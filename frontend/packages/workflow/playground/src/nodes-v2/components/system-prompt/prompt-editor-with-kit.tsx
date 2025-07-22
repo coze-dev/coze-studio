@@ -91,7 +91,7 @@ export const EditorWithPromptKit: FC<EditorWithPromptKitProps> = props => {
   const promptValue = useRef<string>(value || '');
 
   const [FLAGS] = useFlags();
-  // 社区版暂不支持该功能
+  // 开源版暂不支持该功能
   const isHitLLMPromptSkills = FLAGS['bot.automation.llm_prompt_skills'];
 
   const { open, node: PromptLibrary } = usePromptLibraryModal({
@@ -158,7 +158,7 @@ export const EditorWithPromptKit: FC<EditorWithPromptKitProps> = props => {
         <InputSlotWidget mode="input" />
         <LibraryBlockWidget
           {
-            // 社区版暂不支持该功能
+            // 开源版暂不支持该功能
             ...(isHitLLMPromptSkills
               ? {
                   librarys: libraries,
@@ -179,7 +179,7 @@ export const EditorWithPromptKit: FC<EditorWithPromptKitProps> = props => {
         />
         <HighlightExpressionOnActive />
 
-        {/* 社区版暂不支持该功能 */}
+        {/* 开源版暂不支持该功能 */}
         {isHitLLMPromptSkills ? (
           <ContentSearchPopover
             variableTree={variableTree}

@@ -21,7 +21,6 @@
 
 import * as flow_devops_prompt_common from './flow_devops_prompt_common';
 import * as base from './base';
-import * as mcp from './mcp';
 
 export type Int64 = string | number;
 
@@ -53,8 +52,6 @@ export interface ExecuteBatchRequest {
   dataset_id?: Int64;
   /** RowGroupIDs */
   row_group_ids?: Array<Int64>;
-  /** MCP 动态配置 */
-  mcp_execute_config?: mcp.MCPExecuteConfig;
   base?: base.Base;
 }
 
@@ -178,8 +175,6 @@ export interface SendMessageRequest {
   single_step_debug?: boolean;
   /** 串联调试记录(function call单步调试) */
   debug_trace_key?: string;
-  /** MCP 动态配置 */
-  mcp_execute_config?: mcp.MCPExecuteConfig;
   base?: base.Base;
 }
 
@@ -202,8 +197,6 @@ export interface StreamingSendMessageRequest {
   single_step_debug?: boolean;
   /** 串联调试记录(function call单步调试) */
   debug_trace_key?: string;
-  /** MCP 动态配置 */
-  mcp_execute_config?: mcp.MCPExecuteConfig;
   base?: base.Base;
 }
 
@@ -226,8 +219,6 @@ export interface StreamingSendMessageWithoutPermissionCheckRequest {
   single_step_debug?: boolean;
   /** 串联调试记录(function call单步调试) */
   debug_trace_key?: string;
-  /** MCP 动态配置 */
-  mcp_execute_config?: mcp.MCPExecuteConfig;
   base?: base.Base;
 }
 

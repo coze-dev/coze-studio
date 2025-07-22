@@ -187,11 +187,6 @@ export enum ProductUnlistType {
   ByUser = 2,
 }
 
-export enum ResourceType {
-  /** 项目商品/模板用到的资源 */
-  Plugin = 1,
-}
-
 export enum SocialSceneRoleType {
   Host = 1,
   PresetBot = 2,

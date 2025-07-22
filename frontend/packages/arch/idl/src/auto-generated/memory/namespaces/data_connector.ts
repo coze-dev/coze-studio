@@ -109,11 +109,10 @@ export interface GetUserDataSourceListRequest {
 }
 
 export interface GetUserDataSourceListResponse {
-  authorization_url_map?: Partial<
-    Record<data_connector_common.DataSourceType, string>
-  >;
-  data_source_map?: Partial<
-    Record<data_connector_common.DataSourceType, Array<DataSourceInfo>>
+  authorization_url_map?: Record<data_connector_common.DataSourceType, string>;
+  data_source_map?: Record<
+    data_connector_common.DataSourceType,
+    Array<DataSourceInfo>
   >;
   code: Int64;
   msg: string;

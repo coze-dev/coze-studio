@@ -64,7 +64,7 @@ export function PublishConnectors() {
   const { project_id = '' } = useParams<DynamicParams>();
 
   const {
-    connectorList, // 社区版仅支持API 和 Chat SDK 渠道
+    connectorList, // 开源版仅支持API 和 Chat SDK 渠道
     connectorUnionMap,
     monetizeConfig,
     selectedConnectorIds,
@@ -189,7 +189,7 @@ export function PublishConnectors() {
         ))}
       </ConnectorTabbar>
       {connectorGroups.map((i, index) => {
-        // 社区版暂不支持社交平台渠道
+        // 开源版暂不支持社交平台渠道
         const isSocialPlatform =
           i.type === ConnectorClassification.SocialPlatform;
         return (
@@ -208,7 +208,7 @@ export function PublishConnectors() {
                 closeAnimation(i.type);
               }}
             />
-            {/* 社区版暂不支持社交平台渠道 */}
+            {/* 开源版暂不支持社交平台渠道 */}
             {isSocialPlatform ? (
               <SocialPlatformChatflow className="mb-8px" />
             ) : null}

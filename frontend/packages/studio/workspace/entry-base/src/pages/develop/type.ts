@@ -29,7 +29,7 @@ export enum DevelopCustomTypeStatus {
   All = 0,
   Project = 1,
   Agent = 2,
-  DouyinAvatarBot = 3, // single agent 类型的抖音分身 社区版暂不支持该功能
+  DouyinAvatarBot = 3, // single agent 类型的抖音分身 开源版暂不支持该功能
 }
 
 export interface DraftIntelligenceList {

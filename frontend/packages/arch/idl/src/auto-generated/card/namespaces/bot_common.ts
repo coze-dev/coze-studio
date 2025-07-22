@@ -91,13 +91,6 @@ export enum BusinessType {
   DouyinAvatar = 1,
 }
 
-export enum CacheType {
-  /** 缓存关闭 */
-  CacheClosed = 0,
-  /** 前缀缓存 */
-  PrefixCache = 1,
-}
-
 /** 上下文允许传输的类型 */
 export enum ContextMode {
   Chat = 0,
@@ -115,8 +108,6 @@ export enum DefaultUserInputType {
   Voice = 2,
   /** 语音通话 */
   Call = 3,
-  /** 视频通话 */
-  VideoCall = 4,
 }
 
 export enum DisablePromptCalling {
@@ -168,16 +159,6 @@ export enum KnowledgeShowSourceMode {
   CardList = 1,
 }
 
-export enum KnowledgeType {
-  Coze = 0,
-  Volcano = 1,
-}
-
-export enum KnowledgeTypeMode {
-  Coze = 0,
-  Volcano = 1,
-}
-
 export enum MessageFeedbackDetailType {
   UnlikeDefault = 0,
   /** 有害信息 */
@@ -223,9 +204,6 @@ export enum ModelFuncConfigType {
   MultiAgentRecognize = 18,
   KnowledgePhoto = 19,
   HookInfo = 20,
-  KnowledgeValcanoUnstructured = 21,
-  KnowledgeValcanoStructured = 22,
-  Model = 23,
 }
 
 export enum ModelResponseFormat {
@@ -259,12 +237,6 @@ export enum OnboardingMode {
   USE_MANUAL = 2,
   /** 由LLM生成 */
   USE_LLM = 3,
-}
-
-export enum PromptMode {
-  Standard = 0,
-  /** 前缀提示词 */
-  PrefixPrompt = 1,
 }
 
 export enum RecognitionMode {

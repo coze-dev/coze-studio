@@ -93,7 +93,7 @@ export function ModelOption({
     ?.filter(t => t.tag_class === ModelTagClass.ModelFunction && t.tag_name)
     .map(t => t.tag_name);
 
-  // 付费墙，社区版不支持该功能
+  // 付费墙，开源版不支持该功能
   const isProModel =
     model.model_status_details?.is_new_model ||
     model.model_status_details?.is_advanced_model;
@@ -154,7 +154,7 @@ export function ModelOption({
               {model.name}
             </Typography.Title>
             <div className="shrink-0 flex gap-[6px]">
-              {/* 抖音分身场景下不展示改 tag，社区版暂不支持该功能 */}
+              {/* 抖音分身场景下不展示改 tag，开源版暂不支持该功能 */}
               {model.model_status_details?.is_free_model &&
               scene !== BotCreatorScene.DouyinBot ? (
                 <Tag size="mini" color="primary" className="!coz-mg-plus">

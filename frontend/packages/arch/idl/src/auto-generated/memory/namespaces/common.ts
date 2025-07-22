@@ -45,11 +45,6 @@ export enum DataSetStatus {
   DataSetFailed = 9,
 }
 
-export enum DatasetType {
-  Coze = 0,
-  Volcano = 1,
-}
-
 export enum DocumentSourceType {
   /** 本地上传 */
   Document = 0,
@@ -101,10 +96,6 @@ export enum FormatType {
   Image = 2,
   /** 数据库 */
   Database = 3,
-  /** 火山结构化 火山知识库特有 */
-  VolcanoStructured = 4,
-  /** 火山非结构化 火山知识库特有 */
-  VolcanoUnstructured = 5,
 }
 
 export enum SliceStatus {
@@ -116,16 +107,6 @@ export enum SliceStatus {
   Deactive = 9,
   /** 审核不通过 */
   AuditFailed = 1000,
-}
-
-export enum VolcanoDatasetServiceStatus {
-  DatasetServiceValid = 0,
-  DatasetServiceInvalid = 1,
-}
-
-export enum VolcanoDatasetStatus {
-  DatasetValid = 0,
-  DatasetInvalid = 1,
 }
 
 export enum WebInfoStatus {
@@ -168,10 +149,6 @@ export interface DataSetInfo {
   /** 处理失败的文件 */
   failed_file_list?: Array<string>;
   format_type?: FormatType;
-  /** 0=coze知识库 1=火山知识库 */
-  dataset_type?: DatasetType;
-  /** storage_config详细信息 */
-  storage_config?: StorageConfig;
 }
 
 /** 表格的列信息 */
@@ -270,22 +247,5 @@ export interface SourceFileInfo {
   source_type?: DocumentSourceType;
   /** custom json list<map<string, string>> */
   custom_content?: string;
-}
-
-export interface StorageConfig {
-  volcano_dataset_config?: VolcanoDataset;
-}
-
-export interface VolcanoDataset {
-  /** 火山侧知识库id 字符串 */
-  id?: string;
-  /** 名称 */
-  name?: string;
-  /** 类型 结构化 or 非结构化知识库 */
-  format_type?: FormatType;
-  /** 火山知识库详情链接 */
-  link?: string;
-  /** 火山知识库状态 是否已失效 */
-  status?: VolcanoDatasetStatus;
 }
 /* eslint-enable */

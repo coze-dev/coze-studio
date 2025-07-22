@@ -1304,7 +1304,7 @@
   "error_id_copy_success": "Error ID copied successfully.",
   "errorpage_bot_btn": "Back to Coze",
   "errorpage_bot_title": "Failed to view the agent",
-  "errorpage_subtitle": "Please check the link or access permission of this page.",
+  "errorpage_subtitle": "Please check your URL or retry after joining the corresponding workspace.",
   "eval_status_referenced": "Referenced",
   "exit": "Exit",
   "expand": "Expand",

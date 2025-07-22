@@ -90,8 +90,6 @@ export enum IDC {
 export enum MerlinFramework {
   LLMServerPublic = 1,
   Laplace = 2,
-  /** 电商团队专用协议，详见  */
-  Mixinfer = 3,
 }
 
 export enum MerlinLLMInterface {
@@ -348,10 +346,6 @@ export enum UsageScenario {
   PromptAsAService = 3,
   /** AI打标 */
   AIAnnotate = 4,
-  /** 质量分 */
-  AIScore = 5,
-  /** 数据标签 */
-  AITag = 6,
 }
 
 export enum ValidateStatus {

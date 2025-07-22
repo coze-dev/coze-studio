@@ -842,7 +842,7 @@ export interface PluginInfo {
   /** 插件统计数据 */
   statistic_data?: PluginStatisticData;
   /** 公共参数列表 */
-  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
+  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
   /** plugin的商品上下架状态 */
   plugin_product_list_status?: ProductStatus;
   /** plugin的商品状态(组合状态)(已废弃) */
@@ -878,7 +878,7 @@ export interface PluginInfoForPlayground {
   space_id?: string;
   /** 插件统计数据 */
   statistic_data?: PluginStatisticData;
-  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
+  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
   /** plugin的商品状态 */
   plugin_product_status?: ProductStatus;
   /** plugin商品下架类型 */
@@ -913,7 +913,7 @@ export interface PluginMetaInfo {
   service_token?: string;
   /** json序列化 */
   oauth_info?: string;
-  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
+  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
   sub_auth_type?: number;
   auth_payload?: string;
   /** 是否固定出口ip */

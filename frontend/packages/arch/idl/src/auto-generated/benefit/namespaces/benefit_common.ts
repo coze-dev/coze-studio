@@ -47,17 +47,6 @@ export enum BenefitEntityType {
   EnterpriseSingleDevice = 11,
   /** 单终端主题，由客户自定义 */
   EnterpriseSingleCustomConsumer = 12,
-  /** API */
-  API = 13,
-  /** Plugin */
-  Plugin = 14,
-  /** Voice */
-  Voice = 15,
-  /** Workflow */
-  Workflow = 16,
-  /** 企业配置类
-企业安心用配置 */
-  EnterpriseConfConfidenceUsing = 51,
 }
 
 /** 权益历史记录类型 */
@@ -112,7 +101,6 @@ export enum BenefitType {
   UserFreeChat = 2,
   TopUpMessageCredit = 3,
   BonusMessageCredit = 4,
-  /** 40 -59 免费次数 */
   Freetimes = 40,
   /** 评测免费次数 */
   EvaluateFree = 41,
@@ -126,8 +114,7 @@ export enum BenefitType {
   APIRunFree = 45,
   /** SDK 运行免费次数 */
   SDKRunFree = 46,
-  /** 60 - 99 限流
-模型 RPM 限流 */
+  /** 模型 RPM 限流 */
   RateLimitModelRPM = 60,
   /** 模型 Input TPM 限流 */
   RateLimitModelInputTPM = 61,
@@ -137,23 +124,7 @@ export enum BenefitType {
   RateLimitModelInputTPMBasic = 63,
   /** 基础模型 Output TPM 限流 */
   RateLimitModelOutputTPMBasic = 64,
-  /** Plugin 运行 QPS 限流 */
-  PluginRunQPS = 65,
-  /** Plugin 运行并发度限流 */
-  PluginRunParallel = 66,
-  /** 图像节点
-Workflow 运行 QPS 限流 */
-  WorkflowRunQPS = 67,
-  /** Workflow 运行并发度限流 */
-  WorkflowRunParallel = 68,
-  /** API 运行 QPS 限流 */
-  APIRunQPS = 70,
-  /** 语音 QPS 限流 */
-  VoiceQPS = 71,
-  /** 语音并发度限流 */
-  VoiceParallel = 72,
-  /** 100-109 资源点
-资源点总量 */
+  /** 资源点总量 */
   ResourcePoint = 100,
   /** 免费资源点，废弃 */
   FreeResourcePoint = 101,
@@ -161,45 +132,32 @@ Workflow 运行 QPS 限流 */
   VolcProResourcePoint = 102,
   /** 周期性资源点 */
   PeriodicResourcePoint = 103,
-  /** 渠道递减资源点 */
-  ChannelResourcePoint = 104,
-  /** 试算资源点 */
-  CutAndTryResourcePoint = 109,
-  /** 110-129 Fornax
-Trace 用量 */
+  /** Trace 用量 */
   TraceAmount = 111,
   /** Trace 存储时长 */
   TraceStorageDuration = 112,
-  /** 130-149 WorkSpace
-Space 总量 */
+  /** Space 总量 */
   SpaceAmount = 131,
   /** Space 人数 */
   SpacePeopleNumber = 132,
   /** Space 下协作者人数 */
   SpaceCollaboratorNumber = 133,
-  /** 150-169 运维
-日志存储时长 */
+  /** 日志存储时长 */
   LogStorageDuration = 151,
   /** 日志导出 */
   LogExport = 152,
-  /** 170-179 知识库
-知识库容量 */
+  /** 知识库容量 */
   Capacity = 170,
-  /** 180-199 语音
-音色克隆总数 */
+  /** 音色克隆总数 */
   VoiceCloneNumber = 180,
   /** 音色克隆基础数量 */
   VoiceCloneNumberBasic = 181,
-  /** 200-219 租户相关
-席位数上限 */
+  /** 席位数上限 */
   SeatNumberLimit = 200,
   /** 基础席位数 */
   SeatNumberBasic = 201,
   /** 移除水印 */
   RemoveWatermark = 220,
-  /** 240-269 配置
-安心用 */
-  ConfidenceUsing = 240,
 }
 
 /** 权益使用模式 */
@@ -225,9 +183,6 @@ export enum ChargeItemType {
   /** 100-199 语音相关 */
   VoiceClone = 100,
   VoiceStorage = 101,
-  /** 200- */
-  PluginRunQPS = 200,
-  PluginRunParallel = 201,
 }
 
 export enum ChargeResourceType {
@@ -311,18 +266,6 @@ export enum CozeAccountType {
   Personal = 2,
 }
 
-/** 用户权益套餐状态 */
-export enum CozeInstanceStaus {
-  /** 运行中 */
-  Running = 1,
-  /** 退订 */
-  Unsubs = 2,
-  /** 到期 */
-  Expired = 3,
-  /** 欠费 */
-  Overdue = 4,
-}
-
 export enum DurationType {
   Day = 1,
   Month = 2,
@@ -334,10 +277,6 @@ export enum EntityBenefitStatus {
   Valid = 1,
   /** 冻结使用 */
   Frozen = 3,
-  /** 取消 */
-  Cancel = 5,
-  /** 待生效（此枚举通过计算得出，数据库中并无此项数据） */
-  Pending = 6,
 }
 
 export enum EntityPeriodType {
@@ -414,17 +353,6 @@ export enum OperateType {
   TopUpChargeBack = 5,
   SubscriptionChargeBackReverse = 6,
   TopUpChargeBackReverse = 7,
-}
-
-export enum PluginBillType {
-  /** 按次调用计费。适用于大多数插件 */
-  ByCallTime = 0,
-  /** 按时长计费（单位S）。适用于音乐生成、视频编辑等 */
-  ByDuration = 1,
-  /** 按token数计费。适用于视频生成 */
-  ByTotalTokens = 2,
-  /** 插件本身不计费，由下游计费。 */
-  NoneButByDownstream = 11,
 }
 
 /** 资源归属的实体类型 */
@@ -526,13 +454,6 @@ export enum VolcanoUserType {
   BasicUser = 2,
 }
 
-export enum VolcInstanceType {
-  /** 正常版本 */
-  Normal = 1,
-  /** 渠道版本 */
-  Channel = 2,
-}
-
 export enum WorkflowMode {
   Unknown = 0,
   TestRun = 1,
@@ -614,17 +535,8 @@ export interface ModeleResInfo {
   input_tokens?: Int64;
   /** 输出token数 */
   output_tokens?: Int64;
-  /** 模型AK类别 */
-  ak_catalog?: string;
   /** 模型AK */
-  model_ak?: string;
-}
-
-export interface PluginRelationInfo {
-  /** 计费类型 */
-  bill_type?: PluginBillType;
-  /** 插件功能名称。只有当一个插件内有多种计费时，该字段才需要填值 */
-  feature_name?: string;
+  ak_catalog?: string;
 }
 
 export interface PluginResInfo {
@@ -632,16 +544,6 @@ export interface PluginResInfo {
   plugin_api_id?: Int64;
   /** 是否是图像流 */
   is_image_flow?: boolean;
-  /** 工具ID */
-  tool_id?: Int64;
-  /** 工具名称 */
-  tool_name?: string;
-  /** 插件关联信息 */
-  relation_info?: PluginRelationInfo;
-  /** 插件执行时间（单位秒）。默认存在是则优先取该值。适用于通过执行时长计费的插件 */
-  duration?: Int64;
-  /** 输出token数。默认存在是则优先取该值。适用于通过token数计费的插件 */
-  total_tokens?: Int64;
 }
 
 export interface PublicUserBasicInfo {
@@ -768,8 +670,6 @@ export interface VolcAccountInfo {
   instance_begin_time?: Int64;
   /** 权益失效时间（秒级） */
   instance_end_time?: Int64;
-  /** 套餐对应周期资源包实例Id,如果用户购买的是仅版本，则该字段为空 */
-  period_pack_instance_id?: string;
 }
 
 export interface VolcUserInfo {
@@ -777,7 +677,5 @@ export interface VolcUserInfo {
   VolcAuthInstanceID?: string;
   /** 火山开通的套餐等级 */
   VolcUserLevel?: UserLevel;
-  /** 火山用户实例版本 */
-  VolcInstanceType?: VolcInstanceType;
 }
 /* eslint-enable */

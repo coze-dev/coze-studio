@@ -169,15 +169,6 @@ export enum OrderField {
   LastedPublishTime = 2,
 }
 
-/** Prompt 加密类型 */
-export enum PromptEncryptOption {
-  Undefined = 0,
-  /** 加密且返回明文 */
-  EncryptWithPlainText = 1,
-  /** 加密且不返回明文 */
-  EncryptWithoutPlainText = 2,
-}
-
 /** 提示词类型 */
 export enum PromptType {
   Undefined = 0,

@@ -87,9 +87,6 @@ export enum DomainModelTagClass {
   ModelFeature = 3,
   ModelFunction = 4,
   ModelScenario = 5,
-  ModelPaid = 15,
-  /** 模型运行时能力 */
-  ModelAbility = 16,
   /** 本期不做 */
   Custom = 20,
 }

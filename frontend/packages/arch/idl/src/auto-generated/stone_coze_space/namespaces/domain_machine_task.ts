@@ -27,15 +27,6 @@ export enum DomainMachineFileSource {
   IntermidiateOutput = 3,
 }
 
-export enum DomainMilvTaskType {
-  /** 审查 */
-  Review = 1,
-  /** 起草 */
-  Draft = 2,
-  /** 法律问答 */
-  LawQA = 3,
-}
-
 export enum DomainStockTaskType {
   /** 普通咨询任务 */
   GeneralChat = 1,
@@ -55,20 +46,12 @@ export enum DomainTaskStatus {
   IllegalContent = 7,
   /** 异常中断 */
   AbnormalInterrupted = 8,
-  /** 休眠 */
-  Sleep = 9,
 }
 
 export enum DomainTaskType {
   General = 1,
   UserResearch = 2,
   Stock = 3,
-  AnalyzePublicOpinion = 5,
-  PPTAgent = 6,
-  Milv = 7,
-  TongCheng = 9,
-  DevAgent = 10000,
-  CustomerService = 10001,
 }
 
 export enum MachineTaskFileStatus {

@@ -74,8 +74,6 @@ export enum FilterCmpOp {
   NotLike = 10,
   /** 有该 tag */
   Exists = 11,
-  /** 没有该 tag */
-  NotExists = 12,
 }
 
 /** 逻辑算子 */
@@ -113,7 +111,6 @@ export enum TaskStatusType {
   Succeeded = 3,
   Failed = 4,
   Pending = 5,
-  Stopped = 6,
 }
 
 /** Task */

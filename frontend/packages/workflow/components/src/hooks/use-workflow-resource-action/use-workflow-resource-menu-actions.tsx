@@ -126,7 +126,7 @@ export const useWorkflowResourceMenuActions = (
       {
         hide:
           !enablePublishEntry || // 上架入口加白
-          // 社区版暂不支持该功能
+          // 开源版暂不支持该功能
           (!FLAGS['bot.community.store_imageflow'] && isImageFlow) || // Imageflow 不支持商店
           !isSelfCreator ||
           bizExtend?.plugin_id === '0',

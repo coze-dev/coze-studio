@@ -32,13 +32,9 @@ export enum ContentType {
 }
 
 export enum DatasetCategory {
-  /** 数据集 */
   General = 1,
-  /** 训练集 (暂无) */
   Training = 2,
-  /** 验证集 (暂无) */
   Validation = 3,
-  /** 评测集 (暂无) */
   Evaluation = 4,
 }
 
@@ -66,7 +62,6 @@ export enum FieldDisplayFormat {
   JSON = 3,
   YAML = 4,
   Code = 5,
-  SingleOption = 6,
 }
 
 export enum FieldStatus {
@@ -89,10 +84,6 @@ export enum ItemErrorType {
   IllegalContent = 6,
   /** system error */
   InternalError = 100,
-  /** 清空数据集失败 */
-  ClearDatasetFailed = 101,
-  /** 读写文件失败 */
-  RWFileFailed = 102,
 }
 
 export enum SchemaKey {
@@ -101,8 +92,6 @@ export enum SchemaKey {
   Float = 3,
   Bool = 4,
   Message = 5,
-  /** 单选 */
-  SingleChoice = 6,
 }
 
 export enum SecurityLevel {
@@ -155,8 +144,6 @@ export interface ItemErrorDetail {
   /** [startIndex, endIndex] 表示区间错误范围, 如 ExceedDatasetCapacity 错误时 */
   startIndex?: number;
   endIndex?: number;
-  /** ItemErrorType=MismatchSchema, key 为 FieldSchema.name, value 为错误信息 */
-  messagesByField?: Record<string, string>;
 }
 
 export interface ItemErrorGroup {

@@ -233,7 +233,7 @@ export const useWorkflowResource = (): UseWorkflowResourceReturn => {
           subType: WorkflowMode.Workflow,
           tooltip: <WorkflowTooltip flowMode={WorkflowMode.Workflow} />,
         },
-        // 社区版本暂不支持对话流
+        // 开源版本暂不支持对话流
         IS_OPEN_SOURCE
           ? null
           : {

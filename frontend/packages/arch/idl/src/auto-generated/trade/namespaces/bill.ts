@@ -79,9 +79,7 @@ export interface BillItem {
   model_consume_detail?: Array<BillConsumeDetail>;
   /** 废弃 */
   plugin_consume_detail?: Array<BillConsumeDetail>;
-  entity_consume_detail?: Partial<
-    Record<BillItemType, Array<BillConsumeDetail>>
-  >;
+  entity_consume_detail?: Record<BillItemType, Array<BillConsumeDetail>>;
   bill_item_id?: string;
   change_amount_str?: string;
   icon_url?: string;

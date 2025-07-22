@@ -52,17 +52,6 @@ export enum ModelType {
   SmallModel = 1,
 }
 
-export enum PermissionRoleType {
-  User = 1,
-  Space = 2,
-  Connector = 3,
-}
-
-export enum PermissionType {
-  VoiceSpeech = 1,
-  VoiceClone = 2,
-}
-
 export enum RealtimeScene {
   /** 默认场景 */
   ExternalRTCOpenAPI = 0,
@@ -97,28 +86,6 @@ export interface AudioInfo {
   audio_bytes?: Blob;
 }
 
-export interface DeviceInfo {
-  device_id?: string;
-  custom_consumer?: string;
-}
-
-export interface EmotionConfig {
-  Emotion?: string;
-  EmotionScale?: number;
-}
-
-export interface EmotionInfo {
-  emotion?: string;
-  display_name?: string;
-  emotion_scale_interval?: Interval;
-}
-
-export interface Interval {
-  min?: number;
-  max?: number;
-  default?: number;
-}
-
 export interface LanguageInfo {
   language_code?: string;
   language_name?: string;
@@ -145,10 +112,6 @@ export interface OpenAPIVoiceData {
   speaker_id?: string;
   /** 模型类型 */
   model_type?: string;
-  /** 音色状态 */
-  state?: string;
-  /** 支持的情感列表 */
-  support_emotions?: Array<EmotionInfo>;
   /** 创建时间unix时间戳 */
   create_time?: number;
   /** 更新时间unix时间戳 */
@@ -204,11 +167,5 @@ export interface VoiceDetail {
   model_type?: ModelType;
   /** 模型提供方 */
   model_provider?: string;
-  /** 是否是精品音色 */
-  is_fine_tune_voice?: boolean;
-  /** 支持的情感列表 */
-  support_emotions?: Array<EmotionInfo>;
-  /** 是否支持多情感 */
-  is_multi_emotion_voice?: boolean;
 }
 /* eslint-enable */

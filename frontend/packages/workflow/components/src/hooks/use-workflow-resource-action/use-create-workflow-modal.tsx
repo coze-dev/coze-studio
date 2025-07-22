@@ -89,7 +89,7 @@ export const useCreateWorkflowModal = ({
   };
 
   const workflowModalInitState = useMemo(() => {
-    // 社区版暂不支持该功能
+    // 开源版暂不支持该功能
     if (isWorkflowMode || FLAGS['bot.community.store_imageflow']) {
       return {
         productCategory: 'all',

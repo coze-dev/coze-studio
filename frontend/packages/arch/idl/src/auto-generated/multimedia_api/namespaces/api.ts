@@ -46,10 +46,6 @@ export interface AudioSpeechRequest {
   speed?: number;
   /** 采样率，可选值 [8000,16000,22050,24000,32000,44100,48000]，默认 24000 */
   sample_rate?: number;
-  /** 情感，可选值 [none,happy,angry,sad,neutral]，默认 none */
-  emotion?: string;
-  /** 情绪值，[1,5]，默认 4 */
-  emotion_scale?: number;
 }
 
 export interface AudioSpeechResponse {
@@ -134,23 +130,6 @@ export interface CreateRoomResponse {
   data?: CreateRoomData;
 }
 
-export interface GetLiveInfoData {
-  /** 火山 WTN AppID */
-  app_id?: string;
-  /** 直播中多个流信息 */
-  stream_infos?: Array<StreamInfo>;
-}
-
-export interface GetLiveInfoRequest {
-  live_id?: Int64;
-}
-
-export interface GetLiveInfoResponse {
-  code?: number;
-  msg?: string;
-  data?: GetLiveInfoData;
-}
-
 export interface ListVoiceData {
   voice_list?: Array<common.OpenAPIVoiceData>;
   has_more?: boolean;
@@ -161,8 +140,6 @@ export interface ListVoiceRequest {
   filter_system_voice?: boolean;
   /** 大小模型类型，big 是大模型，small 是小模型 默认都返回 */
   model_type?: string;
-  /** 音色状态，init 是待克隆，cloned 是已克隆，all全部，其他报错 */
-  voice_state?: string;
   /** 默认是 1 */
   page_num?: number;
   /** 最大 100, 默认 100 */
@@ -180,29 +157,6 @@ export interface RoomConfig {
   video_config?: VideoConfig;
   /** 房间音频配置 */
   audio_config?: AudioConfig;
-  /** 自定义开场白 */
-  prologue_content?: string;
-  /** 房间模式 */
-  room_mode?: string;
-  /** 同传配置，仅在房间模式为同传时生效 */
-  translate_config?: TranslateConfig;
-  /** 在进房后等待多长时间播放开场白，默认是500ms，[0, 5000] */
-  prologue_delay_duration_ms?: number;
-}
-
-export interface StreamInfo {
-  /** 音视频流ID */
-  stream_id?: string;
-  /** 音视频流名字 */
-  name?: string;
-  live_type?: string;
-}
-
-export interface TranslateConfig {
-  /** 翻译源语言 */
-  from?: string;
-  /** 翻译目标语言 */
-  to?: string;
 }
 
 export interface VideoConfig {
@@ -210,9 +164,5 @@ export interface VideoConfig {
   codec?: string;
   /** 房间视频流类型, 支持 main/screen, main: 主流。包括：「由摄像头/麦克风通过内部采集机制，采集到的流。」和「通过自定义采集，采集到的流。」，screen：屏幕流 */
   stream_video_type?: string;
-  /** 视频抽帧速率，默认值是1，[1, 24] */
-  video_frame_rate?: number;
-  /** 视频帧过期时间，单位为s，默认值是1，[1, 10] */
-  video_frame_expire_duration?: number;
 }
 /* eslint-enable */

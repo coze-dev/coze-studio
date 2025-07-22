@@ -86,7 +86,7 @@ export interface GetMemoryVariableMetaReq {
 }
 
 export interface GetMemoryVariableMetaResp {
-  VariableMap?: Partial<Record<VariableChannel, Array<Variable>>>;
+  VariableMap?: Record<VariableChannel, Array<Variable>>;
   BaseResp: base.BaseResp;
 }
 

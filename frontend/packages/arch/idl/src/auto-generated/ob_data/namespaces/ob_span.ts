@@ -45,7 +45,6 @@ export enum SpanCategory {
   Script = 21,
   CallFlow = 22,
   Connector = 23,
-  WorkflowHTTP = 24,
 }
 
 export enum SpanStatus {
@@ -104,8 +103,6 @@ export enum SpanType {
   BWCallFlow = 46,
   BWConnector = 47,
   UserInputV2 = 48,
-  WorkflowHttp = 49,
-  WorkflowHttp_end = 50,
 }
 
 export interface AttrBWBatch {
@@ -1416,86 +1413,6 @@ export interface AttrWorkflowEnd {
   sub_execute_id?: string;
 }
 
-export interface AttrWorkflowHttp {
-  /** argos日志ID */
-  log_id: string;
-  /** 触发事件的用户ID */
-  user_id: string;
-  /** 事件发生的Bot ID */
-  bot_id: string;
-  /** Bot 的名称快照 */
-  bot_name: string;
-  /** bot开发/正式环境 */
-  bot_env: string;
-  /** bot版本 */
-  bot_version: string;
-  /** bot所属空间ID */
-  bot_space_id: string;
-  /** Bot 的下发渠道，如豆包、飞书等 */
-  channel: string;
-  /** 本节点的输入 */
-  input: string;
-  /** 本节点的输出 */
-  output: string;
-  /** 当前span实际输入消耗token数 */
-  input_tokens: number;
-  /** 当前span实际输出消耗token数 */
-  output_tokens: number;
-  /** 当前span的状态码，0表示成功，非0表示失败 */
-  status_code: string;
-  /** 在workflow中的节点ID */
-  workflow_node_id: string;
-  /** 流程唯一标识 */
-  workflow_id?: string;
-  /** 流程执行ID */
-  execute_id?: string;
-  /** 流程版本号 */
-  workflow_version?: string;
-  /** 流程执行子ID */
-  sub_execute_id?: string;
-  /** 流程节点名 */
-  node_name?: string;
-}
-
-export interface AttrWorkflowHttpEnd {
-  /** argos日志ID */
-  log_id: string;
-  /** 触发事件的用户ID */
-  user_id: string;
-  /** 事件发生的Bot ID */
-  bot_id: string;
-  /** Bot 的名称快照 */
-  bot_name: string;
-  /** bot开发/正式环境 */
-  bot_env: string;
-  /** bot版本 */
-  bot_version: string;
-  /** bot所属空间ID */
-  bot_space_id: string;
-  /** Bot 的下发渠道，如豆包、飞书等 */
-  channel: string;
-  /** 本节点的输入 */
-  input: string;
-  /** 本节点的输出 */
-  output: string;
-  /** 当前span实际输入消耗token数 */
-  input_tokens: number;
-  /** 当前span实际输出消耗token数 */
-  output_tokens: number;
-  /** 当前span的状态码，0表示成功，非0表示失败 */
-  status_code: string;
-  /** 在workflow中的节点ID */
-  workflow_node_id: string;
-  /** 流程唯一标识 */
-  workflow_id?: string;
-  /** 流程执行ID */
-  execute_id?: string;
-  /** 流程版本号 */
-  workflow_version?: string;
-  /** 流程执行子ID */
-  sub_execute_id?: string;
-}
-
 export interface AttrWorkflowKnowledge {
   /** argos日志ID */
   log_id: string;
@@ -1914,8 +1831,6 @@ attribute with the same key). */
   attr_bw_call_flow?: AttrBWCallFlow;
   attr_bw_connector?: AttrBWConnector;
   attr_user_input_v2?: AttrUserInputV2;
-  attr_workflow_http?: AttrWorkflowHttp;
-  attr_workflow_http_end?: AttrWorkflowHttpEnd;
   attr_bw_script?: AttrBWScript;
 }
 /* eslint-enable */

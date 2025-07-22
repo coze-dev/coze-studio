@@ -194,9 +194,7 @@ export interface MGetAuthInfoRequest {
 }
 
 export interface MGetAuthInfoResponse {
-  auth_info_map?: Partial<
-    Record<connector_common.ConnectorID, Array<AuthInfo>>
-  >;
+  auth_info_map?: Record<connector_common.ConnectorID, Array<AuthInfo>>;
   code: Int64;
   msg: string;
 }

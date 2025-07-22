@@ -119,12 +119,6 @@ export enum FormatType {
   Image = 2,
   /** 数据库 */
   Database = 3,
-  /** 火山结构化 火山知识库特有 */
-  VolcanoStructured = 4,
-  /** 火山非结构化 火山知识库特有 */
-  VolcanoUnstructured = 5,
-  /** 火山数据库 */
-  VolcanoDatabase = 6,
 }
 
 export enum FrequencyType {
@@ -179,16 +173,6 @@ export enum UpdateType {
   NoUpdate = 0,
   Cover = 1,
   Append = 2,
-}
-
-export enum VolcanoDatasetServiceStatus {
-  DatasetServiceValid = 0,
-  DatasetServiceInvalid = 1,
-}
-
-export enum VolcanoDatasetStatus {
-  DatasetValid = 0,
-  DatasetInvalid = 1,
 }
 
 export enum WebStatus {
@@ -265,38 +249,5 @@ export interface SinkStrategy {
 export interface StorageStrategy {
   storage_location: StorageLocation;
   open_search_config?: OpenSearchConfig;
-}
-
-export interface VolcanoDataset {
-  /** 火山侧知识库id 字符串 */
-  id?: string;
-  /** 名称 */
-  name?: string;
-  /** 类型 结构化 or 非结构化知识库 */
-  format_type?: FormatType;
-  /** 火山知识库详情链接 */
-  link?: string;
-  /** 火山知识库状态 是否已失效 */
-  status?: VolcanoDatasetStatus;
-  desc?: string;
-}
-
-export interface VolcanoDatasetProject {
-  /** 目前只需要项目名称 */
-  name?: string;
-  /** 火山知识库空间跳转链接 */
-  link?: string;
-}
-
-export interface VolcanoDatasetService {
-  /** 火山侧知识服务id 字符串 */
-  id?: string;
-  /** 名称 */
-  name?: string;
-  /** 火山知识服务链接 */
-  link?: string;
-  /** 火山知识库状态 是否已失效 */
-  status?: VolcanoDatasetServiceStatus;
-  desc?: string;
 }
 /* eslint-enable */

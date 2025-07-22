@@ -119,9 +119,6 @@ export enum ModelTagClass {
   ModelFeature = 3,
   ModelFunction = 4,
   ModelScenario = 5,
-  ModelPayment = 15,
-  /** 模型运行时能力 */
-  ModelAbility = 16,
   /** 本期不做 */
   Custom = 20,
 }
@@ -355,14 +352,12 @@ export interface GetModelListData {
 }
 
 export interface GetModelListFilterParamsData {
-  tag_filters?: Partial<Record<ModelTagClass, Array<string>>>;
+  tag_filters?: Record<ModelTagClass, Array<string>>;
   context_len_min?: Int64;
   context_len_max?: Int64;
   model_cost_min?: Int64;
   model_cost_max?: Int64;
   model_vendors?: Array<string>;
-  model_ability?: ModelAbility;
-  model_show_family_list?: Array<ModelShowFamily>;
 }
 
 export interface GetModelListFilterParamsRequest {}
@@ -376,14 +371,13 @@ export interface GetModelListFilterParamsResponse {
 export interface GetModelListRequest {
   space_id?: string;
   name?: string;
-  tag_filters?: Partial<Record<ModelTagClass, Array<string>>>;
+  tag_filters?: Record<ModelTagClass, Array<string>>;
   context_len_min?: Int64;
   context_len_max?: Int64;
   model_cost_min?: Int64;
   model_cost_max?: Int64;
   model_vendor?: string;
   statusList?: Array<ModelStatus>;
-  model_show_family_id?: string;
   order_by?: OrderBy;
   cursor_id?: string;
   limit?: number;
@@ -423,35 +417,6 @@ export interface GetModelUsageDataResponse {
   msg?: string;
 }
 
-export interface GetSpaceModelUserConfigData {
-  space_model_user_config_list?: Array<SpaceModelUserConfig>;
-}
-
-export interface GetSpaceModelUserConfigRequest {
-  space_id?: string;
-}
-
-export interface GetSpaceModelUserConfigResponse {
-  data?: GetSpaceModelUserConfigData;
-  code?: Int64;
-  msg?: string;
-}
-
-export interface ModelAbility {
-  /** 是否展示cot */
-  cot_display?: boolean;
-  /** 是否支持function call */
-  function_call?: boolean;
-  /** 是否支持图片理解 */
-  image_understanding?: boolean;
-  /** 是否支持视频理解 */
-  video_understanding?: boolean;
-  /** 是否支持音频理解 */
-  audio_understanding?: boolean;
-  /** 是否支持续写 */
-  prefill_resp?: boolean;
-}
-
 export interface ModelBasicInfo {
   name?: string;
   model_id?: string;
@@ -467,18 +432,11 @@ export interface ModelBasicInfo {
   param_size?: string;
   /** 方舟模型节点名称 */
   endpoint_name?: string;
-  model_tags?: Partial<Record<ModelTagClass, Array<string>>>;
+  model_tags?: Record<ModelTagClass, Array<string>>;
   /** 模型厂商 */
   model_vendor?: string;
   /** 模型参数 */
   model_params?: Array<ModelParameter>;
-  show_family_id?: string;
-  model_ability?: ModelAbility;
-  default_model_flag?: boolean;
-  /** 0-用户可见 1-用户不可见 */
-  model_config_type?: number;
-  online_time?: string;
-  offline_time?: string;
   status?: ModelStatus;
   update_time?: string;
 }
@@ -510,7 +468,7 @@ export interface ModelInfo {
   model_rate_limit?: ModelRateLimit;
   model_speed?: Int64;
   model_permission_info?: ModelPermissionInfo;
-  finetune_params?: Partial<Record<FinetuneParamType, FinetuneParam>>;
+  finetune_params?: Record<FinetuneParamType, FinetuneParam>;
   model_concurrent_info?: ModelConcurrentInfo;
 }
 
@@ -575,14 +533,6 @@ export interface ModelRateLimit {
   tpm?: number;
 }
 
-export interface ModelShowFamily {
-  id?: string;
-  icon?: string;
-  iconUrl?: string;
-  name?: string;
-  ranking?: number;
-}
-
 export interface ModelUsage {
   BotTotalInput?: Int64;
   BotTotalOutput?: Int64;
@@ -619,12 +569,6 @@ export interface Option {
   value?: string;
 }
 
-export interface SpaceModelUserConfig {
-  space_id?: string;
-  model_id?: string;
-  config_type?: number;
-}
-
 export interface StartEstimatedTrainingCostData {
   task_id?: string;
 }
@@ -638,18 +582,6 @@ export interface StartEstimatedTrainingCostRequest {
 
 export interface StartEstimatedTrainingCostResponse {
   data?: StartEstimatedTrainingCostData;
-  code?: Int64;
-  msg?: string;
-}
-
-export interface UpdateModelConfigTypeRequest {
-  space_id?: string;
-  model_id?: string;
-  /** 0-用户可见 1-用户不可见 */
-  config_type?: number;
-}
-
-export interface UpdateModelConfigTypeResponse {
   code?: Int64;
   msg?: string;
 }

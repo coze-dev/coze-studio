@@ -58,8 +58,6 @@ export enum QueryScene {
   WORKFLOW_DEBUG = 2,
   /** Bots 运营后台 */
   COZE_OP = 3,
-  /** fornax platform */
-  FORNAX = 4,
 }
 
 export enum QueryTypeEnum {

@@ -21,7 +21,6 @@
 
 import * as base from './base';
 import * as common from './common';
-import * as open_api from './open_api';
 
 export type Int64 = string | number;
 
@@ -65,7 +64,6 @@ export enum OpenAPISource {
 export enum PermissionScope {
   Workspace = 0,
   Account = 1,
-  Enterprise = 2,
 }
 
 export enum PermissionType {
@@ -229,16 +227,6 @@ export interface CreatePSMResponse {
   BaseResp?: base.BaseResp;
 }
 
-/** 创建限流规则-运营后台api */
-export interface CreateRateLimitOperationReq {
-  rate_limit: open_api.RateLimitConf;
-  Base?: base.Base;
-}
-
-export interface CreateRateLimitOperationResp {
-  BaseResp?: base.BaseResp;
-}
-
 export interface DeletePermissionReq {
   permission_info: PermissionInfo;
   Base?: base.Base;
@@ -340,24 +328,6 @@ export interface GetPermissionListResp {
   BaseResp?: base.BaseResp;
 }
 
-/** 限流-运营后台 api
- 只会返回运营后台配置的限流, 由权益提升的限流配置不会返回 */
-export interface GetRateLimitOperationReq {
-  path: string;
-  http_method: string;
-  Base?: base.Base;
-}
-
-export interface GetRateLimitOperationResp {
-  /** 全局限流 */
-  global_limit_list?: Array<open_api.RateLimitConf>;
-  /** 基础限流 */
-  base_limit_list?: Array<open_api.RateLimitConf>;
-  /** 扩容的限流 */
-  expand_limit_list?: Array<open_api.RateLimitConf>;
-  BaseResp?: base.BaseResp;
-}
-
 export interface InitAttributeInfoData {
   data?: Array<AttributeSchemaInfo>;
 }
@@ -396,17 +366,6 @@ export interface PermissionInfo {
   permission_scope?: PermissionScope;
   /** 完整的permission_key；新key字段，打破原先的负责节点拼接得到key的关系 */
   full_permission_key?: string;
-}
-
-/** 删除限流规则-运营后台api */
-export interface RemoveRateLimitOperationReq {
-  /** create 拿到的 id */
-  id: string;
-  Base?: base.Base;
-}
-
-export interface RemoveRateLimitOperationResp {
-  BaseResp?: base.BaseResp;
 }
 
 export interface RequestLimitRule {
@@ -501,26 +460,6 @@ export interface UpdateAPIVisibleResponse {
   code?: number;
   msg?: string;
   data?: common.EmptyData;
-  BaseResp?: base.BaseResp;
-}
-
-/** 更新限流规则-运营后台api
- entity id 就不让改了，如果想改的话就在平台上新建一条，然后删掉这一条 */
-export interface UpdateRateLimitOperationReq {
-  id: string;
-  /** 间隔时间 单位s */
-  duration?: number;
-  /** 限制次数 */
-  limit_count?: number;
-  /** 生效的时间戳（秒） */
-  valid_time_start_unix?: Int64;
-  /** 失效的时间戳（秒） */
-  valid_time_end_unix?: Int64;
-  remark?: string;
-  Base?: base.Base;
-}
-
-export interface UpdateRateLimitOperationResp {
   BaseResp?: base.BaseResp;
 }
 

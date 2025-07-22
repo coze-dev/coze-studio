@@ -75,7 +75,7 @@ export const usePromptConfig: UseEntityConfigHook = ({
     usePromptConfiguratorModal({
       spaceId,
       source: 'resource_library',
-      // 社区版暂不支持该功能
+      // 开源版暂不支持该功能
       enableDiff: FLAGS['bot.studio.prompt_diff'],
       onUpdateSuccess: reloadList,
       onDiff: ({ libraryId }) => {

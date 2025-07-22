@@ -153,8 +153,6 @@ export interface DatasetInfo {
   row_group_capacity?: Int64;
   /** Cell 中文本内容的 bytes 数限制, 默认为 3,2000 */
   max_cell_content_length?: Int64;
-  /** 是否允许导出 */
-  not_allow_export?: boolean;
 }
 
 /** ############# ROW GROUP ############## */

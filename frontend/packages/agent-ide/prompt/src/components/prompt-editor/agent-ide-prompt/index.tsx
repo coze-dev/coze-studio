@@ -99,7 +99,7 @@ const AgentIdePrompt = (props: AgentIdePromptProps) => {
         librarys={libraryList}
         onAddLibrary={addLibrary}
         spaceId={space_id}
-        // Agent IDE 在抖音分身场景下，需要传入分身id进行判断当前资源是否存在 社区版暂不支持该功能
+        // Agent IDE 在抖音分身场景下，需要传入分身id进行判断当前资源是否存在 开源版暂不支持该功能
         avatarBotId={
           businessType === BusinessType.DouyinAvatar ? botId : undefined
         }

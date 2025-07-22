@@ -31,7 +31,6 @@ export enum EnvType {
 export enum OrderType {
   Unknown = 1,
   Desc = 2,
-  Asc = 3,
 }
 
 export enum PlatformType {

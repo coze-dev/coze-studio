@@ -90,8 +90,6 @@ export enum IDC {
 export enum MerlinFramework {
   LLMServerPublic = 1,
   Laplace = 2,
-  /** 电商团队专用协议，详见  */
-  Mixinfer = 3,
 }
 
 export enum MerlinLLMInterface {
@@ -109,12 +107,6 @@ export enum MerlinQuotaPoolType {
   ALI = 3,
   /** 第三方资源hw */
   HW = 4,
-  /** hw arm */
-  HWARM = 5,
-  /** 弹性售卖资源，随时可能被抢占 */
-  Spot = 6,
-  /** 可抢占的稳定资源 */
-  Preemptible = 20,
 }
 
 export enum ModelFilterKey {
@@ -266,10 +258,6 @@ export enum SftTaskOutputStatus {
   ExportFailed = 5,
 }
 
-export enum SftTaskResourceMerlinVersion {
-  RemoveAnyGPU = 1,
-}
-
 export enum SftTaskRunEventType {
   Undefined = 0,
   ErrorOccured = 1,
@@ -348,10 +336,6 @@ export enum UsageScenario {
   PromptAsAService = 3,
   /** AI打标 */
   AIAnnotate = 4,
-  /** 质量分 */
-  AIScore = 5,
-  /** 数据标签 */
-  AITag = 6,
 }
 
 export enum ValidateStatus {
@@ -380,9 +364,9 @@ export interface Ability {
   functionCallEnabled?: boolean;
   /** 是否支持JSON模式 */
   jsonModeEnabled?: boolean;
-  /** 是否支持多模态(模型输入) */
+  /** 是否支持多模态 */
   multiModalEnabled?: boolean;
-  /** 多模态能力配置(模型输入) */
+  /** 多模态能力配置 */
   multiModalAbility?: MultiModalAbility;
   /** 消息预处理hook */
   messagePreHandleHook?: RuntimeHook;
@@ -392,8 +376,6 @@ export interface Ability {
   thinkingSwitchEnabled?: boolean;
   /** 思考能力配置 */
   thinkingAbility?: ThinkingAbility;
-  /** 是否支持多模态(模型输出) */
-  multiModalOutputEnabled?: boolean;
 }
 
 export interface Account {
@@ -540,7 +522,7 @@ export interface MerlinInfo {
   framework?: MerlinFramework;
   instanceResourceOption?: InstanceResourceOption;
   /** 资源配置 */
-  deployDetailM?: Partial<Record<IDC, IDCDeployDetail>>;
+  deployDetailM?: Record<IDC, IDCDeployDetail>;
   /** 服务节点id */
   byteTreeNodeID?: Int64;
   /** 服务树路径 */
@@ -963,8 +945,6 @@ export interface SftTaskResourceMerlin {
   groupNames?: Record<Int64, string>;
   /** 集群名称 */
   clusterName?: string;
-  /** merlin资源格式的版本，目前唯一作用：由于资源格式不向前兼容，只有指定版本号的资源才能在复制精调任务时被写入到新任务中 */
-  version?: SftTaskResourceMerlinVersion;
 }
 
 export interface SftTaskResourceMerlinRole {

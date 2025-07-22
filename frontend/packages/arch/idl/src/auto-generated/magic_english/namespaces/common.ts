@@ -21,11 +21,6 @@
 
 export type Int64 = string | number;
 
-export enum ChatRole {
-  User = 1,
-  Assistant = 2,
-}
-
 export enum ConversationStatus {
   /** 对话中 */
   InProgress = 0,
@@ -33,63 +28,9 @@ export enum ConversationStatus {
   Finished = 1,
 }
 
-export enum EnglishExerciseType {
-  /** 原句 */
-  OriginalSentence = 1,
-  /** 词汇匹配 */
-  VocabularyMatching = 2,
-  /** 听音重组句子 */
-  SentencesByListening = 3,
-  /** 口语跟读 */
-  OralShadowing = 4,
-  /** 听力素材，需要支持马赛克 */
-  ListeningMaterial = 5,
-  /** 题目描述，不需要出AI老师提示 */
-  QuestionDescription = 6,
-  /** 多选 */
-  MultiChoice = 7,
-  /** 简答题，需要出AI提示 */
-  ShortAnswer = 8,
-  /** 事件描述 */
-  EventDescription = 9,
-  /** 图表描述 */
-  ChartDescription = 10,
-  /** 事件复述 */
-  EventRetelling = 11,
-}
-
 export enum ExerciseType {
   NORMAL = 1,
   TEST = 2,
-}
-
-export enum MeetingCategoryType {
-  BizLine = 1,
-  JobRole = 2,
-  Scene = 3,
-}
-
-export enum MeetingLearingRecordStatus {
-  Answering = 1,
-  AIChating = 2,
-  Finished = 3,
-  Exited = 4,
-}
-
-export enum MeetingLearningStatus {
-  Unfinished = 0,
-  Finished = 1,
-}
-
-export enum MeetingType {
-  /** 通用教材 */
-  General = 1,
-  /** 个性化会议 */
-  Personalization = 2,
-  /** 口语练习 */
-  OralPractice = 3,
-  /** 听力练习 */
-  ListeningPractice = 4,
 }
 
 /** ======================= 枚举 ======================= */
@@ -106,20 +47,6 @@ export enum NodeStatus {
   Finished = 2,
 }
 
-export enum OralScoreType {
-  A1_1 = 1,
-  A1_2 = 2,
-  A2_1 = 3,
-  A2_2 = 4,
-  B1_1 = 5,
-  B1_2 = 6,
-  B2_1 = 7,
-  B2_2 = 8,
-  C1_1 = 9,
-  C1_2 = 10,
-  C2 = 11,
-}
-
 export enum PhraseStatus {
   UNUSED = 0,
   USED = 1,
@@ -130,15 +57,6 @@ export enum ReportStatus {
   Expired = 0,
   /** 有效 */
   Normal = 1,
-}
-
-export enum StudyModuleType {
-  /** 魔鬼口语教练 */
-  MagicOral = 1,
-  /** 原味2.0 AI会议 */
-  AiMeeting = 2,
-  /** 刷题（口语+听力） */
-  PracticeExam = 3,
 }
 
 export enum TaskStatus {
@@ -157,21 +75,6 @@ export enum UserExerciseStatus {
   InProgress = 0,
   /** 已完成 */
   Finished = 1,
-}
-
-export interface AISuggestionOutput {
-  suggestions?: Array<string>;
-}
-
-export interface AudioDetail {
-  /** 音频id */
-  audio_id?: Int64;
-  /** 音频uri */
-  audio_url?: string;
-  /** 字时间戳 */
-  words_info?: Array<TTSWord>;
-  created_at?: Int64;
-  updated_at?: Int64;
 }
 
 export interface Conversation {
@@ -243,12 +146,6 @@ export interface ExerciseTask {
   status?: TaskStatus;
 }
 
-export interface HistoryMessage {
-  role?: MessageRole;
-  role_name?: string;
-  role_content?: string;
-}
-
 export interface JSSDKConfig {
   app_id?: string;
   nonce_str?: string;
@@ -309,11 +206,6 @@ export interface Section {
   phase_id?: Int64;
 }
 
-export interface StreamChunk {
-  content?: string;
-  is_finished?: boolean;
-}
-
 export interface Topic {
   topic_id: Int64;
   topic_title?: string;
@@ -322,12 +214,6 @@ export interface Topic {
   exercise_list?: Array<Exercise>;
   status?: NodeStatus;
   section_id?: Int64;
-}
-
-export interface TTSWord {
-  word?: string;
-  start_time?: number;
-  end_time?: number;
 }
 
 export interface UserLevelData {

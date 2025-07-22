@@ -66,10 +66,6 @@ export interface RetrieveChannel {
   score?: number;
 }
 
-export interface RetrieveOptions {
-  parse_table_values?: boolean;
-}
-
 export interface RetrieveReq {
   Authorization?: string;
   knowledge_keys?: Array<string>;
@@ -77,7 +73,6 @@ export interface RetrieveReq {
   channels?: Array<Channel>;
   top_k?: number;
   rank?: Ranker;
-  options?: RetrieveOptions;
   base?: base.Base;
 }
 

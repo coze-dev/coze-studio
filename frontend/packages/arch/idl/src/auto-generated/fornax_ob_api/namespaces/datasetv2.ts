@@ -66,7 +66,6 @@ export enum FieldDisplayFormat {
   JSON = 3,
   YAML = 4,
   Code = 5,
-  SingleOption = 6,
 }
 
 export enum FieldStatus {
@@ -101,8 +100,6 @@ export enum SchemaKey {
   Float = 3,
   Bool = 4,
   Message = 5,
-  /** 单选 */
-  SingleChoice = 6,
 }
 
 export enum SecurityLevel {

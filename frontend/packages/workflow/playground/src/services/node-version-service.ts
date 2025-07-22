@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 import { inject, injectable } from 'inversify';
 import { type FormModelV2 } from '@flowgram-adapter/free-layout-editor';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
@@ -22,8 +22,8 @@ import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowNodeData } from '@coze-workflow/nodes';
 import { workflowApi, StandardNodeType, BlockInput } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze-arch/coze-design';
 import { type GetApiDetailRequest } from '@coze-arch/bot-api/workflow_api';
+import { Modal } from '@coze-arch/coze-design';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { isNodeV2 } from '@/nodes-v2';

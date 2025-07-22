@@ -73,7 +73,7 @@ const usePartMainController = (pluginInfo: PluginInfoForPlayground) => {
       value: PARA.toLowerCase(),
     },
   ];
-  // 社区版暂不支持该功能
+  // 开源版暂不支持该功能
   if (FLAGS['bot.devops.plugin_mockset']) {
     keyOptions.unshift({
       label: I18n.t('bot_ide_plugin_setting_modal_mockset_tab'),

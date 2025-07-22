@@ -137,10 +137,6 @@ export interface CreateDocumentResponse {
 
 export interface DeleteDocumentRequest {
   document_ids?: Array<string>;
-  /** 由于火山侧document是非数字串，这个字段存储新的知识库id，，服务端会聚合document_ids后去重 */
-  document_ids_new?: Array<string>;
-  /** 用来区分是否是火山知识库，不传默认为coze知识库 */
-  dataset_id?: string;
   Base?: base.Base;
 }
 
@@ -261,8 +257,6 @@ export interface DocumentInfo {
   preview_tos_url?: string;
   /** 预览用的原文档 tos_url */
   review_id?: Int64;
-  /** 由于火山侧document是非数字串，新增这个字段返回string类型 */
-  document_id_new?: string;
 }
 
 export interface DocumentProgress {

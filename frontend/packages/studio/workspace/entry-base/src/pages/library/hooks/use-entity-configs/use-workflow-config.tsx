@@ -77,7 +77,7 @@ export const useWorkflowConfig: UseEntityConfigHook = ({
           >
             {I18n.t('library_resource_type_workflow')}
           </Menu.Item>
-          {/* 社区版本暂时不支持对话流 */}
+          {/* 开源版本暂时不支持对话流 */}
           {!IS_OPEN_SOURCE ? (
             <Menu.Item
               data-testid="workspace.library.header.create.chatflow"

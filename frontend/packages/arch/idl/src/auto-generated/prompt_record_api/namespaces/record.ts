@@ -85,7 +85,6 @@ export enum Dimension {
   Chain = 4,
   Connector = 5,
   VolcAcc = 6,
-  APISpace = 7,
   /** 用户维度限速（指定空间生效，和未指定空间的用户维度限速互斥，指定空间的优先级更高） */
   UserWithSpace = 101,
 }
@@ -411,12 +410,6 @@ export interface AdminUpdateConfWithOpReq {
 export interface AdminUpdateConfWithOpResp {
   code?: string;
   message?: string;
-}
-
-export interface APISpaceLiftInfo {
-  connector_id?: Int64;
-  pkg?: PkgTypeScope;
-  lane_type?: string;
 }
 
 export interface CheckResourceResult {

@@ -142,7 +142,7 @@ export const PluginForm: FC<{
     {
       ready:
         compareLevel === UserLevel.Enterprise &&
-        // 社区版暂不支持该功能
+        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc'] &&
         !IS_OPEN_SOURCE,
     },
@@ -225,7 +225,7 @@ export const PluginForm: FC<{
       if (
         editInfo?.meta_info?.private_link_id &&
         compareLevel === UserLevel.Enterprise &&
-        // 社区版暂不支持该功能
+        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc']
       ) {
         setDisableEditUrl(true);
@@ -292,7 +292,7 @@ export const PluginForm: FC<{
     return (
       <>
         {compareLevel === UserLevel.Enterprise &&
-        // 社区版暂不支持该功能
+        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc'] ? (
           <FormSelect
             label={{

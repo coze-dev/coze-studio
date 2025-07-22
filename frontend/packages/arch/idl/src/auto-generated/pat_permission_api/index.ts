@@ -47,16 +47,6 @@ export interface AppInstallationConsentResponse {
   msg: string;
 }
 
-export interface AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionRequest {
-  /** crossaccount authinfo list */
-  crossaccount_authinfo_list?: Array<openapi.AppAndPATAuthInfoForPersonalAccountAuthorization>;
-}
-
-export interface AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionResponse {
-  code: number;
-  msg: string;
-}
-
 export interface AuthorizeAppWithDeclaredPermissionRequest2 {
   appid: string;
   organization_id?: string;
@@ -140,16 +130,6 @@ export interface CheckPersonalAccessTokenInWorkspaceResponse2 {
   data: openapi.CheckPersonalAccessTokenInWorkspaceResponseData;
 }
 
-export interface CreateApplicationForEnterpriseMemberRequest2 {
-  enterprise_id: string;
-  remark?: string;
-}
-
-export interface CreateApplicationForEnterpriseMemberResponse {
-  code: number;
-  msg: string;
-}
-
 export interface CreateAppMetaRequest2 {
   app_type: openapi.AppType;
   client_type?: openapi.ClientType;
@@ -197,7 +177,6 @@ export interface CreateEnterpriseResponse2 {
 
 export interface CreateJoinApplicationRequest2 {
   key: string;
-  remark?: string;
 }
 
 export interface CreateJoinApplicationResponse {
@@ -217,7 +196,6 @@ export interface CreatePersonalAccessTokenAndPermissionRequest2 {
   workspace_permission?: openapi.WorkspacePermission;
   account_permission?: openapi.AccountPermission;
   workspace_permission_v2?: openapi.WorkspacePermissionV2;
-  enterprise_permission?: openapi.EnterprisePermission;
   /** x-tt-env bytedance env tag */
   'x-tt-env'?: string;
 }
@@ -226,26 +204,6 @@ export interface CreatePersonalAccessTokenAndPermissionResponse2 {
   code: number;
   msg: string;
   data: openapi.CreatePersonalAccessTokenAndPermissionResponseData;
-}
-
-export interface CreateServiceIdentityRequest2 {
-  /** 服务身份名称 */
-  name: string;
-  /** 所属组织id */
-  organization_id?: string;
-  /** PAT自定义过期时间 */
-  expire_at?: Int64;
-  /** 可枚举过期时间 */
-  duration_day?: openapi.DurationDay;
-  permission: openapi.ServicePermission;
-  /** x-tt-env bytedance env tag */
-  'x-tt-env'?: string;
-}
-
-export interface CreateServiceIdentityResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.CreateServiceIdentityResponseData;
 }
 
 export interface DeleteAppRequest2 {
@@ -286,16 +244,6 @@ export interface DeletePublicKeyResponse {
   msg: string;
 }
 
-export interface DeleteServiceIdentityRequest {
-  /** service identity id */
-  id: string;
-}
-
-export interface DeleteServiceIdentityResponse {
-  code: number;
-  msg: string;
-}
-
 export interface GetAppAuthorizationRequestInfoRequest {
   /** authorize key */
   authorize_key: string;
@@ -322,16 +270,6 @@ export interface GetAppInstallationRequestInfoResponse2 {
   data: openapi.GetAppInstallationRequestInfoResponseData;
 }
 
-export interface GetApplicationForEnterpriseMemberRequest2 {
-  enterprise_id: string;
-}
-
-export interface GetApplicationForEnterpriseMemberResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.GetApplicationForEnterpriseMemberResponseData;
-}
-
 export interface GetAppMetaRequest {
   /** appid */
   appid: string;
@@ -343,19 +281,6 @@ export interface GetAppMetaResponse2 {
   code: number;
   msg: string;
   data: openapi.GetAppMetaResponseData;
-}
-
-export interface GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationRequest {
-  /** page number */
-  page?: Int64;
-  /** page size */
-  page_size?: Int64;
-}
-
-export interface GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationResponse {
-  code: number;
-  msg: string;
-  data?: openapi.GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponseData;
 }
 
 export interface GetCertificationInfoRequest {}
@@ -408,16 +333,6 @@ export interface GetInviteInfoResponse2 {
   data: openapi.GetInviteInfoResponseData;
 }
 
-export interface GetJoinInvitationRequest2 {
-  join_invitation_id: string;
-}
-
-export interface GetJoinInvitationResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.GetJoinInvitationResponseData;
-}
-
 export interface GetPersonalAccessTokenAndPermissionRequest {
   /** PAT Id */
   id: string;
@@ -427,17 +342,6 @@ export interface GetPersonalAccessTokenAndPermissionResponse2 {
   code: number;
   msg: string;
   data: openapi.GetPersonalAccessTokenAndPermissionResponseData;
-}
-
-export interface GetServiceIdentityRequest {
-  /** service identity id */
-  id: string;
-}
-
-export interface GetServiceIdentityResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.GetServiceIdentityResponseData;
 }
 
 export interface GetSSOSettingRequest2 {
@@ -556,10 +460,7 @@ export interface ListAuthorizedAppsResponse2 {
   data: openapi.ListAuthorizedAppsResponseData;
 }
 
-export interface ListEnterpriseRequest {
-  /** Contain enterprise of user */
-  contain_enterprise_of_user?: boolean;
-}
+export interface ListEnterpriseRequest {}
 
 export interface ListEnterpriseResponse2 {
   code: number;
@@ -579,20 +480,6 @@ export interface ListJoinApplicationResponse2 {
   code: number;
   msg: string;
   data: openapi.ListJoinApplicationResponseData;
-}
-
-export interface ListJoinInvitationRequest2 {
-  invitation_status?: openapi.InvitationStatus;
-  enterprise_id: string;
-  search_key?: string;
-  page: number;
-  page_size: number;
-}
-
-export interface ListJoinInvitationResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.ListJoinInvitationResponseData;
 }
 
 export interface ListPersonalAccessTokensByCreatorRequest {
@@ -631,17 +518,6 @@ export interface ListPersonalAccessTokenSupportPermissionsResponse2 {
   data: openapi.ListPersonalAccessTokenSupportPermissionsResponseData;
 }
 
-export interface ListServiceIdentitiesRequest {
-  /** organization id */
-  organization_id?: string;
-}
-
-export interface ListServiceIdentitiesResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.ListServiceIdentitiesResponseData;
-}
-
 export interface ModifyCollaboratorRequest2 {
   principal: openapi.PrincipalIdentifier;
   resource: openapi.ResourceIdentifier;
@@ -659,23 +535,6 @@ export interface NeedCreateEnterpriseResponse2 {
   code: number;
   msg: string;
   data: openapi.NeedCreateEnterpriseResponseData;
-}
-
-export interface PostAdapterMpV1Code2SessionRequest {
-  bot_id?: string;
-  app_id?: string;
-  connector_id?: string;
-  code?: string;
-  with_userinfo?: boolean;
-  execute_mode?: string;
-  agent_type?: Int64;
-  agent_version?: string;
-}
-
-export interface PostAdapterMpV1Code2SessionResponse {
-  code: Int64;
-  msg: string;
-  data?: openapi.Code2SessionResponseData;
 }
 
 export interface PutOAuth2ConfigurationRequest2 {
@@ -709,15 +568,6 @@ export interface RemoveEnterprisePeopleResponse {
   msg: string;
 }
 
-export interface RevokeAppAndPersonalaccesstokenPersonalAccountPermissionRequest {
-  crossaccount_authinfo?: openapi.AppAndPATAuthInfoForPersonalAccountAuthorization;
-}
-
-export interface RevokeAppAndPersonalaccesstokenPersonalAccountPermissionResponse {
-  code: number;
-  msg: string;
-}
-
 export interface RevokeAppAuthorizedPermissionRequest2 {
   authorization_type: openapi.AuthorizationType;
   appid: string;
@@ -725,16 +575,6 @@ export interface RevokeAppAuthorizedPermissionRequest2 {
 }
 
 export interface RevokeAppAuthorizedPermissionResponse {
-  code: number;
-  msg: string;
-}
-
-export interface RevokeJoinInvitationRequest2 {
-  enterprise_id: string;
-  join_invitation_id: string;
-}
-
-export interface RevokeJoinInvitationResponse {
   code: number;
   msg: string;
 }
@@ -751,7 +591,6 @@ export interface SearchCanAddEnterprisePeopleResponse2 {
 }
 
 export interface SearchEnterprisePeopleRequest2 {
-  people_type?: openapi.PeopleType;
   enterprise_id: string;
   search_key?: string;
   enterprise_role_type_list?: Array<openapi.EnterpriseRoleType>;
@@ -765,19 +604,6 @@ export interface SearchEnterprisePeopleResponse2 {
   code: number;
   msg: string;
   data: openapi.SearchEnterprisePeopleResponseData;
-}
-
-export interface SearchPeopleInOtherEnterpriseRequest2 {
-  enterprise_id: string;
-  search_key?: string;
-  page: number;
-  page_size: number;
-}
-
-export interface SearchPeopleInOtherEnterpriseResponse2 {
-  code: number;
-  msg: string;
-  data: openapi.SearchPeopleInOtherEnterpriseResponseData;
 }
 
 export interface SubmitAppOboInstallationReviewRequest2 {
@@ -832,7 +658,6 @@ export interface UpdateEnterpriseRequest2 {
   enterprise_id: string;
   name?: string;
   icon_uri?: string;
-  replace_logo?: boolean;
 }
 
 export interface UpdateEnterpriseResponse {
@@ -861,22 +686,10 @@ export interface UpdateJoinApplicationResponse {
   msg: string;
 }
 
-export interface UpdateJoinInvitationRequest2 {
-  enterprise_id: string;
-  join_invitation_id: string;
-  joined: boolean;
-}
-
-export interface UpdateJoinInvitationResponse {
-  code: number;
-  msg: string;
-}
-
 export interface UpdatePersonalAccessTokenAndPermissionRequest2 {
   workspace_permission?: openapi.WorkspacePermission;
   account_permission?: openapi.AccountPermission;
   workspace_permission_v2?: openapi.WorkspacePermissionV2;
-  enterprise_permission?: openapi.EnterprisePermission;
   /** PAT Id */
   id: string;
   /** PAT 名称 */
@@ -886,25 +699,6 @@ export interface UpdatePersonalAccessTokenAndPermissionRequest2 {
 }
 
 export interface UpdatePersonalAccessTokenAndPermissionResponse {
-  code: number;
-  msg: string;
-}
-
-export interface UpdateServiceIdentityRequest2 {
-  permission?: openapi.ServicePermission;
-  /** 服务身份id */
-  id: string;
-  /** 服务身份名称 */
-  name?: string;
-  /** PAT自定义过期时间 */
-  expire_at?: Int64;
-  /** 可枚举过期时间 */
-  duration_day?: openapi.DurationDay2;
-  /** x-tt-env bytedance env tag */
-  'x-tt-env'?: string;
-}
-
-export interface UpdateServiceIdentityResponse {
   code: number;
   msg: string;
 }
@@ -919,6 +713,8 @@ export interface UploadPublicKeyResponse2 {
   msg: string;
   data: openapi.UploadPublicKeyResponseData;
 }
+
+// THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.
 
 export default class PatPermissionApiService<T> {
   private request: any = () => {
@@ -973,7 +769,6 @@ export default class PatPermissionApiService<T> {
       workspace_permission: _req['workspace_permission'],
       account_permission: _req['account_permission'],
       workspace_permission_v2: _req['workspace_permission_v2'],
-      enterprise_permission: _req['enterprise_permission'],
     };
     const headers = { 'x-tt-env': _req['x-tt-env'] };
     return this.request({ url, method, data, headers }, options);
@@ -999,7 +794,6 @@ export default class PatPermissionApiService<T> {
       workspace_permission: _req['workspace_permission'],
       account_permission: _req['account_permission'],
       workspace_permission_v2: _req['workspace_permission_v2'],
-      enterprise_permission: _req['enterprise_permission'],
       id: _req['id'],
       name: _req['name'],
     };
@@ -1733,15 +1527,11 @@ export default class PatPermissionApiService<T> {
     req?: ListEnterpriseRequest,
     options?: T,
   ): Promise<ListEnterpriseResponse2> {
-    const _req = req || {};
     const url = this.genBaseURL(
       '/api/permission_api/enterprise/list_enterprises',
     );
     const method = 'GET';
-    const params = {
-      contain_enterprise_of_user: _req['contain_enterprise_of_user'],
-    };
-    return this.request({ url, method, params }, options);
+    return this.request({ url, method }, options);
   }
 
   /**
@@ -1784,7 +1574,6 @@ export default class PatPermissionApiService<T> {
       enterprise_id: _req['enterprise_id'],
       name: _req['name'],
       icon_uri: _req['icon_uri'],
-      replace_logo: _req['replace_logo'],
     };
     return this.request({ url, method, data }, options);
   }
@@ -1920,7 +1709,7 @@ export default class PatPermissionApiService<T> {
       '/api/permission_api/enterprise/create_join_application',
     );
     const method = 'POST';
-    const data = { key: _req['key'], remark: _req['remark'] };
+    const data = { key: _req['key'] };
     return this.request({ url, method, data }, options);
   }
 
@@ -2072,7 +1861,6 @@ export default class PatPermissionApiService<T> {
     );
     const method = 'POST';
     const data = {
-      people_type: _req['people_type'],
       enterprise_id: _req['enterprise_id'],
       search_key: _req['search_key'],
       enterprise_role_type_list: _req['enterprise_role_type_list'],
@@ -2106,33 +1894,6 @@ export default class PatPermissionApiService<T> {
       search_key: _req['search_key'],
       page: _req['page'],
       page_size: _req['page_size'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /adapter/mp/v1/code2session
-   *
-   * code2Session
-   *
-   * code2Session
-   */
-  PostAdapterMpV1Code2Session(
-    req?: PostAdapterMpV1Code2SessionRequest,
-    options?: T,
-  ): Promise<PostAdapterMpV1Code2SessionResponse> {
-    const _req = req || {};
-    const url = this.genBaseURL('/adapter/mp/v1/code2session');
-    const method = 'POST';
-    const data = {
-      bot_id: _req['bot_id'],
-      app_id: _req['app_id'],
-      connector_id: _req['connector_id'],
-      code: _req['code'],
-      with_userinfo: _req['with_userinfo'],
-      execute_mode: _req['execute_mode'],
-      agent_type: _req['agent_type'],
-      agent_version: _req['agent_version'],
     };
     return this.request({ url, method, data }, options);
   }
@@ -2269,343 +2030,6 @@ export default class PatPermissionApiService<T> {
     const method = 'POST';
     const data = { authorization_list: _req['authorization_list'] };
     return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/list_join_invitation
-   *
-   * list join invitation
-   *
-   * list join invitation
-   */
-  ListJoinInvitation(
-    req: ListJoinInvitationRequest2,
-    options?: T,
-  ): Promise<ListJoinInvitationResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/list_join_invitation',
-    );
-    const method = 'POST';
-    const data = {
-      invitation_status: _req['invitation_status'],
-      enterprise_id: _req['enterprise_id'],
-      search_key: _req['search_key'],
-      page: _req['page'],
-      page_size: _req['page_size'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/revoke_join_invitation
-   *
-   * revoke join invitation
-   *
-   * revoke join invitation
-   */
-  RevokeJoinInvitation(
-    req: RevokeJoinInvitationRequest2,
-    options?: T,
-  ): Promise<RevokeJoinInvitationResponse> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/revoke_join_invitation',
-    );
-    const method = 'POST';
-    const data = {
-      enterprise_id: _req['enterprise_id'],
-      join_invitation_id: _req['join_invitation_id'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/update_join_invitation
-   *
-   * update join invitation
-   *
-   * update join invitation
-   */
-  UpdateJoinInvitation(
-    req: UpdateJoinInvitationRequest2,
-    options?: T,
-  ): Promise<UpdateJoinInvitationResponse> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/update_join_invitation',
-    );
-    const method = 'POST';
-    const data = {
-      enterprise_id: _req['enterprise_id'],
-      join_invitation_id: _req['join_invitation_id'],
-      joined: _req['joined'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/get_join_invitation
-   *
-   * get join invitation
-   *
-   * get join invitation
-   */
-  GetJoinInvitation(
-    req: GetJoinInvitationRequest2,
-    options?: T,
-  ): Promise<GetJoinInvitationResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/get_join_invitation',
-    );
-    const method = 'POST';
-    const data = { join_invitation_id: _req['join_invitation_id'] };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/search_people_in_other_enterprise
-   *
-   * search people in other enterprise
-   *
-   * search people in other enterprise
-   */
-  SearchPeopleInOtherEnterprise(
-    req: SearchPeopleInOtherEnterpriseRequest2,
-    options?: T,
-  ): Promise<SearchPeopleInOtherEnterpriseResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/search_people_in_other_enterprise',
-    );
-    const method = 'POST';
-    const data = {
-      enterprise_id: _req['enterprise_id'],
-      search_key: _req['search_key'],
-      page: _req['page'],
-      page_size: _req['page_size'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/create_application_for_enterprise_member
-   *
-   * create application for enterprise member
-   *
-   * create application for enterprise member
-   */
-  CreateApplicationForEnterpriseMember(
-    req: CreateApplicationForEnterpriseMemberRequest2,
-    options?: T,
-  ): Promise<CreateApplicationForEnterpriseMemberResponse> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/create_application_for_enterprise_member',
-    );
-    const method = 'POST';
-    const data = {
-      enterprise_id: _req['enterprise_id'],
-      remark: _req['remark'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/enterprise/get_application_for_enterprise_member
-   *
-   * get application for enterprise member
-   *
-   * get application for enterprise member
-   */
-  GetApplicationForEnterpriseMember(
-    req: GetApplicationForEnterpriseMemberRequest2,
-    options?: T,
-  ): Promise<GetApplicationForEnterpriseMemberResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/enterprise/get_application_for_enterprise_member',
-    );
-    const method = 'POST';
-    const data = { enterprise_id: _req['enterprise_id'] };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/app/authorize_apps_and_patlist_with_personalaccountpermission
-   *
-   * authorize apps and personalaccesstoken list with personal account permission
-   *
-   * authorize apps and personalaccesstoken list with personal account permission
-   */
-  AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermission(
-    req?: AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionRequest,
-    options?: T,
-  ): Promise<AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionResponse> {
-    const _req = req || {};
-    const url = this.genBaseURL(
-      '/api/permission_api/app/authorize_apps_and_patlist_with_personalaccountpermission',
-    );
-    const method = 'POST';
-    const data = {
-      crossaccount_authinfo_list: _req['crossaccount_authinfo_list'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/app/revoke_app_and_pat_personalaccountpermission
-   *
-   * revoke app's and personalaccesstoken's personal account permission
-   *
-   * revoke app's and personalaccesstoken's personal account permission
-   */
-  RevokeAppAndPersonalaccesstokenPersonalAccountPermission(
-    req?: RevokeAppAndPersonalaccesstokenPersonalAccountPermissionRequest,
-    options?: T,
-  ): Promise<RevokeAppAndPersonalaccesstokenPersonalAccountPermissionResponse> {
-    const _req = req || {};
-    const url = this.genBaseURL(
-      '/api/permission_api/app/revoke_app_and_pat_personalaccountpermission',
-    );
-    const method = 'POST';
-    const data = { crossaccount_authinfo: _req['crossaccount_authinfo'] };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/app/get_apps_and_patlist_for_personalaccountpermission_authorization
-   *
-   * get apps and personalaccesstoken list for personal account permission authorization
-   *
-   * get apps and personalaccesstoken list for personal account permission authorization
-   */
-  GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorization(
-    req?: GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationRequest,
-    options?: T,
-  ): Promise<GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationResponse> {
-    const _req = req || {};
-    const url = this.genBaseURL(
-      '/api/permission_api/app/get_apps_and_patlist_for_personalaccountpermission_authorization',
-    );
-    const method = 'POST';
-    const data = { page: _req['page'], page_size: _req['page_size'] };
-    return this.request({ url, method, data }, options);
-  }
-
-  /**
-   * POST /api/permission_api/service/create_service_identity
-   *
-   * 创建服务身份
-   *
-   * 创建服务身份
-   */
-  create_service_identity(
-    req: CreateServiceIdentityRequest2,
-    options?: T,
-  ): Promise<CreateServiceIdentityResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/service/create_service_identity',
-    );
-    const method = 'POST';
-    const data = {
-      name: _req['name'],
-      organization_id: _req['organization_id'],
-      expire_at: _req['expire_at'],
-      duration_day: _req['duration_day'],
-      permission: _req['permission'],
-    };
-    const headers = { 'x-tt-env': _req['x-tt-env'] };
-    return this.request({ url, method, data, headers }, options);
-  }
-
-  /**
-   * GET /api/permission_api/service/get_service_identity
-   *
-   * 获取服务身份
-   *
-   * 获取服务身份
-   */
-  get_service_identity(
-    req: GetServiceIdentityRequest,
-    options?: T,
-  ): Promise<GetServiceIdentityResponse2> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/service/get_service_identity',
-    );
-    const method = 'GET';
-    const params = { id: _req['id'] };
-    return this.request({ url, method, params }, options);
-  }
-
-  /**
-   * POST /api/permission_api/service/update_service_identity
-   *
-   * 更新服务身份
-   *
-   * 更新服务身份
-   */
-  update_service_identity(
-    req: UpdateServiceIdentityRequest2,
-    options?: T,
-  ): Promise<UpdateServiceIdentityResponse> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/service/update_service_identity',
-    );
-    const method = 'POST';
-    const data = {
-      permission: _req['permission'],
-      id: _req['id'],
-      name: _req['name'],
-      expire_at: _req['expire_at'],
-      duration_day: _req['duration_day'],
-    };
-    const headers = { 'x-tt-env': _req['x-tt-env'] };
-    return this.request({ url, method, data, headers }, options);
-  }
-
-  /**
-   * POST /api/permission_api/service/delete_service_identity
-   *
-   * 删除服务身份
-   *
-   * 删除服务身份
-   */
-  delete_service_identity(
-    req: DeleteServiceIdentityRequest,
-    options?: T,
-  ): Promise<DeleteServiceIdentityResponse> {
-    const _req = req;
-    const url = this.genBaseURL(
-      '/api/permission_api/service/delete_service_identity',
-    );
-    const method = 'POST';
-    const params = { id: _req['id'] };
-    return this.request({ url, method, params }, options);
-  }
-
-  /**
-   * GET /api/permission_api/service/list_service_identities
-   *
-   * 列出服务身份
-   *
-   * 列出服务身份
-   */
-  list_service_identities(
-    req?: ListServiceIdentitiesRequest,
-    options?: T,
-  ): Promise<ListServiceIdentitiesResponse2> {
-    const _req = req || {};
-    const url = this.genBaseURL(
-      '/api/permission_api/service/list_service_identities',
-    );
-    const method = 'GET';
-    const params = { organization_id: _req['organization_id'] };
-    return this.request({ url, method, params }, options);
   }
 }
 /* eslint-enable */

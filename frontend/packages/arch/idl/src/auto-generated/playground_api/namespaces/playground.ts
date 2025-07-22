@@ -320,10 +320,6 @@ export enum DataSetType {
   Table = 1,
   /** 图片 */
   Image = 2,
-  /** 火山结构化 火山知识库特有 */
-  VolcanoStructured = 4,
-  /** 火山非结构化 火山知识库特有 */
-  VolcanoUnstructured = 5,
 }
 
 export enum DisablePromptCalling {
@@ -608,13 +604,6 @@ export enum PicType {
   PicPrompt = 5,
 }
 
-export enum PluginSource {
-  Plugin = 1,
-  Workflow = 2,
-  ShortcutCommand = 3,
-  Task = 4,
-}
-
 export enum ProduceType {
   OptimizePrompt = 1,
   SuggestPlugin = 2,
@@ -831,13 +820,6 @@ export enum SpaceInviteStatus {
   Expired = 5,
 }
 
-export enum SpaceMemberIdentity {
-  /** 企业用户 */
-  EnterpriseUser = 1,
-  /** 访客 */
-  ExternalUser = 2,
-}
-
 export enum SpaceMode {
   Normal = 0,
   DevMode = 1,
@@ -994,27 +976,11 @@ export enum VisibilityType {
   SocietyInvisible = 2,
 }
 
-export enum VoiceBizScene {
-  SingleAgent = 1,
-  MultiAgent = 2,
-  WorkflowAsAgent = 3,
-}
-
 export enum VoiceScene {
   /** 预设音色 */
   Preset = 1,
   /** 资源库音色 */
   Library = 2,
-}
-
-export enum VolcanoDatasetServiceStatus {
-  DatasetServiceValid = 0,
-  DatasetServiceInvalid = 1,
-}
-
-export enum VolcanoDatasetStatus {
-  DatasetValid = 0,
-  DatasetInvalid = 1,
 }
 
 export enum VolcanoUserType {
@@ -1614,25 +1580,16 @@ export interface BotOptionData {
   knowledge_detail_map?: Record<string, KnowledgeDetail>;
   /** 快捷指令list */
   shortcut_command_list?: Array<shortcut_command.ShortcutCommand>;
-  /** 知识服务详情 */
-  volcano_dataset_service_detail_map?: Record<
-    string,
-    VolcanoDatasetServiceDetail
-  >;
 }
 
 export interface BotPopupInfoData {
-  bot_popup_count_info: Partial<Record<BotPopupType, Int64>>;
+  bot_popup_count_info: Record<BotPopupType, Int64>;
 }
 
 export interface BotPrompt {
   prompt_type?: PromptType;
   data?: string;
   record_id?: string;
-  /** 提示词模式 */
-  PromptMode?: bot_common.PromptMode;
-  /** 前缀提示词模式下的prompt内容 */
-  PrefixPromptInfo?: bot_common.PrefixPromptInfo;
 }
 
 export interface BotSpace {
@@ -2286,10 +2243,6 @@ export interface CreatePrivateModelRequest {
   operator?: string;
   email?: string;
   employee_id?: string;
-  presence_penalty_config?: ModelParamConfig;
-  frequency_penalty_config?: ModelParamConfig;
-  temperature_config?: ModelParamConfig;
-  top_p_config?: ModelParamConfig;
   'x-inner-auth'?: string;
   /** jwt token */
   'x-jwt-token'?: string;
@@ -2308,7 +2261,6 @@ export interface CreateRoomRequest {
   scene?: Scene;
   /** 音色ID */
   voice_id?: string;
-  video_config?: VideoConfig;
 }
 
 export interface CreateRoomResponse {
@@ -2565,7 +2517,6 @@ export interface DraftBotCreateRequest {
   MonetizationConf?: MonetizationConf;
   BusinessType?: bot_common.BusinessType;
   AppId?: string;
-  FolderId?: string;
 }
 
 export interface DraftBotCreateResponse {
@@ -2760,28 +2711,6 @@ export interface Edge {
   SourceNodeID?: string;
   TargetNodeID?: string;
   SourcePortID?: string;
-}
-
-export interface EmotionConfig {
-  /** 1. 情感类别 */
-  emotion?: string;
-  /** 2. 情感值 */
-  emotion_scale?: number;
-}
-
-export interface EmotionInfo {
-  /** 支持的情感 */
-  emotion?: string;
-  /** 显示名称 */
-  display_name?: string;
-  /** 情绪值范围 */
-  emotion_scale_interval?: EmotionScaleInterval;
-}
-
-export interface EmotionScaleInterval {
-  min?: number;
-  max?: number;
-  default?: number;
 }
 
 export interface EmptyData {}
@@ -4313,15 +4242,6 @@ export interface GetUserRiskAlertInfoResponse {
   msg: string;
 }
 
-export interface GetUserUpdateProfileTagRequest {}
-
-export interface GetUserUpdateProfileTagResponse {
-  /** 是否已经更新过profile */
-  have_updated_profile?: boolean;
-  code?: Int64;
-  msg?: string;
-}
-
 export interface GetVersionByBotVersionRequest {
   /** BotId */
   BotId: Int64;
@@ -4341,11 +4261,6 @@ export interface GetVoiceByIDsRequest {
   voice_id_map?: Record<string, string>;
   /** 音色类别 */
   voice_type?: VoiceScene;
-  space_id?: string;
-  /** key是音色id */
-  emotion_config?: Record<string, EmotionConfig>;
-  /** 音色生成的biz_scene */
-  voice_biz_scene?: VoiceBizScene;
 }
 
 export interface GetVoiceByIDsResponse {
@@ -4564,8 +4479,6 @@ export interface ImportSpaceUserData {
   import_space_user_info_list?: Array<ImportSpaceUserInfo>;
   /** 企业现有总人数 */
   enterprise_total_people_num?: Int64;
-  /** 企业禁止外部用户加入 */
-  forbid_invite_external_user?: boolean;
 }
 
 export interface ImportSpaceUserInfo {
@@ -4581,8 +4494,6 @@ export interface ImportSpaceUserInfo {
   is_in_enterprise?: boolean;
   /** 用户id */
   user_id?: string;
-  /** 用户禁止加入外部团队，只有是外部用户才返回该字段 */
-  forbid_join_external_space?: boolean;
 }
 
 /** 导入空间用户列表 */
@@ -4700,10 +4611,6 @@ export interface KnowledgeDetail {
   name?: string;
   icon_url?: string;
   format_type?: DataSetType;
-  /** 火山 or coze知识库 */
-  type?: bot_common.KnowledgeType;
-  /** 火山知识库详情 */
-  volcano_dataset_info?: VolcanoDataset;
 }
 
 export interface LangDetectInfo {
@@ -4856,8 +4763,6 @@ export interface MemberInfo {
   space_member_tag?: SpaceMemberTag;
   /** 是否邀请加入确认中 */
   is_confirming?: boolean;
-  /** 用户身份 */
-  space_member_identity?: SpaceMemberIdentity;
 }
 
 export interface MessageInfo {
@@ -5058,13 +4963,6 @@ export interface ModelDetail {
   model_family?: Int64;
   /** IconURL */
   model_icon_url?: string;
-  cache_type?: bot_common.CacheType;
-  /** sp拼接当前时间 */
-  sp_current_time?: boolean;
-  /** sp拼接防泄露指令 */
-  sp_anti_leak?: boolean;
-  /** sp拼接声纹 */
-  sp_voice_info?: boolean;
 }
 
 export interface ModelInfo {
@@ -5083,13 +4981,6 @@ export interface ModelInfo {
   response_format?: bot_common.ModelResponseFormat;
   /** 用户选择的模型风格 */
   model_style?: bot_common.ModelStyle;
-  /** 缓存配置 */
-  cache_type?: bot_common.CacheType;
-  /** sp拼接当前时间 */
-  sp_current_time?: boolean;
-  /** sp拼接防泄露指令 */
-  sp_anti_leak?: boolean;
-  sp_voice_info?: boolean;
 }
 
 export interface ModelInfoV2 {
@@ -5108,15 +4999,6 @@ export interface ModelInfoV2 {
   response_format?: bot_common.ModelResponseFormat;
   /** 用户选择的模型风格 */
   model_style?: bot_common.ModelStyle;
-  /** 缓存配置 */
-  cache_type?: bot_common.CacheType;
-  /** sp拼接当前时间 */
-  sp_current_time?: boolean;
-  /** sp拼接防泄露指令 */
-  sp_anti_leak?: boolean;
-  sp_voice_info?: boolean;
-  /** 个性化配置参数 */
-  parameters?: Record<string, string>;
 }
 
 /** model其他信息的json结构
@@ -5136,22 +5018,6 @@ export interface ModelItem {
   response_format?: bot_common.ModelResponseFormat;
   /** 用户选择的模型风格 */
   model_style?: bot_common.ModelStyle;
-  /** 缓存配置 */
-  cache_type?: bot_common.CacheType;
-  /** sp拼接当前时间 */
-  sp_current_time?: boolean;
-  /** sp拼接防泄露指令 */
-  sp_anti_leak?: boolean;
-  sp_voice_info?: boolean;
-  /** 个性化配置参数 */
-  parameters?: Record<string, string>;
-}
-
-export interface ModelParamConfig {
-  switch?: boolean;
-  min?: string;
-  max?: string;
-  default?: string;
 }
 
 export interface ModelPluginDetail {
@@ -5371,7 +5237,7 @@ export interface Parameter {
 }
 
 export interface PicOperationPrompt {
-  PicOpPrompt?: Partial<Record<PicType, GeneratePicPrompt>>;
+  PicOpPrompt?: Record<PicType, GeneratePicPrompt>;
 }
 
 export interface PicStyleInfo {
@@ -5443,7 +5309,6 @@ export interface PluginDetal {
   plugin_type?: Int64;
   plugin_status?: Int64;
   is_official?: boolean;
-  plugin_source?: Array<PluginSource>;
 }
 
 export interface PluginParameter {
@@ -6062,10 +5927,6 @@ export interface SearchMemberRequest {
   SearchWordList: Array<string>;
   /** 空间id */
   SpaceId: Int64;
-  /** search_list为空时有效，默认1 */
-  page?: number;
-  /** search_list为空时有效，默认50，最大100 */
-  size?: number;
 }
 
 export interface SearchMemberResponse {
@@ -6082,10 +5943,6 @@ export interface SearchMemberV2Request {
   space_id: string;
   /** 搜索火山账号用户信息列表 */
   search_volcano_account_list?: boolean;
-  /** search_list为空时有效，默认1 */
-  page?: number;
-  /** search_list为空时有效，默认50，最大100 */
-  size?: number;
 }
 
 export interface SearchMemberV2Response {
@@ -6095,8 +5952,6 @@ export interface SearchMemberV2Response {
   member_info_list?: Array<MemberInfo>;
   /** 查询失败列表信息 */
   failed_search_list?: Array<string>;
-  /** 总数，search_list为空时会返回 */
-  total?: number;
 }
 
 export interface SendEventRequest {
@@ -6551,9 +6406,6 @@ export interface TabDisplayInfo {
   knowledge_photo_tab_status?: TabStatus;
   hook_info_tab_status?: TabStatus;
   default_user_input_tab_status?: TabStatus;
-  knowledge_volcano_unstructured_tab_status?: TabStatus;
-  knowledge_volcano_structured_tab_status?: TabStatus;
-  model_tab_status?: TabStatus;
 }
 
 export interface TaskInfo {
@@ -7101,7 +6953,7 @@ export interface UpdateUserLabelResponse {}
 
 export interface UpdateUserRiskAlertInfoRequest {
   risk_alert_type?: RiskAlertType;
-  switch_info?: Partial<Record<SwitchType, SwitchStatus>>;
+  switch_info?: Record<SwitchType, SwitchStatus>;
 }
 
 export interface UpdateUserRiskAlertInfoResponse {
@@ -7179,8 +7031,6 @@ export interface UserBasicInfo {
   user_status?: UserStatus;
   /** 火山用户名 */
   volcano_user_name?: string;
-  /** 是否是企业认证 */
-  is_enterprise_authn?: boolean;
 }
 
 /** user 广播事件 */
@@ -7210,8 +7060,8 @@ export interface UserLabelInfo {
 }
 
 export interface UserRiskAlertInfoData {
-  RiskAlertInfo?: Partial<Record<RiskAlertType, boolean>>;
-  SwitchInfo?: Partial<Record<SwitchType, SwitchStatus>>;
+  RiskAlertInfo?: Record<RiskAlertType, boolean>;
+  SwitchInfo?: Record<SwitchType, SwitchStatus>;
 }
 
 export interface Variable {
@@ -7250,13 +7100,6 @@ export interface VerifyResult {
   /** sub task */
   sub_project_id?: Int64;
   sub_project_title?: string;
-}
-
-export interface VideoConfig {
-  codec?: string;
-  stream_video_type?: string;
-  video_frame_rate?: number;
-  video_frame_expire?: number;
 }
 
 export interface VoiceConfig {
@@ -7300,9 +7143,6 @@ export interface VoiceConfigV2 {
   icon_url?: string;
   /** 音色类别 */
   VoiceType?: VoiceScene;
-  /** 支持的情感列表 */
-  support_emotions?: Array<EmotionInfo>;
-  is_multi_emotion_voice?: boolean;
 }
 
 export interface VoicePreview {
@@ -7355,30 +7195,6 @@ export interface VolcanoBasicUserConfig {
   forbid_invite_external_user?: boolean;
   /** 禁止加入外部团队，默认false */
   forbid_join_external_space?: boolean;
-}
-
-export interface VolcanoDataset {
-  /** 火山侧知识库id 字符串 */
-  id?: string;
-  /** 名称 */
-  name?: string;
-  /** 类型 结构化 or 非结构化知识库 */
-  format_type?: DataSetType;
-  /** 火山知识库详情链接 */
-  link?: string;
-  /** 火山知识库状态 是否已失效 */
-  status?: VolcanoDatasetStatus;
-}
-
-export interface VolcanoDatasetServiceDetail {
-  /** 火山侧知识服务id 字符串 */
-  id?: string;
-  /** 名称 */
-  name?: string;
-  /** 火山知识服务链接 */
-  link?: string;
-  /** 火山知识库状态 是否已失效 */
-  status?: VolcanoDatasetServiceStatus;
 }
 
 /** 获取专业版子用户配置 */

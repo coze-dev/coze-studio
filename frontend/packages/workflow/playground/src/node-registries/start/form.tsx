@@ -118,7 +118,7 @@ export const FormRender = withNodeConfigForm(() => {
             hasFeedback={false}
           />
 
-          {/* 社区版暂不支持该功能 */}
+          {/* 开源版暂不支持该功能 */}
           {isChatflow && FLAGS['bot.automation.message_auto_write'] ? (
             <Section title={I18n.t('basic_setting')} tooltip="">
               <SwitchField

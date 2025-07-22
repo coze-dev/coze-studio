@@ -19,70 +19,7 @@
 /* tslint:disable */
 // @ts-nocheck
 
-import * as bot_open_api from './bot_open_api';
-
 export type Int64 = string | number;
-
-export interface OpenAddSpaceMemberData {
-  /** 成功添加的成员列表 */
-  added_success_user_ids?: Array<string>;
-  /** 成功邀请的成员列表 */
-  invited_success_user_ids?: Array<string>;
-  /** 不存在的用户列表 */
-  not_exist_user_ids?: Array<string>;
-  /** 已经加入空间的用户不进行处理 */
-  already_joined_user_ids?: Array<string>;
-  /** 已经发起邀请的用户不进行处理 */
-  already_invited_user_ids?: Array<string>;
-}
-
-export interface OpenAddSpaceMemberRequest {
-  /** 空间ID */
-  workspace_id?: string;
-  /** 要添加的成员，数量最多20 */
-  users?: Array<OpenSpaceMember>;
-}
-
-export interface OpenAddSpaceMemberResponse {
-  data?: OpenAddSpaceMemberData;
-  code: Int64;
-  msg: string;
-}
-
-export interface OpenGetBotInfoRequest {
-  bot_id?: string;
-  is_published?: boolean;
-  /** 发布查最新 */
-  connector_id?: string;
-}
-
-export interface OpenGetBotInfoResponse {
-  data?: bot_open_api.BotInfo;
-  code?: Int64;
-  msg?: string;
-}
-
-export interface OpenRemoveSpaceMemberData {
-  /** 成功移除的成员列表 */
-  removed_success_user_ids?: Array<string>;
-  /** 不在空间的用户不进行处理 */
-  not_in_workspace_user_ids?: Array<string>;
-  /** 空间所有者不进行处理 */
-  owner_not_support_remove_user_ids?: Array<string>;
-}
-
-export interface OpenRemoveSpaceMemberRequest {
-  /** 空间ID */
-  workspace_id?: string;
-  /** 要移除的成员，数量最多5 */
-  user_ids?: Array<string>;
-}
-
-export interface OpenRemoveSpaceMemberResponse {
-  data?: OpenRemoveSpaceMemberData;
-  code: Int64;
-  msg: string;
-}
 
 export interface OpenSpace {
   /** 空间 id */
@@ -95,8 +32,6 @@ export interface OpenSpace {
   role_type?: string;
   /** 工作空间类型, 枚举值: personal, team */
   workspace_type?: string;
-  /** 企业 id */
-  enterprise_id?: string;
 }
 
 export interface OpenSpaceData {
@@ -110,47 +45,10 @@ export interface OpenSpaceData {
 export interface OpenSpaceListRequest {
   page_num?: Int64;
   page_size?: Int64;
-  enterprise_id?: string;
-  user_id?: string;
-  coze_account_id?: string;
 }
 
 export interface OpenSpaceListResponse {
   data?: OpenSpaceData;
-  code: Int64;
-  msg: string;
-}
-
-export interface OpenSpaceMember {
-  /** 用户ID */
-  user_id?: string;
-  /** 昵称（添加成员时不用传） */
-  user_nickname?: string;
-  /** 用户名（添加成员时不用传） */
-  user_unique_name?: string;
-  /** 头像 （添加成员时不用传） */
-  avatar_url?: string;
-  /** 当前用户角色 */
-  role_type?: string;
-}
-
-export interface OpenSpaceMemberListData {
-  items?: Array<OpenSpaceMember>;
-  /** 空间成员总数 */
-  total_count?: Int64;
-}
-
-export interface OpenSpaceMemberListRequest {
-  /** 空间ID */
-  workspace_id?: string;
-  /** 页数，默认为1 */
-  page_num?: number;
-  /** 每页大小，默认为20，最大50 */
-  page_size?: number;
-}
-
-export interface OpenSpaceMemberListResponse {
-  data?: OpenSpaceMemberListData;
   code: Int64;
   msg: string;
 }

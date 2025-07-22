@@ -20,7 +20,6 @@
 // @ts-nocheck
 
 import * as datasetv2similarity from './datasetv2similarity';
-import * as tag from './tag';
 
 export type Int64 = string | number;
 
@@ -69,17 +68,11 @@ export enum FieldDisplayFormat {
   JSON = 3,
   YAML = 4,
   Code = 5,
-  SingleOption = 6,
 }
 
 export enum FieldStatus {
   Available = 1,
   Deleted = 2,
-}
-
-export enum FieldTransformationType {
-  /** 移除未在当前列的 jsonSchema 中定义的字段（包括 properties 和 patternProperties），仅在列类型为 struct 时有效 */
-  RemoveExtraFields = 1,
 }
 
 export enum ItemErrorType {
@@ -95,18 +88,10 @@ export enum ItemErrorType {
   MalformedFile = 5,
   /** 包含非法内容 */
   IllegalContent = 6,
-  /** 缺少必填字段 */
-  MissingRequiredField = 7,
-  /** 数据嵌套层数超限 */
-  ExceedMaxNestedDepth = 8,
-  /** 数据转换失败 */
-  TransformItemFailed = 9,
   /** system error */
   InternalError = 100,
   /** 清空数据集失败 */
   ClearDatasetFailed = 101,
-  /** 读写文件失败 */
-  RWFileFailed = 102,
 }
 
 export enum SchemaKey {
@@ -115,8 +100,6 @@ export enum SchemaKey {
   Float = 3,
   Bool = 4,
   Message = 5,
-  /** 单选 */
-  SingleChoice = 6,
 }
 
 export enum SecurityLevel {
@@ -252,8 +235,6 @@ export interface DatasetSpec {
   maxFieldCount?: number;
   /** 单条数据字数上限 */
   maxItemSize?: string;
-  /** 单条 array/struct 数据嵌套上限 */
-  maxItemDataNestedDepth?: number;
 }
 
 /** DatasetVersion 数据集版本元信息，不包含数据本身 */
@@ -296,12 +277,6 @@ export interface FieldData {
   format?: FieldDisplayFormat;
   /** 图文混排时，图文内容 */
   parts?: Array<FieldData>;
-  /** 这条数据生成traceID */
-  traceID?: string;
-  /** 是否生成失败 */
-  genFail?: boolean;
-  /** 标签回流失败后的展示名称 */
-  fallbackDisplayName?: string;
 }
 
 export interface FieldSchema {
@@ -322,27 +297,12 @@ export interface FieldSchema {
   textSchema?: string;
   /** 多模态规格限制 */
   multiModelSpec?: MultiModalSpec;
-  /** 当前列的数据是否必填，不填则会报错 */
-  isRequired?: boolean;
   /** 用户是否不可见 */
   hidden?: boolean;
   /** 当前列的状态，创建/更新时可以不传 */
   status?: FieldStatus;
   /** 是否开启相似度索引 */
   similaritySearchConfig?: SimilaritySearchConfig;
-  /** 质量分配置 */
-  qualityScoreConfig?: QualityScoreConfig;
-  /** 标签字段配置 */
-  tagFieldConfig?: TagFieldConfig;
-  /** 默认的预置转换配置，目前在数据校验后执行 */
-  defaultTransformations?: Array<FieldTransformationConfig>;
-}
-
-export interface FieldTransformationConfig {
-  /** 预置的转换类型 */
-  transType?: FieldTransformationType;
-  /** 当前转换配置在这一列上的数据及其嵌套的子结构上均生效 */
-  global?: boolean;
 }
 
 export interface FileUploadToken {
@@ -365,8 +325,6 @@ export interface ItemErrorDetail {
   /** [startIndex, endIndex] 表示区间错误范围, 如 ExceedDatasetCapacity 错误时 */
   startIndex?: number;
   endIndex?: number;
-  /** ItemErrorType=MismatchSchema, key 为 FieldSchema.name, value 为错误信息 */
-  messagesByField?: Record<string, string>;
 }
 
 export interface ItemErrorGroup {
@@ -402,12 +360,6 @@ export interface OrderBy {
   isAsc?: boolean;
 }
 
-/** 质量分配置 */
-export interface QualityScoreConfig {
-  /** 列是否为质量分 */
-  enabled?: boolean;
-}
-
 /** 相似度算法的配置 */
 export interface SimilaritySearchConfig {
   /** 是否开启相似度索引 */
@@ -416,10 +368,5 @@ export interface SimilaritySearchConfig {
   similarityAlgorithm?: datasetv2similarity.SimilarityAlgorithm;
   /** 所使用的相似度模型 */
   embeddingType?: datasetv2similarity.EmbeddingModel;
-}
-
-export interface TagFieldConfig {
-  /** tag配置 */
-  tagInfo?: tag.TagInfo;
 }
 /* eslint-enable */

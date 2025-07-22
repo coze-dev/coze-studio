@@ -15,7 +15,7 @@
  */
  
 /**
- * @file 社区版暂不支持后台配置，用于未来拓展
+ * @file 开源版暂不支持后台配置，用于未来拓展
  */
 import { useEffect } from 'react';
 

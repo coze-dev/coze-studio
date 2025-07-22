@@ -90,8 +90,6 @@ export enum IDC {
 export enum MerlinFramework {
   LLMServerPublic = 1,
   Laplace = 2,
-  /** 电商团队专用协议，详见  */
-  Mixinfer = 3,
 }
 
 export enum MerlinLLMInterface {
@@ -109,12 +107,6 @@ export enum MerlinQuotaPoolType {
   ALI = 3,
   /** 第三方资源hw */
   HW = 4,
-  /** hw arm */
-  HWARM = 5,
-  /** 弹性售卖资源，随时可能被抢占 */
-  Spot = 6,
-  /** 可抢占的稳定资源 */
-  Preemptible = 20,
 }
 
 export enum ModelFilterKey {
@@ -266,10 +258,6 @@ export enum SftTaskOutputStatus {
   ExportFailed = 5,
 }
 
-export enum SftTaskResourceMerlinVersion {
-  RemoveAnyGPU = 1,
-}
-
 export enum SftTaskRunEventType {
   Undefined = 0,
   ErrorOccured = 1,
@@ -348,10 +336,6 @@ export enum UsageScenario {
   PromptAsAService = 3,
   /** AI打标 */
   AIAnnotate = 4,
-  /** 质量分 */
-  AIScore = 5,
-  /** 数据标签 */
-  AITag = 6,
 }
 
 export enum ValidateStatus {

@@ -134,7 +134,7 @@ export const DynamicChatList = ({
     !!canEdit &&
     !!list?.length &&
     !inBatch &&
-    // 社区版暂不支持该功能
+    // 开源版暂不支持该功能
     FLAGS['bot.automation.conversation_batch_delete'];
   const exitBatch = () => {
     setInBatch(false);

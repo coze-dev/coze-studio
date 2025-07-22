@@ -36,8 +36,6 @@ export enum AppType {
   CozeBot = 2,
   PTaaS = 3,
   Model = 4,
-  FornaxSaas = 5,
-  FornaxPrompt = 6,
 }
 
 /** 指标选项类型 */
@@ -45,8 +43,6 @@ export enum IndicatorOptionType {
   Undefined = 0,
   /** model唯一标识 */
   ModelIdentification = 1,
-  /** prompt key */
-  PromptKey = 2,
 }
 
 export enum InsightIndicatorType {
@@ -90,20 +86,6 @@ export enum InsightIndicatorType {
   InsightIndicatorsModelTokenRateAvg = 37,
   InsightIndicatorsModelTokenRateMax = 38,
   InsightIndicatorsModelTokenRateMin = 39,
-  InsightIndicatorsPromptHubToken = 40,
-  InsightIndicatorsPromptHubInputToken = 41,
-  InsightIndicatorsPromptHubOutputToken = 42,
-  InsightIndicatorsModelCount = 43,
-  InsightIndicatorsSpanErrorCount = 44,
-}
-
-export enum OverviewIndicatorType {
-  /** 总览指标类型，持续补充 */
-  OverviewIndicatorsUsegeCount = 1,
-  OverviewIndicatorsModelErrorRate = 2,
-  OverviewIndicatorsErrorRate = 3,
-  OverviewIndicatorsModelDurationAvg = 4,
-  OverviewIndicatorsModelToken = 5,
 }
 
 export interface Indicator {
@@ -142,15 +124,6 @@ export interface InsightIndicatorFilter {
 export interface ObsObjMeta {
   /** 展示名称，比如bot_id对应的展示名称是bot_name，prompt和psm的展示名称是自己 */
   show_name?: string;
-}
-
-export interface OverviewIndicator {
-  /** 总览指标名称 */
-  overview_indicator_type: OverviewIndicatorType;
-  /** 总览指标的值，整数或小数 */
-  overview_indicator_value?: string;
-  /** 总览指标的同比值 */
-  overview_indicator_yoy_value?: string;
 }
 
 export interface PromptKeyVersion {

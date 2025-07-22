@@ -133,10 +133,6 @@ is not found within that array, the record is included in the result set. */
   not_in?: Array<number>;
   is_null?: boolean;
   not_null?: boolean;
-  /** Greater than */
-  gt?: number;
-  /** Less than */
-  lt?: number;
 }
 
 /** applied on a int64 field
@@ -169,10 +165,6 @@ is not found within that array, the record is included in the result set. */
   not_in?: Array<string>;
   is_null?: boolean;
   not_null?: boolean;
-  /** Greater than */
-  gt?: Int64;
-  /** Less than */
-  lt?: Int64;
 }
 
 /** applied on a string field
@@ -204,7 +196,6 @@ If you want to match a non empty string, pass in "" in the array and cannot pass
   not_in?: Array<string>;
   is_null?: boolean;
   not_null?: boolean;
-  not_contains?: string;
 }
 
 export interface FieldOptions {

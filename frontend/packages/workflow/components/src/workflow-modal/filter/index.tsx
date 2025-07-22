@@ -56,7 +56,7 @@ const flowModeOptions = [
     value: WorkflowMode.ChatFlow,
   },
 ].filter(item => {
-  // 社区版本暂不支持对话流
+  // 开源版本暂不支持对话流
   if (item.value === WorkflowMode.ChatFlow && IS_OPEN_SOURCE) {
     return false;
   }

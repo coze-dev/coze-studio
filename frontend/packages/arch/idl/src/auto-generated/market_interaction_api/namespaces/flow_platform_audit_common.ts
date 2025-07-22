@@ -99,48 +99,6 @@ export enum AuditType {
   ProjectUIBuilder = 90,
   /** 工作流运行时输入 */
   WorkflowRuntimeInput = 100,
-  /** 语音运行时输入 */
-  AudioRuntimeInput = 101,
-  /** 语音资源 */
-  AudioVoiceResource = 102,
-  /** 模型微调输入 */
-  ModelFinetuneInput = 103,
-  /** OpenAPI图片上传 */
-  OpenAPIImageUpload = 104,
-  /** App (Project) 音频 */
-  AppAudio = 105,
-  /** 企业创建/修改 */
-  EnterpriseModify = 106,
-  CozeLoopPEModify = 107,
-  CozeLoopExptModify = 108,
-  CozeLoopDatasetModify = 109,
-  CozeLoopEvaluatorModify = 110,
-  /** CozeSpace */
-  CozeSpaceQuery = 111,
-  /** CozeSpace 回答 */
-  CozeSpaceAnswer = 112,
-  /** CozeSpace TraeBuilder Query */
-  CozeSpaceTraeBuilderQuery = 113,
-  /** CozeSpace TraeBuilder 回答 */
-  CozeSpaceTraeBuilderAnswer = 114,
-  /** CozeSpace web搜索 Query */
-  CozeSpaceSearchWebQuery = 115,
-  /** CozeSpace web搜索 Answer */
-  CozeSpaceSearchWebAnswer = 116,
-  /** CozeSpace Img搜索 Query */
-  CozeSpaceSearchImgQuery = 117,
-  /** CozeSpace Img搜索 Answer */
-  CozeSpaceSearchImgAnswer = 118,
-  /** CozeSpace 定时任务 Query */
-  CozeSpaceScheduleTaskQuery = 119,
-  /** 声纹创建/修改 */
-  VoicePrintGroup = 120,
-  /** 声纹特征创建/修改 */
-  VoicePrintGroupFeature = 121,
-  /** 视频生成输入 */
-  VideoGenerateInput = 122,
-  /** CozeSpace PPT Agent 修改 */
-  CozeSpacePPTAgentModify = 123,
 }
 
 export enum QueueType {

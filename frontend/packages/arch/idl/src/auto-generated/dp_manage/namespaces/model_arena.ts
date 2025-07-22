@@ -108,8 +108,9 @@ export interface ArenaLeaderboard {
 模型信息 */
   models?: Array<ArenaModel>;
   /** 排行榜详情 */
-  leaderboard_details?: Partial<
-    Record<PKScene, Partial<Record<LeaderboardIntention, LeaderboardDetail>>>
+  leaderboard_details?: Record<
+    PKScene,
+    Record<LeaderboardIntention, LeaderboardDetail>
   >;
   /** pk的总次数 */
   pk_count?: number;

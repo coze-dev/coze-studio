@@ -74,15 +74,6 @@ export interface BindSceneModelData {
   redirect_uri?: string;
 }
 
-export interface CancelOpBotsModelScheduleTaskReq {
-  scheduleTaskId?: string;
-}
-
-export interface CancelOpBotsModelScheduleTaskResp {
-  code?: number;
-  msg?: string;
-}
-
 export interface CasLoginReq {
   callback?: string;
 }
@@ -138,7 +129,6 @@ export interface CreateModelEntityReq {
   Referer?: string;
   /** 模型分流 */
   targets: Array<model_manage.ModelRuleTarget>;
-  biz?: number;
   'Ocean-Jwt-Token'?: string;
 }
 
@@ -189,7 +179,7 @@ export interface CreateModelMetaResp {
 }
 
 export interface CreateModelWithSceneData {
-  SceneIDMap?: Partial<Record<copilot_common.ModelListScene, Int64>>;
+  SceneIDMap?: Record<copilot_common.ModelListScene, Int64>;
   redirect_uri?: string;
 }
 
@@ -212,27 +202,6 @@ export interface CreateModelWithSceneResp {
   code?: number;
   msg?: string;
   data: CreateModelWithSceneData;
-}
-
-export interface CreateOpsBotsModelShowFamilyRelatedModelReq {
-  showFamilyId?: string;
-  modelId?: string;
-}
-
-export interface CreateOpsBotsModelShowFamilyRelatedModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface CreateOpsBotsModelShowFamilyReq {
-  icon?: string;
-  name?: string;
-  ranking?: number;
-}
-
-export interface CreateOpsBotsModelShowFamilyResp {
-  code?: number;
-  msg?: string;
 }
 
 export interface DeleteModelMetaData {
@@ -267,25 +236,6 @@ export interface DeleteModelWithSceneResp {
   code?: number;
   msg?: string;
   data: DeleteModelWithSceneData;
-}
-
-export interface DeleteOpsBotsModelShowFamilyRelatedModelReq {
-  showFamilyId?: string;
-  modelId?: string;
-}
-
-export interface DeleteOpsBotsModelShowFamilyRelatedModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface DeleteOpsBotsModelShowFamilyReq {
-  id?: string;
-}
-
-export interface DeleteOpsBotsModelShowFamilyResp {
-  code?: number;
-  msg?: string;
 }
 
 export interface DeploymentDetail {
@@ -387,162 +337,6 @@ export interface GetModelMetaTemplateReq {
   'Ocean-Jwt-Token'?: string;
 }
 
-export interface GetOpBotsModelDetailData {
-  modelId?: string;
-  icon?: string;
-  description?: string;
-  showFamilyId?: string;
-  modelParamList?: Array<model_manage.ModelParameter>;
-  canUpdate?: boolean;
-  modelMetaId?: string;
-  iconUrl?: string;
-  tokenLimit?: number;
-  hotFlag?: number;
-  showFamilyName?: string;
-  paidTags?: Array<string>;
-  modelRuntimeTag?: ModelRuntimeTag;
-  sceneList?: Array<OpBotsModelModelScene>;
-  ranking?: number;
-  modelName?: string;
-  modelArch?: string;
-}
-
-export interface GetOpBotsModelDetailReq {
-  modelId?: string;
-}
-
-export interface GetOpBotsModelDetailResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpBotsModelDetailData;
-}
-
-export interface GetOpBotsModelListData {
-  rowList?: Array<GetOpBotsModelListRow>;
-  total?: number;
-}
-
-export interface GetOpBotsModelListReq {
-  scene?: copilot_common.ModelListScene;
-}
-
-export interface GetOpBotsModelListResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpBotsModelListData;
-}
-
-export interface GetOpBotsModelListRow {
-  modelId?: string;
-  modelName?: string;
-  icon?: string;
-  iconUrl?: string;
-  tokenLimit?: number;
-  modelArch?: string;
-  modelUpdatedAt?: string;
-  sceneList?: Array<OpBotsModelModelScene>;
-  ranking?: number;
-}
-
-export interface GetOpsBotsDefaultModelDetailData {
-  modelId?: string;
-  icon?: string;
-  name?: string;
-  iconUrl?: string;
-  create_user?: string;
-  create_at_unix?: string;
-  create_user_avatar_url?: string;
-}
-
-export interface GetOpsBotsDefaultModelDetailReq {}
-
-export interface GetOpsBotsDefaultModelDetailResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpsBotsDefaultModelDetailData;
-}
-
-export interface GetOpsBotsHotModelListData {
-  rowList?: Array<GetOpsBotsHotModelListRow>;
-  total?: number;
-  showFamilyList?: Array<HotModelShowFamily>;
-}
-
-export interface GetOpsBotsHotModelListReq {}
-
-export interface GetOpsBotsHotModelListResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpsBotsHotModelListData;
-}
-
-export interface GetOpsBotsHotModelListRow {
-  modelId?: string;
-  modelName?: string;
-  icon?: string;
-  iconUrl?: string;
-  hotFlag?: number;
-  showFamilyId?: string;
-  ranking?: number;
-}
-
-export interface GetOpsBotsModelInfoData {
-  modelMap?: Record<Int64, GetOpsBotsModelInfoDataModel>;
-  showFamilyMap?: Record<Int64, ModelShowFamily>;
-  defaultModelId?: Int64;
-}
-
-export interface GetOpsBotsModelInfoDataModel {
-  modelId?: Int64;
-  hotRanking?: number;
-  showFamilyId?: Int64;
-  hotFlag?: number;
-}
-
-export interface GetOpsBotsModelShowFamilyListData {
-  rowList?: Array<ModelShowFamily>;
-  total?: number;
-  modelList?: Array<GetOpsBotsModelShowFamilyModelListRow>;
-}
-
-export interface GetOpsBotsModelShowFamilyListReq {}
-
-export interface GetOpsBotsModelShowFamilyListResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpsBotsModelShowFamilyListData;
-}
-
-export interface GetOpsBotsModelShowFamilyModelListRow {
-  modelId?: string;
-  modelName?: string;
-  icon?: string;
-  iconUrl?: string;
-  showFamilyId?: string;
-}
-
-export interface GetOpsBotsModelShowFamilyRelatedModelListData {
-  rowList?: Array<GetOpsBotsModelShowFamilyRelatedModelListRow>;
-  total?: number;
-}
-
-export interface GetOpsBotsModelShowFamilyRelatedModelListReq {
-  showFamilyId?: string;
-}
-
-export interface GetOpsBotsModelShowFamilyRelatedModelListResp {
-  code?: number;
-  msg?: string;
-  data?: GetOpsBotsModelShowFamilyRelatedModelListData;
-}
-
-export interface GetOpsBotsModelShowFamilyRelatedModelListRow {
-  modelId?: string;
-  modelName?: string;
-  icon?: string;
-  iconUrl?: string;
-}
-
 export interface GetRoleListForModelData {
   role_data?: Array<ApplyRoleData>;
   redirect_uri?: string;
@@ -557,14 +351,6 @@ export interface GetRoleListForModelResp {
   code?: number;
   msg?: string;
   data: GetRoleListForModelData;
-}
-
-export interface HotModelShowFamily {
-  id?: string;
-  icon?: string;
-  iconUrl?: string;
-  name?: string;
-  ranking?: number;
 }
 
 /** 使用api.http_code来注解http_code，使用http_message来注解返回的message
@@ -647,25 +433,6 @@ export interface ModelQueryRequest {
   Size?: Int64;
 }
 
-export interface ModelRuntimeTag {
-  functionCall?: boolean;
-  image?: boolean;
-  video?: boolean;
-  audio?: boolean;
-  /** 多模态支持的文件类型，遵循 MIME 标准 */
-  imageTypes?: Array<string>;
-  /** 多模态支持的文件类型，遵循 MIME 标准 */
-  videoTypes?: Array<string>;
-  /** 多模态支持的文件类型，遵循 MIME 标准 */
-  audioTypes?: Array<string>;
-  /** 续写能力 */
-  prefillResp?: boolean;
-  /** 前缀缓存能力 */
-  prefixCache?: boolean;
-  /** 深度思考 */
-  cotDisplay?: boolean;
-}
-
 export interface ModelSceneData {
   /** 场景 id */
   scene?: copilot_common.ModelListScene;
@@ -689,49 +456,6 @@ export interface ModelSceneData {
   create_at_unix?: Int64;
   /** 更新时间 */
   update_at_unix?: Int64;
-}
-
-export interface ModelShowFamily {
-  id?: string;
-  icon?: string;
-  iconUrl?: string;
-  name?: string;
-  ranking?: number;
-}
-
-export interface OfflineOpBotsModelReq {
-  modelId?: string;
-  scene?: copilot_common.ModelListScene;
-  scheduleTime?: string;
-}
-
-export interface OfflineOpBotsModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface OnlineOpBotsModelReq {
-  modelId?: string;
-  scene?: copilot_common.ModelListScene;
-  /** 排序 */
-  ranking?: number;
-  schedule_time?: string;
-}
-
-export interface OnlineOpBotsModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface OpBotsModelModelScene {
-  scheduleTaskId?: string;
-  scheduleTime?: string;
-  /** 0-未上架 1-待上线 2-上线 3-待下线 4-下线 5-取消 */
-  status?: number;
-  scene?: copilot_common.ModelListScene;
-  operator?: string;
-  operatorAvatarUrl?: string;
-  ranking?: number;
 }
 
 export interface QueryDeploymentDetailRequest {
@@ -810,15 +534,6 @@ export interface RollBackDeploymentResp {
   msg?: string;
 }
 
-export interface RunOpBotsScheduleTaskReq {
-  taskId?: string;
-}
-
-export interface RunOpBotsScheduleTaskResp {
-  code?: number;
-  msg?: string;
-}
-
 export interface UpdateDeploymentStatusReq {
   BizKey?: string;
   BizType?: BussinessType;
@@ -843,7 +558,6 @@ export interface UpdateModelEntityReq {
   Referer?: string;
   /** 模型分流 */
   targets?: Array<model_manage.ModelRuleTarget>;
-  biz?: number;
   'Ocean-Jwt-Token'?: string;
 }
 
@@ -919,85 +633,6 @@ export interface UpdateModelWithSceneResp {
   code?: number;
   msg?: string;
   data: UpdateModelWithSceneData;
-}
-
-export interface UpdateOpBotsModelRankingReq {
-  modelId?: string;
-  ranking?: number;
-  scene?: copilot_common.ModelListScene;
-}
-
-export interface UpdateOpBotsModelRankingResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface UpdateOpBotsModelReq {
-  modelId?: string;
-  icon?: string;
-  description?: string;
-  modelParamList?: Array<model_manage.ModelParameter>;
-  modelName?: string;
-  paidTags?: Array<string>;
-  tokenLimit?: number;
-  modelRuntimeTag?: ModelRuntimeTag;
-}
-
-export interface UpdateOpBotsModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface UpdateOpsBotsDefaultModelReq {
-  modelId?: string;
-}
-
-export interface UpdateOpsBotsDefaultModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface UpdateOpsBotsHotModelInfo {
-  modelId?: string;
-  ranking?: number;
-  hotFlag?: number;
-}
-
-export interface UpdateOpsBotsHotModelReq {
-  modelList?: Array<UpdateOpsBotsHotModelInfo>;
-}
-
-export interface UpdateOpsBotsHotModelResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface UpdateOpsBotsModelShowFamilyReq {
-  id?: string;
-  icon?: string;
-  name?: string;
-  ranking?: number;
-}
-
-export interface UpdateOpsBotsModelShowFamilyResp {
-  code?: number;
-  msg?: string;
-}
-
-export interface UploadOpsBotsModelAvatarData {
-  icon?: string;
-  iconUrl?: string;
-}
-
-export interface UploadOpsBotsModelAvatarReq {
-  filename?: string;
-  content?: string;
-}
-
-export interface UploadOpsBotsModelAvatarResp {
-  code?: number;
-  msg?: string;
-  data?: UploadOpsBotsModelAvatarData;
 }
 
 export interface UserInfo {

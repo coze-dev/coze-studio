@@ -155,7 +155,7 @@ export function ConnectorAction(props: ConnectorActionProps) {
           onClick={stopEventPropagation}
         />
       );
-    // 社区版暂不支持商店渠道绑定，用于未来拓展
+    // 开源版暂不支持商店渠道绑定，用于未来拓展
     case ConnectorBindType.StoreBind:
       return (
         <StoreBind
@@ -164,7 +164,7 @@ export function ConnectorAction(props: ConnectorActionProps) {
           onClick={stopEventPropagation}
         />
       );
-    // 社区版暂不支持模板渠道绑定，用于未来拓展
+    // 开源版暂不支持模板渠道绑定，用于未来拓展
     // bind_type=9 用作扣子第一方渠道的标识，需要按照渠道 ID 展示绑定方式
     // TODO 后端更新 ConnectorBindType 类型定义
     case ConnectorBindType.TemplateBind: {

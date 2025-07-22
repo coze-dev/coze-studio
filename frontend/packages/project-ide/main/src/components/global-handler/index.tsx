@@ -99,7 +99,7 @@ export const GlobalHandler = ({
 
   useWsListener((props: WsMessageProps) => {
     if (
-      // 社区版暂不支持该功能
+      // 开源版暂不支持该功能
       !FLAGS['bot.automation.project_multi_tab'] ||
       !leftPanelResourceType.includes(props.bizType)
     ) {

@@ -120,9 +120,9 @@ export interface DatasetIOJob {
 }
 
 export interface DatasetIOJobOption {
-  /** 覆盖数据集，仅在导入任务中生效 */
+  /** 覆盖数据集 */
   overwriteDataset?: boolean;
-  /** 需要按照手动打标的taskID结果导入，被确认无需导入的不会被导入，仅在导入任务中生效 */
+  /** 需要按照手动打标的taskID结果导入，被确认无需导入的不会被导入 */
   jobID?: Int64;
 }
 
@@ -135,8 +135,6 @@ export interface DatasetIOJobProgress {
   added?: Int64;
   /** 已跳过的数量 */
   skipped?: Int64;
-  /** 下一个扫描的游标，在数据源为数据集时生效 */
-  cursor?: string;
   /** 子任务
 可空, 表示子任务的名称 */
   name?: string;

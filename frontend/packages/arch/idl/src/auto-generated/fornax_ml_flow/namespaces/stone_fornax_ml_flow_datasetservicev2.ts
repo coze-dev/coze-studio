@@ -24,7 +24,6 @@ import * as base from './base';
 import * as datasetv2job from './datasetv2job';
 import * as datasetv2similarity from './datasetv2similarity';
 import * as datasetv2lineage from './datasetv2lineage';
-import * as filter from './filter';
 
 export type Int64 = string | number;
 
@@ -118,16 +117,6 @@ export interface CancelDatasetIOJobResp {
   baseResp?: base.BaseResp;
 }
 
-export interface ClearDatasetItemRequest {
-  spaceID?: string;
-  dataset_id: string;
-  Base?: base.Base;
-}
-
-export interface ClearDatasetItemResponse {
-  BaseResp?: base.BaseResp;
-}
-
 export interface ConfirmItemDeduplicateReq {
   spaceID?: string;
   jobID: string;
@@ -143,15 +132,8 @@ export interface ConfirmItemDeduplicateResp {
 
 export interface ConfirmItemPair {
   /** 新导入的条目主键 */
-  newItemsUniqKey: string;
-  importConfirmType: datasetv2job.ImportConfirmType;
-}
-
-export interface ConflictField {
-  /** 存在冲突的列名 */
-  fieldName?: string;
-  /** 冲突详情。key: 文件名，val：该文件中包含的类型 */
-  detailM?: Record<string, datasetv2.FieldSchema>;
+  newItemsUniqKey?: string;
+  importConfirmType?: datasetv2job.ImportConfirmType;
 }
 
 export interface CreateDatasetItemReq {
@@ -188,7 +170,6 @@ export interface CreateDatasetReq {
   visibility?: datasetv2.DatasetVisibility;
   spec?: datasetv2.DatasetSpec;
   features?: datasetv2.DatasetFeatures;
-  userID?: string;
   base?: base.Base;
 }
 
@@ -254,7 +235,7 @@ export interface CreateItemDeduplicateJobReq {
 
 export interface CreateItemDeduplicateJobResp {
   /** 任务id，前端后续用这个id去获取 待确认列表 */
-  jobID: string;
+  jobID?: string;
   baseResp?: base.BaseResp;
 }
 
@@ -277,49 +258,6 @@ export interface DeleteDatasetReq {
 
 export interface DeleteDatasetResp {
   baseResp?: base.BaseResp;
-}
-
-export interface ExportDatasetReq {
-  spaceID: string;
-  datasetID: string;
-  /** 需要导出的数据集版本 id，为 0 表示导出草稿版本 */
-  versionID?: string;
-  targetType: datasetv2job.SourceType;
-  /** 此处填写一个文件夹，会将对应的文件生成到该文件夹下 */
-  target: datasetv2job.DatasetIOEndpoint;
-  /** base */
-  base?: base.Base;
-}
-
-export interface ExportDatasetResp {
-  jobID?: string;
-  /** base */
-  baseResp?: base.BaseResp;
-}
-
-export interface FieldMeta {
-  /** 字段类型 */
-  field_type: string;
-  /** 当前字段支持的操作类型 */
-  query_types: Array<string>;
-  display_name: string;
-  /** 支持的可选项 */
-  field_options?: FieldOptions;
-  /** 当前字段在schema中是否存在 */
-  exist?: boolean;
-}
-
-export interface FieldMetaInfoData {
-  /** 字段元信息 */
-  field_metas: Record<string, FieldMeta>;
-}
-
-export interface FieldOptions {
-  i32?: Array<number>;
-  i64?: Array<string>;
-  f64?: Array<number>;
-  string?: Array<string>;
-  obj?: Array<ObjectFieldOption>;
 }
 
 export interface GetDatasetIOJobReq {
@@ -412,15 +350,6 @@ export interface GetDatasetVersionResp {
   baseResp?: base.BaseResp;
 }
 
-export interface GetFieldsMetaInfoRequest {
-  spaceID: Int64;
-  datasetID: Int64;
-}
-
-export interface GetFieldsMetaInfoResponse {
-  data: FieldMetaInfoData;
-}
-
 export interface GetItemDeduplicateJobReq {
   spaceID?: string;
   jobID: string;
@@ -475,7 +404,6 @@ export interface ListDatasetItemsByVersionReq {
   /** 与 page 同时提供时，优先使用 cursor */
   cursor?: string;
   orderBy?: datasetv2.OrderBy;
-  filter?: filter.Filter;
   base?: base.Base;
 }
 
@@ -484,7 +412,6 @@ export interface ListDatasetItemsByVersionResp {
   /** pagination */
   nextCursor?: string;
   total?: Int64;
-  filterTotal?: Int64;
   baseResp?: base.BaseResp;
 }
 
@@ -498,7 +425,6 @@ export interface ListDatasetItemsReq {
   /** 与 page 同时提供时，优先使用 cursor */
   cursor?: string;
   orderBy?: datasetv2.OrderBy;
-  filter?: filter.Filter;
   base?: base.Base;
 }
 
@@ -507,7 +433,6 @@ export interface ListDatasetItemsResp {
   /** pagination */
   nextCursor?: string;
   total?: string;
-  filterTotal?: string;
   baseResp?: base.BaseResp;
 }
 
@@ -531,32 +456,6 @@ export interface ListDatasetVersionsResp {
   /** pagination */
   nextCursor?: string;
   total?: string;
-  baseResp?: base.BaseResp;
-}
-
-export interface ObjectFieldOption {
-  id: Int64;
-  displayName: string;
-}
-
-export interface ParseImportSourceFileReq {
-  spaceID: string;
-  /** 如果 path 为文件夹，此处只默认解析当前路径级别下所有指定类型的文件，不嵌套解析 */
-  file?: datasetv2job.DatasetIOFile;
-  /** base */
-  base?: base.Base;
-}
-
-export interface ParseImportSourceFileResp {
-  /** 文件大小，单位为 byte */
-  bytes?: string;
-  /** 列名和类型，有多文件的话会取并集返回。如果文件中的列定义存在冲突，此处不返回解析结果，具体冲突详情通过 conflicts 返回 */
-  fields?: Array<datasetv2.FieldSchema>;
-  /** 冲突详情。key: 列名，val：冲突详情 */
-  conflicts?: Array<ConflictField>;
-  /** 存在列定义不明确的文件（即一个列被定义为多个类型），当前仅 jsonl 文件会出现该状况 */
-  filesWithAmbiguousColumn?: Array<string>;
-  /** base */
   baseResp?: base.BaseResp;
 }
 
@@ -584,7 +483,6 @@ export interface SearchDatasetItemsByVersionReq {
   /** 与 page 同时提供时，优先使用 cursor */
   cursor?: string;
   orderBy?: datasetv2.OrderBy;
-  filter?: filter.Filter;
   base?: base.Base;
 }
 
@@ -593,7 +491,6 @@ export interface SearchDatasetItemsByVersionResp {
   /** pagination */
   nextCursor?: string;
   total?: Int64;
-  filterTotal?: Int64;
   baseResp?: base.BaseResp;
 }
 
@@ -607,7 +504,6 @@ export interface SearchDatasetItemsReq {
   /** 与 page 同时提供时，优先使用 cursor */
   cursor?: string;
   orderBy?: datasetv2.OrderBy;
-  filter?: filter.Filter;
   base?: base.Base;
 }
 
@@ -616,7 +512,6 @@ export interface SearchDatasetItemsResp {
   /** pagination */
   nextCursor?: string;
   total?: string;
-  filterTotal?: string;
   baseResp?: base.BaseResp;
 }
 
@@ -627,7 +522,6 @@ export interface SearchDatasetsReq {
   /** 支持模糊搜索 */
   name?: string;
   createdBys?: Array<string>;
-  bizCategories?: Array<string>;
   /** pagination */
   page?: number;
   /** 分页大小(0, 200]，默认为 20 */
@@ -735,27 +629,6 @@ export interface UpdateDatasetVersionReq {
 }
 
 export interface UpdateDatasetVersionResp {
-  baseResp?: base.BaseResp;
-}
-
-export interface ValidateDatasetItemsReq {
-  spaceID?: string;
-  items?: Array<datasetv2.DatasetItem>;
-  /** 添加到已有数据集时提供 */
-  datasetID?: string;
-  /** 新建数据集并添加数据时提供 */
-  datasetCategory?: datasetv2.DatasetCategory;
-  /** 新建数据集并添加数据时，必须提供；添加到已有数据集时，如非空，则覆盖已有 schema 用于校验 */
-  datasetFields?: Array<datasetv2.FieldSchema>;
-  /** 添加到已有数据集时，现有数据条数，做容量校验时不做考虑，仅考虑提供 items 数量是否超限 */
-  ignoreCurrentItemCount?: boolean;
-}
-
-export interface ValidateDatasetItemsResp {
-  /** 合法的 item 索引，与 ValidateCreateDatasetItemsReq.items 中的索引对应 */
-  validItemIndices?: Array<number>;
-  errors?: Array<datasetv2.ItemErrorGroup>;
-  /** base */
   baseResp?: base.BaseResp;
 }
 

@@ -36,13 +36,6 @@ export enum ConnectStatus {
   ConnectFailed = 3,
 }
 
-export enum OAuthPluginSource {
-  Plugin = 1,
-  Workflow = 2,
-  ShortcutCommand = 3,
-  Task = 4,
-}
-
 export enum OperateLinkType {
   /** 删除连接 */
   Delete = 1,
@@ -557,20 +550,6 @@ export interface GetNL2APPConfigResponse {
   BaseResp?: base.BaseResp;
 }
 
-export interface GetOAuthPluginListRequest {
-  entity_id: string;
-  /** '授权上下文, 0-bot, 1-project,2-workflow' */
-  context_type?: number;
-  /** 授权实体的版本，根据context_type，可能是 bot_version、project_version、workflow_version */
-  entity_version?: string;
-  Base?: base.Base;
-}
-
-export interface GetOAuthPluginListResponse {
-  oauth_plugin_list?: Array<OAuthPluginInfo>;
-  BaseResp: base.BaseResp;
-}
-
 export interface GetOAuthSchemaRequest {
   Base?: base.Base;
 }
@@ -586,16 +565,6 @@ export interface GetOAuthSchemaResponse {
 
 export interface GetOAuthStatusRequest {
   plugin_id: string;
-  /** '授权上下文, 0-bot, 1-project,2-workflow' */
-  context_type?: number;
-  /** bot_id, project_id or workflow_id */
-  entity_id?: string;
-  /** '授权类型，0-单独授权，1-共享授权' */
-  auth_mode?: number;
-  /** 是否草稿版本，仅共享授权会有草稿版本 */
-  is_draft?: boolean;
-  /** 是否强制获取授权使用的 client_url，目前仅共享授权场景需要设置为true */
-  force_get_client_url?: boolean;
   Base?: base.Base;
 }
 
@@ -967,8 +936,6 @@ export interface OAuthPluginInfo {
   name?: string;
   /** 插件头像 */
   plugin_icon?: string;
-  /** workflow, or bot */
-  source_type?: Array<OAuthPluginSource>;
 }
 
 export interface OperatePrivateLinkRequest {
@@ -1144,11 +1111,9 @@ export interface RegisterPluginMetaRequest {
   oauth_info?: string;
   /** json序列化 */
   space_id: string;
-  common_params?: Partial<
-    Record<
-      plugin_develop_common.ParameterLocation,
-      Array<plugin_develop_common.commonParamSchema>
-    >
+  common_params?: Record<
+    plugin_develop_common.ParameterLocation,
+    Array<plugin_develop_common.commonParamSchema>
   >;
   /** 默认0 默认原来表单创建方式，1 cloud ide创建方式 */
   creation_method?: plugin_develop_common.CreationMethod;
@@ -1201,7 +1166,6 @@ export interface RevokeAuthTokenRequest {
   plugin_id: string;
   /** 如果不传使用uid赋值 bot_id = connector_uid */
   bot_id?: string;
-  context_type?: number;
   Base?: base.Base;
 }
 
@@ -1319,11 +1283,9 @@ export interface UpdatePluginMetaRequest {
   /** service */
   oauth_info?: string;
   /** json序列化 */
-  common_params?: Partial<
-    Record<
-      plugin_develop_common.ParameterLocation,
-      Array<plugin_develop_common.commonParamSchema>
-    >
+  common_params?: Record<
+    plugin_develop_common.ParameterLocation,
+    Array<plugin_develop_common.commonParamSchema>
   >;
   /** //默认0 默认原来表单创建方式，1 cloud ide创建方式 */
   creation_method?: plugin_develop_common.CreationMethod;

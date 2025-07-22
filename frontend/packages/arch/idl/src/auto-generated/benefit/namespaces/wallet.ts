@@ -95,7 +95,7 @@ export interface PublicGetUserWalletHistoryResponse {
 }
 
 export interface UserBalanceData {
-  balance_map?: Partial<Record<BalanceType, Int64>>;
+  balance_map?: Record<BalanceType, Int64>;
 }
 
 export interface UserProfitData {

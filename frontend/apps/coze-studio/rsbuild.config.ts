@@ -117,6 +117,13 @@ const mergedConfig = defineConfig({
       version: 'legacy',
     },
   },
+  performance: {
+    chunkSplit: {
+      strategy: 'split-by-size',
+      minSize: 3_000_000,
+      maxSize: 6_000_000,
+    },
+  },
 });
 
 export default mergedConfig;

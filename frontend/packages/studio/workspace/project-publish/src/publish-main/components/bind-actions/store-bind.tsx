@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// @file 社区版暂不支持商店渠道绑定，用于未来拓展
+// @file 开源版暂不支持商店渠道绑定，用于未来拓展
 import { type MouseEventHandler } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';

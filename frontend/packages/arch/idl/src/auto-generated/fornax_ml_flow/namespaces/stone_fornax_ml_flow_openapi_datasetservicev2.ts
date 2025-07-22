@@ -22,16 +22,8 @@
 import * as datasetv2 from './datasetv2';
 import * as datasetv2lineage from './datasetv2lineage';
 import * as base from './base';
-import * as datasetv2job from './datasetv2job';
 
 export type Int64 = string | number;
-
-export interface ConflictField {
-  /** 存在冲突的列名 */
-  fieldName?: string;
-  /** 冲突详情。key: 文件名，val：该文件中包含的类型 */
-  detailM?: Record<string, datasetv2.FieldSchema>;
-}
 
 export interface DatasetItemWithSource {
   item?: datasetv2.DatasetItem;
@@ -101,18 +93,6 @@ export interface OpenBatchGetDatasetItemsResponse {
   baseResp?: base.BaseResp;
 }
 
-export interface OpenCancelDatasetIOJobReq {
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  jobID: string;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  base?: base.Base;
-}
-
-export interface OpenCancelDatasetIOJobResp {
-  baseResp?: base.BaseResp;
-}
-
 export interface OpenClearDatasetItemsRequest {
   datasetID: string;
   'FlowDevops-Agw-OpenAPI-AppId'?: string;
@@ -122,21 +102,6 @@ export interface OpenClearDatasetItemsRequest {
 }
 
 export interface OpenClearDatasetItemsResponse {
-  baseResp?: base.BaseResp;
-}
-
-export interface OpenCreateDatasetReq {
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  name: string;
-  description?: string;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  fields?: Array<datasetv2.FieldSchema>;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  base?: base.Base;
-}
-
-export interface OpenCreateDatasetResp {
-  datasetID?: string;
   baseResp?: base.BaseResp;
 }
 
@@ -156,37 +121,6 @@ export interface OpenCreateDatasetVersionResponse {
   baseResp?: base.BaseResp;
 }
 
-export interface OpenExportDatasetReq {
-  datasetID: string;
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  /** 需要导出的数据集版本 id，为 0 表示导出草稿版本 */
-  versionID?: string;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  targetType: datasetv2job.SourceType;
-  /** 此处填写一个文件夹，会将对应的文件生成到该文件夹下 */
-  target: datasetv2job.DatasetIOEndpoint;
-  base?: base.Base;
-}
-
-export interface OpenExportDatasetResp {
-  jobID?: string;
-  baseResp?: base.BaseResp;
-}
-
-export interface OpenGetDatasetIOJobReq {
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  jobID: string;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  base?: base.Base;
-}
-
-export interface OpenGetDatasetIOJobResp {
-  job?: datasetv2job.DatasetIOJob;
-  baseResp?: base.BaseResp;
-}
-
 export interface OpenGetDatasetItemRequest {
   datasetID: string;
   'FlowDevops-Agw-OpenAPI-AppId'?: string;
@@ -199,22 +133,6 @@ export interface OpenGetDatasetItemRequest {
 
 export interface OpenGetDatasetItemResponse {
   data?: DatasetItemWithSource;
-  baseResp?: base.BaseResp;
-}
-
-export interface OpenImportDatasetReq {
-  datasetID: string;
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  file?: datasetv2job.DatasetIOFile;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  fieldMappings?: Array<datasetv2job.FieldMapping>;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  option?: datasetv2job.DatasetIOJobOption;
-  base?: base.Base;
-}
-
-export interface OpenImportDatasetResp {
-  jobID?: string;
   baseResp?: base.BaseResp;
 }
 
@@ -262,28 +180,6 @@ export interface OpenListDatasetVersionsRequest {
 export interface OpenListDatasetVersionsResponse {
   data?: Array<datasetv2.DatasetVersion>;
   nextCursor?: string;
-  baseResp?: base.BaseResp;
-}
-
-export interface OpenParseImportSourceFileReq {
-  /** 如果 path 为文件夹，此处只默认解析当前路径级别下所有指定类型的文件，不嵌套解析 */
-  file?: datasetv2job.DatasetIOFile;
-  'FlowDevops-Agw-OpenAPI-AppId'?: string;
-  'FlowDevops-Agw-OpenAPI-SpaceId'?: string;
-  'FlowDevops-Agw-OpenAPI-AccountId'?: string;
-  base?: base.Base;
-}
-
-export interface OpenParseImportSourceFileResp {
-  /** 文件大小，单位为 byte */
-  bytes?: string;
-  /** 列名和类型，有多文件的话会取并集返回。如果文件中的列定义存在冲突，此处不返回解析结果，具体冲突详情通过 conflicts 返回 */
-  fields?: Array<datasetv2.FieldSchema>;
-  /** 冲突详情。key: 列名，val：冲突详情 */
-  conflicts?: Array<ConflictField>;
-  /** 存在列定义不明确的文件（即一个列被定义为多个类型），当前仅 jsonl 文件会出现该状况 */
-  filesWithAmbiguousColumn?: Array<string>;
-  /** base */
   baseResp?: base.BaseResp;
 }
 

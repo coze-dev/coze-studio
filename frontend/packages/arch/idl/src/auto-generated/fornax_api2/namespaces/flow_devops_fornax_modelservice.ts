@@ -196,7 +196,7 @@ export interface GetAvailableQuotaByByteTreeNodeRequest {
 }
 
 export interface GetAvailableQuotaByByteTreeNodeResponse {
-  quotas?: Partial<Record<model.IDC, Array<model.DeployQuota>>>;
+  quotas?: Record<model.IDC, Array<model.DeployQuota>>;
 }
 
 export interface GetByteTreeParentNodeByPSMRequest {
@@ -501,7 +501,7 @@ export interface ModelContextRange {
 
 export interface ModelFilter {
   /** 模型tag过滤项，value中list内部各个元素在过滤时是or关系，各个key之间在过滤时是and关系 */
-  modelFilterTags?: Partial<Record<model.ModelFilterKey, Array<string>>>;
+  modelFilterTags?: Record<model.ModelFilterKey, Array<string>>;
   /** 模型状态 */
   modelStatuses?: Array<model.ModelStatus>;
   /** 模型支持的上下文长度的范围 */
@@ -564,7 +564,7 @@ export interface OApiUpsertModelAndAccountResponse {
 export interface SaaSGetModelFilterParamsRequest {}
 
 export interface SaaSGetModelFilterParamsResponse {
-  modelFilterTags?: Partial<Record<model.ModelFilterKey, Array<string>>>;
+  modelFilterTags?: Record<model.ModelFilterKey, Array<string>>;
   modelContextRange?: ModelContextRange;
   modelVendors?: Array<string>;
 }

@@ -545,7 +545,7 @@ export interface GetMultiVersionLatestParamsRequest {
 }
 
 export interface GetMultiVersionLatestParamsResponse {
-  params_map?: Partial<Record<multi_version.VersionType, string>>;
+  params_map?: Record<multi_version.VersionType, string>;
   code: number;
   msg: string;
   BaseResp?: base.BaseResp;

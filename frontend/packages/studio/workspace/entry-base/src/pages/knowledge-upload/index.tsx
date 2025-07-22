@@ -39,7 +39,7 @@ export const KnowledgeUploadPage = () => {
     UnitType.TEXT_DOC) as UnitType;
   const opt = (locationSearchParams.get('opt') || OptType.ADD) as OptType;
   const docID = locationSearchParams.get('doc_id') || '';
-  // 社区版暂不支持该功能
+  // 开源版暂不支持该功能
   const isDouyinBot =
     locationSearchParams.get('is_douyin') === 'true' ? true : false;
   const { dataset_id, space_id } = useParams();

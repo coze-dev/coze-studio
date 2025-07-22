@@ -46,17 +46,6 @@ export enum ResourceType {
   Evaluator = 22,
   Database = 23,
   OceanProject = 24,
-  FinetuneTask = 25,
-  LoopPrompt = 26,
-  LoopEvaluationExperiment = 27,
-  LoopEvaluationSet = 28,
-  LoopEvaluator = 29,
-  LoopEvaluationTarget = 30,
-  LoopTraceView = 31,
-  LoopModel = 32,
-  ApiApp = 33,
-  LoopTask = 34,
-  ServiceIdentity = 35,
 }
 
 export interface AccountInfo {

@@ -21,13 +21,6 @@
 
 export type Int64 = string | number;
 
-export enum CacheType {
-  /** 缓存关闭 */
-  CacheClosed = 0,
-  /** 前缀缓存 */
-  PrefixCache = 1,
-}
-
 /** *
 和前端交互的视图结构体 */
 export enum IntelligenceStatus {
@@ -62,6 +55,5 @@ export interface IntelligenceBasicInfo {
   publish_time?: string;
   enterprise_id?: string;
   organization_id?: Int64;
-  cache_type?: CacheType;
 }
 /* eslint-enable */

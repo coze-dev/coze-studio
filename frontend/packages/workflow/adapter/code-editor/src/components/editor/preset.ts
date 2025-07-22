@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 import { api, type InferEditorAPIFromPlugins } from '@coze-editor/editor/react';
 import preset from '@coze-editor/editor/preset-code';
 import { type EditorView } from '@codemirror/view';

@@ -23,18 +23,18 @@ export interface TRouteConfigGlobal {
   /**
    * 展示小助手
    * @default true
-   * @import 社区版不支持该字段
+   * @import 开源版不支持该字段
    */
   showAssistant?: boolean;
   /**
    * 展示小助手引导提示
    * @default false
-   * @import 社区版不支持该字段
+   * @import 开源版不支持该字段
    */
   showAssistantGuideTip?: boolean;
   /**
    * 当企业ID发生变化时的回调函数。
-   * @import 社区版不支持该字段
+   * @import 开源版不支持该字段
    * @param enterpriseId - 变化后的企业ID。
    * @param params - 包含导航函数和当前路径名的对象。
    */

@@ -100,7 +100,7 @@ export interface GetTracesMetaInfoData {
   /** 字段元信息 */
   field_metas: Record<string, FieldMeta>;
   /** span分类, key是分类，value是span type */
-  span_category: Partial<Record<ob_span.SpanCategory, Array<ob_span.SpanType>>>;
+  span_category: Record<ob_span.SpanCategory, Array<ob_span.SpanType>>;
 }
 
 export interface GetTracesMetaInfoRequest {}

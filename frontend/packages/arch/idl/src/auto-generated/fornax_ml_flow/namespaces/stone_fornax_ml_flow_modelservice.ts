@@ -20,7 +20,7 @@
 // @ts-nocheck
 
 import * as base from './base';
-import * as ml_flow_domain_model from './ml_flow_domain_model';
+import * as model from './model';
 
 export type Int64 = string | number;
 
@@ -31,9 +31,7 @@ export interface GetModelFilterParamsRequest {
 }
 
 export interface GetModelFilterParamsResponse {
-  modelFilterTags?: Partial<
-    Record<ml_flow_domain_model.ModelFilterKey, Array<string>>
-  >;
+  modelFilterTags?: Record<model.ModelFilterKey, Array<string>>;
   modelContextRange?: ModelContextRange;
   modelVendors?: Array<string>;
   baseResp?: base.BaseResp;
@@ -41,7 +39,7 @@ export interface GetModelFilterParamsResponse {
 
 export interface GetModelRequest {
   /** 本期只支持BotEngine(等于llm gateway等于coze) */
-  provider?: ml_flow_domain_model.Provider;
+  provider?: model.Provider;
   providerModelID?: string;
   spaceID?: Int64;
   /** 因为coze暂时给不了rpc接口，所以后端需要拿到cookie去请求coze的前端接口 */
@@ -50,14 +48,14 @@ export interface GetModelRequest {
 }
 
 export interface GetModelResponse {
-  model?: ml_flow_domain_model.Model;
+  model?: model.Model;
   baseResp?: base.BaseResp;
 }
 
 export interface GetModelUsageRequest {
   modelIdentification?: string;
   /** 本期只支持llm gateway */
-  provider?: ml_flow_domain_model.Provider;
+  provider?: model.Provider;
   spaceID?: Int64;
   base?: base.Base;
 }
@@ -80,7 +78,7 @@ export interface ListModelRequest {
 }
 
 export interface ListModelResponse {
-  models?: Array<ml_flow_domain_model.Model>;
+  models?: Array<model.Model>;
   cursorID?: string;
   hasMore?: boolean;
   total?: Int64;
@@ -96,11 +94,9 @@ export interface ModelContextRange {
 
 export interface ModelFilter {
   /** 模型tag过滤项，value中list内部各个元素在过滤时是or关系，各个key之间在过滤时是and关系 */
-  modelFilterTags?: Partial<
-    Record<ml_flow_domain_model.ModelFilterKey, Array<string>>
-  >;
+  modelFilterTags?: Record<model.ModelFilterKey, Array<string>>;
   /** 模型状态 */
-  modelStatuses?: Array<ml_flow_domain_model.CommercialModelStatus>;
+  modelStatuses?: Array<model.CommercialModelStatus>;
   /** 模型支持的上下文长度的范围 */
   modelContextRange?: ModelContextRange;
   /** 模型厂商 */
@@ -108,7 +104,7 @@ export interface ModelFilter {
   /** 名称关键字 */
   name?: string;
   /** 特殊场景 */
-  modelFilterScene?: ml_flow_domain_model.ModelFilterScene;
+  modelFilterScene?: model.ModelFilterScene;
 }
 
 export interface ModelUsage {

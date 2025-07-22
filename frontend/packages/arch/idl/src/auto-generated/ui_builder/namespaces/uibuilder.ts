@@ -362,9 +362,7 @@ export interface GetUIPreviewModeData {
 }
 
 export interface GetUIRelationData {
-  ref_tree_nodes_map?: Partial<
-    Record<ChannelType, Array<resource_common.RefTreeNode>>
-  >;
+  ref_tree_nodes_map?: Record<ChannelType, Array<resource_common.RefTreeNode>>;
 }
 
 export interface GetUIRequest {
@@ -505,7 +503,7 @@ export interface UIData {
   /** UI 描述 */
   description?: string;
   /** 渠道数据详情 */
-  channel_map?: Partial<Record<ChannelType, ChannelData>>;
+  channel_map?: Record<ChannelType, ChannelData>;
   /** 渠道列表 */
   channel_list?: Array<ChannelType>;
 }

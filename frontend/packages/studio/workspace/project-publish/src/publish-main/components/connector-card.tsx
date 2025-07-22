@@ -172,7 +172,7 @@ export function ConnectorCard({
     connectorPublishConfig,
     connectorConfigMap: connectors,
   });
-  // 社区版暂不支持社交平台渠道，用于未来拓展。
+  // 开源版暂不支持社交平台渠道，用于未来拓展。
   // 社交渠道未选择“处理消息的对话流”时，需要将整个卡片展示为禁用态
   const cardDisabled = disabledConfig?.reason === DisabledReason.SocialPlatform;
 
@@ -334,7 +334,7 @@ export function ConnectorCard({
               onClick={stopEventPropagation}
             />
           ) : null}
-          {/* 社区版暂不支持MCP服务渠道，用于未来拓展 */}
+          {/* 开源版暂不支持MCP服务渠道，用于未来拓展 */}
           {connectorInfo.connector_classification ===
             ConnectorClassification.CozeSpaceExtensionLibrary &&
             connectorInfo.bind_type === ConnectorBindType.TemplateBind && (

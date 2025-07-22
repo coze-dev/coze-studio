@@ -119,7 +119,7 @@ const ToolHeader: FC<ToolHeaderProps> = ({
         />
         <span className={s.title}>{I18n.t('plugin_edit_tool_title')}</span>
         <OauthButtonAction />
-        {/* 社区版暂不支持该功能 */}
+        {/* 开源版暂不支持该功能 */}
         {FLAGS['bot.devops.plugin_mockset'] ? (
           <Tooltip
             style={{ display: mocksetDisabled ? 'block' : 'none' }}

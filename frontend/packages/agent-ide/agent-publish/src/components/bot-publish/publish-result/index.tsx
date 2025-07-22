@@ -190,7 +190,7 @@ export const PublishResult = ({
     type: IntelligenceType.Bot,
     spaceId: String(spaceId),
     intelligenceId: String(botId),
-    // 社区版暂不支持该功能
+    // 开源版暂不支持该功能
     enable: FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE,
   });
 
@@ -213,7 +213,7 @@ export const PublishResult = ({
                   ? `⚠️ ${I18n.t('publish_result_all_failed')}`
                   : `🎉  ${I18n.t('publish_success')}`}
               </div>
-              {/* 社区版暂不支持该功能 */}
+              {/* 开源版暂不支持该功能 */}
               {IS_OVERSEA && !publishResult?.monetizeConfigSuccess ? (
                 <div className="mt-[12px] flex items-center gap-[8px] coz-fg-primary">
                   <IconCozInfoCircleFill className="coz-fg-hglt-yellow" />
@@ -222,7 +222,7 @@ export const PublishResult = ({
                   </span>
                 </div>
               ) : null}
-              {/* 社区版暂不支持该功能 */}
+              {/* 开源版暂不支持该功能 */}
               {FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE ? (
                 <div className="coz-fg-dim text-[12px]">
                   {I18n.t('release_management_detail1', {

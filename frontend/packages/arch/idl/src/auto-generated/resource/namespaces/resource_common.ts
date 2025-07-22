@@ -34,8 +34,6 @@ export enum ActionKey {
   SwitchToFuncflow = 8,
   /** 切换成chatflow */
   SwitchToChatflow = 9,
-  /** 跨空间复制 */
-  CrossSpaceCopy = 10,
 }
 
 export enum CopyStatus {
@@ -44,8 +42,6 @@ export enum CopyStatus {
   Failed = 3,
   /** 如果是KeepOrigin，表示该资源不需要做变更，资源方不需要设置Target相关信息；引用方直接忽略即可 */
   KeepOrigin = 4,
-  /** 表示回滚到草稿时，资源从有->无的变更 */
-  Deleted = 5,
 }
 
 export enum ProjectResourceActionKey {
@@ -99,18 +95,8 @@ export enum ResourceCopyScene {
   PublishProject = 6,
   /** 复制项目模板。 */
   CopyProjectTemplate = 7,
-  /** 项目发布到模板，以项目的指定版本发布成临时模板。 */
+  /** 项目发布到模板，以项目的指定版本发布成模板。 */
   PublishProjectTemplate = 8,
-  /** 模板审核通过，上架，根据临时模板复制正式模板。 */
-  LaunchTemplate = 9,
-  /** 草稿版本存档 */
-  ArchiveProject = 10,
-  /** 线上版本加载到草稿，草稿版本加载到草稿 */
-  RollbackProject = 11,
-  /** 单个资源跨空间复制 */
-  CrossSpaceCopy = 12,
-  /** 项目跨空间复制 */
-  CrossSpaceCopyProject = 13,
 }
 
 export enum ResType {
@@ -206,17 +192,12 @@ export interface ProjectResourceInfo {
   biz_extend?: Record<string, string>;
   /** 资源状态，各类型资源自身定义。前端与各资源方约定。 */
   biz_res_status?: number;
-  /** 当前资源的编辑态版本 */
-  version_str?: string;
-  res_third_type?: number;
 }
 
 export interface RefTreeNode {
   ResourceLocator?: ResourceLocator;
   /** 引用的子资源，子资源在不同层级的引用可以出现多次。A-B, A-C-B, A-D, B可以同时在A和C的ChildrenNodes出现 */
   ChildrenNodes?: Array<RefTreeNode>;
-  /** 当前资源的最新版本，临时使用 */
-  LatestPublishVersionStr?: string;
 }
 
 /** Library资源操作 */
@@ -251,8 +232,6 @@ export interface ResourceCopyEnv {
   CurrentUserID?: Int64;
   /** 发布模板时，原项目版本。or 复制模板时，模板的项目版本。 */
   OriginProjectVersion?: Int64;
-  /** 0/default-app，默认是app也就是之前的project; 1-bot或者叫agent */
-  ProjectType?: number;
 }
 
 export interface ResourceCopyFailedReason {
@@ -320,7 +299,6 @@ Plugin：1-Http; 2-App; 6-Local；Knowledge：0-text; 1-table; 2-image；UI：1-
   detail_disable?: boolean;
   /** [数据延迟优化]删除标识符，true-已删除-前端隐藏该item，false-正常 */
   del_flag?: boolean;
-  res_third_type?: number;
 }
 
 /** 用于定位一个资源数据的结构：某资源的某版本 */
@@ -355,6 +333,5 @@ export interface StaticResourceInfo {
   data_version?: Int64;
   /** 业务自定义字段-对于prompt 是正文，该字段可用于搜索 */
   full_text?: string;
-  res_third_type?: number;
 }
 /* eslint-enable */

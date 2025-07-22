@@ -119,8 +119,6 @@ export interface BotUserConversation {
   SessionName?: string;
   ConnectorID?: Int64;
   ConversationID?: Int64;
-  AccountID?: Int64;
-  CreatorID?: string;
 }
 
 export interface CancelChatApiRequest {
@@ -156,7 +154,6 @@ export interface ChatMessage {
   meta_infos?: Array<MetaInfo>;
   query_snap?: string;
   card_status?: Record<string, string>;
-  reasoning_content?: string;
 }
 
 export interface ClearConversationApiRequest {
@@ -181,7 +178,6 @@ export interface ConversationData {
   creator_d?: string;
   connector_id?: string;
   last_section_id?: string;
-  account_id?: Int64;
 }
 
 export interface CreateConversationApiRequest {
@@ -415,7 +411,6 @@ export interface OpenMessage {
   CustomerDataApi?: Record<string, string>;
   Type?: number;
   SectionID?: Int64;
-  ReasoningContent?: string;
 }
 
 export interface OpenMessageApi {
@@ -437,7 +432,6 @@ export interface OpenMessageApi {
   content_type?: string;
   type?: string;
   section_id?: string;
-  reasoning_content?: string;
 }
 
 export interface PlaygroundOriginMessage {

@@ -106,7 +106,7 @@ export interface ListBenefitLimitationResponse {
 }
 
 export interface ListBillDownloadTaskRequest {
-  task_ids?: Array<string>;
+  task_ids?: Array<Int64>;
   page_num?: number;
   page_size?: number;
 }

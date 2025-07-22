@@ -24,14 +24,6 @@ import * as common from './common';
 
 export type Int64 = string | number;
 
-export enum ValueType {
-  String = 1,
-}
-
-export interface Answer {
-  content?: string;
-}
-
 export interface ChatWithLLMReq {
   /** 文本内容 */
   text?: string;
@@ -55,38 +47,6 @@ export interface ChatWithLLMResp {
   base_resp?: base.BaseResp;
 }
 
-export interface CheckTextAccuracyReq {
-  text: string;
-  original_text: string;
-  base?: base.Base;
-}
-
-export interface CheckTextAccuracyResp {
-  /** 准确度合格 */
-  accuracy_qualified?: boolean;
-  base_resp?: base.BaseResp;
-}
-
-export interface CheckUserAudioReq {
-  body: Blob;
-  'Content-Type': string;
-  /** 3-5仅为声明，不使用，从body的Form中解析 */
-  audio_body?: string;
-  original_content?: string;
-  need_check_accuracy?: boolean;
-  base?: base.Base;
-}
-
-export interface CheckUserAudioResp {
-  /** 音频id */
-  audio_id?: Int64;
-  /** 音频文本内容 */
-  text?: string;
-  /** 准确度合格 */
-  accuracy_qualified?: boolean;
-  base_resp?: base.BaseResp;
-}
-
 export interface CloseConversationReq {
   conversation_id: string;
   base?: base.Base;
@@ -97,36 +57,6 @@ export interface CloseConversationResp {
   base_resp?: base.BaseResp;
 }
 
-export interface CompleteMeetingReq {
-  /** 学习记录id */
-  learning_id: Int64;
-  base?: base.Base;
-}
-
-export interface CompleteMeetingResp {
-  base_resp?: base.BaseResp;
-}
-
-export interface ContinueMeetingReq {
-  /** 学习记录id */
-  learning_id: Int64;
-  /** 题目id */
-  exercise_id: Int64;
-  /** 题号 */
-  exercise_seq: Int64;
-  /** 用户答案 */
-  user_answer?: string;
-  /** 用户音频id */
-  user_audio_id?: Int64;
-  /** 原句 */
-  original_content: string;
-  base?: base.Base;
-}
-
-export interface ContinueMeetingResp {
-  base_resp?: base.BaseResp;
-}
-
 export interface CreateConversationReportReq {
   conversation_id: string;
   base?: base.Base;
@@ -134,64 +64,6 @@ export interface CreateConversationReportReq {
 
 export interface CreateConversationReportResp {
   report?: common.ConversationReport;
-  base_resp?: base.BaseResp;
-}
-
-/** 题目 */
-export interface Exercise {
-  /** 题目id */
-  exercise_id?: Int64;
-  /** 角色id */
-  role_id?: Int64;
-  /** 题号 */
-  exercise_seq?: number;
-  /** 题型 */
-  exercise_type?: common.EnglishExerciseType;
-  /** 原句 */
-  original_content?: string;
-  /** 挖空的题 */
-  mask_content?: string;
-  /** 选项 */
-  options?: Array<ExerciseOption>;
-  /** 正确答案 */
-  correct_answer?: Array<Answer>;
-  /** 题目音频 */
-  exercise_audio?: common.AudioDetail;
-  /** 问题翻译 */
-  answer_translate?: string;
-  /** 答案解析 */
-  answer_analysis?: string;
-  created_at?: Int64;
-  updated_at?: Int64;
-}
-
-/** 题目选项 */
-export interface ExerciseOption {
-  content?: string;
-}
-
-export interface GenerateRoleMessageReq {
-  /** 会话id */
-  conversation_id: Int64;
-  /** 用户回答 */
-  user_response?: string;
-  base?: base.Base;
-}
-
-export interface GenerateRoleMessageResp {
-  chunk?: common.StreamChunk;
-  message_id?: Int64;
-  base_resp?: base.BaseResp;
-}
-
-export interface GetAISuggestionReq {
-  /** 会话id */
-  conversation_id: Int64;
-  base?: base.Base;
-}
-
-export interface GetAISuggestionResp {
-  output?: common.AISuggestionOutput;
   base_resp?: base.BaseResp;
 }
 
@@ -247,52 +119,6 @@ export interface GetLearningPathResp {
   base_resp?: base.BaseResp;
 }
 
-export interface GetMeetingAIChatDetailReq {
-  /** 学习记录id */
-  learning_id: Int64;
-  base?: base.Base;
-}
-
-export interface GetMeetingAIChatDetailResp {
-  meeting_detail?: MeetingDetail;
-  meeting_role_list?: Array<MeetingRole>;
-  meeting_ai_chat_message_list?: Array<MeetingAIChatMessage>;
-  conversation_id?: Int64;
-  base_resp?: base.BaseResp;
-}
-
-export interface GetMeetingCategoryReq {
-  study_module_type: common.StudyModuleType;
-  base?: base.Base;
-}
-
-export interface GetMeetingCategoryResp {
-  category_list?: Array<MeetingCategory>;
-  base_resp?: base.BaseResp;
-}
-
-export interface GetMeetingListReq {
-  meeting_type: common.MeetingType;
-  category_id?: Int64;
-  /** 是否只返回未学习的 */
-  only_not_learn?: boolean;
-  base?: base.Base;
-}
-
-export interface GetMeetingListResp {
-  meeting_list?: Array<MeetingListItem>;
-  base_resp?: base.BaseResp;
-}
-
-export interface GetMeetingSlideReq {
-  base?: base.Base;
-}
-
-export interface GetMeetingSlideResp {
-  meeting_slide_list?: Array<MeetingListItem>;
-  base_resp?: base.BaseResp;
-}
-
 export interface GetMessageTipReq {
   message_id?: string;
   base?: base.Base;
@@ -303,18 +129,7 @@ export interface GetMessageTipResp {
   base_resp?: base.BaseResp;
 }
 
-export interface GetOralScoreReq {
-  user_response: string;
-  base?: base.Base;
-}
-
-export interface GetOralScoreResp {
-  oral_score?: common.OralScoreType;
-  base_resp?: base.BaseResp;
-}
-
 export interface GetTodayDurationReq {
-  module_type?: common.StudyModuleType;
   base?: base.Base;
 }
 
@@ -324,7 +139,6 @@ export interface GetTodayDurationResp {
 }
 
 export interface GetTotalDurationReq {
-  module_type?: common.StudyModuleType;
   base?: base.Base;
 }
 
@@ -351,16 +165,6 @@ export interface GetUserLevelResp {
   base_resp?: base.BaseResp;
 }
 
-export interface LeaveAiChatRoomReq {
-  /** 会话id */
-  conversation_id: Int64;
-  base?: base.Base;
-}
-
-export interface LeaveAiChatRoomResp {
-  base_resp?: base.BaseResp;
-}
-
 export interface ListConversationRecordReq {
   exercise_id?: Int64;
   status?: common.ConversationStatus;
@@ -384,54 +188,6 @@ export interface ListPhaseReq {
 export interface ListPhaseResp {
   phase_list?: Array<common.Phase>;
   base_resp?: base.BaseResp;
-}
-
-export interface MeetingAIChatMessage {
-  message_id?: Int64;
-  role_id?: Int64;
-  role?: common.ChatRole;
-  content?: string;
-  msg_index?: Int64;
-  created_at?: Int64;
-  updated_at?: Int64;
-}
-
-export interface MeetingCategory {
-  category_id?: Int64;
-  category_name?: string;
-  category_type?: common.MeetingCategoryType;
-  icon_url?: string;
-  sub_category_list?: Array<MeetingCategory>;
-}
-
-export interface MeetingDetail {
-  meeting_type?: common.MeetingType;
-  title?: string;
-  desc?: string;
-}
-
-export interface MeetingListItem {
-  meeting_id?: Int64;
-  meeting_type: common.MeetingType;
-  title?: string;
-  desc?: string;
-  icon_url?: string;
-  category_icon_url?: string;
-  exercise_count?: number;
-  estimate_duration?: Int64;
-  learning_status?: common.MeetingLearningStatus;
-  learning_id?: Int64;
-  /** 是否有进行过ai_chat */
-  has_ai_chat?: boolean;
-  max_oral_score?: Int64;
-  updated_at?: Int64;
-}
-
-export interface MeetingRole {
-  role_id?: Int64;
-  name?: string;
-  icon_url?: string;
-  speaker_id?: string;
 }
 
 export interface MessageEvalReq {
@@ -482,39 +238,12 @@ export interface StartChatResp {
   base_resp?: base.BaseResp;
 }
 
-export interface StartMeetingReq {
-  /** 会议素材id */
-  meeting_id: Int64;
-  base?: base.Base;
-}
-
-export interface StartMeetingResp {
-  /** 学习记录id */
-  learning_id?: Int64;
-  meeting_detail?: MeetingDetail;
-  meeting_role_list?: Array<MeetingRole>;
-  meeting_exercise_list?: Array<Exercise>;
-  conversation_id?: Int64;
-  base_resp?: base.BaseResp;
-}
-
 export interface TranslateMessageReq {
   message_id: string;
   base?: base.Base;
 }
 
 export interface TranslateMessageResp {
-  translation?: string;
-  base_resp?: base.BaseResp;
-}
-
-export interface TranslateMessageV2Req {
-  content: string;
-  history_message_list?: Array<common.HistoryMessage>;
-  base?: base.Base;
-}
-
-export interface TranslateMessageV2Resp {
   translation?: string;
   base_resp?: base.BaseResp;
 }
@@ -531,7 +260,6 @@ export interface UnlockTopicResp {
 
 export interface UpdateStudyDurationReq {
   duration: number;
-  module_type?: common.StudyModuleType;
   base?: base.Base;
 }
 

@@ -169,7 +169,6 @@ export interface ProjectResourceInfo {
   biz_extend?: Record<string, string>;
   /** 资源状态，各类型资源自身定义。前端与各资源方约定。 */
   biz_res_status?: number;
-  res_third_type?: number;
 }
 
 export interface RefTreeNode {

@@ -40,10 +40,6 @@ export interface DelProfileMemoryResponse {
   BaseResp: base.BaseResp;
 }
 
-export interface GetMemoryVariableMetaListData {
-  items?: Array<VariableNew>;
-}
-
 export interface GetProfileMemoryRequest {
   user_id?: Int64;
   bot_id?: string;
@@ -74,10 +70,6 @@ export interface GetSysVariableConfResponse {
   BaseResp: base.BaseResp;
 }
 
-export interface GetVariableData {
-  items?: Array<KVItem>;
-}
-
 export interface GroupVariableInfo {
   group_name?: string;
   group_desc?: string;
@@ -94,46 +86,6 @@ export interface KVItem {
   is_system?: boolean;
   prompt_disabled?: boolean;
   schema?: string;
-}
-
-export interface OpenGetPlaygroundVariableReq {
-  /** Project的用户变量传project */
-  app_id?: string;
-  /** bot id */
-  bot_id?: string;
-  connector_id?: string;
-  /** 渠道uid */
-  connector_uid?: string;
-  /** 变量名称 */
-  keywords?: Array<string>;
-  Base?: base.Base;
-}
-
-export interface OpenGetPlaygroundVariableResp {
-  code?: number;
-  msg?: string;
-  data?: GetVariableData;
-  BaseResp: base.BaseResp;
-}
-
-export interface OpenSetPlaygroundVariableReq {
-  /** Project的用户变量传project */
-  app_id?: string;
-  /** bot id */
-  bot_id?: string;
-  /** 渠道id */
-  connector_id?: string;
-  /** 渠道uid */
-  connector_uid?: string;
-  /** 要设置的值 */
-  data?: Array<KVItem>;
-  Base?: base.Base;
-}
-
-export interface OpenSetPlaygroundVariableResp {
-  code?: number;
-  msg?: string;
-  BaseResp: base.BaseResp;
 }
 
 export interface SetKvMemoryReq {
@@ -165,23 +117,5 @@ export interface VariableInfo {
   group_desc?: string;
   group_ext_desc?: string;
   EffectiveChannelList?: Array<string>;
-  is_allow_modify?: string;
-}
-
-export interface VariableNew {
-  /** 变量名 */
-  keyword?: string;
-  /** 默认值 */
-  default_value?: string;
-  /** 变量类型 */
-  variable_type?: string;
-  /** 变量来源 */
-  channel?: string;
-  /** 变量描述 */
-  description?: string;
-  /** 是否启用 */
-  enable?: boolean;
-  /** 变量默认支持在Prompt中访问，取消勾选后将不支持在Prompt中访问（仅能在Workflow中访问 */
-  prompt_enable?: boolean;
 }
 /* eslint-enable */

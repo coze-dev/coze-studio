@@ -88,12 +88,6 @@ export enum FaasCallbackEventType {
   SyncUserVoiceAgeAndGender = 12,
   /** 购买音色并绑定到用户 */
   PurchaseUserVoiceAndBind = 13,
-  /** 定时扫描并发任务 */
-  ScanParallelTask = 14,
-  /** 定期并发归零 */
-  ResetParallelTask = 15,
-  /** 多情感音色 */
-  SyncMultiEmotionVoice = 16,
 }
 
 export interface BotConfig {
@@ -215,13 +209,6 @@ export interface ResourceAction {
   enable: boolean;
 }
 
-export interface SpeakerIdentifyChoice {
-  Score?: number;
-  FeatureID?: Int64;
-  FeatureName?: string;
-  FeatureDesc?: string;
-}
-
 export interface SubmitToolOutputs {
   ToolCalls?: Array<InterruptPlugin>;
 }
@@ -237,12 +224,5 @@ export interface Usage {
   TokenCount?: number;
   OutputTokens?: number;
   InputTokens?: number;
-}
-
-export interface VoicePrintGroup {
-  ID?: Int64;
-  Name?: string;
-  Desc?: string;
-  IconURL?: string;
 }
 /* eslint-enable */

@@ -103,8 +103,6 @@ export interface BotConfig {
   user_query_collect_conf?: UserQueryCollectConf;
   /** 是否关闭语音通话（默认是打开） */
   is_close_voice_call?: boolean;
-  /** 是否支持视频通话 */
-  support_video_call?: boolean;
 }
 
 export interface BotExtraInfo {
@@ -256,7 +254,6 @@ export interface DuplicateProductRequest {
   entity_type: product_common.ProductEntityType;
   space_id?: string;
   name?: string;
-  folder_id?: string;
   Cookie?: string;
 }
 
@@ -527,10 +524,6 @@ export interface GetProductDetailData {
   /** 详情页返回 */
   can_duplicate?: boolean;
   commercial_setting?: product_common.CommercialSetting;
-  /** 插件是否支持扩容（插件详情页，控制是否展示扩容按钮） */
-  can_create_user_extra_benefit?: boolean;
-  /** 用户是否有扩容权限（插件详情页，控制扩容按钮是否置灰）：免费版和个人进阶版 - true（跳转到付费墙）；团队版和企业版 - 接入权限校验 */
-  has_create_user_extra_benefit_permission?: boolean;
   plugin_extra?: PluginExtraInfo;
   bot_extra?: BotExtraInfo;
   workflow_extra?: WorkflowExtraInfo;
@@ -545,7 +538,6 @@ export interface GetProductDetailRequest {
   entity_id?: string;
   /** 是否查看最新的审核失败草稿 */
   need_audit_failed?: boolean;
-  enterprise_id?: string;
   'Tt-Agw-Client-Ip'?: string;
 }
 
@@ -569,7 +561,7 @@ export interface GetProductEntityInfoResponse {
 }
 
 export interface GetProductFilterData {
-  filters?: Partial<Record<FilterType, Array<FilterInfo>>>;
+  filters?: Record<FilterType, Array<FilterInfo>>;
 }
 
 export interface GetProductFilterRequest {
@@ -738,7 +730,7 @@ export interface GetUserFavoriteListV2Response {
 }
 
 export interface GetUserProductCountData {
-  counter?: Partial<Record<product_common.ProductEntityType, number>>;
+  counter?: Record<product_common.ProductEntityType, number>;
   total_count?: number;
 }
 
@@ -1166,7 +1158,7 @@ export interface SearchProductResponseData {
   total?: number;
   has_more?: boolean;
   /** 实体数量 */
-  entity_total?: Partial<Record<product_common.ProductEntityType, number>>;
+  entity_total?: Record<product_common.ProductEntityType, number>;
 }
 
 export interface SearchSuggestRequest {

@@ -38,7 +38,6 @@ export enum IntelligenceTaskEntityLocationType {
   Space = 2,
   Online = 3,
   Template = 4,
-  Agent = 5,
 }
 
 export enum IntelligenceTaskEntityType {
@@ -50,10 +49,6 @@ export enum IntelligenceTaskEntityType {
   Project = 6,
   Database = 7,
   Variable = 8,
-  Trigger = 9,
-  Agent = 10,
-  Prompt = 11,
-  Shortcut = 12,
 }
 
 export enum IntelligenceTaskStatus {
@@ -80,16 +75,6 @@ export enum IntelligenceTaskType {
   CopyTemplateToProject = 7,
   /** 项目发布到模板 */
   PublishProjectTemplate = 8,
-  /** 项目模版上架 */
-  LaunchProjectTemplate = 9,
-  /** 项目存档 */
-  ArchiveProject = 10,
-  /** 项目回滚 */
-  RollbackProject = 11,
-  /** 单个资源跨空间复制 */
-  CrossSpaceCopy = 12,
-  /** 项目跨空间复制 */
-  CrossSpaceCopyProject = 13,
 }
 
 export interface FailedReasonDetail {
@@ -107,23 +92,23 @@ export interface IntelligenceTaskEntityLocationInfo {
   /** '位置类型' */
   LocationType?: IntelligenceTaskEntityLocationType;
   /** '位置空间id' */
-  SpaceId?: string;
+  SpaceId?: Int64;
   /** '位置project id' */
-  ProjectId?: string;
+  ProjectId?: Int64;
   /** '位置实体version' */
-  Version?: string;
+  Version?: Int64;
 }
 
 /** task资源方实现接口定义,外部可引用 */
 export interface IntelligenceTaskInfo {
   /** 任务id */
-  TaskId?: string;
+  TaskId?: Int64;
   /** 任务创建者id */
-  UserId?: string;
+  UserId?: Int64;
   /** 操作实体类型 */
   EntityType?: IntelligenceTaskEntityType;
   /** 操作实体id */
-  EntityId?: string;
+  EntityId?: Int64;
   /** '操作类型' */
   ActionType?: IntelligenceTaskActionType;
   /** '源位置信息 */
@@ -144,13 +129,5 @@ export interface IntelligenceTaskInfo {
   CreateTime?: Int64;
   /** 更新时间 */
   UpdateTime?: Int64;
-}
-
-export interface SourceMapping {
-  EntityType: IntelligenceTaskEntityType;
-  OriginalId: Int64;
-  TargetId: Int64;
-  /** 其他的信息，比如plugin的tool映射信息 */
-  TargetResInfo?: string;
 }
 /* eslint-enable */

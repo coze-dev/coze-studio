@@ -38,7 +38,7 @@ export const IntelligenceTag: React.FC<IntelligenceTagProps> = ({
       </Tag>
     );
   }
-  // 社区版暂不支持该功能
+  // 开源版暂不支持该功能
   if (intelligenceType === IntelligenceType.DouyinAvatarBot) {
     return (
       <Tag color="red" size="small" className="w-fit">

@@ -38,13 +38,6 @@ export enum ConnectorDynamicStatus {
   TokenDisconnect = 2,
 }
 
-export enum FolderType {
-  /** 项目/智能体文件夹 */
-  App = 1,
-  /** 资源文件夹 */
-  Resource = 2,
-}
-
 export enum OrderByType {
   Asc = 1,
   Desc = 2,
@@ -95,36 +88,6 @@ export interface ConnectorInfo {
   icon?: string;
   connector_status?: ConnectorDynamicStatus;
   share_link?: string;
-}
-
-export interface FolderBasicInfo {
-  id?: string;
-  /** 父文件夹id */
-  parent_id?: string;
-  /** 文件夹类型 */
-  folder_type?: FolderType;
-  name?: string;
-  description?: string;
-  space_id?: string;
-  creator_id?: string;
-  /** 创建时间，秒级时间戳 */
-  create_time?: string;
-  /** 更新时间，秒级时间戳 */
-  update_time?: string;
-  /** 是否删除 */
-  is_deleted?: boolean;
-}
-
-export interface FolderInfo {
-  folder_basic_info?: FolderBasicInfo;
-  /** 子文件夹列表，只有tree接口才返回 */
-  children_list?: Array<FolderInfo>;
-  /** 父级文件夹路径，不包含本文件夹 */
-  parent_path?: Array<FolderBasicInfo>;
-  /** 父级文件夹路径，包含本文件夹 */
-  full_path?: Array<FolderBasicInfo>;
-  /** 文件夹创建者信息 */
-  folder_creator_info?: User;
 }
 
 export interface Space {

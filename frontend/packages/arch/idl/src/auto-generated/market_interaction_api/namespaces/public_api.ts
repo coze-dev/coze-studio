@@ -246,8 +246,9 @@ export interface GetMetaResponse {
 export interface GetPostDetailData {
   post_info?: PostInfo;
   /** 帖子互动数据统计 */
-  post_emoji_count?: Partial<
-    Record<flow_marketplace_interaction_common.EmojiType, number>
+  post_emoji_count?: Record<
+    flow_marketplace_interaction_common.EmojiType,
+    number
   >;
   /** 用户互动信息 */
   user_emoji_list?: Array<flow_marketplace_interaction_common.EmojiType>;
@@ -419,9 +420,7 @@ export interface PackCommentInfo {
   comment_info?: CommentInfo;
   /** 当前用户 emoji */
   user_emoji_list?: Array<flow_marketplace_interaction_common.EmojiType>;
-  emoji_count?: Partial<
-    Record<flow_marketplace_interaction_common.EmojiType, number>
-  >;
+  emoji_count?: Record<flow_marketplace_interaction_common.EmojiType, number>;
   mention_list?: Array<flow_marketplace_interaction_common.Mention>;
   has_more_reply?: boolean;
   reply_count?: number;
@@ -440,9 +439,7 @@ export interface PackReplyInfo {
   mention_list?: Array<flow_marketplace_interaction_common.Mention>;
   /** 当前用户 reaction */
   user_emoji_list?: Array<flow_marketplace_interaction_common.EmojiType>;
-  emoji_count?: Partial<
-    Record<flow_marketplace_interaction_common.EmojiType, number>
-  >;
+  emoji_count?: Record<flow_marketplace_interaction_common.EmojiType, number>;
   reply_info?: ReplyInfo;
   is_author?: boolean;
 }

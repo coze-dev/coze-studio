@@ -39,7 +39,7 @@ export function ChangeButton({
 }: ChangeButtonProps) {
   const [FLAGS] = useFlags();
 
-  // 社区版暂不支持该功能
+  // 开源版暂不支持该功能
   const showText = modeInfo?.showText || FLAGS['bot.studio.prompt_diff'];
   const ToolTipFragment = tooltip ? Tooltip : React.Fragment;
 

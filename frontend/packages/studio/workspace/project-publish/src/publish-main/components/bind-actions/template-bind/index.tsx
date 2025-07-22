@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// @file 社区版暂不支持模版渠道绑定，用于未来拓展
+// @file 开源版暂不支持模版渠道绑定，用于未来拓展
 import { useParams } from 'react-router-dom';
 import { type MouseEventHandler, useEffect, useRef, useState } from 'react';
 

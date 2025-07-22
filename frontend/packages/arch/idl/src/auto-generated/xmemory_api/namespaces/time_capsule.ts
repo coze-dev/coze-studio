@@ -315,7 +315,6 @@ export interface TimeCapsuleSearchRequest {
 export interface TimeCapsuleSearchResponse {
   search_result_list?: Array<SearchResultItem>;
   wraped_text?: string;
-  version?: Int64;
   BaseResp?: base.BaseResp;
 }
 
