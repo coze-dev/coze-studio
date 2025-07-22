@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getCurrentBranch } from './utils/current-branch';
 
 const processEnvs = {
@@ -26,16 +26,17 @@ const processEnvs = {
     | 'release'
     | 'inhouse',
   BUILD_BRANCH: (process.env.BUILD_BRANCH || getCurrentBranch()) as string,
-  REGION: (process.env.REGION || 'cn') as 'cn' | 'sg' | 'va',
+  REGION: (process.env.BUILD_REGION || 'cn') as 'cn' | 'sg' | 'va',
   NODE_ENV: process.env.NODE_ENV as 'production' | 'development' | 'test',
   CDN_PATH_PREFIX: (process.env.CDN_PATH_PREFIX ?? '/') as string,
   // vmok 生产者使用，用来将生产者的 sourcemap 文件上传至对应的消费者版本下面
   CONSUMER_BUILD_VERSION: (process.env.CONSUMER_BUILD_VERSION ?? '') as string,
 };
 
-const IS_OVERSEA = Boolean(process.env.REGION) && process.env.REGION !== 'cn';
-const IS_CN_REGION = process.env.REGION === 'cn';
-const IS_VA_REGION = process.env.REGION === 'va';
+const IS_OVERSEA =
+  Boolean(process.env.BUILD_REGION) && process.env.BUILD_REGION !== 'cn';
+const IS_CN_REGION = process.env.BUILD_REGION === 'cn';
+const IS_VA_REGION = process.env.BUILD_REGION === 'va';
 const IS_RELEASE_VERSION = processEnvs.CUSTOM_VERSION === 'release'; // 为 ture 表示对外版本
 const IS_OVERSEA_RELEASE = IS_OVERSEA && IS_RELEASE_VERSION;
 const IS_PROD =
