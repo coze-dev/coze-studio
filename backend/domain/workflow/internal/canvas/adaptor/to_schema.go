@@ -1394,10 +1394,11 @@ func toHttpRequesterSchema(n *vo.Node, opts ...OptionFn) (*compose.NodeSchema, e
 		formDataVars := make([]string, 0)
 		for i := range inputs.Body.BodyData.FormData.Data {
 			p := inputs.Body.BodyData.FormData.Data[i]
+			formDataVars = append(formDataVars, p.Name)
 			if p.Input.Type == vo.VariableTypeString && p.Input.AssistType > vo.AssistTypeNotSet && p.Input.AssistType < vo.AssistTypeTime {
 				bodyConfig.FormDataConfig.FileTypeMapping[p.Name] = true
-				formDataVars = append(formDataVars, p.Name)
 			}
+
 		}
 		md5FieldMapping.SetBodyFields(formDataVars...)
 	case httprequester.BodyTypeRawText:
