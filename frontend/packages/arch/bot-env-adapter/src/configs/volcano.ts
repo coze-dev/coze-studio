@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { extractEnvValue } from '../utils/config-helper';
 
 const VOLCANO_PLATFORM_ID = extractEnvValue<number | null>({
@@ -28,6 +28,11 @@ const VOLCANO_PLATFORM_ID = extractEnvValue<number | null>({
   },
   va: {
     release: null,
+    inhouse: null,
+  },
+  oci: {
+    release: null,
+    inhouse: null,
   },
 });
 
@@ -43,6 +48,11 @@ const VOLCANO_PLATFORM_APP_KEY = extractEnvValue<string | null>({
   },
   va: {
     release: null,
+    inhouse: null,
+  },
+  oci: {
+    release: null,
+    inhouse: null,
   },
 });
 
@@ -58,6 +68,11 @@ const VOLCANO_IDENTITY_DOMAIN = extractEnvValue<string | null>({
   },
   va: {
     release: null,
+    inhouse: null,
+  },
+  oci: {
+    release: null,
+    inhouse: null,
   },
 });
 

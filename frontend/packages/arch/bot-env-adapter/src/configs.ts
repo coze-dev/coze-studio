@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines -- 待拆分 */
 
 import { extractEnvValue } from './utils/config-helper';
@@ -36,6 +36,11 @@ const APP_ID = extractEnvValue<number>({
   },
   va: {
     release: 0,
+    inhouse: 0,
+  },
+  oci: {
+    release: 0,
+    inhouse: 0,
   },
 });
 
@@ -51,6 +56,11 @@ const APP_KEY = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -66,6 +76,11 @@ const FLOW_BRAND_NAME = extractEnvValue<string>({
   },
   va: {
     release: 'Cici',
+    inhouse: 'Cici',
+  },
+  oci: {
+    release: 'Cici',
+    inhouse: 'Cici',
   },
 });
 
@@ -81,6 +96,11 @@ const BOT_BRAND_NAME = extractEnvValue<string>({
   },
   va: {
     release: 'Coze',
+    inhouse: 'Coze',
+  },
+  oci: {
+    release: 'Coze',
+    inhouse: 'Coze',
   },
 });
 
@@ -105,6 +125,11 @@ const SEC_SDK_ASSERT_URL = extractEnvValue<string | null>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -120,6 +145,11 @@ const FLOW_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '489823',
+    inhouse: '489823',
+  },
+  oci: {
+    release: '489823',
+    inhouse: '489823',
   },
 });
 
@@ -135,6 +165,11 @@ const FEISHU_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -150,6 +185,11 @@ const LARK_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -165,6 +205,11 @@ const REDDIT_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -180,6 +225,11 @@ const JUEJIN_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -195,6 +245,11 @@ const OBRIC_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -210,6 +265,11 @@ const MYAI_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -225,6 +285,11 @@ const DISCORD_PUBLISH_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -250,6 +315,11 @@ const BYTE_UPLOADER_REGION = extractEnvValue<
   },
   va: {
     release: 'us-east-1',
+    inhouse: 'us-east-1',
+  },
+  oci: {
+    release: 'gcp',
+    inhouse: 'gcp',
   },
 });
 
@@ -266,6 +336,11 @@ const IMAGE_FALLBACK_HOST = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -281,6 +356,11 @@ const GOOGLE_CLIENT_ID = extractEnvValue<null | string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -296,6 +376,11 @@ const GOOGLE_PLATFORM_ID = extractEnvValue<null | number>({
   },
   va: {
     release: 0,
+    inhouse: 0,
+  },
+  oci: {
+    release: 0,
+    inhouse: 0,
   },
 });
 
@@ -312,6 +397,11 @@ const FACEBOOK_APP_ID = extractEnvValue<null | string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -327,6 +417,11 @@ const AWEME_PLATFORM_ID = extractEnvValue<number>({
   },
   va: {
     release: 0,
+    inhouse: 0,
+  },
+  oci: {
+    release: 0,
+    inhouse: 0,
   },
 });
 
@@ -342,6 +437,11 @@ const AWEME_PLATFORM_APP_KEY = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -357,6 +457,11 @@ export const AWEME_ORIGIN = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -372,6 +477,11 @@ export const SAMI_APP_KEY = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -387,6 +497,11 @@ export const SAMI_WS_ORIGIN = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -402,6 +517,11 @@ export const COZE_API_TTS_BASE_URL = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -417,6 +537,11 @@ export const SAMI_CHAT_WS_URL = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -432,6 +557,11 @@ export const COZE_FEISHU_APP = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -447,6 +577,11 @@ export const COZE_LARK_APP = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -474,6 +609,11 @@ const FEEL_GOOD_HOST = extractEnvValue<string>({
   },
   va: {
     release: 'survey.coze.com',
+    inhouse: 'survey.coze.com',
+  },
+  oci: {
+    release: 'survey.coze.com',
+    inhouse: 'survey.coze.com',
   },
 });
 const feelGoodEnvs = {
@@ -493,6 +633,11 @@ const CARD_BUILDER_ENV_STR = extractEnvValue<string>({
   },
   va: {
     release: 'va-release',
+    inhouse: 'va-inhouse',
+  },
+  oci: {
+    release: 'oci-release',
+    inhouse: 'oci-inhouse',
   },
 });
 
@@ -508,6 +653,11 @@ const OPEN_WEB_SDK_BOT_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -523,6 +673,11 @@ const OPEN_DOCS_APP_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -538,6 +693,11 @@ const CUSTOM_PLAT_APPLY_PUBLIC_PLAT_FORM_LINK = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -553,6 +713,11 @@ const OPEN_DOCS_LIB_ID = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -568,6 +733,11 @@ const PLUGIN_IDE_EDITION = extractEnvValue<string>({
   },
   va: {
     release: 'va-public-prod',
+    inhouse: 'va-internal-prod',
+  },
+  oci: {
+    release: 'oci-public-prod',
+    inhouse: 'oci-internal-prod',
   },
 });
 const EMBEDDED_PAGE_URL = extractEnvValue<string>({
@@ -582,6 +752,11 @@ const EMBEDDED_PAGE_URL = extractEnvValue<string>({
   },
   va: {
     release: '',
+    inhouse: '',
+  },
+  oci: {
+    release: '',
+    inhouse: '',
   },
 });
 
@@ -597,6 +772,11 @@ const SOCIAL_SCENE_FRONTIER_SERVICE_KEY = extractEnvValue<number>({
   },
   va: {
     release: 0,
+    inhouse: 0,
+  },
+  oci: {
+    release: 0,
+    inhouse: 0,
   },
 });
 
@@ -612,6 +792,11 @@ const FORNAX_DOMAIN = extractEnvValue<string | null>({
   },
   va: {
     release: null,
+    inhouse: null,
+  },
+  oci: {
+    release: null,
+    inhouse: null,
   },
 });
 
@@ -627,6 +812,11 @@ const COZE_DOMAIN = extractEnvValue<string | null>({
   },
   va: {
     release: 'www.coze.com',
+    inhouse: '',
+  },
+  oci: {
+    release: 'www.coze.com',
+    inhouse: '',
   },
 });
 
