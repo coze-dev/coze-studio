@@ -29,6 +29,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/tcc"
+	"code.byted.org/gopkg/logs"
 )
 
 type AppDependencies struct {
@@ -66,7 +67,9 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 
 	deps.ESClient, err = es.New(ctx)
 	if err != nil {
-		return nil, err
+		// es 初始化先不报错，方便 ttp 中测试
+		logs.CtxError(ctx, "[Init] init es client failed, err=%w", err)
+		// return nil, err
 	}
 	deps.ImageXClient, err = initImageX(ctx)
 	if err != nil {
