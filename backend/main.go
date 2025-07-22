@@ -176,6 +176,11 @@ func asyncStartMinioProxyServer(ctx context.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(target)
 		originDirector := proxy.Director
 		proxy.Director = func(req *http.Request) {
+
+			q := req.URL.Query()
+			q.Del("x-wf-file_name")
+			req.URL.RawQuery = q.Encode()
+
 			originDirector(req)
 			req.Host = req.URL.Host
 		}
