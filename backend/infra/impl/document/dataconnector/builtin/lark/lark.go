@@ -3,6 +3,7 @@ package lark
 import (
 	"context"
 	"errors"
+	"sort"
 	"strconv"
 	"time"
 
@@ -151,6 +152,7 @@ func (l *LarkFetcher) SearchFile(ctx context.Context, request *dataconnector.Sea
 		return nil, err
 	}
 	result := dataconnector.SearchFileResponse{}
+	// get doc list
 	fileList, err := http.GetDriveFileListByParam(ctx, http.FeishuAuthParam{
 		AppId:           l.config.AuthConfig.ClientID,
 		AppSecret:       l.config.AuthConfig.ClientSecret,
@@ -160,8 +162,16 @@ func (l *LarkFetcher) SearchFile(ctx context.Context, request *dataconnector.Sea
 		logs.CtxErrorf(ctx, "GetDriveFileListByParam error:%+v", err)
 		return nil, err
 	}
+	// filter file list by file type
+	feishuFileMap, fileParentMap := filterLarkFileListByFileType(ctx, fileList, request.FileTypeList)
 
-	return nil, nil
+	// build doc list
+	docList := buildFileTreeDocList(ctx, feishuFileMap, fileParentMap)
+
+	result.FileList = docList
+	result.HasMore = false
+
+	return &result, nil
 }
 
 var feishuFileTypeMapping = map[string]dataconnector.FileNodeType{
@@ -192,22 +202,64 @@ func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.Fil
 				}
 				return ptr.From(file.Name)
 			}(),
-			FileType: func() string {
+			FileType: func() dataconnector.FileType {
 				if file.Type == nil || *file.Type == "" {
-					return util.DefaultFeishuFileType
+					return dataconnector.FileTypeDoc
 				}
-				return *file.Type
+				return dataconnector.FileType(ptr.From(file.Type))
 			}(),
 			FileURL: ptr.From(file.Url),
 			CreateTime: func() int64 {
-				val, err := strconv.ParseInt(ptr.From(file.CreatedTime))
-				return conv.Int64Default(conv.StringPtrToVal(file.CreatedTime, "0"), 0)
-			},
-			UpdateTime: conv.Int64Default(conv.StringPtrToVal(file.ModifiedTime, "0"), 0),
+				val, err := strconv.ParseInt(ptr.From(file.CreatedTime), 10, 64)
+				if err != nil {
+					return 0
+				}
+				return val
+			}(),
+			UpdateTime: func() int64 {
+				val, err := strconv.ParseInt(ptr.From(file.CreatedTime), 10, 64)
+				if err != nil {
+					return 0
+				}
+				return val
+			}(),
 		}
 		fileParentMap[*file.ParentToken] = append(fileParentMap[*file.ParentToken], *file.Token)
 	}
 	return feishuFileMap, fileParentMap
+}
+
+func buildFileTreeDocList(ctx context.Context, feishuFileMap map[string]*dataconnector.FileNode, fileParentMap map[string][]string) []*dataconnector.FileNode {
+	var docList []*dataconnector.FileNode
+	for key, fileNode := range feishuFileMap {
+		if fileNode == nil {
+			logs.CtxInfof(ctx, "fileNode is nil, key:%v", key)
+			continue
+		}
+		// 文件夹类型设置 hasChildrenNodes 为true
+		if fileNode.FileNodeType == dataconnector.FileNodeTypeFolder {
+			fileNode.HasChildrenNodes = true
+		}
+		docList = append(docList, fileNode)
+	}
+	// 对结果进行排序
+	sort.SliceStable(docList, func(i, j int) bool {
+		// 为空则排在后面
+		if docList[i] == nil || docList[j] == nil {
+			return false
+		}
+		// 文件夹排在前面
+		if docList[i].FileNodeType == dataconnector.FileNodeTypeFolder &&
+			docList[j].FileNodeType != dataconnector.FileNodeTypeFolder {
+			return true
+		}
+		if docList[i].UpdateTime > 0 && docList[j].UpdateTime > 0 {
+			return docList[i].UpdateTime > docList[j].UpdateTime
+		}
+		return false
+	})
+
+	return docList
 }
 
 func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) {
