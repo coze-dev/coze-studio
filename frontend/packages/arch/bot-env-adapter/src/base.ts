@@ -88,6 +88,7 @@ const getUploadCDN = () => {
     UPLOAD_CDN_CN: '',
     UPLOAD_CDN_SG: '',
     UPLOAD_CDN_VA: '',
+    UPLOAD_CDN_OCI: '',
   };
 
   const currentKey = `UPLOAD_CDN_${processEnvs.REGION.toUpperCase() as string}`;

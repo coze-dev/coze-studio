@@ -104,6 +104,7 @@ declare const UPLOAD_CDN: string;
 declare const UPLOAD_CDN_CN: string;
 declare const UPLOAD_CDN_SG: string;
 declare const UPLOAD_CDN_VA: string;
+declare const UPLOAD_CDN_OCI: string;
 declare const VOLCANO_IDENTITY_DOMAIN: string | null;
 declare const VOLCANO_PLATFORM_APP_KEY: string | null;
 declare const VOLCANO_PLATFORM_ID: number | null;
