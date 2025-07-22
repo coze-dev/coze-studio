@@ -103,6 +103,19 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 }
 
 func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (err error) {
+
+	agentInfo, err := c.handlerAgent(ctx, rtDependence)
+	if err != nil {
+		return
+	}
+
+	rtDependence.agentInfo = agentInfo
+
+	history, err := c.handlerHistory(ctx, rtDependence)
+	if err != nil {
+		return
+	}
+
 	runRecord, err := c.createRunRecord(ctx, sw, rtDependence)
 
 	if err != nil {
@@ -121,18 +134,6 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		}
 		c.runProcess.StepToComplete(ctx, srRecord, sw, rtDependence.usage)
 	}()
-
-	agentInfo, err := c.handlerAgent(ctx, rtDependence)
-	if err != nil {
-		return
-	}
-
-	rtDependence.agentInfo = agentInfo
-
-	history, err := c.handlerHistory(ctx, rtDependence)
-	if err != nil {
-		return
-	}
 
 	input, err := c.handlerInput(ctx, sw, rtDependence)
 	if err != nil {

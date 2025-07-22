@@ -69,6 +69,12 @@ func (c *ConversationApplicationService) Run(ctx context.Context, sseSender *sse
 			if msgMeta.UserID != conv.Int64ToStr(userID) {
 				return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "message not match"))
 			}
+
+			err = c.AgentRunDomainSVC.Delete(ctx, []int64{msgMeta.RunID})
+			if err != nil {
+				return err
+			}
+
 			delErr := c.MessageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
 				RunIDs: []int64{msgMeta.RunID},
 			})
