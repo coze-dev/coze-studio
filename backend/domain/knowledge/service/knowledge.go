@@ -564,7 +564,8 @@ func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgres
 	documentProgress.Progress = int(percent)
 	documentProgress.RemainingSec = int64(remainSec)
 	if len(errMsg) != 0 {
-		documentProgress.Status = entity.DocumentStatusFailed
+		documentProgress.Progress = 0
+		documentProgress.Status = entity.DocumentStatusChunking
 	}
 	return err
 }
