@@ -63,6 +63,7 @@ const (
 	ErrKnowledgeGetAuthInfoFailCode            = 105000040
 	ErrKnowledgeGetAuthConsentURLFailCode      = 105000041
 	ErrKnowledgeAuthorizeCodeFailCode          = 105000042
+	ErrKnowledgeSearchFileFailCode             = 105000043
 )
 
 func init() {
@@ -307,6 +308,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeAuthorizeCodeFailCode,
 		"authorize code failed: {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeSearchFileFailCode,
+		"search file failed: {msg}",
 		code.WithAffectStability(false),
 	)
 }

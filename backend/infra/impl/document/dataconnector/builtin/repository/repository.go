@@ -31,6 +31,9 @@ func NewAuthDAO(db *gorm.DB) AuthRepo {
 }
 
 type AuthRepo interface {
+	GetAuthByID(ctx context.Context, id int64) (*model.Auth, error)
 	GetAuthInfoByCreatorIDAndConnectorID(ctx context.Context, creatorID int64, connectorID dataconnector.ConnectorID) ([]*model.Auth, error)
-	GetAuthByUniqID(ctx context.Context, uniqID string) (*model.Auth, error)
+	GetAuthByUniqID(ctx context.Context, creatorID int64, uniqID string) (*model.Auth, error)
+	CreateAuth(ctx context.Context, auth *model.Auth) error
+	UpdateAuth(ctx context.Context, auth *model.Auth) error
 }

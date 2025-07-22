@@ -26,6 +26,7 @@ import (
 	"time"
 
 	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/connector"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
@@ -34,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -836,4 +838,34 @@ func convertUpdateType2Entity(tp dataset.UpdateType) entity.UpdateType {
 	default:
 		return entity.UpdateType_NoUpdate
 	}
+}
+
+func convertFileNodeFromDomain(node *dataconnector.FileNode) *connector.FileNode {
+	if node == nil {
+		return nil
+	}
+	res := connector.FileNode{
+		FileID:           node.FileID,
+		FileNodeType:     connector.FileNodeType(node.FileNodeType),
+		FileName:         node.FileName,
+		HasChildrenNodes: node.HasChildrenNodes,
+		Icon:             &node.Icon,
+		FileType:         connector.FileType(node.FileType),
+		FileURL:          &node.FileURL,
+		SpaceId:          node.SpaceID,
+		SpaceType:        node.SpaceType,
+		ObjToken:         node.ObjToken,
+		ObjType:          node.ObjType,
+		CreateTime:       node.CreateTime,
+		UpdateTime:       node.UpdateTime,
+	}
+	if len(node.ChildrenNodes) != 0 {
+		for _, cnode := range node.ChildrenNodes {
+			if cnode == nil {
+				continue
+			}
+			res.ChildrenNodes = append(res.ChildrenNodes, convertFileNodeFromDomain(cnode))
+		}
+	}
+	return &res
 }

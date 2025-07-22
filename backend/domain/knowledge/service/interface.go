@@ -71,6 +71,7 @@ type Knowledge interface {
 	MGetAuthInfo(ctx context.Context, request *MGetAuthInfoRequest) (*MGetAuthInfoResponse, error)
 	GetAuthConsentURL(ctx context.Context, request *GetAuthConsentURLRequest) (*GetAuthConsentURLResponse, error)
 	DataSourceOAuthComplete(ctx context.Context, request *DataSourceOAuthCompleteRequest) (*DataSourceOAuthCompleteResponse, error)
+	DataConnectorSearchFile(ctx context.Context, request *DataConnectorSearchFileRequest) (*DataConnectorSearchFileResponse, error)
 }
 
 type CreateKnowledgeRequest struct {
@@ -420,4 +421,12 @@ type DataSourceOAuthCompleteRequest struct {
 type DataSourceOAuthCompleteResponse struct {
 	StatusCode  int32
 	RedirectURL string
+}
+
+type DataConnectorSearchFileRequest struct {
+	SearchRequest *dataconnector.SearchFileRequest
+}
+
+type DataConnectorSearchFileResponse struct {
+	SearchResponse *dataconnector.SearchFileResponse
 }

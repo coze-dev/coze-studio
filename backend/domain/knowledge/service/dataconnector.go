@@ -101,3 +101,23 @@ func (k *knowledgeSVC) DataSourceOAuthComplete(ctx context.Context, request *Dat
 	resp.StatusCode = 301
 	return resp, nil
 }
+
+func (k *knowledgeSVC) DataConnectorSearchFile(ctx context.Context, request *DataConnectorSearchFileRequest) (*DataConnectorSearchFileResponse, error) {
+	resp := &DataConnectorSearchFileResponse{}
+	fetcher, err := k.dataConnectorManager.GetByAuthID(ctx, request.SearchRequest.AuthID)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeFetcherNotFoundCode, errorx.KV("msg", err.Error()))
+	}
+	domainResp, err := fetcher.SearchFile(ctx, request.SearchRequest)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeSearchFileFailCode, errorx.KV("msg", err.Error()))
+	}
+	resp.SearchResponse = &dataconnector.SearchFileResponse{
+		FileList:  domainResp.FileList,
+		HasMore:   domainResp.HasMore,
+		PageToken: domainResp.PageToken,
+		Total:     domainResp.Total,
+		Offset:    domainResp.Offset,
+	}
+	return resp, nil
+}

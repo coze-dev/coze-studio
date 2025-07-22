@@ -1,23 +1,28 @@
 package builtin
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"sync"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/repository"
+	"gorm.io/gorm"
 )
 
 // fetcherManager 实现
 type fetcherManager struct {
 	mu       sync.RWMutex
+	authDao  repository.AuthRepo
 	fetchers map[dataconnector.ConnectorID]dataconnector.Fetcher
 }
 
 // NewFetcherManager 构造函数
-func NewFetcherManager() dataconnector.FetcherManager {
+func NewFetcherManager(db *gorm.DB) dataconnector.FetcherManager {
 	return &fetcherManager{
+		authDao:  repository.NewAuthDAO(db),
 		fetchers: make(map[dataconnector.ConnectorID]dataconnector.Fetcher),
 	}
 }
@@ -71,4 +76,21 @@ func (m *fetcherManager) Unregister(cid dataconnector.ConnectorID) error {
 
 	delete(m.fetchers, cid)
 	return nil
+}
+
+func (m *fetcherManager) GetByAuthID(ctx context.Context, authID int64) (dataconnector.Fetcher, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	auth, err := m.authDao.GetAuthByID(ctx, authID)
+	if err != nil {
+		return nil, err
+	}
+
+	fetcher, exists := m.fetchers[dataconnector.ConnectorID(auth.ConnectorID)]
+	if !exists {
+		return nil, fmt.Errorf("fetcher not found")
+	}
+
+	return fetcher, nil
 }

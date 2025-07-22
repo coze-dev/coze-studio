@@ -757,7 +757,11 @@ func SubmitConnectionTask(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.SubmitConnectionTaskResponse)
-
+	resp, err = application.KnowledgeSVC.SubmitConnectionTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -789,6 +793,11 @@ func GetFileTreeDocList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.GetFileTreeDocListResponse)
+	resp, err = application.KnowledgeSVC.GetFileTreeDocList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -805,6 +814,11 @@ func SearchDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.SearchDocumentResponse)
+	// resp, err = application.KnowledgeSVC.SearchDocument(ctx, &req)
+	// if err != nil {
+	// 	internalServerErrorResponse(ctx, c, err)
+	// 	return
+	// }
 
 	c.JSON(consts.StatusOK, resp)
 }

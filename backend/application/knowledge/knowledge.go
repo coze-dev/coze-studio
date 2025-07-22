@@ -40,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	resourceEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	cd "github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -1380,5 +1381,50 @@ func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Contex
 	}
 	resp.BaseResp.StatusCode = http.StatusMovedPermanently
 	resp.RedirectURL = domainResp.RedirectURL
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) SubmitConnectionTask(ctx context.Context, req *connector.SubmitConnectionTaskRequest) (*connector.SubmitConnectionTaskResponse, error) {
+	resp := connector.NewSubmitConnectionTaskResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.ConnectionFileNodeList) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connection file node list is empty"))
+	}
+	return nil, nil
+}
+
+func (k *KnowledgeApplicationService) GetFileTreeDocList(ctx context.Context, req *connector.GetFileTreeDocListRequest) (*connector.GetFileTreeDocListResponse, error) {
+	resp := &connector.GetFileTreeDocListResponse{}
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if req.GetAuthID() == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "auth id is empty"))
+	}
+	domainResp, err := k.DomainSVC.DataConnectorSearchFile(ctx, &service.DataConnectorSearchFileRequest{
+		SearchRequest: &dataconnector.SearchFileRequest{
+			AuthID:        req.GetAuthID(),
+			SearchQuery:   req.SearchKeywords,
+			FileTypeList:  slices.Transform(req.GetFileTypeList(), func(t connector.FileNodeType) dataconnector.FileNodeType { return dataconnector.FileNodeType(t) }),
+			DocSourceType: dataconnector.DocSourceType(req.DocSourceType),
+			SpaceID:       req.SpaceId,
+			FolderID:      req.FolderID,
+			PageToken:     req.PageToken,
+		},
+	})
+	if err != nil {
+		return resp, err
+	}
+	for _, node := range domainResp.SearchResponse.FileList {
+		if node == nil {
+			continue
+		}
+		resp.FileTreeDocList = append(resp.FileTreeDocList, convertFileNodeFromDomain(node))
+	}
+	resp.TotalCount = domainResp.SearchResponse.Total
+	resp.HasMore = domainResp.SearchResponse.HasMore
+	resp.PageToken = domainResp.SearchResponse.PageToken
 	return resp, nil
 }

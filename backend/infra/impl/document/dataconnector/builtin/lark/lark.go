@@ -3,18 +3,24 @@ package lark
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark/http"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/repository"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	larkdrive "github.com/larksuite/oapi-sdk-go/v3/service/drive/v1"
 	"gorm.io/gorm"
 )
 
 type LarkFetcher struct {
 	authDao repository.AuthRepo
+	idgen   idgen.IDGenerator
 	config  *dataconnector.ConnectorConfig
 }
 
@@ -49,6 +55,194 @@ func (l *LarkFetcher) AuthorizeCode(ctx context.Context, creatorID int64, code s
 		AppId:     l.config.AuthConfig.ClientID,
 		AppSecret: l.config.AuthConfig.ClientSecret,
 	}
+	authTokenInfo, err := l.getAuthTokenInfo(ctx, authParam, code)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[AuthorizeCode] getAuthTokenInfo error:%v", err)
+		return errors.New("get auth token info error")
+	}
+
+	authParam.UserAccessToken = authTokenInfo.AccessToken
+	userInfo, err := http.GetUserInfo(ctx, authParam)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[AuthorizeCode] GetUserInfo error:%v", err)
+		return err
+	}
+
+	var auth *model.Auth
+	auth, err = l.authDao.GetAuthByUniqID(ctx, creatorID, ptr.From(userInfo.OpenId))
+	if err != nil {
+		logs.CtxErrorf(ctx, "[AuthorizeCode] GetAuthByUniqID error:%v", err)
+		return errors.New("get auth info 「GetAuthByUniqID」error")
+	}
+	if auth == nil {
+		id, err := l.idgen.GenID(ctx)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[AuthorizeCode] GenID error:%v", err)
+			return errors.New("gen auth id error")
+		}
+		authModel := &model.Auth{
+			ID:          id,
+			CreatorID:   creatorID,
+			ConnectorID: int64(l.config.ConnectorID),
+			AuthUniqID:  ptr.From(userInfo.OpenId),
+			Name:        ptr.From(userInfo.Name),
+			Icon:        ptr.From(userInfo.AvatarUrl),
+			AuthType:    l.config.AuthType,
+			AuthInfo:    authTokenInfo,
+			CreatedAt:   time.Now().UnixMilli(),
+			UpdatedAt:   time.Now().UnixMilli(),
+		}
+		err = l.authDao.CreateAuth(ctx, authModel)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[AuthorizeCode] CreateAuth error:%v", err)
+			return errors.New("create auth error")
+		}
+	}
+	auth.ConnectorID = int64(l.config.ConnectorID)
+	if userInfo.Name != nil {
+		auth.Name = ptr.From(userInfo.Name)
+	}
+	if userInfo.AvatarUrl != nil {
+		auth.Icon = ptr.From(userInfo.AvatarUrl)
+	}
+	auth.AuthType = l.config.AuthType
+	auth.AuthInfo = authTokenInfo
+	err = l.authDao.UpdateAuth(ctx, auth)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[AuthorizeCode] UpdateAuth error:%v", err)
+		return errors.New("update auth error")
+	}
+	return nil
+}
+
+func (l *LarkFetcher) getAuthTokenInfo(ctx context.Context, authParam http.FeishuAuthParam, code string) (*dataconnector.AuthTokenInfo, error) {
+	now := time.Now().UnixMilli()
+	var authTokenInfo *dataconnector.AuthTokenInfo
+	tokenData, err := http.GetWebUserAccessToken(ctx, authParam, code)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[getAuthTokenInfo] GetWebUserAccessToken error:%v", err)
+		return nil, errors.New("get auth token info error")
+	}
+	authTokenInfo = &dataconnector.AuthTokenInfo{
+		AccessToken:  ptr.From(tokenData.AccessToken),
+		RefreshToken: ptr.From(tokenData.RefreshToken),
+		TokenExpireIn: func(expiresIn *int) int64 {
+			if expiresIn == nil {
+				return now
+			}
+			return now + int64(time.Duration(*expiresIn)*time.Second/time.Millisecond)
+		}(tokenData.ExpiresIn),
+		RefreshExpireIn: func(refreshExpiresIn *int) int64 {
+			if refreshExpiresIn == nil {
+				return now
+			}
+			return now + int64(time.Duration(*refreshExpiresIn)*time.Second/time.Millisecond)
+		}(tokenData.RefreshExpiresIn),
+		Scope: ptr.From(tokenData.Scope),
+		Extra: tokenData,
+	}
+	return authTokenInfo, nil
+}
+
+func (l *LarkFetcher) SearchFile(ctx context.Context, request *dataconnector.SearchFileRequest) (*dataconnector.SearchFileResponse, error) {
+	ak, err := l.GetAccessTokenByAuthID(ctx, request.AuthID)
+	if err != nil {
+		return nil, err
+	}
+	result := dataconnector.SearchFileResponse{}
+	fileList, err := http.GetDriveFileListByParam(ctx, http.FeishuAuthParam{
+		AppId:           l.config.AuthConfig.ClientID,
+		AppSecret:       l.config.AuthConfig.ClientSecret,
+		UserAccessToken: ak,
+	}, request.FolderID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetDriveFileListByParam error:%+v", err)
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var feishuFileTypeMapping = map[string]dataconnector.FileNodeType{
+	"folder": dataconnector.FileNodeTypeFolder,
+	"docx":   dataconnector.FileNodeTypeDocument,
+	"sheet":  dataconnector.FileNodeTypeSheet,
+	"doc":    dataconnector.FileNodeTypeDocument,
+}
+
+func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.File, fileTypeList []dataconnector.FileNodeType) []*larkdrive.File {
+	fileTypeSet := sets.FromSlice(fileTypeList)
+
+}
+
+func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) {
+
+}
+
+func (l *LarkFetcher) searchWikiFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest)
+
+func (l *LarkFetcher) GetAccessTokenByAuthID(ctx context.Context, authID int64) (token string, err error) {
+	auth, err := l.authDao.GetAuthByID(ctx, authID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[AuthorizeCode] GetAuthByUniqID error:%v", err)
+		return "", errors.New("get auth info 「GetAuthByUniqID」error")
+	}
+	if auth == nil {
+		return "", errors.New("auth info is nil")
+	}
+	auth, err = l.refreshAccessToken(ctx, auth)
+	if err != nil {
+		return "", err
+	}
+	return auth.AuthInfo.AccessToken, nil
+}
+
+const (
+	NeedRefreshTokenRightNowDuration = time.Minute * 5
+)
+
+func (l *LarkFetcher) refreshAccessToken(ctx context.Context, auth *model.Auth) (*model.Auth, error) {
+	if auth.AuthInfo.RefreshToken == "" || time.UnixMilli(auth.AuthInfo.RefreshExpireIn).Before(time.Now()) {
+		logs.CtxInfof(ctx, "[refreshAccessToken] authID:%v refreshToken:%v refreshExpireIn:%v is expired", auth.ID, auth.AuthInfo.RefreshToken, time.UnixMilli(auth.AuthInfo.RefreshExpireIn))
+		return auth, errors.New("refresh token is expired")
+	}
+	duration := time.Until(time.UnixMilli(auth.AuthInfo.TokenExpireIn))
+	if duration <= NeedRefreshTokenRightNowDuration {
+		logs.CtxInfof(ctx, "[refreshAccessToken] authID:%v tokenExpireIn:%v need refresh token right now", auth.ID, time.UnixMilli(auth.AuthInfo.TokenExpireIn))
+		now := time.Now().UnixMilli()
+		refreshTokenData, err := http.RefreshAccessToken(ctx, http.FeishuAuthParam{
+			AppId:     l.config.AuthConfig.ClientID,
+			AppSecret: l.config.AuthConfig.ClientSecret,
+		}, auth.AuthInfo.RefreshToken)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[refreshAuthInfo] refreshAccessToken authID:%v error: %v", auth.ID, err)
+			return auth, err
+		}
+		auth.AuthInfo.AccessToken = ptr.From(refreshTokenData.AccessToken)
+		if refreshTokenData.RefreshToken != nil {
+			auth.AuthInfo.RefreshToken = ptr.From(refreshTokenData.RefreshToken)
+		}
+		auth.AuthInfo.TokenExpireIn = now
+		auth.AuthInfo.RefreshExpireIn = now
+		if refreshTokenData.ExpiresIn != nil {
+			auth.AuthInfo.TokenExpireIn += int64(time.Duration(*refreshTokenData.ExpiresIn) * time.Second / time.Millisecond)
+		}
+		if refreshTokenData.RefreshExpiresIn != nil {
+			auth.AuthInfo.RefreshExpireIn += int64(time.Duration(*refreshTokenData.RefreshExpiresIn) * time.Second / time.Millisecond)
+		}
+		if refreshTokenData.Scope != nil {
+			auth.AuthInfo.Scope = *refreshTokenData.Scope
+		}
+		auth.AuthInfo.Extra = refreshTokenData
+		auth.UpdatedAt = time.Now().UnixMilli()
+		err = l.authDao.UpdateAuth(ctx, auth)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[refreshAuthInfo] UpdateAuth authID:%v error: %v", auth.ID, err)
+			return auth, err
+		}
+		return auth, nil
+	}
+	return auth, nil
 }
 
 func (l *LarkFetcher) fromModelAuth(auth *model.Auth) (*dataconnector.AuthInfo, error) {
