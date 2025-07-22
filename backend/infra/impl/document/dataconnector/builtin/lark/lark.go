@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
@@ -151,27 +152,7 @@ func (l *LarkFetcher) SearchFile(ctx context.Context, request *dataconnector.Sea
 	if err != nil {
 		return nil, err
 	}
-	result := dataconnector.SearchFileResponse{}
-	// get doc list
-	fileList, err := http.GetDriveFileListByParam(ctx, http.FeishuAuthParam{
-		AppId:           l.config.AuthConfig.ClientID,
-		AppSecret:       l.config.AuthConfig.ClientSecret,
-		UserAccessToken: ak,
-	}, request.FolderID)
-	if err != nil {
-		logs.CtxErrorf(ctx, "GetDriveFileListByParam error:%+v", err)
-		return nil, err
-	}
-	// filter file list by file type
-	feishuFileMap, fileParentMap := filterLarkFileListByFileType(ctx, fileList, request.FileTypeList)
 
-	// build doc list
-	docList := buildFileTreeDocList(ctx, feishuFileMap, fileParentMap)
-
-	result.FileList = docList
-	result.HasMore = false
-
-	return &result, nil
 }
 
 var feishuFileTypeMapping = map[string]dataconnector.FileNodeType{
@@ -181,6 +162,15 @@ var feishuFileTypeMapping = map[string]dataconnector.FileNodeType{
 	"doc":    dataconnector.FileNodeTypeDocument,
 }
 
+func filterLarkFileListBySearchQuery(ctx context.Context, fileList []*larkdrive.File, searchQuery string) []*larkdrive.File {
+	var result []*larkdrive.File
+	for _, file := range fileList {
+		if file.Name != nil && strings.Contains(*file.Name, searchQuery) {
+			result = append(result, file)
+		}
+	}
+	return result
+}
 func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.File, fileTypeList []dataconnector.FileNodeType) (map[string]*dataconnector.FileNode, map[string][]string) {
 	fileTypeSet := sets.FromSlice(fileTypeList)
 	var feishuFileMap = make(map[string]*dataconnector.FileNode)
@@ -262,11 +252,38 @@ func buildFileTreeDocList(ctx context.Context, feishuFileMap map[string]*datacon
 	return docList
 }
 
-func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) {
+func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, request *dataconnector.SearchFileRequest) (*dataconnector.SearchFileResponse, error) {
+	result := dataconnector.SearchFileResponse{}
+	// get doc list
+	fileList, err := http.GetDriveFileListByParam(ctx, http.FeishuAuthParam{
+		AppId:           l.config.AuthConfig.ClientID,
+		AppSecret:       l.config.AuthConfig.ClientSecret,
+		UserAccessToken: ak,
+	}, request.FolderID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetDriveFileListByParam error:%+v", err)
+		return nil, err
+	}
+	if ptr.From(request.SearchQuery) != "" {
+		fileList = filterLarkFileListBySearchQuery(ctx, fileList, ptr.From(request.SearchQuery))
+	}
+	// filter file list by file type
+	feishuFileMap, fileParentMap := filterLarkFileListByFileType(ctx, fileList, request.FileTypeList)
 
+	// build doc list
+	docList := buildFileTreeDocList(ctx, feishuFileMap, fileParentMap)
+
+	result.FileList = docList
+	result.HasMore = false
+	result.Offset = 0
+	return &result, nil
 }
 
-func (l *LarkFetcher) searchWikiFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest)
+func (l *LarkFetcher) searchWikiFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) (*dataconnector.SearchFileResponse, error) {
+	result := dataconnector.SearchFileResponse{}
+
+	return &result, nil
+}
 
 func (l *LarkFetcher) GetAccessTokenByAuthID(ctx context.Context, authID int64) (token string, err error) {
 	auth, err := l.authDao.GetAuthByID(ctx, authID)
