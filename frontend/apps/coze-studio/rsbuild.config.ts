@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import { defineConfig } from '@coze-arch/rsbuild-config';
@@ -34,10 +34,10 @@ const mergedConfig = defineConfig({
     ],
   },
   html: {
-    title: '扣子 Studio',
+    title: 'ecom coze',
     favicon: './assets/favicon.png',
     template: './index.html',
-    crossorigin: 'anonymous',
+    crossorigin: 'use-credentials',
   },
   tools: {
     postcss: (opts, { addPlugins }) => {
