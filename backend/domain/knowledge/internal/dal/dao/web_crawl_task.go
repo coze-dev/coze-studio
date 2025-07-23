@@ -53,3 +53,8 @@ func (dao *WebCrawlTaskDAO) DeleteByID(ctx context.Context, id int64) error {
 	_, err := dao.Query.WebCrawlTask.WithContext(ctx).Where(dao.Query.WebCrawlTask.ID.Eq(id)).Delete()
 	return err
 }
+
+func (dao *WebCrawlTaskDAO) BatchUpdate(ctx context.Context, ids []int64, mp map[string]any) error {
+	_, err := dao.Query.WebCrawlTask.WithContext(ctx).Where(dao.Query.WebCrawlTask.ID.In(ids...)).Updates(mp)
+	return err
+}

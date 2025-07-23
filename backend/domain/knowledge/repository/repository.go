@@ -114,6 +114,7 @@ type WebCrawlTaskRepo interface {
 	GetByID(ctx context.Context, id int64) (*model.WebCrawlTask, error)
 	BatchGetByID(ctx context.Context, ids []int64) ([]*model.WebCrawlTask, error)
 	Update(ctx context.Context, id int64, mp map[string]any) error
+	BatchUpdate(ctx context.Context, ids []int64, mp map[string]any) error
 	Upsert(ctx context.Context, task *model.WebCrawlTask) error
 }
 

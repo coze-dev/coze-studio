@@ -101,11 +101,11 @@ func (k *knowledgeSVC) GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfo
 }
 
 func (k *knowledgeSVC) AbortWebUrlTask(ctx context.Context, request *AbortWebUrlTaskRequest) error {
-	if request.TaskID == 0 {
+	if len(request.TaskIDs) == 0 {
 		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "task id is empty"))
 	}
 
-	err := k.webCrawlTaskRepo.Update(ctx, request.TaskID, map[string]any{
+	err := k.webCrawlTaskRepo.BatchUpdate(ctx, request.TaskIDs, map[string]any{
 		"status": int32(entity.WebCrawlTaskStatusAborted),
 	})
 	if err != nil {

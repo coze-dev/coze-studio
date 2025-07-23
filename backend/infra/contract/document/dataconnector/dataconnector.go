@@ -59,7 +59,7 @@ type DocSourceType int64
 
 const (
 	DocSourceTypeDrive = 1
-	DocSourceTypeSheet = 2
+	DocSourceTypeWiki  = 2
 )
 
 type SearchFileRequest struct {
@@ -84,10 +84,12 @@ type FileNode struct {
 	Icon             string       `json:"icon"`
 	FileType         FileType     `json:"file_type"`
 	FileURL          string       `json:"file_url"`
-	SpaceID          *string      `json:"space_id"`   // lark wiki space id
-	SpaceType        *string      `json:"space_type"` // wiki, 表示知识空间类型（团队空间 或 个人空间）
-	ObjToken         *string      `json:"obj_token"`  // wiki, 对应文档类型的token，可根据 obj_type 判断属于哪种文档类型
-	ObjType          *string      `json:"obj_type"`   // wiki, 文档类型，对于快捷方式，该字段是对应的实体的obj_type
+	SpaceID          *string      `json:"space_id"`          // lark wiki space id
+	SpaceType        *string      `json:"space_type"`        // wiki, 表示知识空间类型（团队空间 或 个人空间）
+	SpaceDescription *string      `json:"space_description"` // wiki, 知识空间描述
+	SpaceVisibility  *string      `json:"space_visibility"`  // wiki, wiki, 知识空间可见性（公开空间 或 私有空间）
+	ObjToken         *string      `json:"obj_token"`         // wiki, 对应文档类型的token，可根据 obj_type 判断属于哪种文档类型
+	ObjType          *string      `json:"obj_type"`          // wiki, 文档类型，对于快捷方式，该字段是对应的实体的obj_type
 	CreateTime       int64        `json:"create_time"`
 	UpdateTime       int64        `json:"update_time"`
 }

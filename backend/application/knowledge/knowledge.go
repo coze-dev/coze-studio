@@ -1090,11 +1090,7 @@ func (k *KnowledgeApplicationService) PhotoDetail(ctx context.Context, req *data
 	}
 	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs, SelectAll: true})
 	if err != nil {
-		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
-		return resp, err
-	}
-	if err != nil {
-		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		logs.CtxErrorf(ctx, "ListDocument failed, err: %v", err)
 		return resp, err
 	}
 	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
@@ -1259,7 +1255,7 @@ func (k *KnowledgeApplicationService) AbortSubLinkDiscoveryTask(ctx context.Cont
 	if req.GetTaskID() == 0 {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "task id is empty"))
 	}
-	err := k.DomainSVC.AbortWebUrlTask(ctx, &service.AbortWebUrlTaskRequest{TaskID: req.GetTaskID()})
+	err := k.DomainSVC.AbortWebUrlTask(ctx, &service.AbortWebUrlTaskRequest{TaskIDs: []int64{req.GetTaskID()}})
 	if err != nil {
 		return resp, err
 	}
@@ -1386,12 +1382,14 @@ func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Contex
 
 func (k *KnowledgeApplicationService) SubmitConnectionTask(ctx context.Context, req *connector.SubmitConnectionTaskRequest) (*connector.SubmitConnectionTaskResponse, error) {
 	resp := connector.NewSubmitConnectionTaskResponse()
+	var err error
 	if req == nil {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	if len(req.ConnectionFileNodeList) == 0 {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connection file node list is empty"))
 	}
+
 	return nil, nil
 }
 
@@ -1424,6 +1422,38 @@ func (k *KnowledgeApplicationService) GetFileTreeDocList(ctx context.Context, re
 		resp.FileTreeDocList = append(resp.FileTreeDocList, convertFileNodeFromDomain(node))
 	}
 	resp.TotalCount = domainResp.SearchResponse.Total
+	resp.HasMore = domainResp.SearchResponse.HasMore
+	resp.PageToken = domainResp.SearchResponse.PageToken
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) SearchDocument(ctx context.Context, req *connector.SearchDocumentRequest) (*connector.SearchDocumentResponse, error) {
+	resp := &connector.SearchDocumentResponse{}
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if req.GetAuthID() == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "auth id is empty"))
+	}
+	domainResp, err := k.DomainSVC.DataConnectorSearchFile(ctx, &service.DataConnectorSearchFileRequest{
+		SearchRequest: &dataconnector.SearchFileRequest{
+			AuthID:        req.GetAuthID(),
+			SearchQuery:   ptr.Of(req.SearchQuery),
+			FileTypeList:  slices.Transform(req.GetFileTypeList(), func(t connector.FileNodeType) dataconnector.FileNodeType { return dataconnector.FileNodeType(t) }),
+			DocSourceType: dataconnector.DocSourceType(req.DocSourceType),
+			PageToken:     req.PageToken,
+			OffSet:        req.OffSet,
+		},
+	})
+	if err != nil {
+		return resp, err
+	}
+	for _, node := range domainResp.SearchResponse.FileList {
+		if node == nil {
+			continue
+		}
+		resp.Documents = append(resp.Documents, convertFileNodeFromDomain(node))
+	}
 	resp.HasMore = domainResp.SearchResponse.HasMore
 	resp.PageToken = domainResp.SearchResponse.PageToken
 	return resp, nil

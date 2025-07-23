@@ -369,16 +369,25 @@ type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse
 
 type SubmitWebUrlTaskRequest struct {
-	Source entity.DocumentSource
-	URLs   []string
+	Source          entity.DocumentSource
+	URLs            []string
+	LarkFileRequest *SearchLarkFileRequest
+}
+
+type SearchLarkFileRequest struct {
+	AuthID       int64
+	FileNodeType dataconnector.FileNodeType
+	Nodes        []*dataconnector.FileNode
 }
 
 type SubmitWebUrlTaskResponse struct {
-	TaskIDs []int64
+	TaskIDs     []int64
+	AggregateID int64
 }
 
 type GetWebUrlInfoRequest struct {
-	TaskIDs []int64
+	TaskIDs     []int64
+	AggregateID int64
 }
 
 type GetWebUrlInfoResponse struct {
@@ -386,7 +395,8 @@ type GetWebUrlInfoResponse struct {
 }
 
 type AbortWebUrlTaskRequest struct {
-	TaskID int64
+	TaskIDs     []int64
+	AggregateID int64
 }
 
 type BatchRefreshDocumentRequest struct {

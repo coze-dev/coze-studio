@@ -814,11 +814,11 @@ func SearchDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.SearchDocumentResponse)
-	// resp, err = application.KnowledgeSVC.SearchDocument(ctx, &req)
-	// if err != nil {
-	// 	internalServerErrorResponse(ctx, c, err)
-	// 	return
-	// }
+	resp, err = application.KnowledgeSVC.SearchDocument(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
