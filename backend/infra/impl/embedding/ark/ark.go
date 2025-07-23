@@ -76,9 +76,8 @@ func (d embWrap) slicedNormL2(vectors [][]float64) ([][]float64, error) {
 	}
 	if curDims := len(vectors[0]); curDims < int(d.dims) {
 		return nil, fmt.Errorf("[slicedNormL2] got dims=%d less than %d", curDims, d.dims)
-	} else if curDims == int(d.dims) {
-		return vectors, nil
 	}
+
 	result := make([][]float64, len(vectors))
 	for i, vec := range vectors {
 		sliced := vec[:d.dims]
