@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import axios, { type AxiosResponse, isAxiosError } from 'axios';
 import { redirect } from '@coze-arch/web-context';
 import { logger } from '@coze-arch/logger';
@@ -36,7 +36,9 @@ export enum ErrorCodes {
   COZE_TOKEN_INSUFFICIENT_WORKFLOW = 702095072,
 }
 
-export const axiosInstance = axios.create();
+export const axiosInstance = axios.create({
+  withCredentials: true,
+});
 
 const HTTP_STATUS_COE_UNAUTHORIZED = 401;
 

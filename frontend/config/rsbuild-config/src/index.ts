@@ -108,6 +108,9 @@ export const defineConfig = (options: Partial<RsbuildConfig>) => {
       },
       overrideBrowserslist,
     },
+    html: {
+      crossorigin: 'use-credentials',
+    },
     source: {
       define: getDefine(),
       alias: {
