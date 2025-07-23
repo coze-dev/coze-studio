@@ -161,7 +161,13 @@ func setCrashOutput() {
 }
 
 func asyncStartMinioProxyServer(ctx context.Context) {
+	storageType := getEnv(consts.StorageType, "minio")
 	proxyURL := getEnv(consts.MinIOAPIHost, "http://localhost:9000")
+
+	if storageType == "tos" {
+		proxyURL = getEnv(consts.TOSBucketEndpoint, "https://opencoze.tos-cn-beijing.volces.com")
+	}
+
 	minioProxyEndpoint := getEnv(consts.MinIOProxyEndpoint, "")
 	if len(minioProxyEndpoint) == 0 {
 		return
@@ -176,7 +182,6 @@ func asyncStartMinioProxyServer(ctx context.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(target)
 		originDirector := proxy.Director
 		proxy.Director = func(req *http.Request) {
-
 			q := req.URL.Query()
 			q.Del("x-wf-file_name")
 			req.URL.RawQuery = q.Encode()

@@ -21,7 +21,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"time"
 
 	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
@@ -72,7 +75,6 @@ func getTosClient(ctx context.Context, ak, sk, bucketName, endpoint, region stri
 }
 
 func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (storage.Storage, error) {
-
 	t, err := getTosClient(ctx, ak, sk, bucketName, endpoint, region)
 	if err != nil {
 		return nil, err
@@ -211,17 +213,45 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 		return "", err
 	}
 
+	// url parse
+	url, err := url.Parse(output.SignedUrl)
+	if err != nil {
+		logs.CtxWarnf(ctx, "[GetObjectUrl] url parse failed, err: %v", err)
+		return output.SignedUrl, nil
+	}
+
+	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
+	if len(proxyPort) > 0 {
+		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
+		if !ok {
+			return output.SignedUrl, nil
+		}
+
+		currentScheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
+		if !ok {
+			return output.SignedUrl, nil
+		}
+
+		host, _, err := net.SplitHostPort(currentHost)
+		if err != nil {
+			host = currentHost
+		}
+		minioProxyHost := host + proxyPort
+		url.Host = minioProxyHost
+		url.Scheme = currentScheme
+		// logs.CtxDebugf(ctx, "[GetObjectUrl] reset \n ORG.URL = %s \n TOS.URL = %s", output.SignedUrl, url.String())
+		return url.String(), nil
+	}
+
 	return output.SignedUrl, nil
 }
 
 func (i *tosClient) GetUploadHost(ctx context.Context) string {
-
 	currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
 	if !ok {
 		return ""
 	}
 	return currentHost + consts.ApplyUploadActionURI
-
 }
 
 func (t *tosClient) GetServerID() string {

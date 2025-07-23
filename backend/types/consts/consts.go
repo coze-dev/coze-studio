@@ -43,6 +43,7 @@ const (
 	TOSSecretKey       = "TOS_SECRET_KEY"
 	TOSRegion          = "TOS_REGION"
 	TOSEndpoint        = "TOS_ENDPOINT"
+	TOSBucketEndpoint  = "TOS_BUCKET_ENDPOINT"
 
 	HostKeyInCtx          = "HOST_KEY_IN_CTX"
 	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
