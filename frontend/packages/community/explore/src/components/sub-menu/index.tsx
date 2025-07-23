@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNavigate } from 'react-router-dom';
 
+import { SubMenuItem } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozTemplate,
@@ -24,7 +25,6 @@ import {
   IconCozPluginFill,
 } from '@coze-arch/coze-design/icons';
 import { Space } from '@coze-arch/coze-design';
-import { SubMenuItem } from '@coze-community/components';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
 
@@ -53,9 +53,6 @@ export const ExploreSubMenu = () => {
   const menuConfig = getMenuConfig();
   return (
     <Space spacing={4} vertical>
-      <p className="text-[14px] w-full text-left font-medium coz-fg-secondary ">
-        {I18n.t('menu_title_personal_space')}
-      </p>
       {menuConfig.map(item => (
         <SubMenuItem
           {...item}

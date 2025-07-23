@@ -43,6 +43,12 @@ export interface AudioSpeechRequest {
   response_data_type?: common.AudioSpeechRespType;
   /** 语速，[0.2,3]，默认为1，通常保留一位小数即可 */
   speed?: number;
+  /** 情感，默认为空 */
+  emotion?: string;
+  /** 情绪值，[1,5]，默认为4，通常保留一位小数即可 */
+  emotion_scale?: number;
+  /** 扩展参数，用于透传一些业务参数，bot_id，workflow_id */
+  extented?: Record<string, string>;
 }
 
 export interface AudioSpeechResponse {
@@ -141,6 +147,8 @@ export interface GetVoiceMenuData {
   genders?: Array<string>;
   /** 年龄段 */
   ages?: Array<string>;
+  /** 模型类型 */
+  model_types?: Array<common.ModelType>;
 }
 
 export interface GetVoiceMenuRequest {}
@@ -176,6 +184,8 @@ export interface MGetVoiceRequest {
   gender?: string;
   /** 年龄段 */
   age?: string;
+  /** 模型类型 */
+  model_type?: common.ModelType;
   page_index?: number;
   page_size?: number;
 }
@@ -218,6 +228,8 @@ export interface VoiceFeatureGatewayData {
   enable?: boolean;
   /** 音色克隆功能开关 */
   voice_clone_enable?: boolean;
+  /** 声纹识别功能开关 */
+  voice_print_enable?: boolean;
 }
 
 export interface VoiceFeatureGatewayRequest {}

@@ -31,6 +31,7 @@ export enum EnvType {
 export enum OrderType {
   Unknown = 1,
   Desc = 2,
+  Asc = 3,
 }
 
 export enum PlatformType {
@@ -49,6 +50,7 @@ export enum PlatformType {
   CozeBot = 11,
   SaasEvalTarget = 12,
   SaasAll = 13,
+  CozeWorkflow = 14,
 }
 
 export enum QueryOfflineType {
@@ -64,6 +66,7 @@ export enum QueryOfflineType {
   ListAllSpans = 9,
   ListLLMSpans = 10,
   SearchTraceV3 = 11,
+  GetSpanInfo = 12,
 }
 
 export enum SpanListType {

@@ -76,6 +76,8 @@ export enum FilterCmpOp {
   NotLike = 10,
   /** 有该 tag */
   Exists = 11,
+  /** 没有该 tag */
+  NotExists = 12,
 }
 
 /** 逻辑算子 */
@@ -113,6 +115,7 @@ export enum TaskStatusType {
   Succeeded = 3,
   Failed = 4,
   Pending = 5,
+  Stopped = 6,
 }
 
 /** Task */
@@ -150,6 +153,15 @@ export interface ApplyTicket {
   invalidateAt?: string;
 }
 
+export interface BackfillStat {
+  /** 已从观测检索到 span 数量 */
+  retrievedSpanCount?: string;
+  /** 已写入到数据集中 span 数量 */
+  backfilledSpanCount?: string;
+  /** 回填状态 */
+  backfillStatus?: TaskStatusType;
+}
+
 export interface BatchExecAutoUseCaseStat {
   common?: StatusDetailCommon;
   /** 各用例执行情况 */
@@ -170,6 +182,9 @@ export interface DatasetConfig {
   datasetName?: string;
   /** 默认将 span 的 input&output tag 写入 dataset 同名列中, 通过 extraColumns 定义其他列的回流 */
   extraColumns?: Array<Span2ColumnConfig>;
+  /** omitDefaultColumns=true 时，不写入默认的 input、output 列 */
+  omitDefaultColumns?: boolean;
+  datasetDesc?: string;
 }
 
 /** Deprecated */
@@ -230,7 +245,7 @@ export interface Rule {
   sampler?: Sampler;
   /** 筛选条件 */
   spanFilter?: SpanFilter;
-  /** 定时触发时效配置 */
+  /** Deprecated, typo, 换用 triggerTime(13) 字段 */
   tiggerTime?: TriggerTime;
   /** 生效时间窗口 */
   effectiveTime?: EffectiveTime;
@@ -238,6 +253,10 @@ export interface Rule {
   objectID?: Int64;
   /** 内置过滤器, 包含服务端定义的复杂过滤逻辑. 用于页面的"数据类型"字段过滤 */
   builtinFilter?: BuiltinSpanFilterType;
+  /** 回流历史数据 */
+  effectiveTimeFromPast?: EffectiveTime;
+  /** 定时触发时效配置 */
+  triggerTime?: TriggerTime;
   /** Processor Config
 数据集 */
   dataset?: DatasetConfig;
@@ -261,6 +280,8 @@ export interface Span2ColumnConfig {
   sourceType: Span2ColumnSourceType;
   /** 根据 sourceType 不同, 其值为 span 属性, prompt 变量的 key 等 */
   sourceField: string;
+  /** 指定 sourceField 的 JSON 提取路径 */
+  sourceFieldJSONPath?: string;
   /** dataset column 名 */
   datasetColumn: string;
 }
@@ -376,6 +397,8 @@ export interface Task {
   spanEvalStat?: SpanEvalStat;
   /** 批量评测状态详情 */
   batchExecAutoUseCaseStat?: BatchExecAutoUseCaseStat;
+  /** 回填历史数据详情 */
+  backfillStat?: BackfillStat;
   /** 创建者 */
   createdBy?: string;
   /** 更新者 */

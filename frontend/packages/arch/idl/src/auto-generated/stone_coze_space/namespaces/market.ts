@@ -42,6 +42,13 @@ export interface ExpertProduct {
   name?: string;
   desc?: string;
   avatar_url?: string;
+  disable_team_mode?: boolean;
+  /** is_closed为false时生效 */
+  user_count?: Int64;
+  /** second，is_closed为false时生效 */
+  avg_time_cost?: Int64;
+  /** 列表里隐藏 */
+  is_closed?: boolean;
 }
 
 export interface ExpertProductDetailsRequest {
@@ -59,7 +66,7 @@ export interface ExpertProductDetailsResponseData {
   agent_desc?: string;
   avatar_url?: string;
   user_count?: Int64;
-  /** minute */
+  /** second */
   avg_time_cost?: Int64;
   digg_count?: Int64;
   bury_count?: Int64;
@@ -93,6 +100,15 @@ export interface FeatureHighlights {
   title?: string;
   content?: string;
   use_cases?: Array<UseCases>;
+}
+
+export interface LandingPageEmailSubscribeRequest {
+  email?: string;
+}
+
+export interface LandingPageEmailSubscribeResponse {
+  code?: Int64;
+  msg?: string;
 }
 
 export interface LandingPageRequest {}

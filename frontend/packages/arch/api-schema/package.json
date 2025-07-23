@@ -7,13 +7,17 @@
   "maintainers": [],
   "exports": {
     ".": "./src/index.ts",
-    "./passport": "./src/idl/passport/passport.ts"
+    "./passport": "./src/idl/passport/passport.ts",
+    "./marketplace": "./src/idl/flow/marketplace/flow_marketplace_product/public_api.ts"
   },
   "main": "src/index.ts",
   "typesVersions": {
     "*": {
       "passport": [
         "./src/idl/passport/passport.ts"
+      ],
+      "marketplace": [
+        "./src/idl/flow/marketplace/flow_marketplace_product/public_api.ts"
       ]
     }
   },
@@ -39,3 +43,4 @@
     "vitest": "~3.0.5"
   }
 }
+

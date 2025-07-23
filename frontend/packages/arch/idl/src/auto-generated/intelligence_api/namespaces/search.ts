@@ -32,6 +32,12 @@ export enum BotMode {
   WorkflowMode = 2,
 }
 
+export enum FolderOrderBy {
+  UpdateTime = 0,
+  CreateTime = 1,
+  Name = 2,
+}
+
 export enum OceanProjectOrderBy {
   UpdateTime = 0,
   CreateTime = 1,
@@ -41,6 +47,13 @@ export enum OrderBy {
   UpdateTime = 0,
   CreateTime = 1,
   PublishTime = 2,
+  OpenTime = 3,
+}
+
+export enum PromptMode {
+  Standard = 0,
+  /** 前缀提示词 */
+  PrefixPrompt = 1,
 }
 
 export enum PublishStatus {
@@ -52,6 +65,15 @@ export enum PublishStatus {
 export enum SearchScope {
   All = 0,
   CreateByMe = 1,
+  /** 作为owner及协作者 */
+  AllWithCollaborator = 2,
+}
+
+export enum SortOrderType {
+  /** 降序 */
+  Desc = 0,
+  /** 升序 */
+  Asc = 1,
 }
 
 export interface DraftIntelligenceListData {
@@ -102,6 +124,11 @@ export interface GetDraftIntelligenceListRequest {
   status?: Array<intelligence_common_struct.IntelligenceStatus>;
   types?: Array<intelligence_common_struct.IntelligenceType>;
   search_scope?: SearchScope;
+  /** 文件夹id */
+  folder_id?: string;
+  /** 是否击穿搜索（一期不支持） */
+  folder_include_children?: boolean;
+  order_type?: SortOrderType;
   is_fav?: boolean;
   recently_open?: boolean;
   option?: GetDraftIntelligenceListOption;
@@ -113,6 +140,41 @@ export interface GetDraftIntelligenceListRequest {
 
 export interface GetDraftIntelligenceListResponse {
   data?: DraftIntelligenceListData;
+  code?: number;
+  msg?: string;
+}
+
+export interface GetFolderListData {
+  folder_list?: Array<common_struct.FolderInfo>;
+  total?: number;
+  has_more?: boolean;
+}
+
+export interface GetFolderListRequest {
+  /** 空间id */
+  space_id: string;
+  /** 文件夹类型 */
+  type: common_struct.FolderType;
+  /** 名称搜索（一期不支持） */
+  name?: string;
+  /** 搜索范围（一期不支持） */
+  search_scope?: SearchScope;
+  /** 父级文件夹id */
+  parent_folder_id?: string;
+  /** 是否击穿搜索（一期不支持） */
+  parent_include_children?: boolean;
+  /** 排序策略（一期不支持） */
+  order_by?: FolderOrderBy;
+  /** 排序方式（一期不支持） */
+  order_type?: SortOrderType;
+  /** 默认20，最大50 */
+  size?: number;
+  /** 默认1 */
+  page_num?: number;
+}
+
+export interface GetFolderListResponse {
+  data?: GetFolderListData;
   code?: number;
   msg?: string;
 }
@@ -214,6 +276,7 @@ export interface IntelligenceData {
   owner_info?: common_struct.User;
   latest_audit_info?: common_struct.AuditInfo;
   favorite_info?: FavoriteInfo;
+  folder_info?: common_struct.FolderInfo;
   other_info?: OtherInfo;
 }
 
@@ -279,6 +342,8 @@ export interface OtherInfo {
   recently_open_time?: string;
   /** 仅bot类型返回 */
   bot_mode?: BotMode;
+  /** 仅bot类型返回 */
+  prompt_mode?: PromptMode;
 }
 
 export interface PublishIntelligenceData {

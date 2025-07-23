@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
 import cls from 'classnames';
@@ -48,13 +48,7 @@ const PATH_MAP: Partial<
 export const TemplateCard: FC<TemplateCardProps> = props => {
   const [visible, setVisible] = useState(false);
   return (
-    <CardContainer
-      className={styles.template}
-      shadowMode="default"
-      onClick={() => {
-        console.log('Template Click Card');
-      }}
-    >
+    <CardContainer className={styles.template} shadowMode="default">
       <div className={styles['template-wrapper']}>
         <TempCardBody
           {...{
@@ -112,7 +106,6 @@ const DuplicateModal: FC<{
   const [title, setTitle] = useState(defaultTitle);
   const { spaces } = useSpaceList();
   const spaceId = spaces?.[0]?.id;
-  console.log('title', title, spaces);
   return (
     <Modal
       type="modal"

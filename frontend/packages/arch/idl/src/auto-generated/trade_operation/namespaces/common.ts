@@ -40,8 +40,13 @@ export enum AmountType {
   ChargeAmount = 1,
 }
 
+/** 权益类型。同 benefit_common.thrift 对齐。此处用于业务层使用。 */
 export enum BenefitType {
+  /** 海外 */
   SubsMessageCredit = 1,
+  UserFreeChat = 2,
+  TopUpMessageCredit = 3,
+  BonusMessageCredit = 4,
   /** 40 -59 免费次数 */
   Freetimes = 40,
   /** 评测免费次数 */
@@ -67,6 +72,21 @@ export enum BenefitType {
   RateLimitModelInputTPMBasic = 63,
   /** 基础模型 Output TPM 限流 */
   RateLimitModelOutputTPMBasic = 64,
+  /** Plugin 运行 QPS 限流 */
+  PluginRunQPS = 65,
+  /** Plugin 运行并发度限流 */
+  PluginRunParallel = 66,
+  /** 图像节点
+Workflow 运行 QPS 限流 */
+  WorkflowRunQPS = 67,
+  /** Workflow 运行并发度限流 */
+  WorkflowRunParallel = 68,
+  /** API 运行 QPS 限流 */
+  APIRunQPS = 70,
+  /** 语音 QPS 限流 */
+  VoiceQPS = 71,
+  /** 语音并发度限流 */
+  VoiceParallel = 72,
   /** 100-109 资源点
 资源点总量 */
   ResourcePoint = 100,
@@ -76,6 +96,10 @@ export enum BenefitType {
   VolcProResourcePoint = 102,
   /** 周期性资源点 */
   PeriodicResourcePoint = 103,
+  /** 渠道递减资源点 */
+  ChannelResourcePoint = 104,
+  /** 试算资源点 */
+  CutAndTryResourcePoint = 109,
   /** 110-129 Fornax
 Trace 用量 */
   TraceAmount = 111,
@@ -108,6 +132,11 @@ Space 总量 */
   SeatNumberLimit = 200,
   /** 基础席位数 */
   SeatNumberBasic = 201,
+  /** 移除水印 */
+  RemoveWatermark = 220,
+  /** 240-269 配置
+安心用 */
+  ConfidenceUsing = 240,
 }
 
 export enum BenefitUseMode {
@@ -347,6 +376,16 @@ export enum Scene {
   VoiceCloneStorage = 101,
 }
 
+export enum SubscriptionRenewalType {
+  Unknown = 0,
+  /** 手动续费 */
+  ManualRenewal = 1,
+  /** 自动续费 */
+  AutoRenewal = 2,
+  /** 到期不续费续费 */
+  DontRenewal = 3,
+}
+
 export enum SubscriptionStatus {
   /** 初始化 */
   Init = 0,
@@ -415,6 +454,13 @@ export enum VolcanoUserType {
   Unknown = 0,
   RootUser = 1,
   BasicUser = 2,
+}
+
+export enum VolcInstanceType {
+  /** 正常版本 */
+  Normal = 1,
+  /** 渠道版本 */
+  Channel = 2,
 }
 
 export interface ChannelInfo {

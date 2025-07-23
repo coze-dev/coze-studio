@@ -69,6 +69,21 @@ export interface GetUserInfoResponse {
   BaseResp?: base.BaseResp;
 }
 
+export interface IsUserInGrayData {
+  uid?: string;
+}
+
+export interface IsUserInGrayRequest {
+  /** 灰度策略 */
+  strategy?: string;
+  Base?: base.Base;
+}
+
+export interface IsUserInGrayResponse {
+  data?: IsUserInGrayData;
+  BaseResp?: base.BaseResp;
+}
+
 export interface KickUserReq {
   extUserID: string;
   'Zti-Token': string;

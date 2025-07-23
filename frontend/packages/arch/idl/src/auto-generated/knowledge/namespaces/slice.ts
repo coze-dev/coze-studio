@@ -65,11 +65,17 @@ export interface CreateSliceRequest {
   tree_node_id?: Int64;
   front_tree_node_id?: Int64;
   parent_tree_node_id?: Int64;
+  /** 用来区分是否是火山知识库，不传默认为coze知识库 */
+  dataset_id?: string;
+  /** 由于火山侧document是非数字串，新增这个字段传入document_id */
+  document_id_new?: string;
   Base?: base.Base;
 }
 
 export interface CreateSliceResponse {
   slice_id?: string;
+  /** 由于火山侧slice id是非数字串，新增这个字段返回火山侧slice_id */
+  slice_id_new?: string;
   code: Int64;
   msg: string;
   BaseResp?: base.BaseResp;

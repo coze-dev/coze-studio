@@ -137,6 +137,10 @@ export interface CreateDocumentResponse {
 
 export interface DeleteDocumentRequest {
   document_ids?: Array<string>;
+  /** 由于火山侧document是非数字串，这个字段存储新的知识库id，，服务端会聚合document_ids后去重 */
+  document_ids_new?: Array<string>;
+  /** 用来区分是否是火山知识库，不传默认为coze知识库 */
+  dataset_id?: string;
   Base?: base.Base;
 }
 
@@ -170,6 +174,8 @@ export interface DocumentBase {
   filter_strategy?: common.FilterStrategy;
   /** 图片类型，人工标注时的图片描述，目前只支持openapi调用 */
   caption?: string;
+  /** 火山知识库专用，<标签名，标签值> */
+  volcano_tab_kv?: Record<string, common.TabValue>;
 }
 
 /** 仅提供Document表中的字段。请勿增加其他需要跨表、RPC 调用才能得到的字段。 */
@@ -257,6 +263,8 @@ export interface DocumentInfo {
   preview_tos_url?: string;
   /** 预览用的原文档 tos_url */
   review_id?: Int64;
+  /** 由于火山侧document是非数字串，新增这个字段返回string类型 */
+  document_id_new?: string;
 }
 
 export interface DocumentProgress {

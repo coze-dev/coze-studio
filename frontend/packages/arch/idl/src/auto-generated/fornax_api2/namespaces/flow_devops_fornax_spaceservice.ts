@@ -218,6 +218,8 @@ export interface UpdateSpaceRequest {
   release_approval_config?: space.ReleaseApprovalConfig;
   /** 服务树节点ID */
   byte_tree_node_id?: Int64;
+  /** 具体配置内容 */
+  trace_config?: space.TraceConfig;
   'x-jwt-token'?: string;
   Base?: base.Base;
 }

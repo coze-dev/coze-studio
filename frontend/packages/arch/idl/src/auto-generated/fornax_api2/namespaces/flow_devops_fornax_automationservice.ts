@@ -130,6 +130,12 @@ export interface Rule2TraceQueryResp {
   platformType?: flow_devops_fornaxob_common.PlatformType;
 }
 
+export interface StopTaskReq {
+  task_id: string;
+}
+
+export interface StopTaskResp {}
+
 export interface TaskBatchExecCasesStatus {
   taskID: string;
   allCasesDeleted?: boolean;

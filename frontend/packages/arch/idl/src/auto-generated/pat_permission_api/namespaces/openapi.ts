@@ -21,6 +21,18 @@
 
 export type Int64 = string | number;
 
+export enum AppAndPATAuthInfoItemType {
+  app = 'app',
+  pat = 'pat',
+}
+
+export enum ApplicationForEnterpriseMemberStatus {
+  can_apply2 = 'CanApply',
+  already_applied2 = 'AlreadyApplied',
+  joined4 = 'Joined',
+  deny3 = 'Deny',
+}
+
 export enum ApplicationStatus {
   processing = 'Processing',
   approved = 'Approved',
@@ -70,23 +82,50 @@ export enum CollaboratorType {
 
 export enum DenyType {
   visitors_prohibited = 'VisitorsProhibited',
+  guest_prohibited_by_invited_user_enterprise2 = 'GuestProhibitedByInvitedUserEnterprise',
+}
+
+export enum DurationDay {
+  _1 = '1',
+  _30 = '30',
+  _90 = '90',
+  _180 = '180',
+  _365 = '365',
+  customize = 'customize',
+  permanent = 'permanent',
+}
+
+export enum DurationDay2 {
+  _12 = '1',
+  _302 = '30',
+  _902 = '90',
+  _1802 = '180',
+  _3652 = '365',
+  customize2 = 'customize',
+  permanent2 = 'permanent',
 }
 
 export enum EnterpriseRoleType {
   super_admin = 'SuperAdmin',
   admin = 'Admin',
   member = 'Member',
+  guest = 'Guest',
 }
 
 export enum EnterpriseSettingKey {
   join_enterprise_share_link_expiration_time = 'JoinEnterpriseShareLinkExpirationTime',
   sso = 'SSO',
+  forbid_guest_join_enterprise = 'ForbidGuestJoinEnterprise',
+  forbid_member_join_other_enterprise = 'ForbidMemberJoinOtherEnterprise',
+  replace_enterprise_logo = 'ReplaceEnterpriseLogo',
+  forbid_custom_people_management = 'ForbidCustomPeopleManagement',
 }
 
 export enum EnterpriseSettingValueType {
   string = 'String',
   boolean = 'Boolean',
   integer = 'Integer',
+  string_list = 'StringList',
 }
 
 export enum InstallationStatus {
@@ -94,6 +133,35 @@ export enum InstallationStatus {
   pending_review_app_obo = 'pending_review_app_obo',
   approved_app_auth = 'approved_app_auth',
   approved_app_obo = 'approved_app_obo',
+}
+
+export enum InvitationDenyType {
+  no_permission = 'NoPermission',
+  guest_prohibited_by_enterprise2 = 'GuestProhibitedByEnterprise',
+  guest_prohibited_by_invited_user_enterprise3 = 'GuestProhibitedByInvitedUserEnterprise',
+}
+
+export enum InvitationInfoStatus {
+  confirming2 = 'Confirming',
+  joined3 = 'Joined',
+  rejected3 = 'Rejected',
+  revoked2 = 'Revoked',
+  expired3 = 'Expired',
+  deny2 = 'Deny',
+}
+
+export enum InvitationStatus {
+  confirming = 'Confirming',
+  joined2 = 'Joined',
+  rejected2 = 'Rejected',
+  revoked = 'Revoked',
+  expired2 = 'Expired',
+}
+
+export enum InvitedUserStatus {
+  can_join = 'CanJoin',
+  guest_prohibited_by_enterprise = 'GuestProhibitedByEnterprise',
+  guest_prohibited_by_invited_user_enterprise = 'GuestProhibitedByInvitedUserEnterprise',
 }
 
 export enum InviteLinkStatus {
@@ -119,6 +187,11 @@ export enum PatSearchOption {
   all = 'all',
   owned = 'owned',
   others = 'others',
+}
+
+export enum PeopleType {
+  enterprise_member = 'EnterpriseMember',
+  enterprise_guest = 'EnterpriseGuest',
 }
 
 export enum Status {
@@ -168,6 +241,19 @@ export interface AddEnterprisePeopleData {
   nick_name: string;
   avatar_url: string;
   joined: boolean;
+  invited?: boolean;
+  people_type?: PeopleType;
+  invited_user_status?: InvitedUserStatus;
+}
+
+export interface AppAndPATAuthInfoForPersonalAccountAuthorization {
+  id: string;
+  name?: string;
+  created_at?: Int64;
+  /** -1 表示无限期 */
+  expire_at?: Int64;
+  is_authorized?: boolean;
+  type: AppAndPATAuthInfoItemType;
 }
 
 export interface AppAuthorizationInfo {
@@ -200,6 +286,7 @@ export interface AppAuthorizationInfoPermissionWorkspacePermission {
 export interface AppDeclaredPermissionV2 {
   workspace_permission?: Array<string>;
   account_permission?: Array<string>;
+  enterprise_permission?: Array<string>;
 }
 
 export interface AppInstallationConsentRequest {
@@ -247,6 +334,21 @@ export interface AppOwnerInfo {
   username: string;
   avator_url: string;
   icon_url?: string;
+}
+
+export interface AuthorizeAppsAndPatlistWithPersonalAccountPermissionRequest {
+  /** crossaccount authinfo list */
+  crossaccount_authinfo_list?: Array<AppAndPATAuthInfoForPersonalAccountAuthorization>;
+}
+
+export interface AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionRequest {
+  /** crossaccount authinfo list */
+  crossaccount_authinfo_list?: Array<AppAndPATAuthInfoForPersonalAccountAuthorization>;
+}
+
+export interface AuthorizeAppsAndPersonalaccesstokenListWithPersonalAccountPermissionResponse {
+  code: number;
+  msg: string;
 }
 
 export interface AuthorizeAppWithDeclaredPermissionRequest {
@@ -433,8 +535,52 @@ export interface ClientSecret {
   plaintext?: string;
 }
 
+export interface Code2SessionRequest {
+  bot_id?: string;
+  app_id?: string;
+  connector_id?: string;
+  code?: string;
+  with_userinfo?: boolean;
+  execute_mode?: string;
+  agent_type?: Int64;
+  agent_version?: string;
+}
+
+export interface Code2SessionResponse {
+  code: Int64;
+  msg: string;
+  data?: Code2SessionResponseData;
+}
+
+export interface Code2SessionResponseData {
+  benefit?: UserBenefit;
+  open_id: string;
+  access_token: string;
+  expires_in: Int64;
+  user_name: string;
+  user_avatar_url: string;
+  connector_uid: string;
+  bot_id: string;
+  project_id: string;
+}
+
 export interface Connector {
   connector_id: string;
+}
+
+export interface CreateApplicationForEnterpriseMemberRequest {
+  enterprise_id: string;
+  remark?: string;
+}
+
+export interface CreateApplicationForEnterpriseMemberRequest2 {
+  enterprise_id: string;
+  remark?: string;
+}
+
+export interface CreateApplicationForEnterpriseMemberResponse {
+  code: number;
+  msg: string;
 }
 
 export interface CreateAppMetaRequest {
@@ -539,10 +685,12 @@ export interface CreateEnterpriseResponseData {
 
 export interface CreateJoinApplicationRequest {
   key: string;
+  remark?: string;
 }
 
 export interface CreateJoinApplicationRequest2 {
   key: string;
+  remark?: string;
 }
 
 export interface CreateJoinApplicationResponse {
@@ -562,6 +710,7 @@ export interface CreatePersonalAccessTokenAndPermissionRequest {
   workspace_permission?: WorkspacePermission;
   account_permission?: AccountPermission;
   workspace_permission_v2?: WorkspacePermissionV2;
+  enterprise_permission?: EnterprisePermission;
 }
 
 export interface CreatePersonalAccessTokenAndPermissionRequest2 {
@@ -576,6 +725,7 @@ export interface CreatePersonalAccessTokenAndPermissionRequest2 {
   workspace_permission?: WorkspacePermission;
   account_permission?: AccountPermission;
   workspace_permission_v2?: WorkspacePermissionV2;
+  enterprise_permission?: EnterprisePermission;
   /** x-tt-env bytedance env tag */
   x_tt_env?: string;
 }
@@ -594,6 +744,48 @@ export interface CreatePersonalAccessTokenAndPermissionResponseData {
   personal_access_token: PersonalAccessToken;
   /** PAT token 明文 */
   token: string;
+}
+
+export interface CreateServiceIdentityRequest {
+  /** 服务身份名称 */
+  name: string;
+  /** 所属组织id */
+  organization_id?: string;
+  /** PAT自定义过期时间 */
+  expire_at?: Int64;
+  /** 可枚举过期时间 */
+  duration_day?: DurationDay;
+  permission: ServicePermission;
+}
+
+export interface CreateServiceIdentityRequest2 {
+  /** 服务身份名称 */
+  name: string;
+  /** 所属组织id */
+  organization_id?: string;
+  /** PAT自定义过期时间 */
+  expire_at?: Int64;
+  /** 可枚举过期时间 */
+  duration_day?: DurationDay;
+  permission: ServicePermission;
+  /** x-tt-env bytedance env tag */
+  x_tt_env?: string;
+}
+
+export interface CreateServiceIdentityResponse {
+  data: CreateServiceIdentityResponseData;
+}
+
+export interface CreateServiceIdentityResponse2 {
+  code: number;
+  msg: string;
+  data: CreateServiceIdentityResponseData;
+}
+
+export interface CreateServiceIdentityResponseData {
+  service_identity: ServiceIdentity;
+  /** 服务访问令牌 */
+  token?: string;
 }
 
 export interface DeclaredPermission {
@@ -657,9 +849,25 @@ export interface DeletePublicKeyResponse {
   msg: string;
 }
 
+export interface DeleteServiceIdentityRequest {
+  /** service identity id */
+  id: string;
+}
+
+export interface DeleteServiceIdentityResponse {
+  code: number;
+  msg: string;
+}
+
 export interface DeviceLocation {
   device_ip: string;
   device_city: string;
+}
+
+export interface EnterpriseBasicInfo {
+  enterprise_id: string;
+  name: string;
+  icon_url: string;
 }
 
 export interface EnterpriseInfo {
@@ -671,6 +879,7 @@ export interface EnterpriseInfo {
 }
 
 export interface EnterprisePeople {
+  people_type?: PeopleType;
   user_id: string;
   name: string;
   nick_name: string;
@@ -686,6 +895,10 @@ export interface EnterprisePeopleAddData {
   enterprise_role_type_list: Array<EnterpriseRoleType>;
 }
 
+export interface EnterprisePermission {
+  permission_list: Array<string>;
+}
+
 export interface EnterpriseSetting {
   enterprise_setting_key: EnterpriseSettingKey;
   enterprise_setting_value: EnterpriseSettingValue;
@@ -693,6 +906,7 @@ export interface EnterpriseSetting {
 
 export interface EnterpriseSettingValue {
   value: string;
+  is_set_none?: boolean;
   value_type: EnterpriseSettingValueType;
 }
 
@@ -748,6 +962,33 @@ export interface GetAppInstallationRequestInfoResponseData {
   request_permission: Array<string>;
 }
 
+export interface GetApplicationForEnterpriseMemberRequest {
+  enterprise_id: string;
+}
+
+export interface GetApplicationForEnterpriseMemberRequest2 {
+  enterprise_id: string;
+}
+
+export interface GetApplicationForEnterpriseMemberResponse {
+  data: GetApplicationForEnterpriseMemberResponseData;
+}
+
+export interface GetApplicationForEnterpriseMemberResponse2 {
+  code: number;
+  msg: string;
+  data: GetApplicationForEnterpriseMemberResponseData;
+}
+
+export interface GetApplicationForEnterpriseMemberResponseData {
+  application_for_enterprise_member_status: ApplicationForEnterpriseMemberStatus;
+  enterprise_id: string;
+  name: string;
+  icon_url: string;
+  super_admin_list: Array<UserInfo>;
+  remark?: string;
+}
+
 export interface GetAppMetaRequest {
   /** appid */
   appid: string;
@@ -771,6 +1012,39 @@ export interface GetAppMetaResponseData {
   public_keys?: Array<PublicKey>;
   client_secrets?: Array<ClientSecret>;
   request_permission: Array<string>;
+}
+
+export interface GetAppsAndPATListForPersonalAccountPermissionAuthorizationRequest {
+  /** page number */
+  page?: Int64;
+  /** page size */
+  page_size?: Int64;
+}
+
+export interface GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponse {
+  data?: GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponseData;
+}
+
+export interface GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponseData {
+  /** enterprise name */
+  enterprise_name: string;
+  /** crossaccount authinfo List */
+  crossaccount_authinfo: Array<AppAndPATAuthInfoForPersonalAccountAuthorization>;
+  total: Int64;
+  has_more: boolean;
+}
+
+export interface GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationRequest {
+  /** page number */
+  page?: Int64;
+  /** page size */
+  page_size?: Int64;
+}
+
+export interface GetAppsAndPersonalAccessTokenListForPersonalAccountPermissionAuthorizationResponse {
+  code: number;
+  msg: string;
+  data?: GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponseData;
 }
 
 export interface GetCertificationInfoRequest {}
@@ -841,6 +1115,7 @@ export interface GetEnterpriseResponseData {
   super_admin_list: Array<UserInfo>;
   create_time: Int64;
   expiration_time: Int64;
+  replace_logo?: boolean;
 }
 
 export interface GetEnterpriseSettingsRequest {
@@ -882,8 +1157,40 @@ export interface GetInviteInfoResponse2 {
 }
 
 export interface GetInviteInfoResponseData {
+  link_creator?: UserInfo;
   invite_link_status: InviteLinkStatus;
   deny_type?: DenyType;
+  enterprise_id: string;
+  name: string;
+  icon_url: string;
+  super_admin_list: Array<UserInfo>;
+  create_time: Int64;
+  expiration_time: Int64;
+  remark?: string;
+}
+
+export interface GetJoinInvitationRequest {
+  join_invitation_id: string;
+}
+
+export interface GetJoinInvitationRequest2 {
+  join_invitation_id: string;
+}
+
+export interface GetJoinInvitationResponse {
+  data: GetJoinInvitationResponseData;
+}
+
+export interface GetJoinInvitationResponse2 {
+  code: number;
+  msg: string;
+  data: GetJoinInvitationResponseData;
+}
+
+export interface GetJoinInvitationResponseData {
+  inviter: UserInfo;
+  invitation_status: InvitationInfoStatus;
+  invitation_deny_type?: InvitationDenyType;
   enterprise_id: string;
   name: string;
   icon_url: string;
@@ -912,6 +1219,27 @@ export interface GetPersonalAccessTokenAndPermissionResponseData {
   workspace_permission?: WorkspacePermission;
   account_permission?: AccountPermission;
   workspace_permission_v2?: WorkspacePermissionV2;
+  enterprise_permission?: EnterprisePermission;
+}
+
+export interface GetServiceIdentityRequest {
+  /** service identity id */
+  id: string;
+}
+
+export interface GetServiceIdentityResponse {
+  data: GetServiceIdentityResponseData;
+}
+
+export interface GetServiceIdentityResponse2 {
+  code: number;
+  msg: string;
+  data: GetServiceIdentityResponseData;
+}
+
+export interface GetServiceIdentityResponseData {
+  service_identity: ServiceIdentity;
+  service_permission: ServicePermission;
 }
 
 export interface GetSSOSettingRequest {
@@ -1196,10 +1524,58 @@ export interface InlineResponse20036 {
   data: CheckEnterpriseExistResponseData;
 }
 
+export interface InlineResponse20037 {
+  code: number;
+  msg: string;
+  data?: GetAppsAndPATListForPersonalAccountPermissionAuthorizationResponseData;
+}
+
+export interface InlineResponse20038 {
+  code: number;
+  msg: string;
+  data: ListJoinInvitationResponseData;
+}
+
+export interface InlineResponse20039 {
+  code: number;
+  msg: string;
+  data: GetJoinInvitationResponseData;
+}
+
 export interface InlineResponse2004 {
   code: number;
   msg: string;
   data: ListPersonalAccessTokenSupportPermissionsResponseData;
+}
+
+export interface InlineResponse20040 {
+  code: number;
+  msg: string;
+  data: SearchPeopleInOtherEnterpriseResponseData;
+}
+
+export interface InlineResponse20041 {
+  code: number;
+  msg: string;
+  data: GetApplicationForEnterpriseMemberResponseData;
+}
+
+export interface InlineResponse20042 {
+  code: number;
+  msg: string;
+  data: CreateServiceIdentityResponseData;
+}
+
+export interface InlineResponse20043 {
+  code: number;
+  msg: string;
+  data: GetServiceIdentityResponseData;
+}
+
+export interface InlineResponse20044 {
+  code: number;
+  msg: string;
+  data: ListServiceIdentitiesResponseData;
 }
 
 export interface InlineResponse2005 {
@@ -1252,7 +1628,16 @@ export interface JoinApplicationInfo {
   application_id: string;
   create_time: Int64;
   operator?: string;
+  remark?: string;
   application_status: ApplicationStatus;
+}
+
+export interface JoinInvitationInfo {
+  operator?: UserInfo;
+  invitee: UserInfo;
+  join_invitation_id: string;
+  create_time: Int64;
+  invitation_status: InvitationStatus;
 }
 
 export interface ListAppAuthorizationsRequest {
@@ -1347,7 +1732,10 @@ export interface ListAuthorizedAppsResponseData {
   total: Int64;
 }
 
-export interface ListEnterpriseRequest {}
+export interface ListEnterpriseRequest {
+  /** Contain enterprise of user */
+  contain_enterprise_of_user?: boolean;
+}
 
 export interface ListEnterpriseResponse {
   data: ListEnterpriseResponseData;
@@ -1392,6 +1780,39 @@ export interface ListJoinApplicationResponse2 {
 
 export interface ListJoinApplicationResponseData {
   join_application_list: Array<JoinApplicationInfo>;
+  page: number;
+  page_size: number;
+  total: Int64;
+}
+
+export interface ListJoinInvitationRequest {
+  invitation_status?: InvitationStatus;
+  enterprise_id: string;
+  search_key?: string;
+  page: number;
+  page_size: number;
+}
+
+export interface ListJoinInvitationRequest2 {
+  invitation_status?: InvitationStatus;
+  enterprise_id: string;
+  search_key?: string;
+  page: number;
+  page_size: number;
+}
+
+export interface ListJoinInvitationResponse {
+  data: ListJoinInvitationResponseData;
+}
+
+export interface ListJoinInvitationResponse2 {
+  code: number;
+  msg: string;
+  data: ListJoinInvitationResponseData;
+}
+
+export interface ListJoinInvitationResponseData {
+  join_invitation_list: Array<JoinInvitationInfo>;
   page: number;
   page_size: number;
   total: Int64;
@@ -1461,6 +1882,25 @@ export interface ListPersonalAccessTokenSupportPermissionsResponseData {
   permission_list: Array<WorkspaceResourcePermission>;
 }
 
+export interface ListServiceIdentitiesRequest {
+  /** organization id */
+  organization_id?: string;
+}
+
+export interface ListServiceIdentitiesResponse {
+  data: ListServiceIdentitiesResponseData;
+}
+
+export interface ListServiceIdentitiesResponse2 {
+  code: number;
+  msg: string;
+  data: ListServiceIdentitiesResponseData;
+}
+
+export interface ListServiceIdentitiesResponseData {
+  service_identity_list: Array<ServiceIdentity>;
+}
+
 export interface MigrateAuthorizationItem {
   authorization_type: ChecklistItemType;
   authorization_id: string;
@@ -1511,6 +1951,11 @@ export interface OpenApiRespDetailDetail {
   logid: string;
 }
 
+export interface PeopleInOtherEnterpriseInfo {
+  user_info: UserInfo;
+  enterprise_list: Array<EnterpriseBasicInfo>;
+}
+
 export interface PersonalAccessToken {
   id: string;
   name: string;
@@ -1555,6 +2000,23 @@ export interface PersonalAccountInfo {
   nick_name: string;
   avatar_url: string;
   enterprise_id?: string;
+}
+
+export interface PostAdapterMpV1Code2SessionRequest {
+  bot_id?: string;
+  app_id?: string;
+  connector_id?: string;
+  code?: string;
+  with_userinfo?: boolean;
+  execute_mode?: string;
+  agent_type?: Int64;
+  agent_version?: string;
+}
+
+export interface PostAdapterMpV1Code2SessionResponse {
+  code: Int64;
+  msg: string;
+  data?: Code2SessionResponseData;
 }
 
 export interface PrincipalIdentifier {
@@ -1625,6 +2087,19 @@ export interface RespBaseModel {
   msg: string;
 }
 
+export interface RevokeAppAndPATPersonalAccountPermissionRequest {
+  crossaccount_authinfo?: AppAndPATAuthInfoForPersonalAccountAuthorization;
+}
+
+export interface RevokeAppAndPersonalaccesstokenPersonalAccountPermissionRequest {
+  crossaccount_authinfo?: AppAndPATAuthInfoForPersonalAccountAuthorization;
+}
+
+export interface RevokeAppAndPersonalaccesstokenPersonalAccountPermissionResponse {
+  code: number;
+  msg: string;
+}
+
 export interface RevokeAppAuthorizedPermissionRequest {
   authorization_type: AuthorizationType;
   appid: string;
@@ -1638,6 +2113,21 @@ export interface RevokeAppAuthorizedPermissionRequest2 {
 }
 
 export interface RevokeAppAuthorizedPermissionResponse {
+  code: number;
+  msg: string;
+}
+
+export interface RevokeJoinInvitationRequest {
+  enterprise_id: string;
+  join_invitation_id: string;
+}
+
+export interface RevokeJoinInvitationRequest2 {
+  enterprise_id: string;
+  join_invitation_id: string;
+}
+
+export interface RevokeJoinInvitationResponse {
   code: number;
   msg: string;
 }
@@ -1672,6 +2162,7 @@ export interface SearchCanAddEnterprisePeopleResponseData {
 }
 
 export interface SearchEnterprisePeopleRequest {
+  people_type?: PeopleType;
   enterprise_id: string;
   search_key?: string;
   enterprise_role_type_list?: Array<EnterpriseRoleType>;
@@ -1682,6 +2173,7 @@ export interface SearchEnterprisePeopleRequest {
 }
 
 export interface SearchEnterprisePeopleRequest2 {
+  people_type?: PeopleType;
   enterprise_id: string;
   search_key?: string;
   enterprise_role_type_list?: Array<EnterpriseRoleType>;
@@ -1707,6 +2199,56 @@ export interface SearchEnterprisePeopleResponseData {
   page: number;
   page_size: number;
   total: Int64;
+}
+
+export interface SearchPeopleInOtherEnterpriseRequest {
+  enterprise_id: string;
+  search_key?: string;
+  page: number;
+  page_size: number;
+}
+
+export interface SearchPeopleInOtherEnterpriseRequest2 {
+  enterprise_id: string;
+  search_key?: string;
+  page: number;
+  page_size: number;
+}
+
+export interface SearchPeopleInOtherEnterpriseResponse {
+  data: SearchPeopleInOtherEnterpriseResponseData;
+}
+
+export interface SearchPeopleInOtherEnterpriseResponse2 {
+  code: number;
+  msg: string;
+  data: SearchPeopleInOtherEnterpriseResponseData;
+}
+
+export interface SearchPeopleInOtherEnterpriseResponseData {
+  people_in_other_enterprise_info_list: Array<PeopleInOtherEnterpriseInfo>;
+  page: number;
+  page_size: number;
+  total: Int64;
+}
+
+export interface ServiceIdentity {
+  /** 服务身份id */
+  id: string;
+  /** 服务身份名称 */
+  name: string;
+  created_at: Int64;
+  updated_at: Int64;
+  /** -1 表示未使用 */
+  last_used_at: Int64;
+  /** -1 表示无限期 */
+  expire_at: Int64;
+}
+
+export interface ServicePermission {
+  account_permission?: AccountPermission;
+  enterprise_permission?: EnterprisePermission;
+  workspace_permission?: WorkspacePermission2;
 }
 
 export interface SubmitAppOboInstallationReviewRequest {
@@ -1787,12 +2329,14 @@ export interface UpdateEnterpriseRequest {
   enterprise_id: string;
   name?: string;
   icon_uri?: string;
+  replace_logo?: boolean;
 }
 
 export interface UpdateEnterpriseRequest2 {
   enterprise_id: string;
   name?: string;
   icon_uri?: string;
+  replace_logo?: boolean;
 }
 
 export interface UpdateEnterpriseResponse {
@@ -1832,10 +2376,28 @@ export interface UpdateJoinApplicationResponse {
   msg: string;
 }
 
+export interface UpdateJoinInvitationRequest {
+  enterprise_id: string;
+  join_invitation_id: string;
+  joined: boolean;
+}
+
+export interface UpdateJoinInvitationRequest2 {
+  enterprise_id: string;
+  join_invitation_id: string;
+  joined: boolean;
+}
+
+export interface UpdateJoinInvitationResponse {
+  code: number;
+  msg: string;
+}
+
 export interface UpdatePersonalAccessTokenAndPermissionRequest {
   workspace_permission?: WorkspacePermission;
   account_permission?: AccountPermission;
   workspace_permission_v2?: WorkspacePermissionV2;
+  enterprise_permission?: EnterprisePermission;
   /** PAT Id */
   id: string;
   /** PAT 名称 */
@@ -1846,6 +2408,7 @@ export interface UpdatePersonalAccessTokenAndPermissionRequest2 {
   workspace_permission?: WorkspacePermission;
   account_permission?: AccountPermission;
   workspace_permission_v2?: WorkspacePermissionV2;
+  enterprise_permission?: EnterprisePermission;
   /** PAT Id */
   id: string;
   /** PAT 名称 */
@@ -1855,6 +2418,37 @@ export interface UpdatePersonalAccessTokenAndPermissionRequest2 {
 }
 
 export interface UpdatePersonalAccessTokenAndPermissionResponse {
+  code: number;
+  msg: string;
+}
+
+export interface UpdateServiceIdentityRequest {
+  permission?: ServicePermission;
+  /** 服务身份id */
+  id: string;
+  /** 服务身份名称 */
+  name?: string;
+  /** PAT自定义过期时间 */
+  expire_at?: Int64;
+  /** 可枚举过期时间 */
+  duration_day?: DurationDay2;
+}
+
+export interface UpdateServiceIdentityRequest2 {
+  permission?: ServicePermission;
+  /** 服务身份id */
+  id: string;
+  /** 服务身份名称 */
+  name?: string;
+  /** PAT自定义过期时间 */
+  expire_at?: Int64;
+  /** 可枚举过期时间 */
+  duration_day?: DurationDay2;
+  /** x-tt-env bytedance env tag */
+  x_tt_env?: string;
+}
+
+export interface UpdateServiceIdentityResponse {
   code: number;
   msg: string;
 }
@@ -1881,6 +2475,10 @@ export interface UploadPublicKeyResponse2 {
 
 export interface UploadPublicKeyResponseData {
   fingerprint: string;
+}
+
+export interface UserBenefit {
+  remove_watermark: boolean;
 }
 
 export interface UserInfo {
@@ -1945,6 +2543,13 @@ export interface WorkspacePermission {
 export interface WorkspacePermission1 {
   workspace_id_list?: Array<string>;
   permission_list?: Array<string>;
+}
+
+export interface WorkspacePermission2 {
+  /** 1-Select, 2-All */
+  option: number;
+  workspace_id_list?: Array<string>;
+  permission_list: Array<string>;
 }
 
 export interface WorkspacePermissionV2 {

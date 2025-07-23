@@ -208,6 +208,7 @@ export interface ProjectResourceInfo {
   biz_res_status?: number;
   /** 当前资源的编辑态版本 */
   version_str?: string;
+  res_third_type?: number;
 }
 
 export interface RefTreeNode {
@@ -331,6 +332,7 @@ Plugin：1-Http; 2-App; 6-Local；Knowledge：0-text; 1-table; 2-image；UI：1-
   detail_disable?: boolean;
   /** [数据延迟优化]删除标识符，true-已删除-前端隐藏该item，false-正常 */
   del_flag?: boolean;
+  res_third_type?: number;
 }
 
 /** 用于定位一个资源数据的结构：某资源的某版本 */
@@ -365,6 +367,7 @@ export interface StaticResourceInfo {
   data_version?: Int64;
   /** 业务自定义字段-对于prompt 是正文，该字段可用于搜索 */
   full_text?: string;
+  res_third_type?: number;
 }
 
 /** 同步资源mq补偿 */

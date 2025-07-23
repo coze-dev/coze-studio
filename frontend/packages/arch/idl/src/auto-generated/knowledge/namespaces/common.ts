@@ -119,6 +119,12 @@ export enum FormatType {
   Image = 2,
   /** 数据库 */
   Database = 3,
+  /** 火山结构化 火山知识库特有 */
+  VolcanoStructured = 4,
+  /** 火山非结构化 火山知识库特有 */
+  VolcanoUnstructured = 5,
+  /** 火山数据库 */
+  VolcanoDatabase = 6,
 }
 
 export enum FrequencyType {
@@ -132,6 +138,25 @@ export enum FrequencyType {
   EverySevenDay = 3,
 }
 
+export enum Operation {
+  /** "=" */
+  EQUAL = 1,
+  /** "<>" 或 "!=" */
+  NOT_EQUAL = 2,
+  /** ">" */
+  GREATER_THAN = 3,
+  /** "<" */
+  LESS_THAN = 4,
+  /** ">=" */
+  GREATER_EQUAL = 5,
+  /** "<=" */
+  LESS_EQUAL = 6,
+  /** "IN" */
+  IN = 7,
+  /** "NOT IN" */
+  NOT_IN = 8,
+}
+
 /** 排序字段 */
 export enum OrderField {
   CreateTime = 1,
@@ -142,6 +167,13 @@ export enum OrderField {
 export enum OrderType {
   Desc = 1,
   Asc = 2,
+}
+
+export enum ParamSource {
+  /** 默认用户输入 */
+  Input = 0,
+  /** 引用变量 */
+  Variable = 1,
 }
 
 export enum ParsingType {
@@ -168,11 +200,41 @@ export enum StorageLocation {
   Douyin = 2,
 }
 
+export enum TabType {
+  /** list<string> */
+  ListString = 1,
+  /** string */
+  String = 2,
+  /** int64 */
+  Integer = 3,
+  /** float32 */
+  Float = 4,
+  /** bool */
+  Boolean = 5,
+}
+
 /** 更新类型 */
 export enum UpdateType {
   NoUpdate = 0,
   Cover = 1,
   Append = 2,
+}
+
+export enum VolcanoDatasetServiceStatus {
+  DatasetServiceValid = 0,
+  DatasetServiceInvalid = 1,
+}
+
+export enum VolcanoDatasetStatus {
+  DatasetValid = 0,
+  DatasetInvalid = 1,
+}
+
+export enum VolcanoDatasetType {
+  /** 标准版 */
+  Standard = 1,
+  /** 旗舰版 */
+  Ultimate = 2,
 }
 
 export enum WebStatus {
@@ -249,5 +311,59 @@ export interface SinkStrategy {
 export interface StorageStrategy {
   storage_location: StorageLocation;
   open_search_config?: OpenSearchConfig;
+}
+
+export interface TabValue {
+  type?: TabType;
+  /** 本地默认值 */
+  local_input?: string;
+  /** 入参的来源 */
+  param_source?: ParamSource;
+  /** 引用variable的key */
+  variable_ref?: string;
+}
+
+export interface VolcanoDataset {
+  /** 火山侧知识库id 字符串 */
+  id?: string;
+  /** 名称 */
+  name?: string;
+  /** 类型 结构化 or 非结构化知识库 */
+  format_type?: FormatType;
+  /** 火山知识库详情链接 */
+  link?: string;
+  /** 火山知识库状态 是否已失效 */
+  status?: VolcanoDatasetStatus;
+  desc?: string;
+  /** 火山知识库版本 */
+  version?: VolcanoDatasetType;
+  /** 标签信息（标签名和标签信息） */
+  tab_info?: Record<string, VolcanoDatasetTabInfo>;
+}
+
+export interface VolcanoDatasetProject {
+  /** 目前只需要项目名称 */
+  name?: string;
+  /** 火山知识库空间跳转链接 */
+  link?: string;
+}
+
+export interface VolcanoDatasetService {
+  /** 火山侧知识服务id 字符串 */
+  id?: string;
+  /** 名称 */
+  name?: string;
+  /** 火山知识服务链接 */
+  link?: string;
+  /** 火山知识库状态 是否已失效 */
+  status?: VolcanoDatasetServiceStatus;
+  desc?: string;
+}
+
+export interface VolcanoDatasetTabInfo {
+  name?: string;
+  type?: TabType;
+  /** 枚举值列表 */
+  enumerated_val_list?: Array<string>;
 }
 /* eslint-enable */

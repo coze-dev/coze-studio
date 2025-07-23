@@ -205,6 +205,18 @@ export interface PublicCreateSubscriptionResponse {
   message: string;
 }
 
+export interface PublicGetSpaceBenefitRequest {
+  SpaceID: Int64;
+  /** 不传仅返回 Space Owner 信息 */
+  benefit_types?: Array<common.BenefitType>;
+}
+
+export interface PublicGetSpaceBenefitResponse {
+  data?: SpaceBenefit;
+  code: number;
+  message: string;
+}
+
 export interface PublicGetSubscriptionDetailRequest {
   subscribe_type?: common.SubscriptionType;
 }
@@ -364,6 +376,14 @@ export interface RightValue {
   unit?: string;
 }
 
+export interface SpaceBenefit {
+  /** 用户基本信息 */
+  user_basic_info?: UserBasicInfo;
+  benefit_type_infos?: Partial<
+    Record<common.BenefitType, common.CommonCounter>
+  >;
+}
+
 export interface SubscriptionBenefitDetail {
   name?: string;
   benefit_type?: common.BenefitType;
@@ -393,8 +413,12 @@ export interface SubscriptionDetail {
 export interface SubscriptionDetailV2 {
   /** 用户基本信息 */
   user_basic_info?: UserBasicInfo;
-  benefit_type_infos?: Record<common.BenefitType, common.CommonCounter>;
+  benefit_type_infos?: Partial<
+    Record<common.BenefitType, common.CommonCounter>
+  >;
   resource_packages?: Array<ResourcePackage>;
+  /** 续费信息 */
+  renewal_info?: SubscriptionRenewalInfo;
 }
 
 export interface SubscriptionPlan {
@@ -434,6 +458,13 @@ export interface SubscriptionRelateBenefit {
   collaborate_quota?: CollaborateQuota;
 }
 
+export interface SubscriptionRenewalInfo {
+  /** 续费类型 */
+  renewal_type?: common.SubscriptionRenewalType;
+  /** 单次自动续费的周期数量，比如包月，就是每次自动续费几个月 */
+  renewal_period_times?: Int64;
+}
+
 export interface SubscriptionUserInfo {
   subs_status?: common.SubscriptionStatus;
   /** 对于Free套餐，无该字段 */
@@ -467,6 +498,8 @@ export interface VolcAccountInfo {
   start_at?: Int64;
   /** 权益失效时间（秒级） */
   end_at?: Int64;
+  /** 套餐对应周期资源包实例Id,如果用户购买的是仅版本，则该字段为空 */
+  period_pack_instance_id?: string;
 }
 
 export interface VolcUserInfo {
@@ -474,5 +507,7 @@ export interface VolcUserInfo {
   volc_auth_instance_id?: string;
   /** 火山用户等级 */
   volc_user_level?: common.UserLevel;
+  /** 火山用户实例版本 */
+  volc_instance_type?: common.VolcInstanceType;
 }
 /* eslint-enable */

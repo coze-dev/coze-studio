@@ -100,9 +100,11 @@ export interface GetTracesMetaInfoData {
   /** 字段元信息 */
   field_metas: Record<string, FieldMeta>;
   /** span分类, key是分类，value是span type */
-  span_category: Record<
-    flow_devops_ob_query_telemetry_span.SpanCategory,
-    Array<flow_devops_ob_query_telemetry_span.SpanType>
+  span_category: Partial<
+    Record<
+      flow_devops_ob_query_telemetry_span.SpanCategory,
+      Array<flow_devops_ob_query_telemetry_span.SpanType>
+    >
   >;
 }
 

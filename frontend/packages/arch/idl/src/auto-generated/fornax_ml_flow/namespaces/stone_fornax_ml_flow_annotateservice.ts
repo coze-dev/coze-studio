@@ -32,6 +32,8 @@ export interface CreateAIAnnotateTaskReq {
   promptVersion?: string;
   userPromptColumnName?: string;
   promptVariables?: Array<ai_annotate.PromptVariable>;
+  /** 打标并发度 */
+  executeConcurrency?: number;
   space_id?: string;
   base?: base.Base;
 }
@@ -133,6 +135,8 @@ export interface UpdateAIAnnotateTaskReq {
   promptVersion?: string;
   userPromptColumnName?: string;
   promptVariables?: Array<ai_annotate.PromptVariable>;
+  /** 打标并发度 */
+  executeConcurrency?: number;
   space_id?: string;
   base?: base.Base;
 }

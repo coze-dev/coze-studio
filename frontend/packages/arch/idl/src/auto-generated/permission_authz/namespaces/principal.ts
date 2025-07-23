@@ -21,6 +21,11 @@
 
 export type Int64 = string | number;
 
+export enum AuthSemantics {
+  Delegation = 0,
+  Impersonation = 1,
+}
+
 export enum AuthType {
   /** 用户直接访问 */
   Session = 1,

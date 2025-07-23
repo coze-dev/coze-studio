@@ -19,25 +19,29 @@
 /* tslint:disable */
 // @ts-nocheck
 
+import * as exper_agent from './exper_agent';
+
 export type Int64 = string | number;
 
 export enum CozeSpaceTaskStatus {
-  /** 还得再细化一下
-初始化 */
-  Init = 0,
   /** 运行中，Chat和任务执行都算在运行中 */
   Running = 1,
   /** 暂停 */
   Pause = 2,
   /** 一轮任务完成 */
   TaskFinish = 3,
-  Stop = 4,
+  /** 初始化 */
+  Init = 4,
+  /** 终止 */
+  Stop = 5,
   /** 中断 */
-  Interrupt = 5,
+  Interrupt = 6,
   /** 存在非法内容 */
   IllegalContent = 7,
   /** 异常中断 */
   AbnormalInterrupt = 8,
+  /** 休眠 */
+  Sleep = 9,
 }
 
 export enum CozeSpaceTaskType {
@@ -47,12 +51,30 @@ export enum CozeSpaceTaskType {
   UserResearch = 2,
   /** 股票任务 */
   Stock = 3,
+  /** 舆情专家 */
+  AnalyzePublicOpinion = 5,
+  /** PPT Agent */
+  PPTAgent = 6,
+  /** 同程专家agent */
+  TongCheng = 9,
+}
+
+export enum FeelType {
+  Good = 1,
+  Bad = 2,
 }
 
 export enum MessageType {
   Query = 1,
   Answer = 2,
   Resume = 3,
+}
+
+export enum MilvTaskType {
+  /** 审查，起草，法律问答 */
+  Review = 1,
+  Draft = 2,
+  LawQA = 3,
 }
 
 export enum OperateType {
@@ -63,6 +85,28 @@ export enum OperateType {
   DoNotDisturb = 5,
   CancelDoNotDisturb = 6,
   Stop = 7,
+}
+
+/** 定时任务状态 */
+export enum ScheduledTaskStatus {
+  /** 初始化 */
+  Init = 1,
+  /** 启用中 */
+  Enabled = 2,
+  /** 弃用 */
+  Disabled = 3,
+}
+
+/** 定时任务调度状态 */
+export enum ScheduledTaskTriggerStatus {
+  /** 初始化状态 */
+  Pending = 1,
+  /** 调度成功 */
+  Success = 2,
+  /** 调度回避 */
+  Avoid = 3,
+  /** 调度失败 */
+  Failed = 4,
 }
 
 export enum StockSearchType {
@@ -81,7 +125,18 @@ export enum StockTaskType {
   Scheduled = 2,
 }
 
+export enum TaskExampleStatus {
+  Init = 0,
+  Enable = 1,
+  Disable = 2,
+}
+
 export enum TaskReplayOperateType {
+  Open = 1,
+  Close = 2,
+}
+
+export enum TaskReplayStatus {
   Open = 1,
   Close = 2,
 }
@@ -89,6 +144,12 @@ export enum TaskReplayOperateType {
 export enum TaskRunMode {
   HandsOff = 0,
   Cooperative = 1,
+  Auto = 2,
+}
+
+export enum TaskSourceFrom {
+  UserCreate = 0,
+  Example = 1,
 }
 
 export enum UploadUserResearchFileAction {
@@ -115,9 +176,44 @@ export interface Action {
   parent_step_ids?: Array<string>;
 }
 
+export interface AnalyzePublicOpinionConfig {
+  /** 关键词 */
+  key_word?: string;
+  /** 描述 */
+  description?: string;
+  /** 关联词 */
+  related_words?: Array<RelatedWord>;
+  /** 已授权的渠道 */
+  authorized_channels?: Array<Channel>;
+  /** 是否开启联网搜索 */
+  is_open_search?: boolean;
+}
+
 export interface BrowserResumeData {
   /** 是否跳过接管 */
   skip_takeover?: boolean;
+}
+
+export interface Channel {
+  url_code?: string;
+  name?: string;
+  is_authorization?: boolean;
+  icon?: string;
+  /** 不在白名单里面的URL */
+  extra_web_url?: string;
+  is_open?: boolean;
+}
+
+export interface CheckUserScheduledTaskQuotaData {
+  remained_quota?: number;
+}
+
+export interface CheckUserScheduledTaskQuotaRequest {}
+
+export interface CheckUserScheduledTaskQuotaResponse {
+  code?: Int64;
+  msg?: string;
+  data?: CheckUserScheduledTaskQuotaData;
 }
 
 export interface CozeSpaceChatRequest {
@@ -130,6 +226,11 @@ export interface CozeSpaceChatRequest {
   pause_reason?: string;
   task_run_mode?: TaskRunMode;
   expert_agent_run_config?: ExpertTaskRunConfig;
+  scheduled_task_config?: ScheduledTaskConfig;
+  /** 禁用团队模式 */
+  disable_team_mode?: boolean;
+  /** resume 时相关表单数据 */
+  resume_data?: ResumeData;
 }
 
 export interface CozeSpaceChatResponse {
@@ -146,15 +247,20 @@ export interface CozeSpaceChatResponseData {
 export interface CozeSpaceTask {
   task_id?: string;
   task_name?: string;
-  task_type?: CozeSpaceTaskType;
+  task_type?: Int64;
   task_status?: CozeSpaceTaskStatus;
   task_create_time?: string;
   task_update_time?: string;
   task_display_info?: CozeSpaceTaskDisplayInfo;
   mcp_tool_list?: Array<Mcp>;
   expert_agent_config?: ExpertAgentConfig;
+  parent_id?: string;
   /** 是否是定时任务 */
   is_scheduled_task?: boolean;
+  /** task 关联的定时任务相关信息 */
+  scheduled_task?: TaskScheduledInfo;
+  /** 是否开启团队模式 */
+  team_mode?: boolean;
 }
 
 export interface CozeSpaceTaskDisplayInfo {
@@ -164,16 +270,46 @@ export interface CozeSpaceTaskDisplayInfo {
   is_dnd?: boolean;
 }
 
+export interface CreateCozeScheduledTaskData {
+  scheduled_task?: ScheduledTask;
+  answer_id?: string;
+  query_id?: string;
+}
+
+export interface CreateCozeScheduledTaskRequest {
+  /** 是否需要试运行 */
+  is_need_try_run?: boolean;
+  scheduled_task_name?: string;
+  trigger?: string;
+  /** 源任务 id */
+  source_task_id?: string;
+  /** 任务计划 */
+  task_plan?: string;
+  description?: string;
+  /** 执行的时间点，格式为 10:00 */
+  daily_executed_at?: string;
+  /** 新版的plan，一个普通的string，优先取这个，没有就取 task_plan */
+  task_plan_v2?: string;
+}
+
+export interface CreateCozeScheduledTaskResponse {
+  code?: Int64;
+  msg?: string;
+  data?: CreateCozeScheduledTaskData;
+}
+
 export interface CreateCozeSpaceTaskData {
   task: CozeSpaceTask;
 }
 
 export interface CreateCozeSpaceTaskRequest {
   task_name: string;
-  task_type: CozeSpaceTaskType;
+  task_type: Int64;
   file_uri_list?: Array<string>;
   mcp_tool_list?: Array<Mcp>;
   agent_ids?: Array<string>;
+  scheduled_task_setting?: ScheduledTaskSetting;
+  source_from?: TaskSourceFrom;
   expert_agent_config?: ExpertAgentConfig;
 }
 
@@ -185,6 +321,7 @@ export interface CreateCozeSpaceTaskResponse {
 
 export interface CreateTaskReplayRequest {
   task_id?: string;
+  need_qr_code?: boolean;
 }
 
 export interface CreateTaskReplayResponse {
@@ -194,8 +331,17 @@ export interface CreateTaskReplayResponse {
 }
 
 export interface CreateTaskReplayResponseData {
-  share_id?: string;
-  secret?: string;
+  task_share_url?: string;
+  qr_code_url?: string;
+}
+
+export interface DeleteCozeScheduledTaskRequest {
+  scheduled_task_id: string;
+}
+
+export interface DeleteCozeScheduledTaskResponse {
+  code?: Int64;
+  msg?: string;
 }
 
 export interface DeleteCozeSpaceTaskRequest {
@@ -207,14 +353,58 @@ export interface DeleteCozeSpaceTaskResponse {
   msg?: string;
 }
 
+export interface DiscountTravelConfig {
+  /** 出发地 */
+  departure?: string;
+  /** 目的地 */
+  destination?: string;
+  /** 出发时间 */
+  departure_time?: string;
+  /** 出行人数 */
+  return_time?: string;
+  /** 出行方式 */
+  travel_mode?: Array<string>;
+  /** 个性化需求 */
+  personal_demand?: string;
+}
+
 export interface ExpertAgentConfig {
   user_research_config?: UserResearchConfig;
   stock_config?: StockConfig;
+  analyze_public_opinion_config?: AnalyzePublicOpinionConfig;
+  /** callback时透传 */
+  external_config?: Record<string, string>;
+  milv_config?: MilvConfig;
+  tongcheng_agent_config?: TongChengTravelAgentConfig;
 }
 
 export interface ExpertTaskRunConfig {
   user_research_run_config?: UserResearchRunConfig;
   stock_task_run_config?: StockTaskRunConfig;
+  analyze_public_opinion_config?: AnalyzePublicOpinionConfig;
+  milv_config?: MilvConfig;
+}
+
+export interface FeelContent {
+  bad_reason?: string;
+}
+
+export interface FeelGoodData {
+  task_id?: string;
+  answer_id?: string;
+  feel?: FeelType;
+}
+
+export interface FeelGoodRequest {
+  task_id?: string;
+  answer_id?: string;
+  feel?: FeelType;
+  content?: FeelContent;
+}
+
+export interface FeelGoodResponse {
+  code?: Int64;
+  msg?: string;
 }
 
 export interface File {
@@ -267,6 +457,7 @@ export interface GetMessageListResponseData {
 
 export interface GetSandboxTokenRequest {
   task_id: string;
+  action_url_code?: string;
 }
 
 export interface GetSandboxTokenResponse {
@@ -278,6 +469,77 @@ export interface GetSandboxTokenResponse {
 export interface GetSandboxTokenResponseData {
   token?: string;
   url?: string;
+}
+
+export interface GetSingleScheduledTaskData {
+  taskInfo?: ScheduledTask;
+}
+
+export interface GetSingleScheduledTaskRequest {
+  scheduled_task_id: string;
+}
+
+export interface GetSingleScheduledTaskResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetSingleScheduledTaskData;
+}
+
+export interface GetTaskExampleCategoryListData {
+  example_categories?: Array<TaskExampleCategory>;
+}
+
+export interface GetTaskExampleCategoryListRequest {}
+
+export interface GetTaskExampleCategoryListResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetTaskExampleCategoryListData;
+}
+
+export interface GetTaskExampleData {
+  task_example?: TaskExample;
+}
+
+export interface GetTaskExampleListData {
+  task_examples?: Array<TaskExample>;
+  total?: number;
+}
+
+export interface GetTaskExampleListRequest {
+  category_id?: string;
+  page_size?: number;
+  page?: number;
+}
+
+export interface GetTaskExampleListResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetTaskExampleListData;
+}
+
+export interface GetTaskExampleRequest {
+  task_example_id: string;
+}
+
+export interface GetTaskExampleResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetTaskExampleData;
+}
+
+export interface GetTaskInfoData {
+  task_info?: CozeSpaceTask;
+}
+
+export interface GetTaskInfoRequest {
+  task_id: string;
+}
+
+export interface GetTaskInfoResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetTaskInfoData;
 }
 
 export interface GetTaskReplayByIdRequest {
@@ -293,6 +555,7 @@ export interface GetTaskReplayByIdResponse {
 
 export interface GetTaskReplayByIdResponseData {
   replay_file?: File;
+  task_example_id?: string;
 }
 
 export interface GetTaskReplayRequest {
@@ -309,8 +572,20 @@ export interface GetTaskReplayResponseData {
   replay_task_list?: Array<TaskReplay>;
 }
 
+export interface GetUserScheduledTaskData {
+  scheduled_tasks?: Array<ScheduledTask>;
+}
+
+export interface GetUserScheduledTaskRequest {}
+
+export interface GetUserScheduledTaskResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetUserScheduledTaskData;
+}
+
 export interface GetUserScheduledTasksData {
-  task_num_map?: Record<CozeSpaceTaskType, Int64>;
+  task_num_map?: Record<Int64, Int64>;
 }
 
 export interface GetUserScheduledTasksRequest {}
@@ -332,7 +607,19 @@ export interface Message {
   content?: string;
   file_list?: Array<File>;
   create_time?: Int64;
-  task_run_mode?: TaskRunMode;
+  /** resume 时相关表单数据 */
+  resume_data?: ResumeData;
+}
+
+export interface MilvConfig {
+  /** 类型 */
+  type?: MilvTaskType;
+  /** 文件id */
+  fileId?: string;
+  review_config?: exper_agent.ReviewConfig;
+  draft_config?: exper_agent.DraftConfig;
+  law_qa_config?: exper_agent.LawQAConfig;
+  contract_files?: Array<exper_agent.ContractFileInfo>;
 }
 
 export interface NameDesc {
@@ -342,9 +629,22 @@ export interface NameDesc {
   ori_name?: string;
 }
 
+export interface OperatePausedTaskRequest {
+  task_id?: string;
+  /** confirm_plan or ack_outline */
+  pause_reason?: string;
+}
+
+export interface OperatePausedTaskResponse {
+  code?: Int64;
+  msg?: string;
+}
+
 export interface OperateTaskData {
   /** OperateType=Resume时返回 */
   answer_id?: string;
+  /** OperateType=Resume时返回 */
+  message_id?: string;
 }
 
 export interface OperateTaskReplayRequest {
@@ -394,6 +694,89 @@ export interface PollStepListResponseData {
   next_answer_id?: string;
 }
 
+export interface RelatedWord {
+  intent?: string;
+  keywords?: Array<string>;
+  no_choice_keywords?: Array<string>;
+}
+
+export interface RestoreExampleFileData {
+  files?: Array<File>;
+}
+
+export interface RestoreExampleFileRequest {
+  task_id: string;
+  example_id: string;
+}
+
+export interface RestoreExampleFileResponse {
+  code?: Int64;
+  msg?: string;
+  data?: RestoreExampleFileData;
+}
+
+export interface ResumeData {
+  /** 幻灯片 */
+  slide_resume_data?: SlideResumeData;
+}
+
+export interface ScheduledRecord {
+  /** 调度状态 */
+  trigger_status?: ScheduledTaskTriggerStatus;
+  /** 调度时间 */
+  trigger_time?: string;
+}
+
+export interface ScheduledTask {
+  scheduled_task_id?: string;
+  scheduled_task_name?: string;
+  trigger?: string;
+  /** 定时任务状态 */
+  status?: ScheduledTaskStatus;
+  task_type?: CozeSpaceTaskType;
+  mcp_tool_list?: Array<Mcp>;
+  expert_agent_config?: ExpertAgentConfig;
+  /** 任务步骤，对应 agent 中的 PlanUpdateData 结构 */
+  task_plan?: string;
+  description?: string;
+  /** 执行的时间点，格式为 10:00 */
+  daily_executed_at?: string;
+  /** 新版的plan，一个普通的string，优先取这个，没有就取 task_plan */
+  task_plan_v2?: string;
+}
+
+export interface ScheduledTaskConfig {
+  plan_update_config?: string;
+  /** 如果用户通过时间选择窗口修改了执行时间就传 true */
+  save_with_new_time?: boolean;
+  /** 用户保存计划时的 cron 表达式 */
+  cron_exp?: string;
+  /** 用于间隔 xx 天场景，具体的执行时刻 */
+  execute_time?: string;
+  /** plan卡片，用户希望通过query修改定时任务时传true */
+  save_and_modify_with_query?: boolean;
+}
+
+export interface ScheduledTaskSetting {
+  trigger?: string;
+  related_scheduled_task_id?: string;
+}
+
+export interface SearchFeelGoodRequest {
+  task_id?: string;
+  answer_id?: string;
+}
+
+export interface SearchFeelGoodResponse {
+  code?: Int64;
+  msg?: string;
+  data?: SearchFeelGoodResponseData;
+}
+
+export interface SearchFeelGoodResponseData {
+  feel_good_data?: FeelGoodData;
+}
+
 export interface SearchStockData {
   stock_list?: Array<StockInfo>;
   sector_list?: Array<string>;
@@ -412,6 +795,20 @@ export interface SearchStockResponse {
   code?: Int64;
   msg?: string;
   data?: SearchStockData;
+}
+
+export interface Slide {
+  title?: string;
+  content?: string;
+}
+
+export interface SlideResumeData {
+  /** 总页数 */
+  total_page_number?: Int64;
+  /** PPT场景 */
+  scene_key?: string;
+  /** 大纲 */
+  slides?: Array<Slide>;
 }
 
 export interface Step {
@@ -453,18 +850,129 @@ export interface StockTaskRunConfig {
   is_onboarding_run?: boolean;
 }
 
+export interface TaskExample {
+  /** 案例的 id */
+  id?: string;
+  name?: string;
+  description?: string;
+  icon_url?: string;
+  category_info?: TaskExampleCategory;
+  user_query?: string;
+  task_replay_url?: string;
+  task_type?: CozeSpaceTaskType;
+  mcp_tool_list?: Array<Mcp>;
+  expert_agent_config?: ExpertAgentConfig;
+  task_run_mode?: TaskRunMode;
+  status?: TaskExampleStatus;
+  files?: Array<File>;
+  is_team_mode?: boolean;
+}
+
+export interface TaskExampleCategory {
+  id?: string;
+  name?: string;
+  is_job_recommend?: boolean;
+  recommend_content?: string;
+}
+
 export interface TaskReplay {
   secret?: string;
   task_share_id?: string;
+  taskReplayStatus?: TaskReplayStatus;
 }
 
-export interface TriggerScheduledTaskRequest {
-  task_id: string;
+export interface TaskScheduledInfo {
+  /** 源定时任务信息 */
+  source_scheduled_task?: ScheduledTask;
+  /** 定时任务调度记录 */
+  scheduled_record?: ScheduledRecord;
 }
 
-export interface TriggerScheduledTaskResponse {
+export interface TongChengTravelAgentConfig {
+  /** 旅游攻略配置 */
+  travel_guide_config?: TravelGuideConfig;
+  /** 优惠出行配置 */
+  discount_travel_config?: DiscountTravelConfig;
+  /** 保存设置后需要发送的query（不支持接口修改) */
+  user_send_query?: string;
+}
+
+export interface TravelGuideConfig {
+  /** 出发地 */
+  departure?: string;
+  /** 目的地 */
+  destination?: string;
+  /** 出发时间 */
+  departure_time?: string;
+  /** 返程时间 */
+  return_time?: string;
+  /** 预算 */
+  budget?: string;
+  /** 个性化需求 */
+  personal_demand?: string;
+  /** 出行人数 */
+  travel_people?: TravelPeople;
+}
+
+export interface TravelPeople {
+  /** 成人人数 */
+  adult_num?: Int64;
+  /** 儿童人数 */
+  child_num?: Int64;
+  /** 婴儿人数 */
+  infant_num?: Int64;
+  /** 宠物人数 */
+  pet_num?: Int64;
+}
+
+export interface TryRunCozeScheduledTaskData {
+  answer_id?: string;
+  query_id?: string;
+  user_query?: string;
+  new_task_id?: string;
+}
+
+export interface TryRunCozeScheduledTaskRequest {
+  scheduled_task_id: string;
+}
+
+export interface TryRunCozeScheduledTaskResponse {
   code?: Int64;
   msg?: string;
+  data?: TryRunCozeScheduledTaskData;
+}
+
+export interface UpdateCozeScheduledTaskData {
+  answer_id?: string;
+  query_id?: string;
+}
+
+export interface UpdateCozeScheduledTaskRequest {
+  scheduled_task_id: string;
+  task_type: CozeSpaceTaskType;
+  /** 定时任务状态 */
+  status?: ScheduledTaskStatus;
+  scheduled_task_name?: string;
+  trigger?: string;
+  mcp_tool_list?: Array<Mcp>;
+  expert_agent_config?: ExpertAgentConfig;
+  /** 任务计划, 对应 agent 的PlanUpdateData 结构 */
+  task_plan?: string;
+  /** 是否需要试运行 */
+  is_need_try_run?: boolean;
+  description?: string;
+  /** 请求来自于哪个 task_id，如果是来自管理页面就不用传 */
+  task_id?: string;
+  /** 执行的时间点，格式为 10:00 */
+  daily_executed_at?: string;
+  /** 新版的plan，一个普通的string，优先取这个，没有就取 task_plan */
+  task_plan_v2?: string;
+}
+
+export interface UpdateCozeScheduledTaskResponse {
+  code?: Int64;
+  msg?: string;
+  data?: UpdateCozeScheduledTaskData;
 }
 
 export interface UpdateCozeSpaceTaskData {
@@ -480,12 +988,24 @@ export interface UpdateCozeSpaceTaskRequest {
   task_name?: string;
   mcp_tool_list?: Array<Mcp>;
   expert_agent_config?: ExpertAgentConfig;
+  scheduled_task_setting?: ScheduledTaskSetting;
 }
 
 export interface UpdateCozeSpaceTaskResponse {
   code?: Int64;
   msg?: string;
   data?: UpdateCozeSpaceTaskData;
+}
+
+export interface UpdateFileContentRequest {
+  task_id?: string;
+  file_uri?: string;
+  file_content?: Blob;
+}
+
+export interface UpdateFileContentResponse {
+  code?: Int64;
+  msg?: string;
 }
 
 export interface UpdateTaskPlanData {

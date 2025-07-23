@@ -31,6 +31,7 @@ export enum EnvType {
 export enum OrderType {
   Unknown = 1,
   Desc = 2,
+  Asc = 3,
 }
 
 export enum PlatformType {
@@ -48,6 +49,7 @@ export enum PlatformType {
   CozeProject = 10,
   CozeBot = 11,
   SaasEvalTarget = 12,
+  SaasAll = 13,
 }
 
 export enum QueryOfflineType {

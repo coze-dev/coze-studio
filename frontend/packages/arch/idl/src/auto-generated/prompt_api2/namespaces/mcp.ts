@@ -23,6 +23,15 @@ import * as flow_devops_prompt_common from './flow_devops_prompt_common';
 
 export type Int64 = string | number;
 
+export enum MCPStatus {
+  /** 未定义 */
+  Undefined = 0,
+  /** 正常 */
+  Normal = 1,
+  /** 已停用 */
+  Disabled = 2,
+}
+
 export interface Content {
   type?: string;
   text?: string;
@@ -32,6 +41,17 @@ export interface Function {
   name?: string;
   description?: string;
   input_schema?: string;
+}
+
+export interface MCPExecuteConfig {
+  /** 动态请求头 accessPointID -> key -> value */
+  headers?: Record<string, Record<string, string>>;
+  /** 动态请求参数 accessPointID -> key -> value */
+  params?: Record<string, Record<string, string>>;
+  /** 通用动态请求头 */
+  common_headers?: Record<string, string>;
+  /** 通用动态参数 */
+  common_params?: Record<string, string>;
 }
 
 export interface MCPServer {
@@ -57,6 +77,12 @@ export interface MCPServer {
   create_time_ms?: Int64;
   /** 更新时间 */
   update_time_ms?: Int64;
+  /** 是否支持与prompt一起发布  已废弃，不消费不更改 */
+  is_publish_supported?: boolean;
+  /** 服务状态 */
+  status?: MCPStatus;
+  /** MCP 对应的文档或详情页 */
+  detail_page_url?: string;
 }
 
 export interface MCPServerAccessPoint {
@@ -86,5 +112,13 @@ export interface MCPServerAccessPoint {
   create_time_ms?: Int64;
   /** 更新时间 */
   update_time_ms?: Int64;
+  /** 接口PSM */
+  server_psm?: string;
+  /** 配置 */
+  config?: flow_devops_prompt_common.AccessPointConfig;
+  /** 服务状态 */
+  status?: MCPStatus;
+  /** 是否支持与prompt一起发布 */
+  is_publish_supported?: boolean;
 }
 /* eslint-enable */

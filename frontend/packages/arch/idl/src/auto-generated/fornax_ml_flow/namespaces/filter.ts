@@ -21,6 +21,31 @@
 
 export type Int64 = string | number;
 
+export interface FieldMeta {
+  /** 字段类型 */
+  field_type: string;
+  /** 当前字段支持的操作类型 */
+  query_types: Array<string>;
+  display_name: string;
+  /** 支持的可选项 */
+  field_options?: FieldOptions;
+  /** 当前字段在schema中是否存在 */
+  exist?: boolean;
+}
+
+export interface FieldMetaInfoData {
+  /** 字段元信息 */
+  field_metas: Record<string, FieldMeta>;
+}
+
+export interface FieldOptions {
+  i32?: Array<number>;
+  i64?: Array<string>;
+  f64?: Array<number>;
+  string?: Array<string>;
+  obj?: Array<ObjectFieldOption>;
+}
+
 export interface Filter {
   queryAndOr?: string;
   filterFields: Array<FilterField>;
@@ -33,5 +58,10 @@ export interface FilterField {
   query_type?: string;
   query_and_or?: string;
   sub_filter?: Filter;
+}
+
+export interface ObjectFieldOption {
+  id: Int64;
+  displayName: string;
 }
 /* eslint-enable */

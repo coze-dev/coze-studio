@@ -19,6 +19,7 @@
 /* tslint:disable */
 // @ts-nocheck
 
+import * as filter from './filter';
 import * as flow_devops_prompt_common from './flow_devops_prompt_common';
 import * as batch_infer from './batch_infer';
 
@@ -40,9 +41,37 @@ export enum AnnotationType {
   Manual = 3,
 }
 
+export enum CrowdsourcingAnnotateJobStatus {
+  Undefined = 0,
+  Sending = 1,
+  In_Progress = 2,
+  Abnormal = 3,
+  Completed = 4,
+  Terminated = 5,
+}
+
+export enum CrowdsourcingAnnotationPlatform {
+  Undefined = 0,
+  AIDP = 1,
+  AIDP_Lite = 2,
+}
+
+export enum DataSelectScope {
+  Undefined = 0,
+  All = 1,
+  Filtered = 2,
+  Manually_Selected = 3,
+}
+
 export enum RuleAnnotatorCategory {
   /** python */
   Python = 1,
+}
+
+export enum ThinkingOutputBehavior {
+  UNSPECIFIED = 0,
+  WithoutThinking = 1,
+  ThinkingToSpecifiedColumn = 2,
 }
 
 export interface AIAnnotator {
@@ -50,6 +79,57 @@ export interface AIAnnotator {
   category?: AIAnnotatorCategory;
   onlineAIAnnotator?: OnlineAIAnnotator;
   offlineAIAnnotator?: OfflineAIAnnotator;
+}
+
+export interface AIDPConfig {
+  /** AIDP 用户 ID */
+  userID: string;
+  /** AIDP 任务 ID */
+  taskID: string;
+  /** 任务名称 */
+  taskName: string;
+  /** 任务详情链接，返回字段 */
+  taskURL?: string;
+  answerSchema?: string;
+}
+
+export interface AIDPField {
+  key?: string;
+  name?: string;
+}
+
+export interface AIDPFlowNode {
+  nodeID?: string;
+  name?: string;
+}
+
+export interface AIDPTaskFlowConfig {
+  nodes?: Array<AIDPFlowNode>;
+  requiredFields?: Array<AIDPField>;
+}
+
+export interface AIDPTaskSummary {
+  /** 任务ID */
+  taskID?: string;
+  /** 任务名称 */
+  title?: string;
+  /** 项目名称 */
+  projectName?: string;
+  /** 回调配置 */
+  callbackOpts?: CallbackOpts;
+  /** 答案模板ID */
+  templateID?: string;
+  /** 任务链接 */
+  taskURL?: string;
+}
+
+export interface AnnotateStatusDetail {
+  /** 总数据量 */
+  inputSize?: string;
+  /** 已送标数据量 */
+  sent?: string;
+  /** 已取标数据量 */
+  received?: string;
 }
 
 export interface AnnotationConfig {
@@ -121,6 +201,78 @@ export interface Annotator {
   manualAnnotator?: ManualAnnotator;
 }
 
+export interface CallbackOpts {
+  CallbackType?: string;
+}
+
+export interface CrowdsourcingAnnotateInputConfig {
+  /** 输入数据集ID */
+  inputDatasetID: string;
+  /** 输入数据集名 */
+  inputDatasetName: string;
+  /** 输入数据集版本 */
+  inputDatasetVersionNum: string;
+  /** 输入数据集Veriosn主键 */
+  inputDatasetVersionID: string;
+  /** 三段式版本号返回字段 */
+  inputDatasetVersion?: string;
+  /** 需要标注数据的itemID */
+  itemIDs?: Array<Int64>;
+  /** 数据筛选条件,待定看标签的具体实现 */
+  filter?: filter.Filter;
+  /** 返回字段 */
+  fieldMeta?: filter.FieldMetaInfoData;
+  /** 返回字段 */
+  total?: number;
+  /** 发送字段映射配置 */
+  inputMappings: Array<InputMapping>;
+  /** 数据范围 */
+  dataSelectScope?: DataSelectScope;
+}
+
+export interface CrowdsourcingAnnotateJob {
+  /** 主键 */
+  id?: string;
+  name?: string;
+  description?: string;
+  platform?: CrowdsourcingAnnotationPlatform;
+  /** AIDP 配置 */
+  aidpConfig?: AIDPConfig;
+  /** 送标配置 */
+  inputConfig?: CrowdsourcingAnnotateInputConfig;
+  /** 取标配置 */
+  outputConfig?: CrowdsourcingAnnotateOutputConfig;
+  /** 数据详情存储的数据集ID */
+  InternalDatasetID?: string;
+  /** 任务状态 */
+  status?: CrowdsourcingAnnotateJobStatus;
+  /** 失败的原因 */
+  terminateReason?: string;
+  /** 任务进展 */
+  statusDetail?: AnnotateStatusDetail;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新时间/结束时间 */
+  updatedAt?: string;
+  /** 创建人 */
+  createdBy?: string;
+}
+
+export interface CrowdsourcingAnnotateOutputConfig {
+  /** 是否自动取标 */
+  isAutoFetchRes: boolean;
+  /** 是否自动输出到新数据集 */
+  isAutoExportToNewDataset: boolean;
+  /** 输出数据集名称 */
+  outputDatasetName?: string;
+  /** 输出数据集ID 返回字段 */
+  outputDatasetID?: string;
+  /** 是否拆解标注结果 */
+  isParseAnnotateRes: boolean;
+  /** 输出映射 */
+  outputMappings?: Array<OutputMapping>;
+}
+
 export interface InputMapping {
   /** 输入类型: 固定值fixed、关联字段use_column、之前输入former_model_input、之前输出former_model_output */
   sourceType?: string;
@@ -130,6 +282,8 @@ export interface InputMapping {
   targetType?: string;
   /** 输出值 */
   targetValue?: string;
+  /** 如果是列这个字段可以存储name */
+  sourceName?: string;
 }
 
 export interface ManualAnnotator {
@@ -148,6 +302,8 @@ export interface ManualAnnotator {
   inputMappings?: Array<InputMapping>;
   /** 输出映射 */
   outputMappings?: Array<OutputMapping>;
+  /** thinking输出映射，当ThinkingOutputBehavior=ThinkingToSpecifiedColumn时使用 */
+  thinkingOutputMapping?: OutputMapping;
 }
 
 export interface OfflineAIAnnotator {
@@ -197,6 +353,8 @@ export interface OnlineAIAnnotator {
   autoUpdate?: boolean;
   /** 打标并发度 */
   executeConcurrency?: number;
+  /** 输出模型thinking过程的策略 */
+  thinkingOutputBehavior?: ThinkingOutputBehavior;
 }
 
 export interface OutputMapping {
@@ -208,6 +366,10 @@ export interface OutputMapping {
   targetType?: string;
   /** 输出值 */
   targetValue?: string;
+  /** targetType是use_column时标识是否是新建列 */
+  isNewColumn?: boolean;
+  /** 输入值的标签/name */
+  sourceName?: string;
 }
 
 export interface PassKTask {
@@ -281,5 +443,16 @@ export interface RuleAnnotator {
   onlyForEmpty?: boolean;
   /** 仅为失败项打标 */
   onlyForFailed?: boolean;
+}
+
+export interface SearchConfig {
+  /** 数据集ID */
+  datasetID?: string;
+  /** 搜索的任务名称 */
+  jobName?: string;
+  /** 搜索的任务ID */
+  jobID?: string;
+  /** 搜索的创建人 */
+  createdBy?: Array<string>;
 }
 /* eslint-enable */

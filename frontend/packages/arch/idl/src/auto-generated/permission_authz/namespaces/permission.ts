@@ -37,6 +37,7 @@ export enum WorkspacePermissionOption {
 
 export interface AccountPermission {
   permission_list: Array<string>;
+  account_id_list?: Array<string>;
 }
 
 export interface ActionAndResource {
@@ -62,6 +63,11 @@ export interface AttributeConstraint {
   connector_bot_update_profile_attribute?: ConnectorBotUpdateProfileAttribute;
 }
 
+export interface BotPermission {
+  bot_id_list: Array<string>;
+  permission_list: Array<string>;
+}
+
 export interface ConnectorBotChatAttribute {
   bot_id_list?: Array<string>;
 }
@@ -75,6 +81,11 @@ export interface ConnectorPermission {
   permission_list: Array<string>;
 }
 
+export interface EnterprisePermission {
+  permission_list: Array<string>;
+  enterprise_id_list: Array<string>;
+}
+
 export interface Permission {
   connector_permission?: ConnectorPermission;
   workspace_permission?: WorkspacePermission;
@@ -82,6 +93,8 @@ export interface Permission {
   attribute_constraint?: AttributeConstraint;
   project_permission?: ProjectPermission;
   workflow_permission?: WorkflowPermission;
+  bot_permission?: BotPermission;
+  enterprise_permission?: EnterprisePermission;
 }
 
 export interface ProjectPermission {

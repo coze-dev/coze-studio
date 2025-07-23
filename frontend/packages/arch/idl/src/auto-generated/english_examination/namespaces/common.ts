@@ -91,11 +91,54 @@ export enum PaperStatus {
   Disbled = 1,
 }
 
+/** 题目选项正确状态 */
 export enum QuestionOptionCorrectStatus {
   /** 错误 */
   Incorrect = 0,
   /** 正确 */
   Correct = 1,
+}
+
+export enum RemindType {
+  /** 未知 */
+  Unknown = 0,
+  /** 测试通知 */
+  Test = 1,
+  /** 正式通知 */
+  Formal = 2,
+}
+
+export enum TeamExamCategory {
+  /** 测试 */
+  Test = 0,
+  /** 团队考试 */
+  TeamExam = 1,
+}
+
+/** 团队考试批改类型 */
+export enum TeamExamCheckType {
+  /** 机器批改 */
+  DeprecatedMachine = 0,
+  /** 人工批改 */
+  DeprecatedManual = 1,
+  /** 人工AI */
+  Manual = 2,
+  /** 机器AI */
+  Machine = 3,
+  /** 统一考试（人工批改） */
+  UnifiedManual = 4,
+  /** 统一考试（机器批改） */
+  UnifiedMachine = 5,
+}
+
+/** 团队考试状态 */
+export enum TeamExamStatus {
+  /** 进行中 */
+  InProgress = 0,
+  /** 未开始 */
+  Pending = 1,
+  /** 已完成 */
+  Finished = 2,
 }
 
 export interface CreatePaperExamParams {

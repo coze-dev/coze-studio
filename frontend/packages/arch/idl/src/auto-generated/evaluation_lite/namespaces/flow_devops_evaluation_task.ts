@@ -666,6 +666,7 @@ export interface Task {
   /** 评估器整体 token 消耗 */
   evaluator_token_usage?: TokenUsage;
   credit_cost?: number;
+  description?: string;
 }
 
 export interface TaskManualStats {

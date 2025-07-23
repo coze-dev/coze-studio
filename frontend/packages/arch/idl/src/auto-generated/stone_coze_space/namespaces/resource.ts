@@ -21,10 +21,54 @@
 
 export type Int64 = string | number;
 
+export enum GenFileType {
+  PDF = 1,
+  /** WIP */
+  DOCX = 2,
+}
+
+export enum OperateSandboxAction {
+  DeleteCookie = 1,
+}
+
+export interface CodeRepairRequest {
+  uri?: string;
+  error_msg?: string;
+}
+
+export interface CodeRepairResponse {
+  code?: Int64;
+  msg?: string;
+  data?: CodeRepairResponseData;
+}
+
+export interface CodeRepairResponseData {}
+
+export interface DeleteCookieInfo {
+  url_code?: string;
+}
+
+export interface GenDocRequest {
+  task_id: string;
+  target_file_type?: GenFileType;
+  original_file_uri?: string;
+}
+
+export interface GenDocResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GenDocResponseData;
+}
+
+export interface GenDocResponseData {
+  target_file_url?: string;
+}
+
 export interface GetUrlRequest {
   uri: string;
   /** Expiration time in seconds, default 3600 seconds, max 7 days, range [1, 604800] */
   expire_seconds?: Int64;
+  is_short_url?: boolean;
 }
 
 export interface GetUrlResponse {
@@ -35,6 +79,53 @@ export interface GetUrlResponse {
 
 export interface GetUrlResponseData {
   url?: string;
+}
+
+export interface GetWebUrlRequest {
+  original_url?: string;
+  exchange_for_short_url?: boolean;
+  exchange_for_qr_code?: boolean;
+}
+
+export interface GetWebUrlResponse {
+  code?: Int64;
+  msg?: string;
+  data?: GetWebUrlResponseData;
+}
+
+export interface GetWebUrlResponseData {
+  short_url?: string;
+  qr_code_url?: string;
+}
+
+export interface ImageInfo {
+  image_url?: string;
+}
+
+export interface OperateSandboxRequest {
+  task_id?: string;
+  action?: OperateSandboxAction;
+  delete_cookie_info?: DeleteCookieInfo;
+}
+
+export interface OperateSandboxResponse {
+  code?: Int64;
+  msg?: string;
+}
+
+export interface SearchImageRequest {
+  query: string;
+  count?: number;
+}
+
+export interface SearchImageResponse {
+  code?: Int64;
+  msg?: string;
+  data?: SearchImageResponseData;
+}
+
+export interface SearchImageResponseData {
+  image_list?: Array<ImageInfo>;
 }
 
 export interface Text2ImageRequest {

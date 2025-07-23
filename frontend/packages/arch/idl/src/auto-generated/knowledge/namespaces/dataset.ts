@@ -64,6 +64,22 @@ export enum DatasetStatus {
   DatasetFailed = 9,
 }
 
+export enum DatasetType {
+  Coze = 0,
+  Volcano = 1,
+}
+
+export enum EntityType {
+  Project = 1,
+  Bot = 2,
+}
+
+export enum EventType {
+  Create = 1,
+  Update = 2,
+  Delete = 3,
+}
+
 export enum InstanceStatus {
   /** 创建中, 理论上不会返回该状态 */
   InstanceStatusCreating = 0,
@@ -210,6 +226,10 @@ export interface Dataset {
   /** 存储配置id */
   storage_config_id?: string;
   dy_bot_id?: string;
+  /** 0=coze知识库 1=火山知识库 */
+  dataset_type?: DatasetType;
+  /** storage_config详细信息 */
+  storage_config?: StorageConfig;
 }
 
 export interface DatasetDetailRequest {
@@ -239,6 +259,8 @@ export interface DatasetFilter {
   scope_type?: DatasetScopeType;
   /** 类型 */
   format_type?: common.FormatType;
+  /** 按coze/火山筛选 */
+  dataset_type_list?: Array<DatasetType>;
 }
 
 export interface DeleteDatasetRequest {
@@ -361,6 +383,10 @@ export interface ScriptData {
 export interface SpaceItem {
   UserId?: Int64;
   SpaceId?: Int64;
+}
+
+export interface StorageConfig {
+  volcano_dataset_config?: common.VolcanoDataset;
 }
 
 export interface TreeChunkRecInfo {

@@ -19,6 +19,7 @@
 /* tslint:disable */
 // @ts-nocheck
 
+import * as volcano_database from './volcano_database';
 import * as base from './base';
 
 export type Int64 = string | number;
@@ -32,6 +33,8 @@ export enum ActionKey {
   EnableSwitch = 3,
   /** 编辑 */
   Edit = 4,
+  /** 跨空间复制 */
+  CrossSpaceCopy = 10,
 }
 
 export enum BotTableRWMode {
@@ -45,7 +48,6 @@ export enum BotTableRWMode {
   RWModeMax = 4,
 }
 
-/** *****  bot_table start   ******* */
 export enum BotTableStatus {
   /** 已上线 */
   Online = 1,
@@ -69,7 +71,46 @@ export enum ColumnType {
   Image = 6,
 }
 
+/** *****  bot_table start   ******* */
+export enum DatabaseType {
+  All = -1,
+  /** Coze上创建的数据库 */
+  Coze = 0,
+  /** 火山引擎数据库 */
+  Volcano = 1,
+}
+
+export enum FieldFunction {
+  /** 当前时间戳 */
+  CURRENT_TIMESTAMP = 1,
+  /** 当前日期 */
+  CURRENT_DATE = 2,
+  /** 当前时间 */
+  CURRENT_TIME = 3,
+  /** 当前日期和时间（等同于 CURRENT_TIMESTAMP） */
+  NOW = 4,
+  /** 当前 UTC 时间戳 */
+  UTC_TIMESTAMP = 5,
+  /** 当前 UTC 日期 */
+  UTC_DATE = 6,
+  /** 当前 UTC 时间 */
+  UTC_TIME = 7,
+  /** 生成 UUID */
+  UUID = 8,
+  /** 生成随机数 */
+  RAND = 9,
+  /** 当前用户 */
+  USER = 10,
+  /** 当前数据库 */
+  DATABASE = 11,
+  /** MySQL 版本 */
+  VERSION = 12,
+  /** 最后插入的 ID */
+  LAST_INSERT_ID = 13,
+}
+
 export enum FieldItemType {
+  Unknown = 0,
   /** 文本 */
   Text = 1,
   /** 数字 */
@@ -80,6 +121,8 @@ export enum FieldItemType {
   Float = 4,
   /** bool */
   Boolean = 5,
+  /** 二进制 */
+  Binary = 6,
 }
 
 export enum OperateType {
@@ -136,6 +179,12 @@ export enum SceneType {
   ModelDesc = 2,
 }
 
+export enum ScopeType {
+  Draft = 1,
+  Online = 2,
+  All = 3,
+}
+
 export enum SortDirection {
   ASC = 1,
   Desc = 2,
@@ -148,6 +197,13 @@ export enum TableDataType {
   OnlySchema = 1,
   /** 只需要 preview data */
   OnlyPreview = 2,
+}
+
+export enum TableRWMode {
+  ReadWrite = 1,
+  ReadOnly = 2,
+  DisableDelete = 3,
+  RWModeMax = 4,
 }
 
 export enum TableType {
@@ -178,6 +234,10 @@ export interface AddDatabaseRequest {
   prompt_disabled?: boolean;
   /** 扩展信息 */
   extra_info?: Record<string, string>;
+  database_type?: DatabaseType;
+  volcano_database_bind_info?: volcano_database.VolcanoDatabaseBindInfo;
+  /** 火山region id */
+  region_id?: string;
   Base?: base.Base;
 }
 
@@ -193,6 +253,10 @@ export interface AlterBotTableResponse {
   BaseResp: base.BaseResp;
 }
 
+export interface BinaryDefault {
+  value?: Blob;
+}
+
 export interface BindDatabaseToBotRequest {
   /** 草稿态数据database表主键id，注意是草稿态哈 */
   database_id?: string;
@@ -205,6 +269,10 @@ export interface BindDatabaseToBotResponse {
   code: Int64;
   msg: string;
   BaseResp?: base.BaseResp;
+}
+
+export interface BoolDefault {
+  value?: boolean;
 }
 
 export interface BotTable {
@@ -255,6 +323,7 @@ export interface Condition {
 export interface ConnectorInfo {
   ConnectorID?: Int64;
   ConnectorName?: string;
+  ConnectorIDStr?: string;
 }
 
 export interface Criterion {
@@ -312,6 +381,31 @@ export interface DatabaseInfo {
   extra_info?: Record<string, string>;
   /** 是否已经添加到bot中 */
   is_added_to_bot?: boolean;
+  /** 0=coze知识库 1=火山知识库 */
+  database_type?: DatabaseType;
+  volcano_storage_config?: volcano_database.VolcanoStorageConfig;
+}
+
+export interface DateDefault {
+  /** 动态函数（如 CURRENT_TIMESTAMP） */
+  func?: FieldFunction;
+  /** 更新时的动态函数 */
+  on_update?: FieldFunction;
+  /** 静态值（格式：YYYY-MM-DD） */
+  value?: string;
+}
+
+export interface DateTimeDefault {
+  /** 动态函数（如 CURRENT_TIMESTAMP） */
+  func?: FieldFunction;
+  /** 更新时的动态函数 */
+  on_update?: FieldFunction;
+  /** 静态值（格式：YYYY-MM-DD HH:MM:SS） */
+  value?: string;
+}
+
+export interface DecimalDefault {
+  value?: string;
 }
 
 export interface DeleteBotTableRequest {
@@ -363,6 +457,51 @@ export interface DisplayResourceInfo {
   PublishStatus?: PublishStatus;
   /** 最近编辑时间, unix秒级时间戳 */
   EditTime?: Int64;
+  ResSubType?: number;
+}
+
+export interface EnumDefault {
+  value?: string;
+}
+
+/** struct VolcanoDBFieldItem {
+    1: string        name
+    2: string        desc
+    3: FieldItemType type
+    4: bool          must_required
+    5: i64           id                 // 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
+    6: i64           alterId            // 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
+    7: bool          is_primary_key     // 是否是主键
+    8: FieldDefault default_value       // 默认值
+    9: map<string,string> map_ext_meta      // 业务自定义扩展field元数据
+} */
+export interface FieldDefault {
+  /** CHAR、VARCHAR、TEXT */
+  default_text?: TextDefault;
+  /** INT、TINYINT、SMALLINT、MEDIUMINT、BIGINT */
+  default_number?: NumberDefault;
+  /** FLOAT、DOUBLE */
+  default_float?: FloatDefault;
+  /** DECIMAL */
+  default_decimal?: DecimalDefault;
+  /** BOOL、BOOLEAN */
+  default_bool?: BoolDefault;
+  /** DATE */
+  default_date?: DateDefault;
+  /** DATETIME */
+  default_datetime?: DateTimeDefault;
+  /** TIMESTAMP */
+  default_timestamp?: TimestampDefault;
+  /** TIME */
+  default_time?: TimeDefault;
+  /** ENUM */
+  default_enum?: EnumDefault;
+  /** SET */
+  default_set?: SetDefault;
+  /** JSON */
+  default_json?: JsonDefault;
+  /** BLOB、BINARY、VARBINARY */
+  default_binary?: BinaryDefault;
 }
 
 export interface FieldItem {
@@ -376,6 +515,20 @@ export interface FieldItem {
   alterId?: Int64;
   /** 是否是系统字段 */
   is_system_field?: boolean;
+  /** 是否是主键 */
+  is_primary_key?: boolean;
+  /** 默认值 */
+  default_value?: FieldDefault;
+  /** 默认值 */
+  default_value_str?: string;
+  /** 业务自定义扩展field元数据 */
+  map_ext_meta?: Record<string, string>;
+  /** 原始的数据类型（目前火山数据库会返回这个字段） */
+  origin_type?: string;
+}
+
+export interface FloatDefault {
+  value?: number;
 }
 
 export interface GetBotTableRequest {
@@ -514,6 +667,10 @@ export interface InsertBotTableResponse {
   BaseResp: base.BaseResp;
 }
 
+export interface JsonDefault {
+  value?: string;
+}
+
 export interface ListDatabaseRecordsRequest {
   /** database_id */
   database_id: string;
@@ -570,6 +727,8 @@ export interface ListDatabaseRequest {
   filter_criterion?: Criterion;
   /** 排序条件 */
   order_by_list?: Array<OrderBy>;
+  /** 数据库类型 0-coze 1-火山 */
+  database_type?: DatabaseType;
   Base?: base.Base;
 }
 
@@ -594,6 +753,11 @@ export interface MigrateOldDataResponse {
   code: Int64;
   msg: string;
   BaseResp: base.BaseResp;
+}
+
+export interface NumberDefault {
+  auto_increment?: boolean;
+  value?: Int64;
 }
 
 export interface OrderBy {
@@ -687,6 +851,10 @@ export interface SelectFieldList {
   isDistinct: boolean;
 }
 
+export interface SetDefault {
+  value?: Array<string>;
+}
+
 export interface SingleDatabaseRequest {
   /** database_info的主键id */
   id?: string;
@@ -716,6 +884,7 @@ export interface SqlParamVal {
   is_null: boolean;
   value?: string;
   name?: string;
+  origin_type?: string;
 }
 
 export interface SubmitDatabaseInsertRequest {
@@ -735,6 +904,28 @@ export interface SubmitDatabaseInsertResponse {
   BaseResp?: base.BaseResp;
 }
 
+export interface TableInfo {
+  /** online_database_info的主键id */
+  id?: string;
+  /** 头像url */
+  icon_url?: string;
+  /** 表名 */
+  table_name?: string;
+  /** 表描述 */
+  table_desc?: string;
+  /** 创建者id */
+  creator_id?: string;
+  /** 创建时间 */
+  create_time?: Int64;
+  /** 更新时间 */
+  update_time?: Int64;
+  /** project id */
+  project_id?: string;
+  icon_uri?: string;
+  /** 数据库类型 */
+  database_type?: DatabaseType;
+}
+
 export interface TableSheet {
   /** 用户选择的 sheet id */
   sheet_id?: string;
@@ -742,6 +933,29 @@ export interface TableSheet {
   header_line_idx?: string;
   /** 用户选择的起始行号，从 0 开始编号 */
   start_line_idx?: string;
+}
+
+export interface TextDefault {
+  /** CHAR、VARCHAR、TEXT 的默认值 */
+  value?: string;
+}
+
+export interface TimeDefault {
+  /** 动态函数（如 CURRENT_TIMESTAMP） */
+  func?: FieldFunction;
+  /** 更新时的动态函数 */
+  on_update?: FieldFunction;
+  /** 静态值（格式：HH:MM:SS） */
+  value?: string;
+}
+
+export interface TimestampDefault {
+  /** 动态函数（如 CURRENT_TIMESTAMP） */
+  func?: FieldFunction;
+  /** 更新时的动态函数 */
+  on_update?: FieldFunction;
+  /** 静态值（格式：YYYY-MM-DD HH:MM:SS） */
+  value?: string;
 }
 
 export interface UpdateDatabaseBotSwitchRequest {

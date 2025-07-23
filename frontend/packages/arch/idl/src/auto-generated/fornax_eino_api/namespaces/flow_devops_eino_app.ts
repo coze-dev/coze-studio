@@ -24,6 +24,43 @@ import * as flow_devops_eino_app_debug from './flow_devops_eino_app_debug';
 
 export type Int64 = string | number;
 
+/** Code Doc  */
+export enum ErrCode {
+  InvalidConfig = 100,
+  DownloadEinoTool = 110,
+  CreateToolWindows = 120,
+  ComandExecute = 130,
+  DebugTestRun = 140,
+  DebugTestAbort = 150,
+}
+
+export enum SubErrCode {
+  CommonErrOfInvalidConfig = 100001,
+  NotFoundPropertiesErrOfInvalidConfig = 100002,
+  CommonErrOfDownloadEinoTool = 110001,
+  HTTPRequestTimeoutErrOfDownloadEinoTool = 110002,
+  HTTPRequestFailedErrOfDownloadEinoTool = 110003,
+  NotFoundMD5SignatureErrOfDownloadEinoTool = 110004,
+  MD5CheckFailedErrOfDownloadEinoTool = 110005,
+  WriteFileIOExceptionErrOfDownloadEinoTool = 110006,
+  AddPermissionExceptionErrOfDownloadEinoTool = 110007,
+  EinoToolDownloadEventErrOfDownloadEinoTool = 110008,
+  CommonErrOfCreateToolWindows = 120001,
+  OpenLinkFailedErrOfCreateToolWindows = 120002,
+  GetPageDataFailedErrOfCreateToolWindows = 120003,
+  InvaildEntryURLErrOfCreateToolWindows = 120004,
+  CommonErrOfComandExecute = 130001,
+  CommandVersionErrOfComandExecute = 130002,
+  CommandGetGenPathErrOfComandExecute = 130003,
+  CommandGenCodeErrOfComandExecute = 130004,
+  CommonErrOfDebugTestRun = 140001,
+  HTTPRequestTimeoutErrOfDebugTestRun = 140002,
+  HTTPRequestFailedErrOfDebugTestRun = 140003,
+  CommonErrOfDebugTestAbort = 150001,
+  HTTPRequestTimeoutErrOfDebugTestAbort = 150002,
+  HTTPRequestFailedErrOfDebugTestAbort = 150003,
+}
+
 export interface ComponentItem {
   /** 列表项名称 */
   name?: string;
@@ -55,14 +92,7 @@ export interface DisplayReq {
 }
 
 export interface DisplayResp {
-  code?: Int64;
-  msg?: string;
-  data?: GraphSchemaData;
-}
-
-export interface GenCodeResultData {
-  gen_path?: string;
-  fdl_schema?: string;
+  canvas_info?: flow_devops_eino_app_canvas.CanvasInfo;
 }
 
 export interface GetCanvasInfoData {
@@ -92,9 +122,8 @@ export interface GraphGenCodeReq {
 }
 
 export interface GraphGenCodeResp {
-  code?: Int64;
-  msg?: string;
-  data?: GenCodeResultData;
+  gen_path?: string;
+  fdl_schema?: string;
 }
 
 export interface GraphMeta {
@@ -102,23 +131,13 @@ export interface GraphMeta {
   name?: string;
 }
 
-export interface GraphSchemaData {
-  canvas_info?: flow_devops_eino_app_canvas.CanvasInfo;
-}
+export interface ListComponentsRequest {}
 
-export interface ListComponentsData {
+export interface ListComponentsResp {
   /** 官方组件 */
   official_components?: Array<ComponentItem>;
   /** 自定义组件 */
   custom_components?: Array<ComponentItem>;
-}
-
-export interface ListComponentsRequest {}
-
-export interface ListComponentsResp {
-  code: number;
-  msg: string;
-  data?: ListComponentsData;
 }
 
 export interface ListGraphData {
@@ -169,4 +188,12 @@ export interface StreamDebugRunResp {
 }
 
 export interface StreamLogReq {}
+
+export interface VersionReq {}
+
+export interface VersionResp {
+  data: string;
+  code: Int64;
+  msg: string;
+}
 /* eslint-enable */

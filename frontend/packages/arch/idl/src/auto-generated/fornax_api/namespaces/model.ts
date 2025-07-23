@@ -90,6 +90,8 @@ export enum IDC {
 export enum MerlinFramework {
   LLMServerPublic = 1,
   Laplace = 2,
+  /** 电商团队专用协议，详见  */
+  Mixinfer = 3,
 }
 
 export enum MerlinLLMInterface {
@@ -346,6 +348,10 @@ export enum UsageScenario {
   PromptAsAService = 3,
   /** AI打标 */
   AIAnnotate = 4,
+  /** 质量分 */
+  AIScore = 5,
+  /** 数据标签 */
+  AITag = 6,
 }
 
 export enum ValidateStatus {
@@ -534,7 +540,7 @@ export interface MerlinInfo {
   framework?: MerlinFramework;
   instanceResourceOption?: InstanceResourceOption;
   /** 资源配置 */
-  deployDetailM?: Record<IDC, IDCDeployDetail>;
+  deployDetailM?: Partial<Record<IDC, IDCDeployDetail>>;
   /** 服务节点id */
   byteTreeNodeID?: Int64;
   /** 服务树路径 */
@@ -800,6 +806,10 @@ export interface SftTaskCustomModel {
   hyperParams?: Array<SftTaskHyperParam>;
   /** 此定制模型是通过哪个基础模型训练得到 */
   foundationModel?: SftTaskFoundationModel;
+  /** merlin模型仓库版本 */
+  version?: string;
+  /** merlin模型文件保存的地址 */
+  hdfsPath?: string;
 }
 
 export interface SftTaskDataset {

@@ -108,6 +108,16 @@ export enum KnowledgeShowSourceMode {
   CardList = 1,
 }
 
+export enum KnowledgeType {
+  Coze = 0,
+  Volcano = 1,
+}
+
+export enum KnowledgeTypeMode {
+  Coze = 0,
+  Volcano = 1,
+}
+
 export enum MultiAgentConnectorType {
   Curve = 0,
   Straight = 1,

@@ -687,7 +687,7 @@ export interface CheckCardLengthRequest {
 }
 
 export interface CheckCardLengthResponse {
-  is_over_length?: Record<ChannelType, boolean>;
+  is_over_length?: Partial<Record<ChannelType, boolean>>;
   code?: Int64;
   msg?: string;
   BaseResp?: base.BaseResp;

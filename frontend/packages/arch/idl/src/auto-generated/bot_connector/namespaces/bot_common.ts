@@ -86,12 +86,37 @@ export enum BotTableRWMode {
   RWModeMax = 4,
 }
 
+export enum BusinessType {
+  Default = 0,
+  DouyinAvatar = 1,
+}
+
+export enum CacheType {
+  /** 缓存关闭 */
+  CacheClosed = 0,
+  /** 前缀缓存 */
+  PrefixCache = 1,
+}
+
 /** 上下文允许传输的类型 */
 export enum ContextMode {
   Chat = 0,
   FunctionCall_1 = 1,
   FunctionCall_2 = 2,
   FunctionCall_3 = 3,
+}
+
+export enum DefaultUserInputType {
+  /** 没设置 */
+  NotSet = 0,
+  /** 文字 */
+  Text = 1,
+  /** 按住语音 */
+  Voice = 2,
+  /** 语音通话 */
+  Call = 3,
+  /** 视频通话 */
+  VideoCall = 4,
 }
 
 export enum DisablePromptCalling {
@@ -143,6 +168,16 @@ export enum KnowledgeShowSourceMode {
   CardList = 1,
 }
 
+export enum KnowledgeType {
+  Coze = 0,
+  Volcano = 1,
+}
+
+export enum KnowledgeTypeMode {
+  Coze = 0,
+  Volcano = 1,
+}
+
 export enum MessageFeedbackDetailType {
   UnlikeDefault = 0,
   /** 有害信息 */
@@ -188,6 +223,9 @@ export enum ModelFuncConfigType {
   MultiAgentRecognize = 18,
   KnowledgePhoto = 19,
   HookInfo = 20,
+  KnowledgeValcanoUnstructured = 21,
+  KnowledgeValcanoStructured = 22,
+  Model = 23,
 }
 
 export enum ModelResponseFormat {
@@ -221,6 +259,12 @@ export enum OnboardingMode {
   USE_MANUAL = 2,
   /** 由LLM生成 */
   USE_LLM = 3,
+}
+
+export enum PromptMode {
+  Standard = 0,
+  /** 前缀提示词 */
+  PrefixPrompt = 1,
 }
 
 export enum RecognitionMode {
@@ -439,6 +483,11 @@ export interface ChatV3MessageDetail {
   section_id?: string;
   created_at?: Int64;
   updated_at?: Int64;
+  reasoning_content?: string;
+}
+
+export interface CompletionUsage {
+  reasoning_tokens?: number;
 }
 
 export interface GradientPosition {
@@ -497,6 +546,16 @@ export interface ModelInfo {
   response_format?: ModelResponseFormat;
   /** 用户选择的模型风格 */
   model_style?: ModelStyle;
+  /** 缓存配置 */
+  cache_type?: CacheType;
+  /** sp拼接当前时间 */
+  sp_current_time?: boolean;
+  /** sp拼接防泄露指令 */
+  sp_anti_leak?: boolean;
+  /** sp拼接声纹信息 */
+  sp_voice_info?: boolean;
+  /** 个性化配置参数 */
+  parameters?: Record<string, string>;
 }
 
 export interface OnboardingInfo {
@@ -532,9 +591,24 @@ export interface PluginParameter {
   sub_type?: string;
 }
 
+export interface PrefixPromptInfo {
+  /** 前缀提示词 */
+  prefix_prompt?: string;
+  /** 不支持前缀提示词部分 */
+  dynamic_prompt?: string;
+}
+
 export interface PromptInfo {
   /** 文本prompt */
   prompt?: string;
+  /** 提示词模式 */
+  prompt_mode?: PromptMode;
+  /** 前缀提示词模式下的prompt内容 */
+  prefix_prompt_info?: PrefixPromptInfo;
+}
+
+export interface PromptUsage {
+  cached_tokens?: number;
 }
 
 export interface RequiredAction {
@@ -568,6 +642,26 @@ export interface Usage {
   token_count?: number;
   output_count?: number;
   input_count?: number;
+  input_tokens_details?: PromptUsage;
+  output_tokens_details?: CompletionUsage;
+}
+
+export interface VideoCallConfig {
+  /** 是否关闭 */
+  video_call?: boolean;
+  /** 每秒抽取帧数(范围1～24) */
+  frames_per_second?: number;
+  /** 开始说话前抽取秒数(范围0～10s) */
+  pre_speech_seconds?: number;
+}
+
+export interface VoiceprintRecognitionConfig {
+  /** 是否关闭声纹识别 */
+  close_voice_print_recognition?: boolean;
+  /** 命中阈值 */
+  hit_threshold?: number;
+  /** 空值时是否沿用历史开关 */
+  use_history_if_empty?: boolean;
 }
 
 /** tts Voices */
@@ -583,6 +677,12 @@ export interface VoicesInfo {
   autoplay_voice?: Record<string, Int64>;
   /** 是否关闭语音通话，true:关闭 false:开启  默认为false */
   voice_call?: boolean;
+  /** 默认用户输入类型 */
+  default_user_input_type?: DefaultUserInputType;
+  /** 多语音音色配置, string类型 */
+  i18n_lang_voice_str?: Record<string, string>;
+  video_call_config?: VideoCallConfig;
+  voiceprint_recognition_config?: VoiceprintRecognitionConfig;
 }
 
 export interface WorkflowInfo {

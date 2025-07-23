@@ -20,6 +20,7 @@
 // @ts-nocheck
 
 import * as base from './base';
+import * as flow_devops_prompt_common from './flow_devops_prompt_common';
 import * as mcp from './mcp';
 
 export type Int64 = string | number;
@@ -37,7 +38,30 @@ export interface CreateMCPServerAccessPointRequest {
   base?: base.Base;
 }
 
+export interface CreateMCPServerAccessPointRequestV2 {
+  /** MCP Server ID */
+  mcp_server_id?: Int64;
+  /** 空间ID */
+  space_id?: Int64;
+  env?: string;
+  lane?: string;
+  /** 服务运行模式 */
+  transport_mode?: string;
+  server_url?: string;
+  server_psm?: string;
+  /** 配置 */
+  config?: flow_devops_prompt_common.AccessPointConfig;
+  base?: base.Base;
+}
+
 export interface CreateMCPServerAccessPointResponse {
+  mcp_server_access_point?: mcp.MCPServerAccessPoint;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface CreateMCPServerAccessPointResponseV2 {
   mcp_server_access_point?: mcp.MCPServerAccessPoint;
   code?: number;
   msg?: string;
@@ -55,6 +79,10 @@ export interface CreateMCPServerRequest {
   source_type?: string;
   /** 标签 */
   labels?: Array<Int64>;
+  /** 已废弃 */
+  is_publish_supported?: boolean;
+  /** MCP 对应的文档或详情页 */
+  detail_page_url?: string;
   base?: base.Base;
 }
 
@@ -76,6 +104,10 @@ export interface DebugMCPServerToolsRequest {
   tool_name?: string;
   /** 工具运行时需要的输入参数 */
   parameters?: string;
+  /** 动态请求头 */
+  dynamic_headers?: Record<string, string>;
+  /** 动态请求参数 */
+  dynamic_params?: Record<string, string>;
   base?: base.Base;
 }
 
@@ -111,6 +143,20 @@ export interface DeleteMCPServerRequest {
 }
 
 export interface DeleteMCPServerResponse {
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface ForkMCPServerRequest {
+  /** 个人空间ID */
+  space_id?: Int64;
+  /** 被复制的mcp server ID */
+  mcp_server_id?: Int64;
+  base?: base.Base;
+}
+
+export interface ForkMCPServerResponse {
   code?: number;
   msg?: string;
   base_resp?: base.BaseResp;
@@ -163,6 +209,8 @@ export interface ListMCPServerRequest {
   labels?: Array<Int64>;
   /** 创建人列表筛选 */
   creator_list?: Array<string>;
+  /** 服务状态 */
+  status?: mcp.MCPStatus;
   base?: base.Base;
 }
 
@@ -187,6 +235,8 @@ export interface ListOfficialMCPServerRequest {
   source_type?: string;
   /** 标签 */
   labels?: Array<Int64>;
+  /** 服务状态 */
+  status?: mcp.MCPStatus;
   base?: base.Base;
 }
 
@@ -195,6 +245,22 @@ export interface ListOfficialMCPServerResponse {
   mcp_servers?: Array<mcp.MCPServer>;
   /** 总条目数 */
   total?: number;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface MGetMCPServerAccessPointRequest {
+  /** 空间ID */
+  space_id?: Int64;
+  /** accessPoint id 列表 */
+  accesspoint_ids?: Array<Int64>;
+  base?: base.Base;
+}
+
+export interface MGetMCPServerAccessPointResponse {
+  /** MCP AccessPoint 列表 */
+  mcp_server_access_points?: Array<mcp.MCPServerAccessPoint>;
   code?: number;
   msg?: string;
   base_resp?: base.BaseResp;
@@ -211,10 +277,31 @@ export interface UpdateMCPServerAccessPointRequest {
   /** 服务模式（如 SSE 或 STDIO） */
   transport_mode?: string;
   server_url?: string;
+  server_psm?: string;
+  /** 配置 */
+  config?: flow_devops_prompt_common.AccessPointConfig;
   base?: base.Base;
 }
 
 export interface UpdateMCPServerAccessPointResponse {
+  mcp_server_access_point?: mcp.MCPServerAccessPoint;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface UpdateMCPServerAccessPointStatusRequest {
+  /** 接入点的ID */
+  access_point_id?: Int64;
+  /** MCP Server 主键ID */
+  mcp_server_id?: Int64;
+  space_id?: Int64;
+  /** 要更改到的新状态 */
+  status?: mcp.MCPStatus;
+  base?: base.Base;
+}
+
+export interface UpdateMCPServerAccessPointStatusResponse {
   mcp_server_access_point?: mcp.MCPServerAccessPoint;
   code?: number;
   msg?: string;
@@ -234,10 +321,32 @@ export interface UpdateMCPServerRequest {
   source_type?: string;
   /** 标签 */
   labels?: Array<Int64>;
+  /** 是否支持与prompt一起发布 */
+  is_publish_supported?: boolean;
+  /** MCP 对应的文档或详情页 */
+  detail_page_url?: string;
   base?: base.Base;
 }
 
 export interface UpdateMCPServerResponse {
+  /** 更新后的 MCP Server 对象 */
+  mcp_server?: mcp.MCPServer;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface UpdateMCPServerStatusRequest {
+  /** MCP Server 的主键 ID */
+  mcp_server_id?: Int64;
+  /** 空间 ID */
+  space_id?: Int64;
+  /** 要更改到的新状态 */
+  status?: mcp.MCPStatus;
+  base?: base.Base;
+}
+
+export interface UpdateMCPServerStatusResponse {
   /** 更新后的 MCP Server 对象 */
   mcp_server?: mcp.MCPServer;
   code?: number;

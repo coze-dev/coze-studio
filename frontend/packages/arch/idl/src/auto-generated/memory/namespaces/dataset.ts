@@ -144,6 +144,7 @@ export interface RecallDataSetData {
 export interface RecallDataSetInfo {
   slice?: string;
   score?: number;
+  doc_id?: string;
 }
 
 export interface RecallStrategy {

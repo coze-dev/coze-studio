@@ -81,7 +81,28 @@ export enum CopilotContentType {
   OutputSearchResult = 200,
   OutputMultiStream = 201,
   SearchIntentionResult = 300,
+  /** 深入研究卡片 */
   DeepResearchCard = 400,
+  /** 文档 */
+  Artifact = 401,
+  /** 深入研究报告 */
+  DeepResearchReport = 402,
+  /** 深入思考 */
+  Thinking = 500,
+  /** 搜索query */
+  SearchQuery = 501,
+  /** 搜索结果 */
+  SearchResult = 502,
+  /** 搜索结果 query可被替换版本 */
+  SearchQueryResult = 503,
+  /** 路径规划 */
+  RoutePlan = 504,
+  /** 图片分析 */
+  ImageAnalysis = 505,
+  /** LinkReader */
+  LinkReader = 506,
+  /** 本地生活 */
+  LocalLife = 507,
 }
 
 export enum CopilotResult {

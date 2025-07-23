@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { useParams } from 'react-router-dom';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 
 import {
@@ -32,7 +33,6 @@ import {
 } from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { type UITagProps } from '@coze-arch/bot-semi';
-import { useParams } from 'react-router-dom';
 
 import { useWebSdkGuideModal } from '@/web-sdk-guide';
 import { WEB_SDK_CONNECTOR_ID } from '@/utils/constants';
@@ -109,8 +109,7 @@ function toPackStepProps(
                 position: 'top',
                 style: {
                   padding: 8,
-                  backgroundColor: 'rgb(var(--black-5))',
-                  borderColor: 'rgb(var(--black-5))',
+                  maxWidth: 800,
                 },
               }}
             />

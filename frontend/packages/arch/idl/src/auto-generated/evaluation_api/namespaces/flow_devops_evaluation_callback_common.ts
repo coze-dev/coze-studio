@@ -96,6 +96,7 @@ export interface Image {
   url?: string;
   uri?: string;
   thumb_url?: string;
+  original_url?: string;
 }
 
 export interface ImageInfo {

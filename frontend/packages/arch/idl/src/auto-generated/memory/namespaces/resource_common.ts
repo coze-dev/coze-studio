@@ -30,6 +30,12 @@ export enum ActionKey {
   EnableSwitch = 3,
   /** 编辑 */
   Edit = 4,
+  /** 切换成funcflow */
+  SwitchToFuncflow = 8,
+  /** 切换成chatflow */
+  SwitchToChatflow = 9,
+  /** 跨空间复制 */
+  CrossSpaceCopy = 10,
 }
 
 export enum CopyStatus {
@@ -85,13 +91,13 @@ export enum ResourceCopyScene {
   MoveResourceToLibrary = 3,
   /** 复制Library资源到项目 */
   CopyResourceFromLibrary = 4,
-  /** 复制项目 */
+  /** 复制项目，连带资源要复制。复制当前草稿。 */
   CopyProject = 5,
   /** 项目发布到渠道，连带资源需要发布（含商店）。以当前草稿发布。 */
   PublishProject = 6,
   /** 复制项目模板。 */
   CopyProjectTemplate = 7,
-  /** 项目发布到模板，以项目的指定版本发布成模板。 */
+  /** 项目发布到模板，以项目的指定版本发布成临时模板。 */
   PublishProjectTemplate = 8,
   /** 上架模板 */
   LaunchTemplate = 9,
@@ -182,6 +188,8 @@ export interface ResourceCopyEnv {
   CurrentUserID?: Int64;
   /** 发布模板时，原项目版本。or 复制模板时，模板的项目版本。 */
   OriginProjectVersion?: Int64;
+  /** 0/default-app，默认是app也就是之前的project; 1-bot或者叫agent */
+  ProjectType?: number;
 }
 
 /** 每个资源的复制结果，包含前后映射信息 */
@@ -199,8 +207,7 @@ export interface ResourceCopyResult {
 export interface ResourceLocator {
   ResID?: Int64;
   ResType?: ResType;
-  /** 资源的当前版本，没有则是最新版本。项目发布版本或Library发布版本
-废弃，不要使用 */
+  /** 废弃，不要使用 */
   PublishVersion?: Int64;
   /** 资源的当前版本，为nil或空字符串都看作是最新版本。项目发布版本或Library发布版本。 */
   PublishVersionStr?: string;

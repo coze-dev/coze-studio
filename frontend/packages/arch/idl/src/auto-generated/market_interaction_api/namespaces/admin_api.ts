@@ -50,6 +50,8 @@ export interface Comment {
   post_status?: flow_marketplace_interaction_common.PostStatus;
   content?: string;
   resource?: Record<string, flow_marketplace_interaction_common.Resource>;
+  /** ProductEntityType 所属商品的实体类型，当 ItemType = Product 时有对应的值：1-bot商品；2-插件商品；6-应用商品；21-bot模板；23-工作流模板；26-应用模板 */
+  product_entity_type?: number;
 }
 
 export interface DeleteTopPostRequest {
@@ -72,6 +74,8 @@ export interface Discussion {
   comment_count?: string;
   /** 帖子数量 */
   post_count?: string;
+  /** ProductEntityType 所属商品的实体类型，当 ItemType = Product 时有对应的值：1-bot商品；2-插件商品；6-应用商品；21-bot模板；23-工作流模板；26-应用模板 */
+  product_entity_type?: number;
 }
 
 export interface GetCommentListData {
@@ -279,6 +283,8 @@ export interface Post {
   product_entity_id?: string;
   /** 帖子的正负向评分，50 为中性，0 未评，100 是最正向 */
   evaluation_score?: number;
+  /** ProductEntityType 所属商品的实体类型，当 ItemType = Product 时有对应的值：1-bot商品；2-插件商品；6-应用商品；21-bot模板；23-工作流模板；26-应用模板 */
+  product_entity_type?: number;
 }
 
 export interface PublishPostData {

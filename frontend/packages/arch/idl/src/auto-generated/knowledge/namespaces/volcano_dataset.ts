@@ -79,6 +79,8 @@ export interface GetVolcanoDatasetServiceListData {
   volcano_dataset_service_list?: Array<common.VolcanoDatasetService>;
   /** 跳转火山知识库下知识服务创建页面 */
   create_volcano_dataset_service_link?: string;
+  /** 标签信息（标签名和标签信息） */
+  tab_info?: Record<string, common.VolcanoDatasetTabInfo>;
 }
 
 export interface GetVolcanoDatasetServiceListRequest {

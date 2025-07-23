@@ -24,6 +24,19 @@ import * as batch_infer from './batch_infer';
 
 export type Int64 = string | number;
 
+export interface GetBatchInferTaskReq {
+  task_id?: string;
+  userJwtToken?: string;
+  /** 空间ID */
+  space_id?: string;
+  base?: base.Base;
+}
+
+export interface GetBatchInferTaskResp {
+  batchInferTask?: batch_infer.BatchInferTask;
+  baseResp?: base.BaseResp;
+}
+
 export interface GetRecommendResourceReq {
   modelCardID?: string;
   userJwtToken?: string;

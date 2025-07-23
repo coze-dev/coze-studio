@@ -115,7 +115,7 @@ fornax space id */
 
 export interface GetIndicatorOptionsResponse {
   /** 指标选项，map[option]option的分类 */
-  indicator_options: Record<IndicatorOptionType, Array<string>>;
+  indicator_options: Partial<Record<IndicatorOptionType, Array<string>>>;
   /** 仅供http请求使用; 内部RPC不予使用，统一通过BaseResp获取Code和Msg */
   code?: number;
   /** 仅供http请求使用; 内部RPC不予使用，统一通过BaseResp获取Code和Msg */
@@ -221,11 +221,13 @@ export interface QueryInsightIndicatorsRequest {
 
 export interface QueryInsightIndicatorsResponse {
   /** 指标结果 */
-  indicators: Record<InsightIndicatorType, Indicator>;
+  indicators: Partial<Record<InsightIndicatorType, Indicator>>;
   /** 观测对象meta信息，key对应MultiObsObjsIndicatorPoints的key */
   obs_objs_metas?: Record<string, ObsObjMeta>;
   /** 总览指标结果 */
-  overview_indicators?: Record<OverviewIndicatorType, OverviewIndicator>;
+  overview_indicators?: Partial<
+    Record<OverviewIndicatorType, OverviewIndicator>
+  >;
   /** 仅供http请求使用; 内部RPC不予使用，统一通过BaseResp获取Code和Msg */
   code?: number;
   /** 仅供http请求使用; 内部RPC不予使用，统一通过BaseResp获取Code和Msg */

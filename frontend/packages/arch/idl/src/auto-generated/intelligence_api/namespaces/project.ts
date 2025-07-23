@@ -102,6 +102,7 @@ export interface DraftProjectCreateRequest {
   monetization_conf?: MonetizationConf;
   /** 创建来源  navi:导航栏 space:空间 */
   create_from?: string;
+  folder_id?: string;
 }
 
 export interface DraftProjectCreateResponse {

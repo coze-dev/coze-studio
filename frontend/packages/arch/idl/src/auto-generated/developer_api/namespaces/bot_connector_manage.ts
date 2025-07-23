@@ -115,6 +115,13 @@ export enum ManageAccountConnectorAction {
   Remove = 1,
 }
 
+export enum MiniProgramDomainAction {
+  /** 添加域名 */
+  Add = 0,
+  /** 移除域名 */
+  Remove = 1,
+}
+
 export enum OperateType {
   /** 1 属性修改  2-4 状态修改 */
   Update = 1,

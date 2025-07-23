@@ -426,6 +426,8 @@ export interface ListPromptReleaseInfoRequest {
   status?: flow_devops_prompt_common.ReleaseStatus;
   /** 发布label */
   label?: string;
+  /** 版本信息模糊查询 */
+  version_like?: string;
   /** 起始为空，滚动传入Response里的NextCursor */
   cursor?: Int64;
   page_size: Int64;

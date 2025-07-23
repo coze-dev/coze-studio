@@ -103,6 +103,10 @@ export interface Space {
   space_origin?: string;
   /** 服务树节点ID */
   tree_node_id?: string;
+  /** 具体配置内容 */
+  trace_config?: TraceConfig;
+  /** 空间下的服务账号列表 */
+  accounts?: Array<auth.ServiceAccount>;
 }
 
 /** 空间成员 */
@@ -113,5 +117,13 @@ export interface SpaceMember {
   member?: auth.AuthPrincipal;
   /** 空间角色类型 */
   space_role_type?: SpaceRoleType;
+}
+
+/** 观测配置 */
+export interface TraceConfig {
+  /** 是否加密trace 默认false */
+  trace_encrypt?: boolean;
+  /** ttl天数 默认7，目前合法值有7/30/90 */
+  ttl?: number;
 }
 /* eslint-enable */

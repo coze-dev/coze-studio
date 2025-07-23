@@ -171,6 +171,15 @@ export enum OrderField {
   LastedPublishTime = 2,
 }
 
+/** Prompt 加密类型 */
+export enum PromptEncryptOption {
+  Undefined = 0,
+  /** 加密且返回明文 */
+  EncryptWithPlainText = 1,
+  /** 加密且不返回明文 */
+  EncryptWithoutPlainText = 2,
+}
+
 /** 提示词类型 */
 export enum PromptType {
   Undefined = 0,
@@ -385,6 +394,19 @@ export enum VariableType {
   Object = 6,
   Placeholder = 7,
   Image = 8,
+}
+
+export interface AccessPointConfig {
+  static_headers?: Array<AccessPointConfigDef>;
+  dynamic_headers?: Array<AccessPointConfigDef>;
+  static_params?: Array<AccessPointConfigDef>;
+  dynamic_params?: Array<AccessPointConfigDef>;
+}
+
+export interface AccessPointConfigDef {
+  key?: string;
+  value?: string;
+  is_required?: boolean;
 }
 
 export interface AllowList {
@@ -715,6 +737,10 @@ export interface MCPServerCombine {
   lane?: string;
   /** Server描述 */
   description?: string;
+  /** 是否支持与prompt一起发布 */
+  is_publish_supported?: boolean;
+  /** MCP接入点配置 */
+  access_point_config?: AccessPointConfig;
 }
 
 /** Message */
@@ -728,6 +754,8 @@ export interface Message {
   parts?: Array<ContentPart>;
   /** 消息元数据 */
   metadata?: Record<string, string>;
+  /** 加密后的消息内容 */
+  encrypt_content?: string;
 }
 
 /** 模型信息 */
@@ -957,6 +985,8 @@ export interface Prompt {
   is_draft_edited?: boolean;
   /** MCP服务列表 */
   mcp_servers?: Array<MCPServerCombine>;
+  /** 版本快照关联的上一个版本 */
+  snapshot_base_version?: string;
 }
 
 /** Prompt 基础信息，不含版本相关的详情内容 */
@@ -1196,6 +1226,9 @@ export interface ReplyItem {
   /** 多模态内容返回 */
   parts?: Array<ContentPart>;
   finish_reason?: string;
+  prompt_version?: string;
+  /** Tool执行结果 */
+  tool_call_responses?: Array<ToolCallResponse>;
 }
 
 export interface ReportEvent {
@@ -1318,6 +1351,12 @@ export interface ToolCallCombine {
 export interface ToolCallConfig {
   tool_choice?: ToolChoiceType;
   specification?: ToolChoiceSpecification;
+}
+
+export interface ToolCallResponse {
+  tool_call_id?: string;
+  name?: string;
+  content?: string;
 }
 
 export interface ToolChoiceSpecification {

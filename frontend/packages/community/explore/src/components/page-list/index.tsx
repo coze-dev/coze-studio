@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import { useRequest } from 'ahooks';
+import { type ProductInfo } from '@coze-studio/api-schema/marketplace';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozIllusError } from '@coze-arch/coze-design/illustrations';
 import { EmptyState } from '@coze-arch/coze-design';
@@ -25,7 +26,7 @@ import styles from './index.module.less';
 
 export const PageList: FC<{
   title: string;
-  renderCard: (cardData: unknown) => React.ReactNode;
+  renderCard: (cardData: ProductInfo) => React.ReactNode;
   renderCardSkeleton: () => React.ReactNode;
   getDataList: () => Promise<unknown[]>;
 }> = ({ title, renderCard, getDataList, renderCardSkeleton }) => {
@@ -38,7 +39,6 @@ export const PageList: FC<{
     const dataList = await getDataList();
     return dataList;
   });
-  console.log('data:', { cardList, loading, error });
   return (
     <div className={styles['explore-list-container']}>
       <h2 className="leading-[72px] text-[20px] m-[0] pl-[24px] pr-[24px]">
@@ -59,7 +59,7 @@ export const PageList: FC<{
         <div className="grid grid-cols-3 auto-rows-min gap-[20px] [@media(min-width:1600px)]:grid-cols-4 pl-[24px] pr-[24px]">
           {loading
             ? new Array(20).fill(0).map((_, index) => renderCardSkeleton?.())
-            : cardList?.map(item => renderCard(item))}
+            : cardList?.map(item => renderCard(item as ProductInfo))}
         </div>
       )}
     </div>

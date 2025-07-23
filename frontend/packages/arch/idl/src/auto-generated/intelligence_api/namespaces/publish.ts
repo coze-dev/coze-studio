@@ -279,6 +279,8 @@ export interface PublishConnectorInfo {
   config_status_toast?: string;
   /** connector_status为审核中时补全信息按钮的url */
   to_complete_info_url?: string;
+  /** 渠道发布提示 */
+  connector_tips?: string;
 }
 
 export interface PublishConnectorListData {

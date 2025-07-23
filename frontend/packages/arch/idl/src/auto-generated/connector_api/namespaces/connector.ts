@@ -36,6 +36,13 @@ export enum ManageAccountConnectorAction {
   Remove = 1,
 }
 
+export enum MiniProgramDomainAction {
+  /** 添加域名 */
+  Add = 0,
+  /** 移除域名 */
+  Remove = 1,
+}
+
 export enum SpaceConnectorType {
   /** 团队内自定义渠道 */
   Team = 1,
@@ -246,7 +253,7 @@ export interface GetPreviewConnectorRequest {
 }
 
 export interface GetPreviewConnectorResponse {
-  connector_list?: Array<Int64>;
+  connector_list?: Array<string>;
   BaseResp?: base.BaseResp;
 }
 
@@ -274,6 +281,21 @@ export interface ListConnectorResponse {
   data?: Array<ConnectorMetaInfo>;
   has_more?: boolean;
   next_page_token?: string;
+  code?: number;
+  msg?: string;
+}
+
+export interface ListMiniProgramDomainRequest {
+  /** 企业ID */
+  enterprise_id?: string;
+  /** 渠道ID */
+  connector_id?: string;
+  /** 搜索词 */
+  search_word?: string;
+}
+
+export interface ListMiniProgramDomainResponse {
+  data?: Array<MiniProgramDomain>;
   code?: number;
   msg?: string;
 }
@@ -308,6 +330,12 @@ export interface ManageAccountConnectorResponse {
   msg?: string;
 }
 
+export interface MiniProgramDomain {
+  id?: string;
+  domain?: string;
+  status?: number;
+}
+
 export interface OauthSchema {
   schema_area?: SchemaAreaInfo;
   copy_link_area?: CopyLinkAreaInfo;
@@ -328,6 +356,20 @@ export interface SchemaAreaInfo {
   description?: string;
   /** 步骤号,只是展示指定的步骤号，不影响SchemaArea的展示顺序。 */
   step_order?: Int64;
+}
+
+export interface SetMiniProgramDomainRequest {
+  /** 企业ID */
+  enterprise_id?: string;
+  domain_list?: Array<string>;
+  action?: MiniProgramDomainAction;
+  /** 渠道ID */
+  connector_id?: string;
+}
+
+export interface SetMiniProgramDomainResponse {
+  code?: number;
+  msg?: string;
 }
 
 export interface SpaceConnector {
@@ -368,6 +410,16 @@ export interface UpdateConnectorResponse {
   code?: number;
   msg?: string;
   callback_token?: string;
+}
+
+export interface UpdateMiniProgramDomainRequest {
+  id: string;
+  domain: string;
+}
+
+export interface UpdateMiniProgramDomainResponse {
+  code?: number;
+  msg?: string;
 }
 
 export interface UpdateOauthConfigRequest {

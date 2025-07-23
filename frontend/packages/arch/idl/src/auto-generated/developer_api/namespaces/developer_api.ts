@@ -215,6 +215,13 @@ export enum Branch {
   Publish = 3,
 }
 
+export enum CacheType {
+  /** 缓存关闭 */
+  CacheClosed = 0,
+  /** 前缀缓存 */
+  PrefixCache = 1,
+}
+
 export enum CardBizType {
   Plugin = 1,
   Workflow = 2,
@@ -698,6 +705,9 @@ export enum ModelTagClass {
   ModelUserRight = 2,
   ModelFeature = 3,
   ModelFunction = 4,
+  ModelPaid = 15,
+  /** 模型运行时能力 */
+  ModelAbility = 16,
   /** 本期不做 */
   Custom = 20,
   Others = 100,
@@ -2717,6 +2727,7 @@ export interface DraftBotCreateRequest {
   /** 关联的抖音分身应用id */
   app_id?: string;
   business_type?: bot_common.BusinessType;
+  folder_id?: string;
 }
 
 export interface DraftBotCreateResponse {
@@ -3804,6 +3815,8 @@ export interface GetTypeListData {
   model_list?: Array<Model>;
   voice_list?: Array<VoiceType>;
   raw_model_list?: Array<Model>;
+  model_show_family_list?: Array<ModelShowFamily>;
+  default_model_id?: Int64;
 }
 
 export interface GetTypeListRequest {
@@ -4089,6 +4102,13 @@ export interface InitVoicesInfo {
   autoplay?: boolean;
   /** 是否关闭语音通话，true:关闭 false:开启  默认为false */
   close_voice_call?: boolean;
+  video_call_config?: bot_common.VideoCallConfig;
+  voiceprint_recognition_config?: bot_common.VoiceprintRecognitionConfig;
+  /** key: lang value: voiceConfig */
+  i18nlang_voice_parameter_config?: Record<
+    string,
+    bot_common.I18nLangVoiceParameterConfig
+  >;
 }
 
 export interface Intent {
@@ -4420,9 +4440,8 @@ export interface Model {
   model_params?: Array<ModelParameter>;
   model_desc?: Array<ModelDescGroup>;
   /** 模型功能配置 */
-  func_config?: Record<
-    bot_common.ModelFuncConfigType,
-    bot_common.ModelFuncConfigStatus
+  func_config?: Partial<
+    Record<bot_common.ModelFuncConfigType, bot_common.ModelFuncConfigStatus>
   >;
   /** 方舟模型节点名称 */
   endpoint_name?: string;
@@ -4438,6 +4457,13 @@ export interface Model {
   model_status_details?: ModelStatusDetails;
   /** 模型能力 */
   model_ability?: ModelAbility;
+  model_show_family_id?: string;
+  hot_flag?: number;
+  hot_ranking?: number;
+  online_time?: Int64;
+  /** 0-用户可见 1-用户不可见 */
+  config_type?: number;
+  offline_time?: Int64;
 }
 
 export interface ModelAbility {
@@ -4449,6 +4475,12 @@ export interface ModelAbility {
   image_understanding?: boolean;
   /** 是否支持视频理解 */
   video_understanding?: boolean;
+  /** 是否支持音频理解 */
+  audio_understanding?: boolean;
+  /** 是否支持多模态 */
+  support_multi_modal?: boolean;
+  /** 是否支持续写 */
+  prefill_resp?: boolean;
 }
 
 export interface ModelDescGroup {
@@ -4474,6 +4506,13 @@ export interface ModelInfo {
   response_format?: bot_common.ModelResponseFormat;
   /** 用户选择的模型风格 */
   model_style?: bot_common.ModelStyle;
+  cache_type?: bot_common.CacheType;
+  /** sp拼接当前时间 */
+  sp_current_time?: boolean;
+  /** sp拼接防泄露指令 */
+  sp_anti_leak?: boolean;
+  /** sp拼接声纹信息 */
+  sp_voice_info?: boolean;
 }
 
 export interface ModelParamClass {
@@ -4510,6 +4549,7 @@ export interface ModelParameter {
   options?: Array<Option>;
   /** 参数分类，"Generation diversity", "Input and output length", "Output format" */
   param_class?: ModelParamClass;
+  custom_flag?: boolean;
 }
 
 export interface ModelQuota {
@@ -4544,6 +4584,14 @@ export interface ModelSeriesInfo {
   icon_url?: string;
   model_vendor?: string;
   model_tips?: string;
+}
+
+export interface ModelShowFamily {
+  id?: Int64;
+  icon?: string;
+  iconUrl?: string;
+  name?: string;
+  ranking?: number;
 }
 
 export interface ModelStatusDetails {
@@ -4929,7 +4977,7 @@ export interface PluginInfo {
   /** 插件统计数据 */
   statistic_data?: PluginStatisticData;
   /** 公共参数列表 */
-  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
+  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
   /** plugin的商品上下架状态 */
   plugin_product_list_status?: product_common.ProductStatus;
   /** plugin的商品状态(组合状态) */
@@ -4961,7 +5009,7 @@ export interface PluginInfoForPlayground {
   space_id?: string;
   /** 插件统计数据 */
   statistic_data?: PluginStatisticData;
-  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
+  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
   /** plugin的商品状态 */
   plugin_product_status?: product_common.ProductStatus;
   /** plugin商品下架类型 */
@@ -4984,7 +5032,7 @@ export interface PluginMetaInfo {
   service_token?: string;
   /** json序列化 */
   oauth_info?: string;
-  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
+  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
 }
 
 export interface PluginParameter {
@@ -5113,6 +5161,8 @@ export interface PublishConnectorInfo {
   auth_status?: bot_user_auth.UserAuthStatus;
   /** 补全信息按钮的 url */
   to_complete_info_url?: string;
+  /** 渠道发布提示 */
+  connector_tips?: string;
 }
 
 export interface PublishConnectorListRequest {
@@ -5348,7 +5398,7 @@ export interface RegisterPluginMetaRequest {
   oauth_info?: string;
   space_id: string;
   /** 公共参数列表 */
-  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
+  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
   /** 默认0 默认原来表单创建方式，1 coze ide创建方式 */
   creation_method?: CreationMethod;
   /** ide创建下的代码编程语言 */
@@ -5950,6 +6000,9 @@ export interface TabDisplayItems {
   knowledge_photo_tab_status?: TabStatus;
   hook_info_tab_status?: TabStatus;
   default_user_input_tab_status?: TabStatus;
+  knowledge_volcano_unstructured_tab_status?: TabStatus;
+  knowledge_volcano_structured_tab_status?: TabStatus;
+  model_tab_status?: TabStatus;
 }
 
 /** deprecated */
@@ -6286,7 +6339,7 @@ export interface UpdatePluginMetaRequest {
   service_token?: string;
   /** json序列化 */
   oauth_info?: string;
-  common_params?: Record<ParameterLocation, Array<commonParamSchema>>;
+  common_params?: Partial<Record<ParameterLocation, Array<commonParamSchema>>>;
   creation_method?: CreationMethod;
 }
 

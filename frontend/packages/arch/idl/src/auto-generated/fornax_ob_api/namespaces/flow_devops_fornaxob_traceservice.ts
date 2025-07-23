@@ -453,6 +453,24 @@ export interface ListTracesResponse {
   msg?: string;
 }
 
+export interface OtelIngestTracesRequest {
+  /** pb/json bytes数据 */
+  body: Blob;
+  /** 数据类型,可选application/x-protobuf或application/json */
+  ContentType: string;
+  /** 数据编码类型,可选gzip */
+  ContentEncoding: string;
+  /** 空间ID */
+  SpaceID: string;
+  Base?: base.Base;
+}
+
+export interface OtelIngestTracesResponse {
+  /** pb bytes数据 */
+  body?: Blob;
+  BaseResp?: base.BaseResp;
+}
+
 export interface PreviewExportTracesToEvaluationRequest {
   workspace_id: Int64;
   span_ids: Array<string>;

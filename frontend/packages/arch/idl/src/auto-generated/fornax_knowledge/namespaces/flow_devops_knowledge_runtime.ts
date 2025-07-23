@@ -20,17 +20,91 @@
 // @ts-nocheck
 
 import * as base from './base';
+import * as flow_devops_knowledge_common from './flow_devops_knowledge_common';
 
 export type Int64 = string | number;
+
+export interface BatchDeleteKnowledgeDocumentEntryReq {
+  Authorization?: string;
+  knowledge_document_id?: Int64;
+  knowledge_document_entry_ids?: Array<Int64>;
+  base?: base.Base;
+}
+
+export interface BatchDeleteKnowledgeDocumentEntryResp {
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
 
 export interface ImportKnowledgeTableDataReq {
   Authorization?: string;
   document_id?: Int64;
   entries?: Array<Record<string, string>>;
+  unique_entries?: Array<UniqueEntry>;
   base?: base.Base;
 }
 
 export interface ImportKnowledgeTableDataResp {
+  code?: number;
+  msg?: string;
   base_resp?: base.BaseResp;
+}
+
+export interface MGetKnowledgeDocumentEntryReq {
+  Authorization?: string;
+  knowledge_shelf_document_id?: Int64;
+  knowledge_document_id?: Int64;
+  /** 数据来源 */
+  resource_type?: flow_devops_knowledge_common.ResourceType;
+  offset?: number;
+  limit?: number;
+  base?: base.Base;
+}
+
+export interface MGetKnowledgeDocumentEntryResp {
+  knowledge_document_entries?: Array<flow_devops_knowledge_common.KnowledgeDocumentEntry>;
+  total?: number;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface MGetKnowledgeShelfDocumentReq {
+  Authorization?: string;
+  knowledge_id?: Int64;
+  knowledge_shelf_document_id?: Int64;
+  type?: flow_devops_knowledge_common.KnowledgeShelfDocumentType;
+  offset?: number;
+  limit?: number;
+  base?: base.Base;
+}
+
+export interface MGetKnowledgeShelfDocumentResp {
+  knowledge_shelf_documents?: Array<flow_devops_knowledge_common.KnowledgeShelfDocument>;
+  total?: number;
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+export interface StartEmbeddingReq {
+  Authorization?: string;
+  knowledge_document_id?: Int64;
+  chunk_rule?: flow_devops_knowledge_common.ChunkRule;
+  base?: base.Base;
+}
+
+export interface StartEmbeddingResp {
+  code?: number;
+  msg?: string;
+  base_resp?: base.BaseResp;
+}
+
+/** --------------------------------------- 知识库OpenAPI -------------------------------------------
+ OpenAPI的设计不允许以SpaceID为粒度进行CRUD，最粗粒度限制为KnowledgeID粒度。 */
+export interface UniqueEntry {
+  unique_id?: Int64;
+  entry?: Record<string, string>;
 }
 /* eslint-enable */

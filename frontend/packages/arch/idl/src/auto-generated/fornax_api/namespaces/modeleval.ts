@@ -45,7 +45,8 @@ export enum OfflineEvalTaskModelSource {
   Unknown = 0,
   MerlinSeed = 1,
   FornaxSftTask = 2,
-  Opensource = 3,
+  /** 基座模型 */
+  FoundationModel = 3,
 }
 
 export enum OfflineEvalTaskStatus {
@@ -136,7 +137,7 @@ export interface OfflineEvalTaskCkptConfigItem {
 export interface OfflineEvalTaskCkptResult {
   /** 评测集上传到hdfs的地址 */
   datasetHdfsAddress?: string;
-  /** 推理结果保存的hdfs地址，可能为文件夹 */
+  /** 推理结果保存的hdfs地址，可能为文件夹(开源模型必须时文件而非文件夹) */
   inferResultHdfsAddress?: string;
   /** 推理结果导出进度 */
   resultExportStatuses?: Array<InferResExportStatus>;
@@ -158,6 +159,28 @@ export interface OfflineEvalTaskCkptResult {
   merlinJobTerminated?: boolean;
   /** 保存除了 plainText 以外的类型的数据的原始信息 */
   originDataColumnName?: string;
+  /** 批量推理结果的列名，老数据可能为空，为空时该值取output（parquet中的列名。如果是jsonl，格式是方舟固定的） */
+  outputColumnName?: string;
+  /** 原始批量推理结果的列名（parquet中的列名） */
+  originOutputColumnName?: string;
+  /** 批量推理任务的id */
+  batchInferTaskID?: Int64;
+  /** 批量推理任务的状态 */
+  batchInferTaskStatus?: string;
+  /** 批量推理输入数据的其中一列列名，这列记录了数据中每一行的唯一id */
+  itemIDColumnName?: string;
+  /** 评测集上传到tos的桶名 */
+  datasetTosBucketName?: string;
+  /** 评测集上传到tos后的文件路径 */
+  datasetTosObjectKey?: string;
+  /** 推理结果保存到tos的桶名 */
+  inferResultTosBucketName?: string;
+  /** 推理结果保存到tos后的文件夹路径 */
+  inferResultTosObjectKey?: string;
+  /** 火山项目名，用于记录用户托管的字节云方舟账号的项目名称 */
+  volcEngineProjectName?: string;
+  /** 评测集中的图片上传到hdfs的地址（文件夹） */
+  datasetImageHdfsAddress?: string;
 }
 
 export interface OfflineEvalTaskDataset {
@@ -191,10 +214,19 @@ export interface OfflineEvalTaskInputPreHandler {
 
 export interface OfflineEvalTaskModel {
   source?: OfflineEvalTaskModelSource;
+  /** 被评测的模型（当source是OpenSource/Ark基础模型时，模型信息写在这里） */
+  foundationModel?: model.SftTaskFoundationModel;
+  /** 被评测的模型的标识（此时模型是sft产物，identification是方舟custom_id / model_version，且会记录foundation model） */
   identification?: string;
   sftTaskID?: string;
   sftTaskProvider?: model.Provider;
+  merlinModelName?: string;
+  merlinModelVersion?: string;
+  trainingType?: model.SftTaskTrainingType;
+  trainingMethod?: model.SftTaskTrainingMethod;
+  sftTask?: model.SftTask;
   merlinSeedModelType?: MerlinSeedModelType;
+  /** 被评测的模型文件的hdfs地址（当source是seed/sft/OpenSource时，模型hdfs地址写在这里） */
   modelAddress?: string;
   tokenizerAddress?: string;
   networkConfigContext?: string;

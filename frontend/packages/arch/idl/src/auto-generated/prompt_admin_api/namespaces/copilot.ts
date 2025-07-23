@@ -47,6 +47,10 @@ export enum BotType {
   GuanFang = 2,
 }
 
+export enum ModelCacheType {
+  PrefixCache = 1,
+}
+
 export enum ModelParamType {
   Float = 1,
   Int = 2,
@@ -84,6 +88,8 @@ export interface BytedLLMServerConf {
   request_type?: string;
   /** 使用genai时必填 */
   chat_template?: string;
+  /** 自定义orca框架的模型出入参 */
+  orca_model_param?: OrcaModelParamConf;
 }
 
 export interface Capability {
@@ -117,6 +123,12 @@ export interface Capability {
   pre_query?: boolean;
   /** 是否支持搜索增强，会插入 type=search_enhance 的 tool */
   search_enhance?: boolean;
+  /** 是否展示thinking */
+  cot_display?: boolean;
+  /** 支持的缓存类型 */
+  cache?: Array<ModelCacheType>;
+  /** 是否支持续写 */
+  prefill_resp?: boolean;
   /** 允许展示的如意卡片列表 */
   ala_src_allow_list?: Array<string>;
   /** 是否支持批量调用 */
@@ -241,6 +253,21 @@ export interface ModelQuota {
   request_per_minute?: Int64;
   /** 容量，用于监控 */
   token_per_minute?: Int64;
+}
+
+export interface OrcaCustomerParam {
+  string_lists?: Record<string, Array<string>>;
+  int_lists?: Record<string, Array<Int64>>;
+  float_lists?: Record<string, Array<number>>;
+  string_arrays?: Record<string, Array<Array<string>>>;
+}
+
+export interface OrcaModelParamConf {
+  /** openai */
+  openai_req_key?: string;
+  openai_resp_key?: string;
+  /** customer */
+  in_customer_param?: OrcaCustomerParam;
 }
 
 export interface PromptConf {

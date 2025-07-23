@@ -21,6 +21,10 @@
 
 export type Int64 = string | number;
 
+export enum ModelCacheType {
+  PrefixCache = 1,
+}
+
 export enum ModelParamType {
   Float = 1,
   Int = 2,
@@ -36,6 +40,41 @@ export enum ModelProvider {
   BytedLLMServer = 5,
 }
 
+export enum ModelTagKeyID {
+  /** 用户权益 */
+  UserRights = 1,
+  /** 模型类型 */
+  ModelType = 2,
+  /** 模型特色 */
+  ModelFeatures = 3,
+  /** 模型支持功能 */
+  ModelCapabilities = 4,
+  /** 模型应用场景 */
+  ModelScene = 5,
+  /** 自定义标签 */
+  CustomTag = 6,
+  /** 模型厂商 */
+  ModelManufacturer = 7,
+  /** 参数量 */
+  ParameterQuantity = 8,
+  /** 火山方舟标签 */
+  MaasTag = 9,
+  /** 模型系列 */
+  ModelSeries = 10,
+  /** 下线日期 */
+  OfflineDate = 11,
+  /** 替换模型 */
+  ReplaceModel = 12,
+  /** 更新日志 */
+  UpdateLog = 13,
+  /** 一句话描述 */
+  BriefDescription = 14,
+  /** 付费标签 */
+  PaidTag = 15,
+  /** 模型运行时能力 */
+  ModelAbility = 16,
+}
+
 export interface ModelEntity {
   /** 模型 id */
   ModelID?: string;
@@ -43,6 +82,7 @@ export interface ModelEntity {
   ModelName?: string;
   /** 模型分流规则 */
   Targets?: Array<ModelRuleTarget>;
+  biz?: number;
   /** 创建者 */
   CreaterEmail?: string;
   /** 最后修改人 */
@@ -51,6 +91,27 @@ export interface ModelEntity {
   CreateTime?: Int64;
   /** 模型修改时间 */
   UpdateTime?: Int64;
+}
+
+export interface ModelParameter {
+  /** 配置字段，如max_tokens */
+  name?: string;
+  /** 类型 */
+  type?: ModelParamType;
+  /** 是否必填 */
+  is_required?: boolean;
+  /** 数值类型参数，允许设置的最小值 */
+  min?: string;
+  /** 数值类型参数，允许设置的最大值 */
+  max?: string;
+  /** float类型参数的精度 */
+  precision?: number;
+  /** 不同风格的参数默认值 */
+  default_value?: Record<string, string>;
+  /** 枚举值，如response_format支持text,markdown,json */
+  options?: Array<string>;
+  /** 是否自动修正该参数到[min, max]范围内， 默认为false */
+  auto_fix?: boolean;
 }
 
 export interface ModelRuleTarget {

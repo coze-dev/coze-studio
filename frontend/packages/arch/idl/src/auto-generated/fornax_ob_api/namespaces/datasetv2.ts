@@ -66,11 +66,17 @@ export enum FieldDisplayFormat {
   JSON = 3,
   YAML = 4,
   Code = 5,
+  SingleOption = 6,
 }
 
 export enum FieldStatus {
   Available = 1,
   Deleted = 2,
+}
+
+export enum FieldTransformationType {
+  /** 移除未在当前列的 jsonSchema 中定义的字段（包括 properties 和 patternProperties），仅在列类型为 struct 时有效 */
+  RemoveExtraFields = 1,
 }
 
 export enum ItemErrorType {
@@ -86,6 +92,12 @@ export enum ItemErrorType {
   MalformedFile = 5,
   /** 包含非法内容 */
   IllegalContent = 6,
+  /** 缺少必填字段 */
+  MissingRequiredField = 7,
+  /** 数据嵌套层数超限 */
+  ExceedMaxNestedDepth = 8,
+  /** 数据转换失败 */
+  TransformItemFailed = 9,
   /** system error */
   InternalError = 100,
   /** 清空数据集失败 */
@@ -100,6 +112,8 @@ export enum SchemaKey {
   Float = 3,
   Bool = 4,
   Message = 5,
+  /** 单选 */
+  SingleChoice = 6,
 }
 
 export enum SecurityLevel {

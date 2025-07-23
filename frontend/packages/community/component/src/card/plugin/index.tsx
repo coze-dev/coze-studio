@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import cls from 'classnames';
 import { type explore } from '@coze-studio/api-schema';
 import { I18n } from '@coze-arch/i18n';
 import { Avatar, Space, Tag, Toast, Tooltip } from '@coze-arch/coze-design';
-
-import { cozeBaseUrl } from '@/const/url';
 
 import { PluginAuthMode, type AuthMode } from '../type';
 import { CardInfo } from '../components/info';
@@ -40,13 +38,7 @@ export type PluginCardProps = ProductInfo & {
 };
 
 export const PluginCard: FC<PluginCardProps> = props => (
-  <CardContainer
-    className={styles.plugin}
-    shadowMode="default"
-    onClick={() => {
-      console.log('CardContainer...');
-    }}
-  >
+  <CardContainer className={styles.plugin} shadowMode="default">
     <div className={styles['plugin-wrapper']}>
       <PluginCardBody {...props} />
 
@@ -65,15 +57,6 @@ export const PluginCard: FC<PluginCardProps> = props => (
             {I18n.t('plugin_store_install')}
           </CardButton>
         ) : null}
-        <CardButton
-          onClick={() => {
-            window.open(
-              `${cozeBaseUrl}/store/plugin/${props.meta_info?.id}?from=plugin_card`,
-            );
-          }}
-        >
-          {I18n.t('plugin_usage_limits_modal_view_details')}
-        </CardButton>
       </Space>
     </div>
   </CardContainer>
@@ -129,7 +112,6 @@ const PluginCardBody: FC<PluginCardProps> = props => {
           userInfo: props.meta_info?.user_info,
           authMode: props.plugin_extra.auth_mode,
           renderCardTag,
-          descClassName: styles.description,
         }}
       />
     </div>

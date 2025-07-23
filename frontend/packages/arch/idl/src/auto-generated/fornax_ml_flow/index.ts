@@ -20,57 +20,100 @@
 // @ts-nocheck
 
 import * as ai_annotate from './namespaces/ai_annotate';
+import * as aidpcallback from './namespaces/aidpcallback';
+import * as annotation_job from './namespaces/annotation_job';
 import * as base from './namespaces/base';
+import * as batch_infer from './namespaces/batch_infer';
+import * as dataprocess from './namespaces/dataprocess';
 import * as dataset from './namespaces/dataset';
 import * as datasetv2 from './namespaces/datasetv2';
 import * as datasetv2job from './namespaces/datasetv2job';
 import * as datasetv2lineage from './namespaces/datasetv2lineage';
 import * as datasetv2similarity from './namespaces/datasetv2similarity';
+import * as filter from './namespaces/filter';
 import * as flow_devops_evaluation_callback_common from './namespaces/flow_devops_evaluation_callback_common';
-import * as model from './namespaces/model';
+import * as flow_devops_prompt_common from './namespaces/flow_devops_prompt_common';
+import * as fornax_domain_model from './namespaces/fornax_domain_model';
+import * as ml_flow_domain_model from './namespaces/ml_flow_domain_model';
 import * as openapi from './namespaces/openapi';
 import * as stone_fornax_ml_flow_annotateservice from './namespaces/stone_fornax_ml_flow_annotateservice';
+import * as stone_fornax_ml_flow_annotationjobservice from './namespaces/stone_fornax_ml_flow_annotationjobservice';
+import * as stone_fornax_ml_flow_batchinferservice from './namespaces/stone_fornax_ml_flow_batchinferservice';
+import * as stone_fornax_ml_flow_crowdsourcingannotationjobservice from './namespaces/stone_fornax_ml_flow_crowdsourcingannotationjobservice';
+import * as stone_fornax_ml_flow_dataprocessservice from './namespaces/stone_fornax_ml_flow_dataprocessservice';
 import * as stone_fornax_ml_flow_datasetservice from './namespaces/stone_fornax_ml_flow_datasetservice';
 import * as stone_fornax_ml_flow_datasetservicev2 from './namespaces/stone_fornax_ml_flow_datasetservicev2';
 import * as stone_fornax_ml_flow_modelservice from './namespaces/stone_fornax_ml_flow_modelservice';
+import * as stone_fornax_ml_flow_openapi_annotationjobservice from './namespaces/stone_fornax_ml_flow_openapi_annotationjobservice';
+import * as stone_fornax_ml_flow_openapi_batchinferservice from './namespaces/stone_fornax_ml_flow_openapi_batchinferservice';
 import * as stone_fornax_ml_flow_openapi_datasetservicev2 from './namespaces/stone_fornax_ml_flow_openapi_datasetservicev2';
+import * as stone_fornax_ml_flow_tagservice from './namespaces/stone_fornax_ml_flow_tagservice';
+import * as tag from './namespaces/tag';
 
 export {
   ai_annotate,
+  aidpcallback,
+  annotation_job,
   base,
+  batch_infer,
+  dataprocess,
   dataset,
   datasetv2,
   datasetv2job,
   datasetv2lineage,
   datasetv2similarity,
+  filter,
   flow_devops_evaluation_callback_common,
-  model,
+  flow_devops_prompt_common,
+  fornax_domain_model,
+  ml_flow_domain_model,
   openapi,
   stone_fornax_ml_flow_annotateservice,
+  stone_fornax_ml_flow_annotationjobservice,
+  stone_fornax_ml_flow_batchinferservice,
+  stone_fornax_ml_flow_crowdsourcingannotationjobservice,
+  stone_fornax_ml_flow_dataprocessservice,
   stone_fornax_ml_flow_datasetservice,
   stone_fornax_ml_flow_datasetservicev2,
   stone_fornax_ml_flow_modelservice,
+  stone_fornax_ml_flow_openapi_annotationjobservice,
+  stone_fornax_ml_flow_openapi_batchinferservice,
   stone_fornax_ml_flow_openapi_datasetservicev2,
+  stone_fornax_ml_flow_tagservice,
+  tag,
 };
 export * from './namespaces/ai_annotate';
+export * from './namespaces/aidpcallback';
+export * from './namespaces/annotation_job';
 export * from './namespaces/base';
+export * from './namespaces/batch_infer';
+export * from './namespaces/dataprocess';
 export * from './namespaces/dataset';
 export * from './namespaces/datasetv2';
 export * from './namespaces/datasetv2job';
 export * from './namespaces/datasetv2lineage';
 export * from './namespaces/datasetv2similarity';
+export * from './namespaces/filter';
 export * from './namespaces/flow_devops_evaluation_callback_common';
-export * from './namespaces/model';
+export * from './namespaces/flow_devops_prompt_common';
+export * from './namespaces/fornax_domain_model';
+export * from './namespaces/ml_flow_domain_model';
 export * from './namespaces/openapi';
 export * from './namespaces/stone_fornax_ml_flow_annotateservice';
+export * from './namespaces/stone_fornax_ml_flow_annotationjobservice';
+export * from './namespaces/stone_fornax_ml_flow_batchinferservice';
+export * from './namespaces/stone_fornax_ml_flow_crowdsourcingannotationjobservice';
+export * from './namespaces/stone_fornax_ml_flow_dataprocessservice';
 export * from './namespaces/stone_fornax_ml_flow_datasetservice';
 export * from './namespaces/stone_fornax_ml_flow_datasetservicev2';
 export * from './namespaces/stone_fornax_ml_flow_modelservice';
+export * from './namespaces/stone_fornax_ml_flow_openapi_annotationjobservice';
+export * from './namespaces/stone_fornax_ml_flow_openapi_batchinferservice';
 export * from './namespaces/stone_fornax_ml_flow_openapi_datasetservicev2';
+export * from './namespaces/stone_fornax_ml_flow_tagservice';
+export * from './namespaces/tag';
 
 export type Int64 = string | number;
-
-// THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.
 
 export default class FornaxMlFlowService<T> {
   private request: any = () => {
@@ -160,6 +203,7 @@ export default class FornaxMlFlowService<T> {
       promptVersion: _req['promptVersion'],
       userPromptColumnName: _req['userPromptColumnName'],
       promptVariables: _req['promptVariables'],
+      executeConcurrency: _req['executeConcurrency'],
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
@@ -275,6 +319,7 @@ export default class FornaxMlFlowService<T> {
       promptVersion: _req['promptVersion'],
       userPromptColumnName: _req['userPromptColumnName'],
       promptVariables: _req['promptVariables'],
+      executeConcurrency: _req['executeConcurrency'],
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
@@ -390,6 +435,7 @@ export default class FornaxMlFlowService<T> {
       visibility: _req['visibility'],
       spec: _req['spec'],
       features: _req['features'],
+      userID: _req['userID'],
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
@@ -438,6 +484,7 @@ export default class FornaxMlFlowService<T> {
       pageSize: _req['pageSize'],
       cursor: _req['cursor'],
       orderBy: _req['orderBy'],
+      filter: _req['filter'],
       base: _req['base'],
     };
     return this.request({ url, method, params }, options);
@@ -684,6 +731,7 @@ export default class FornaxMlFlowService<T> {
       category: _req['category'],
       name: _req['name'],
       createdBys: _req['createdBys'],
+      bizCategories: _req['bizCategories'],
       page: _req['page'],
       pageSize: _req['pageSize'],
       cursor: _req['cursor'],
@@ -713,6 +761,7 @@ export default class FornaxMlFlowService<T> {
       pageSize: _req['pageSize'],
       cursor: _req['cursor'],
       orderBy: _req['orderBy'],
+      filter: _req['filter'],
       base: _req['base'],
     };
     return this.request({ url, method, params }, options);
@@ -1293,6 +1342,123 @@ export default class FornaxMlFlowService<T> {
   }
 
   /**
+   * PUT /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID
+   *
+   * 更新质量分任务
+   */
+  UpdateQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.UpdateQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.UpdateQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}`,
+    );
+    const method = 'PUT';
+    const data = { job: _req['job'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs
+   *
+   * 创建质量分任务
+   */
+  CreateQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.CreateQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.CreateQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs`,
+    );
+    const method = 'POST';
+    const data = { job: _req['job'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID
+   *
+   * 获取质量分任务
+   */
+  GetQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.GetQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.GetQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * DELETE /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID
+   *
+   * 删除质量分任务
+   */
+  DeleteQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.DeleteQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.DeleteQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}`,
+    );
+    const method = 'DELETE';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/dry_run
+   *
+   * 试运行质量分任务
+   */
+  DryRunQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.DryRunQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.DryRunQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/dry_run`,
+    );
+    const method = 'POST';
+    const data = {
+      job: _req['job'],
+      sampleCount: _req['sampleCount'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs
+   *
+   * 获取质量分任务
+   */
+  ListQualityScoreJobs(
+    req: stone_fornax_ml_flow_annotationjobservice.ListQualityScoreJobsRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.ListQualityScoreJobsResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs`,
+    );
+    const method = 'GET';
+    const params = {
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+      cursor: _req['cursor'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
    * GET /api/ml_flow/v2/datasets/:datasetID/items/:id/source
    *
    * 查询 item 的来源信息
@@ -1384,6 +1550,42 @@ export default class FornaxMlFlowService<T> {
   }
 
   /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_job_instances/:jobID
+   *
+   * 获取任务执行情况信息
+   */
+  GetQualityScoreJobInstance(
+    req: stone_fornax_ml_flow_annotationjobservice.GetQualityScoreJobInstanceRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.GetQualityScoreJobInstanceResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_job_instances/${_req['jobID']}`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID/instances/:instanceID/terminate
+   *
+   * 终止任务
+   */
+  TerminateQualityScoreJobInstance(
+    req: stone_fornax_ml_flow_annotationjobservice.TerminateQualityScoreJobInstanceRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.TerminateQualityScoreJobInstanceResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}/instances/${_req['instanceID']}/terminate`,
+    );
+    const method = 'POST';
+    const data = { base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
    * GET /open-api/ml_flow/v2/datasets/:datasetID/items/:itemID
    *
    * 获取某条数据行&血缘数据，主键ID
@@ -1453,6 +1655,7 @@ export default class FornaxMlFlowService<T> {
       pageSize: _req['pageSize'],
       cursor: _req['cursor'],
       orderBy: _req['orderBy'],
+      filter: _req['filter'],
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
@@ -1504,6 +1707,7 @@ export default class FornaxMlFlowService<T> {
       pageSize: _req['pageSize'],
       cursor: _req['cursor'],
       orderBy: _req['orderBy'],
+      filter: _req['filter'],
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
@@ -1556,6 +1760,46 @@ export default class FornaxMlFlowService<T> {
   }
 
   /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID/run
+   *
+   * 运行打标任务
+   */
+  RunQualityScoreJob(
+    req: stone_fornax_ml_flow_annotationjobservice.RunQualityScoreJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.RunQualityScoreJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}/run`,
+    );
+    const method = 'POST';
+    const data = {
+      taskRunType: _req['taskRunType'],
+      filter: _req['filter'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/quality_score_jobs/:jobID/sync_run
+   *
+   * 同步运行几条打分任务
+   */
+  RunQualityScoreSync(
+    req: stone_fornax_ml_flow_annotationjobservice.RunQualityScoreSyncRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.RunQualityScoreSyncResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/quality_score_jobs/${_req['jobID']}/sync_run`,
+    );
+    const method = 'POST';
+    const data = { itemIDs: _req['itemIDs'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
    * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/items
    *
    * 创建数据行
@@ -1578,6 +1822,1071 @@ export default class FornaxMlFlowService<T> {
       base: _req['base'],
     };
     return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/fields_meta_info
+   *
+   * 获取筛选元数据
+   */
+  GetFieldsMetaInfo(
+    req: stone_fornax_ml_flow_datasetservicev2.GetFieldsMetaInfoRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_datasetservicev2.GetFieldsMetaInfoResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/fields_meta_info`,
+    );
+    const method = 'GET';
+    return this.request({ url, method }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/tags
+   *
+   * 创建标签
+   */
+  CreateTag(
+    req: stone_fornax_ml_flow_tagservice.CreateTagRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.CreateTagResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags`,
+    );
+    const method = 'POST';
+    const data = {
+      tagKeyName: _req['tagKeyName'],
+      tagType: _req['tagType'],
+      version: _req['version'],
+      description: _req['description'],
+      tagValues: _req['tagValues'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/tags/search
+   *
+   * 查询标签列表
+   */
+  SearchTags(
+    req: stone_fornax_ml_flow_tagservice.SearchTagsRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.SearchTagsResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/search`,
+    );
+    const method = 'POST';
+    const data = {
+      status: _req['status'],
+      tagKeyNameLike: _req['tagKeyNameLike'],
+      createdBys: _req['createdBys'],
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+      cursor: _req['cursor'],
+      orderBy: _req['orderBy'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * PATCH /api/ml_flow/v2/spaces/:spaceID/tags/:tagKeyID
+   *
+   * 更新标签
+   */
+  UpdateTag(
+    req: stone_fornax_ml_flow_tagservice.UpdateTagRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.UpdateTagResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/${_req['tagKeyID']}`,
+    );
+    const method = 'PATCH';
+    const data = {
+      version: _req['version'],
+      tagKeyName: _req['tagKeyName'],
+      description: _req['description'],
+      tagType: _req['tagType'],
+      tagValues: _req['tagValues'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/tags/batch_update_status
+   *
+   * 批量更新标签状态
+   */
+  BatchUpdateTagStatus(
+    req: stone_fornax_ml_flow_tagservice.BatchUpdateTagStatusRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.BatchUpdateTagStatusResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/batch_update_status`,
+    );
+    const method = 'POST';
+    const data = {
+      tagKeyIDs: _req['tagKeyIDs'],
+      status: _req['status'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/export
+   *
+   * 导出数据
+   */
+  ExportDataset(
+    req: stone_fornax_ml_flow_datasetservicev2.ExportDatasetReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_datasetservicev2.ExportDatasetResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/export`,
+    );
+    const method = 'POST';
+    const data = {
+      versionID: _req['versionID'],
+      targetType: _req['targetType'],
+      target: _req['target'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/tags/:tagKeyID/archive_option_tag
+   *
+   * 将单选标签归档进标签管理
+   */
+  ArchiveOptionTag(
+    req: stone_fornax_ml_flow_tagservice.ArchiveOptionTagRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.ArchiveOptionTagResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/${_req['tagKeyID']}/archive_option_tag`,
+    );
+    const method = 'POST';
+    const data = {
+      name: _req['name'],
+      description: _req['description'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/tags/:tagKeyID
+   *
+   * 获取标签明细
+   */
+  GetTagDetail(
+    req: stone_fornax_ml_flow_tagservice.GetTagDetailRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.GetTagDetailResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/${_req['tagKeyID']}`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * GET /open-api/ml_flow/v2/dataset_io_jobs/:jobID
+   *
+   * 任务(导入、导出、转换)详情
+   */
+  OpenGetDatasetIOJob(
+    req: stone_fornax_ml_flow_openapi_datasetservicev2.OpenGetDatasetIOJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenGetDatasetIOJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/dataset_io_jobs/${_req['jobID']}`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, params, headers }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/datasets/:datasetID/import
+   *
+   * 导入数据
+   */
+  OpenImportDataset(
+    req: stone_fornax_ml_flow_openapi_datasetservicev2.OpenImportDatasetReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenImportDatasetResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/import`,
+    );
+    const method = 'POST';
+    const data = {
+      file: _req['file'],
+      fieldMappings: _req['fieldMappings'],
+      option: _req['option'],
+      base: _req['base'],
+    };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/datasets/:datasetID/export
+   *
+   * 导出数据
+   */
+  OpenExportDataset(
+    req: stone_fornax_ml_flow_openapi_datasetservicev2.OpenExportDatasetReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenExportDatasetResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/export`,
+    );
+    const method = 'POST';
+    const data = {
+      versionID: _req['versionID'],
+      targetType: _req['targetType'],
+      target: _req['target'],
+      base: _req['base'],
+    };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * PUT /open-api/ml_flow/v2/dataset_io_jobs/:jobID/cancel
+   *
+   * 取消一个任务
+   */
+  OpenCancelDatasetIOJob(
+    req: stone_fornax_ml_flow_openapi_datasetservicev2.OpenCancelDatasetIOJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenCancelDatasetIOJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/dataset_io_jobs/${_req['jobID']}/cancel`,
+    );
+    const method = 'PUT';
+    const data = { base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/parse_import_source_file
+   *
+   * 解析源文件
+   */
+  ParseImportSourceFile(
+    req: stone_fornax_ml_flow_datasetservicev2.ParseImportSourceFileReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_datasetservicev2.ParseImportSourceFileResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/parse_import_source_file`,
+    );
+    const method = 'POST';
+    const data = { file: _req['file'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/:jobID/run
+   *
+   * 运行标注任务
+   */
+  RunAnnotationJob(
+    req: stone_fornax_ml_flow_annotationjobservice.RunAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.RunAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/run`,
+    );
+    const method = 'POST';
+    const data = {
+      jwtToken: _req['jwtToken'],
+      annotationJobRunID: _req['annotationJobRunID'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/:jobID/job_run_instances/:jobRunID/terminate
+   *
+   * 终止正在运行的打标任务
+   */
+  TerminateAnnotationJob(
+    req: stone_fornax_ml_flow_annotationjobservice.TerminateAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.TerminateAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/job_run_instances/${_req['jobRunID']}/terminate`,
+    );
+    const method = 'POST';
+    const data = { jwtToken: _req['jwtToken'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/process
+   *
+   * 查看当前数据集进行中标注任务进度
+   */
+  GetAnnotationJobProcess(
+    req: stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobProcessRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobProcessResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/process`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/associated
+   *
+   * 获取数据集每列关联的标注任务
+   */
+  GetAnnotationJobsWithDataset(
+    req: stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobsWithDatasetRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobsWithDatasetResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/associated`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/:jobID
+   *
+   * 获取单个标注任务详情
+   */
+  GetAnnotationJobDetail(
+    req: stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobDetailRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.GetAnnotationJobDetailResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * GET /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs/:jobID/instances
+   *
+   * 查看任务实例状态
+   */
+  OpenGetAnnotationJobInstance(
+    req: stone_fornax_ml_flow_openapi_annotationjobservice.OpenGetAnnotationJobInstanceRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenGetAnnotationJobInstanceResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/instances`,
+    );
+    const method = 'GET';
+    const params = { jobInstanceID: _req['jobInstanceID'], base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, params, headers }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs/:jobID/run
+   *
+   * 运行任务
+   */
+  OpenRunAnnotationJob(
+    req: stone_fornax_ml_flow_openapi_annotationjobservice.OpenRunAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenRunAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/run`,
+    );
+    const method = 'POST';
+    const data = { jwtToken: _req['jwtToken'], base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * GET /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs
+   *
+   * 列举数据集的标注任务
+   */
+  OpenListAnnotationJobs(
+    req: stone_fornax_ml_flow_openapi_annotationjobservice.OpenListAnnotationJobsRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenListAnnotationJobsResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs`,
+    );
+    const method = 'GET';
+    const params = { cursor: _req['cursor'], base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, params, headers }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs/:jobID/instances/:instanceID/terminate
+   *
+   * 终止标注任务
+   */
+  OpenTerminateAnnotationJob(
+    req: stone_fornax_ml_flow_openapi_annotationjobservice.OpenTerminateAnnotationJobInstanceRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenTerminateAnnotationJobInstanceResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/instances/${_req['instanceID']}/terminate`,
+    );
+    const method = 'POST';
+    const data = { jwtToken: _req['jwtToken'], base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/datasets/:dataset_id/items/clear
+   *
+   * 清除(草稿)数据项
+   */
+  ClearDatasetItem(
+    req: stone_fornax_ml_flow_datasetservicev2.ClearDatasetItemRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_datasetservicev2.ClearDatasetItemResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/datasets/${_req['dataset_id']}/items/clear`,
+    );
+    const method = 'POST';
+    const data = { spaceID: _req['spaceID'], Base: _req['Base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/job_run_instances/search
+   *
+   * 搜索标注任务列表
+   */
+  SearchAnnotationJobInstances(
+    req: stone_fornax_ml_flow_annotationjobservice.SearchAnnotationjobInstancesRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.SearchAnnotationjobInstancesResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/job_run_instances/search`,
+    );
+    const method = 'POST';
+    const data = {
+      typeFilter: _req['typeFilter'],
+      createdBys: _req['createdBys'],
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+      cursor: _req['cursor'],
+      orderBy: _req['orderBy'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/insight/field_distribute
+   *
+   * 获取洞察分布
+   */
+  QueryFieldDistribute(
+    req: stone_fornax_ml_flow_tagservice.QueryFieldDistributeRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.QueryFieldDistributeResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/insight/field_distribute`,
+    );
+    const method = 'GET';
+    const params = {
+      datasetVersion: _req['datasetVersion'],
+      fieldKeys: _req['fieldKeys'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * PUT /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/:jobID
+   *
+   * 更新标注任务
+   */
+  UpdateAnnotationJob(
+    req: stone_fornax_ml_flow_annotationjobservice.UpdateAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.UpdateAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}`,
+    );
+    const method = 'PUT';
+    const data = {
+      name: _req['name'],
+      content: _req['content'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs
+   *
+   * 创建标注任务
+   */
+  CreateAnnotationJob(
+    req: stone_fornax_ml_flow_annotationjobservice.CreateAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.CreateAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs`,
+    );
+    const method = 'POST';
+    const data = {
+      name: _req['name'],
+      content: _req['content'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/dataset_items/validate
+   *
+   * 校验数据
+   */
+  ValidateDatasetItems(
+    req?: stone_fornax_ml_flow_datasetservicev2.ValidateDatasetItemsReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_datasetservicev2.ValidateDatasetItemsResp> {
+    const _req = req || {};
+    const url = this.genBaseURL('/api/ml_flow/v2/dataset_items/validate');
+    const method = 'POST';
+    const data = {
+      spaceID: _req['spaceID'],
+      items: _req['items'],
+      datasetID: _req['datasetID'],
+      datasetCategory: _req['datasetCategory'],
+      datasetFields: _req['datasetFields'],
+      ignoreCurrentItemCount: _req['ignoreCurrentItemCount'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs/:jobID/clone
+   *
+   * 复用标注任务
+   */
+  OpenCloneAnnotationJob(
+    req: stone_fornax_ml_flow_openapi_annotationjobservice.OpenCloneAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenCloneAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}/clone`,
+    );
+    const method = 'POST';
+    const data = {
+      targetDatasetID: _req['targetDatasetID'],
+      jobName: _req['jobName'],
+      base: _req['base'],
+    };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /**
+   * DELETE /open-api/ml_flow/v2/datasets/:datasetID/annotation_jobs/:jobID
+   *
+   * 删除数据集的标注任务
+   */
+  OpenDeleteAnnotationJob(
+    req?: stone_fornax_ml_flow_openapi_annotationjobservice.OpenDeleteAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_annotationjobservice.OpenDeleteAnnotationJobResponse> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}`,
+    );
+    const method = 'DELETE';
+    const params = { base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, params, headers }, options);
+  }
+
+  /**
+   * DELETE /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/:jobID
+   *
+   * 删除标注任务
+   */
+  DeleteAnnotationJob(
+    req: stone_fornax_ml_flow_annotationjobservice.DeleteAnnotationJobRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.DeleteAnnotationJobResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/${_req['jobID']}`,
+    );
+    const method = 'DELETE';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/annotation_jobs/preview
+   *
+   * 预览标注任务效果
+   */
+  PreviewAnnotation(
+    req: stone_fornax_ml_flow_annotationjobservice.PreviewAnnotationRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.PreviewAnnotationResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/annotation_jobs/preview`,
+    );
+    const method = 'POST';
+    const data = {
+      job: _req['job'],
+      fields: _req['fields'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v2/spaces/:spaceID/annotation_jobs/search
+   *
+   * 搜索标注任务
+   */
+  SearchAnnotationJobs(
+    req: stone_fornax_ml_flow_annotationjobservice.SearchAnnotationJobsRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_annotationjobservice.SearchAnnotationJobsResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/annotation_jobs/search`,
+    );
+    const method = 'POST';
+    const data = {
+      nameLike: _req['nameLike'],
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+      cursor: _req['cursor'],
+      orderBy: _req['orderBy'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v1/batch_infer/list_model_cards
+   *
+   * 获取模型card列表
+   */
+  ListModelCards(
+    req?: stone_fornax_ml_flow_batchinferservice.ListModelCardsReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_batchinferservice.ListModelCardsResp> {
+    const _req = req || {};
+    const url = this.genBaseURL('/api/ml_flow/v1/batch_infer/list_model_cards');
+    const method = 'POST';
+    const data = {
+      provider: _req['provider'],
+      nameKeyword: _req['nameKeyword'],
+      userJwtToken: _req['userJwtToken'],
+      limit: _req['limit'],
+      offset: _req['offset'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v1/batch_infer/parse_model_config
+   *
+   * 解析模型配置
+   */
+  ParseModelConfig(
+    req?: stone_fornax_ml_flow_batchinferservice.ParseModelConfigReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_batchinferservice.ParseModelConfigResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/api/ml_flow/v1/batch_infer/parse_model_config',
+    );
+    const method = 'POST';
+    const data = {
+      provider: _req['provider'],
+      seedHdfsAddress: _req['seedHdfsAddress'],
+      seedModelCardID: _req['seedModelCardID'],
+      userJwtToken: _req['userJwtToken'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v1/batch_infer/get_recommend_resource
+   *
+   * 根据模型card获得推荐的merlin资源信息
+   */
+  GetRecommendResource(
+    req?: stone_fornax_ml_flow_batchinferservice.GetRecommendResourceReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_batchinferservice.GetRecommendResourceResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/api/ml_flow/v1/batch_infer/get_recommend_resource',
+    );
+    const method = 'POST';
+    const data = {
+      modelCardID: _req['modelCardID'],
+      userJwtToken: _req['userJwtToken'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * GET /api/ml_flow/v2/spaces/:spaceID/tags/spec
+   *
+   * 获取spaceid维度标签配置
+   */
+  GetTagSpec(
+    req: stone_fornax_ml_flow_tagservice.GetTagSpecRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_tagservice.GetTagSpecResponse> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/tags/spec`,
+    );
+    const method = 'GET';
+    return this.request({ url, method }, options);
+  }
+
+  /** POST /open-api/ml_flow/v2/datasets */
+  OpenCreateDataset(
+    req: stone_fornax_ml_flow_openapi_datasetservicev2.OpenCreateDatasetReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenCreateDatasetResp> {
+    const _req = req;
+    const url = this.genBaseURL('/open-api/ml_flow/v2/datasets');
+    const method = 'POST';
+    const data = {
+      name: _req['name'],
+      description: _req['description'],
+      fields: _req['fields'],
+      base: _req['base'],
+    };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /** GET /api/ml_flow/v1/data_process/user_script_template */
+  GetUserScriptTemplate(
+    req?: stone_fornax_ml_flow_dataprocessservice.GetUserScriptTemplateRequest,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_dataprocessservice.GetUserScriptTemplateResponse> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/api/ml_flow/v1/data_process/user_script_template',
+    );
+    const method = 'GET';
+    const params = { template_type: _req['template_type'], base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** POST /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/crowdsourcing_annotate_jobs/:jobID/terminate */
+  TerminateCrowdsourcingAnnotateJob(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.TerminateCrowdsourcingAnnotateJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.TerminateCrowdsourcingAnnotateJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/crowdsourcing_annotate_jobs/${_req['jobID']}/terminate`,
+    );
+    const method = 'POST';
+    const data = { base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /** GET /api/ml_flow/v2/spaces/:spaceID/crowdsourcing_annotate_jobs/:jobID/refresh */
+  RefreshCrowdsourcingAnnotateJob(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.RefreshCrowdsourcingAnnotateJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.RefreshCrowdsourcingAnnotateJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/crowdsourcing_annotate_jobs/${_req['jobID']}/refresh`,
+    );
+    const method = 'GET';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** DELETE /api/ml_flow/v2/spaces/:spaceID/datasets/:datasetID/crowdsourcing_annotate_jobs/:jobID */
+  DeleteCrowdsourcingAnnotateJob(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.DeleteCrowdsourcingAnnotateJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.DeleteCrowdsourcingAnnotateJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/datasets/${_req['datasetID']}/crowdsourcing_annotate_jobs/${_req['jobID']}`,
+    );
+    const method = 'DELETE';
+    const params = { base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** POST /api/ml_flow/v2/spaces/:spaceID/crowdsourcing_annotate_jobs/list */
+  ListCrowdsourcingAnnotateJob(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.ListCrowdsourcingAnnotateJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.ListCrowdsourcingAnnotateJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/crowdsourcing_annotate_jobs/list`,
+    );
+    const method = 'POST';
+    const data = {
+      searchConfig: _req['searchConfig'],
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /** GET /api/ml_flow/v2/spaces/:spaceID/crowdsourcing_annotate_jobs/authorized_aidp_info */
+  ListAuthorizedAIDPTaskSummaries(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.ListAuthorizedAIDPTasksReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.ListAuthorizedAIDPTasksResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/crowdsourcing_annotate_jobs/authorized_aidp_info`,
+    );
+    const method = 'GET';
+    const params = {
+      platform: _req['platform'],
+      keyword: _req['keyword'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** GET /api/ml_flow/v2/spaces/:spaceID/templateID/:templateID/answer_schema */
+  GetAnswerSchema(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.GetAnswerSchemaReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.GetAnswerSchemaResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/templateID/${_req['templateID']}/answer_schema`,
+    );
+    const method = 'GET';
+    const params = { platform: _req['platform'], base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * POST /api/ml_flow/v1/spaces/:space_id/batch_infer/:task_id
+   *
+   * 获取批量推理任务详情
+   */
+  GetBatchInferTask(
+    req?: stone_fornax_ml_flow_batchinferservice.GetBatchInferTaskReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_batchinferservice.GetBatchInferTaskResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      `/api/ml_flow/v1/spaces/${_req['space_id']}/batch_infer/${_req['task_id']}`,
+    );
+    const method = 'POST';
+    const data = { userJwtToken: _req['userJwtToken'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /** GET /open-api/ml_flow/v2/batch_infer/spaces/:space_id/tasks/:task_id */
+  OpenGetBatchInferTask(
+    req?: stone_fornax_ml_flow_openapi_batchinferservice.OpenGetBatchInferTaskReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_batchinferservice.OpenGetBatchInferTaskResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/batch_infer/spaces/${_req['space_id']}/tasks/${_req['task_id']}`,
+    );
+    const method = 'GET';
+    const params = { userJwtToken: _req['userJwtToken'], base: _req['base'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** POST /open-api/ml_flow/v2/batch_infer/spaces/:space_id/tasks/:task_id/report_progress */
+  OpenReportBatchInferProgress(
+    req?: stone_fornax_ml_flow_openapi_batchinferservice.OpenReportBatchInferProgressReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_batchinferservice.OpenReportBatchInferProgressResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      `/open-api/ml_flow/v2/batch_infer/spaces/${_req['space_id']}/tasks/${_req['task_id']}/report_progress`,
+    );
+    const method = 'POST';
+    const data = { errorMsg: _req['errorMsg'], base: _req['base'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /** POST /api/ml_flow/v2/spaces/:spaceID/crowdsourcing_annotate_jobs */
+  CreateCrowdsourcingAnnotateJob(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.CreateCrowdsourcingAnnotateJobReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.CreateCrowdsourcingAnnotateJobResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/crowdsourcing_annotate_jobs`,
+    );
+    const method = 'POST';
+    const data = {
+      name: _req['name'],
+      description: _req['description'],
+      platform: _req['platform'],
+      aidpConfig: _req['aidpConfig'],
+      inputConfig: _req['inputConfig'],
+      outputConfig: _req['outputConfig'],
+      base: _req['base'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
+  /**
+   * POST /open-api/ml_flow/v2/parse_import_source_file
+   *
+   * 解析导入文件的列配置
+   */
+  OpenParseImportSourceFile(
+    req?: stone_fornax_ml_flow_openapi_datasetservicev2.OpenParseImportSourceFileReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_openapi_datasetservicev2.OpenParseImportSourceFileResp> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/open-api/ml_flow/v2/parse_import_source_file',
+    );
+    const method = 'POST';
+    const data = { file: _req['file'], base: _req['base'] };
+    const headers = {
+      'FlowDevops-Agw-OpenAPI-AppId': _req['FlowDevops-Agw-OpenAPI-AppId'],
+      'FlowDevops-Agw-OpenAPI-SpaceId': _req['FlowDevops-Agw-OpenAPI-SpaceId'],
+      'FlowDevops-Agw-OpenAPI-AccountId':
+        _req['FlowDevops-Agw-OpenAPI-AccountId'],
+    };
+    return this.request({ url, method, data, headers }, options);
+  }
+
+  /** GET /api/ml_flow/v2/spaces/:spaceID/taskID/:taskID/aidp_flow_config */
+  GetAIDPTaskConfig(
+    req: stone_fornax_ml_flow_crowdsourcingannotationjobservice.GetAIDPTaskConfigReq,
+    options?: T,
+  ): Promise<stone_fornax_ml_flow_crowdsourcingannotationjobservice.GetAIDPTaskConfigResp> {
+    const _req = req;
+    const url = this.genBaseURL(
+      `/api/ml_flow/v2/spaces/${_req['spaceID']}/taskID/${_req['taskID']}/aidp_flow_config`,
+    );
+    const method = 'GET';
+    const params = { platform: _req['platform'], base: _req['base'] };
+    return this.request({ url, method, params }, options);
   }
 }
 /* eslint-enable */

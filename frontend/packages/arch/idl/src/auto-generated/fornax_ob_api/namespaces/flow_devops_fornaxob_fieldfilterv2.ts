@@ -46,6 +46,8 @@ export enum FieldFilterType {
   NotNull = 11,
   /** 在list中存在 */
   InList = 12,
+  /** Not Like */
+  NotLike = 13,
 }
 
 export enum FieldGroupSpecial {

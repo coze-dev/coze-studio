@@ -24,6 +24,12 @@ import * as datasetv2job from './datasetv2job';
 
 export type Int64 = string | number;
 
+export enum BatchInferDatasetType {
+  DatasetV2 = 0,
+  HDFS = 1,
+  TOS = 2,
+}
+
 export enum BatchInferTaskStatus {
   Preparing = 0,
   Launching = 1,
@@ -75,17 +81,56 @@ export enum OutputConfigType {
 
 export enum Provider {
   /** GPTOpenAPI = 1 // GPT OpenAPI平台
-Maas       = 2 // 火山方舟
-BotEngine  = 3 // 暂时特指seed从bot_engine接入
-Merlin     = 4 // merlin平台
-merlin-seed平台 */
+火山方舟 */
+  Maas = 2,
+  /** BotEngine  = 3 // 暂时特指seed从bot_engine接入
+merlin平台 */
+  Merlin = 4,
+  /** merlin-seed平台 */
   MerlinSeed = 5,
+}
+
+export enum TrainingMethod {
+  LoRA = 1,
+  Full = 2,
+}
+
+export enum TrainingType {
+  SftFineTuning = 1,
+}
+
+export interface ArkModel {
+  foundationModelName?: string;
+  foundationModelVersion?: string;
+  /** 如果是精调后的模型，这个id非空 */
+  customModelID?: string;
+  sftTaskID?: string;
+  /** 训练类型 */
+  trainingType?: TrainingType;
+  /** 训练方法 */
+  trainingMethod?: TrainingMethod;
 }
 
 export interface BatchInferDataset {
   datasetID?: string;
   inputConfig?: InputConfig;
   outputConfig?: OutputConfig;
+  /** 默认是数据集v2，本期新增hdfs和tos */
+  datasetType?: BatchInferDatasetType;
+  /** 待推理的数据集hdfs路径 */
+  hdfsPath?: string;
+  /** 待推理的图片存储的文件夹路径 */
+  imageHdfsPath?: string;
+  /** 输出结果保存的hdfs路径 */
+  outputHdfsPath?: string;
+  /** 待推理的数据集的tos桶名 */
+  tosBucketName?: string;
+  /** 待推理的数据集的tos对象名称 */
+  tosObjKey?: string;
+  /** 输出结果保存的tos桶名 */
+  outputTosBucketName?: string;
+  /** 输出结果保存的tos对象名称 */
+  outputTosObjKey?: string;
 }
 
 export interface BatchInferParam {
@@ -96,6 +141,8 @@ export interface BatchInferParam {
   maxContextToken?: string;
   /** 推理次数 */
   inferTimes?: string;
+  /** 推理批次大小 */
+  batchSize?: string;
 }
 
 export interface BatchInferTask {
@@ -152,6 +199,10 @@ export interface CkptExecResult {
   itemIDColumnName?: string;
   /** dataset id 所在的列名 */
   datasetIDColumnName?: string;
+  /** 数据集上传到 tos 的 bucket */
+  datasetTosBucket?: string;
+  /** 数据集上传到 tos 的object key */
+  datasetTosObjectKey?: string;
   /** 创建推理任务 [10,20)
 merlin seed离线推理任务实际上就是在merlin任务用例外包了一层，在这里记录这个merlin任务用例id */
   merlinJobID?: string;
@@ -166,6 +217,18 @@ merlin推理任务状态 */
   merlinDataProcessInstanceStatus?: string;
   /** merlin 任务实例是否终止 */
   merlinJobTerminated?: boolean;
+  /** merlin 任务实例状态 */
+  merlinJobStatus?: string;
+  /** merlin 任务实例错误信息 */
+  merlinJobErrMsg?: string;
+  /** 有merlin 任务实例上报的错误信息 */
+  merlinJobUploadedErrMsg?: string;
+  /** 方舟任务状态 */
+  arkJobStatus?: string;
+  /** 方舟任务状态说明 */
+  arkJobDetail?: string;
+  /** 方舟任务状态更新时间 */
+  arkJobStatusUpdateTimeMs?: Int64;
   /** 导出推理结果 [30,40)
 推理结果输出的列名 */
   inferResultColumnName?: string;
@@ -222,6 +285,30 @@ export interface InputConfig {
   type?: InputConfigType;
   /** 作为输入的数据集列名 */
   rawInput?: string;
+  /** 每行数据的唯一标识的列名 */
+  itemID?: string;
+}
+
+export interface MerlinModel {
+  /** 多记录一些额外信息，比如是基座模型还是训练后的模型，如果是训练后的模型，那么还需要记录训练任务的id
+模型文件保存地址 */
+  hdfsPath?: string;
+  /** 基座模型名称 */
+  foundationModelName?: string;
+  /** 3: optional string foundationModelFamily // 基座模型家族
+4: optional string foundationModelVendor // 基座模型厂商
+5: optional string foundationModelDisplayName // 基座模型显示名称
+6: optional i64 foundationModelVersionUpdateTimeInMs // 基座模型版本更新时间
+训练任务id，当训练任务非0时，说明此次批量推理使用的模型是训练后的产物 */
+  sftTaskID?: string;
+  /** 训练产物的名称(此时要求该产物已经导出到merlin的模型仓库中，因此这个name就是merlin的某个模型仓库名称) */
+  merlinModelName?: string;
+  /** merlin的某个模型仓库的版本 */
+  merlinModelVersion?: string;
+  /** 训练类型 */
+  trainingType?: TrainingType;
+  /** 训练方法 */
+  trainingMethod?: TrainingMethod;
 }
 
 export interface MerlinResource {
@@ -273,6 +360,8 @@ export interface OutputConfig {
   type?: OutputConfigType;
   /** 输出会保存在这个数据集列名 */
   rawOutput?: string;
+  /** 完整输出会保存在这个数据集列名（目前只支持方舟/开源模型/训练后的开源模型） */
+  completeOutput?: string;
 }
 
 export interface ProviderInfo {
@@ -281,5 +370,11 @@ export interface ProviderInfo {
   merlinResource?: MerlinResource;
   merlinCustomEnvs?: Record<string, string>;
   merlinSeedDataProcessType?: MerlinSeedDataProcessType;
+  /** open source model */
+  merlinModel?: MerlinModel;
+  /** 方舟model */
+  arkModel?: ArkModel;
+  /** 方舟项目名称 */
+  arkProjectName?: string;
 }
 /* eslint-enable */

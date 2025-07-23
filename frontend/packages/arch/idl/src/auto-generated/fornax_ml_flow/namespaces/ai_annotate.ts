@@ -79,6 +79,9 @@ export interface AIAnnotateTask {
   userPromptColumnName?: string;
   promptVariables?: Array<PromptVariable>;
   latestTaskRunID?: string;
+  /** 打标并发度 */
+  executeConcurrency?: number;
+  spaceID?: string;
   /** 创建人ID */
   createdBy?: string;
   /** 创建时间，ms */

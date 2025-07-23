@@ -21,6 +21,7 @@
 
 import * as base from './base';
 import * as flow_devops_prompt_common from './flow_devops_prompt_common';
+import * as mcp from './mcp';
 
 export type Int64 = string | number;
 
@@ -64,6 +65,10 @@ export enum UsageScenario {
   PromptAsAService = 3,
   /** AI打标 */
   AIAnnotate = 4,
+  /** 质量分 */
+  AIScore = 5,
+  /** 数据标签 */
+  AITag = 6,
 }
 
 export interface CustomAccount {
@@ -126,6 +131,8 @@ export interface ExecuteRequest {
   custom_model_config?: flow_devops_prompt_common.ModelConfig;
   /** 发布标签 */
   release_label?: string;
+  /** MCP 动态配置 */
+  mcp_execute_config?: mcp.MCPExecuteConfig;
   /** 用于fornax鉴权 */
   token?: string;
   /** 用于识别老用户身份，待用户迁移后下线 */
@@ -154,6 +161,8 @@ export interface MPullPromptQuery {
 export interface MPullPromptRequest {
   /** Prompt查询 */
   prompt_queries: Array<MPullPromptQuery>;
+  /** 加密选项 */
+  encrypt_option?: flow_devops_prompt_common.PromptEncryptOption;
   /** 用于fornax鉴权 */
   token?: string;
   /** 用于识别老用户身份，待用户迁移后下线 */
@@ -210,6 +219,8 @@ export interface StreamingExecuteRequest {
   custom_model_config?: flow_devops_prompt_common.ModelConfig;
   /** 发布标签 */
   release_label?: string;
+  /** MCP 动态配置 */
+  mcp_execute_config?: mcp.MCPExecuteConfig;
   /** 用于fornax鉴权 */
   token?: string;
   /** 用于识别老用户身份，待用户迁移后下线 */

@@ -38,6 +38,8 @@ export enum LineageSourceType {
   /** 暂无 */
   DataGenerate = 7,
   OpenAPI = 8,
+  /** 众包标注任务 */
+  CrowdsourcingAnnotation = 9,
 }
 
 export enum TrackedJobType {
@@ -51,6 +53,8 @@ export enum TrackedJobType {
   DataProcessing = 4,
   /** 数据生成任务 */
   DataGenerate = 5,
+  /** 众包标注任务 */
+  CrowdsourcingAnnotation = 6,
 }
 
 export interface ItemSource {
