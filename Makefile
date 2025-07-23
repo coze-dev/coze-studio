@@ -12,6 +12,7 @@ COMPOSE_FILE := docker/docker-compose.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env
+STATIC_DIR := ./bin/resources/static
 
 debug: middleware python server
 
@@ -20,6 +21,10 @@ fe:
 	@bash $(BUILD_FE_SCRIPT)
 
 server:
+	@if [ ! -d "$(STATIC_DIR)" ]; then \
+		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
+		$(MAKE) fe; \
+	fi
 	@echo "Building and run server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 
