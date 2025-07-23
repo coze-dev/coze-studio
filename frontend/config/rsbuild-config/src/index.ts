@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import { pluginSvgr } from '@rsbuild/plugin-svgr';
@@ -21,9 +21,9 @@ import { pluginSass } from '@rsbuild/plugin-sass';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginLess } from '@rsbuild/plugin-less';
 import { type RsbuildConfig, mergeRsbuildConfig } from '@rsbuild/core';
+import { SemiRspackPlugin } from '@douyinfe/semi-rspack-plugin';
 import { PkgRootWebpackPlugin } from '@coze-arch/pkg-root-webpack-plugin';
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
-import { SemiRspackPlugin } from '@douyinfe/semi-rspack-plugin';
 
 const getDefine = () => {
   const define = {};
@@ -47,8 +47,9 @@ export const overrideBrowserslist = [
 ];
 
 const generateCdnPrefix = () => {
-  if (process.env.CDN_INNER_CN) {
-    return `https://${process.env.CDN_INNER_CN}/${process.env.CDN_PATH_PREFIX ? `${process.env.CDN_PATH_PREFIX}/` : ''}`;
+  const region = process.env.BUILD_REGION || 'cn';
+  if (process.env[`CDN_INNER_${region.toUpperCase()}`]) {
+    return `https://${process.env[`CDN_INNER_${region.toUpperCase()}`]}/${process.env.CDN_PATH_PREFIX ? `${process.env.CDN_PATH_PREFIX}/` : ''}`;
   }
   return '/';
 };
