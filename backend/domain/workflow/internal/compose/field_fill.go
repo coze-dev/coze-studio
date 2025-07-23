@@ -154,6 +154,9 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						}
 
 						newSubContainer := maps.Clone(subContainer)
+						if newSubContainer == nil {
+							newSubContainer = make(map[string]any)
+						}
 
 						for subK, subL := range elemTInfo.Properties {
 							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy, true); err != nil {
