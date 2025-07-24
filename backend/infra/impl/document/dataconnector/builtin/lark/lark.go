@@ -401,9 +401,8 @@ func (l *LarkFetcher) searchWikiFile(ctx context.Context, ak string, req *dataco
 		logs.CtxErrorf(ctx, "fetchFeishuWikiDocList error:%+v", err)
 		return nil, err
 	}
-	fileMetaMap := make(map[string]*larkdrive.Meta)
 	// query meta
-	fileMetaMap, err = l.batchQueryFileURL(ctx, ak, req, fileList)
+	fileMetaMap, err := l.batchQueryFileURL(ctx, ak, req, fileList)
 	if err != nil {
 		logs.CtxErrorf(ctx, "batchQueryFileURL error:%+v", err)
 		return nil, err
@@ -448,8 +447,7 @@ func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dat
 		AppSecret:       l.config.AuthConfig.ClientSecret,
 		UserAccessToken: ak,
 	}
-	var paramList []lark_http.QueryMetaParams
-	paramList = slices.Transform(nodeList, func(node *larkwiki.Node) lark_http.QueryMetaParams {
+	paramList := slices.Transform(nodeList, func(node *larkwiki.Node) lark_http.QueryMetaParams {
 		return lark_http.QueryMetaParams{
 			DocToken: ptr.From(node.ObjToken),
 			DocType:  ptr.From(node.ObjType),
@@ -458,7 +456,7 @@ func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dat
 	metaList, err := lark_http.BatchQueryDriveFileMetas(ctx, authParam, paramList)
 	if err != nil {
 		logs.CtxErrorf(ctx, "%v BatchQueryDriveFileMetas error:%+v", prefix, err)
-		return nil, errors.New(fmt.Sprintf("batch query drive file metas error:%v", err))
+		return nil, fmt.Errorf("batch query drive file metas error:%v", err)
 	}
 	metaMap := slices.ToMap(metaList, func(meta *larkdrive.Meta) (string, *larkdrive.Meta) {
 		return ptr.From(meta.DocToken), meta
@@ -477,20 +475,20 @@ func (l *LarkFetcher) fetchFeishuWikiDocList(ctx context.Context, ak string, req
 		wikiSpace, err = lark_http.GetWikiSpace(ctx, l.config, ptr.From(req.SpaceID), ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpace err: %v", prefix, err)
-			return nil, errors.New(fmt.Sprintf("get wiki space error:%v", err))
+			return nil, fmt.Errorf("get wiki space error:%v", err)
 		}
 		// 2. 获取知识空间子节点列表
 		wikiSpaceNodeList, err = lark_http.GetWikiSpaceNodeListByParam(ctx, l.config, wikiSpace, ptr.From(req.FolderID), ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpaceNodeList err: %v", prefix, err)
-			return nil, errors.New(fmt.Sprintf("get wiki space node list error:%v", err))
+			return nil, fmt.Errorf("get wiki space node list error:%v", err)
 		}
 	} else {
 		// 根目录下所有space列表
 		wikiSpaces, err = lark_http.GetWikiSpaceList(ctx, l.config, ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpaceList err: %v", prefix, err)
-			return nil, errors.New(fmt.Sprintf("get wiki space list error:%v", err))
+			return nil, fmt.Errorf("get wiki space list error:%v", err)
 		}
 		for _, wikiSpace := range wikiSpaces {
 			wikiSpaceNodeList = append(wikiSpaceNodeList,
@@ -503,18 +501,6 @@ func (l *LarkFetcher) fetchFeishuWikiDocList(ctx context.Context, ak string, req
 		}
 	}
 	return wikiSpaceNodeList, nil
-}
-
-type searchParam struct {
-	AuthID         int64
-	AccessToken    string
-	FileTypeList   []dataconnector.FileNodeType
-	FolderId       string
-	PageToken      string
-	SpaceId        string
-	DocSourceType  dataconnector.DocSourceType
-	SearchKeywords *string
-	PageSize       int64
 }
 
 func (l *LarkFetcher) GetAccessTokenByAuthID(ctx context.Context, authID int64) (token string, err error) {
