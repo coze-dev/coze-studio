@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
 import { CozeBrand } from '@coze-studio/components/coze-brand';
+import { bdSSOLogin } from '@coze-foundation/account-ui-base';
 import { I18n } from '@coze-arch/i18n';
 import { Button, Form } from '@coze-arch/coze-design';
 import { SignFrame, SignPanel } from '@coze-arch/bot-semi';
@@ -104,6 +105,15 @@ export const LoginPage: FC = () => {
               color="primary"
             >
               {I18n.t('register')}
+            </Button>
+            <Button
+              data-testid="login.button.sso_login"
+              className="mt-[12px]"
+              onClick={bdSSOLogin}
+              loading={false}
+              color="green"
+            >
+              SSO {I18n.t('login_button_text')}
             </Button>
             <div className="mt-[12px] flex justify-center">
               <a

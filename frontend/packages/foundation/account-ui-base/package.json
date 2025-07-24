@@ -13,6 +13,7 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@byted-sdk/bdsso": "2.0.6",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-http": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",

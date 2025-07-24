@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useLogout } from './hooks/logout';
 export { RequireAuthContainer } from './components/require-auth-container';
 export { LoadingContainer } from './components/loading-container';
 export { UserInfoPanel } from './components/user-info-panel';
 export { useAccountSettings } from './hooks/use-account-settings';
+export { bdsso, bdSSOLogin, bdSSOLogout } from './hooks/logout';

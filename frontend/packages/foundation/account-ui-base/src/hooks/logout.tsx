@@ -13,14 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
+import { logout } from '@coze-foundation/account-adapter';
 import { I18n } from '@coze-arch/i18n';
 import { Modal } from '@coze-arch/coze-design';
-import { logout } from '@coze-foundation/account-adapter';
+import { BDSSO, BDSSOType } from '@byted-sdk/bdsso';
 
+export const bdsso = BDSSO.config({
+  type: BDSSOType.CAS,
+  aid: 'md1y2p0ir34syross67j',
+  redirectUrl: 'https://ecomcoze.tiktok-row.net/',
+});
+
+export function bdSSOLogin() {
+  bdsso.login();
+}
+
+export function bdSSOLogout() {
+  bdsso.logout();
+}
 export interface UseLogoutReturnType {
   open: () => void;
   close: () => void;
@@ -39,6 +53,7 @@ export const useLogout = (): UseLogoutReturnType => {
       centered
       onOk={async () => {
         await logout();
+        bdSSOLogout();
         setVisible(false);
         // 跳转到根路径
         navigate('/');
