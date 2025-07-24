@@ -110,6 +110,17 @@ type SearchFileResponse struct {
 	Offset    int64       `json:"offset"`
 }
 
+type GetFileContentRequest struct {
+	FileID   string   `json:"file_id"`
+	AuthID   int64    `json:"auth_id"`
+	FileType FileType `json:"file_type"`
+}
+
+type GetFileContentResponse struct {
+	URI      string `json:"uri"`
+	FileSize int64  `json:"file_size"`
+}
+
 type Fetcher interface {
 	GetConsentURL(ctx context.Context) (string, error)
 	AuthorizeCode(ctx context.Context, creatorID int64, code string) error
@@ -117,4 +128,5 @@ type Fetcher interface {
 	GetAccessTokenByAuthID(ctx context.Context, authID int64) (string, error)
 	RefreshAccessToken(ctx context.Context, authID int64) (string, error)
 	SearchFile(ctx context.Context, req *SearchFileRequest) (*SearchFileResponse, error)
+	GetFileContent(ctx context.Context, req *GetFileContentRequest) (*GetFileContentResponse, error)
 }

@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,15 +15,22 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark/http"
+	lark_http "github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark/http"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark/lark_api"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark/larkparse"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/google/uuid"
+	larkdocx "github.com/larksuite/oapi-sdk-go/v3/service/docx/v1"
 	larkdrive "github.com/larksuite/oapi-sdk-go/v3/service/drive/v1"
 	larkwiki "github.com/larksuite/oapi-sdk-go/v3/service/wiki/v2"
+	"github.com/spf13/cast"
+	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +38,7 @@ type LarkFetcher struct {
 	authDao repository.AuthRepo
 	idgen   idgen.IDGenerator
 	config  *dataconnector.ConnectorConfig
+	storage storage.Storage
 }
 
 func NewLarkFetcher(db *gorm.DB, config *dataconnector.ConnectorConfig) *LarkFetcher {
@@ -56,7 +68,7 @@ func (l *LarkFetcher) GetConsentURL(ctx context.Context) (string, error) {
 
 func (l *LarkFetcher) AuthorizeCode(ctx context.Context, creatorID int64, code string) error {
 	// get token
-	authParam := http.FeishuAuthParam{
+	authParam := lark_http.FeishuAuthParam{
 		AppId:     l.config.AuthConfig.ClientID,
 		AppSecret: l.config.AuthConfig.ClientSecret,
 	}
@@ -67,7 +79,7 @@ func (l *LarkFetcher) AuthorizeCode(ctx context.Context, creatorID int64, code s
 	}
 
 	authParam.UserAccessToken = authTokenInfo.AccessToken
-	userInfo, err := http.GetUserInfo(ctx, authParam)
+	userInfo, err := lark_http.GetUserInfo(ctx, authParam)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[AuthorizeCode] GetUserInfo error:%v", err)
 		return err
@@ -120,10 +132,10 @@ func (l *LarkFetcher) AuthorizeCode(ctx context.Context, creatorID int64, code s
 	return nil
 }
 
-func (l *LarkFetcher) getAuthTokenInfo(ctx context.Context, authParam http.FeishuAuthParam, code string) (*dataconnector.AuthTokenInfo, error) {
+func (l *LarkFetcher) getAuthTokenInfo(ctx context.Context, authParam lark_http.FeishuAuthParam, code string) (*dataconnector.AuthTokenInfo, error) {
 	now := time.Now().UnixMilli()
 	var authTokenInfo *dataconnector.AuthTokenInfo
-	tokenData, err := http.GetWebUserAccessToken(ctx, authParam, code)
+	tokenData, err := lark_http.GetWebUserAccessToken(ctx, authParam, code)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[getAuthTokenInfo] GetWebUserAccessToken error:%v", err)
 		return nil, errors.New("get auth token info error")
@@ -233,7 +245,7 @@ func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.Fil
 }
 
 // 过滤文件类型，只支持部分类型的文件
-func filterWikiFileListByFileType(ctx context.Context, fileTypeList []dataconnector.FileNodeType, wikiNodeList []http.FeishuWikiSpaceNode, fileMetaMap map[string]*larkdrive.Meta) (map[string]*dataconnector.FileNode, map[string][]string) {
+func filterWikiFileListByFileType(ctx context.Context, fileTypeList []dataconnector.FileNodeType, wikiNodeList []lark_http.FeishuWikiSpaceNode, fileMetaMap map[string]*larkdrive.Meta) (map[string]*dataconnector.FileNode, map[string][]string) {
 	const prefix = "[filterFileType]"
 	fileNodeTypeListSet := sets.FromSlice(fileTypeList)
 	var feishuFileMap = make(map[string]*dataconnector.FileNode)
@@ -357,7 +369,7 @@ func buildFileTreeDocList(ctx context.Context, feishuFileMap map[string]*datacon
 func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, request *dataconnector.SearchFileRequest) (*dataconnector.SearchFileResponse, error) {
 	result := dataconnector.SearchFileResponse{}
 	// get doc list
-	fileList, err := http.GetDriveFileListByParam(ctx, http.FeishuAuthParam{
+	fileList, err := lark_http.GetDriveFileListByParam(ctx, lark_http.FeishuAuthParam{
 		AppId:           l.config.AuthConfig.ClientID,
 		AppSecret:       l.config.AuthConfig.ClientSecret,
 		UserAccessToken: ak,
@@ -422,7 +434,7 @@ func filterWikiFileListBySearchQuery(ctx context.Context, fileList []*dataconnec
 	return result
 }
 
-func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dataconnector.SearchFileRequest, wikiNodeList []http.FeishuWikiSpaceNode) (map[string]*larkdrive.Meta, error) {
+func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dataconnector.SearchFileRequest, wikiNodeList []lark_http.FeishuWikiSpaceNode) (map[string]*larkdrive.Meta, error) {
 	const prefix = "[fillFileURL]"
 	// node wikiNodeList
 	nodeList := make([]*larkwiki.Node, 0)
@@ -431,19 +443,19 @@ func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dat
 			nodeList = append(nodeList, node.SpaceNode)
 		}
 	}
-	authParam := http.FeishuAuthParam{
+	authParam := lark_http.FeishuAuthParam{
 		AppId:           l.config.AuthConfig.ClientID,
 		AppSecret:       l.config.AuthConfig.ClientSecret,
 		UserAccessToken: ak,
 	}
-	var paramList []http.QueryMetaParams
-	paramList = slices.Transform(nodeList, func(node *larkwiki.Node) http.QueryMetaParams {
-		return http.QueryMetaParams{
+	var paramList []lark_http.QueryMetaParams
+	paramList = slices.Transform(nodeList, func(node *larkwiki.Node) lark_http.QueryMetaParams {
+		return lark_http.QueryMetaParams{
 			DocToken: ptr.From(node.ObjToken),
 			DocType:  ptr.From(node.ObjType),
 		}
 	})
-	metaList, err := http.BatchQueryDriveFileMetas(ctx, authParam, paramList)
+	metaList, err := lark_http.BatchQueryDriveFileMetas(ctx, authParam, paramList)
 	if err != nil {
 		logs.CtxErrorf(ctx, "%v BatchQueryDriveFileMetas error:%+v", prefix, err)
 		return nil, errors.New(fmt.Sprintf("batch query drive file metas error:%v", err))
@@ -453,36 +465,36 @@ func (l *LarkFetcher) batchQueryFileURL(ctx context.Context, ak string, req *dat
 	})
 	return metaMap, nil
 }
-func (l *LarkFetcher) fetchFeishuWikiDocList(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) ([]http.FeishuWikiSpaceNode, error) {
+func (l *LarkFetcher) fetchFeishuWikiDocList(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) ([]lark_http.FeishuWikiSpaceNode, error) {
 	const prefix = "[fetchFeishuWikiDocList]"
-	var wikiSpaceNodeList []http.FeishuWikiSpaceNode
+	var wikiSpaceNodeList []lark_http.FeishuWikiSpaceNode
 	var err error
 	var wikiSpaces []*larkwiki.Space
 	// 某个space下面的node列表
 	if ptr.From(req.SpaceID) != "" {
 		// 1. 获取知识空间列表
 		var wikiSpace *larkwiki.Space
-		wikiSpace, err = http.GetWikiSpace(ctx, l.config, ptr.From(req.SpaceID), ak)
+		wikiSpace, err = lark_http.GetWikiSpace(ctx, l.config, ptr.From(req.SpaceID), ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpace err: %v", prefix, err)
 			return nil, errors.New(fmt.Sprintf("get wiki space error:%v", err))
 		}
 		// 2. 获取知识空间子节点列表
-		wikiSpaceNodeList, err = http.GetWikiSpaceNodeListByParam(ctx, l.config, wikiSpace, ptr.From(req.FolderID), ak)
+		wikiSpaceNodeList, err = lark_http.GetWikiSpaceNodeListByParam(ctx, l.config, wikiSpace, ptr.From(req.FolderID), ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpaceNodeList err: %v", prefix, err)
 			return nil, errors.New(fmt.Sprintf("get wiki space node list error:%v", err))
 		}
 	} else {
 		// 根目录下所有space列表
-		wikiSpaces, err = http.GetWikiSpaceList(ctx, l.config, ak)
+		wikiSpaces, err = lark_http.GetWikiSpaceList(ctx, l.config, ak)
 		if err != nil {
 			logs.CtxErrorf(ctx, "%v GetWikiSpaceList err: %v", prefix, err)
 			return nil, errors.New(fmt.Sprintf("get wiki space list error:%v", err))
 		}
 		for _, wikiSpace := range wikiSpaces {
 			wikiSpaceNodeList = append(wikiSpaceNodeList,
-				http.FeishuWikiSpaceNode{
+				lark_http.FeishuWikiSpaceNode{
 					Space:     wikiSpace,
 					SpaceNode: nil,
 					IsSpace:   true,
@@ -534,7 +546,7 @@ func (l *LarkFetcher) refreshAccessToken(ctx context.Context, auth *model.Auth) 
 	if duration <= NeedRefreshTokenRightNowDuration {
 		logs.CtxInfof(ctx, "[refreshAccessToken] authID:%v tokenExpireIn:%v need refresh token right now", auth.ID, time.UnixMilli(auth.AuthInfo.TokenExpireIn))
 		now := time.Now().UnixMilli()
-		refreshTokenData, err := http.RefreshAccessToken(ctx, http.FeishuAuthParam{
+		refreshTokenData, err := lark_http.RefreshAccessToken(ctx, lark_http.FeishuAuthParam{
 			AppId:     l.config.AuthConfig.ClientID,
 			AppSecret: l.config.AuthConfig.ClientSecret,
 		}, auth.AuthInfo.RefreshToken)
@@ -619,4 +631,389 @@ func buildWikiFileTreeDocList(ctx context.Context, feishuFileMap map[string]*dat
 	})
 
 	return docList
+}
+
+func (l *LarkFetcher) GetFileContent(ctx context.Context, req *dataconnector.GetFileContentRequest) (resp *dataconnector.GetFileContentResponse, err error) {
+	defer func() {
+		if recoverErr := recover(); recoverErr != nil {
+			logs.CtxErrorf(ctx, "[ReadRecord] recovery error: %v", recoverErr)
+			err = fmt.Errorf("non-retry,panic:%v", recoverErr)
+			return
+		}
+	}()
+	if req.FileID == "" {
+		return nil, errors.New("non-retry,file_id is empty")
+	}
+	ak, err := l.GetAccessTokenByAuthID(ctx, req.AuthID)
+	if err != nil {
+		return nil, errors.New("non-retry,get access token by auth id failed")
+	}
+	var content []byte
+	var fName string
+	switch req.FileType {
+	case dataconnector.FileTypeDocx:
+		content, err = l.fetchDocx(ctx, ak, req)
+		if err != nil {
+			return nil, err
+		}
+	case dataconnector.FileTypeSheet:
+		content, err = l.fetchSheet(ctx, ak, req)
+		if err != nil {
+			return nil, err
+		}
+	case dataconnector.FileTypeDoc:
+		content, err = l.fetchDoc(ctx, ak, req)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("non-retry,file type not support")
+	}
+	if req.FileType == dataconnector.FileTypeSheet {
+		fName = uuid.NewString() + ".xlsx"
+	} else {
+		fName = uuid.NewString() + ".txt"
+	}
+	objKey := fmt.Sprintf("%s/%d_%s", "FileBizType.BIZ_CONNECTOR_IMAGE", time.Now().UnixNano(), fName)
+	err = l.storage.PutObject(ctx, objKey, content)
+	if err != nil {
+		return nil, err
+	}
+	resp = &dataconnector.GetFileContentResponse{
+		URI:      objKey,
+		FileSize: int64(len(content)),
+	}
+	return resp, nil
+}
+
+func (l *LarkFetcher) fetchDoc(ctx context.Context, ak string, req *dataconnector.GetFileContentRequest) (content []byte, err error) {
+	logs.CtxInfof(ctx, "[ReadLarkDocxFile] GetDocumentRawContent accessToken:%v fileID:%v", ak, req.FileID)
+	ctx = context.WithValue(ctx, lark_api.ContextAccessToken, ak)
+	cfg := lark_api.NewConfiguration()
+	cfg.BasePath = l.config.BaseOpenURL
+	cfg.HTTPClient = &http.Client{
+		Timeout: 15 * time.Second,
+	}
+	body, resp, err := lark_api.NewAPIClient(cfg).DefaultApi.OpenApisDocV2DocumentIdRawContentGet(ctx, req.FileID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[ReadLarkDocxFile] GetDocumentRawContent error: %v", err)
+		return nil, err
+	}
+	if body.Code != 0 {
+		requestID := GetLarkRequestId(resp)
+		err = lark_http.DealLarkError(ctx, int(body.Code), body.Msg, requestID)
+		logs.CtxErrorf(ctx, "[ReadLarkDocxFile] GetDocumentRawContent not success,code:%v msg:%v request_id:%v", int(body.Code), body.Msg, requestID)
+		return nil, err
+	}
+	if body.Data == nil {
+		err = errors.New("non-retry,body data is nil")
+		return nil, err
+	}
+	if body.Data.Content == "" {
+		err = errors.New("non-retry,body data content is empty")
+		return nil, err
+	}
+	content = []byte(body.Data.Content)
+	return content, nil
+}
+
+func (l *LarkFetcher) fetchDocx(ctx context.Context, ak string, req *dataconnector.GetFileContentRequest) (content []byte, err error) {
+	var blockList []*larkdocx.Block
+	authParam := lark_http.FeishuAuthParam{
+		AppId:           l.config.AuthConfig.ClientID,
+		AppSecret:       l.config.AuthConfig.ClientSecret,
+		UserAccessToken: ak,
+	}
+	blockList, err = lark_http.RetrieveDocxBlockList(ctx, authParam, req.FileID)
+	if err != nil {
+		return nil, err
+	}
+	imageTokenSet := map[string]struct{}{}
+	for _, block := range blockList {
+		if block.BlockType == nil &&
+			*block.BlockType != int(larkparse.FeishuDocxBlockTypeImage) ||
+			block.Image == nil || block.Image.Token == nil {
+			continue
+		}
+		imageTokenSet[ptr.From(block.Image.Token)] = struct{}{}
+	}
+	imageTokenList := []string{}
+	for imageToken := range imageTokenSet {
+		imageTokenList = append(imageTokenList, imageToken)
+	}
+	var imageTokenMap map[string]string
+	imageTokenMap, err = l.RetrieveImage(ctx, authParam, imageTokenList)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[FetchData] RetrieveImage err: %v", err)
+	} else {
+		logs.CtxInfof(ctx, "[FetchData] RetrieveImage res:%v", imageTokenMap)
+		content = []byte(larkparse.FeishuDocx2MD(req.FileID, blockList, imageTokenMap))
+	}
+	return content, nil
+}
+
+type SheetInfo struct {
+	Title        string
+	Index        int32
+	RowCount     int32
+	ColCount     int32
+	SheetContent [][]string
+}
+
+func (l *LarkFetcher) fetchSheet(ctx context.Context, ak string, req *dataconnector.GetFileContentRequest) (content []byte, err error) {
+	ctx = context.WithValue(ctx, lark_api.ContextAccessToken, ak)
+	cfg := lark_api.NewConfiguration()
+	cfg.BasePath = l.config.BaseOpenURL
+	cfg.HTTPClient = &http.Client{
+		Timeout: 15 * time.Second,
+	}
+	body, resp, err := lark_api.NewAPIClient(cfg).DefaultApi.OpenApisSheetsV3SpreadsheetsSpreadsheetTokenSheetsQueryGet(ctx, req.FileID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[ReadLarkSheet] GetSheetList error: %v", err)
+		return nil, err
+	}
+	if body.Code != 0 {
+		requestID := GetLarkRequestId(resp)
+		logs.CtxErrorf(ctx, "[ReadLarkSheet] GetSheetList not success,entityID:%v code:%v msg:%v request_id:%v", int(body.Code), body.Msg, requestID)
+		err = lark_http.DealLarkError(ctx, int(body.Code), body.Msg, requestID)
+		return nil, err
+	}
+	if body.Data == nil {
+		logs.CtxErrorf(ctx, "[ReadLarkSheet] GetSheetList data is nil")
+		return nil, errors.New("non-retry,get sheet list data is nil")
+	}
+	authParam := lark_http.FeishuAuthParam{
+		AppId:           l.config.AuthConfig.ClientID,
+		AppSecret:       l.config.AuthConfig.ClientSecret,
+		UserAccessToken: ak,
+		BaseUrl:         l.config.BaseOpenURL,
+	}
+	// 内容为空检查
+	allSheetEmpty := true
+	sheetInfoList := make([]*SheetInfo, 0)
+	for _, sheet := range body.Data.Sheets {
+		if sheet.GridProperties == nil {
+			logs.CtxInfof(ctx, "[ReadLarkSheet] sheet:%v gridProperties is nil", sheet.SheetId)
+			continue
+		}
+		// 2.拉取表格内容
+		rangeValue := sheet.SheetId + "!" + "A1:" + larkparse.GetExcelTitle(sheet.GridProperties.ColumnCount) + fmt.Sprint(sheet.GridProperties.RowCount)
+		valueRanges, ocErr := lark_http.ReadLarkSheet(ctx, authParam, req.FileID, []string{rangeValue})
+		if ocErr != nil {
+			logs.CtxErrorf(ctx, "ReadLarkSheet error:%v", ocErr)
+			return nil, ocErr
+		}
+		if valueRanges == nil {
+			continue
+		}
+		if len(valueRanges[rangeValue]) == 0 {
+			continue
+		}
+		content := make([][]string, len(valueRanges[rangeValue]))
+		for i, line := range valueRanges[rangeValue] {
+			content[i] = make([]string, len(line))
+			for j, value := range line {
+				content[i][j] = l.translateFeishuSheetValue(ctx, authParam, value)
+			}
+		}
+		if len(content) != 0 {
+			allSheetEmpty = false
+			sheetInfoList = append(sheetInfoList, &SheetInfo{
+				Title:        sheet.Title,
+				Index:        sheet.Index,
+				RowCount:     sheet.GridProperties.RowCount,
+				ColCount:     sheet.GridProperties.ColumnCount,
+				SheetContent: content,
+			})
+		}
+	}
+	if allSheetEmpty {
+		logs.CtxErrorf(ctx, "[ReadLarkSheet]allSheetEmpty is empty")
+		return nil, errors.New("non-retry,all sheet is empty")
+	}
+	sort.SliceStable(sheetInfoList, func(i, j int) bool {
+		return sheetInfoList[i].Index < sheetInfoList[j].Index
+	})
+	contentBytes, ocErr := l.genLocalExcelFile(ctx, sheetInfoList)
+	if ocErr != nil {
+		logs.CtxErrorf(ctx, "genLocalExcelFile error: %v", ocErr)
+		return nil, ocErr
+	}
+	return contentBytes, nil
+}
+func GetLarkRequestId(resp *http.Response) string {
+	if resp == nil {
+		return ""
+	}
+	logID := resp.Header.Get(HttpHeaderKeyLogId)
+	if logID != "" {
+		return logID
+	}
+	return resp.Header.Get(HttpHeaderKeyRequestId)
+}
+func (l *LarkFetcher) translateFeishuSheetValue(ctx context.Context, authParam lark_http.FeishuAuthParam, value interface{}) string {
+	if value == nil {
+		return ""
+	}
+	// 如果不是图片类型直接marshal string处理
+	imageSheetVal, ok := value.(map[string]interface{})
+	if !ok {
+		imageSheetValList, ok := value.([]interface{})
+		if !ok || len(imageSheetValList) == 0 {
+			return cast.ToString(value)
+		}
+		result := ""
+		for _, imageSheetValInterface := range imageSheetValList {
+			// 图片链接类型通过拼接<img src="" data-tos-key="">
+			result += func() string {
+				imageSheetVal, ok = imageSheetValInterface.(map[string]interface{})
+				if !ok {
+					return cast.ToString(value)
+				}
+				link, ok := imageSheetVal["link"].(string)
+				if !ok {
+					text, ok := imageSheetVal["text"].(string)
+					if ok {
+						return cast.ToString(text)
+					}
+					return cast.ToString(value)
+				}
+				urlInfo, err := url.ParseRequestURI(link)
+				if err != nil || urlInfo.Scheme == "" || urlInfo.Host == "" {
+					text, ok := imageSheetVal["text"].(string)
+					if ok {
+						return cast.ToString(text)
+					}
+					return cast.ToString(value)
+				}
+				urlType, ok := imageSheetVal["type"].(string)
+				if !ok || urlType != "url" {
+					return fmt.Sprintf("<img src=\"%s\">", link)
+				}
+				return link
+			}()
+		}
+		return result
+	}
+	// 图片类型通过image token获取图片二进制流并上传到tos
+	fileToken, ok := imageSheetVal["fileToken"].(string)
+	if !ok {
+		return cast.ToString(value)
+	}
+	imageTokenMap, ocErr := l.RetrieveImage(ctx, authParam, []string{fileToken})
+	if ocErr != nil {
+		logs.CtxWarnf(ctx, "DownloadMedia error:%+v", ocErr)
+		return cast.ToString(value)
+	}
+	logs.CtxInfof(ctx, "[FetchData] RetrieveImage res:%v", imageTokenMap)
+	tosKey, ok := imageTokenMap[fileToken]
+	if !ok {
+		return cast.ToString(value)
+	}
+	return fmt.Sprintf("<img src=\"%s\" data-tos-key=\"%s\" >", "", tosKey)
+}
+
+const (
+	HttpHeaderKeyRequestId = "X-Request-Id"
+	HttpHeaderKeyLogId     = "X-Tt-Logid"
+)
+
+func (l *LarkFetcher) RetrieveImage(ctx context.Context, authParam lark_http.FeishuAuthParam, imageTokenList []string) (map[string]string, error) {
+	imageTokenMap := make(map[string]string)
+	for _, imageToken := range imageTokenList {
+		if _, ok := imageTokenMap[imageToken]; ok {
+			continue
+		}
+		var imageName string
+		var imageContent []byte
+		var err error
+		for i := 0; i < 3; i++ {
+			imageName, imageContent, err = lark_http.DownloadMedia(ctx, authParam, imageToken)
+			if err == nil {
+				break
+			}
+			if strings.Contains(err.Error(), "rate limit") {
+				time.Sleep(time.Duration(rand.Intn(10)) * 200 * time.Millisecond)
+			}
+			continue
+		}
+		if err != nil {
+			logs.CtxErrorf(ctx, "DownloadMedia error:%+v", err)
+			continue
+		}
+		fileExtension := path.Base(imageName)
+		ext := path.Ext(fileExtension)
+		fName := uuid.NewString() + ext
+		objKey := fmt.Sprintf("%s/%d_%s", "FileBizType.BIZ_CONNECTOR_IMAGE", time.Now().UnixNano(), fName)
+		err = l.storage.PutObject(ctx, objKey, imageContent)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[RetrieveImage] PutObject objKey:%v err:%v", objKey, err)
+			return nil, err
+		}
+		imageTokenMap[imageToken] = objKey
+	}
+	return imageTokenMap, nil
+}
+
+func (l *LarkFetcher) genLocalExcelFile(ctx context.Context, sheetInfos []*SheetInfo) ([]byte, error) {
+	f := excelize.NewFile()
+	defer func() {
+		if err := f.Close(); err != nil {
+			logs.CtxErrorf(ctx, "[genLocalExcelFile] file close err: %v", err)
+		}
+	}()
+
+	sheetIndex2Title := make(map[int32]string)
+	for _, sheetInfo := range sheetInfos {
+		sheetIndex2Title[sheetInfo.Index] = sheetInfo.Title
+	}
+	for i, sheet := range sheetInfos {
+		if i != 0 {
+			_, err := f.NewSheet(sheet.Title)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[genLocalExcelFile] new sheet err: %v", err)
+				return nil, errors.New("new sheet err")
+			}
+		} else {
+			err := f.SetSheetName("Sheet1", sheet.Title)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[genLocalExcelFile] set sheet name err: %v", err)
+				return nil, errors.New("set sheet name err")
+			}
+		}
+
+		for rowNum, row := range sheet.SheetContent {
+			row = filterEmptyValue(row)
+			if len(row) == 0 {
+				continue
+			}
+			// rowNum 从0开始，CoordinatesToCellName 接收的参数从1开始
+			beginCell, err := excelize.CoordinatesToCellName(1, rowNum+1)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[genLocalExcelFile] CoordinatesToCellName err: %v", err)
+				return nil, errors.New("coordinates to cell name err")
+			}
+			err = f.SetSheetRow(sheet.Title, beginCell, &sheet.SheetContent[rowNum])
+			if err != nil {
+				logs.CtxErrorf(ctx, "[genLocalExcelFile] set sheet row err: %v", err)
+				return nil, errors.New("set sheet row err")
+			}
+		}
+	}
+
+	buffer, err := f.WriteToBuffer()
+	if err != nil {
+		logs.CtxErrorf(ctx, "[genLocalExcelFile] write to buffer err: %v", err)
+		return nil, errors.New("write to buffer err")
+	}
+
+	return buffer.Bytes(), nil
+}
+func filterEmptyValue(valueRanges []string) []string {
+	for i := len(valueRanges) - 1; i >= 0; i-- {
+		if valueRanges[i] != "" {
+			return valueRanges[:i+1]
+		}
+	}
+	return nil
 }

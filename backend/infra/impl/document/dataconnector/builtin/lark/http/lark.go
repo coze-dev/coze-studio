@@ -178,7 +178,7 @@ func RefreshAccessToken(ctx context.Context, authParam FeishuAuthParam, refreshT
 	// 服务端错误处理
 	if !resp.Success() {
 		logs.CtxErrorf(ctx, "RefreshAccessToken not success,code:%v msg:%v request_id:%v", resp.Code, resp.Msg, resp.RequestId())
-		return nil, errors.New(resp.Msg)
+		return nil, DealLarkError(ctx, resp.Code, resp.Msg, resp.RequestId())
 	}
 	if resp.Data == nil || resp.Data.AccessToken == nil {
 		logs.CtxErrorf(ctx, "RefreshAccessToken response data or access_token is nil")
@@ -375,7 +375,7 @@ func RetrieveDocxBlockList(ctx context.Context, authParam FeishuAuthParam, docID
 		// 服务端错误处理
 		if !resp.Success() {
 			logs.CtxErrorf(ctx, "RetrieveDocxBlockList not success,code:%v msg:%v request_id:%v", resp.Code, resp.Msg, resp.RequestId())
-			return nil, errors.New(resp.Msg)
+			return nil, DealLarkError(ctx, resp.Code, resp.Msg, resp.RequestId())
 		}
 		if resp.Data == nil {
 			break
@@ -404,7 +404,7 @@ func DownloadMedia(ctx context.Context, authParam FeishuAuthParam, fileToken str
 	logs.CtxInfof(ctx, "DownloadMedia response:%v", larkcore.Prettify(resp))
 	if !resp.Success() {
 		logs.CtxErrorf(ctx, "DownloadMedia not success,code:%v msg:%v request_id:%v", resp.Code, resp.Msg, resp.RequestId())
-		return "", nil, errors.New(resp.Msg)
+		return "", nil, DealLarkError(ctx, resp.Code, resp.Msg, resp.RequestId())
 	}
 
 	fileContent, err := io.ReadAll(resp.File)
@@ -432,7 +432,7 @@ func GetSheetList(ctx context.Context, authParam FeishuAuthParam, spreadsheetTok
 	// 服务端错误处理
 	if !resp.Success() {
 		logs.CtxErrorf(ctx, "GetSheetList not success,code:%v msg:%v request_id:%v", resp.Code, resp.Msg, resp.RequestId())
-		return nil, errors.New(resp.Msg)
+		return nil, DealLarkError(ctx, resp.Code, resp.Msg, resp.RequestId())
 	}
 	if resp.Data == nil {
 		logs.CtxErrorf(ctx, "GetSheetList response data is nil")
@@ -477,11 +477,29 @@ func ReadLarkSheet(ctx context.Context, authParam FeishuAuthParam, spreadsheetTo
 	logs.CtxInfof(ctx, "ReadLarkSheet response:%v rawBody:%v", larkcore.Prettify(resp), larkcore.Prettify(rawBody))
 	if rawBody.Code != 0 {
 		logs.CtxErrorf(ctx, "ReadLarkSheet not success,code:%v msg:%v request_id:%v", rawBody.Code, rawBody.Msg, resp.RequestId())
-		return nil, errors.New(rawBody.Msg)
+		return nil, DealLarkError(ctx, rawBody.Code, rawBody.Msg, resp.RequestId())
 	}
 	valueRanges := make(map[string][][]interface{})
 	for _, rangeInfo := range rawBody.Data.ValueRanges {
 		valueRanges[rangeInfo.Range] = rangeInfo.Values
 	}
 	return valueRanges, nil
+}
+
+const (
+	LarkErrorCodeMethodRateLimited  = 1000004
+	LarkErrorCodeAppRateLimited     = 1000005
+	LarkErrorCodeInvalidToken       = 4001
+	LarkErrorCodeInvalidAccessToken = 20005
+)
+
+func DealLarkError(ctx context.Context, code int, msg string, requestID string) error {
+	switch code {
+	case LarkErrorCodeMethodRateLimited, LarkErrorCodeAppRateLimited:
+		return fmt.Errorf("rate limit,code:%v msg:%v request_id:%v", code, msg, requestID)
+	case LarkErrorCodeInvalidToken, LarkErrorCodeInvalidAccessToken:
+		return fmt.Errorf("non-retry,code:%v msg:%v request_id:%v", code, msg, requestID)
+	default:
+		return fmt.Errorf("system error,code:%v msg:%v request_id:%v", code, msg, requestID)
+	}
 }
