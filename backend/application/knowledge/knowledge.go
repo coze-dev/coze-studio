@@ -1515,7 +1515,7 @@ func (k *KnowledgeApplicationService) PollConnectionTask(ctx context.Context, re
 				FileID:       task.FileID,
 				FileName:     task.Title,
 				Status:       connector.EntityRecordStatus(task.Status.String()),
-				FileNodeType: connector.FileNodeType(ptr.From(task.LarkFileType)),
+				FileNodeType: connector.FileNodeType(task.LarkExtra.FileNodeType),
 				TosKey:       &task.ContentUri,
 				FileUrl:      &task.URL,
 				FileSize:     ptr.Of(fmt.Sprintf("%d", task.FileSize)),

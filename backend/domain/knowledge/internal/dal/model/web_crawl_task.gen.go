@@ -5,6 +5,7 @@
 package model
 
 import (
+	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"gorm.io/gorm"
 )
 
@@ -12,21 +13,21 @@ const TableNameWebCrawlTask = "web_crawl_task"
 
 // WebCrawlTask 网页爬取任务表
 type WebCrawlTask struct {
-	ID            int64          `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`       // 主键ID
-	WebURL        string         `gorm:"column:web_url;comment:网页URL" json:"web_url"`                          // 网页URL
-	Title         string         `gorm:"column:title;comment:网页标题" json:"title"`                               // 网页标题
-	FileSize      int64          `gorm:"column:file_size;not null;comment:文件大小（字节）" json:"file_size"`          // 文件大小（字节）
-	FileID        string         `gorm:"column:file_id;comment:文件ID" json:"file_id"`                           // 文件ID
-	SubPageCount  int32          `gorm:"column:sub_page_count;not null;comment:子页面数量" json:"sub_page_count"`   // 子页面数量
-	ContentTosURL string         `gorm:"column:content_tos_url;comment:内容存储URL" json:"content_tos_url"`        // 内容存储URL
-	SublinkTosURI string         `gorm:"column:sublink_tos_uri;comment:子链接存储URI" json:"sublink_tos_uri"`       // 子链接存储URI
-	Status        int32          `gorm:"column:status;not null;comment:状态: 0-初始化 1-抓取完成 2-抓取失败" json:"status"` // 状态: 0-初始化 1-抓取完成 2-抓取失败
-	FailReason    string         `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                   // 失败原因
-	CreatedAt     int64          `gorm:"column:created_at;not null;comment:创建时间（毫秒）" json:"created_at"`        // 创建时间（毫秒）
-	UpdatedAt     int64          `gorm:"column:updated_at;not null;comment:更新时间（毫秒）" json:"updated_at"`        // 更新时间（毫秒）
-	DeletedAt     gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`              // Delete Time
-	AuthID        int64          `gorm:"column:auth_id" json:"auth_id"`
-	LarkFileType  int32          `gorm:"column:lark_file_type;comment:1:folder;2:doc;3:sheet;4:space" json:"lark_file_type"` // 1:folder;2:doc;3:sheet;4:space
+	ID            int64             `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`       // 主键ID
+	WebURL        string            `gorm:"column:web_url;comment:网页URL" json:"web_url"`                          // 网页URL
+	Title         string            `gorm:"column:title;comment:网页标题" json:"title"`                               // 网页标题
+	FileSize      int64             `gorm:"column:file_size;not null;comment:文件大小（字节）" json:"file_size"`          // 文件大小（字节）
+	FileID        string            `gorm:"column:file_id;comment:文件ID" json:"file_id"`                           // 文件ID
+	SubPageCount  int32             `gorm:"column:sub_page_count;not null;comment:子页面数量" json:"sub_page_count"`   // 子页面数量
+	ContentTosURL string            `gorm:"column:content_tos_url;comment:内容存储URL" json:"content_tos_url"`        // 内容存储URL
+	SublinkTosURI string            `gorm:"column:sublink_tos_uri;comment:子链接存储URI" json:"sublink_tos_uri"`       // 子链接存储URI
+	Status        int32             `gorm:"column:status;not null;comment:状态: 0-初始化 1-抓取完成 2-抓取失败" json:"status"` // 状态: 0-初始化 1-抓取完成 2-抓取失败
+	FailReason    string            `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                   // 失败原因
+	CreatedAt     int64             `gorm:"column:created_at;not null;comment:创建时间（毫秒）" json:"created_at"`        // 创建时间（毫秒）
+	UpdatedAt     int64             `gorm:"column:updated_at;not null;comment:更新时间（毫秒）" json:"updated_at"`        // 更新时间（毫秒）
+	DeletedAt     gorm.DeletedAt    `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`              // Delete Time
+	AuthID        int64             `gorm:"column:auth_id" json:"auth_id"`
+	LarkExtra     *entity.LarkExtra `gorm:"column:lark_extra;comment:lark extra info;serializer:json" json:"lark_extra"` // lark extra info
 }
 
 // TableName WebCrawlTask's table name

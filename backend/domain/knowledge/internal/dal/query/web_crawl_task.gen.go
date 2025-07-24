@@ -41,7 +41,7 @@ func newWebCrawlTask(db *gorm.DB, opts ...gen.DOOption) webCrawlTask {
 	_webCrawlTask.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_webCrawlTask.DeletedAt = field.NewField(tableName, "deleted_at")
 	_webCrawlTask.AuthID = field.NewInt64(tableName, "auth_id")
-	_webCrawlTask.LarkFileType = field.NewInt32(tableName, "lark_file_type")
+	_webCrawlTask.LarkExtra = field.NewField(tableName, "lark_extra")
 
 	_webCrawlTask.fillFieldMap()
 
@@ -67,7 +67,7 @@ type webCrawlTask struct {
 	UpdatedAt     field.Int64  // 更新时间（毫秒）
 	DeletedAt     field.Field  // Delete Time
 	AuthID        field.Int64
-	LarkFileType  field.Int32 // 1:folder;2:doc;3:sheet;4:space
+	LarkExtra     field.Field // lark extra info
 
 	fieldMap map[string]field.Expr
 }
@@ -98,7 +98,7 @@ func (w *webCrawlTask) updateTableName(table string) *webCrawlTask {
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
 	w.AuthID = field.NewInt64(table, "auth_id")
-	w.LarkFileType = field.NewInt32(table, "lark_file_type")
+	w.LarkExtra = field.NewField(table, "lark_extra")
 
 	w.fillFieldMap()
 
@@ -130,7 +130,7 @@ func (w *webCrawlTask) fillFieldMap() {
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
 	w.fieldMap["auth_id"] = w.AuthID
-	w.fieldMap["lark_file_type"] = w.LarkFileType
+	w.fieldMap["lark_extra"] = w.LarkExtra
 }
 
 func (w webCrawlTask) clone(db *gorm.DB) webCrawlTask {

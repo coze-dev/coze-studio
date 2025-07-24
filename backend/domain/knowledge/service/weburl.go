@@ -93,7 +93,10 @@ func (k *knowledgeSVC) submitFeishuTasks(ctx context.Context, request *SubmitWeb
 		task.WebURL = node.FileURL
 		task.FileID = node.FileID
 		task.Status = 0
-		task.LarkFileType = int32(node.FileNodeType)
+		task.LarkExtra = &entity.LarkExtra{
+			FileType:     node.FileType,
+			FileNodeType: node.FileNodeType,
+		}
 		task.CreatedAt = time.Now().UnixMilli()
 		task.UpdatedAt = time.Now().UnixMilli()
 		tasks = append(tasks, &task)
@@ -178,7 +181,7 @@ func (k *knowledgeSVC) GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfo
 				r.FileID = task.FileID
 				r.FileSize = task.FileSize
 				r.AuthID = task.AuthID
-				r.LarkFileType = &task.LarkFileType
+				r.LarkExtra = task.LarkExtra
 			}
 			r.Progress = 100
 		case int32(entity.WebCrawlTaskStatusInit):

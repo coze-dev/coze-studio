@@ -1,0 +1,358 @@
+openapi: 3.0.0
+info:
+  title: lark doc get
+  description: Lark doc get.
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /open-apis/docx/v1/documents/{document_id}/raw_content:
+    get:
+      parameters:
+      - name: document_id
+        in: path
+        description: Document ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentContentBody'
+      security:
+      - bearerAuth: []
+  /open-apis/doc/v2/{document_id}/raw_content:
+    get:
+      parameters:
+      - name: document_id
+        in: path
+        description: Document ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentContentBody'
+      security:
+      - bearerAuth: []
+  /open-apis/sheets/v3/spreadsheets/{spreadsheet_token}/sheets/query:
+    get:
+      parameters:
+      - name: spreadsheet_token
+        in: path
+        description: Spreadsheet Token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuerySheetBody'
+      security:
+      - bearerAuth: []
+  /open-apis/sheets/v2/spreadsheets/{spreadsheet_token}/values/{range}:
+    get:
+      parameters:
+      - name: spreadsheet_token
+        in: path
+        description: Spreadsheet Token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: range
+        in: path
+        description: Range
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSheetUnitBody'
+      security:
+      - bearerAuth: []
+components:
+  schemas:
+    DocumentContentBody:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+        msg:
+          type: string
+          description: error message
+        data:
+          $ref: '#/components/schemas/DocumentContentBody_data'
+      example:
+        msg: msg
+        code: 0
+        data:
+          content: content
+    QuerySheetBody:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+        msg:
+          type: string
+          description: error message
+        data:
+          $ref: '#/components/schemas/QuerySheetBody_data'
+      example:
+        msg: msg
+        code: 0
+        data:
+          sheets:
+          - hidden: true
+            sheet_id: sheet_id
+            grid_properties:
+              frozen_column_count: 5
+              column_count: 2
+              frozen_row_count: 1
+              row_count: 5
+            index: 6
+            title: title
+            merges:
+            - end_column_index: 2
+              start_column_index: 3
+              start_row_index: 7
+              end_row_index: 9
+            - end_column_index: 2
+              start_column_index: 3
+              start_row_index: 7
+              end_row_index: 9
+          - hidden: true
+            sheet_id: sheet_id
+            grid_properties:
+              frozen_column_count: 5
+              column_count: 2
+              frozen_row_count: 1
+              row_count: 5
+            index: 6
+            title: title
+            merges:
+            - end_column_index: 2
+              start_column_index: 3
+              start_row_index: 7
+              end_row_index: 9
+            - end_column_index: 2
+              start_column_index: 3
+              start_row_index: 7
+              end_row_index: 9
+    sheet:
+      type: object
+      properties:
+        sheet_id:
+          type: string
+          description: Sheet ID
+        title:
+          type: string
+          description: Title
+        index:
+          type: integer
+          description: Index
+        hidden:
+          type: boolean
+          description: Hidden
+        grid_properties:
+          $ref: '#/components/schemas/sheet_grid_properties'
+        merges:
+          type: array
+          items:
+            $ref: '#/components/schemas/merge_range'
+      example:
+        hidden: true
+        sheet_id: sheet_id
+        grid_properties:
+          frozen_column_count: 5
+          column_count: 2
+          frozen_row_count: 1
+          row_count: 5
+        index: 6
+        title: title
+        merges:
+        - end_column_index: 2
+          start_column_index: 3
+          start_row_index: 7
+          end_row_index: 9
+        - end_column_index: 2
+          start_column_index: 3
+          start_row_index: 7
+          end_row_index: 9
+    merge_range:
+      type: object
+      properties:
+        start_row_index:
+          type: integer
+        end_row_index:
+          type: integer
+        start_column_index:
+          type: integer
+        end_column_index:
+          type: integer
+      example:
+        end_column_index: 2
+        start_column_index: 3
+        start_row_index: 7
+        end_row_index: 9
+    GetSheetUnitBody:
+      type: object
+      properties:
+        revision:
+          type: integer
+        spreadsheetToken:
+          type: integer
+        valueRange:
+          $ref: '#/components/schemas/GetSheetUnitBody_valueRange'
+      example:
+        spreadsheetToken: 6
+        valueRange:
+          majorDimension: majorDimension
+          values:
+          - objects:
+            - object: {}
+            - object: {}
+          - objects:
+            - object: {}
+            - object: {}
+          range: range
+          revision: 1
+        revision: 0
+    DocumentContentBody_data:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Document content
+      example:
+        content: content
+    QuerySheetBody_data:
+      type: object
+      properties:
+        sheets:
+          type: array
+          items:
+            $ref: '#/components/schemas/sheet'
+      example:
+        sheets:
+        - hidden: true
+          sheet_id: sheet_id
+          grid_properties:
+            frozen_column_count: 5
+            column_count: 2
+            frozen_row_count: 1
+            row_count: 5
+          index: 6
+          title: title
+          merges:
+          - end_column_index: 2
+            start_column_index: 3
+            start_row_index: 7
+            end_row_index: 9
+          - end_column_index: 2
+            start_column_index: 3
+            start_row_index: 7
+            end_row_index: 9
+        - hidden: true
+          sheet_id: sheet_id
+          grid_properties:
+            frozen_column_count: 5
+            column_count: 2
+            frozen_row_count: 1
+            row_count: 5
+          index: 6
+          title: title
+          merges:
+          - end_column_index: 2
+            start_column_index: 3
+            start_row_index: 7
+            end_row_index: 9
+          - end_column_index: 2
+            start_column_index: 3
+            start_row_index: 7
+            end_row_index: 9
+    sheet_grid_properties:
+      type: object
+      properties:
+        frozen_row_count:
+          type: integer
+        frozen_column_count:
+          type: integer
+        row_count:
+          type: integer
+        column_count:
+          type: integer
+      example:
+        frozen_column_count: 5
+        column_count: 2
+        frozen_row_count: 1
+        row_count: 5
+    GetSheetUnitBody_valueRange_objects:
+      properties:
+        object:
+          type: object
+      example:
+        object: {}
+    GetSheetUnitBody_valueRange_values:
+      properties:
+        objects:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetSheetUnitBody_valueRange_objects'
+      example:
+        objects:
+        - object: {}
+        - object: {}
+    GetSheetUnitBody_valueRange:
+      type: object
+      properties:
+        majorDimension:
+          type: string
+        range:
+          type: string
+        revision:
+          type: integer
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetSheetUnitBody_valueRange_values'
+      example:
+        majorDimension: majorDimension
+        values:
+        - objects:
+          - object: {}
+          - object: {}
+        - objects:
+          - object: {}
+          - object: {}
+        range: range
+        revision: 1
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

@@ -1,5 +1,7 @@
 package entity
 
+import "github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
+
 type WebCrawlTaskResp struct {
 	Title        string
 	Progress     int
@@ -12,10 +14,15 @@ type WebCrawlTaskResp struct {
 	FileID       string
 	AuthID       int64
 	FileSize     int64
-	LarkFileType *int32
+	LarkExtra    *LarkExtra
 }
 
 type WebCrawlTask struct {
 	TaskID int64
 	Source DocumentSource
+}
+
+type LarkExtra struct {
+	FileType     dataconnector.FileType
+	FileNodeType dataconnector.FileNodeType
 }

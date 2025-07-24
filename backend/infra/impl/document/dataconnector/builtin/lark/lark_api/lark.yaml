@@ -1,0 +1,200 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: lark doc get
+  description: >-
+    Lark doc get.
+paths:
+  /open-apis/docx/v1/documents/{document_id}/raw_content:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: document_id
+          required: true
+          schema:
+            type: string
+          description: Document ID
+      responses:
+        '200':
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentContentBody'
+  /open-apis/doc/v2/{document_id}/raw_content:
+    get:
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: document_id
+          required: true
+          schema:
+            type: string
+          description: Document ID
+      responses:
+        '200':
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentContentBody'
+  /open-apis/sheets/v3/spreadsheets/{spreadsheet_token}/sheets/query:
+    get:
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+          description: Spreadsheet Token
+      responses:
+        '200':
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuerySheetBody'
+  /open-apis/sheets/v2/spreadsheets/{spreadsheet_token}/values/{range}:
+    get:
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+          description: Spreadsheet Token
+        - in: path
+          name: range
+          required: true
+          schema:
+            type: string
+          description: Range
+      responses:
+        '200':
+          description: A Data object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSheetUnitBody'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    DocumentContentBody:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+        msg:
+          type: string
+          description: error message
+        data:
+          type: object
+          properties:
+            content:
+              type: string
+              description: Document content
+    QuerySheetBody:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+        msg:
+          type: string
+          description: error message
+        data:
+          type: object
+          properties:
+            sheets:
+              type: array
+              items:
+                $ref: '#/components/schemas/sheet'
+    sheet:
+      type: object
+      properties:
+        sheet_id:
+          type: string
+          description: Sheet ID
+        title:
+          type: string
+          description: Title
+        index:
+          type: integer
+          description: Index
+        hidden:
+          type: boolean
+          description: Hidden
+        grid_properties:
+          type: object
+          properties:
+            frozen_row_count:
+              type: integer
+            frozen_column_count:
+              type: integer
+            row_count:
+              type: integer
+            column_count:
+              type: integer
+        merges:
+          type: array
+          items:
+            $ref: '#/components/schemas/merge_range'
+    merge_range:
+      type: object
+      properties:
+        start_row_index:
+          type: integer
+        end_row_index:
+          type: integer
+        start_column_index:
+          type: integer
+        end_column_index:
+          type: integer
+    GetSheetUnitBody:
+      type: object
+      properties:
+        revision:
+          type: integer
+        spreadsheetToken:
+          type: integer
+        valueRange:
+          type: object
+          properties:
+            majorDimension:
+             type: string
+            range:
+              type: string
+            revision:
+              type: integer
+            values:
+              type: array
+              items:
+                properties:
+                 objects:
+                   type: array
+                   items:
+                    properties:
+                      object:
+                        type: object
+
+
+
+
+
+
+
+
+
+
+
