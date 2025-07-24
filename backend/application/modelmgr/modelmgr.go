@@ -21,6 +21,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
@@ -29,7 +30,8 @@ import (
 )
 
 type ModelmgrApplicationService struct {
-	Mgr modelmgr.Manager
+	Mgr       modelmgr.Manager
+	TosClient storage.Storage
 }
 
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
@@ -49,9 +51,15 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	}
 
 	locale := i18n.GetLocale(ctx)
-	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(m *modelmgr.Model) (*developer_api.Model, error) {
-		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
-		return modelDo2To(m, locale)
+	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *modelmgr.Model) (*developer_api.Model, error) {
+		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", mm.DefaultParameters)
+		if mm.IconURI != "" {
+			iconUrl, err := m.TosClient.GetObjectUrl(ctx, mm.IconURI)
+			if err == nil {
+				mm.IconURL = iconUrl
+			}
+		}
+		return modelDo2To(mm, locale)
 	})
 	if err != nil {
 		return nil, err

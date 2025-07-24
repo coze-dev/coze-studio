@@ -229,10 +229,6 @@ func fillModelContent(ctx context.Context, oss storage.Storage, items []*modelmg
 				if err := oss.PutObject(ctx, key, icon); err != nil {
 					return err
 				}
-				iconURL, err := oss.GetObjectUrl(ctx, key)
-				if err == nil {
-					item.IconURL = iconURL
-				}
 				item.IconURI = key
 			} else if errors.Is(err, os.ErrNotExist) {
 				// try to get object from uri

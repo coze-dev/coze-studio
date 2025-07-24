@@ -155,7 +155,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	upload.InitService(infra.TOSClient, infra.CacheCli)
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
-	modelMgrSVC := modelmgr.InitService(infra.ModelMgr)
+	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
