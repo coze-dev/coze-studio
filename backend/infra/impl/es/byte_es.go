@@ -115,7 +115,20 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 	logs.CtxInfo(ctx, "[search] search index, rawReq: %s, q: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(q))
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
-	res, err := c.readClient.Search().Index(index).Query(q).Size(*req.Size).Do(ctx)
+	esService := c.readClient.Search().Index(index).Query(q).Size(*req.Size)
+	for _, sort := range req.Sort {
+		// 插入排序配置
+		esService = esService.Sort(sort.Field, sort.Asc)
+	}
+	if req.From != nil {
+		esService = esService.From(*req.From)
+	} else {
+		for _, v := range req.SearchAfter {
+			esService = esService.SearchAfter(v)
+		}
+	}
+
+	res, err := esService.Do(ctx)
 	if err != nil {
 		logs.CtxError(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
