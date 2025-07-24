@@ -354,7 +354,16 @@ func needResetDebugStatusTool(_ context.Context, nt, ot *model.Openapi3Operation
 		}
 	}
 
+	if nt.RequestBody == nil && ot.RequestBody == nil {
+		return false
+	}
+	if (nt.RequestBody == nil && ot.RequestBody != nil) ||
+		(nt.RequestBody != nil && ot.RequestBody == nil) {
+		return true
+	}
+
 	nReqBody, oReqBody := nt.RequestBody.Value, ot.RequestBody.Value
+
 	if len(nReqBody.Content) != len(oReqBody.Content) {
 		return true
 	}

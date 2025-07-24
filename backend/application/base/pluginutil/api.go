@@ -22,6 +22,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -30,6 +32,14 @@ import (
 
 func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (*openapi3.Operation, error) {
 	op := &openapi3.Operation{}
+
+	if reqParams != nil && len(reqParams) == 0 {
+		op.Parameters = []*openapi3.ParameterRef{}
+		op.RequestBody = entity.DefaultOpenapi3RequestBody()
+	}
+	if respParams != nil && len(respParams) == 0 {
+		op.Responses = entity.DefaultOpenapi3Responses()
+	}
 
 	hasSetReqBody := false
 	hasSetParams := false

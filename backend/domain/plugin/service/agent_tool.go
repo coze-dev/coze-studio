@@ -165,6 +165,9 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		if !ok {
 			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
 		}
+		if op.RequestBody == nil || op.RequestBody.Value == nil {
+			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+		}
 		if op.RequestBody.Value.Content == nil {
 			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
@@ -182,16 +185,12 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		}
 
 		if op.Responses == nil {
-			op.Responses = map[string]*openapi3.ResponseRef{}
+			op.Responses = entity.DefaultOpenapi3Responses()
 		}
 
 		oldRespRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
-			oldRespRef = &openapi3.ResponseRef{
-				Value: &openapi3.Response{
-					Content: map[string]*openapi3.MediaType{},
-				},
-			}
+			oldRespRef = entity.DefaultOpenapi3Responses()[strconv.Itoa(http.StatusOK)]
 			op.Responses[strconv.Itoa(http.StatusOK)] = oldRespRef
 		}
 
