@@ -99,3 +99,5 @@ const (
 	ApplyUploadActionURI = "/api/playground/apply_upload_action"
 	UploadURI            = "/api/playground/upload"
 )
+
+const CurrentServicePSM = "data.ecom.workflow_engine_next"

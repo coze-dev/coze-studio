@@ -30,6 +30,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/application/user"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 var noNeedSessionCheckPath = map[string]bool{
@@ -48,6 +49,15 @@ func SessionAuthMW() app.HandlerFunc {
 		if noNeedSessionCheckPath[string(ctx.GetRequest().URI().Path())] {
 			ctx.Next(c)
 			return
+		}
+
+		bdSession, err := bdsso.GetHertzSession(ctx)
+		if err != nil {
+			logs.CtxError(c, "[SessionAuthMW] get session failed, err: %v", err)
+			// httputil.InternalError(c, ctx, err)
+			// return
+		} else {
+			logs.CtxInfo(c, "[SessionAuthMW] session id is %+v", bdSession)
 		}
 
 		s := ctx.Cookie(entity.SessionKey)

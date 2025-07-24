@@ -24,7 +24,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/api/middleware"
 	"code.byted.org/data_edc/workflow_engine_next/api/router"
 	"code.byted.org/data_edc/workflow_engine_next/application"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/middleware/hertz/byted"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 func InitInfra() {
@@ -38,7 +40,8 @@ func main() {
 	InitInfra()
 	byted.Init()
 	s := byted.Default()
-
+	// 初始化 sso 登录组件
+	bdsso.MustInit(consts.CurrentServicePSM)
 	// Middleware order matters
 	s.Use(middleware.ContextCacheMW())     // must be first
 	s.Use(middleware.RequestInspectorMW()) // must be second
@@ -46,6 +49,7 @@ func main() {
 	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
+	s.Use(bdsso.SessionHertzMiddleware)
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.I18nMW()) // must after SessionAuthMW
 	router.GeneratedRegister(s)

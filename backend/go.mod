@@ -41,7 +41,7 @@ require (
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
 	golang.org/x/mod v0.25.0
 	golang.org/x/sync v0.15.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.3
 	gorm.io/gen v0.3.26
@@ -55,7 +55,9 @@ require github.com/alicebob/miniredis/v2 v2.34.0
 
 require (
 	code.byted.org/ad/elastic-go/v7 v7.2.24
+	code.byted.org/gopkg/env v1.6.27
 	code.byted.org/gopkg/logs v1.2.26
+	code.byted.org/gopkg/tccclient/v3 v3.0.3
 	code.byted.org/gopkg/tos v1.5.16
 	code.byted.org/gorm/bytedgorm v0.9.30
 	code.byted.org/kv/goredis v5.7.3+incompatible
@@ -96,19 +98,21 @@ require (
 	code.byted.org/bytedtrace-contrib/kitex-go v1.1.36 // indirect
 	code.byted.org/bytedtrace/bytedtrace-client-go v1.2.2 // indirect
 	code.byted.org/bytedtrace/bytedtrace-common/go v0.0.13 // indirect
+	code.byted.org/bytedtrace/bytedtrace-compatible-client-go v0.0.14 // indirect
 	code.byted.org/bytedtrace/bytedtrace-compatible-lightweight-go v1.0.2 // indirect
 	code.byted.org/bytedtrace/bytedtrace-conf-provider-client-go v0.0.26 // indirect
 	code.byted.org/bytedtrace/bytedtrace-gls-switch v1.3.0 // indirect
 	code.byted.org/bytedtrace/interface-go v1.0.20 // indirect
 	code.byted.org/bytedtrace/serializer-go v1.0.0 // indirect
+	code.byted.org/gin/ginex v1.8.0 // indirect
 	code.byted.org/gopkg/apm_vendor_interface v0.0.3 // indirect
 	code.byted.org/gopkg/asyncache v0.0.0-20210129072708-1df5611dba17 // indirect
 	code.byted.org/gopkg/asynccache v0.0.0-20201112072351-d630cb60c767 // indirect
 	code.byted.org/gopkg/bytedmysql v1.1.20 // indirect
+	code.byted.org/gopkg/circuitbreaker v3.8.0+incompatible // indirect
 	code.byted.org/gopkg/consul v1.2.6 // indirect
 	code.byted.org/gopkg/ctxvalues v0.6.0 // indirect
 	code.byted.org/gopkg/debug v0.10.1 // indirect
-	code.byted.org/gopkg/env v1.6.27 // indirect
 	code.byted.org/gopkg/etcd_util v2.3.2+incompatible // indirect
 	code.byted.org/gopkg/etcdproxy v0.1.1 // indirect
 	code.byted.org/gopkg/logid v0.0.0-20211104042040-f78600e482f2 // indirect
@@ -119,13 +123,19 @@ require (
 	code.byted.org/gopkg/metrics/v4 v4.1.4 // indirect
 	code.byted.org/gopkg/metrics_core v0.0.39 // indirect
 	code.byted.org/gopkg/net2 v1.5.0 // indirect
+	code.byted.org/gopkg/rand v0.0.0-20200622102840-8cd9b682e5b4 // indirect
+	code.byted.org/gopkg/retry v0.0.0-20220517012520-bde92e63db0a // indirect
 	code.byted.org/gopkg/stats v1.2.7 // indirect
 	code.byted.org/gopkg/tccclient v1.4.15 // indirect
-	code.byted.org/gopkg/tccclient/v3 v3.0.3 // indirect
 	code.byted.org/gopkg/thrift v1.12.0 // indirect
+	code.byted.org/hystrix/hystrix-go v0.0.0-20190214095017-a2a890c81cd5 // indirect
 	code.byted.org/inf/authcenter v1.5.0 // indirect
 	code.byted.org/inf/infsecc v1.0.3 // indirect
+	code.byted.org/kite/endpoint v3.7.5+incompatible // indirect
+	code.byted.org/kite/kitc v3.10.21+incompatible // indirect
+	code.byted.org/kite/kite v3.9.30+incompatible // indirect
 	code.byted.org/kite/kitex v1.9.4 // indirect
+	code.byted.org/kite/kitutil v3.8.3+incompatible // indirect
 	code.byted.org/kv/backoff v0.0.0-20191031070508-5d868504e646 // indirect
 	code.byted.org/kv/circuitbreaker v0.0.0-20241122071059-8350ca46c51d // indirect
 	code.byted.org/lang/trace v0.0.3 // indirect
@@ -147,14 +157,18 @@ require (
 	code.byted.org/service_mesh/shmipc v0.2.16 // indirect
 	code.byted.org/trace/trace-client-go v1.3.6 // indirect
 	code.byted.org/ttarch/byteconf-cel-go v0.0.3 // indirect
+	code.byted.org/ucenter/bdsso_sessionlib v1.3.0-hertz-v1 // indirect
 	github.com/3vilive/sizeof v0.0.0-20220507072046-f0cfbbd2c289 // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
 	github.com/alicebob/miniredis v2.5.0+incompatible // indirect
+	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/antonmedv/expr v1.13.0 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
+	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/choleraehyq/pid v0.0.20 // indirect
+	github.com/choleraehyq/rwlock v0.0.13 // indirect
 	github.com/cloudwego/frugal v0.2.0 // indirect
 	github.com/cloudwego/gopkg v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
@@ -165,9 +179,15 @@ require (
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/gin-gonic/gin v1.10.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
@@ -179,13 +199,16 @@ require (
 	github.com/hertz-contrib/http2 v0.1.1 // indirect
 	github.com/hertz-contrib/localsession v0.1.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/kuangchanglang/graceful v1.0.2 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/modern-go/gls v0.0.0-20220109145502-612d0167dce5 // indirect
 	github.com/olivere/elastic/v7 v7.0.22 // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/pelletier/go-toml v1.2.0 // indirect
+	github.com/opentracing/opentracing-go v1.2.1-0.20210205174328-3088eee7e4d2 // indirect
+	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/peterbourgon/g2s v0.0.0-20170223122336-d4e7ad98afea // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
@@ -195,6 +218,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect

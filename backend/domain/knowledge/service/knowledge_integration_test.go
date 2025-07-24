@@ -27,6 +27,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/minio/minio-go/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -49,7 +50,6 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	rdbservice "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
-	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage/minio"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
