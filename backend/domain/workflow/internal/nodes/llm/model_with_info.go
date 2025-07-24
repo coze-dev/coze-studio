@@ -24,28 +24,27 @@ import (
 	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
-
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 )
 
 type ModelWithInfo interface {
 	model.BaseChatModel
-	Info(ctx context.Context) *crossmodelmgr.Model
+	Info(ctx context.Context) *modelmgr.Model
 }
 
 type ModelForLLM struct {
 	Model         model.BaseChatModel
-	MInfo         *crossmodelmgr.Model
+	MInfo         *modelmgr.Model
 	FallbackModel model.BaseChatModel
-	FallbackInfo  *crossmodelmgr.Model
+	FallbackInfo  *modelmgr.Model
 	UseFallback   func(ctx context.Context) bool
 
 	modelEnableCallback    bool
 	fallbackEnableCallback bool
 }
 
-func NewModel(m model.BaseChatModel, info *crossmodelmgr.Model) *ModelForLLM {
+func NewModel(m model.BaseChatModel, info *modelmgr.Model) *ModelForLLM {
 	return &ModelForLLM{
 		Model: m,
 		MInfo: info,
@@ -57,7 +56,7 @@ func NewModel(m model.BaseChatModel, info *crossmodelmgr.Model) *ModelForLLM {
 	}
 }
 
-func NewModelWithFallback(m, f model.BaseChatModel, info, fInfo *crossmodelmgr.Model) *ModelForLLM {
+func NewModelWithFallback(m, f model.BaseChatModel, info, fInfo *modelmgr.Model) *ModelForLLM {
 	return &ModelForLLM{
 		Model:         m,
 		MInfo:         info,
@@ -175,7 +174,7 @@ func (m *ModelForLLM) IsCallbacksEnabled() bool {
 	return true
 }
 
-func (m *ModelForLLM) Info(ctx context.Context) *crossmodelmgr.Model {
+func (m *ModelForLLM) Info(ctx context.Context) *modelmgr.Model {
 	if m.UseFallback(ctx) {
 		return m.FallbackInfo
 	}

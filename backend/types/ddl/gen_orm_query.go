@@ -32,13 +32,11 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	modelEntity "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
 	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -135,18 +133,18 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 		"variable_instance": {},
 	},
-	"domain/modelmgr/internal/dal/query": {
-		"model_meta": {
-			"capability":  &modelEntity.Capability{},
-			"conn_config": &chatmodel.Config{},
-			"status":      modelEntity.ModelMetaStatus(0),
-		},
-		"model_entity": {
-			"scenario":       modelEntity.Scenario(0),
-			"default_params": []*modelEntity.Parameter{},
-			"status":         modelEntity.ModelEntityStatus(0),
-		},
-	},
+	// "domain/modelmgr/internal/dal/query": {
+	// 	"model_meta": {
+	// 		"capability":  &modelmgr.Capability{},
+	// 		"conn_config": &chatmodel.Config{},
+	// 		"status":      modelmgr.ModelStatus(0),
+	// 	},
+	// 	"model_entity": {
+	// 		"scenario":       modelmgr.Scenario(0),
+	// 		"default_params": []*modelmgr.Parameter{},
+	// 		"status":         modelmgr.ModelStatus(0),
+	// 	},
+	// },
 	"domain/workflow/internal/repo/dal/query": {
 		"workflow_meta":              {},
 		"workflow_draft":             {},

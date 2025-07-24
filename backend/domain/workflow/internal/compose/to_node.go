@@ -28,8 +28,8 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	crosscode "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
@@ -91,7 +91,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	var (
 		err                  error
 		chatModel, fallbackM einomodel.BaseChatModel
-		info, fallbackI      *crossmodelmgr.Model
+		info, fallbackI      *modelmgr.Model
 		modelWithInfo        llm.ModelWithInfo
 	)
 

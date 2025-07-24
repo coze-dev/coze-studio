@@ -22,6 +22,7 @@ import (
 	"math/rand"
 
 	"github.com/cloudwego/eino/compose"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/jinzhu/copier"
 
 	"github.com/cloudwego/eino/schema"
@@ -44,6 +45,7 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
+	ModelMgr     modelmgr.Manager
 	ModelFactory chatmodel.Factory
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
@@ -106,6 +108,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		Agent:        ae,
 		UserID:       req.UserID,
 		Identity:     req.Identity,
+		ModelMgr:     s.ModelMgr,
 		ModelFactory: s.ModelFactory,
 		CPStore:      s.CPStore,
 	}

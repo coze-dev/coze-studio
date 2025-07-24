@@ -30,13 +30,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
-	modelEntity "github.com/coze-dev/coze-studio/backend/domain/modelmgr/entity"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	shortcutCMDEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -159,13 +158,13 @@ func (s *SingleAgentApplicationService) shortcutCMDDo2Vo(cmdDOs []*shortcutCMDEn
 	})
 }
 
-func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*modelEntity.Model, error) {
+func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*modelmgr.Model, error) {
 	if agentInfo.ModelInfo.ModelId == nil {
 		return nil, nil
 	}
 
 	modelID := agentInfo.ModelInfo.GetModelId()
-	modelInfos, err := s.appContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	modelInfos, err := s.appContext.ModelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelID},
 	})
 	if err != nil {
@@ -249,13 +248,13 @@ func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context
 	return ret, nil
 }
 
-func modelInfoDo2Vo(modelInfos []*modelEntity.Model) map[int64]*playground.ModelDetail {
-	return slices.ToMap(modelInfos, func(e *modelEntity.Model) (int64, *playground.ModelDetail) {
+func modelInfoDo2Vo(modelInfos []*modelmgr.Model) map[int64]*playground.ModelDetail {
+	return slices.ToMap(modelInfos, func(e *modelmgr.Model) (int64, *playground.ModelDetail) {
 		return e.ID, toModelDetail(e)
 	})
 }
 
-func toModelDetail(m *modelEntity.Model) *playground.ModelDetail {
+func toModelDetail(m *modelmgr.Model) *playground.ModelDetail {
 	mm := m.Meta
 
 	return &playground.ModelDetail{
@@ -263,7 +262,7 @@ func toModelDetail(m *modelEntity.Model) *playground.ModelDetail {
 		ModelName:    ptr.Of(m.Meta.Name),
 		ModelID:      ptr.Of(m.ID),
 		ModelFamily:  ptr.Of(int64(mm.Protocol.TOModelClass())),
-		ModelIconURL: ptr.Of(mm.IconURL),
+		ModelIconURL: ptr.Of(m.IconURL),
 	}
 }
 
