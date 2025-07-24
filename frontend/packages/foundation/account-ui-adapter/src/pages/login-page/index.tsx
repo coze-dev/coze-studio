@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
 import { CozeBrand } from '@coze-studio/components/coze-brand';
@@ -108,7 +108,7 @@ export const LoginPage: FC = () => {
             <div className="mt-[12px] flex justify-center">
               <a
                 data-testid="login.link.terms"
-                href="https://spdx.org/licenses/Apache-2.0.html"
+                href="https://github.com/coze-dev/coze-studio?tab=Apache-2.0-1-ov-file"
                 target="_blank"
                 className="no-underline coz-fg-hglt"
               >

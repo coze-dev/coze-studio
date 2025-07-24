@@ -21,9 +21,7 @@ import { explore } from '@coze-studio/api-schema';
 import { useSpaceList } from '@coze-foundation/space-store';
 import { I18n } from '@coze-arch/i18n';
 import { Image, Input, Modal, Space, Toast } from '@coze-arch/coze-design';
-import { ProductEntityType } from '@coze-arch/bot-api/product_api';
-
-import { cozeBaseUrl } from '@/const/url';
+import { type ProductEntityType } from '@coze-arch/bot-api/product_api';
 
 import { type CardInfoProps } from '../type';
 import { CardTag } from '../components/tag';
@@ -35,15 +33,6 @@ type ProductInfo = explore.ProductInfo;
 import styles from './index.module.less';
 
 export type TemplateCardProps = ProductInfo;
-
-const PATH_MAP: Partial<
-  Record<explore.product_common.ProductEntityType, string>
-> = {
-  [ProductEntityType.BotTemplate]: 'agent',
-  [ProductEntityType.WorkflowTemplateV2]: 'workflow',
-  [ProductEntityType.ImageflowTemplateV2]: 'workflow',
-  [ProductEntityType.ProjectTemplate]: 'project',
-};
 
 export const TemplateCard: FC<TemplateCardProps> = props => {
   const [visible, setVisible] = useState(false);
@@ -64,24 +53,9 @@ export const TemplateCard: FC<TemplateCardProps> = props => {
             onClick={() => {
               setVisible(true);
             }}
+            className="w-full"
           >
             {I18n.t('copy')}
-          </CardButton>
-          <CardButton
-            onClick={() => {
-              const pathPrefix = PATH_MAP[props.meta_info.entity_type] || '';
-              const pathSuffix = [
-                ProductEntityType.WorkflowTemplateV2,
-                ProductEntityType.ImageflowTemplateV2,
-              ].includes(props.meta_info.entity_type)
-                ? `?entity_type=${props.meta_info.entity_type}`
-                : '';
-              window.open(
-                `${cozeBaseUrl}/template/${pathPrefix}/${props.meta_info.id}${pathSuffix}`,
-              );
-            }}
-          >
-            {I18n.t('plugin_usage_limits_modal_view_details')}
           </CardButton>
         </Space>
       </div>
