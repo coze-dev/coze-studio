@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/modelmgr/static"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"gopkg.in/yaml.v3"
 )
 
 func initModelMgr(ctx context.Context, oss storage.Storage) (modelmgr.Manager, error) {
@@ -227,6 +228,10 @@ func fillModelContent(ctx context.Context, oss storage.Storage, items []*modelmg
 				key := fmt.Sprintf("icon_%s_%d", base, time.Now().Second())
 				if err := oss.PutObject(ctx, key, icon); err != nil {
 					return err
+				}
+				iconURL, err := oss.GetObjectUrl(ctx, key)
+				if err == nil {
+					item.IconURL = iconURL
 				}
 				item.IconURI = key
 			} else if errors.Is(err, os.ErrNotExist) {
