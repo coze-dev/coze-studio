@@ -33,8 +33,8 @@ func newKnowledgeDocumentUpdateConfig(db *gorm.DB, opts ...gen.DOOption) knowled
 	_knowledgeDocumentUpdateConfig.NextUpdateTime = field.NewInt64(tableName, "next_update_time")
 	_knowledgeDocumentUpdateConfig.CreateAt = field.NewInt64(tableName, "create_at")
 	_knowledgeDocumentUpdateConfig.UpdateAt = field.NewInt64(tableName, "update_at")
-	_knowledgeDocumentUpdateConfig.DeletedAt = field.NewField(tableName, "deleted_at")
 	_knowledgeDocumentUpdateConfig.FailReason = field.NewString(tableName, "fail_reason")
+	_knowledgeDocumentUpdateConfig.DeletedAt = field.NewField(tableName, "deleted_at")
 
 	_knowledgeDocumentUpdateConfig.fillFieldMap()
 
@@ -52,8 +52,8 @@ type knowledgeDocumentUpdateConfig struct {
 	NextUpdateTime field.Int64  // 下次更新时间，单位ms
 	CreateAt       field.Int64  // 创建时间，单位ms
 	UpdateAt       field.Int64  // 更新时间，单位ms
-	DeletedAt      field.Field  //  删除时间，单位 ms
 	FailReason     field.String // 失败原因
+	DeletedAt      field.Field  // Delete Time
 
 	fieldMap map[string]field.Expr
 }
@@ -76,8 +76,8 @@ func (k *knowledgeDocumentUpdateConfig) updateTableName(table string) *knowledge
 	k.NextUpdateTime = field.NewInt64(table, "next_update_time")
 	k.CreateAt = field.NewInt64(table, "create_at")
 	k.UpdateAt = field.NewInt64(table, "update_at")
-	k.DeletedAt = field.NewField(table, "deleted_at")
 	k.FailReason = field.NewString(table, "fail_reason")
+	k.DeletedAt = field.NewField(table, "deleted_at")
 
 	k.fillFieldMap()
 
@@ -101,8 +101,8 @@ func (k *knowledgeDocumentUpdateConfig) fillFieldMap() {
 	k.fieldMap["next_update_time"] = k.NextUpdateTime
 	k.fieldMap["create_at"] = k.CreateAt
 	k.fieldMap["update_at"] = k.UpdateAt
-	k.fieldMap["deleted_at"] = k.DeletedAt
 	k.fieldMap["fail_reason"] = k.FailReason
+	k.fieldMap["deleted_at"] = k.DeletedAt
 }
 
 func (k knowledgeDocumentUpdateConfig) clone(db *gorm.DB) knowledgeDocumentUpdateConfig {

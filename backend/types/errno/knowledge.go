@@ -64,6 +64,7 @@ const (
 	ErrKnowledgeGetAuthConsentURLFailCode      = 105000041
 	ErrKnowledgeAuthorizeCodeFailCode          = 105000042
 	ErrKnowledgeSearchFileFailCode             = 105000043
+	ErrKnowledgeCacheFileCode                  = 105000044
 )
 
 func init() {
@@ -314,6 +315,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeSearchFileFailCode,
 		"search file failed: {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeCacheFileCode,
+		"cache failed: {msg}",
 		code.WithAffectStability(false),
 	)
 }

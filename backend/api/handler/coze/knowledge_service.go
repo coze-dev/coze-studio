@@ -777,7 +777,11 @@ func PollConnectionTask(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.PollConnectionTaskResponse)
-
+	resp, err = application.KnowledgeSVC.PollConnectionTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 

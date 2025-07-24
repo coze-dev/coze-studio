@@ -9,6 +9,10 @@ type WebCrawlTaskResp struct {
 	SubPageCount int
 	SubLinkUrls  []string
 	FailReason   string
+	FileID       string
+	AuthID       int64
+	FileSize     int64
+	LarkFileType *int32
 }
 
 type WebCrawlTask struct {

@@ -32,7 +32,7 @@ type KnowledgeDocument struct {
 	FailReason    string             `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                                           // 失败原因
 	ParseRule     *DocumentParseRule `gorm:"column:parse_rule;comment:解析+切片规则;serializer:json" json:"parse_rule"`                          // 解析+切片规则
 	TableInfo     *entity.TableInfo  `gorm:"column:table_info;comment:表格信息;serializer:json" json:"table_info"`                             // 表格信息
-	SourceFileID  int64              `gorm:"column:source_file_id;comment:三方数据源id" json:"source_file_id"`                                  // 三方数据源id
+	SourceFileID  int64              `gorm:"column:source_file_id;comment: 三方数据源id" json:"source_file_id"`                                 //  三方数据源id
 }
 
 // TableName KnowledgeDocument's table name

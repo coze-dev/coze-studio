@@ -77,7 +77,7 @@ type knowledgeDocument struct {
 	FailReason    field.String // 失败原因
 	ParseRule     field.Field  // 解析+切片规则
 	TableInfo     field.Field  // 表格信息
-	SourceFileID  field.Int64  // 三方数据源id
+	SourceFileID  field.Int64  //  三方数据源id
 
 	fieldMap map[string]field.Expr
 }

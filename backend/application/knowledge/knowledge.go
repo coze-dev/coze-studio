@@ -1389,7 +1389,22 @@ func (k *KnowledgeApplicationService) SubmitConnectionTask(ctx context.Context, 
 	if len(req.ConnectionFileNodeList) == 0 {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connection file node list is empty"))
 	}
-
+	domainResp, err := k.DomainSVC.SubmitWebUrlTask(ctx, &service.SubmitWebUrlTaskRequest{
+		LarkFileRequest: &service.SearchLarkFileRequest{
+			AuthID:       req.ConnectionFileNodeList[0].GetAuthID(),
+			FileNodeType: dataconnector.FileNodeType(req.ConnectionFileNodeList[0].GetFileNodeType()),
+			Nodes:        slices.Transform(req.ConnectionFileNodeList[0].FileNodeList, convertFileNodeToDomain),
+		},
+	})
+	if err != nil {
+		return resp, err
+	}
+	resp.ConnectionInfoList = make([]*connector.ConnectionInfo, 0)
+	resp.ConnectionInfoList = append(resp.ConnectionInfoList, &connector.ConnectionInfo{
+		ConnectionID: domainResp.AggregateID,
+		Status:       connector.ConnectionStatus_ConnectionStatusEnable,
+		InstanceID:   ptr.Of(domainResp.AggregateID),
+	})
 	return nil, nil
 }
 
@@ -1456,5 +1471,59 @@ func (k *KnowledgeApplicationService) SearchDocument(ctx context.Context, req *c
 	}
 	resp.HasMore = domainResp.SearchResponse.HasMore
 	resp.PageToken = domainResp.SearchResponse.PageToken
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) PollConnectionTask(ctx context.Context, req *connector.PollConnectionTaskRequest) (*connector.PollConnectionTaskResponse, error) {
+	resp := &connector.PollConnectionTaskResponse{}
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.GetInstanceIDList()) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "instance id list is empty"))
+	}
+	resp.ConnectionTask = make([]*connector.ConnectionTask, 0)
+	for _, id := range req.GetInstanceIDList() {
+		domainResp, err := k.DomainSVC.GetWebUrlInfo(ctx, &service.GetWebUrlInfoRequest{
+			AggregateID: id,
+		})
+		if err != nil {
+			return resp, err
+		}
+		conn := &connector.ConnectionTask{}
+		conn.EntityTaskList = make([]*connector.EntityTask, 0)
+		conn.Status = connector.InstanceStatusSuccess
+		conn.InstanceID = id
+		conn.ConnectionID = id
+		for taskID, task := range domainResp.Tasks {
+			if task.Status == entity.WebCrawlTaskStatusFailed {
+				if conn.Status == connector.InstanceStatusSuccess || conn.Status == connector.InstanceStatusProcess {
+					conn.Status = connector.InstanceStatusFailure
+				}
+			}
+			if task.Status == entity.WebCrawlTaskStatusInit {
+				if conn.Status == connector.InstanceStatusSuccess {
+					conn.Status = connector.InstanceStatusProcess
+				}
+			}
+			if task.Status == entity.WebCrawlTaskStatusAborted {
+				conn.Status = connector.InstanceStatusCancel
+			}
+			entityTask := &connector.EntityTask{
+				EntityID:     taskID,
+				ConnectionID: id,
+				FileID:       task.FileID,
+				FileName:     task.Title,
+				Status:       connector.EntityRecordStatus(task.Status.String()),
+				FileNodeType: connector.FileNodeType(ptr.From(task.LarkFileType)),
+				TosKey:       &task.ContentUri,
+				FileUrl:      &task.URL,
+				FileSize:     ptr.Of(fmt.Sprintf("%d", task.FileSize)),
+				InstanceID:   id,
+				RecordID:     taskID,
+			}
+			conn.EntityTaskList = append(conn.EntityTaskList, entityTask)
+		}
+	}
 	return resp, nil
 }

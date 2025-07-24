@@ -30,6 +30,8 @@ func newWebCrawlTask(db *gorm.DB, opts ...gen.DOOption) webCrawlTask {
 	_webCrawlTask.ID = field.NewInt64(tableName, "id")
 	_webCrawlTask.WebURL = field.NewString(tableName, "web_url")
 	_webCrawlTask.Title = field.NewString(tableName, "title")
+	_webCrawlTask.FileSize = field.NewInt64(tableName, "file_size")
+	_webCrawlTask.FileID = field.NewString(tableName, "file_id")
 	_webCrawlTask.SubPageCount = field.NewInt32(tableName, "sub_page_count")
 	_webCrawlTask.ContentTosURL = field.NewString(tableName, "content_tos_url")
 	_webCrawlTask.SublinkTosURI = field.NewString(tableName, "sublink_tos_uri")
@@ -38,27 +40,34 @@ func newWebCrawlTask(db *gorm.DB, opts ...gen.DOOption) webCrawlTask {
 	_webCrawlTask.CreatedAt = field.NewInt64(tableName, "created_at")
 	_webCrawlTask.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_webCrawlTask.DeletedAt = field.NewField(tableName, "deleted_at")
+	_webCrawlTask.AuthID = field.NewInt64(tableName, "auth_id")
+	_webCrawlTask.LarkFileType = field.NewInt32(tableName, "lark_file_type")
 
 	_webCrawlTask.fillFieldMap()
 
 	return _webCrawlTask
 }
 
+// webCrawlTask 网页爬取任务表
 type webCrawlTask struct {
 	webCrawlTaskDo
 
 	ALL           field.Asterisk
-	ID            field.Int64
-	WebURL        field.String
-	Title         field.String
-	SubPageCount  field.Int32
-	ContentTosURL field.String
-	SublinkTosURI field.String
-	Status        field.Int32 // 0: 页面初始化 1: 页面抓取完成 2: 抓取失败
-	FailReason    field.String
-	CreatedAt     field.Int64 //  创建时间，单位 ms
-	UpdatedAt     field.Int64 //  更新时间，单位 ms
-	DeletedAt     field.Field //  删除时间，单位 ms
+	ID            field.Int64  // 主键ID
+	WebURL        field.String // 网页URL
+	Title         field.String // 网页标题
+	FileSize      field.Int64  // 文件大小（字节）
+	FileID        field.String // 文件ID
+	SubPageCount  field.Int32  // 子页面数量
+	ContentTosURL field.String // 内容存储URL
+	SublinkTosURI field.String // 子链接存储URI
+	Status        field.Int32  // 状态: 0-初始化 1-抓取完成 2-抓取失败
+	FailReason    field.String // 失败原因
+	CreatedAt     field.Int64  // 创建时间（毫秒）
+	UpdatedAt     field.Int64  // 更新时间（毫秒）
+	DeletedAt     field.Field  // Delete Time
+	AuthID        field.Int64
+	LarkFileType  field.Int32 // 1:folder;2:doc;3:sheet;4:space
 
 	fieldMap map[string]field.Expr
 }
@@ -78,6 +87,8 @@ func (w *webCrawlTask) updateTableName(table string) *webCrawlTask {
 	w.ID = field.NewInt64(table, "id")
 	w.WebURL = field.NewString(table, "web_url")
 	w.Title = field.NewString(table, "title")
+	w.FileSize = field.NewInt64(table, "file_size")
+	w.FileID = field.NewString(table, "file_id")
 	w.SubPageCount = field.NewInt32(table, "sub_page_count")
 	w.ContentTosURL = field.NewString(table, "content_tos_url")
 	w.SublinkTosURI = field.NewString(table, "sublink_tos_uri")
@@ -86,6 +97,8 @@ func (w *webCrawlTask) updateTableName(table string) *webCrawlTask {
 	w.CreatedAt = field.NewInt64(table, "created_at")
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
+	w.AuthID = field.NewInt64(table, "auth_id")
+	w.LarkFileType = field.NewInt32(table, "lark_file_type")
 
 	w.fillFieldMap()
 
@@ -102,10 +115,12 @@ func (w *webCrawlTask) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (w *webCrawlTask) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 11)
+	w.fieldMap = make(map[string]field.Expr, 15)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["web_url"] = w.WebURL
 	w.fieldMap["title"] = w.Title
+	w.fieldMap["file_size"] = w.FileSize
+	w.fieldMap["file_id"] = w.FileID
 	w.fieldMap["sub_page_count"] = w.SubPageCount
 	w.fieldMap["content_tos_url"] = w.ContentTosURL
 	w.fieldMap["sublink_tos_uri"] = w.SublinkTosURI
@@ -114,6 +129,8 @@ func (w *webCrawlTask) fillFieldMap() {
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
+	w.fieldMap["auth_id"] = w.AuthID
+	w.fieldMap["lark_file_type"] = w.LarkFileType
 }
 
 func (w webCrawlTask) clone(db *gorm.DB) webCrawlTask {

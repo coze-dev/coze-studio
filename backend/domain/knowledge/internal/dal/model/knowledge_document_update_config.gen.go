@@ -18,8 +18,8 @@ type KnowledgeDocumentUpdateConfig struct {
 	NextUpdateTime int64          `gorm:"column:next_update_time;not null;comment:下次更新时间，单位ms" json:"next_update_time"` // 下次更新时间，单位ms
 	CreateAt       int64          `gorm:"column:create_at;not null;comment:创建时间，单位ms" json:"create_at"`                 // 创建时间，单位ms
 	UpdateAt       int64          `gorm:"column:update_at;not null;comment:更新时间，单位ms" json:"update_at"`                 // 更新时间，单位ms
-	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;comment: 删除时间，单位 ms" json:"deleted_at"`                      //  删除时间，单位 ms
 	FailReason     string         `gorm:"column:fail_reason;comment:失败原因" json:"fail_reason"`                           // 失败原因
+	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                      // Delete Time
 }
 
 // TableName KnowledgeDocumentUpdateConfig's table name

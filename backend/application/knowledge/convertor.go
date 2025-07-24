@@ -869,3 +869,33 @@ func convertFileNodeFromDomain(node *dataconnector.FileNode) *connector.FileNode
 	}
 	return &res
 }
+
+func convertFileNodeToDomain(node *connector.FileNode) *dataconnector.FileNode {
+	if node == nil {
+		return nil
+	}
+	res := dataconnector.FileNode{
+		FileID:           node.GetFileID(),
+		FileNodeType:     dataconnector.FileNodeType(node.FileNodeType),
+		FileName:         node.FileName,
+		HasChildrenNodes: node.HasChildrenNodes,
+		Icon:             node.GetIcon(),
+		FileType:         dataconnector.FileType(node.FileType),
+		FileURL:          node.GetFileURL(),
+		SpaceID:          node.SpaceId,
+		SpaceType:        node.SpaceType,
+		ObjToken:         node.ObjToken,
+		ObjType:          node.ObjType,
+		CreateTime:       node.CreateTime,
+		UpdateTime:       node.UpdateTime,
+	}
+	if len(node.ChildrenNodes) != 0 {
+		for _, cnode := range node.ChildrenNodes {
+			if cnode == nil {
+				continue
+			}
+			res.ChildrenNodes = append(res.ChildrenNodes, convertFileNodeToDomain(cnode))
+		}
+	}
+	return &res
+}

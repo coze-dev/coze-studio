@@ -70,3 +70,18 @@ const (
 	WebCrawlTaskStatusFailed  WebCrawlTaskStatus = 2
 	WebCrawlTaskStatusAborted WebCrawlTaskStatus = 3
 )
+
+func (s WebCrawlTaskStatus) String() string {
+	switch s {
+	case WebCrawlTaskStatusInit:
+		return "process"
+	case WebCrawlTaskStatusSuccess:
+		return "success"
+	case WebCrawlTaskStatusFailed:
+		return "failure"
+	case WebCrawlTaskStatusAborted:
+		return "cancel"
+	default:
+		return "unknown"
+	}
+}
