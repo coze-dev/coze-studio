@@ -30,7 +30,6 @@ import (
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -44,6 +43,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner"
 )

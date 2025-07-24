@@ -20,15 +20,14 @@ import (
 	"context"
 	"time"
 
-	modelmgrEntity "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	intelligence "github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -95,7 +94,7 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 			Plugin:         []*bot_common.PluginInfo{},
 			Knowledge: &bot_common.Knowledge{
 				TopK:           ptr.Of(int64(1)),
-				MinScore:       ptr.Of(float64(0.01)),
+				MinScore:       ptr.Of(0.01),
 				SearchStrategy: ptr.Of(bot_common.SearchStrategy_SemanticSearch),
 				RecallStrategy: &bot_common.RecallStrategy{
 					UseNl2sql:  ptr.Of(true),
@@ -115,8 +114,8 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 }
 
 func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*bot_common.ModelInfo, error) {
-	modelResp, err := s.appContext.ModelMgrDomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
-		Status: []modelmgrEntity.ModelEntityStatus{modelmgrEntity.ModelEntityStatusDefault, modelmgrEntity.ModelEntityStatusInUse},
+	modelResp, err := s.appContext.ModelMgr.ListModel(ctx, &modelmgr.ListModelRequest{
+		Status: []modelmgr.ModelStatus{modelmgr.StatusInUse},
 		Limit:  1,
 		Cursor: nil,
 	})
@@ -131,8 +130,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	dm := modelResp.ModelList[0]
 
 	var temperature *float64
-	if tp, ok := dm.FindParameter(modelmgrEntity.Temperature); ok {
-		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.Temperature); ok {
+		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -141,8 +140,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var maxTokens *int32
-	if tp, ok := dm.FindParameter(modelmgrEntity.MaxTokens); ok {
-		t, err := tp.GetInt(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.MaxTokens); ok {
+		t, err := tp.GetInt(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -152,8 +151,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var topP *float64
-	if tp, ok := dm.FindParameter(modelmgrEntity.TopP); ok {
-		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.TopP); ok {
+		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -161,8 +160,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var topK *int32
-	if tp, ok := dm.FindParameter(modelmgrEntity.TopK); ok {
-		t, err := tp.GetInt(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.TopK); ok {
+		t, err := tp.GetInt(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -170,8 +169,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var frequencyPenalty *float64
-	if tp, ok := dm.FindParameter(modelmgrEntity.FrequencyPenalty); ok {
-		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.FrequencyPenalty); ok {
+		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}
@@ -179,8 +178,8 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	var presencePenalty *float64
-	if tp, ok := dm.FindParameter(modelmgrEntity.PresencePenalty); ok {
-		t, err := tp.GetFloat(modelmgrEntity.DefaultTypeBalance)
+	if tp, ok := dm.FindParameter(modelmgr.PresencePenalty); ok {
+		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
 		if err != nil {
 			return nil, err
 		}

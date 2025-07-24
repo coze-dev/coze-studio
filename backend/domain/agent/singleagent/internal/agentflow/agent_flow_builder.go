@@ -26,6 +26,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -38,6 +39,7 @@ type Config struct {
 	Agent        *entity.SingleAgent
 	UserID       string
 	Identity     *entity.AgentIdentity
+	ModelMgr     modelmgr.Manager
 	ModelFactory chatmodel.Factory
 	CPStore      compose.CheckPointStore
 }
@@ -86,7 +88,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
-	modelInfo, err := loadModelInfo(ctx, ptr.From(conf.Agent.ModelInfo.ModelId))
+	modelInfo, err := loadModelInfo(ctx, conf.ModelMgr, ptr.From(conf.Agent.ModelInfo.ModelId))
 	if err != nil {
 		return nil, err
 	}

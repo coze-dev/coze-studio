@@ -28,7 +28,6 @@ import (
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	shortcutCmd "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
@@ -36,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
@@ -55,9 +55,9 @@ type ServiceComponents struct {
 	ImageX      imagex.ImageX
 	EventBus    search.ProjectEventBus
 	CounterRepo repository.CounterRepository
+	ModelMgr    modelmgr.Manager
 
 	KnowledgeDomainSVC   knowledge.Knowledge
-	ModelMgrDomainSVC    modelmgr.Manager
 	PluginDomainSVC      service.PluginService
 	WorkflowDomainSVC    workflow.Service
 	UserDomainSVC        user.User
@@ -76,6 +76,7 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 		CPStore:          c.CPStore,
 		ModelFactory:     chatmodel.NewDefaultFactory(),
+		ModelMgr:         c.ModelMgr,
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

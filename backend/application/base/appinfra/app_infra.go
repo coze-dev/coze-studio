@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/es"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
@@ -43,6 +44,7 @@ type AppDependencies struct {
 	TOSClient             storage.Storage
 	ResourceEventProducer eventbus.Producer
 	AppEventProducer      eventbus.Producer
+	ModelMgr              modelmgr.Manager
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -82,6 +84,11 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	}
 
 	deps.AppEventProducer, err = initAppEventProducer()
+	if err != nil {
+		return nil, err
+	}
+
+	deps.ModelMgr, err = initModelMgr()
 	if err != nil {
 		return nil, err
 	}

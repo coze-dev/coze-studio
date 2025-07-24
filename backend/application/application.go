@@ -47,7 +47,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmessage"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
@@ -60,7 +59,6 @@ import (
 	dataCopyImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/datacopy"
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/knowledge"
 	messageImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/message"
-	modelmgrImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/modelmgr"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
 	searchImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/search"
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
@@ -130,7 +128,6 @@ func Init(ctx context.Context) (err error) {
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
-	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
 	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
 	crossvariables.SetDefaultSVC(variablesImpl.InitDomainService(primaryServices.memorySVC.VariablesDomainSVC))
 	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
@@ -158,10 +155,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	upload.InitService(infra.TOSClient, infra.CacheCli)
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
-	modelMgrSVC, err := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
-	if err != nil {
-		return nil, err
-	}
+	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
@@ -285,7 +279,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,
 		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
-		ModelManager:       b.modelMgrSVC.DomainSVC,
+		ModelManager:       b.infra.ModelMgr,
 		DomainNotifier:     b.eventbus.resourceEventBus,
 		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
 	}
@@ -299,7 +293,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		Cache:                p.basicServices.infra.CacheCli,
 		TosClient:            p.basicServices.infra.TOSClient,
 		ImageX:               p.basicServices.infra.ImageXClient,
-		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
+		ModelMgr:             p.infra.ModelMgr,
 		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
 		EventBus:             p.basicServices.eventbus.projectEventBus,
 		DatabaseDomainSVC:    p.memorySVC.DatabaseDomainSVC,

@@ -31,10 +31,10 @@ import (
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"

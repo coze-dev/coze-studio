@@ -20,16 +20,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type config struct {
 	modelFactory chatmodel.Factory
-	modelInfo    *crossmodelmgr.Model
+	modelInfo    *modelmgr.Model
 }
 
 func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatModel, error) {
@@ -53,12 +52,12 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 	return cm, nil
 }
 
-func loadModelInfo(ctx context.Context, modelID int64) (*crossmodelmgr.Model, error) {
+func loadModelInfo(ctx context.Context, manager modelmgr.Manager, modelID int64) (*modelmgr.Model, error) {
 	if modelID == 0 {
 		return nil, fmt.Errorf("modelID is required")
 	}
 
-	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	models, err := manager.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelID},
 	})
 

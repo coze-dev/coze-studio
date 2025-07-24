@@ -18,7 +18,6 @@ package coze
 
 import (
 	"bytes"
-
 	"context"
 	"errors"
 	"fmt"
@@ -49,7 +48,6 @@ import (
 	"gorm.io/gorm"
 
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
@@ -85,6 +83,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner"
 	mockCrossUser "github.com/coze-dev/coze-studio/backend/internal/mock/crossdomain/crossuser"
@@ -1503,7 +1502,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return chatModel1, nil, nil
 			} else {
@@ -1972,7 +1971,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1706077826 {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return innerModel, nil, nil
@@ -2161,7 +2160,7 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1706077827 {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return outerModel, nil, nil
@@ -2455,7 +2454,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				cm1.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return cm1, nil, nil
@@ -2598,7 +2597,7 @@ func TestParallelInterrupts(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return chatModel1, nil, nil
 			} else {
@@ -3871,7 +3870,7 @@ func TestLLMException(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return mainChatModel, nil, nil
 			} else {
@@ -3938,7 +3937,7 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return mainChatModel, nil, nil
 			} else {

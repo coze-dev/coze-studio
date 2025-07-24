@@ -19,10 +19,9 @@ package modelmgr
 import (
 	"context"
 
-	modelmgrEntity "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
-	modelEntity "github.com/coze-dev/coze-studio/backend/domain/modelmgr/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
@@ -31,18 +30,19 @@ import (
 )
 
 type ModelmgrApplicationService struct {
-	DomainSVC modelmgr.Manager
+	Mgr       modelmgr.Manager
+	TosClient storage.Storage
 }
 
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
 
-func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *developer_api.GetTypeListRequest) (
+func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *developer_api.GetTypeListRequest) (
 	resp *developer_api.GetTypeListResponse, err error,
 ) {
 	// 一般不太可能同时配置这么多模型
 	const modelMaxLimit = 300
 
-	modelResp, err := m.DomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
+	modelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
 		Limit:  modelMaxLimit,
 		Cursor: nil,
 	})
@@ -51,9 +51,15 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	}
 
 	locale := i18n.GetLocale(ctx)
-	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(m *modelEntity.Model) (*developer_api.Model, error) {
-		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
-		return modelDo2To(m, locale)
+	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *modelmgr.Model) (*developer_api.Model, error) {
+		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", mm.DefaultParameters)
+		if mm.IconURI != "" {
+			iconUrl, err := m.TosClient.GetObjectUrl(ctx, mm.IconURI)
+			if err == nil {
+				mm.IconURL = iconUrl
+			}
+		}
+		return modelDo2To(mm, locale)
 	})
 	if err != nil {
 		return nil, err
@@ -68,11 +74,11 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	}, nil
 }
 
-func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Model, error) {
+func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
-		func(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
+		func(param *modelmgr.Parameter) *developer_api.ModelParameter {
 			return parameterDo2To(param, locale)
 		},
 	)
@@ -83,7 +89,7 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		Name:             model.Name,
 		ModelType:        model.ID,
 		ModelClass:       mm.Protocol.TOModelClass(),
-		ModelIcon:        mm.IconURL,
+		ModelIcon:        model.IconURL,
 		ModelInputPrice:  0,
 		ModelOutputPrice: 0,
 		ModelQuota: &developer_api.ModelQuota{
@@ -102,19 +108,19 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		},
 		ModelName:      mm.Name,
 		ModelClassName: mm.Protocol.TOModelClass().String(),
-		IsOffline:      mm.Status != modelmgrEntity.StatusInUse,
+		IsOffline:      mm.Status != modelmgr.StatusInUse,
 		ModelParams:    mps,
 		ModelDesc: []*developer_api.ModelDescGroup{
 			{
 				GroupName: "Description",
-				Desc:      []string{model.Description},
+				Desc:      []string{model.Description.Read(locale)},
 			},
 		},
 		FuncConfig:     nil,
 		EndpointName:   nil,
 		ModelTagList:   nil,
 		IsUpRequired:   nil,
-		ModelBriefDesc: mm.Description.Read(locale),
+		ModelBriefDesc: model.Description.Read(locale),
 		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
 			SeriesName: "热门模型",
 		},
@@ -122,16 +128,16 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		ModelAbility: &developer_api.ModelAbility{
 			CotDisplay:         ptr.Of(mm.Capability.Reasoning),
 			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
-			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalImage)),
-			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalVideo)),
-			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalAudio)),
+			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalImage)),
+			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalVideo)),
+			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalAudio)),
 			SupportMultiModal:  ptr.Of(len(modalSet) > 1),
 			PrefillResp:        ptr.Of(mm.Capability.PrefillResponse),
 		},
 	}, nil
 }
 
-func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
+func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
 	if param == nil {
 		return nil
 	}
@@ -146,19 +152,19 @@ func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *develo
 
 	var custom string
 	var creative, balance, precise *string
-	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeDefault]; ok {
+	if val, ok := param.DefaultVal[modelmgr.DefaultTypeDefault]; ok {
 		custom = val
 	}
 
-	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeCreative]; ok {
+	if val, ok := param.DefaultVal[modelmgr.DefaultTypeCreative]; ok {
 		creative = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypeBalance]; ok {
+	if val, ok := param.DefaultVal[modelmgr.DefaultTypeBalance]; ok {
 		balance = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelmgrEntity.DefaultTypePrecise]; ok {
+	if val, ok := param.DefaultVal[modelmgr.DefaultTypePrecise]; ok {
 		precise = ptr.Of(val)
 	}
 
@@ -168,11 +174,11 @@ func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *develo
 		Desc:  param.Desc.Read(locale),
 		Type: func() developer_api.ModelParamType {
 			switch param.Type {
-			case modelmgrEntity.ValueTypeBoolean:
+			case modelmgr.ValueTypeBoolean:
 				return developer_api.ModelParamType_Boolean
-			case modelmgrEntity.ValueTypeInt:
+			case modelmgr.ValueTypeInt:
 				return developer_api.ModelParamType_Int
-			case modelmgrEntity.ValueTypeFloat:
+			case modelmgr.ValueTypeFloat:
 				return developer_api.ModelParamType_Float
 			default:
 				return developer_api.ModelParamType_String
@@ -191,9 +197,9 @@ func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *develo
 		ParamClass: &developer_api.ModelParamClass{
 			ClassID: func() int32 {
 				switch param.Style.Widget {
-				case modelmgrEntity.WidgetSlider:
+				case modelmgr.WidgetSlider:
 					return 1
-				case modelmgrEntity.WidgetRadioButtons:
+				case modelmgr.WidgetRadioButtons:
 					return 2
 				default:
 					return 0

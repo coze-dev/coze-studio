@@ -20,8 +20,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/model"
-
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 )
 
 type LLMParams struct {
@@ -59,5 +58,5 @@ func SetManager(m Manager) {
 
 //go:generate  mockgen -destination modelmock/model_mock.go --package mockmodel -source model.go
 type Manager interface {
-	GetModel(ctx context.Context, params *LLMParams) (model.BaseChatModel, *crossmodelmgr.Model, error)
+	GetModel(ctx context.Context, params *LLMParams) (model.BaseChatModel, *modelmgr.Model, error)
 }

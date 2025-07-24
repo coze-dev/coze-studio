@@ -22,10 +22,9 @@ import (
 
 	model2 "github.com/cloudwego/eino/components/model"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	chatmodel2 "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
@@ -45,9 +44,9 @@ func NewModelManager(m modelmgr.Manager, f chatmodel.Factory) *ModelManager {
 	}
 }
 
-func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
+func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 	modelID := params.ModelType
-	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	models, err := m.modelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelID},
 	})
 	if err != nil {
@@ -55,7 +54,7 @@ func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (m
 	}
 	var config *chatmodel.Config
 	var protocol chatmodel.Protocol
-	var mdl *crossmodelmgr.Model
+	var mdl *modelmgr.Model
 	for i := range models {
 		md := models[i]
 		if md.ID == modelID {

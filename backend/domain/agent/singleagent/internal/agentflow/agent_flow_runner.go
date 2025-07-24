@@ -27,11 +27,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -59,7 +58,7 @@ type AgentRunner struct {
 	requireCheckpoint bool
 
 	containWfTool bool
-	modelInfo     *crossmodelmgr.Model
+	modelInfo     *modelmgr.Model
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (

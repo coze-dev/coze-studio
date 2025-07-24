@@ -25,9 +25,9 @@ import (
 )
 
 type Config struct {
-	BaseURL string        `json:"base_url,omitempty" yaml:"base_url,omitempty"`
-	APIKey  string        `json:"api_key,omitempty" yaml:"api_key,omitempty"`
-	Timeout time.Duration `json:"timeout,omitempty" yaml:"timeout,omitempty"`
+	BaseURL string        `json:"base_url,omitempty" yaml:"base_url"`
+	APIKey  string        `json:"api_key,omitempty" yaml:"api_key"`
+	Timeout time.Duration `json:"timeout,omitempty" yaml:"timeout"`
 
 	Model            string   `json:"model" yaml:"model"`
 	Temperature      *float32 `json:"temperature,omitempty" yaml:"temperature,omitempty"`
