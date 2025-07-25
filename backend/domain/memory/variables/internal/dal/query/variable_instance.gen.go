@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/internal/dal/model"
 )
 
 func newVariableInstance(db *gorm.DB, opts ...gen.DOOption) variableInstance {

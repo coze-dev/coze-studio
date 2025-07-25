@@ -312,7 +312,7 @@ func (p *CreatePersonalAccessTokenAndPermissionRequest) String() string {
 }
 
 type PersonalAccessToken struct {
-	ID        string `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	ID        int64  `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
 	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	CreatedAt int64  `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
 	UpdatedAt int64  `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
@@ -329,7 +329,7 @@ func NewPersonalAccessToken() *PersonalAccessToken {
 func (p *PersonalAccessToken) InitDefault() {
 }
 
-func (p *PersonalAccessToken) GetID() (v string) {
+func (p *PersonalAccessToken) GetID() (v int64) {
 	return p.ID
 }
 
@@ -387,7 +387,7 @@ func (p *PersonalAccessToken) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -502,8 +502,8 @@ RequiredFieldNotSetError:
 
 func (p *PersonalAccessToken) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -616,10 +616,10 @@ WriteStructEndError:
 }
 
 func (p *PersonalAccessToken) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1506,7 +1506,7 @@ func (p *ListPersonalAccessTokensRequest) String() string {
 }
 
 type PersonalAccessTokenWithCreatorInfo struct {
-	ID        string `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	ID        int64  `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
 	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	CreatedAt int64  `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
 	UpdatedAt int64  `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
@@ -1529,7 +1529,7 @@ func NewPersonalAccessTokenWithCreatorInfo() *PersonalAccessTokenWithCreatorInfo
 func (p *PersonalAccessTokenWithCreatorInfo) InitDefault() {
 }
 
-func (p *PersonalAccessTokenWithCreatorInfo) GetID() (v string) {
+func (p *PersonalAccessTokenWithCreatorInfo) GetID() (v int64) {
 	return p.ID
 }
 
@@ -1617,7 +1617,7 @@ func (p *PersonalAccessTokenWithCreatorInfo) Read(iprot thrift.TProtocol) (err e
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1780,8 +1780,8 @@ RequiredFieldNotSetError:
 
 func (p *PersonalAccessTokenWithCreatorInfo) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1984,10 +1984,10 @@ WriteStructEndError:
 }
 
 func (p *PersonalAccessTokenWithCreatorInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2657,7 +2657,7 @@ func (p *ListPersonalAccessTokensResponseData) String() string {
 
 type DeletePersonalAccessTokenAndPermissionRequest struct {
 	// PAT Id
-	ID string `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	ID int64 `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
 }
 
 func NewDeletePersonalAccessTokenAndPermissionRequest() *DeletePersonalAccessTokenAndPermissionRequest {
@@ -2667,7 +2667,7 @@ func NewDeletePersonalAccessTokenAndPermissionRequest() *DeletePersonalAccessTok
 func (p *DeletePersonalAccessTokenAndPermissionRequest) InitDefault() {
 }
 
-func (p *DeletePersonalAccessTokenAndPermissionRequest) GetID() (v string) {
+func (p *DeletePersonalAccessTokenAndPermissionRequest) GetID() (v int64) {
 	return p.ID
 }
 
@@ -2695,7 +2695,7 @@ func (p *DeletePersonalAccessTokenAndPermissionRequest) Read(iprot thrift.TProto
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2740,8 +2740,8 @@ RequiredFieldNotSetError:
 
 func (p *DeletePersonalAccessTokenAndPermissionRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -2779,10 +2779,10 @@ WriteStructEndError:
 }
 
 func (p *DeletePersonalAccessTokenAndPermissionRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -3004,7 +3004,7 @@ func (p *DeletePersonalAccessTokenAndPermissionResponse) String() string {
 
 type GetPersonalAccessTokenAndPermissionRequest struct {
 	// PAT Id
-	ID string `thrift:"id,1,required" json:"id,required" query:"id,required"`
+	ID int64 `thrift:"id,1,required" json:"id,string,required" query:"id,required"`
 }
 
 func NewGetPersonalAccessTokenAndPermissionRequest() *GetPersonalAccessTokenAndPermissionRequest {
@@ -3014,7 +3014,7 @@ func NewGetPersonalAccessTokenAndPermissionRequest() *GetPersonalAccessTokenAndP
 func (p *GetPersonalAccessTokenAndPermissionRequest) InitDefault() {
 }
 
-func (p *GetPersonalAccessTokenAndPermissionRequest) GetID() (v string) {
+func (p *GetPersonalAccessTokenAndPermissionRequest) GetID() (v int64) {
 	return p.ID
 }
 
@@ -3042,7 +3042,7 @@ func (p *GetPersonalAccessTokenAndPermissionRequest) Read(iprot thrift.TProtocol
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3087,8 +3087,8 @@ RequiredFieldNotSetError:
 
 func (p *GetPersonalAccessTokenAndPermissionRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -3126,10 +3126,10 @@ WriteStructEndError:
 }
 
 func (p *GetPersonalAccessTokenAndPermissionRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ID); err != nil {
+	if err := oprot.WriteI64(p.ID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

@@ -3,7 +3,7 @@
 package agentrun
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

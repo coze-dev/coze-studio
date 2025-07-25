@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package workflow
 
 import (
@@ -5,15 +21,15 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 //go:generate mockgen -destination ../../internal/mock/domain/workflow/interface.go --package mockWorkflow -source interface.go
 type Service interface {
-	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error)
+	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error)
 	Create(ctx context.Context, meta *vo.MetaCreate) (int64, error)
 	Save(ctx context.Context, id int64, schema string) error
 	Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
@@ -73,6 +89,11 @@ type Repository interface {
 	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
 
 	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
+
+	BatchCreateConnectorWorkflowVersion(ctx context.Context, appID, connectorID int64, workflowIDs []int64, version string) error
+
+	IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (b bool, err error)
+
 	compose.CheckPointStore
 	idgen.IDGenerator
 }

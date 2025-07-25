@@ -13,13 +13,12 @@ import (
 	context "context"
 	reflect "reflect"
 
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	workflow "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	entity "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	vo "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -289,27 +288,29 @@ func (mr *MockServiceMockRecorder) GetWorkflowReference(ctx, id any) *gomock.Cal
 }
 
 // ListNodeMeta mocks base method.
-func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
+func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes, locale)
+	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes)
 	ret0, _ := ret[0].(map[string][]*entity.NodeTypeMeta)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]entity.Category)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ListNodeMeta indicates an expected call of ListNodeMeta.
-func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes, locale any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes, locale)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes)
 }
 
 // MGet mocks base method.
-func (m *MockService) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockService) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGet", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGet indicates an expected call of MGet.
@@ -690,20 +691,6 @@ func (mr *MockRepositoryMockRecorder) DraftV2(ctx, id, commitID any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DraftV2", reflect.TypeOf((*MockRepository)(nil).DraftV2), ctx, id, commitID)
 }
 
-// EmitWorkflowCancelSignal mocks base method.
-func (m *MockRepository) EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmitWorkflowCancelSignal", ctx, wfExeID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EmitWorkflowCancelSignal indicates an expected call of EmitWorkflowCancelSignal.
-func (mr *MockRepositoryMockRecorder) EmitWorkflowCancelSignal(ctx, wfExeID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmitWorkflowCancelSignal", reflect.TypeOf((*MockRepository)(nil).EmitWorkflowCancelSignal), ctx, wfExeID)
-}
-
 // GenID mocks base method.
 func (m *MockRepository) GenID(ctx context.Context) (int64, error) {
 	m.ctrl.T.Helper()
@@ -979,12 +966,13 @@ func (mr *MockRepositoryMockRecorder) MDelete(ctx, ids any) *gomock.Call {
 }
 
 // MGetDrafts mocks base method.
-func (m *MockRepository) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockRepository) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetDrafts", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetDrafts indicates an expected call of MGetDrafts.
@@ -994,12 +982,13 @@ func (mr *MockRepositoryMockRecorder) MGetDrafts(ctx, policy any) *gomock.Call {
 }
 
 // MGetLatestVersion mocks base method.
-func (m *MockRepository) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockRepository) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetLatestVersion", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetLatestVersion indicates an expected call of MGetLatestVersion.
@@ -1009,12 +998,13 @@ func (mr *MockRepositoryMockRecorder) MGetLatestVersion(ctx, policy any) *gomock
 }
 
 // MGetMetas mocks base method.
-func (m *MockRepository) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error) {
+func (m *MockRepository) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetMetas", ctx, query)
 	ret0, _ := ret[0].(map[int64]*vo.Meta)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetMetas indicates an expected call of MGetMetas.
@@ -1110,20 +1100,18 @@ func (mr *MockRepositoryMockRecorder) SetTestRunLatestExeID(ctx, wfID, uID, exeI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTestRunLatestExeID", reflect.TypeOf((*MockRepository)(nil).SetTestRunLatestExeID), ctx, wfID, uID, exeID)
 }
 
-// SubscribeWorkflowCancelSignal mocks base method.
-func (m *MockRepository) SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error) {
+// SetWorkflowCancelFlag mocks base method.
+func (m *MockRepository) SetWorkflowCancelFlag(ctx context.Context, wfExeID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeWorkflowCancelSignal", ctx, wfExeID)
-	ret0, _ := ret[0].(<-chan *redis.Message)
-	ret1, _ := ret[1].(func())
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "SetWorkflowCancelFlag", ctx, wfExeID)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// SubscribeWorkflowCancelSignal indicates an expected call of SubscribeWorkflowCancelSignal.
-func (mr *MockRepositoryMockRecorder) SubscribeWorkflowCancelSignal(ctx, wfExeID any) *gomock.Call {
+// SetWorkflowCancelFlag indicates an expected call of SetWorkflowCancelFlag.
+func (mr *MockRepositoryMockRecorder) SetWorkflowCancelFlag(ctx, wfExeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeWorkflowCancelSignal", reflect.TypeOf((*MockRepository)(nil).SubscribeWorkflowCancelSignal), ctx, wfExeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWorkflowCancelFlag", reflect.TypeOf((*MockRepository)(nil).SetWorkflowCancelFlag), ctx, wfExeID)
 }
 
 // TryLockWorkflowExecution mocks base method.

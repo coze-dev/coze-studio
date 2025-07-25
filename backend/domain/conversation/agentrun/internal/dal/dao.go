@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -7,11 +23,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/gopkg/logs"
 )
 
 type RunRecordDAO struct {
@@ -48,28 +64,35 @@ func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecor
 }
 
 func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *entity.UpdateMeta) error {
-
-	updateMeta.UpdatedAt = time.Now().UnixMilli()
-	updateColumn := make(map[string]interface{})
+	po := &model.RunRecord{
+		ID: id,
+	}
 	if updateMeta.Status != "" {
-		updateColumn["status"] = updateMeta.Status
+
+		po.Status = string(updateMeta.Status)
 	}
 	if updateMeta.LastError != nil {
 		errString, err := json.Marshal(updateMeta.LastError)
 		if err != nil {
 			return err
 		}
-		updateColumn["last_error"] = string(errString)
+		po.LastError = string(errString)
 	}
 	if updateMeta.CompletedAt != 0 {
-		updateColumn["completed_at"] = updateMeta.CompletedAt
+
+		po.CompletedAt = updateMeta.CompletedAt
 	}
 	if updateMeta.FailedAt != 0 {
-		updateColumn["failed_at"] = updateMeta.FailedAt
-	}
-	updateColumn["updated_at"] = time.Now().UnixMilli()
 
-	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).UpdateColumns(updateColumn)
+		po.FailedAt = updateMeta.FailedAt
+	}
+	if updateMeta.Usage != nil {
+
+		po.Usage = updateMeta.Usage
+	}
+	po.UpdatedAt = time.Now().UnixMilli()
+
+	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).Updates(po)
 	return err
 }
 
@@ -84,7 +107,7 @@ func (dao *RunRecordDAO) Delete(ctx context.Context, id []int64) error {
 }
 
 func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, sectionID int64, limit int32) ([]*model.RunRecord, error) {
-	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
+	logs.CtxInfo(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
 	m := dao.query.RunRecord
 	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug().Where(m.Status.NotIn(string(entity.RunStatusDeleted)))
 
@@ -137,11 +160,7 @@ func (dao *RunRecordDAO) buildPo2Do(po *model.RunRecord) *entity.RunRecordMeta {
 		UpdatedAt:      po.UpdatedAt,
 		CompletedAt:    po.CompletedAt,
 		FailedAt:       po.FailedAt,
-		Usage: &entity.Usage{
-			LlmPromptTokens:     int64(po.InputTokens),
-			LlmCompletionTokens: int64(po.OutputTokens),
-			LlmTotalTokens:      int64(po.InputTokens + po.OutputTokens),
-		},
+		Usage:          po.Usage,
 	}
 
 	return runMeta

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newWorkflowMeta(db *gorm.DB, opts ...gen.DOOption) workflowMeta {
@@ -52,6 +52,7 @@ func newWorkflowMeta(db *gorm.DB, opts ...gen.DOOption) workflowMeta {
 	return _workflowMeta
 }
 
+// workflowMeta workflow 元信息表，用于记录workflow基本的元信息
 type workflowMeta struct {
 	workflowMetaDo
 

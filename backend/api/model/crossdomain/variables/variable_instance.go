@@ -1,7 +1,7 @@
 package variables
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
 )
 
 type UserVariableMeta struct {

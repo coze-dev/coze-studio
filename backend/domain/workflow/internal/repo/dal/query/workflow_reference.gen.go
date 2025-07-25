@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newWorkflowReference(db *gorm.DB, opts ...gen.DOOption) workflowReference {
@@ -28,31 +28,32 @@ func newWorkflowReference(db *gorm.DB, opts ...gen.DOOption) workflowReference {
 	tableName := _workflowReference.workflowReferenceDo.TableName()
 	_workflowReference.ALL = field.NewAsterisk(tableName)
 	_workflowReference.ID = field.NewInt64(tableName, "id")
+	_workflowReference.ReferredID = field.NewInt64(tableName, "referred_id")
 	_workflowReference.ReferringID = field.NewInt64(tableName, "referring_id")
 	_workflowReference.ReferType = field.NewInt32(tableName, "refer_type")
 	_workflowReference.ReferringBizType = field.NewInt32(tableName, "referring_biz_type")
 	_workflowReference.CreatedAt = field.NewInt64(tableName, "created_at")
-	_workflowReference.DeletedAt = field.NewField(tableName, "deleted_at")
-	_workflowReference.ReferredID = field.NewInt64(tableName, "referred_id")
 	_workflowReference.Status = field.NewInt32(tableName, "status")
+	_workflowReference.DeletedAt = field.NewField(tableName, "deleted_at")
 
 	_workflowReference.fillFieldMap()
 
 	return _workflowReference
 }
 
+// workflowReference workflow 关联关系表，用于记录workflow 直接互相引用关系
 type workflowReference struct {
 	workflowReferenceDo
 
 	ALL              field.Asterisk
 	ID               field.Int64 // workflow id
+	ReferredID       field.Int64 // the id of the workflow that is referred by other entities
 	ReferringID      field.Int64 // the entity id that refers this workflow
 	ReferType        field.Int32 // 1 subworkflow 2 tool
 	ReferringBizType field.Int32 // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        field.Int64 // create time in millisecond
-	DeletedAt        field.Field
-	ReferredID       field.Int64 // the id of the workflow that is referred by other entities
 	Status           field.Int32 // whether this reference currently takes effect. 0: disabled 1: enabled
+	DeletedAt        field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -70,13 +71,13 @@ func (w workflowReference) As(alias string) *workflowReference {
 func (w *workflowReference) updateTableName(table string) *workflowReference {
 	w.ALL = field.NewAsterisk(table)
 	w.ID = field.NewInt64(table, "id")
+	w.ReferredID = field.NewInt64(table, "referred_id")
 	w.ReferringID = field.NewInt64(table, "referring_id")
 	w.ReferType = field.NewInt32(table, "refer_type")
 	w.ReferringBizType = field.NewInt32(table, "referring_biz_type")
 	w.CreatedAt = field.NewInt64(table, "created_at")
-	w.DeletedAt = field.NewField(table, "deleted_at")
-	w.ReferredID = field.NewInt64(table, "referred_id")
 	w.Status = field.NewInt32(table, "status")
+	w.DeletedAt = field.NewField(table, "deleted_at")
 
 	w.fillFieldMap()
 
@@ -95,13 +96,13 @@ func (w *workflowReference) GetFieldByName(fieldName string) (field.OrderExpr, b
 func (w *workflowReference) fillFieldMap() {
 	w.fieldMap = make(map[string]field.Expr, 8)
 	w.fieldMap["id"] = w.ID
+	w.fieldMap["referred_id"] = w.ReferredID
 	w.fieldMap["referring_id"] = w.ReferringID
 	w.fieldMap["refer_type"] = w.ReferType
 	w.fieldMap["referring_biz_type"] = w.ReferringBizType
 	w.fieldMap["created_at"] = w.CreatedAt
-	w.fieldMap["deleted_at"] = w.DeletedAt
-	w.fieldMap["referred_id"] = w.ReferredID
 	w.fieldMap["status"] = w.Status
+	w.fieldMap["deleted_at"] = w.DeletedAt
 }
 
 func (w workflowReference) clone(db *gorm.DB) workflowReference {

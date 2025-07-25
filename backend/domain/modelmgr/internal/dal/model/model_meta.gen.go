@@ -5,8 +5,8 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 	"gorm.io/gorm"
 )
 

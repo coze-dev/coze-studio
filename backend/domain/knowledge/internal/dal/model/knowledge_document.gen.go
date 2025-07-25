@@ -5,7 +5,7 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 	"gorm.io/gorm"
 )
 

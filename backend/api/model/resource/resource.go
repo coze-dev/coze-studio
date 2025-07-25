@@ -3,8 +3,8 @@
 package resource
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

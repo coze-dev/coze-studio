@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package repo
 
 import (
@@ -7,18 +23,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type executeHistoryStoreImpl struct {
@@ -26,7 +44,13 @@ type executeHistoryStoreImpl struct {
 	redis *redis.Client
 }
 
-func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
+func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	var mode int32
 	if execution.Mode == vo.ExecuteModeDebug {
 		mode = 1
@@ -65,6 +89,7 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 		NodeCount:       execution.NodeCount,
 		SyncPattern:     syncPattern,
 		CommitID:        execution.CommitID,
+		LogID:           execution.LogID,
 	}
 
 	if execution.ParentNodeID == nil {
@@ -87,7 +112,13 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 }
 
 func (e *executeHistoryStoreImpl) UpdateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution,
-	allowedStatus []entity.WorkflowExecuteStatus) (int64, entity.WorkflowExecuteStatus, error) {
+	allowedStatus []entity.WorkflowExecuteStatus) (_ int64, _ entity.WorkflowExecuteStatus, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	// Use map[string]any to explicitly specify fields for update
 	updateMap := map[string]any{
 		"status":          int32(execution.Status),
@@ -129,7 +160,14 @@ func (e *executeHistoryStoreImpl) UpdateWorkflowExecution(ctx context.Context, e
 	return info.RowsAffected, execution.Status, nil
 }
 
-func (e *executeHistoryStoreImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error) {
+func (e *executeHistoryStoreImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (
+	_ bool, _ entity.WorkflowExecuteStatus, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	// Update WorkflowExecution set current_resuming_event_id = resumingEventID, status = 1
 	// where id = wfExeID and current_resuming_event_id = 0 and status = 5
 	result, err := e.query.WorkflowExecution.WithContext(ctx).
@@ -166,7 +204,7 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		Where(e.query.WorkflowExecution.ID.Eq(id)).
 		Find()
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to find workflow execution: %v", err)
+		return nil, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to find workflow execution: %v", err))
 	}
 
 	if len(rootExes) == 0 {
@@ -250,7 +288,8 @@ func (e *executeHistoryStoreImpl) CreateNodeExecution(ctx context.Context, execu
 	if execution.Extra != nil {
 		m, err := sonic.MarshalString(execution.Extra)
 		if err != nil {
-			return fmt.Errorf("failed to marshal extra: %w", err)
+			return vo.WrapError(errno.ErrSerializationDeserializationFail,
+				fmt.Errorf("failed to marshal extra: %w", err))
 		}
 		nodeExec.Extra = m
 	}
@@ -258,7 +297,27 @@ func (e *executeHistoryStoreImpl) CreateNodeExecution(ctx context.Context, execu
 	return e.query.NodeExecution.WithContext(ctx).Create(nodeExec)
 }
 
-func (e *executeHistoryStoreImpl) UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
+func (e *executeHistoryStoreImpl) UpdateNodeExecutionStreaming(ctx context.Context, execution *entity.NodeExecution) error {
+	if execution.Output == nil {
+		return nil
+	}
+
+	key := fmt.Sprintf(nodeExecOutputKey, execution.ID)
+
+	if err := e.redis.WithContext(ctx).Set(key, execution.Output, nodeExecDataExpiry).Err(); err != nil {
+		return vo.WrapError(errno.ErrRedisError, err)
+	}
+
+	return nil
+}
+
+func (e *executeHistoryStoreImpl) UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	nodeExec := &model.NodeExecution{
 		Status:     int32(execution.Status),
 		Input:      ptr.FromOrDefault(execution.Input, ""),
@@ -286,7 +345,7 @@ func (e *executeHistoryStoreImpl) UpdateNodeExecution(ctx context.Context, execu
 		nodeExec.SubExecuteID = execution.SubWorkflowExecution.ID
 	}
 
-	_, err := e.query.NodeExecution.WithContext(ctx).Where(e.query.NodeExecution.ID.Eq(execution.ID)).Updates(nodeExec)
+	_, err = e.query.NodeExecution.WithContext(ctx).Where(e.query.NodeExecution.ID.Eq(execution.ID)).Updates(nodeExec)
 	if err != nil {
 		return fmt.Errorf("failed to update node execution: %w", err)
 	}
@@ -294,8 +353,14 @@ func (e *executeHistoryStoreImpl) UpdateNodeExecution(ctx context.Context, execu
 	return nil
 }
 
-func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int64) error {
-	_, err := e.query.NodeExecution.WithContext(ctx).
+func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int64) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
+	_, err = e.query.NodeExecution.WithContext(ctx).
 		Where(e.query.NodeExecution.ExecuteID.Eq(wfExeID),
 			e.query.NodeExecution.Status.In(int32(entity.NodeRunning))).
 		Updates(map[string]interface{}{
@@ -312,7 +377,7 @@ func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfE
 		Updates(map[string]interface{}{
 			"status":      int32(entity.WorkflowCancel),
 			"fail_reason": "workflow cancel by user",
-			"error_code":  "-1", // TODO: give it the proper code
+			"error_code":  strconv.Itoa(errno.ErrWorkflowCanceledByUser),
 		})
 	if err != nil {
 		return fmt.Errorf("failed to cancel workflow execution: %w", err)
@@ -320,7 +385,7 @@ func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfE
 	return nil
 }
 
-func convertNodeExecution(nodeExec *model.NodeExecution) *entity.NodeExecution {
+func convertNodeExecution(ctx context.Context, nodeExec *model.NodeExecution) *entity.NodeExecution {
 	nodeExeEntity := &entity.NodeExecution{
 		ID:                   nodeExec.ID,
 		ExecuteID:            nodeExec.ExecuteID,
@@ -355,7 +420,7 @@ func convertNodeExecution(nodeExec *model.NodeExecution) *entity.NodeExecution {
 	if len(nodeExec.Extra) > 0 {
 		var extra entity.NodeExtra
 		if err := sonic.UnmarshalString(nodeExec.Extra, &extra); err != nil {
-			logs.Errorf("failed to unmarshal extra: %v", err)
+			logs.CtxError(ctx, "failed to unmarshal extra: %v", err)
 		} else {
 			nodeExeEntity.Extra = &extra
 		}
@@ -369,15 +434,41 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionsByWfExeID(ctx context.Context
 		Where(e.query.NodeExecution.ExecuteID.Eq(wfExeID)).
 		Find()
 	if err != nil {
-		return nil, fmt.Errorf("failed to find node executions: %v", err)
+		return nil, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to find node executions: %v", err))
 	}
 
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := convertNodeExecution(nodeExec)
+		nodeExeEntity := convertNodeExecution(ctx, nodeExec)
+		// For nodes that are currently running and support streaming, their complete information needs to be retrieved from Redis.
+		if nodeExeEntity.Status == entity.NodeRunning {
+			meta := entity.NodeMetaByNodeType(nodeExeEntity.NodeType)
+			if meta.ExecutableMeta.IncrementalOutput {
+				if err := e.loadNodeExecutionFromRedis(ctx, nodeExeEntity); err != nil {
+					logs.CtxError(ctx, "failed to load node execution from redis: %v", err)
+				}
+			}
+		}
 		result = append(result, nodeExeEntity)
 	}
-
 	return result, nil
+}
+
+func (e *executeHistoryStoreImpl) loadNodeExecutionFromRedis(ctx context.Context, nodeExeEntity *entity.NodeExecution) error {
+	key := fmt.Sprintf(nodeExecOutputKey, nodeExeEntity.ID)
+
+	result, err := e.redis.WithContext(ctx).Get(key).Result()
+	if err != nil {
+		if errors.Is(err, redisV6.Nil) {
+			return nil
+		}
+		return vo.WrapError(errno.ErrRedisError, err)
+	}
+
+	if result != "" {
+		nodeExeEntity.Output = &result
+	}
+
+	return nil
 }
 
 func (e *executeHistoryStoreImpl) GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error) {
@@ -388,10 +479,10 @@ func (e *executeHistoryStoreImpl) GetNodeExecution(ctx context.Context, wfExeID 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, false, nil
 		}
-		return nil, false, fmt.Errorf("failed to find node executions: %w", err)
+		return nil, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to find node executions: %w", err))
 	}
 
-	nodeExeEntity := convertNodeExecution(nodeExec)
+	nodeExeEntity := convertNodeExecution(ctx, nodeExec)
 
 	return nodeExeEntity, true, nil
 }
@@ -402,11 +493,11 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionByParent(ctx context.Context, 
 		Where(e.query.NodeExecution.ExecuteID.Eq(wfExeID), e.query.NodeExecution.ParentNodeID.Eq(parentNodeID)).
 		Find()
 	if err != nil {
-		return nil, fmt.Errorf("failed to find node executions: %w", err)
+		return nil, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to find node executions: %w", err))
 	}
 	var result []*entity.NodeExecution
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := convertNodeExecution(nodeExec)
+		nodeExeEntity := convertNodeExecution(ctx, nodeExec)
 		result = append(result, nodeExeEntity)
 	}
 	return result, nil
@@ -415,21 +506,28 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionByParent(ctx context.Context, 
 const (
 	testRunLastExeKey   = "test_run_last_exe_id:%d:%d"
 	nodeDebugLastExeKey = "node_debug_last_exe_id:%d:%s:%d"
+	nodeExecDataExpiry  = 24 * time.Hour // keep it for 24 hours
+	nodeExecOutputKey   = "wf:node_exec:output:%d"
 )
 
 func (e *executeHistoryStoreImpl) SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error {
 	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
-	return e.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+	err := e.redis.WithContext(ctx).Set(key, exeID, 7*24*time.Hour).Err()
+	if err != nil {
+		return vo.WrapError(errno.ErrRedisError, err)
+	}
+
+	return nil
 }
 
 func (e *executeHistoryStoreImpl) GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error) {
 	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
-	exeIDStr, err := e.redis.Get(ctx, key).Result()
+	exeIDStr, err := e.redis.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return 0, nil
 		}
-		return 0, err
+		return 0, vo.WrapError(errno.ErrRedisError, err)
 	}
 	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
 	if err != nil {
@@ -440,17 +538,21 @@ func (e *executeHistoryStoreImpl) GetTestRunLatestExeID(ctx context.Context, wfI
 
 func (e *executeHistoryStoreImpl) SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error {
 	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
-	return e.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+	err := e.redis.WithContext(ctx).Set(key, exeID, 7*24*time.Hour).Err()
+	if err != nil {
+		return vo.WrapError(errno.ErrRedisError, err)
+	}
+	return nil
 }
 
 func (e *executeHistoryStoreImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error) {
 	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
-	exeIDStr, err := e.redis.Get(ctx, key).Result()
+	exeIDStr, err := e.redis.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return 0, nil
 		}
-		return 0, err
+		return 0, vo.WrapError(errno.ErrRedisError, err)
 	}
 	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
 	if err != nil {

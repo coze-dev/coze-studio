@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { inject, injectable } from 'inversify';
 import { type FormModelV2 } from '@flowgram-adapter/free-layout-editor';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
@@ -6,8 +22,8 @@ import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowNodeData } from '@coze-workflow/nodes';
 import { workflowApi, StandardNodeType, BlockInput } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type GetApiDetailRequest } from '@coze-arch/bot-api/workflow_api';
 import { Modal } from '@coze-arch/coze-design';
+import { type GetApiDetailRequest } from '@coze-arch/bot-api/workflow_api';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { isNodeV2 } from '@/nodes-v2';
@@ -178,25 +194,35 @@ export const setApiNodeVersion = (node: FlowNodeEntity, version: string) => {
   }
 };
 
-export const setLLMWorkflowFCVersion = (
+const setLLMWorkflowFCVersion = (
   node: FlowNodeEntity,
   workflowId: string,
   version: string,
 ) => {
-  const current = getLLMWorkflowFCById(node, workflowId);
-  if (current) {
-    current.workflow_version = version;
+  const form = getNodeFormModelV2(node);
+  const value = form.getValueIn(LLM_WORKFLOW_FC_PATH);
+  if (Array.isArray(value)) {
+    const idx = value.findIndex(i => i.workflow_id === workflowId);
+    if (idx > -1) {
+      value[idx].workflow_version = version;
+      form.setValueIn(LLM_WORKFLOW_FC_PATH, [...value]);
+    }
   }
 };
 
-export const setLLMApiFCVersion = (
+const setLLMApiFCVersion = (
   node: FlowNodeEntity,
   pluginId: string,
   version: string,
 ) => {
-  const current = getLLMApiFCById(node, pluginId);
-  if (current) {
-    current.plugin_version = version;
+  const form = getNodeFormModelV2(node);
+  const value = form.getValueIn(LLM_API_FC_PATH);
+  if (Array.isArray(value)) {
+    const idx = value.findIndex(i => i.plugin_id === pluginId);
+    if (idx > -1) {
+      value[idx].plugin_version = version;
+      form.setValueIn(LLM_API_FC_PATH, [...value]);
+    }
   }
 };
 

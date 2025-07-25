@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package variable
 
 import (
@@ -10,14 +26,16 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	variablesModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
-	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	variablesModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/variables"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type varStore struct {
@@ -82,7 +100,7 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...vari
 		BizType:      bizType,
 		BizID:        bizID,
 		ConnectorID:  opt.StoreInfo.ConnectorID,
-		ConnectorUID: strconv.FormatInt(opt.StoreInfo.ConnectorUID, 10),
+		ConnectorUID: opt.StoreInfo.ConnectorUID,
 	})
 	if len(path) == 0 {
 		return nil, errors.New("field path is required")
@@ -198,10 +216,10 @@ func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, o
 	}
 
 	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
-		BizType:     bizType,
-		BizID:       bizID,
-		ConnectorID: opt.StoreInfo.ConnectorID,
-		//ConnectorUID:
+		BizType:      bizType,
+		BizID:        bizID,
+		ConnectorID:  opt.StoreInfo.ConnectorID,
+		ConnectorUID: opt.StoreInfo.ConnectorUID,
 	})
 
 	if len(path) == 0 {
@@ -246,62 +264,118 @@ func NewVariablesMetaGetter(vs variables.Variables) variable.VariablesMetaGetter
 	}
 }
 
-func (v variablesMetaGetter) GetProjectVariablesMeta(ctx context.Context, projectID, version string) ([]*variable.VarMeta, error) {
-	varsMeta, err := v.vs.GetProjectVariablesMeta(ctx, projectID, version)
+func (v variablesMetaGetter) GetAppVariablesMeta(ctx context.Context, id, version string) (m map[string]*vo.TypeInfo, err error) {
+	var varMetas *entity.VariablesMeta
+	varMetas, err = v.vs.GetProjectVariablesMeta(ctx, id, version)
 	if err != nil {
 		return nil, err
 	}
-	metas := make([]*variable.VarMeta, 0, len(varsMeta.Variables))
 
-	for _, vm := range varsMeta.Variables {
-		varSchema, err := vm.GetSchema(ctx)
+	m = make(map[string]*vo.TypeInfo, len(varMetas.Variables))
+	for _, v := range varMetas.Variables {
+		varSchema, err := v.GetSchema(ctx)
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
+		}
+
+		t, err := varMeta2TypeInfo(varSchema)
 		if err != nil {
 			return nil, err
 		}
 
-		varMeta := &variable.VarMeta{
-			Name: vm.Keyword,
-		}
-
-		var typeInfo *variable.VarTypeInfo
-		if varSchema.IsBooleanType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeBoolean,
-			}
-		}
-		if varSchema.IsStringType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeString,
-			}
-		}
-		if varSchema.IsNumberType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeFloat,
-			}
-		}
-		if varSchema.IsIntegerType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeInteger,
-			}
-		}
-		// array and object only focuses on the first layer of type validation
-		if varSchema.IsArrayType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeArray,
-			}
-		}
-		if varSchema.IsObjectType() {
-			typeInfo = &variable.VarTypeInfo{
-				Type: variable.VarTypeObject,
-			}
-		}
-		if typeInfo != nil {
-			varMeta.TypeInfo = *typeInfo
-			metas = append(metas, varMeta)
-		}
+		m[v.Keyword] = t
 	}
 
-	return metas, nil
+	return m, nil
+}
+
+func (v variablesMetaGetter) GetAgentVariablesMeta(ctx context.Context, id int64, version string) (m map[string]*vo.TypeInfo, err error) {
+	var varMetas *entity.VariablesMeta
+	varMetas, err = v.vs.GetAgentVariableMeta(ctx, id, version)
+	if err != nil {
+		return nil, err
+	}
+
+	m = make(map[string]*vo.TypeInfo, len(varMetas.Variables))
+	for _, v := range varMetas.Variables {
+		varSchema, err := v.GetSchema(ctx)
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
+		}
+
+		t, err := varMeta2TypeInfo(varSchema)
+		if err != nil {
+			return nil, err
+		}
+
+		m[v.Keyword] = t
+	}
+
+	return m, nil
+}
+
+func varMeta2TypeInfo(v *entity.VariableMetaSchema) (*vo.TypeInfo, error) {
+	if v.IsBooleanType() {
+		return &vo.TypeInfo{
+			Type: vo.DataTypeBoolean,
+		}, nil
+	}
+	if v.IsStringType() {
+		return &vo.TypeInfo{
+			Type: vo.DataTypeString,
+		}, nil
+	}
+	if v.IsNumberType() {
+		return &vo.TypeInfo{
+			Type: vo.DataTypeNumber,
+		}, nil
+	}
+	if v.IsIntegerType() {
+		return &vo.TypeInfo{
+			Type: vo.DataTypeInteger,
+		}, nil
+	}
+	if v.IsArrayType() {
+		if len(v.Schema) == 0 {
+			return nil, vo.WrapError(errno.ErrVariablesAPIFail, fmt.Errorf("array type should contain element type info"))
+		}
+
+		elemType, err := entity.NewVariableMetaSchema(v.Schema)
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
+		}
+
+		et, err := varMeta2TypeInfo(elemType)
+		if err != nil {
+			return nil, err
+		}
+
+		return &vo.TypeInfo{
+			Type:         vo.DataTypeArray,
+			ElemTypeInfo: et,
+		}, nil
+	}
+	if v.IsObjectType() {
+		ps, err := v.GetObjectProperties(v.Schema)
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
+		}
+
+		properties := make(map[string]*vo.TypeInfo, len(ps))
+		for k, p := range ps {
+			pt, err := varMeta2TypeInfo(p)
+			if err != nil {
+				return nil, err
+			}
+			properties[k] = pt
+		}
+
+		return &vo.TypeInfo{
+			Type:       vo.DataTypeObject,
+			Properties: properties,
+		}, nil
+	}
+	return nil, vo.WrapError(errno.ErrVariablesAPIFail, fmt.Errorf("invalid variable type"))
 }
 
 func takeMapValue(m map[string]any, path []string) (any, bool) {

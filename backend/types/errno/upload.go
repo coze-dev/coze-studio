@@ -1,6 +1,22 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package errno
 
-import "code.byted.org/flow/opencoze/backend/pkg/errorx/code"
+import "code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 
 // Upload: 104 000 000 ~ 104 999 999
 const (
@@ -13,6 +29,9 @@ const (
 	ErrUploadEmptyFileCode                   = 104000006
 	ErrUploadFileUploadGreaterOneCode        = 104000007
 	ErrUploadSystemErrorCode                 = 104000008
+
+	ErrUploadHostNotExistCode       = 104000009
+	ErrUploadHostSchemaNotExistCode = 104000010
 )
 
 func init() {
@@ -67,6 +86,16 @@ func init() {
 	code.Register(
 		ErrUploadSystemErrorCode,
 		"system error : {msg}",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrUploadHostNotExistCode,
+		"upload host not exist",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrUploadHostSchemaNotExistCode,
+		"upload host schema not exist",
 		code.WithAffectStability(false),
 	)
 

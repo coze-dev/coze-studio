@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -6,10 +22,9 @@ import (
 	"strconv"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
 )
 
 type selectorCallbackField struct {
@@ -64,7 +79,7 @@ func (s *NodeSchema) toSelectorCallbackInput(sc *WorkflowSchema) func(_ context.
 						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 					}
 					if source.Source.Ref.VariableType != nil {
-						if *source.Source.Ref.VariableType == variable.ParentIntermediate {
+						if *source.Source.Ref.VariableType == vo.ParentIntermediate {
 							parentNodeKey, ok := sc.Hierarchy[s.Key]
 							if !ok {
 								return nil, fmt.Errorf("failed to find parent node key of %s", s.Key)
@@ -75,10 +90,11 @@ func (s *NodeSchema) toSelectorCallbackInput(sc *WorkflowSchema) func(_ context.
 								Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 								Value: leftV,
 							}
-						} else { // TODO: double check format for variables, excluding intermediate vars
+						} else {
 							output[index].Conditions[0].Left = selectorCallbackField{
-								Key:  strings.Join(source.Source.Ref.FromPath, "."),
-								Type: s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+								Key:   "",
+								Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+								Value: leftV,
 							}
 						}
 					} else {
@@ -135,7 +151,7 @@ func (s *NodeSchema) toSelectorCallbackInput(sc *WorkflowSchema) func(_ context.
 						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 					}
 					if source.Source.Ref.VariableType != nil {
-						if *source.Source.Ref.VariableType == variable.ParentIntermediate {
+						if *source.Source.Ref.VariableType == vo.ParentIntermediate {
 							parentNodeKey, ok := sc.Hierarchy[s.Key]
 							if !ok {
 								return nil, fmt.Errorf("failed to find parent node key of %s", s.Key)
@@ -146,10 +162,11 @@ func (s *NodeSchema) toSelectorCallbackInput(sc *WorkflowSchema) func(_ context.
 								Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
 								Value: leftV,
 							}
-						} else { // TODO: double check format for variables, excluding intermediate vars
+						} else {
 							output[index].Conditions[clauseIndex].Left = selectorCallbackField{
-								Key:  strings.Join(source.Source.Ref.FromPath, "."),
-								Type: s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+								Key:   "",
+								Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+								Value: leftV,
 							}
 						}
 					} else {

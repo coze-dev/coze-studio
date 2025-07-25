@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -13,14 +29,14 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/impl/rdb"
-	producerMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/eventbus"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
+	producerMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/eventbus"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func MockKnowledgeSVC(t *testing.T) Knowledge {

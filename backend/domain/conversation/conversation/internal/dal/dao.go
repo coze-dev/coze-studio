@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -7,13 +23,13 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type ConversationDAO struct {
@@ -62,13 +78,13 @@ func (dao *ConversationDAO) GetByID(ctx context.Context, id int64) (*entity.Conv
 
 func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64, error) {
 	updateColumn := make(map[string]interface{})
-
+	table := dao.query.Conversation
 	newSectionID, err := dao.idgen.GenID(ctx)
 	if err != nil {
 		return 0, err
 	}
-	updateColumn["section_id"] = newSectionID
-	updateColumn["updated_at"] = time.Now().UnixMilli()
+	updateColumn[table.SectionID.ColumnName().String()] = newSectionID
+	updateColumn[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 
 	_, err = dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
 	if err != nil {
@@ -78,9 +94,11 @@ func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64,
 }
 
 func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error) {
+	table := dao.query.Conversation
+
 	updateColumn := make(map[string]interface{})
-	updateColumn["updated_at"] = time.Now().UnixMilli()
-	updateColumn["status"] = conversation.ConversationStatusDeleted
+	updateColumn[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
+	updateColumn[table.Status.ColumnName().String()] = conversation.ConversationStatusDeleted
 
 	updateRes, err := dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
 	if err != nil {
@@ -153,8 +171,8 @@ func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation 
 		Scene:       int32(conversation.Scene),
 		Status:      int32(conversation.Status),
 		Ext:         conversation.Ext,
-		CreatedAt:   conversation.CreatedAt,
-		UpdatedAt:   conversation.UpdatedAt,
+		CreatedAt:   time.Now().UnixMilli(),
+		UpdatedAt:   time.Now().UnixMilli(),
 	}
 }
 

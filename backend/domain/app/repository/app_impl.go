@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package repository
 
 import (
@@ -9,16 +25,16 @@ import (
 	"sync"
 	"time"
 
-	redisV9 "github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
+	"code.byted.org/gopkg/logs"
 )
 
 type appRepoImpl struct {
@@ -34,7 +50,7 @@ type appRepoImpl struct {
 type APPRepoComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
-	CacheCli *redisV9.Client
+	CacheCli *redis.Client
 }
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {
@@ -86,8 +102,8 @@ func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecor
 	var app *entity.APP
 	if req.RecordID != nil {
 		app, exist, err = a.appReleaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
-	} else if req.Oldest {
-		app, exist, err = a.appReleaseRecordDAO.GetOldestReleaseRecord(ctx, req.APPID)
+	} else if req.OldestSuccess {
+		app, exist, err = a.appReleaseRecordDAO.GetOldestReleaseSuccessRecord(ctx, req.APPID)
 	} else {
 		app, exist, err = a.appReleaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
 	}
@@ -125,14 +141,14 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, record *entity
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()

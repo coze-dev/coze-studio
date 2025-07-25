@@ -1,25 +1,35 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package test
 
 import (
 	"context"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
-	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/textprocessor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableaggregator"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestAddSelector(t *testing.T) {
@@ -27,7 +37,9 @@ func TestAddSelector(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
-	}
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		}}
 
 	exit := &compose2.NodeSchema{
 		Key:  entity.ExitNodeKey,
@@ -294,6 +306,9 @@ func TestVariableAggregator(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		},
 	}
 
 	exit := &compose2.NodeSchema{
@@ -436,6 +451,9 @@ func TestTextProcessor(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		exit := &compose2.NodeSchema{
@@ -512,6 +530,9 @@ func TestTextProcessor(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		exit := &compose2.NodeSchema{
@@ -609,106 +630,5 @@ func TestTextProcessor(t *testing.T) {
 		assert.Equal(t, map[string]any{
 			"output": "true_1_a",
 		}, out)
-	})
-}
-
-func TestHTTPRequester(t *testing.T) {
-	t.Run("post method text/plain", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				t.Fatal(err)
-				return
-			}
-			defer func() {
-				_ = r.Body.Close()
-			}()
-			assert.Equal(t, "text v1 v2", string(body))
-			w.WriteHeader(http.StatusOK)
-			response := map[string]string{
-				"message": "success",
-			}
-			bs, _ := sonic.Marshal(response)
-			_, _ = w.Write(bs)
-
-		}))
-		defer ts.Close()
-		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
-
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-		}
-
-		exit := &compose2.NodeSchema{
-			Key:  entity.ExitNodeKey,
-			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
-			},
-			InputSources: []*vo.FieldInfo{
-				{
-					Path: compose.FieldPath{"body"},
-					Source: vo.FieldSource{
-						Ref: &vo.Reference{
-							FromNodeKey: "hr",
-							FromPath:    compose.FieldPath{"body"},
-						},
-					},
-				},
-			},
-		}
-
-		ns := &compose2.NodeSchema{
-			Key:  "hr",
-			Type: entity.NodeTypeHTTPRequester,
-			Configs: map[string]any{
-				"URLConfig": httprequester.URLConfig{
-					Tpl: urlTpl,
-				},
-				"BodyConfig": httprequester.BodyConfig{
-					BodyType: httprequester.BodyTypeRawText,
-					TextPlainConfig: &httprequester.TextPlainConfig{
-						Tpl: "text {{block_output_start.v1}} {{block_output_start.v2}}",
-					},
-				},
-				"Method":     http.MethodPost,
-				"RetryTimes": uint64(1),
-				"Timeout":    2 * time.Second,
-			},
-		}
-
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
-				entry,
-				ns,
-				exit,
-			},
-			Connections: []*compose2.Connection{
-				{
-					FromNode: entry.Key,
-					ToNode:   "hr",
-				},
-				{
-					FromNode: "hr",
-					ToNode:   exit.Key,
-				},
-			},
-		}
-
-		ws.Init()
-
-		ctx := context.Background()
-		wf, err := compose2.NewWorkflow(ctx, ws)
-		assert.NoError(t, err)
-
-		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
-			"post_text_plain": "post_text_plain",
-			"v1":              "v1",
-			"v2":              "v2",
-		})
-		assert.NoError(t, err)
-
-		assert.Equal(t, `{"message":"success"}`, out["body"])
 	})
 }

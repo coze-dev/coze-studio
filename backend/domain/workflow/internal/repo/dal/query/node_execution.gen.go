@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
@@ -54,6 +54,7 @@ func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
 	return _nodeExecution
 }
 
+// nodeExecution node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息
 type nodeExecution struct {
 	nodeExecutionDo
 

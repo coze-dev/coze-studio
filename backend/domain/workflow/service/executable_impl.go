@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -9,19 +25,19 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type executableImpl struct {
@@ -43,6 +59,14 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	})
 	if err != nil {
 		return nil, "", err
+	}
+
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	c := &vo.Canvas{}
@@ -70,14 +94,16 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 		config.AppID = wfEntity.AppID
 	}
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
-		}
+		return nil, "", err
+	} else if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -180,6 +206,14 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 		return 0, err
 	}
 
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -207,14 +241,16 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	config.CommitID = wfEntity.CommitID
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, err
+	} else if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -230,7 +266,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	if config.Mode == vo.ExecuteModeDebug {
 		if err = i.repo.SetTestRunLatestExeID(ctx, wfEntity.ID, config.Operator, executeID); err != nil {
-			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
+			logs.CtxError(ctx, "failed to set test run latest exe id: %v", err)
 		}
 	}
 
@@ -255,6 +291,14 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, err
 	}
 
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -270,14 +314,16 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, err
+	} else if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -299,7 +345,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 	if config.Mode == vo.ExecuteModeNodeDebug {
 		if err = i.repo.SetNodeDebugLatestExeID(ctx, wfEntity.ID, nodeID, config.Operator, executeID); err != nil {
-			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
+			logs.CtxError(ctx, "failed to set node debug latest exe id: %v", err)
 		}
 	}
 
@@ -314,6 +360,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	var (
 		err      error
 		wfEntity *entity.Workflow
+		ws       *nodes.ConversionWarnings
 	)
 
 	wfEntity, err = i.Get(ctx, &vo.GetPolicy{
@@ -325,6 +372,14 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	c := &vo.Canvas{}
@@ -354,14 +409,16 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	config.CommitID = wfEntity.CommitID
 
-	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	input, ws, err = nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return nil, err
+	} else if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -485,7 +542,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 	}
 
 	if !found {
-		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+		return nil, nil, fmt.Errorf("try getting workflow exe for exeID : %d, but not found", exeID)
 	}
 
 	if wfExe.Mode != vo.ExecuteModeNodeDebug {
@@ -524,7 +581,8 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
 	if err != nil {
-		return nil, false, err
+		logs.CtxError(ctx, "[GetLatestTestRunInput] failed to get node execution from redis, wfID: %d, err: %v", wfID, err)
+		return nil, false, nil
 	}
 
 	if exeID == 0 {
@@ -533,7 +591,8 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 
 	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
-		return nil, false, err
+		logs.CtxError(ctx, "[GetLatestTestRunInput] failed to get node execution, exeID: %d, err: %v", exeID, err)
+		return nil, false, nil
 	}
 
 	return nodeExe, true, nil
@@ -543,7 +602,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxError(ctx, "[GetLatestNodeDebugInput] failed to get node execution from redis, wfID: %d, nodeID: %s, err: %v",
+			wfID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	if exeID == 0 {
@@ -552,7 +613,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 
 	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxError(ctx, "[GetLatestNodeDebugInput] failed to get node execution, exeID: %d, nodeID: %s, err: %v",
+			exeID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	return nodeExe, innerExe, true, nil
@@ -859,5 +922,17 @@ func (i *impl) Cancel(ctx context.Context, wfExeID int64, wfID, spaceID int64) e
 	}
 
 	// emit cancel signal just in case the execution is running
-	return i.repo.EmitWorkflowCancelSignal(ctx, wfExeID)
+	return i.repo.SetWorkflowCancelFlag(ctx, wfExeID)
+}
+
+func (i *impl) checkApplicationWorkflowReleaseVersion(ctx context.Context, appID, connectorID, workflowID int64, version string) error {
+	ok, err := i.repo.IsApplicationConnectorWorkflowVersion(ctx, connectorID, workflowID, version)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return vo.WrapError(errno.ErrWorkflowSpecifiedVersionNotFound, fmt.Errorf("applcaition id %v, workflow id %v,connector id %v not have version %v", appID, workflowID, connectorID, version))
+	}
+
+	return nil
 }

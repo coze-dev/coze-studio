@@ -8,6 +8,7 @@
   "exports": {
     "./components/*": "./src/components/*/index.tsx",
     "./constants": "./src/constants/index.ts",
+    "./features/*": "./src/features/*/index.tsx",
     "./types": "./src/types/index.ts"
   },
   "main": "src/index.tsx",
@@ -18,6 +19,9 @@
       ],
       "constants": [
         "./src/constants/index.ts"
+      ],
+      "features/*": [
+        "./src/features/*/index.tsx"
       ],
       "types": [
         "./src/types/index.ts"

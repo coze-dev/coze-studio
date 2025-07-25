@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -5,12 +21,12 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
 )
 
 type Knowledge interface {
@@ -32,7 +48,7 @@ type Knowledge interface {
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
 	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
 	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (response *ValidateTableSchemaResponse, err error)
-	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error) // todo: 这个接口是否还有必要保留？
+	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error)
 	GetImportDataTableSchema(ctx context.Context, request *ImportDataTableSchemaRequest) (response *TableSchemaResponse, err error)
 
 	CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error)
@@ -156,6 +172,7 @@ type DocumentProgress struct {
 	Status        entity.DocumentStatus
 	StatusMsg     string
 	RemainingSec  int64
+	URL           string
 }
 
 type ResegmentDocumentRequest struct {

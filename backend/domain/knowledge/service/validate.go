@@ -1,14 +1,30 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
 	"context"
 	"fmt"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) isWritableKnowledgeAndDocument(ctx context.Context, knowledgeID, documentID int64) (bool, error) {
@@ -33,7 +49,7 @@ func (k *knowledgeSVC) isWritableKnowledge(ctx context.Context, knowledgeID int6
 		return false, fmt.Errorf("[isWritableKnowledge] GetByID failed, %w", err)
 	}
 	if knowledgeModel == nil {
-		logs.Errorf("[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
+		logs.CtxError(ctx, "[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
 	}
 	switch model.KnowledgeStatus(knowledgeModel.Status) {
@@ -52,7 +68,7 @@ func (k *knowledgeSVC) isWritableDocument(ctx context.Context, documentID int64)
 		return false, fmt.Errorf("[isWritableDocument] GetByID failed, %w", err)
 	}
 	if documentModel == nil {
-		logs.Errorf("[isWritableDocument] document is nil, id=%d", documentID)
+		logs.CtxError(ctx, "[isWritableDocument] document is nil, id=%d", documentID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
 	}
 	switch entity.DocumentStatus(documentModel.Status) {

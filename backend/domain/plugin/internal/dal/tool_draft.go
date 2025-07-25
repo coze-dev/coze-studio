@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -9,14 +25,14 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolDraftDAO {
@@ -431,7 +447,7 @@ func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]
 		if err != nil {
 			return nil, err
 		}
-		updateMap[table.Operation.ColumnName().String()] = b
+		updateMap[table.Operation.ColumnName().String()] = string(b)
 	}
 	if tool.SubURL != nil {
 		updateMap[table.SubURL.ColumnName().String()] = *tool.SubURL
@@ -445,6 +461,5 @@ func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]
 	if tool.DebugStatus != nil {
 		updateMap[table.DebugStatus.ColumnName().String()] = int32(*tool.DebugStatus)
 	}
-
 	return updateMap, nil
 }

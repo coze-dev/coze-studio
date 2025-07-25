@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package database
 
 import (
@@ -5,8 +21,8 @@ import (
 	"errors"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type DeleteConfig struct {
@@ -42,7 +58,7 @@ func NewDelete(_ context.Context, cfg *DeleteConfig) (*Delete, error) {
 }
 
 func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any, error) {
-	conditionGroup, err := ConvertClauseGroupToConditionGroup(ctx, d.config.ClauseGroup, in)
+	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, d.config.ClauseGroup, in)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +82,7 @@ func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any,
 }
 
 func (d *Delete) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
-	conditionGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), d.config.ClauseGroup, in)
+	conditionGroup, err := convertClauseGroupToConditionGroup(context.Background(), d.config.ClauseGroup, in)
 	if err != nil {
 		return nil, err
 	}

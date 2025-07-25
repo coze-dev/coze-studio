@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package singleagent
 
 import (
@@ -10,17 +26,17 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/agentflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/jsoncache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type singleAgentImpl struct {
@@ -260,7 +276,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 		return s.AgentVersionRepo.List(ctx, agentID, pageIndex, pageSize)
 	}
 
-	logs.CtxInfof(ctx, "ListAgentPublishHistory, agentID=%v, pageIndex=%v, pageSize=%v, connectorID=%v",
+	logs.CtxInfo(ctx, "ListAgentPublishHistory, agentID=%v, pageIndex=%v, pageSize=%v, connectorID=%v",
 		agentID, pageIndex, pageSize, *connectorID)
 
 	var (

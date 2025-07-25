@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package idgen
 
 import (
@@ -5,9 +21,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
 )
 
 const (
@@ -107,7 +122,7 @@ func (i *idGenImpl) GenMultiIDs(ctx context.Context, counts int) ([]int64, error
 }
 
 func (i *idGenImpl) IncrBy(ctx context.Context, key string, num int64) (cntPos int64, err error) {
-	return i.cli.IncrBy(ctx, key, num).Result()
+	return i.cli.WithContext(ctx).IncrBy(key, num).Result()
 }
 
 func (i *idGenImpl) GetIDTimeMs() int64 {
@@ -116,7 +131,7 @@ func (i *idGenImpl) GetIDTimeMs() int64 {
 
 func (i *idGenImpl) Expire(ctx context.Context, key string) {
 	// 暂时忽略错误
-	_, _ = i.cli.Expire(ctx, key, counterKeyExpirationTime).Result()
+	_, _ = i.cli.WithContext(ctx).Expire(key, counterKeyExpirationTime).Result()
 }
 
 func genIDKey(space string, svrID int64, ms int64) string {

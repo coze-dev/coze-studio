@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "opencoze.fullname" . }}-mysql-init
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-after-create": "true"
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: {{ .Values.images.busybox }}
+        command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-mysql 3306; do echo waiting for mysql; sleep 2; done']
+      - name: sql-init
+        image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          mysql -h {{ .Release.Name }}-mysql -u root -p"{{ .Values.mysql.rootPassword }}" -e "CREATE USER IF NOT EXISTS '{{ .Values.mysql.user }}'@'%' IDENTIFIED BY '{{ .Values.mysql.password }}';GRANT ALL PRIVILEGES ON {{ .Values.mysql.database }}.* TO '{{ .Values.mysql.user }}'@'%';FLUSH PRIVILEGES;"
+          mysql -h {{ .Release.Name }}-mysql -u {{ .Values.mysql.user }} -p"{{ .Values.mysql.password }}" {{ .Values.mysql.database }} < /sql/schema.sql
+          mysql -h {{ .Release.Name }}-mysql -u {{ .Values.mysql.user }} -p"{{ .Values.mysql.password }}" {{ .Values.mysql.database }} < /sql/sql_init.sql
+        volumeMounts:
+        - name: init-sql
+          mountPath: /sql/sql_init.sql
+          subPath: sql_init.sql
+        - name: schema-sql
+          mountPath: /sql/schema.sql
+          subPath: schema.sql
+        env:
+        - name: MYSQL_PASSWORD
+          value: {{ .Values.mysql.password | quote }}
+      containers:
+      - name: job-completer
+        image: {{ .Values.images.busybox }}
+        command: ["echo", "MySQL initialization complete"]
+      volumes:
+      - name: init-sql
+        configMap:
+          name: {{ include "opencoze.fullname" . }}-mysql-init
+          items:
+            - key: sql_init.sql
+              path: sql_init.sql
+      - name: schema-sql
+        configMap:
+          name: {{ include "opencoze.fullname" . }}-mysql-init
+          items:
+            - key: schema.sql
+              path: schema.sql
+      restartPolicy: Never
+  backoffLimit: 5

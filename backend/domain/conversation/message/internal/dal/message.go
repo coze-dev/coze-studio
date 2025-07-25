@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -9,14 +25,15 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type MessageDAO struct {
@@ -118,39 +135,36 @@ func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Messa
 
 func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interface{} {
 	columns := make(map[string]interface{})
+	table := dao.query.Message
 	if msg.Content != "" {
-		columns["content"] = msg.Content
+		columns[table.Content.ColumnName().String()] = msg.Content
 	}
 	if msg.MessageType != "" {
-		columns["message_type"] = msg.MessageType
+		columns[table.MessageType.ColumnName().String()] = msg.MessageType
 	}
 	if msg.ContentType != "" {
-		columns["content_type"] = msg.ContentType
+		columns[table.ContentType.ColumnName().String()] = msg.ContentType
 	}
 	if len(msg.ReasoningContent) > 0 {
-		columns["reasoning_content"] = msg.ReasoningContent
+		columns[table.ReasoningContent.ColumnName().String()] = msg.ReasoningContent
 	}
 
 	if msg.Position > 0 {
-		columns["position"] = msg.Position
+		columns[table.BrokenPosition.ColumnName().String()] = msg.Position
 	}
 	if msg.Status > 0 {
-		columns["status"] = msg.Status
-	}
-
-	if len(msg.MessageType) > 0 {
-		columns["message_type"] = msg.MessageType
+		columns[table.Status.ColumnName().String()] = msg.Status
 	}
 
 	if len(msg.ModelContent) > 0 {
-		columns["model_content"] = msg.ModelContent
+		columns[table.ModelContent.ColumnName().String()] = msg.ModelContent
 	}
 
-	columns["created_at"] = time.Now().UnixMilli()
+	columns[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	if msg.Ext != nil {
-		ext, err := json.Marshal(msg.Ext)
+		ext, err := sonic.MarshalString(msg.Ext)
 		if err == nil {
-			columns["ext"] = string(ext)
+			columns[table.Ext.ColumnName().String()] = ext
 		}
 	}
 	return columns
@@ -238,6 +252,9 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 		Role: msgDO.Role,
 		Name: msgDO.Name,
 	}
+	if msgDO.Content == "" && len(msgDO.MultiContent) == 0 {
+		return "", nil
+	}
 
 	var multiContent []schema.ChatMessagePart
 	for _, contentData := range msgDO.MultiContent {
@@ -291,22 +308,23 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 func (dao *MessageDAO) batchMessagePO2DO(msgPOs []*model.Message) []*entity.Message {
 	return slices.Transform(msgPOs, func(msgPO *model.Message) *entity.Message {
 		msgDO := &entity.Message{
-			ID:             msgPO.ID,
-			AgentID:        msgPO.AgentID,
-			ConversationID: msgPO.ConversationID,
-			SectionID:      msgPO.SectionID,
-			UserID:         msgPO.UserID,
-			RunID:          msgPO.RunID,
-			Role:           schema.RoleType(msgPO.Role),
-			ContentType:    message.ContentType(msgPO.ContentType),
-			MessageType:    message.MessageType(msgPO.MessageType),
-			Position:       msgPO.BrokenPosition,
-			ModelContent:   msgPO.ModelContent,
-			Content:        msgPO.Content,
-			Status:         message.MessageStatus(msgPO.Status),
-			DisplayContent: msgPO.DisplayContent,
-			CreatedAt:      msgPO.CreatedAt,
-			UpdatedAt:      msgPO.UpdatedAt,
+			ID:               msgPO.ID,
+			AgentID:          msgPO.AgentID,
+			ConversationID:   msgPO.ConversationID,
+			SectionID:        msgPO.SectionID,
+			UserID:           msgPO.UserID,
+			RunID:            msgPO.RunID,
+			Role:             schema.RoleType(msgPO.Role),
+			ContentType:      message.ContentType(msgPO.ContentType),
+			MessageType:      message.MessageType(msgPO.MessageType),
+			Position:         msgPO.BrokenPosition,
+			ModelContent:     msgPO.ModelContent,
+			Content:          msgPO.Content,
+			Status:           message.MessageStatus(msgPO.Status),
+			DisplayContent:   msgPO.DisplayContent,
+			CreatedAt:        msgPO.CreatedAt,
+			UpdatedAt:        msgPO.UpdatedAt,
+			ReasoningContent: msgPO.ReasoningContent,
 		}
 
 		var ext map[string]string

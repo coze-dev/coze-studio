@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package vo
 
 import (
@@ -7,10 +23,9 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type NodeKey string
@@ -24,12 +39,18 @@ type Reference struct {
 	FromNodeKey NodeKey           `json:"from_node_key,omitempty"`
 	FromPath    compose.FieldPath `json:"from_path"`
 
-	VariableType *variable.Type `json:"variable_type,omitempty"`
+	VariableType *GlobalVarType `json:"variable_type,omitempty"`
 }
 
 type FieldSource struct {
 	Ref *Reference `json:"ref,omitempty"`
 	Val any        `json:"val,omitempty"`
+}
+
+type ImplicitNodeDependency struct {
+	NodeID    string
+	FieldPath compose.FieldPath
+	TypeInfo  *TypeInfo
 }
 
 type TypeInfo struct {
@@ -55,7 +76,7 @@ type ErrorLevel string
 const (
 	LevelWarn   ErrorLevel = "Warn"
 	LevelError  ErrorLevel = "Error"
-	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
+	LevelCancel ErrorLevel = "pending" // forget about why it's called 'pending', somebody named it and it's now part of the protocol
 )
 
 type WorkflowError interface {
@@ -225,6 +246,22 @@ func newWorkflowTimeout() WorkflowError {
 		StatusError: sErr,
 	}
 	return wfe
+}
+
+func UnwrapRootErr(err error) error {
+	var (
+		rootE    = err
+		currentE error
+	)
+	for {
+		currentE = errors.Unwrap(rootE)
+		if currentE == nil {
+			break
+		}
+		rootE = currentE
+	}
+
+	return rootE
 }
 
 type DataType string
@@ -527,7 +564,7 @@ type NodeProperty struct {
 
 func (f *FieldInfo) IsRefGlobalVariable() bool {
 	if f.Source.Ref != nil && f.Source.Ref.VariableType != nil {
-		return *f.Source.Ref.VariableType == variable.GlobalUser || *f.Source.Ref.VariableType == variable.GlobalSystem || *f.Source.Ref.VariableType == variable.GlobalAPP
+		return *f.Source.Ref.VariableType == GlobalUser || *f.Source.Ref.VariableType == GlobalSystem || *f.Source.Ref.VariableType == GlobalAPP
 	}
 	return false
 }
@@ -554,3 +591,12 @@ func ParseVariable(v any) (*Variable, error) {
 
 	return p, nil
 }
+
+type GlobalVarType string
+
+const (
+	ParentIntermediate GlobalVarType = "parent_intermediate"
+	GlobalUser         GlobalVarType = "global_user"
+	GlobalSystem       GlobalVarType = "global_system"
+	GlobalAPP          GlobalVarType = "global_app"
+)

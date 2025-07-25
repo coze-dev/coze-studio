@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package execute
 
 import (
@@ -10,9 +26,9 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type Context struct {
@@ -129,6 +145,11 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 		storedCtx.NodeCtx.ResumingEvent = nil
 	}
 
+	existingC := GetExeCtx(ctx)
+	if existingC != nil {
+		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
+	}
+
 	// restore the parent-child relationship between token collectors
 	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
 		currentC := GetExeCtx(ctx)
@@ -160,10 +181,14 @@ func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context
 
 	storedCtx.NodeCtx.ResumingEvent = nil
 
+	existingC := GetExeCtx(ctx)
+	if existingC != nil {
+		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
+	}
+
 	// restore the parent-child relationship between token collectors
-	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
-		currentC := GetExeCtx(ctx)
-		currentTokenCollector := currentC.TokenCollector
+	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil && existingC != nil {
+		currentTokenCollector := existingC.TokenCollector
 		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
 

@@ -1,10 +1,26 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package goutil
 
 import (
 	"os"
 	"path/filepath"
 
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func GetPythonFilePath(fileName string) string {
@@ -14,15 +30,17 @@ func GetPythonFilePath(fileName string) string {
 		return fileName
 	}
 
-	return filepath.Join(cwd, fileName)
+	return filepath.Join(cwd, "app", fileName)
 }
 
 func GetPython3Path() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		logs.Warnf("[GetPython3Path] Failed to get current working directory: %v", err)
-		return ".venv/bin/python3"
-	}
+	// cwd, err := os.Getwd()
+	// if err != nil {
+	// 	logs.Warnf("[GetPython3Path] Failed to get current working directory: %v", err)
+	// 	return ".venv/bin/python3"
+	// }
 
-	return filepath.Join(cwd, ".venv/bin/python3")
+	//return filepath.Join(cwd, ".venv/bin/python3")
+	// return filepath.Join(cwd, "python3")
+	return "python3"
 }

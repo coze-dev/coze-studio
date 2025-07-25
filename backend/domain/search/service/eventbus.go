@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -6,10 +22,10 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/gopkg/logs"
 )
 
 type eventbusImpl struct {
@@ -48,25 +64,36 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 		event.Resource.UpdateTimeMS = ptr.Of(now)
 	}
 
-	if defaultResourceHandler != nil {
-		err := defaultResourceHandler.indexResources(ctx, event)
-		if err == nil {
-			json, _ := sonic.Marshal(event)
-			logs.CtxInfof(ctx, "Sync PublishResources success: %s", string(json))
+	err := defaultResourceHandler.indexResources(ctx, event)
+	if err == nil {
+		json, _ := sonic.Marshal(event)
+		logs.CtxInfo(ctx, "Sync PublishResources success: %s", string(json))
 
-			return nil
-		}
-
-		logs.CtxWarnf(ctx, "Sync PublishResources indexResources error: %s", err.Error())
+		return nil
 	}
+
+	logs.CtxError(ctx, "Sync PublishResources indexResources error: %s", err.Error())
+
+	//if defaultResourceHandler != nil {
+	//	err := defaultResourceHandler.indexResources(ctx, event)
+	//	if err == nil {
+	//		json, _ := sonic.Marshal(event)
+	//		logs.CtxInfo(ctx, "Sync PublishResources success: %s", string(json))
+	//
+	//		return nil
+	//	}
+	//
+	//	logs.CtxWarn(ctx, "Sync PublishResources indexResources error: %s", err.Error())
+	//}
 
 	bytes, err := sonic.Marshal(event)
 	if err != nil {
 		return err
 	}
 
-	logs.Infof("PublishResources success: %s", string(bytes))
-	return d.producer.Send(ctx, bytes)
+	logs.CtxInfo(ctx, "PublishResources success: %s", string(bytes))
+	//return d.producer.Send(ctx, bytes)
+	return nil
 }
 
 func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.ProjectDomainEvent) error {
@@ -90,21 +117,31 @@ func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.Project
 		event.Project.UpdateTimeMS = ptr.Of(now)
 	}
 
-	if defaultProjectHandle != nil {
-		err := defaultProjectHandle.indexProject(ctx, event)
-		if err == nil {
-			json, _ := sonic.Marshal(event)
-			logs.CtxInfof(ctx, "Sync PublishProject success: %s", string(json))
-			return nil
-		}
-		logs.CtxWarnf(ctx, "Sync PublishProject indexProject error: %s", err.Error())
+	// 默认同步创建ES
+	err := defaultProjectHandle.indexProject(ctx, event)
+	if err == nil {
+		json, _ := sonic.Marshal(event)
+		logs.CtxInfo(ctx, "Sync PublishProject success: %s", string(json))
+		return nil
 	}
+	logs.CtxError(ctx, "Sync PublishProject indexProject error: %s", err.Error())
+
+	//if defaultProjectHandle != nil {
+	//	err := defaultProjectHandle.indexProject(ctx, event)
+	//	if err == nil {
+	//		json, _ := sonic.Marshal(event)
+	//		logs.CtxInfo(ctx, "Sync PublishProject success: %s", string(json))
+	//		return nil
+	//	}
+	//	logs.CtxWarn(ctx, "Sync PublishProject indexProject error: %s", err.Error())
+	//}
 
 	bytes, err := sonic.Marshal(event)
 	if err != nil {
 		return err
 	}
 
-	logs.Infof("PublishProject success: %s", string(bytes))
-	return d.producer.Send(ctx, bytes)
+	logs.CtxInfo(ctx, "PublishProject success: %s", string(bytes))
+	return nil
+	//return d.producer.Send(ctx, bytes)
 }

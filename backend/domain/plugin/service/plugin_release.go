@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -8,15 +24,15 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error) {
@@ -32,13 +48,13 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 
 	parts := strings.Split(pl.GetVersion(), ".") // Remove the 'v' and split
 	if len(parts) < 3 {
-		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarn(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
 	patch, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarn(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
@@ -153,7 +169,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 			}
 		}
 		if len(failedPluginIDs) > 0 {
-			logs.CtxErrorf(ctx, "invalid version of plugins '%v'", failedPluginIDs)
+			logs.CtxError(ctx, "invalid version of plugins '%v'", failedPluginIDs)
 			return failedPluginIDs, nil
 		}
 	}
@@ -163,7 +179,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 		err = p.checkToolsDebugStatus(ctx, draftPlugin.ID)
 		if err != nil {
 			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
-			logs.CtxErrorf(ctx, "checkToolsDebugStatus failed, pluginID=%d, err=%s", draftPlugin.ID, err)
+			logs.CtxError(ctx, "checkToolsDebugStatus failed, pluginID=%d, err=%s", draftPlugin.ID, err)
 		}
 	}
 

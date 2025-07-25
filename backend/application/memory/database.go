@@ -1,28 +1,44 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package memory
 
 import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/search"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/knowledge/document"
+	resCommon "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	databaseEntity "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	database "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type DatabaseApplicationService struct {
@@ -120,6 +136,10 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	}
 	if *uid != req.CreatorID {
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
+	}
+
+	if req.GetTableName() == "database" {
+		return nil, errorx.New(errno.ErrMemoryDatabaseNameInvalid)
 	}
 
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
@@ -769,7 +789,7 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, databas
 	}
 
 	if do.Databases[0].CreatorID != *uid {
-		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, databaseID)
+		logs.CtxError(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, databaseID)
 		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
 	}
 

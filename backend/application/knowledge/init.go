@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package knowledge
 
 import (
@@ -13,6 +29,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	ao "github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/gemini"
 	"github.com/cloudwego/eino-ext/components/model/ollama"
 	mo "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino-ext/components/model/qwen"
@@ -21,36 +38,37 @@ import (
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
+	"google.golang.org/genai"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/application/search"
-	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	chatmodelImpl "code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
-	builtinNL2SQL "code.byted.org/flow/opencoze/backend/infra/impl/document/nl2sql/builtin"
-	"code.byted.org/flow/opencoze/backend/infra/impl/document/ocr/veocr"
-	builtinParser "code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
-	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
-	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
-	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
-	ssvikingdb "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/vikingdb"
-	"code.byted.org/flow/opencoze/backend/infra/impl/embedding/wrap"
-	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	builtinM2Q "code.byted.org/flow/opencoze/backend/infra/impl/messages2query/builtin"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	knowledgeImpl "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/cache"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/nl2sql"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/messages2query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	chatmodelImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/chatmodel"
+	builtinNL2SQL "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/nl2sql/builtin"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/ocr/veocr"
+	builtinParser "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/parser/builtin"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/rerank/rrf"
+	sses "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/elasticsearch"
+	ssmilvus "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/milvus"
+	ssvikingdb "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/vikingdb"
+	arkemb "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/ark"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
+	builtinM2Q "code.byted.org/data_edc/workflow_engine_next/infra/impl/messages2query/builtin"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/gopkg/logs"
 )
 
 type ServiceComponents struct {
@@ -65,27 +83,28 @@ type ServiceComponents struct {
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
+	// TODO:: MQ未就绪，知识库会依赖，先不处理
 	ctx := context.Background()
 
-	nameServer := os.Getenv(consts.RMQServer)
+	// nameServer := os.Getenv(consts.MQServer)
 
-	knowledgeProducer, err := rmq.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQTopicKnowledgeSearch, 2)
-	if err != nil {
-		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
-	}
+	// knowledgeProducer, err := eventbus.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
+	// }
 
 	var sManagers []searchstore.Manager
-
+	//
 	// es full text search
 	sManagers = append(sManagers, sses.NewManager(&sses.ManagerConfig{Client: c.ES}))
-
-	// vector search
-	mgr, err := getVectorStore(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("init vector store failed, err=%w", err)
-	}
-	sManagers = append(sManagers, mgr)
-
+	//
+	//// vector search
+	//mgr, err := getVectorStore(ctx)
+	//if err != nil {
+	//	return nil, fmt.Errorf("init vector store failed, err=%w", err)
+	//}
+	//sManagers = append(sManagers, mgr)
+	//
 	var ocrImpl ocr.OCR
 	switch os.Getenv("OCR_TYPE") {
 	case "ve":
@@ -98,7 +117,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	default:
 		// accept ocr not configured
 	}
-
+	//
 	root, err := os.Getwd()
 	if err != nil {
 		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
@@ -109,7 +128,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
 		return nil, err
 	} else {
-		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
+		filePath := filepath.Join(root, "conf/prompt/messages_to_query_template_jinja2.json")
 		rewriterTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
@@ -124,7 +143,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	if n2sChatModel, _, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
 		return nil, err
 	} else {
-		filePath := filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
+		filePath := filepath.Join(root, "conf/prompt/nl2sql_template_jinja2.json")
 		n2sTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
@@ -140,15 +159,14 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		return nil, err
 	}
 
-	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+	knowledgeDomainSVC, _ := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
 		DB:                        c.DB,
 		IDGen:                     c.IDGenSVC,
 		RDB:                       c.RDB,
-		Producer:                  knowledgeProducer,
+		Producer:                  nil,
 		SearchStoreManagers:       sManagers,
 		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
 		Storage:                   c.Storage,
-		ImageX:                    c.ImageX,
 		Rewriter:                  rewriter,
 		Reranker:                  rrf.NewRRFReranker(0), // default rrf
 		NL2Sql:                    n2s,
@@ -158,9 +176,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
 	})
 
-	if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
-		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
-	}
+	// if err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
+	// 	return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
+	// }
 
 	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
 	KnowledgeSVC.eventBus = c.EventBus
@@ -268,12 +286,13 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 	switch os.Getenv("EMBEDDING_TYPE") {
 	case "openai":
 		var (
-			openAIEmbeddingBaseURL    = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
-			openAIEmbeddingModel      = os.Getenv("OPENAI_EMBEDDING_MODEL")
-			openAIEmbeddingApiKey     = os.Getenv("OPENAI_EMBEDDING_API_KEY")
-			openAIEmbeddingByAzure    = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
-			openAIEmbeddingApiVersion = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
-			openAIEmbeddingDims       = os.Getenv("OPENAI_EMBEDDING_DIMS")
+			openAIEmbeddingBaseURL     = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
+			openAIEmbeddingModel       = os.Getenv("OPENAI_EMBEDDING_MODEL")
+			openAIEmbeddingApiKey      = os.Getenv("OPENAI_EMBEDDING_API_KEY")
+			openAIEmbeddingByAzure     = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
+			openAIEmbeddingApiVersion  = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
+			openAIEmbeddingDims        = os.Getenv("OPENAI_EMBEDDING_DIMS")
+			openAIRequestEmbeddingDims = os.Getenv("OPENAI_EMBEDDING_REQUEST_DIMS")
 		)
 
 		byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
@@ -286,23 +305,31 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
 		}
 
-		emb, err = wrap.NewOpenAIEmbedder(ctx, &openai.EmbeddingConfig{
+		openAICfg := &openai.EmbeddingConfig{
 			APIKey:     openAIEmbeddingApiKey,
 			ByAzure:    byAzure,
 			BaseURL:    openAIEmbeddingBaseURL,
 			APIVersion: openAIEmbeddingApiVersion,
 			Model:      openAIEmbeddingModel,
-			Dimensions: ptr.Of(int(dims)),
-		}, dims)
+			// Dimensions: ptr.Of(int(dims)),
+		}
+		reqDims := conv.StrToInt64D(openAIRequestEmbeddingDims, 0)
+		if reqDims > 0 {
+			// some openai model not support request dims
+			openAICfg.Dimensions = ptr.Of(int(reqDims))
+		}
+
+		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, dims)
 		if err != nil {
 			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
 		}
 
 	case "ark":
 		var (
-			arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
-			arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingBaseURL = os.Getenv("ARK_EMBEDDING_BASE_URL")
+			arkEmbeddingModel   = os.Getenv("ARK_EMBEDDING_MODEL")
+			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
+			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
 		)
 
 		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
@@ -310,9 +337,10 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
 		}
 
-		emb, err = wrap.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey: arkEmbeddingAK,
-			Model:  arkEmbeddingModel,
+		emb, err = arkemb.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
+			APIKey:  arkEmbeddingAK,
+			Model:   arkEmbeddingModel,
+			BaseURL: arkEmbeddingBaseURL,
 		}, dims)
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
@@ -343,8 +371,9 @@ func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 		})
 	case "ark":
 		bcm, err = ao.NewChatModel(ctx, &ao.ChatModelConfig{
-			APIKey: getEnv("BUILTIN_CM_ARK_API_KEY"),
-			Model:  getEnv("BUILTIN_CM_ARK_MODEL"),
+			APIKey:  getEnv("BUILTIN_CM_ARK_API_KEY"),
+			Model:   getEnv("BUILTIN_CM_ARK_MODEL"),
+			BaseURL: getEnv("BUILTIN_CM_ARK_BASE_URL"),
 		})
 	case "deepseek":
 		bcm, err = deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
@@ -362,6 +391,27 @@ func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 			APIKey:  getEnv("BUILTIN_CM_QWEN_API_KEY"),
 			BaseURL: getEnv("BUILTIN_CM_QWEN_BASE_URL"),
 			Model:   getEnv("BUILTIN_CM_QWEN_MODEL"),
+		})
+	case "gemini":
+		backend, convErr := strconv.ParseInt(getEnv("BUILTIN_CM_GEMINI_BACKEND"), 10, 64)
+		if convErr != nil {
+			return nil, false, convErr
+		}
+		c, clientErr := genai.NewClient(ctx, &genai.ClientConfig{
+			APIKey:   getEnv("BUILTIN_CM_GEMINI_API_KEY"),
+			Backend:  genai.Backend(backend),
+			Project:  getEnv("BUILTIN_CM_GEMINI_PROJECT"),
+			Location: getEnv("BUILTIN_CM_GEMINI_LOCATION"),
+			HTTPOptions: genai.HTTPOptions{
+				BaseURL: getEnv("BUILTIN_CM_GEMINI_BASE_URL"),
+			},
+		})
+		if clientErr != nil {
+			return nil, false, clientErr
+		}
+		bcm, err = gemini.NewChatModel(ctx, &gemini.Config{
+			Client: c,
+			Model:  getEnv("BUILTIN_CM_GEMINI_MODEL"),
 		})
 	default:
 		// accept builtin chat model not configured

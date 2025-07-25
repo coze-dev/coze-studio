@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -6,11 +22,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewAgentToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToolDraftDAO {
@@ -203,6 +219,39 @@ func (at *AgentToolDraftDAO) DeleteAll(ctx context.Context, agentID int64) (err 
 	}
 
 	return nil
+}
+
+func (at *AgentToolDraftDAO) GetAllPluginIDs(ctx context.Context, agentID int64) (pluginIDs []int64, err error) {
+	const size = 100
+	table := at.query.AgentToolDraft
+	cursor := int64(0)
+
+	for {
+		tls, err := table.WithContext(ctx).
+			Select(table.PluginID, table.ID).
+			Where(
+				table.AgentID.Eq(agentID),
+				table.ID.Gt(cursor),
+			).
+			Order(table.ID.Asc()).
+			Limit(size).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tl := range tls {
+			pluginIDs = append(pluginIDs, tl.PluginID)
+		}
+
+		if len(tls) < size {
+			break
+		}
+
+		cursor = tls[len(tls)-1].ID
+	}
+
+	return slices.Unique(pluginIDs), nil
 }
 
 func (at *AgentToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, agentID int64) (err error) {

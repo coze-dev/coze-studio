@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -6,10 +22,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func NewAPPDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *APPDraftDAO {
@@ -32,7 +48,7 @@ func (a appDraftPO) ToDO() *entity.APP {
 		SpaceID:     a.SpaceID,
 		IconURI:     &a.IconURI,
 		Name:        &a.Name,
-		Desc:        &a.Desc,
+		Desc:        &a.Description,
 		OwnerID:     a.OwnerID,
 		CreatedAtMS: a.CreatedAt,
 		UpdatedAtMS: a.UpdatedAt,
@@ -46,12 +62,12 @@ func (a *APPDraftDAO) Create(ctx context.Context, app *entity.APP) (appID int64,
 	}
 
 	m := &model.AppDraft{
-		ID:      appID,
-		SpaceID: app.SpaceID,
-		OwnerID: app.OwnerID,
-		IconURI: app.GetIconURI(),
-		Name:    app.GetName(),
-		Desc:    app.GetDesc(),
+		ID:          appID,
+		SpaceID:     app.SpaceID,
+		OwnerID:     app.OwnerID,
+		IconURI:     app.GetIconURI(),
+		Name:        app.GetName(),
+		Description: app.GetDesc(),
 	}
 	err = a.query.AppDraft.WithContext(ctx).Create(m)
 	if err != nil {
@@ -112,7 +128,7 @@ func (a *APPDraftDAO) Update(ctx context.Context, app *entity.APP) (err error) {
 		m.Name = *app.Name
 	}
 	if app.Desc != nil {
-		m.Desc = *app.Desc
+		m.Description = *app.Desc
 	}
 	if app.IconURI != nil {
 		m.IconURI = *app.IconURI

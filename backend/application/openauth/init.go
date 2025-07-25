@@ -1,33 +1,39 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package openauth
 
 import (
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
-	openapiauth2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	openapiauth2 "code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 var (
 	openapiAuthDomainSVC openapiauth2.APIAuth
-	oauthDomainSVC       service.OAuthService
 )
 
-func InitService(db *gorm.DB, cacheCli *redis.Client, idGenSVC idgen.IDGenerator) *OpenAuthApplicationService {
+func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator) *OpenAuthApplicationService {
 	openapiAuthDomainSVC = openapiauth2.NewService(&openapiauth2.Components{
 		IDGen: idGenSVC,
 		DB:    db,
 	})
 
-	oauthDomainSVC = service.NewService(&service.Components{
-		IDGen:    idGenSVC,
-		DB:       db,
-		CacheCli: cacheCli,
-	})
-
 	OpenAuthApplication.OpenAPIDomainSVC = openapiAuthDomainSVC
-	OpenAuthApplication.OAuthDomainSVC = oauthDomainSVC
 
 	return OpenAuthApplication
 }

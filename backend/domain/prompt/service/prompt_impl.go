@@ -1,13 +1,29 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package prompt
 
 import (
 	"context"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
-	"code.byted.org/flow/opencoze/backend/domain/prompt/internal/official"
-	"code.byted.org/flow/opencoze/backend/domain/prompt/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/internal/official"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type promptService struct {

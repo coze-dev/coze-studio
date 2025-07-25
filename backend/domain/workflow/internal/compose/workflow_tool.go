@@ -1,8 +1,23 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -10,13 +25,13 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	wf "code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	wf "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/gopkg/logs"
 )
 
 const answerKey = "output"
@@ -67,7 +82,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfo(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return "", einoCompose.InterruptAndRerun
 	}
 
@@ -89,6 +104,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		callOpts  []einoCompose.Option
 		in        map[string]any
 		err       error
+		ws        *nodes.ConversionWarnings
 	)
 
 	if rInfo == nil {
@@ -106,14 +122,11 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return "", err
-			}
+			return "", err
+		} else if ws != nil {
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 
@@ -218,7 +231,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfo(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return nil, einoCompose.InterruptAndRerun
 	}
 
@@ -240,6 +253,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		callOpts  []einoCompose.Option
 		in        map[string]any
 		err       error
+		ws        *nodes.ConversionWarnings
 	)
 
 	if rInfo == nil {
@@ -257,14 +271,11 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return nil, err
-			}
+			return nil, err
+		} else if ws != nil {
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 
@@ -307,9 +318,6 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 		if strings.HasSuffix(contentStr, nodes.KeyIsFinished) {
 			contentStr = strings.TrimSuffix(contentStr, nodes.KeyIsFinished)
-			if len(contentStr) == 0 {
-				return "", schema.ErrNoValue
-			}
 		}
 
 		return contentStr, nil

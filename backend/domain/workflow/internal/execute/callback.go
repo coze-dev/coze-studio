@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package execute
 
 import (
@@ -17,14 +33,14 @@ import (
 	"github.com/cloudwego/eino/schema"
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
-	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type NodeHandler struct {
@@ -137,13 +153,13 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			resume = true
 			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
-				logs.Errorf("failed to restore root execute context: %v", err)
+				logs.CtxError(ctx, "failed to restore root execute context: %v", err)
 				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareRootExeCtx(ctx, w)
 			if err != nil {
-				logs.Errorf("failed to prepare root exe context: %v", err)
+				logs.CtxError(ctx, "failed to prepare root exe context: %v", err)
 				return ctx, false
 			}
 		}
@@ -178,13 +194,13 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 		if resume {
 			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
-				logs.Errorf("failed to restore sub execute context: %v", err)
+				logs.CtxError(ctx, "failed to restore sub execute context: %v", err)
 				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowBasic, w.requireCheckpoint)
 			if err != nil {
-				logs.Errorf("failed to prepare root exe context: %v", err)
+				logs.CtxError(ctx, "failed to prepare root exe context: %v", err)
 				return ctx, false
 			}
 		}
@@ -205,7 +221,7 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
-			logs.Errorf("failed to get workflow cancel flag: %v", err)
+			logs.CtxError(ctx, "failed to get workflow cancel flag: %v", err)
 		}
 
 		if canceled {
@@ -266,7 +282,7 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 
 const InterruptEventIndexPrefix = "interrupt_event_index_"
 
-func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...string) (interruptEvents []*entity.InterruptEvent, err error) {
+func extractInterruptEvents(ctx context.Context, interruptInfo *compose.InterruptInfo, prefixes ...string) (interruptEvents []*entity.InterruptEvent, err error) {
 	ieStore, ok := interruptInfo.State.(nodes.InterruptEventStore)
 	if !ok {
 		return nil, errors.New("failed to extract interrupt event store from interrupt info")
@@ -275,7 +291,7 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 	for _, nodeKey := range interruptInfo.RerunNodes {
 		interruptE, ok, err := ieStore.GetInterruptEvent(vo.NodeKey(nodeKey))
 		if err != nil {
-			logs.Errorf("failed to extract interrupt event from node key: %v", err)
+			logs.CtxError(ctx, "failed to extract interrupt event from node key: %v", err)
 			continue
 		}
 
@@ -286,7 +302,7 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 			}
 			interruptE, ok = extra.(*entity.InterruptEvent)
 			if !ok {
-				logs.Errorf("failed to extract tool interrupt event from node key: %v", err)
+				logs.CtxError(ctx, "failed to extract tool interrupt event from node key: %v", err)
 				continue
 			}
 		}
@@ -297,7 +313,7 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 		} else if len(interruptE.NestedInterruptInfo) > 0 {
 			for index := range interruptE.NestedInterruptInfo {
 				indexedPrefixes := append(prefixes, string(interruptE.NodeKey), InterruptEventIndexPrefix+strconv.Itoa(index))
-				indexedIEvents, err := extractInterruptEvents(interruptE.NestedInterruptInfo[index], indexedPrefixes...)
+				indexedIEvents, err := extractInterruptEvents(ctx, interruptE.NestedInterruptInfo[index], indexedPrefixes...)
 				if err != nil {
 					return nil, err
 				}
@@ -305,7 +321,7 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 			}
 		} else if interruptE.SubWorkflowInterruptInfo != nil {
 			appendedPrefix := append(prefixes, string(interruptE.NodeKey))
-			subWorkflowIEvents, err := extractInterruptEvents(interruptE.SubWorkflowInterruptInfo, appendedPrefix...)
+			subWorkflowIEvents, err := extractInterruptEvents(ctx, interruptE.SubWorkflowInterruptInfo, appendedPrefix...)
 			if err != nil {
 				return nil, err
 			}
@@ -315,7 +331,7 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 
 	for graphKey, subGraphInfo := range interruptInfo.SubGraphs {
 		newPrefix := append(prefixes, graphKey)
-		subInterruptEvents, subErr := extractInterruptEvents(subGraphInfo, newPrefix...)
+		subInterruptEvents, subErr := extractInterruptEvents(ctx, subGraphInfo, newPrefix...)
 		if subErr != nil {
 			return nil, subErr
 		}
@@ -340,14 +356,14 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 			return ctx
 		}
 
-		interruptEvents, err := extractInterruptEvents(interruptInfo)
+		interruptEvents, err := extractInterruptEvents(ctx, interruptInfo)
 		if err != nil {
-			logs.Errorf("failed to extract interrupt events: %v", err)
+			logs.CtxError(ctx, "failed to extract interrupt events: %v", err)
 			return ctx
 		}
 
 		for _, interruptEvent := range interruptEvents {
-			logs.CtxInfof(ctx, "emit interrupt event id= %d, eventType= %d, nodeID= %s", interruptEvent.ID,
+			logs.CtxInfo(ctx, "emit interrupt event id= %d, eventType= %d, nodeID= %s", interruptEvent.ID,
 				interruptEvent.EventType, interruptEvent.NodeKey)
 		}
 
@@ -384,7 +400,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	logs.CtxErrorf(ctx, "workflow failed: %v", err)
+	logs.CtxError(ctx, "workflow failed: %v", err)
 
 	e := &Event{
 		Type:     WorkflowFailed,
@@ -422,7 +438,7 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
-			logs.Errorf("failed to get workflow cancel flag: %v", err)
+			logs.CtxError(ctx, "failed to get workflow cancel flag: %v", err)
 		}
 
 		if canceled {
@@ -452,12 +468,12 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 			if e == io.EOF {
 				break
 			}
-			logs.Errorf("failed to receive stream input: %v", e)
+			logs.CtxError(ctx, "failed to receive stream input: %v", e)
 			return newCtx
 		}
 		fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 		if e != nil {
-			logs.Errorf("failed to concat two maps: %v", e)
+			logs.CtxError(ctx, "failed to concat two maps: %v", e)
 			return newCtx
 		}
 	}
@@ -494,13 +510,13 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 				continue
 			}
 
-			logs.Errorf("workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
+			logs.CtxError(ctx, "workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
 			_ = w.OnError(ctx, info, e)
 			return ctx
 		}
 		fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 		if e != nil {
-			logs.Errorf("failed to concat two maps: %v", e)
+			logs.CtxError(ctx, "failed to concat two maps: %v", e)
 			return ctx
 		}
 	}
@@ -575,9 +591,14 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 	if resume {
 		newCtx, err = restoreNodeCtx(ctx, n.nodeKey, n.resumeEvent, exactlyResuming)
 		if err != nil {
-			logs.Errorf("failed to restore node execute context: %v", err)
+			logs.CtxError(ctx, "failed to restore node execute context: %v", err)
 			return ctx, resume
 		}
+		var resumeEventID int64
+		if c := GetExeCtx(newCtx); c != nil && c.RootCtx.ResumeEvent != nil {
+			resumeEventID = c.RootCtx.ResumeEvent.ID
+		}
+		logs.CtxInfo(ctx, "[restoreNodeCtx] restored nodeKey= %s, root.resumeEventID= %d", n.nodeKey, resumeEventID)
 	} else {
 		// even if this node is not on the resume path, it could still restore from checkpoint,
 		// for example:
@@ -585,12 +606,14 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 		// but not resumed this time
 		restoredCtx, restored := tryRestoreNodeCtx(ctx, n.nodeKey)
 		if restored {
-			return restoredCtx, true
+			logs.CtxInfo(ctx, "[tryRestoreNodeCtx] restored, nodeKey= %s", n.nodeKey)
+			newCtx = restoredCtx
+			return newCtx, true
 		}
 
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
 		if err != nil {
-			logs.Errorf("failed to prepare node execute context: %v", err)
+			logs.CtxError(ctx, "failed to prepare node execute context: %v", err)
 			return ctx, resume
 		}
 	}
@@ -732,7 +755,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			return fmt.Sprint(o["output"])
 		}
 	case entity.NodeTypeInputReceiver:
-		e.Input = output.(map[string]any)
+		e.Input = outputMap
 	default:
 	}
 
@@ -754,9 +777,10 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 				return errors.New("state is nil")
 			}
 
+			logs.CtxInfo(ctx, "[SetNodeCtx] nodeKey= %s", n.nodeKey)
 			return state.SetNodeCtx(n.nodeKey, c)
 		}); err != nil {
-			logs.Errorf("failed to process state: %v", err)
+			logs.CtxError(ctx, "failed to process state: %v", err)
 		}
 
 		return ctx
@@ -838,6 +862,19 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		Type:    NodeStart,
 		Context: c,
 	}
+	if entity.NodeType(info.Type) == entity.NodeTypeExit {
+		terminatePlan := n.terminatePlan
+		if terminatePlan == nil {
+			terminatePlan = ptr.Of(vo.ReturnVariables)
+		}
+		if *terminatePlan == vo.UseAnswerContent {
+			e.extra = &entity.NodeExtra{
+				ResponseExtra: map[string]any{
+					"terminal_plan": workflow2.TerminatePlanType_USESETTING,
+				},
+			}
+		}
+	}
 	n.ch <- e
 
 	safego.Go(ctx, func() {
@@ -855,14 +892,14 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 					continue
 				}
 
-				logs.Errorf("node OnStartWithStreamInput failed to receive stream output: %v", e)
+				logs.CtxError(ctx, "node OnStartWithStreamInput failed to receive stream output: %v", e)
 				_ = n.OnError(newCtx, info, e)
 				return
 			}
 			previous = fullInput
 			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 			if e != nil {
-				logs.Errorf("failed to concat two maps: %v", e)
+				logs.CtxError(ctx, "failed to concat two maps: %v", e)
 				return
 			}
 
@@ -899,6 +936,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		safego.Go(ctx, func() {
 			defer output.Close()
 			fullOutput := make(map[string]any)
+			fullRawOutput := make(map[string]any)
+			var warning error
 			for {
 				chunk, e := output.Recv()
 				if e != nil {
@@ -906,15 +945,27 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						break
 					}
 
-					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", e)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
-				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+				so := chunk.(*nodes.StructuredCallbackOutput)
+				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, so.Output)
 				if e != nil {
-					logs.Errorf("failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
+				}
+
+				fullRawOutput, e = nodes.ConcatTwoMaps(fullRawOutput, so.RawOutput)
+				if e != nil {
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
+					_ = n.OnError(ctx, info, e)
+					return
+				}
+
+				if so.Error != nil {
+					warning = so.Error
 				}
 			}
 
@@ -922,8 +973,9 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				Type:      NodeEndStreaming,
 				Context:   c,
 				Output:    fullOutput,
-				RawOutput: fullOutput,
+				RawOutput: fullRawOutput,
 				Duration:  time.Since(time.UnixMilli(c.StartTime)),
+				Err:       warning,
 				extra:     &entity.NodeExtra{},
 			}
 
@@ -999,7 +1051,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						break
 					}
 
-					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", e)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -1007,14 +1059,14 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				fullOutputMap, e := nodes.ConcatTwoMaps(fullOutput.Output, chunk.(*nodes.StructuredCallbackOutput).Output)
 				if e != nil {
-					logs.Errorf("failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
 
 				fullRawOutput, e := nodes.ConcatTwoMaps(fullOutput.RawOutput, chunk.(*nodes.StructuredCallbackOutput).RawOutput)
 				if e != nil {
-					logs.Errorf("failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -1093,7 +1145,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					if _, ok := schema.GetSourceName(err); ok {
 						continue
 					}
-					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", err)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", err)
 					return n.OnError(ctx, info, err)
 				}
 
@@ -1103,7 +1155,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 				if err != nil {
-					logs.Errorf("failed to concat two maps: %v", err)
+					logs.CtxError(ctx, "failed to concat two maps: %v", err)
 					return n.OnError(ctx, info, err)
 				}
 
@@ -1137,19 +1189,6 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				if firstEvent == nil { // prioritize sending the first event asap.
 					firstEvent = deltaEvent
-					if t == entity.NodeTypeExit {
-						terminatePlan := n.terminatePlan
-						if terminatePlan == nil {
-							terminatePlan = ptr.Of(vo.ReturnVariables)
-						}
-						if *terminatePlan == vo.UseAnswerContent {
-							firstEvent.extra = &entity.NodeExtra{
-								ResponseExtra: map[string]any{
-									"terminal_plan": workflow2.TerminatePlanType_USESETTING,
-								},
-							}
-						}
-					}
 					n.ch <- firstEvent
 				} else {
 					secondPreviousEvent = previousEvent
@@ -1301,7 +1340,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					}
 					break
 				}
-				logs.Errorf("tool OnEndWithStreamOutput failed to receive stream output: %v", e)
+				logs.CtxError(ctx, "tool OnEndWithStreamOutput failed to receive stream output: %v", e)
 				_ = t.OnError(ctx, info, e)
 				return
 			}

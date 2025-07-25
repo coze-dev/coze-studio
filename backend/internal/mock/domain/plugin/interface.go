@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	entity "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	service "code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -221,6 +221,36 @@ func (mr *MockPluginServiceMockRecorder) GetAPPAllPlugins(ctx, appID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPPAllPlugins", reflect.TypeOf((*MockPluginService)(nil).GetAPPAllPlugins), ctx, appID)
 }
 
+// GetAccessToken mocks base method.
+func (m *MockPluginService) GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccessToken", ctx, oa)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccessToken indicates an expected call of GetAccessToken.
+func (mr *MockPluginServiceMockRecorder) GetAccessToken(ctx, oa any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessToken", reflect.TypeOf((*MockPluginService)(nil).GetAccessToken), ctx, oa)
+}
+
+// GetAgentPluginsOAuthStatus mocks base method.
+func (m *MockPluginService) GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) ([]*service.AgentPluginOAuthStatus, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentPluginsOAuthStatus", ctx, userID, agentID)
+	ret0, _ := ret[0].([]*service.AgentPluginOAuthStatus)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentPluginsOAuthStatus indicates an expected call of GetAgentPluginsOAuthStatus.
+func (mr *MockPluginServiceMockRecorder) GetAgentPluginsOAuthStatus(ctx, userID, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPluginsOAuthStatus", reflect.TypeOf((*MockPluginService)(nil).GetAgentPluginsOAuthStatus), ctx, userID, agentID)
+}
+
 // GetDraftAgentToolByName mocks base method.
 func (m *MockPluginService) GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (*entity.ToolInfo, error) {
 	m.ctrl.T.Helper()
@@ -252,18 +282,18 @@ func (mr *MockPluginServiceMockRecorder) GetDraftPlugin(ctx, pluginID any) *gomo
 }
 
 // GetOAuthStatus mocks base method.
-func (m *MockPluginService) GetOAuthStatus(ctx context.Context, pluginID int64) (*service.GetOAuthStatusResponse, error) {
+func (m *MockPluginService) GetOAuthStatus(ctx context.Context, userID, pluginID int64) (*service.GetOAuthStatusResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOAuthStatus", ctx, pluginID)
+	ret := m.ctrl.Call(m, "GetOAuthStatus", ctx, userID, pluginID)
 	ret0, _ := ret[0].(*service.GetOAuthStatusResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetOAuthStatus indicates an expected call of GetOAuthStatus.
-func (mr *MockPluginServiceMockRecorder) GetOAuthStatus(ctx, pluginID any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) GetOAuthStatus(ctx, userID, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthStatus", reflect.TypeOf((*MockPluginService)(nil).GetOAuthStatus), ctx, pluginID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthStatus", reflect.TypeOf((*MockPluginService)(nil).GetOAuthStatus), ctx, userID, pluginID)
 }
 
 // GetOnlinePlugin mocks base method.
@@ -324,6 +354,22 @@ func (m *MockPluginService) GetPluginProductAllTools(ctx context.Context, plugin
 func (mr *MockPluginServiceMockRecorder) GetPluginProductAllTools(ctx, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginProductAllTools", reflect.TypeOf((*MockPluginService)(nil).GetPluginProductAllTools), ctx, pluginID)
+}
+
+// ListCustomOnlinePlugins mocks base method.
+func (m *MockPluginService) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) ([]*entity.PluginInfo, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCustomOnlinePlugins", ctx, spaceID, pageInfo)
+	ret0, _ := ret[0].([]*entity.PluginInfo)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListCustomOnlinePlugins indicates an expected call of ListCustomOnlinePlugins.
+func (mr *MockPluginServiceMockRecorder) ListCustomOnlinePlugins(ctx, spaceID, pageInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCustomOnlinePlugins", reflect.TypeOf((*MockPluginService)(nil).ListCustomOnlinePlugins), ctx, spaceID, pageInfo)
 }
 
 // ListDraftPlugins mocks base method.
@@ -491,6 +537,20 @@ func (mr *MockPluginServiceMockRecorder) MoveAPPPluginToLibrary(ctx, pluginID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveAPPPluginToLibrary", reflect.TypeOf((*MockPluginService)(nil).MoveAPPPluginToLibrary), ctx, pluginID)
 }
 
+// OAuthCode mocks base method.
+func (m *MockPluginService) OAuthCode(ctx context.Context, code string, state *entity.OAuthState) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OAuthCode", ctx, code, state)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OAuthCode indicates an expected call of OAuthCode.
+func (mr *MockPluginServiceMockRecorder) OAuthCode(ctx, code, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OAuthCode", reflect.TypeOf((*MockPluginService)(nil).OAuthCode), ctx, code, state)
+}
+
 // PublishAPPPlugins mocks base method.
 func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *service.PublishAPPPluginsRequest) (*service.PublishAPPPluginsResponse, error) {
 	m.ctrl.T.Helper()
@@ -532,6 +592,20 @@ func (m *MockPluginService) PublishPlugin(ctx context.Context, req *service.Publ
 func (mr *MockPluginServiceMockRecorder) PublishPlugin(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPlugin", reflect.TypeOf((*MockPluginService)(nil).PublishPlugin), ctx, req)
+}
+
+// RevokeAccessToken mocks base method.
+func (m *MockPluginService) RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeAccessToken", ctx, meta)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeAccessToken indicates an expected call of RevokeAccessToken.
+func (mr *MockPluginServiceMockRecorder) RevokeAccessToken(ctx, meta any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeAccessToken", reflect.TypeOf((*MockPluginService)(nil).RevokeAccessToken), ctx, meta)
 }
 
 // UpdateBotDefaultParams mocks base method.

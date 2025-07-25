@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dao
 
 import (
@@ -8,10 +24,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type KnowledgeDocumentDAO struct {
@@ -131,9 +147,6 @@ func (dao *KnowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int6
 
 func (dao *KnowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
 	k := dao.Query.KnowledgeDocument
-	if len(reason) > 255 { // TODO: tinytext 换成 text ?
-		reason = reason[:255]
-	}
 	d := &model.KnowledgeDocument{Status: status, FailReason: reason, UpdatedAt: time.Now().UnixMilli()}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
@@ -143,7 +156,6 @@ func (dao *KnowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, 
 	if len(documents) == 0 {
 		return nil
 	}
-	// todo，要不要做限制，行数限制等
 	tx = tx.WithContext(ctx).Debug().CreateInBatches(documents, len(documents))
 	return tx.Error
 }

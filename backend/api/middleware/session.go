@@ -1,18 +1,35 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package middleware
 
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/gopkg/logs"
+	"code.byted.org/middleware/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
-	"code.byted.org/flow/opencoze/backend/application/user"
-	"code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+
+	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 var noNeedSessionCheckPath = map[string]bool{
@@ -33,7 +50,6 @@ func SessionAuthMW() app.HandlerFunc {
 			return
 		}
 
-		// session auth check
 		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")

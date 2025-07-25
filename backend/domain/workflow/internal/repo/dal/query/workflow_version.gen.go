@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newWorkflowVersion(db *gorm.DB, opts ...gen.DOOption) workflowVersion {
@@ -28,6 +28,7 @@ func newWorkflowVersion(db *gorm.DB, opts ...gen.DOOption) workflowVersion {
 	tableName := _workflowVersion.workflowVersionDo.TableName()
 	_workflowVersion.ALL = field.NewAsterisk(tableName)
 	_workflowVersion.ID = field.NewInt64(tableName, "id")
+	_workflowVersion.WorkflowID = field.NewInt64(tableName, "workflow_id")
 	_workflowVersion.Version = field.NewString(tableName, "version")
 	_workflowVersion.VersionDescription = field.NewString(tableName, "version_description")
 	_workflowVersion.Canvas = field.NewString(tableName, "canvas")
@@ -43,11 +44,13 @@ func newWorkflowVersion(db *gorm.DB, opts ...gen.DOOption) workflowVersion {
 	return _workflowVersion
 }
 
+// workflowVersion workflow 画布版本信息表，用于记录不同版本的画布信息
 type workflowVersion struct {
 	workflowVersionDo
 
 	ALL                field.Asterisk
-	ID                 field.Int64  // workflow id
+	ID                 field.Int64  // ID
+	WorkflowID         field.Int64  // workflow id
 	Version            field.String // 发布版本
 	VersionDescription field.String // 版本描述
 	Canvas             field.String // 前端 schema
@@ -74,6 +77,7 @@ func (w workflowVersion) As(alias string) *workflowVersion {
 func (w *workflowVersion) updateTableName(table string) *workflowVersion {
 	w.ALL = field.NewAsterisk(table)
 	w.ID = field.NewInt64(table, "id")
+	w.WorkflowID = field.NewInt64(table, "workflow_id")
 	w.Version = field.NewString(table, "version")
 	w.VersionDescription = field.NewString(table, "version_description")
 	w.Canvas = field.NewString(table, "canvas")
@@ -99,8 +103,9 @@ func (w *workflowVersion) GetFieldByName(fieldName string) (field.OrderExpr, boo
 }
 
 func (w *workflowVersion) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 10)
+	w.fieldMap = make(map[string]field.Expr, 11)
 	w.fieldMap["id"] = w.ID
+	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["version"] = w.Version
 	w.fieldMap["version_description"] = w.VersionDescription
 	w.fieldMap["canvas"] = w.Canvas

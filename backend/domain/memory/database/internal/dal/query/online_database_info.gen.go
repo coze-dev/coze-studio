@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal/model"
 )
 
 func newOnlineDatabaseInfo(db *gorm.DB, opts ...gen.DOOption) onlineDatabaseInfo {

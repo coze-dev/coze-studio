@@ -1,9 +1,25 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package errno
 
 import (
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/pkg/errorx/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 )
 
 // Plugin: 109 000 000 ~ 109 999 999
@@ -21,6 +37,7 @@ const (
 	ErrPluginConvertProtocolFailed        = 109000010
 	ErrPluginToolsCheckFailed             = 109000011
 	ErrPluginParseToolRespFailed          = 109000012
+	ErrPluginOAuthFailed                  = 109000013
 )
 
 const (
@@ -97,6 +114,12 @@ func init() {
 	code.Register(
 		ErrPluginParseToolRespFailed,
 		fmt.Sprintf("parse tool response failed : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginOAuthFailed,
+		fmt.Sprintf("oauth failed : {%s}", PluginMsgKey),
 		code.WithAffectStability(false),
 	)
 }

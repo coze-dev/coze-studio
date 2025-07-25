@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -9,11 +25,11 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func NewAPPReleaseRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *APPReleaseRecordDAO {
@@ -36,7 +52,7 @@ func (a releaseRecordPO) ToDO() *entity.APP {
 		SpaceID:          a.SpaceID,
 		IconURI:          &a.IconURI,
 		Name:             &a.Name,
-		Desc:             &a.Desc,
+		Desc:             &a.Description,
 		OwnerID:          a.OwnerID,
 		CreatedAtMS:      a.CreatedAt,
 		UpdatedAtMS:      a.UpdatedAt,
@@ -94,10 +110,13 @@ func (r *APPReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID 
 	return app, true, nil
 }
 
-func (r *APPReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+func (r *APPReleaseRecordDAO) GetOldestReleaseSuccessRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
 	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
-		Where(table.AppID.Eq(appID)).
+		Where(
+			table.AppID.Eq(appID),
+			table.PublishStatus.Eq(int32(entity.PublishStatusOfPublishDone)),
+		).
 		Order(table.PublishAt.Asc()).
 		First()
 	if err != nil {
@@ -220,7 +239,7 @@ func (r *APPReleaseRecordDAO) CreateWithTX(ctx context.Context, tx *query.QueryT
 		OwnerID:       app.OwnerID,
 		IconURI:       app.GetIconURI(),
 		Name:          app.GetName(),
-		Desc:          app.GetDesc(),
+		Description:   app.GetDesc(),
 		ConnectorIds:  app.ConnectorIDs,
 		Version:       app.GetVersion(),
 		VersionDesc:   app.GetVersionDesc(),

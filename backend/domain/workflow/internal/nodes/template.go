@@ -1,7 +1,24 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package nodes
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -12,8 +29,9 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/ast"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type TemplatePart struct {
@@ -139,6 +157,13 @@ func removeSlice(s string) string {
 type renderOptions struct {
 	type2CustomRenderer map[reflect.Type]func(any) (string, error)
 	reservedKey         map[string]struct{}
+	nilRenderer         func() (string, error)
+}
+
+func WithNilRender(fn func() (string, error)) RenderOption {
+	return func(opts *renderOptions) {
+		opts.nilRenderer = fn
+	}
 }
 
 type RenderOption func(options *renderOptions)
@@ -215,17 +240,19 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 									return tp.literal, nil
 								}
 
-								return "", vo.WrapError(errno.ErrArrIndexOutOfRange,
-									fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
-										joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI))
+								return "", vo.NewError(errno.ErrArrIndexOutOfRange,
+									errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+									errorx.KV("req_index", strconv.Itoa(segmentI)),
+									errorx.KV("arr_len", strconv.Itoa(len(segArr))))
 							}
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					} else if errors.As(err, &syntaxErr) {
 						segmentI, ok := tp.JsonPath[i].(int)
 						if ok {
-							return "", fmt.Errorf("Array类型的变量 %s 为空，无法提取下标 %d的值",
-								joinJsonPath(tp.JsonPath[:i]), segmentI)
+							return "", vo.NewError(errno.ErrIndexingNilArray,
+								errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+								errorx.KV("req_index", strconv.Itoa(segmentI)))
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					}
@@ -238,12 +265,15 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		return tp.literal, nil
 	}
 
-	i, err := n.Interface()
+	i, err := n.InterfaceUseNumber()
 	if err != nil {
 		return tp.literal, nil
 	}
 
 	if i == nil {
+		if options.nilRenderer != nil {
+			return options.nilRenderer()
+		}
 		return "", nil
 	}
 
@@ -257,10 +287,8 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	switch i.(type) {
 	case string:
 		return i.(string), nil
-	case int64:
-		return strconv.FormatInt(i.(int64), 10), nil
-	case float64:
-		return strconv.FormatFloat(i.(float64), 'f', -1, 64), nil
+	case json.Number:
+		return i.(json.Number).String(), nil
 	case bool:
 		return strconv.FormatBool(i.(bool)), nil
 	default:

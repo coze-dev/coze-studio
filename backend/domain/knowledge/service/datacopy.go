@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -11,22 +27,22 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
-	"code.byted.org/flow/opencoze/backend/domain/datacopy"
-	copyEntity "code.byted.org/flow/opencoze/backend/domain/datacopy/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatacopy"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy"
+	copyEntity "code.byted.org/data_edc/workflow_engine_next/domain/datacopy/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rdbEntity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error) {
@@ -108,13 +124,13 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	var err error
 	defer func() {
 		if e := recover(); e != nil {
-			logs.CtxErrorf(ctx, "copy knowledge failed, err: %v", e)
+			logs.CtxError(ctx, "copy knowledge failed, err: %v", e)
 			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", e))
 		}
 		if err != nil {
 			deleteErr := k.DeleteKnowledge(ctx, &DeleteKnowledgeRequest{KnowledgeID: copyCtx.CopyTask.TargetDataID})
 			if deleteErr != nil {
-				logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", deleteErr)
+				logs.CtxError(ctx, "delete knowledge failed, err: %v", deleteErr)
 			}
 			if len(copyCtx.NewRDBTableNames) != 0 {
 				for i := range copyCtx.NewRDBTableNames {
@@ -123,14 +139,14 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 						IfExists:  true,
 					})
 					if dropErr != nil {
-						logs.CtxErrorf(ctx, "[copyDo] drop table failed, err: %v", dropErr)
+						logs.CtxError(ctx, "[copyDo] drop table failed, err: %v", dropErr)
 					}
 				}
 			}
 			copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusFail
 			err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
 			if err != nil {
-				logs.CtxErrorf(ctx, "update copy task failed, err: %v", err)
+				logs.CtxError(ctx, "update copy task failed, err: %v", err)
 			}
 		}
 	}()
@@ -141,7 +157,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	}
 	err = k.copyKnowledge(ctx, copyCtx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "copy knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "copy knowledge failed, err: %v", err)
 		return nil, err
 	}
 	err = k.copyKnowledgeDocuments(ctx, copyCtx)
@@ -152,7 +168,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusSuccess
 	err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
 	if err != nil {
-		logs.CtxWarnf(ctx, "update copy task failed, err: %v", err)
+		logs.CtxWarn(ctx, "update copy task failed, err: %v", err)
 	}
 	return &CopyKnowledgeResponse{
 		OriginKnowledgeID: copyCtx.OriginData.ID,
@@ -194,7 +210,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(documents) == 0 {
-		logs.CtxInfof(ctx, "knowledge %d has no document", copyCtx.OriginData.ID)
+		logs.CtxInfo(ctx, "knowledge %d has no document", copyCtx.OriginData.ID)
 		return nil
 	}
 
@@ -223,7 +239,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		SelectAll:    true,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "find target document failed, err: %v", err)
+		logs.CtxError(ctx, "find target document failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for i := range targetDocuments {
@@ -238,9 +254,9 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	mu := sync.Mutex{}
 	var failList []int64
 
-	newIDs, err := k.idgen.GenMultiIDs(ctx, len(documents))
+	newIDs, err := k.genMultiIDs(ctx, len(documents))
 	if err != nil {
-		logs.CtxErrorf(ctx, "gen document id failed, err: %v", err)
+		logs.CtxError(ctx, "gen document id failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 
@@ -254,7 +270,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 				mu.Lock()
 				failList = append(failList, doc.ID)
 				mu.Unlock()
-				logs.CtxErrorf(ctx, "copy document failed, src document id: %d, new id: %d, err: %v", doc.ID, newID, err)
+				logs.CtxError(ctx, "copy document failed, src document id: %d, new id: %d, err: %v", doc.ID, newID, err)
 				return cpErr
 			}
 			return nil
@@ -262,7 +278,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	}
 
 	if err := eg.Wait(); err != nil {
-		logs.CtxErrorf(ctx, "copy document failed, document ids: %v, first-err: %v", failList, err)
+		logs.CtxError(ctx, "copy document failed, document ids: %v, first-err: %v", failList, err)
 		return errorx.New(errno.ErrKnowledgeCopyFailCode, errorx.KV("msg", err.Error()))
 	}
 
@@ -330,7 +346,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 	}
 	fields, err := k.mapSearchFields(docEntity)
 	if err != nil {
-		logs.CtxErrorf(ctx, "map search fields failed, err: %v", err)
+		logs.CtxError(ctx, "map search fields failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", err.Error()))
 	}
 	indexingFields := getIndexingFields(fields)
@@ -353,7 +369,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		}
 		updateErr := k.documentRepo.SetStatus(ctx, newDoc.ID, status, msg)
 		if updateErr != nil {
-			logs.CtxErrorf(ctx, "update document status failed, err: %v", updateErr)
+			logs.CtxError(ctx, "update document status failed, err: %v", updateErr)
 		}
 	}()
 	batchSize := 100
@@ -367,7 +383,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		newSliceModels := make([]*model.KnowledgeDocumentSlice, 0)
-		newSliceIDs, err := k.idgen.GenMultiIDs(ctx, len(sliceInfo))
+		newSliceIDs, err := k.genMultiIDs(ctx, len(sliceInfo))
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", err.Error()))
 		}
@@ -396,7 +412,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 			sliceMap, err := k.selectTableData(ctx, doc.TableInfo, sliceInfo)
 			if err != nil {
-				logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
+				logs.CtxError(ctx, "select table data failed, err: %v", err)
 				return err
 			}
 			newSlices := make([]*entity.Slice, 0)
@@ -412,7 +428,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			}
 			err = k.upsertDataToTable(ctx, newDoc.TableInfo, newSlices)
 			if err != nil {
-				logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
+				logs.CtxError(ctx, "upsert data to table failed, err: %v", err)
 				return err
 			}
 			sliceEntities = newSlices
@@ -459,7 +475,7 @@ func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocu
 	// 表格型知识库，创建表
 	rdbColumns := []*rdbEntity.Column{}
 	tableColumns := doc.TableInfo.Columns
-	columnIDs, err := k.idgen.GenMultiIDs(ctx, len(tableColumns)+1)
+	columnIDs, err := k.genMultiIDs(ctx, len(tableColumns)+1)
 	if err != nil {
 		return err
 	}
@@ -499,7 +515,7 @@ func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocu
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "create table failed, err: %v", err)
+		logs.CtxError(ctx, "create table failed, err: %v", err)
 		return err
 	}
 	doc.TableInfo = &entity.TableInfo{

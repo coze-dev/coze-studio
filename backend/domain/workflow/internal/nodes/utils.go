@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package nodes
 
 import (
@@ -7,9 +23,11 @@ import (
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/nikolalohinski/gonja"
 
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 // TakeMapValue extracts the value for specified path from input map.
@@ -46,12 +64,26 @@ func SetMapValue(m map[string]any, path compose.FieldPath, v any) {
 	container[path[len(path)-1]] = v
 }
 
-func Jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
-	tpl, err := gonja.FromString(template)
+func TemplateRender(template string, vals map[string]interface{}) (string, error) {
+	sb := strings.Builder{}
+	valsBytes, err := sonic.Marshal(vals)
 	if err != nil {
-		return "", err
+		return "", vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
-	return tpl.Execute(vals)
+	parts := ParseTemplate(template)
+	for idx := range parts {
+		part := parts[idx]
+		if !part.IsVariable {
+			sb.WriteString(part.Value)
+		} else {
+			renderString, err := part.Render(valsBytes)
+			if err != nil {
+				return "", err
+			}
+			sb.WriteString(renderString)
+		}
+	}
+	return sb.String(), nil
 }
 
 func ExtractJSONString(content string) string {

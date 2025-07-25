@@ -12,7 +12,7 @@ struct ClearConversationHistoryRequest  {
 struct ClearConversationHistoryResponse {
     1:          i64    code
     2:          string msg
-    3: required string new_section_id
+    3: required i64 new_section_id  ( api.js_conv="true")
 }
 
 struct ClearConversationCtxRequest  {
@@ -57,8 +57,8 @@ struct ClearConversationApiRequest {
 }
 
 struct Section {
-    1: i64 id (agw.key = "id", go.tag = "json:\"id\"", api.js_conv = "true")
-    2: i64 conversation_id (agw.key = "conversation_id", go.tag = "json:\"conversation_id\"", api.js_conv = "true")
+    1: i64 id (agw.key = "id", api.js_conv = "true")
+    2: i64 conversation_id (agw.key = "conversation_id", api.js_conv = "true")
 }
 
 struct ClearConversationApiResponse {

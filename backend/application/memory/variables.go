@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package memory
 
 import (
@@ -6,19 +22,19 @@ import (
 	"fmt"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
-	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/i18n"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/variables"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type VariableApplicationService struct {
@@ -210,7 +226,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 	for _, v := range req.VariableList {
 		if v.Channel == project_memory.VariableChannel_System &&
 			sysVarsKeys2Meta[v.Keyword] == nil {
-			logs.CtxInfof(ctx, "sys variable not found, keyword: %s", v.Keyword)
+			logs.CtxInfo(ctx, "sys variable not found, keyword: %s", v.Keyword)
 			continue
 		}
 

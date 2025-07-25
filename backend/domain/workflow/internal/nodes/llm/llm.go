@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package llm
 
 import (
@@ -10,25 +26,28 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
+	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 	"golang.org/x/exp/maps"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	crossknowledge "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type Format int
@@ -160,6 +179,11 @@ type LLM struct {
 	fullSources       map[string]*nodes.SourceInfo
 }
 
+const (
+	rawOutputKey = "llm_raw_output_%s"
+	warningKey   = "llm_warning_%s"
+)
+
 func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	data = nodes.ExtractJSONString(data)
 
@@ -167,27 +191,29 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 
 	err := sonic.UnmarshalString(data, &result)
 	if err != nil {
+		c := execute.GetExeCtx(ctx)
+		if c != nil {
+			logs.CtxError(ctx, "failed to parse json: %v, data: %s", err, data)
+			rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeCtx.NodeKey)
+			warningK := fmt.Sprintf(warningKey, c.NodeCtx.NodeKey)
+			ctxcache.Store(ctx, rawOutputK, data)
+			ctxcache.Store(ctx, warningK, vo.WrapWarn(errno.ErrLLMStructuredOutputParseFail, err))
+			return map[string]any{}, nil
+		}
+
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, err := nodes.ConvertInputs(ctx, result, schema_)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrLLMStructuredOutputParseFail, err)
 	}
 
-	return result, nil
+	if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
+	}
+
+	return r, nil
 }
 
 func getReasoningContent(message *schema.Message) string {
@@ -224,6 +250,8 @@ func WithToolWorkflowMessageWriter(sw *schema.StreamWriter[*entity.Message]) Opt
 }
 
 type llmState = map[string]any
+
+const agentModelName = "agent_model"
 
 func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	g := compose.NewGraph[map[string]any, map[string]any](compose.WithGenLocalState(func(ctx context.Context) (state llmState) {
@@ -312,6 +340,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		reactConfig := react.AgentConfig{
 			ToolCallingModel: m,
 			ToolsConfig:      compose.ToolsNodeConfig{Tools: cfg.Tools},
+			ModelNodeName:    agentModelName,
 		}
 
 		if len(cfg.ToolsReturnDirectly) > 0 {
@@ -327,6 +356,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		}
 
 		agentNode, opts := reactAgent.ExportGraph()
+		opts = append(opts, compose.WithNodeName("workflow_llm_react_agent"))
 		_ = g.AddGraphNode(llmNodeKey, agentNode, opts...)
 	} else {
 		_ = g.AddChatModelNode(llmNodeKey, cfg.ChatModel)
@@ -433,6 +463,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	if requireCheckpoint {
 		opts = append(opts, compose.WithCheckPointStore(workflow.GetRepository()))
 	}
+	opts = append(opts, compose.WithGraphName("workflow_llm_node_graph"))
 
 	r, err := g.Compile(ctx, opts...)
 	if err != nil {
@@ -523,6 +554,37 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 					EventID:    resumingEvent.ToolInterruptEvent.ID,
 					ResumeData: resumeData,
 				}, allIEs))))
+
+		chatModelHandler := callbacks2.NewHandlerHelper().ChatModel(&callbacks2.ModelCallbackHandler{
+			OnStart: func(ctx context.Context, runInfo *callbacks.RunInfo, input *model.CallbackInput) context.Context {
+				if runInfo.Name != agentModelName {
+					return ctx
+				}
+
+				// react agent loops back to chat model after resuming,
+				// pop the previous interrupt event immediately
+				ie, deleted, e := workflow.GetRepository().PopFirstInterruptEvent(ctx, c.RootExecuteID)
+				if e != nil {
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start: %v", err)
+					return ctx
+				}
+
+				if !deleted {
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start: not deleted")
+					return ctx
+				}
+
+				if ie.ID != resumingEvent.ID {
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start, "+
+						"deleted ID: %d, resumingEvent ID: %d", ie.ID, resumingEvent.ID)
+					return ctx
+				}
+
+				return ctx
+			},
+		}).Handler()
+
+		composeOpts = append(composeOpts, compose.WithCallbacks(chatModelHandler))
 	}
 
 	if c != nil {
@@ -542,11 +604,11 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 					if err == io.EOF {
 						return
 					}
-					logs.CtxErrorf(ctx, "failed to receive message from tool workflow: %v", err)
+					logs.CtxError(ctx, "failed to receive message from tool workflow: %v", err)
 					return
 				}
 
-				logs.Infof("received message from tool workflow: %+v", msg)
+				logs.CtxInfo(ctx, "received message from tool workflow: %+v", msg)
 
 				llmOpts.toolWorkflowSW.Send(msg, nil)
 			}
@@ -597,11 +659,17 @@ func handleInterrupt(ctx context.Context, err error, resumingEvent *entity.Inter
 		previousInterruptedCallID = resumingEvent.ToolInterruptEvent.ToolCallID
 	}
 
+	c := execute.GetExeCtx(ctx)
+
 	toolIEs := make([]*entity.ToolInterruptEvent, 0, len(toolsNodeExtra.RerunExtraMap))
 	for callID := range toolsNodeExtra.RerunExtraMap {
 		subIE, ok := toolsNodeExtra.RerunExtraMap[callID].(*entity.ToolInterruptEvent)
 		if !ok {
 			return fmt.Errorf("llm rerun node extra type expected to be ToolInterruptEvent, actual: %T", extra)
+		}
+
+		if subIE.ExecuteID == 0 {
+			subIE.ExecuteID = c.RootExecuteID
 		}
 
 		toolIEs = append(toolIEs, subIE)
@@ -610,7 +678,6 @@ func handleInterrupt(ctx context.Context, err error, resumingEvent *entity.Inter
 		}
 	}
 
-	c := execute.GetExeCtx(ctx)
 	ie := &entity.InterruptEvent{
 		ID:        id,
 		NodeKey:   c.NodeKey,
@@ -744,4 +811,37 @@ type ToolInterruptEventStore interface {
 	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
 	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
 	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
+}
+
+func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	c := execute.GetExeCtx(ctx)
+	if c == nil {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: output,
+		}, nil
+	}
+	rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeKey)
+	warningK := fmt.Sprintf(warningKey, c.NodeKey)
+	rawOutput, found := ctxcache.Get[string](ctx, rawOutputK)
+	if !found {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: output,
+		}, nil
+	}
+
+	warning, found := ctxcache.Get[vo.WorkflowError](ctx, warningK)
+	if !found {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: map[string]any{"output": rawOutput},
+		}, nil
+	}
+
+	return &nodes.StructuredCallbackOutput{
+		Output:    output,
+		RawOutput: map[string]any{"output": rawOutput},
+		Error:     warning,
+	}, nil
 }

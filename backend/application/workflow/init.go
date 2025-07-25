@@ -1,35 +1,51 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package workflow
 
 import (
+	redis "code.byted.org/kv/goredis"
 	"github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	wfdatabase "code.byted.org/flow/opencoze/backend/crossdomain/workflow/database"
-	wfknowledge "code.byted.org/flow/opencoze/backend/crossdomain/workflow/knowledge"
-	wfmodel "code.byted.org/flow/opencoze/backend/crossdomain/workflow/model"
-	wfplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
-	wfsearch "code.byted.org/flow/opencoze/backend/crossdomain/workflow/search"
-	"code.byted.org/flow/opencoze/backend/crossdomain/workflow/variable"
-	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	crossmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
-	crossvariable "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
+	wfdatabase "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/database"
+	wfknowledge "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/knowledge"
+	wfmodel "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/model"
+	wfplugin "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/plugin"
+	wfsearch "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/search"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/variable"
+	knowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	dbservice "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	plugin "code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	crosscode "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	crossdatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	crossknowledge "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	crossmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	crossplugin "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	crosssearch "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/search"
+	crossvariable "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/coderunner"
 )
 
 type ServiceComponents struct {
@@ -64,6 +80,8 @@ func InitService(components *ServiceComponents) *ApplicationService {
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX
+	SVC.TosClient = components.Tos
+	SVC.IDGenerator = components.IDGen
 
 	return SVC
 }

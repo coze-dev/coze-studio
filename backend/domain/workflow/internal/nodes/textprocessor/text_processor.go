@@ -1,14 +1,29 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package textprocessor
 
 import (
 	"context"
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 type Type string
@@ -25,8 +40,6 @@ type Config struct {
 	Separators  []string                     `json:"separator"`
 	FullSources map[string]*nodes.SourceInfo `json:"fullSources"`
 }
-
-var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
 
 type TextProcessor struct {
 	config *Config
@@ -91,21 +104,6 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 	default:
 		return nil, fmt.Errorf("not support type %s", t.config.Type)
 	}
-}
-
-func formatTpl(_ context.Context, tpl string, arrayVs map[string]bool) (formatedTpl string, err error) {
-	matches := parserRegexp.FindAllStringSubmatch(tpl, -1)
-	formattedTpl := tpl
-	for _, match := range matches {
-		if len(match) > 1 {
-			tplVariable := match[1]
-			if arrayVs[tplVariable] {
-				tplVariable = tplVariable + "_join"
-			}
-			formattedTpl = strings.ReplaceAll(formattedTpl, match[0], fmt.Sprintf("{{%s}}", tplVariable))
-		}
-	}
-	return formattedTpl, nil
 }
 
 func join(vs []any, concatChar string) (string, error) {

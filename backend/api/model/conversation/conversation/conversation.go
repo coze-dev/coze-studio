@@ -3,8 +3,8 @@
 package conversation
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )
@@ -272,7 +272,7 @@ func (p *ClearConversationHistoryRequest) String() string {
 type ClearConversationHistoryResponse struct {
 	Code         int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg          string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	NewSectionID string `thrift:"new_section_id,3,required" form:"new_section_id,required" json:"new_section_id,required" query:"new_section_id,required"`
+	NewSectionID int64  `thrift:"new_section_id,3,required" form:"new_section_id,required" json:"new_section_id,string,required" query:"new_section_id,required"`
 }
 
 func NewClearConversationHistoryResponse() *ClearConversationHistoryResponse {
@@ -290,7 +290,7 @@ func (p *ClearConversationHistoryResponse) GetMsg() (v string) {
 	return p.Msg
 }
 
-func (p *ClearConversationHistoryResponse) GetNewSectionID() (v string) {
+func (p *ClearConversationHistoryResponse) GetNewSectionID() (v int64) {
 	return p.NewSectionID
 }
 
@@ -336,7 +336,7 @@ func (p *ClearConversationHistoryResponse) Read(iprot thrift.TProtocol) (err err
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -403,8 +403,8 @@ func (p *ClearConversationHistoryResponse) ReadField2(iprot thrift.TProtocol) er
 }
 func (p *ClearConversationHistoryResponse) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -482,10 +482,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ClearConversationHistoryResponse) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("new_section_id", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("new_section_id", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.NewSectionID); err != nil {
+	if err := oprot.WriteI64(p.NewSectionID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2234,8 +2234,8 @@ func (p *ClearConversationApiRequest) String() string {
 }
 
 type Section struct {
-	ID             int64 `thrift:"id,1" json:"id" form:"id" query:"id"`
-	ConversationID int64 `thrift:"conversation_id,2" json:"conversation_id" form:"conversation_id" query:"conversation_id"`
+	ID             int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	ConversationID int64 `thrift:"conversation_id,2" form:"conversation_id" json:"conversation_id,string" query:"conversation_id"`
 }
 
 func NewSection() *Section {

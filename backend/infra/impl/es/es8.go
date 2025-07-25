@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package es
 
 import (
@@ -16,11 +32,11 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/textquerytype"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/es"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/gopkg/logs"
 )
 
 type es8Client struct {
@@ -185,11 +201,15 @@ func (c *es8Client) Search(ctx context.Context, index string, req *Request) (*Re
 		}))
 	}
 
-	for _, v := range req.SearchAfter {
-		esReq.SearchAfter = append(esReq.SearchAfter, types.FieldValue(v))
+	if req.From != nil {
+		esReq.From = req.From
+	} else {
+		for _, v := range req.SearchAfter {
+			esReq.SearchAfter = append(esReq.SearchAfter, types.FieldValue(v))
+		}
 	}
 
-	logs.CtxDebugf(ctx, "Elasticsearch Request: %s\n", conv.DebugJsonToStr(esReq))
+	logs.CtxDebug(ctx, "Elasticsearch Request: %s\n", conv.DebugJsonToStr(esReq))
 
 	resp, err := c.esClient.Search().Request(esReq).Index(index).Do(ctx)
 	if err != nil {

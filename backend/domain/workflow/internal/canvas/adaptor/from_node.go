@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package adaptor
 
 import (
@@ -7,9 +23,9 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"golang.org/x/exp/maps"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
 )
 
 func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
@@ -46,7 +62,15 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		n = batchN
 	}
 
-	nsList, hierarchy, err := NodeToNodeSchema(ctx, n)
+	implicitDependencies, err := extractImplicitDependency(n, c.Nodes)
+	if err != nil {
+		return nil, err
+	}
+	opts := make([]OptionFn, 0, 1)
+	if len(implicitDependencies) > 0 {
+		opts = append(opts, WithImplicitNodeDependencies(implicitDependencies))
+	}
+	nsList, hierarchy, err := NodeToNodeSchema(ctx, n, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +201,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		}
 
 		for k, tInfo := range startOutputTypes {
-			if err := compose.FillIfNotRequired(tInfo, newOutput, k, compose.FillNil); err != nil {
+			if err := compose.FillIfNotRequired(tInfo, newOutput, k, compose.FillNil, false); err != nil {
 				return nil, err
 			}
 		}
@@ -200,6 +224,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 				},
 			},
 		},
+		OutputTypes: startOutputTypes,
 	}
 
 	trimmedSC := &compose.WorkflowSchema{

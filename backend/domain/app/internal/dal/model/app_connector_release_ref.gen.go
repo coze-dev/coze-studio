@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/app/entity"
+import "code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
 
 const TableNameAppConnectorReleaseRef = "app_connector_release_ref"
 

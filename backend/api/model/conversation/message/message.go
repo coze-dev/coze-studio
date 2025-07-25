@@ -3,8 +3,8 @@
 package message
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"

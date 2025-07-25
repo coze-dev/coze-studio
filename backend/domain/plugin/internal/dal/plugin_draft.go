@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -9,13 +25,13 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewPluginDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginDraftDAO {
@@ -61,6 +77,12 @@ func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []fiel
 	if opt.OpenapiDoc {
 		selected = append(selected, table.OpenapiDoc)
 	}
+	if opt.Manifest {
+		selected = append(selected, table.Manifest)
+	}
+	if opt.IconURI {
+		selected = append(selected, table.IconURI)
+	}
 
 	return selected
 }
@@ -69,6 +91,11 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 	id, err := p.idGen.GenID(ctx)
 	if err != nil {
 		return 0, err
+	}
+
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return 0, fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
 	}
 
 	table := p.query.PluginDraft
@@ -80,7 +107,7 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		AppID:       plugin.GetAPPID(),
-		Manifest:    plugin.Manifest,
+		Manifest:    mf,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
 	if err != nil {
@@ -210,8 +237,13 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInf
 }
 
 func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	}
+
 	m := &model.PluginDraft{
-		Manifest:   plugin.Manifest,
+		Manifest:   mf,
 		OpenapiDoc: plugin.OpenapiDoc,
 	}
 	if plugin.IconURI != nil {
@@ -235,6 +267,11 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		return 0, err
 	}
 
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return 0, fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	}
+
 	table := tx.PluginDraft
 	err = table.WithContext(ctx).Create(&model.PluginDraft{
 		ID:          id,
@@ -244,7 +281,7 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		AppID:       plugin.GetAPPID(),
-		Manifest:    plugin.Manifest,
+		Manifest:    mf,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
 	if err != nil {
@@ -259,18 +296,24 @@ func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, pl
 
 	updateMap := map[string]any{}
 	if plugin.Manifest != nil {
-		mf, err := json.Marshal(plugin.Manifest)
+		mf, err := plugin.Manifest.EncryptAuthPayload()
+		if err != nil {
+			return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+		}
+
+		mfBytes, err := json.Marshal(mf)
 		if err != nil {
 			return err
 		}
-		updateMap[table.Manifest.ColumnName().String()] = mf
+
+		updateMap[table.Manifest.ColumnName().String()] = string(mfBytes)
 	}
 	if plugin.OpenapiDoc != nil {
 		doc, err := json.Marshal(plugin.OpenapiDoc)
 		if err != nil {
 			return err
 		}
-		updateMap[table.OpenapiDoc.ColumnName().String()] = doc
+		updateMap[table.OpenapiDoc.ColumnName().String()] = string(doc)
 	}
 	if plugin.IconURI != nil {
 		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI

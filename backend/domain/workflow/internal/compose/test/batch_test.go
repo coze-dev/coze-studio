@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package test
 
 import (
@@ -8,9 +24,10 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/batch"
 )
 
 func TestBatch(t *testing.T) {
@@ -121,6 +138,9 @@ func TestBatch(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		},
 	}
 
 	ns := &compose2.NodeSchema{
@@ -146,13 +166,13 @@ func TestBatch(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{"Concurrency"},
+				Path: compose.FieldPath{batch.ConcurrentSizeKey},
 				Source: vo.FieldSource{
 					Val: int64(2),
 				},
 			},
 			{
-				Path: compose.FieldPath{"MaxIter"},
+				Path: compose.FieldPath{batch.MaxBatchSizeKey},
 				Source: vo.FieldSource{
 					Val: int64(5),
 				},

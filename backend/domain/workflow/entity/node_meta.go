@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package entity
 
 type NodeType string
@@ -12,11 +28,16 @@ type NodeTypeMeta struct {
 	IconURL         string   `json:"icon_url"`
 	SupportBatch    bool     `json:"support_batch"`
 	Disabled        bool     `json:"disabled,omitempty"`
-	EnUSCategory    string   `json:"en_us_category,omitempty"`
 	EnUSName        string   `json:"en_us_name,omitempty"`
 	EnUSDescription string   `json:"en_us_description,omitempty"`
 
 	ExecutableMeta
+}
+
+type Category struct {
+	Key      string `json:"key"`
+	Name     string `json:"name"`
+	EnUSName string `json:"en_us_name"`
 }
 
 type StreamingParadigm string
@@ -38,6 +59,15 @@ type ExecutableMeta struct {
 	InputSourceAware     bool                       `json:"input_source_aware,omitempty"` // whether this node needs to know the runtime status of its input sources
 	StreamingParadigms   map[StreamingParadigm]bool `json:"streaming_paradigms,omitempty"`
 	StreamSourceEOFAware bool                       `json:"needs_stream_source_eof,omitempty"` // whether this node needs to be aware stream sources' SourceEOF error
+	/*
+	 IncrementalOutput indicates that the node's output is intended for progressive, user-facing streaming.
+	 This distinguishes nodes that actually stream text to the user (e.g., 'Exit', 'Output')
+	 from those that are merely capable of streaming internally (defined by StreamingParadigms),
+	 whose output is consumed by other nodes.
+	 In essence, nodes with IncrementalOutput are a subset of those defined in StreamingParadigms.
+	 When set to true, stream chunks from the node are persisted in real-time and can be fetched by get_process.
+	*/
+	IncrementalOutput bool `json:"incremental_output,omitempty"`
 }
 
 type PluginNodeMeta struct {
@@ -80,6 +110,7 @@ const (
 	NodeTypeDatabaseUpdate             NodeType = "DatabaseUpdate"
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
+	NodeTypeKnowledgeDeleter           NodeType = "KnowledgeDeleter"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"

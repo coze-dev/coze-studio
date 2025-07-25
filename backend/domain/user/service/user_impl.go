@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -16,19 +32,19 @@ import (
 
 	"golang.org/x/crypto/argon2"
 
-	uploadEntity "code.byted.org/flow/opencoze/backend/domain/upload/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/user/repository"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	uploadEntity "code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
+	userEntity "code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type Components struct {
@@ -67,6 +83,15 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
 	}
 
+	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
+	if err != nil {
+		return nil, err
+	}
+	// 登录后如果已经有 SessionKey 就直接返回，不需要重新生成【TODO】
+	if userModel.SessionKey != "" {
+		return userPo2Do(userModel, resURL), nil
+	}
+
 	uniqueSessionID, err := u.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate session id: %w", err)
@@ -84,12 +109,6 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 	}
 
 	userModel.SessionKey = sessionKey
-
-	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	if err != nil {
-		return nil, err
-	}
-
 	return userPo2Do(userModel, resURL), nil
 }
 
@@ -344,12 +363,12 @@ func (u *userImpl) getUniqueNameFormEmail(ctx context.Context, email string) str
 
 	exist, err := u.UserRepo.CheckUniqueNameExist(ctx, username)
 	if err != nil {
-		logs.CtxWarnf(ctx, "check unique name exist failed: %v", err)
+		logs.CtxWarn(ctx, "check unique name exist failed: %v", err)
 		return email
 	}
 
 	if exist {
-		logs.CtxWarnf(ctx, "unique name %s already exist", username)
+		logs.CtxWarn(ctx, "unique name %s already exist", username)
 
 		return email
 	}
@@ -378,6 +397,7 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 
 	return &userEntity.Session{
 		UserID:    userModel.ID,
+		Locale:    userModel.Locale,
 		CreatedAt: sessionModel.CreatedAt,
 		ExpiresAt: sessionModel.ExpiresAt,
 	}, true, nil

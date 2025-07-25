@@ -5,7 +5,7 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
 	"gorm.io/gorm"
 )
 

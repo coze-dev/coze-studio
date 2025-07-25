@@ -1,4 +1,4 @@
-module code.byted.org/flow/opencoze/scripts/volcengine
+module github.com/coze-dev/coze-studio/scripts/volcengine
 
 go 1.24.1
 

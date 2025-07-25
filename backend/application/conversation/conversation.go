@@ -1,21 +1,37 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package conversation
 
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	conversationService "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/service"
-	message "code.byted.org/flow/opencoze/backend/domain/conversation/message/service"
-	"code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	agentrun "code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	conversationService "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/service"
+	message "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type ConversationApplicationService struct {
@@ -36,27 +52,29 @@ type OpenapiAgentRunApplication struct {
 
 var ConversationOpenAPISVC = new(OpenapiAgentRunApplication)
 
-func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
+func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*conversation.ClearConversationHistoryResponse, error) {
+	resp := new(conversation.ClearConversationHistoryResponse)
+
 	conversationID := req.ConversationID
 
 	// get conversation
 	currentRes, err := c.ConversationDomainSVC.GetByID(ctx, conversationID)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 	if currentRes == nil {
-		return nil, errorx.New(errno.ErrConversationNotFound)
+		return resp, errorx.New(errno.ErrConversationNotFound)
 	}
 	// check user
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil || *userID != currentRes.CreatorID {
-		return nil, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
+		return resp, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
 	// delete conversation
 	err = c.ConversationDomainSVC.Delete(ctx, conversationID)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 	// create new conversation
 	convRes, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
@@ -66,10 +84,10 @@ func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *
 		ConnectorID: consts.CozeConnectorID,
 	})
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
-
-	return convRes, nil
+	resp.NewSectionID = convRes.SectionID
+	return resp, nil
 }
 
 func (c *ConversationApplicationService) CreateSection(ctx context.Context, conversationID int64) (int64, error) {
@@ -101,7 +119,8 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 	return convRes.SectionID, nil
 }
 
-func (c *ConversationApplicationService) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.ConversationData, error) {
+func (c *ConversationApplicationService) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.CreateConversationResponse, error) {
+	resp := new(conversation.CreateConversationResponse)
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 	if connectorID != consts.WebSDKConnectorID {
@@ -117,24 +136,25 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-
-	return &conversation.ConversationData{
+	resp.ConversationData = &conversation.ConversationData{
 		Id:            conversationData.ID,
 		LastSectionID: &conversationData.SectionID,
 		ConnectorID:   &conversationData.ConnectorID,
 		CreatedAt:     conversationData.CreatedAt,
-	}, nil
+	}
+	return resp, nil
 }
 
-func (c *ConversationApplicationService) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) ([]*conversation.ConversationData, bool, error) {
-	var hasMore bool
+func (c *ConversationApplicationService) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) (*conversation.ListConversationsApiResponse, error) {
+
+	resp := new(conversation.ListConversationsApiResponse)
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 	connectorID := apiKeyInfo.ConnectorID
 
 	if userID == 0 {
-		return nil, hasMore, errorx.New(errno.ErrConversationNotFound)
+		return resp, errorx.New(errno.ErrConversationNotFound)
 	}
 	if ptr.From(req.ConnectorID) == consts.WebSDKConnectorID {
 		connectorID = ptr.From(req.ConnectorID)
@@ -149,7 +169,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		Limit:       int(req.GetPageSize()),
 	})
 	if err != nil {
-		return nil, hasMore, err
+		return resp, err
 	}
 	conversationData := slices.Transform(conversationDOList, func(conv *entity.Conversation) *conversation.ConversationData {
 		return &conversation.ConversationData{
@@ -160,5 +180,9 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		}
 	})
 
-	return conversationData, hasMore, nil
+	resp.Data = &conversation.ListConversationData{
+		Conversations: conversationData,
+		HasMore:       hasMore,
+	}
+	return resp, nil
 }

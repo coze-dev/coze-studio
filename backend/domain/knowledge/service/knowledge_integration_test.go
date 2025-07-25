@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -15,28 +31,27 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
-	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
-	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
-	"code.byted.org/flow/opencoze/backend/infra/impl/es"
-	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	rdbservice "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
-	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/nl2sql"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
+	sses "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/elasticsearch"
+	ssmilvus "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/milvus"
+	hembed "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/http"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
+	rdbservice "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage/minio"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 func TestKnowledgeSuite(t *testing.T) {
@@ -86,7 +101,10 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	cacheCli := redis.New()
+	cacheCli, err := redis.New()
+	if err != nil {
+		panic(err)
+	}
 	idGenSVC, err := idgen.New(cacheCli)
 	if err != nil {
 		panic(err)
@@ -105,7 +123,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 
-	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQTopicKnowledgeSearch, 2)
+	knowledgeProducer, err := eventbus.NewProducer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
 	if err != nil {
 		panic(err)
 	}
@@ -116,7 +134,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	//	panic(err)
 	// }
 
-	knowledgeES, err := es.New()
+	knowledgeES, err := es.New(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -156,7 +174,6 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		SearchStoreManagers: mgrs,
 		ParseManager:        nil, // default builtin
 		Storage:             tosClient,
-		ImageX:              nil, // TODO: image not support
 		Rewriter:            nil,
 		Reranker:            nil, // default rrf
 		EnableCompactTable:  ptr.Of(true),
@@ -164,7 +181,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	suite.handler = knowledgeEventHandler
 
-	err = rmq.RegisterConsumer(rmqEndpoint, "opencoze_knowledge", "cg_knowledge", suite)
+	err = eventbus.RegisterConsumer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, suite)
 	if err != nil {
 		panic(err)
 	}

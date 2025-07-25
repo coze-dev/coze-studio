@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package main
 
 import (
@@ -14,17 +30,21 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	appEntity "code.byted.org/flow/opencoze/backend/domain/app/entity"
-	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	modelEntity "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	appEntity "code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	variableEntity "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
+	"domain/datacopy/internal/dal/query": {
+		"data_copy_task": {},
+	},
 	"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
 			// "variable":        []*bot_common.Variable{},
@@ -37,7 +57,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"suggest_reply":              &bot_common.SuggestReplyInfo{},
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
-			"database":                   []*bot_common.Database{},
+			"database_config":            []*bot_common.Database{},
 			"shortcut_command":           []string{},
 		},
 		"single_agent_version": {
@@ -51,7 +71,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"suggest_reply":              &bot_common.SuggestReplyInfo{},
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
-			"database":                   []*bot_common.Database{},
+			"database_config":            []*bot_common.Database{},
 			"shortcut_command":           []string{},
 		},
 		"single_agent_publish": {
@@ -86,9 +106,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"tool_version": {
 			"operation": &plugin.Openapi3Operation{},
 		},
+		"plugin_oauth_auth": {
+			"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},
+		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
-		"run_record": {},
+		"run_record": {
+			"usage": &agentrun.Usage{},
+		},
 	},
 	"domain/conversation/conversation/internal/dal/query": {
 		"conversation": {},
@@ -123,13 +148,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/workflow/internal/repo/dal/query": {
-		"workflow_meta":      {},
-		"workflow_draft":     {},
-		"workflow_version":   {},
-		"workflow_reference": {},
-		"workflow_execution": {},
-		"node_execution":     {},
-		"workflow_snapshot":  {},
+		"workflow_meta":              {},
+		"workflow_draft":             {},
+		"workflow_version":           {},
+		"workflow_reference":         {},
+		"workflow_execution":         {},
+		"node_execution":             {},
+		"workflow_snapshot":          {},
+		"connector_workflow_version": {},
 	},
 
 	"domain/openauth/openapiauth/internal/dal/query": {

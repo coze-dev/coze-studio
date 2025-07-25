@@ -1,8 +1,26 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package consts
 
 import "time"
 
 const (
+	I18nMQCluster = "ecom_global"
+
 	MySQLDsn           = "MYSQL_DSN"
 	RedisAddr          = "REDIS_ADDR"
 	VeImageXAK         = "VE_IMAGEX_AK"
@@ -12,25 +30,37 @@ const (
 	VeImageXTemplate   = "VE_IMAGEX_TEMPLATE"
 	VeImageXUploadHost = "VE_IMAGEX_UPLOAD_HOST"
 
-	StorageType   = "STORAGE_TYPE"
-	MinIOAK       = "MINIO_AK"
-	MinIOSK       = "MINIO_SK"
-	MinIOEndpoint = "MINIO_ENDPOINT"
-	StorageBucket = "STORAGE_BUCKET"
-	TOSAccessKey  = "TOS_ACCESS_KEY"
-	TOSSecretKey  = "TOS_SECRET_KEY"
-	TOSRegion     = "TOS_REGION"
-	TOSEndpoint   = "TOS_ENDPOINT"
+	FileUploadComponentType        = "FILE_UPLOAD_COMPONENT_TYPE"
+	FileUploadComponentTypeImagex  = "imagex"
+	FileUploadComponentTypeStorage = "storage"
 
-	RMQServer               = "RMQ_NAME_SERVER"
-	RMQSecretKey            = "RMQ_SECRET_KEY"
-	RMQAccessKey            = "RMQ_ACCESS_KEY"
-	RMQTopicApp             = "opencoze_search_app"
-	RMQTopicResource        = "opencoze_search_resource"
-	RMQTopicKnowledge       = "opencoze_knowledge"
-	RMQTopicSearchResource  = "cg_search_resource"
-	RMQTopicSearchApp       = "cg_search_app"
-	RMQTopicKnowledgeSearch = "cg_knowledge"
+	StorageType        = "STORAGE_TYPE"
+	MinIOAK            = "MINIO_AK"
+	MinIOSK            = "MINIO_SK"
+	MinIOEndpoint      = "MINIO_ENDPOINT"
+	MinIOProxyEndpoint = "MINIO_PROXY_ENDPOINT"
+	MinIOAPIHost       = "MINIO_API_HOST"
+	StorageBucket      = "STORAGE_BUCKET"
+	TOSAccessKey       = "TOS_ACCESS_KEY"
+	TOSSecretKey       = "TOS_SECRET_KEY"
+	TOSRegion          = "TOS_REGION"
+	TOSEndpoint        = "TOS_ENDPOINT"
+
+	HostKeyInCtx          = "HOST_KEY_IN_CTX"
+	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
+
+	MQTypeKey                = "COZE_MQ_TYPE"
+	MQServer                 = "MQ_NAME_SERVER"
+	RMQSecretKey             = "RMQ_SECRET_KEY"
+	RMQAccessKey             = "RMQ_ACCESS_KEY"
+	RMQTopicApp              = "opencoze_search_app"
+	RMQTopicResource         = "opencoze_search_resource"
+	RMQConsumeGroupResource  = "cg_search_resource"
+	RMQConsumeGroupApp       = "cg_search_app"
+	RMQConsumeGroupKnowledge = "cg_knowledge"
+	RMQTopicSearchResource   = "ecom_wf_cg_search_resource" // TODO:: 后续topic需要修改和注册
+	RMQTopicSearchApp        = "ecom_wf_cg_search_app"      // TODO:: 后续topic需要修改和注册
+	RMQTopicKnowledge        = "ecom_wf_cg_knowledge"       // TODO:: 知识库先不管, 异步操作，向量化文档
 
 	CozeConnectorID   = int64(10000010)
 	WebSDKConnectorID = int64(999)
@@ -63,4 +93,9 @@ const (
 
 const (
 	TemplateSpaceID = int64(999999) // special space id for template
+)
+
+const (
+	ApplyUploadActionURI = "/api/playground/apply_upload_action"
+	UploadURI            = "/api/playground/upload"
 )

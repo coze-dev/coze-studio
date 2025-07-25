@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
@@ -60,6 +60,7 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	return _workflowExecution
 }
 
+// workflowExecution workflow 执行记录表，用于记录每次workflow执行时的状态
 type workflowExecution struct {
 	workflowExecutionDo
 

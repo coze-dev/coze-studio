@@ -16,7 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	imagex "code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	imagex "code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
 )
 
 // MockImageX is a mock of ImageX interface.

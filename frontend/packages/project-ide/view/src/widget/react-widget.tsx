@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import * as React from 'react';
 
 import { injectable, type interfaces, unmanaged } from 'inversify';
@@ -5,14 +21,14 @@ import { Emitter } from '@flowgram-adapter/common';
 import { type URI } from '@coze-project-ide/core';
 
 import { type Widget } from '../lumino/widgets';
-import { BaseWidget } from './base-widget';
+import { AbstractWidget } from './base-widget';
 
 export const ReactWidgetContext = React.createContext<ReactWidget | undefined>(
   undefined,
 );
 
 @injectable()
-export abstract class ReactWidget extends BaseWidget {
+export abstract class ReactWidget extends AbstractWidget {
   /**
    * widget resource uri
    */

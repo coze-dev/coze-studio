@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package veimagex
 
 import (
@@ -8,8 +24,8 @@ import (
 	"github.com/volcengine/volc-sdk-golang/base"
 	veimagex "github.com/volcengine/volc-sdk-golang/service/imagex/v2"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/gopkg/logs"
 )
 
 func New(ak, sk, domain, uploadHost, template string, serverIDs []string) (imagex.ImageX, error) {
@@ -89,6 +105,7 @@ func (v *veImageX) GetUploadAuthWithExpire(ctx context.Context, expire time.Dura
 		SessionToken:    token.SessionToken,
 		ExpiredTime:     token.ExpiredTime,
 		CurrentTime:     token.CurrentTime,
+		HostScheme:      "https",
 	}, nil
 }
 
@@ -141,7 +158,7 @@ func (v *veImageX) GetResourceURL(ctx context.Context, uri string, opts ...image
 		Tpl:       option.Template,
 	}
 
-	logs.CtxInfof(ctx, "GetResourceURL param: %+v", param)
+	logs.CtxInfo(ctx, "GetResourceURL param: %+v", param)
 
 	instance := veimagex.DefaultInstance
 	resp, err := instance.GetResourceURL(context.Background(), param)
@@ -220,6 +237,6 @@ func (v *veImageX) GetServerID() string {
 	return v.serverIDs[0]
 }
 
-func (v *veImageX) GetUploadHost() string {
+func (v *veImageX) GetUploadHost(ctx context.Context) string {
 	return v.uploadHost
 }

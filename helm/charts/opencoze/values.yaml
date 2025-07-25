@@ -1,0 +1,263 @@
+# Default values for opencoze.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+mysql:
+  enabled: true
+  port: 3306
+  targetPort: 3306
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/mysql
+    tag: 8.4.5
+  rootPassword: "root"
+  database: opencoze
+  user: coze
+  password: coze123
+  persistence:
+    storageClassName: "opencoze-data"
+    size: "50Gi"
+  initScripts:
+    - files/mysql/init.sql
+    - files/mysql/sql_init.sql
+
+redis:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/redis
+    tag: "7.2"
+  aofEnabled: "no"
+  port: 6379
+  ioThreads: 4
+  allowEmptyPassword: "yes"
+  password: ""
+  persistence:
+    storageClassName: "opencoze-data"
+    size: "50Gi"
+
+# -- coze-server configuration
+cozeServer:
+  enabled: true
+  # -- Number of replicas for the coze-server deployment
+  replicaCount: 1
+
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/opencoze
+    pullPolicy: IfNotPresent
+    tag: 'latest'
+
+  service:
+    type: LoadBalancer
+    port: 8888
+
+  env:
+    LOG_LEVEL: "debug"
+    MAX_REQUEST_BODY_SIZE: "1073741824"
+    STORAGE_TYPE: "minio"
+    MINIO_POD_PROXY_URL: "opencoze-minio:9000"
+    MINIO_ENDPOINT: "127.0.0.1:9000"
+    ES_VERSION: "v8"
+    VECTOR_STORE_TYPE: "milvus"
+    EMBEDDING_TYPE: "openai"
+    OPENAI_EMBEDDING_BASE_URL: "https://api.openai.com/v1/embeddings"
+    OPENAI_EMBEDDING_MODEL: "text-embedding-3-large"
+    OPENAI_EMBEDDING_API_KEY: "your_api_key"
+    OPENAI_EMBEDDING_BY_AZURE: "false"
+    OPENAI_EMBEDDING_DIMS: "1024"
+    OCR_TYPE: "ve"
+    VE_OCR_AK: ""
+    VE_OCR_SK: ""
+    BUILTIN_CM_TYPE: "openai"
+    BUILTIN_CM_OPENAI_BASE_URL: "https://api.openai.com/v1/chat/completions"
+    BUILTIN_CM_OPENAI_API_KEY: "your_api_key"
+    BUILTIN_CM_OPENAI_BY_AZURE: "false"
+    BUILTIN_CM_OPENAI_MODEL: "gpt-4o-2024-05-13"
+    VE_IMAGEX_AK: ""
+    VE_IMAGEX_SK: ""
+    VE_IMAGEX_SERVER_ID: ""
+    VE_IMAGEX_DOMAIN: ""
+    VE_IMAGEX_TEMPLATE: ""
+    VE_IMAGEX_UPLOAD_HOST: "https://imagex.volcengineapi.com"
+
+rocketmq:
+  enabled: true
+  namesrv:
+    replicaCount: 1
+    image:
+      repository: opencoze-cn-beijing.cr.volces.com/iac/rocketmq
+      tag: 5.3.2
+    persistence:
+      store:
+        storageClassName: "opencoze-data"
+        size: "20Gi"
+      logs:
+        storageClassName: "opencoze-data"
+        size: "20Gi"
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+    livenessProbe:
+      exec:
+        command: ["sh", "-c", "mqadmin clusterList -n localhost:9876"]
+      initialDelaySeconds: 30
+      periodSeconds: 10
+  topics:
+    - opencoze_knowledge
+    - opencoze_search_app
+    - opencoze_search_resource
+    - "%RETRY%cg_knowledge"
+    - "%RETRY%cg_search_app"
+    - "%RETRY%cg_search_resource"
+  consumerGroups:
+    - cg_knowledge
+    - cg_search_app
+    - cg_search_resource
+  broker:
+    replicaCount: 1
+    image:
+      repository: opencoze-cn-beijing.cr.volces.com/iac/rocketmq
+      tag: 5.3.2
+    config: |
+      brokerClusterName = DefaultCluster
+      brokerName = broker-a
+      brokerId = 0
+      deleteWhen = 04
+      fileReservedTime = 48
+      brokerRole = ASYNC_MASTER
+      flushDiskType = ASYNC_FLUSH
+    persistence:
+      store:
+        storageClassName: "opencoze-data"
+        size: "20Gi"
+      logs:
+        storageClassName: "opencoze-data"
+        size: "20Gi"
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+    initContainers:
+      - name: wait-for-namesrv
+        image: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
+        command: ['sh', '-c', 'until nc -z rocketmq-namesrv 9876; do echo waiting for namesrv; sleep 2; done']
+
+elasticsearch:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/elasticsearch
+    tag: 8.18.0
+  javaOpts: "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m"
+  username: ""
+  password: ""
+  persistence:
+    enabled: true
+    storageClassName: "opencoze-data"
+    accessModes:
+      - ReadWriteOnce
+    size: 50Gi
+  service:
+    type: ClusterIP
+    port: 9200
+    targetPort: 9200
+
+minio:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/minio
+    tag: latest
+  accessKey: minioadmin
+  secretKey: minioadmin123
+  bucket: opencoze
+  service:
+    type: LoadBalancer
+    port: 9000
+    consolePort: 9001
+  persistence:
+    storageClassName: "opencoze-data"
+    size: "50Gi"
+  resources:
+    limits:
+      cpu: 8000m
+      memory: 16Gi
+    requests:
+      cpu: 4000m
+      memory: 8Gi
+
+etcd:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/etcd
+    tag: 3.5
+  persistence:
+    storageClassName: "opencoze-data"
+    size: "20Gi"
+
+milvus:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/milvus
+    tag: v2.5.10
+  bucketName: milvus
+  persistence:
+    storageClassName: "opencoze-data"
+    size: "20Gi"
+
+kibana:
+  enabled: true
+  image:
+    repository: opencoze-cn-beijing.cr.volces.com/iac/kibana
+    tag: 8.18.0
+  service:
+    type: ClusterIP
+    port: 5601
+
+
+images:
+  busybox: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
+  curl: opencoze-cn-beijing.cr.volces.com/iac/curl:8.12.1
+
+
+# -- We will add other services like mysql, redis etc. here later
+
+# This is to override the chart name.
+nameOverride: ''
+fullnameOverride: ''
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 80
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ''
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+

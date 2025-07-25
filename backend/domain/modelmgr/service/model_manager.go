@@ -1,22 +1,39 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"gorm.io/gorm"
 
-	modelmgrModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/dao"
-	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
-	uploadEntity "code.byted.org/flow/opencoze/backend/domain/upload/entity"
-	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	modelmgrModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/dao"
+	dmodel "code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/model"
+	uploadEntity "code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
+	modelcontract "code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) modelmgr.Manager {
@@ -49,6 +66,11 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		}
 	}
 
+	desc, err := json.Marshal(meta.Description)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now().UnixMilli()
 	if err = m.modelMetaRepo.Create(ctx, &dmodel.ModelMeta{
 		ID:          id,
@@ -59,7 +81,7 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		Capability:  meta.Capability,
 		ConnConfig:  meta.ConnConfig,
 		Status:      meta.Status,
-		Description: meta.Description,
+		Description: string(desc),
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		DeletedAt:   gorm.DeletedAt{},
@@ -257,13 +279,18 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 		uris[uri] = url
 	}
 
-	dos := slices.Transform(pos, func(po *dmodel.ModelMeta) *entity.ModelMeta {
+	dos, err := slices.TransformWithErrorCheck(pos, func(po *dmodel.ModelMeta) (*entity.ModelMeta, error) {
 		if po == nil {
-			return nil
+			return nil, nil
 		}
 		url := po.IconURL
 		if url == "" {
 			url = uris[po.IconURI]
+		}
+
+		desc := &modelmgrModel.MultilingualText{}
+		if unmarshalErr := json.Unmarshal([]byte(po.Description), desc); unmarshalErr != nil {
+			return nil, unmarshalErr
 		}
 
 		return &entity.ModelMeta{
@@ -272,7 +299,7 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 			IconURI: po.IconURI,
 			IconURL: url,
 
-			Description: po.Description,
+			Description: desc,
 			CreatedAtMs: po.CreatedAt,
 			UpdatedAtMs: po.UpdatedAt,
 			DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
@@ -281,8 +308,11 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 			Capability: po.Capability,
 			ConnConfig: po.ConnConfig,
 			Status:     po.Status,
-		}
+		}, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return dos, nil
 }

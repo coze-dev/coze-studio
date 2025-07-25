@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package internal
 
 import (
@@ -6,10 +22,11 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/repository"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type RunProcess struct {
@@ -45,18 +62,19 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 	return nil
 }
 
-func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *agentrun.Usage) {
 
 	completedAt := time.Now().UnixMilli()
 
 	updateMeta := &entity.UpdateMeta{
 		Status:      entity.RunStatusCompleted,
+		Usage:       usage,
 		CompletedAt: completedAt,
 		UpdatedAt:   completedAt,
 	}
 	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 	if err != nil {
-		logs.CtxErrorf(ctx, "RunRecordRepo.UpdateByID error: %v", err)
+		logs.CtxError(ctx, "RunRecordRepo.UpdateByID error: %v", err)
 		r.event.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
 			Code: errno.ErrConversationAgentRunError,
 			Msg:  err.Error(),
@@ -70,8 +88,6 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 	r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
 
 	r.event.SendStreamDoneEvent(sw)
-	return
-
 }
 func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 
@@ -90,7 +106,7 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 			Code: errno.ErrConversationAgentRunError,
 			Msg:  err.Error(),
 		})
-		logs.CtxErrorf(ctx, "update run record failed, err: %v", err)
+		logs.CtxError(ctx, "update run record failed, err: %v", err)
 		return
 	}
 	srRecord.Status = entity.RunStatusFailed

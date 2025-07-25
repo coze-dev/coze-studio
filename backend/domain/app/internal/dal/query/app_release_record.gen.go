@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/model"
 )
 
 func newAppReleaseRecord(db *gorm.DB, opts ...gen.DOOption) appReleaseRecord {
@@ -32,8 +32,8 @@ func newAppReleaseRecord(db *gorm.DB, opts ...gen.DOOption) appReleaseRecord {
 	_appReleaseRecord.SpaceID = field.NewInt64(tableName, "space_id")
 	_appReleaseRecord.OwnerID = field.NewInt64(tableName, "owner_id")
 	_appReleaseRecord.IconURI = field.NewString(tableName, "icon_uri")
-	_appReleaseRecord.Name = field.NewString(tableName, "Name")
-	_appReleaseRecord.Desc = field.NewString(tableName, "desc")
+	_appReleaseRecord.Name = field.NewString(tableName, "name")
+	_appReleaseRecord.Description = field.NewString(tableName, "description")
 	_appReleaseRecord.ConnectorIds = field.NewField(tableName, "connector_ids")
 	_appReleaseRecord.ExtraInfo = field.NewField(tableName, "extra_info")
 	_appReleaseRecord.Version = field.NewString(tableName, "version")
@@ -59,7 +59,7 @@ type appReleaseRecord struct {
 	OwnerID       field.Int64  // Owner ID
 	IconURI       field.String // Icon URI
 	Name          field.String // Application Name
-	Desc          field.String // Application Description
+	Description   field.String // Application Description
 	ConnectorIds  field.Field  // Publish Connector IDs
 	ExtraInfo     field.Field  // Publish Extra Info
 	Version       field.String // Release Version
@@ -89,8 +89,8 @@ func (a *appReleaseRecord) updateTableName(table string) *appReleaseRecord {
 	a.SpaceID = field.NewInt64(table, "space_id")
 	a.OwnerID = field.NewInt64(table, "owner_id")
 	a.IconURI = field.NewString(table, "icon_uri")
-	a.Name = field.NewString(table, "Name")
-	a.Desc = field.NewString(table, "desc")
+	a.Name = field.NewString(table, "name")
+	a.Description = field.NewString(table, "description")
 	a.ConnectorIds = field.NewField(table, "connector_ids")
 	a.ExtraInfo = field.NewField(table, "extra_info")
 	a.Version = field.NewString(table, "version")
@@ -121,8 +121,8 @@ func (a *appReleaseRecord) fillFieldMap() {
 	a.fieldMap["space_id"] = a.SpaceID
 	a.fieldMap["owner_id"] = a.OwnerID
 	a.fieldMap["icon_uri"] = a.IconURI
-	a.fieldMap["Name"] = a.Name
-	a.fieldMap["desc"] = a.Desc
+	a.fieldMap["name"] = a.Name
+	a.fieldMap["description"] = a.Description
 	a.fieldMap["connector_ids"] = a.ConnectorIds
 	a.fieldMap["extra_info"] = a.ExtraInfo
 	a.fieldMap["version"] = a.Version

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package agentflow
 
 import (
@@ -6,19 +22,25 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+)
+
+const (
+	TimeFormat = "2006-01-02 15:04:05"
 )
 
 type databaseConfig struct {
@@ -203,6 +225,9 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 	}
 	sb.WriteString("\n")
 
+	fieldMap := slices.ToMap(result.FieldList, func(f *database.FieldItem) (string, *database.FieldItem) {
+		return f.Name, f
+	})
 	for _, record := range result.Records {
 		sb.WriteString("| ")
 		for _, header := range headers {
@@ -210,7 +235,12 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 			if !exists {
 				value = ""
 			}
-			sb.WriteString(value + " | ")
+			fieldType := table.FieldItemType_Text
+			fValue, fExists := fieldMap[header]
+			if fExists {
+				fieldType = fValue.Type
+			}
+			sb.WriteString(convertDBValueToString(value, fieldType) + " | ")
 		}
 		sb.WriteString("\n")
 	}
@@ -220,4 +250,53 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 	}
 
 	return sb.String()
+}
+
+func convertDBValueToString(value interface{}, fieldType table.FieldItemType) string {
+	switch fieldType {
+	case table.FieldItemType_Text:
+		if byteArray, ok := value.([]uint8); ok {
+			return string(byteArray)
+		}
+
+	case table.FieldItemType_Number:
+		switch v := value.(type) {
+		case int64:
+			return strconv.FormatInt(v, 10)
+		case []uint8:
+			return string(v)
+		}
+
+	case table.FieldItemType_Float:
+		switch v := value.(type) {
+		case float64:
+			return strconv.FormatFloat(v, 'f', -1, 64)
+		case []uint8:
+			return string(v)
+		}
+
+	case table.FieldItemType_Boolean:
+		switch v := value.(type) {
+		case bool:
+			return strconv.FormatBool(v)
+		case int64:
+			return strconv.FormatBool(v != 0)
+		case []uint8:
+			boolStr := string(v)
+			if boolStr == "1" || boolStr == "true" {
+				return "true"
+			}
+			return "false"
+		}
+
+	case table.FieldItemType_Date:
+		switch v := value.(type) {
+		case time.Time:
+			return v.Format(TimeFormat)
+		case []uint8:
+			return string(v)
+		}
+	}
+
+	return fmt.Sprintf("%v", value)
 }

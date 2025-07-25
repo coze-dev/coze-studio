@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package agent
 
 import (
@@ -6,15 +22,15 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
-	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagent"
+	singleagent "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 var defaultSVC crossagent.SingleAgent
@@ -40,7 +56,7 @@ func (c *impl) StreamExecute(ctx context.Context, historyMsg []*message.Message,
 	singleAgentStreamExecReq := c.buildSingleAgentStreamExecuteReq(ctx, historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
-	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
+	logs.CtxInfo(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 
@@ -58,7 +74,6 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg 
 		Input:    inputBuild[0],
 		History:  history,
 		UserID:   input.UserID,
-		// SpaceID:      agentRuntime.SpaceID, // TODO(@lijunwen): 梳理概念
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
 			return &agentrun.ToolsRetriever{
 				PluginID:  tool.PluginID,

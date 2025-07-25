@@ -73,7 +73,6 @@ struct IndexStrategy{
 
 struct FilterStrategy{
     1: optional list<i32>    filter_page;          //过滤页数
-    2: optional list<double>    filter_box_position;  //过滤框位置
 }
 
 // 排序字段

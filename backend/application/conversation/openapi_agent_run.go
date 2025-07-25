@@ -1,33 +1,49 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package conversation
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	cmdEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	saEntity "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
+	convEntity "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	cmdEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	sseImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/sse"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
-func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *run.ChatV3Request) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	agentInfo, caErr := a.checkAgent(ctx, ar)
-	if caErr != nil {
-		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
-		return nil, caErr
-	}
+func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSender *sseImpl.SSenderImpl, ar *run.ChatV3Request) error {
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	creatorID := apiKeyInfo.UserID
@@ -36,19 +52,30 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 	if ptr.From(ar.ConnectorID) == consts.WebSDKConnectorID {
 		connectorID = ptr.From(ar.ConnectorID)
 	}
+	agentInfo, caErr := a.checkAgent(ctx, ar, connectorID)
+	if caErr != nil {
+		logs.CtxError(ctx, "checkAgent err:%v", caErr)
+		return caErr
+	}
+
 	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
-		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
-		return nil, ccErr
+		logs.CtxError(ctx, "checkConversation err:%v", ccErr)
+		return ccErr
 	}
 
 	spaceID := agentInfo.SpaceID
 	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData)
 	if err != nil {
-		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
-		return nil, err
+		logs.CtxError(ctx, "buildAgentRunRequest err:%v", err)
+		return err
 	}
-	return ConversationSVC.AgentRunDomainSVC.AgentRun(ctx, arr)
+	streamer, err := ConversationSVC.AgentRunDomainSVC.AgentRun(ctx, arr)
+	if err != nil {
+		return err
+	}
+	a.pullStream(ctx, sseSender, streamer)
+	return nil
 }
 
 func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64) (*convEntity.Conversation, error) {
@@ -87,8 +114,12 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 	return conversationData, nil
 }
 
-func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.ChatV3Request) (*saEntity.SingleAgent, error) {
-	agentInfo, err := ConversationSVC.appContext.SingleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
+func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.ChatV3Request, connectorID int64) (*saEntity.SingleAgent, error) {
+	agentInfo, err := ConversationSVC.appContext.SingleAgentDomainSVC.ObtainAgentByIdentity(ctx, &singleagent.AgentIdentity{
+		AgentID:     ar.BotID,
+		IsDraft:     false,
+		ConnectorID: connectorID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +150,7 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		UserID:           ar.User,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
-		IsDraft:          true,
+		IsDraft:          false,
 		ConnectorID:      connectorID,
 		ContentType:      contentType,
 		Ext:              ar.ExtraParams,
@@ -191,7 +222,7 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 			var inputs []*run.AdditionalContent
 			err := json.Unmarshal([]byte(item.Content), &inputs)
 
-			logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
+			logs.CtxInfo(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
 			if err != nil {
 				continue
 			}
@@ -223,4 +254,76 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 	}
 
 	return multiContents, contentType, nil
+}
+
+func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *sseImpl.SSenderImpl, streamer *schema.StreamReader[*entity.AgentRunResponse]) {
+	for {
+		chunk, recvErr := streamer.Recv()
+		logs.CtxInfo(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
+		if recvErr != nil {
+			if errors.Is(recvErr, io.EOF) {
+				return
+			}
+			sseSender.Send(ctx, buildErrorEvent(errno.ErrConversationAgentRunError, recvErr.Error()))
+			return
+		}
+
+		switch chunk.Event {
+
+		case entity.RunEventError:
+			sseSender.Send(ctx, buildErrorEvent(chunk.Error.Code, chunk.Error.Msg))
+		case entity.RunEventStreamDone:
+			sseSender.Send(ctx, buildDoneEvent(string(entity.RunEventStreamDone)))
+		case entity.RunEventAck:
+		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
+			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiChatMessage(chunk)))
+		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
+
+		default:
+			logs.CtxError(ctx, "unknow handler event:%v", chunk.Event)
+		}
+	}
+}
+
+func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
+	chunkMessageItem := chunk.ChunkMessageItem
+	chunkMessage := &run.ChatV3MessageDetail{
+		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),
+		ConversationID:   strconv.FormatInt(chunkMessageItem.ConversationID, 10),
+		BotID:            strconv.FormatInt(chunkMessageItem.AgentID, 10),
+		Role:             string(chunkMessageItem.Role),
+		Type:             string(chunkMessageItem.MessageType),
+		Content:          chunkMessageItem.Content,
+		ContentType:      string(chunkMessageItem.ContentType),
+		MetaData:         chunkMessageItem.Ext,
+		ChatID:           strconv.FormatInt(chunkMessageItem.RunID, 10),
+		ReasoningContent: chunkMessageItem.ReasoningContent,
+	}
+
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
+}
+
+func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
+	chunkRunItem := chunk.ChunkRunItem
+	chunkMessage := &run.ChatV3ChatDetail{
+		ID:             chunkRunItem.ID,
+		ConversationID: chunkRunItem.ConversationID,
+		BotID:          chunkRunItem.AgentID,
+		Status:         string(chunkRunItem.Status),
+		SectionID:      ptr.Of(chunkRunItem.SectionID),
+		CreatedAt:      ptr.Of(int32(chunkRunItem.CreatedAt / 1000)),
+		CompletedAt:    ptr.Of(int32(chunkRunItem.CompletedAt / 1000)),
+		FailedAt:       ptr.Of(int32(chunkRunItem.FailedAt / 1000)),
+	}
+	if chunkRunItem.Usage != nil {
+		chunkMessage.Usage = &run.Usage{
+			TokenCount:   ptr.Of(int32(chunkRunItem.Usage.LlmTotalTokens)),
+			InputTokens:  ptr.Of(int32(chunkRunItem.Usage.LlmPromptTokens)),
+			OutputTokens: ptr.Of(int32(chunkRunItem.Usage.LlmCompletionTokens)),
+		}
+	}
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
 }

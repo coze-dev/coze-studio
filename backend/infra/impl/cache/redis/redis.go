@@ -1,30 +1,67 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package redis
 
 import (
-	"os"
+	"context"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/tcc"
+	"code.byted.org/gopkg/logs"
+	redis "code.byted.org/kv/goredis"
 )
+
+type RedisConfig struct {
+	PSMWithCluster string `json:"psm_with_cluster"` // 数据库 PSM
+	DialTimeout    int    `json:"dial_timeout"`     // 连接超时时间,分钟
+	ReadTimeout    int    `json:"read_timeout"`     // 读取超时时间,分钟
+	WriteTimeout   int    `json:"write_timeout"`    // 写入超时时间,分钟
+	PoolSize       int    `json:"pool_size"`        // 连接池大小
+	PoolTimeout    int    `json:"pool_timeout"`     // 连接池超时时间,分钟
+	IdleTimeout    int    `json:"idle_timeout"`
+	LiveTimeout    int    `json:"live_timeout"`
+}
 
 type Client = redis.Client
 
-func New() *redis.Client {
-	addr := os.Getenv("REDIS_ADDR")
-	rdb := redis.NewClient(&redis.Options{
-		Addr: addr, // Redis地址
-		DB:   0,    // 默认数据库
-		// 连接池配置
-		PoolSize:        100,             // 最大连接数（建议设置为CPU核心数*10）
-		MinIdleConns:    10,              // 最小空闲连接
-		MaxIdleConns:    30,              // 最大空闲连接
-		ConnMaxIdleTime: 5 * time.Minute, // 空闲连接超时时间
+func New(ctx context.Context) (*redis.Client, error) {
+	c, err := getRedisConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	option := redis.NewOptionWithTimeout(
+		time.Duration(c.DialTimeout)*time.Second,
+		time.Duration(c.ReadTimeout)*time.Second,
+		time.Duration(c.WriteTimeout)*time.Second,
+		time.Duration(c.PoolTimeout)*time.Second,
+		time.Duration(c.IdleTimeout)*time.Second,
+		time.Duration(c.LiveTimeout)*time.Second,
+		c.PoolSize,
+	)
+	return redis.NewClientWithOption(c.PSMWithCluster, option)
+}
 
-		// 超时配置
-		DialTimeout:  5 * time.Second, // 连接建立超时
-		ReadTimeout:  3 * time.Second, // 读操作超时
-		WriteTimeout: 3 * time.Second, // 写操作超时
-	})
+var redisConfigKey = "redis_config"
 
-	return rdb
+func getRedisConfig(ctx context.Context) (*RedisConfig, error) {
+	config, err := tcc.GetConfigByKey[RedisConfig](ctx, tcc.Client(), redisConfigKey)
+	if err != nil {
+		return nil, err
+	}
+	logs.CtxInfo(ctx, "[GetRedisConfig] get redis config success, config:%v", config)
+	return &config, nil
 }

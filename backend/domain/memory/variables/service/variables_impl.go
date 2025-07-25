@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -6,14 +22,14 @@ import (
 	"sort"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/i18n"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 var sysVariableConf []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{
@@ -318,8 +334,8 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 			resMemory = append(resMemory, &kvmemory.KVItem{
 				Keyword:        vv.Keyword,
 				Value:          vv.Content,
-				CreateTime:     vv.CreatedAt,
-				UpdateTime:     vv.UpdatedAt,
+				CreateTime:     vv.CreatedAt / 1000,
+				UpdateTime:     vv.UpdatedAt / 1000,
 				Schema:         meta.Schema,
 				IsSystem:       meta.IsSystem(),
 				PromptDisabled: meta.PromptDisabled,
@@ -519,4 +535,9 @@ func (v *variablesImpl) PublishMeta(ctx context.Context, variableMetaID int64, v
 
 	e.Version = version
 	return v.Repo.CreateVariableMeta(ctx, e, project_memory.VariableConnector(e.BizType))
+}
+
+func (v *variablesImpl) DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *entity.VariableInstance {
+	meta := &entity.UserVariableMeta{}
+	return meta.DecryptSysUUIDKey(ctx, encryptSysUUIDKey)
 }

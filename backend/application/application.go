@@ -1,56 +1,72 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package application
 
 import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/application/openauth"
-	"code.byted.org/flow/opencoze/backend/application/template"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
+	"code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/appinfra"
+	"code.byted.org/data_edc/workflow_engine_next/application/connector"
+	"code.byted.org/data_edc/workflow_engine_next/application/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/application/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/memory"
+	"code.byted.org/data_edc/workflow_engine_next/application/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/application/openauth"
+	"code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/application/prompt"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/application/shortcutcmd"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/template"
+	"code.byted.org/data_edc/workflow_engine_next/application/upload"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagent"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagentrun"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconversation"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatacopy"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossknowledge"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmessage"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crosssearch"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossvariables"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	agentrunImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/agentrun"
+	connectorImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/connector"
+	conversationImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/conversation"
+	crossuserImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/crossuser"
+	databaseImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/database"
+	dataCopyImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/datacopy"
+	knowledgeImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/knowledge"
+	messageImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/message"
+	modelmgrImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/modelmgr"
+	pluginImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/plugin"
+	searchImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/search"
+	singleagentImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/singleagent"
+	variablesImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/variables"
+	workflowImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/workflow"
 
-	"code.byted.org/flow/opencoze/backend/application/app"
-	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
-	"code.byted.org/flow/opencoze/backend/application/connector"
-	"code.byted.org/flow/opencoze/backend/application/conversation"
-	"code.byted.org/flow/opencoze/backend/application/knowledge"
-	"code.byted.org/flow/opencoze/backend/application/memory"
-	"code.byted.org/flow/opencoze/backend/application/modelmgr"
-	"code.byted.org/flow/opencoze/backend/application/plugin"
-	"code.byted.org/flow/opencoze/backend/application/prompt"
-	"code.byted.org/flow/opencoze/backend/application/search"
-	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
-	"code.byted.org/flow/opencoze/backend/application/singleagent"
-	"code.byted.org/flow/opencoze/backend/application/upload"
-	"code.byted.org/flow/opencoze/backend/application/user"
-	"code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagentrun"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconversation"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
-	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
-	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
-	conversationImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/conversation"
-	crossuserImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/crossuser"
-	databaseImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/database"
-	dataCopyImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/datacopy"
-	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
-	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
-	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
-	openauthImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/openauth"
-	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
-	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
-	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
-	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
-	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/checkpoint"
 )
 
 type eventbusImpl struct {
@@ -124,7 +140,7 @@ func Init(ctx context.Context) (err error) {
 	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
-	crossopenauth.SetDefaultOAuthSVC(openauthImpl.InitDomainService(basicServices.openAuthSVC.OAuthDomainSVC))
+	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 
 	return nil
 }
@@ -139,8 +155,8 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	upload.InitService(infra.TOSClient)
-	openAuthSVC := openauth.InitService(infra.DB, infra.CacheCli, infra.IDGenSVC)
+	upload.InitService(infra.TOSClient, infra.CacheCli)
+	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	modelMgrSVC, err := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
 	if err != nil {
@@ -149,8 +165,9 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
-		DB:    infra.DB,
-		IDGen: infra.IDGenSVC,
+		DB:      infra.DB,
+		IDGen:   infra.IDGenSVC,
+		Storage: infra.TOSClient,
 	})
 
 	return &basicServices{
@@ -230,7 +247,6 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.TOSClient,
 		UserSVC:  b.userSVC.DomainSVC,
-		OAuthSVC: b.openAuthSVC.OAuthDomainSVC,
 	}
 }
 
@@ -249,12 +265,12 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 
 func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 	return &memory.ServiceComponents{
-		IDGen:                  b.infra.IDGenSVC,
-		DB:                     b.infra.DB,
-		EventBus:               b.eventbus.resourceEventBus,
-		TosClient:              b.infra.TOSClient,
-		ResourceDomainNotifier: b.eventbus.resourceEventBus,
-		CacheCli:               b.infra.CacheCli,
+		IDGen:     b.infra.IDGenSVC,
+		DB:        b.infra.DB,
+		EventBus:  b.eventbus.resourceEventBus,
+		TosClient: b.infra.TOSClient,
+		// ResourceDomainNotifier: b.eventbus.resourceEventBus,
+		CacheCli: b.infra.CacheCli,
 	}
 }
 
@@ -276,6 +292,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 }
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
+
 	return &singleagent.ServiceComponents{
 		IDGen:                p.basicServices.infra.IDGenSVC,
 		DB:                   p.basicServices.infra.DB,

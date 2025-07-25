@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+import "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
 
 const TableNameVariablesMeta = "variables_meta"
 

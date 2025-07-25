@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package imagex
 
 import (
@@ -12,7 +28,7 @@ type ImageX interface {
 	GetResourceURL(ctx context.Context, uri string, opts ...GetResourceOpt) (*ResourceURL, error)
 	Upload(ctx context.Context, data []byte, opts ...UploadAuthOpt) (*UploadResult, error)
 	GetServerID() string
-	GetUploadHost() string
+	GetUploadHost(ctx context.Context) string
 }
 
 type SecurityToken struct {
@@ -21,6 +37,7 @@ type SecurityToken struct {
 	SessionToken    string `thrift:"session_token,3" frugal:"3,default,string" json:"session_token"`
 	ExpiredTime     string `thrift:"expired_time,4" frugal:"4,default,string" json:"expired_time"`
 	CurrentTime     string `thrift:"current_time,5" frugal:"5,default,string" json:"current_time"`
+	HostScheme      string `thrift:"host_scheme,6" frugal:"6,default,string" json:"host_scheme"`
 }
 
 type ResourceURL struct {

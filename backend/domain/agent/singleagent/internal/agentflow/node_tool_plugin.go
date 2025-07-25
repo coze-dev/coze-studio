@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package agentflow
 
 import (
@@ -6,15 +22,15 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	pluginEntity "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type toolConfig struct {
@@ -43,7 +59,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 
 	projectInfo := &plugin.ProjectInfo{
 		ProjectID:      conf.agentIdentity.AgentID,
-		ProjectType:    plugin.ProjectTypeOfBot,
+		ProjectType:    plugin.ProjectTypeOfAgent,
 		ProjectVersion: ptr.Of(conf.agentIdentity.Version),
 		ConnectorID:    conf.agentIdentity.ConnectorID,
 	}

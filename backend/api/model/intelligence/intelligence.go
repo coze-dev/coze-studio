@@ -3,9 +3,9 @@
 package intelligence
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/project"
-	"code.byted.org/flow/opencoze/backend/api/model/publish"
-	"code.byted.org/flow/opencoze/backend/api/model/task"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/publish"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/task"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

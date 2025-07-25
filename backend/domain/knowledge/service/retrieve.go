@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -15,26 +31,26 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
-	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/nl2sql"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/rerank"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/messages2query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	sqlparsercontract "code.byted.org/data_edc/workflow_engine_next/infra/contract/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error) {
@@ -71,8 +87,6 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 		AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).
 		AddLambda("passRequestContext", passRequestContextNode)
 
-	// TODO: 加一个对 table 类型数据回表读取操作
-
 	r, err := chain.
 		AppendLambda(rewriteNode).
 		AppendParallel(parallelNode).
@@ -80,12 +94,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 		AppendLambda(packResult).
 		Compile(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
+		logs.CtxError(ctx, "compile chain failed: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeBuildRetrieveChainFailCode, errorx.KV("msg", err.Error()))
 	}
 	output, err := r.Invoke(ctx, retrieveContext)
 	if err != nil {
-		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
+		logs.CtxError(ctx, "invoke chain failed: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeRetrieveExecFailCode, errorx.KV("msg", err.Error()))
 	}
 	return &RetrieveResponse{
@@ -101,7 +115,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 	docIDSets := sets.FromSlice(req.DocumentIDs)
 	enableDocs, enableKnowledge, err := k.prepareRAGDocuments(ctx, docIDSets.ToSlice(), knowledgeIDSets.ToSlice())
 	if err != nil {
-		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)
+		logs.CtxError(ctx, "prepare rag documents failed: %v", err)
 		return nil, err
 	}
 	if len(enableDocs) == 0 {
@@ -151,7 +165,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []int64, knowledgeIDs []int64) ([]*model.KnowledgeDocument, []*model.Knowledge, error) {
 	enableKnowledge, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
 	if err != nil {
-		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
+		logs.CtxError(ctx, "filter enable knowledge failed: %v", err)
 		return nil, nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(enableKnowledge) == 0 {
@@ -168,7 +182,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 		SelectAll:    true,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "find document by condition failed: %v", err)
+		logs.CtxError(ctx, "find document by condition failed: %v", err)
 		return nil, nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return enableDocs, enableKnowledge, nil
@@ -189,7 +203,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContex
 	}
 	rewrittenQuery, err := k.rewriter.MessagesToQuery(ctx, req.ChatHistory, opts...)
 	if err != nil {
-		logs.CtxErrorf(ctx, "rewrite query failed: %v", err)
+		logs.CtxError(ctx, "rewrite query failed: %v", err)
 		return req, nil
 	}
 	// 改写完成
@@ -210,13 +224,13 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *RetrieveCont
 		}
 	}
 	if manager == nil {
-		logs.CtxErrorf(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现vectorStore")).Error())
+		logs.CtxError(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现vectorStore")).Error())
 		return nil, nil
 	}
 
 	retrieveResult, err = k.retrieveChannels(ctx, req, manager)
 	if err != nil {
-		logs.CtxErrorf(ctx, "retrieveChannels err:%s", err.Error())
+		logs.CtxError(ctx, "retrieveChannels err:%s", err.Error())
 	}
 	return retrieveResult, nil
 }
@@ -234,13 +248,13 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *RetrieveContext)
 		}
 	}
 	if manager == nil {
-		logs.CtxErrorf(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现esStore")).Error())
+		logs.CtxError(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现esStore")).Error())
 		return nil, nil
 	}
 
 	retrieveResult, err = k.retrieveChannels(ctx, req, manager)
 	if err != nil {
-		logs.CtxErrorf(ctx, "retrieveChannels err:%s", err.Error())
+		logs.CtxError(ctx, "retrieveChannels err:%s", err.Error())
 	}
 	return retrieveResult, nil
 }
@@ -258,7 +272,6 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 		info := knowledgeInfo
 		collectionName := getCollectionName(kid)
 
-		// TODO: creator id 过滤
 		dsl := &searchstore.DSL{
 			Op:    searchstore.OpIn,
 			Field: "document_id",
@@ -332,7 +345,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 				doc := tableDocs[t]
 				docs, execErr := k.nl2SqlExec(ctx, doc, req, opts)
 				if execErr != nil {
-					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", execErr)
+					logs.CtxError(ctx, "nl2sql exec failed: %v", execErr)
 					return errorx.New(errno.ErrKnowledgeNL2SqlExecFailCode, errorx.KV("msg", execErr.Error()))
 				}
 				mu.Lock()
@@ -343,7 +356,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 		}
 		err = eg.Wait()
 		if err != nil {
-			logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
+			logs.CtxError(ctx, "nl2sql exec failed: %v", err)
 			return nil, nil
 		}
 		return res, nil
@@ -356,7 +369,7 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 	retrieveResult []*schema.Document, err error) {
 	sql, err := k.nl2Sql.NL2SQL(ctx, retrieveCtx.ChatHistory, []*document.TableSchema{packNL2SqlRequest(doc)}, opts...)
 	if err != nil {
-		logs.CtxErrorf(ctx, "nl2sql failed: %v", err)
+		logs.CtxError(ctx, "nl2sql failed: %v", err)
 		return nil, err
 	}
 	sql = addSliceIdColumn(sql)
@@ -379,7 +392,7 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 	}
 	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(sql, replaceMap)
 	if err != nil {
-		logs.CtxErrorf(ctx, "parse sql failed: %v", err)
+		logs.CtxError(ctx, "parse sql failed: %v", err)
 		return nil, err
 	}
 	// 执行sql
@@ -387,14 +400,13 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		SQL: parsedSQL,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "execute sql failed: %v", err)
+		logs.CtxError(ctx, "execute sql failed: %v", err)
 		return nil, err
 	}
 	for i := range resp.ResultSet.Rows {
-		// TODO: 列转换
 		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
 		if !ok {
-			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
+			logs.CtxWarn(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
 			return nil, errors.New("convert id failed")
 		}
 		d := &schema.Document{
@@ -465,25 +477,25 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 	// 首先获取下retrieve上下文
 	retrieveCtx, ok := resultMap["passRequestContext"].(*RetrieveContext)
 	if !ok {
-		logs.CtxErrorf(ctx, "retrieve context is not found")
+		logs.CtxError(ctx, "retrieve context is not found")
 		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "retrieve context is not found"))
 	}
 	// 获取下向量化召回的接口
 	vectorRetrieveResult, ok := resultMap["vectorRetrieveNode"].([]*schema.Document)
 	if !ok {
-		logs.CtxErrorf(ctx, "vector retrieve result is not found")
+		logs.CtxError(ctx, "vector retrieve result is not found")
 		vectorRetrieveResult = []*schema.Document{}
 	}
 	// 获取下es召回的接口
 	esRetrieveResult, ok := resultMap["esRetrieveNode"].([]*schema.Document)
 	if !ok {
-		logs.CtxErrorf(ctx, "es retrieve result is not found")
+		logs.CtxError(ctx, "es retrieve result is not found")
 		esRetrieveResult = []*schema.Document{}
 	}
 	// 获取下nl2sql召回的接口
 	nl2SqlRetrieveResult, ok := resultMap["nl2SqlRetrieveNode"].([]*schema.Document)
 	if !ok {
-		logs.CtxErrorf(ctx, "nl2sql retrieve result is not found")
+		logs.CtxError(ctx, "nl2sql retrieve result is not found")
 		nl2SqlRetrieveResult = []*schema.Document{}
 	}
 
@@ -525,7 +537,7 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 		TopN:  retrieveCtx.Strategy.TopK,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "rerank failed: %v", err)
+		logs.CtxError(ctx, "rerank failed: %v", err)
 		return nil, err
 	}
 
@@ -556,7 +568,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	for _, doc := range retrieveResult {
 		id, err := strconv.ParseInt(doc.ID, 10, 64)
 		if err != nil {
-			logs.CtxErrorf(ctx, "convert id failed: %v", err)
+			logs.CtxError(ctx, "convert id failed: %v", err)
 			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "convert id failed"))
 		}
 		sliceIDs[id] = struct{}{}
@@ -564,7 +576,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	}
 	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs.ToSlice())
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget slices failed: %v", err)
+		logs.CtxError(ctx, "mget slices failed: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for _, slice := range slices {
@@ -573,7 +585,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	}
 	knowledgeModels, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs.ToSlice())
 	if err != nil {
-		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
+		logs.CtxError(ctx, "filter enable knowledge failed: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for _, kn := range knowledgeModels {
@@ -581,7 +593,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	}
 	documents, err := k.documentRepo.MGetByID(ctx, docIDs.ToSlice())
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget documents failed: %v", err)
+		logs.CtxError(ctx, "mget documents failed: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for _, doc := range documents {
@@ -609,7 +621,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 		}
 		sliceMap, err = k.selectTableData(ctx, documentMap[docID].TableInfo, slices)
 		if err != nil {
-			logs.CtxErrorf(ctx, "select table data failed: %v", err)
+			logs.CtxError(ctx, "select table data failed: %v", err)
 			return nil, err
 		}
 	}
@@ -639,7 +651,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 		if len(docUri) != 0 {
 			docURL, err = k.storage.GetObjectUrl(ctx, docUri)
 			if err != nil {
-				logs.CtxErrorf(ctx, "get object url failed: %v", err)
+				logs.CtxError(ctx, "get object url failed: %v", err)
 				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 			}
 		}
@@ -671,7 +683,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	}
 	err = k.sliceRepo.IncrementHitCount(ctx, sliceIDs.ToSlice())
 	if err != nil {
-		logs.CtxWarnf(ctx, "increment hit count failed: %v", err)
+		logs.CtxWarn(ctx, "increment hit count failed: %v", err)
 	}
 	return results, nil
 }
@@ -683,7 +695,7 @@ func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent stri
 		if v.TagsKV[DATATOSKEY] != "" {
 			tosURL, err := k.storage.GetObjectUrl(ctx, v.TagsKV[DATATOSKEY])
 			if err != nil {
-				logs.CtxErrorf(ctx, "get object url failed: %v", err)
+				logs.CtxError(ctx, "get object url failed: %v", err)
 			} else {
 				v.SetKV(SRC, tosURL)
 			}

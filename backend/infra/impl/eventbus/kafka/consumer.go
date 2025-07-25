@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package kafka
 
 import (
@@ -6,10 +22,10 @@ import (
 
 	"github.com/IBM/sarama"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/signal"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type consumerImpl struct {
@@ -20,7 +36,7 @@ type consumerImpl struct {
 	consumerGroup sarama.ConsumerGroup
 }
 
-func NewConsumer(broker string, topic, groupID string, handler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) (eventbus.Consumer, error) {
+func RegisterConsumer(broker string, topic, groupID string, handler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	config := sarama.NewConfig()
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest // 从最早消息开始消费
 	config.Consumer.Group.Session.Timeout = 30 * time.Second
@@ -33,7 +49,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 
 	consumerGroup, err := sarama.NewConsumerGroup([]string{broker}, groupID, config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c := &consumerImpl{
@@ -48,7 +64,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 	safego.Go(ctx, func() {
 		for {
 			if err := consumerGroup.Consume(ctx, []string{topic}, c); err != nil {
-				logs.Errorf("consumer group consume: %v", err)
+				logs.CtxError(ctx, "consumer group consume: %v", err)
 				break
 			}
 		}
@@ -58,11 +74,11 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 		signal.WaitExit()
 
 		if err := c.consumerGroup.Close(); err != nil {
-			logs.Errorf("consumer group close: %v", err)
+			logs.CtxError(ctx, "consumer group close: %v", err)
 		}
 	})
 
-	return c, nil
+	return nil
 }
 
 func (c *consumerImpl) Setup(sess sarama.ConsumerGroupSession) error {

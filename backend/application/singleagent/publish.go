@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package singleagent
 
 import (
@@ -7,20 +23,20 @@ import (
 	"sync"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	search "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
@@ -83,7 +99,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		tasks.Go(func() error {
 			_, err = s.DomainSVC.CreateSingleAgent(ctx, connectorID, version, draftAgent)
 			if err != nil {
-				logs.CtxWarnf(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
+				logs.CtxWarn(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
 				lock.Lock()
 				publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
 					PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Failed),
@@ -115,7 +131,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
+		logs.CtxWarn(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
 	}
 
 	return &developer_api.PublishDraftBotResponse{
@@ -218,7 +234,7 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 }
 
 func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
+	logs.CtxInfo(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
 	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
 		return agent, nil
 	}

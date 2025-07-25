@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
+ROOT_DIR=$(realpath "$SCRIPT_DIR/../..")
 echo $ROOT_DIR
 RUSH_FILE="$ROOT_DIR/common/scripts/install-run-rush.js"
 
-source "$ROOT_DIR/scripts/setup-env.sh"
+source "$ROOT_DIR/frontend/scripts/setup-env.sh"
 
 # Fix https://code.byted.org/apaas/monorepo/issues/45
 # Use the latest git version from leafboat

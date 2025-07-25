@@ -138,6 +138,13 @@ struct UserBehaviorInfo {
     2: optional i64                              UsedAt (agw.js_conv="str", api.js_conv="true",  agw.cli_conv="str", agw.key = "used_at", api.body= "used_at") ,     // 最近使用时间戳
 }
 
+enum PluginAuthMode {
+    NoAuth     = 0, // 不需要授权
+    Required   = 1, // 需要授权，但无授权配置
+    Configured = 2, // 需要授权，且已经配置
+    Supported  = 3, // 需要授权，但授权配置可能是用户级别，可由用户自己配置
+}
+
 struct PluginExtraInfo {
     1: optional list<PluginToolInfo> Tools               (agw.key = "tools", api.body= "tools")                ,
     2:          i32                  TotalAPICount       (agw.key = "total_api_count", api.body= "total_api_count")      ,
@@ -155,6 +162,9 @@ struct PluginExtraInfo {
     14: optional i64 MaterialID (agw.key = "material_id", agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body= "material_id"),
     15: list<PluginConnectorInfo> Connectors (agw.key = "connectors", api.body= "connectors"),
     16: optional product_common.PluginType PluginType (agw.key = "plugin_type", api.body= "plugin_type"),
+
+    // for opencoze
+    50: optional PluginAuthMode AuthMode (agw.key = "auth_mode", api.body= "auth_mode"),
 }
 
 struct ToolParameter {

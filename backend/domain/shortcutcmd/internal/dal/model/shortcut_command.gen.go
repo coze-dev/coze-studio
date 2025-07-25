@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
 
 const TableNameShortcutCommand = "shortcut_command"
 

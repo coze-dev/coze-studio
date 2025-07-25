@@ -3,7 +3,7 @@
 package dataset
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
@@ -990,6 +990,8 @@ type DocumentInfo struct {
 	DocOutline *string `thrift:"doc_outline,29,optional" form:"doc_outline" json:"doc_outline,omitempty" query:"doc_outline"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,30,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
+	// 过滤策略
+	FilterStrategy *FilterStrategy `thrift:"filter_strategy,32,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
 	// 层级分段文档树 tos_url
 	DocTreeTosURL *string `thrift:"doc_tree_tos_url,33,optional" form:"doc_tree_tos_url" json:"doc_tree_tos_url,omitempty" query:"doc_tree_tos_url"`
 	// 预览用的原文档 tos_url
@@ -1152,6 +1154,15 @@ func (p *DocumentInfo) GetParsingStrategy() (v *ParsingStrategy) {
 	return p.ParsingStrategy
 }
 
+var DocumentInfo_FilterStrategy_DEFAULT *FilterStrategy
+
+func (p *DocumentInfo) GetFilterStrategy() (v *FilterStrategy) {
+	if !p.IsSetFilterStrategy() {
+		return DocumentInfo_FilterStrategy_DEFAULT
+	}
+	return p.FilterStrategy
+}
+
 var DocumentInfo_DocTreeTosURL_DEFAULT string
 
 func (p *DocumentInfo) GetDocTreeTosURL() (v string) {
@@ -1203,6 +1214,7 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 	28: "imagex_uri",
 	29: "doc_outline",
 	30: "parsing_strategy",
+	32: "filter_strategy",
 	33: "doc_tree_tos_url",
 	34: "preview_tos_url",
 	35: "review_id",
@@ -1250,6 +1262,10 @@ func (p *DocumentInfo) IsSetDocOutline() bool {
 
 func (p *DocumentInfo) IsSetParsingStrategy() bool {
 	return p.ParsingStrategy != nil
+}
+
+func (p *DocumentInfo) IsSetFilterStrategy() bool {
+	return p.FilterStrategy != nil
 }
 
 func (p *DocumentInfo) IsSetDocTreeTosURL() bool {
@@ -1461,6 +1477,14 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 30:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField30(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 32:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField32(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1778,6 +1802,14 @@ func (p *DocumentInfo) ReadField30(iprot thrift.TProtocol) error {
 	p.ParsingStrategy = _field
 	return nil
 }
+func (p *DocumentInfo) ReadField32(iprot thrift.TProtocol) error {
+	_field := NewFilterStrategy()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.FilterStrategy = _field
+	return nil
+}
 func (p *DocumentInfo) ReadField33(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -1908,6 +1940,10 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField30(oprot); err != nil {
 			fieldId = 30
+			goto WriteFieldError
+		}
+		if err = p.writeField32(oprot); err != nil {
+			fieldId = 32
 			goto WriteFieldError
 		}
 		if err = p.writeField33(oprot); err != nil {
@@ -2335,6 +2371,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 30 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 30 end error: ", p), err)
+}
+func (p *DocumentInfo) writeField32(oprot thrift.TProtocol) (err error) {
+	if p.IsSetFilterStrategy() {
+		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 32); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.FilterStrategy.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 32 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 32 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField33(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDocTreeTosURL() {
@@ -6623,7 +6677,9 @@ type ResegmentRequest struct {
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,3" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,5,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	Base            *base.Base       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// 过滤策略
+	FilterStrategy *FilterStrategy `thrift:"filter_strategy,7,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
+	Base           *base.Base      `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewResegmentRequest() *ResegmentRequest {
@@ -6659,6 +6715,15 @@ func (p *ResegmentRequest) GetParsingStrategy() (v *ParsingStrategy) {
 	return p.ParsingStrategy
 }
 
+var ResegmentRequest_FilterStrategy_DEFAULT *FilterStrategy
+
+func (p *ResegmentRequest) GetFilterStrategy() (v *FilterStrategy) {
+	if !p.IsSetFilterStrategy() {
+		return ResegmentRequest_FilterStrategy_DEFAULT
+	}
+	return p.FilterStrategy
+}
+
 var ResegmentRequest_Base_DEFAULT *base.Base
 
 func (p *ResegmentRequest) GetBase() (v *base.Base) {
@@ -6673,6 +6738,7 @@ var fieldIDToName_ResegmentRequest = map[int16]string{
 	2:   "document_ids",
 	3:   "chunk_strategy",
 	5:   "parsing_strategy",
+	7:   "filter_strategy",
 	255: "Base",
 }
 
@@ -6682,6 +6748,10 @@ func (p *ResegmentRequest) IsSetChunkStrategy() bool {
 
 func (p *ResegmentRequest) IsSetParsingStrategy() bool {
 	return p.ParsingStrategy != nil
+}
+
+func (p *ResegmentRequest) IsSetFilterStrategy() bool {
+	return p.FilterStrategy != nil
 }
 
 func (p *ResegmentRequest) IsSetBase() bool {
@@ -6733,6 +6803,14 @@ func (p *ResegmentRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6825,6 +6903,14 @@ func (p *ResegmentRequest) ReadField5(iprot thrift.TProtocol) error {
 	p.ParsingStrategy = _field
 	return nil
 }
+func (p *ResegmentRequest) ReadField7(iprot thrift.TProtocol) error {
+	_field := NewFilterStrategy()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.FilterStrategy = _field
+	return nil
+}
 func (p *ResegmentRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -6854,6 +6940,10 @@ func (p *ResegmentRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -6951,6 +7041,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *ResegmentRequest) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetFilterStrategy() {
+		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.FilterStrategy.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *ResegmentRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -8098,6 +8206,8 @@ type DocumentBase struct {
 	TableMeta []*TableColumn `thrift:"table_meta,4,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
 	// 表格解析信息
 	TableSheet *TableSheet `thrift:"table_sheet,5,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
+	// 过滤策略
+	FilterStrategy *FilterStrategy `thrift:"filter_strategy,6,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
 	// 图片类型知识库，人工标注时的图片描述
 	Caption *string `thrift:"caption,7,optional" form:"caption" json:"caption,omitempty" query:"caption"`
 }
@@ -8140,6 +8250,15 @@ func (p *DocumentBase) GetTableSheet() (v *TableSheet) {
 	return p.TableSheet
 }
 
+var DocumentBase_FilterStrategy_DEFAULT *FilterStrategy
+
+func (p *DocumentBase) GetFilterStrategy() (v *FilterStrategy) {
+	if !p.IsSetFilterStrategy() {
+		return DocumentBase_FilterStrategy_DEFAULT
+	}
+	return p.FilterStrategy
+}
+
 var DocumentBase_Caption_DEFAULT string
 
 func (p *DocumentBase) GetCaption() (v string) {
@@ -8154,6 +8273,7 @@ var fieldIDToName_DocumentBase = map[int16]string{
 	2: "source_info",
 	4: "table_meta",
 	5: "table_sheet",
+	6: "filter_strategy",
 	7: "caption",
 }
 
@@ -8167,6 +8287,10 @@ func (p *DocumentBase) IsSetTableMeta() bool {
 
 func (p *DocumentBase) IsSetTableSheet() bool {
 	return p.TableSheet != nil
+}
+
+func (p *DocumentBase) IsSetFilterStrategy() bool {
+	return p.FilterStrategy != nil
 }
 
 func (p *DocumentBase) IsSetCaption() bool {
@@ -8218,6 +8342,14 @@ func (p *DocumentBase) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -8310,6 +8442,14 @@ func (p *DocumentBase) ReadField5(iprot thrift.TProtocol) error {
 	p.TableSheet = _field
 	return nil
 }
+func (p *DocumentBase) ReadField6(iprot thrift.TProtocol) error {
+	_field := NewFilterStrategy()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.FilterStrategy = _field
+	return nil
+}
 func (p *DocumentBase) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -8342,6 +8482,10 @@ func (p *DocumentBase) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -8441,6 +8585,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *DocumentBase) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetFilterStrategy() {
+		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.FilterStrategy.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *DocumentBase) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaption() {

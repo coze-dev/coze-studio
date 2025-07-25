@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package vikingdb
 
 import (
@@ -12,12 +28,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type vkSearchStore struct {
@@ -343,7 +359,7 @@ func (v *vkSearchStore) dsl2Filter(ctx context.Context, src map[string]any) (map
 			"conds": toSliceValue(dsl.Value),
 		}
 	case searchstore.OpLike:
-		logs.CtxWarnf(ctx, "[dsl2Filter] vikingdb invalid dsl type, skip, type=%s", dsl.Op)
+		logs.CtxWarn(ctx, "[dsl2Filter] vikingdb invalid dsl type, skip, type=%s", dsl.Op)
 	case searchstore.OpAnd, searchstore.OpOr:
 		var conds []map[string]any
 		sub, ok := dsl.Value.([]map[string]any)

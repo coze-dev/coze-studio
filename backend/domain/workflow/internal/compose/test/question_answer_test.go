@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package test
 
 import (
@@ -9,32 +25,31 @@ import (
 	"testing"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	repo2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
-	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-
-	"code.byted.org/flow/opencoze/backend/internal/testutil"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	repo2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/checkpoint"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/internal/testutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestQuestionAnswer(t *testing.T) {
@@ -77,9 +92,8 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 		defer s.Close()
 
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
+		redisClient, err := redis.NewClient("TEST_PSM")
+		assert.NoError(t, err)
 
 		mockIDGen := mock.NewMockIDGenerator(ctrl)
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
@@ -93,7 +107,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
-			}
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				}}
 
 			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
@@ -195,6 +211,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{
@@ -344,6 +363,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{
@@ -501,6 +523,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{

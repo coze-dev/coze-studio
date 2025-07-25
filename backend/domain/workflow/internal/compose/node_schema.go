@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -7,33 +23,36 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/conversation"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/json"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/subworkflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/batch"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/emitter"
+	entry "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/entry"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/httprequester"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/intentdetector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/json"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/llm"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/loop"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/subworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/textprocessor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableaggregator"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
 )
 
 type NodeSchema struct {
@@ -88,10 +107,14 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
 		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrCreateNodeFail, err, errorx.KV("node_name", s.Name), errorx.KV("cause", err.Error()))
+		}
 	}()
 
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
-		if err := s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
+		if err = s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
 			return nil, err
 		}
 	}
@@ -114,7 +137,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream), nil
+		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream, withCallbackOutputConverter(l.ToCallbackOutput)), nil
 	case entity.NodeTypeSelector:
 		conf := s.ToSelectorConfig()
 
@@ -178,7 +201,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput)), nil
+		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput), withCallbackOutputConverter(hr.ToCallbackOutput)), nil
 	case entity.NodeTypeContinue:
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return map[string]any{}, nil
@@ -244,7 +267,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, inputR.Invoke), nil
+		return invokableNode(s, inputR.Invoke, withCallbackOutputConverter(inputR.ToCallbackOutput)), nil
 	case entity.NodeTypeOutputEmitter:
 		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {
@@ -258,10 +281,15 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 
 		return invokableTransformableNode(s, e.Emit, e.EmitStream), nil
 	case entity.NodeTypeEntry:
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			return in, nil
+		conf, err := s.ToEntryConfig(ctx)
+		if err != nil {
+			return nil, err
 		}
-		return invokableNode(s, i), nil
+		e, err := entry.NewEntry(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, e.Invoke), nil
 	case entity.NodeTypeExit:
 		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
 		if terminalPlan == vo.ReturnVariables {
@@ -361,6 +389,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return invokableNode(s, r.Retrieve), nil
+	case entity.NodeTypeKnowledgeDeleter:
+		conf, err := s.ToKnowledgeDeleterConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := knowledge.NewKnowledgeDeleter(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, r.Delete), nil
 	case entity.NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {
@@ -516,19 +554,6 @@ func (s *NodeSchema) IsRefGlobalVariable() bool {
 			return true
 		}
 	}
-
-	fields, err := s.GetImplicitInputFields()
-	if err != nil {
-		return false
-	}
-
-	for _, source := range fields {
-		if source.IsRefGlobalVariable() {
-			return true
-		}
-
-	}
-
 	return false
 }
 

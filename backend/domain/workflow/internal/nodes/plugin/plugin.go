@@ -1,16 +1,34 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package plugin
 
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type Config struct {
@@ -18,16 +36,14 @@ type Config struct {
 	ToolID        int64
 	PluginVersion string
 
-	IgnoreException bool
-	DefaultOutput   map[string]any
-	PluginService   plugin.PluginService
+	PluginService plugin.Service
 }
 
 type Plugin struct {
 	config *Config
 }
 
-func NewPlugin(ctx context.Context, cfg *Config) (*Plugin, error) {
+func NewPlugin(_ context.Context, cfg *Config) (*Plugin, error) {
 	if cfg == nil {
 		return nil, errors.New("config is nil")
 	}
@@ -40,51 +56,25 @@ func NewPlugin(ctx context.Context, cfg *Config) (*Plugin, error) {
 	if cfg.PluginService == nil {
 		return nil, errors.New("tool service is required")
 	}
+
 	return &Plugin{config: cfg}, nil
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
-	invokeMap, err := p.config.PluginService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInvokableRequest{
-		PluginEntity: plugin.PluginEntity{
-			PluginID: p.config.PluginID,
-			// if the plugin version is equal to '', set the plugin version = nil to be considered online, otherwise it is considered for the version
-			PluginVersion: ternary.IFElse(p.config.PluginVersion == "", nil, &p.config.PluginVersion),
-		},
-		ToolsInvokableInfo: map[int64]*plugin.ToolsInvokableInfo{
-			p.config.ToolID: &plugin.ToolsInvokableInfo{
-				ToolID: p.config.ToolID,
-			},
-		},
-		IsDraft: p.config.PluginVersion == "0", // if the version is 0, it is considered draft
-	})
-
-	var (
-		pTool plugin.PluginInvokableTool
-		ok    bool
-	)
-
-	if pTool, ok = invokeMap[p.config.ToolID]; !ok {
-		return nil, fmt.Errorf("tool not found, tool id=%v", p.config.ToolID)
+	var exeCfg vo.ExecuteConfig
+	if ctxExeCfg := execute.GetExeCtx(ctx); ctxExeCfg != nil {
+		exeCfg = ctxExeCfg.ExeCfg
 	}
-
-	argumentsInJSON, err := sonic.MarshalString(parameters)
+	result, err := p.config.PluginService.ExecutePlugin(ctx, parameters, &vo.PluginEntity{
+		PluginID:      p.config.PluginID,
+		PluginVersion: ptr.Of(p.config.PluginVersion),
+	}, p.config.ToolID, exeCfg)
 	if err != nil {
-		return nil, err
-	}
-
-	opts := make([]tool.Option, 0)
-	if execute.GetExeCtx(ctx) != nil {
-		opts = append(opts, execute.WithExecuteConfig(execute.GetExeCtx(ctx).ExeCfg))
-	}
-
-	data, err := plugin.NewInvokableTool(pTool).InvokableRun(ctx, argumentsInJSON, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]any)
-	err = sonic.UnmarshalString(data, &result)
-	if err != nil {
+		if extra, ok := compose.IsInterruptRerunError(err); ok {
+			// TODO: temporarily replace interrupt with real error, because frontend cannot handle interrupt for now
+			interruptData := extra.(*entity.InterruptEvent).InterruptData
+			return nil, vo.NewError(errno.ErrAuthorizationRequired, errorx.KV("extra", interruptData))
+		}
 		return nil, err
 	}
 

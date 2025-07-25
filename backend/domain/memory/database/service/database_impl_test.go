@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -14,17 +30,17 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rdb2 "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repository.DraftDAO, repository.OnlineDAO, Database) {
@@ -513,7 +529,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectResp)
 	assert.NotNil(t, selectResp.Records)
 	assert.True(t, len(selectResp.Records) == 2)
-	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
+	assert.Equal(t, string(selectResp.Records[0]["name"].([]uint8)), "Bob")
 	assert.NotNil(t, selectResp.Records[0][database.DefaultUidDisplayColName])
 	assert.NotNil(t, selectResp.Records[0][database.DefaultIDDisplayColName])
 	assert.NotNil(t, selectResp.Records[0][database.DefaultCreateTimeDisplayColName])
@@ -548,7 +564,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectNotNullResp)
 	assert.NotNil(t, selectNotNullResp.Records)
 	assert.True(t, len(selectNotNullResp.Records) == 2)
-	assert.Equal(t, selectNotNullResp.Records[0]["name"], "Bob")
+	assert.Equal(t, string(selectNotNullResp.Records[0]["name"].([]uint8)), "Bob")
 
 	executeNullSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,

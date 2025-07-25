@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -6,26 +22,30 @@ import (
 	"strconv"
 	"strings"
 
-	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	cloudworkflow "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/validate"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {
 	c := &vo.Canvas{}
 	err := sonic.UnmarshalString(config.CanvasSchema, &c)
-	c.Nodes, c.Edges = adaptor.PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to unmarshal canvas schema: %w", err))
 	}
+
+	c.Nodes, c.Edges = adaptor.PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
 		AppID:               config.AppID,
+		AgentID:             config.AgentID,
 		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {
@@ -129,7 +149,12 @@ type version struct {
 	Patch  int
 }
 
-func parseVersion(versionString string) (version, error) {
+func parseVersion(versionString string) (_ version, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapError(errno.ErrInvalidVersionName, err)
+		}
+	}()
 	if !strings.HasPrefix(versionString, "v") {
 		return version{}, fmt.Errorf("invalid prefix format: %s", versionString)
 	}
@@ -321,8 +346,11 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 		return vo.BlockTypeJsonSerialization, nil
 	case entity.NodeTypeJsonDeserialization:
 		return vo.BlockTypeJsonDeserialization, nil
+	case entity.NodeTypeKnowledgeDeleter:
+		return vo.BlockTypeBotDatasetDelete, nil
 
 	default:
-		return "", fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
+		return "", vo.WrapError(errno.ErrSchemaConversionFail,
+			fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType))
 	}
 }

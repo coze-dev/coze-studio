@@ -1,0 +1,21 @@
+{{- if .Values.minio.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-minio
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.minio.service.type }}
+  ports:
+    - name: api
+      port: {{ .Values.minio.service.port }}
+      targetPort: {{ .Values.minio.service.port }}
+    - name: console
+      port: {{ .Values.minio.service.consolePort }}
+      targetPort: {{ .Values.minio.service.consolePort }}
+  selector:
+    app.kubernetes.io/component: minio
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package main
 
 import (
@@ -5,18 +21,64 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 )
 
 func main() {
-	listen("mysql:3306")
-	listen("redis:6379")
-	listen("elasticsearch:9200")
-	listen("milvus:19530")
-	listen("rocketmq-namesrv:9876")
-	listen("rocketmq-broker:10909")
-	listen("rocketmq-broker:10911")
-	listen("rocketmq-broker:10912")
-	listen("minio:9000")
+	mysqlPodProxyURL := os.Getenv("MYSQL_POD_PROXY_URL")
+	if mysqlPodProxyURL == "" {
+		mysqlPodProxyURL = "mysql:3306"
+	}
+
+	redisPodProxyURL := os.Getenv("REDIS_POD_PROXY_URL")
+	if redisPodProxyURL == "" {
+		redisPodProxyURL = "redis:6379"
+	}
+
+	elasticsearchPodProxyURL := os.Getenv("ELASTICSEARCH_POD_PROXY_URL")
+	if elasticsearchPodProxyURL == "" {
+		elasticsearchPodProxyURL = "elasticsearch:9200"
+	}
+
+	milvusPodProxyURL := os.Getenv("MILVUS_POD_PROXY_URL")
+	if milvusPodProxyURL == "" {
+		milvusPodProxyURL = "milvus:19530"
+	}
+
+	rocketmqNamesrvPodProxyURL := os.Getenv("ROCKETMQ_NAMESRV_POD_PROXY_URL")
+	if rocketmqNamesrvPodProxyURL == "" {
+		rocketmqNamesrvPodProxyURL = "rocketmq-namesrv:9876"
+	}
+
+	rocketmqBrokerPodProxyURL := os.Getenv("ROCKETMQ_BROKER_POD_PROXY_URL")
+	if rocketmqBrokerPodProxyURL == "" {
+		rocketmqBrokerPodProxyURL = "rocketmq-broker:10909"
+	}
+
+	rocketmqBrokerPodProxyURL1 := os.Getenv("ROCKETMQ_BROKER_POD_PROXY_URL1")
+	if rocketmqBrokerPodProxyURL1 == "" {
+		rocketmqBrokerPodProxyURL1 = "rocketmq-broker:10911"
+	}
+
+	rocketmqBrokerPodProxyURL2 := os.Getenv("ROCKETMQ_BROKER_POD_PROXY_URL2")
+	if rocketmqBrokerPodProxyURL2 == "" {
+		rocketmqBrokerPodProxyURL2 = "rocketmq-broker:10912"
+	}
+
+	minioPodProxyURL := os.Getenv("MINIO_POD_PROXY_URL")
+	if minioPodProxyURL == "" {
+		minioPodProxyURL = "minio:9000"
+	}
+
+	listen(mysqlPodProxyURL)
+	listen(redisPodProxyURL)
+	listen(elasticsearchPodProxyURL)
+	listen(milvusPodProxyURL)
+	listen(rocketmqNamesrvPodProxyURL)
+	listen(rocketmqBrokerPodProxyURL)
+	listen(rocketmqBrokerPodProxyURL1)
+	listen(rocketmqBrokerPodProxyURL2)
+	listen(minioPodProxyURL)
 	// 阻塞主程序，防止退出
 	select {}
 }

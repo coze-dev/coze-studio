@@ -1,0 +1,189 @@
+{
+ "nodes": [
+  {
+   "id": "100001",
+   "type": "1",
+   "meta": {
+    "position": {
+     "x": 139.6613358419567,
+     "y": -44.89266227657572
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+     "subTitle": "",
+     "title": "开始"
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": true
+     },
+     {
+      "type": "object",
+      "name": "m",
+      "schema": [
+       {
+        "type": "string",
+        "name": "m1",
+        "required": true
+       }
+      ],
+      "required": true
+     }
+    ],
+    "trigger_parameters": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": true
+     },
+     {
+      "type": "object",
+      "name": "m",
+      "schema": [
+       {
+        "type": "string",
+        "name": "m1",
+        "required": true
+       }
+      ],
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "900001",
+   "type": "2",
+   "meta": {
+    "position": {
+     "x": 1100,
+     "y": 12.700000000000003
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+     "subTitle": "",
+     "title": "结束"
+    },
+    "inputs": {
+     "terminatePlan": "returnVariables",
+     "inputParameters": [
+      {
+       "name": "output",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "115927",
+          "name": "body"
+         },
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "115927",
+   "type": "45",
+   "meta": {
+    "position": {
+     "x": 640,
+     "y": 0
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "title": "HTTP 请求",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+     "description": "用于发送API请求，从接口返回数据",
+     "mainColor": "#3071F2",
+     "subTitle": "HTTP 请求"
+    },
+    "inputParameters": [],
+    "inputs": {
+     "apiInfo": {
+      "method": "GET",
+      "url": "http://echo.apifox.com/anything?var={{block_output_100001.input}}&var2={{block_output_100001.m.m1}}"
+     },
+     "body": {
+      "bodyType": "RAW_TEXT",
+      "bodyData": {
+       "binary": {
+        "fileURL": {
+         "type": "string",
+         "value": {
+          "type": "ref",
+          "content": {
+           "source": "block-output",
+           "blockID": "",
+           "name": ""
+          }
+         }
+        }
+       },
+       "rawText": "{{block_output_100001.input}}"
+      }
+     },
+     "headers": [],
+     "params": [],
+     "auth": {
+      "authType": "BEARER_AUTH",
+      "authData": {
+       "customData": {
+        "addTo": "header"
+       }
+      },
+      "authOpen": false
+     },
+     "setting": {
+      "timeout": 120,
+      "retryTimes": 3
+     },
+     "settingOnError": {}
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "body"
+     },
+     {
+      "type": "integer",
+      "name": "statusCode"
+     },
+     {
+      "type": "string",
+      "name": "headers"
+     }
+    ],
+    "settingOnError": {}
+   }
+  }
+ ],
+ "edges": [
+  {
+   "sourceNodeID": "100001",
+   "targetNodeID": "115927"
+  },
+  {
+   "sourceNodeID": "115927",
+   "targetNodeID": "900001"
+  }
+ ],
+ "versions": {
+  "loop": "v2"
+ }
+}

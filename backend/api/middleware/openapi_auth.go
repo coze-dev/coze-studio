@@ -1,20 +1,38 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package middleware
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"regexp"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
-	"code.byted.org/flow/opencoze/backend/application/openauth"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
+	"code.byted.org/data_edc/workflow_engine_next/application/openauth"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 const HeaderAuthorizationKey = "Authorization"
@@ -94,9 +112,12 @@ func OpenapiAuthMW() app.HandlerFunc {
 			return
 		}
 
-		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, apiKey)
+		md5Hash := md5.Sum([]byte(apiKey))
+		md5Key := hex.EncodeToString(md5Hash[:])
+		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, md5Key)
+
 		if err != nil {
-			logs.CtxErrorf(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
+			logs.CtxError(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
 			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", err.Error())))
 			return
@@ -109,9 +130,12 @@ func OpenapiAuthMW() app.HandlerFunc {
 		}
 
 		apiKeyInfo.ConnectorID = consts.APIConnectorID
-		logs.CtxInfof(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
+		logs.CtxInfo(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
 		ctxcache.Store(ctx, consts.OpenapiAuthKeyInCtx, apiKeyInfo)
-
+		err = openauth.OpenAuthApplication.UpdateLastUsedAt(ctx, apiKeyInfo.ID, apiKeyInfo.UserID)
+		if err != nil {
+			logs.CtxError(ctx, "OpenAuthApplication.UpdateLastUsedAt failed, err=%v", err)
+		}
 		c.Next(ctx)
 	}
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package execute
 
 import (
@@ -6,19 +22,19 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
@@ -95,6 +111,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if parentNodeID != nil { // root workflow execution has already been created
+			var logID string
+			logID, _ = ctx.Value("log-id").(string)
+
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,
 				WorkflowID:          wb.ID,
@@ -108,6 +127,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				ParentNodeExecuteID: parentNodeExecuteID,
 				NodeCount:           event.nodeCount,
 				CommitID:            wb.CommitID,
+				LogID:               logID,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
@@ -173,11 +193,13 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		return workflowSuccess, nil
 	case WorkflowFailed:
 		exeID := event.RootCtx.RootExecuteID
+		wfID := event.RootCtx.RootWorkflowBasic.ID
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
+			wfID = event.SubWorkflowBasic.ID
 		}
 
-		logs.CtxErrorf(ctx, "workflow execution failed: %v", event.Err)
+		logs.CtxError(ctx, "workflow execution failed: %v", event.Err)
 
 		wfExec := &entity.WorkflowExecution{
 			ID:       exeID,
@@ -196,17 +218,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			} else if errors.Is(event.Err, context.Canceled) {
 				wfe = vo.CancelErr
 			} else {
-				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
 			}
 		}
 
-		var msg string
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			msg = cause.Error()
+			logs.CtxError(ctx, "workflow %d for exeID %d returns err: %v, cause: %v",
+				wfID, exeID, event.Err, cause)
 		} else {
-			msg = wfe.Msg()
+			logs.CtxError(ctx, "workflow %d for exeID %d returns err: %v",
+				wfID, exeID, event.Err)
 		}
-		errMsg := msg[:min(1000, len(msg))]
+
+		errMsg := wfe.Msg()[:min(1000, len(wfe.Msg()))]
 		wfExec.ErrorCode = ptr.Of(strconv.Itoa(int(wfe.Code())))
 		wfExec.FailReason = ptr.Of(errMsg)
 
@@ -351,7 +375,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		)
 
 		if err = repo.CancelAllRunningNodes(ctx, exeID); err != nil {
-			logs.CtxErrorf(ctx, err.Error())
+			logs.CtxError(ctx, err.Error())
 		}
 
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
@@ -433,13 +457,14 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				panic("node end: event.Err is not a WorkflowError")
 			}
 
-			var msg string
 			if cause := errors.Unwrap(event.Err); cause != nil {
-				msg = cause.Error()
+				logs.CtxWarn(ctx, "node %s for exeID %d end with warning: %v, cause: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err, cause)
 			} else {
-				msg = wfe.Msg()
+				logs.CtxWarn(ctx, "node %s for exeID %d end with warning: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err)
 			}
-			nodeExec.ErrorInfo = ptr.Of(msg)
+			nodeExec.ErrorInfo = ptr.Of(wfe.Msg())
 			nodeExec.ErrorLevel = ptr.Of(string(wfe.Level()))
 		}
 
@@ -472,18 +497,25 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if event.NodeCtx.ResumingEvent != nil {
-			deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
 			if err != nil {
 				return noTerminate, err
 			}
 
-			if !deleted {
-				return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
-			}
+			if found && firstIE.ID == event.NodeCtx.ResumingEvent.ID {
+				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+				if err != nil {
+					return noTerminate, err
+				}
 
-			if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
-				return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-					event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				if !deleted {
+					return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+				}
+
+				if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
+					return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+						event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				}
 			}
 		}
 
@@ -550,7 +582,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			nodeExec.Output = ptr.Of(mustMarshalToString(event.Output))
 		}
 
-		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
+		if err = repo.UpdateNodeExecutionStreaming(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
@@ -596,16 +628,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			} else if errors.Is(event.Err, context.Canceled) {
 				wfe = vo.CancelErr
 			} else {
-				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
 			}
 		}
-		var msg string
+
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			msg = cause.Error()
+			logs.CtxError(ctx, "node %s for exeID %d returns err: %v, cause: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err, cause)
 		} else {
-			msg = wfe.Msg()
+			logs.CtxError(ctx, "node %s for exeID %d returns err: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err)
 		}
-		errorInfo = msg[:min(1000, len(msg))]
+
+		errorInfo = wfe.Msg()[:min(1000, len(wfe.Msg()))]
 		errorLevel = string(wfe.Level())
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
@@ -669,7 +704,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}, nil)
 	case ToolError:
 		// TODO: optimize this log
-		logs.CtxErrorf(ctx, "received tool error event: %v", event)
+		logs.CtxError(ctx, "received tool error event: %v", event)
 	default:
 		panic("unimplemented event type: " + event.Type)
 	}
@@ -684,78 +719,124 @@ type fcInfo struct {
 }
 
 func HandleExecuteEvent(ctx context.Context,
-	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
-	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
-	timeoutFn context.CancelFunc, // func to timeout the context
-	cancelSignalChan <-chan *redis.Message, // channel to receive workflow cancel signal from redis
-	clearFn func(), // func to clear the cancel signal subscription
+	wfExeID int64,
+	eventChan <-chan *Event,
+	cancelFn context.CancelFunc,
+	timeoutFn context.CancelFunc,
 	repo workflow.Repository,
-	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
+	sw *schema.StreamWriter[*entity.Message],
 	exeCfg vo.ExecuteConfig,
 ) (event *Event) {
-	defer func() {
-		logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
-			event.Type, event.Context.RootWorkflowBasic.ID)
-		clearFn()
-		if timeoutFn != nil {
-			timeoutFn()
-		}
-		cancelFn() // always invoke cancel to notify any child contexts to release its resource
-	}()
-
 	var (
 		wfSuccessEvent *Event
 		lastNodeIsDone bool
+		cancelled      bool
 	)
 
 	ctx = context.WithValue(ctx, fcCacheKey{}, make(map[vo.NodeKey]map[string]*fcInfo))
 
-	for {
-		select {
-		case <-cancelSignalChan:
-			cancelFn()
-		case event = <-eventChan:
-			var (
-				nodeType entity.NodeType
-				nodeKey  vo.NodeKey
-			)
-			if event.Context.NodeCtx != nil {
-				nodeType = event.Context.NodeCtx.NodeType
-				nodeKey = event.Context.NodeCtx.NodeKey
-			}
-			fmt.Println(fmt.Sprintf("receiving event type= %v, workflowID= %v, nodeType= %v, nodeKey = %s",
-				event.Type, event.RootWorkflowBasic.ID, nodeType, nodeKey))
+	handler := func(event *Event) *Event {
+		var (
+			nodeType entity.NodeType
+			nodeKey  vo.NodeKey
+		)
+		if event.Context.NodeCtx != nil {
+			nodeType = event.Context.NodeCtx.NodeType
+			nodeKey = event.Context.NodeCtx.NodeKey
+		}
 
-			signal, err := handleEvent(ctx, event, repo, sw)
-			if err != nil {
-				logs.CtxErrorf(ctx, "failed to handle event: %v", err)
-			}
+		logs.CtxInfo(ctx, "receiving event type= %v, workflowID= %v, nodeType= %v, nodeKey = %s",
+			event.Type, event.RootWorkflowBasic.ID, nodeType, nodeKey)
 
-			switch signal {
-			case noTerminate:
-				// continue to next event
-			case workflowAbort:
-				return event
-			case workflowSuccess: // workflow success, wait for exit node to be done
-				wfSuccessEvent = event
-				if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
-					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
-							wfSuccessEvent.RootWorkflowBasic.ID, err)
-					}
-					return wfSuccessEvent
+		signal, err := handleEvent(ctx, event, repo, sw)
+		if err != nil {
+			logs.CtxError(ctx, "failed to handle event: %v", err)
+		}
+
+		switch signal {
+		case noTerminate:
+			// continue to next event
+		case workflowAbort:
+			return event
+		case workflowSuccess: // workflow success, wait for exit node to be done
+			wfSuccessEvent = event
+			if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
+				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
+					logs.CtxError(ctx, "failed to set root workflow success for workflow %d: %v",
+						wfSuccessEvent.RootWorkflowBasic.ID, err)
 				}
-			case lastNodeDone: // exit node done, wait for workflow success
-				lastNodeIsDone = true
-				if wfSuccessEvent != nil {
-					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.CtxErrorf(ctx, "failed to set root workflow success: %v", err)
-					}
-					return wfSuccessEvent
+				return wfSuccessEvent
+			}
+		case lastNodeDone: // exit node done, wait for workflow success
+			lastNodeIsDone = true
+			if wfSuccessEvent != nil {
+				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
+					logs.CtxError(ctx, "failed to set root workflow success: %v", err)
+				}
+				return wfSuccessEvent
+			}
+		default:
+		}
+
+		return nil
+	}
+
+	if exeCfg.Cancellable {
+		// Add cancellation check timer
+		cancelTicker := time.NewTicker(cancelCheckInterval)
+		defer func() {
+			logs.CtxInfo(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+				event.Type, event.Context.RootWorkflowBasic.ID)
+			cancelTicker.Stop() // Clean up timer
+			if timeoutFn != nil {
+				timeoutFn()
+			}
+			cancelFn()
+		}()
+
+		for {
+			select {
+			case <-cancelTicker.C:
+				if cancelled {
+					continue
+				}
+
+				// Check cancellation status in Redis
+				isCancelled, err := repo.GetWorkflowCancelFlag(ctx, wfExeID)
+				if err != nil {
+					logs.CtxError(ctx, "failed to check cancellation status for workflow %d: %v", wfExeID, err)
+					continue
+				}
+
+				if isCancelled {
+					cancelled = true
+					logs.CtxInfo(ctx, "workflow %d cancellation detected", wfExeID)
+					cancelFn()
+				}
+			case event = <-eventChan:
+				if terminalE := handler(event); terminalE != nil {
+					return terminalE
 				}
 			}
 		}
+	} else {
+		defer func() {
+			logs.CtxInfo(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+				event.Type, event.Context.RootWorkflowBasic.ID)
+			if timeoutFn != nil {
+				timeoutFn()
+			}
+			cancelFn()
+		}()
+
+		for e := range eventChan {
+			if terminalE := handler(e); terminalE != nil {
+				return terminalE
+			}
+		}
 	}
+
+	panic("unreachable")
 }
 
 func mustMarshalToString[T any](m map[string]T) string {

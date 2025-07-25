@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	eventbus "code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	eventbus "code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal/model"
 )
 
 func newSingleAgentPublish(db *gorm.DB, opts ...gen.DOOption) singleAgentPublish {

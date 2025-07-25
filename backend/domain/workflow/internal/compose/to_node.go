@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -13,42 +29,49 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	crossconversation "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/conversation"
-	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/conversation"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/json"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/subworkflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	crossmodelmgr "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	workflow3 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	crosscode "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	crossconversation "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/conversation"
+	crossdatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	crossknowledge "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	crossplugin "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/batch"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/emitter"
+	entry "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/entry"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/httprequester"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/intentdetector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/json"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/llm"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/loop"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/subworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/textprocessor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableaggregator"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 )
+
+func (s *NodeSchema) ToEntryConfig(_ context.Context) (*entry.Config, error) {
+	return &entry.Config{
+		DefaultValues: getKeyOrZero[map[string]any]("DefaultValues", s.Configs),
+		OutputTypes:   s.OutputTypes,
+	}, nil
+}
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	llmConf := &llm.Config{
@@ -139,7 +162,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		}
 
 		if fcParams.PluginFCParam != nil {
-			pluginToolsInvokableReq := make(map[int64]*crossplugin.PluginToolsInvokableRequest)
+			pluginToolsInvokableReq := make(map[int64]*crossplugin.ToolsInvokableRequest)
 			for _, p := range fcParams.PluginFCParam.PluginList {
 				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
 				if err != nil {
@@ -166,9 +189,10 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 						ResponseAPIParametersConfig: responseParameters,
 					}
 				} else {
-					pluginToolsInfoRequest := &crossplugin.PluginToolsInvokableRequest{
-						PluginEntity: crossplugin.PluginEntity{
-							PluginID: pid,
+					pluginToolsInfoRequest := &crossplugin.ToolsInvokableRequest{
+						PluginEntity: crossplugin.Entity{
+							PluginID:      pid,
+							PluginVersion: ptr.Of(p.PluginVersion),
 						},
 						ToolsInvokableInfo: map[int64]*crossplugin.ToolsInvokableInfo{
 							toolID: {
@@ -195,7 +219,6 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 			if len(inInvokableTools) > 0 {
 				llmConf.Tools = inInvokableTools
 			}
-
 		}
 
 		if fcParams.KnowledgeFCParam != nil && len(fcParams.KnowledgeFCParam.KnowledgeList) > 0 {
@@ -381,12 +404,13 @@ func (s *NodeSchema) ToJsonDeserializationConfig() (*json.DeserializationConfig,
 
 func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 	return &httprequester.Config{
-		URLConfig:  mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
-		AuthConfig: getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
-		BodyConfig: mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
-		Method:     mustGetKey[string]("Method", s.Configs),
-		Timeout:    mustGetKey[time.Duration]("Timeout", s.Configs),
-		RetryTimes: mustGetKey[uint64]("RetryTimes", s.Configs),
+		URLConfig:       mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
+		AuthConfig:      getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
+		BodyConfig:      mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
+		Method:          mustGetKey[string]("Method", s.Configs),
+		Timeout:         mustGetKey[time.Duration]("Timeout", s.Configs),
+		RetryTimes:      mustGetKey[uint64]("RetryTimes", s.Configs),
+		MD5FieldMapping: mustGetKey[httprequester.MD5FieldMapping]("MD5FieldMapping", s.Configs),
 	}, nil
 }
 
@@ -493,13 +517,6 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
-	inputTimeTypes := make(map[string]*vo.TypeInfo, len(s.InputTypes))
-	fieldTypes := s.InputTypes["Fields"]
-	for key, t := range fieldTypes.Properties {
-		if t.Type == vo.DataTypeTime {
-			inputTimeTypes[key] = t
-		}
-	}
 
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
@@ -518,13 +535,7 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
-	inputTimeTypes := make(map[string]*vo.TypeInfo, len(s.InputTypes))
-	fieldTypes := s.InputTypes["Fields"]
-	for key, t := range fieldTypes.Properties {
-		if t.Type == vo.DataTypeTime {
-			inputTimeTypes[key] = t
-		}
-	}
+
 	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
@@ -547,6 +558,13 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 		KnowledgeIDs:      mustGetKey[[]int64]("KnowledgeIDs", s.Configs),
 		RetrievalStrategy: mustGetKey[*crossknowledge.RetrievalStrategy]("RetrievalStrategy", s.Configs),
 		Retriever:         crossknowledge.GetKnowledgeOperator(),
+	}, nil
+}
+
+func (s *NodeSchema) ToKnowledgeDeleterConfig() (*knowledge.DeleterConfig, error) {
+	return &knowledge.DeleterConfig{
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
+		KnowledgeDeleter: crossknowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
@@ -621,50 +639,6 @@ func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context, requireCheckpoint 
 	return &subworkflow.Config{
 		Runner: wf.Runner,
 	}, nil
-}
-
-func (s *NodeSchema) GetImplicitInputFields() ([]*vo.FieldInfo, error) {
-	switch s.Type {
-	case entity.NodeTypeHTTPRequester:
-		urlConfig := mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs)
-		inputs, err := extractInputFieldsFromTemplate(urlConfig.Tpl)
-		if err != nil {
-			return nil, err
-		}
-
-		for i := range inputs {
-			inputs[i].Path = append(compose.FieldPath{"URLVars"}, inputs[i].Path...)
-		}
-
-		bodyConfig := mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs)
-		if bodyConfig.TextPlainConfig != nil {
-			textInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextPlainConfig.Tpl)
-			if err != nil {
-				return nil, err
-			}
-
-			for i := range textInputs {
-				textInputs[i].Path = append(compose.FieldPath{"TextPlainVars"}, textInputs[i].Path...)
-			}
-
-			inputs = append(inputs, textInputs...)
-		} else if bodyConfig.TextJsonConfig != nil {
-			jsonInputs, err := extractInputFieldsFromTemplate(bodyConfig.TextJsonConfig.Tpl)
-			if err != nil {
-				return nil, err
-			}
-
-			for i := range jsonInputs {
-				jsonInputs[i].Path = append(compose.FieldPath{"JsonVars"}, jsonInputs[i].Path...)
-			}
-
-			inputs = append(inputs, jsonInputs...)
-		}
-
-		return inputs, nil
-	default:
-		return nil, nil
-	}
 }
 
 func totRetrievalSearchType(s int64) (crossknowledge.SearchType, error) {

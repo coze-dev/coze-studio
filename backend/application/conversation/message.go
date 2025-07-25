@@ -1,22 +1,38 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package conversation
 
 import (
 	"context"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	singleAgentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	singleAgentEntity "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	convEntity "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
@@ -182,17 +198,18 @@ func (c *ConversationApplicationService) buildMessageListResponse(ctx context.Co
 
 func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
 	cm := &message.ChatMessage{
-		MessageID:   strconv.FormatInt(dm.ID, 10),
-		Role:        string(dm.Role),
-		Type:        string(dm.MessageType),
-		Content:     dm.Content,
-		ContentType: string(dm.ContentType),
-		ReplyID:     "0",
-		SectionID:   strconv.FormatInt(dm.SectionID, 10),
-		ExtraInfo:   buildDExt2ApiExt(dm.Ext),
-		ContentTime: dm.CreatedAt,
-		Status:      "available",
-		Source:      0,
+		MessageID:        strconv.FormatInt(dm.ID, 10),
+		Role:             string(dm.Role),
+		Type:             string(dm.MessageType),
+		Content:          dm.Content,
+		ContentType:      string(dm.ContentType),
+		ReplyID:          "0",
+		SectionID:        strconv.FormatInt(dm.SectionID, 10),
+		ExtraInfo:        buildDExt2ApiExt(dm.Ext),
+		ContentTime:      dm.CreatedAt,
+		Status:           "available",
+		Source:           0,
+		ReasoningContent: ptr.Of(dm.ReasoningContent),
 	}
 
 	if dm.Status == model.MessageStatusBroken {
@@ -231,35 +248,46 @@ func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
 	}
 }
 
-func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
-
+func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) (*message.DeleteMessageResponse, error) {
+	resp := new(message.DeleteMessageResponse)
 	messageInfo, err := c.MessageDomainSVC.GetByID(ctx, mr.MessageID)
 	if err != nil {
-		return err
+		return resp, err
 	}
 	if messageInfo == nil {
-		return errorx.New(errno.ErrConversationMessageNotFound)
+		return resp, errorx.New(errno.ErrConversationMessageNotFound)
 	}
 
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if messageInfo.UserID != conv.Int64ToStr(*userID) {
-		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	err = c.AgentRunDomainSVC.Delete(ctx, []int64{messageInfo.RunID})
 	if err != nil {
-		return err
+		return resp, err
 	}
 
-	return c.MessageDomainSVC.Delete(ctx, &entity.DeleteMeta{
+	err = c.MessageDomainSVC.Delete(ctx, &entity.DeleteMeta{
 		RunIDs: []int64{messageInfo.RunID},
 	})
+	if err != nil {
+		return resp, nil
+	}
+
+	return resp, nil
 }
 
-func (c *ConversationApplicationService) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
+func (c *ConversationApplicationService) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) (*message.BreakMessageResponse, error) {
+	resp := new(message.BreakMessageResponse)
 
-	return c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
+	err := c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
 		ID:       *mr.AnswerMessageID,
 		Position: mr.BrokenPos,
 	})
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }

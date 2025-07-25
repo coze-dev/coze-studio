@@ -5,7 +5,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
 )
 
 var httpParamLocations = map[common.ParameterLocation]HTTPParamLocation{
@@ -202,7 +202,7 @@ func ToThriftAuthType(typ AuthzType) (common.AuthorizationType, bool) {
 
 var subAuthTypes = map[int32]AuthzSubType{
 	int32(common.ServiceAuthSubType_ApiKey):                 AuthzSubTypeOfServiceAPIToken,
-	int32(common.ServiceAuthSubType_OAuthClientCredentials): AuthzSubTypeOfOAuthClientCredentials,
+	int32(common.ServiceAuthSubType_OAuthAuthorizationCode): AuthzSubTypeOfOAuthAuthorizationCode,
 }
 
 func ToAuthSubType(typ int32) (AuthzSubType, bool) {
@@ -243,4 +243,28 @@ var thriftPluginTypes = func() map[PluginType]common.PluginType {
 func ToThriftPluginType(typ PluginType) (common.PluginType, bool) {
 	_type, ok := thriftPluginTypes[typ]
 	return _type, ok
+}
+
+var apiAuthModes = map[common.PluginToolAuthType]ToolAuthMode{
+	common.PluginToolAuthType_Required:  ToolAuthModeOfRequired,
+	common.PluginToolAuthType_Supported: ToolAuthModeOfSupported,
+	common.PluginToolAuthType_Disable:   ToolAuthModeOfDisabled,
+}
+
+func ToAPIAuthMode(mode common.PluginToolAuthType) (ToolAuthMode, bool) {
+	_mode, ok := apiAuthModes[mode]
+	return _mode, ok
+}
+
+var thriftAPIAuthModes = func() map[ToolAuthMode]common.PluginToolAuthType {
+	modes := make(map[ToolAuthMode]common.PluginToolAuthType, len(apiAuthModes))
+	for k, v := range apiAuthModes {
+		modes[v] = k
+	}
+	return modes
+}()
+
+func ToThriftAPIAuthMode(mode ToolAuthMode) (common.PluginToolAuthType, bool) {
+	_mode, ok := thriftAPIAuthModes[mode]
+	return _mode, ok
 }

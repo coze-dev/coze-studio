@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { injectable, decorate, unmanaged } from 'inversify';
 import {
   Emitter,
@@ -21,14 +37,10 @@ export const PINNED_CLASS = 'flowide-mod-pinned';
 export const LOCKED_CLASS = 'flowide-mod-locked';
 
 @injectable()
-export class BaseWidget extends Widget {
+export class AbstractWidget extends Widget {
   protected readonly onDidChangeVisibilityEmitter = new Emitter<boolean>();
 
   readonly onDidChangeVisibility = this.onDidChangeVisibilityEmitter.event;
-
-  protected readonly onDidDisposeEmitter = new Emitter<void>();
-
-  readonly onDidDispose = this.onDidDisposeEmitter.event;
 
   protected readonly onUpdateEmitter = new Emitter<Message>();
 
@@ -39,14 +51,12 @@ export class BaseWidget extends Widget {
   readonly onActivate = this.onActivateEmitter.event;
 
   protected readonly toDispose = new DisposableCollection(
-    this.onDidDisposeEmitter,
-    Disposable.create(() => this.onDidDisposeEmitter.fire()),
     this.onDidChangeVisibilityEmitter,
     this.onUpdateEmitter,
     this.onActivateEmitter,
   );
 
-  protected readonly toDisposeOnDetach = new DisposableCollection();
+  protected readonly toBeforeDetach = new DisposableCollection();
 
   protected scrollBar?: PerfectScrollbar;
 
@@ -56,49 +66,31 @@ export class BaseWidget extends Widget {
     super(options);
   }
 
-  override dispose(): void {
-    if (this.isDisposed) {
-      return;
-    }
-    super.dispose();
-    this.toDispose.dispose();
-  }
-
-  readonly onDispose = this.toDispose.onDispose;
-
-  protected override onCloseRequest(msg: Message): void {
-    super.onCloseRequest(msg);
-    this.dispose();
-  }
-
   protected override onBeforeDetach(msg: Message): void {
-    this.toDisposeOnDetach.dispose();
+    this.toBeforeDetach.dispose();
     super.onBeforeDetach(msg);
   }
 
-  protected override onActivateRequest(msg: Message): void {
-    this.onActivateEmitter.fire(msg);
-    super.onActivateRequest(msg);
+  private async createScrollbar(): Promise<void> {
+    const container = await this.getScrollContainer();
+    container.style.overflow = 'hidden';
+    this.scrollBar = new PerfectScrollbar(container, this.scrollOptions);
+    this.disableScrollBarFocus(container);
+    this.toBeforeDetach.push(
+      Disposable.create(() => {
+        if (this.scrollBar) {
+          this.scrollBar.destroy();
+          this.scrollBar = undefined;
+        }
+        container.style.overflow = 'initial';
+      }),
+    );
   }
 
   protected override onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     if (this.scrollOptions) {
-      (async () => {
-        const container = await this.getScrollContainer();
-        container.style.overflow = 'hidden';
-        this.scrollBar = new PerfectScrollbar(container, this.scrollOptions);
-        this.disableScrollBarFocus(container);
-        this.toDisposeOnDetach.push(
-          Disposable.create(() => {
-            if (this.scrollBar) {
-              this.scrollBar.destroy();
-              this.scrollBar = undefined;
-            }
-            container.style.overflow = 'initial';
-          }),
-        );
-      })();
+      this.createScrollbar();
     }
   }
 
@@ -140,5 +132,25 @@ export class BaseWidget extends Widget {
     if (flag === Widget.Flag.IsVisible) {
       this.onDidChangeVisibilityEmitter.fire(this.isVisible);
     }
+  }
+
+  protected override onActivateRequest(msg: Message): void {
+    this.onActivateEmitter.fire(msg);
+    super.onActivateRequest(msg);
+  }
+
+  override dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    super.dispose();
+    this.toDispose.dispose();
+  }
+
+  readonly onDispose = this.toDispose.onDispose;
+
+  protected override onCloseRequest(msg: Message): void {
+    super.onCloseRequest(msg);
+    this.dispose();
   }
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package batch
 
 import (
@@ -6,17 +22,18 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"sync"
 
 	"github.com/cloudwego/eino/compose"
 	"golang.org/x/exp/maps"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type Batch struct {
@@ -64,8 +81,8 @@ func NewBatch(_ context.Context, config *Config) (*Batch, error) {
 }
 
 const (
-	MaxBatchSizeKey   = "MaxIter"
-	ConcurrentSizeKey = "Concurrency"
+	MaxBatchSizeKey   = "batchSize"
+	ConcurrentSizeKey = "concurrentSize"
 )
 
 func (b *Batch) initOutput(length int) map[string]any {
@@ -143,17 +160,30 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 			}
 		}
 
-		if _, ok := input[string(b.config.BatchNodeKey)]; !ok {
-			input[string(b.config.BatchNodeKey)] = make(map[string]any)
-		}
-
-		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = int64(i)
+		input[string(b.config.BatchNodeKey)+"#index"] = int64(i)
 
 		items := make(map[string]any)
 		for arrayKey, array := range arrays {
 			ele := reflect.ValueOf(array).Index(i).Interface()
 			items[arrayKey] = []any{ele}
-			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = ele
+			currentKey := string(b.config.BatchNodeKey) + "#" + arrayKey
+
+			// Recursively expand map[string]any elements
+			if m, ok := ele.(map[string]any); ok {
+				var expand func(prefix string, val interface{})
+				expand = func(prefix string, val interface{}) {
+					if nestedMap, ok := val.(map[string]any); ok {
+						for k, v := range nestedMap {
+							expand(prefix+"#"+k, v)
+						}
+					} else {
+						input[prefix] = val
+					}
+				}
+				expand(currentKey, m)
+			} else {
+				input[currentKey] = ele
+			}
 		}
 
 		return input, items, nil
@@ -161,18 +191,15 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 	setIthOutput := func(i int, taskOutput map[string]any) error {
 		for k, source := range b.outputs {
-			fromValue, ok := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)},
+			fromValue, _ := nodes.TakeMapValue(taskOutput, append(compose.FieldPath{string(source.Ref.FromNodeKey)},
 				source.Ref.FromPath...))
-			if !ok {
-				return fmt.Errorf("key not present in inner workflow's output: %s", k)
-			}
 
 			toArray, ok := nodes.TakeMapValue(output, compose.FieldPath{k})
 			if !ok {
 				return fmt.Errorf("key not present in outer workflow's output: %s", k)
 			}
 
-			reflect.ValueOf(toArray).Index(i).Set(reflect.ValueOf(fromValue))
+			toArray.([]any)[i] = fromValue
 		}
 
 		return nil
@@ -252,12 +279,12 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 		subCtx, subCheckpointID := execute.InheritExeCtxWithBatchInfo(ctx, i, items)
 
-		ithOpts := options.GetOptsForNested()
+		ithOpts := slices.Clone(options.GetOptsForNested())
 		mu.Lock()
 		ithOpts = append(ithOpts, options.GetOptsForIndexed(i)...)
 		mu.Unlock()
 		if subCheckpointID != "" {
-			logs.CtxInfof(ctx, "[testInterrupt] prepare %d th run for batch node %s, subCheckPointID %s",
+			logs.CtxInfo(ctx, "[testInterrupt] prepare %d th run for batch node %s, subCheckPointID %s",
 				i, b.config.BatchNodeKey, subCheckpointID)
 			ithOpts = append(ithOpts, compose.WithCheckPointID(subCheckpointID))
 		}
@@ -384,9 +411,9 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 				return nil
 			}
 
-			// althrough this invocation does not have new interruptions,
+			// although this invocation does not have new interruptions,
 			// this batch node previously have interrupts yet to be resumed.
-			// we overrite the interrupt events, keeping only the interrupts yet to be resumed.
+			// we overwrite the interrupt events, keeping only the interrupts yet to be resumed.
 			return setter.SetInterruptEvent(b.config.BatchNodeKey, &entity.InterruptEvent{
 				NodeKey:             b.config.BatchNodeKey,
 				NodeType:            entity.NodeTypeBatch,
@@ -401,7 +428,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
-		logs.CtxInfof(ctx, "no interrupt thrown this round, but has historical interrupt events yet to be resumed, "+
+		logs.CtxInfo(ctx, "no interrupt thrown this round, but has historical interrupt events yet to be resumed, "+
 			"nodeKey: %v. indexes: %v", b.config.BatchNodeKey, maps.Keys(existingCState.Index2InterruptInfo))
 		return nil, compose.InterruptAndRerun // interrupt again to wait for resuming of previously interrupted index runs
 	}

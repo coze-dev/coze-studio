@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/model"
 )
 
 func newAppDraft(db *gorm.DB, opts ...gen.DOOption) appDraft {
@@ -31,8 +31,8 @@ func newAppDraft(db *gorm.DB, opts ...gen.DOOption) appDraft {
 	_appDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_appDraft.OwnerID = field.NewInt64(tableName, "owner_id")
 	_appDraft.IconURI = field.NewString(tableName, "icon_uri")
-	_appDraft.Name = field.NewString(tableName, "Name")
-	_appDraft.Desc = field.NewString(tableName, "desc")
+	_appDraft.Name = field.NewString(tableName, "name")
+	_appDraft.Description = field.NewString(tableName, "description")
 	_appDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_appDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_appDraft.DeletedAt = field.NewField(tableName, "deleted_at")
@@ -46,16 +46,16 @@ func newAppDraft(db *gorm.DB, opts ...gen.DOOption) appDraft {
 type appDraft struct {
 	appDraftDo
 
-	ALL       field.Asterisk
-	ID        field.Int64  // APP ID
-	SpaceID   field.Int64  // Space ID
-	OwnerID   field.Int64  // Owner ID
-	IconURI   field.String // Icon URI
-	Name      field.String // Application Name
-	Desc      field.String // Application Description
-	CreatedAt field.Int64  // Create Time in Milliseconds
-	UpdatedAt field.Int64  // Update Time in Milliseconds
-	DeletedAt field.Field  // Delete Time
+	ALL         field.Asterisk
+	ID          field.Int64  // APP ID
+	SpaceID     field.Int64  // Space ID
+	OwnerID     field.Int64  // Owner ID
+	IconURI     field.String // Icon URI
+	Name        field.String // Application Name
+	Description field.String // Application Description
+	CreatedAt   field.Int64  // Create Time in Milliseconds
+	UpdatedAt   field.Int64  // Update Time in Milliseconds
+	DeletedAt   field.Field  // Delete Time
 
 	fieldMap map[string]field.Expr
 }
@@ -76,8 +76,8 @@ func (a *appDraft) updateTableName(table string) *appDraft {
 	a.SpaceID = field.NewInt64(table, "space_id")
 	a.OwnerID = field.NewInt64(table, "owner_id")
 	a.IconURI = field.NewString(table, "icon_uri")
-	a.Name = field.NewString(table, "Name")
-	a.Desc = field.NewString(table, "desc")
+	a.Name = field.NewString(table, "name")
+	a.Description = field.NewString(table, "description")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 	a.UpdatedAt = field.NewInt64(table, "updated_at")
 	a.DeletedAt = field.NewField(table, "deleted_at")
@@ -102,8 +102,8 @@ func (a *appDraft) fillFieldMap() {
 	a.fieldMap["space_id"] = a.SpaceID
 	a.fieldMap["owner_id"] = a.OwnerID
 	a.fieldMap["icon_uri"] = a.IconURI
-	a.fieldMap["Name"] = a.Name
-	a.fieldMap["desc"] = a.Desc
+	a.fieldMap["name"] = a.Name
+	a.fieldMap["description"] = a.Description
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
 	a.fieldMap["deleted_at"] = a.DeletedAt

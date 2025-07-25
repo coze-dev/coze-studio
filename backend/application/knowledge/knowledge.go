@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package knowledge
 
 import (
@@ -10,26 +26,26 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
-	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
-	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/search"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	modelCommon "code.byted.org/data_edc/workflow_engine_next/api/model/common"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/dataengine/dataset"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/knowledge/document"
+	resource "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	resourceEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	cd "code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/maps"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type KnowledgeApplicationService struct {
@@ -63,7 +79,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	}
 	domainResp, err := k.DomainSVC.CreateKnowledge(ctx, &createReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "create knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "create knowledge failed, err: %v", err)
 		return dataset.NewCreateDatasetResponse(), err
 	}
 	var ptrAppID *int64
@@ -87,7 +103,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+		logs.CtxError(ctx, "publish resource event failed, err: %v", err)
 		return dataset.NewCreateDatasetResponse(), err
 	}
 	return &dataset.CreateDatasetResponse{
@@ -104,7 +120,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		return id, err
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+		logs.CtxError(ctx, "convert string ids failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err
 	}
 
@@ -114,12 +130,12 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		AppID:   &req.ProjectID,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "get knowledge failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err
 	}
 	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, domainResp.KnowledgeList)
 	if err != nil {
-		logs.CtxErrorf(ctx, "batch convert knowledge entity failed, err: %v", err)
+		logs.CtxError(ctx, "batch convert knowledge entity failed, err: %v", err)
 		return dataset.NewDatasetDetailResponse(), err
 	}
 	response := dataset.NewDatasetDetailResponse()
@@ -146,7 +162,7 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 	if req.GetProjectID() != "" && req.GetProjectID() != "0" {
 		projectID, err = conv.StrToInt64(req.GetProjectID())
 		if err != nil {
-			logs.CtxErrorf(ctx, "convert project id failed, err: %v", err)
+			logs.CtxError(ctx, "convert project id failed, err: %v", err)
 			return dataset.NewListDatasetResponse(), err
 		}
 		request.AppID = ptr.Of(projectID)
@@ -175,7 +191,7 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 				return id, err
 			})
 			if err != nil {
-				logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+				logs.CtxError(ctx, "convert string ids failed, err: %v", err)
 				return dataset.NewListDatasetResponse(), err
 			}
 		}
@@ -185,14 +201,14 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 	}
 	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &request)
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "mget knowledge failed, err: %v", err)
 		return dataset.NewListDatasetResponse(), err
 	}
 	resp := dataset.ListDatasetResponse{}
 	resp.Total = int32(domainResp.Total)
 	knowledgeMap, err := batchConvertKnowledgeEntity2Model(ctx, domainResp.KnowledgeList)
 	if err != nil {
-		logs.CtxErrorf(ctx, "batch convert knowledge entity failed, err: %v", err)
+		logs.CtxError(ctx, "batch convert knowledge entity failed, err: %v", err)
 		return dataset.NewListDatasetResponse(), err
 	}
 	resp.DatasetList = make([]*dataset.Dataset, 0)
@@ -207,7 +223,7 @@ func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *
 		KnowledgeID: req.GetDatasetID(),
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "delete knowledge failed, err: %v", err)
 		return dataset.NewDeleteDatasetResponse(), err
 	}
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
@@ -218,7 +234,7 @@ func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+		logs.CtxError(ctx, "publish resource event failed, err: %v", err)
 		return dataset.NewDeleteDatasetResponse(), err
 	}
 	return &dataset.DeleteDatasetResponse{}, nil
@@ -239,7 +255,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 	}
 	err := k.DomainSVC.UpdateKnowledge(ctx, &updateReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "update knowledge failed, err: %v", err)
 		return dataset.NewUpdateDatasetResponse(), err
 	}
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
@@ -252,7 +268,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+		logs.CtxError(ctx, "publish resource event failed, err: %v", err)
 		return dataset.NewUpdateDatasetResponse(), err
 	}
 	return &dataset.UpdateDatasetResponse{}, nil
@@ -265,7 +281,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 	}
 	listResp, err := k.DomainSVC.ListKnowledge(ctx, &service.ListKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "mget knowledge failed, err: %v", err)
 		return dataset.NewCreateDocumentResponse(), err
 	}
 	if len(listResp.KnowledgeList) == 0 {
@@ -305,7 +321,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
 			Source:           docSource,
 			IsAppend:         req.GetIsAppend(),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType, req.GetDocumentBases()[i].FilterStrategy),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
@@ -318,7 +334,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		Documents: documents,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
+		logs.CtxError(ctx, "create document failed, err: %v", err)
 		return resp, err
 	}
 	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
@@ -339,7 +355,7 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 			return id, err
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+			logs.CtxError(ctx, "convert string ids failed, err: %v", err)
 			return dataset.NewListDocumentResponse(), err
 		}
 	}
@@ -350,7 +366,7 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 		Offset:      &offset,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		logs.CtxError(ctx, "list document failed, err: %v", err)
 		return dataset.NewListDocumentResponse(), err
 	}
 	documents := listResp.Documents
@@ -370,14 +386,14 @@ func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *d
 	for i := range req.GetDocumentIds() {
 		docID, err := strconv.ParseInt(req.GetDocumentIds()[i], 10, 64)
 		if err != nil {
-			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			logs.CtxError(ctx, "parse int failed, err: %v", err)
 			return dataset.NewDeleteDocumentResponse(), err
 		}
 		err = k.DomainSVC.DeleteDocument(ctx, &service.DeleteDocumentRequest{
 			DocumentID: docID,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "delete document failed, err: %v", err)
+			logs.CtxError(ctx, "delete document failed, err: %v", err)
 			return dataset.NewDeleteDocumentResponse(), err
 		}
 	}
@@ -393,7 +409,7 @@ func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *d
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "update document failed, err: %v", err)
+		logs.CtxError(ctx, "update document failed, err: %v", err)
 		return dataset.NewUpdateDocumentResponse(), err
 	}
 	return &dataset.UpdateDocumentResponse{}, nil
@@ -405,20 +421,19 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 		return id, err
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
+		logs.CtxError(ctx, "convert string ids failed, err: %v", err)
 		return dataset.NewGetDocumentProgressResponse(), err
 	}
 	domainResp, err := k.DomainSVC.MGetDocumentProgress(ctx, &service.MGetDocumentProgressRequest{
 		DocumentIDs: docIDs,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget document progress failed, err: %v", err)
+		logs.CtxError(ctx, "mget document progress failed, err: %v", err)
 		return dataset.NewGetDocumentProgressResponse(), err
 	}
 	resp := dataset.NewGetDocumentProgressResponse()
 	resp.Data = make([]*dataset.DocumentProgress, 0)
 	for i := range domainResp.ProgressList {
-		url := "" // todo，图片型知识库需要
 		resp.Data = append(resp.Data, &dataset.DocumentProgress{
 			DocumentID:     domainResp.ProgressList[i].ID,
 			Progress:       int32(domainResp.ProgressList[i].Progress),
@@ -428,7 +443,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			RemainingTime:  &domainResp.ProgressList[i].RemainingSec,
 			Size:           &domainResp.ProgressList[i].Size,
 			Type:           &domainResp.ProgressList[i].FileExtension,
-			URL:            &url,
+			URL:            ptr.Of(domainResp.ProgressList[i].URL),
 		})
 	}
 	return resp, nil
@@ -440,7 +455,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 	for i := range req.GetDocumentIds() {
 		docID, err := strconv.ParseInt(req.GetDocumentIds()[i], 10, 64)
 		if err != nil {
-			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			logs.CtxError(ctx, "parse int failed, err: %v", err)
 			return dataset.NewResegmentResponse(), err
 		}
 		var captionType *dataset.CaptionType
@@ -450,10 +465,10 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType, req.FilterStrategy),
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "resegment document failed, err: %v", err)
+			logs.CtxError(ctx, "resegment document failed, err: %v", err)
 			return dataset.NewResegmentResponse(), err
 		}
 		resp.DocumentInfos = append(resp.DocumentInfos, &dataset.DocumentInfo{
@@ -473,7 +488,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		DocumentIDs: []int64{req.GetDocumentID()},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		logs.CtxError(ctx, "list document failed, err: %v", err)
 		return dataset.NewCreateSliceResponse(), err
 	}
 	if len(listResp.Documents) != 1 {
@@ -489,7 +504,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
-			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
+			logs.CtxError(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewCreateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
@@ -507,7 +522,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		RawContent: sliceEntity.RawContent,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
+		logs.CtxError(ctx, "create slice failed, err: %v", err)
 		return dataset.NewCreateSliceResponse(), err
 	}
 	resp := dataset.NewCreateSliceResponse()
@@ -519,14 +534,14 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 	for i := range req.GetSliceIds() {
 		sliceID, err := strconv.ParseInt(req.GetSliceIds()[i], 10, 64)
 		if err != nil {
-			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+			logs.CtxError(ctx, "parse int failed, err: %v", err)
 			return dataset.NewDeleteSliceResponse(), err
 		}
 		err = k.DomainSVC.DeleteSlice(ctx, &service.DeleteSliceRequest{
 			SliceID: sliceID,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
+			logs.CtxError(ctx, "delete slice failed, err: %v", err)
 			return dataset.NewDeleteSliceResponse(), err
 		}
 	}
@@ -550,7 +565,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		DocumentIDs: []int64{docID},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		logs.CtxError(ctx, "list document failed, err: %v", err)
 		return dataset.NewUpdateSliceResponse(), err
 	}
 	if len(listResp.Documents) != 1 {
@@ -566,7 +581,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
-			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
+			logs.CtxError(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewUpdateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
@@ -584,7 +599,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		RawContent: sliceEntity.RawContent,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		logs.CtxError(ctx, "update slice failed, err: %v", err)
 		return dataset.NewUpdateSliceResponse(), err
 	}
 	return &dataset.UpdateSliceResponse{}, nil
@@ -600,7 +615,7 @@ func packTableSliceColumnData(ctx context.Context, slice *model.Slice, text stri
 	dataMap := map[string]string{}
 	err := sonic.Unmarshal([]byte(text), &dataMap)
 	if err != nil {
-		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
+		logs.CtxError(ctx, "unmarshal raw text failed, err: %v", err)
 		return err
 	}
 	slice.RawContent = []*model.SliceContent{
@@ -614,13 +629,13 @@ func packTableSliceColumnData(ctx context.Context, slice *model.Slice, text stri
 	for columnID, val := range dataMap {
 		cid, err := strconv.ParseInt(columnID, 10, 64)
 		if err != nil {
-			logs.CtxErrorf(ctx, "parse column id failed, err: %v", err)
+			logs.CtxError(ctx, "parse column id failed, err: %v", err)
 			return err
 		}
 		value := val
 		column, err := assertValAs(columnTypeMap[cid], value)
 		if err != nil {
-			logs.CtxErrorf(ctx, "assert val as failed, err: %v", err)
+			logs.CtxError(ctx, "assert val as failed, err: %v", err)
 			return err
 		}
 		column.ColumnID = cid
@@ -639,7 +654,7 @@ func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *datase
 		Limit:       req.GetPageSize(),
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
+		logs.CtxError(ctx, "list slice failed, err: %v", err)
 		return dataset.NewListSliceResponse(), err
 	}
 	resp := dataset.NewListSliceResponse()
@@ -694,7 +709,7 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		})
 	}
 	if err != nil {
-		logs.CtxErrorf(ctx, "get table schema failed, err: %v", err)
+		logs.CtxError(ctx, "get table schema failed, err: %v", err)
 		return resp, err
 	}
 
@@ -717,7 +732,6 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
 
-	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
 	resp.SheetList = make([]*dataset.DocTableSheet, 0)
 	for i := range domainResp.AllTableSheets {
 		if domainResp.AllTableSheets[i] == nil {
@@ -751,7 +765,7 @@ func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, r
 		TableSheet: tableSheet,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "validate table schema failed, err: %v", err)
+		logs.CtxError(ctx, "validate table schema failed, err: %v", err)
 		return resp, err
 	}
 	resp.ColumnValidResult = domainResp.ColumnValidResult
@@ -766,7 +780,7 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "get document table info failed, err: %v", err)
+		logs.CtxError(ctx, "get document table info failed, err: %v", err)
 		return document.NewGetDocumentTableInfoResponse(), err
 	}
 	resp := document.NewGetDocumentTableInfoResponse()
@@ -792,7 +806,7 @@ func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, 
 	}
 	createResp, err := k.DomainSVC.CreateDocumentReview(ctx, convertCreateDocReviewReq(req))
 	if err != nil {
-		logs.CtxErrorf(ctx, "create document review failed, err: %v", err)
+		logs.CtxError(ctx, "create document review failed, err: %v", err)
 		return dataset.NewCreateDocumentReviewResponse(), err
 	}
 	resp := dataset.NewCreateDocumentReviewResponse()
@@ -821,7 +835,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 		return id, err
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+		logs.CtxError(ctx, "parse int failed, err: %v", err)
 		return dataset.NewMGetDocumentReviewResponse(), err
 	}
 	mGetResp, err := k.DomainSVC.MGetDocumentReview(ctx, &service.MGetDocumentReviewRequest{
@@ -829,7 +843,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 		ReviewIDs:   reviewIDs,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "mget document review failed, err: %v", err)
+		logs.CtxError(ctx, "mget document review failed, err: %v", err)
 		return dataset.NewMGetDocumentReviewResponse(), err
 	}
 	resp := dataset.NewMGetDocumentReviewResponse()
@@ -859,7 +873,7 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 		ReviewID:    req.GetReviewID(),
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "save document review failed, err: %v", err)
+		logs.CtxError(ctx, "save document review failed, err: %v", err)
 		return dataset.NewSaveDocumentReviewResponse(), err
 	}
 	return &dataset.SaveDocumentReviewResponse{}, nil
@@ -884,7 +898,7 @@ func (k *KnowledgeApplicationService) DeleteAppKnowledge(ctx context.Context, re
 			},
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "publish resources failed, err: %v", err)
+			logs.CtxError(ctx, "publish resources failed, err: %v", err)
 			return err
 		}
 		err = k.DomainSVC.DeleteKnowledge(ctx, &model.DeleteKnowledgeRequest{
@@ -942,7 +956,7 @@ func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, re
 	resp := dataset.NewUpdatePhotoCaptionResponse()
 	listResp, err := k.DomainSVC.ListSlice(ctx, &service.ListSliceRequest{DocumentID: ptr.Of(req.DocumentID)})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
+		logs.CtxError(ctx, "list slice failed, err: %v", err)
 		return resp, err
 	}
 	if len(listResp.Slices) == 0 {
@@ -958,7 +972,7 @@ func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, re
 		}},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		logs.CtxError(ctx, "update slice failed, err: %v", err)
 		return resp, err
 	}
 	return resp, nil
@@ -979,7 +993,7 @@ func (k *KnowledgeApplicationService) MoveKnowledgeToLibrary(ctx context.Context
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resources failed, err: %v", err)
+		logs.CtxError(ctx, "publish resources failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -1001,7 +1015,7 @@ func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *datase
 	}
 	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &listPhotoSliceReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		logs.CtxError(ctx, "list document failed, err: %v", err)
 		return resp, err
 	}
 	if len(listResp.Slices) == 0 {
@@ -1013,7 +1027,7 @@ func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *datase
 	})
 	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs, SelectAll: true})
 	if err != nil {
-		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		logs.CtxError(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err
 	}
 	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
@@ -1062,21 +1076,21 @@ func (k *KnowledgeApplicationService) PhotoDetail(ctx context.Context, req *data
 		return id, err
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+		logs.CtxError(ctx, "parse int failed, err: %v", err)
 		return resp, err
 	}
 	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &service.ListPhotoSliceRequest{DocumentIDs: docIDs})
 	if err != nil {
-		logs.CtxErrorf(ctx, "list photo slice failed, err: %v", err)
+		logs.CtxError(ctx, "list photo slice failed, err: %v", err)
 		return resp, err
 	}
 	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs, SelectAll: true})
 	if err != nil {
-		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		logs.CtxError(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err
 	}
 	if err != nil {
-		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		logs.CtxError(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err
 	}
 	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)

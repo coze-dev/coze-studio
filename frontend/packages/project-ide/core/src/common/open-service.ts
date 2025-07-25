@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import { named, injectable, inject } from 'inversify';
 import {
   ContributionProvider,
@@ -13,30 +29,12 @@ import { prioritizeAll } from './prioritizeable';
 export interface OpenerOptions {}
 
 export const OpenHandler = Symbol('OpenHandler');
-/**
- * `OpenHandler` should be implemented to provide a new opener.
- */
 export interface OpenHandler {
-  /**
-   * Test whether this handler can open the given URI for given options.
-   * Return a nonzero number if this handler can open; otherwise it cannot.
-   * Never reject.
-   *
-   * A returned value indicating a priority of this handler.
-   */
   canHandle: (uri: URI, options?: OpenerOptions) => MaybePromise<number>;
-  /**
-   * Open a widget for the given URI and options.
-   * Resolve to an opened widget or undefined, e.g. if a page is opened.
-   * Never reject if `canHandle` return a positive number; otherwise should reject.
-   */
   open: (uri: URI, options?: OpenerOptions) => MaybePromise<object | undefined>;
 }
 
 export const OpenerService = Symbol('OpenerService');
-/**
- * `OpenerService` provide an access to existing openers.
- */
 export interface OpenerService {
   /**
    * 跳转定位
@@ -53,7 +51,6 @@ export interface OpenerService {
 
 @injectable()
 export class DefaultOpenerService implements OpenerService {
-  // Collection of open-handlers for custom-editor contributions.
   protected readonly customEditorOpenHandlers: OpenHandler[] = [];
 
   protected readonly onDidChangeOpenersEmitter = new Emitter<void>();
@@ -93,18 +90,6 @@ export class DefaultOpenerService implements OpenerService {
     });
   }
 
-  async getOpener(uri: URI, options?: OpenerOptions): Promise<OpenHandler> {
-    const handlers = await this.prioritize(uri, options);
-    if (handlers.length >= 1) {
-      return handlers[0];
-    }
-    return Promise.reject(new Error(`There is no opener for ${uri}.`));
-  }
-
-  async getOpeners(uri?: URI, options?: OpenerOptions): Promise<OpenHandler[]> {
-    return uri ? this.prioritize(uri, options) : this.getHandlers();
-  }
-
   protected async prioritize(
     uri: URI,
     options?: OpenerOptions,
@@ -120,6 +105,18 @@ export class DefaultOpenerService implements OpenerService {
       },
     );
     return prioritized.map((p: any) => p.value) as OpenHandler[];
+  }
+
+  async getOpener(uri: URI, options?: OpenerOptions): Promise<OpenHandler> {
+    const handlers = await this.prioritize(uri, options);
+    if (handlers.length >= 1) {
+      return handlers[0];
+    }
+    return Promise.reject(new Error(`There is no opener for ${uri}.`));
+  }
+
+  async getOpeners(uri?: URI, options?: OpenerOptions): Promise<OpenHandler[]> {
+    return uri ? this.prioritize(uri, options) : this.getHandlers();
   }
 
   protected getHandlers(): OpenHandler[] {

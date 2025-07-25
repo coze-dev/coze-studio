@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package intentdetector
 
 import (
@@ -13,8 +29,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type Config struct {
@@ -99,7 +115,7 @@ func NewIntentDetector(ctx context.Context, cfg *Config) (*IntentDetector, error
 
 	spt := ternary.IFElse[string](cfg.IsFastMode, FastModeSystemIntentPrompt, SystemIntentPrompt)
 
-	sptTemplate, err := nodes.Jinja2TemplateRender(spt, map[string]interface{}{
+	sptTemplate, err := nodes.TemplateRender(spt, map[string]interface{}{
 		"intents": toIntentString(cfg.Intents),
 	})
 	if err != nil {
@@ -163,7 +179,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	vars := make(map[string]any)
 	vars["query"] = queryStr
 	if !id.config.IsFastMode {
-		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
+		ad, err := nodes.TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
 		if err != nil {
 			return nil, err
 		}

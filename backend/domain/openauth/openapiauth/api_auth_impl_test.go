@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package openapiauth
 
 import (
@@ -8,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/model"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/orm"
 )
 
 func TestApiAuthImpl_Create(t *testing.T) {
@@ -51,7 +67,7 @@ func TestApiAuthImpl_Get(t *testing.T) {
 			&model.APIKey{
 				ID:        10000000001,
 				Name:      "test",
-				Key:       "a5f58bea9028d49143bff3ee436b2fb663291c0c6ab242f3c9dc6bf6df9f7b74",
+				APIKey:    "a5f58bea9028d49143bff3ee436b2fb663291c0c6ab242f3c9dc6bf6df9f7b74",
 				Status:    0,
 				UserID:    666666,
 				ExpiredAt: time.Now().Add(time.Hour).UnixMilli(),
@@ -86,7 +102,7 @@ func TestApiAuthImpl_Delete(t *testing.T) {
 			&model.APIKey{
 				ID:        10000000001,
 				Name:      "test",
-				Key:       "df9f7b74",
+				APIKey:    "df9f7b74",
 				Status:    0,
 				UserID:    666666,
 				ExpiredAt: time.Now().Add(time.Hour).UnixMilli(),
@@ -116,7 +132,7 @@ func TestApiAuthImpl_List(t *testing.T) {
 			&model.APIKey{
 				ID:        10000000001,
 				Name:      "test",
-				Key:       "df9f7b74",
+				APIKey:    "df9f7b74",
 				Status:    0,
 				UserID:    666666,
 				ExpiredAt: time.Now().Add(time.Hour).UnixMilli(),
@@ -126,7 +142,7 @@ func TestApiAuthImpl_List(t *testing.T) {
 			&model.APIKey{
 				ID:        10000000002,
 				Name:      "test2",
-				Key:       "adfadfad",
+				APIKey:    "adfadfad",
 				Status:    0,
 				UserID:    666666,
 				ExpiredAt: time.Now().Add(time.Hour).UnixMilli(),
@@ -163,7 +179,7 @@ func TestApiAuthImpl_CheckPermission(t *testing.T) {
 			&model.APIKey{
 				ID:        10000000001,
 				Name:      "test",
-				Key:       "df9f7b74",
+				APIKey:    "df9f7b74",
 				Status:    0,
 				UserID:    666666,
 				ExpiredAt: time.Now().Add(time.Hour).UnixMilli(),

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -5,51 +21,48 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bytedance/sonic"
-
-	"code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 )
 
-const projectIndexName = "project_draft"
+const projectIndexName = "project_draft_new"
 
-type projectHandlerImpl struct {
+type ProjectHandlerImpl struct {
 	esClient es.Client
 }
 
-type ConsumerHandler = eventbus.ConsumerHandler
+//type ConsumerHandler = eventbus.ConsumerHandler
 
-var defaultProjectHandle *projectHandlerImpl
+var defaultProjectHandle *ProjectHandlerImpl
 
-func NewProjectHandler(ctx context.Context, e es.Client) ConsumerHandler {
-	defaultProjectHandle = &projectHandlerImpl{
+func NewProjectHandler(ctx context.Context, e es.Client) *ProjectHandlerImpl {
+
+	defaultProjectHandle = &ProjectHandlerImpl{
 		esClient: e,
 	}
 
 	return defaultProjectHandle
 }
 
-func (s *projectHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
-	ev := &entity.ProjectDomainEvent{}
+//func (s *projectHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
+//	ev := &entity.ProjectDomainEvent{}
+//
+//	logs.CtxInfo(ctx, "Project Handler receive: %s", string(msg.Body))
+//	err := sonic.Unmarshal(msg.Body, ev)
+//	if err != nil {
+//		return err
+//	}
+//
+//	err = s.indexProject(ctx, ev)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
-	logs.CtxInfof(ctx, "Project Handler receive: %s", string(msg.Body))
-	err := sonic.Unmarshal(msg.Body, ev)
-	if err != nil {
-		return err
-	}
-
-	err = s.indexProject(ctx, ev)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *projectHandlerImpl) indexProject(ctx context.Context, ev *entity.ProjectDomainEvent) error {
+func (s *ProjectHandlerImpl) indexProject(ctx context.Context, ev *entity.ProjectDomainEvent) error {
 	if ev.Project == nil {
 		return fmt.Errorf("project is nil")
 	}

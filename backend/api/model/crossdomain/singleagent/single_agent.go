@@ -4,9 +4,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
 )
 
 type AgentRuntime struct {
@@ -20,23 +21,23 @@ type AgentRuntime struct {
 type EventType string
 
 const (
-	EventTypeOfFinalAnswer  EventType = "final_answer"
-	EventTypeOfToolsMessage EventType = "tools_message"
-	EventTypeOfFuncCall     EventType = "func_call"
-	EventTypeOfSuggest      EventType = "suggest"
-	EventTypeOfKnowledge    EventType = "knowledge"
-	EventTypeOfInterrupt    EventType = "interrupt"
+	EventTypeOfChatModelAnswer EventType = "chatmodel_answer"
+	EventTypeOfToolsMessage    EventType = "tools_message"
+	EventTypeOfFuncCall        EventType = "func_call"
+	EventTypeOfSuggest         EventType = "suggest"
+	EventTypeOfKnowledge       EventType = "knowledge"
+	EventTypeOfInterrupt       EventType = "interrupt"
 )
 
 type AgentEvent struct {
 	EventType EventType
 
-	FinalAnswer  *schema.StreamReader[*schema.Message]
-	ToolsMessage []*schema.Message
-	FuncCall     *schema.Message
-	Suggest      *schema.Message
-	Knowledge    []*schema.Document
-	Interrupt    *InterruptInfo
+	ChatModelAnswer *schema.StreamReader[*schema.Message]
+	ToolsMessage    []*schema.Message
+	FuncCall        *schema.Message
+	Suggest         *schema.Message
+	Knowledge       []*schema.Document
+	Interrupt       *InterruptInfo
 }
 
 type SingleAgent struct {
@@ -65,9 +66,24 @@ type SingleAgent struct {
 	ShortcutCommand         []string
 }
 
+type InterruptEventType int64
+
+const (
+	InterruptEventType_LocalPlugin         InterruptEventType = 1
+	InterruptEventType_Question            InterruptEventType = 2
+	InterruptEventType_RequireInfos        InterruptEventType = 3
+	InterruptEventType_SceneChat           InterruptEventType = 4
+	InterruptEventType_InputNode           InterruptEventType = 5
+	InterruptEventType_WorkflowLocalPlugin InterruptEventType = 6
+	InterruptEventType_OauthPlugin         InterruptEventType = 7
+	InterruptEventType_WorkflowLLM         InterruptEventType = 100
+)
+
 type InterruptInfo struct {
-	AllToolInterruptData map[string]*crossworkflow.ToolInterruptEvent
+	AllToolInterruptData map[string]*plugin.ToolInterruptEvent
+	AllWfInterruptData   map[string]*crossworkflow.ToolInterruptEvent
 	ToolCallID           string
+	InterruptType        InterruptEventType
 	InterruptID          string
 }
 

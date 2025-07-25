@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { SpaceSubModuleEnum } from '@coze-foundation/space-ui-adapter';
@@ -13,7 +29,7 @@ import {
   AgentIDELayout,
   AgentIDE,
   AgentPublishPage,
-  DocsRedirect,
+  Redirect,
   spaceSubMenu,
   exploreSubMenu,
   WorkflowPage,
@@ -35,7 +51,7 @@ export const router: ReturnType<typeof createBrowserRouter> =
     // 文档路由
     {
       path: '/open/docs/*',
-      Component: DocsRedirect,
+      Component: Redirect,
       loader: () => ({
         hasSider: false,
         requireAuth: false,
@@ -43,13 +59,20 @@ export const router: ReturnType<typeof createBrowserRouter> =
     },
     {
       path: '/docs/*',
-      Component: DocsRedirect,
+      Component: Redirect,
       loader: () => ({
         hasSider: false,
         requireAuth: false,
       }),
     },
-
+    {
+      path: '/information/auth/success',
+      Component: Redirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
     // 主应用路由
     {
       path: '/',

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
 )
 
 func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
@@ -28,13 +28,14 @@ func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
 	tableName := _aPIKey.aPIKeyDo.TableName()
 	_aPIKey.ALL = field.NewAsterisk(tableName)
 	_aPIKey.ID = field.NewInt64(tableName, "id")
-	_aPIKey.Key = field.NewString(tableName, "key")
+	_aPIKey.APIKey = field.NewString(tableName, "api_key")
 	_aPIKey.Name = field.NewString(tableName, "name")
 	_aPIKey.Status = field.NewInt32(tableName, "status")
 	_aPIKey.UserID = field.NewInt64(tableName, "user_id")
 	_aPIKey.ExpiredAt = field.NewInt64(tableName, "expired_at")
 	_aPIKey.CreatedAt = field.NewInt64(tableName, "created_at")
 	_aPIKey.UpdatedAt = field.NewInt64(tableName, "updated_at")
+	_aPIKey.LastUsedAt = field.NewInt64(tableName, "last_used_at")
 
 	_aPIKey.fillFieldMap()
 
@@ -45,15 +46,16 @@ func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
 type aPIKey struct {
 	aPIKeyDo
 
-	ALL       field.Asterisk
-	ID        field.Int64  // Primary Key ID
-	Key       field.String // API Key hash
-	Name      field.String // API Key Name
-	Status    field.Int32  // 0 normal, 1 deleted
-	UserID    field.Int64  // API Key Owner
-	ExpiredAt field.Int64  // API Key Expired Time
-	CreatedAt field.Int64  // Create Time in Milliseconds
-	UpdatedAt field.Int64  // Update Time in Milliseconds
+	ALL        field.Asterisk
+	ID         field.Int64  // Primary Key ID
+	APIKey     field.String // API Key hash
+	Name       field.String // API Key Name
+	Status     field.Int32  // 0 normal, 1 deleted
+	UserID     field.Int64  // API Key Owner
+	ExpiredAt  field.Int64  // API Key Expired Time
+	CreatedAt  field.Int64  // Create Time in Milliseconds
+	UpdatedAt  field.Int64  // Update Time in Milliseconds
+	LastUsedAt field.Int64  // Used Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }
@@ -71,13 +73,14 @@ func (a aPIKey) As(alias string) *aPIKey {
 func (a *aPIKey) updateTableName(table string) *aPIKey {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt64(table, "id")
-	a.Key = field.NewString(table, "key")
+	a.APIKey = field.NewString(table, "api_key")
 	a.Name = field.NewString(table, "name")
 	a.Status = field.NewInt32(table, "status")
 	a.UserID = field.NewInt64(table, "user_id")
 	a.ExpiredAt = field.NewInt64(table, "expired_at")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 	a.UpdatedAt = field.NewInt64(table, "updated_at")
+	a.LastUsedAt = field.NewInt64(table, "last_used_at")
 
 	a.fillFieldMap()
 
@@ -94,15 +97,16 @@ func (a *aPIKey) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *aPIKey) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 8)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
-	a.fieldMap["key"] = a.Key
+	a.fieldMap["api_key"] = a.APIKey
 	a.fieldMap["name"] = a.Name
 	a.fieldMap["status"] = a.Status
 	a.fieldMap["user_id"] = a.UserID
 	a.fieldMap["expired_at"] = a.ExpiredAt
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
+	a.fieldMap["last_used_at"] = a.LastUsedAt
 }
 
 func (a aPIKey) clone(db *gorm.DB) aPIKey {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package knowledge
 
 import (
@@ -9,18 +25,18 @@ import (
 	"strings"
 	"time"
 
-	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
-	"code.byted.org/flow/opencoze/backend/application/upload"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	modelCommon "code.byted.org/data_edc/workflow_engine_next/api/model/common"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/dataengine/dataset"
+	"code.byted.org/data_edc/workflow_engine_next/application/upload"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
@@ -58,7 +74,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 			}, nil
 
 		}
-		t, err := time.Parse(TimeFormat, val)
+		t, err := time.Parse(time.DateTime, val)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +209,7 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		CharCount:  sliceEntity.CharCount,
 		Sequence:   sliceEntity.Sequence,
 		DocumentID: sliceEntity.DocumentID,
-		ChunkInfo:  "", // todo chunk info逻辑没写
+		ChunkInfo:  "",
 	}
 }
 
@@ -207,7 +223,6 @@ func convertSliceContent(s *entity.Slice) string {
 			tableData = append(tableData, sliceContentData{
 				ColumnID:   strconv.FormatInt(col.ColumnID, 10),
 				ColumnName: col.ColumnName,
-				IsSemantic: false, // TODO: 这个对应 indexing？需要确认下是否有用到的地方，看起来冗余了
 				Value:      col.GetNullableStringValue(),
 				Desc:       "",
 			})
@@ -221,7 +236,6 @@ func convertSliceContent(s *entity.Slice) string {
 type sliceContentData struct {
 	ColumnID   string `json:"column_id"`
 	ColumnName string `json:"column_name"`
-	IsSemantic bool   `json:"is_semantic"`
 	Value      string `json:"value"`
 	Desc       string `json:"desc"`
 }
@@ -238,12 +252,25 @@ func convertSliceStatus2Model(status knowledgeModel.SliceStatus) dataset.SliceSt
 		return dataset.SliceStatus_PendingVectoring
 	}
 }
-
+func convertFilterStrategy2Model(strategy *entity.ParsingStrategy) *dataset.FilterStrategy {
+	if strategy == nil {
+		return nil
+	}
+	if len(strategy.FilterPages) != 0 {
+		return &dataset.FilterStrategy{
+			FilterPage: slices.Transform(strategy.FilterPages, func(page int) int32 {
+				return int32(page)
+			}),
+		}
+	}
+	return nil
+}
 func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
 	if documentEntity == nil {
 		return nil
 	}
 	chunkStrategy := convertChunkingStrategy2Model(documentEntity.ChunkingStrategy)
+	filterStrategy := convertFilterStrategy2Model(documentEntity.ParsingStrategy)
 	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
 		Name:                  documentEntity.Name,
@@ -265,6 +292,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		StatusDescript:        &documentEntity.StatusMsg,
 		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
+		FilterStrategy:        filterStrategy,
 		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -401,7 +429,7 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 	}
 }
 
-func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType) *entity.ParsingStrategy {
+func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType, filterStrategy *dataset.FilterStrategy) *entity.ParsingStrategy {
 	if strategy == nil && sheet == nil && captionType == nil {
 		return nil
 	}
@@ -421,6 +449,9 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.SheetID = sheet.GetSheetID()
 		res.HeaderLine = int(sheet.GetHeaderLineIdx())
 		res.DataStartLine = int(sheet.GetStartLineIdx())
+	}
+	if filterStrategy != nil {
+		res.FilterPages = slices.Transform(filterStrategy.GetFilterPage(), func(page int32) int { return int(page) })
 	}
 	res.CaptionType = convertCaptionType2Entity(captionType)
 
@@ -596,7 +627,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			SelectAll:   true,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+			logs.CtxError(ctx, "list document failed, err: %v", err)
 			return nil, err
 		}
 		datasetStatus := dataset.DatasetStatus_DatasetReady
@@ -637,7 +668,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			IconURI:              k.IconURI,
 			IconURL:              k.IconURL,
 			Description:          k.Description,
-			CanEdit:              true, // todo，判断user id是否等于creator id
+			CanEdit:              true,
 			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,
@@ -690,7 +721,7 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *servic
 	}
 	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
-		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType, nil),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {

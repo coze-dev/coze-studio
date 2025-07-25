@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import React, { useState, useEffect, useMemo } from 'react';
 
 import { pick } from 'lodash-es';
@@ -15,12 +31,12 @@ import {
 import { DatabaseModeSelect } from '@coze-data/database-v2-adapter/components/database-mode-select';
 import { DatabaseCreateTableModal } from '@coze-data/database-v2-adapter/components/create-table-modal';
 import { DatabaseBaseInfoModal } from '@coze-data/database-v2-adapter/components/base-info-modal';
+import { DatabaseDetailWaring } from '@coze-data/database-v2-adapter';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozEdit,
   IconCozCross,
   IconCozArrowLeft,
-  IconCozWarningCircle,
 } from '@coze-arch/coze-design/icons';
 import {
   Button,
@@ -296,12 +312,7 @@ export const DatabaseDetail = ({
             align="left"
             tabBarExtraContent={
               <Space spacing={16}>
-                <Space spacing={4} className="coz-fg-dim">
-                  <IconCozWarningCircle className="text-lg" />
-                  <div className="text-base leading-[16px]">
-                    {I18n.t('data_base_doubao_channel_tips')}
-                  </div>
-                </Space>
+                <DatabaseDetailWaring />
                 {activeKey === DatabaseTabs.Structure ? (
                   <Button
                     data-testid={BotE2e.BotDatabaseEditTableStructureBtn}

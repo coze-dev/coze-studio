@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package elasticsearch
 
 import (
@@ -12,10 +28,10 @@ import (
 	"github.com/cloudwego/eino/components/retriever"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type esSearchStore struct {
@@ -147,13 +163,20 @@ func (e *esSearchStore) travDSL(query *es.Query, dsl *searchstore.DSL) error {
 	}
 
 	switch dsl.Op {
-	case searchstore.OpEq:
-		query.Bool.Must = append(query.Bool.Must,
-			es.NewEqualQuery(dsl.Field, stringifyValue(dsl.Value)))
-	case searchstore.OpNe:
-		query.Bool.MustNot = append(query.Bool.MustNot,
-			es.NewEqualQuery(dsl.Field, stringifyValue(dsl.Value)))
+	case searchstore.OpEq, searchstore.OpNe:
+		arr := stringifyValue(dsl.Value)
+		v := dsl.Value
+		if len(arr) > 0 {
+			v = arr[0]
+		}
 
+		if dsl.Op == searchstore.OpEq {
+			query.Bool.Must = append(query.Bool.Must,
+				es.NewEqualQuery(dsl.Field, v))
+		} else {
+			query.Bool.MustNot = append(query.Bool.MustNot,
+				es.NewEqualQuery(dsl.Field, v))
+		}
 	case searchstore.OpLike:
 		s, ok := dsl.Value.(string)
 		if !ok {
@@ -268,7 +291,7 @@ func (e *esSearchStore) fromDocument(doc *schema.Document) (map[string]any, erro
 	return fieldMapping, nil
 }
 
-func stringifyValue(dslValue any) any {
+func stringifyValue(dslValue any) []any {
 	value := reflect.ValueOf(dslValue)
 	switch value.Kind() {
 	case reflect.Slice, reflect.Array:
@@ -291,7 +314,7 @@ func stringifyValue(dslValue any) any {
 		}
 		return slice
 	default:
-		return dslValue
+		return []any{fmt.Sprintf("%v", value)}
 	}
 }
 

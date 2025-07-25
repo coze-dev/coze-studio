@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -8,8 +24,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 // outputValueFiller will fill the output value with nil if the key is not present in the output map.
@@ -28,7 +44,7 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 		}
 
 		for k, tInfo := range s.OutputTypes {
-			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil); err != nil {
+			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil, false); err != nil {
 				return nil, err
 			}
 		}
@@ -53,7 +69,7 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 		}
 
 		for k, tInfo := range s.InputTypes {
-			if err := FillIfNotRequired(tInfo, newInput, k, FillZero); err != nil {
+			if err := FillIfNotRequired(tInfo, newInput, k, FillZero, false); err != nil {
 				return nil, err
 			}
 		}
@@ -93,11 +109,14 @@ const (
 	FillNil  FillStrategy = "nil"
 )
 
-func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy) error {
+func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy, isInsideObject bool) error {
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 {
 			if v == nil && strategy == FillZero {
+				if isInsideObject {
+					return nil
+				}
 				v = tInfo.Zero()
 				container[k] = v
 				return nil
@@ -137,7 +156,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						newSubContainer := maps.Clone(subContainer)
 
 						for subK, subL := range elemTInfo.Properties {
-							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
+							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy, true); err != nil {
 								return err
 							}
 						}
@@ -171,7 +190,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				newSubContainer = make(map[string]any)
 			}
 			for subK, subT := range tInfo.Properties {
-				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
+				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy, true); err != nil {
 					return err
 				}
 			}
@@ -184,7 +203,9 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 		} else {
 			var z any
 			if strategy == FillZero {
-				z = tInfo.Zero()
+				if !isInsideObject {
+					z = tInfo.Zero()
+				}
 			}
 
 			container[k] = z
@@ -194,7 +215,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = z
 				subContainer := z.(map[string]any)
 				for subK, subL := range tInfo.Properties {
-					if err := FillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+					if err := FillIfNotRequired(subL, subContainer, subK, strategy, true); err != nil {
 						return err
 					}
 				}

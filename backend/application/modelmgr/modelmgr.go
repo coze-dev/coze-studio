@@ -1,15 +1,33 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package modelmgr
 
 import (
 	"context"
 
-	modelmgrEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	modelmgrEntity "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	modelEntity "code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type ModelmgrApplicationService struct {
@@ -32,9 +50,10 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 		return nil, err
 	}
 
+	locale := i18n.GetLocale(ctx)
 	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(m *modelEntity.Model) (*developer_api.Model, error) {
-		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
-		return modelDo2To(m)
+		logs.CtxInfo(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
+		return modelDo2To(m, locale)
 	})
 	if err != nil {
 		return nil, err
@@ -49,14 +68,16 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	}, nil
 }
 
-func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
+func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Model, error) {
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
 		func(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
-			return parameterDo2To(param)
+			return parameterDo2To(param, locale)
 		},
 	)
+
+	modalSet := sets.FromSlice(mm.Capability.InputModal)
 
 	return &developer_api.Model{
 		Name:             model.Name,
@@ -68,13 +89,13 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 		ModelQuota: &developer_api.ModelQuota{
 			TokenLimit: int32(mm.Capability.MaxTokens),
 			TokenResp:  int32(mm.Capability.OutputTokens),
-			//TokenSystem:       0,
-			//TokenUserIn:       0,
-			//TokenToolsIn:      0,
-			//TokenToolsOut:     0,
-			//TokenData:         0,
-			//TokenHistory:      0,
-			//TokenCutSwitch:    false,
+			// TokenSystem:       0,
+			// TokenUserIn:       0,
+			// TokenToolsIn:      0,
+			// TokenToolsOut:     0,
+			// TokenData:         0,
+			// TokenHistory:      0,
+			// TokenCutSwitch:    false,
 			PriceIn:           0,
 			PriceOut:          0,
 			SystemPromptLimit: nil,
@@ -93,38 +114,24 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 		EndpointName:   nil,
 		ModelTagList:   nil,
 		IsUpRequired:   nil,
-		ModelBriefDesc: mm.Description,
+		ModelBriefDesc: mm.Description.Read(locale),
 		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
 			SeriesName: "热门模型",
 		},
 		ModelStatusDetails: nil,
 		ModelAbility: &developer_api.ModelAbility{
+			CotDisplay:         ptr.Of(mm.Capability.Reasoning),
 			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
-			ImageUnderstanding: ptr.Of(supportImageModal(mm.Capability.InputModal)),
-			VideoUnderstanding: ptr.Of(supportVideoModal(mm.Capability.InputModal)),
+			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalImage)),
+			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalVideo)),
+			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalAudio)),
+			SupportMultiModal:  ptr.Of(len(modalSet) > 1),
+			PrefillResp:        ptr.Of(mm.Capability.PrefillResponse),
 		},
 	}, nil
 }
 
-func supportImageModal(ms []modelmgrEntity.Modal) bool {
-	for _, m := range ms {
-		if m == modelmgrEntity.ModalImage {
-			return true
-		}
-	}
-	return false
-}
-
-func supportVideoModal(ms []modelmgrEntity.Modal) bool {
-	for _, m := range ms {
-		if m == modelmgrEntity.ModalVideo {
-			return true
-		}
-	}
-	return false
-}
-
-func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
+func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
 	if param == nil {
 		return nil
 	}
@@ -157,8 +164,8 @@ func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParamet
 
 	return &developer_api.ModelParameter{
 		Name:  string(param.Name),
-		Label: param.Label,
-		Desc:  param.Desc,
+		Label: param.Label.Read(locale),
+		Desc:  param.Desc.Read(locale),
 		Type: func() developer_api.ModelParamType {
 			switch param.Type {
 			case modelmgrEntity.ValueTypeBoolean:
@@ -192,7 +199,7 @@ func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParamet
 					return 0
 				}
 			}(),
-			Label: param.Style.Label,
+			Label: param.Style.Label.Read(locale),
 		},
 	}
 }

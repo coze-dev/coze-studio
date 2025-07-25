@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -10,17 +26,17 @@ import (
 
 	"github.com/xuri/excelize/v2"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	rentity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rentity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error) {
@@ -259,7 +275,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 	// 1. 表头名称对齐（不要求顺序一致）
 	// 2. indexing 列必须有值, 其余列可以为空
 	// 3. 值类型可转换
-	// 4. 已有表表头字段全包含（TODO: 待讨论）
+	// 4. 已有表表头字段全包含
 	dstMapping := make(map[string]*entity.TableColumn)
 	for _, col := range dst.Columns {
 		dstCol := col
@@ -345,7 +361,6 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDoc
 		RowsCount:     0, // get all rows
 	}, nil)
 	if err != nil {
-		// TODO: resp code msg 具体填写
 		return nil, err
 	}
 

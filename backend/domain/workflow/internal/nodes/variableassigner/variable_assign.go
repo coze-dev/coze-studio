@@ -1,16 +1,63 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package variableassigner
 
 import (
 	"context"
 	"fmt"
+	"strings"
+	"sync"
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
+
+type AppVariables struct {
+	vars map[string]any
+	mu   sync.RWMutex
+}
+
+func NewAppVariables() *AppVariables {
+	return &AppVariables{
+		vars: make(map[string]any),
+	}
+}
+
+func (av *AppVariables) Set(key string, value any) {
+	av.mu.Lock()
+	av.vars[key] = value
+	av.mu.Unlock()
+}
+
+func (av *AppVariables) Get(key string) (any, bool) {
+	av.mu.RLock()
+	defer av.mu.RUnlock()
+
+	if value, ok := av.vars[key]; ok {
+		return value, ok
+	}
+	return nil, false
+}
 
 type AppVariableStore interface {
 	GetAppVariableValue(key string) (any, bool)
@@ -32,6 +79,21 @@ type Pair struct {
 }
 
 func NewVariableAssigner(_ context.Context, conf *Config) (*VariableAssigner, error) {
+	for _, pair := range conf.Pairs {
+		if pair.Left.VariableType == nil {
+			return nil, fmt.Errorf("cannot assign to output of nodes in VariableAssigner, ref: %v", pair.Left)
+		}
+
+		if *pair.Left.VariableType == vo.GlobalSystem {
+			return nil, fmt.Errorf("cannot assign to global system variables in VariableAssigner because they are read-only, ref: %v", pair.Left)
+		}
+
+		vType := *pair.Left.VariableType
+		if vType != vo.GlobalAPP && vType != vo.GlobalUser {
+			return nil, fmt.Errorf("cannot assign to variable type %s in VariableAssigner", vType)
+		}
+	}
+
 	return &VariableAssigner{
 		config: conf,
 	}, nil
@@ -39,25 +101,17 @@ func NewVariableAssigner(_ context.Context, conf *Config) (*VariableAssigner, er
 
 func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[string]any, error) {
 	for _, pair := range v.config.Pairs {
-		if pair.Left.VariableType == nil {
-			return nil, fmt.Errorf("cannot assign to output of nodes in VariableAssigner, ref: %v", pair.Left)
-		}
-
-		if *pair.Left.VariableType == variable.GlobalSystem {
-			return nil, fmt.Errorf("cannot assign to global system variables in VariableAssigner because they are read-only, ref: %v", pair.Left)
-		}
-
 		right, ok := nodes.TakeMapValue(in, pair.Right)
 		if !ok {
-			return nil, fmt.Errorf("failed to extract right value for path %s", pair.Right)
+			return nil, vo.NewError(errno.ErrInputFieldMissing, errorx.KV("name", strings.Join(pair.Right, ".")))
 		}
 
 		vType := *pair.Left.VariableType
 		switch vType {
-		case variable.GlobalAPP:
+		case vo.GlobalAPP:
 			err := compose.ProcessState(ctx, func(ctx context.Context, appVarsStore AppVariableStore) error {
 				if len(pair.Left.FromPath) != 1 {
-					return fmt.Errorf("invalid path: %v", pair.Left.FromPath)
+					return fmt.Errorf("can only assign to top level variable: %v", pair.Left.FromPath)
 				}
 				appVarsStore.SetAppVariableValue(pair.Left.FromPath[0], right)
 				return nil
@@ -65,22 +119,23 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[s
 			if err != nil {
 				return nil, err
 			}
-		case variable.GlobalUser:
+		case vo.GlobalUser:
 			opts := make([]variable.OptionFn, 0, 1)
 			if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 				exeCfg := exeCtx.RootCtx.ExeCfg
 				opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-					AgentID:     exeCfg.AgentID,
-					AppID:       exeCfg.AppID,
-					ConnectorID: exeCfg.ConnectorID,
+					AgentID:      exeCfg.AgentID,
+					AppID:        exeCfg.AppID,
+					ConnectorID:  exeCfg.ConnectorID,
+					ConnectorUID: exeCfg.ConnectorUID,
 				}))
 			}
 			err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right, opts...)
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
 			}
 		default:
-			return nil, fmt.Errorf("cannot assign to variable type %s in VariableAssigner", vType)
+			panic("impossible")
 		}
 	}
 

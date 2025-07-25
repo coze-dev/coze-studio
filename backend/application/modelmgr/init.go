@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package modelmgr
 
 import (
@@ -12,17 +28,18 @@ import (
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 
-	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	crossmodelmgr "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
+	"code.byted.org/gopkg/logs"
 )
 
 func InitService(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) (*ModelmgrApplicationService, error) {
 	svc := service.NewModelManager(db, idgen, oss)
+	// 后续通过接口增加模型配置
 	if err := loadStaticModelConfig(svc, oss); err != nil {
 		return nil, err
 	}
@@ -60,12 +77,22 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		cursor = listMetaResp.NextCursor
 	}
 
-	root := os.Getenv("PWD")
-	filePath := filepath.Join(root, "resources/conf/model/meta")
+	root, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	logs.CtxInfo(ctx, "[loadStaticModelConfig] get work dir, root=%s", root)
+	envModelMeta, envModelEntity, err := initModelByEnv(root, "conf/model/template")
+	if err != nil {
+		return err
+	}
+
+	filePath := filepath.Join(root, "conf/model/meta")
 	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta](filePath)
 	if err != nil {
 		return err
 	}
+	staticModelMeta = append(staticModelMeta, envModelMeta...)
 	for _, modelMeta := range staticModelMeta {
 		if _, found := id2Meta[modelMeta.ID]; !found {
 			if modelMeta.IconURI == "" && modelMeta.IconURL == "" {
@@ -75,7 +102,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			} else if modelMeta.IconURI != "" {
 				// try local path
 				base := filepath.Base(modelMeta.IconURI)
-				iconPath := filepath.Join("resources/conf/model/icon", base)
+				iconPath := filepath.Join("conf/model/icon", base)
 				if _, err = os.Stat(iconPath); err == nil {
 					// try upload icon
 					icon, err := os.ReadFile(iconPath)
@@ -98,28 +125,32 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			}
 			newMeta, err := svc.CreateModelMeta(ctx, modelMeta)
 			if err != nil {
+				if errors.Is(err, gorm.ErrDuplicatedKey) {
+					logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta conflict for id=%d, skip", newMeta.ID)
+				}
 				return err
+			} else {
+				logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			}
-			logs.Infof("[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			id2Meta[newMeta.ID] = newMeta
 		} else {
-			logs.Infof("[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
-
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
 		}
 	}
 
-	filePath = filepath.Join(root, "resources/conf/model/entity")
+	filePath = filepath.Join(root, "conf/model/entity")
 	staticModel, err := readDirYaml[crossmodelmgr.Model](filePath)
 	if err != nil {
 		return err
 	}
+	staticModel = append(staticModel, envModelEntity...)
 	for _, modelEntity := range staticModel {
 		curModelEntities, err := svc.MGetModelByID(ctx, &modelmgr.MGetModelRequest{IDs: []int64{modelEntity.ID}})
 		if err != nil {
 			return err
 		}
 		if len(curModelEntities) > 0 {
-			logs.Infof("[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
 			continue
 		}
 		meta, found := id2Meta[modelEntity.Meta.ID]
@@ -128,9 +159,13 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		}
 		modelEntity.Meta = *meta
 		if _, err = svc.CreateModel(ctx, &entity.Model{Model: modelEntity}); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity conflict for id=%d, skip", modelEntity.ID)
+			}
 			return err
+		} else {
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 		}
-		logs.Infof("[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 	}
 
 	return nil

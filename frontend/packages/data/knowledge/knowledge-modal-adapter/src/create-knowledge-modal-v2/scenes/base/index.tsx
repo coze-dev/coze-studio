@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import { useRef, useState } from 'react';
 
 import { useDataModalWithCoze } from '@coze-data/utils';
@@ -9,10 +25,10 @@ import {
 } from '@coze-data/knowledge-modal-base/create-knowledge-modal-v2';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Form, LoadingButton } from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { FormatType } from '@coze-arch/bot-api/memory';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Button, Form, LoadingButton } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 
@@ -27,13 +43,11 @@ export const useCreateKnowledgeModalV2 = (
   const { onFinish, beforeCreate, projectID } = params;
   const formRef = useRef<Form<CozeKnowledgeAddTypeContentFormData>>(null);
   // 使用 useState 保证能重新渲染
-  // TODO: hzf 重命名
   const [currentFormatType, setCurrentFormatType] = useState(FormatType.Text);
   const spaceId = useSpaceStore(store => store.getSpaceId());
 
   const resourceNavigate = useDataNavigate();
 
-  // TODO: hzf 重命名
   const [unitType, setUnitType] = useState<UnitType>(UnitType.TEXT_DOC);
 
   const createDataset = async () => {

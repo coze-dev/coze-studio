@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package httputil
 
 import (
@@ -5,10 +21,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/gopkg/logs"
 )
 
 type data struct {
@@ -24,11 +40,11 @@ func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
-		logs.CtxWarnf(ctx, "[ErrorX] error:  %v %v \n", customErr.Code(), err)
+		logs.CtxWarn(ctx, "[ErrorX] error:  %v %v \n", customErr.Code(), err)
 		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
 		return
 	}
 
-	logs.CtxErrorf(ctx, "[InternalError]  error: %v \n", err)
+	logs.CtxError(ctx, "[InternalError]  error: %v \n", err)
 	c.AbortWithStatusJSON(http.StatusInternalServerError, data{Code: 500, Msg: "internal server error"})
 }

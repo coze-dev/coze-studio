@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useNavigate, useParams } from 'react-router-dom';
 import React, { type FC, useEffect, useRef, useState, useMemo } from 'react';
@@ -16,6 +32,8 @@ import { useDatasetStore } from '@coze-data/knowledge-data-set-for-agent';
 import { BotE2e } from '@coze-data/e2e';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Popover } from '@coze-arch/coze-design';
 import { OpenBlockEvent, emitEvent } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIButton, UITag, Toast } from '@coze-arch/bot-semi';
@@ -35,8 +53,6 @@ import {
   AddButton,
 } from '@coze-agent-ide/tool';
 import { useBotEditor } from '@coze-agent-ide/bot-editor-context-store';
-import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
-import { Tooltip, Popover } from '@coze-arch/coze-design';
 
 import { usePopoverLock } from '../../hook/use-popover-lock';
 import { useDatasetAutoChangeConfirm } from '../../hook/use-dataset-auto-change-confirm';
@@ -181,6 +197,7 @@ export const DataSetAreaItem: FC<IDataSetAreaProps> = ({
   const jumpToAdd = (datasetID: string, type: UnitType) => {
     const queryParams = {
       biz: 'agentIDE',
+      type,
       bot_id: params.bot_id,
       action_type: ActionType.ADD,
       page_mode: 'modal',

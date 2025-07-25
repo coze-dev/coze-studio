@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package app
 
 import (
@@ -10,42 +26,42 @@ import (
 
 	"github.com/google/uuid"
 
-	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	intelligenceAPI "code.byted.org/flow/opencoze/backend/api/model/intelligence"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	workflowAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
-	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
-	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
-	resourceAPI "code.byted.org/flow/opencoze/backend/api/model/resource"
-	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	taskAPI "code.byted.org/flow/opencoze/backend/api/model/task"
-	taskStruct "code.byted.org/flow/opencoze/backend/api/model/task_struct"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/knowledge"
-	"code.byted.org/flow/opencoze/backend/application/memory"
-	"code.byted.org/flow/opencoze/backend/application/plugin"
-	"code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	"code.byted.org/flow/opencoze/backend/domain/app/repository"
-	"code.byted.org/flow/opencoze/backend/domain/app/service"
-	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
-	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	user "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	connectorModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/connector"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	pluginModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	intelligenceAPI "code.byted.org/data_edc/workflow_engine_next/api/model/intelligence"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	workflowAPI "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	projectAPI "code.byted.org/data_edc/workflow_engine_next/api/model/project"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	publishAPI "code.byted.org/data_edc/workflow_engine_next/api/model/publish"
+	resourceAPI "code.byted.org/data_edc/workflow_engine_next/api/model/resource"
+	resourceCommon "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	taskAPI "code.byted.org/data_edc/workflow_engine_next/api/model/task"
+	taskStruct "code.byted.org/data_edc/workflow_engine_next/api/model/task_struct"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/memory"
+	"code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/service"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	user "code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var APPApplicationSVC = &APPApplicationService{}
@@ -153,12 +169,12 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project '%d' failed, err=%v", req.ProjectID, err)
+		logs.CtxError(ctx, "publish project '%d' failed, err=%v", req.ProjectID, err)
 	}
 
 	err = a.deleteAPPResources(ctx, req.ProjectID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' resources failed, err=%v", req.ProjectID, err)
+		logs.CtxError(ctx, "delete app '%d' resources failed, err=%v", req.ProjectID, err)
 	}
 
 	resp = &projectAPI.DraftProjectDeleteResponse{}
@@ -169,27 +185,27 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) (err error) {
 	err = plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' plugins failed, err=%v", appID, err)
+		logs.CtxError(ctx, "delete app '%d' plugins failed, err=%v", appID, err)
 	}
 
 	err = memory.DatabaseApplicationSVC.DeleteDatabaseByAppID(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' databases failed, err=%v", appID, err)
+		logs.CtxError(ctx, "delete app '%d' databases failed, err=%v", appID, err)
 	}
 
 	err = a.variablesSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' variables failed, err=%v", appID, err)
+		logs.CtxError(ctx, "delete app '%d' variables failed, err=%v", appID, err)
 	}
 
 	err = knowledge.KnowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' knowledge failed, err=%v", appID, err)
+		logs.CtxError(ctx, "delete app '%d' knowledge failed, err=%v", appID, err)
 	}
 
 	err = workflow.SVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' workflow failed, err=%v", appID, err)
+		logs.CtxError(ctx, "delete app '%d' workflow failed, err=%v", appID, err)
 	}
 
 	return nil
@@ -277,7 +293,7 @@ func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, 
 				return nil, err
 			}
 		default:
-			logs.CtxWarnf(ctx, "unsupported connector id '%v'", c.ID)
+			logs.CtxWarn(ctx, "unsupported connector id '%v'", c.ID)
 			continue
 		}
 
@@ -352,7 +368,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish project '%d' event failed err=%s", req.ResourceID, err)
+		logs.CtxWarn(ctx, "publish project '%d' event failed err=%s", req.ResourceID, err)
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
@@ -423,7 +439,7 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project '%d' failed,  err=%v", req.ProjectID, err)
+		logs.CtxError(ctx, "publish project '%d' failed,  err=%v", req.ProjectID, err)
 	}
 
 	return resp, nil
@@ -486,7 +502,7 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 		for _, c := range r.ConnectorPublishRecords {
 			info, exist := connectorInfo[c.ConnectorID]
 			if !exist {
-				logs.CtxErrorf(ctx, "connector '%d' not exist", c.ConnectorID)
+				logs.CtxError(ctx, "connector '%d' not exist", c.ConnectorID)
 				continue
 			}
 
@@ -543,7 +559,7 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 	for _, c := range record.ConnectorPublishRecords {
 		info, exist := connectorInfo[c.ConnectorID]
 		if !exist {
-			logs.CtxErrorf(ctx, "connector '%d' not exist", c.ConnectorID)
+			logs.CtxError(ctx, "connector '%d' not exist", c.ConnectorID)
 			continue
 		}
 
@@ -630,7 +646,7 @@ func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *r
 	}
 
 	if handleErr != nil {
-		logs.CtxErrorf(ctx, "copy resource failed, taskID=%s, err=%v", taskID, handleErr)
+		logs.CtxError(ctx, "copy resource failed, taskID=%s, err=%v", taskID, handleErr)
 	}
 
 	failedReason, err := a.handleCopyResult(ctx, taskID, newResID, req, handleErr)
@@ -1207,7 +1223,7 @@ func (a *APPApplicationService) duplicateAPPVariables(ctx context.Context, userI
 func (a *APPApplicationService) getAPPUserInfo(ctx context.Context, userID int64) (userInfo *common.User) {
 	ui, err := a.userSVC.GetUserInfo(ctx, userID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "GetUserInfo failed, userID=%d, err=%v", userID, err)
+		logs.CtxError(ctx, "GetUserInfo failed, userID=%d, err=%v", userID, err)
 		return nil
 	}
 
@@ -1238,7 +1254,7 @@ func (a *APPApplicationService) getAPPBasicInfo(ctx context.Context, draftAPP *e
 
 	iconURL, err := a.oss.GetObjectUrl(ctx, draftAPP.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", draftAPP.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url failed with '%s', err=%v", draftAPP.GetIconURI(), err)
 	}
 
 	basicInfo := &common.IntelligenceBasicInfo{

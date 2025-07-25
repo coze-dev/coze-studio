@@ -1,8 +1,23 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package coze
 
 import (
 	"bytes"
-
 	"context"
 	"errors"
 	"fmt"
@@ -15,75 +30,74 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alicebob/miniredis/v2"
+	redis "code.byted.org/kv/goredis"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app/client"
+	"code.byted.org/middleware/hertz/pkg/app/server"
+	"code.byted.org/middleware/hertz/pkg/common/ut"
+	"code.byted.org/middleware/hertz/pkg/protocol"
 	"github.com/bytedance/mockey"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/app/client"
-	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/ut"
-	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	modelknowledge "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	plugin2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
-	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
-	appplugin "code.byted.org/flow/opencoze/backend/application/plugin"
-	"code.byted.org/flow/opencoze/backend/application/user"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
-	plugin3 "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
-	entity4 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
-	entity3 "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	entity5 "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
-	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search/searchmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
-	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
-	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
-	mockCrossUser "code.byted.org/flow/opencoze/backend/internal/mock/crossdomain/crossuser"
-	mockPlugin "code.byted.org/flow/opencoze/backend/internal/mock/domain/plugin"
-	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
-	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
-	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/internal/testutil"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	modelknowledge "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	crossmodelmgr "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	plugin2 "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	pluginmodel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	pluginAPI "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/plugin_develop"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	appknowledge "code.byted.org/data_edc/workflow_engine_next/application/knowledge"
+	appmemory "code.byted.org/data_edc/workflow_engine_next/application/memory"
+	appplugin "code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	appworkflow "code.byted.org/data_edc/workflow_engine_next/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
+	plugin3 "code.byted.org/data_edc/workflow_engine_next/crossdomain/workflow/plugin"
+	entity4 "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	entity3 "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	entity5 "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	userentity "code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge/knowledgemock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin/pluginmock"
+	crosssearch "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/search/searchmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	mockvar "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable/varmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/checkpoint"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/coderunner"
+	mockCrossUser "code.byted.org/data_edc/workflow_engine_next/internal/mock/crossdomain/crossuser"
+	mockPlugin "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/plugin"
+	mockcode "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/workflow/crossdomain/code"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/internal/testutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type wfTestRunner struct {
@@ -100,7 +114,7 @@ type wfTestRunner struct {
 	tos         *storageMock.MockStorage
 	knowledge   *knowledgemock.MockKnowledgeOperator
 	database    *databasemock.MockDatabaseOperator
-	pluginSrv   *pluginmock.MockPluginService
+	pluginSrv   *pluginmock.MockService
 	ctx         context.Context
 	closeFn     func()
 }
@@ -210,14 +224,8 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	db, err := gorm.Open(mysql.Open(dsn))
 	assert.NoError(t, err)
 
-	s, err := miniredis.Run()
-	if err != nil {
-		t.Fatalf("Failed to start miniredis: %v", err)
-	}
-
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
+	redisClient, err := redis.NewClient("TEST_PSM")
+	assert.NoError(t, err)
 
 	cpStore := checkpoint.NewRedisStore(redisClient)
 
@@ -270,7 +278,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
 	database.SetDatabaseOperator(mockDatabaseOperator)
 
-	mockPluginSrv := pluginmock.NewMockPluginService(ctrl)
+	mockPluginSrv := pluginmock.NewMockService(ctrl)
 	plugin.SetPluginService(mockPluginSrv)
 
 	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
@@ -949,9 +957,9 @@ func TestNodeTemplateList(t *testing.T) {
 		assert.Equal(t, 3, len(resp.Data.CateList))
 
 		id2Name := map[string]string{
-			"3":  "大模型",
-			"5":  "代码",
-			"18": "问答",
+			"3":  "LLM",
+			"5":  "Code",
+			"18": "Question",
 		}
 		for _, tl := range resp.Data.TemplateList {
 			assert.Equal(t, tl.Name, id2Name[tl.ID])
@@ -1044,31 +1052,23 @@ func TestValidateTree(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		vars := make([]*variable.VarMeta, 0)
-
-		vars = append(vars, &variable.VarMeta{
-			Name: "app_v1",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeString,
+		vars := map[string]*vo.TypeInfo{
+			"app_v1": {
+				Type: vo.DataTypeString,
 			},
-		})
-		vars = append(vars, &variable.VarMeta{
-			Name: "app_list_v1",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeArray,
-				ElemTypeInfo: &variable.VarTypeInfo{
-					Type: variable.VarTypeString,
+			"app_list_v1": {
+				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
 				},
 			},
-		})
-		vars = append(vars, &variable.VarMeta{
-			Name: "app_list_v2",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeString,
+			"app_list_v2": {
+				Type:     vo.DataTypeString,
+				Required: true,
 			},
-		})
+		}
 
-		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
 		t.Run("workflow_has_loop", func(t *testing.T) {
 			errs := r.validateTree("validate/workflow_has_loop.json")
@@ -1122,12 +1122,12 @@ func TestValidateTree(t *testing.T) {
 		t.Run("workflow_nested_has_loop_or_batch", func(t *testing.T) {
 			errs := r.validateTree("validate/workflow_nested_has_loop_or_batch.json")
 
-			assert.Equal(t, errs[0][0].Message, `nested nodes do not support batch/loop`)
+			assert.Equal(t, errs[0][0].Message, `composite nodes such as batch/loop cannot be nested`)
 		})
 
 		t.Run("workflow_variable_assigner", func(t *testing.T) {
 			errs := r.validateTree("validate/workflow_variable_assigner.json")
-			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
+			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2], type mismatch`)
 		})
 
 		t.Run("sub_workflow_terminate_plan_type", func(t *testing.T) {
@@ -1135,7 +1135,7 @@ func TestValidateTree(t *testing.T) {
 
 			errs := r.validateTree("validate/sub_workflow_terminate_plan_type.json")
 			require.Equal(t, 2, len(errs))
-			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
+			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2], type mismatch`)
 
 			for _, i := range errs[1] {
 				if i.NodeError != nil {
@@ -1155,8 +1155,8 @@ func TestValidateTree(t *testing.T) {
 			msgs := slices.Transform(errs[0], func(item *workflow.ValidateErrorData) string {
 				return item.Message
 			})
-			assert.Contains(t, msgs, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
-			assert.Contains(t, msgs, `ref block error, not found [blockID]`)
+			assert.Contains(t, msgs, `parameter name only allows number or alphabet, and must begin with alphabet, but it's "123"`)
+			assert.Contains(t, msgs, `ref block error,[blockID] is empty`)
 		})
 
 	})
@@ -2289,6 +2289,83 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 		})
 	})
 }
+
+func TestStartNodeDefaultValues(t *testing.T) {
+	mockey.PatchConvey("default values", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		t.Run("no input keys, all fields use default values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{}
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "str",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"1", "2"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   false,
+			})
+
+		})
+		t.Run("all fields use default values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{
+				"str":    "",
+				"array":  "[]",
+				"object": "{}",
+			}
+
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "str",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"1", "2"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   false,
+			})
+
+		})
+		t.Run("some use default values and some use user-entered values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{
+				"str":    "value",
+				"array":  `["a","b"]`,
+				"object": "{}",
+				"bool":   "true",
+			}
+
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "value",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"a", "b"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   true,
+			})
+
+		})
+
+	})
+}
+
 func TestAggregateStreamVariables(t *testing.T) {
 	mockey.PatchConvey("test aggregate stream variables", t, func() {
 		r := newWfTestRunner(t)
@@ -2626,10 +2703,10 @@ func TestInputComplex(t *testing.T) {
 			"output_list": []any{
 				map[string]any{
 					"name": "user_1",
-					"age":  int64(0), // TODO: this is different to online behavior which is nil
+					"age":  nil,
 				},
 				map[string]any{
-					"name": "", // TODO: this is different to online behavior which is nil
+					"name": nil,
 					"age":  int64(2),
 				},
 			},
@@ -3183,9 +3260,8 @@ func TestStreamResume(t *testing.T) {
 					NodeTitle:    ptr.Of("结束"),
 					NodeSeqID:    ptr.Of("0"),
 					NodeIsFinish: ptr.Of(true),
-					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
+					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":null,\"name\":\"user_1\"},{\"age\":2,\"name\":null}]}"),
 					ContentType:  ptr.Of("text"),
-					// Token:        ptr.Of(int64(0)), TODO: verify if we need to uncomment this
 				},
 			},
 			{
@@ -3556,7 +3632,7 @@ func TestCopyWorkflow(t *testing.T) {
 			CommitID: "",
 		})
 		assert.NotNil(t, err)
-		assert.Equal(t, fmt.Sprintf("workflow meta not found for ID %s: record not found", id), err.Error())
+		assert.ErrorContains(t, err, strconv.Itoa(errno.ErrWorkflowNotFound))
 	})
 }
 
@@ -3566,29 +3642,22 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		vars := []*variable.VarMeta{
-			{
-				Name: "app_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
+		vars := map[string]*vo.TypeInfo{
+			"app_v1": {
+				Type: vo.DataTypeString,
+			},
+			"app_list_v1": {
+				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
 				},
-			}, {
-				Name: "app_list_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeArray,
-					ElemTypeInfo: &variable.VarTypeInfo{
-						Type: variable.VarTypeString,
-					},
-				},
-			}, {
-				Name: "app_list_v2",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
-				},
+			},
+			"app_list_v2": {
+				Type: vo.DataTypeString,
 			},
 		}
 
-		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
 		r.load("publish/release_main_workflow.json", withID(100100100100), withProjectID(appID))
 		r.load("publish/release_c1_workflow.json", withID(7511615200781402118), withProjectID(appID))
@@ -3612,8 +3681,9 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		}
 
 		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(context.Background(), appID, &vo.ReleaseWorkflowConfig{
-			Version:   version,
-			PluginIDs: []int64{7511616454588891136},
+			Version:      version,
+			PluginIDs:    []int64{7511616454588891136},
+			ConnectorIDs: []int64{consts.APIConnectorID},
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(vIssues))
@@ -3675,29 +3745,22 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		vars := []*variable.VarMeta{
-			{
-				Name: "app_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
+		vars := map[string]*vo.TypeInfo{
+			"app_v1": {
+				Type: vo.DataTypeString,
+			},
+			"app_list_v1": {
+				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
 				},
-			}, {
-				Name: "app_list_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeArray,
-					ElemTypeInfo: &variable.VarTypeInfo{
-						Type: variable.VarTypeString,
-					},
-				},
-			}, {
-				Name: "app_list_v2",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
-				},
+			},
+			"app_list_v2": {
+				Type: vo.DataTypeString,
 			},
 		}
 
-		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
 		r.load("publish/release_error_workflow.json", withID(1001001001001), withProjectID(100010001))
 		wf, err := appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
@@ -3719,8 +3782,9 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		}
 
 		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(context.Background(), 100010001, &vo.ReleaseWorkflowConfig{
-			Version:   version,
-			PluginIDs: []int64{},
+			Version:      version,
+			PluginIDs:    []int64{},
+			ConnectorIDs: []int64{consts.APIConnectorID},
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(vIssues))
@@ -3828,7 +3892,6 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 		exeID := r.nodeDebug(id, "103929", withNDInput(map[string]string{"input": "hello"}))
 		e := r.getProcess(id, exeID)
 		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowFailed), e.status)
-		assert.Contains(t, e.reason, "context deadline exceeded")
 	})
 }
 
@@ -3885,33 +3948,27 @@ func TestCodeExceptionBranch(t *testing.T) {
 
 func TestCopyWorkflowAppToLibrary(t *testing.T) {
 	r := newWfTestRunner(t)
+	appworkflow.SVC.IDGenerator = r.idGen
 	defer r.closeFn()
 
-	vars := []*variable.VarMeta{
-		{
-			Name: "app_v1",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeString,
+	vars := map[string]*vo.TypeInfo{
+		"app_v1": {
+			Type: vo.DataTypeString,
+		},
+		"app_list_v1": {
+			Type: vo.DataTypeArray,
+			ElemTypeInfo: &vo.TypeInfo{
+				Type: vo.DataTypeString,
 			},
-		}, {
-			Name: "app_list_v1",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeArray,
-				ElemTypeInfo: &variable.VarTypeInfo{
-					Type: variable.VarTypeString,
-				},
-			},
-		}, {
-			Name: "app_list_v2",
-			TypeInfo: variable.VarTypeInfo{
-				Type: variable.VarTypeString,
-			},
+		},
+		"app_list_v2": {
+			Type: vo.DataTypeString,
 		},
 	}
 
-	r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+	r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
-	mockey.PatchConvey("copy only with subworkflow", t, func() {
+	mockey.PatchConvey("copy with subworkflow, subworkflow with external resource ", t, func() {
 		var copiedIDs = make([]int64, 0)
 		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
 		var ignoreIDs = map[int64]bool{
@@ -3939,24 +3996,81 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
 				return strconv.FormatInt(e, 10), true
 			})
+
 			var validateSubWorkflowIDs func(nodes []*vo.Node)
 			validateSubWorkflowIDs = func(nodes []*vo.Node) {
 				for _, node := range nodes {
-					if node.Type == vo.BlockTypeBotSubWorkflow {
+					switch node.Type {
+					case vo.BlockTypeBotAPI:
+						apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+							return e.Name, e
+						})
+						pluginIDParam, ok := apiParams["pluginID"]
+						assert.True(t, ok)
+						pID, err := strconv.ParseInt(pluginIDParam.Input.Value.Content.(string), 10, 64)
+						assert.NoError(t, err)
+
+						pluginVersionParam, ok := apiParams["pluginVersion"]
+						assert.True(t, ok)
+
+						pVersion := pluginVersionParam.Input.Value.Content.(string)
+
+						if pVersion == "0" {
+							assert.Equal(t, "100100", pID)
+						}
+
+					case vo.BlockTypeBotSubWorkflow:
 						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
-					}
-					if node.Type == vo.BlockTypeBotLLM {
+						wfId, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+						assert.NoError(t, err)
+
+						subWf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+							ID:    wfId,
+							QType: vo.FromLatestVersion,
+						})
+						assert.NoError(t, err)
+						subworkflowCanvas := &vo.Canvas{}
+						err = sonic.UnmarshalString(subWf.Canvas, subworkflowCanvas)
+						assert.NoError(t, err)
+						validateSubWorkflowIDs(subworkflowCanvas.Nodes)
+					case vo.BlockTypeBotLLM:
 						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
 							}
 						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+							for _, p := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
+								if p.PluginVersion == "0" {
+									assert.Equal(t, "100100", p.PluginID)
+								}
+							}
+						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+							for _, k := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
+								assert.Equal(t, "100100", k.ID)
+							}
+						}
+					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
+						for idx := range knowledgeIDs {
+							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
+						}
+					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+						for _, d := range node.Data.Inputs.DatabaseInfoList {
+							assert.Equal(t, "100100", d.DatabaseInfoID)
+						}
+
 					}
 
 				}
 			}
 
 			validateSubWorkflowIDs(canvas.Nodes)
+
 			return nil
 
 		}
@@ -3971,6 +4085,31 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_2.json", withID(7515027182796668928), withProjectID(appIDInt64))
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
+
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+			TargetKnowledgeID: 100100,
+		}, nil).Build().UnPatch()
+
+		mockCopyDatabase := func(ctx context.Context, req *appmemory.CopyDatabaseRequest) (*appmemory.CopyDatabaseResponse, error) {
+			es := make(map[int64]*entity4.Database)
+			for _, id := range req.DatabaseIDs {
+				es[id] = &entity4.Database{ID: 100100}
+			}
+			return &appmemory.CopyDatabaseResponse{
+				Databases: es,
+			}, nil
+		}
+
+		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
+
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+			Plugin: &entity5.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
+					ID:      100100,
+					Version: ptr.Of("v0.0.1"),
+				},
+			},
+		}, nil).Build().UnPatch()
 
 		_, is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)
@@ -4090,29 +4229,22 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 	mockey.PatchConvey("test move workflow", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
-		vars := []*variable.VarMeta{
-			{
-				Name: "app_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
+		vars := map[string]*vo.TypeInfo{
+			"app_v1": {
+				Type: vo.DataTypeString,
+			},
+			"app_list_v1": {
+				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
 				},
-			}, {
-				Name: "app_list_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeArray,
-					ElemTypeInfo: &variable.VarTypeInfo{
-						Type: variable.VarTypeString,
-					},
-				},
-			}, {
-				Name: "app_list_v2",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
-				},
+			},
+			"app_list_v2": {
+				Type: vo.DataTypeString,
 			},
 		}
 
-		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 		t.Run("move workflow", func(t *testing.T) {
 
 			var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
@@ -4257,29 +4389,22 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		vars := []*variable.VarMeta{
-			{
-				Name: "app_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
+		vars := map[string]*vo.TypeInfo{
+			"app_v1": {
+				Type: vo.DataTypeString,
+			},
+			"app_list_v1": {
+				Type: vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{
+					Type: vo.DataTypeString,
 				},
-			}, {
-				Name: "app_list_v1",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeArray,
-					ElemTypeInfo: &variable.VarTypeInfo{
-						Type: variable.VarTypeString,
-					},
-				},
-			}, {
-				Name: "app_list_v2",
-				TypeInfo: variable.VarTypeInfo{
-					Type: variable.VarTypeString,
-				},
+			},
+			"app_list_v2": {
+				Type: vo.DataTypeString,
 			},
 		}
 
-		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 		var copiedIDs = make([]int64, 0)
 		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
 		var ignoreIDs = map[int64]bool{
@@ -4382,7 +4507,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
+		assert.Equal(t, "false [] {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
 	})
 }
 
@@ -4461,8 +4586,26 @@ func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
 		outputData, ok := result["output"].(map[string]any)
 		assert.True(t, ok, "output field is not a map[string]any")
 
-		assert.Equal(t, false, outputData["int"], "int field mismatch")
+		assert.Equal(t, nil, outputData["int"], "int field mismatch")
 		assert.Equal(t, "abc", outputData["string"], "string field mismatch")
 		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
+	})
+}
+
+func TestSetAppVariablesFOrSubProcesses(t *testing.T) {
+	mockey.PatchConvey("app variables for sub_process", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return("1.0", nil).AnyTimes()
+		idStr := r.load("app_variables_for_sub_process.json")
+		r.publish(idStr, "v0.0.1", true)
+		result, _ := r.openapiSyncRun(idStr, map[string]any{
+			"input": "ax",
+		})
+
+		assert.Equal(t, result, map[string]any{
+			"output": "ax",
+		})
+
 	})
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -10,14 +26,16 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 type State struct {
@@ -35,7 +53,7 @@ type State struct {
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
-	AppVariableStore    map[string]any                                                       `json:"variable_app_store,omitempty"`
+	AppVariableStore    *variableassigner.AppVariables                                       `json:"variable_app_store,omitempty"`
 }
 
 func init() {
@@ -66,15 +84,16 @@ func init() {
 	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
 	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
 	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
+	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
+	_ = compose.RegisterSerializableType[*variableassigner.AppVariables]("app_variables")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {
-	s.AppVariableStore[key] = value
+	s.AppVariableStore.Set(key, value)
 }
 
 func (s *State) GetAppVariableValue(key string) (any, bool) {
-	v, ok := s.AppVariableStore[key]
-	return v, ok
+	return s.AppVariableStore.Get(key)
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -252,6 +271,19 @@ func (s *State) NodeExecuted(key vo.NodeKey) bool {
 
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
+		var parentState *State
+		_ = compose.ProcessState(ctx, func(ctx context.Context, s *State) error {
+			parentState = s
+			return nil
+		})
+
+		var appVariableStore *variableassigner.AppVariables
+		if parentState == nil {
+			appVariableStore = variableassigner.NewAppVariables()
+		} else {
+			appVariableStore = parentState.AppVariableStore
+		}
+
 		return &State{
 			Answers:              make(map[vo.NodeKey][]string),
 			Questions:            make(map[vo.NodeKey][]*qa.Question),
@@ -264,7 +296,7 @@ func GenState() compose.GenLocalState[*State] {
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			LLMToResumeData:      make(map[vo.NodeKey]string),
-			AppVariableStore:     make(map[string]any),
+			AppVariableStore:     appVariableStore,
 		}
 	}
 }
@@ -395,15 +427,11 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 		out := make(map[string]any)
@@ -417,11 +445,11 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 			var v any
 			var err error
 			switch *input.Source.Ref.VariableType {
-			case variable.ParentIntermediate:
+			case vo.ParentIntermediate:
 				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalSystem, variable.GlobalUser:
+			case vo.GlobalSystem, vo.GlobalUser:
 				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalAPP:
+			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
 				if v, ok = state.GetAppVariableValue(path); !ok {
@@ -470,10 +498,10 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 		)
 
 		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-			AgentID:     exeCfg.AgentID,
-			AppID:       exeCfg.AppID,
-			ConnectorID: exeCfg.ConnectorID,
-			//ConnectorUID:
+			AgentID:      exeCfg.AgentID,
+			AppID:        exeCfg.AppID,
+			ConnectorID:  exeCfg.ConnectorID,
+			ConnectorUID: exeCfg.ConnectorUID,
 		}))
 
 		for _, input := range vars {
@@ -483,11 +511,11 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 			var v any
 			var err error
 			switch *input.Source.Ref.VariableType {
-			case variable.ParentIntermediate:
+			case vo.ParentIntermediate:
 				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalSystem, variable.GlobalUser:
+			case vo.GlobalSystem, vo.GlobalUser:
 				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalAPP:
+			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
 				if v, ok = state.GetAppVariableValue(path); !ok {
@@ -732,7 +760,7 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 	for _, output := range s.OutputSources {
 		if output.Source.Ref != nil && output.Source.Ref.VariableType != nil {
 			// intermediate vars are handled within nodes themselves
-			if *output.Source.Ref.VariableType == variable.ParentIntermediate {
+			if *output.Source.Ref.VariableType == vo.ParentIntermediate {
 				continue
 			}
 			vars = append(vars, output)
@@ -750,15 +778,11 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 		out := make(map[string]any)
@@ -772,9 +796,9 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 			var v any
 			var err error
 			switch *input.Source.Ref.VariableType {
-			case variable.GlobalSystem, variable.GlobalUser:
+			case vo.GlobalSystem, vo.GlobalUser:
 				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalAPP:
+			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
 				if v, ok = state.GetAppVariableValue(path); !ok {
@@ -805,7 +829,7 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 	for _, output := range s.OutputSources {
 		if output.Source.Ref != nil && output.Source.Ref.VariableType != nil {
 			// intermediate vars are handled within nodes themselves
-			if *output.Source.Ref.VariableType == variable.ParentIntermediate {
+			if *output.Source.Ref.VariableType == vo.ParentIntermediate {
 				continue
 			}
 			vars = append(vars, output)
@@ -825,15 +849,11 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 
@@ -844,9 +864,9 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 			var v any
 			var err error
 			switch *input.Source.Ref.VariableType {
-			case variable.GlobalSystem, variable.GlobalUser:
+			case vo.GlobalSystem, vo.GlobalUser:
 				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
-			case variable.GlobalAPP:
+			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
 				if v, ok = state.GetAppVariableValue(path); !ok {
@@ -874,11 +894,27 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
-	resumeData string) (stateModifier compose.StateModifier) {
+	resumeData string,
+	exeCfg vo.ExecuteConfig) (stateModifier compose.StateModifier) {
 	// TODO: can we unify them all to a map[NodeKey]resumeData?
 	switch e {
 	case entity.InterruptEventInput:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
+		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
+			if exeCfg.BizType == vo.BizTypeAgent {
+				m := make(map[string]any)
+				sList := strings.Split(resumeData, "\n")
+				for _, s := range sList {
+					firstColon := strings.Index(s, ":")
+					k := s[:firstColon]
+					v := s[firstColon+1:]
+					m[k] = v
+				}
+				resumeData, err = sonic.MarshalString(m)
+				if err != nil {
+					return err
+				}
+			}
+
 			input := map[string]any{
 				receiver.ReceivedDataKey: resumeData,
 			}

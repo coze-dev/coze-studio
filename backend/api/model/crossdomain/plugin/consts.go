@@ -43,8 +43,8 @@ const (
 type ProjectType int8
 
 const (
-	ProjectTypeOfBot ProjectType = 1
-	ProjectTypeOfAPP ProjectType = 2
+	ProjectTypeOfAgent ProjectType = 1
+	ProjectTypeOfAPP   ProjectType = 2
 )
 
 type ExecuteScene string
@@ -68,6 +68,15 @@ const (
 	APISchemaExtendGlobalDisable = "x-global-disable"
 	APISchemaExtendLocalDisable  = "x-local-disable"
 	APISchemaExtendVariableRef   = "x-variable-ref"
+	APISchemaExtendAuthMode      = "x-auth-mode"
+)
+
+type ToolAuthMode string
+
+const (
+	ToolAuthModeOfRequired  ToolAuthMode = "required"
+	ToolAuthModeOfSupported ToolAuthMode = "supported"
+	ToolAuthModeOfDisabled  ToolAuthMode = "disabled"
 )
 
 type APIFileAssistType string
@@ -92,4 +101,10 @@ const (
 	CopySceneOfToLibrary    CopyScene = "to_library"
 	CopySceneOfDuplicate    CopyScene = "duplicate"
 	CopySceneOfAPPDuplicate CopyScene = "app_duplicate"
+)
+
+type InterruptEventType string
+
+const (
+	InterruptEventTypeOfToolNeedOAuth InterruptEventType = "tool_need_oauth"
 )

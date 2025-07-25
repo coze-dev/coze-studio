@@ -1,72 +1,61 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package rmq
 
 import (
 	"context"
 	"fmt"
-	"os"
+	"time"
 
-	"github.com/apache/rocketmq-client-go/v2"
-	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"github.com/apache/rocketmq-client-go/v2/producer"
-
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/rocketmq/rocketmq-go-proxy/pkg/config"
+	"code.byted.org/rocketmq/rocketmq-go-proxy/pkg/producer"
+	"code.byted.org/rocketmq/rocketmq-go-proxy/pkg/types"
 )
 
 type producerImpl struct {
-	nameServer string
-	topic      string
-	p          rocketmq.Producer
+	topic string
+	p     producer.Producer
 }
 
-func NewProducer(nameServer, topic, group string, retries int) (eventbus.Producer, error) {
-	if nameServer == "" {
-		return nil, fmt.Errorf("name server is empty")
+func NewProducer(psm, clusterName, topic string, retries int) (eventbus.Producer, error) {
+	if psm == "" {
+		return nil, fmt.Errorf("psm is empty")
 	}
 
 	if topic == "" {
 		return nil, fmt.Errorf("topic is empty")
 	}
 
-	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
-		producer.WithRetry(retries),
-		producer.WithGroupName(group),
-		producer.WithCredentials(primitive.Credentials{
-			AccessKey: os.Getenv(consts.RMQAccessKey),
-			SecretKey: os.Getenv(consts.RMQSecretKey),
-		}),
-		// producer.WithNsResolver(primitive.NewGRPCCredentialsResolver(nil)),
-		// producer.WithInstanceName("rocketmq-cnngf291ea363b7a"),
-	)
+	cfg := config.NewProducerConfig(psm, clusterName)
+	cfg.ProduceTimeout = 1000 * time.Millisecond
+	rmqProducer, err := producer.NewProducer(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("NewProducer failed, nameServer: %s, topic: %s, err: %w", nameServer, topic, err)
+		panic(fmt.Sprintf("init RMQProducer fail:%v", err.Error()))
 	}
-
-	err = p.Start()
-	if err != nil {
-		return nil, fmt.Errorf("start producer error: %w", err)
-	}
-
-	safego.Go(context.Background(), func() {
-		signal.WaitExit()
-		if err := p.Shutdown(); err != nil {
-			logs.Errorf("shutdown producer error: %s", err.Error())
-		}
-	})
 
 	return &producerImpl{
-		nameServer: nameServer,
-		topic:      topic,
-		p:          p,
+		topic: topic,
+		p:     rmqProducer,
 	}, nil
 }
 
 func (r *producerImpl) Send(ctx context.Context, body []byte, opts ...eventbus.SendOpt) error {
-	_, err := r.p.SendSync(context.Background(), primitive.NewMessage(r.topic, body))
+	_, err := r.p.Send(context.Background(), types.NewDefaultMessage(r.topic, body))
 	if err != nil {
 		return fmt.Errorf("[producerImpl] send message failed: %w", err)
 	}
@@ -79,17 +68,17 @@ func (r *producerImpl) BatchSend(ctx context.Context, bodyArr [][]byte, opts ...
 		opt(&option)
 	}
 
-	var msgArr []*primitive.Message
+	var msgArr []*types.Message
 	for _, body := range bodyArr {
-		msg := primitive.NewMessage(r.topic, body)
+		msg := types.NewDefaultMessage(r.topic, body)
 
 		if option.ShardingKey != nil {
-			msg.WithShardingKey(*option.ShardingKey)
+			msg.WithPartitionKey(*option.ShardingKey)
 		}
 
 		msgArr = append(msgArr, msg)
 	}
 
-	_, err := r.p.SendSync(ctx, msgArr...)
+	_, err := r.p.SendBatch(ctx, msgArr)
 	return err
 }

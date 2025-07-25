@@ -1,11 +1,19 @@
 #!/bin/sh
+set -e
 
 if [[ "$ES_ADDR" == *"localhost"* || "$ES_ADDR" == *"127.0.0.1"* ]]; then
   echo "ES_ADDR is localhost, using docker address: http://elasticsearch:9200"
   ES_ADDR="http://elasticsearch:9200"
 fi
+# ES_ADDR=http://localhost:31160
+INDEX_DIR=/es_index_schema
 
 echo "ES_ADDR: $ES_ADDR"
+
+AUTH_PARAM=""
+if [ -n "$ES_USERNAME" ]; then
+  AUTH_PARAM="-k -u $ES_USERNAME:$ES_PASSWORD"
+fi
 
 for i in $(seq 1 60); do
   echo "Checking Elasticsearch availability... (attempt $i)"
@@ -17,11 +25,6 @@ for i in $(seq 1 60); do
   sleep 1
 done
 
-AUTH_PARAM=""
-if [ -n "$ES_USERNAME" ]; then
-  AUTH_PARAM="-k -u $ES_USERNAME:$ES_PASSWORD"
-fi
-
 echo -e "🔍 Checking smartcn plugin status..."
 if ! curl -s $AUTH_PARAM "${ES_ADDR}/_cat/plugins" | grep -q "analysis-smartcn"; then
   echo -e "❌ smartcn plugin not loaded correctly, please ensure the plugin is installed and Elasticsearch is restarted"
@@ -29,9 +32,10 @@ if ! curl -s $AUTH_PARAM "${ES_ADDR}/_cat/plugins" | grep -q "analysis-smartcn";
 fi
 
 echo -e "🔍 Initializing Elasticsearch index templates..."
-ES_TEMPLATES=$(find "/es_index_schema" -type f -name "*.index-template.json" | sort)
+ES_TEMPLATES=$(find "$INDEX_DIR" -type f -name "*.index-template.json" | sort)
 if [ -z "$ES_TEMPLATES" ]; then
-  echo -e "ℹ️ No Elasticsearch index templates found in $SCRIPT_DIR/es_index_schema"
+  echo -e "ℹ️ No Elasticsearch index templates found in $INDEX_DIR"
+  exit 1
 else
   # Add index creation logic
   echo -e "🔄 Creating Elasticsearch indexes..."

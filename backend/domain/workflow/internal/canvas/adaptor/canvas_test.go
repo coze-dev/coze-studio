@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package adaptor
 
 import (
@@ -16,28 +32,28 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
-	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/internal/testutil"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	userentity "code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	crossdatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge/knowledgemock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin/pluginmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	mockvar "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable/varmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	mockWorkflow "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/workflow"
+	mockcode "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/internal/testutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 func TestIntentDetectorAndDatabase(t *testing.T) {
@@ -57,6 +73,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -216,6 +233,7 @@ func TestDatabaseCURD(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -245,7 +263,7 @@ func TestDatabaseCURD(t *testing.T) {
 func TestHttpRequester(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:8080") // 指定IP和端口
 	assert.NoError(t, err)
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/http_error" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -352,7 +370,8 @@ func TestHttpRequester(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}))
-	ts.Listener = listener // TODO@zhuangjie: data race
+	ts.Listener = listener
+	ts.Start()
 	defer ts.Close()
 	defer func() {
 		_ = listener.Close()
@@ -541,6 +560,39 @@ func TestHttpRequester(t *testing.T) {
 		assert.Equal(t, body, `{"message":"custom_auth_file_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
 	})
+
+	mockey.PatchConvey("http requester with url template", t, func() {
+		data, err := os.ReadFile("../examples/httprequester/http_with_url_template.json")
+		assert.NoError(t, err)
+		c := &vo.Canvas{}
+		err = sonic.Unmarshal(data, c)
+
+		assert.NoError(t, err)
+		ctx := t.Context()
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+		response, err := wf.Runner.Invoke(ctx, map[string]any{
+			"input": "input",
+			"m": map[string]any{
+				"m1": "m1_v1",
+			},
+		})
+		assert.NoError(t, err)
+		output := response["output"].(string)
+
+		result := make(map[string]any)
+		err = sonic.UnmarshalString(output, &result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, result["data"].(string), `input`)
+		assert.Equal(t, result["args"], map[string]any{
+			"var":  "input",
+			"var2": "m1_v1",
+		})
+	})
+
 	mockey.PatchConvey("http requester error", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/http_error.json")
 		assert.NoError(t, err)
@@ -640,24 +692,47 @@ func TestKnowledgeNodes(t *testing.T) {
 	})
 }
 
-type mockInvokableTool struct{}
+func TestKnowledgeDeleter(t *testing.T) {
+	mockey.PatchConvey("knowledge deleter", t, func() {
+		data, err := os.ReadFile("../examples/knowledge_delete.json")
+		assert.NoError(t, err)
+		c := &vo.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-func (m *mockInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
-	return &schema.ToolInfo{}, nil
-}
+		mockKnowledgeOperator := knowledgemock.NewMockKnowledgeOperator(ctrl)
+		mockey.Mock(knowledge.GetKnowledgeOperator).Return(mockKnowledgeOperator).Build()
 
-func (m *mockInvokableTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg vo.ExecuteConfig) (string, error) {
-	r := map[string]any{
-		"log_id": "20240617191637796DF3F4453E16AF3615",
-		"msg":    "success",
-		"code":   0,
-		"data": map[string]interface{}{
-			"image_url": "image_url",
-			"prompt":    "小狗在草地上",
-		},
-	}
-	return sonic.MarshalString(r)
+		storeResponse := &knowledge.CreateDocumentResponse{
+			DocumentID: int64(1),
+			FileName:   "1706.03762v7.pdf",
+			FileURL:    "https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/5264fa1295da4a6483cd236b1316c454.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1782379180&x-signature=mlaXPIk9VJjOXu87xGaRmNRg9%2BA%3D&x-wf-file_name=1706.03762v7.pdf",
+		}
+		mockKnowledgeOperator.EXPECT().Store(gomock.Any(), gomock.Any()).Return(storeResponse, nil)
 
+		deleteResponse := &knowledge.DeleteDocumentResponse{
+			IsSuccess: true,
+		}
+		mockKnowledgeOperator.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(deleteResponse, nil)
+
+		ctx := t.Context()
+		ctx = ctxcache.Init(ctx)
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+
+		resp, err := wf.Runner.Invoke(ctx, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{"output": true}, resp)
+	})
 }
 
 func TestCodeAndPluginNodes(t *testing.T) {
@@ -679,11 +754,18 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			},
 		}, nil)
 
-		mockToolService := pluginmock.NewMockPluginService(ctrl)
+		mockToolService := pluginmock.NewMockService(ctrl)
 		mockey.Mock(plugin.GetPluginService).Return(mockToolService).Build()
-		mockToolService.EXPECT().GetPluginInvokableTools(gomock.Any(), gomock.Any()).Return(map[int64]plugin.PluginInvokableTool{
-			7348853341923016714: &mockInvokableTool{},
-		}, nil)
+		mockToolService.EXPECT().ExecutePlugin(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any()).Return(map[string]any{
+			"log_id": "20240617191637796DF3F4453E16AF3615",
+			"msg":    "success",
+			"code":   0,
+			"data": map[string]interface{}{
+				"image_url": "image_url",
+				"prompt":    "小狗在草地上",
+			},
+		}, nil).AnyTimes()
 
 		ctx := t.Context()
 		ctx = ctxcache.Init(ctx)
@@ -696,7 +778,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		resp, err := wf.Runner.Invoke(ctx, map[string]any{
 			"code_input":   "v1",
 			"code_input_2": "v2",
-			"model_type":   123,
+			"model_type":   int64(123),
 		})
 		assert.NoError(t, err)
 

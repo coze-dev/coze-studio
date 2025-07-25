@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package repository
 
 import (
@@ -7,14 +23,14 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	pluginConf "code.byted.org/data_edc/workflow_engine_next/domain/plugin/conf"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type toolRepoImpl struct {
@@ -71,14 +87,14 @@ func (t *toolRepoImpl) UpsertDraftTools(ctx context.Context, pluginID int64, too
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -271,14 +287,14 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -294,6 +310,10 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 	}
 
 	return tx.Commit()
+}
+
+func (t *toolRepoImpl) GetAgentPluginIDs(ctx context.Context, agentID int64) (pluginIDs []int64, err error) {
+	return t.agentToolDraftDAO.GetAllPluginIDs(ctx, agentID)
 }
 
 func (t *toolRepoImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
@@ -314,14 +334,14 @@ func (t *toolRepoImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -379,14 +399,14 @@ func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, plugi
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()

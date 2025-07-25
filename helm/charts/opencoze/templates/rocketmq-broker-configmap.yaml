@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "opencoze.fullname" . }}-broker-config
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+data:
+  broker.conf: |-
+    brokerClusterName = DefaultCluster
+    brokerName = broker-a
+    brokerId = 0
+    deleteWhen = 04
+    fileReservedTime = 48
+    brokerRole = ASYNC_MASTER
+    flushDiskType = ASYNC_FLUSH
+    brokerIP1 = __POD_IP__

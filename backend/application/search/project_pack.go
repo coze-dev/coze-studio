@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package search
 
 import (
@@ -5,13 +21,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	appService "code.byted.org/flow/opencoze/backend/domain/app/service"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	appService "code.byted.org/data_edc/workflow_engine_next/domain/app/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type projectInfo struct {
@@ -57,7 +73,7 @@ func (p *projectBase) GetPermissionInfo() *intelligence.IntelligencePermissionIn
 func (p *projectBase) GetUserInfo(ctx context.Context, userID int64) *common.User {
 	u, err := p.SVC.UserDomainSVC.GetUserInfo(ctx, userID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[projectBase-GetUserInfo] failed to get user info, user_id: %d, err: %v", userID, err)
+		logs.CtxError(ctx, "[projectBase-GetUserInfo] failed to get user info, user_id: %d, err: %v", userID, err)
 		return nil
 	}
 
@@ -90,7 +106,7 @@ func (a *agentPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) 
 func (p *agentPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
 	pubInfo, err := p.SVC.SingleAgentDomainSVC.GetPublishedInfo(ctx, p.projectID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[agent-GetPublishedInfo]failed to get published info, agent_id: %d, err: %v", p.projectID, err)
+		logs.CtxError(ctx, "[agent-GetPublishedInfo]failed to get published info, agent_id: %d, err: %v", p.projectID, err)
 
 		return nil
 	}
@@ -99,7 +115,7 @@ func (p *agentPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intell
 	for connectorID := range pubInfo.ConnectorID2PublishTime {
 		c, err := p.SVC.ConnectorDomainSVC.GetByID(ctx, connectorID)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to get connector by id: %d, err: %v", connectorID, err)
+			logs.CtxError(ctx, "failed to get connector by id: %d, err: %v", connectorID, err)
 
 			continue
 		}
@@ -140,7 +156,7 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 		Oldest: true,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get published info, app_id=%d, err=%v", a.projectID, err)
+		logs.CtxError(ctx, "[app-GetPublishedInfo] failed to get published info, app_id=%d, err=%v", a.projectID, err)
 		return nil
 	}
 	if !exist {
@@ -158,7 +174,7 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 
 	connectors, err := a.SVC.ConnectorDomainSVC.GetByIDs(ctx, connectorIDs)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get connector info, app_id=%d, err=%v", a.projectID, err)
+		logs.CtxError(ctx, "[app-GetPublishedInfo] failed to get connector info, app_id=%d, err=%v", a.projectID, err)
 	} else {
 		for _, c := range connectors {
 			connectorInfo = append(connectorInfo, &common.ConnectorInfo{

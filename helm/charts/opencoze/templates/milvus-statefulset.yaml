@@ -1,0 +1,77 @@
+{{- if .Values.milvus.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-milvus
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-milvus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: milvus
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: milvus
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      containers:
+        - name: milvus
+          securityContext:
+            runAsUser: 0
+          image: "{{ .Values.milvus.image.repository }}:{{ .Values.milvus.image.tag }}"
+          command: ["milvus", "run", "standalone"]
+          env:
+            - name: ETCD_ENDPOINTS
+              value: "{{ include "opencoze.fullname" . }}-etcd:2379"
+            - name: MINIO_ADDRESS
+              value: "{{ include "opencoze.fullname" . }}-minio:9000"
+            - name: MINIO_BUCKET_NAME
+              value: {{ .Values.milvus.bucketName | quote }}
+            - name: MINIO_ACCESS_KEY_ID
+              value: {{ .Values.minio.accessKey | quote }}
+            - name: MINIO_SECRET_ACCESS_KEY
+              value: {{ .Values.minio.secretKey | quote }}
+            - name: MINIO_USE_SSL
+              value: "false"
+            - name: LOG_LEVEL
+              value: "debug"
+          ports:
+            - containerPort: 19530
+            - containerPort: 9091
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9091
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9091
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+          - name: milvus-data
+            mountPath: /var/lib/milvus
+  volumeClaimTemplates:
+    - metadata:
+        name: milvus-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.milvus.persistence.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.milvus.persistence.size | quote }}
+{{- end }}

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package singleagent
 
 import (
@@ -6,33 +22,33 @@ import (
 	"strconv"
 	"time"
 
-	shortcutCmd "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/types/consts"
+	shortcutCmd "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
-	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	shortcutEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	intelligence "code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	singleagent "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/service"
+	variableEntity "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	shortcutEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
 
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type SingleAgentApplicationService struct {
@@ -222,6 +238,13 @@ func (s *SingleAgentApplicationService) BindDatabase(ctx context.Context, req *t
 		return nil, err
 	}
 
+	dbMap := slices.ToMap(draft.Database, func(d *bot_common.Database) (string, *bot_common.Database) {
+		return d.GetTableId(), d
+	})
+	if _, ok := dbMap[conv.Int64ToStr(req.GetDatabaseID())]; ok {
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KVf("msg", "database %d already bound to agent %d", req.GetDatabaseID(), agentID))
+	}
+
 	basics := []*database.DatabaseBasic{
 		{
 			ID:        req.DatabaseID,
@@ -369,7 +392,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish delete project event failed id = %v , err = %v", req.GetBotID(), err)
+		logs.CtxWarn(ctx, "publish delete project event failed id = %v , err = %v", req.GetBotID(), err)
 	}
 
 	return &developer_api.DeleteDraftBotResponse{
@@ -518,7 +541,7 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	}
 
 	if do.CreatorID != *uid {
-		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
+		logs.CtxError(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
 
 		return do, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not the agent owner"))
 	}
@@ -607,7 +630,7 @@ func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, 
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+		logs.CtxWarn(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
@@ -633,7 +656,7 @@ func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, 
 		return nil, err
 	}
 	if agentInfo == nil {
-		logs.CtxErrorf(ctx, "agent(%d) is not exist", req.BotID)
+		logs.CtxError(ctx, "agent(%d) is not exist", req.BotID)
 		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "agent not exist"))
 	}
 	if agentInfo.CreatorID != uid {

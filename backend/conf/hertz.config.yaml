@@ -1,0 +1,17 @@
+Develop:
+  ServicePort: "6789"
+  DebugPort: "6790"
+  EnablePprof: true
+  LogLevel: "debug"
+  ConsoleLog: true
+  AgentLog: true
+  FileLog: true
+
+Product:
+  ServicePort: "6789"
+  DebugPort: "6790"
+  EnablePprof: true
+  LogLevel: "info"
+  ConsoleLog: false
+  AgentLog: true
+  FileLog: true

@@ -10,7 +10,7 @@ import (
 
 const TableNameWorkflowMeta = "workflow_meta"
 
-// WorkflowMeta mapped from table <workflow_meta>
+// WorkflowMeta workflow 元信息表，用于记录workflow基本的元信息
 type WorkflowMeta struct {
 	ID              int64          `gorm:"column:id;primaryKey;comment:workflow id" json:"id"`                                                                                                                                                                                                                      // workflow id
 	Name            string         `gorm:"column:name;not null;comment:workflow name" json:"name"`                                                                                                                                                                                                                  // workflow name

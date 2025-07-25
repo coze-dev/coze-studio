@@ -5,7 +5,7 @@
 package model
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +17,7 @@ type ModelEntity struct {
 	MetaID        int64                      `gorm:"column:meta_id;not null;comment:模型元信息 id" json:"meta_id"`                                               // 模型元信息 id
 	Name          string                     `gorm:"column:name;not null;comment:名称" json:"name"`                                                           // 名称
 	Description   string                     `gorm:"column:description;comment:描述" json:"description"`                                                      // 描述
-	DefaultParams []*modelmgr.Parameter      `gorm:"column:default_params;not null;comment:默认参数;serializer:json" json:"default_params"`                     // 默认参数
+	DefaultParams []*modelmgr.Parameter      `gorm:"column:default_params;comment:默认参数;serializer:json" json:"default_params"`                              // 默认参数
 	Scenario      modelmgr.Scenario          `gorm:"column:scenario;not null;comment:模型应用场景;serializer:json" json:"scenario"`                               // 模型应用场景
 	Status        modelmgr.ModelEntityStatus `gorm:"column:status;not null;default:1;comment:模型状态;serializer:json" json:"status"`                           // 模型状态
 	CreatedAt     int64                      `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds

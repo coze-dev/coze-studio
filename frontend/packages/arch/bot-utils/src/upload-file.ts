@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import { userStoreService } from '@coze-studio/user-store';
 import {
@@ -25,6 +41,7 @@ type BizConfig = Record<
       serviceId: string;
       uploadHost: string;
       stsToken: BytedUploaderConfig['stsToken'];
+      schema: string;
     }>;
   }
 >;
@@ -36,9 +53,12 @@ const bizConfig: BizConfig = {
         scene: 'bot_task',
       });
       const dataAuthnr = dataAuth.data;
-      const { service_id, upload_host, auth } = dataAuthnr || {};
+      const { service_id, upload_host, auth, schema } = (dataAuthnr ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {}) as any;
 
       return {
+        schema,
         serviceId: service_id || '',
         uploadHost: upload_host || '',
         stsToken: {
@@ -57,9 +77,13 @@ const bizConfig: BizConfig = {
         scene: 'imageflow',
       });
       const dataAuthnr = dataAuth.data;
-      const { service_id, upload_host, auth } = dataAuthnr || {};
+
+      const { service_id, upload_host, auth, schema } = (dataAuthnr ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {}) as any;
 
       return {
+        schema,
         serviceId: service_id || '',
         uploadHost: upload_host || '',
         stsToken: {
@@ -99,18 +123,21 @@ export function upLoadFile({
     // eslint-disable-next-line complexity
     (async function () {
       try {
-        let serviceId, uploadHost, stsToken;
+        let serviceId, uploadHost, stsToken, schema;
         if (config) {
           const data = await config.getAuthToken();
           serviceId = data.serviceId;
           uploadHost = data.uploadHost;
           stsToken = data.stsToken;
+          schema = data.schema;
         } else if (getUploadAuthToken) {
           const { data } = await getUploadAuthToken();
           // @ts-expect-error -- linter-disable-autofix
           serviceId = data.service_id;
           // @ts-expect-error -- linter-disable-autofix
           uploadHost = data.upload_host;
+          // @ts-expect-error -- linter-disable-autofix
+          schema = data.schema;
           // cp-disable-next-line
           if (uploadHost.startsWith('https://')) {
             uploadHost = uploadHost.substr(8);
@@ -131,6 +158,7 @@ export function upLoadFile({
 
         const bytedUploader: BytedUploader = initUploader(
           {
+            schema,
             useFileExtension: true,
             userId: userStoreService.getUserInfo()?.user_id_str || '',
             appId: APP_ID,

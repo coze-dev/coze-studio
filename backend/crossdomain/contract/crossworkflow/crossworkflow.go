@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package crossworkflow
 
 import (
@@ -5,9 +21,9 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	workflowEntity "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 // TODO(@fanlv): 参数引用需要修改。
@@ -20,7 +36,31 @@ type Workflow interface {
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
 	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
 }
+
+type ExecuteConfig = vo.ExecuteConfig
+type ExecuteMode = vo.ExecuteMode
+
+const (
+	ExecuteModeDebug     ExecuteMode = "debug"
+	ExecuteModeRelease   ExecuteMode = "release"
+	ExecuteModeNodeDebug ExecuteMode = "node_debug"
+)
+
+type TaskType = vo.TaskType
+
+const (
+	TaskTypeForeground TaskType = "foreground"
+	TaskTypeBackground TaskType = "background"
+)
+
+type BizType = vo.BizType
+
+const (
+	BizTypeAgent    BizType = "agent"
+	BizTypeWorkflow BizType = "workflow"
+)
 
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig
 

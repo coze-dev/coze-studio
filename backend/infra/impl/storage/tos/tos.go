@@ -1,147 +1,104 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package tos
 
 import (
 	"bytes"
-	"context"
-	"fmt"
-	"io"
-	"net/http"
 	"time"
 
-	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
-	"github.com/volcengine/ve-tos-golang-sdk/v2/tos/enum"
+	"context"
+	"io"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
+	"code.byted.org/gopkg/tos"
 )
 
 type tosClient struct {
-	client     *tos.ClientV2
-	bucketName string
+	client *tos.Tos
 }
 
-func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (storage.Storage, error) {
-	logs.CtxInfof(ctx, "TOS GO SDK Version: %s", tos.Version)
-	credential := tos.NewStaticCredentials(ak, sk)
-	client, err := tos.NewClientV2(endpoint,
-		tos.WithCredentials(credential), tos.WithRegion(region))
+func NewStorageImagex(ctx context.Context, bucketName, ak, region, psm string) (imagex.ImageX, error) {
+	t, err := getTosClient(ctx, bucketName, ak, region, psm)
 	if err != nil {
-		return nil, fmt.Errorf("new tos client failed, bucketName: %s, endpoint: %s, region: %s, err: %v", bucketName, endpoint, region, err)
+		return nil, err
 	}
+	return t, nil
+}
 
-	t := &tosClient{
-		client:     client,
-		bucketName: bucketName,
-	}
+func getTosClient(ctx context.Context, bucketName, ak, region, psm string) (*tosClient, error) {
+	logs.CtxInfo(ctx, "TOS GO SDK Version: %s", tos.Version)
 
-	// 创建存储桶
-	err = t.CheckAndCreateBucket(ctx)
+	TosClient, err := tos.NewTos(tos.WithBucket(bucketName),
+		tos.WithCredentials(&tos.BucketAccessKeyCredentials{
+			BucketName: bucketName,
+			AccessKey:  ak,
+		}), tos.WithServiceName("toutiao.tos.tosapi"), tos.WithCluster("default"), tos.WithIDC(region), tos.WithRemotePSM(psm))
 	if err != nil {
 		return nil, err
 	}
 
-	// t.test()
-
+	t := &tosClient{
+		client: TosClient,
+	}
 	return t, nil
 }
 
-func (t *tosClient) test() {
-	// 测试上传
-	objectKey := fmt.Sprintf("test-%s.txt", time.Now().Format("20060102150405"))
-	err := t.PutObject(context.Background(), objectKey, []byte("hello world"))
+func New(ctx context.Context, bucketName, ak, region, psm string) (storage.Storage, error) {
+	t, err := getTosClient(ctx, bucketName, ak, region, psm)
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
+		return nil, err
 	}
-
-	// 测试下载
-	content, err := t.GetObject(context.Background(), objectKey)
-	if err != nil {
-		logs.CtxErrorf(context.Background(), "GetObject failed, objectKey: %s, err: %v", objectKey, err)
-	}
-
-	logs.CtxInfof(context.Background(), "GetObject content: %s", string(content))
-
-	// 测试获取URL
-	url, err := t.GetObjectUrl(context.Background(), objectKey)
-	if err != nil {
-		logs.CtxErrorf(context.Background(), "GetObjectUrl failed, objectKey: %s, err: %v", objectKey, err)
-	}
-
-	logs.CtxInfof(context.Background(), "GetObjectUrl url: %s", url)
-
-	// 测试删除
-	err = t.DeleteObject(context.Background(), objectKey)
-	if err != nil {
-		logs.CtxErrorf(context.Background(), "DeleteObject failed, objectKey: %s, err: %v", objectKey, err)
-	}
-}
-
-func (t *tosClient) CheckAndCreateBucket(ctx context.Context) error {
-	client := t.client
-	bucketName := t.bucketName
-
-	_, err := client.HeadBucket(ctx, &tos.HeadBucketInput{Bucket: bucketName})
-	if err == nil {
-		return nil // already exist
-	}
-
-	serverErr, ok := err.(*tos.TosServerError)
-	if !ok {
-		return err
-	}
-
-	if serverErr.StatusCode == http.StatusNotFound {
-		// 存储桶不存在
-		logs.CtxInfof(ctx, "Bucket not found.")
-		resp, err := client.CreateBucketV2(context.Background(), &tos.CreateBucketV2Input{
-			Bucket: bucketName,
-			ACL:    enum.ACLPrivate,
-		})
-
-		logs.CtxInfof(ctx, "Bucket Create resp: %v, err: %v", conv.DebugJsonToStr(resp), err)
-		return err
-	}
-
-	return err
+	return t, nil
 }
 
 func (t *tosClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
 	client := t.client
-	body := bytes.NewReader(content)
-	bucketName := t.bucketName
 
-	_, err := client.PutObjectV2(ctx, &tos.PutObjectV2Input{
-		PutObjectBasicInput: tos.PutObjectBasicInput{
-			Bucket: bucketName,
-			Key:    objectKey,
-		},
-		Content: body,
-	})
+	o := storage.PutOption{}
+	for _, opt := range opts {
+		opt(&o)
+	}
+	tosOptions := storagePutOptToBytedanceTosOpt(o)
 
-	// logs.CtxDebugf(ctx, "PutObject resp: %v, err: %v", conv.DebugJsonToStr(output), err)
+	err := client.PutObject(ctx, objectKey, int64(len(content)), bytes.NewBuffer(content), tosOptions...)
+	if err != nil {
+		logs.CtxError(ctx, "PutObject failed: %v, objectKey: %v", err, objectKey)
+	}
 
 	return err
 }
 
 func (t *tosClient) GetObject(ctx context.Context, objectKey string) ([]byte, error) {
 	client := t.client
-	bucketName := t.bucketName
 
 	// 下载数据到内存
-	getOutput, err := client.GetObjectV2(ctx, &tos.GetObjectV2Input{
-		Bucket:                  bucketName,
-		Key:                     objectKey,
-		ResponseContentType:     "application/json",
-		ResponseContentEncoding: "deflate",
-	})
+	getOutput, err := client.GetObject(ctx, objectKey)
 	if err != nil {
+		logs.CtxError(ctx, "GetObject failed: %v, objectKey: %v", err, objectKey)
 		return nil, err
 	}
 
-	// logs.CtxDebugf(ctx, "GetObject resp: %v, err: %v", conv.DebugJsonToStr(getOutput), err)
-
-	body, err := io.ReadAll(getOutput.Content)
+	body, err := io.ReadAll(getOutput.R)
 	if err != nil {
 		return nil, err
 	}
@@ -151,30 +108,74 @@ func (t *tosClient) GetObject(ctx context.Context, objectKey string) ([]byte, er
 
 func (t *tosClient) DeleteObject(ctx context.Context, objectKey string) error {
 	client := t.client
-	bucketName := t.bucketName
-
 	// 删除存储桶中指定对象
-	_, err := client.DeleteObjectV2(ctx, &tos.DeleteObjectV2Input{
-		Bucket: bucketName,
-		Key:    objectKey,
-	})
-
-	return err
+	err := client.DelObject(ctx, objectKey)
+	if err != nil {
+		logs.CtxError(ctx, "DeleteObject failed: %v, objectKey: %v", err, objectKey)
+		return err
+	}
+	return nil
 }
 
 func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
-	client := t.client
-	bucketName := t.bucketName
+	// 内网临时域名
+	// TODO:: 后续看是否需要支持子域名签名认证
+	// 先返回办公网能够访问的地址，后续可以进行区分返回两种不同地址
+	productEnvUrl := "https://tosv.boe.byted.org/obj/" + t.client.BucketName() + "/" + objectKey
+	return productEnvUrl, nil
+}
 
-	output, err := client.PreSignedURL(&tos.PreSignedURLInput{
-		HTTPMethod: enum.HttpMethodGet,
-		Expires:    60 * 60 * 24,
-		Bucket:     bucketName,
-		Key:        objectKey,
-	})
-	if err != nil {
-		return "", err
+func storagePutOptToBytedanceTosOpt(o storage.PutOption) []tos.ObjOption {
+	var tosOpts []tos.ObjOption
+	if o.ContentType != nil {
+		tosOpts = append(tosOpts, tos.ContentType(*o.ContentType))
 	}
+	return tosOpts
+}
 
-	return output.SignedUrl, nil
+func (i *tosClient) GetUploadHost(ctx context.Context) string {
+
+	currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
+	if !ok {
+		return ""
+	}
+	return currentHost + consts.ApplyUploadActionURI
+
+}
+
+func (t *tosClient) GetServerID() string {
+	return ""
+}
+
+func (t *tosClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
+	scheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
+	if !ok {
+		return nil, errorx.New(errno.ErrUploadHostSchemaNotExistCode)
+	}
+	return &imagex.SecurityToken{
+		AccessKeyID:     "",
+		SecretAccessKey: "",
+		SessionToken:    "",
+		ExpiredTime:     time.Now().Add(time.Hour).Format("2006-01-02 15:04:05"),
+		CurrentTime:     time.Now().Format("2006-01-02 15:04:05"),
+		HostScheme:      scheme,
+	}, nil
+}
+
+func (t *tosClient) GetResourceURL(ctx context.Context, uri string, opts ...imagex.GetResourceOpt) (*imagex.ResourceURL, error) {
+	url, err := t.GetObjectUrl(ctx, uri)
+	if err != nil {
+		return nil, err
+	}
+	return &imagex.ResourceURL{
+		URL: url,
+	}, nil
+}
+
+func (t *tosClient) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
+	return nil, nil
+}
+
+func (t *tosClient) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
+	return nil, nil
 }

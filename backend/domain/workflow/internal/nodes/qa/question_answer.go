@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package qa
 
 import (
@@ -12,14 +28,14 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type QuestionAnswer struct {
@@ -194,7 +210,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 	case AnswerDirectly:
 		if isFirst { // first execution, ask the question
 			// format the question. Which is common to all use cases
-			firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+			firstQuestion, err := nodes.TemplateRender(q.config.QuestionTpl, in)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +253,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 		}
 
 		// format the question. Which is common to all use cases
-		firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+		firstQuestion, err := nodes.TemplateRender(q.config.QuestionTpl, in)
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +262,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 		switch q.config.ChoiceType {
 		case FixedChoices:
 			for _, choice := range q.config.FixedChoices {
-				formattedChoice, err := nodes.Jinja2TemplateRender(choice, in)
+				formattedChoice, err := nodes.TemplateRender(choice, in)
 				if err != nil {
 					return nil, err
 				}
@@ -294,7 +310,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 
 	var formattedAdditionalPrompt string
 	if len(q.config.AdditionalSystemPromptTpl) > 0 {
-		additionalPrompt, err := nodes.Jinja2TemplateRender(q.config.AdditionalSystemPromptTpl, in)
+		additionalPrompt, err := nodes.TemplateRender(q.config.AdditionalSystemPromptTpl, in)
 		if err != nil {
 			return nil, err
 		}
@@ -350,22 +366,13 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, fmt.Errorf("field %s not found", fieldInfo)
 	}
 
-	realOutput := make(map[string]any)
-	for k, v := range fields.(map[string]any) {
-		if s, ok := q.config.OutputFields[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					realOutput[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				realOutput[k] = val
-			}
-		}
+	realOutput, ws, err := nodes.ConvertInputs(ctx, fields.(map[string]any), q.config.OutputFields, nodes.SkipRequireCheck())
+	if err != nil {
+		return nil, err
+	}
+
+	if ws != nil {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	realOutput[UserResponseKey] = userResponse

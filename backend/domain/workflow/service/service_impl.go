@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -7,29 +23,29 @@ import (
 	"strconv"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
-	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	cloudworkflow "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type impl struct {
@@ -55,7 +71,7 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Cl
 	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
-func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
+func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 
@@ -75,12 +91,11 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	// Process standard node types
 	for _, meta := range entity.NodeTypeMetas {
 		if shouldInclude(meta) {
-			category := ternary.IFElse(locale == entity.EnUS, meta.EnUSCategory, meta.Category)
-			nodeMetaMap[category] = append(nodeMetaMap[category], meta)
+			nodeMetaMap[meta.Category] = append(nodeMetaMap[meta.Category], meta)
 		}
 	}
 
-	return nodeMetaMap, nil
+	return nodeMetaMap, entity.Categories, nil
 }
 
 func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
@@ -116,7 +131,7 @@ func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
 		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 	})
 	if err != nil {
-		return 0, err
+		return 0, vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
 	}
 	return id, nil
 }
@@ -124,17 +139,17 @@ func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
 func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 	var draft vo.Canvas
 	if err = sonic.UnmarshalString(schema, &draft); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	var inputParams, outputParams string
-	inputs, outputs := extractInputsAndOutputsNamedInfoList(&draft)
+	inputs, outputs := extractInputsAndOutputsNamedInfoList(ctx, &draft)
 	if inputParams, err = sonic.MarshalString(inputs); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	if outputParams, err = sonic.MarshalString(outputs); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	testRunSuccess, err := i.calculateTestRunSuccess(ctx, &draft, id)
@@ -144,7 +159,7 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 
 	commitID, err := i.repo.GenID(ctx) // generate a new commit ID for this draft version
 	if err != nil {
-		return err
+		return vo.WrapError(errno.ErrIDGenError, err)
 	}
 
 	return i.repo.CreateOrUpdateDraft(ctx, id, &vo.DraftInfo{
@@ -159,10 +174,10 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 	})
 }
 
-func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
+func extractInputsAndOutputsNamedInfoList(ctx context.Context, c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
 	defer func() {
 		if err := recover(); err != nil {
-			logs.Warnf("failed to extract inputs and outputs: %v", err)
+			logs.CtxWarn(ctx, "failed to extract inputs and outputs: %v", err)
 		}
 	}()
 	var (
@@ -197,7 +212,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 			return nInfo, nil
 		})
 		if err != nil {
-			logs.Warn(fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
+			logs.CtxWarn(ctx, fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
 		}
 	}
 
@@ -206,7 +221,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
 		})
 		if err != nil {
-			logs.Warn(fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
+			logs.CtxWarn(ctx, fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
 		}
 	}
 
@@ -226,9 +241,13 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 			return err
 		}
 
-		return search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
+		if err = search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
 			WorkflowID: id,
-		})
+		}); err != nil {
+			return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
+		}
+
+		return nil
 	}
 
 	ids := policy.IDs
@@ -256,7 +275,11 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 		})
 	}
 
-	return g.Wait()
+	if err = g.Wait(); err != nil {
+		return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
+	}
+
+	return nil
 }
 
 func (i *impl) Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error) {
@@ -301,7 +324,6 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 	if len(issues) > 0 {
 		wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
 			WorkflowID: strconv.FormatInt(id, 10),
-			Name:       "", // TODO front doesn't seem to care about this workflow name
 			Errors:     toValidateErrorData(issues),
 		})
 	}
@@ -309,7 +331,8 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 	c := &vo.Canvas{}
 	err = sonic.UnmarshalString(validateConfig.CanvasSchema, &c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to unmarshal canvas schema: %w", err))
 	}
 
 	subWorkflowIdentities := c.GetAllSubWorkflowIdentities()
@@ -372,7 +395,7 @@ func (i *impl) QueryNodeProperties(ctx context.Context, wfID int64) (map[string]
 	mainCanvas := &vo.Canvas{}
 	err = sonic.UnmarshalString(canvasSchema, mainCanvas)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	mainCanvas.Nodes, mainCanvas.Edges = adaptor.PruneIsolatedNodes(mainCanvas.Nodes, mainCanvas.Edges, nil)
@@ -419,7 +442,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			nodePropertyMap[string(nodeSchema.Key)] = prop
 			wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapError(errno.ErrSchemaConversionFail, err)
 			}
 
 			var canvasSchema string
@@ -444,7 +467,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			c := &vo.Canvas{}
 			err = sonic.UnmarshalString(canvasSchema, c)
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapError(errno.ErrSchemaConversionFail, err)
 			}
 			ret, err := i.collectNodePropertyMap(ctx, c)
 			if err != nil {
@@ -478,7 +501,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
 	var canvas vo.Canvas
 	if err := sonic.UnmarshalString(canvasStr, &canvas); err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	wfRefs := map[entity.WorkflowReferenceKey]struct{}{}
@@ -488,7 +511,7 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 			if node.Type == vo.BlockTypeBotSubWorkflow {
 				referredID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
-					return err
+					return vo.WrapError(errno.ErrSchemaConversionFail, err)
 				}
 				wfRefs[entity.WorkflowReferenceKey{
 					ReferredID:       referredID,
@@ -501,7 +524,7 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 						referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
 						if err != nil {
-							return err
+							return vo.WrapError(errno.ErrSchemaConversionFail, err)
 						}
 						wfRefs[entity.WorkflowReferenceKey{
 							ReferredID:       referredID,
@@ -589,7 +612,7 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		UpdatedAt:     ptr.Of(now),
 		PublishedAt:   ptr.Of(now),
 	}); err != nil {
-		return err
+		return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
 	}
 
 	return nil
@@ -642,6 +665,10 @@ func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.Cop
 }
 
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
+	if len(config.ConnectorIDs) == 0 {
+		return nil, fmt.Errorf("connector ids is required")
+	}
+
 	wfs, _, err := i.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
@@ -739,13 +766,22 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		}
 	}
 
+	workflowIDs := make([]int64, 0, len(wfs))
 	for id, vInfo := range workflowsToPublish {
 		wfRefs, err := canvasToRefs(id, vInfo.Canvas)
 		if err != nil {
 			return nil, err
 		}
 
+		workflowIDs = append(workflowIDs, id)
 		if err = i.repo.CreateVersion(ctx, id, vInfo, wfRefs); err != nil {
+			return nil, err
+		}
+	}
+
+	for _, connectorID := range config.ConnectorIDs {
+		err = i.repo.BatchCreateConnectorWorkflowVersion(ctx, appID, connectorID, workflowIDs, config.Version)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -1298,7 +1334,17 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				if err != nil {
 					return err
 				}
-				ds.PluginIDs = append(ds.PluginIDs, pID)
+
+				pluginVersionParam, ok := apiParams["pluginVersion"]
+				if !ok {
+					return fmt.Errorf("plugin version param is not found")
+				}
+
+				pVersion := pluginVersionParam.Input.Value.Content.(string)
+				if pVersion == "0" { // version = 0 to represent the plug-in in the app
+					ds.PluginIDs = append(ds.PluginIDs, pID)
+				}
+
 			case vo.BlockTypeBotDatasetWrite, vo.BlockTypeBotDataset:
 				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
@@ -1329,7 +1375,10 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 						if err != nil {
 							return err
 						}
-						ds.PluginIDs = append(ds.PluginIDs, pluginID)
+
+						if pl.PluginVersion == "0" {
+							ds.PluginIDs = append(ds.PluginIDs, pluginID)
+						}
 
 					}
 				}
@@ -1343,6 +1392,31 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 						ds.KnowledgeIDs = append(ds.KnowledgeIDs, kid)
 
 					}
+				}
+
+			case vo.BlockTypeBotSubWorkflow:
+				wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+
+				subWorkflow, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+					ID:    wfID,
+					QType: vo.FromDraft,
+				})
+				if err != nil {
+					return err
+				}
+
+				subCanvas := &vo.Canvas{}
+				err = sonic.UnmarshalString(subWorkflow.Canvas, subCanvas)
+				if err != nil {
+					return err
+				}
+
+				err = collectDependence(subCanvas.Nodes)
+				if err != nil {
+					return err
 				}
 
 			}

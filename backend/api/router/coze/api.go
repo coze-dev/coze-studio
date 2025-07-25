@@ -3,8 +3,8 @@
 package coze
 
 import (
-	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
-	"github.com/cloudwego/hertz/pkg/app/server"
+	coze "code.byted.org/data_edc/workflow_engine_next/api/handler/coze"
+	"code.byted.org/middleware/hertz/pkg/app/server"
 )
 
 /*
@@ -195,6 +195,10 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_oauth := _api.Group("/oauth", _oauthMw()...)
+			_oauth.GET("/authorization_code", append(_oauthauthorizationcodeMw(), coze.OauthAuthorizationCode)...)
+		}
+		{
 			_passport := _api.Group("/passport", _passportMw()...)
 			{
 				_account := _passport.Group("/account", _accountMw()...)
@@ -248,10 +252,13 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_playground := _api.Group("/playground", _playgroundMw()...)
+			_playground.GET("/apply_upload_action", append(_applyuploadactionMw(), coze.ApplyUploadAction)...)
+			_playground.POST("/apply_upload_action", append(_applyuploadaction0Mw(), coze.ApplyUploadAction)...)
 			_playground.POST("/get_onboarding", append(_getonboardingMw(), coze.GetOnboarding)...)
 			{
 				_upload := _playground.Group("/upload", _uploadMw()...)
 				_upload.POST("/auth_token", append(_getuploadauthtokenMw(), coze.GetUploadAuthToken)...)
+				_upload.POST("/*tos_uri", append(_commonuploadMw(), coze.CommonUpload)...)
 			}
 		}
 		{
@@ -301,6 +308,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/get_plugin_apis", append(_getpluginapisMw(), coze.GetPluginAPIs)...)
 			_plugin_api.POST("/get_plugin_info", append(_getplugininfoMw(), coze.GetPluginInfo)...)
 			_plugin_api.POST("/get_plugin_next_version", append(_getpluginnextversionMw(), coze.GetPluginNextVersion)...)
+			_plugin_api.POST("/get_queried_oauth_plugins", append(_getqueriedoauthpluginlistMw(), coze.GetQueriedOAuthPluginList)...)
 			_plugin_api.POST("/get_updated_apis", append(_getupdatedapisMw(), coze.GetUpdatedAPIs)...)
 			_plugin_api.POST("/get_user_authority", append(_getuserauthorityMw(), coze.GetUserAuthority)...)
 			_plugin_api.POST("/library_resource_list", append(_libraryresourcelistMw(), coze.LibraryResourceList)...)

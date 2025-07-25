@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package workflow
 
 import (
@@ -6,10 +22,9 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type Executable interface {
@@ -47,8 +62,7 @@ type InterruptEventStore interface {
 }
 
 type CancelSignalStore interface {
-	EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error
-	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)
+	SetWorkflowCancelFlag(ctx context.Context, wfExeID int64) error
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 }
 
@@ -59,6 +73,7 @@ type ExecuteHistoryStore interface {
 	GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error)
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
+	UpdateNodeExecutionStreaming(ctx context.Context, execution *entity.NodeExecution) error
 	CancelAllRunningNodes(ctx context.Context, wfExeID int64) error
 	GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error)
 	GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error)

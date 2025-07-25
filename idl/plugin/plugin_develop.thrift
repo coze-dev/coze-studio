@@ -46,6 +46,7 @@ service PluginDevelopService {
     // 批量创建工具，目前是配合 Convert2OpenAPI 接口使用
     BatchCreateAPIResponse BatchCreateAPI(1: BatchCreateAPIRequest request)(api.post='/api/plugin_api/batch_create_api', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     RevokeAuthTokenResponse RevokeAuthToken(1: RevokeAuthTokenRequest request)(api.post='/api/plugin_api/revoke_auth_token', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
+    GetQueriedOAuthPluginListResponse GetQueriedOAuthPluginList(1: GetQueriedOAuthPluginListRequest request)(api.post='/api/plugin_api/get_queried_oauth_plugins', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -600,4 +601,25 @@ struct RevokeAuthTokenRequest {
 
 struct RevokeAuthTokenResponse {
     255: required base.BaseResp BaseResp,
+}
+
+struct OAuthPluginInfo {
+    1: i64                               plugin_id (api.js_conv = "str") ,
+    2: plugin_develop_common.OAuthStatus status     , // 用户授权状态
+    3: string                            name       , // 插件name
+    4: string                            plugin_icon, // 插件头像
+}
+
+struct GetQueriedOAuthPluginListRequest {
+    1  : required i64    bot_id (api.js_conv = "str"),
+    255:          base.Base Base  ,
+
+}
+
+struct GetQueriedOAuthPluginListResponse {
+    1  :          list<OAuthPluginInfo> oauth_plugin_list,
+
+    253: i64 code
+    254: string msg
+    255: required base.BaseResp         BaseResp         ,
 }

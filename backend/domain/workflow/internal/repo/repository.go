@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package repo
 
 import (
@@ -7,32 +23,38 @@ import (
 	"strconv"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/maps"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	workflow3 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
+)
+
+const (
+	batchCreateSize = 10
 )
 
 type RepositoryImpl struct {
@@ -70,7 +92,7 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, to
 func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error) {
 	id, err := r.GenID(ctx)
 	if err != nil {
-		return 0, err
+		return 0, vo.WrapError(errno.ErrIDGenError, err)
 	}
 	wfMeta := &model.WorkflowMeta{
 		ID:          id,
@@ -98,13 +120,20 @@ func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, 
 	}
 
 	if err = r.query.WorkflowMeta.Create(wfMeta); err != nil {
-		return 0, fmt.Errorf("create workflow meta: %w", err)
+		return 0, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("create workflow meta: %w", err))
 	}
 
 	return id, nil
 }
 
-func (r *RepositoryImpl) updateReferences(ctx context.Context, id int64, wfRefs map[entity.WorkflowReferenceKey]struct{}) error {
+func (r *RepositoryImpl) updateReferences(ctx context.Context, id int64, wfRefs map[entity.WorkflowReferenceKey]struct{}) (
+	err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	currentRefs, err := r.query.WorkflowReference.WithContext(ctx).Where(
 		r.query.WorkflowReference.ReferringID.Eq(id)).Find()
 	if err != nil {
@@ -229,12 +258,19 @@ func (r *RepositoryImpl) updateReferences(ctx context.Context, id int64, wfRefs 
 }
 
 func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo, newRefs map[entity.WorkflowReferenceKey]struct{}) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	if err = r.updateReferences(ctx, id, newRefs); err != nil {
 		return err
 	}
 
 	if err = r.query.WorkflowVersion.WithContext(ctx).Create(&model.WorkflowVersion{
-		ID:                 id,
+		// ID: auto_increment
+		WorkflowID:         id,
 		Version:            info.Version,
 		VersionDescription: info.VersionDescription,
 		Canvas:             info.Canvas,
@@ -259,7 +295,7 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 	}
 
 	if result.RowsAffected == 0 {
-		logs.CtxWarnf(ctx, "update workflow draft when publish failed: no rows affected. WorkflowID: %d", id)
+		logs.CtxWarn(ctx, "update workflow draft when publish failed: no rows affected. WorkflowID: %d", id)
 	}
 
 	_, err = r.query.WorkflowMeta.WithContext(ctx).
@@ -270,7 +306,7 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 			r.query.WorkflowMeta.LatestVersionTs.Value(time.Now().UnixMilli()),
 		)
 	if err != nil {
-		logs.CtxWarnf(ctx, "update workflow meta when publish failed: %v", err)
+		logs.CtxWarn(ctx, "update workflow meta when publish failed: %v", err)
 	}
 
 	return nil
@@ -288,7 +324,7 @@ func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, draf
 	}
 
 	if err := r.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
-		return fmt.Errorf("save workflow draft: %w", err)
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("save workflow draft: %w", err))
 	}
 
 	return nil
@@ -296,13 +332,19 @@ func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, draf
 
 func (r *RepositoryImpl) UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error {
 	if _, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.Eq(id)).UpdateColumnSimple(r.query.WorkflowDraft.TestRunSuccess.Value(true)); err != nil {
-		return fmt.Errorf("update workflow draft test run success failed: %w", err)
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("update workflow draft test run success failed: %w", err))
 	}
 
 	return nil
 }
 
-func (r *RepositoryImpl) Delete(ctx context.Context, id int64) error {
+func (r *RepositoryImpl) Delete(ctx context.Context, id int64) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	return r.query.Transaction(func(tx *query.Query) error {
 		// Delete from workflow_meta
 		_, err := tx.WorkflowMeta.WithContext(ctx).Where(tx.WorkflowMeta.ID.Eq(id)).Delete()
@@ -315,7 +357,7 @@ func (r *RepositoryImpl) Delete(ctx context.Context, id int64) error {
 			return fmt.Errorf("delete workflow draft: %w", err)
 		}
 
-		_, err = tx.WorkflowVersion.WithContext(ctx).Where(tx.WorkflowVersion.ID.Eq(id)).Delete()
+		_, err = tx.WorkflowVersion.WithContext(ctx).Where(tx.WorkflowVersion.WorkflowID.Eq(id)).Delete()
 		if err != nil {
 			return fmt.Errorf("delete workflow versions: %w", err)
 		}
@@ -333,42 +375,50 @@ func (r *RepositoryImpl) Delete(ctx context.Context, id int64) error {
 		return nil
 	})
 }
+
 func (r *RepositoryImpl) MDelete(ctx context.Context, ids []int64) error {
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.In(ids...)).Delete()
 	if err != nil {
-		return fmt.Errorf("delete workflow meta failed err=%w", err)
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("delete workflow meta failed err=%w", err))
 	}
 
 	safego.Go(ctx, func() {
 		_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow draft failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow draft failed err=%v, ids %v", err, ids)
 		}
 
-		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Delete()
+		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.WorkflowID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow version failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow version failed err=%v, ids %v", err, ids)
 		}
 
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow reference failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow reference failed err=%v, ids %v", err, ids)
 
 		}
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow reference refer failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow reference refer failed err=%v, ids %v", err, ids)
 		}
 	})
 
 	return nil
 }
 
-func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (*vo.Meta, error) {
+func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (_ *vo.Meta, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	meta, err := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(r.query.WorkflowMeta.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("workflow meta not found for ID %d: %w", id, err)
+			return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow meta not found for ID %d: %w", id, err),
+				errorx.KV("id", strconv.FormatInt(id, 10)))
 		}
 		return nil, fmt.Errorf("failed to get workflow meta for ID %d: %w", id, err)
 	}
@@ -379,7 +429,7 @@ func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (*vo.Meta, error
 func (r *RepositoryImpl) convertMeta(ctx context.Context, meta *model.WorkflowMeta) (*vo.Meta, error) {
 	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 	if err != nil {
-		logs.Warnf("failed to get url for workflow meta %v", err)
+		logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 	}
 	// Initialize the result entity
 	wfMeta := &vo.Meta{
@@ -451,13 +501,19 @@ func (r *RepositoryImpl) UpdateMeta(ctx context.Context, id int64, metaUpdate *v
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(id)).
 		UpdateColumnSimple(expressions...)
 	if err != nil {
-		return fmt.Errorf("update workflow meta: %w", err)
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("update workflow meta: %w", err))
 	}
 
 	return nil
 }
 
-func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error) {
+func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_ *entity.Workflow, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	meta, err := r.GetMeta(ctx, policy.ID)
 	if err != nil {
 		return nil, err
@@ -509,20 +565,20 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (*
 		versionMeta = v.VersionMeta
 		commitID = v.CommitID
 	default:
-		return nil, errors.New("invalid query type")
+		panic(fmt.Sprintf("invalid query type: %v", policy.QType))
 	}
 
 	var inputs, outputs []*vo.NamedTypeInfo
 	if inputParams != "" {
 		err = sonic.UnmarshalString(inputParams, &inputs)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 	}
 	if outputParams != "" {
 		err = sonic.UnmarshalString(outputParams, &outputs)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 	}
 
@@ -542,13 +598,19 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (*
 	}, nil
 }
 
-func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
+func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (_ *vo.VersionInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	wfVersion, err := r.query.WorkflowVersion.WithContext(ctx).
-		Where(r.query.WorkflowVersion.ID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
+		Where(r.query.WorkflowVersion.WorkflowID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("workflow version %s not found for ID %d: %w", version, id, err)
+			return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", version, id, err), errorx.KV("id", strconv.FormatInt(id, 10)))
 		}
 		return nil, fmt.Errorf("failed to get workflow version %s for ID %d: %w", version, id, err)
 	}
@@ -569,7 +631,30 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 	}, nil
 }
 
-func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string) (*vo.DraftInfo, error) {
+func (r *RepositoryImpl) IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (b bool, err error) {
+	connectorWorkflowVersion := r.query.ConnectorWorkflowVersion
+	_, err = connectorWorkflowVersion.WithContext(ctx).
+		Where(connectorWorkflowVersion.ConnectorID.Eq(connectorID),
+			connectorWorkflowVersion.WorkflowID.Eq(workflowID),
+			connectorWorkflowVersion.Version.Eq(version)).
+		First()
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, vo.WrapError(errno.ErrDatabaseError, err)
+	}
+	return true, nil
+}
+
+func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string) (_ *vo.DraftInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	var conds []gen.Condition
 	conds = append(conds, r.query.WorkflowDraft.ID.Eq(id))
 	if commitID != "" {
@@ -580,7 +665,8 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			if len(commitID) == 0 {
-				return nil, fmt.Errorf("workflow draft not found for ID %d: %w", id, err)
+				return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow draft not found for ID %d: %w", id, err),
+					errorx.KV("id", strconv.FormatInt(id, 10)))
 			} else {
 				snapshot, err := r.query.WorkflowSnapshot.WithContext(ctx).Where(
 					r.query.WorkflowSnapshot.WorkflowID.Eq(id),
@@ -588,8 +674,11 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 				).First()
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
-						return nil, fmt.Errorf("workflow snapshot not found for ID %d, commitID %s: %w",
-							id, commitID, err)
+						return nil, vo.WrapError(errno.ErrWorkflowSnapshotNotFound,
+							fmt.Errorf("workflow snapshot not found for ID %d, commitID %s: %w",
+								id, commitID, err),
+							errorx.KV("id", strconv.FormatInt(id, 10)),
+							errorx.KV("commit_id", commitID))
 					} else {
 						return nil, fmt.Errorf("failed to query workflow snapshot for ID %d, commitID %s: %w",
 							id, commitID, err)
@@ -628,9 +717,17 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 }
 
 func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) (_ []*entity.Workflow, totalCount int64, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	q := policy.MetaQuery
 	if len(q.IDs) == 0 && q.Page == nil && q.Name == nil && q.AppID == nil {
-		return nil, 0, fmt.Errorf("insufficient query parameters for workflow draft: %+v", q)
+		return nil, 0, vo.WrapError(errno.ErrInternalBadRequest,
+			fmt.Errorf("insufficient query parameters for workflow draft: %+v", q),
+			errorx.KV("scene", "query workflow drafts"))
 	}
 
 	var (
@@ -730,7 +827,7 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 	for i, draft := range combinedDrafts {
 		url, err := r.tos.GetObjectUrl(ctx, draft.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get url for workflow meta %v", err)
+			logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -739,7 +836,7 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 			OutputParamsStr: draft.OutputParams,
 		}
 		if err = canvasInfo.Unmarshal(); err != nil {
-			return nil, 0, err
+			return nil, 0, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 
 		wf := &entity.Workflow{
@@ -786,16 +883,24 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 
 func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) (
 	_ []*entity.Workflow, totalCount int64, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	q := policy.MetaQuery
 	if len(q.IDs) == 0 && q.Page == nil && q.Name == nil && q.AppID == nil {
-		return nil, 0, fmt.Errorf("insufficient query parameters for workflow latest versions: %+v", q)
+		return nil, 0, vo.WrapError(errno.ErrInternalBadRequest,
+			fmt.Errorf("insufficient query parameters for workflow latest versions: %+v", q),
+			errorx.KV("scene", "query latest workflow version"))
 	}
 
 	var (
 		conditions []gen.Condition
 	)
 	if len(q.IDs) > 0 {
-		conditions = append(conditions, r.query.WorkflowVersion.ID.In(q.IDs...))
+		conditions = append(conditions, r.query.WorkflowVersion.WorkflowID.In(q.IDs...))
 	}
 
 	if q.Name != nil {
@@ -846,7 +951,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 	)
 
 	d := r.query.WorkflowMeta.Debug().WithContext(ctx).
-		Join(r.query.WorkflowVersion, r.query.WorkflowVersion.ID.EqCol(r.query.WorkflowMeta.ID),
+		Join(r.query.WorkflowVersion, r.query.WorkflowVersion.WorkflowID.EqCol(r.query.WorkflowMeta.ID),
 			r.query.WorkflowVersion.Version.EqCol(r.query.WorkflowMeta.LatestVersion)).
 		Select(selectColumns...).
 		Where(conditions...)
@@ -881,7 +986,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 	for i, version := range combinedVersions {
 		url, err := r.tos.GetObjectUrl(ctx, version.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get url for workflow meta %v", err)
+			logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -890,7 +995,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 			OutputParamsStr: version.OutputParams,
 		}
 		if err = canvasInfo.Unmarshal(); err != nil {
-			return nil, 0, err
+			return nil, 0, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 
 		wf := &entity.Workflow{
@@ -936,9 +1041,15 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 }
 
 func (r *RepositoryImpl) MGetReferences(ctx context.Context, policy *vo.MGetReferencePolicy) (
-	[]*entity.WorkflowReference, error) {
+	_ []*entity.WorkflowReference, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	if len(policy.ReferredIDs) == 0 {
-		return nil, errors.New("referred IDs cannot be empty when querying references")
+		return nil, vo.WrapError(errno.ErrInternalBadRequest, errors.New("referred IDs cannot be empty when querying references"))
 	}
 
 	var conds []gen.Condition
@@ -997,9 +1108,18 @@ func (r *RepositoryImpl) MGetReferences(ctx context.Context, policy *vo.MGetRefe
 	return result, nil
 }
 
-func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, int64, error) {
+func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (
+	_ map[int64]*vo.Meta, _ int64, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	if len(query.IDs) == 0 && query.Page == nil && query.Name == nil && query.AppID == nil {
-		return nil, 0, fmt.Errorf("insufficient query parameters for workflow meta: %+v", query)
+		return nil, 0, vo.WrapError(errno.ErrInternalBadRequest,
+			fmt.Errorf("insufficient query parameters for workflow meta: %+v", query),
+			errorx.KV("scene", "query workflow metas"))
 	}
 
 	var conditions []gen.Condition
@@ -1031,10 +1151,7 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
-	var (
-		result []*model.WorkflowMeta
-		err    error
-	)
+	var result []*model.WorkflowMeta
 
 	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...)
 
@@ -1079,12 +1196,13 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 }
 
 func (r *RepositoryImpl) GetLatestVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {
-
-	version, err := r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.Eq(id)).
+	version, err := r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.WorkflowID.Eq(id)).
 		Order(r.query.WorkflowVersion.CreatedAt.Desc()).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("workflow version not found for ID %d: %w", id, err)
+			return nil, vo.WrapError(errno.ErrWorkflowNotFound,
+				fmt.Errorf("workflow version not found for ID %d: %w", id, err),
+				errorx.KV("id", strconv.FormatInt(id, 10)))
 		}
 		return nil, fmt.Errorf("failed to query workflow version for ID %d: %w", id, err)
 	}
@@ -1111,7 +1229,7 @@ func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, c
 
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			logs.CtxErrorf(ctx, "query workflow snapshot failed err=%v", err)
+			logs.CtxError(ctx, "query workflow snapshot failed err=%v", err)
 		}
 	} else if latestSnapshot != nil { // already have this snapshot, no need to create it
 		return nil
@@ -1123,12 +1241,16 @@ func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, c
 	).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("workflow draft not found for ID %d, commitID %s: %w", id, commitID, err)
+			return vo.WrapError(errno.ErrWorkflowNotFound,
+				fmt.Errorf("workflow draft not found for ID %d, commitID %s: %w", id, commitID, err),
+				errorx.KV("id", strconv.FormatInt(id, 10)))
 		}
-		return fmt.Errorf("failed to query workflow draft for ID %d, commitID %s: %w", id, commitID, err)
+		return vo.WrapError(errno.ErrDatabaseError,
+			fmt.Errorf("failed to query workflow draft for ID %d, commitID %s: %w", id, commitID, err))
 	}
 
 	return r.query.WorkflowSnapshot.WithContext(ctx).Save(&model.WorkflowSnapshot{
+		// ID: auto_increment
 		WorkflowID:   id,
 		CommitID:     commitID,
 		Canvas:       draft.Canvas,
@@ -1153,7 +1275,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	}
 
 	if err = sonic.UnmarshalString(wfEntity.Canvas, &canvas); err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	name := fmt.Sprintf("ts_%s_%s", wfEntity.Name, wfEntity.Name)
@@ -1184,7 +1306,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 
 	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+		return nil, vo.WrapError(errno.ErrSchemaConversionFail, err)
 	}
 
 	var opts []compose.WorkflowOption
@@ -1195,39 +1317,38 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 
 	wf, err := compose.NewWorkflow(ctx, workflowSC, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create workflow: %w", err)
+		return nil, vo.WrapError(errno.ErrWorkflowCompileFail, err)
 	}
 
 	type streamFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
 
-	convertStream := func(stream streamFunc) streamFunc {
-		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
-			if len(inputParamsConfigMap) == 0 {
-				return stream(ctx, in, opts...)
-			}
-			input := make(map[string]any, len(in))
-			for k, v := range in {
-				if p, ok := inputParamsConfigMap[k]; ok {
-					if p.LocalDisable {
-						if p.LocalDefault != nil {
-							input[k], err = transformDefaultValue(*p.LocalDefault, p)
-							if err != nil {
-								return nil, err
+	if wf.StreamRun() {
+		convertStream := func(stream streamFunc) streamFunc {
+			return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
+				if len(inputParamsConfigMap) == 0 {
+					return stream(ctx, in, opts...)
+				}
+				input := make(map[string]any, len(in))
+				for k, v := range in {
+					if p, ok := inputParamsConfigMap[k]; ok {
+						if p.LocalDisable {
+							if p.LocalDefault != nil {
+								input[k], err = transformDefaultValue(*p.LocalDefault, p)
+								if err != nil {
+									return nil, err
+								}
 							}
+						} else {
+							input[k] = v
 						}
+
 					} else {
 						input[k] = v
 					}
-
-				} else {
-					input[k] = v
 				}
+				return stream(ctx, input, opts...)
 			}
-			return stream(ctx, input, opts...)
 		}
-	}
-
-	if wf.StreamRun() {
 		return compose.NewStreamableWorkflow(
 			toolInfo,
 			convertStream(wf.Runner.Stream),
@@ -1286,21 +1407,28 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	), nil
 }
 
-func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
+func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (
+	_ *entity.Workflow, err error) {
 	const (
 		copyWorkflowRedisKeyPrefix         = "copy_workflow_redis_key_prefix"
 		copyWorkflowRedisKeyExpireInterval = time.Hour * 24 * 7
 	)
+
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	var (
 		copiedID      int64
-		err           error
 		workflowMeta  = r.query.WorkflowMeta
 		workflowDraft = r.query.WorkflowDraft
 	)
 
 	copiedID, err = r.IDGenerator.GenID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrIDGenError, err)
 	}
 
 	var copiedWorkflow *entity.Workflow
@@ -1322,13 +1450,13 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 	var copiedWorkflowName string
 	if policy.ShouldModifyWorkflowName {
 		copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
-		copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
+		copiedNameSuffix, err := r.redis.WithContext(ctx).Incr(copiedWorkflowRedisKey).Result()
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrRedisError, err)
 		}
-		err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
+		err = r.redis.WithContext(ctx).Expire(copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
 		if err != nil {
-			logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
+			logs.CtxWarn(ctx, "failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
 		}
 		copiedWorkflowName = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
 	} else {
@@ -1396,13 +1524,19 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 	return copiedWorkflow, nil
 }
 
-func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
+func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (
+	_ map[int64]*vo.DraftInfo, _ map[int64]string, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
 	var (
 		workflowMeta  = r.query.WorkflowMeta
 		workflowDraft = r.query.WorkflowDraft
 	)
 
-	// TODO(zhuangjie): querying workflow information may require additional commit_id at a later stage, it is used to confirm the workflow information at the time of release, not to obtain the latest version
 	wfMetas, err := workflowMeta.WithContext(ctx).Where(workflowMeta.AppID.Eq(AppID)).Find()
 	if err != nil {
 		return nil, nil, err
@@ -1428,6 +1562,25 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 		return e.ID, e.Name
 	})
 	return result, wid2Named, nil
+}
+
+func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context, appID, connectorID int64, workflowIDs []int64, version string) error {
+	objects := make([]*model.ConnectorWorkflowVersion, 0, len(workflowIDs))
+	for idx := range workflowIDs {
+		workflowID := workflowIDs[idx]
+		objects = append(objects, &model.ConnectorWorkflowVersion{
+			AppID:       appID,
+			ConnectorID: connectorID,
+			Version:     version,
+			WorkflowID:  workflowID,
+		})
+	}
+	err := r.query.ConnectorWorkflowVersion.WithContext(ctx).CreateInBatches(objects, batchCreateSize)
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, err)
+	}
+
+	return nil
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {
@@ -1463,34 +1616,33 @@ func transformDefaultValue(value string, p *workflow3.APIParameter) (any, error)
 		ret := make(map[string]any)
 		err := sonic.UnmarshalString(value, &ret)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 		return ret, nil
 	case workflow3.ParameterType_Bool:
 		b, err := strconv.ParseBool(value)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 		return b, nil
 	case workflow3.ParameterType_Number:
 		f, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 		return f, nil
 	case workflow3.ParameterType_Integer:
 		i, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 		return i, nil
 	case workflow3.ParameterType_Array:
 		ret := make([]any, 0)
 		err := sonic.UnmarshalString(value, &ret)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 		}
 		return ret, nil
-
 	}
 }

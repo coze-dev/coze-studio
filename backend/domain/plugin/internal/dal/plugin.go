@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -9,13 +25,13 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewPluginDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginDAO {
@@ -64,6 +80,12 @@ func (p *PluginDAO) getSelected(opt *PluginSelectedOption) (selected []field.Exp
 	}
 	if opt.Version {
 		selected = append(selected, table.Version)
+	}
+	if opt.Manifest {
+		selected = append(selected, table.Manifest)
+	}
+	if opt.IconURI {
+		selected = append(selected, table.IconURI)
 	}
 
 	return selected
@@ -198,14 +220,14 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		if err != nil {
 			return err
 		}
-		updateMap[table.Manifest.ColumnName().String()] = b
+		updateMap[table.Manifest.ColumnName().String()] = string(b)
 	}
 	if plugin.OpenapiDoc != nil {
 		b, err := json.Marshal(plugin.OpenapiDoc)
 		if err != nil {
 			return err
 		}
-		updateMap[table.OpenapiDoc.ColumnName().String()] = b
+		updateMap[table.OpenapiDoc.ColumnName().String()] = string(b)
 	}
 
 	_, err = table.WithContext(ctx).

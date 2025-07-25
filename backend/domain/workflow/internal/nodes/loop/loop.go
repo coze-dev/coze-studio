@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package loop
 
 import (
@@ -9,12 +25,11 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type Loop struct {
@@ -67,7 +82,7 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 		fromPath := info.Source.Ref.FromPath
 
 		if info.Source.Ref != nil && info.Source.Ref.VariableType != nil &&
-			*info.Source.Ref.VariableType == variable.ParentIntermediate {
+			*info.Source.Ref.VariableType == vo.ParentIntermediate {
 			if len(fromPath) > 1 {
 				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
 			}
@@ -175,16 +190,30 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 			input[k] = v
 		}
 
-		if _, ok := input[string(l.config.LoopNodeKey)]; !ok {
-			input[string(l.config.LoopNodeKey)] = make(map[string]any)
-		}
-
-		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = int64(i)
+		input[string(l.config.LoopNodeKey)+"#index"] = int64(i)
 
 		items := make(map[string]any)
 		for arrayKey := range arrays {
-			items[arrayKey] = arrays[arrayKey][i]
-			input[string(l.config.LoopNodeKey)].(map[string]any)[arrayKey] = arrays[arrayKey][i]
+			ele := arrays[arrayKey][i]
+			items[arrayKey] = ele
+			currentKey := string(l.config.LoopNodeKey) + "#" + arrayKey
+
+			// Recursively expand map[string]any elements
+			if m, ok := ele.(map[string]any); ok {
+				var expand func(prefix string, val interface{})
+				expand = func(prefix string, val interface{}) {
+					if nestedMap, ok := val.(map[string]any); ok {
+						for k, v := range nestedMap {
+							expand(prefix+"#"+k, v)
+						}
+					} else {
+						input[prefix] = val
+					}
+				}
+				expand(currentKey, m)
+			} else {
+				input[currentKey] = ele
+			}
 		}
 
 		return input, items, nil

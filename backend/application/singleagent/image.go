@@ -1,15 +1,33 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package singleagent
 
 import (
 	"context"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
 )
 
 func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, req *developer_api.GetUploadAuthTokenRequest) (*developer_api.GetUploadAuthTokenResponse, error) {
-	authToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
+
+	authToken, err := s.getAuthToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -18,9 +36,9 @@ func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, 
 
 	return &developer_api.GetUploadAuthTokenResponse{
 		Data: &developer_api.GetUploadAuthTokenData{
-			ServiceID:        s.appContext.ImageX.GetServerID(),
+			ServiceID:        authToken.ServiceID,
 			UploadPathPrefix: prefix,
-			UploadHost:       s.appContext.ImageX.GetUploadHost(),
+			UploadHost:       authToken.UploadHost,
 			Auth: &developer_api.UploadAuthTokenInfo{
 				AccessKeyID:     authToken.AccessKeyID,
 				SecretAccessKey: authToken.SecretAccessKey,
@@ -28,8 +46,26 @@ func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, 
 				ExpiredTime:     authToken.ExpiredTime,
 				CurrentTime:     authToken.CurrentTime,
 			},
+			Schema: authToken.HostScheme,
 		},
 	}, nil
+}
+func (s *SingleAgentApplicationService) getAuthToken(ctx context.Context) (*bot_common.AuthToken, error) {
+	uploadAuthToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	authToken := &bot_common.AuthToken{
+		ServiceID:       s.appContext.ImageX.GetServerID(),
+		AccessKeyID:     uploadAuthToken.AccessKeyID,
+		SecretAccessKey: uploadAuthToken.SecretAccessKey,
+		SessionToken:    uploadAuthToken.SessionToken,
+		ExpiredTime:     uploadAuthToken.ExpiredTime,
+		CurrentTime:     uploadAuthToken.CurrentTime,
+		UploadHost:      s.appContext.ImageX.GetUploadHost(ctx),
+		HostScheme:      uploadAuthToken.HostScheme,
+	}
+	return authToken, nil
 }
 
 func (s *SingleAgentApplicationService) getUploadPrefix(scene, dataType string) string {

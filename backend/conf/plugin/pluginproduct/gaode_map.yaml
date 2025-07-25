@@ -1,0 +1,754 @@
+info:
+  description: 高德地图相关工具，可以帮助用户规划路线、搜索附近相关地点、还有其他常用小工具
+  title: 高德地图
+  version: v1
+openapi: 3.0.1
+paths:
+  /v3/geocode/geo:
+    get:
+      operationId: geocodeGeo
+      parameters:
+        - description: 经纬度，经度在前，维度在后，用英文逗号分隔；例如 123,121
+          in: query
+          name: address
+          required: true
+          schema:
+            type: string
+        - description: 指定查询的城市
+          in: query
+          name: city
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "成功返回"
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: "返回结果状态值, 返回值为 0 或 1，0 表示请求失败；1 表示请求成功。"
+                  count:
+                    type: string
+                    description: "返回结果数目, 返回结果的个数。"
+                  info:
+                    type: string
+                    description: "返回状态说明, 当 status 为 0 时，info 会返回具体错误原因，否则返回“OK”。详情可以参阅 info 状态表"
+                  geocodes:
+                    type: array
+                    description: "地理编码信息列表， 结果对象列表"
+                    items:
+                      type: object
+                      properties:
+                        country:
+                          type: string
+                          description: "国家, 国内地址默认返回中国"
+                        province:
+                          type: string
+                          description: "地址所在的省份名, 例如：北京市。此处需要注意的是，中国的四大直辖市也算作省级单位。"
+                        city:
+                          type: string
+                          description: "地址所在的城市名, 例如：北京市"
+                        citycode:
+                          type: string
+                          description: "城市编码, 例如：010"
+                        district:
+                          type: string
+                          description: "地址所在的区, 例如：朝阳区"
+                        street:
+                          type: string
+                          description: "街道, 例如：阜通东大街"
+                        number:
+                          type: string
+                          description: "门牌, 例如：6号"
+                        adcode:
+                          type: string
+                          description: "区域编码, 例如：110101"
+                        location:
+                          type: string
+                          description: "坐标点, 经度，纬度"
+                        level:
+                          type: string
+                          description: "匹配级别, 参见下方的地理编码匹配级别列表"
+                type: object
+        default:
+          description: ""
+      summary: 地理编码：将详细的结构化地址转换为高德经纬度坐标
+  /v3/ip:
+    get:
+      operationId: ip
+      parameters:
+        - description: 需要搜索的 IP 地址（仅支持国内）,若用户不填写 IP，则取客户 http 之中的请求来进行定位
+          in: query
+          name: ip
+          required: false
+          schema:
+            type: string
+        - description: 选择数字签名认证的付费用户必填
+          in: query
+          name: sig
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "成功返回"
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: "返回结果状态值, 值为0或1,0表示失败；1表示成功"
+                  info:
+                    type: string
+                    description: "返回状态说明, 返回状态说明，status 为0时，info 返回错误原因，否则返回“OK”。"
+                  infocode:
+                    type: string
+                    description: "状态码, 返回状态说明,10000代表正确,详情参阅 info 状态表"
+                  province:
+                    type: string
+                    description: "省份名称, 若为直辖市则显示直辖市名称； 如果在局域网 IP 网段内，则返回“局域网”； 非法 IP 以及国外 IP 则返回空"
+                  city:
+                    type: string
+                    description: "城市名称, 若为直辖市则显示直辖市名称； 如果为局域网网段内 IP 或者非法 IP 或国外 IP，则返回空"
+                  adcode:
+                    type: string
+                    description: "城市的 adcode 编码, adcode 信息可参考 城市编码表 获取"
+                  rectangle:
+                    type: string
+                    description: "所在城市矩形区域范围, 所在城市范围的左下右上对标对"
+                type: object
+        default:
+          description: ""
+      summary: IP定位
+  /v3/geocode/regeo:
+    get:
+      operationId: geocodeRegeo
+      parameters:
+        - name: location
+          in: query
+          required: true
+          description: 传入内容规则：经度在前，纬度在后，经纬度间以“,”分割，经纬度小数点后不要超过 6 位。
+          schema:
+            type: string
+        - name: radius
+          in: query
+          required: false
+          description: 搜索半径, radius 取值范围：0~3000，默认值：1000。单位：米
+          schema:
+            type: string
+            default: "1000"
+        - name: extensions
+          in: query
+          required: false
+          description: "返回结果控制, extensions 参数默认取值是 base，也就是返回基本地址信息； extensions 参数取值为 all 时会返回基本地址信息、附近 POI 内容、道路信息以及道路交叉口信息。"
+          schema:
+            type: string
+            default: "base"
+        - name: roadlevel
+          in: query
+          required: false
+          description: "道路等级, 以下内容需要 extensions 参数为 all 时才生效。可选值：0，1  当 roadlevel=0时，显示所有道路 ； 当 roadlevel=1时，过滤非主干道路，仅输出主干道路数据"
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                  regeocode:
+                    properties:
+                      addressComponent:
+                        properties:
+                          businessAreas:
+                            items:
+                              properties:
+                                location:
+                                  type: string
+                                name:
+                                  type: string
+                              type: object
+                            type: array
+                          country:
+                            type: string
+                          district:
+                            type: string
+                          province:
+                            type: string
+                          streetNumber:
+                            properties:
+                              direction:
+                                type: string
+                              distance:
+                                type: string
+                              location:
+                                type: string
+                              number:
+                                type: string
+                              street:
+                                type: string
+                            type: object
+                          township:
+                            type: string
+                        type: object
+                      formatted_address:
+                        type: string
+                    type: object
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 逆地理编码，将经纬度转换为详细结构化的地址，且返回附近周边的POI、AOI信息
+  /v5/direction/bicycling:
+    get:
+      operationId: directionBicycling
+      summary: 骑行路径规划
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  route:
+                    properties:
+                      destination:
+                        type: string
+                      origin:
+                        type: string
+                      paths:
+                        items:
+                          properties:
+                            distance:
+                              type: string
+                            duration:
+                              type: string
+                            steps:
+                              items:
+                                properties:
+                                  duration:
+                                    type: string
+                                  index:
+                                    type: integer
+                                  instruction:
+                                    type: string
+                                  road_name:
+                                    type: string
+                                  step_distance:
+                                    type: number
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+  /v5/direction/driving:
+    get:
+      operationId: directionDriving
+      summary: 驾车路线规划
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  route:
+                    properties:
+                      destination:
+                        type: string
+                      origin:
+                        type: string
+                      taxi_cost:
+                        type: string
+                      paths:
+                        items:
+                          properties:
+                            distance:
+                              type: string
+                            restriction:
+                              type: string
+                            steps:
+                              items:
+                                properties:
+                                  road_name:
+                                    type: integer
+                                  instruction:
+                                    type: string
+                                  orientation:
+                                    type: string
+                                  step_distance:
+                                    type: number
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+  /v5/direction/electrobike:
+    get:
+      operationId: directionElectrobike
+      summary: 电动车（骑行）路线规划
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  route:
+                    properties:
+                      destination:
+                        type: string
+                      origin:
+                        type: string
+                      taxi_cost:
+                        type: string
+                      paths:
+                        items:
+                          properties:
+                            distance:
+                              type: string
+                            steps:
+                              items:
+                                properties:
+                                  road_name:
+                                    type: integer
+                                  instruction:
+                                    type: string
+                                  orientation:
+                                    type: string
+                                  step_distance:
+                                    type: number
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+  /v5/direction/transit/integrated:
+    get:
+      operationId: directionTransit
+      summary: 公交路线规划
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: city1
+          in: query
+          required: true
+          description: 起点所在城市，仅支持 citycode
+          schema:
+            type: string
+        - name: city2
+          in: query
+          required: true
+          description: 目的地所在城市， 仅支持 citycode
+          schema:
+            type: string
+        - name: strategy
+          in: query
+          required: false
+          description: 公共交通换乘策略 0：推荐模式，综合权重，同高德APP默认 1：最经济模式，票价最低 2：最少换乘模式，换乘次数少 3：最少步行模式，尽可能减少步行距离 4：最舒适模式，尽可能乘坐空调车5：不乘地铁模式，不乘坐地铁路线6：地铁图模式，起终点都是地铁站（地铁图模式下 originpoi 及 destinationpoi 为必填项）7：地铁优先模式，步行距离不超过4KM8：时间短模式，方案花费总时间最少
+          schema:
+            type: number
+        - name: date
+          in: query
+          required: false
+          description: 请求日期
+          schema:
+            type: string
+        - name: time
+          in: query
+          required: false
+          description: 请求时间
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  route:
+                    properties:
+                      destination:
+                        type: string
+                      origin:
+                        type: string
+                      distance:
+                        type: string
+                      transits:
+                        items:
+                          type: object
+                          properties:
+                            distance:
+                              type: string
+                            nightflag:
+                              type: string
+                            paths:
+                              items:
+                                properties:
+                                  bus:
+                                    properties:
+                                      buslines:
+                                        items:
+                                          properties:
+                                            arrival_stop:
+                                              properties:
+                                                exit:
+                                                  properties:
+                                                    location:
+                                                      type: string
+                                                    name:
+                                                      type: string
+                                                  type: object
+                                                id:
+                                                  type: string
+                                                location:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              type: object
+                                            departure_stop:
+                                              properties:
+                                                entrance:
+                                                  properties:
+                                                    location:
+                                                      type: string
+                                                    name:
+                                                      type: string
+                                                  type: object
+                                                id:
+                                                  type: string
+                                                location:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              type: object
+                                            distance:
+                                              type: string
+                                            duration:
+                                              type: string
+                                            end_time:
+                                              type: string
+                                            id:
+                                              type: string
+                                            name:
+                                              type: string
+                                            start_time:
+                                              type: string
+                                            type:
+                                              type: string
+                                            via_num:
+                                              type: string
+                                            via_stops:
+                                              items:
+                                                properties:
+                                                  id:
+                                                    type: string
+                                                  location:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                type: object
+                                              type: array
+                                          type: object
+                                        type: array
+                                    type: object
+                                  taxi:
+                                    properties:
+                                      price:
+                                        type: string
+                                      drivetime:
+                                        type: string
+                                      distance:
+                                        type: string
+                                      polyline:
+                                        type: string
+                                      startpoint:
+                                        type: string
+                                      startname:
+                                        type: string
+                                      endpoint:
+                                        type: string
+                                      endname:
+                                        type: string
+                                    type: object
+                                  railway:
+                                    properties:
+                                      destination:
+                                        type: string
+                                      distance:
+                                        type: string
+                                      origin:
+                                        type: string
+                                      steps:
+                                        items:
+                                          properties:
+                                            distance:
+                                              type: string
+                                            instruction:
+                                              type: string
+                                            road:
+                                              type: string
+                                          type: object
+                                        type: array
+                                    type: object
+                                  walking:
+                                    properties:
+                                      destination:
+                                        type: string
+                                      distance:
+                                        type: string
+                                      origin:
+                                        type: string
+                                      steps:
+                                        items:
+                                          properties:
+                                            distance:
+                                              type: string
+                                            instruction:
+                                              type: string
+                                            road:
+                                              type: string
+                                          type: object
+                                        type: array
+                                    type: object
+                                type: object
+                              type: array
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+  /v5/direction/walking:
+    get:
+      operationId: directionWalking
+      summary: 步行路线规划
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: destination
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  route:
+                    properties:
+                      destination:
+                        type: string
+                      origin:
+                        type: string
+                      paths:
+                        items:
+                          properties:
+                            distance:
+                              type: string
+                            steps:
+                              items:
+                                properties:
+                                  orientation:
+                                    type: string
+                                  instruction:
+                                    type: string
+                                  road_name:
+                                    type: string
+                                  step_distance:
+                                    type: number
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+  /v5/place/around:
+    get:
+      operationId: placeAround
+      summary: 周边搜索
+      parameters:
+        - name: radius
+          in: query
+          required: false
+          description: 搜索半径,取值范围:0-50000，大于50000时按默认值，单位：米
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: true
+          description: 经度在前，纬度在后，经度和纬度用","分割，经纬度小数点后不得超过6位。
+          schema:
+            type: string
+        - name: types
+          in: query
+          required: false
+          description: 指定地点类型,地点文本搜索接口支持按照设定的POI类型限定地点搜索结果；地点类型与 poi typecode 是同类内容，可以传入多个poi typecode，相互之间用“|”分隔，内容可以参考 POI 分类码表；地点（POI）列表的排序会按照高德搜索能力进行综合权重排序
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: number
+                  info:
+                    type: string
+                  infocode:
+                    type: string
+                  count:
+                    type: number
+                  pois:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                        id:
+                          type: string
+                        location:
+                          type: string
+                        type:
+                          type: string
+                        typecode:
+                          type: string
+                        pname:
+                          type: string
+                        cityname:
+                          type: string
+                        adname:
+                          type: string
+                        address:
+                          type: string
+                        pcode:
+                          type: string
+                        adcode:
+                          type: string
+                        citycode:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+          description: new desc
+        default:
+          description: ""
+servers:
+  - url: https://restapi.amap.com

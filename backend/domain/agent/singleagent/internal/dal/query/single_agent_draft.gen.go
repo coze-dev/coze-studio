@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal/model"
 )
 
 func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
@@ -32,7 +32,7 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.CreatorID = field.NewInt64(tableName, "creator_id")
 	_singleAgentDraft.SpaceID = field.NewInt64(tableName, "space_id")
 	_singleAgentDraft.Name = field.NewString(tableName, "name")
-	_singleAgentDraft.Desc = field.NewString(tableName, "desc")
+	_singleAgentDraft.Description = field.NewString(tableName, "description")
 	_singleAgentDraft.IconURI = field.NewString(tableName, "icon_uri")
 	_singleAgentDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_singleAgentDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
@@ -47,7 +47,7 @@ func newSingleAgentDraft(db *gorm.DB, opts ...gen.DOOption) singleAgentDraft {
 	_singleAgentDraft.SuggestReply = field.NewField(tableName, "suggest_reply")
 	_singleAgentDraft.JumpConfig = field.NewField(tableName, "jump_config")
 	_singleAgentDraft.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
-	_singleAgentDraft.Database = field.NewField(tableName, "database")
+	_singleAgentDraft.DatabaseConfig = field.NewField(tableName, "database_config")
 	_singleAgentDraft.ShortcutCommand = field.NewField(tableName, "shortcut_command")
 
 	_singleAgentDraft.fillFieldMap()
@@ -65,7 +65,7 @@ type singleAgentDraft struct {
 	CreatorID               field.Int64  // Creator ID
 	SpaceID                 field.Int64  // Space ID
 	Name                    field.String // Agent Name
-	Desc                    field.String // Agent Description
+	Description             field.String // Agent Description
 	IconURI                 field.String // Icon URI
 	CreatedAt               field.Int64  // Create Time in Milliseconds
 	UpdatedAt               field.Int64  // Update Time in Milliseconds
@@ -80,7 +80,7 @@ type singleAgentDraft struct {
 	SuggestReply            field.Field  // Suggested Replies
 	JumpConfig              field.Field  // Jump Configuration
 	BackgroundImageInfoList field.Field  // Background image
-	Database                field.Field  // Agent Database Base Configuration
+	DatabaseConfig          field.Field  // Agent Database Base Configuration
 	ShortcutCommand         field.Field  // shortcut command
 
 	fieldMap map[string]field.Expr
@@ -103,7 +103,7 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.CreatorID = field.NewInt64(table, "creator_id")
 	s.SpaceID = field.NewInt64(table, "space_id")
 	s.Name = field.NewString(table, "name")
-	s.Desc = field.NewString(table, "desc")
+	s.Description = field.NewString(table, "description")
 	s.IconURI = field.NewString(table, "icon_uri")
 	s.CreatedAt = field.NewInt64(table, "created_at")
 	s.UpdatedAt = field.NewInt64(table, "updated_at")
@@ -118,7 +118,7 @@ func (s *singleAgentDraft) updateTableName(table string) *singleAgentDraft {
 	s.SuggestReply = field.NewField(table, "suggest_reply")
 	s.JumpConfig = field.NewField(table, "jump_config")
 	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
-	s.Database = field.NewField(table, "database")
+	s.DatabaseConfig = field.NewField(table, "database_config")
 	s.ShortcutCommand = field.NewField(table, "shortcut_command")
 
 	s.fillFieldMap()
@@ -142,7 +142,7 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["creator_id"] = s.CreatorID
 	s.fieldMap["space_id"] = s.SpaceID
 	s.fieldMap["name"] = s.Name
-	s.fieldMap["desc"] = s.Desc
+	s.fieldMap["description"] = s.Description
 	s.fieldMap["icon_uri"] = s.IconURI
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
@@ -157,7 +157,7 @@ func (s *singleAgentDraft) fillFieldMap() {
 	s.fieldMap["suggest_reply"] = s.SuggestReply
 	s.fieldMap["jump_config"] = s.JumpConfig
 	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
-	s.fieldMap["database"] = s.Database
+	s.fieldMap["database_config"] = s.DatabaseConfig
 	s.fieldMap["shortcut_command"] = s.ShortcutCommand
 }
 

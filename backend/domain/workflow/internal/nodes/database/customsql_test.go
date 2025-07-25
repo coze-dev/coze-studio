@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package database
 
 import (
@@ -8,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 )
 
 type mockCustomSQLer struct {
@@ -41,9 +57,13 @@ func TestCustomSQL_Execute(t *testing.T) {
 	mockSQLer := mockCustomSQLer{
 		validate: func(req *database.CustomSQLRequest) {
 			assert.Equal(t, int64(111), req.DatabaseInfoID)
-			ps := []string{"v2_value", "v3_value"}
+			ps := []database.SQLParam{
+				database.SQLParam{Value: "v1_value"},
+				database.SQLParam{Value: "v2_value"},
+				database.SQLParam{Value: "v3_value"},
+			}
 			assert.Equal(t, ps, req.Params)
-			assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
+			assert.Equal(t, "select * from v1 where v1 = ? and v2 = ? and v3 = ?", req.SQL)
 		},
 	}
 
@@ -52,6 +72,7 @@ func TestCustomSQL_Execute(t *testing.T) {
 			ExeCfg: vo.ExecuteConfig{
 				Mode:     vo.ExecuteModeDebug,
 				Operator: 123,
+				BizType:  vo.BizTypeWorkflow,
 			},
 		},
 	}).Build().UnPatch()

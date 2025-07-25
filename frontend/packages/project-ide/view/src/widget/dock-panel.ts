@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   Emitter,
   type Event as CustomEvent,
@@ -28,6 +44,8 @@ export class FlowDockPanel extends DockPanel {
 
   private _options?: DockPanelOptions;
 
+  protected _currentTitle: Title<Widget> | undefined;
+
   get onDidChangeCurrent(): CustomEvent<Title<Widget> | undefined> {
     return this.onDidChangeCurrentEmitter.event;
   }
@@ -39,55 +57,25 @@ export class FlowDockPanel extends DockPanel {
       sender: TabBar<Widget>,
       args: TabBar.ICurrentChangedArgs<Widget>,
     ) => {
-      this.markAsCurrent(args.currentTitle || undefined);
+      this.setCurrent(args.currentTitle || undefined);
       super._onCurrentChanged(sender, args);
     };
     this._onTabActivateRequested = (
       sender: TabBar<Widget>,
       args: TabBar.ITabActivateRequestedArgs<Widget>,
     ) => {
-      this.markAsCurrent(args.title);
+      this.setCurrent(args.title);
       super._onTabActivateRequested(sender, args);
     };
   }
-
-  protected _currentTitle: Title<Widget> | undefined;
 
   get currentTitle(): Title<Widget> | undefined {
     return this._currentTitle;
   }
 
-  get currentTabBar(): TabBar<Widget> | undefined {
-    return this._currentTitle && this.findTabBar(this._currentTitle);
-  }
-
-  findTabBar(title: Title<Widget>): TabBar<Widget> | undefined {
-    return find(
-      this.tabBars(),
-      bar => ArrayExt.firstIndexOf(bar.titles, title) > -1,
-    );
-  }
-
   protected readonly toDisposeOnMarkAsCurrent = new DisposableCollection();
 
   protected readonly toDisposeWidgetRemove: Record<string, Disposable> = {};
-
-  markAsCurrent(title: Title<Widget> | undefined): void {
-    this.toDisposeOnMarkAsCurrent.dispose();
-    title?.owner.node.focus();
-    if (this._currentTitle !== title) {
-      this.onDidChangeCurrentEmitter.fire(title);
-    }
-    this._currentTitle = title;
-    this.markActiveTabBar(title);
-    if (title) {
-      const resetCurrent = () => this.markAsCurrent(undefined);
-      title.owner.disposed.connect(resetCurrent);
-      this.toDisposeOnMarkAsCurrent.push(
-        Disposable.create(() => title.owner.disposed.disconnect(resetCurrent)),
-      );
-    }
-  }
 
   markActiveTabBar(title?: Title<Widget>): void {
     const tabBars = toArray(this.tabBars());
@@ -99,6 +87,10 @@ export class FlowDockPanel extends DockPanel {
       // At least one tabbar needs to be active
       tabBars[0].addClass(ACTIVE_TABBAR_CLASS);
     }
+  }
+
+  get currentTabBar(): TabBar<Widget> | undefined {
+    return this._currentTitle && this.findTabBar(this._currentTitle);
   }
 
   override addWidget(
@@ -117,11 +109,28 @@ export class FlowDockPanel extends DockPanel {
     this.markActiveTabBar(widget.title);
   }
 
+  setCurrent(title: Title<Widget> | undefined): void {
+    this.toDisposeOnMarkAsCurrent.dispose();
+    title?.owner.node.focus();
+    if (this._currentTitle !== title) {
+      this.onDidChangeCurrentEmitter.fire(title);
+    }
+    this._currentTitle = title;
+    this.markActiveTabBar(title);
+    if (title) {
+      const resetCurrent = () => this.setCurrent(undefined);
+      title.owner.disposed.connect(resetCurrent);
+      this.toDisposeOnMarkAsCurrent.push(
+        Disposable.create(() => title.owner.disposed.disconnect(resetCurrent)),
+      );
+    }
+  }
+
   public addWidgetActiveListener(widget: Widget): void {
     const listener = () => {
       if (this._currentTitle !== widget.title) {
         widget.activate();
-        this.markAsCurrent(widget.title);
+        this.setCurrent(widget.title);
       }
     };
 
@@ -137,6 +146,13 @@ export class FlowDockPanel extends DockPanel {
     for (const widget of this.widgets()) {
       this.addWidgetActiveListener(widget);
     }
+  }
+
+  findTabBar(title: Title<Widget>): TabBar<Widget> | undefined {
+    return find(
+      this.tabBars(),
+      bar => ArrayExt.firstIndexOf(bar.titles, title) > -1,
+    );
   }
 
   handleEvent(event: Event): void {
@@ -165,7 +181,7 @@ export class FlowDockPanel extends DockPanel {
   protected override onChildRemoved(msg: Widget.ChildMessage): void {
     super.onChildRemoved(msg);
 
-    const dispose = this.toDisposeWidgetRemove[msg.child.id];
+    const dispose = this.toDisposeWidgetRemove[msg?.child?.id];
     if (dispose) {
       dispose.dispose();
     }

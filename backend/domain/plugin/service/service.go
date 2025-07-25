@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -8,11 +24,11 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 //go:generate mockgen -destination ../../../internal/mock/domain/plugin/interface.go --package mockPlugin -source service.go
@@ -37,6 +53,7 @@ type PluginService interface {
 	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error)
 	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
 	MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error)
+	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	// Draft Tool
 	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
@@ -67,7 +84,11 @@ type PluginService interface {
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
 	GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 
-	GetOAuthStatus(ctx context.Context, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*AgentPluginOAuthStatus, err error)
+	OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error)
+	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
+	RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -192,11 +213,10 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 	}
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
-		_oauthInfo := &model.AuthOfOAuthClientCredentials{
+		_oauthInfo := &model.OAuthClientCredentialsConfig{
 			ClientID:     oauthInfo["client_id"],
 			ClientSecret: oauthInfo["client_secret"],
 			TokenURL:     oauthInfo["token_url"],
-			Scopes:       strings.Split(oauthInfo["scope"], " "),
 		}
 
 		str, err := sonic.MarshalString(_oauthInfo)
@@ -207,7 +227,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthClientCredentials,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthClientCredentials: _oauthInfo,
 		}, nil
 	}
@@ -219,11 +239,11 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 				"the type '%s' of authorization content is invalid", contentType))
 		}
 
-		_oauthInfo := &model.AuthOfOAuthAuthorizationCode{
+		_oauthInfo := &model.OAuthAuthorizationCodeConfig{
 			ClientID:                 oauthInfo["client_id"],
 			ClientSecret:             oauthInfo["client_secret"],
 			ClientURL:                oauthInfo["client_url"],
-			Scopes:                   strings.Split(oauthInfo["scope"], " "),
+			Scope:                    oauthInfo["scope"],
 			AuthorizationURL:         oauthInfo["authorization_url"],
 			AuthorizationContentType: contentType,
 		}
@@ -236,7 +256,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthAuthorizationCode,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthAuthorizationCode: _oauthInfo,
 		}, nil
 	}
@@ -275,7 +295,7 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:           model.AuthzTypeOfService,
 			SubType:        model.AuthzSubTypeOfServiceAPIToken,
-			Payload:        &str,
+			Payload:        str,
 			AuthOfAPIToken: tokenAuth,
 		}, nil
 	}
@@ -305,6 +325,7 @@ type UpdateToolDraftRequest struct {
 	Disabled     *bool
 	SaveExample  *bool
 	DebugExample *common.DebugExample
+	APIExtend    *common.APIExtend
 }
 
 type MGetAgentToolsRequest = model.MGetAgentToolsRequest
@@ -347,6 +368,13 @@ type GetOAuthStatusResponse struct {
 	OAuthURL string
 }
 
+type AgentPluginOAuthStatus struct {
+	PluginID      int64
+	PluginName    string
+	PluginIconURL string
+	Status        common.OAuthStatus
+}
+
 type CopyPluginRequest struct {
 	UserID    int64
 	PluginID  int64
@@ -362,4 +390,11 @@ type CopyPluginResponse struct {
 
 type MoveAPPPluginToLibRequest struct {
 	PluginID int64
+}
+
+type GetAccessTokenRequest struct {
+	UserID    string
+	PluginID  *int64
+	Mode      model.AuthzSubType
+	OAuthInfo *entity.OAuthInfo
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package plugin
 
 import (
@@ -6,32 +22,34 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	workflow3 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 )
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
-type PluginService interface {
-	GetPluginToolsInfo(ctx context.Context, req *PluginToolsInfoRequest) (*PluginToolsInfoResponse, error)
-	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInvokableRequest) (map[int64]PluginInvokableTool, error)
+type Service interface {
+	GetPluginToolsInfo(ctx context.Context, req *ToolsInfoRequest) (*ToolsInfoResponse, error)
+	GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (map[int64]InvokableTool, error)
+	ExecutePlugin(ctx context.Context, input map[string]any, pe *Entity,
+		toolID int64, cfg ExecConfig) (map[string]any, error)
 }
 
-func GetPluginService() PluginService {
+func GetPluginService() Service {
 	return pluginSrvImpl
 }
 
-func SetPluginService(ts PluginService) {
+func SetPluginService(ts Service) {
 	pluginSrvImpl = ts
 }
 
-var pluginSrvImpl PluginService
+var pluginSrvImpl Service
 
-type PluginEntity = vo.PluginEntity
+type Entity = vo.PluginEntity
 
 type WorkflowAPIParameters = []*workflow3.APIParameter
-type PluginToolsInfoRequest struct {
-	PluginEntity PluginEntity
+type ToolsInfoRequest struct {
+	PluginEntity Entity
 	ToolIDs      []int64
 	IsDraft      bool
 }
@@ -41,8 +59,8 @@ type ToolsInvokableInfo struct {
 	ResponseAPIParametersConfig WorkflowAPIParameters
 }
 
-type PluginToolsInvokableRequest struct {
-	PluginEntity       PluginEntity
+type ToolsInvokableRequest struct {
+	PluginEntity       Entity
 	ToolsInvokableInfo map[int64]*ToolsInvokableInfo
 	IsDraft            bool
 }
@@ -62,7 +80,7 @@ type ToolInfo struct {
 	Outputs []*workflow3.APIParameter
 }
 
-type PluginToolsInfoResponse struct {
+type ToolsInfoResponse struct {
 	PluginID      int64
 	SpaceID       int64
 	Version       string
@@ -78,16 +96,16 @@ type PluginToolsInfoResponse struct {
 
 type ExecConfig = vo.ExecuteConfig
 
-type PluginInvokableTool interface {
+type InvokableTool interface {
 	Info(ctx context.Context) (*schema.ToolInfo, error)
 	PluginInvoke(ctx context.Context, argumentsInJSON string, cfg ExecConfig) (string, error)
 }
 
 type pluginInvokableTool struct {
-	pluginInvokableTool PluginInvokableTool
+	pluginInvokableTool InvokableTool
 }
 
-func NewInvokableTool(pl PluginInvokableTool) tool.InvokableTool {
+func NewInvokableTool(pl InvokableTool) tool.InvokableTool {
 	return &pluginInvokableTool{
 		pluginInvokableTool: pl,
 	}
@@ -100,5 +118,4 @@ func (p pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error)
 func (p pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	execCfg := execute.GetExecuteConfig(opts...)
 	return p.pluginInvokableTool.PluginInvoke(ctx, argumentsInJSON, execCfg)
-
 }

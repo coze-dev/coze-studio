@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dal
 
 import (
@@ -6,12 +22,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/redis/go-redis/v9"
+	redisV6 "code.byted.org/kv/redis-v6"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func makeAgentDisplayInfoKey(userID, agentID int64) string {
@@ -26,7 +42,7 @@ func (sa *SingleAgentDraftDAO) UpdateDisplayInfo(ctx context.Context, userID int
 
 	key := makeAgentDisplayInfoKey(userID, e.AgentID)
 
-	_, err = sa.cacheClient.Set(ctx, key, data, 0).Result()
+	_, err = sa.cacheClient.WithContext(ctx).Set(key, data, 0).Result()
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrAgentSetDraftBotDisplayInfo)
 	}
@@ -36,8 +52,8 @@ func (sa *SingleAgentDraftDAO) UpdateDisplayInfo(ctx context.Context, userID int
 
 func (sa *SingleAgentDraftDAO) GetDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
 	key := makeAgentDisplayInfoKey(userID, agentID)
-	data, err := sa.cacheClient.Get(ctx, key).Result()
-	if errors.Is(err, redis.Nil) {
+	data, err := sa.cacheClient.WithContext(ctx).Get(key).Result()
+	if errors.Is(err, redisV6.Nil) {
 		tabStatusDefault := developer_api.TabStatus_Default
 		return &entity.AgentDraftDisplayInfo{
 			AgentID: agentID,

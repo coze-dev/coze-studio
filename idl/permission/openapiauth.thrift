@@ -22,7 +22,7 @@ struct CreatePersonalAccessTokenAndPermissionRequest {
 
 
 struct PersonalAccessToken {
-    1: required string id
+    1: required i64 id (api.js_conv="true")
     2: required string name
     3: required i64 created_at
     4: required i64 updated_at
@@ -51,7 +51,7 @@ struct ListPersonalAccessTokensRequest {
 
 
 struct PersonalAccessTokenWithCreatorInfo {
-    1: required string id
+    1: required i64 id (api.js_conv="true")
     2: required string name
     3: required i64 created_at
     4: required i64 updated_at
@@ -78,7 +78,7 @@ struct ListPersonalAccessTokensResponseData {
 
 
 struct DeletePersonalAccessTokenAndPermissionRequest {
-    1: required string id // PAT Id
+    1: required i64 id  (api.js_conv="true")// PAT Id
 }
 
 struct DeletePersonalAccessTokenAndPermissionResponse {
@@ -87,7 +87,7 @@ struct DeletePersonalAccessTokenAndPermissionResponse {
 }
 
 struct GetPersonalAccessTokenAndPermissionRequest {
-    1: required string id (api.query="id") // PAT Id
+    1: required i64 id (api.query="id", api.js_conv="true") // PAT Id
 }
 
 struct GetPersonalAccessTokenAndPermissionResponseData {

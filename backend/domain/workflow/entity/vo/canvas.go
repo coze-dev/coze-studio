@@ -1,8 +1,24 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package vo
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
 )
 
 type Canvas struct {
@@ -229,7 +245,7 @@ type PluginAPIParam struct {
 
 type CodeRunner struct {
 	Code     string `json:"code"`
-	Language int64
+	Language int64  `json:"language"`
 }
 
 type KnowledgeIndexer struct {
@@ -377,13 +393,14 @@ type Param struct {
 }
 
 type Variable struct {
-	Name        string       `json:"name"`
-	Type        VariableType `json:"type"`
-	Required    bool         `json:"required,omitempty"`
-	AssistType  AssistType   `json:"assistType,omitempty"`
-	Schema      any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
-	Description string       `json:"description,omitempty"`
-	ReadOnly    bool         `json:"readOnly,omitempty"`
+	Name         string       `json:"name"`
+	Type         VariableType `json:"type"`
+	Required     bool         `json:"required,omitempty"`
+	AssistType   AssistType   `json:"assistType,omitempty"`
+	Schema       any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
+	Description  string       `json:"description,omitempty"`
+	ReadOnly     bool         `json:"readOnly,omitempty"`
+	DefaultValue any          `json:"defaultValue,omitempty"`
 }
 
 type BlockInput struct {
@@ -419,6 +436,8 @@ type SubWorkflow struct {
 	SpaceID         string `json:"spaceId,omitempty"`
 }
 
+// BlockType is the enumeration of node types for front-end canvas schema.
+// To add a new BlockType, start from a really big number such as 1000, to avoid conflict with future extensions.
 type BlockType string
 
 func (b BlockType) String() string {
@@ -426,58 +445,37 @@ func (b BlockType) String() string {
 }
 
 const (
-	BlockTypeVirtualStart BlockType = "virtual_start"
-	BlockTypeVirtualEnd   BlockType = "virtual_end"
-	BlockTypePlaceholder  BlockType = "placeholder" // loop嵌套块占位节点
-	BlockTypeMock         BlockType = "mock"
-
-	BlockTypeBotStart           BlockType = "1"
-	BlockTypeBotEnd             BlockType = "2"
-	BlockTypeBotLLM             BlockType = "3"
-	BlockTypeBotAPI             BlockType = "4"
-	BlockTypeBotCode            BlockType = "5"
-	BlockTypeBotDataset         BlockType = "6"
-	BlockTypeCondition          BlockType = "8"
-	BlockTypeBotSubWorkflow     BlockType = "9"
-	BlockTypeBotTypeConvert     BlockType = "10"
-	BlockTypeVariable           BlockType = "11"
-	BlockTypeDatabase           BlockType = "12"
-	BlockTypeBotMessage         BlockType = "13"
-	BlockTypeBotText            BlockType = "15"
-	BlockTypeImageGenerate      BlockType = "16"
-	BlockTypeImageReference     BlockType = "17"
-	BlockTypeQuestion           BlockType = "18"
-	BlockTypeBotBreak           BlockType = "19"
-	BlockTypeBotLoopSetVariable BlockType = "20"
-	BlockTypeBotLoop            BlockType = "21"
-	BlockTypeBotIntent          BlockType = "22"
-	BlockTypeDrawingBoard       BlockType = "23"
-	BlockTypeBotSceneVariable   BlockType = "24"
-	BlockTypeBotSceneChat       BlockType = "25"
-	BlockTypeBotDatasetWrite    BlockType = "27"
-	BlockTypeBotInput           BlockType = "30"
-	BlockTypeBotBatch           BlockType = "28"
-	BlockTypeBotContinue        BlockType = "29"
-	BlockTypeBotComment         BlockType = "31"
-
-	BlockTypeBotVariableMerge      BlockType = "32"
-	BlockTypeBotUpsertTimeTrigger  BlockType = "34"
-	BlockTypeBotDeleteTimeTrigger  BlockType = "35"
-	BlockTypeBotQueryTimeTrigger   BlockType = "36"
-	BlockTypeBotMessageList        BlockType = "37"
-	BlockTypeBotClearConversation  BlockType = "38"
-	BlockTypeBotCreateConversation BlockType = "39"
-
-	BlockTypeBotAssignVariable BlockType = "40"
-	BlockTypeDatabaseUpdate    BlockType = "42"
-	BlockTypeDatabaseSelect    BlockType = "43"
-	BlockTypeDatabaseDelete    BlockType = "44"
-	BlockTypeBotHttp           BlockType = "45"
-	BlockTypeDatabaseInsert    BlockType = "46"
-	BlockTypeBotLocalPlugin    BlockType = "7"
-
+	BlockTypeBotStart            BlockType = "1"
+	BlockTypeBotEnd              BlockType = "2"
+	BlockTypeBotLLM              BlockType = "3"
+	BlockTypeBotAPI              BlockType = "4"
+	BlockTypeBotCode             BlockType = "5"
+	BlockTypeBotDataset          BlockType = "6"
+	BlockTypeCondition           BlockType = "8"
+	BlockTypeBotSubWorkflow      BlockType = "9"
+	BlockTypeDatabase            BlockType = "12"
+	BlockTypeBotMessage          BlockType = "13"
+	BlockTypeBotText             BlockType = "15"
+	BlockTypeQuestion            BlockType = "18"
+	BlockTypeBotBreak            BlockType = "19"
+	BlockTypeBotLoopSetVariable  BlockType = "20"
+	BlockTypeBotLoop             BlockType = "21"
+	BlockTypeBotIntent           BlockType = "22"
+	BlockTypeBotDatasetWrite     BlockType = "27"
+	BlockTypeBotInput            BlockType = "30"
+	BlockTypeBotBatch            BlockType = "28"
+	BlockTypeBotContinue         BlockType = "29"
+	BlockTypeBotComment          BlockType = "31"
+	BlockTypeBotVariableMerge    BlockType = "32"
+	BlockTypeBotAssignVariable   BlockType = "40"
+	BlockTypeDatabaseUpdate      BlockType = "42"
+	BlockTypeDatabaseSelect      BlockType = "43"
+	BlockTypeDatabaseDelete      BlockType = "44"
+	BlockTypeBotHttp             BlockType = "45"
+	BlockTypeDatabaseInsert      BlockType = "46"
 	BlockTypeJsonSerialization   BlockType = "58"
 	BlockTypeJsonDeserialization BlockType = "59"
+	BlockTypeBotDatasetDelete    BlockType = "60"
 )
 
 type VariableType string
@@ -489,11 +487,6 @@ const (
 	VariableTypeBoolean VariableType = "boolean"
 	VariableTypeObject  VariableType = "object"
 	VariableTypeList    VariableType = "list"
-	VariableTypeAny     VariableType = "any"
-	VariableTypeUnknown VariableType = "unknown"
-	VariableTypeImage   VariableType = "image"
-
-	VariableTypeStreamString VariableType = "__StreamString"
 )
 
 type AssistType = int64

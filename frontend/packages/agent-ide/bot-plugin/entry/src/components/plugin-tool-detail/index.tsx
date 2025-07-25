@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 /* eslint-disable @coze-arch/max-line-per-function */
 
 import { type FC, useEffect, useState } from 'react';
@@ -11,6 +27,7 @@ import {
   REPORT_EVENTS as ReportEventNames,
 } from '@coze-arch/report-events';
 import { useErrorHandler } from '@coze-arch/logger';
+import { Spin, Collapse } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
 import {
   type APIParameter,
@@ -22,7 +39,6 @@ import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { addDepthAndValue } from '@coze-agent-ide/bot-plugin-tools/pluginModal/utils';
 import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
 import { setEditToolExampleValue } from '@coze-agent-ide/bot-plugin-tools/example/utils';
-import { Spin, Collapse } from '@coze-arch/coze-design';
 
 import { useContentResponse } from './use-content-response';
 import { useContentRequest } from './use-content-request';
@@ -62,7 +78,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     unlockPlugin,
     spaceID,
     pluginID,
-    setPluginInfo,
+    updatePluginInfoByImmer,
     version,
   } = usePluginStore(
     useShallow(store => ({
@@ -74,15 +90,17 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
       unlockPlugin: store.unlockPlugin,
       spaceID: store.spaceID,
       pluginID: store.pluginId,
-      setPluginInfo: store.setPluginInfo,
+      updatePluginInfoByImmer: store.updatePluginInfoByImmer,
       version: store.version,
     })),
   );
 
   const handleSuccess = (baseResData: UpdateAPIResponse) => {
-    setPluginInfo({
-      ...pluginInfo,
-      edit_version: baseResData?.edit_version,
+    updatePluginInfoByImmer(draft => {
+      if (!draft) {
+        return;
+      }
+      draft.edit_version = baseResData?.edit_version;
     });
   };
 

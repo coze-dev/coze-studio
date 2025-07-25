@@ -1,16 +1,34 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package builtin
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/cloudwego/eino/components/document/parser"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	ms "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	ms "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
 )
 
 func TestParseMarkdown(t *testing.T) {
@@ -46,4 +64,12 @@ func TestParseMarkdown(t *testing.T) {
 	for _, doc := range docs {
 		assertDoc(t, doc)
 	}
+}
+
+func assertDoc(t *testing.T, doc *schema.Document) {
+	assert.NotZero(t, doc.Content)
+	fmt.Println(doc.Content)
+	assert.NotNil(t, doc.MetaData)
+	assert.Equal(t, int64(123), doc.MetaData["document_id"].(int64))
+	assert.Equal(t, int64(456), doc.MetaData["knowledge_id"].(int64))
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package knowledge
 
 import (
@@ -6,14 +22,14 @@ import (
 	"fmt"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	domainknowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	crossknowledge "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type Knowledge struct {
@@ -133,6 +149,22 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 	return &crossknowledge.RetrieveResponse{
 		Slices: ss,
 	}, nil
+}
+
+func (k *Knowledge) Delete(ctx context.Context, r *crossknowledge.DeleteDocumentRequest) (*crossknowledge.DeleteDocumentResponse, error) {
+	docID, err := strconv.ParseInt(r.DocumentID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid document id: %s", r.DocumentID)
+	}
+
+	err = k.client.DeleteDocument(ctx, &domainknowledge.DeleteDocumentRequest{
+		DocumentID: docID,
+	})
+	if err != nil {
+		return &crossknowledge.DeleteDocumentResponse{IsSuccess: false}, err
+	}
+
+	return &crossknowledge.DeleteDocumentResponse{IsSuccess: true}, nil
 }
 
 func (k *Knowledge) ListKnowledgeDetail(ctx context.Context, req *crossknowledge.ListKnowledgeDetailRequest) (*crossknowledge.ListKnowledgeDetailResponse, error) {

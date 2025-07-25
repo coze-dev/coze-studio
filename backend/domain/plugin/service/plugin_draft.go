@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -12,17 +28,20 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/openapi"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/search"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	resCommon "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crosssearch"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/openapi"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
@@ -39,11 +58,6 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		return 0, err
 	}
 	mf.Auth = authV2
-
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, mf.Auth)
-	if err != nil {
-		return 0, err
-	}
 
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
@@ -65,6 +79,15 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	})
 	doc.Info.Title = req.Name
 	doc.Info.Description = req.Desc
+
+	err = doc.Validate(ctx)
+	if err != nil {
+		return 0, err
+	}
+	err = mf.Validate(false)
+	if err != nil {
+		return 0, err
+	}
 
 	pl := entity.NewPluginInfo(&model.PluginInfo{
 		IconURI:     ptr.Of(req.IconURI),
@@ -107,18 +130,64 @@ func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []in
 }
 
 func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
-	res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+	if req.PageInfo.Name == nil || *req.PageInfo.Name == "" {
+		res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+			SpaceID:  req.SpaceID,
+			APPID:    req.APPID,
+			PageInfo: req.PageInfo,
+		})
+		if err != nil {
+			return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		}
+
+		return &ListDraftPluginsResponse{
+			Plugins: res.Plugins,
+			Total:   res.Total,
+		}, nil
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
 		SpaceID:  req.SpaceID,
 		APPID:    req.APPID,
-		PageInfo: req.PageInfo,
+		Name:     *req.PageInfo.Name,
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		OrderFiledName: func() string {
+			if req.PageInfo.SortBy == nil || *req.PageInfo.SortBy != entity.SortByCreatedAt {
+				return searchModel.FieldOfUpdateTime
+			}
+			return searchModel.FieldOfCreateTime
+		}(),
+		Page:  ptr.Of(int32(req.PageInfo.Page)),
+		Limit: int32(req.PageInfo.Size),
 	})
 	if err != nil {
-		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		return nil, errorx.Wrapf(err, "SearchResources failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+	}
+
+	plugins := make([]*entity.PluginInfo, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarn(ctx, "draft plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+		plugins = append(plugins, draftPlugin)
+	}
+
+	total := int64(0)
+	if res.TotalHits != nil {
+		total = *res.TotalHits
 	}
 
 	return &ListDraftPluginsResponse{
-		Plugins: res.Plugins,
-		Total:   res.Total,
+		Plugins: plugins,
+		Total:   total,
 	}, nil
 }
 
@@ -127,12 +196,7 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	err = req.Manifest.Validate()
-	if err != nil {
-		return nil, err
-	}
-
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, req.Manifest.Auth)
+	err = req.Manifest.Validate(false)
 	if err != nil {
 		return nil, err
 	}
@@ -164,12 +228,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 	if err != nil {
 		return err
 	}
-	err = mf.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = p.validateOAuthInfo(ctx, req.UserID, mf.Auth)
+	err = mf.Validate(false)
 	if err != nil {
 		return err
 	}
@@ -178,12 +237,12 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 	apis := make([]entity.UniqueToolAPI, 0, len(doc.Paths))
 
 	for subURL, pathItem := range doc.Paths {
-		for method, operation := range pathItem.Operations() {
+		for method, op := range pathItem.Operations() {
 			api := entity.UniqueToolAPI{
 				SubURL: subURL,
 				Method: method,
 			}
-			apiSchemas[api] = ptr.Of(model.Openapi3Operation(*operation))
+			apiSchemas[api] = model.NewOpenapi3Operation(op)
 			apis = append(apis, api)
 		}
 	}
@@ -400,11 +459,6 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		return errorx.Wrapf(err, "updatePluginManifest failed")
 	}
 
-	err = p.validateOAuthInfo(ctx, oldPlugin.DeveloperID, mf.Auth)
-	if err != nil {
-		return err
-	}
-
 	newPlugin := entity.NewPluginInfo(&model.PluginInfo{
 		ID:         req.PluginID,
 		IconURI:    ptr.Of(mf.LogoURL),
@@ -447,7 +501,7 @@ func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *Update
 			}
 		}
 		if !hasServer {
-			doc.Servers = append(openapi3.Servers{{URL: *req.URL}}, doc.Servers...)
+			doc.Servers = openapi3.Servers{{URL: *req.URL}}
 		}
 	}
 
@@ -573,6 +627,15 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	if req.Parameters != nil {
 		op.Parameters = req.Parameters
 	}
+	if req.APIExtend != nil {
+		if op.Extensions == nil {
+			op.Extensions = map[string]any{}
+		}
+		authMode, ok := model.ToAPIAuthMode(req.APIExtend.AuthMode)
+		if ok {
+			op.Extensions[model.APISchemaExtendAuthMode] = authMode
+		}
+	}
 
 	if req.RequestBody == nil {
 		op.RequestBody = draftTool.Operation.RequestBody
@@ -684,7 +747,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 	var err error
 	defer func() {
 		if err != nil {
-			logs.Errorf("ConvertToOpenapi3Doc failed, err=%s", err)
+			logs.CtxError(ctx, "ConvertToOpenapi3Doc failed, err=%s", err)
 
 			resp.ErrMsg = "internal server error"
 
@@ -770,7 +833,7 @@ func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest
 		return err
 	}
 
-	err = mf.Validate()
+	err = mf.Validate(false)
 	if err != nil {
 		return err
 	}
@@ -824,7 +887,7 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 				SubURL:          ptr.Of(path),
 				ActivatedStatus: ptr.Of(model.ActivateTool),
 				DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
-				Operation:       ptr.Of(model.Openapi3Operation(*op)),
+				Operation:       model.NewOpenapi3Operation(op),
 			})
 		}
 	}

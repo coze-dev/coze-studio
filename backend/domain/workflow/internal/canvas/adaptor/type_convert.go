@@ -1,26 +1,42 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package adaptor
 
 import (
 	"fmt"
-	"time"
-
+	"regexp"
 	"strconv"
 	"strings"
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/httprequester"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/loop"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/crypto"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
@@ -87,8 +103,14 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 	return tInfo, nil
 }
 
-func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (*vo.TypeInfo, error) {
-	tInfo := &vo.TypeInfo{}
+func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (tInfo *vo.TypeInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrSchemaConversionFail, err)
+		}
+	}()
+
+	tInfo = &vo.TypeInfo{}
 
 	if b == nil {
 		return tInfo, nil
@@ -256,14 +278,7 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 			default:
 				return nil, fmt.Errorf("unsupported variable type for boolean: %s", b.Type)
 			}
-		case vo.VariableTypeString:
-			if b.AssistType == vo.AssistTypeTime {
-				t, err := time.Parse(time.DateTime, content.(string))
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse input %s as time: %w", content.(string), err)
-				}
-				content = t
-			}
+		default:
 		}
 		return []*vo.FieldInfo{
 			{
@@ -295,7 +310,7 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 				for _, p := range parentNode.Data.Inputs.VariableParameters {
 					if p.Name == varRoot {
 						fieldSource.Ref.FromNodeKey = ""
-						pi := variable.ParentIntermediate
+						pi := vo.ParentIntermediate
 						fieldSource.Ref.VariableType = &pi
 					}
 				}
@@ -378,14 +393,14 @@ func CanvasBlockInputRefToFieldSource(r *vo.BlockInputReference) (*vo.FieldSourc
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Path is empty when source is variables", r)
 		}
 
-		var varType variable.Type
+		var varType vo.GlobalVarType
 		switch r.Source {
 		case vo.RefSourceTypeGlobalApp:
-			varType = variable.GlobalAPP
+			varType = vo.GlobalAPP
 		case vo.RefSourceTypeGlobalSystem:
-			varType = variable.GlobalSystem
+			varType = vo.GlobalSystem
 		case vo.RefSourceTypeGlobalUser:
-			varType = variable.GlobalUser
+			varType = vo.GlobalUser
 		default:
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Source is invalid", r)
 		}
@@ -558,7 +573,6 @@ func SetInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 }
 
 func SetDatabaseInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (err error) {
-
 	selectParam := n.Data.Inputs.SelectParam
 	if selectParam != nil {
 		err = applyDBConditionToSchema(ns, selectParam.Condition, n.Parent())
@@ -596,54 +610,133 @@ func SetDatabaseInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (err err
 	}
 	return nil
 }
-func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (err error) {
-	inputs := n.Data.Inputs
 
-	err = applyParamsToSchema(ns, "Headers", inputs.Headers, n.Parent())
+var globalVariableRegex = regexp.MustCompile(`global_variable_\w+\s*\["(.*?)"\]`)
+
+func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema, implicitNodeDependencies []*vo.ImplicitNodeDependency) (err error) {
+	inputs := n.Data.Inputs
+	implicitPathVars := make(map[string]bool)
+	addImplicitVarsSources := func(prefix string, vars []string) error {
+		for _, v := range vars {
+			if strings.HasPrefix(v, "block_output_") {
+				paths := strings.Split(strings.TrimPrefix(v, "block_output_"), ".")
+				if len(paths) < 2 {
+					return fmt.Errorf("invalid implicit var : %s", v)
+				}
+				for _, dep := range implicitNodeDependencies {
+					if dep.NodeID == paths[0] && strings.Join(dep.FieldPath, ".") == strings.Join(paths[1:], ".") {
+						pathValue := prefix + crypto.MD5HexValue(v)
+						if _, visited := implicitPathVars[pathValue]; visited {
+							continue
+						}
+						implicitPathVars[pathValue] = true
+						ns.SetInputType(pathValue, dep.TypeInfo)
+						ns.AddInputSource(&vo.FieldInfo{
+							Path: []string{pathValue},
+							Source: vo.FieldSource{
+								Ref: &vo.Reference{
+									FromNodeKey: vo.NodeKey(dep.NodeID),
+									FromPath:    dep.FieldPath,
+								},
+							},
+						})
+					}
+				}
+			}
+			if strings.HasPrefix(v, "global_variable_") {
+				matches := globalVariableRegex.FindStringSubmatch(v)
+				if len(matches) < 2 {
+					continue
+				}
+
+				var varType vo.GlobalVarType
+				if strings.HasPrefix(v, string(vo.RefSourceTypeGlobalApp)) {
+					varType = vo.GlobalAPP
+				} else if strings.HasPrefix(v, string(vo.RefSourceTypeGlobalUser)) {
+					varType = vo.GlobalUser
+				} else if strings.HasPrefix(v, string(vo.RefSourceTypeGlobalSystem)) {
+					varType = vo.GlobalSystem
+				} else {
+					return fmt.Errorf("invalid global variable type: %s", v)
+				}
+
+				source := vo.FieldSource{
+					Ref: &vo.Reference{
+						VariableType: &varType,
+						FromPath:     []string{matches[1]},
+					},
+				}
+
+				ns.AddInputSource(&vo.FieldInfo{
+					Path:   []string{prefix + crypto.MD5HexValue(v)},
+					Source: source,
+				})
+
+			}
+		}
+		return nil
+
+	}
+
+	urlVars := extractBracesContent(inputs.APIInfo.URL)
+	err = addImplicitVarsSources("__apiInfo_url_", urlVars)
 	if err != nil {
 		return err
 	}
 
-	err = applyParamsToSchema(ns, "Params", inputs.Params, n.Parent())
+	err = applyParamsToSchema(ns, "__headers_", inputs.Headers, n.Parent())
+	if err != nil {
+		return err
+	}
+
+	err = applyParamsToSchema(ns, "__params_", inputs.Params, n.Parent())
 	if err != nil {
 		return err
 	}
 
 	if inputs.Auth != nil && inputs.Auth.AuthOpen {
-		authTypeInfo := &vo.TypeInfo{
-			Type:       vo.DataTypeObject,
-			Properties: make(map[string]*vo.TypeInfo),
-		}
-		authFieldsName := "Authentication"
-		ns.SetInputType(authFieldsName, authTypeInfo)
 		authData := inputs.Auth.AuthData
+		const bearerTokenKey = "__auth_authData_bearerTokenData_token"
 		if inputs.Auth.AuthType == "BEARER_AUTH" {
 			bearTokenParam := authData.BearerTokenData[0]
-			authTypeInfo.Properties["Token"] = &vo.TypeInfo{
-				Type: vo.DataTypeString,
+			tInfo, err := CanvasBlockInputToTypeInfo(bearTokenParam.Input)
+			if err != nil {
+				return err
 			}
-			sources, err := CanvasBlockInputToFieldInfo(bearTokenParam.Input, einoCompose.FieldPath{authFieldsName, "Token"}, n.Parent())
+			ns.SetInputType(bearerTokenKey, tInfo)
+			sources, err := CanvasBlockInputToFieldInfo(bearTokenParam.Input, einoCompose.FieldPath{bearerTokenKey}, n.Parent())
 			if err != nil {
 				return err
 			}
 			ns.AddInputSource(sources...)
+
 		}
+
 		if inputs.Auth.AuthType == "CUSTOM_AUTH" {
+			const (
+				customDataDataKey   = "__auth_authData_customData_data_Key"
+				customDataDataValue = "__auth_authData_customData_data_Value"
+			)
 			dataParams := authData.CustomData.Data
 			keyParam := dataParams[0]
-			valueParam := dataParams[1]
-			authTypeInfo.Properties["Key"] = &vo.TypeInfo{
-				Type: vo.DataTypeString,
+			keyTypeInfo, err := CanvasBlockInputToTypeInfo(keyParam.Input)
+			if err != nil {
+				return err
 			}
-			authTypeInfo.Properties["Value"] = &vo.TypeInfo{
-				Type: vo.DataTypeString,
-			}
-			sources, err := CanvasBlockInputToFieldInfo(keyParam.Input, einoCompose.FieldPath{authFieldsName, "Key"}, n.Parent())
+			ns.SetInputType(customDataDataKey, keyTypeInfo)
+			sources, err := CanvasBlockInputToFieldInfo(keyParam.Input, einoCompose.FieldPath{customDataDataKey}, n.Parent())
 			if err != nil {
 				return err
 			}
 			ns.AddInputSource(sources...)
-			sources, err = CanvasBlockInputToFieldInfo(valueParam.Input, einoCompose.FieldPath{authFieldsName, "Value"}, n.Parent())
+
+			valueParam := dataParams[1]
+			valueTypeInfo, err := CanvasBlockInputToTypeInfo(valueParam.Input)
+			if err != nil {
+				return err
+			}
+			ns.SetInputType(customDataDataValue, valueTypeInfo)
+			sources, err = CanvasBlockInputToFieldInfo(valueParam.Input, einoCompose.FieldPath{customDataDataValue}, n.Parent())
 			if err != nil {
 				return err
 			}
@@ -655,21 +748,17 @@ func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (er
 
 	switch httprequester.BodyType(inputs.Body.BodyType) {
 	case httprequester.BodyTypeFormData:
-		formDataParams := inputs.Body.BodyData.FormData.Data
-		err = applyParamsToSchema(ns, "FormDataVars", formDataParams, n.Parent())
+		err = applyParamsToSchema(ns, "__body_bodyData_formData_", inputs.Body.BodyData.FormData.Data, n.Parent())
 		if err != nil {
 			return err
 		}
-
 	case httprequester.BodyTypeFormURLEncoded:
-		formURLEncodedParams := inputs.Body.BodyData.FormURLEncoded
-		err = applyParamsToSchema(ns, "FormURLEncodedVars", formURLEncodedParams, n.Parent())
+		err = applyParamsToSchema(ns, "__body_bodyData_formURLEncoded_", inputs.Body.BodyData.FormURLEncoded, n.Parent())
 		if err != nil {
 			return err
 		}
-
 	case httprequester.BodyTypeBinary:
-		fileURLName := "FileURL"
+		const fileURLName = "__body_bodyData_binary_fileURL"
 		fileURLInput := inputs.Body.BodyData.Binary.FileURL
 		ns.SetInputType(fileURLName, &vo.TypeInfo{
 			Type: vo.DataTypeString,
@@ -679,6 +768,19 @@ func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) (er
 			return err
 		}
 		ns.AddInputSource(sources...)
+	case httprequester.BodyTypeJSON:
+		jsonVars := extractBracesContent(inputs.Body.BodyData.Json)
+		err = addImplicitVarsSources("__body_bodyData_json_", jsonVars)
+		if err != nil {
+			return err
+		}
+	case httprequester.BodyTypeRawText:
+		rawTextVars := extractBracesContent(inputs.Body.BodyData.RawText)
+		err = addImplicitVarsSources("__body_bodyData_rawText_", rawTextVars)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -688,70 +790,36 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition,
 	if condition.ConditionList == nil {
 		return nil
 	}
-	if len(condition.ConditionList) > 0 {
-		if len(condition.ConditionList) == 1 {
-			params := condition.ConditionList[0]
-			var right *vo.Param
-			for _, param := range params {
-				if param == nil {
-					continue
-				}
-				if param.Name == "right" {
-					right = param
-					break
-				}
+
+	for idx, params := range condition.ConditionList {
+		var right *vo.Param
+		for _, param := range params {
+			if param == nil {
+				continue
 			}
-
-			if right == nil {
-				return nil
+			if param.Name == "right" {
+				right = param
+				break
 			}
-
-			name := "SingleRight"
-			tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
-			if err != nil {
-				return err
-			}
-			ns.SetInputType(name, tInfo)
-
-			sources, err := CanvasBlockInputToFieldInfo(right.Input, einoCompose.FieldPath{name}, parentNode)
-			if err != nil {
-				return err
-			}
-			ns.AddInputSource(sources...)
-
-		} else {
-			for idx, params := range condition.ConditionList {
-				var right *vo.Param
-				for _, param := range params {
-					if param == nil {
-						continue
-					}
-					if param.Name == "right" {
-						right = param
-						break
-					}
-				}
-
-				if right == nil {
-					continue
-				}
-				name := fmt.Sprintf("Multi_%d_Right", idx)
-				tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
-				if err != nil {
-					return err
-				}
-				ns.SetInputType(name, tInfo)
-
-				sources, err := CanvasBlockInputToFieldInfo(right.Input, einoCompose.FieldPath{name}, parentNode)
-				if err != nil {
-					return err
-				}
-				ns.AddInputSource(sources...)
-			}
-
 		}
 
+		if right == nil {
+			continue
+		}
+		name := fmt.Sprintf("__condition_right_%d", idx)
+		tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
+		if err != nil {
+			return err
+		}
+		ns.SetInputType(name, tInfo)
+		sources, err := CanvasBlockInputToFieldInfo(right.Input, einoCompose.FieldPath{name}, parentNode)
+		if err != nil {
+			return err
+		}
+		ns.AddInputSource(sources...)
+
 	}
+
 	return nil
 
 }
@@ -760,26 +828,19 @@ func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*vo.Param
 	if len(fieldInfo) == 0 {
 		return nil
 	}
-	fieldsName := "Fields"
-	FieldsTypeInfo := &vo.TypeInfo{
-		Type:       vo.DataTypeObject,
-		Properties: make(map[string]*vo.TypeInfo, len(fieldInfo)),
-	}
-	ns.SetInputType(fieldsName, FieldsTypeInfo)
 	for _, params := range fieldInfo {
 		// Each FieldInfo is list params, containing two elements.
 		// The first is to set the name of the field and the second is the corresponding value.
 		p0 := params[0]
 		p1 := params[1]
-
 		name := p0.Input.Value.Content.(string) // must string type
 		tInfo, err := CanvasBlockInputToTypeInfo(p1.Input)
 		if err != nil {
 			return err
 		}
-
-		FieldsTypeInfo.Properties[name] = tInfo
-		sources, err := CanvasBlockInputToFieldInfo(p1.Input, einoCompose.FieldPath{fieldsName, name}, parentNode)
+		name = "__setting_field_" + name
+		ns.SetInputType(name, tInfo)
+		sources, err := CanvasBlockInputToFieldInfo(p1.Input, einoCompose.FieldPath{name}, parentNode)
 		if err != nil {
 			return err
 		}
@@ -789,13 +850,7 @@ func applyInsetFieldInfoToSchema(ns *compose.NodeSchema, fieldInfo [][]*vo.Param
 
 }
 
-func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*vo.Param, parentNode *vo.Node) error {
-
-	typeInfo := &vo.TypeInfo{
-		Type:       vo.DataTypeObject,
-		Properties: make(map[string]*vo.TypeInfo, len(params)),
-	}
-	ns.SetInputType(fieldName, typeInfo)
+func applyParamsToSchema(ns *compose.NodeSchema, prefix string, params []*vo.Param, parentNode *vo.Node) error {
 	for i := range params {
 		param := params[i]
 		name := param.Name
@@ -803,13 +858,14 @@ func applyParamsToSchema(ns *compose.NodeSchema, fieldName string, params []*vo.
 		if err != nil {
 			return err
 		}
-		typeInfo.Properties[name] = tInfo
-		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{fieldName, name}, parentNode)
+
+		fieldName := prefix + crypto.MD5HexValue(name)
+		ns.SetInputType(fieldName, tInfo)
+		sources, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{fieldName}, parentNode)
 		if err != nil {
 			return err
 		}
 		ns.AddInputSource(sources...)
-
 	}
 	return nil
 }

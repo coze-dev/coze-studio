@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package openapiauth
 
 import (
@@ -6,12 +22,12 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal"
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type apiAuthImpl struct {
@@ -34,27 +50,11 @@ func NewService(c *Components) APIAuth {
 }
 
 func (a *apiAuthImpl) Create(ctx context.Context, req *entity.CreateApiKey) (*entity.ApiKey, error) {
-
-	apiData, err := a.buildApiKey2PoData(ctx, req)
+	apiKeyData, err := a.dao.Create(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	apiModel, err := a.dao.Create(ctx, apiData)
-	if err != nil {
-		return nil, err
-	}
-	return a.buildPoData2ApiKey([]*model.APIKey{apiModel})[0], nil
-}
-
-func (a *apiAuthImpl) buildApiKey2PoData(ctx context.Context, req *entity.CreateApiKey) (*model.APIKey, error) {
-
-	apiKey := &model.APIKey{
-		Name:      req.Name,
-		ExpiredAt: req.Expire,
-		UserID:    req.UserID,
-		CreatedAt: time.Now().Unix(),
-	}
-	return apiKey, nil
+	return apiKeyData, nil
 }
 
 func (a *apiAuthImpl) Delete(ctx context.Context, req *entity.DeleteApiKey) error {
@@ -65,7 +65,7 @@ func (a *apiAuthImpl) Delete(ctx context.Context, req *entity.DeleteApiKey) erro
 func (a *apiAuthImpl) Get(ctx context.Context, req *entity.GetApiKey) (*entity.ApiKey, error) {
 
 	apiKey, err := a.dao.Get(ctx, req.ID)
-	logs.CtxInfof(ctx, "apiKey=%v, err:%v", apiKey, err)
+	logs.CtxInfo(ctx, "apiKey=%v, err:%v", apiKey, err)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +79,13 @@ func (a *apiAuthImpl) buildPoData2ApiKey(apiKey []*model.APIKey) []*entity.ApiKe
 
 	apiKeyData := slices.Transform(apiKey, func(a *model.APIKey) *entity.ApiKey {
 		return &entity.ApiKey{
-			ID:        a.ID,
-			Name:      a.Name,
-			ApiKey:    a.Key,
-			UserID:    a.UserID,
-			ExpiredAt: a.ExpiredAt,
-			CreatedAt: a.CreatedAt,
+			ID:         a.ID,
+			Name:       a.Name,
+			ApiKey:     a.APIKey,
+			UserID:     a.UserID,
+			ExpiredAt:  a.ExpiredAt,
+			CreatedAt:  a.CreatedAt,
+			LastUsedAt: a.LastUsedAt,
 		}
 	})
 
@@ -111,7 +112,7 @@ func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPerm
 	if err != nil {
 		return nil, err
 	}
-	if apiKey.Key != req.ApiKey {
+	if apiKey.APIKey != req.ApiKey {
 		return nil, nil
 	}
 	apiKeyDo := &entity.ApiKey{
@@ -127,7 +128,12 @@ func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPerm
 func (a *apiAuthImpl) Save(ctx context.Context, sm *entity.SaveMeta) error {
 
 	updateColumn := make(map[string]any)
-	updateColumn["name"] = sm.Name
+	if sm.Name != nil {
+		updateColumn["name"] = sm.Name
+	}
+	if sm.LastUsedAt != nil {
+		updateColumn["last_used_at"] = sm.LastUsedAt
+	}
 	updateColumn["updated_at"] = time.Now().Unix()
 	err := a.dao.Update(ctx, sm.ID, sm.UserID, updateColumn)
 

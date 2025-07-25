@@ -10,7 +10,7 @@ import (
 
 const TableNameWorkflowDraft = "workflow_draft"
 
-// WorkflowDraft mapped from table <workflow_draft>
+// WorkflowDraft workflow 画布草稿表，用于记录workflow最新的草稿画布信息
 type WorkflowDraft struct {
 	ID             int64          `gorm:"column:id;primaryKey;comment:workflow ID" json:"id"`                             // workflow ID
 	Canvas         string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`                         // 前端 schema

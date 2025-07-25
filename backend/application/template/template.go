@@ -1,18 +1,35 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package template
 
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/template/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-
-	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
-	"code.byted.org/flow/opencoze/backend/domain/template/repository"
+	productAPI "code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 type ApplicationService struct {
 	templateRepo repository.TemplateRepository
+	storage      storage.Storage
 }
 
 var ApplicationSVC = &ApplicationService{}
@@ -34,6 +51,24 @@ func (t *ApplicationService) PublicGetProductList(ctx context.Context, req *prod
 
 	products := make([]*productAPI.ProductInfo, 0, len(listResp))
 	for _, item := range listResp {
+		meta := item.MetaInfo
+		for _, cover := range meta.Covers {
+			objURL, uRrr := t.storage.GetObjectUrl(ctx, cover.URI)
+			if uRrr == nil {
+				cover.URL = objURL
+			}
+		}
+
+		avatarURL, uRrr := t.storage.GetObjectUrl(ctx, "default_icon/connector-coze.png")
+		if uRrr == nil {
+			if meta.Seller != nil {
+				meta.Seller.AvatarURL = avatarURL
+			}
+			if meta.UserInfo != nil {
+				meta.UserInfo.AvatarURL = avatarURL
+			}
+		}
+
 		products = append(products, &productAPI.ProductInfo{
 			MetaInfo:      item.MetaInfo,
 			BotExtra:      item.AgentExtra,

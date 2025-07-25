@@ -1,0 +1,126 @@
+{{- if .Values.rocketmq.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-rocketmq-broker
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-rocketmq-broker
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: rocketmq-broker
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: rocketmq-broker
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      initContainers:
+        - name: wait-for-namesrv
+          image: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
+          command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-rocketmq-namesrv 9876; do echo waiting for namesrv; sleep 2; done']
+      volumes:
+        - name: broker-config
+          configMap:
+            name: {{ include "opencoze.fullname" . }}-broker-config
+      containers:
+        - name: broker
+          image: "{{ .Values.rocketmq.broker.image.repository }}:{{ .Values.rocketmq.broker.image.tag }}"
+          env:
+            - name: NAMESRV_ADDR
+              value: "{{ include "opencoze.fullname" . }}-rocketmq-namesrv:9876"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -ex
+              mkdir -p /home/rocketmq/logs/rocketmqlogs /home/rocketmq/store
+              touch /home/rocketmq/logs/rocketmqlogs/tools.log \
+                    /home/rocketmq/logs/rocketmqlogs/tools_default.log
+              chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+              chmod g+s /home/rocketmq/logs /home/rocketmq/store
+
+              echo "Starting RocketMQ Broker..."
+              cp /home/rocketmq/conf/broker.conf /tmp/broker.conf
+              sed -i "s/__POD_IP__/$POD_IP/g" /tmp/broker.conf
+              echo "broker.conf content after sed:"
+              cat /tmp/broker.conf
+              /home/rocketmq/rocketmq-5.3.2/bin/mqbroker -c /tmp/broker.conf &
+              broker_ready=false
+              for i in {1..60}; do
+                if /home/rocketmq/rocketmq-5.3.2/bin/mqadmin clusterList -n $NAMESRV_ADDR | grep -q "DefaultCluster.*broker-a"; then
+                  echo "Registered."
+                  broker_ready=true
+                  break
+                fi
+                echo "Not ready, retry $i/60..."
+                sleep 1
+              done
+              if [ "$broker_ready" = false ]; then
+                echo "ERROR: registration timed out."
+                exit 1
+              fi
+
+              touch /tmp/rocketmq_ready
+              echo "Broker started successfully."
+
+              echo "Creating topics..."
+              {{- range .Values.rocketmq.topics }}
+              /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateTopic -n $NAMESRV_ADDR -c DefaultCluster -t "{{ . }}"
+              {{- end }}
+
+              echo "Creating consumer groups..."
+              {{- range .Values.rocketmq.consumerGroups }}
+              /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateSubGroup -n $NAMESRV_ADDR -c DefaultCluster -g "{{ . }}"
+              {{- end }}
+
+              wait
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "[ -f /tmp/rocketmq_ready ]"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          ports:
+            - containerPort: 10909
+            - containerPort: 10911
+          volumeMounts:
+            - name: broker-store
+              mountPath: /home/rocketmq/store
+            - name: broker-logs
+              mountPath: /home/rocketmq/logs
+            - name: broker-config
+              mountPath: /home/rocketmq/conf/broker.conf
+              subPath: broker.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: broker-store
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.rocketmq.broker.persistence.store.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.rocketmq.broker.persistence.store.size | quote }}
+    - metadata:
+        name: broker-logs
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.rocketmq.broker.persistence.logs.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.rocketmq.broker.persistence.logs.size | quote }}
+{{- end }}

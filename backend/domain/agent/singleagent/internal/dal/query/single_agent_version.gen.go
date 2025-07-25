@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal/model"
 )
 
 func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion {
@@ -32,7 +32,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.CreatorID = field.NewInt64(tableName, "creator_id")
 	_singleAgentVersion.SpaceID = field.NewInt64(tableName, "space_id")
 	_singleAgentVersion.Name = field.NewString(tableName, "name")
-	_singleAgentVersion.Desc = field.NewString(tableName, "desc")
+	_singleAgentVersion.Description = field.NewString(tableName, "description")
 	_singleAgentVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_singleAgentVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_singleAgentVersion.UpdatedAt = field.NewInt64(tableName, "updated_at")
@@ -49,7 +49,7 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_singleAgentVersion.Version = field.NewString(tableName, "version")
 	_singleAgentVersion.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
-	_singleAgentVersion.Database = field.NewField(tableName, "database")
+	_singleAgentVersion.DatabaseConfig = field.NewField(tableName, "database_config")
 	_singleAgentVersion.ShortcutCommand = field.NewField(tableName, "shortcut_command")
 
 	_singleAgentVersion.fillFieldMap()
@@ -67,7 +67,7 @@ type singleAgentVersion struct {
 	CreatorID               field.Int64  // Creator ID
 	SpaceID                 field.Int64  // Space ID
 	Name                    field.String // Agent Name
-	Desc                    field.String // Agent Description
+	Description             field.String // Agent Description
 	IconURI                 field.String // Icon URI
 	CreatedAt               field.Int64  // Create Time in Milliseconds
 	UpdatedAt               field.Int64  // Update Time in Milliseconds
@@ -84,7 +84,7 @@ type singleAgentVersion struct {
 	ConnectorID             field.Int64  // Connector ID
 	Version                 field.String // Agent Version
 	BackgroundImageInfoList field.Field  // Background image
-	Database                field.Field  // Agent Database Base Configuration
+	DatabaseConfig          field.Field  // Agent Database Base Configuration
 	ShortcutCommand         field.Field  // shortcut command
 
 	fieldMap map[string]field.Expr
@@ -107,7 +107,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.CreatorID = field.NewInt64(table, "creator_id")
 	s.SpaceID = field.NewInt64(table, "space_id")
 	s.Name = field.NewString(table, "name")
-	s.Desc = field.NewString(table, "desc")
+	s.Description = field.NewString(table, "description")
 	s.IconURI = field.NewString(table, "icon_uri")
 	s.CreatedAt = field.NewInt64(table, "created_at")
 	s.UpdatedAt = field.NewInt64(table, "updated_at")
@@ -124,7 +124,7 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.ConnectorID = field.NewInt64(table, "connector_id")
 	s.Version = field.NewString(table, "version")
 	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
-	s.Database = field.NewField(table, "database")
+	s.DatabaseConfig = field.NewField(table, "database_config")
 	s.ShortcutCommand = field.NewField(table, "shortcut_command")
 
 	s.fillFieldMap()
@@ -148,7 +148,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["creator_id"] = s.CreatorID
 	s.fieldMap["space_id"] = s.SpaceID
 	s.fieldMap["name"] = s.Name
-	s.fieldMap["desc"] = s.Desc
+	s.fieldMap["description"] = s.Description
 	s.fieldMap["icon_uri"] = s.IconURI
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
@@ -165,7 +165,7 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["connector_id"] = s.ConnectorID
 	s.fieldMap["version"] = s.Version
 	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
-	s.fieldMap["database"] = s.Database
+	s.fieldMap["database_config"] = s.DatabaseConfig
 	s.fieldMap["shortcut_command"] = s.ShortcutCommand
 }
 

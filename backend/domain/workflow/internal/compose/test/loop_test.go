@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package test
 
 import (
@@ -7,13 +23,12 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/loop"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestLoop(t *testing.T) {
@@ -47,6 +62,9 @@ func TestLoop(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		loopNode := &compose2.NodeSchema{
@@ -178,6 +196,9 @@ func TestLoop(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		loopNode := &compose2.NodeSchema{
@@ -302,7 +323,7 @@ func TestLoop(t *testing.T) {
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
 							FromPath:     compose.FieldPath{"count"},
-							VariableType: ptr.Of(variable.ParentIntermediate),
+							VariableType: ptr.Of(vo.ParentIntermediate),
 						},
 					},
 				},
@@ -316,7 +337,7 @@ func TestLoop(t *testing.T) {
 				{
 					Left: vo.Reference{
 						FromPath:     compose.FieldPath{"count"},
-						VariableType: ptr.Of(variable.ParentIntermediate),
+						VariableType: ptr.Of(vo.ParentIntermediate),
 					},
 					Right: compose.FieldPath{"total"},
 				},
@@ -337,6 +358,9 @@ func TestLoop(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		exit := &compose2.NodeSchema{
@@ -411,7 +435,7 @@ func TestLoop(t *testing.T) {
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
 							FromPath:     compose.FieldPath{"count"},
-							VariableType: ptr.Of(variable.ParentIntermediate),
+							VariableType: ptr.Of(vo.ParentIntermediate),
 						},
 					},
 				},

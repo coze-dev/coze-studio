@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package plugin
 
 import (
@@ -6,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -15,40 +32,43 @@ import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"gopkg.in/yaml.v3"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
-	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
-	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
-	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
-	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	search "code.byted.org/flow/opencoze/backend/domain/search/service"
-	user "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/search"
+	productCommon "code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_common"
+	productAPI "code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	botOpenAPI "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_open_api"
+	pluginAPI "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/plugin_develop"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	resCommon "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/pluginutil"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crosssearch"
+	pluginConf "code.byted.org/data_edc/workflow_engine_next/domain/plugin/conf"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/utils"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	user "code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	commonConsts "code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var PluginApplicationSVC = &PluginApplicationService{}
 
 type PluginApplicationService struct {
-	DomainSVC  service.PluginService
-	eventbus   search.ResourceEventBus
-	oss        storage.Storage
-	userSVC    user.User
-	oauthSVC   oauth.OAuthService
+	DomainSVC service.PluginService
+	eventbus  search.ResourceEventBus
+	oss       storage.Storage
+	userSVC   user.User
+
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -61,46 +81,17 @@ func (p *PluginApplicationService) GetOAuthSchema(ctx context.Context, req *plug
 
 func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
 	var (
-		onlinePlugins []*entity.PluginInfo
-		total         int64
+		plugins []*entity.PluginInfo
+		total   int64
 	)
 	if len(req.PluginIds) > 0 {
-		pluginIDs := make([]int64, 0, len(req.PluginIds))
-		for _, id := range req.PluginIds {
-			pluginID, err := strconv.ParseInt(id, 10, 64)
-			if err != nil {
-				return nil, fmt.Errorf("invalid pluginID '%s'", id)
-			}
-			pluginIDs = append(pluginIDs, pluginID)
-		}
-
-		onlinePlugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
-		if err != nil {
-			return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
-		}
-
-		total = int64(len(onlinePlugins))
-
+		plugins, total, err = p.getPlaygroundPluginListByIDs(ctx, req.PluginIds)
 	} else {
-		pageInfo := entity.PageInfo{
-			Page: int(req.GetPage()),
-			Size: int(req.GetSize()),
-			SortBy: func() *entity.SortField {
-				if req.GetOrderBy() == 0 {
-					return ptr.Of(entity.SortByUpdatedAt)
-				}
-				return ptr.Of(entity.SortByCreatedAt)
-			}(),
-			OrderByACS: ptr.Of(false),
-		}
-		onlinePlugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
-		if err != nil {
-			return nil, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", req.GetSpaceID())
-		}
+		plugins, total, err = p.getPlaygroundPluginList(ctx, req)
 	}
 
-	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
-	for _, pl := range onlinePlugins {
+	pluginList := make([]*common.PluginInfoForPlayground, 0, len(plugins))
+	for _, pl := range plugins {
 		tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", pl.ID)
@@ -111,17 +102,58 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 			return nil, err
 		}
 
-		pluginLists = append(pluginLists, pluginInfo)
+		pluginList = append(pluginList, pluginInfo)
 	}
 
 	resp = &pluginAPI.GetPlaygroundPluginListResponse{
 		Data: &common.GetPlaygroundPluginListData{
 			Total:      int32(total),
-			PluginList: pluginLists,
+			PluginList: pluginList,
 		},
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) getPlaygroundPluginListByIDs(ctx context.Context, pluginIDs []string) (plugins []*entity.PluginInfo, total int64, err error) {
+	ids := make([]int64, 0, len(pluginIDs))
+	for _, id := range pluginIDs {
+		pluginID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid pluginID '%s'", id)
+		}
+		ids = append(ids, pluginID)
+	}
+
+	plugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, ids)
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
+	}
+
+	total = int64(len(plugins))
+
+	return plugins, total, nil
+}
+
+func (p *PluginApplicationService) getPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (plugins []*entity.PluginInfo, total int64, err error) {
+	pageInfo := entity.PageInfo{
+		Name: req.Name,
+		Page: int(req.GetPage()),
+		Size: int(req.GetSize()),
+		SortBy: func() *entity.SortField {
+			if req.GetOrderBy() == 0 {
+				return ptr.Of(entity.SortByUpdatedAt)
+			}
+			return ptr.Of(entity.SortByCreatedAt)
+		}(),
+		OrderByACS: ptr.Of(false),
+	}
+	plugins, total, err = p.DomainSVC.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", req.GetSpaceID())
+	}
+
+	return plugins, total, nil
 }
 
 func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context, pl *entity.PluginInfo, tools []*entity.ToolInfo) (*common.PluginInfoForPlayground, error) {
@@ -146,7 +178,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 	var creator *common.Creator
 	userInfo, err := p.userSVC.GetUserInfo(context.Background(), pl.DeveloperID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "get user info failed, err=%v", err)
+		logs.CtxError(ctx, "get user info failed, err=%v", err)
 		creator = common.NewCreator()
 	} else {
 		creator = &common.Creator{
@@ -159,7 +191,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, pl.GetIconURI())
 	if err != nil {
-		logs.Errorf("get plugin icon url failed, err=%v", err)
+		logs.CtxError(ctx, "get plugin icon url failed, err=%v", err)
 	}
 
 	authType, ok := model.ToThriftAuthType(pl.GetAuthInfo().Type)
@@ -402,6 +434,15 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			return nil, err
 		}
 
+		var apiExtend *common.APIExtend
+		if tmp, ok := tool.Operation.Extensions[model.APISchemaExtendAuthMode].(string); ok {
+			if mode, ok := model.ToThriftAPIAuthMode(model.ToolAuthMode(tmp)); ok {
+				apiExtend = &common.APIExtend{
+					AuthMode: mode,
+				}
+			}
+		}
+
 		api := &common.PluginAPIInfo{
 			APIID:       strconv.FormatInt(tool.ID, 10),
 			CreateTime:  strconv.FormatInt(tool.CreatedAt/1000, 10),
@@ -421,6 +462,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			RequestParams:  reqParams,
 			ResponseParams: respParams,
 			StatisticData:  common.NewPluginStatisticData(),
+			APIExtend:      apiExtend,
 		}
 		example := pl.GetToolExample(ctx, tool.GetName())
 		if example != nil {
@@ -502,7 +544,7 @@ func (p *PluginApplicationService) getPluginCodeInfo(ctx context.Context, draftP
 			continue
 		}
 		item := &openapi3.PathItem{}
-		item.SetOperation(tool.GetMethod(), ptr.Of(openapi3.Operation(*tool.Operation)))
+		item.SetOperation(tool.GetMethod(), tool.Operation.Operation)
 		paths[tool.GetSubURL()] = item
 	}
 	draftPlugin.OpenapiDoc.Paths = paths
@@ -543,7 +585,7 @@ func (p *PluginApplicationService) getPluginMetaInfo(ctx context.Context, draftP
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, draftPlugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
 	}
 
 	metaInfo := &common.PluginMetaInfo{
@@ -605,7 +647,7 @@ func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, d
 	}
 
 	if authType == common.AuthorizationType_OAuth {
-		metaInfo.OauthInfo = authInfo.Payload
+		metaInfo.OauthInfo = &authInfo.Payload
 	}
 
 	return nil
@@ -657,14 +699,14 @@ func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *plug
 
 		os, err := sonic.MarshalString(ot.Operation)
 		if err != nil {
-			logs.CtxErrorf(ctx, "marshal online tool operation failed, toolID=%d, err=%v", ot.ID, err)
+			logs.CtxError(ctx, "marshal online tool operation failed, toolID=%d, err=%v", ot.ID, err)
 
 			updatedToolName = append(updatedToolName, name)
 			continue
 		}
 		ds, err := sonic.MarshalString(dt.Operation)
 		if err != nil {
-			logs.CtxErrorf(ctx, "marshal draft tool operation failed, toolID=%d, err=%v", ot.ID, err)
+			logs.CtxError(ctx, "marshal draft tool operation failed, toolID=%d, err=%v", ot.ID, err)
 
 			updatedToolName = append(updatedToolName, name)
 			continue
@@ -700,7 +742,12 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
-	res, err := p.DomainSVC.GetOAuthStatus(ctx, req.PluginID)
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	res, err := p.DomainSVC.GetOAuthStatus(ctx, *userID, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetOAuthStatus failed, pluginID=%d", req.PluginID)
 	}
@@ -737,14 +784,14 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 		DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
 		SubURL:          ptr.Of("/" + defaultSubURL),
 		Method:          ptr.Of(http.MethodGet),
-		Operation: &model.Openapi3Operation{
+		Operation: model.NewOpenapi3Operation(&openapi3.Operation{
 			Summary:     req.Desc,
 			OperationID: req.Name,
 			Parameters:  []*openapi3.ParameterRef{},
 			RequestBody: entity.DefaultOpenapi3RequestBody(),
 			Responses:   entity.DefaultOpenapi3Responses(),
 			Extensions:  map[string]any{},
-		},
+		}),
 	}
 
 	toolID, err := p.toolRepo.CreateDraftTool(ctx, tool)
@@ -788,6 +835,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		Disabled:     req.Disabled,
 		SaveExample:  req.SaveExample,
 		DebugExample: req.DebugExample,
+		APIExtend:    req.APIExtend,
 	}
 	err = p.DomainSVC.UpdateDraftTool(ctx, updateReq)
 	if err != nil {
@@ -803,7 +851,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdateAPIResponse{}
@@ -853,7 +901,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginResponse{
@@ -934,7 +982,7 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.PublishPluginResponse{}
@@ -977,7 +1025,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginMetaResponse{}
@@ -1118,7 +1166,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 			return resp, nil
 		}
 
-		logs.CtxErrorf(ctx, "ExecuteTool failed, err=%v", err)
+		logs.CtxError(ctx, "ExecuteTool failed, err=%v", err)
 		resp.Reason = defaultErrReason
 
 		return resp, nil
@@ -1138,7 +1186,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 
 	respParams, err := res.Tool.ToRespAPIParameter()
 	if err != nil {
-		logs.CtxErrorf(ctx, "ToRespAPIParameter failed, err=%v", err)
+		logs.CtxError(ctx, "ToRespAPIParameter failed, err=%v", err)
 		resp.Success = false
 		resp.Reason = defaultErrReason
 	} else {
@@ -1222,7 +1270,7 @@ func (p *PluginApplicationService) buildProductInfo(ctx context.Context, plugin 
 func (p *PluginApplicationService) buildProductMetaInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
 	iconURL, err := p.oss.GetObjectUrl(ctx, plugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
 	return &productAPI.ProductMetaInfo{
@@ -1280,6 +1328,23 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 
 	ei.Tools = toolInfos
 
+	authInfo := plugin.GetAuthInfo()
+
+	authMode := ptr.Of(productAPI.PluginAuthMode_NoAuth)
+	if authInfo != nil {
+		if authInfo.Type == model.AuthzTypeOfService || authInfo.Type == model.AuthzTypeOfOAuth {
+			authMode = ptr.Of(productAPI.PluginAuthMode_Required)
+			err := plugin.Manifest.Validate(false)
+			if err != nil {
+				logs.CtxWarn(ctx, "validate plugin manifest failed, err=%v", err)
+			} else {
+				authMode = ptr.Of(productAPI.PluginAuthMode_Configured)
+			}
+		}
+	}
+
+	ei.AuthMode = authMode
+
 	return ei, nil
 }
 
@@ -1329,6 +1394,7 @@ func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req
 
 func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (resp *pluginAPI.GetDevPluginListResponse, err error) {
 	pageInfo := entity.PageInfo{
+		Name:       req.Name,
 		Page:       int(req.GetPage()),
 		Size:       int(req.GetSize()),
 		OrderByACS: ptr.Of(false),
@@ -1348,7 +1414,7 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.ProjectID)
 	}
 
-	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
+	pluginList := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
 		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, pl.ID)
 		if err != nil {
@@ -1361,15 +1427,68 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 		}
 
 		pluginInfo.VersionTs = "0" // when you get the plugin information in the project, version ts is set to 0 by default
-		pluginLists = append(pluginLists, pluginInfo)
+		pluginList = append(pluginList, pluginInfo)
 	}
 
 	resp = &pluginAPI.GetDevPluginListResponse{
-		PluginList: pluginLists,
+		PluginList: pluginList,
 		Total:      res.Total,
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) getDevPluginListByName(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (pluginList []*common.PluginInfoForPlayground, total int64, err error) {
+	limit := req.GetSize()
+	if limit == 0 {
+		limit = 10
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
+		SpaceID:  req.SpaceID,
+		APPID:    req.ProjectID,
+		Name:     req.GetName(),
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		Page:  req.Page,
+		Limit: limit,
+	})
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "SearchResources failed, spaceID=%d, appID=%d", req.SpaceID, req.ProjectID)
+	}
+
+	pluginList = make([]*common.PluginInfoForPlayground, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarn(ctx, "plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+
+		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", draftPlugin.ID)
+		}
+
+		pluginInfo, err := p.toPluginInfoForPlayground(ctx, draftPlugin, tools)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		pluginInfo.VersionTs = "0" // when you get the plugin information in the project, version ts is set to 0 by default
+		pluginList = append(pluginList, pluginInfo)
+	}
+
+	if res.TotalHits != nil {
+		total = *res.TotalHits
+	}
+
+	return pluginList, total, nil
 }
 
 func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appID int64) (err error) {
@@ -1461,11 +1580,30 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 		PathsDuplicated: duplicated,
 	}
 
+	if len(duplicated) > 0 {
+		resp.Code = errno.ErrPluginDuplicatedTool
+	}
+
 	return resp, nil
 }
 
 func (p *PluginApplicationService) RevokeAuthToken(ctx context.Context, req *pluginAPI.RevokeAuthTokenRequest) (resp *pluginAPI.RevokeAuthTokenResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	err = p.DomainSVC.RevokeAccessToken(ctx, &entity.AuthorizationCodeMeta{
+		UserID:   conv.Int64ToStr(*userID),
+		PluginID: req.PluginID,
+		IsDraft:  req.GetBotID() == 0,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "RevokeAccessToken failed, pluginID=%d", req.PluginID)
+	}
+
 	resp = &pluginAPI.RevokeAuthTokenResponse{}
+
 	return resp, nil
 }
 
@@ -1557,4 +1695,65 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 	}
 
 	return plugin, nil
+}
+
+func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, req *botOpenAPI.OauthAuthorizationCodeReq) (resp *botOpenAPI.OauthAuthorizationCodeResp, err error) {
+	stateStr, err := url.QueryUnescape(req.State)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	stateBytes, err := utils.DecryptByAES(stateStr, utils.StateSecretKey)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	state := &entity.OAuthState{}
+	err = json.Unmarshal(stateBytes, state)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	err = p.DomainSVC.OAuthCode(ctx, req.Code, state)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorize failed"))
+	}
+
+	resp = &botOpenAPI.OauthAuthorizationCodeResp{}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) GetQueriedOAuthPluginList(ctx context.Context, req *pluginAPI.GetQueriedOAuthPluginListRequest) (resp *pluginAPI.GetQueriedOAuthPluginListResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	status, err := p.DomainSVC.GetAgentPluginsOAuthStatus(ctx, *userID, req.BotID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAgentPluginsOAuthStatus failed, userID=%d, agentID=%d", *userID, req.BotID)
+	}
+
+	if len(status) == 0 {
+		return &pluginAPI.GetQueriedOAuthPluginListResponse{
+			OauthPluginList: []*pluginAPI.OAuthPluginInfo{},
+		}, nil
+	}
+
+	oauthPluginList := make([]*pluginAPI.OAuthPluginInfo, 0, len(status))
+	for _, s := range status {
+		oauthPluginList = append(oauthPluginList, &pluginAPI.OAuthPluginInfo{
+			PluginID:   s.PluginID,
+			Status:     s.Status,
+			Name:       s.PluginName,
+			PluginIcon: s.PluginIconURL,
+		})
+	}
+
+	resp = &pluginAPI.GetQueriedOAuthPluginListResponse{
+		OauthPluginList: oauthPluginList,
+	}
+
+	return resp, nil
 }

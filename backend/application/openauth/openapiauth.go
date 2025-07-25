@@ -1,65 +1,79 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package openauth
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
 
-	openapimodel "code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
-	openapi "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth"
-	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	openapimodel "code.byted.org/data_edc/workflow_engine_next/api/model/permission/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	openapi "code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/gopkg/logs"
 )
 
 type OpenAuthApplicationService struct {
 	OpenAPIDomainSVC openapi.APIAuth
-	OAuthDomainSVC   oauth.OAuthService
 }
 
 var OpenAuthApplication = &OpenAuthApplicationService{}
 
-func (s *OpenAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.GetPersonalAccessTokenAndPermissionRequest) (*openapimodel.GetPersonalAccessTokenAndPermissionResponseData, error) {
+func (s *OpenAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.GetPersonalAccessTokenAndPermissionRequest) (*openapimodel.GetPersonalAccessTokenAndPermissionResponse, error) {
+
+	resp := new(openapimodel.GetPersonalAccessTokenAndPermissionResponse)
+
 	userID := ctxutil.GetUIDFromCtx(ctx)
 
-	apiKeyID, err := strconv.ParseInt(req.ID, 10, 64)
-	if err != nil {
-		return nil, errors.New("invalid apiKeyID")
-	}
 	appReq := &entity.GetApiKey{
-		ID: apiKeyID,
+		ID: req.ID,
 	}
 	apiKeyResp, err := openapiAuthDomainSVC.Get(ctx, appReq)
 
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
-		return nil, errors.New("GetPersonalAccessTokenAndPermission failed")
+		logs.CtxError(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
+		return resp, errors.New("GetPersonalAccessTokenAndPermission failed")
 	}
 	if apiKeyResp == nil {
-		return nil, errors.New("GetPersonalAccessTokenAndPermission failed")
+		return resp, errors.New("GetPersonalAccessTokenAndPermission failed")
 	}
 
 	if apiKeyResp.UserID != *userID {
-		return nil, errors.New("permission not match")
+		return resp, errors.New("permission not match")
 	}
-
-	return &openapimodel.GetPersonalAccessTokenAndPermissionResponseData{
+	resp.Data = &openapimodel.GetPersonalAccessTokenAndPermissionResponseData{
 		PersonalAccessToken: &openapimodel.PersonalAccessToken{
-			ID:        fmt.Sprintf("%d", apiKeyResp.ID),
+			ID:        apiKeyResp.ID,
 			Name:      apiKeyResp.Name,
 			ExpireAt:  apiKeyResp.ExpiredAt,
 			CreatedAt: apiKeyResp.CreatedAt,
 			UpdatedAt: apiKeyResp.UpdatedAt,
 		},
-	}, nil
+	}
+	return resp, nil
 }
 
-func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Context, req *openapimodel.CreatePersonalAccessTokenAndPermissionRequest) (*openapimodel.CreatePersonalAccessTokenAndPermissionResponseData, error) {
+func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Context, req *openapimodel.CreatePersonalAccessTokenAndPermissionRequest) (*openapimodel.CreatePersonalAccessTokenAndPermissionResponse, error) {
+	resp := new(openapimodel.CreatePersonalAccessTokenAndPermissionResponse)
 	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	appReq := &entity.CreateApiKey{
@@ -73,20 +87,19 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 	} else {
 		expireDay, err := strconv.ParseInt(req.DurationDay, 10, 64)
 		if err != nil {
-			return nil, errors.New("invalid expireDay")
+			return resp, errors.New("invalid expireDay")
 		}
 		appReq.Expire = time.Now().Add(time.Duration(expireDay) * time.Hour * 24).Unix()
 	}
 
 	apiKeyResp, err := openapiAuthDomainSVC.Create(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
-		return nil, errors.New("CreatePersonalAccessToken failed")
+		logs.CtxError(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
+		return resp, errors.New("CreatePersonalAccessToken failed")
 	}
-
-	return &openapimodel.CreatePersonalAccessTokenAndPermissionResponseData{
+	resp.Data = &openapimodel.CreatePersonalAccessTokenAndPermissionResponseData{
 		PersonalAccessToken: &openapimodel.PersonalAccessToken{
-			ID:       strconv.FormatInt(apiKeyResp.ID, 10),
+			ID:       apiKeyResp.ID,
 			Name:     apiKeyResp.Name,
 			ExpireAt: apiKeyResp.ExpiredAt,
 
@@ -94,10 +107,14 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 			UpdatedAt: apiKeyResp.UpdatedAt,
 		},
 		Token: apiKeyResp.ApiKey,
-	}, nil
+	}
+	return resp, nil
 }
 
-func (s *OpenAuthApplicationService) ListPersonalAccessTokens(ctx context.Context, req *openapimodel.ListPersonalAccessTokensRequest) (*openapimodel.ListPersonalAccessTokensResponseData, error) {
+func (s *OpenAuthApplicationService) ListPersonalAccessTokens(ctx context.Context, req *openapimodel.ListPersonalAccessTokensRequest) (*openapimodel.ListPersonalAccessTokensResponse, error) {
+
+	resp := new(openapimodel.ListPersonalAccessTokensResponse)
+
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	appReq := &entity.ListApiKey{
 		UserID: *userID,
@@ -107,57 +124,69 @@ func (s *OpenAuthApplicationService) ListPersonalAccessTokens(ctx context.Contex
 
 	apiKeyResp, err := openapiAuthDomainSVC.List(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.ListPersonalAccessTokens failed, err=%v", err)
-		return nil, errors.New("ListPersonalAccessTokens failed")
+		logs.CtxError(ctx, "OpenAuthApplicationService.ListPersonalAccessTokens failed, err=%v", err)
+		return resp, errors.New("ListPersonalAccessTokens failed")
 	}
 
 	if apiKeyResp == nil {
-		return nil, nil
+		return resp, nil
 	}
-
-	listData := &openapimodel.ListPersonalAccessTokensResponseData{}
-
-	listData.PersonalAccessTokens = slices.Transform(apiKeyResp.ApiKeys, func(a *entity.ApiKey) *openapimodel.PersonalAccessTokenWithCreatorInfo {
-		return &openapimodel.PersonalAccessTokenWithCreatorInfo{
-			ID:        strconv.FormatInt(a.ID, 10),
-			Name:      a.Name,
-			ExpireAt:  a.ExpiredAt,
-			CreatedAt: a.CreatedAt,
-			UpdatedAt: a.UpdatedAt,
-		}
-	})
-	listData.HasMore = apiKeyResp.HasMore
-
-	return listData, nil
+	resp.Data = &openapimodel.ListPersonalAccessTokensResponseData{
+		HasMore: apiKeyResp.HasMore,
+		PersonalAccessTokens: slices.Transform(apiKeyResp.ApiKeys, func(a *entity.ApiKey) *openapimodel.PersonalAccessTokenWithCreatorInfo {
+			lastUsedAt := a.LastUsedAt
+			if lastUsedAt == 0 {
+				lastUsedAt = -1
+			}
+			return &openapimodel.PersonalAccessTokenWithCreatorInfo{
+				ID:         a.ID,
+				Name:       a.Name,
+				ExpireAt:   a.ExpiredAt,
+				CreatedAt:  a.CreatedAt,
+				UpdatedAt:  a.UpdatedAt,
+				LastUsedAt: lastUsedAt,
+			}
+		}),
+	}
+	return resp, nil
 }
 
-func (s *OpenAuthApplicationService) DeletePersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.DeletePersonalAccessTokenAndPermissionRequest) error {
+func (s *OpenAuthApplicationService) DeletePersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.DeletePersonalAccessTokenAndPermissionRequest) (*openapimodel.DeletePersonalAccessTokenAndPermissionResponse, error) {
+	resp := new(openapimodel.DeletePersonalAccessTokenAndPermissionResponse)
+
 	userID := ctxutil.GetUIDFromCtx(ctx)
-	apiKeyID, err := strconv.ParseInt(req.ID, 10, 64)
-	if err != nil {
-		return errors.New("invalid apiKeyID")
-	}
+
 	appReq := &entity.DeleteApiKey{
-		ID:     apiKeyID,
+		ID:     req.ID,
 		UserID: *userID,
 	}
-	err = openapiAuthDomainSVC.Delete(ctx, appReq)
+	err := openapiAuthDomainSVC.Delete(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
-		return errors.New("DeletePersonalAccessTokenAndPermission failed")
+		logs.CtxError(ctx, "OpenAuthApplicationService.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
+		return resp, errors.New("DeletePersonalAccessTokenAndPermission failed")
 	}
-	return nil
+	return resp, nil
 }
 
-func (s *OpenAuthApplicationService) UpdatePersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.UpdatePersonalAccessTokenAndPermissionRequest) error {
+func (s *OpenAuthApplicationService) UpdatePersonalAccessTokenAndPermission(ctx context.Context, req *openapimodel.UpdatePersonalAccessTokenAndPermissionRequest) (*openapimodel.UpdatePersonalAccessTokenAndPermissionResponse, error) {
+	resp := new(openapimodel.UpdatePersonalAccessTokenAndPermissionResponse)
 	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	upErr := openapiAuthDomainSVC.Save(ctx, &entity.SaveMeta{
 		ID:     req.ID,
-		Name:   req.Name,
+		Name:   ptr.Of(req.Name),
 		UserID: *userID,
 	})
 
+	return resp, upErr
+}
+
+func (s *OpenAuthApplicationService) UpdateLastUsedAt(ctx context.Context, apiID int64, userID int64) error {
+	upErr := openapiAuthDomainSVC.Save(ctx, &entity.SaveMeta{
+		ID:         apiID,
+		LastUsedAt: ptr.Of(time.Now().Unix()),
+		UserID:     userID,
+	})
 	return upErr
 }
 
@@ -167,7 +196,7 @@ func (s *OpenAuthApplicationService) CheckPermission(ctx context.Context, token 
 	}
 	apiKey, err := openapiAuthDomainSVC.CheckPermission(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CheckPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.CheckPermission failed, err=%v", err)
 		return nil, errors.New("CheckPermission failed")
 	}
 	return apiKey, nil

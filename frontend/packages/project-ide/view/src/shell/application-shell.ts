@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import { inject, injectable, optional } from 'inversify';
 import { Emitter, type RecursivePartial } from '@flowgram-adapter/common';
 import { NavigationHistory, type URI } from '@coze-project-ide/core';
@@ -19,7 +35,7 @@ import {
 import { DockPanelRendererFactory } from '../widget/dock-panel-renderer-factory';
 import { type DockPanelRenderer } from '../widget/dock-panel-renderer';
 import { FlowDockPanel } from '../widget/dock-panel';
-import { type BaseWidget } from '../widget/base-widget';
+import { type AbstractWidget } from '../widget/base-widget';
 import { createBoxLayout, createSplitLayout } from '../utils/layout';
 import { isURIMatch } from '../utils';
 import { type SplitOptions, type SplitScreenConfig } from '../types/view';
@@ -111,7 +127,7 @@ export class ApplicationShell extends Widget {
    * 当前 focus widget 变化
    */
   protected readonly onCurrentWidgetChangeEmitter = new Emitter<
-    BaseWidget | undefined
+    AbstractWidget | undefined
   >();
 
   readonly onCurrentWidgetChange = this.onCurrentWidgetChangeEmitter.event;
@@ -160,7 +176,7 @@ export class ApplicationShell extends Widget {
   }
 
   async addWidget(
-    widget: BaseWidget,
+    widget: AbstractWidget,
     options?: {
       area: LayoutPanelType;
       addOptions?: DockLayout.IAddOptions;
@@ -212,7 +228,7 @@ export class ApplicationShell extends Widget {
     }
   }
 
-  getWidgetArea(widget: BaseWidget) {
+  getWidgetArea(widget: AbstractWidget) {
     const { parent } = widget;
     switch (parent) {
       case this.mainPanel:

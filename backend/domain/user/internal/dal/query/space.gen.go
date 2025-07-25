@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/internal/dal/model"
 )
 
 func newSpace(db *gorm.DB, opts ...gen.DOOption) space {

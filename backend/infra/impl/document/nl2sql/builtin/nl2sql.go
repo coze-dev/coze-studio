@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package builtin
 
 import (
@@ -11,10 +27,10 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/nl2sql"
+	"code.byted.org/gopkg/logs"
 )
 
 const (
@@ -56,7 +72,7 @@ func (n *n2s) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*
 					tableDesc.WriteString(fmt.Sprintf(defaultColumnFmt, column.Name, column.Description, column.Type.String(), !column.Nullable))
 				}
 			}
-			//logs.CtxInfof(ctx, "table schema: %s", tableDesc.String())
+			//logs.CtxInfo(ctx, "table schema: %s", tableDesc.String())
 			return map[string]interface{}{
 				"messages":     input.messages,
 				"table_schema": tableDesc.String(),
@@ -67,11 +83,11 @@ func (n *n2s) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*
 		AppendLambda(compose.InvokableLambda(func(ctx context.Context, msg *schema.Message) (sql string, err error) {
 			var promptResp *promptResponse
 			if err := json.Unmarshal([]byte(msg.Content), &promptResp); err != nil {
-				logs.CtxWarnf(ctx, "unmarshal failed: %v", err)
+				logs.CtxWarn(ctx, "unmarshal failed: %v", err)
 				return "", err
 			}
 			if promptResp.SQL == "" {
-				logs.CtxInfof(ctx, "no sql generated, err_code: %v, err_msg: %v", promptResp.ErrCode, promptResp.ErrMsg)
+				logs.CtxInfo(ctx, "no sql generated, err_code: %v, err_msg: %v", promptResp.ErrCode, promptResp.ErrMsg)
 				return "", errors.New(promptResp.ErrMsg)
 			}
 			return promptResp.SQL, nil

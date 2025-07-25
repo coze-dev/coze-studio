@@ -9,11 +9,11 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	gonanoid "github.com/matoous/go-nanoid"
 
-	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	productAPI "code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type ToolInfo struct {

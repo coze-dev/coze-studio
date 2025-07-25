@@ -3,15 +3,71 @@
 package product_public_api
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/marketplace_common"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/marketplace_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_common"
 	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )
+
+type PluginAuthMode int64
+
+const (
+	// 不需要授权
+	PluginAuthMode_NoAuth PluginAuthMode = 0
+	// 需要授权，但无授权配置
+	PluginAuthMode_Required PluginAuthMode = 1
+	// 需要授权，且已经配置
+	PluginAuthMode_Configured PluginAuthMode = 2
+	// 需要授权，但授权配置可能是用户级别，可由用户自己配置
+	PluginAuthMode_Supported PluginAuthMode = 3
+)
+
+func (p PluginAuthMode) String() string {
+	switch p {
+	case PluginAuthMode_NoAuth:
+		return "NoAuth"
+	case PluginAuthMode_Required:
+		return "Required"
+	case PluginAuthMode_Configured:
+		return "Configured"
+	case PluginAuthMode_Supported:
+		return "Supported"
+	}
+	return "<UNSET>"
+}
+
+func PluginAuthModeFromString(s string) (PluginAuthMode, error) {
+	switch s {
+	case "NoAuth":
+		return PluginAuthMode_NoAuth, nil
+	case "Required":
+		return PluginAuthMode_Required, nil
+	case "Configured":
+		return PluginAuthMode_Configured, nil
+	case "Supported":
+		return PluginAuthMode_Supported, nil
+	}
+	return PluginAuthMode(0), fmt.Errorf("not a valid PluginAuthMode string")
+}
+
+func PluginAuthModePtr(v PluginAuthMode) *PluginAuthMode { return &v }
+func (p *PluginAuthMode) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = PluginAuthMode(result.Int64)
+	return
+}
+
+func (p *PluginAuthMode) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
 
 type PluginRunMode int64
 
@@ -5693,6 +5749,8 @@ type PluginExtraInfo struct {
 	MaterialID    *int64                     `thrift:"MaterialID,14,optional" form:"material_id" json:"material_id,string,omitempty"`
 	Connectors    []*PluginConnectorInfo     `thrift:"Connectors,15" form:"connectors" json:"connectors"`
 	PluginType    *product_common.PluginType `thrift:"PluginType,16,optional" form:"plugin_type" json:"plugin_type,omitempty"`
+	// for opencoze
+	AuthMode *PluginAuthMode `thrift:"AuthMode,50,optional" form:"auth_mode" json:"auth_mode,omitempty"`
 }
 
 func NewPluginExtraInfo() *PluginExtraInfo {
@@ -5816,6 +5874,15 @@ func (p *PluginExtraInfo) GetPluginType() (v product_common.PluginType) {
 	return *p.PluginType
 }
 
+var PluginExtraInfo_AuthMode_DEFAULT PluginAuthMode
+
+func (p *PluginExtraInfo) GetAuthMode() (v PluginAuthMode) {
+	if !p.IsSetAuthMode() {
+		return PluginExtraInfo_AuthMode_DEFAULT
+	}
+	return *p.AuthMode
+}
+
 var fieldIDToName_PluginExtraInfo = map[int16]string{
 	1:  "Tools",
 	2:  "TotalAPICount",
@@ -5833,6 +5900,7 @@ var fieldIDToName_PluginExtraInfo = map[int16]string{
 	14: "MaterialID",
 	15: "Connectors",
 	16: "PluginType",
+	50: "AuthMode",
 }
 
 func (p *PluginExtraInfo) IsSetTools() bool {
@@ -5873,6 +5941,10 @@ func (p *PluginExtraInfo) IsSetMaterialID() bool {
 
 func (p *PluginExtraInfo) IsSetPluginType() bool {
 	return p.PluginType != nil
+}
+
+func (p *PluginExtraInfo) IsSetAuthMode() bool {
+	return p.AuthMode != nil
 }
 
 func (p *PluginExtraInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -6016,6 +6088,14 @@ func (p *PluginExtraInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 16:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField16(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 50:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField50(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6251,6 +6331,18 @@ func (p *PluginExtraInfo) ReadField16(iprot thrift.TProtocol) error {
 	p.PluginType = _field
 	return nil
 }
+func (p *PluginExtraInfo) ReadField50(iprot thrift.TProtocol) error {
+
+	var _field *PluginAuthMode
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := PluginAuthMode(v)
+		_field = &tmp
+	}
+	p.AuthMode = _field
+	return nil
+}
 
 func (p *PluginExtraInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -6320,6 +6412,10 @@ func (p *PluginExtraInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField16(oprot); err != nil {
 			fieldId = 16
+			goto WriteFieldError
+		}
+		if err = p.writeField50(oprot); err != nil {
+			fieldId = 50
 			goto WriteFieldError
 		}
 	}
@@ -6631,6 +6727,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 16 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
+}
+func (p *PluginExtraInfo) writeField50(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAuthMode() {
+		if err = oprot.WriteFieldBegin("AuthMode", thrift.I32, 50); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.AuthMode)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 50 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 50 end error: ", p), err)
 }
 
 func (p *PluginExtraInfo) String() string {

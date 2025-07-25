@@ -2,7 +2,9 @@ id: 0 # 模型 meta id, 同 id 数据不会覆盖
 name: test_model # 模型展示名称
 icon_uri: test_icon_uri # 模型展示图片 uri
 icon_url: test_icon_url # 模型展示图片 url
-description: test_description # 模型默认描述
+description:
+  zh: test_description # 模型默认描述
+  en: test_description
 protocol: test_protocol # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
@@ -22,6 +24,7 @@ capability: # 模型基础能力
   json_mode: true # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   base_url: https://localhost:1234/chat/completion
   api_key: qweasdzxc
@@ -57,4 +60,16 @@ conn_config: # 模型连接参数
       key: val
   deepseek:
     response_format_type: text
+  gemini:
+    backend: 0
+    project: ''
+    location: ''
+    api_version: ''
+    headers:
+      key_1:
+        - val_1
+        - val_2
+    timeout: 0
+    include_thoughts: true
+    thinking_budget: null
   status: 1

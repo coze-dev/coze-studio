@@ -16,18 +16,20 @@ import (
 )
 
 var (
-	Q                 = new(Query)
-	NodeExecution     *nodeExecution
-	WorkflowDraft     *workflowDraft
-	WorkflowExecution *workflowExecution
-	WorkflowMeta      *workflowMeta
-	WorkflowReference *workflowReference
-	WorkflowSnapshot  *workflowSnapshot
-	WorkflowVersion   *workflowVersion
+	Q                        = new(Query)
+	ConnectorWorkflowVersion *connectorWorkflowVersion
+	NodeExecution            *nodeExecution
+	WorkflowDraft            *workflowDraft
+	WorkflowExecution        *workflowExecution
+	WorkflowMeta             *workflowMeta
+	WorkflowReference        *workflowReference
+	WorkflowSnapshot         *workflowSnapshot
+	WorkflowVersion          *workflowVersion
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	ConnectorWorkflowVersion = &Q.ConnectorWorkflowVersion
 	NodeExecution = &Q.NodeExecution
 	WorkflowDraft = &Q.WorkflowDraft
 	WorkflowExecution = &Q.WorkflowExecution
@@ -39,41 +41,44 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                db,
-		NodeExecution:     newNodeExecution(db, opts...),
-		WorkflowDraft:     newWorkflowDraft(db, opts...),
-		WorkflowExecution: newWorkflowExecution(db, opts...),
-		WorkflowMeta:      newWorkflowMeta(db, opts...),
-		WorkflowReference: newWorkflowReference(db, opts...),
-		WorkflowSnapshot:  newWorkflowSnapshot(db, opts...),
-		WorkflowVersion:   newWorkflowVersion(db, opts...),
+		db:                       db,
+		ConnectorWorkflowVersion: newConnectorWorkflowVersion(db, opts...),
+		NodeExecution:            newNodeExecution(db, opts...),
+		WorkflowDraft:            newWorkflowDraft(db, opts...),
+		WorkflowExecution:        newWorkflowExecution(db, opts...),
+		WorkflowMeta:             newWorkflowMeta(db, opts...),
+		WorkflowReference:        newWorkflowReference(db, opts...),
+		WorkflowSnapshot:         newWorkflowSnapshot(db, opts...),
+		WorkflowVersion:          newWorkflowVersion(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	NodeExecution     nodeExecution
-	WorkflowDraft     workflowDraft
-	WorkflowExecution workflowExecution
-	WorkflowMeta      workflowMeta
-	WorkflowReference workflowReference
-	WorkflowSnapshot  workflowSnapshot
-	WorkflowVersion   workflowVersion
+	ConnectorWorkflowVersion connectorWorkflowVersion
+	NodeExecution            nodeExecution
+	WorkflowDraft            workflowDraft
+	WorkflowExecution        workflowExecution
+	WorkflowMeta             workflowMeta
+	WorkflowReference        workflowReference
+	WorkflowSnapshot         workflowSnapshot
+	WorkflowVersion          workflowVersion
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                db,
-		NodeExecution:     q.NodeExecution.clone(db),
-		WorkflowDraft:     q.WorkflowDraft.clone(db),
-		WorkflowExecution: q.WorkflowExecution.clone(db),
-		WorkflowMeta:      q.WorkflowMeta.clone(db),
-		WorkflowReference: q.WorkflowReference.clone(db),
-		WorkflowSnapshot:  q.WorkflowSnapshot.clone(db),
-		WorkflowVersion:   q.WorkflowVersion.clone(db),
+		db:                       db,
+		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.clone(db),
+		NodeExecution:            q.NodeExecution.clone(db),
+		WorkflowDraft:            q.WorkflowDraft.clone(db),
+		WorkflowExecution:        q.WorkflowExecution.clone(db),
+		WorkflowMeta:             q.WorkflowMeta.clone(db),
+		WorkflowReference:        q.WorkflowReference.clone(db),
+		WorkflowSnapshot:         q.WorkflowSnapshot.clone(db),
+		WorkflowVersion:          q.WorkflowVersion.clone(db),
 	}
 }
 
@@ -87,36 +92,39 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                db,
-		NodeExecution:     q.NodeExecution.replaceDB(db),
-		WorkflowDraft:     q.WorkflowDraft.replaceDB(db),
-		WorkflowExecution: q.WorkflowExecution.replaceDB(db),
-		WorkflowMeta:      q.WorkflowMeta.replaceDB(db),
-		WorkflowReference: q.WorkflowReference.replaceDB(db),
-		WorkflowSnapshot:  q.WorkflowSnapshot.replaceDB(db),
-		WorkflowVersion:   q.WorkflowVersion.replaceDB(db),
+		db:                       db,
+		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.replaceDB(db),
+		NodeExecution:            q.NodeExecution.replaceDB(db),
+		WorkflowDraft:            q.WorkflowDraft.replaceDB(db),
+		WorkflowExecution:        q.WorkflowExecution.replaceDB(db),
+		WorkflowMeta:             q.WorkflowMeta.replaceDB(db),
+		WorkflowReference:        q.WorkflowReference.replaceDB(db),
+		WorkflowSnapshot:         q.WorkflowSnapshot.replaceDB(db),
+		WorkflowVersion:          q.WorkflowVersion.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	NodeExecution     INodeExecutionDo
-	WorkflowDraft     IWorkflowDraftDo
-	WorkflowExecution IWorkflowExecutionDo
-	WorkflowMeta      IWorkflowMetaDo
-	WorkflowReference IWorkflowReferenceDo
-	WorkflowSnapshot  IWorkflowSnapshotDo
-	WorkflowVersion   IWorkflowVersionDo
+	ConnectorWorkflowVersion IConnectorWorkflowVersionDo
+	NodeExecution            INodeExecutionDo
+	WorkflowDraft            IWorkflowDraftDo
+	WorkflowExecution        IWorkflowExecutionDo
+	WorkflowMeta             IWorkflowMetaDo
+	WorkflowReference        IWorkflowReferenceDo
+	WorkflowSnapshot         IWorkflowSnapshotDo
+	WorkflowVersion          IWorkflowVersionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		NodeExecution:     q.NodeExecution.WithContext(ctx),
-		WorkflowDraft:     q.WorkflowDraft.WithContext(ctx),
-		WorkflowExecution: q.WorkflowExecution.WithContext(ctx),
-		WorkflowMeta:      q.WorkflowMeta.WithContext(ctx),
-		WorkflowReference: q.WorkflowReference.WithContext(ctx),
-		WorkflowSnapshot:  q.WorkflowSnapshot.WithContext(ctx),
-		WorkflowVersion:   q.WorkflowVersion.WithContext(ctx),
+		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.WithContext(ctx),
+		NodeExecution:            q.NodeExecution.WithContext(ctx),
+		WorkflowDraft:            q.WorkflowDraft.WithContext(ctx),
+		WorkflowExecution:        q.WorkflowExecution.WithContext(ctx),
+		WorkflowMeta:             q.WorkflowMeta.WithContext(ctx),
+		WorkflowReference:        q.WorkflowReference.WithContext(ctx),
+		WorkflowSnapshot:         q.WorkflowSnapshot.WithContext(ctx),
+		WorkflowVersion:          q.WorkflowVersion.WithContext(ctx),
 	}
 }
 

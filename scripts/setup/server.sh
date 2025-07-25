@@ -19,7 +19,7 @@ if command -v goimports >/dev/null 2>&1; then
         -path "*/mock/*" -prune -o \
         -path "*_mock.go" -prune -o \
         -path "*/dal/model*" -prune -o \
-        -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
+        -name "*.go" -exec goimports -w -local "github.com/coze-dev/coze-studio" {} \;
 else
     echo "⚠️ goimports not found, skipping Go file formatting."
 fi
@@ -41,7 +41,7 @@ echo "📑 Copying environment file..."
 if [ -f "$DOCKER_DIR/.env" ]; then
     cp "$DOCKER_DIR/.env" "$BIN_DIR/.env"
 else
-    echo "❌ .env file not found in $BACKEND_DIR"
+    echo "❌ .env file not found in $DOCKER_DIR"
     exit 1
 fi
 
@@ -58,14 +58,9 @@ rm -rf "$CONFIG_DIR"
 mkdir -p "$CONFIG_DIR"
 
 echo "📑 Copying plugin configuration files..."
-mkdir -p "$CONFIG_DIR/plugin/pluginproduct"
-mkdir -p "$CONFIG_DIR/plugin/common"
-mkdir -p "$CONFIG_DIR/prompt"
-cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
-cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
-cp "$BACKEND_DIR/conf/prompt/"* "$CONFIG_DIR/prompt"
+
+cp -r "$BACKEND_DIR/conf" "$RESOURCES_DIR"
 cp -r "$BACKEND_DIR/static" "$RESOURCES_DIR"
-cp -r "$BACKEND_DIR/conf/model" "$CONFIG_DIR"
 
 for arg in "$@"; do
     if [[ "$arg" == "-start" ]]; then

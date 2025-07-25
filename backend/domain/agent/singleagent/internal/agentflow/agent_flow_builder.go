@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package agentflow
 
 import (
@@ -11,11 +27,11 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type Config struct {
@@ -33,6 +49,8 @@ const (
 	keyOfPromptVariables        = "prompt_variables"
 	keyOfPromptTemplate         = "prompt_template"
 	keyOfReActAgent             = "react_agent"
+	keyOfReActAgentToolsNode    = "agent_tool"
+	keyOfReActAgentChatModel    = "re_act_chat_model"
 	keyOfLLM                    = "llm"
 	keyOfToolsPreRetriever      = "tools_pre_retriever"
 )
@@ -121,7 +139,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 			return nil, err
 		}
 	}
+	containWfTool := false
 
+	if len(wfTools) > 0 {
+		containWfTool = true
+	}
 	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools)+len(avTools))
 	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
@@ -139,7 +161,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if len(agentTools) > 0 {
 		isReActAgent = true
 		requireCheckpoint = true
-		if modelInfo.Meta.Capability != nil && modelInfo.Meta.Capability.FunctionCall == false {
+		if modelInfo.Meta.Capability != nil && !modelInfo.Meta.Capability.FunctionCall {
 			return nil, fmt.Errorf("model %v does not support function call", modelInfo.Meta.Name)
 		}
 	}
@@ -154,6 +176,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 				Tools: agentTools,
 			},
 			ToolReturnDirectly: toolsReturnDirectly,
+			ModelNodeName:      keyOfReActAgentChatModel,
+			ToolsNodeName:      keyOfReActAgentToolsNode,
 		})
 		if err != nil {
 			return nil, err
@@ -251,6 +275,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		runner:            runner,
 		requireCheckpoint: requireCheckpoint,
 		modelInfo:         modelInfo,
+		containWfTool:     containWfTool,
 	}, nil
 }
 

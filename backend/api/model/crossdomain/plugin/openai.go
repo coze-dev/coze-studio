@@ -9,11 +9,11 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -64,7 +64,7 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 
 	for _, pathItem := range ot.Paths {
 		for _, op := range pathItem.Operations() {
-			err = Openapi3Operation(*op).Validate()
+			err = NewOpenapi3Operation(op).Validate(ctx)
 			if err != nil {
 				return err
 			}
@@ -74,9 +74,31 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	return nil
 }
 
-type Openapi3Operation openapi3.Operation
+func NewOpenapi3Operation(op *openapi3.Operation) *Openapi3Operation {
+	return &Openapi3Operation{
+		Operation: op,
+	}
+}
 
-func (op Openapi3Operation) Validate() (err error) {
+type Openapi3Operation struct {
+	*openapi3.Operation
+}
+
+func (op *Openapi3Operation) MarshalJSON() ([]byte, error) {
+	return op.Operation.MarshalJSON()
+}
+
+func (op *Openapi3Operation) UnmarshalJSON(data []byte) error {
+	op.Operation = &openapi3.Operation{}
+	return op.Operation.UnmarshalJSON(data)
+}
+
+func (op *Openapi3Operation) Validate(ctx context.Context) (err error) {
+	err = op.Operation.Validate(ctx)
+	if err != nil {
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey, "operation is invalid, err=%s", err))
+	}
+
 	if op.OperationID == "" {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "operationID is required"))
 	}
@@ -102,7 +124,7 @@ func (op Openapi3Operation) Validate() (err error) {
 	return nil
 }
 
-func (op Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[string]*schema.ParameterInfo, error) {
+func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[string]*schema.ParameterInfo, error) {
 	convertType := func(openapiType string) schema.DataType {
 		switch openapiType {
 		case openapi3.TypeString:
@@ -191,7 +213,7 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[
 		}
 
 		if _, ok := result[paramVal.Name]; ok {
-			logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramVal.Name)
+			logs.CtxWarn(ctx, "duplicate parameter name '%s'", paramVal.Name)
 			continue
 		}
 
@@ -219,7 +241,7 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[
 			}
 
 			if _, ok := result[paramName]; ok {
-				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
+				logs.CtxWarn(ctx, "duplicate parameter name '%s'", paramName)
 				continue
 			}
 

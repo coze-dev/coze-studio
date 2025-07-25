@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import { type Root, createRoot } from 'react-dom/client';
 import { decorate, inject, injectable } from 'inversify';
 import { DisposableCollection } from '@flowgram-adapter/common';
@@ -21,6 +37,7 @@ import {
 } from '../../lumino/virtualdom';
 import { MenuService } from '../../contributions/context-menu';
 import { DISABLE_HANDLE_EVENT, MAIN_PANEL_ID } from '../../constants';
+import { createTabStyle } from './utils';
 
 export const TabBarRendererFactory = Symbol('TabBarRendererFactory');
 export type TabBarRendererFactory = () => TabBarRenderer;
@@ -36,7 +53,7 @@ export interface SizeData {
 /**
  * Extension of the rendering data used for tabs in side bars of the application shell.
  */
-export interface SideBarRenderData extends TabBar.IRenderData<Widget> {
+export interface RenderData extends TabBar.IRenderData<Widget> {
   labelSize?: SizeData;
   iconSize?: SizeData;
   paddingTop?: number;
@@ -90,8 +107,8 @@ export class TabBarRenderer extends TabBar.Renderer {
   }
 
   override renderTab(
-    data: SideBarRenderData,
-    isInSidePanel?: boolean,
+    data: RenderData,
+    _isInSidePanel?: boolean,
     isPartOfHiddenTabBar?: boolean,
   ): VirtualElement {
     const title = data.title as CustomTitleType;
@@ -132,8 +149,8 @@ export class TabBarRenderer extends TabBar.Renderer {
       },
       h.div(
         { className: 'flow-tab-icon-label' },
-        this.renderIcon(data, isInSidePanel),
-        this.renderLabel(data, isInSidePanel),
+        this.renderIcon(data),
+        this.renderLabel(data),
       ),
       h.div({
         className: title.saving
@@ -155,7 +172,7 @@ export class TabBarRenderer extends TabBar.Renderer {
     );
   }
 
-  override createTabClass(data: SideBarRenderData): string {
+  override createTabClass(data: RenderData): string {
     let tabClass = super.createTabClass(data);
     if (!(data.visible ?? true)) {
       tabClass += ' p-mod-invisible';
@@ -174,36 +191,12 @@ export class TabBarRenderer extends TabBar.Renderer {
   }
 
   override createTabStyle(
-    data: SideBarRenderData & ScrollableRenderData,
+    data: RenderData & ScrollableRenderData,
   ): ElementInlineStyle {
-    const zIndex = `${data.zIndex}`;
-    const { labelSize } = data;
-    const { iconSize } = data;
-    let height: string | undefined;
-    let width: string | undefined;
-    if (labelSize || iconSize) {
-      const labelHeight = labelSize ? labelSize.height : 0;
-      const iconHeight = iconSize ? iconSize.height : 0;
-      let paddingTop = data.paddingTop || 0;
-      if (labelHeight > 0 && iconHeight > 0) {
-        // Leave some extra space between icon and label
-        paddingTop = paddingTop * 1.5;
-      }
-      const paddingBottom = data.paddingBottom || 0;
-      height = `${labelHeight + iconHeight + paddingTop + paddingBottom}px`;
-    }
-    if (data.tabWidth) {
-      width = `${data.tabWidth}px`;
-    } else {
-      width = '';
-    }
-    return { zIndex, height, minWidth: width, maxWidth: width };
+    return createTabStyle(data);
   }
 
-  override renderLabel(
-    data: SideBarRenderData,
-    isInSidePanel?: boolean,
-  ): VirtualElement {
+  override renderLabel(data: RenderData): VirtualElement {
     const { labelSize } = data;
     const { iconSize } = data;
     let width: string | undefined;
@@ -217,7 +210,6 @@ export class TabBarRenderer extends TabBar.Renderer {
       const iconHeight = iconSize ? iconSize.height : 0;
       let paddingTop = data.paddingTop || 0;
       if (iconHeight > 0) {
-        // Leave some extra space between icon and label
         paddingTop = paddingTop * 1.5;
       }
       top = `${paddingTop + iconHeight}px`;
@@ -260,10 +252,7 @@ export class TabBarRenderer extends TabBar.Renderer {
     }
   }
 
-  override renderIcon(
-    data: SideBarRenderData,
-    isInSidePanel?: boolean,
-  ): VirtualElement {
+  override renderIcon(data: RenderData): VirtualElement {
     if (!data.title.iconLabel) {
       return h.div();
     }

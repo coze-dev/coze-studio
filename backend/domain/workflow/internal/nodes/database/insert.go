@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package database
 
 import (
@@ -5,11 +21,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudwego/eino/compose"
-
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type InsertConfig struct {
@@ -40,16 +53,8 @@ func NewInsert(_ context.Context, cfg *InsertConfig) (*Insert, error) {
 }
 
 func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]any, error) {
-	fs, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
-	if !ok {
-		return nil, errors.New("cannot get key 'Fields' value from input")
-	}
 
-	fields := make(map[string]any)
-	for key, value := range fs.(map[string]any) {
-		fields[key] = value
-	}
-
+	fields := parseToInput(input)
 	req := &database.InsertRequest{
 		DatabaseInfoID: is.config.DatabaseInfoID,
 		Fields:         fields,
@@ -72,12 +77,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 
 func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
 	databaseID := is.config.DatabaseInfoID
-
-	fs, ok := input["Fields"]
-	if !ok {
-		return nil, fmt.Errorf("failed to take right value of %s", compose.FieldPath{"Fields"})
-	}
-
+	fs := parseToInput(input)
 	result := make(map[string]any)
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
 
@@ -87,7 +87,7 @@ func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[
 	}
 
 	fieldInfo := make([]*FieldInfo, 0)
-	for k, v := range fs.(map[string]any) {
+	for k, v := range fs {
 		fieldInfo = append(fieldInfo, &FieldInfo{
 			FieldID:    k,
 			FieldValue: v,

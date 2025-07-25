@@ -1,7 +1,23 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package errno
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/errorx/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 )
 
 // single agent: 100 000 000 ~ 100 999 999
@@ -17,6 +33,8 @@ const (
 	ErrAgentSetDraftBotDisplayInfo         = 100000008
 	ErrAgentGetDraftBotDisplayInfoNotFound = 100000009
 	ErrAgentPublishSingleAgentCode         = 100000010
+	ErrAgentAlreadyBindDatabaseCode        = 100000011
+	ErrAgentExecuteErrCode                 = 100000012
 )
 
 func init() {
@@ -83,5 +101,16 @@ func init() {
 		ErrAgentInvalidParamCode,
 		"invalid parameter : {msg}",
 		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAgentAlreadyBindDatabaseCode,
+		"already bind database : {msg}",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrAgentExecuteErrCode,
+		"systemt error",
+		code.WithAffectStability(true),
 	)
 }

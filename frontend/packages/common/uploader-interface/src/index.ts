@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 export interface STSToken {
   AccessKeyId: string;
   SecretAccessKey: string;
@@ -61,6 +77,13 @@ export interface Config {
   imageConfig?: ImageConfig;
   objectConfig?: ObjectConfig;
   testHost?: string;
+  /**
+   * tt-uploader 逻辑，
+   * 需要根据当前用户的部署环境动态获取schema
+   * schema 值只会有 https 和 http 两种。
+   * sdk 内部消费了 schema，但是没有类型定义出来，这边特化兼容。
+   */
+  schema?: string;
 
   useFileExtension?: boolean;
   useServerCurrentTime?: boolean;

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package search
 
 import (
@@ -6,21 +22,22 @@ import (
 	"sync"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/marketplace_common"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	search2 "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/search"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/marketplace_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var projectType2iconURI = map[common.IntelligenceType]string{
@@ -58,7 +75,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 	lock := sync.Mutex{}
 	intelligenceDataList := make([]*intelligence.IntelligenceData, len(searchResp.Data))
 
-	logs.CtxDebugf(ctx, "[GetDraftIntelligenceList] searchResp.Data: %v", conv.DebugJsonToStr(searchResp.Data))
+	logs.CtxDebug(ctx, "[GetDraftIntelligenceList] searchResp.Data: %v", conv.DebugJsonToStr(searchResp.Data))
 
 	for idx := range searchResp.Data {
 		data := searchResp.Data[idx]
@@ -66,7 +83,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 		tasks.Go(func() error {
 			info, err := s.packIntelligenceData(ctx, data)
 			if err != nil {
-				logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
+				logs.CtxError(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
 
 				return err
 			}
@@ -180,7 +197,7 @@ func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID
 		OwnerID:        userID,
 		Types:          types,
 		IsFav:          true,
-		OrderFiledName: searchEntity.FieldOfFavTime,
+		OrderFiledName: search2.FieldOfFavTime,
 		OrderAsc:       false,
 		Limit:          req.PageSize,
 		Cursor:         req.GetCursorID(),
@@ -201,7 +218,7 @@ func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID
 	for _, r := range res.Data {
 		favEntity, err := s.projectResourceToProductInfo(ctx, userID, r)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[pluginResourceToProductInfo] failed to get project info, id=%v, type=%d, err=%v",
+			logs.CtxError(ctx, "[pluginResourceToProductInfo] failed to get project info, id=%v, type=%d, err=%v",
 				r.ID, r.Type, err)
 			continue
 		}
@@ -275,7 +292,7 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 		OwnerID:        *userID,
 		Types:          req.Types,
 		IsRecentlyOpen: true,
-		OrderFiledName: searchEntity.FieldOfRecentlyOpenTime,
+		OrderFiledName: search2.FieldOfRecentlyOpenTime,
 		OrderAsc:       false,
 		Limit:          req.Size,
 	})
@@ -288,7 +305,7 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 		data := res.Data[idx]
 		info, err := s.packIntelligenceData(ctx, data)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d, name %s, err: %v", data.ID, data.Type, data.GetName(), err)
+			logs.CtxError(ctx, "[packIntelligenceData] failed id %v, type %d, name %s, err: %v", data.ID, data.Type, data.GetName(), err)
 			continue
 		}
 		intelligenceDataList = append(intelligenceDataList, info)
@@ -378,13 +395,13 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 	orderBy := func() string {
 		switch req.GetOrderBy() {
 		case intelligence.OrderBy_PublishTime:
-			return searchEntity.FieldOfPublishTime
+			return search2.FieldOfPublishTime
 		case intelligence.OrderBy_UpdateTime:
-			return searchEntity.FieldOfUpdateTime
+			return search2.FieldOfUpdateTime
 		case intelligence.OrderBy_CreateTime:
-			return searchEntity.FieldOfCreateTime
+			return search2.FieldOfCreateTime
 		default:
-			return searchEntity.FieldOfUpdateTime
+			return search2.FieldOfUpdateTime
 		}
 	}()
 
@@ -413,7 +430,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 func (s *SearchApplicationService) getProjectDefaultIconURL(ctx context.Context, tp common.IntelligenceType) string {
 	iconURL, ok := projectType2iconURI[tp]
 	if !ok {
-		logs.CtxWarnf(ctx, "[getProjectDefaultIconURL] don't have type: %d  default icon", tp)
+		logs.CtxWarn(ctx, "[getProjectDefaultIconURL] don't have type: %d  default icon", tp)
 
 		return ""
 	}

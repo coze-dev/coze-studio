@@ -1,25 +1,50 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package plugin
 
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
 
+	"github.com/cloudwego/eino/compose"
+
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	workflow3 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/pluginutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	crossplugin "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type pluginService struct {
@@ -27,7 +52,7 @@ type pluginService struct {
 	tos    storage.Storage
 }
 
-func NewPluginService(client service.PluginService, tos storage.Storage) crossplugin.PluginService {
+func NewPluginService(client service.PluginService, tos storage.Storage) crossplugin.Service {
 	return &pluginService{client: client, tos: tos}
 }
 
@@ -36,7 +61,14 @@ type pluginInfo struct {
 	LatestVersion *string
 }
 
-func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*pluginInfo, []*entity.ToolInfo, error) {
+func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.Entity, toolIDs []int64, isDraft bool) (
+	_ *pluginInfo, toolsInfo []*entity.ToolInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrPluginAPIErr, err)
+		}
+	}()
+
 	var pluginsInfo []*entity.PluginInfo
 	var latestPluginInfo *entity.PluginInfo
 	pluginID := pluginEntity.PluginID
@@ -72,7 +104,6 @@ func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *c
 				break
 			}
 		}
-
 	}
 
 	var pInfo *entity.PluginInfo
@@ -83,10 +114,8 @@ func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *c
 		}
 	}
 	if pInfo == nil {
-		return nil, nil, fmt.Errorf("plugin id %v not found", pluginID)
+		return nil, nil, vo.NewError(errno.ErrPluginIDNotFound, errorx.KV("id", strconv.FormatInt(pluginID, 10)))
 	}
-
-	var toolsInfo []*entity.ToolInfo
 
 	if isDraft {
 		tools, err := t.client.MGetDraftTools(ctx, toolIDs)
@@ -121,20 +150,27 @@ func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *c
 	return &pluginInfo{PluginInfo: pInfo}, toolsInfo, nil
 }
 
-func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
+func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.ToolsInfoRequest) (
+	_ *crossplugin.ToolsInfoResponse, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrPluginAPIErr, err)
+		}
+	}()
+
 	var toolsInfo []*entity.ToolInfo
 	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.Entity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
 	if err != nil {
 		return nil, err
 	}
 
 	url, err := t.tos.GetObjectUrl(ctx, pInfo.GetIconURI())
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapIfNeeded(errno.ErrTOSError, err)
 	}
 
-	response := &crossplugin.PluginToolsInfoResponse{
+	response := &crossplugin.ToolsInfoResponse{
 		PluginID:      pInfo.ID,
 		SpaceID:       pInfo.SpaceID,
 		Version:       pInfo.GetVersion(),
@@ -184,18 +220,28 @@ func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin
 	return response, nil
 }
 
-func (t *pluginService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]crossplugin.PluginInvokableTool, error) {
+func (t *pluginService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.ToolsInvokableRequest) (
+	_ map[int64]crossplugin.InvokableTool, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrPluginAPIErr, err)
+		}
+	}()
+
 	var toolsInfo []*entity.ToolInfo
 	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), isDraft)
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.Entity{
+		PluginID:      req.PluginEntity.PluginID,
+		PluginVersion: req.PluginEntity.PluginVersion,
+	}, maps.Keys(req.ToolsInvokableInfo), isDraft)
 	if err != nil {
 		return nil, err
 	}
 
-	result := map[int64]crossplugin.PluginInvokableTool{}
+	result := map[int64]crossplugin.InvokableTool{}
 	for _, tf := range toolsInfo {
 		tl := &pluginInvokeTool{
-			pluginEntity: crossplugin.PluginEntity{
+			pluginEntity: crossplugin.Entity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
 			},
@@ -209,35 +255,104 @@ func (t *pluginService) GetPluginInvokableTools(ctx context.Context, req *crossp
 			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
 
 			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
-			tl.toolOperation.OperationID = tf.Operation.OperationID
-			tl.toolOperation.Summary = tf.Operation.Summary
 			if err != nil {
 				return nil, err
 			}
+
+			tl.toolOperation.OperationID = tf.Operation.OperationID
+			tl.toolOperation.Summary = tf.Operation.Summary
 		}
 
 		result[tf.ID] = tl
-
 	}
 	return result, nil
 }
 
+func (t *pluginService) ExecutePlugin(ctx context.Context, input map[string]any, pe *crossplugin.Entity,
+	toolID int64, cfg crossplugin.ExecConfig) (map[string]any, error) {
+	args, err := sonic.MarshalString(input)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	req := &service.ExecuteToolRequest{
+		UserID:          conv.Int64ToStr(cfg.Operator),
+		PluginID:        pe.PluginID,
+		ToolID:          toolID,
+		ExecScene:       plugin.ExecSceneOfWorkflow,
+		ArgumentsInJson: args,
+		ExecDraftTool:   pe.PluginVersion == nil || *pe.PluginVersion == "0",
+	}
+	execOpts := []entity.ExecuteToolOpt{
+		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
+	}
+
+	if pe.PluginVersion != nil {
+		execOpts = append(execOpts, plugin.WithToolVersion(*pe.PluginVersion))
+	}
+
+	r, err := t.client.ExecuteTool(ctx, req, execOpts...)
+	if err != nil {
+		if extra, ok := compose.IsInterruptRerunError(err); ok {
+			pluginTIE, ok := extra.(*plugin.ToolInterruptEvent)
+			if !ok {
+				return nil, vo.WrapError(errno.ErrPluginAPIErr, fmt.Errorf("expects ToolInterruptEvent, got %T", extra))
+			}
+
+			var eventType workflow3.EventType
+			switch pluginTIE.Event {
+			case plugin.InterruptEventTypeOfToolNeedOAuth:
+				eventType = workflow3.EventType_WorkflowOauthPlugin
+			default:
+				return nil, vo.WrapError(errno.ErrPluginAPIErr,
+					fmt.Errorf("unsupported interrupt event type: %s", pluginTIE.Event))
+			}
+
+			id, err := workflow.GetRepository().GenID(ctx)
+			if err != nil {
+				return nil, vo.WrapError(errno.ErrIDGenError, err)
+			}
+
+			ie := &entity2.InterruptEvent{
+				ID:            id,
+				InterruptData: pluginTIE.ToolNeedOAuth.Message,
+				EventType:     eventType,
+			}
+
+			// temporarily replace interrupt with real error, until frontend can handle plugin oauth interrupt
+			interruptData := ie.InterruptData
+			return nil, vo.NewError(errno.ErrAuthorizationRequired, errorx.KV("extra", interruptData))
+		}
+		return nil, err
+	}
+
+	var output map[string]any
+	err = sonic.UnmarshalString(r.RawResp, &output)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	return output, nil
+}
+
 type pluginInvokeTool struct {
-	pluginEntity  crossplugin.PluginEntity
+	pluginEntity  crossplugin.Entity
 	client        service.PluginService
 	toolInfo      *entity.ToolInfo
 	toolOperation *openapi3.Operation
 	IsDraft       bool
 }
 
-func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
-	var (
-		err           error
-		parameterInfo map[string]*schema.ParameterInfo
-	)
+func (p *pluginInvokeTool) Info(ctx context.Context) (_ *schema.ToolInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrPluginAPIErr, err)
+		}
+	}()
 
+	var parameterInfo map[string]*schema.ParameterInfo
 	if p.toolOperation != nil {
-		parameterInfo, err = plugin.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo(ctx)
+		parameterInfo, err = plugin.NewOpenapi3Operation(p.toolOperation).ToEinoSchemaParameterInfo(ctx)
 	} else {
 		parameterInfo, err = p.toolInfo.Operation.ToEinoSchemaParameterInfo(ctx)
 	}
@@ -271,11 +386,48 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 	}
 
 	if p.toolOperation != nil {
-		execOpts = append(execOpts, plugin.WithOpenapiOperation(ptr.Of(plugin.Openapi3Operation(*p.toolOperation))))
+		execOpts = append(execOpts, plugin.WithOpenapiOperation(plugin.NewOpenapi3Operation(p.toolOperation)))
 	}
 
 	r, err := p.client.ExecuteTool(ctx, req, execOpts...)
 	if err != nil {
+		if extra, ok := compose.IsInterruptRerunError(err); ok {
+			pluginTIE, ok := extra.(*plugin.ToolInterruptEvent)
+			if !ok {
+				return "", vo.WrapError(errno.ErrPluginAPIErr, fmt.Errorf("expects ToolInterruptEvent, got %T", extra))
+			}
+
+			var eventType workflow3.EventType
+			switch pluginTIE.Event {
+			case plugin.InterruptEventTypeOfToolNeedOAuth:
+				eventType = workflow3.EventType_WorkflowOauthPlugin
+			default:
+				return "", vo.WrapError(errno.ErrPluginAPIErr,
+					fmt.Errorf("unsupported interrupt event type: %s", pluginTIE.Event))
+			}
+
+			id, err := workflow.GetRepository().GenID(ctx)
+			if err != nil {
+				return "", vo.WrapError(errno.ErrIDGenError, err)
+			}
+
+			ie := &entity2.InterruptEvent{
+				ID:            id,
+				InterruptData: pluginTIE.ToolNeedOAuth.Message,
+				EventType:     eventType,
+			}
+
+			tie := &entity2.ToolInterruptEvent{
+				ToolCallID:     compose.GetToolCallID(ctx),
+				ToolName:       p.toolInfo.GetName(),
+				InterruptEvent: ie,
+			}
+
+			// temporarily replace interrupt with real error, until frontend can handle plugin oauth interrupt
+			_ = tie
+			interruptData := ie.InterruptData
+			return "", vo.NewError(errno.ErrAuthorizationRequired, errorx.KV("extra", interruptData))
+		}
 		return "", err
 	}
 	return r.TrimmedResp, nil

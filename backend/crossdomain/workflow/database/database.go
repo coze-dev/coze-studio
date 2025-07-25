@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package database
 
 import (
@@ -8,14 +24,14 @@ import (
 
 	"github.com/spf13/cast"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	nodedatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type DatabaseRepository struct {
@@ -52,10 +68,11 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
 	for i := range request.Params {
-		value := request.Params[i]
+		param := request.Params[i]
 		req.SQLParams = append(req.SQLParams, &database.SQLParamVal{
 			ValueType: table.FieldItemType_Text,
-			Value:     &value,
+			Value:     &param.Value,
+			ISNull:    param.IsNull,
 		})
 	}
 	response, err := d.client.ExecuteSQL(ctx, req)
@@ -416,7 +433,7 @@ func toLogic(relation nodedatabase.ClauseRelation) (database.Logic, error) {
 func toNodeDateBaseResponse(response *service.ExecuteSQLResponse) *nodedatabase.Response {
 	objects := make([]nodedatabase.Object, 0, len(response.Records))
 	for i := range response.Records {
-		objects = append(objects, toMapStringAny(response.Records[i]))
+		objects = append(objects, response.Records[i])
 	}
 	return &nodedatabase.Response{
 		Objects:   objects,

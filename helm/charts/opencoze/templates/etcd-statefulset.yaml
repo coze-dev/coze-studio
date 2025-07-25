@@ -1,0 +1,60 @@
+{{- if .Values.etcd.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-etcd
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-etcd
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: etcd
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: etcd
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      containers:
+        - name: etcd
+          securityContext:
+            runAsUser: 0
+          image: "{{ .Values.etcd.image.repository }}:{{ .Values.etcd.image.tag }}"
+          env:
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes"
+            - name: ETCD_AUTO_COMPACTION_MODE
+              value: "revision"
+            - name: ETCD_AUTO_COMPACTION_RETENTION
+              value: "1000"
+            - name: ETCD_QUOTA_BACKEND_BYTES
+              value: "4294967296"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              /opt/bitnami/scripts/etcd/setup.sh
+              chown -R etcd:etcd /bitnami/etcd
+              chmod g+s /bitnami/etcd
+              exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
+          ports:
+            - containerPort: 2379
+            - containerPort: 2380
+          volumeMounts:
+          - name: etcd-data
+            mountPath: /bitnami/etcd
+  volumeClaimTemplates:
+    - metadata:
+        name: etcd-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.etcd.persistence.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.etcd.persistence.size | quote }}
+{{- end }}

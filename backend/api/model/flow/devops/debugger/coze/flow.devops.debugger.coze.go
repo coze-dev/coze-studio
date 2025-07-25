@@ -3,9 +3,9 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/devops/debugger/domain/infra"
-	"code.byted.org/flow/opencoze/backend/api/model/flow/devops/debugger/domain/testcase"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/devops/debugger/domain/infra"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/devops/debugger/domain/testcase"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )

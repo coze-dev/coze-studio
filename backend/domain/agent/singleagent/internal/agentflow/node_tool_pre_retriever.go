@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package agentflow
 
 import (
@@ -8,15 +24,15 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	pluginEntity "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/gopkg/logs"
 )
 
 type toolPreCallConf struct{}
@@ -55,7 +71,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			opts := []pluginEntity.ExecuteToolOpt{
 				plugin.WithProjectInfo(&plugin.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
-					ProjectType:    plugin.ProjectTypeOfBot,
+					ProjectType:    plugin.ProjectTypeOfAgent,
 					ProjectVersion: ptr.Of(ar.Identity.Version),
 				}),
 			}
@@ -69,20 +85,20 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			var input map[string]any
 			err := json.Unmarshal([]byte(item.Arguments), &input)
 			if err != nil {
-				logs.CtxErrorf(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
+				logs.CtxError(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
 				return nil, err
 			}
 			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, vo.ExecuteConfig{
 				ID:           item.PluginID,
 				ConnectorID:  ar.Identity.ConnectorID,
 				ConnectorUID: ar.UserID,
-				TaskType:     vo.TaskTypeForeground,
+				TaskType:     crossworkflow.TaskTypeForeground,
 				AgentID:      ptr.Of(ar.Identity.AgentID),
-				Mode: func() vo.ExecuteMode {
+				Mode: func() crossworkflow.ExecuteMode {
 					if ar.Identity.IsDraft {
-						return vo.ExecuteModeDebug
+						return crossworkflow.ExecuteModeDebug
 					} else {
-						return vo.ExecuteModeRelease
+						return crossworkflow.ExecuteModeRelease
 					}
 				}(),
 			}, input)

@@ -6,12 +6,15 @@
 id: 102 # 模型 id, 同 id 数据不会覆盖
 name: Doubao # 模型 meta 名称
 icon_uri: doubao_v2.png
-description: 豆包模型简介 # 模型默认描述
+description:
+  zh: 豆包模型简介 # 模型默认描述
+  en: doubao model description
 protocol: ark # 模型连接协议
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
   input_modal: # 模型输入支持模态
     - text
+    - image
   input_tokens: 128000 # 输入 token 上限
   output_modal: # 模型输出支持模态
     - text
@@ -20,6 +23,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   api_key: ''   # REQUIRED: api_key
   model: ''     # REQUIRED: model name

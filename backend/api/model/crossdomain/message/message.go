@@ -3,7 +3,7 @@ package message
 import (
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
 )
 
 type Message struct {

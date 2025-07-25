@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
 )
 
 func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
@@ -42,6 +42,7 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 	return _workflowDraft
 }
 
+// workflowDraft workflow 画布草稿表，用于记录workflow最新的草稿画布信息
 type workflowDraft struct {
 	workflowDraftDo
 

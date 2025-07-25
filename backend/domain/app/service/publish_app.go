@@ -1,21 +1,37 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
 	"context"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
-	"code.byted.org/flow/opencoze/backend/domain/app/entity"
-	"code.byted.org/flow/opencoze/backend/domain/app/repository"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	resourceCommon "code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	commonConsts "code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
@@ -31,7 +47,7 @@ func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest)
 
 	success, err := a.publishByConnectors(ctx, recordID, req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish by connectors failed, recordID=%d, err=%v", recordID, err)
+		logs.CtxError(ctx, "publish by connectors failed, recordID=%d, err=%v", recordID, err)
 	}
 
 	resp = &PublishAPPResponse{
@@ -50,21 +66,25 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
 			if updateErr != nil {
-				logs.CtxErrorf(ctx, "UpdateAPPPublishStatus failed, recordID=%d, err=%v", recordID, updateErr)
+				logs.CtxError(ctx, "UpdateAPPPublishStatus failed, recordID=%d, err=%v", recordID, updateErr)
 			}
 		}
 	}()
 
-	failedResources, err := a.packResources(ctx, req.APPID, req.Version)
+	connectorIDs := make([]int64, 0, len(req.ConnectorPublishConfigs))
+	for cid := range req.ConnectorPublishConfigs {
+		connectorIDs = append(connectorIDs, cid)
+	}
+	failedResources, err := a.packResources(ctx, req.APPID, req.Version, connectorIDs)
 	if err != nil {
 		return false, err
 	}
 	if len(failedResources) > 0 {
-		logs.CtxWarnf(ctx, "packResources failed, recordID=%d, len=%d", recordID, len(failedResources))
+		logs.CtxWarn(ctx, "packResources failed, recordID=%d, len=%d", recordID, len(failedResources))
 
 		processErr := a.packResourcesFailedPostProcess(ctx, recordID, failedResources)
 		if processErr != nil {
-			logs.CtxErrorf(ctx, "packResourcesFailedPostProcess failed, recordID=%d, err=%v", recordID, processErr)
+			logs.CtxError(ctx, "packResourcesFailedPostProcess failed, recordID=%d, err=%v", recordID, processErr)
 		}
 
 		return false, nil
@@ -78,7 +98,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 				continue
 			}
 
-			logs.CtxErrorf(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
+			logs.CtxError(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
 
 			updateFailedErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
@@ -86,7 +106,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 			})
 
 			if updateFailedErr != nil {
-				logs.CtxWarnf(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
+				logs.CtxWarn(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
 			}
 
 		default:
@@ -152,7 +172,7 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 	return recordID, nil
 }
 
-func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string) (failedResources []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string, connectorIDs []int64) (failedResources []*entity.PackResourceFailedInfo, err error) {
 	failedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
 	if err != nil {
 		return nil, err
@@ -161,7 +181,7 @@ func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version
 	workflowFailedInfoList, err := a.packWorkflows(ctx, appID, version,
 		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
 			return a.ID
-		}))
+		}), connectorIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -199,10 +219,11 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 
 }
 
-func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64, connectorIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
 	issues, err := crossworkflow.DefaultSVC().ReleaseApplicationWorkflows(ctx, appID, &crossworkflow.ReleaseWorkflowConfig{
-		Version:   version,
-		PluginIDs: allDraftPluginIDs,
+		Version:      version,
+		PluginIDs:    allDraftPluginIDs,
+		ConnectorIDs: connectorIDs,
 	})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ReleaseApplicationWorkflows failed, appID=%d, version=%s", appID, version)

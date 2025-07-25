@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -12,22 +28,22 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document"
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
-	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/events"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/progressbar"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message) (err error) {
@@ -35,13 +51,13 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		if err != nil {
 			var statusError errorx.StatusError
 			if errors.As(err, &statusError) && statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
-				logs.Errorf("[HandleMessage][no-retry] failed, %v", err)
+				logs.CtxError(ctx, "[HandleMessage][no-retry] failed, %v", err)
 				err = nil
 			} else {
-				logs.Errorf("[HandleMessage][retry] failed, %v", err)
+				logs.CtxError(ctx, "[HandleMessage][retry] failed, %v", err)
 			}
 		} else {
-			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
+			logs.CtxInfo(ctx, "[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
 
@@ -66,12 +82,12 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	case entity.EventTypeDeleteKnowledgeData:
 		err = k.deleteKnowledgeDataEventHandler(ctx, event)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[HandleMessage] delete knowledge failed, err: %v", err)
+			logs.CtxError(ctx, "[HandleMessage] delete knowledge failed, err: %v", err)
 			return err
 		}
 	case entity.EventTypeDocumentReview:
 		if err = k.documentReviewEventHandler(ctx, event); err != nil {
-			logs.CtxErrorf(ctx, "[HandleMessage] document review failed, err: %v", err)
+			logs.CtxError(ctx, "[HandleMessage] document review failed, err: %v", err)
 			return err
 		}
 	default:
@@ -83,7 +99,6 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
 	for _, manager := range k.searchStoreManagers {
-		// TODO: non retry 错误可能导致其他资源删除也失效
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
@@ -91,7 +106,7 @@ func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, even
 		if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
 			return strconv.FormatInt(id, 10)
 		})); err != nil {
-			logs.Errorf("delete knowledge failed, err: %v", err)
+			logs.CtxError(ctx, "delete knowledge failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
 		}
 	}
@@ -100,24 +115,24 @@ func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, even
 
 func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) (err error) {
 	if len(event.Documents) == 0 {
-		logs.CtxWarnf(ctx, "[indexDocuments] documents not provided")
+		logs.CtxWarn(ctx, "[indexDocuments] documents not provided")
 		return nil
 	}
 	for i := range event.Documents {
 		doc := event.Documents[i]
 		if doc == nil {
-			logs.CtxWarnf(ctx, "[indexDocuments] document not provided")
+			logs.CtxWarn(ctx, "[indexDocuments] document not provided")
 			continue
 		}
 		e := events.NewIndexDocumentEvent(doc.KnowledgeID, doc)
 		msgData, err := sonic.Marshal(e)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[indexDocuments] marshal event failed, err: %v", err)
+			logs.CtxError(ctx, "[indexDocuments] marshal event failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", fmt.Sprintf("marshal event failed, err: %v", err)))
 		}
 		err = k.producer.Send(ctx, msgData, eventbus.WithShardingKey(strconv.FormatInt(doc.KnowledgeID, 10)))
 		if err != nil {
-			logs.CtxErrorf(ctx, "[indexDocuments] send message failed, err: %v", err)
+			logs.CtxError(ctx, "[indexDocuments] send message failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", fmt.Sprintf("send message failed, err: %v", err)))
 		}
 	}
@@ -130,7 +145,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[indexDocument] document not provided"))
 	}
 
-	// TODO: document redis lock
 	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
 	// 2. rebalance 重复消费同一条消息
 
@@ -145,9 +159,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	defer func() {
 		if e := recover(); e != nil {
 			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("panic: %v", e)))
-			logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", err)
+			logs.CtxError(ctx, "[indexDocument] panic, err: %v", err)
 			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
+				logs.CtxError(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
 			}
 			return
 		}
@@ -155,13 +169,12 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			var statusError errorx.StatusError
 			if errors.As(err, &statusError) && statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
 				if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
-					logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
+					logs.CtxError(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
 				}
 			}
 		}
 	}()
 
-	// TODO: fix append retry
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
 
@@ -182,7 +195,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 				if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
 					return strconv.FormatInt(id, 10)
 				})); err != nil {
-					logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+					logs.CtxError(ctx, "[indexDocument] delete knowledge failed, err: %v", err)
 					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
 				}
 			}
@@ -233,7 +246,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		batchSize := r - l
 		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
 		if err != nil {
-			return errorx.New(errno.ErrAgentIDGenFailCode)
+			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 		}
 		allIDs = append(allIDs, ids...)
 		for i := 0; i < batchSize; i++ {
@@ -260,7 +273,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		// 表格类型，将数据插入到数据库中
 		err = k.upsertDataToTable(ctx, &doc.TableInfo, sliceEntities)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
+			logs.CtxError(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
 		}
 	}
@@ -293,7 +306,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		if doc.Type == knowledge.DocumentTypeTable {
 			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
 			if err != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
+				logs.CtxError(ctx, "[indexDocument] convert document failed, err: %v", err)
 				return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
 			}
 			sliceModel.Content = sliceEntity.GetSliceContent()
@@ -307,7 +320,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	defer func() {
 		if err != nil { // set slice status
 			if setStatusErr := k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusFailed), err.Error()); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] set slice status failed, err: %v", setStatusErr)
+				logs.CtxError(ctx, "[indexDocument] set slice status failed, err: %v", setStatusErr)
 			}
 		}
 	}()
@@ -329,7 +342,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.cacheCli, true)
 	for _, manager := range k.searchStoreManagers {
 		now := time.Now()
-		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
 			Fields:         fields,
@@ -353,7 +365,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		); err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("store search store failed, err: %v", err)))
 		}
-		logs.CtxDebugf(ctx, "[indexDocument] ss type=%v, len(docs)=%d, finished after %d ms",
+		logs.CtxDebug(ctx, "[indexDocument] ss type=%v, len(docs)=%d, finished after %d ms",
 			manager.GetType(), len(ssDocs), time.Now().Sub(now).Milliseconds())
 	}
 	// set slice status
@@ -376,9 +388,9 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(slices) == 0 {
 		return nil
 	}
-	insertData, err := packInsertData(slices)
+	insertData, err := packInsertData(ctx, slices)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
+		logs.CtxError(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
 	}
 	resp, err := k.rdb.UpsertData(ctx, &rdb.UpsertDataRequest{
@@ -386,20 +398,20 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 		Data:      insertData,
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
+		logs.CtxError(ctx, "[insertDataToTable] insert data failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, err: %v", err))
 	}
 	if resp.AffectedRows+resp.UnchangedRows != int64(len(slices)) {
-		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
+		logs.CtxError(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices)))
 	}
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err error) {
+func packInsertData(ctx context.Context, slices []*entity.Slice) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Errorf("[packInsertData] panic: %v", r)
+			logs.CtxError(ctx, "[packInsertData] panic: %v", r)
 			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", r))
 			return
 		}
@@ -450,7 +462,7 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 	defer func() {
 		if err != nil {
 			if setStatusErr := k.sliceRepo.BatchSetStatus(ctx, []int64{slice.ID}, int32(model.SliceStatusFailed), err.Error()); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexSlice] set slice status failed, err: %v", setStatusErr)
+				logs.CtxError(ctx, "[indexSlice] set slice status failed, err: %v", setStatusErr)
 			}
 		}
 	}()
@@ -528,9 +540,9 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", fmt.Sprintf("parse document failed, err: %v", err)))
 	}
-	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
+	ids, err := k.genMultiIDs(ctx, len(result))
 	if err != nil {
-		return errorx.New(errno.ErrAgentIDGenFailCode)
+		return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 	}
 	fn, ok := d2sMapping[event.Document.Type]
 	if !ok {

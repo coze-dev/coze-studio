@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	chatmodel "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	chatmodel "code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 	gomock "go.uber.org/mock/gomock"
 )
 

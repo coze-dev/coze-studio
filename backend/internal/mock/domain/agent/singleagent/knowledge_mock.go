@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	knowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
 
 	gomock "go.uber.org/mock/gomock"
 )

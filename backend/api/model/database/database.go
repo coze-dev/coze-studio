@@ -3,8 +3,8 @@
 package database
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/knowledge/document"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package validate
 
 import (
@@ -6,10 +22,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type Issue struct {
@@ -60,7 +78,7 @@ func NewCanvasValidator(_ context.Context, cfg *Config) (*CanvasValidator, error
 	return &CanvasValidator{reachability: reachability, cfg: cfg}, nil
 }
 
-func (cv *CanvasValidator) DetectCycles(ctx context.Context) (issues []*Issue, err error) {
+func (cv *CanvasValidator) DetectCycles(_ context.Context) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
 	nodeIDs := make([]string, 0)
 	for _, node := range cv.cfg.Canvas.Nodes {
@@ -142,7 +160,7 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 						NodeID:   node.ID,
 						NodeName: node.Data.Meta.Title,
 					},
-					Message: `ref block error, not found [blockID]`,
+					Message: `ref block error,[blockID] is empty`,
 				})
 				return nil
 			}
@@ -153,7 +171,7 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 						NodeID:   node.ID,
 						NodeName: node.Data.Meta.Title,
 					},
-					Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, node.ID, ref.BlockID),
+					Message: fmt.Sprintf(`the node id "%s" on which node id "%s" depends does not exist`, node.ID, ref.BlockID),
 				})
 			}
 			return nil
@@ -171,7 +189,7 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 									NodeID:   nodeID,
 									NodeName: node.Data.Meta.Title,
 								},
-								Message: fmt.Sprintf(`it only allow include number or alphabet and begin with alphabet, but it's "%v"`, p.Name),
+								Message: fmt.Sprintf(`parameter name only allows number or alphabet, and must begin with alphabet, but it's "%s"`, p.Name),
 							})
 						}
 						err = inputBlockVerify(node, p.Input)
@@ -228,7 +246,7 @@ func (cv *CanvasValidator) ValidateNestedFlows(ctx context.Context) (issues []*I
 					NodeID:   nodeID,
 					NodeName: node.Data.Meta.Title,
 				},
-				Message: "nested nodes do not support batch/loop",
+				Message: "composite nodes such as batch/loop cannot be nested",
 			})
 		}
 	}
@@ -236,54 +254,48 @@ func (cv *CanvasValidator) ValidateNestedFlows(ctx context.Context) (issues []*I
 }
 
 func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*Issue, err error) {
-	if cv.cfg.AppID == nil {
-		return nil, nil // if not project not check global variables, directly return nil
+	if cv.cfg.AppID == nil && cv.cfg.AgentID == nil {
+		return issues, nil
 	}
 
-	// TODO(@zhuangjie): if there is a value for project or agent ID, you need to verify the global variables.
-	// TODO(@zhuangjie): currently, agent verification is not supported, skipping now.
-	issues = make([]*Issue, 0)
 	type nodeVars struct {
 		node *vo.Node
-		vars map[string]*variable.VarTypeInfo
+		vars map[string]*vo.TypeInfo
 	}
-	appID := cv.cfg.AppID
 
 	nVars := make([]*nodeVars, 0)
 	for _, node := range cv.cfg.Canvas.Nodes {
 		if node.Type == vo.BlockTypeBotComment {
 			continue
 		}
-		v := &nodeVars{node: node, vars: make(map[string]*variable.VarTypeInfo)}
 		if node.Type == vo.BlockTypeBotAssignVariable {
+			v := &nodeVars{node: node, vars: make(map[string]*vo.TypeInfo)}
 			for _, p := range node.Data.Inputs.InputParameters {
-				v.vars[p.Name], err = canvasBlockInputToVarTypeInfo(p.Left)
+				v.vars[p.Name], err = adaptor.CanvasBlockInputToTypeInfo(p.Left)
 				if err != nil {
 					return nil, err
 				}
 			}
+			nVars = append(nVars, v)
 		}
-		nVars = append(nVars, v)
 	}
+
 	if len(nVars) == 0 {
-		return nil, nil
+		return issues, nil
 	}
 
-	varsMeta, err := cv.cfg.VariablesMetaGetter.GetProjectVariablesMeta(ctx, strconv.FormatInt(*appID, 10), "") // now project version always empty
-	if err != nil {
-		return nil, err
-	}
-
-	varTypeInfoMap := make(map[string]variable.VarTypeInfo)
-	for _, meta := range varsMeta {
-		varTypeInfoMap[meta.Name] = meta.TypeInfo
+	var varsMeta map[string]*vo.TypeInfo
+	if cv.cfg.AppID != nil {
+		varsMeta, err = cv.cfg.VariablesMetaGetter.GetAppVariablesMeta(ctx, strconv.FormatInt(*cv.cfg.AppID, 10), "")
+	} else {
+		varsMeta, err = cv.cfg.VariablesMetaGetter.GetAgentVariablesMeta(ctx, *cv.cfg.AgentID, "")
 	}
 
 	for _, nodeVar := range nVars {
 		nodeName := nodeVar.node.Data.Meta.Title
 		nodeID := nodeVar.node.ID
 		for v, info := range nodeVar.vars {
-			vInfo, ok := varTypeInfoMap[v]
+			vInfo, ok := varsMeta[v]
 			if !ok {
 				continue
 			}
@@ -294,18 +306,18 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 						NodeID:   nodeID,
 						NodeName: nodeName,
 					},
-					Message: fmt.Sprintf("node name %v,param [%s] is updated, please update the param", nodeName, v),
+					Message: fmt.Sprintf("node name %v,param [%s], type mismatch", nodeName, v),
 				})
 			}
 
-			if vInfo.Type == variable.VarTypeArray && info.Type == variable.VarTypeArray {
+			if vInfo.Type == vo.DataTypeArray && info.Type == vo.DataTypeArray {
 				if vInfo.ElemTypeInfo.Type != info.ElemTypeInfo.Type {
 					issues = append(issues, &Issue{
 						NodeErr: &NodeErr{
 							NodeID:   nodeID,
 							NodeName: nodeName,
 						},
-						Message: fmt.Sprintf("node name %v, param [%s] is updated, please update the param", nodeName, v),
+						Message: fmt.Sprintf("node name %v, param [%s], array element type mismatch", nodeName, v),
 					})
 
 				}
@@ -744,128 +756,6 @@ func detectCycles(nodes []string, controlSuccessors map[string][]string) [][]str
 	return ret
 }
 
-func canvasVariableToVarTypeInfo(v *vo.Variable) (*variable.VarTypeInfo, error) {
-	vInfo := &variable.VarTypeInfo{}
-	switch v.Type {
-	case vo.VariableTypeString:
-		vInfo.Type = variable.VarTypeString
-	case vo.VariableTypeInteger:
-		vInfo.Type = variable.VarTypeInteger
-	case vo.VariableTypeFloat:
-		vInfo.Type = variable.VarTypeFloat
-	case vo.VariableTypeBoolean:
-		vInfo.Type = variable.VarTypeBoolean
-	case vo.VariableTypeObject:
-		vInfo.Type = variable.VarTypeObject
-		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
-		for _, subVAny := range v.Schema.([]any) {
-			subV, err := vo.ParseVariable(subVAny)
-			if err != nil {
-				return nil, err
-			}
-			subTInfo, err := canvasVariableToVarTypeInfo(subV)
-			if err != nil {
-				return nil, err
-			}
-			vInfo.Properties[subV.Name] = subTInfo
-		}
-	case vo.VariableTypeList:
-		vInfo.Type = variable.VarTypeArray
-		subVAny := v.Schema
-		subV, err := vo.ParseVariable(subVAny)
-		if err != nil {
-			return nil, err
-		}
-		subTInfo, err := canvasVariableToVarTypeInfo(subV)
-		if err != nil {
-			return nil, err
-		}
-		vInfo.ElemTypeInfo = subTInfo
-	default:
-		return nil, fmt.Errorf("unsupported variable type: %s", v.Type)
-	}
-	return vInfo, nil
-}
-
-func canvasBlockInputToVarTypeInfo(b *vo.BlockInput) (*variable.VarTypeInfo, error) {
-	vInfo := &variable.VarTypeInfo{}
-
-	if b == nil {
-		return vInfo, nil
-	}
-
-	switch b.Type {
-	case vo.VariableTypeString:
-		vInfo.Type = variable.VarTypeString
-	case vo.VariableTypeInteger:
-		vInfo.Type = variable.VarTypeInteger
-	case vo.VariableTypeFloat:
-		vInfo.Type = variable.VarTypeFloat
-	case vo.VariableTypeBoolean:
-		vInfo.Type = variable.VarTypeBoolean
-	case vo.VariableTypeObject:
-		vInfo.Type = variable.VarTypeObject
-		vInfo.Properties = make(map[string]*variable.VarTypeInfo)
-		for _, subVAny := range b.Schema.([]any) {
-			if b.Value.Type == vo.BlockInputValueTypeRef {
-				subV, err := vo.ParseVariable(subVAny)
-				if err != nil {
-					return nil, err
-				}
-				subTInfo, err := canvasVariableToVarTypeInfo(subV)
-				if err != nil {
-					return nil, err
-				}
-				vInfo.Properties[subV.Name] = subTInfo
-			} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
-				subV, err := parseParam(subVAny)
-				if err != nil {
-					return nil, err
-				}
-				subTInfo, err := canvasBlockInputToVarTypeInfo(subV.Input)
-				if err != nil {
-					return nil, err
-				}
-				vInfo.Properties[subV.Name] = subTInfo
-			}
-		}
-	case vo.VariableTypeList:
-		vInfo.Type = variable.VarTypeArray
-		subV, err := vo.ParseVariable(b.Schema)
-		if err != nil {
-			return nil, err
-		}
-		subTInfo, err := canvasVariableToVarTypeInfo(subV)
-		if err != nil {
-			return nil, err
-		}
-		vInfo.ElemTypeInfo = subTInfo
-	default:
-		return nil, fmt.Errorf("unsupported variable type: %s", b.Type)
-	}
-
-	return vInfo, nil
-}
-
-func parseParam(v any) (*vo.Param, error) {
-	m, ok := v.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("invalid content type: %T when parse Param", v)
-	}
-
-	marshaled, err := sonic.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-
-	p := &vo.Param{}
-	if err := sonic.Unmarshal(marshaled, p); err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
-
 func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 	m, ok := content.(map[string]any)
 	if !ok {
@@ -874,12 +764,12 @@ func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 
 	marshaled, err := sonic.Marshal(m)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	p := &vo.BlockInputReference{}
-	if err := sonic.Unmarshal(marshaled, p); err != nil {
-		return nil, err
+	if err = sonic.Unmarshal(marshaled, p); err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	return p, nil

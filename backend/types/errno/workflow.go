@@ -1,24 +1,69 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package errno
 
 import (
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 )
 
 const (
-	ErrWorkflowNotPublished   = 720702011
-	ErrMissingRequiredParam   = 720702002
-	ErrInterruptNotSupported  = 720702078
-	ErrInvalidParameter       = 720702001
-	ErrArrIndexOutOfRange     = 720712014
-	ErrWorkflowExecuteFail    = 720701013
-	ErrWorkflowOperationFail  = 777777775
-	ErrCodeExecuteFail        = 305000002
-	ErrQuestionOptionsEmpty   = 720712049
-	ErrNodeOutputParseFail    = 720712023
-	ErrWorkflowCanceledByUser = 777777777
-	ErrNodeTimeout            = 777777776
-	ErrWorkflowTimeout        = 720702085
+	ErrWorkflowNotPublished             = 720702011
+	ErrMissingRequiredParam             = 720702002
+	ErrInterruptNotSupported            = 720702078
+	ErrInvalidParameter                 = 720702001
+	ErrArrIndexOutOfRange               = 720712014
+	ErrWorkflowExecuteFail              = 720701013
+	ErrCodeExecuteFail                  = 305000002
+	ErrQuestionOptionsEmpty             = 720712049
+	ErrNodeOutputParseFail              = 720712023
+	ErrWorkflowTimeout                  = 720702085
+	ErrWorkflowNotFound                 = 720702004
+	ErrSerializationDeserializationFail = 720701011
+	ErrInternalBadRequest               = 720701007
+	ErrSchemaConversionFail             = 720702089
+	ErrWorkflowCompileFail              = 720701003
+	ErrPluginAPIErr                     = 720701004
+)
+
+const (
+	ErrWorkflowSpecifiedVersionNotFound = 777777778
+	ErrWorkflowCanceledByUser           = 777777777
+	ErrNodeTimeout                      = 777777776
+	ErrWorkflowOperationFail            = 777777775
+	ErrIndexingNilArray                 = 777777774
+	ErrLLMStructuredOutputParseFail     = 777777773
+	ErrCreateNodeFail                   = 777777772
+	ErrWorkflowSnapshotNotFound         = 777777771
+	ErrNotifyWorkflowResourceChangeErr  = 777777770
+	ErrInvalidVersionName               = 777777769
+	ErrPluginIDNotFound                 = 777777768
+	ErrTOSError                         = 777777767
+	ErrToolIDNotFound                   = 777777766
+	ErrAuthorizationRequired            = 777777765
+	ErrVariablesAPIFail                 = 777777764
+	ErrInputFieldMissing                = 777777763
+)
+
+// stability problems
+const (
+	ErrDatabaseError = 720700801
+	ErrRedisError    = 720700803
+	ErrIDGenError    = 720700808
 )
 
 const (
@@ -37,7 +82,7 @@ func init() {
 
 	code.Register(
 		ErrMissingRequiredParam,
-		"Missing required parameters. Please review the API documentation and ensure all mandatory fields are included in your request.",
+		"Missing required parameters {param}. Please review the API documentation and ensure all mandatory fields are included in your request.",
 		code.WithAffectStability(false),
 	)
 
@@ -55,7 +100,13 @@ func init() {
 
 	code.Register(
 		ErrArrIndexOutOfRange,
-		"Array index out of bounds: The requested index exceeds the array's length. Please ensure the index is within the valid range of the array. You can refer to debug_url for more details.",
+		"Array {arr_name} index out of bounds: The requested index {req_index} exceeds the array's length {arr_len}. Please ensure the index is within the valid range of the array. You can refer to debug_url for more details.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrIndexingNilArray,
+		"Array {arr_name} is nil: The requested index {req_index} cannot be extracted.",
 		code.WithAffectStability(false),
 	)
 
@@ -73,7 +124,7 @@ func init() {
 
 	code.Register(
 		ErrCodeExecuteFail,
-		"code node execute fail",
+		"Function execution failed, please check the code of the function. Detail: {detail}",
 		code.WithAffectStability(false),
 	)
 
@@ -85,7 +136,7 @@ func init() {
 
 	code.Register(
 		ErrNodeOutputParseFail,
-		"node output parse fail",
+		"node output parse fail: {warnings}",
 		code.WithAffectStability(false),
 	)
 
@@ -106,6 +157,124 @@ func init() {
 		"Workflow execution timed out. Please check for long-running operations, optimize if possible, or retry later.",
 		code.WithAffectStability(false),
 	)
+
+	code.Register(
+		ErrLLMStructuredOutputParseFail,
+		"parse LLM structured output failed, please refer to LLM's raw output for detail.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrCreateNodeFail,
+		"create node {node_name} failed: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrDatabaseError,
+		"database operation failed",
+		code.WithAffectStability(true),
+	)
+	code.Register(
+		ErrRedisError,
+		"redis operation failed",
+		code.WithAffectStability(true),
+	)
+	code.Register(
+		ErrIDGenError,
+		"id generator failed",
+		code.WithAffectStability(true),
+	)
+
+	code.Register(
+		ErrWorkflowNotFound,
+		"workflow {id} not found, please check if the workflow exists and not deleted",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrSerializationDeserializationFail,
+		"data serialization/deserialization fail, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowSnapshotNotFound,
+		"workflow {id} snapshot {commit_id} not found, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrInternalBadRequest,
+		"one of the request parameters for {scene} is invalid, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrSchemaConversionFail,
+		"schema conversion failed, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowCompileFail,
+		"workflow compile failed, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrNotifyWorkflowResourceChangeErr,
+		"notify workflow resource change failed, please try again later",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrInvalidVersionName,
+		"workflow version name is invalid",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginAPIErr,
+		"plugin api error",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginIDNotFound,
+		"plugin {id} not found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrTOSError,
+		"tos operation failed",
+		code.WithAffectStability(true),
+	)
+
+	code.Register(
+		ErrToolIDNotFound,
+		"tool {id} not found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAuthorizationRequired,
+		"authorization required: {extra}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrVariablesAPIFail,
+		"variables API failed",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrInputFieldMissing,
+		"input field {name} not found",
+		code.WithAffectStability(false),
+	)
 }
 
 var errnoMap = map[int]int{
@@ -114,7 +283,7 @@ var errnoMap = map[int]int{
 	ErrInterruptNotSupported: ErrOpenAPIInterruptNotSupported,
 	ErrInvalidParameter:      ErrOpenAPIBadRequest,
 	ErrArrIndexOutOfRange:    ErrOpenAPIBadRequest,
-	ErrWorkflowTimeout:       ErrWorkflowTimeout,
+	ErrWorkflowTimeout:       ErrOpenAPIWorkflowTimeout,
 }
 
 func CodeForOpenAPI(err errorx.StatusError) int {

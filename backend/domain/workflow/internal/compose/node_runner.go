@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -5,21 +21,23 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type nodeRunConfig[O any] struct {
@@ -71,6 +89,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 
 	preProcessors := []func(ctx context.Context, input map[string]any) (map[string]any, error){
 		preTypeConverter(ns.InputTypes),
+		keyFinishedMarkerTrimmer(),
 	}
 	if meta.PreFillZero {
 		preProcessors = append(preProcessors, ns.inputValueFiller())
@@ -237,7 +256,7 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 					output = errOutput
 					err = nil
 					if output, err = runner.postProcess(ctx, output); err != nil {
-						logs.CtxErrorf(ctx, "postProcess failed after returning error output: %v", err)
+						logs.CtxError(ctx, "postProcess failed after returning error output: %v", err)
 					}
 				}
 			}
@@ -370,7 +389,6 @@ func (nc *nodeRunConfig[O]) toNode() *Node {
 
 type nodeRunner[O any] struct {
 	*nodeRunConfig[O]
-	onStartDone bool
 	interrupted bool
 	cancelFn    context.CancelFunc
 }
@@ -394,13 +412,13 @@ func (r *nodeRunner[O]) onStart(ctx context.Context, input map[string]any) (cont
 	if r.callbackInputConverter != nil {
 		convertedInput, err := r.callbackInputConverter(ctx, input)
 		if err != nil {
-			return nil, err
+			ctx = callbacks.OnStart(ctx, input)
+			return ctx, err
 		}
 		ctx = callbacks.OnStart(ctx, convertedInput)
 	} else {
 		ctx = callbacks.OnStart(ctx, input)
 	}
-	r.onStartDone = true
 
 	return ctx, nil
 }
@@ -472,7 +490,7 @@ func (r *nodeRunner[O]) invoke(ctx context.Context, input map[string]any, opts .
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -503,7 +521,7 @@ func (r *nodeRunner[O]) stream(ctx context.Context, input map[string]any, opts .
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -546,7 +564,7 @@ func (r *nodeRunner[O]) transform(ctx context.Context, input *schema.StreamReade
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -627,7 +645,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		} else if errors.Is(err, context.Canceled) {
 			sErr = vo.CancelErr
 		} else {
-			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 	}
 
@@ -685,24 +703,16 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, e := nodes.ConvertInputs(ctx, result, schema_)
+	if e != nil {
+		return nil, e
 	}
 
-	return result, nil
+	if ws != nil {
+		logs.CtxWarn(ctx, "convert output warnings: %v", *ws)
+	}
+
+	return r, nil
 }
 
 func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) map[string]any {
@@ -723,16 +733,59 @@ func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[
 
 func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
 	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
-		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		out, ws, err := nodes.ConvertInputs(ctx, in, inTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-				return out, nil
-			} else {
-				return out, err
+			return nil, err
+		}
+
+		if ws != nil {
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
+		}
+
+		return out, err
+	}
+}
+
+func trimKeyFinishedMarker(ctx context.Context, in map[string]any) (map[string]any, bool, error) {
+	var (
+		newIn   map[string]any
+		trimmed bool
+	)
+	for k, v := range in {
+		if vStr, ok := v.(string); ok {
+			if strings.HasSuffix(vStr, nodes.KeyIsFinished) {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				vStr = strings.TrimSuffix(vStr, nodes.KeyIsFinished)
+				newIn[k] = vStr
+				trimmed = true
+			}
+		} else if vMap, ok := v.(map[string]any); ok {
+			newMap, subTrimmed, err := trimKeyFinishedMarker(ctx, vMap)
+			if err != nil {
+				return nil, false, err
+			}
+			if subTrimmed {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				newIn[k] = newMap
+				trimmed = true
 			}
 		}
+	}
+
+	if trimmed {
+		return newIn, true, nil
+	}
+
+	return in, false, nil
+}
+
+func keyFinishedMarkerTrimmer() func(ctx context.Context, in map[string]any) (map[string]any, error) {
+	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		out, _, err := trimKeyFinishedMarker(ctx, in)
 		return out, err
 	}
 }

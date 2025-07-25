@@ -1,17 +1,32 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package database
 
 import (
 	"context"
 	"errors"
-	"regexp"
+	"reflect"
 	"strings"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
-
-var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}`|'\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}'")
 
 type CustomSQLConfig struct {
 	DatabaseInfoID    int64
@@ -49,29 +64,55 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
-	templateSQL := c.config.SQLTemplate
 
-	sqlParams := regexStringParams.FindAllString(templateSQL, -1)
-
-	if len(sqlParams) > 0 {
-		ps := make([]string, 0, len(sqlParams))
-		for _, p := range sqlParams {
-			val, err := nodes.Jinja2TemplateRender(p, input)
-			if err != nil {
-				return nil, err
-			}
-			ps = append(ps, val[1:len(val)-1]) // what is rendered is `xxx` or `yyy` and you need to remove `` or ''
-			templateSQL = strings.Replace(templateSQL, p, "?", 1)
-		}
-		req.Params = ps
-	}
-
-	sql, err := nodes.Jinja2TemplateRender(templateSQL, input)
+	inputBytes, err := sonic.Marshal(input)
 	if err != nil {
 		return nil, err
 	}
-	req.SQL = sql
 
+	templateSQL := ""
+	templateParts := nodes.ParseTemplate(c.config.SQLTemplate)
+	sqlParams := make([]database.SQLParam, 0, len(templateParts))
+	var nilError = errors.New("field is nil")
+	for _, templatePart := range templateParts {
+		if !templatePart.IsVariable {
+			templateSQL += templatePart.Value
+			continue
+		}
+
+		templateSQL += "?"
+		val, err := templatePart.Render(inputBytes, nodes.WithNilRender(func() (string, error) {
+			return "", nilError
+		}),
+			nodes.WithCustomRender(reflect.TypeOf(false), func(val any) (string, error) {
+				b := val.(bool)
+				if b {
+					return "1", nil
+				}
+				return "0", nil
+			}))
+
+		if err != nil {
+			if !errors.Is(err, nilError) {
+				return nil, err
+			}
+			sqlParams = append(sqlParams, database.SQLParam{
+				IsNull: true,
+			})
+		} else {
+			sqlParams = append(sqlParams, database.SQLParam{
+				Value:  val,
+				IsNull: false,
+			})
+		}
+
+	}
+
+	// replace sql template '?' to ?
+	templateSQL = strings.Replace(templateSQL, "'?'", "?", -1)
+	templateSQL = strings.Replace(templateSQL, "`?`", "?", -1)
+	req.SQL = templateSQL
+	req.Params = sqlParams
 	response, err := c.config.CustomSQLExecutor.Execute(ctx, req)
 	if err != nil {
 		return nil, err

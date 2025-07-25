@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 import type React from 'react';
 
 import { type Root, createRoot } from 'react-dom/client';
@@ -81,21 +97,8 @@ export namespace HoverPosition {
 export interface HoverRequest {
   content: string | HTMLElement | React.ReactNode;
   target: HTMLElement;
-  /**
-   * The position where the hover should appear.
-   * Note that the hover service will try to invert the position (i.e. right -> left)
-   * if the specified content does not fit in the window next to the target element
-   */
   position: HoverPosition;
-  /**
-   * Additional css classes that should be added to the hover box.
-   * Used to style certain boxes different e.g. for the extended tab preview.
-   */
   cssClasses?: string[];
-  /**
-   * A function to render a visual preview on the hover.
-   * Function that takes the desired width and returns a HTMLElement to be rendered.
-   */
   visualPreview?: (width: number) => HTMLElement | undefined;
   /** hover 位置偏移 */
   offset?: number;
@@ -154,10 +157,6 @@ export class HoverService {
     }
   }
 
-  protected getHoverDelay(): number {
-    return Date.now() - this.lastHidHover < 200 ? 0 : 200;
-  }
-
   protected async renderHover(request: HoverRequest): Promise<void> {
     const host = this.hoverHost;
     let firstChild: HTMLElement | undefined;
@@ -174,8 +173,8 @@ export class HoverService {
       host.textContent = content;
     }
 
-    host.style.left = '0px';
     host.style.top = '0px';
+    host.style.left = '0px';
     document.body.append(host);
 
     if (request.visualPreview) {
@@ -188,7 +187,7 @@ export class HoverService {
       }
     }
 
-    await animationFrame(); // Allow the browser to size the host
+    await animationFrame();
     const newPos = this.setHostPosition(target, host, position, offset);
 
     if (this.reactRoot) {
@@ -234,6 +233,10 @@ export class HoverService {
     this.disposeOnHide.push({
       dispose: () => document.removeEventListener('mousemove', handleMouseMove),
     });
+  }
+
+  protected getHoverDelay(): number {
+    return Date.now() - this.lastHidHover < 200 ? 0 : 200;
   }
 
   protected setHostPosition(

@@ -1,16 +1,32 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package coze
 
 import (
 	"context"
 	"errors"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
-	application "code.byted.org/flow/opencoze/backend/application/conversation"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
+	application "code.byted.org/data_edc/workflow_engine_next/application/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 // GetMessageList .
@@ -61,12 +77,12 @@ func DeleteMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	err = application.ConversationSVC.DeleteMessage(ctx, &req)
+	resp, err := application.ConversationSVC.DeleteMessage(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-	resp := new(message.DeleteMessageResponse)
+
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -94,14 +110,11 @@ func BreakMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	err = application.ConversationSVC.BreakMessage(ctx, &req)
+	resp, err := application.ConversationSVC.BreakMessage(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
-
-	resp := new(message.BreakMessageResponse)
-
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -126,9 +139,8 @@ func GetApiMessageList(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
-	resp := new(message.ListMessageApiResponse)
 
-	resp, err = application.OpenapiMessageApplicationService.GetApiMessageList(ctx, &req)
+	resp, err := application.OpenapiMessageApplicationService.GetApiMessageList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

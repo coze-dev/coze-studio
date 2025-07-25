@@ -1,20 +1,36 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package prompt
 
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/search"
-	"code.byted.org/flow/opencoze/backend/domain/prompt/entity"
-	prompt "code.byted.org/flow/opencoze/backend/domain/prompt/service"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/entity"
+	prompt "code.byted.org/data_edc/workflow_engine_next/domain/prompt/service"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type PromptApplicationService struct {
@@ -50,7 +66,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 			},
 		})
 		if pErr != nil {
-			logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+			logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 		}
 
 		return resp, nil
@@ -72,7 +88,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 		},
 	})
 	if pErr != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+		logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 	}
 
 	return resp, nil
@@ -141,7 +157,7 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 		},
 	})
 	if pErr != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+		logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 	}
 
 	return &playground.DeletePromptResourceResponse{
@@ -176,7 +192,7 @@ func (p *PromptApplicationService) updatePromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	logs.CtxInfof(ctx, "promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
+	logs.CtxInfo(ctx, "promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	if promptResource.CreatorID != *uid {

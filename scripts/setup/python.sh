@@ -29,7 +29,24 @@ source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
 # If you want to use other third-party libraries, you can install them here.
 pip install urllib3==1.26.16
-pip install pillow pdfplumber python-docx numpy git+https://gitcode.com/gh_mirrors/re/requests-async.git@master
+
+REQUESTS_ASYNC_REPO_URL="https://gitcode.com/gh_mirrors/re/requests-async.git"
+REQUESTS_ASYNC_DIR="$BIN_DIR/requests-async"
+
+if [ ! -d "$REQUESTS_ASYNC_DIR/.git" ]; then
+    echo "Cloning requests-async repository..."
+    rm -rf "$REQUESTS_ASYNC_DIR"
+    git clone "$REQUESTS_ASYNC_REPO_URL" "$REQUESTS_ASYNC_DIR"
+    if [ $? -ne 0 ]; then
+        echo "Failed to clone requests-async repository - aborting startup"
+        deactivate
+        exit 1
+    fi
+else
+    echo "requests-async repository already exists."
+fi
+
+pip install pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 "$REQUESTS_ASYNC_DIR"
 
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package model
 
 import (
@@ -6,12 +22,12 @@ import (
 
 	model2 "github.com/cloudwego/eino/components/model"
 
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	chatmodel2 "code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	chatmodel2 "code.byted.org/data_edc/workflow_engine_next/infra/impl/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type ModelManager struct {

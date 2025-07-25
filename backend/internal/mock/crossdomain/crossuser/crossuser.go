@@ -15,7 +15,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	crossuser "code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	crossuser "code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
 )
 
 // MockUser is a mock of User interface.

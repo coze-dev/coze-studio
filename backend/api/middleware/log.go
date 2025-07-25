@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package middleware
 
 import (
@@ -9,11 +25,11 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 	"github.com/google/uuid"
 
-	"code.byted.org/flow/opencoze/backend/pkg/i18n"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/gopkg/logs"
 )
 
 func AccessLogMW() app.HandlerFunc {
@@ -34,14 +50,15 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
-			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
+		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
+			string(ctx.GetRequest().Scheme()), ctx.Host(), status,
+			latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
 
 		switch {
 		case status >= http.StatusInternalServerError:
-			logs.CtxErrorf(c, "%s", baseLog)
+			logs.CtxError(c, "%s", baseLog)
 		case status >= http.StatusBadRequest:
-			logs.CtxWarnf(c, "%s ", baseLog)
+			logs.CtxWarn(c, "%s", baseLog)
 		default:
 			urlQuery := ctx.Request.URI().QueryString()
 			reqBody := bytesToString(ctx.Request.Body())
@@ -56,8 +73,9 @@ func AccessLogMW() app.HandlerFunc {
 
 			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
 			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {
-				logs.CtxDebugf(c, "%s \nquery : %s \nreq : %s \nresp: %s",
-					baseLog, urlQuery, reqBody, respBody)
+				logs.CtxInfo(c, "%s ", baseLog)
+				logs.CtxDebug(c, "query : %s \nreq : %s \nresp: %s",
+					urlQuery, reqBody, respBody)
 			}
 		}
 	}

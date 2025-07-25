@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package service
 
 import (
@@ -12,31 +28,33 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/table"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/physicaltable"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/sheet"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	entity3 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
-	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossvariables"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/convertor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/physicaltable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/sheet"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	entity3 "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	sqlparsercontract "code.byted.org/data_edc/workflow_engine_next/infra/contract/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type databaseService struct {
@@ -116,7 +134,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -126,7 +144,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -226,7 +244,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -236,7 +254,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -281,7 +299,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -291,7 +309,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -317,7 +335,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: draftInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.Errorf("drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
+			logs.CtxError(ctx, "drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
 		}
 	}
 
@@ -327,7 +345,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: onlineInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
+			logs.CtxError(ctx, "drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
 		}
 	}
 
@@ -600,7 +618,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			physicalFieldName := fieldInfo.PhysicalName
 			convertedValue, err := convertor.ConvertValueByType(valueStr, fieldInfo.Type)
 			if err != nil {
-				logs.Warnf("convert value failed for field %s: %v, using original value", fieldName, err)
+				logs.CtxWarn(ctx, "convert value failed for field %s: %v, using original value", fieldName, err)
 				convertedValue = valueStr
 			}
 			updateData[physicalFieldName] = convertedValue
@@ -801,7 +819,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 		return &ListDatabaseRecordResponse{}, nil
 	}
 
-	records := convertor.ConvertResultSet(selectResp.ResultSet, physicalToFieldName, physicalToFieldType)
+	records := convertor.ConvertResultSetToString(selectResp.ResultSet, physicalToFieldName, physicalToFieldType)
 
 	var hasMore bool
 	if selectResp.Total <= int64(req.Limit)+int64(req.Offset) {
@@ -986,7 +1004,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 	if resultSet != nil && len(resultSet.Rows) > 0 {
 		response.Records = convertor.ConvertResultSet(resultSet, physicalToFieldName, physicalToFieldType)
 	} else {
-		response.Records = []map[string]string{}
+		response.Records = make([]map[string]interface{}, 0)
 	}
 
 	// process special system fields
@@ -1037,7 +1055,11 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if req.SQLParams != nil {
 		params = make([]interface{}, 0, len(req.SQLParams))
 		for _, param := range req.SQLParams {
-			params = append(params, param.Value)
+			value := param.Value
+			if param.ISNull {
+				value = nil
+			}
+			params = append(params, value)
 		}
 	}
 
@@ -1180,7 +1202,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	var complexCond *rdb.ComplexCondition
 	var err error
 	if req.Condition != nil {
-		complexCond, err = convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 		if err != nil {
 			return nil, fmt.Errorf("convert condition failed: %v", err)
 		}
@@ -1274,13 +1296,14 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 
 			fieldVal := sqlParams[i].Value
 			if sqlParams[i].ISNull || fieldVal == nil {
+				rowData[field.PhysicalName] = nil
 				i++
 				continue
 			}
 
 			convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 			if err != nil {
-				logs.Warnf("convert value failed: %v, using original value", err)
+				logs.CtxWarn(ctx, "convert value failed: %v, using original value", err)
 				rowData[field.PhysicalName] = *fieldVal
 			} else {
 				rowData[field.PhysicalName] = convertedValue
@@ -1326,15 +1349,17 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 			return -1, errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode)
 		}
 
-		fieldVal := req.SQLParams[index].Value
+		param := req.SQLParams[index]
+		fieldVal := param.Value
 		index++
-		if fieldVal == nil {
+		if param.ISNull || fieldVal == nil {
+			updateData[field.PhysicalName] = nil
 			continue
 		}
 
 		convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 		if err != nil {
-			logs.Warnf("convert value failed: %v, using original value", err)
+			logs.CtxWarn(ctx, "convert value failed: %v, using original value", err)
 			updateData[field.PhysicalName] = *fieldVal
 		} else {
 			updateData[field.PhysicalName] = convertedValue
@@ -1342,7 +1367,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	condParams := req.SQLParams[index:]
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, condParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1382,7 +1407,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1432,7 +1457,7 @@ func convertSortDirection(direction table.SortDirection) entity3.SortDirection {
 	return entity3.SortDirectionAsc
 }
 
-func convertCondition(cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
+func convertCondition(ctx context.Context, cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
 	if cond == nil {
 		return nil, nil
 	}
@@ -1478,7 +1503,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 						index++
 						continue
 					}
-					vals = append(vals, *params[index].Value)
+					vals = append(vals, decryptSysUUIDKey(ctx, leftField, *params[index].Value))
 					index++
 				}
 				conditions = append(conditions, &rdb.Condition{
@@ -1497,7 +1522,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 			conditions = append(conditions, &rdb.Condition{
 				Field:    leftField,
 				Operator: convertor.ConvertOperator(c.Operation),
-				Value:    *params[index].Value,
+				Value:    decryptSysUUIDKey(ctx, leftField, *params[index].Value),
 			})
 			index++
 		}
@@ -1512,6 +1537,17 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 	// }
 
 	return result, nil
+}
+
+func decryptSysUUIDKey(ctx context.Context, leftField, value string) string {
+	if leftField == database.DefaultUidDisplayColName || leftField == database.DefaultUidColName {
+		decryptVal := crossvariables.DefaultSVC().DecryptSysUUIDKey(ctx, value)
+		if decryptVal != nil {
+			value = decryptVal.ConnectorUID
+		}
+	}
+
+	return value
 }
 
 func (d databaseService) BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error {
@@ -1784,12 +1820,12 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 	defer func() {
 		if r := recover(); r != nil {
 			errMsg := fmt.Sprintf("panic: %v", r)
-			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+			d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
 			err = fmt.Errorf("panic: %v", r)
 			return
 		}
 		if err != nil {
-			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+			d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 		}
 	}()
 
@@ -1832,7 +1868,7 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 		defer func() {
 			if r := recover(); r != nil {
 				errMsg := fmt.Sprintf("panic: %v", r)
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
 			}
 		}()
 
@@ -1850,13 +1886,13 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 				Records:     batchRecords,
 			})
 			if err != nil {
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 				return
 			}
 
 			err = d.increaseProgress(ctx, req, int64(len(batchRecords)))
 			if err != nil {
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 				return
 			}
 		}
@@ -1882,23 +1918,23 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 	if req.TableType == table.TableType_DraftTable {
 		currentFileName = draftCurrentFileName
 	}
-	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	totalNum, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	progressNum, err := d.cache.Get(ctx, fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	progressNum, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	failReason, err := d.cache.Get(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	failReason, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	fileName, err := d.cache.Get(ctx, fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	fileName, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
@@ -1948,22 +1984,22 @@ func (d databaseService) initializeCache(ctx context.Context, req *SubmitDatabas
 		failKey = draftFailReasonKey
 	}
 
-	_, err := d.cache.Set(ctx, fmt.Sprintf(totalKey, databaseID, userID), fmt.Sprintf("%d", len(parseData.SampleData)), redisKeyTimeOut).Result()
+	_, err := d.cache.WithContext(ctx).Set(fmt.Sprintf(totalKey, databaseID, userID), fmt.Sprintf("%d", len(parseData.SampleData)), redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), int64(0), redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(progressKey, databaseID, userID), int64(0), redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(failKey, databaseID, userID), "", redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, databaseID, userID), "", redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(currentFileName, databaseID, userID), extra.Sheets[req.TableSheet.SheetID].SheetName, redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(currentFileName, databaseID, userID), extra.Sheets[req.TableSheet.SheetID].SheetName, redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
@@ -1981,7 +2017,7 @@ func (d databaseService) increaseProgress(ctx context.Context, req *SubmitDataba
 		progressKey = draftProgressKey
 	}
 
-	_, err := d.cache.IncrBy(ctx, fmt.Sprintf(progressKey, databaseID, userID), successNum).Result()
+	_, err := d.cache.WithContext(ctx).IncrBy(fmt.Sprintf(progressKey, databaseID, userID), successNum).Result()
 	if err != nil {
 		return err
 	}
@@ -2048,7 +2084,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -2058,7 +2094,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -2102,7 +2138,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxError(ctx, "drop online physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 	for _, physical := range draftPhysicals {
@@ -2110,7 +2146,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.Errorf("drop draft physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxError(ctx, "drop draft physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 

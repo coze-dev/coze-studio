@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package sheet
 
 import (
@@ -19,14 +35,14 @@ import (
 	"github.com/extrame/xls"
 	"github.com/xuri/excelize/v2"
 
-	"code.byted.org/flow/opencoze/backend/api/model/common"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type CellTypeIdentifier struct {
@@ -59,7 +75,7 @@ func (t *TosTableParser) GetTableDataBySheetIDx(ctx context.Context, rMeta entit
 			return
 		}
 		if err1 := meta.ExcelFile.Close(); err1 != nil {
-			logs.CtxInfof(ctx, "[GetTableDataBySheetIdx] close excel file failed, err: %v", err1)
+			logs.CtxInfo(ctx, "[GetTableDataBySheetIdx] close excel file failed, err: %v", err1)
 		}
 	}()
 
@@ -194,7 +210,7 @@ func (t *TosTableParser) getTableDataBySheetIdx(ctx context.Context, rMeta entit
 	defer func() {
 		if localMeta != nil && localMeta.ExcelFile != nil {
 			if err := localMeta.ExcelFile.Close(); err != nil {
-				logs.CtxErrorf(ctx, "[GetTableDataBySheetIdx] close excel file err: %v", err)
+				logs.CtxError(ctx, "[GetTableDataBySheetIdx] close excel file err: %v", err)
 			}
 		}
 	}()
@@ -249,7 +265,7 @@ func (t *TosTableParser) parseSchemaInfo(ctx context.Context, meta *entity.Local
 		case database.TableReadDataMethodAll:
 			return meta.RawLines[rMeta.HeaderLineIdx], meta.RawLines[rMeta.StartLineIdx:], nil
 		default:
-			logs.CtxInfof(ctx, "[parseSchemaInfo] reader method is:%d", rMeta.ReaderMethod)
+			logs.CtxInfo(ctx, "[parseSchemaInfo] reader method is:%d", rMeta.ReaderMethod)
 		}
 
 		return nil, nil, fmt.Errorf("reader method is:%d", rMeta.ReaderMethod)
@@ -378,7 +394,7 @@ func HandleTmpFile(ctx context.Context, reader io.Reader, extension string, call
 
 	defer func() {
 		if err = os.Remove(tmpFile); err != nil {
-			logs.CtxErrorf(ctx, "[HandleTmpFile]Error removing tmpFile: %v", err)
+			logs.CtxError(ctx, "[HandleTmpFile]Error removing tmpFile: %v", err)
 			return
 		}
 	}()
@@ -391,7 +407,7 @@ func getXlsLocalSheetMetaWithTmpFileCallback(ctx context.Context, tmpFile string
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			s := string(debug.Stack())
-			logs.CtxErrorf(ctx, "%s get recover, stack: %s", prefix, s)
+			logs.CtxError(ctx, "%s get recover, stack: %s", prefix, s)
 			return
 		}
 	}()
@@ -402,7 +418,7 @@ func getXlsLocalSheetMetaWithTmpFileCallback(ctx context.Context, tmpFile string
 	}
 	defer func() {
 		if err = file.Close(); err != nil {
-			logs.CtxErrorf(ctx, "%v close excel reader failed:%+v", prefix, err)
+			logs.CtxError(ctx, "%v close excel reader failed:%+v", prefix, err)
 			return
 		}
 	}()
@@ -679,7 +695,7 @@ func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*com
 		}
 		lineValue := make(map[int64]string)
 		if len(columns) != len(line) {
-			logs.CtxWarnf(ctx, "[TransferPreviewData] sampleData's length:%d is not match with column count:%d", len(line), len(columns))
+			logs.CtxWarn(ctx, "[TransferPreviewData] sampleData's length:%d is not match with column count:%d", len(line), len(columns))
 		}
 
 		for i, value := range line {

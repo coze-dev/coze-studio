@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package variable
 
 import (
@@ -5,15 +21,8 @@ import (
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
-)
 
-type Type string
-
-const (
-	ParentIntermediate Type = "parent_intermediate"
-	GlobalUser         Type = "global_user"
-	GlobalSystem       Type = "global_system"
-	GlobalAPP          Type = "global_app"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 var variableHandlerSingleton *Handler
@@ -31,26 +40,26 @@ type Handler struct {
 	AppVarStore    Store
 }
 
-func (v *Handler) Get(ctx context.Context, t Type, path compose.FieldPath, opts ...OptionFn) (any, error) {
+func (v *Handler) Get(ctx context.Context, t vo.GlobalVarType, path compose.FieldPath, opts ...OptionFn) (any, error) {
 	switch t {
-	case GlobalUser:
+	case vo.GlobalUser:
 		return v.UserVarStore.Get(ctx, path, opts...)
-	case GlobalSystem:
+	case vo.GlobalSystem:
 		return v.SystemVarStore.Get(ctx, path, opts...)
-	case GlobalAPP:
+	case vo.GlobalAPP:
 		return v.AppVarStore.Get(ctx, path, opts...)
 	default:
 		return nil, fmt.Errorf("unknown variable type: %v", t)
 	}
 }
 
-func (v *Handler) Set(ctx context.Context, t Type, path compose.FieldPath, value any, opts ...OptionFn) error {
+func (v *Handler) Set(ctx context.Context, t vo.GlobalVarType, path compose.FieldPath, value any, opts ...OptionFn) error {
 	switch t {
-	case GlobalUser:
+	case vo.GlobalUser:
 		return v.UserVarStore.Set(ctx, path, value, opts...)
-	case GlobalSystem:
+	case vo.GlobalSystem:
 		return v.SystemVarStore.Set(ctx, path, value, opts...)
-	case GlobalAPP:
+	case vo.GlobalAPP:
 		return v.AppVarStore.Set(ctx, path, value, opts...)
 	default:
 		return fmt.Errorf("unknown variable type: %v", t)
@@ -77,7 +86,7 @@ type StoreInfo struct {
 	AppID        *int64
 	AgentID      *int64
 	ConnectorID  int64
-	ConnectorUID int64
+	ConnectorUID string
 }
 
 type StoreConfig struct {
@@ -99,28 +108,6 @@ type Store interface {
 	Set(ctx context.Context, path compose.FieldPath, value any, opts ...OptionFn) error
 }
 
-type VarType string
-
-const (
-	VarTypeString  VarType = "string"
-	VarTypeInteger VarType = "integer"
-	VarTypeFloat   VarType = "float"
-	VarTypeBoolean VarType = "boolean"
-	VarTypeObject  VarType = "object"
-	VarTypeArray   VarType = "array"
-)
-
-type VarTypeInfo struct {
-	Type         VarType
-	ElemTypeInfo *VarTypeInfo
-	Properties   map[string]*VarTypeInfo
-}
-
-type VarMeta struct {
-	Name     string
-	TypeInfo VarTypeInfo
-}
-
 var variablesMetaGetterImpl VariablesMetaGetter
 
 func GetVariablesMetaGetter() VariablesMetaGetter {
@@ -132,5 +119,6 @@ func SetVariablesMetaGetter(v VariablesMetaGetter) {
 }
 
 type VariablesMetaGetter interface {
-	GetProjectVariablesMeta(ctx context.Context, projectID, version string) ([]*VarMeta, error)
+	GetAppVariablesMeta(ctx context.Context, id, version string) (m map[string]*vo.TypeInfo, err error)
+	GetAgentVariablesMeta(ctx context.Context, id int64, version string) (m map[string]*vo.TypeInfo, err error)
 }

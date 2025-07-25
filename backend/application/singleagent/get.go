@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package singleagent
 
 import (
@@ -6,26 +22,27 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
-	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	knowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	modelEntity "code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	pluginEntity "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	shortcutCMDEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	workflowEntity "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
@@ -73,6 +90,11 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
+	workflowDetailMap, err := workflowDo2Vo(workflowInfos)
+	if err != nil {
+		return nil, err
+	}
+
 	return &playground.GetDraftBotInfoAgwResponse{
 		Data: &playground.GetDraftBotInfoAgwData{
 			BotInfo: vo,
@@ -81,7 +103,7 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 				KnowledgeDetailMap:  knowledgeInfoDo2Vo(klInfos),
 				PluginAPIDetailMap:  toolInfoDo2Vo(toolInfos),
 				PluginDetailMap:     s.pluginInfoDo2Vo(ctx, pluginInfos),
-				WorkflowDetailMap:   workflowDo2Vo(workflowInfos),
+				WorkflowDetailMap:   workflowDetailMap,
 				ShortcutCommandList: shortCutCmdResp,
 			},
 			SpaceID:   agentInfo.SpaceID,
@@ -92,6 +114,11 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 }
 
 func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, agentInfo *entity.SingleAgent) ([]*playground.ShortcutCommand, error) {
+	var cmdVOs []*playground.ShortcutCommand
+	if len(agentInfo.ShortcutCommand) == 0 {
+		return cmdVOs, nil
+	}
+
 	cmdDOs, err := s.appContext.ShortcutCMDDomainSVC.ListCMD(ctx, &shortcutCMDEntity.ListMeta{
 		SpaceID:  agentInfo.SpaceID,
 		ObjectID: agentInfo.AgentID,
@@ -100,12 +127,12 @@ func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, ag
 		}),
 	})
 
-	logs.CtxInfof(ctx, "fetchShortcutCMD cmdDOs = %v, err = %v", conv.DebugJsonToStr(cmdDOs), err)
+	logs.CtxInfo(ctx, "fetchShortcutCMD cmdDOs = %v, err = %v", conv.DebugJsonToStr(cmdDOs), err)
 
 	if err != nil {
 		return nil, err
 	}
-	cmdVOs := s.shortcutCMDDo2Vo(cmdDOs)
+	cmdVOs = s.shortcutCMDDo2Vo(cmdDOs)
 	return cmdVOs, nil
 }
 
@@ -282,7 +309,7 @@ func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, plu
 			var err error
 			iconURL, err = s.appContext.TosClient.GetObjectUrl(ctx, e.GetIconURI())
 			if err != nil {
-				logs.CtxErrorf(ctx, "get icon url failed, err = %v", err)
+				logs.CtxError(ctx, "get icon url failed, err = %v", err)
 			}
 		}
 
@@ -397,6 +424,10 @@ func parametersDo2Vo(op *plugin.Openapi3Operation) []*playground.PluginParameter
 		})
 	}
 
+	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
+		return params
+	}
+
 	for _, mType := range op.RequestBody.Value.Content {
 		schemaVal := mType.Schema.Value
 		if len(schemaVal.Properties) == 0 {
@@ -450,19 +481,107 @@ func toParameterAssistType(assistType string) *int64 {
 	}
 }
 
-func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.WorkflowDetail {
-	return slices.ToMap(wfInfos, func(e *workflowEntity.Workflow) (int64, *playground.WorkflowDetail) {
-		return e.ID, &playground.WorkflowDetail{
+func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) (map[int64]*playground.WorkflowDetail, error) {
+	result := make(map[int64]*playground.WorkflowDetail, len(wfInfos))
+	for _, e := range wfInfos {
+		parameters, err := slices.TransformWithErrorCheck(e.InputParams, toPluginParameter)
+		if err != nil {
+			return nil, err
+		}
+		result[e.ID] = &playground.WorkflowDetail{
 			ID:          ptr.Of(e.ID),
 			Name:        ptr.Of(e.Name),
 			Description: ptr.Of(e.Desc),
 			IconURL:     ptr.Of(e.IconURL),
+			PluginID:    ptr.Of(e.ID),
 			APIDetail: &playground.PluginAPIDetal{
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),
 				Description: ptr.Of(e.Desc),
-				Parameters:  nil, // TODO(@shentong): convert from []NamedTypeInfo
+				PluginID:    ptr.Of(e.ID),
+				Parameters:  parameters,
 			},
 		}
-	})
+
+	}
+
+	return result, nil
+}
+
+func toPluginParameter(info *vo.NamedTypeInfo) (*playground.PluginParameter, error) {
+	if info == nil {
+		return nil, fmt.Errorf("named type info is nil")
+	}
+	p := &playground.PluginParameter{
+		Name:        ptr.Of(info.Name),
+		Description: ptr.Of(info.Desc),
+		IsRequired:  ptr.Of(info.Required),
+	}
+
+	switch info.Type {
+	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
+		p.Type = ptr.Of("string")
+		if info.Type == vo.DataTypeFile {
+			p.AssistType = toWorkflowParameterAssistType(string(*info.FileType))
+		}
+
+	case vo.DataTypeInteger:
+		p.Type = ptr.Of("integer")
+	case vo.DataTypeNumber:
+		p.Type = ptr.Of("number")
+	case vo.DataTypeBoolean:
+		p.Type = ptr.Of("boolean")
+	case vo.DataTypeObject:
+		p.Type = ptr.Of("object")
+		p.SubParameters = make([]*playground.PluginParameter, 0, len(info.Properties))
+		for _, sub := range info.Properties {
+			subParameter, err := toPluginParameter(sub)
+			if err != nil {
+				return nil, err
+			}
+			p.SubParameters = append(p.SubParameters, subParameter)
+		}
+	case vo.DataTypeArray:
+		p.Type = ptr.Of("array")
+		eleParameter, err := toPluginParameter(info.ElemTypeInfo)
+		if err != nil {
+			return nil, err
+		}
+		p.SubType = eleParameter.Type
+		p.SubParameters = []*playground.PluginParameter{eleParameter}
+	default:
+		return nil, fmt.Errorf("unknown named type info type: %s", info.Type)
+	}
+
+	return p, nil
+}
+
+func toWorkflowParameterAssistType(assistType string) *int64 {
+	if assistType == "" {
+		return nil
+	}
+	switch vo.FileSubType(assistType) {
+	case vo.FileTypeDefault:
+		return ptr.Of(int64(workflow.AssistParameterType_DEFAULT))
+	case vo.FileTypeImage:
+		return ptr.Of(int64(workflow.AssistParameterType_IMAGE))
+	case vo.FileTypeDocument:
+		return ptr.Of(int64(workflow.AssistParameterType_DOC))
+	case vo.FileTypePPT:
+		return ptr.Of(int64(workflow.AssistParameterType_PPT))
+	case vo.FileTypeCode:
+		return ptr.Of(int64(workflow.AssistParameterType_CODE))
+	case vo.FileTypeExcel:
+		return ptr.Of(int64(workflow.AssistParameterType_EXCEL))
+	case vo.FileTypeZip:
+		return ptr.Of(int64(workflow.AssistParameterType_ZIP))
+	case vo.FileTypeVideo:
+		return ptr.Of(int64(workflow.AssistParameterType_VIDEO))
+	case vo.FileTypeAudio:
+		return ptr.Of(int64(workflow.AssistParameterType_AUDIO))
+	case vo.FileTypeTxt:
+		return ptr.Of(int64(workflow.AssistParameterType_TXT))
+	default:
+		return nil
+	}
 }

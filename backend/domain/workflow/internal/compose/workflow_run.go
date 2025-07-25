@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package compose
 
 import (
@@ -10,16 +26,16 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	wf "code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	wf "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type WorkflowRunner struct {
@@ -138,7 +154,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	if interruptEvent != nil {
 		var stateOpt einoCompose.Option
 		stateModifier := GenStateModifierByEventType(interruptEvent.EventType,
-			interruptEvent.NodeKey, resumeReq.ResumeData)
+			interruptEvent.NodeKey, resumeReq.ResumeData, r.config)
 
 		if len(interruptEvent.NodePath) == 1 {
 			// this interrupt event is within the top level workflow
@@ -214,11 +230,14 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			return ctx, 0, nil, nil, fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, executeID)
 		}
 
-		logs.CtxInfof(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
+		logs.CtxInfo(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
 			executeID, interruptEvent.NodeKey)
 	}
 
 	if interruptEvent == nil {
+		var logID string
+		logID, _ = ctx.Value("log-id").(string)
+
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,
 			WorkflowID:             wb.ID,
@@ -231,16 +250,12 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			NodeCount:              sc.NodeCount(),
 			CurrentResumingEventID: ptr.Of(int64(0)),
 			CommitID:               wb.CommitID,
+			LogID:                  logID,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
 			return ctx, 0, nil, nil, err
 		}
-	}
-
-	cancelSignalChan, clearFn, err := repo.SubscribeWorkflowCancelSignal(ctx, executeID)
-	if err != nil {
-		return ctx, 0, nil, nil, err
 	}
 
 	cancelCtx, cancelFn := context.WithCancel(ctx)
@@ -258,7 +273,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	go func() {
 		defer func() {
 			if panicErr := recover(); panicErr != nil {
-				logs.CtxErrorf(ctx, "panic when handling execute event: %v", safego.NewPanicErr(panicErr, debug.Stack()))
+				logs.CtxError(ctx, "panic when handling execute event: %v", safego.NewPanicErr(panicErr, debug.Stack()))
 			}
 		}()
 		defer func() {
@@ -268,8 +283,8 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 		}()
 
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		lastEventChan <- execute.HandleExecuteEvent(ctx, eventChan, cancelFn, timeoutFn,
-			cancelSignalChan, clearFn, repo, sw, config)
+		lastEventChan <- execute.HandleExecuteEvent(ctx, executeID, eventChan, cancelFn, timeoutFn,
+			repo, sw, config)
 		close(lastEventChan)
 	}()
 

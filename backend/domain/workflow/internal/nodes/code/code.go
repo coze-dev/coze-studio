@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package code
 
 import (
@@ -9,11 +25,13 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 const (
@@ -91,6 +109,8 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 var pythonThirdPartyWhitelist = map[string]struct{}{
 	"requests_async": {},
 	"numpy":          {},
+	"bytedenv":       {},
+	"requests":       {},
 }
 
 type Config struct {
@@ -174,18 +194,24 @@ func validatePythonImports(code string) error {
 
 func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
 	if c.importError != nil {
-		return nil, vo.WrapError(errno.ErrCodeExecuteFail, fmt.Errorf("Function execution failed, please check the code of the function. Detail: %w", c.importError))
+		return nil, vo.WrapError(errno.ErrCodeExecuteFail, c.importError, errorx.KV("detail", c.importError.Error()))
 	}
 	response, err := c.config.Runner.Run(ctx, &code.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err)
+		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
 	}
 
 	result := response.Result
 	ctxcache.Store(ctx, coderRunnerRawOutputCtxKey, result)
-	output, err := formatOutput(ctx, c.config.OutputConfig, result)
+
+	output, ws, err := nodes.ConvertInputs(ctx, result, c.config.OutputConfig)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapIfNeeded(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
+	}
+
+	if ws != nil && len(*ws) > 0 {
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
+		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, *ws)
 	}
 
 	return output, nil
@@ -200,7 +226,7 @@ func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any
 
 	var wfe vo.WorkflowError
 	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
-		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings)
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
 			Output:    output,
@@ -245,34 +271,4 @@ func parsePythonImports(code string) []string {
 	}
 
 	return maps.Keys(modules)
-}
-
-func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
-	ret := make(map[string]any, len(inInfo))
-	var warnings nodes.ConversionWarnings
-	for k, info := range inInfo {
-		if _, ok := in[k]; !ok {
-			ret[k] = nil
-			continue
-		}
-		vv, err := nodes.Convert(ctx, in[k], k, info)
-		if err != nil {
-			var subWarnings nodes.ConversionWarnings
-			if errors.As(err, &subWarnings) {
-				warnings = subWarnings.Merge(warnings)
-				ret[k] = nil
-			} else {
-				return nil, err
-			}
-		} else {
-			ret[k] = vv
-		}
-
-	}
-
-	if len(warnings) > 0 {
-		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnings)
-	}
-
-	return ret, nil
 }

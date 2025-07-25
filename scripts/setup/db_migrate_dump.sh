@@ -3,6 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/../../" && pwd)"
 ATLAS_DIR="$BASE_DIR/docker/atlas"
+DOCKER_DIR="$(cd "$SCRIPT_DIR/../../docker" && pwd)"
 
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'

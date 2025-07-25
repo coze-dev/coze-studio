@@ -6,13 +6,18 @@
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
-    "./components/*": "./src/components/*/index.tsx"
+    ".": "./src/index.tsx",
+    "./components/*": "./src/components/*/index.tsx",
+    "./features/*": "./src/features/*/index.tsx"
   },
   "main": "src/index.tsx",
   "typesVersions": {
     "*": {
       "components/*": [
         "./src/components/*/index.tsx"
+      ],
+      "features/*": [
+        "./src/features/*/index.tsx"
       ]
     }
   },
