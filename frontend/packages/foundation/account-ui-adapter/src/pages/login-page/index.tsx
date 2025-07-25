@@ -120,12 +120,7 @@ export const LoginPage: FC = () => {
             <Button
               data-testid="login.button.sso_login"
               className="mt-[12px]"
-              onClick={() => {
-                bdSSOLogin();
-                setEmail('');
-                setPassword('');
-                login();
-              }}
+              onClick={bdSSOLogin}
               loading={false}
               color="green"
             >
