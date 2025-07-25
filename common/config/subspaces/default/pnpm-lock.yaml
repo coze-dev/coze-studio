@@ -17904,8 +17904,8 @@ importers:
         specifier: workspace:*
         version: link:../../workflow/base
       '@coze/api':
-        specifier: 1.1.0-beta.4
-        version: 1.1.0-beta.4(axios@1.10.0)
+        specifier: 1.3.6-alpha.3
+        version: 1.3.6-alpha.3(axios@1.10.0)
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
@@ -19033,8 +19033,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/i18n
       '@coze/chat-sdk':
-        specifier: 0.1.11-beta.17
-        version: 0.1.11-beta.17(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.1.11-beta.19
+        version: 0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -26074,25 +26074,8 @@ packages:
       - '@lezer/common'
     dev: false
 
-  /@coze/api@1.1.0-beta.4(axios@1.10.0):
-    resolution: {integrity: sha512-PUDZSFuv0L4UgW8Hq5YY1mSAJx83uGGER5etmFX7E4lX457pyTZb+kPL3szDfS3Hx5gikqcU/gx3w9XkSVEcfw==}
-    peerDependencies:
-      axios: ^1.7.1
-    dependencies:
-      axios: 1.10.0(debug@4.3.3)
-      jsonwebtoken: 9.0.2
-      node-fetch: 2.7.0
-      reconnecting-websocket: 4.4.0
-      uuid: 10.0.0
-      ws: 8.18.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-    dev: false
-
-  /@coze/api@1.3.0(axios@1.10.0)(debug@4.3.3):
-    resolution: {integrity: sha512-kVaV4U83xXFax8yXxQSk1sUM9FdFYGB+ZzQ9eAn02/NwUOv/LpI28OxhYn7muGSJtlJ7TGyUa+deAAScSDnLIQ==}
+  /@coze/api@1.3.2(axios@1.10.0)(debug@4.3.3):
+    resolution: {integrity: sha512-8sp2BobV/fyzhSh+XjGTnCCTCvPCPpN1T80rZa0iqFeYiB59/QGtK59psAarFjtaH6BWk1F10LNoif9giUZihg==}
     peerDependencies:
       axios: ^1.7.1
     dependencies:
@@ -26113,8 +26096,30 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@coze/chat-sdk@0.1.11-beta.17(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-nrev9w8IeW9mPqVhl4nT/8Z6fnaja4RlNqXj5e+MPjJugPTOw1brXuHTN2sVKUuFEsc5qse0U531qKJDg34zkA==}
+  /@coze/api@1.3.6-alpha.3(axios@1.10.0):
+    resolution: {integrity: sha512-WsQFpOCOeJWaVO5fPOAKiH5FLsscJmG+rYl1IMZ1nEeqTiaMJqUYtSQxSotEvak6jbPnpcQJUcWC2r1f0VKOWg==}
+    peerDependencies:
+      axios: ^1.7.1
+    dependencies:
+      agora-extension-ai-denoiser: 1.1.0(agora-rtc-sdk-ng@4.23.2-1)
+      agora-rtc-sdk-ng: 4.23.2-1(debug@4.3.3)
+      agora-rte-extension: 1.2.4
+      axios: 1.10.0(debug@4.3.3)
+      jsonwebtoken: 9.0.2
+      node-fetch: 2.7.0
+      opus-encdec: 0.1.1
+      reconnecting-websocket: 4.4.0
+      uuid: 10.0.0
+      ws: 8.18.2
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - encoding
+      - utf-8-validate
+    dev: false
+
+  /@coze/chat-sdk@0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-LSAjZGVhy9ihCzMK5Yf0NgwxwbZJK/r/M0vhEH8gW3pqcs7r2z1slY+TgG9KgmNlaJlXBOg0JQB1YmuDVKTjYg==}
     requiresBuild: true
     peerDependencies:
       axios: ^1.7.1
@@ -26122,7 +26127,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@coze/api': 1.3.0(axios@1.10.0)(debug@4.3.3)
+      '@coze/api': 1.3.2(axios@1.10.0)(debug@4.3.3)
       axios: 1.10.0(debug@4.3.3)
       classnames: 2.5.1
       lodash-es: 4.17.21
@@ -26140,6 +26145,7 @@ packages:
       micromark-extension-misc-radio-list-item: 2.1.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+      xss: 1.0.15
       zustand: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
@@ -35428,7 +35434,7 @@ packages:
     resolution: {integrity: sha512-b3nLFGaGkJ9rzOcuXRfHkZMdjsawuDD0ENL9fzTophtBg8FJHSGbH7daXkEpcwy3v7Xol3pAvsmlYyFhR4pqJw==}
     dependencies:
       '@types/node': 18.18.9
-      '@types/unist': 2.0.11
+      '@types/unist': 3.0.3
       '@types/vfile-message': 2.0.0
     dev: true
 
@@ -38238,7 +38244,7 @@ packages:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /character-entities-html4@1.1.4:
     resolution: {integrity: sha512-HRcDxZuZqMx3/a+qrzxdBKBPUpxWEq9xw2OPZ3a/174ihfrQKVsFhqtthBInFy1zZ9GgZyFXOatNujm8M+El3g==}
@@ -53555,6 +53561,7 @@ packages:
 
   /tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+    dev: false
 
   /tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -55687,7 +55694,7 @@ packages:
       '@types/ws': 8.18.1
       ansi-html-community: 0.0.8
       bonjour-service: 1.3.0
-      chokidar: 3.5.3
+      chokidar: 3.6.0
       colorette: 2.0.19
       compression: 1.8.0
       connect-history-api-fallback: 2.0.0

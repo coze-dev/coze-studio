@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@coze-arch/i18n": "workspace:*",
-    "@coze/chat-sdk": "0.1.11-beta.17",
+    "@coze/chat-sdk": "0.1.11-beta.19",
     "react": "~18.2.0"
   },
   "devDependencies": {
