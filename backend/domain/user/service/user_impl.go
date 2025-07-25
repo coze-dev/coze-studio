@@ -30,6 +30,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/spf13/cast"
 	"golang.org/x/crypto/argon2"
 
 	uploadEntity "code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
@@ -39,12 +40,14 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 	"code.byted.org/gopkg/logs"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 type Components struct {
@@ -62,6 +65,84 @@ func NewUserDomain(ctx context.Context, c *Components) User {
 
 type userImpl struct {
 	*Components
+}
+
+func (u *userImpl) SSOLogin(ctx context.Context, session *bdsso.Session) (user *userEntity.User, err error) {
+	email, err := session.Email(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userModel, exist, err := u.UserRepo.GetUsersByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		// 走注册流程，初始化用户相关的信息
+		return u.CreateUserBySSOSession(ctx, session)
+	}
+	picture, _ := session.Picture(ctx)
+	return userPo2Do(userModel, picture), nil
+}
+
+// CreateUserBySSOSession 创建用户,SSO登录的用户信息，不需要再校验了，前置 check 过用户的唯一性即可。TODO: 删除表中目前使用真实邮箱注册的用户
+func (u *userImpl) CreateUserBySSOSession(ctx context.Context, session *bdsso.Session) (user *userEntity.User, err error) {
+	now := time.Now().UnixMilli()
+	userInfo, err := session2UserInfo(ctx, session)
+	if err != nil {
+		return nil, err
+	}
+	userID := userInfo.UserID
+	// 创建个人空间
+	spaceID, err := u.IDGen.GenID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("gen space_id failed: %w", err)
+	}
+	err = u.SpaceRepo.CreateSpace(ctx, &model.Space{
+		ID:          spaceID,
+		Name:        "Personal Space",
+		Description: "This is your personal space",
+		IconURI:     uploadEntity.EnterpriseIconURI,
+		OwnerID:     userID,
+		CreatorID:   userID,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create personal space failed: %w", err)
+	}
+
+	// 创建用户
+	newUser := &model.User{
+		ID:           userID,
+		IconURI:      userInfo.IconURL,
+		Name:         userInfo.Name,
+		UniqueName:   userInfo.UniqueName,
+		Email:        userInfo.Email,
+		Password:     "",
+		Description:  "",
+		UserVerified: false,
+		Locale:       string(i18n.GetLocale(ctx)),
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	err = u.UserRepo.CreateUser(ctx, newUser)
+	if err != nil {
+		return nil, fmt.Errorf("insert user failed: %w", err)
+	}
+
+	err = u.SpaceRepo.AddSpaceUser(ctx, &model.SpaceUser{
+		SpaceID:   spaceID,
+		UserID:    userID,
+		RoleType:  1,
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("add space user failed: %w", err)
+	}
+
+	return userPo2Do(newUser, userInfo.IconURL), nil
 }
 
 func (u *userImpl) Login(ctx context.Context, email, password string) (user *userEntity.User, err error) {
@@ -147,9 +228,14 @@ func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEnt
 		return nil, err
 	}
 
-	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	if err != nil {
-		return nil, err
+	// SSO 登录的用户不存储密码，且头像是完整路径
+	resURL := userModel.IconURI
+	if userModel.Password != "" && userModel.SessionKey != "" {
+		var err error
+		resURL, err = u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return userPo2Do(userModel, resURL), nil
@@ -663,4 +749,47 @@ func userPo2Do(model *model.User, iconURL string) *userEntity.User {
 		CreatedAt:    model.CreatedAt,
 		UpdatedAt:    model.UpdatedAt,
 	}
+}
+
+type UserInfo struct {
+	UserID     int64  `json:"user_id"`
+	Name       string `json:"name"`
+	UniqueName string `json:"unique_name"`
+	Email      string `json:"email"`
+	IconURL    string `json:"icon_url"`
+}
+
+func session2UserInfo(ctx context.Context, session *bdsso.Session) (*UserInfo, error) {
+	employeeID, err := session.EmployeeID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userID, err := cast.ToInt64E(employeeID)
+	if err != nil {
+		return nil, err
+	}
+	name, err := session.NickName(ctx)
+	if err != nil {
+		return nil, err
+	}
+	email, err := session.Email(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// username 为用户邮箱前缀，唯一
+	uniqueName, err := session.UserName(ctx)
+	if err != nil {
+		return nil, err
+	}
+	picture, err := session.Picture(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &UserInfo{
+		UserID:     userID,
+		Name:       name,
+		UniqueName: uniqueName,
+		Email:      email,
+		IconURL:    picture,
+	}, nil
 }

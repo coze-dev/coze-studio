@@ -49,7 +49,9 @@ func main() {
 	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
+	// 注入 sso 登录 session
 	s.Use(bdsso.SessionHertzMiddleware)
+	// session 校验
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.I18nMW()) // must after SessionAuthMW
 	router.GeneratedRegister(s)
