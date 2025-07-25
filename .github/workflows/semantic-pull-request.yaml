@@ -57,6 +57,7 @@ jobs:
             model
             database
             foundation
+            comment
 
           # The pull request's title should be fulfilled the following pattern:
           #

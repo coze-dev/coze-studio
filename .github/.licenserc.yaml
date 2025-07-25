@@ -21,5 +21,9 @@ header:
     - '**/gorm_gen/**'
     - '**/kitex_gen/**'
     - '**/*.gen.go'
+    - '**/gen.go'
+    - 'backend/api/**'
+    - '**/*_mock.go'
+    - 'backend/internal/mock/**'
   files:
     - ../backend/go.mod
