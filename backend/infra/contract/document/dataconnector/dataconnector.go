@@ -24,6 +24,7 @@ type ConnectorID int64
 
 const (
 	ConnectorIDFeishuWeb ConnectorID = 103
+	ConnectorIDLarkWeb   ConnectorID = 105
 )
 
 type AuthTokenInfo struct {
@@ -126,7 +127,6 @@ type Fetcher interface {
 	AuthorizeCode(ctx context.Context, creatorID int64, code string) error
 	GetAuthInfo(ctx context.Context, creatorID int64) ([]*AuthInfo, error)
 	GetAccessTokenByAuthID(ctx context.Context, authID int64) (string, error)
-	RefreshAccessToken(ctx context.Context, authID int64) (string, error)
 	SearchFile(ctx context.Context, req *SearchFileRequest) (*SearchFileResponse, error)
 	GetFileContent(ctx context.Context, req *GetFileContentRequest) (*GetFileContentResponse, error)
 }

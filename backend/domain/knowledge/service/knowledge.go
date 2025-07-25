@@ -97,6 +97,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		cacheCli:                  config.CacheCli,
 		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
 		modelFactory:              config.ModelFactory,
+		dataConnectorManager:      config.DataConnectorManager,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -125,6 +126,7 @@ type KnowledgeSVCConfig struct {
 	Crawler                   crawl.Crawler                  // required: 网页内容获取
 	CacheCli                  cache.Cmdable                  // optional: 缓存实现
 	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
+	DataConnectorManager      dataconnector.FetcherManager
 }
 
 type knowledgeSVC struct {

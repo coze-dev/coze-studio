@@ -45,6 +45,7 @@ import (
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
@@ -57,6 +58,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/crawl/crawl4ai"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/lark"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
 	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
@@ -118,7 +121,35 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	default:
 		// accept ocr not configured
 	}
-
+	fetcherManager := builtin.NewFetcherManager(c.DB)
+	feishuFetcher := lark.NewLarkFetcher(c.DB, &dataconnector.ConnectorConfig{
+		ConnectorName: "feishu",
+		ConnectorID:   103,
+		AuthConfig: dataconnector.AuthConfig{
+			ClientID:         "cli_a5d6e52ba83c100c",
+			ClientSecret:     "NdYLagZ4HQ39AbzzBSYb7d8LViKU0eSc",
+			RedirectURI:      "https://%s/api/memory/knowledge/oauth_complete",
+			AuthorizationURI: "https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=cli_a5d6e52ba83c100c&redirect_uri=https%3A%2F%2F%s%2Fapi%2Fmemory%2Fknowledge%2Foauth_complete&scope=drive%3Adrive.metadata%3Areadonly+drive%3Adrive%3Areadonly+docx%3Adocument%3Areadonly+wiki%3Awiki%3Areadonly",
+			GetTokenURI:      "https://open.feishu.cn/open-apis/authen/v1/oidc/access_token",
+		},
+		AuthType:    "oauth",
+		BaseOpenURL: "https://open.feishu.cn",
+	})
+	larkFetcher := lark.NewLarkFetcher(c.DB, &dataconnector.ConnectorConfig{
+		ConnectorName: "lark",
+		ConnectorID:   105,
+		AuthConfig: dataconnector.AuthConfig{
+			ClientID:         "cli_a55f0abaac38500a",
+			ClientSecret:     "wORAaesIy9dk85KmF22q2f0gyrye7T0V",
+			RedirectURI:      "https://%s/api/memory/knowledge/oauth_complete",
+			AuthorizationURI: "https://open.larksuite.com/open-apis/authen/v1/authorize?app_id=cli_a55f0abaac38500a&redirect_uri=https%3A%2F%2F%s%2Fapi%2Fmemory%2Fknowledge%2Foauth_complete&scope=drive%3Adrive.metadata%3Areadonly+drive%3Adrive%3Areadonly+docx%3Adocument%3Areadonly+wiki%3Awiki%3Areadonly",
+			GetTokenURI:      "https://open.larksuite.com/open-apis/authen/v1/oidc/access_token",
+		},
+		AuthType:    "oauth",
+		BaseOpenURL: "https://open.larksuite.com",
+	})
+	fetcherManager.Register(dataconnector.ConnectorIDFeishuWeb, feishuFetcher)
+	fetcherManager.Register(dataconnector.ConnectorIDLarkWeb, larkFetcher)
 	root, err := os.Getwd()
 	if err != nil {
 		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
@@ -176,6 +207,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		CacheCli:                  c.CacheCli,
 		IsAutoAnnotationSupported: configured,
 		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
+		DataConnectorManager:      fetcherManager,
 	})
 
 	if err = rmq.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {

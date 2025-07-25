@@ -15,6 +15,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/crawl"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -27,6 +28,8 @@ func (k *knowledgeSVC) newFetchFunc(source *entity.DocumentSource) func(ctx cont
 		return k.fetchFromWebUrl
 	case entity.DocumentSourceTableDataUrl:
 		return k.fetchTableDataFromWebUrl
+	case entity.DocumentSourceFeishuWeb:
+		return k.fetchFileFromLark
 	}
 	return func(ctx context.Context, req *fecthRequest) (resp *fetchResponse, err error) {
 		return nil, errors.New("unsupported document source")
@@ -40,14 +43,22 @@ func (k *knowledgeSVC) newFetchRequest(ctx context.Context, source *entity.Docum
 	if sourceFileID <= 0 {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "source file id is invalid"))
 	}
+	crawlTask, err := k.webCrawlTaskRepo.GetByID(ctx, sourceFileID)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get crawl task failed, err: %v", err)))
+	}
 	switch ptr.From(source) {
 	case entity.DocumentSourceWeb, entity.DocumentSourceTableDataUrl:
-		crawlTask, err := k.webCrawlTaskRepo.GetByID(ctx, sourceFileID)
-		if err != nil {
-			return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get crawl task failed, err: %v", err)))
-		}
 		return &fecthRequest{
 			URL: crawlTask.WebURL,
+		}, nil
+	case entity.DocumentSourceFeishuWeb:
+		return &fecthRequest{
+			ConnectorRequest: &dataconnector.GetFileContentRequest{
+				FileID:   crawlTask.FileID,
+				AuthID:   crawlTask.AuthID,
+				FileType: crawlTask.LarkExtra.FileType,
+			},
 		}, nil
 	default:
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "unsupported document source"))
@@ -55,12 +66,14 @@ func (k *knowledgeSVC) newFetchRequest(ctx context.Context, source *entity.Docum
 }
 
 type fecthRequest struct {
-	URL string `json:"url"`
+	URL              string `json:"url"`
+	ConnectorRequest *dataconnector.GetFileContentRequest
 }
 
 type fetchResponse struct {
 	Title       string   `json:"title"`
 	ContentUri  string   `json:"content_uri"`
+	FileSize    int64    `json:"file_size"`
 	SubLinkUrls []string `json:"sub_link_urls"`
 }
 
@@ -77,6 +90,7 @@ func (k *knowledgeSVC) fetchFromWebUrl(ctx context.Context, req *fecthRequest) (
 	}
 
 	return &fetchResponse{
+		FileSize:    int64(len([]byte(crawlResult.Content))),
 		ContentUri:  uri,
 		SubLinkUrls: append(crawlResult.InternalLinks, crawlResult.ExternalLinks...),
 	}, nil
@@ -114,9 +128,27 @@ func (k *knowledgeSVC) fetchTableDataFromWebUrl(ctx context.Context, req *fecthR
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgePutObjectFailCode, errorx.KV("msg", fmt.Sprintf("put object failed, err: %v", err)))
 	}
-	return &fetchResponse{ContentUri: uri}, nil
+	return &fetchResponse{ContentUri: uri, FileSize: int64(len(body))}, nil
+
 }
 
+func (k *knowledgeSVC) fetchFileFromLark(ctx context.Context, req *fecthRequest) (resp *fetchResponse, err error) {
+	if req.ConnectorRequest == nil {
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connector request is nil"))
+	}
+	fetcher, err := k.dataConnectorManager.GetByAuthID(ctx, req.ConnectorRequest.AuthID)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeFetcherNotFoundCode, errorx.KV("msg", err.Error()))
+	}
+	fetchResp, err := fetcher.GetFileContent(ctx, req.ConnectorRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &fetchResponse{
+		ContentUri: fetchResp.URI,
+		FileSize:   fetchResp.FileSize,
+	}, nil
+}
 func (k *knowledgeSVC) saveSubLinks2Storage(ctx context.Context, subLinkUrls []string) (uri string, err error) {
 	tosUri := uuid.NewString() + ".json"
 	byteData, err := sonic.Marshal(subLinkUrls)
@@ -141,18 +173,25 @@ func (k *knowledgeSVC) saveWebCrawlTaskResult(ctx context.Context, fetchResp *fe
 	if err != nil {
 		return 0, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get crawl task failed, err: %v", err)))
 	}
-	tosUri, err := k.saveSubLinks2Storage(ctx, fetchResp.SubLinkUrls)
-	if err != nil {
-		return 0, err
+	var tosUri string
+	if len(fetchResp.SubLinkUrls) > 0 {
+		tosUri, err = k.saveSubLinks2Storage(ctx, fetchResp.SubLinkUrls)
+		if err != nil {
+			return 0, err
+		}
 	}
 	newTask := model.WebCrawlTask{
 		ID:            taskID,
 		WebURL:        originTask.WebURL,
 		Title:         originTask.Title,
+		FileSize:      fetchResp.FileSize,
+		FileID:        originTask.FileID,
+		AuthID:        originTask.AuthID,
 		SubPageCount:  int32(len(fetchResp.SubLinkUrls)),
 		ContentTosURL: fetchResp.ContentUri,
 		SublinkTosURI: tosUri,
 		Status:        int32(entity.WebCrawlTaskStatusSuccess),
+		LarkExtra:     originTask.LarkExtra,
 		CreatedAt:     time.Now().UnixMilli(),
 		UpdatedAt:     time.Now().UnixMilli(),
 	}

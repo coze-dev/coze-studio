@@ -512,7 +512,7 @@ func (l *LarkFetcher) GetAccessTokenByAuthID(ctx context.Context, authID int64) 
 	if auth == nil {
 		return "", errors.New("auth info is nil")
 	}
-	auth, err = l.refreshAccessToken(ctx, auth)
+	auth, err = l.RefreshAccessToken(ctx, auth)
 	if err != nil {
 		return "", err
 	}
@@ -523,21 +523,21 @@ const (
 	NeedRefreshTokenRightNowDuration = time.Minute * 5
 )
 
-func (l *LarkFetcher) refreshAccessToken(ctx context.Context, auth *model.Auth) (*model.Auth, error) {
+func (l *LarkFetcher) RefreshAccessToken(ctx context.Context, auth *model.Auth) (*model.Auth, error) {
 	if auth.AuthInfo.RefreshToken == "" || time.UnixMilli(auth.AuthInfo.RefreshExpireIn).Before(time.Now()) {
-		logs.CtxInfof(ctx, "[refreshAccessToken] authID:%v refreshToken:%v refreshExpireIn:%v is expired", auth.ID, auth.AuthInfo.RefreshToken, time.UnixMilli(auth.AuthInfo.RefreshExpireIn))
+		logs.CtxInfof(ctx, "[RefreshAccessToken] authID:%v refreshToken:%v refreshExpireIn:%v is expired", auth.ID, auth.AuthInfo.RefreshToken, time.UnixMilli(auth.AuthInfo.RefreshExpireIn))
 		return auth, errors.New("refresh token is expired")
 	}
 	duration := time.Until(time.UnixMilli(auth.AuthInfo.TokenExpireIn))
 	if duration <= NeedRefreshTokenRightNowDuration {
-		logs.CtxInfof(ctx, "[refreshAccessToken] authID:%v tokenExpireIn:%v need refresh token right now", auth.ID, time.UnixMilli(auth.AuthInfo.TokenExpireIn))
+		logs.CtxInfof(ctx, "[RefreshAccessToken] authID:%v tokenExpireIn:%v need refresh token right now", auth.ID, time.UnixMilli(auth.AuthInfo.TokenExpireIn))
 		now := time.Now().UnixMilli()
 		refreshTokenData, err := lark_http.RefreshAccessToken(ctx, lark_http.FeishuAuthParam{
 			AppId:     l.config.AuthConfig.ClientID,
 			AppSecret: l.config.AuthConfig.ClientSecret,
 		}, auth.AuthInfo.RefreshToken)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[refreshAuthInfo] refreshAccessToken authID:%v error: %v", auth.ID, err)
+			logs.CtxErrorf(ctx, "[refreshAuthInfo] RefreshAccessToken authID:%v error: %v", auth.ID, err)
 			return auth, err
 		}
 		auth.AuthInfo.AccessToken = ptr.From(refreshTokenData.AccessToken)

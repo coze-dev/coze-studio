@@ -661,7 +661,7 @@ func (k *knowledgeSVC) refreshDocument(ctx context.Context, documentID int64) (e
 		return err
 	}
 	switch entity.DocumentSource(oldDoc.SourceType) {
-	case entity.DocumentSourceWeb:
+	case entity.DocumentSourceWeb, entity.DocumentSourceTableDataUrl, entity.DocumentSourceFeishuWeb:
 		newDoc.SourceFileID, err = k.saveWebCrawlTaskResult(ctx, fetchResp, oldDoc.SourceFileID)
 		if err != nil {
 			return err
@@ -752,23 +752,26 @@ func (k *knowledgeSVC) crawlDataEventHandler(ctx context.Context, event *entity.
 		logs.CtxErrorf(ctx, "fetch data failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", fmt.Sprintf("fetch data failed, err: %v", err)))
 	}
+	var updateMap = map[string]any{
+		"content_tos_url": fetchResp.ContentUri,
+		"status":          entity.WebCrawlTaskStatusSuccess,
+		"file_size":       fetchResp.FileSize,
+		"updated_at":      time.Now().UnixMilli(),
+	}
 	switch entity.DocumentSource(task.Source) {
 	case entity.DocumentSourceWeb:
 		sublinkUri, err := k.saveSubLinks2Storage(ctx, fetchResp.SubLinkUrls)
 		if err != nil {
 			return err
 		}
-		err = k.webCrawlTaskRepo.Update(ctx, task.TaskID, map[string]any{
-			"title":           fetchResp.Title,
-			"sub_page_count":  len(fetchResp.SubLinkUrls),
-			"content_tos_url": fetchResp.ContentUri,
-			"sublink_tos_uri": sublinkUri,
-			"status":          entity.WebCrawlTaskStatusSuccess,
-			"updated_at":      time.Now().UnixMilli(),
-		})
-		if err != nil {
-			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update web crawl task failed, err: %v", err)))
-		}
+		updateMap["title"] = fetchResp.Title
+		updateMap["sub_page_count"] = len(fetchResp.SubLinkUrls)
+		updateMap["sublink_tos_uri"] = sublinkUri
+	case entity.DocumentSourceFeishuWeb, entity.DocumentSourceTableDataUrl:
+	}
+	err = k.webCrawlTaskRepo.Update(ctx, task.TaskID, updateMap)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update web crawl task failed, err: %v", err)))
 	}
 	return nil
 }
