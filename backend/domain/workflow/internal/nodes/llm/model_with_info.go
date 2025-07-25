@@ -24,6 +24,7 @@ import (
 	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 )
@@ -77,7 +78,8 @@ func NewModelWithFallback(m, f model.BaseChatModel, info, fInfo *modelmgr.Model)
 }
 
 func (m *ModelForLLM) Generate(ctx context.Context, input []*schema.Message, opts ...model.Option) (
-	output *schema.Message, err error) {
+	output *schema.Message, err error,
+) {
 	if m.UseFallback(ctx) {
 		if !m.fallbackEnableCallback {
 			defer func() {
@@ -106,7 +108,8 @@ func (m *ModelForLLM) Generate(ctx context.Context, input []*schema.Message, opt
 }
 
 func (m *ModelForLLM) Stream(ctx context.Context, input []*schema.Message, opts ...model.Option) (
-	output *schema.StreamReader[*schema.Message], err error) {
+	output *schema.StreamReader[*schema.Message], err error,
+) {
 	if m.UseFallback(ctx) {
 		if !m.fallbackEnableCallback {
 			defer func() {

@@ -28,7 +28,6 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -62,6 +61,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/textprocessor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableaggregator"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 )
@@ -501,7 +501,6 @@ func (s *NodeSchema) ToDatabaseCustomSQLConfig() (*database.CustomSQLConfig, err
 		OutputConfig:      s.OutputTypes,
 		CustomSQLExecutor: crossdatabase.GetDatabaseOperator(),
 	}, nil
-
 }
 
 func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
@@ -517,7 +516,6 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
-
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		OutputConfig:   s.OutputTypes,
@@ -535,7 +533,6 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
-
 	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
@@ -575,7 +572,6 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 		PluginVersion: mustGetKey[string]("PluginVersion", s.Configs),
 		PluginService: crossplugin.GetPluginService(),
 	}, nil
-
 }
 
 func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {

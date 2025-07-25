@@ -14,13 +14,19 @@ MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env
 STATIC_DIR := ./bin/resources/static
 
-debug: middleware python server
+debug: env middleware python server
+
+env:
+	@if [ ! -f "$(ENV_FILE)" ]; then \
+		echo "Env file '$(ENV_FILE)' not found, using example env..."; \
+		cp ./docker/.env.example $(ENV_FILE); \
+	fi
 
 fe:
 	@echo "Building frontend..."
 	@bash $(BUILD_FE_SCRIPT)
 
-server:
+server: env
 	@if [ ! -d "$(STATIC_DIR)" ]; then \
 		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
 		$(MAKE) fe; \
@@ -83,6 +89,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  debug            - Start the debug environment."
+	@echo "  env              - Setup env file."
 	@echo "  fe               - Build the frontend."
 	@echo "  server           - Build and run the server binary."
 	@echo "  build_server     - Build the server binary."

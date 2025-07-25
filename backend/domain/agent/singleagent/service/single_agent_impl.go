@@ -22,22 +22,20 @@ import (
 	"math/rand"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/jinzhu/copier"
-
 	"github.com/cloudwego/eino/schema"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/agentflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"github.com/jinzhu/copier"
 )
 
 type singleAgentImpl struct {

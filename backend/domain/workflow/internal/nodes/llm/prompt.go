@@ -22,11 +22,11 @@ import (
 
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
@@ -108,7 +108,8 @@ func newPrompts(sp, up *promptTpl, model ModelWithInfo) *prompts {
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	sources map[string]*nodes.SourceInfo,
-	supportedModals map[modelmgr.Modal]bool) (*schema.Message, error) {
+	supportedModals map[modelmgr.Modal]bool,
+) (*schema.Message, error) {
 	if !pl.hasMultiModal || len(supportedModals) == 0 {
 		var opts []nodes.RenderOption
 		if len(pl.reservedKeys) > 0 {
@@ -237,7 +238,8 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 }
 
 func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Option) (
-	_ []*schema.Message, err error) {
+	_ []*schema.Message, err error,
+) {
 	exeCtx := execute.GetExeCtx(ctx)
 	var nodeKey vo.NodeKey
 	if exeCtx != nil && exeCtx.NodeCtx != nil {

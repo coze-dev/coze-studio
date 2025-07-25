@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/model"
+
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 )
 

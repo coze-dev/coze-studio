@@ -26,11 +26,11 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
@@ -97,7 +97,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		modelFactory: conf.ModelFactory,
 		modelInfo:    modelInfo,
 	})
-
 	if err != nil {
 		return nil, err
 	}

@@ -31,7 +31,6 @@ import (
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -42,6 +41,7 @@ import (
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/internal/testutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 )
