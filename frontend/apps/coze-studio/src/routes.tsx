@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 

@@ -24,8 +24,8 @@ import { BDSSO, BDSSOType } from '@byted-sdk/bdsso';
 
 export const bdsso = BDSSO.config({
   type: BDSSOType.CAS,
-  aid: 'md1y2p0ir34syross67j',
-  redirectUrl: 'https://ecomcoze.tiktok-row.net/',
+  aid: 'id1y2p0ir34tlac1j8km',
+  redirectUrl: 'https://ecomcoze.tiktok-row.net',
 });
 
 export function bdSSOLogin() {

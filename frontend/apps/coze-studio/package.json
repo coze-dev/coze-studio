@@ -10,7 +10,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "IS_OPEN_SOURCE=true rsbuild build",
-    "dev": "IS_OPEN_SOURCE=true CUSTOM_VERSION=release rsbuild dev",
+    "dev": "WEB_SERVER_PORT=9527 IS_OPEN_SOURCE=true CUSTOM_VERSION=release rsbuild dev",
     "lint": "eslint ./ --cache --quiet",
     "preview": "rsbuild preview",
     "test": "vitest --run --passWithNoTests",
