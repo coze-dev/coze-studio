@@ -30,7 +30,7 @@ export const LoginPage: FC = () => {
   const [password, setPassword] = useState('');
   const [hasError, setHasError] = useState(false);
 
-  const { login, register, loginLoading, registerLoading } = useLoginService({
+  const { login, loginLoading, registerLoading } = useLoginService({
     email,
     password,
   });
@@ -96,7 +96,7 @@ export const LoginPage: FC = () => {
             >
               {I18n.t('login_button_text')}
             </Button>
-            <Button
+            {/* <Button
               data-testid="login.button.signup"
               className="mt-[20px]"
               disabled={submitDisabled || loginLoading}
@@ -105,7 +105,7 @@ export const LoginPage: FC = () => {
               color="primary"
             >
               {I18n.t('register')}
-            </Button>
+            </Button> */}
             <Button
               data-testid="login.button.sso_login"
               className="mt-[12px]"

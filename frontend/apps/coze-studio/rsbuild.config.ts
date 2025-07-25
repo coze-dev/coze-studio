@@ -37,7 +37,8 @@ const mergedConfig = defineConfig({
     title: 'ecom coze',
     favicon: './assets/favicon.png',
     template: './index.html',
-    crossorigin: 'use-credentials',
+    // 根据是否为 oci 环境，设置 crossorigin 属性
+    crossorigin: GLOBAL_ENVS.REGION === 'oci' ? 'use-credentials' : 'anonymous',
   },
   tools: {
     postcss: (opts, { addPlugins }) => {
