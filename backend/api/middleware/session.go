@@ -25,6 +25,7 @@ import (
 
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 
 	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
@@ -64,6 +65,7 @@ func SessionAuthMW() app.HandlerFunc {
 					errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "bdsso session not found")))
 				return
 			} else {
+				logs.CtxInfo(c, "[SessionAuthMW] bdsso session found: %v", conv.DebugJsonToStr(bdSession))
 				userName, err := bdSession.UserName(c)
 				if err != nil {
 					logs.CtxError(c, "[SessionAuthMW] get user name failed, err: %v", err)
