@@ -20,9 +20,9 @@ English | [中文](README.zh_CN.md)
 [Coze Studio](https://www.coze.cn/home) is an all-in-one AI agent development tool. Providing the latest large models and tools, various development modes and frameworks, Coze Studio offers the most convenient AI agent development environment, from development to deployment. Tens of thousands of enterprises and millions of developers are using Coze Studio.
 
 * **Provides all core technologies needed for AI agent development**: prompt, RAG, plugin, workflow, enabling developers to focus on creating the core value of AI.
-* **Ready to use for professional AI agent development at the lowest cost:** Coze Studio provides developers with complete app templates and build frameworks, allowing you to quickly construct various AI agents and turn creative ideas into reality.
+* **Ready to use for professional AI agent development at the lowest cost**: Coze Studio provides developers with complete app templates and build frameworks, allowing you to quickly construct various AI agents and turn creative ideas into reality.
 
-Coze Studio is the open-source version of ByteDance's new AI agent development platform **Coze**. Through Coze Studio's visual design and build tools, developers can quickly create and debug agents, apps, and workflows using no-code or low-code approaches, enabling powerful AI app development and more customized business logic. It's an ideal choice for building low-code AI products tailored for non-programming users. Coze Studio aims to lower the threshold for AI agent development and application, encouraging community co-construction and sharing for deeper exploration and practice in the AI field.
+Coze Studio is the open-source version of ByteDance's new AI agent development platform **Coze**. Through Coze Studio's visual design and build tools, developers can quickly create and debug agents, apps, and workflows using no-code or low-code approaches, enabling powerful AI app development and more customized business logic. It's an ideal choice for building low-code AI products tailored . Coze Studio aims to lower the threshold for AI agent development and application, encouraging community co-construction and sharing for deeper exploration and practice in the AI field.
 
 The backend of Coze Studio is developed using Golang, the frontend uses React + TypeScript, and the overall architecture is based on microservices and built following domain-driven design (DDD) principles. Provide developers with a high-performance, highly scalable, and easy-to-customize underlying framework to help them address complex business needs.
 ## Feature list
@@ -32,7 +32,7 @@ The backend of Coze Studio is developed using Golang, the frontend uses React + 
 | Build agent | * Build, publish, and manage agent <br> * Support configuring workflows, knowledge bases, and other resources |
 | Build apps | * Create and publish apps <br> * Build business logic through workflows |
 | Build a workflow | Create, modify, publish, and delete workflows |
-| Develop resources | Support creating and managing the following resources: <br>  <br> * Plugins <br> * Knowledge bases <br> * Databases <br> * Prompts |
+| Develop resources | Support creating and managing the following resources: <br> * Plugins <br> * Knowledge bases <br> * Databases <br> * Prompts |
 | API and SDK | * Create conversations, initiate chats, and other OpenAPI <br> * Integrate agents or apps into your own app through Chat SDK |
 
 ## Quickstart
@@ -41,7 +41,7 @@ Learn how to obtain and deploy the open-source version of Coze Studio, quickly b
 
 Environment requirements:
 
-* 2 Core、4 GB
+* Before installing Coze Studio, please ensure that your machine meets the following minimum system requirements: 2 Core、4 GB
 * Pre-install Docker and Docker Compose, and start the Docker service.
 
 Deployment steps:
@@ -57,15 +57,15 @@ Deployment steps:
       ```Bash
       cd coze-studio
       # Copy model configuration template
-      cp backend/conf/model/template/model_template_ark_doubao-seed-1.6.yaml backend/conf/model/model_template_ark_doubao-seed-1.6.yaml
+      cp backend/conf/model/template/model_template_ark_doubao-seed-1.6.yaml backend/conf/model/ark_doubao-seed-1.6.yaml
       ```
 
    2. Modify the template file in the configuration file directory.
-      1. Enter the directory `backend/conf/model`. Open the file `model_template_ark_doubao-seed-1.6.yaml`.
+      1. Enter the directory `backend/conf/model`. Open the file `ark_doubao-seed-1.6.yaml`.
       2. Set the fields `id`, `meta.conn_config.api_key`, `meta.conn_config.model`, and save the file.
          * **id**: The model ID in Coze Studio, defined by the developers themselves, must be a non-zero integer and globally unique. Do not modify the model ID after the model goes online.
-         * **meta.conn_config.api_key**: The API Key for the online model service, which in this example is the API Key for Volcengine Ark. Refer to [Retrieve Volcengine Ark API Key](https://www.volcengine.com/docs/82379/1541594) for the acquisition method.
-         * **meta.conn_config.model**: The model ID of the online model service, which in this example is the Endpoint ID of the Volcano Ark doubao-seed-1.6 model access point. For retrieval methods, refer to [Retrieve Endpoint ID](https://www.volcengine.com/docs/82379/1099522).
+         * **meta.conn_config.api_key**: The API Key for the model service, which in this example is the API Key for Volcengine Ark. Refer to [Retrieve Volcengine Ark API Key](https://www.volcengine.com/docs/82379/1541594) for the acquisition method.
+         * **meta.conn_config.model**: The model ID of the model service, which in this example is the Endpoint ID of the Volcengine Ark doubao-seed-1.6 model access point. For retrieval methods, refer to [Retrieve Endpoint ID](https://www.volcengine.com/docs/82379/1099522).
 3. Deploy and start the service.
    When deploying and starting Coze Studio for the first time, it may take a while to retrieve images and build local images. Please be patient. During deployment, you will see the following log information. If you see the message "Container coze-server Started," it means the Coze Studio service has started successfully.
    ```Bash
@@ -81,7 +81,7 @@ Deployment steps:
 * **Project Configuration**:
    * [Model Configuration](https://github.com/coze-dev/coze-studio/wiki/3.-Model-configuration): Before deploying the open-source version of Coze Studio, you must configure the model service. Otherwise, you cannot select models when building agents, workflows, and apps.
    * [Plugin Configuration](https://github.com/coze-dev/coze-studio/wiki/4.-Plugin-Configuration): To use official plugins from the plugin store, you must first configure the plugins and add the authentication keys for third-party services.
-   * [Basic Component Configuration](https://github.com/coze-dev/coze-studio/wiki/5.-Basic-component-configuration): Learn how to configure services like ImageX to enable features such as image uploads in Coze Studio.
+   * [Basic Component Configuration](https://github.com/coze-dev/coze-studio/wiki/5.-Basic-component-configuration): Learn how to configure components such as image uploaders to use functions like image uploading in Coze Studio .
 * [API Reference](https://github.com/coze-dev/coze-studio/wiki/6.-API-Reference): Unlike the commercial edition, the open-source version of Coze Studio only supports personal access token (PAT) authentication and supports APIs related to chat and workflows.
 * [Development Guidelines](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards):
    * [Project Architecture](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#project-architecture): Learn about the technical architecture and core components of the open-source version of Coze Studio.
