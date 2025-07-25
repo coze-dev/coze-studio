@@ -286,7 +286,6 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 }
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
-
 	return &singleagent.ServiceComponents{
 		IDGen:                p.basicServices.infra.IDGenSVC,
 		DB:                   p.basicServices.infra.DB,
@@ -336,6 +335,7 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		DB:              infra.DB,
 		OSS:             infra.TOSClient,
 		CacheCli:        infra.CacheCli,
+		ModelMgr:        infra.ModelMgr,
 		ProjectEventBus: basic.eventbus.projectEventBus,
 		UserSVC:         basic.userSVC.DomainSVC,
 		ConnectorSVC:    basic.connectorSVC.DomainSVC,
