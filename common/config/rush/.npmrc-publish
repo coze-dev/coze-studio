@@ -18,7 +18,7 @@
 #
 #   //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}
 #
-registry=https://registry.npmjs.org
+registry=http://bnpm.byted.org
 always-auth=false
 prefer-frozen-lockfile=true
 

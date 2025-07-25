@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"code.byted.org/gopkg/logs"
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 
@@ -34,15 +35,14 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/service"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
-	"code.byted.org/gopkg/logs"
 )
 
 func InitService(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) (*ModelmgrApplicationService, error) {
 	svc := service.NewModelManager(db, idgen, oss)
 	// 先不通过这种形式初始化模型，后续通过接口增加模型配置
-	// if err := loadStaticModelConfig(svc, oss); err != nil {
-	// 	return nil, err
-	// }
+	if err := loadStaticModelConfig(svc, oss); err != nil {
+		return nil, err
+	}
 	ModelmgrApplicationSVC.DomainSVC = svc
 
 	return ModelmgrApplicationSVC, nil

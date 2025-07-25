@@ -6,7 +6,7 @@ trigger:
     # 后续需调整回 integration/**
     types: [create, push, restore]
     paths:
-      - "frontend/**"
+      - 'frontend/**'
     notification:
       when: failure
 
@@ -71,7 +71,7 @@ jobs:
           - printenv
           - git config user.name ci_flow
           - git config user.email ci_flow@bytedance.com
-          - npm config set registry=https://registry.npmjs.org
+          - npm config set registry=http://bnpm.byted.org
           - pnpm config set network-concurrency 32
           - echo "$(<${{Steps.RemoteInfo.Outputs.changed_files_path}})"
           - echo "::set-output name=ShouldRunBuild::${{ Event.Change.IsPreSubmit || int(Steps.RemoteInfo.Outputs.behind_commits) <= 6 }}"
