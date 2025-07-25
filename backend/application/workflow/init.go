@@ -41,11 +41,11 @@ import (
 	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
 	crossvariable "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner"
 )
 
 type ServiceComponents struct {
@@ -61,6 +61,7 @@ type ServiceComponents struct {
 	Tos                storage.Storage
 	ImageX             imagex.ImageX
 	CPStore            compose.CheckPointStore
+	CodeRunner         coderunner.Runner
 }
 
 func InitService(components *ServiceComponents) *ApplicationService {
@@ -75,7 +76,7 @@ func InitService(components *ServiceComponents) *ApplicationService {
 	crossplugin.SetPluginService(wfplugin.NewPluginService(components.PluginDomainSVC, components.Tos))
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC, components.IDGen))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
-	crosscode.SetCodeRunner(coderunner.NewRunner())
+	crosscode.SetCodeRunner(components.CodeRunner)
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
 	SVC.DomainSVC = workflowDomainSVC

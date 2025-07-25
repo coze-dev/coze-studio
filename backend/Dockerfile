@@ -23,7 +23,6 @@ COPY backend/ ./
 RUN go build -ldflags="-s -w" -o /app/opencoze main.go
 
 
-
 # Stage 2: Final image
 FROM alpine:3.22.0
 
@@ -32,7 +31,7 @@ WORKDIR /app
 # Install runtime dependencies for Go app and base for Python
 # pax-utils for scanelf, python3 for running Python, python3-dev for headers/shared libs
 # bind-tools for nslookup etc., file for debugging file types
-RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file
+RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno
 
 # Install Python build dependencies, create venv, install packages, then remove build deps
 RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
@@ -48,6 +47,7 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # Remove build dependencies
     apk del .python-build-deps
 
+
 # Copy the built Go binary from the builder stage
 COPY --from=builder /app/opencoze /app/opencoze
 COPY --from=builder /app/proxy_app /app/proxy
@@ -55,6 +55,7 @@ COPY --from=builder /app/proxy_app /app/proxy
 # Copy Python application scripts
 COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
 COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
+COPY backend/infra/impl/coderunner/script/sandbox.py /app/sandbox.py
 
 
 # Copy static resources

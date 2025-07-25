@@ -7,6 +7,15 @@ BIN_DIR="$BASE_DIR/bin"
 CONFIG_DIR="$BIN_DIR/resources/conf"
 RESOURCES_DIR="$BIN_DIR/resources/"
 DOCKER_DIR="$BASE_DIR/docker"
+source "$DOCKER_DIR/.env"
+
+if [[ "$CODE_RUNNER_TYPE" == "sandbox" ]] && ! command -v deno &> /dev/null; then
+    echo "deno is not installed, installing now..."
+    curl -fsSL https://deno.land/install.sh | sh
+    export PATH="$HOME/.deno/bin:$PATH"
+fi
+
+echo "🧹 Checking for sandbo availability..."
 
 echo "🧹 Checking for goimports availability..."
 

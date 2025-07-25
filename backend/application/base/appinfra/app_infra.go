@@ -20,12 +20,17 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/direct"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/sandbox"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/es"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
@@ -45,6 +50,7 @@ type AppDependencies struct {
 	ResourceEventProducer eventbus.Producer
 	AppEventProducer      eventbus.Producer
 	ModelMgr              modelmgr.Manager
+	CodeRunner            coderunner.Runner
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -93,6 +99,8 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
+	deps.CodeRunner = initCodeRunner()
+
 	return deps, nil
 }
 
@@ -136,4 +144,41 @@ func initAppEventProducer() (eventbus.Producer, error) {
 	}
 
 	return appEventProducer, nil
+}
+
+func initCodeRunner() coderunner.Runner {
+	switch typ := os.Getenv(consts.CodeRunnerType); typ {
+	case "sandbox":
+		getAndSplit := func(key string) []string {
+			v := os.Getenv(key)
+			if v == "" {
+				return nil
+			}
+			return strings.Split(v, ",")
+		}
+		config := &sandbox.Config{
+			AllowEnv:       getAndSplit(consts.CodeRunnerAllowEnv),
+			AllowRead:      getAndSplit(consts.CodeRunnerAllowRead),
+			AllowWrite:     getAndSplit(consts.CodeRunnerAllowWrite),
+			AllowNet:       getAndSplit(consts.CodeRunnerAllowNet),
+			AllowRun:       getAndSplit(consts.CodeRunnerAllowRun),
+			AllowFFI:       getAndSplit(consts.CodeRunnerAllowFFI),
+			NodeModulesDir: os.Getenv(consts.CodeRunnerNodeModulesDir),
+			TimeoutSeconds: 0,
+			MemoryLimitMB:  0,
+		}
+		if f, err := strconv.ParseFloat(os.Getenv(consts.CodeRunnerTimeoutSeconds), 64); err == nil {
+			config.TimeoutSeconds = f
+		} else {
+			config.TimeoutSeconds = 60.0
+		}
+		if mem, err := strconv.ParseInt(os.Getenv(consts.CodeRunnerMemoryLimitMB), 10, 64); err == nil {
+			config.MemoryLimitMB = mem
+		} else {
+			config.MemoryLimitMB = 100
+		}
+		return sandbox.NewRunner(config)
+	default:
+		return direct.NewRunner()
+	}
 }

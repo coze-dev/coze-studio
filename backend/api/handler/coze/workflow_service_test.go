@@ -40,13 +40,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
@@ -84,8 +77,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/direct"
 	mockCrossUser "github.com/coze-dev/coze-studio/backend/internal/mock/crossdomain/crossuser"
 	mockPlugin "github.com/coze-dev/coze-studio/backend/internal/mock/domain/plugin"
 	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
@@ -99,6 +93,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type wfTestRunner struct {
@@ -3636,8 +3636,8 @@ func TestNodeDebugLoop(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 		runner := mockcode.NewMockRunner(r.ctrl)
-		runner.EXPECT().Run(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, request *code.RunRequest) (*code.RunResponse, error) {
-			return &code.RunResponse{
+		runner.EXPECT().Run(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, request *coderunner.RunRequest) (*coderunner.RunResponse, error) {
+			return &coderunner.RunResponse{
 				Result: request.Params,
 			}, nil
 		}).AnyTimes()
@@ -3959,7 +3959,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 		id := r.load("exception/code_exception_branch.json")
 
 		mockey.PatchConvey("exception branch", func() {
-			code.SetCodeRunner(coderunner.NewRunner())
+			code.SetCodeRunner(direct.NewRunner())
 
 			exeID := r.testRun(id, map[string]string{"input": "hello"})
 			e := r.getProcess(id, exeID)
@@ -3973,7 +3973,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 		mockey.PatchConvey("normal branch", func() {
 			mockCodeRunner := mockcode.NewMockRunner(r.ctrl)
 			mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
-			mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&code.RunResponse{
+			mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&coderunner.RunResponse{
 				Result: map[string]any{
 					"key0": "value0",
 					"key1": []string{"value1", "value2"},

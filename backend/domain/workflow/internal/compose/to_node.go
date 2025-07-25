@@ -61,6 +61,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/textprocessor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableaggregator"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
@@ -577,7 +578,7 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 	return &code.Config{
 		Code:         mustGetKey[string]("Code", s.Configs),
-		Language:     mustGetKey[crosscode.Language]("Language", s.Configs),
+		Language:     mustGetKey[coderunner.Language]("Language", s.Configs),
 		OutputConfig: s.OutputTypes,
 		Runner:       crosscode.GetCodeRunner(),
 	}, nil
