@@ -1,134 +1,119 @@
-<div align="center">
-<h1>Coze Studio 社区版</h1>
-<p><strong> AI Agent 开发与运维的平台级解决方案</strong></p>
-<p>
-  <a href="#什么是Coze Studio">Coze Studio</a> •
-  <a href="#功能清单">功能清单</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#开发指南">开发指南</a>
+![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/943f576df3424fa98580c2ad18946719~tplv-goo7wpa0wc-image.image)
+
+<div align="center"><p>
+<a href="#what-is-coze-studio">Coze Studio</a> •
+<a href="#feature-list">Feature list</a> •
+<a href="#quickstart">Quickstart</a> •
+<a href="#developer-guide">Developer Guide</a>
 </p>
 <p>
   <img alt="License" src="https://img.shields.io/badge/license-apache2.0-blue.svg">
   <img alt="Go Version" src="https://img.shields.io/badge/go-%3E%3D%201.23.4-blue">
 </p>
 
-[English](README.md) | 中文
+English | [中文](README.zh_CN.md)
 
 </div>
 
-## 什么是Coze Studio
+## What is Coze Studio?
 
-[Coze Studio](https://www.coze.cn/home) 是一站式 AI Agent 开发工具。提供各类最新大模型和工具、多种开发模式和框架，从开发到部署，为你提供最便捷的 AI Agent 开发环境。上万家企业、数百万开发者正在使 Coze Studio。
+[Coze Studio](https://www.coze.cn/home) is an all-in-one AI agent development tool. Providing the latest large models and tools, various development modes and frameworks, Coze Studio offers the most convenient AI agent development environment, from development to deployment. Tens of thousands of enterprises and millions of developers are using Coze Studio.
 
-* **提供 AI Agent 开发所需的全部核心技术**：Prompt、RAG、Plugin、Workflow、UI Builder ，使得开发者可以聚焦创造 AI 核心价值。
-* **开箱即用，用最低的成本开发最专业的 AI Agent：​**Coze Studio 为开发者提供了健全的应用模板和编排框架，你可以基于它们快速构建各种 AI Agent ，将创意变为现实。Coze Studio 支持集成火山引擎各类资源，方便你的 AI Agent 实现快速扩容。
+* **Provides all core technologies needed for AI agent development**: prompt, RAG, plugin, workflow, enabling developers to focus on creating the core value of AI.
+* **Ready to use for professional AI agent development at the lowest cost**: Coze Studio provides developers with complete app templates and build frameworks, allowing you to quickly construct various AI agents and turn creative ideas into reality.
 
-Coze Studio 是字节跳动新一代 AI Agent 开发平台**扣子（Coze）**的**开源版本**。通过 Coze Studio 提供的可视化设计与编排工具，开发者可以通过零代码或低代码的方式，快速打造和调试智能体、应用和工作流，实现强大的 AI 应用开发和更多定制化业务逻辑，是构建面向非编程用户的低代码 AI 产品的理想选择。Coze Studio 致力于降低 AI Agent 开发与应用门槛，鼓励社区共建和分享交流，助你在 AI 领域进行更深层次的探索与实践。
+Coze Studio is the open-source version of ByteDance's new AI agent development platform **Coze**. Through Coze Studio's visual design and build tools, developers can quickly create and debug agents, apps, and workflows using no-code or low-code approaches, enabling powerful AI app development and more customized business logic. It's an ideal choice for building low-code AI products tailored . Coze Studio aims to lower the threshold for AI agent development and application, encouraging community co-construction and sharing for deeper exploration and practice in the AI field.
 
-Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，整体基于微服务架构并遵循领域驱动设计（DDD）原则构建。为开发者提供一个高性能、高扩展性、易于二次开发的底层框架，助力开发者应对复杂的业务需求。
-## 功能清单
-<table>
-        <thead>
-            <tr>
-                <th>功能模块</th>
-                <th>功能点</th>
-                <th>商业版</th>
-                <th>社区版</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td rowspan="1">搭建智能体</td>
-                <td>编排、发布、管理智能体</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td rowspan="1">搭建应用</td>
-                <td>通过工作流搭建业务逻辑</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td rowspan="1">搭建工作流</td>
-                <td>创建、修改、发布、管理工作流</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td rowspan="2">插件等开发资源</td>
-                <td>插件、知识库、数据库、提示词</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td>音色、卡片、音视频通话等</td>
-                <td>✔️</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td rowspan="1">企业与团队空间</td>
-                <td>企业团队管理、多人协作、SSO 等特性</td>
-                <td>✔️</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td rowspan="3">API 与 SDK</td>
-                <td>OpenAPI</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td>Chat SDK</td>
-                <td>✔️</td>
-                <td>✔️</td>
-            </tr>
-            <tr>
-                <td>Realtime 等 SDK、API</td>
-                <td>✔️</td>
-                <td>-</td>
-            </tr>
-        </tbody>
-    </table>
-## 快速开始
-参考[快速开始](https://github.com/coze-dev/coze-studio/wiki/2.-快速开始)，了解如何获取并部署 Coze Studio 社区版，快速构建项目、体验 Coze Studio 社区版。
-## 开发指南
+The backend of Coze Studio is developed using Golang, the frontend uses React + TypeScript, and the overall architecture is based on microservices and built following domain-driven design (DDD) principles. Provide developers with a high-performance, highly scalable, and easy-to-customize underlying framework to help them address complex business needs.
+## Feature list
+| **Module** | **Feature** |
+| --- | --- |
+| Model service | Manage the model list, integrate services such as OpenAI and Volcengine |
+| Build agent | * Build, publish, and manage agent <br> * Support configuring workflows, knowledge bases, and other resources |
+| Build apps | * Create and publish apps <br> * Build business logic through workflows |
+| Build a workflow | Create, modify, publish, and delete workflows |
+| Develop resources | Support creating and managing the following resources: <br> * Plugins <br> * Knowledge bases <br> * Databases <br> * Prompts |
+| API and SDK | * Create conversations, initiate chats, and other OpenAPI <br> * Integrate agents or apps into your own app through Chat SDK |
 
-* **项目配置**：
-   * [模型配置](https://github.com/coze-dev/coze-studio/wiki/3.-模型配置)：部署 Coze Studio 社区版之前，必须配置模型服务，否则无法在搭建智能体、工作流和应用时选择模型。
-   * [插件配置](https://github.com/coze-dev/coze-studio/wiki/4.-插件配置)：如需使用插件商店中的官方插件，必须先配置插件，添加第三方服务的鉴权秘钥。
-   * [基础组件配置](https://github.com/coze-dev/coze-studio/wiki/5.-基础组件配置)：了解如何配置 ImageX 等服务，以便在 Coze Studio 中使用上传图片等功能。
-* [API 参考](https://github.com/coze-dev/coze-studio/wiki/6.-API-参考)：和商业版不同，Coze Studio 社区版仅支持个人访问秘钥（PAT）鉴权，并支持对话和工作流相关 API。
-* [开发规范](https://github.com/coze-dev/coze-studio/wiki/7.-开发规范)：
-   * [项目架构](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84)：了解 Coze Studio 社区版的技术架构与核心组件。
-   * [代码开发与测试](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E4%BB%A3%E7%A0%81%E5%BC%80%E5%8F%91%E4%B8%8E%E6%B5%8B%E8%AF%95)：了解如何基于 Coze Studio 社区版进行二次开发与测试。
-   * [故障排查](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E6%95%85%E9%9A%9C%E6%8E%92%E6%9F%A5)：了解如何查看容器状态、系统日志。
+## Quickstart
+Learn how to obtain and deploy the open-source version of Coze Studio, quickly build projects, and experience Coze Studio's open-source version.
+> Detailed steps and deployment requirements can be found in [Quickstart](https://github.com/coze-dev/coze-studio/wiki/2.-Quickstart).
 
-## 使用 Coze Studio 社区版
-> 关于如何使用 Coze Studio，可参考[扣子开发平台官方文档中心](https://www.coze.cn/open/docs)获取更多资料。需要注意的是，音色等部分功能限商业版本使用，社区版与商业版的功能差异可参考**功能清单**。
+Environment requirements:
+
+* Before installing Coze Studio, please ensure that your machine meets the following minimum system requirements: 2 Core、4 GB
+* Pre-install Docker and Docker Compose, and start the Docker service.
+
+Deployment steps:
+
+1. Retrieve the source code.
+   ```Bash
+   # Clone code
+   git clone https://github.com/coze-dev/coze-studio.git
+   ```
+
+2. Configure the model.
+   1. Copy the template files of the doubao-seed-1.6 model from the template directory and paste them into the configuration file directory.
+      ```Bash
+      cd coze-studio
+      # Copy model configuration template
+      cp backend/conf/model/template/model_template_ark_doubao-seed-1.6.yaml backend/conf/model/ark_doubao-seed-1.6.yaml
+      ```
+
+   2. Modify the template file in the configuration file directory.
+      1. Enter the directory `backend/conf/model`. Open the file `ark_doubao-seed-1.6.yaml`.
+      2. Set the fields `id`, `meta.conn_config.api_key`, `meta.conn_config.model`, and save the file.
+         * **id**: The model ID in Coze Studio, defined by the developers themselves, must be a non-zero integer and globally unique. Do not modify the model ID after the model goes online.
+         * **meta.conn_config.api_key**: The API Key for the model service, which in this example is the API Key for Volcengine Ark. Refer to [Retrieve Volcengine Ark API Key](https://www.volcengine.com/docs/82379/1541594) for the acquisition method.
+         * **meta.conn_config.model**: The model ID of the model service, which in this example is the Endpoint ID of the Volcengine Ark doubao-seed-1.6 model access point. For retrieval methods, refer to [Retrieve Endpoint ID](https://www.volcengine.com/docs/82379/1099522).
+3. Deploy and start the service.
+   When deploying and starting Coze Studio for the first time, it may take a while to retrieve images and build local images. Please be patient. During deployment, you will see the following log information. If you see the message "Container coze-server Started," it means the Coze Studio service has started successfully.
+   ```Bash
+   # Start the service
+   cd docker
+   cp .env.example .env
+   docker compose --profile '*' up -d
+   ```
 
 
-* [快速入门](https://www.coze.cn/open/docs/guides/quickstart)：通过 Coze Studio 快速搭建一个 AI 助手智能体。
-* [开发智能体](https://www.coze.cn/open/docs/guides/agent_overview)：如何创建、编排、发布与管理智能体。你可以使用知识、插件等功能解决模型幻觉、专业领域知识不足等问题。除此之外，Coze Studio 还提供了丰富的记忆功能，使智能体在与个人用户交互时，可根据个人用户的历史对话等生成更准确性的回复。
-* [开发工作流](https://www.coze.cn/open/docs/guides/workflow)：工作流是一系列可执行指令的集合，用于实现业务逻辑或完成特定任务。它为应用/智能体的数据流动和任务处理提供了一个结构化框架。 Coze Studio 提供了一个可视化画布，你可以通过拖拽节点迅速搭建工作流。
-* [插件等资源](https://www.coze.cn/open/docs/guides/plugin)：在 Coze Studio，工作流、插件、数据库、知识库和变量统称为资源。
-* **API & SDK**： Coze Studio 支持[对话和工作流相关 API](https://github.com/coze-dev/coze-studio/wiki/6.-API-%E5%8F%82%E8%80%83)，你也可以通过 [Chat SDK](https://www.coze.cn/open/docs/developer_guides/web_sdk_overview) 将智能体或应用集成到本地业务系统。
-* [实践教程](https://www.coze.cn/open/docs/tutorial/chat_sdk_web_online_customer_service)：了解如何通过 Coze Studio 实现各种 AI 场景，例如通过 Chat SDK 搭建网页在线客服。 
+## Developer Guide
+
+* **Project Configuration**:
+   * [Model Configuration](https://github.com/coze-dev/coze-studio/wiki/3.-Model-configuration): Before deploying the open-source version of Coze Studio, you must configure the model service. Otherwise, you cannot select models when building agents, workflows, and apps.
+   * [Plugin Configuration](https://github.com/coze-dev/coze-studio/wiki/4.-Plugin-Configuration): To use official plugins from the plugin store, you must first configure the plugins and add the authentication keys for third-party services.
+   * [Basic Component Configuration](https://github.com/coze-dev/coze-studio/wiki/5.-Basic-component-configuration): Learn how to configure components such as image uploaders to use functions like image uploading in Coze Studio .
+* [API Reference](https://github.com/coze-dev/coze-studio/wiki/6.-API-Reference): Unlike the commercial edition, the open-source version of Coze Studio only supports personal access token (PAT) authentication and supports APIs related to chat and workflows.
+* [Development Guidelines](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards):
+   * [Project Architecture](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#project-architecture): Learn about the technical architecture and core components of the open-source version of Coze Studio.
+   * [Code Development and Testing](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#code-development-and-testing): Learn how to perform secondary development and testing based on the open-source version of Coze Studio.
+   * [Troubleshooting](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#troubleshooting): Learn how to view container states and system logs.
+
+## Using the open-source version of Coze Studio
+> Regarding how to use Coze Studio, refer to the [Coze Development Platform Official Documentation Center](https://www.coze.cn/open/docs) for more information. Please note that certain features, such as tone customization, are limited to the commercial version. Differences between the open-source and commercial versions can be found in the **Feature List**.
+
+
+* [Quick Start](https://www.coze.cn/open/docs/guides/quickstart): Quickly build an AI assistant agent with Coze Studio.
+* [Developing Agents](https://www.coze.cn/open/docs/guides/agent_overview): Learn how to create, build, publish, and manage agents. You can use functions such as knowledge, plugins, etc., to resolve model hallucination and lack of expertise in professional fields. In addition, Coze Studio provides rich memory features that enable agents to generate more accurate responses based on a personal user's historical conversations during interactions.
+* [Develop workflows](https://www.coze.cn/open/docs/guides/workflow): A workflow is a set of executable instructions used to implement business logic or complete specific tasks. It structures data flow and task processing for apps or agents. Coze Studio provides a visual canvas where you can quickly build workflows by dragging and dropping nodes.
+* [Resources such as plugins](https://www.coze.cn/open/docs/guides/plugin): In Coze Studio, workflows, plugins, databases, knowledge bases, and variables are collectively referred to as resources.
+* **API & SDK**: Coze Studio supports [API related to chat and workflows](https://github.com/coze-dev/coze-studio/wiki/6.-API-Reference), and you can also integrate agents or apps with local business systems through [Chat SDK](https://www.coze.cn/open/docs/developer_guides/web_sdk_overview).
+* [Tutorials for practice](https://www.coze.cn/open/docs/tutorial/chat_sdk_web_online_customer_service): Learn how to use Coze Studio to implement various AI scenarios, such as building web-based online customer service using Chat SDK.
 
 ## License
-本项目采用 Apache 2.0 许可证。详情请参阅 [LICENSE](https://github.com/coze-dev/coze-studio/blob/main/LICENSE-APACHE) 文件。
-## 社区贡献
-我们欢迎社区贡献，贡献指南参见 [CONTRIBUTING](https://github.com/coze-dev/coze-studio/blob/main/CONTRIBUTING.md) 和 [Code of conduct](https://github.com/coze-dev/coze-studio/blob/main/CODE_OF_CONDUCT.md)，期待您的贡献！
-## 安全与隐私
-如果你在该项目中发现潜在的安全问题，或你认为可能发现了安全问题，请通过我们的[安全中心](https://security.bytedance.com/src) 或[漏洞报告邮箱](https://code.byted.org/flowdevops/cozeloop/blob/feat/release/sec@bytedance.com)通知字节跳动安全团队。
-请**不要**创建公开的 GitHub Issue。
-## 加入社区
-飞书移动端扫描以下二维码，加入 Coze Studio 技术交流群。
+This project uses the Apache 2.0 license. For details, please refer to the [LICENSE](https://github.com/coze-dev/coze-studio/blob/main/LICENSE-APACHE) file.
+## Community contributions
+We welcome community contributions. For contribution guidelines, please refer to [CONTRIBUTING](https://github.com/coze-dev/coze-studio/blob/main/CONTRIBUTING.md) and [Code of conduct](https://github.com/coze-dev/coze-studio/blob/main/CODE_OF_CONDUCT.md). We look forward to your contributions!
+## Security and privacy
+If you discover potential security issues in the project, or believe you may have found a security issue, please notify the ByteDance security team through our [security center](https://security.bytedance.com/src) or [vulnerability reporting mailbox](https://code.byted.org/flowdevops/cozeloop/blob/feat/release/sec@bytedance.com).
+Please **do not** create public GitHub Issues.
+## Join the community
+Scan the QR code below using the Lark mobile app to join the Coze Studio technical exchange group.
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/194fe3b9832848f0b7540279c91700b3~tplv-goo7wpa0wc-image.image)
-## 致谢
-感谢所有为 Coze Studio 项目做出贡献的开发者和社区成员。特别感谢：
+![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0a49081e8f3743e8bf3dcdded4bb571a~tplv-goo7wpa0wc-image.image)
 
-* Eino 框架团队提供的 LLM 集成支持
-* Cloudwego 团队开发的高性能框架
-* 所有参与测试和反馈的用户
+## Acknowledgments
+Thank you to all the developers and community members who have contributed to the Coze Studio project. Special thanks:
+
+* LLM integration support provided by the Eino framework team
+* High-performance framework developed by the Cloudwego team
+* All users who participated in testing and feedback
