@@ -1,0 +1,67 @@
+name: Thrift Syntax Validation
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'idl/**'
+      - '.github/workflows/idl.yaml'
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'idl/**'
+      - '.github/workflows/idl.yaml'
+
+jobs:
+  validate-thrift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install kitex tools
+        run: |
+          go install github.com/cloudwego/thriftgo@v0.4.1
+          go install github.com/cloudwego/kitex/tool/cmd/kitex@v0.13.1
+          go install github.com/cloudwego/thrift-gen-validator@v0.2.6
+
+      - name: Validate Thrift Files via kitex
+        run: |
+          # Initialize error flag
+          ERROR_FOUND=0
+
+          # Create temporary working directory
+          TEMP_DIR=$(mktemp -d)
+          echo "Created temporary working directory: $TEMP_DIR"
+
+          # Initialize go mod in temp directory
+          cd "$TEMP_DIR"
+          go mod init dummy
+
+          # Find all thrift files and validate them
+          while IFS= read -r -d '' thrift_file; do
+            echo "Validating $thrift_file..."
+            if ! kitex -streamx -thrift ignore_initialisms=false -module=dummy "$thrift_file" 2>&1; then
+              echo "IDL gen code error in file: $thrift_file"
+              ERROR_FOUND=1
+            fi
+          done < <(find "$GITHUB_WORKSPACE/idl" -name '*.thrift' -print0)
+
+          # Clean up temporary directory
+          cd "$GITHUB_WORKSPACE"
+          rm -rf "$TEMP_DIR"
+          echo "Cleaned up temporary working directory"
+
+          # Exit with appropriate status
+          if [ $ERROR_FOUND -eq 1 ]; then
+            echo "Thrift validation failed. Please check the errors above."
+            exit 1
+          else
+            echo "All Thrift files validated successfully!"
+            exit 0
+          fi

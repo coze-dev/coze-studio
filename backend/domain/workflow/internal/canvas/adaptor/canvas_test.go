@@ -29,9 +29,10 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"

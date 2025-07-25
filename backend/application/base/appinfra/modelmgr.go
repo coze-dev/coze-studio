@@ -100,7 +100,7 @@ func initModelByEnv(wd, templatePath string) (modelEntities []*modelmgr.Model, e
 			modelEntity.Meta.ConnConfig.Model = info.modelID
 			modelEntity.Meta.ConnConfig.APIKey = info.apiKey
 			modelEntity.Meta.ConnConfig.BaseURL = info.baseURL
-			
+
 			modelEntities = append(modelEntities, modelEntity)
 
 		default:

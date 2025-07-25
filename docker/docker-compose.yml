@@ -458,6 +458,9 @@ services:
     container_name: coze-mysql-setup-schema
     profiles: ['middleware', 'mysql-setup', 'run-server']
     env_file: *env_file
+    depends_on:
+      mysql:
+        condition: service_healthy
     volumes:
       - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl
     entrypoint:
@@ -493,6 +496,9 @@ services:
     container_name: coze-mysql-setup-init-sql
     profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano-setup']
     env_file: *env_file
+    depends_on:
+      mysql:
+        condition: service_healthy
     command:
       - /bin/sh
       - -c

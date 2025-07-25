@@ -1,0 +1,69 @@
+name: Semantic Pull Request
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Check Pull Request Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5.5.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # see https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type
+          types: |
+            build
+            ci
+            docs
+            feat
+            fix
+            perf
+            refactor
+            style
+            test
+            chore
+          # idl: idl
+          # infra:
+          #   - go version update, lint, database, etc
+          #   - rush update, {eslint,ts,vitest}-config, prettier etc
+          # frontend
+          # backend
+          # workflow: gh workflow
+          # prompt, evaluation, trace, model, dataset, foundation
+          scopes: |
+            idl
+            frontend
+            backend
+            infra
+            app
+            singleagent
+            memory
+            search
+            workflow
+            prompt
+            knowledge
+            plugin
+            middleware
+            model
+            database
+            foundation
+
+          # The pull request's title should be fulfilled the following pattern:
+          #
+          #     [<type>][<optional scope>] <description>
+          #
+          # ... where valid types and scopes can be found above; for example:
+          #
+          #     [fix][test] flaky test V1_ProxyAuthenticationTest.anonymousSocketTest
+          headerPattern: '^\[(\w*?)\](?:\[(.*?)\])?(?:\s*)(.*)$'
+          headerPatternCorrespondence: type, scope, subject

@@ -1,0 +1,25 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: coze-dev
+
+  paths:
+    - '**/*.go'
+    - frontend/apps/**/*.{ts,tsx}
+    - frontend/packages/**/*.{ts,tsx}
+  paths-ignore:
+    - 'dist'
+    - 'licenses'
+    - '**/*.md'
+    - '**/testdata/**'
+    - '**/go.mod'
+    - '**/go.sum'
+    - 'LICENSE'
+    - 'NOTICE'
+    - '**/assets/languages.yaml'
+    - '**/assets/assets.gen.go'
+    - '**/gorm_gen/**'
+    - '**/kitex_gen/**'
+    - '**/*.gen.go'
+  files:
+    - ../backend/go.mod
