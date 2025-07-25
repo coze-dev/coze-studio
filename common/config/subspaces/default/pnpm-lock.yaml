@@ -13151,8 +13151,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       react-arborist:
-        specifier: ^3.4.0
-        version: 3.4.3(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 3.4.2
+        version: 3.4.2(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
       react-pdf:
         specifier: 9.1.1
         version: 9.1.1(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
@@ -14190,8 +14190,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       react-arborist:
-        specifier: ^3.4.0
-        version: 3.4.3(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 3.4.2
+        version: 3.4.2(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
       react-pdf:
         specifier: 9.1.1
         version: 9.1.1(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
@@ -49171,8 +49171,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-arborist@3.4.3(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-yFnq1nIQhT2uJY4TZVz2tgAiBb9lxSyvF4vC3S8POCK8xLzjGIxVv3/4dmYquQJ7AHxaZZArRGHiHKsEewKdTQ==}
+  /react-arborist@3.4.2(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-A5qJp5GE5DNsBxR31b1pJ8xwpH3gxH1RwHMLmAQC+bqDLJwfBYghLPco7DdbgsdxyiPLcBnyZvr6kCzvfj6Nrw==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0

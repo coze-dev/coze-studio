@@ -60,7 +60,7 @@
     "lodash-es": "^4.17.21",
     "mitt": "^3.0.1",
     "nanoid": "^4.0.2",
-    "react-arborist": "^3.4.0",
+    "react-arborist": "3.4.2",
     "react-pdf": "9.1.1",
     "use-resize-observer": "^9.1.0"
   },

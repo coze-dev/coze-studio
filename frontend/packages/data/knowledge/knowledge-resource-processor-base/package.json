@@ -117,7 +117,7 @@
     "immer": "^10.0.3",
     "lodash-es": "^4.17.21",
     "nanoid": "^4.0.2",
-    "react-arborist": "^3.4.0",
+    "react-arborist": "3.4.2",
     "react-pdf": "9.1.1",
     "semver": "^7.3.7",
     "usehooks-ts": "^3.1.0",
