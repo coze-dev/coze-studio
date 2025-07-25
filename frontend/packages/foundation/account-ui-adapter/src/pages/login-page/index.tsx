@@ -17,7 +17,7 @@
 import { type FC, useEffect, useState } from 'react';
 
 import { CozeBrand } from '@coze-studio/components/coze-brand';
-import { bdSSOLogin } from '@coze-foundation/account-ui-base';
+import { bdsso } from '@coze-foundation/account-ui-base';
 import { I18n } from '@coze-arch/i18n';
 import { Button, Form } from '@coze-arch/coze-design';
 import { SignFrame, SignPanel } from '@coze-arch/bot-semi';
@@ -120,7 +120,13 @@ export const LoginPage: FC = () => {
             <Button
               data-testid="login.button.sso_login"
               className="mt-[12px]"
-              onClick={bdSSOLogin}
+              onClick={() => {
+                console.log('start login');
+                bdsso.isLogin(l => {
+                  console.log('is login', l);
+                });
+                bdsso.login();
+              }}
               loading={false}
               color="green"
             >

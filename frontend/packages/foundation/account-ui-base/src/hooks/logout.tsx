@@ -25,17 +25,10 @@ import { BDSSO, BDSSOType } from '@byted-sdk/bdsso';
 export const bdsso = BDSSO.config({
   type: BDSSOType.CAS,
   aid: '1479',
-  redirectUrl: 'https://ecomcoze.tiktok-row.net/sign_callback',
+  redirectUrl: 'https://ecomcoze.tiktok-row.net',
   targetSSO: 'ttsso',
 });
 
-export function bdSSOLogin() {
-  bdsso.login();
-}
-
-export function bdSSOLogout() {
-  bdsso.logout();
-}
 export interface UseLogoutReturnType {
   open: () => void;
   close: () => void;
@@ -54,7 +47,7 @@ export const useLogout = (): UseLogoutReturnType => {
       centered
       onOk={async () => {
         await logout();
-        bdSSOLogout();
+        bdsso.logout();
         setVisible(false);
         // 跳转到根路径
         navigate('/');
