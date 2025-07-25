@@ -21,6 +21,7 @@ import (
 
 	"code.byted.org/gopkg/logs"
 	"code.byted.org/middleware/hertz/pkg/app"
+	"github.com/spf13/cast"
 
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
@@ -51,35 +52,43 @@ func SessionAuthMW() app.HandlerFunc {
 			return
 		}
 
-		bdSession, err := bdsso.GetHertzSession(ctx)
-		if err != nil {
-			logs.CtxError(c, "[SessionAuthMW] get session failed, err: %v", err)
-			// httputil.InternalError(c, ctx, err)
-			// return
-		} else {
-			logs.CtxInfo(c, "[SessionAuthMW] session id is %+v", bdSession)
-		}
-
+		// 先尝试获取邮箱登录的 session
 		s := ctx.Cookie(entity.SessionKey)
+		logs.CtxInfo(c, "[SessionAuthMW] session id: %s", s)
 		if len(s) == 0 {
-			logs.Errorf("[SessionAuthMW] session id is nil")
-			httputil.InternalError(c, ctx,
-				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
-			return
-		}
+			// 再取 bdsso
+			bdSession, err := bdsso.GetHertzSession(ctx)
+			if err != nil {
+				logs.CtxError(c, "[SessionAuthMW] get session failed, err: %v", err)
+				httputil.InternalError(c, ctx,
+					errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "bdsso session not found")))
+				return
+			} else {
+				isLogin, _ := bdSession.IsLogin(c)
+				if !isLogin {
+					httputil.InternalError(c, ctx,
+						errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "bdsso session not login")))
+					return
+				}
+				userID, _ := bdSession.EmployeeID(c)
+				ctxcache.Store(c, consts.SessionDataKeyInCtx, &entity.Session{
+					UserID: cast.ToInt64(userID),
+				})
+				ctx.Next(c)
+			}
+		} else {
+			// sessionID -> sessionData
+			session, err := user.UserApplicationSVC.ValidateSession(c, string(s))
+			if err != nil {
+				logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
+				httputil.InternalError(c, ctx, err)
+				return
+			}
 
-		// sessionID -> sessionData
-		session, err := user.UserApplicationSVC.ValidateSession(c, string(s))
-		if err != nil {
-			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
-			httputil.InternalError(c, ctx, err)
-			return
+			if session != nil {
+				ctxcache.Store(c, consts.SessionDataKeyInCtx, session)
+			}
 		}
-
-		if session != nil {
-			ctxcache.Store(c, consts.SessionDataKeyInCtx, session)
-		}
-
 		ctx.Next(c)
 	}
 }

@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 type UpdateProfileRequest struct {
@@ -67,6 +68,8 @@ type User interface {
 	// Create creates or registers a new user.
 	Create(ctx context.Context, req *CreateUserRequest) (user *entity.User, err error)
 	Login(ctx context.Context, email, password string) (user *entity.User, err error)
+	SSOLogin(ctx context.Context, session *bdsso.Session) (user *entity.User, err error)
+	CreateUserBySSOSession(ctx context.Context, session *bdsso.Session) (user *entity.User, err error)
 	Logout(ctx context.Context, userID int64) (err error)
 	ResetPassword(ctx context.Context, email, password string) (err error)
 	GetUserInfo(ctx context.Context, userID int64) (user *entity.User, err error)

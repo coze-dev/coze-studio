@@ -35,6 +35,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 	"code.byted.org/gopkg/logs"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 // PassportWebEmailRegisterV2Post .
@@ -94,6 +95,29 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	// 暂时复用这个登录接口， email 为空时从 bdsso 中取用户信息
+	if req.Email == "" {
+		bdSession, err := bdsso.GetHertzSession(c)
+		if err != nil {
+			logs.CtxError(ctx, "[PassportWebEmailLoginPost] get bdsso session failed, err: %v", err)
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+		isLogin, err := bdSession.IsLogin(ctx)
+		if err != nil || !isLogin {
+			logs.CtxError(ctx, "[PassportWebEmailLoginPost] is login failed, err: %v", err)
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+
+		resp, err := user.UserApplicationSVC.BdSSOLogin(ctx, bdSession)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+		c.JSON(http.StatusOK, resp)
 		return
 	}
 

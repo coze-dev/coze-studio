@@ -32,6 +32,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	bdsso "code.byted.org/ucenter/bdsso_sessionlib"
 )
 
 var UserApplicationSVC = &UserApplicationService{}
@@ -107,6 +108,21 @@ func (u *UserApplicationService) PassportWebEmailLoginPost(ctx context.Context, 
 		Data: userDo2PassportTo(userInfo),
 		Code: 0,
 	}, userInfo.SessionKey, nil
+}
+
+// BdSSOLogin 处理用户 SSO 登录请求
+func (u *UserApplicationService) BdSSOLogin(ctx context.Context, req *bdsso.Session) (
+	resp *passport.PassportWebEmailLoginPostResponse, err error,
+) {
+	userInfo, err := u.DomainSVC.SSOLogin(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &passport.PassportWebEmailLoginPostResponse{
+		Data: userDo2PassportTo(userInfo),
+		Code: 0,
+	}, nil
 }
 
 func (u *UserApplicationService) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
