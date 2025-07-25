@@ -23,11 +23,22 @@ COPY backend/ ./
 RUN go build -ldflags="-s -w" -o /app/opencoze main.go
 
 
-
 # Stage 2: Final image
 FROM alpine:3.22.0
 
 WORKDIR /app
+
+ARG TARGETARCH
+
+RUN case "${TARGETARCH}" in \
+        amd64)  deno_arch="x86_64" ;; \
+        arm64)  deno_arch="aarch64" ;; \
+        *)      echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    deno_url="https://github.com/denoland/deno/releases/download/v2.4.1/deno-${deno_arch}-unknown-linux-gnu.zip" && \
+    wget -q -O /tmp/deno.zip "${deno_url}" && \
+    unzip -q /tmp/deno.zip -d /usr/local/bin && \
+    rm -f /tmp/deno.zip
 
 # Install runtime dependencies for Go app and base for Python
 # pax-utils for scanelf, python3 for running Python, python3-dev for headers/shared libs
@@ -48,7 +59,6 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # Remove build dependencies
     apk del .python-build-deps
 
-RUN curl -fsSL https://deno.land/x/install/install.sh | sh
 
 # Copy the built Go binary from the builder stage
 COPY --from=builder /app/opencoze /app/opencoze
