@@ -122,9 +122,7 @@ export const LoginPage: FC = () => {
               className="mt-[12px]"
               onClick={() => {
                 console.log('start login');
-                bdsso.isLogin(l => {
-                  console.log('is login', l);
-                });
+                bdsso.logout();
                 bdsso.login();
               }}
               loading={false}
