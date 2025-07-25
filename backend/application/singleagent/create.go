@@ -34,6 +34,15 @@ import (
 )
 
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
+	resp, err := s.appContext.ModelMgr.ListInUseModel(ctx, 1, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.ModelList) == 0 {
+		return nil, errorx.New(errno.ErrAgentNoModelInUseCode)
+	}
+
 	do, err := s.draftBotCreateRequestToSingleAgent(ctx, req)
 	if err != nil {
 		return nil, err

@@ -22,12 +22,19 @@ import "github.com/coze-dev/coze-studio/backend/pkg/errorx/code"
 const (
 	ErrAppInvalidParamCode = 101000000
 	ErrAppPermissionCode   = 101000001
-	ErrAppRecordNotFound   = 109000002
+	ErrAppRecordNotFound   = 101000002
+	ErrAppNoModelInUseCode = 101000003
 )
 
 const APPMsgKey = "msg"
 
 func init() {
+	code.Register(
+		ErrAppNoModelInUseCode,
+		"there is no llm model in use, please config a model first",
+		code.WithAffectStability(false),
+	)
+
 	code.Register(
 		ErrAppPermissionCode,
 		"unauthorized access : {msg}",

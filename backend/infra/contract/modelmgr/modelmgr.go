@@ -6,6 +6,7 @@ import (
 
 type Manager interface {
 	ListModel(ctx context.Context, req *ListModelRequest) (*ListModelResponse, error)
+	ListInUseModel(ctx context.Context, limit int, Cursor *string) (*ListModelResponse, error)
 	MGetModelByID(ctx context.Context, req *MGetModelRequest) ([]*Model, error)
 }
 

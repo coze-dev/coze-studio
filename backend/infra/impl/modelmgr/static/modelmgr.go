@@ -26,6 +26,14 @@ type staticModelManager struct {
 	modelMapping map[int64]*modelmgr.Model
 }
 
+func (s *staticModelManager) ListInUseModel(ctx context.Context, limit int, Cursor *string) (*modelmgr.ListModelResponse, error) {
+	return s.ListModel(ctx, &modelmgr.ListModelRequest{
+		Status: []modelmgr.ModelStatus{modelmgr.StatusInUse},
+		Limit:  limit,
+		Cursor: Cursor,
+	})
+}
+
 func (s *staticModelManager) ListModel(_ context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	startIdx := 0
 	if req.Cursor != nil {

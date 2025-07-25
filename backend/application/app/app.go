@@ -54,6 +54,7 @@ import (
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -72,6 +73,7 @@ type APPApplicationService struct {
 
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
+	modelMgr        modelmgr.Manager
 
 	userSVC user.User
 
@@ -83,6 +85,15 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
+	}
+
+	respModel, err := a.modelMgr.ListInUseModel(ctx, 1, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(respModel.ModelList) == 0 {
+		return nil, errorx.New(errno.ErrAppNoModelInUseCode)
 	}
 
 	appID, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
@@ -692,8 +703,8 @@ func (a *APPApplicationService) initTask(ctx context.Context, req *resourceAPI.R
 }
 
 func (a *APPApplicationService) handleCopyResult(ctx context.Context, taskID string, newResID int64,
-	req *resourceAPI.ResourceCopyDispatchRequest, copyErr error) (failedReason string, err error) {
-
+	req *resourceAPI.ResourceCopyDispatchRequest, copyErr error,
+) (failedReason string, err error) {
 	resType, err := toResourceType(req.ResType)
 	if err != nil {
 		return "", err

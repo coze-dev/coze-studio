@@ -35,9 +35,16 @@ const (
 	ErrAgentPublishSingleAgentCode         = 100000010
 	ErrAgentAlreadyBindDatabaseCode        = 100000011
 	ErrAgentExecuteErrCode                 = 100000012
+	ErrAgentNoModelInUseCode               = 100000013
 )
 
 func init() {
+	code.Register(
+		ErrAgentNoModelInUseCode,
+		"there is no llm model in use, please config a model first",
+		code.WithAffectStability(false),
+	)
+
 	code.Register(
 		ErrAgentPublishSingleAgentCode,
 		"publish single agent failed",
