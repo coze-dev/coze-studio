@@ -414,6 +414,9 @@ services:
     container_name: coze-elasticsearch-setup
     profiles: ['middleware', 'volcano-setup']
     env_file: *env_file
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
