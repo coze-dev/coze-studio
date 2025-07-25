@@ -25,7 +25,7 @@ import { BDSSO, BDSSOType } from '@byted-sdk/bdsso';
 export const bdsso = BDSSO.config({
   type: BDSSOType.CAS,
   aid: '1479',
-  redirectUrl: 'https://ecomcoze.tiktok-row.net',
+  redirectUrl: 'https://ecomcoze.tiktok-row.net/sign_callback',
   targetSSO: 'ttsso',
 });
 

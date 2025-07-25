@@ -22,6 +22,11 @@ export const LoginPage = lazy(() =>
     default: res.LoginPage,
   })),
 );
+export const LoginCallBack = lazy(() =>
+  import('@coze-foundation/account-ui-adapter').then(res => ({
+    default: res.LoginCallBack,
+  })),
+);
 
 // 文档页面
 export const Redirect = lazy(() => import('../pages/redirect'));

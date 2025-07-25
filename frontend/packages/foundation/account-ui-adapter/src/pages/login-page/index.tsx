@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 
 import { CozeBrand } from '@coze-studio/components/coze-brand';
 import { bdSSOLogin } from '@coze-foundation/account-ui-base';
@@ -24,6 +24,17 @@ import { SignFrame, SignPanel } from '@coze-arch/bot-semi';
 
 import { useLoginService } from './service';
 import { Favicon } from './favicon';
+
+export const LoginCallBack: FC = () => {
+  const { login } = useLoginService({
+    email: '',
+    password: '',
+  });
+  useEffect(() => {
+    login();
+  }, []);
+  return <>Login...</>;
+};
 
 export const LoginPage: FC = () => {
   const [email, setEmail] = useState('');
@@ -109,7 +120,12 @@ export const LoginPage: FC = () => {
             <Button
               data-testid="login.button.sso_login"
               className="mt-[12px]"
-              onClick={bdSSOLogin}
+              onClick={() => {
+                bdSSOLogin();
+                setEmail('');
+                setPassword('');
+                login();
+              }}
               loading={false}
               color="green"
             >

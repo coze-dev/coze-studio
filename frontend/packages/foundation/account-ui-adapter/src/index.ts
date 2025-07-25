@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export {
   useLogout,
   RequireAuthContainer,
 } from '@coze-foundation/account-ui-base';
 
-export { LoginPage } from './pages/login-page';
+export { LoginPage, LoginCallBack } from './pages/login-page';

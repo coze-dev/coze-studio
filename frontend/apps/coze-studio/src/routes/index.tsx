@@ -44,6 +44,7 @@ import {
   DatabaseDetail,
   ExplorePluginPage,
   ExploreTemplatePage,
+  LoginCallBack,
 } from './async-components';
 
 export const router: ReturnType<typeof createBrowserRouter> =
@@ -87,6 +88,15 @@ export const router: ReturnType<typeof createBrowserRouter> =
         {
           path: 'sign',
           Component: LoginPage,
+          errorElement: <GlobalError />,
+          loader: () => ({
+            hasSider: false,
+            requireAuth: false,
+          }),
+        },
+        {
+          path: 'sign_callback',
+          Component: LoginCallBack,
           errorElement: <GlobalError />,
           loader: () => ({
             hasSider: false,

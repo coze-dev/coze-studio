@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect } from 'react';
 
 import { logger } from '@coze-arch/logger';
@@ -37,7 +37,7 @@ export const useRouteErrorCatch = (error: unknown) => {
           ? error
           : new CustomError(
               ReportEventNames.GlobalErrorBoundary,
-              `global error route catch error infos:${String(error)}`,
+              `global error route catch error infos:${String(error?.data || error)}`,
             );
       // 过滤 其他error
       sendCertainError(realError, () => {
