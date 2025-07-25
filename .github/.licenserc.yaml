@@ -25,5 +25,6 @@ header:
     - 'backend/api/**'
     - '**/*_mock.go'
     - 'backend/internal/mock/**'
+    - '**/mock/**'
   files:
     - ../backend/go.mod

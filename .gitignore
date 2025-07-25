@@ -49,3 +49,6 @@ node_modules
 common/temp
 .rush
 .eslintcache
+
+
+backend/conf/model/*.yaml
