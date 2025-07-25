@@ -20,6 +20,7 @@ package coze
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -30,6 +31,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/api/model/passport"
 	"code.byted.org/data_edc/workflow_engine_next/application/user"
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/hertzutil/domain"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
@@ -102,13 +104,13 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 		bdSession, err := bdsso.GetHertzSession(c)
 		if err != nil {
 			logs.CtxError(ctx, "[PassportWebEmailLoginPost] get bdsso session failed, err: %v", err)
-			internalServerErrorResponse(ctx, c, err)
+			internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", fmt.Sprintf("get bdsso session failed, err: %v", err.Error()))))
 			return
 		}
 		isLogin, err := bdSession.IsLogin(ctx)
 		if err != nil || !isLogin {
 			logs.CtxError(ctx, "[PassportWebEmailLoginPost] is login failed, err: %v", err)
-			internalServerErrorResponse(ctx, c, err)
+			internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", fmt.Sprintf("is not login"))))
 			return
 		}
 

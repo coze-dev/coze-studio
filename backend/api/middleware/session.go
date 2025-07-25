@@ -64,6 +64,14 @@ func SessionAuthMW() app.HandlerFunc {
 					errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "bdsso session not found")))
 				return
 			} else {
+				userName, err := bdSession.UserName(c)
+				if err != nil {
+					logs.CtxError(c, "[SessionAuthMW] get user name failed, err: %v", err)
+					httputil.InternalError(c, ctx,
+						errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "bdsso session not login")))
+					return
+				}
+				logs.CtxInfo(c, "[SessionAuthMW] user name: %s", userName)
 				isLogin, _ := bdSession.IsLogin(c)
 				if !isLogin {
 					httputil.InternalError(c, ctx,
