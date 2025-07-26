@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import 'reflect-metadata';
 import { useNavigate } from 'react-router-dom';
 import React, { useMemo, memo } from 'react';
@@ -73,7 +73,7 @@ const ProjectIDE: React.FC<ProjectIDEProps> = memo(
       () => ({
         view: {
           widgetRegistries: [
-            // The community version does not currently support conversation management in project, for future expansion
+            // will support soon
             ...(IS_OPEN_SOURCE ? [] : [ConversationRegistry]),
             WorkflowWidgetRegistry,
             DatabaseWidgetRegistry,

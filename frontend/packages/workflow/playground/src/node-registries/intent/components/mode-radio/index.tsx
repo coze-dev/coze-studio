@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { INTENT_NODE_MODE } from '@coze-workflow/nodes';
@@ -22,7 +22,7 @@ import { I18n } from '@coze-arch/i18n';
 import { INTENT_MODE } from '@/node-registries/intent/constants';
 import { RadioSetterField } from '@/node-registries/common/fields';
 export default function ModeRadio() {
-  // The community version does not support the fast mode of intent recognition for future expansion
+  // will support soon
   if (IS_OPEN_SOURCE) {
     return null;
   }

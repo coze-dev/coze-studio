@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback } from 'react';
 
 import cls from 'classnames';
@@ -38,7 +38,7 @@ export const TestFormSheetHeaderV2 = () => {
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
-    // The community version does not currently support trace, for future expansion
+    // will support soon
     if (IS_OPEN_SOURCE) {
       return;
     }
@@ -61,7 +61,7 @@ export const TestFormSheetHeaderV2 = () => {
             onClick={handleOpenTraceBottomSheet}
             hiddenStateText
             extra={
-              // The community version does not currently support trace, for future expansion
+              // will support soon
               !IS_OPEN_SOURCE && (
                 <span className={cls('cursor-pointer font-medium')}>
                   {I18n.t('workflow_testset_view_log')}

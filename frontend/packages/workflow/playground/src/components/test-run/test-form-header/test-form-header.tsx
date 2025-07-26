@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -33,7 +33,7 @@ export const TestFormHeader: React.FC = () => {
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
-    // The community version does not currently support trace, for future expansion
+    // will support soon
     if (IS_OPEN_SOURCE) {
       return;
     }
@@ -55,7 +55,7 @@ export const TestFormHeader: React.FC = () => {
           hiddenStateText
           onClick={handleOpenTraceBottomSheet}
           extra={
-            // The community version does not currently support trace, for future expansion
+            // will support soon
             !IS_OPEN_SOURCE && (
               <span className={'cursor-pointer font-medium'}>
                 {I18n.t('workflow_testset_view_log')}

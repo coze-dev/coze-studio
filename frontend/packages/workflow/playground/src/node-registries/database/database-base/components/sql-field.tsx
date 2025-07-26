@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -36,7 +36,7 @@ const Sql = () => {
 
   return (
     <div className={styles.container}>
-      {/* The community version does not currently support the AI-generated SQL function for future expansion */}
+      {/* will support soon */}
       {!readonly && !IS_OPEN_SOURCE ? (
         <AutoGenerate
           className={styles['auto-generate']}

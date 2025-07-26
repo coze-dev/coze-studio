@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { pick } from 'lodash-es';
 import { inject, injectable } from 'inversify';
 import { QueryClient } from '@tanstack/react-query';
@@ -76,7 +76,7 @@ export class TriggerService {
   protected subWorkflowInfos: Record<string, WorkflowDetailInfoData> = {};
   protected startNodeFormValues: Record<string, unknown> = {};
   async load() {
-    // The community version does not support the project trigger feature, for future expansion
+    // will support soon
     if (this.globalState.projectId && !IS_OPEN_SOURCE) {
       const meta = await fetchTriggerFormMeta({
         spaceId: this.globalState.spaceId,

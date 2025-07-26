@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState, useCallback } from 'react';
 
 import classnames from 'classnames';
@@ -90,7 +90,7 @@ export const Configuration = () => {
           onClick={handleSwitchExpand}
         />
       </div>
-      {/* The community version does not currently support conversation management in project, for future expansion */}
+      {/* will support soon */}
       {IS_OPEN_SOURCE ? null : (
         <div
           className={classnames(

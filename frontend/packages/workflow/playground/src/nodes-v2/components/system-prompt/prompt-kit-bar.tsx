@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect } from 'react';
 
 import { PublicScopeProvider } from '@coze-workflow/variable';
 import { NLPromptButton } from '@coze-workflow/resources-adapter';
 import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
 import { I18n } from '@coze-arch/i18n';
-import { UIIconButton } from '@coze-arch/bot-semi';
 import {
   IconCozExpand,
   IconCozLightbulb,
@@ -28,6 +27,7 @@ import {
   IconCozTrayArrowUp,
 } from '@coze-arch/coze-design/icons';
 import { Tooltip, IconButton, Button } from '@coze-arch/coze-design';
+import { UIIconButton } from '@coze-arch/bot-semi';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { CopyButton } from '@/components/copy-button';
@@ -112,7 +112,7 @@ export const PromptKitBar = props => {
       </Tooltip>
 
       <div className={styles['nl-prompt']}>
-        {/* The community version does not support the AI-generated system prompt feature, for future expansion */}
+        {/* will support soon */}
         {IS_OPEN_SOURCE ? null : (
           <NLPromptButton
             disabled={readonly}

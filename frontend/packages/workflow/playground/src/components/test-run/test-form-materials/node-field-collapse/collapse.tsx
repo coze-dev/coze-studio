@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-batch-import-or-export */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
@@ -63,7 +63,7 @@ export const NodeFieldCollapse: React.FC<React.PropsWithChildren> = ({
         <div className={css.extra}>
           <ModeSwitch />
 
-          {/* The community version does not support AI-generated test-run inputs, for future expansion */}
+          {/* will support soon */}
           {IS_OPEN_SOURCE ? null : (
             <AIGenerateButton
               schema={schema}

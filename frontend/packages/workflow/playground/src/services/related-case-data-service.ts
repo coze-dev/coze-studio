@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import type { WorkflowJSON } from '@flowgram-adapter/free-layout-editor';
 import { getTestDataByTestset, FieldName } from '@coze-workflow/test-run';
@@ -70,7 +70,7 @@ export class RelatedCaseDataService {
       node => node.type === StandardNodeType.Start,
     );
 
-    /* The community version does not currently support testset, for future expansion */
+    /* will support soon */
     if (IS_OPEN_SOURCE) {
       return;
     }
