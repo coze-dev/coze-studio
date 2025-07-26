@@ -72,7 +72,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    # 启动服务
    cd docker
    cp .env.example .env
-   docker compose --profile '*' up -d
+   docker compose --profile "*" up -d
    ```
 4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
 
@@ -114,7 +114,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 ## 致谢
 感谢所有为 Coze Studio 项目做出贡献的开发者和社区成员。特别感谢：
 
-* [Eino](https://github.com/cloudwego/eino) 框架团队 - 为 Coze Studio 的智能体和工作流运行时、模型抽象封装、知识库索引构建和检索提供了强大的 LLM 集成支持
+* [Eino](https://github.com/cloudwego/eino) 框架团队 - 为 Coze Studio 的智能体和工作流运行时、模型抽象封装、知识库索引构建和检索提供了强大的支持
 * [FlowGram](https://github.com/bytedance/flowgram.ai) 团队 - 为 Coze Studio 的工作流画布编辑页提供了高质量的流程搭建引擎
 * [Hertz](https://github.com/cloudwego/hertz) 团队 - 高性能、强扩展性的 Go HTTP 框架，用于构建微服务
 * 所有参与测试和反馈的用户
