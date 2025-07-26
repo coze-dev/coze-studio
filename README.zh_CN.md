@@ -72,7 +72,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    # 启动服务
    cd docker
    cp .env.example .env
-   docker compose --profile "*" up -d
+   docker-compose --profile "*" up -d
    ```
 4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
 
