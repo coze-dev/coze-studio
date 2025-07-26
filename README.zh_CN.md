@@ -115,4 +115,5 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 
 * Eino 框架团队提供的 LLM 集成支持
 * Cloudwego 团队开发的高性能框架
+* [FlowGram](https://github.com/bytedance/flowgram.ai) 团队开发的高质量流程搭建引擎
 * 所有参与测试和反馈的用户

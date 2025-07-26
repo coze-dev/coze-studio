@@ -117,4 +117,5 @@ Thank you to all the developers and community members who have contributed to th
 
 * LLM integration support provided by the Eino framework team
 * High-performance framework developed by the Cloudwego team
+* High-quality workflow building engine developed by the [FlowGram](https://github.com/bytedance/flowgram.ai) team
 * All users who participated in testing and feedback
