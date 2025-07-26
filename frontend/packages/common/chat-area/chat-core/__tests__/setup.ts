@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import eventEmitter from 'eventemitter3';
 
 vi.stubGlobal('IS_OVERSEA', false);
@@ -53,9 +53,6 @@ export const testSetup = () => {
         slardarTracer: vi.fn(),
       }),
     })),
-  }));
-  vi.mock('@slardar/web/client', () => ({
-    createMinimalBrowserClient: vi.fn(),
   }));
   // mock上传插件实现
   vi.mock('../src/plugins/upload-plugin', () => ({

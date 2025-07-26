@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   useEffect,
   useMemo,
@@ -133,7 +133,6 @@ export const OnboardingMessage = forwardRef<
             initValues={onboardingContent}
             isReadonly={isReadonly}
             isGenerating={isLoading}
-            // 即将支持，敬请期待
             plainText={scene === BotCreatorScene.DouyinBot}
             onChange={submitEditor}
             onBlur={() => {

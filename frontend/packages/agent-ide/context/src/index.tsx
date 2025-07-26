@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createContext, useContext } from 'react';
 
 export enum BotCreatorScene {
   Bot = 'bot',
-  /** 即将支持，敬请期待 */
   DouyinBot = 'douyin-bot',
 }
 
