@@ -86,7 +86,7 @@ export const TemplateConfigForm = forwardRef<
   // eslint-disable-next-line @coze-arch/max-line-per-function
 >(({ record, userInfo }, ref) => {
   const [FLAGS] = useFlags();
-  // 开源版暂不支持该功能
+  // 即将支持，敬请期待
   const customRequest = FLAGS['bot.studio.project_publish_imagex']
     ? uploadCustomRequestImageX
     : uploadCustomRequest;

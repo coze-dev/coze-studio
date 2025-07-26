@@ -44,7 +44,7 @@ export const PublishRecord: FC<{
     type: IntelligenceType.Project,
     spaceId,
     intelligenceId: projectId,
-    // 开源版暂不支持该功能
+    // 即将支持，敬请期待
     enable: FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE,
   });
 
@@ -58,7 +58,7 @@ export const PublishRecord: FC<{
         <div className="text-[12px] coz-fg-dim leading-[16px]">
           {I18n.t('project_release_already_released_desc')}
         </div>
-        {/* 开源版暂不支持该功能 */}
+        {/* 即将支持，敬请期待 */}
         {FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE ? (
           <div className="text-[12px] coz-fg-dim leading-[16px]">
             {I18n.t('release_management_detail1', {

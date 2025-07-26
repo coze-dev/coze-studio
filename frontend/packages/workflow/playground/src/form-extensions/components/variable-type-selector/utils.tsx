@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode } from 'react';
 
 import { VARIABLE_TYPE_ALIAS_MAP, ViewVariableType } from '@coze-workflow/base';
@@ -89,7 +89,6 @@ const getFileChildren = (
     generateVariableOption({ type: ViewVariableType.Video, parentPath }),
     // 1. 是否开启了auto start节点支持音色字段能力
     // 2. 是否开启了语音资源功能
-    // 开源版暂不支持该功能
     FLAGS['bot.automation.start_support_voice'] &&
     FLAGS['bot.studio.library_voice_resource']
       ? generateVariableOption({ type: ViewVariableType.Voice })

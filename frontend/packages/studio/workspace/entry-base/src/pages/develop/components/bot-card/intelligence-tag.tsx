@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { Tag } from '@coze-arch/coze-design';
@@ -38,7 +38,6 @@ export const IntelligenceTag: React.FC<IntelligenceTagProps> = ({
       </Tag>
     );
   }
-  // 开源版暂不支持该功能
   if (intelligenceType === IntelligenceType.DouyinAvatarBot) {
     return (
       <Tag color="red" size="small" className="w-fit">

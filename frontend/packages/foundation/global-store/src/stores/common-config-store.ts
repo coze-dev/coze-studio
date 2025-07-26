@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { devtools } from 'zustand/middleware';
 import { create } from 'zustand';
 import {
@@ -28,7 +28,6 @@ interface ICommonConfig {
   homeBannerTask?: Array<HomeBannerDisplay>;
   quickStart?: Array<QuickStartConfig>;
   oceanProjectSpaces?: Array<string>;
-  /** 开源版暂不支持该功能 */
   douyinAvatarSpaces?: Array<string>;
 }
 export interface ICommonConfigStoreState {

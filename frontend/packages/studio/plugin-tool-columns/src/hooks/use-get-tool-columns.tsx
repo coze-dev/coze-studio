@@ -443,7 +443,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
                 visible={record.api_id === showDropdownItem?.api_id}
                 render={
                   <Dropdown.Menu className="px-[4px]">
-                    {/* 开源版暂不支持该功能 */}
+                    {/* 即将支持，敬请期待 */}
                     {FLAGS2['bot.devops.plugin_import_export'] ? (
                       <Dropdown.Item
                         disabled={
@@ -459,7 +459,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
                         {I18n.t('code_snippet')}
                       </Dropdown.Item>
                     ) : null}
-                    {/* 开源版暂不支持该功能 */}
+                    {/* 即将支持，敬请期待 */}
                     {FLAGS2['bot.devops.plugin_mockset'] ? (
                       <Dropdown.Item
                         className="rounded-[4px]"

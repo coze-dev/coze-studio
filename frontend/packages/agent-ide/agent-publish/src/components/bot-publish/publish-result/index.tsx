@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { NavLink, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -47,8 +47,8 @@ import {
   type ConnectResultInfo,
 } from '@coze-agent-ide/space-bot';
 
-import styles from '../index.module.less';
 import { PublishResultArea } from './component/publish-result-area';
+import styles from '../index.module.less';
 
 interface PublishResultProps {
   // 隐藏Banner
@@ -190,7 +190,6 @@ export const PublishResult = ({
     type: IntelligenceType.Bot,
     spaceId: String(spaceId),
     intelligenceId: String(botId),
-    // 开源版暂不支持该功能
     enable: FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE,
   });
 

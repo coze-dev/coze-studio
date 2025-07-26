@@ -42,6 +42,7 @@ module.exports = [
       '**/es/**',
       '**/lib/**',
       '**/.codebase/**',
+      '**/.github/**',
       '**/.changeset/**',
       '**/config/**',
       '**/common/scripts/**',

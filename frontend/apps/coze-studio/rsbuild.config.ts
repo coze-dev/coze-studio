@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import { defineConfig } from '@coze-arch/rsbuild-config';
@@ -103,8 +103,6 @@ const mergedConfig = defineConfig({
       /\/node_modules\/(marked|@dagrejs|@tanstack)\//,
     ],
     alias: {
-      // TODO: fixme late，开源之前需要干掉这个
-      '@slardar/web/client': '@slardar/web/cn',
       '@coze-arch/foundation-sdk': require.resolve(
         '@coze-foundation/foundation-sdk',
       ),

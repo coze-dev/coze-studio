@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable max-lines-per-function */
@@ -37,15 +37,6 @@ import { useCurrentEnterpriseInfo } from '@coze-foundation/enterprise-store-adap
 import { PictureUpload } from '@coze-common/biz-components/picture-upload';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { safeJSONParse } from '@coze-arch/bot-utils';
-import { useFlags } from '@coze-arch/bot-flags';
-import {
-  type PrivateLink,
-  type commonParamSchema,
-} from '@coze-arch/bot-api/plugin_develop';
-import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
-import { DeveloperApi, PluginDevelopApi } from '@coze-arch/bot-api';
-import { InfoPopover } from '@coze-agent-ide/bot-plugin-tools/infoPopover';
 import { IconCozPlus, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   Cascader,
@@ -60,6 +51,15 @@ import {
   Typography,
   withField,
 } from '@coze-arch/coze-design';
+import { safeJSONParse } from '@coze-arch/bot-utils';
+import { useFlags } from '@coze-arch/bot-flags';
+import {
+  type PrivateLink,
+  type commonParamSchema,
+} from '@coze-arch/bot-api/plugin_develop';
+import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
+import { DeveloperApi, PluginDevelopApi } from '@coze-arch/bot-api';
+import { InfoPopover } from '@coze-agent-ide/bot-plugin-tools/infoPopover';
 
 import {
   findAuthTypeItemV2,
@@ -142,7 +142,6 @@ export const PluginForm: FC<{
     {
       ready:
         compareLevel === UserLevel.Enterprise &&
-        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc'] &&
         !IS_OPEN_SOURCE,
     },
@@ -225,7 +224,6 @@ export const PluginForm: FC<{
       if (
         editInfo?.meta_info?.private_link_id &&
         compareLevel === UserLevel.Enterprise &&
-        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc']
       ) {
         setDisableEditUrl(true);
@@ -292,7 +290,6 @@ export const PluginForm: FC<{
     return (
       <>
         {compareLevel === UserLevel.Enterprise &&
-        // 开源版暂不支持该功能
         FLAGS['bot.studio.plugin_vpc'] ? (
           <FormSelect
             label={{

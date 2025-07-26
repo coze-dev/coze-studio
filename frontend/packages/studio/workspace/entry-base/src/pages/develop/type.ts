@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type IntelligenceData,
   type SearchScope,
@@ -29,7 +29,7 @@ export enum DevelopCustomTypeStatus {
   All = 0,
   Project = 1,
   Agent = 2,
-  DouyinAvatarBot = 3, // single agent 类型的抖音分身 开源版暂不支持该功能
+  DouyinAvatarBot = 3, // single agent 类型的抖音分身
 }
 
 export interface DraftIntelligenceList {

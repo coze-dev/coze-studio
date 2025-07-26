@@ -62,7 +62,7 @@ export const Inputs = withFieldArray(
         tooltip={I18n.t('ltm_240826_01')}
         testId={getNodeSetterId(fieldName)}
         actions={[
-          // 开源版暂不支持该功能
+          // 即将支持，敬请期待
           isChatflow && FLAGS['bot.automation.ltm_enhance'] ? (
             <HistorySwitchField name="inputs.historySetting.enableChatHistory" />
           ) : null,

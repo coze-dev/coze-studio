@@ -70,7 +70,7 @@ const useAgentSkillPluginSettingModalController = (
     },
     {
       refreshDeps: [commonParams],
-      // 开源版暂不支持该功能
+      // 即将支持，敬请期待
       ready: visible && FLAGS['bot.devops.plugin_mockset'],
     },
   );

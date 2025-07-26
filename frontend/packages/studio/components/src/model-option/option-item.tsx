@@ -77,12 +77,12 @@ export const ModelOptionItem: React.FC<OptionItemProps> = ({
   const tags: OptionItemTag[] = [];
 
   const shouldShowEndPoint = showEndPointName && endPointName;
-  // 开源版暂不支持该功能
+  // 即将支持，敬请期待
   const displayName = FLAGS['bot.studio.model_select_switch_end_point_name_pos']
     ? endPointName || name
     : name;
 
-  // 开源版暂不支持该功能
+  // 即将支持，敬请期待
   const displayEndPointName = FLAGS[
     'bot.studio.model_select_switch_end_point_name_pos'
   ]

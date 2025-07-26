@@ -144,7 +144,7 @@ export const MoreMenuButton: FC = () => {
     spaceId,
     enable:
       showPublishManageMenu &&
-      // 开源版暂不支持该功能
+      // 即将支持，敬请期待
       FLAGS['bot.studio.publish_management'] &&
       !IS_OPEN_SOURCE,
   });
@@ -172,7 +172,7 @@ export const MoreMenuButton: FC = () => {
     <Dropdown
       render={
         <Dropdown.Menu mode="menu">
-          {/* 开源版暂不支持该功能 */}
+          {/* 即将支持，敬请期待 */}
           {showPublishManageMenu &&
           FLAGS['bot.studio.publish_management'] &&
           !IS_OPEN_SOURCE
@@ -196,7 +196,7 @@ export const MoreMenuButton: FC = () => {
             : null}
           {hideOpenIn ? null : (
             <>
-              {/* 开源版暂不支持该功能 */}
+              {/* 即将支持，敬请期待 */}
               {showPublishManageMenu &&
               FLAGS['bot.studio.publish_management'] &&
               !IS_OPEN_SOURCE ? (

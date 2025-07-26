@@ -154,7 +154,6 @@ export function ModelOption({
               {model.name}
             </Typography.Title>
             <div className="shrink-0 flex gap-[6px]">
-              {/* 抖音分身场景下不展示改 tag，开源版暂不支持该功能 */}
               {model.model_status_details?.is_free_model &&
               scene !== BotCreatorScene.DouyinBot ? (
                 <Tag size="mini" color="primary" className="!coz-mg-plus">

@@ -10,7 +10,6 @@ EXCLUDE_PATTERNS=(
   'packages/arch/bot-api/src/auto-generate/**'
   'apps/bot-op/src/services/bam-auto-generate/**'
   'apps/prompt-platform/src/services/auto-generate/**'
-  ".cursor/api/**"
   "**/lib/**"
   "**/.*/**"
   '**/__tests__/**'
@@ -24,9 +23,7 @@ EXCLUDE_PATTERNS=(
   '**/e2e/**'
   'common/changes/**'
   'apps/fornax/**',
-  "packages/arch/semi-theme-hand01",
-  "packages/arch/arco-icon",
-  "packages/arch/resources/**"
+  "packages/arch/semi-theme-hand01"
 )
 
 for pattern in "${EXCLUDE_PATTERNS[@]}"; do
