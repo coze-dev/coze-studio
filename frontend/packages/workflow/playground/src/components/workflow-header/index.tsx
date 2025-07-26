@@ -62,7 +62,6 @@ const WorkFlowHeader: React.FC = () => {
         {/* will support soon */}
         {IS_OPEN_SOURCE ? null : <ReferenceButton workflowId={workflowId} />}
 
-        {/* will support soon */}
         {IS_OPEN_SOURCE ? null : (
           <>
             {!readonly && <CreditButton />}
