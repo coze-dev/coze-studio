@@ -58,6 +58,7 @@ jobs:
             database
             foundation
             comment
+            ci
 
           # The pull request's title should be fulfilled the following pattern:
           #
@@ -66,5 +67,5 @@ jobs:
           # ... where valid types and scopes can be found above; for example:
           #
           #     [fix][test] flaky test V1_ProxyAuthenticationTest.anonymousSocketTest
-          headerPattern: '^\[(\w*?)\](?:\[(.*?)\])?(?:\s*)(.*)$'
+          # headerPattern: '^\[(\w*?)\](?:\[(.*?)\])?(?:\s*)(.*)$'
           headerPatternCorrespondence: type, scope, subject
