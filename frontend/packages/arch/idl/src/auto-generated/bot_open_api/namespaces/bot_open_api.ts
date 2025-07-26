@@ -60,7 +60,7 @@ export interface BackgroundImageInfo {
 
 export interface BotConfig {
   character_name?: string;
-  propmt?: string;
+  prompt?: string;
 }
 
 export interface BotInfo {
