@@ -41,7 +41,6 @@ export const FormRender = withNodeConfigForm(() => {
 
   let hiddenTypes = isBindDouyin ? FILE_TYPES : [];
 
-  // will support soon
   if (IS_OPEN_SOURCE) {
     hiddenTypes = [ViewVariableType.Voice, ViewVariableType.ArrayVoice];
   }

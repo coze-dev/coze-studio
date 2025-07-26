@@ -97,7 +97,6 @@ const WorkflowFilter = forwardRef<
         FLAGS['bot.community.store_imageflow'] ||
         isGeneralWorkflow(context?.flowMode || WorkflowMode.Workflow)
       ) {
-        // will support soon
         if (IS_OPEN_SOURCE) {
           return {
             type: 'PublicGetProductCategoryList',
