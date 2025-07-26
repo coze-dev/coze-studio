@@ -34,13 +34,13 @@ const (
 type RunEvent string
 
 const (
-	RunEventCreated        RunEvent = "conversation.run.created"
-	RunEventInProgress     RunEvent = "conversation.run.in_progress"
-	RunEventCompleted      RunEvent = "conversation.run.completed"
-	RunEventFailed         RunEvent = "conversation.run.failed"
-	RunEventExpired        RunEvent = "conversation.run.expired"
-	RunEventCancelled      RunEvent = "conversation.run.cancelled"
-	RunEventRequiredAction RunEvent = "conversation.run.required_action"
+	RunEventCreated        RunEvent = "conversation.chat.created"
+	RunEventInProgress     RunEvent = "conversation.chat.in_progress"
+	RunEventCompleted      RunEvent = "conversation.chat.completed"
+	RunEventFailed         RunEvent = "conversation.chat.failed"
+	RunEventExpired        RunEvent = "conversation.chat.expired"
+	RunEventCancelled      RunEvent = "conversation.chat.cancelled"
+	RunEventRequiredAction RunEvent = "conversation.chat.required_action"
 
 	RunEventMessageDelta     RunEvent = "conversation.message.delta"
 	RunEventMessageCompleted RunEvent = "conversation.message.completed"
