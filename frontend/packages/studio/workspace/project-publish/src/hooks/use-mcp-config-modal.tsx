@@ -130,7 +130,7 @@ export const UseMcpConfigModal = ({
     setVisible(false);
   };
 
-  const handelConfirm = () => {
+  const handleConfirm = () => {
     setProjectPublishInfo({
       connectorPublishConfig: {
         ...connectorPublishConfig,
@@ -178,7 +178,7 @@ export const UseMcpConfigModal = ({
         cancelText={I18n.t(
           'app_publish_connector_space_mcp_config_dialog_cancel',
         )}
-        onOk={handelConfirm}
+        onOk={handleConfirm}
       >
         <div className="text-[12px]">
           {I18n.t('app_publish_connector_space_mcp_config_dialog_desc')}

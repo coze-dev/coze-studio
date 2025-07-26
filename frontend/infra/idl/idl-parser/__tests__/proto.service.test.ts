@@ -18,7 +18,7 @@ import * as t from '../src/proto';
 
 describe('ferry-parser', () => {
   describe('proto service', () => {
-    it('should convert service extenstions', () => {
+    it('should convert service extensions', () => {
       const idl = `
       syntax = "proto3";
       service Foo {
@@ -32,7 +32,7 @@ describe('ferry-parser', () => {
       return expect(Foo.extensionConfig).to.eql(expected);
     });
 
-    it('should convert service extenstions with package', () => {
+    it('should convert service extensions with package', () => {
       const idl = `
       syntax = "proto3";
       package example;
