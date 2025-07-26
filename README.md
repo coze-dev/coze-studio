@@ -72,7 +72,7 @@ Deployment steps:
    # Start the service
    cd docker
    cp .env.example .env
-   docker compose --profile '*' up -d
+   docker compose --profile "*" up -d
    ```
 4. After starting the service, you can open Coze Studio by accessing `http://localhost:8888/` through your browser.
 
@@ -115,7 +115,7 @@ Scan the QR code below using the Lark mobile app to join the Coze Studio technic
 ## Acknowledgments
 Thank you to all the developers and community members who have contributed to the Coze Studio project. Special thanks:
 
-* LLM integration support provided by the Eino framework team
-* High-performance framework developed by the Cloudwego team
-* High-quality workflow building engine developed by the [FlowGram](https://github.com/bytedance/flowgram.ai) team
+* The [Eino](https://github.com/cloudwego/eino) framework team - providing powerful support for Coze Studio's agent and workflow runtime engines, model abstractions and implementations, and knowledge base indexing and retrieval
+* The [FlowGram](https://github.com/bytedance/flowgram.ai) team - providing a high-quality workflow building engine for Coze Studio's frontend workflow canvas editor
+* The [Hertz](https://github.com/cloudwego/hertz) team - Go HTTP framework with high-performance and strong-extensibility for building micro-services
 * All users who participated in testing and feedback
