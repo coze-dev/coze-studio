@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, type RefObject } from 'react';
 
 import cls from 'classnames';
@@ -78,7 +78,7 @@ export const Tools = (props: ITool) => {
                 margin={3}
               />
             ) : null}
-            {/* The community version does not currently support trace, for future expansion  */}
+            {/* will support soon */}
             {!IS_OPEN_SOURCE && <OpenTraceButton />}
             <StartTestRunButton />
           </>

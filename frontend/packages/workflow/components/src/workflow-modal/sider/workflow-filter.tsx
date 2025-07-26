@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import {
   forwardRef,
@@ -28,14 +28,14 @@ import { useQuery } from '@tanstack/react-query';
 import { WorkflowMode } from '@coze-workflow/base/api';
 import { workflowApi, isGeneralWorkflow } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { useFlags } from '@coze-arch/bot-flags';
-import { ProductEntityType } from '@coze-arch/bot-api/product_api';
-import { ProductApi } from '@coze-arch/bot-api';
 import {
   IconCozAllFill,
   IconCozFireFill,
   IconCozKnowledgeFill,
 } from '@coze-arch/coze-design/icons';
+import { useFlags } from '@coze-arch/bot-flags';
+import { ProductEntityType } from '@coze-arch/bot-api/product_api';
+import { ProductApi } from '@coze-arch/bot-api';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import {
@@ -97,7 +97,6 @@ const WorkflowFilter = forwardRef<
         FLAGS['bot.community.store_imageflow'] ||
         isGeneralWorkflow(context?.flowMode || WorkflowMode.Workflow)
       ) {
-        // The community version does not currently support workflow template tags for future expansion
         if (IS_OPEN_SOURCE) {
           return {
             type: 'PublicGetProductCategoryList',

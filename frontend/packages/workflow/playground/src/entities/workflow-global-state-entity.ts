@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 /* eslint-disable max-lines */
 import { isFunction } from 'lodash-es';
@@ -722,7 +722,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       this.spaceId !== PUBLIC_SPACE_ID &&
       !this.projectId &&
       !IS_BOT_OP &&
-      // The community version does not support the mockset yet, for future expansion
+      // will support soon
       !IS_OPEN_SOURCE
     );
   }

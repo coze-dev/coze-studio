@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type FC, useContext, useState } from 'react';
 
 import { WorkflowMode, BindBizType } from '@coze-arch/idl/workflow_api';
 import { I18n } from '@coze-arch/i18n';
-import { CustomError } from '@coze-arch/bot-error';
 import {
   IconCozWorkflow,
   IconCozChat,
   IconCozArrowDown,
 } from '@coze-arch/coze-design/icons';
 import { Menu, Button } from '@coze-arch/coze-design';
+import { CustomError } from '@coze-arch/bot-error';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import { WorkflowModalFrom, type WorkFlowModalModeProps } from '../type';
@@ -80,7 +80,7 @@ export const CreateWorkflowBtn: FC<
 
   return (
     <>
-      {/* The community version does not currently support chatflow, for future expansion */}
+      {/* will support soon */}
       {showSingleButton || IS_OPEN_SOURCE ? (
         <Button
           className={className}

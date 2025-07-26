@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import { type Form } from '@coze-workflow/test-run/formily';
@@ -100,7 +100,7 @@ const schema = {
       'x-component-props': {
         title: I18n.t('devops_publish_multibranch_BotInfo.OnboardingInfo'),
         collapsible: true,
-        // The community version does not support AI-generated opening text for now, for future expansion
+        // will support soon
         action: IS_OPEN_SOURCE ? null : <AIGenerateBtn />,
       },
       properties: {
@@ -152,7 +152,7 @@ const schema = {
     },
     voices: {
       type: 'object',
-      // The community version does not currently support the Agent voice configuration in Chatflow, for future expansion
+      // will support soon
       'x-visible': !IS_OVERSEA && !IS_OPEN_SOURCE,
       'x-decorator': 'FormSection',
       'x-decorator-props': {
@@ -173,7 +173,7 @@ const schema = {
     },
     input: {
       type: 'void',
-      // The community version does not support change user input method (typing, voice), for future expansion
+      // will support soon
       'x-visible': !IS_OVERSEA && !IS_OPEN_SOURCE,
       'x-component': 'FormSection',
       'x-component-props': {

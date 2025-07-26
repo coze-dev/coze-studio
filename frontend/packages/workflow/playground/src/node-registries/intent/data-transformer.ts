@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get, isNil, omit } from 'lodash-es';
 import { type NodeFormContext } from '@flowgram-adapter/free-layout-editor';
 import { variableUtils } from '@coze-workflow/variable';
@@ -54,7 +54,7 @@ export const transformOnInit = (
   const inputParameters = get(inputs, 'inputParameters', []);
 
   // - If it is a new node, the default is fast mode, otherwise it is determined according to the backend return value (if there is no backend mode field, it means it is historical data, then it is standard mode)
-  // - The community version does not support the fast mode of intent recognition for future expansion
+  // - will support soon
   const intentModeInInit =
     isNewCreateInInit && !IS_OPEN_SOURCE
       ? INTENT_NODE_MODE.MINIMAL

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
@@ -59,10 +59,9 @@ const WorkFlowHeader: React.FC = () => {
       </div>
 
       <div className={styles.right}>
-        {/** The community version does not currently provide resource tree modal. Will allow for future expansion. */}
+        {/* will support soon */}
         {IS_OPEN_SOURCE ? null : <ReferenceButton workflowId={workflowId} />}
 
-        {/** The community version does not currently provide features such as billing, collaboration, history, and workspaces to allow for future expansion. */}
         {IS_OPEN_SOURCE ? null : (
           <>
             {!readonly && <CreditButton />}

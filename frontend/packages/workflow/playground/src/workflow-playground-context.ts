@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { EntityManager } from '@flowgram-adapter/free-layout-editor';
 import {
@@ -241,7 +241,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     pageNum: number;
     pageSize?: number;
   }): Promise<GetUserFavoriteListData | undefined> {
-    // The community version does not currently support plugin favorite function, for future expansion
+    // will support soon
     if (IS_OPEN_SOURCE) {
       return {
         favorite_products: [],

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type IFormSchema,
   TestFormFieldName,
@@ -21,8 +21,8 @@ import {
 } from '@coze-workflow/test-run-next';
 import { PUBLIC_SPACE_ID } from '@coze-workflow/base';
 
-import type { WorkflowNodeEntity } from '../types';
 import { getTestsetField } from './generate-form-schema/testset-field';
+import type { WorkflowNodeEntity } from '../types';
 import { generateFormRelatedField } from './generate-form-related-field';
 import { generateFormNodeField } from './generate-form-node-field';
 
@@ -63,7 +63,7 @@ export const generateFormSchema = async (
   /**
    * 若支持测试集且输入不为空，则添加测试集的组件
    */
-  /* The community version does not currently support testset, for future expansion */
+  /* will support soon */
   if (
     !IS_OPEN_SOURCE &&
     spaceId !== PUBLIC_SPACE_ID &&

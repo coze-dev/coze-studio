@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable complexity */
 /**
@@ -204,7 +204,7 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
-    // The community version does not currently support trace, for future expansion
+    // will support soon
     if (IS_OPEN_SOURCE) {
       return;
     }
@@ -222,7 +222,7 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
           onClick={handleOpenTraceBottomSheet}
           hiddenStateText
           extra={
-            // The community version does not currently support trace, for future expansion
+            // will support soon
             !IS_OPEN_SOURCE && (
               <span className={'font-medium cursor-pointer'}>
                 {I18n.t('workflow_testset_view_log')}

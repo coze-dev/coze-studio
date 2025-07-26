@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TriggerForm } from '@coze-workflow/nodes';
 import { FILE_TYPES, ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { useFlags } from '@coze-arch/bot-flags';
 import { Switch } from '@coze-arch/coze-design';
+import { useFlags } from '@coze-arch/bot-flags';
 
 import { withNodeConfigForm } from '@/node-registries/common/hocs';
 import { useGlobalState } from '@/hooks';
@@ -41,7 +41,6 @@ export const FormRender = withNodeConfigForm(() => {
 
   let hiddenTypes = isBindDouyin ? FILE_TYPES : [];
 
-  // The community version does not support the Voice feature, for future expansion
   if (IS_OPEN_SOURCE) {
     hiddenTypes = [ViewVariableType.Voice, ViewVariableType.ArrayVoice];
   }
@@ -71,7 +70,7 @@ export const FormRender = withNodeConfigForm(() => {
         />
       ) : null}
 
-      {/* The community version does not support the project trigger feature, for future expansion */}
+      {/* will support soon */}
       {(projectId || IS_BOT_OP) && !IS_OPEN_SOURCE ? (
         <RadioSetterField
           name={'trigger.tab'}

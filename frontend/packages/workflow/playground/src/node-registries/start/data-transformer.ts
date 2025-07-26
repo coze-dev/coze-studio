@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { omit, isUndefined } from 'lodash-es';
@@ -45,7 +45,7 @@ export const transformOnInit = (
 
   let trigger;
 
-  // The community version does not support the project trigger feature, for future expansion
+  // will support soon
   if (projectId && !IS_OPEN_SOURCE) {
     const triggerService =
       context.node.getService<TriggerService>(TriggerService);
