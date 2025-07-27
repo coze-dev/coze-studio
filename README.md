@@ -107,10 +107,28 @@ We welcome community contributions. For contribution guidelines, please refer to
 ## Security and privacy
 If you discover potential security issues in the project, or believe you may have found a security issue, please notify the ByteDance security team through our [security center](https://security.bytedance.com/src) or [vulnerability reporting mailbox](https://code.byted.org/flowdevops/cozeloop/blob/feat/release/sec@bytedance.com).
 Please **do not** create public GitHub Issues.
-## Join the community
-Scan the QR code below using the Lark mobile app to join the Coze Studio technical exchange group.
+## Join Community
+
+We are committed to building an open and friendly developer community. All developers interested in AI Agent development are welcome to join us!
+
+### 🐛 Issue Reports & Feature Requests
+To efficiently track and resolve issues while ensuring transparency and collaboration, we recommend participating through:
+- **GitHub Issues**: [Submit bug reports or feature requests](https://github.com/coze-dev/coze-studio/issues)
+- **Pull Requests**: [Contribute code or documentation improvements](https://github.com/coze-dev/coze-studio/pulls)
+
+### 💬 Technical Discussion & Communication
+Join our technical discussion groups to share experiences with other developers and stay updated with the latest project developments:
+
+**Feishu Group Chat**  
+Scan the QR code below with Feishu mobile app to join:
 
 ![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0a49081e8f3743e8bf3dcdded4bb571a~tplv-goo7wpa0wc-image.image)
+
+**Discord Server**  
+Click to join: [Coze Community](https://discord.gg/sTVN9EVS4B)
+
+**Telegram Group**  
+Click to join: Telegram Group [Coze](https://t.me/+pP9CkPnomDA0Mjgx)
 
 ## Acknowledgments
 Thank you to all the developers and community members who have contributed to the Coze Studio project. Special thanks:

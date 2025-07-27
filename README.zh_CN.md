@@ -107,9 +107,27 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 如果你在该项目中发现潜在的安全问题，或你认为可能发现了安全问题，请通过我们的[安全中心](https://security.bytedance.com/src) 或[漏洞报告邮箱](https://code.byted.org/flowdevops/cozeloop/blob/feat/release/sec@bytedance.com)通知字节跳动安全团队。
 请**不要**创建公开的 GitHub Issue。
 ## 加入社区
-飞书移动端扫描以下二维码，加入 Coze Studio 技术交流群。
+
+我们致力于构建一个开放、友好的开发者社区，欢迎所有对 AI Agent 开发感兴趣的开发者加入我们！
+
+### 🐛 问题反馈与功能建议
+为了更高效地跟踪和解决问题，保证信息透明和便于协同，我们推荐通过以下方式参与：
+- **GitHub Issues**：[提交 Bug 报告或功能请求](https://github.com/coze-dev/coze-studio/issues)
+- **Pull Requests**：[贡献代码或文档改进](https://github.com/coze-dev/coze-studio/pulls)
+
+### 💬 技术交流与讨论
+加入我们的技术交流群，与其他开发者分享经验、获取项目最新动态：
+
+**飞书群聊**  
+使用飞书移动端扫描下方二维码加入：
 
 ![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0a49081e8f3743e8bf3dcdded4bb571a~tplv-goo7wpa0wc-image.image)
+
+**Discord 服务器**  
+点击加入：[Coze Community](https://discord.gg/sTVN9EVS4B)
+
+**Telegram 群组**  
+点击加入：Telegram Group [Coze](https://t.me/+pP9CkPnomDA0Mjgx)
 
 ## 致谢
 感谢所有为 Coze Studio 项目做出贡献的开发者和社区成员。特别感谢：
