@@ -1,6 +1,5 @@
 .PHONY: debug fe server sync_db dump_db middleware web down clean python help
 
-# 定义脚本路径
 SCRIPTS_DIR := ./scripts
 BUILD_FE_SCRIPT := $(SCRIPTS_DIR)/build_fe.sh
 BUILD_SERVER_SCRIPT := $(SCRIPTS_DIR)/setup/server.sh
