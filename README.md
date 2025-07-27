@@ -125,8 +125,10 @@ Scan the QR code below with Feishu mobile app to join:
 ![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0a49081e8f3743e8bf3dcdded4bb571a~tplv-goo7wpa0wc-image.image)
 
 **Discord Server**  
-
 Click to join: [Coze Community](https://discord.gg/sTVN9EVS4B)
+
+**Telegram Group**  
+Click to join: Telegram Group [Coze](https://t.me/+pP9CkPnomDA0Mjgx)
 
 ## Acknowledgments
 Thank you to all the developers and community members who have contributed to the Coze Studio project. Special thanks:

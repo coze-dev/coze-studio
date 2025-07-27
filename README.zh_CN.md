@@ -124,7 +124,10 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 ![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0a49081e8f3743e8bf3dcdded4bb571a~tplv-goo7wpa0wc-image.image)
 
 **Discord 服务器**  
-点击加入：[Coze Studio Community](https://discord.gg/sTVN9EVS4B)
+点击加入：[Coze Community](https://discord.gg/sTVN9EVS4B)
+
+**Telegram 群组**  
+点击加入：Telegram Group [Coze](https://t.me/+pP9CkPnomDA0Mjgx)
 
 ## 致谢
 感谢所有为 Coze Studio 项目做出贡献的开发者和社区成员。特别感谢：
