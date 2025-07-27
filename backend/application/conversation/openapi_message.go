@@ -110,8 +110,8 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 			Content:        content,
 			ContentType:    string(dm.ContentType),
 			SectionID:      strconv.FormatInt(dm.SectionID, 10),
-			CreatedAt:      dm.CreatedAt,
-			UpdatedAt:      dm.UpdatedAt,
+			CreatedAt:      dm.CreatedAt / 1000,
+			UpdatedAt:      dm.UpdatedAt / 1000,
 			ChatID:         dm.RunID,
 			MetaData:       dm.Ext,
 		}
