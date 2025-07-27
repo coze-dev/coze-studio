@@ -74,6 +74,8 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    cp .env.example .env
    docker compose --profile "*" up -d
    ```
+   服务启动之后，`coze-elasticsearch-setup`、`coze-minio-setup`、`coze-mysql-setup-init-sql`、`coze-mysql-setup-schema` 这几个容器处于退出状态（exit 0），是正常现象。
+
 4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
 
 ## 开发指南
