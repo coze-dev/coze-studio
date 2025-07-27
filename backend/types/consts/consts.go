@@ -44,6 +44,11 @@ const (
 	TOSRegion          = "TOS_REGION"
 	TOSEndpoint        = "TOS_ENDPOINT"
 	TOSBucketEndpoint  = "TOS_BUCKET_ENDPOINT"
+	S3AccessKey        = "S3_ACCESS_KEY"
+	S3SecretKey        = "S3_SECRET_KEY"
+	S3Region           = "S3_REGION"
+	S3Endpoint         = "S3_ENDPOINT"
+	S3BucketEndpoint   = "S3_BUCKET_ENDPOINT"
 
 	HostKeyInCtx          = "HOST_KEY_IN_CTX"
 	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
