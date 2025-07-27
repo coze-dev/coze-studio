@@ -142,3 +142,8 @@ Thank you to all the developers and community members who have contributed to th
 **Name:** Surbhi Rai
 **Location:** India
 **Certification:** Git & GitHub (Coursera)
+
+---
+**Name:** John Doe
+**Location:** USA
+**Certification:** Git & GitHub (Coursera)
