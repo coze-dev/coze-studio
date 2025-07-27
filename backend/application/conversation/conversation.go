@@ -140,7 +140,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		Id:            conversationData.ID,
 		LastSectionID: &conversationData.SectionID,
 		ConnectorID:   &conversationData.ConnectorID,
-		CreatedAt:     conversationData.CreatedAt,
+		CreatedAt:     conversationData.CreatedAt / 1000,
 	}
 	return resp, nil
 }
@@ -176,7 +176,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 			Id:            conv.ID,
 			LastSectionID: &conv.SectionID,
 			ConnectorID:   &conv.ConnectorID,
-			CreatedAt:     conv.CreatedAt,
+			CreatedAt:     conv.CreatedAt / 1000,
 		}
 	})
 
