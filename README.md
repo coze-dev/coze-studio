@@ -138,3 +138,7 @@ Thank you to all the developers and community members who have contributed to th
 * The [FlowGram](https://github.com/bytedance/flowgram.ai) team - providing a high-quality workflow building engine for Coze Studio's frontend workflow canvas editor
 * The [Hertz](https://github.com/cloudwego/hertz) team - Go HTTP framework with high-performance and strong-extensibility for building micro-services
 * All users who participated in testing and feedback
+---
+**Name:** Surbhi Rai
+**Location:** India
+**Certification:** Git & GitHub (Coursera)
