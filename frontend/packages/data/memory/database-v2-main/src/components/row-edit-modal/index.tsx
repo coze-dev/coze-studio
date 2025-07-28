@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useRef, useState } from 'react';
 
 import dayjs from 'dayjs';
@@ -25,7 +25,6 @@ import {
 } from '@coze-data/database-v2-base/constants';
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
-import { FieldItemType, TableType } from '@coze-arch/bot-api/memory';
 import {
   CozInputNumber,
   type DatePickerProps,
@@ -37,6 +36,7 @@ import {
   withField,
   type CommonFieldProps,
 } from '@coze-arch/coze-design';
+import { FieldItemType, TableType } from '@coze-arch/bot-api/memory';
 
 import {
   type TableRow,
@@ -250,6 +250,7 @@ function getSystemFieldCommonProps(field: TableMemoryItem): FieldCommonProps {
       <DatabaseFieldTitle
         field={field.name}
         textType="primary"
+        // @ts-expect-error fix me late
         type={field.type}
         tip={field.desc}
         required

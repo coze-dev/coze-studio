@@ -1,0 +1,45 @@
+name: PR Common Checks
+on:
+  pull_request:
+    paths:
+      - 'github/**'
+      - 'idl/**'
+      - 'frontend/**'
+      - 'common/**'
+      - 'rush.json'
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  common-checks:
+    name: PR Common Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Config Git User
+        run: |
+          git config --local user.name "flow_bot"
+          git config --local user.email "flow_bot@bytedance.com"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22.16.0
+
+      - name: Install Dependencies
+        run: node common/scripts/install-run-rush.js install
+
+      # PR Title Format Check
+      - name: Check PR Title Format
+        if: ${{ !contains(github.event.pull_request.title, 'WIP') && !contains(github.event.pull_request.title, 'wip') }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-commitlint && \
+          pushd common/autoinstallers/rush-commitlint && \
+          echo "$PR_TITLE" | npx commitlint --config commitlint.config.js && \
+          popd
+
+      # Add more common checks here
+      # For example: file size checks, specific file format validations, etc.

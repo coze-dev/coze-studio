@@ -28,7 +28,7 @@ fe:
 	@echo "Building frontend..."
 	@bash $(BUILD_FE_SCRIPT)
 
-server: env setup_es_index
+server: env 
 	@if [ ! -d "$(STATIC_DIR)" ]; then \
 		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
 		$(MAKE) fe; \

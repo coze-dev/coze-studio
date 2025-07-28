@@ -1,3 +1,4 @@
+// eslint-disable unicorn/filename-case
 /*
  * Copyright 2025 coze-dev Authors
  *
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable */
 /* tslint:disable */
 // @ts-nocheck

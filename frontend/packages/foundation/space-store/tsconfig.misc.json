@@ -5,7 +5,8 @@
     "stories",
     "./src/**/*.test.ts",
     "vitest.config.ts",
-    "setup-vitest.ts"
+    "setup-vitest.ts",
+    "__mocks__/*.ts"
   ],
   "exclude": ["./dist"],
   "references": [
