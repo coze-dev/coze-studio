@@ -27,8 +27,8 @@ services:
           'ping',
           '-h',
           'localhost',
-          '-u$${MYSQL_USER}',
-          '-p$${MYSQL_PASSWORD}',
+          '-u$$${MYSQL_USER}',
+          '-p$$${MYSQL_PASSWORD}',
         ]
       interval: 10s
       timeout: 5s
@@ -36,6 +36,7 @@ services:
       start_period: 30s
     networks:
       - coze-network
+
 
   redis:
     image: bitnami/redis:8.0
@@ -56,21 +57,10 @@ services:
     command: >
       bash -c "
         /opt/bitnami/scripts/redis/setup.sh
-        # Set proper permissions for data directories
         chown -R redis:redis /bitnami/redis/data
         chmod g+s /bitnami/redis/data
-
         exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
       "
-    depends_on:
-      minio-setup:
-        condition: service_completed_successfully
-      elasticsearch-setup:
-        condition: service_completed_successfully
-      mysql-setup-schema:
-        condition: service_completed_successfully
-      mysql-setup-init-sql:
-        condition: service_completed_successfully
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
@@ -79,6 +69,7 @@ services:
       start_period: 10s
     networks:
       - coze-network
+
 
   # rocketmq-namesrv:
   #   image: apache/rocketmq:5.3.2
@@ -183,6 +174,7 @@ services:
   #     retries: 10
   #     start_period: 10s
 
+
   elasticsearch:
     image: bitnami/elasticsearch:8.18.0
     container_name: coze-elasticsearch
@@ -192,14 +184,35 @@ services:
     env_file: *env_file
     environment:
       - TEST=1
-      # Add Java certificate trust configuration
-      # - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
     ports:
       - '9200:9200'
     volumes:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
       - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
+    command: >
+      bash -c '
+        /opt/bitnami/scripts/elasticsearch/setup.sh
+        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
+        chmod g+s /bitnami/elasticsearch/data
+        mkdir -p /bitnami/elasticsearch/plugins;
+        
+        echo "Installing smartcn plugin...";
+        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
+          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
+          if [[ "$$?" != "0" ]]; then
+            echo "Plugin installation failed, exiting operation";
+            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
+            exit 1;
+          fi;
+          rm -f /tmp/analysis-smartcn.zip;
+        fi;
+        
+        touch /tmp/es_plugins_ready;
+        echo "Plugin installation successful, marker file created";
+        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
+      '
     healthcheck:
       test:
         [
@@ -212,43 +225,6 @@ services:
       start_period: 10s
     networks:
       - coze-network
-    # Install smartcn analyzer plugin
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/elasticsearch/setup.sh
-        # Set proper permissions for data directories
-        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
-        chmod g+s /bitnami/elasticsearch/data
-
-        # Create plugin directory
-        mkdir -p /bitnami/elasticsearch/plugins;
-
-        # Unzip plugin to plugin directory and set correct permissions
-        echo 'Installing smartcn plugin...';
-        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
-
-          # Download plugin package locally
-          echo 'Copying smartcn plugin...';
-          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
-
-          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
-          if [[ "$?" != "0" ]]; then
-            echo 'Plugin installation failed, exiting operation';
-            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
-            exit 1;
-          fi;
-          rm -f /tmp/analysis-smartcn.zip;
-        fi;
-
-        # Create marker file indicating plugin installation success
-        touch /tmp/es_plugins_ready;
-        echo 'Plugin installation successful, marker file created';
-
-        # Start Elasticsearch
-        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
-
-        echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
-      "
 
   minio:
     image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
@@ -266,6 +242,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-opencoze}
     command: server /data --console-address ":9001"
     healthcheck:
       test:
@@ -301,10 +278,8 @@ services:
     command: >
       bash -c "
         /opt/bitnami/scripts/etcd/setup.sh
-        # Set proper permissions for data and config directories
         chown -R etcd:etcd /bitnami/etcd
         chmod g+s /bitnami/etcd
-
         exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
       "
     healthcheck:
@@ -323,14 +298,6 @@ services:
     privileged: true
     profiles: ['middleware']
     env_file: *env_file
-    command: >
-      bash -c "
-        # Set proper permissions for data directories
-        chown -R root:root /var/lib/milvus
-        chmod g+s /var/lib/milvus
-
-        exec milvus run standalone
-      "
     security_opt:
       - seccomp:unconfined
     environment:
@@ -359,6 +326,7 @@ services:
         condition: service_healthy
     networks:
       - coze-network
+
   nsqlookupd:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqlookupd
@@ -430,6 +398,7 @@ services:
     networks:
       - coze-network
     restart: 'no'
+
   minio-setup:
     image: minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1
     container_name: coze-minio-setup
@@ -491,6 +460,7 @@ services:
          exit 1
     networks:
       - coze-network
+
   mysql-setup-init-sql:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
@@ -505,12 +475,12 @@ services:
       - |
         set -ex
         for i in $(seq 1 60); do
-          DB_HOST="$${MYSQL_HOST}"
-          if [ "$${MYSQL_HOST}" = "localhost" ] || [ "$${MYSQL_HOST}" = "127.0.0.1" ]; then
+          DB_HOST="$$${MYSQL_HOST}"
+          if [ "$$${MYSQL_HOST}" = "localhost" ] || [ "$$${MYSQL_HOST}" = "127.0.0.1" ]; then
             DB_HOST="mysql"
           fi
-          if mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /schema.sql && \
-             mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /sql_init.sql; then
+          if mysql -h "$$${DB_HOST}" -P"$$${MYSQL_PORT}" -u"$$${MYSQL_USER}" -p"$$${MYSQL_PASSWORD}" "$$${MYSQL_DATABASE}" < /schema.sql && \
+             mysql -h "$$${DB_HOST}" -P"$$${MYSQL_PORT}" -u"$$${MYSQL_USER}" -p"$$${MYSQL_PASSWORD}" "$$${MYSQL_DATABASE}" < /sql_init.sql; then
             echo 'MySQL init success.'
             exit 0
           fi
@@ -527,9 +497,6 @@ services:
     restart: 'no'
 
   coze-server:
-    # build:
-    #   context: ../
-    #   dockerfile: backend/Dockerfile
     image: opencoze/opencoze:latest
     container_name: coze-server
     profiles: ['run-server']
@@ -544,19 +511,10 @@ services:
     volumes:
       - .env:/app/.env
       - ../backend/conf:/app/resources/conf
-      # - ../backend/static:/app/resources/static
     depends_on:
-      mysql:
-        condition: service_healthy
       redis:
         condition: service_healthy
-      # rocketmq-namesrv:
-      #   condition: service_healthy
-      # rocketmq-broker:
-      #   condition: service_healthy
       elasticsearch:
-        condition: service_healthy
-      minio:
         condition: service_healthy
       milvus:
         condition: service_healthy
