@@ -54,14 +54,14 @@ func NewStorageImagex(ctx context.Context, ak, sk, bucketName, endpoint, region 
 }
 
 func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region string) (*s3Client, error) {
-	creds := credentials.NewStaticCredentialsProvider(ak, sk, "") //密钥
+	creds := credentials.NewStaticCredentialsProvider(ak, sk, "")
 	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
-			PartitionID:   "aws",
-			URL:           endpoint,
-			SigningRegion: region,
+			PartitionID:       "aws",
+			URL:               endpoint,
+			SigningRegion:     region,
 			HostnameImmutable: true,
-			Source: aws.EndpointSourceCustom,
+			Source:            aws.EndpointSourceCustom,
 		}, nil
 	})
 	cfg, err := config.LoadDefaultConfig(
@@ -71,11 +71,11 @@ func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region strin
 		config.WithRegion("auto"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("load config failed, bucketName: %s, endpoint: %s, region: %s, err: %v", bucketName, endpoint, region, err)
+		return nil, fmt.Errorf("init config failed, bucketName: %s, endpoint: %s, region: %s, err: %v", bucketName, endpoint, region, err)
 	}
 
 	c := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.UsePathStyle = false // 使用virtual-host的方式访问
+		o.UsePathStyle = false // virtual-host mode
 		o.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
 	})
 
@@ -84,7 +84,6 @@ func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region strin
 		bucketName: bucketName,
 	}
 
-	// 创建存储桶
 	err = t.CheckAndCreateBucket(ctx)
 	if err != nil {
 		return nil, err
@@ -102,14 +101,14 @@ func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (stor
 }
 
 func (t *s3Client) test() {
-	// 测试上传
+	// test upload
 	objectKey := fmt.Sprintf("test-%s.txt", time.Now().Format("20060102150405"))
 	err := t.PutObject(context.Background(), objectKey, []byte("hello world"))
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
-	// 测试下载
+	// test download
 	content, err := t.GetObject(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "GetObject failed, objectKey: %s, err: %v", objectKey, err)
@@ -117,7 +116,7 @@ func (t *s3Client) test() {
 
 	logs.CtxInfof(context.Background(), "GetObject content: %s", string(content))
 
-	// 测试获取URL
+	// test get presigned url
 	url, err := t.GetObjectUrl(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "GetObjectUrl failed, objectKey: %s, err: %v", objectKey, err)
@@ -125,7 +124,7 @@ func (t *s3Client) test() {
 
 	logs.CtxInfof(context.Background(), "GetObjectUrl url: %s", url)
 
-	// 测试删除
+	// test delete
 	err = t.DeleteObject(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "DeleteObject failed, objectKey: %s, err: %v", objectKey, err)
@@ -142,16 +141,16 @@ func (t *s3Client) CheckAndCreateBucket(ctx context.Context) error {
 	}
 
 	if err != nil {
-		// 如果返回404错误，表示存储桶不存在
+		// bucket not exist
 		if awsErr, ok := err.(interface{ ErrorCode() string }); ok && awsErr.ErrorCode() == "404" {
 			input := &s3.CreateBucketInput{
 				Bucket: aws.String(bucket),
 			}
-			// 创建存储桶
+			// create bucket
 			_, err := client.CreateBucket(ctx, input)
 			return err
 		}
-		// 其他错误（如权限不足）
+		// other case
 		return err
 	}
 
@@ -163,7 +162,7 @@ func (t *s3Client) PutObject(ctx context.Context, objectKey string, content []by
 	body := bytes.NewReader(content)
 	bucket := t.bucketName
 
-	// 上传对象
+	// upload object
 	_, err := client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(objectKey),
@@ -176,13 +175,12 @@ func (t *s3Client) GetObject(ctx context.Context, objectKey string) ([]byte, err
 	client := t.client
 	bucket := t.bucketName
 
-	// 获取S3对象
 	result, err := client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(objectKey),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("获取S3对象失败: %w", err)
+		return nil, fmt.Errorf("get object failed : %v", err)
 	}
 	defer result.Body.Close()
 
@@ -198,7 +196,6 @@ func (t *s3Client) DeleteObject(ctx context.Context, objectKey string) error {
 	client := t.client
 	bucket := t.bucketName
 
-	// 删除对象
 	_, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(objectKey),
@@ -219,7 +216,7 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 		options.Expires = time.Duration(60*60*24) * time.Second
 	})
 	if err != nil {
-		return "", fmt.Errorf("s3生成GET预签名URL失败: %w", err)
+		return "", fmt.Errorf("get object presigned url failed: %v", err)
 	}
 
 	// url parse
