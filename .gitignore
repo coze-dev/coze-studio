@@ -51,4 +51,4 @@ common/temp
 .eslintcache
 
 
-backend/conf/model/*.yaml
+# backend/conf/model/*.yaml
