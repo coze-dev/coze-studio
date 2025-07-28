@@ -57,8 +57,10 @@ spec:
           image: "{{ .Values.cozeServer.image.repository }}:{{ .Values.cozeServer.image.tag }}"
           imagePullPolicy: {{ .Values.cozeServer.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: {{ .Values.cozeServer.service.port }}
+          {{- range .Values.cozeServer.service.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .targetPort }}
+          {{- end }}
           env:
             - name: MYSQL_HOST
               value: "{{ include "opencoze.fullname" . }}-mysql"
@@ -95,13 +97,18 @@ spec:
               value: {{ $val | quote }}
             {{- end }}
 
-          {{- if .Values.cozeServer.confHostPath }}
           volumeMounts:
+            - name: model-config
+              mountPath: /app/resources/conf/model
+          {{- if .Values.cozeServer.confHostPath }}
             - name: opencoze-server-conf
               mountPath: /app/resources/conf
           {{- end }}
-      {{- if .Values.cozeServer.confHostPath }}
       volumes:
+        - name: model-config
+          configMap:
+            name: {{ include "opencoze.fullname" . }}-model-config
+      {{- if .Values.cozeServer.confHostPath }}
         - name: opencoze-server-conf
           hostPath:
             path: {{ .Values.cozeServer.confHostPath }}
