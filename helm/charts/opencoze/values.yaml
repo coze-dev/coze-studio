@@ -77,6 +77,7 @@ cozeServer:
     VE_IMAGEX_DOMAIN: ""
     VE_IMAGEX_TEMPLATE: ""
     VE_IMAGEX_UPLOAD_HOST: "https://imagex.volcengineapi.com"
+    COZE_MQ_TYPE: "rmq"
 
 rocketmq:
   enabled: true

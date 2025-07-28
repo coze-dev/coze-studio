@@ -86,6 +86,8 @@ spec:
               value: {{ .Values.elasticsearch.password | quote }}
             - name: RMQ_NAME_SERVER
               value: "http://{{ include "opencoze.fullname" . }}-rocketmq-namesrv:9876"
+            - name: MQ_NAME_SERVER
+              value: "http://{{ include "opencoze.fullname" . }}-rocketmq-namesrv:9876"
             - name: MILVUS_ADDR
               value: "{{ include "opencoze.fullname" . }}-milvus:19530"
             - name: MYSQL_DSN
