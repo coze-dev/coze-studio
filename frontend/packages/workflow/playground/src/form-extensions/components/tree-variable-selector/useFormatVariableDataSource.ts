@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/filename-case */
 /*
  * Copyright 2025 coze-dev Authors
  *
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable unicorn/filename-case */
+
 import { type ViewVariableType } from '@coze-workflow/base';
 
 import { useNodeAvailableVariablesWithNode } from '../../hooks/use-node-available-variables';

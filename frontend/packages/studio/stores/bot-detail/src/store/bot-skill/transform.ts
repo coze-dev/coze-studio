@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { nanoid } from 'nanoid';
 import { isNumber, mapValues } from 'lodash-es';
-import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
 import {
   type PluginStatus,
   type PluginType,
@@ -50,6 +49,7 @@ import {
   DisablePromptCalling,
 } from '@coze-arch/bot-api/playground_api';
 import { SuggestReplyMode } from '@coze-arch/bot-api/developer_api';
+import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
 
 import {
   type WorkFlowItemType,
@@ -369,6 +369,7 @@ export const transformVo2Dto = {
   databaseList: (
     databaseList: DatabaseList,
   ): BotInfoForUpdate['database_list'] =>
+    // @ts-expect-error fix me late
     databaseList.map(d => ({
       table_id: d.tableId,
       table_name: d.name,

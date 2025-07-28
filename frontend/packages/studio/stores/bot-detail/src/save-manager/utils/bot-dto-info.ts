@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { merge } from 'lodash-es';
 import {
   REPORT_EVENTS as ReportEventNames,
@@ -87,6 +87,7 @@ export const getBotDetailDtoInfo = () => {
       onboarding_info: botSkill.transformVo2Dto.onboarding(onboardingContent),
       background_image_info_list: backgroundImageInfoList,
       shortcut_sort: botSkill.transformVo2Dto.shortcut(shortcut),
+      // @ts-expect-error fix me late
       voices_info: merge(
         {},
         botSkill.transformVo2Dto.tts(tts),

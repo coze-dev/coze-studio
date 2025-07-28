@@ -18,4 +18,12 @@ module.exports = defineConfig({
       },
     ],
   },
+  overrides: [
+    {
+      files: ['src/**/namespaces/*.ts'],
+      rules: {
+        'unicorn/filename-case': 'off',
+      },
+    },
+  ],
 });

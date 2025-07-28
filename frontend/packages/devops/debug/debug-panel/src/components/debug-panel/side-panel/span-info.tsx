@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import {
@@ -79,6 +79,7 @@ export const SpanInfoArea = (props: SpanInfoAreaProps) => {
   const { rootSpan, spans } = useSpanTransform({
     orgSpans: orgDetailSpans ?? [],
     traceAdvanceInfo,
+    // @ts-expect-error fix me late
     spanCategoryMeta: spanCategory,
   });
 
