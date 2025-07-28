@@ -88,7 +88,8 @@ atlas-hash:
 
 setup_es_index:
 	@echo "Setting up Elasticsearch index..."
-	@bash $(ES_SETUP_SCRIPT)  --index-dir $(ES_INDEX_SCHEMA) --docker-host false
+	@. $(ENV_FILE); \
+	bash $(ES_SETUP_SCRIPT) --index-dir $(ES_INDEX_SCHEMA) --docker-host false --es-address "$$ES_ADDR"
 
 help:
 	@echo "Usage: make [target]"
