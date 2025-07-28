@@ -28,7 +28,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 3. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the coze-dev {project_name} repo.
 4. In your forked repository, make your changes in a new git branch:
     ```
-    git checkout -b my-fix-branch develop
+    git checkout -b my-fix-branch main
     ```
 5. Create your patch, including appropriate test cases.
 6. Follow our [Style Guides](#code-style-guides).
@@ -38,7 +38,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
     ```
     git push origin my-fix-branch
     ```
-9. In GitHub, send a pull request to `{project_name}:develop`
+9. In GitHub, send a pull request to `{project_name}:main`
 
 ## Contribution Prerequisites
 - Our development environment keeps up with [Go Official](https://golang.org/project/).
