@@ -13,6 +13,8 @@ MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env
 STATIC_DIR := ./bin/resources/static
+ES_INDEX_SCHEMA := ./docker/volumes/elasticsearch/es_index_schema
+ES_SETUP_SCRIPT := ./docker/volumes/elasticsearch/setup_es.sh
 
 debug: env middleware python server
 
@@ -26,7 +28,7 @@ fe:
 	@echo "Building frontend..."
 	@bash $(BUILD_FE_SCRIPT)
 
-server: env
+server: env setup_es_index
 	@if [ ! -d "$(STATIC_DIR)" ]; then \
 		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
 		$(MAKE) fe; \
@@ -84,6 +86,10 @@ atlas-hash:
 	@echo "Rehash atlas migration files..."
 	@(cd ./docker/atlas && atlas migrate hash)
 
+setup_es_index:
+	@echo "Setting up Elasticsearch index..."
+	@bash $(ES_SETUP_SCRIPT)  --index-dir $(ES_INDEX_SCHEMA) --docker-host false
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -103,4 +109,5 @@ help:
 	@echo "  clean            - Stop the docker containers and clean volumes."
 	@echo "  python           - Setup python environment."
 	@echo "  atlas-hash       - Rehash atlas migration files."
+	@echo "  setup_es_index   - Setup elasticsearch index."
 	@echo "  help             - Show this help message."

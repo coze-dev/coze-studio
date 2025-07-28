@@ -27,6 +27,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -88,7 +89,7 @@ func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []fiel
 }
 
 func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
-	id, err := p.idGen.GenID(ctx)
+	id, err := p.genPluginID(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -112,6 +113,25 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 	})
 	if err != nil {
 		return 0, err
+	}
+
+	return id, nil
+}
+
+func (p *PluginDraftDAO) genPluginID(ctx context.Context) (id int64, err error) {
+
+	retryTimes := 5
+	for i := 0; i < retryTimes; i++ {
+		id, err = p.idGen.GenID(ctx)
+		if err != nil {
+			return 0, err
+		}
+		if _, ok := conf.GetPluginProduct(id); !ok {
+			break
+		}
+		if i == retryTimes-1 {
+			return 0, fmt.Errorf("id %d is confilict with product plugin id.", id)
+		}
 	}
 
 	return id, nil
@@ -262,7 +282,7 @@ func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) 
 }
 
 func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (pluginID int64, err error) {
-	id, err := p.idGen.GenID(ctx)
+	id, err := p.genPluginID(ctx)
 	if err != nil {
 		return 0, err
 	}

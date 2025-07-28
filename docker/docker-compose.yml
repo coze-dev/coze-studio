@@ -65,8 +65,6 @@ services:
     depends_on:
       minio-setup:
         condition: service_completed_successfully
-      elasticsearch-setup:
-        condition: service_completed_successfully
       mysql-setup-schema:
         condition: service_completed_successfully
       mysql-setup-init-sql:
@@ -409,27 +407,6 @@ services:
     networks:
       - coze-network
 
-  elasticsearch-setup:
-    image: alpine/curl:8.12.1
-    container_name: coze-elasticsearch-setup
-    profiles: ['middleware', 'volcano-setup']
-    env_file: *env_file
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    volumes:
-      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
-      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
-    command:
-      - /bin/sh
-      - -c
-      - |
-        set -ex
-        /setup_es.sh
-        echo 'Elasticsearch setup complete.'
-    networks:
-      - coze-network
-    restart: 'no'
   minio-setup:
     image: minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1
     container_name: coze-minio-setup
@@ -561,8 +538,6 @@ services:
       milvus:
         condition: service_healthy
       minio-setup:
-        condition: service_completed_successfully
-      elasticsearch-setup:
         condition: service_completed_successfully
       mysql-setup-init-sql:
         condition: service_completed_successfully
