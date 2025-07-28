@@ -2,12 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
   "rushVersion": "5.147.1",
   "pnpmVersion": "8.15.8",
-  "nodeSupportedVersionRange": ">=16.13.0",
+  "nodeSupportedVersionRange": ">=21",
   "projectFolderMinDepth": 3,
   "projectFolderMaxDepth": 6,
   "gitPolicy": {
-    "allowedEmailRegExps": [],
-    "sampleEmail": "<user>@bytedance.com",
     "versionBumpCommitMessage": "chore: bump versions [skip ci]",
     "changeLogUpdateCommitMessage": "chore: update changelogs [skip ci]",
     "tagSeparator": "@"
