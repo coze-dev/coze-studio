@@ -1,4 +1,4 @@
-* @Tecvan-fe
+* @Tecvan-fe @IPender
 
 /frontend/apps/coze-studio/ @Tecvan-fe @evan-crash @duwenhan2byte
 /frontend/packages/agent-ide/agent-publish/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei @catee
@@ -266,3 +266,8 @@
 /frontend/packages/community/explore/ @evan-crash @duwenhan2byte
 /frontend/common/_templates/node-core/ @Tecvan-fe
 /frontend/common/_templates/rspack-web/ @Tecvan-fe
+
+
+/backend/ @IPender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125
+/docker/ @IPender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125
+/helm/ @IPender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125
