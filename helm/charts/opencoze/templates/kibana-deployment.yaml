@@ -44,9 +44,6 @@ spec:
       containers:
         - name: kibana
           image: "{{ .Values.kibana.image.repository }}:{{ .Values.kibana.image.tag }}"
-          env:
-          - name: KIBANA_ELASTICSEARCH_URL
-            value: "{{ include "opencoze.fullname" . }}-elasticsearch"
           command:
             - /bin/bash
             - -c
