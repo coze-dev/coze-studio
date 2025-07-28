@@ -20,7 +20,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -29,28 +33,57 @@ const (
 	OutputKeySerialization = "output"
 )
 
+// SerializationConfig is the Config type for NodeTypeJsonSerialization.
+// Each Node Type should have its own designated Config type,
+// which should implement NodeAdaptor and NodeBuilder.
+// NOTE: we didn't define any fields for this type,
+// because this node is simple, we doesn't need to extract any SPECIFIC piece of info
+// from frontend Node. In other cases we would need to do it, such as LLM's model configs.
 type SerializationConfig struct {
-	InputTypes map[string]*vo.TypeInfo
+	// you can define ANY number of fields here,
+	// as long as these fields are SERIALIZABLE and EXPORTED.
+	// to store specific info extracted from frontend node.
+	// e.g.
+	// - LLM model configs
+	// - conditional expressions
+	// - fixed input fields such as MaxBatchSize
 }
 
-type JsonSerializer struct {
-	config *SerializationConfig
-}
-
-func NewJsonSerializer(_ context.Context, cfg *SerializationConfig) (*JsonSerializer, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("config required")
+// Adapt provides conversion from Node to NodeSchema.
+// NOTE: in this specific case, we don't need AdaptOption.
+func (s *SerializationConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeJsonSerialization,
+		Name:    n.Data.Meta.Title,
+		Configs: s, // remember to set the Node's Config Type to NodeSchema as well
 	}
-	if cfg.InputTypes == nil {
-		return nil, fmt.Errorf("InputTypes is required for serialization")
+
+	// this sets input fields' type and mapping info
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
 	}
 
-	return &JsonSerializer{
-		config: cfg,
-	}, nil
+	// this set output fields' type info
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
 
-func (js *JsonSerializer) Invoke(_ context.Context, input map[string]any) (map[string]any, error) {
+func (s *SerializationConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (
+	any, error) {
+	return &Serializer{}, nil
+}
+
+// Serializer is the actual node implementation.
+type Serializer struct {
+	// here can holds ANY data required for node execution
+}
+
+// Invoke implements the InvokableNode interface.
+func (js *Serializer) Invoke(_ context.Context, input map[string]any) (map[string]any, error) {
 	// Directly use the input map for serialization
 	if input == nil {
 		return nil, fmt.Errorf("input data for serialization cannot be nil")

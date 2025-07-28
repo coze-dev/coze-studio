@@ -18,7 +18,6 @@ package subworkflow
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -29,35 +28,56 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type Config struct {
-	Runner compose.Runnable[map[string]any, map[string]any]
+	WorkflowID      int64
+	WorkflowVersion string
+}
+
+func (c *Config) FieldStreamType(path compose.FieldPath, ns *schema2.NodeSchema,
+	sc *schema2.WorkflowSchema) (schema2.FieldStreamType, error) {
+	if !sc.RequireStreaming() {
+		return schema2.FieldNotStream, nil
+	}
+
+	innerWF := ns.SubWorkflowSchema
+
+	if !innerWF.RequireStreaming() {
+		return schema2.FieldNotStream, nil
+	}
+
+	innerExit := innerWF.GetNode(entity.ExitNodeKey)
+
+	if innerExit.Configs.(*exit.Config).TerminatePlan == vo.ReturnVariables {
+		return schema2.FieldNotStream, nil
+	}
+
+	if !innerExit.StreamConfigs.RequireStreamingInput {
+		return schema2.FieldNotStream, nil
+	}
+
+	if len(path) > 1 || path[0] != "output" {
+		return schema2.FieldNotStream, fmt.Errorf(
+			"streaming answering sub-workflow node can only have out field 'output'")
+	}
+
+	return schema2.FieldIsStream, nil
 }
 
 type SubWorkflow struct {
-	cfg *Config
+	Runner compose.Runnable[map[string]any, map[string]any]
 }
 
-func NewSubWorkflow(_ context.Context, cfg *Config) (*SubWorkflow, error) {
-	if cfg == nil {
-		return nil, errors.New("config is nil")
-	}
-
-	if cfg.Runner == nil {
-		return nil, errors.New("runnable is nil")
-	}
-
-	return &SubWorkflow{cfg: cfg}, nil
-}
-
-func (s *SubWorkflow) Invoke(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (map[string]any, error) {
+func (s *SubWorkflow) Invoke(ctx context.Context, in map[string]any, opts ...nodes.NodeOption) (map[string]any, error) {
 	nestedOpts, nodeKey, err := prepareOptions(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	out, err := s.cfg.Runner.Invoke(ctx, in, nestedOpts...)
+	out, err := s.Runner.Invoke(ctx, in, nestedOpts...)
 	if err != nil {
 		interruptInfo, ok := compose.ExtractInterruptInfo(err)
 		if !ok {
@@ -82,13 +102,13 @@ func (s *SubWorkflow) Invoke(ctx context.Context, in map[string]any, opts ...nod
 	return out, nil
 }
 
-func (s *SubWorkflow) Stream(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (*schema.StreamReader[map[string]any], error) {
+func (s *SubWorkflow) Stream(ctx context.Context, in map[string]any, opts ...nodes.NodeOption) (*schema.StreamReader[map[string]any], error) {
 	nestedOpts, nodeKey, err := prepareOptions(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	out, err := s.cfg.Runner.Stream(ctx, in, nestedOpts...)
+	out, err := s.Runner.Stream(ctx, in, nestedOpts...)
 	if err != nil {
 		interruptInfo, ok := compose.ExtractInterruptInfo(err)
 		if !ok {
@@ -114,11 +134,8 @@ func (s *SubWorkflow) Stream(ctx context.Context, in map[string]any, opts ...nod
 	return out, nil
 }
 
-func prepareOptions(ctx context.Context, opts ...nodes.NestedWorkflowOption) ([]compose.Option, vo.NodeKey, error) {
-	options := &nodes.NestedWorkflowOptions{}
-	for _, opt := range opts {
-		opt(options)
-	}
+func prepareOptions(ctx context.Context, opts ...nodes.NodeOption) ([]compose.Option, vo.NodeKey, error) {
+	options := nodes.GetCommonOptions(&nodes.NodeOptions{}, opts...)
 
 	nestedOpts := options.GetOptsForNested()
 

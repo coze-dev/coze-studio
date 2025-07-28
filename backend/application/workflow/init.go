@@ -24,6 +24,7 @@ import (
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/coze-dev/coze-studio/backend/application/internal"
+
 	wfdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/database"
 	wfknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/knowledge"
 	wfmodel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
@@ -78,6 +79,9 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	if !ok {
 		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
 	}
+
+	service.RegisterAllNodeAdaptors()
+
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
 		components.Tos, components.CPStore, bcm)
 	workflow.SetRepository(workflowRepo)

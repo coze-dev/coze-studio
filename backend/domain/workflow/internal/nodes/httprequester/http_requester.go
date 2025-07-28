@@ -31,9 +31,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -129,7 +134,7 @@ type Request struct {
 	FileURL            *string
 }
 
-var globalVariableReplaceRegexp = regexp.MustCompile(`global_variable_(\w+)\["(\w+)"\]`)
+var globalVariableReplaceRegexp = regexp.MustCompile(`global_variable_(\w+)\["(\w+)"]`)
 
 type MD5FieldMapping struct {
 	HeaderMD5Mapping map[string]string `json:"header_md_5_mapping,omitempty"` // md5 vs key
@@ -184,49 +189,188 @@ type Config struct {
 	Timeout    time.Duration
 	RetryTimes uint64
 
-	IgnoreException bool
-	DefaultOutput   map[string]any
-
 	MD5FieldMapping
 }
 
-type HTTPRequester struct {
-	client *http.Client
-	config *Config
-}
-
-func NewHTTPRequester(_ context.Context, cfg *Config) (*HTTPRequester, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("config is requried")
+func (c *Config) Adapt(_ context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	options := nodes.GetAdaptOptions(opts...)
+	if options.Canvas == nil {
+		return nil, fmt.Errorf("canvas is requried when adapting HTTPRequester node")
 	}
 
-	if len(cfg.Method) == 0 {
+	implicitDeps, err := extractImplicitDependency(n, options.Canvas)
+	if err != nil {
+		return nil, err
+	}
+
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeHTTPRequester,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+
+	inputs := n.Data.Inputs
+
+	md5FieldMapping := &MD5FieldMapping{}
+
+	method := inputs.APIInfo.Method
+	c.Method = method
+	reqURL := inputs.APIInfo.URL
+	c.URLConfig = URLConfig{
+		Tpl: strings.TrimSpace(reqURL),
+	}
+
+	urlVars := extractBracesContent(reqURL)
+	md5FieldMapping.SetURLFields(urlVars...)
+
+	md5FieldMapping.SetHeaderFields(slices.Transform(inputs.Headers, func(a *vo.Param) string {
+		return a.Name
+	})...)
+
+	md5FieldMapping.SetParamFields(slices.Transform(inputs.Params, func(a *vo.Param) string {
+		return a.Name
+	})...)
+
+	if inputs.Auth != nil && inputs.Auth.AuthOpen {
+		auth := &AuthenticationConfig{}
+		ty, err := convertAuthType(inputs.Auth.AuthType)
+		if err != nil {
+			return nil, err
+		}
+		auth.Type = ty
+		location, err := convertLocation(inputs.Auth.AuthData.CustomData.AddTo)
+		if err != nil {
+			return nil, err
+		}
+		auth.Location = location
+
+		c.AuthConfig = auth
+	}
+
+	bodyConfig := BodyConfig{}
+
+	bodyConfig.BodyType = BodyType(inputs.Body.BodyType)
+	switch BodyType(inputs.Body.BodyType) {
+	case BodyTypeJSON:
+		jsonTpl := inputs.Body.BodyData.Json
+		bodyConfig.TextJsonConfig = &TextJsonConfig{
+			Tpl: jsonTpl,
+		}
+		jsonVars := extractBracesContent(jsonTpl)
+		md5FieldMapping.SetBodyFields(jsonVars...)
+	case BodyTypeFormData:
+		bodyConfig.FormDataConfig = &FormDataConfig{
+			FileTypeMapping: map[string]bool{},
+		}
+		formDataVars := make([]string, 0)
+		for i := range inputs.Body.BodyData.FormData.Data {
+			p := inputs.Body.BodyData.FormData.Data[i]
+			formDataVars = append(formDataVars, p.Name)
+			if p.Input.Type == vo.VariableTypeString && p.Input.AssistType > vo.AssistTypeNotSet && p.Input.AssistType < vo.AssistTypeTime {
+				bodyConfig.FormDataConfig.FileTypeMapping[p.Name] = true
+			}
+		}
+
+		md5FieldMapping.SetBodyFields(formDataVars...)
+	case BodyTypeRawText:
+		TextTpl := inputs.Body.BodyData.RawText
+		bodyConfig.TextPlainConfig = &TextPlainConfig{
+			Tpl: TextTpl,
+		}
+		textPlainVars := extractBracesContent(TextTpl)
+		md5FieldMapping.SetBodyFields(textPlainVars...)
+	case BodyTypeFormURLEncoded:
+		formURLEncodedVars := make([]string, 0)
+		for _, p := range inputs.Body.BodyData.FormURLEncoded {
+			formURLEncodedVars = append(formURLEncodedVars, p.Name)
+		}
+		md5FieldMapping.SetBodyFields(formURLEncodedVars...)
+	}
+	c.BodyConfig = bodyConfig
+	c.MD5FieldMapping = *md5FieldMapping
+
+	if inputs.Setting != nil {
+		c.Timeout = time.Duration(inputs.Setting.Timeout) * time.Second
+		c.RetryTimes = uint64(inputs.Setting.RetryTimes)
+	}
+
+	if err := setHttpRequesterInputsForNodeSchema(n, ns, implicitDeps); err != nil {
+		return nil, err
+	}
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+	return ns, nil
+}
+
+func convertAuthType(auth string) (AuthType, error) {
+	switch auth {
+	case "CUSTOM_AUTH":
+		return Custom, nil
+	case "BEARER_AUTH":
+		return BearToken, nil
+	default:
+		return AuthType(0), fmt.Errorf("invalid auth type")
+	}
+}
+
+func convertLocation(l string) (Location, error) {
+	switch l {
+	case "header":
+		return Header, nil
+	case "query":
+		return QueryParam, nil
+	default:
+		return 0, fmt.Errorf("invalid location")
+	}
+
+}
+
+func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if len(c.Method) == 0 {
 		return nil, fmt.Errorf("method is requried")
 	}
 
-	hg := &HTTPRequester{}
+	hg := &HTTPRequester{
+		urlConfig:       c.URLConfig,
+		method:          c.Method,
+		retryTimes:      c.RetryTimes,
+		authConfig:      c.AuthConfig,
+		bodyConfig:      c.BodyConfig,
+		md5FieldMapping: c.MD5FieldMapping,
+	}
 	client := http.DefaultClient
-	if cfg.Timeout > 0 {
-		client.Timeout = cfg.Timeout
+	if c.Timeout > 0 {
+		client.Timeout = c.Timeout
 	}
 
 	hg.client = client
-	hg.config = cfg
 
 	return hg, nil
+}
+
+type HTTPRequester struct {
+	client          *http.Client
+	urlConfig       URLConfig
+	authConfig      *AuthenticationConfig
+	bodyConfig      BodyConfig
+	method          string
+	retryTimes      uint64
+	md5FieldMapping MD5FieldMapping
 }
 
 func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (output map[string]any, err error) {
 	var (
 		req         = &Request{}
-		method      = hg.config.Method
-		retryTimes  = hg.config.RetryTimes
+		method      = hg.method
+		retryTimes  = hg.retryTimes
 		body        io.ReadCloser
 		contentType string
 		response    *http.Response
 	)
 
-	req, err = hg.config.parserToRequest(input)
+	req, err = hg.parserToRequest(input)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +380,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		Header: http.Header{},
 	}
 
-	httpURL, err := nodes.TemplateRender(hg.config.URLConfig.Tpl, req.URLVars)
+	httpURL, err := nodes.TemplateRender(hg.urlConfig.Tpl, req.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +399,8 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		params.Set(key, value)
 	}
 
-	if hg.config.AuthConfig != nil {
-		httpRequest.Header, params, err = hg.config.AuthConfig.addAuthentication(ctx, req.Authentication, httpRequest.Header, params)
+	if hg.authConfig != nil {
+		httpRequest.Header, params, err = hg.authConfig.addAuthentication(ctx, req.Authentication, httpRequest.Header, params)
 		if err != nil {
 			return nil, err
 		}
@@ -264,7 +408,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	u.RawQuery = params.Encode()
 	httpRequest.URL = u
 
-	body, contentType, err = hg.config.BodyConfig.getBodyAndContentType(ctx, req)
+	body, contentType, err = hg.bodyConfig.getBodyAndContentType(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -479,18 +623,16 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 }
 
 func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
-	var (
-		request = &Request{}
-		config  = hg.config
-	)
-	request, err := hg.config.parserToRequest(input)
+	var request = &Request{}
+
+	request, err := hg.parserToRequest(input)
 	if err != nil {
 		return nil, err
 	}
 	result := make(map[string]any)
-	result["method"] = config.Method
+	result["method"] = hg.method
 
-	u, err := nodes.TemplateRender(config.URLConfig.Tpl, request.URLVars)
+	u, err := nodes.TemplateRender(hg.urlConfig.Tpl, request.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -508,13 +650,13 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	}
 	result["header"] = headers
 	result["auth"] = nil
-	if config.AuthConfig != nil {
-		if config.AuthConfig.Type == Custom {
+	if hg.authConfig != nil {
+		if hg.authConfig.Type == Custom {
 			result["auth"] = map[string]interface{}{
 				"Key":   request.Authentication.Key,
 				"Value": request.Authentication.Value,
 			}
-		} else if config.AuthConfig.Type == BearToken {
+		} else if hg.authConfig.Type == BearToken {
 			result["auth"] = map[string]interface{}{
 				"token": request.Authentication.Token,
 			}
@@ -522,9 +664,9 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	}
 
 	result["body"] = nil
-	switch config.BodyConfig.BodyType {
+	switch hg.bodyConfig.BodyType {
 	case BodyTypeJSON:
-		js, err := nodes.TemplateRender(config.BodyConfig.TextJsonConfig.Tpl, request.JsonVars)
+		js, err := nodes.TemplateRender(hg.bodyConfig.TextJsonConfig.Tpl, request.JsonVars)
 		if err != nil {
 			return nil, err
 		}
@@ -535,7 +677,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 		}
 		result["body"] = ret
 	case BodyTypeRawText:
-		tx, err := nodes.TemplateRender(config.BodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
+		tx, err := nodes.TemplateRender(hg.bodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
 		if err != nil {
 
 			return nil, err
@@ -569,7 +711,7 @@ const (
 	bodyBinaryFileURLPrefix  = "binary_fileURL"
 )
 
-func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
+func (hg *HTTPRequester) parserToRequest(input map[string]any) (*Request, error) {
 	request := &Request{
 		URLVars:            make(map[string]any),
 		Headers:            make(map[string]string),
@@ -583,7 +725,7 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 	for key, value := range input {
 		if strings.HasPrefix(key, apiInfoURLPrefix) {
 			urlMD5 := strings.TrimPrefix(key, apiInfoURLPrefix)
-			if urlKey, ok := cfg.URLMD5Mapping[urlMD5]; ok {
+			if urlKey, ok := hg.md5FieldMapping.URLMD5Mapping[urlMD5]; ok {
 				if strings.HasPrefix(urlKey, "global_variable_") {
 					urlKey = globalVariableReplaceRegexp.ReplaceAllString(urlKey, "global_variable_$1.$2")
 				}
@@ -592,13 +734,13 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 		}
 		if strings.HasPrefix(key, headersPrefix) {
 			headerKeyMD5 := strings.TrimPrefix(key, headersPrefix)
-			if headerKey, ok := cfg.HeaderMD5Mapping[headerKeyMD5]; ok {
+			if headerKey, ok := hg.md5FieldMapping.HeaderMD5Mapping[headerKeyMD5]; ok {
 				request.Headers[headerKey] = value.(string)
 			}
 		}
 		if strings.HasPrefix(key, paramsPrefix) {
 			paramKeyMD5 := strings.TrimPrefix(key, paramsPrefix)
-			if paramKey, ok := cfg.ParamMD5Mapping[paramKeyMD5]; ok {
+			if paramKey, ok := hg.md5FieldMapping.ParamMD5Mapping[paramKeyMD5]; ok {
 				request.Params[paramKey] = value.(string)
 			}
 		}
@@ -622,7 +764,7 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 			bodyKey := strings.TrimPrefix(key, bodyDataPrefix)
 			if strings.HasPrefix(bodyKey, bodyJsonPrefix) {
 				jsonMd5Key := strings.TrimPrefix(bodyKey, bodyJsonPrefix)
-				if jsonKey, ok := cfg.BodyMD5Mapping[jsonMd5Key]; ok {
+				if jsonKey, ok := hg.md5FieldMapping.BodyMD5Mapping[jsonMd5Key]; ok {
 					if strings.HasPrefix(jsonKey, "global_variable_") {
 						jsonKey = globalVariableReplaceRegexp.ReplaceAllString(jsonKey, "global_variable_$1.$2")
 					}
@@ -632,7 +774,7 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 			}
 			if strings.HasPrefix(bodyKey, bodyFormDataPrefix) {
 				formDataMd5Key := strings.TrimPrefix(bodyKey, bodyFormDataPrefix)
-				if formDataKey, ok := cfg.BodyMD5Mapping[formDataMd5Key]; ok {
+				if formDataKey, ok := hg.md5FieldMapping.BodyMD5Mapping[formDataMd5Key]; ok {
 					request.FormDataVars[formDataKey] = value.(string)
 				}
 
@@ -640,14 +782,14 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 
 			if strings.HasPrefix(bodyKey, bodyFormURLEncodedPrefix) {
 				formURLEncodeMd5Key := strings.TrimPrefix(bodyKey, bodyFormURLEncodedPrefix)
-				if formURLEncodeKey, ok := cfg.BodyMD5Mapping[formURLEncodeMd5Key]; ok {
+				if formURLEncodeKey, ok := hg.md5FieldMapping.BodyMD5Mapping[formURLEncodeMd5Key]; ok {
 					request.FormURLEncodedVars[formURLEncodeKey] = value.(string)
 				}
 			}
 
 			if strings.HasPrefix(bodyKey, bodyRawTextPrefix) {
 				rawTextMd5Key := strings.TrimPrefix(bodyKey, bodyRawTextPrefix)
-				if rawTextKey, ok := cfg.BodyMD5Mapping[rawTextMd5Key]; ok {
+				if rawTextKey, ok := hg.md5FieldMapping.BodyMD5Mapping[rawTextMd5Key]; ok {
 					if strings.HasPrefix(rawTextKey, "global_variable_") {
 						rawTextKey = globalVariableReplaceRegexp.ReplaceAllString(rawTextKey, "global_variable_$1.$2")
 					}

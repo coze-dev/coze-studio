@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 func TestNodeSchema_OutputValueFiller(t *testing.T) {
@@ -282,11 +283,11 @@ func TestNodeSchema_OutputValueFiller(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &NodeSchema{
+			s := &schema.NodeSchema{
 				OutputTypes: tt.fields.Outputs,
 			}
 
-			got, err := s.outputValueFiller()(context.Background(), tt.fields.In)
+			got, err := outputValueFiller(s)(context.Background(), tt.fields.In)
 
 			if len(tt.wantErr) > 0 {
 				assert.Error(t, err)

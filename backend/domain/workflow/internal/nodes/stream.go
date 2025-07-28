@@ -22,57 +22,27 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 var KeyIsFinished = "\x1FKey is finished\x1F"
 
-type Mode string
-
-const (
-	Streaming    Mode = "streaming"
-	NonStreaming Mode = "non-streaming"
-)
-
-type FieldStreamType string
-
-const (
-	FieldIsStream    FieldStreamType = "yes"     // absolutely a stream
-	FieldNotStream   FieldStreamType = "no"      // absolutely not a stream
-	FieldMaybeStream FieldStreamType = "maybe"   // maybe a stream, requires request-time resolution
-	FieldSkipped     FieldStreamType = "skipped" // the field source's node is skipped
-)
-
-// SourceInfo contains stream type for a input field source of a node.
-type SourceInfo struct {
-	// IsIntermediate means this field is itself not a field source, but a map containing one or more field sources.
-	IsIntermediate bool
-	// FieldType the stream type of the field. May require request-time resolution in addition to compile-time.
-	FieldType FieldStreamType
-	// FromNodeKey is the node key that produces this field source. empty if the field is a static value or variable.
-	FromNodeKey vo.NodeKey
-	// FromPath is the path of this field source within the source node. empty if the field is a static value or variable.
-	FromPath compose.FieldPath
-	TypeInfo *vo.TypeInfo
-	// SubSources are SourceInfo for keys within this intermediate Map(Object) field.
-	SubSources map[string]*SourceInfo
-}
-
 type DynamicStreamContainer interface {
 	SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int)
 	GetDynamicChoice(nodeKey vo.NodeKey) map[string]int
-	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (FieldStreamType, error)
-	GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]FieldStreamType, error)
+	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema.FieldStreamType, error)
+	GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema.FieldStreamType, error)
 }
 
 // ResolveStreamSources resolves incoming field sources for a node, deciding their stream type.
-func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (map[string]*SourceInfo, error) {
-	resolved := make(map[string]*SourceInfo, len(sources))
+func ResolveStreamSources(ctx context.Context, sources map[string]*schema.SourceInfo) (map[string]*schema.SourceInfo, error) {
+	resolved := make(map[string]*schema.SourceInfo, len(sources))
 
 	nodeKey2Skipped := make(map[vo.NodeKey]bool)
 
-	var resolver func(path string, sInfo *SourceInfo) (*SourceInfo, error)
-	resolver = func(path string, sInfo *SourceInfo) (*SourceInfo, error) {
-		resolvedNode := &SourceInfo{
+	var resolver func(path string, sInfo *schema.SourceInfo) (*schema.SourceInfo, error)
+	resolver = func(path string, sInfo *schema.SourceInfo) (*schema.SourceInfo, error) {
+		resolvedNode := &schema.SourceInfo{
 			IsIntermediate: sInfo.IsIntermediate,
 			FieldType:      sInfo.FieldType,
 			FromNodeKey:    sInfo.FromNodeKey,
@@ -81,7 +51,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (
 		}
 
 		if len(sInfo.SubSources) > 0 {
-			resolvedNode.SubSources = make(map[string]*SourceInfo, len(sInfo.SubSources))
+			resolvedNode.SubSources = make(map[string]*schema.SourceInfo, len(sInfo.SubSources))
 
 			for k, subInfo := range sInfo.SubSources {
 				resolvedSub, err := resolver(k, subInfo)
@@ -109,16 +79,16 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (
 		}
 
 		if skipped {
-			resolvedNode.FieldType = FieldSkipped
+			resolvedNode.FieldType = schema.FieldSkipped
 			return resolvedNode, nil
 		}
 
-		if sInfo.FieldType == FieldMaybeStream {
+		if sInfo.FieldType == schema.FieldMaybeStream {
 			if len(sInfo.SubSources) > 0 {
 				panic("a maybe stream field should not have sub sources")
 			}
 
-			var streamType FieldStreamType
+			var streamType schema.FieldStreamType
 			err := compose.ProcessState(ctx, func(ctx context.Context, state DynamicStreamContainer) error {
 				var e error
 				streamType, e = state.GetDynamicStreamType(sInfo.FromNodeKey, sInfo.FromPath[0])
@@ -128,7 +98,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (
 				return nil, err
 			}
 
-			return &SourceInfo{
+			return &schema.SourceInfo{
 				IsIntermediate: sInfo.IsIntermediate,
 				FieldType:      streamType,
 				FromNodeKey:    sInfo.FromNodeKey,
@@ -156,30 +126,12 @@ type NodeExecuteStatusAware interface {
 	NodeExecuted(key vo.NodeKey) bool
 }
 
-func (s *SourceInfo) Skipped() bool {
-	if !s.IsIntermediate {
-		return s.FieldType == FieldSkipped
+func IsStreamingField(s *schema.NodeSchema, path compose.FieldPath,
+	sc *schema.WorkflowSchema) (schema.FieldStreamType, error) {
+	sg, ok := s.Configs.(StreamGenerator)
+	if !ok {
+		return schema.FieldNotStream, nil
 	}
 
-	for _, sub := range s.SubSources {
-		if !sub.Skipped() {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (s *SourceInfo) FromNode(nodeKey vo.NodeKey) bool {
-	if !s.IsIntermediate {
-		return s.FromNodeKey == nodeKey
-	}
-
-	for _, sub := range s.SubSources {
-		if sub.FromNode(nodeKey) {
-			return true
-		}
-	}
-
-	return false
+	return sg.FieldStreamType(path, s, sc)
 }

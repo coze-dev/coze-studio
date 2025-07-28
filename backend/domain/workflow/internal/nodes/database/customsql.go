@@ -19,48 +19,89 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type CustomSQLConfig struct {
-	DatabaseInfoID    int64
-	SQLTemplate       string
-	OutputConfig      map[string]*vo.TypeInfo
-	CustomSQLExecutor database.DatabaseOperator
+	DatabaseInfoID int64
+	SQLTemplate    string
 }
 
-func NewCustomSQL(_ context.Context, cfg *CustomSQLConfig) (*CustomSQL, error) {
-	if cfg == nil {
-		return nil, errors.New("config is required")
+func (c *CustomSQLConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeDatabaseCustomSQL,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
 	}
-	if cfg.DatabaseInfoID == 0 {
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	c.DatabaseInfoID = dsID
+
+	sql := n.Data.Inputs.SQL
+	if len(sql) == 0 {
+		return nil, fmt.Errorf("sql is requird")
+	}
+
+	c.SQLTemplate = sql
+
+	if err = convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (c *CustomSQLConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if c.DatabaseInfoID == 0 {
 		return nil, errors.New("database info id is required and greater than 0")
 	}
-	if cfg.SQLTemplate == "" {
+	if c.SQLTemplate == "" {
 		return nil, errors.New("sql template is required")
 	}
-	if cfg.CustomSQLExecutor == nil {
-		return nil, errors.New("custom sqler is required")
-	}
+
 	return &CustomSQL{
-		config: cfg,
+		databaseInfoID:    c.DatabaseInfoID,
+		sqlTemplate:       c.SQLTemplate,
+		outputTypes:       ns.OutputTypes,
+		customSQLExecutor: database.GetDatabaseOperator(),
 	}, nil
 }
 
 type CustomSQL struct {
-	config *CustomSQLConfig
+	databaseInfoID    int64
+	sqlTemplate       string
+	outputTypes       map[string]*vo.TypeInfo
+	customSQLExecutor database.DatabaseOperator
 }
 
-func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[string]any, error) {
-
+func (c *CustomSQL) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	req := &database.CustomSQLRequest{
-		DatabaseInfoID: c.config.DatabaseInfoID,
+		DatabaseInfoID: c.databaseInfoID,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
@@ -71,7 +112,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 	}
 
 	templateSQL := ""
-	templateParts := nodes.ParseTemplate(c.config.SQLTemplate)
+	templateParts := nodes.ParseTemplate(c.sqlTemplate)
 	sqlParams := make([]database.SQLParam, 0, len(templateParts))
 	var nilError = errors.New("field is nil")
 	for _, templatePart := range templateParts {
@@ -113,12 +154,12 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 	templateSQL = strings.Replace(templateSQL, "`?`", "?", -1)
 	req.SQL = templateSQL
 	req.Params = sqlParams
-	response, err := c.config.CustomSQLExecutor.Execute(ctx, req)
+	response, err := c.customSQLExecutor.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := responseFormatted(c.config.OutputConfig, response)
+	ret, err := responseFormatted(c.outputTypes, response)
 	if err != nil {
 		return nil, err
 	}

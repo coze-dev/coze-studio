@@ -43,8 +43,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	repo2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
 	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
 	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
@@ -106,26 +109,25 @@ func TestQuestionAnswer(t *testing.T) {
 		mockey.Mock(workflow.GetRepository).Return(repo).Build()
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				}}
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
+			}
 
-			ns := &compose2.NodeSchema{
+			ns := &schema2.NodeSchema{
 				Key:  "qa_node_key",
 				Type: entity.NodeTypeQuestionAnswer,
-				Configs: map[string]any{
-					"QuestionTpl": "{{input}}",
-					"AnswerType":  qa.AnswerDirectly,
+				Configs: &qa.Config{
+					QuestionTpl: "{{input}}",
+					AnswerType:  qa.AnswerDirectly,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
@@ -133,11 +135,11 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -152,20 +154,20 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					ns,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   "qa_node_key",
 					},
 					{
 						FromNode: "qa_node_key",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}
@@ -210,30 +212,28 @@ func TestQuestionAnswer(t *testing.T) {
 				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil, nil).Times(1)
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			ns := &compose2.NodeSchema{
+			ns := &schema2.NodeSchema{
 				Key:  "qa_node_key",
 				Type: entity.NodeTypeQuestionAnswer,
-				Configs: map[string]any{
-					"QuestionTpl":  "{{input}}",
-					"AnswerType":   qa.AnswerByChoices,
-					"ChoiceType":   qa.FixedChoices,
-					"FixedChoices": []string{"{{choice1}}", "{{choice2}}"},
-					"LLMParams":    &model.LLMParams{},
+				Configs: &qa.Config{
+					QuestionTpl:  "{{input}}",
+					AnswerType:   qa.AnswerByChoices,
+					ChoiceType:   qa.FixedChoices,
+					FixedChoices: []string{"{{choice1}}", "{{choice2}}"},
+					LLMParams:    &model.LLMParams{},
 				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
@@ -242,7 +242,7 @@ func TestQuestionAnswer(t *testing.T) {
 						Path: compose.FieldPath{"choice1"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"choice1"},
 							},
 						},
@@ -251,7 +251,7 @@ func TestQuestionAnswer(t *testing.T) {
 						Path: compose.FieldPath{"choice2"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"choice2"},
 							},
 						},
@@ -259,11 +259,11 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -287,7 +287,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			lambda := &compose2.NodeSchema{
+			lambda := &schema2.NodeSchema{
 				Key:  "lambda",
 				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
@@ -295,26 +295,26 @@ func TestQuestionAnswer(t *testing.T) {
 				}),
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					ns,
-					exit,
+					exitN,
 					lambda,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   "qa_node_key",
 					},
 					{
 						FromNode: "qa_node_key",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 						FromPort: ptr.Of("branch_0"),
 					},
 					{
 						FromNode: "qa_node_key",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 						FromPort: ptr.Of("branch_1"),
 					},
 					{
@@ -324,10 +324,14 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 					{
 						FromNode: "lambda",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}
+
+			branches, err := schema2.BuildBranches(ws.Connections)
+			assert.NoError(t, err)
+			ws.Branches = branches
 
 			ws.Init()
 
@@ -362,28 +366,26 @@ func TestQuestionAnswer(t *testing.T) {
 		})
 
 		t.Run("answer with dynamic choices", func(t *testing.T) {
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			ns := &compose2.NodeSchema{
+			ns := &schema2.NodeSchema{
 				Key:  "qa_node_key",
 				Type: entity.NodeTypeQuestionAnswer,
-				Configs: map[string]any{
-					"QuestionTpl": "{{input}}",
-					"AnswerType":  qa.AnswerByChoices,
-					"ChoiceType":  qa.DynamicChoices,
+				Configs: &qa.Config{
+					QuestionTpl: "{{input}}",
+					AnswerType:  qa.AnswerByChoices,
+					ChoiceType:  qa.DynamicChoices,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
@@ -392,7 +394,7 @@ func TestQuestionAnswer(t *testing.T) {
 						Path: compose.FieldPath{qa.DynamicChoicesKey},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"choices"},
 							},
 						},
@@ -400,11 +402,11 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -428,7 +430,7 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			lambda := &compose2.NodeSchema{
+			lambda := &schema2.NodeSchema{
 				Key:  "lambda",
 				Type: entity.NodeTypeLambda,
 				Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
@@ -436,26 +438,26 @@ func TestQuestionAnswer(t *testing.T) {
 				}),
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					ns,
-					exit,
+					exitN,
 					lambda,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   "qa_node_key",
 					},
 					{
 						FromNode: "qa_node_key",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 						FromPort: ptr.Of("branch_0"),
 					},
 					{
 						FromNode: "lambda",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 					{
 						FromNode: "qa_node_key",
@@ -464,6 +466,10 @@ func TestQuestionAnswer(t *testing.T) {
 					},
 				},
 			}
+
+			branches, err := schema2.BuildBranches(ws.Connections)
+			assert.NoError(t, err)
+			ws.Branches = branches
 
 			ws.Init()
 
@@ -522,31 +528,29 @@ func TestQuestionAnswer(t *testing.T) {
 				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).Times(1)
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			ns := &compose2.NodeSchema{
+			ns := &schema2.NodeSchema{
 				Key:  "qa_node_key",
 				Type: entity.NodeTypeQuestionAnswer,
-				Configs: map[string]any{
-					"QuestionTpl":               "{{input}}",
-					"AnswerType":                qa.AnswerDirectly,
-					"ExtractFromAnswer":         true,
-					"AdditionalSystemPromptTpl": "{{prompt}}",
-					"MaxAnswerCount":            2,
-					"LLMParams":                 &model.LLMParams{},
+				Configs: &qa.Config{
+					QuestionTpl:               "{{input}}",
+					AnswerType:                qa.AnswerDirectly,
+					ExtractFromAnswer:         true,
+					AdditionalSystemPromptTpl: "{{prompt}}",
+					MaxAnswerCount:            2,
+					LLMParams:                 &model.LLMParams{},
 				},
 				InputSources: []*vo.FieldInfo{
 					{
 						Path: compose.FieldPath{"input"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
@@ -555,7 +559,7 @@ func TestQuestionAnswer(t *testing.T) {
 						Path: compose.FieldPath{"prompt"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"prompt"},
 							},
 						},
@@ -573,11 +577,11 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -610,20 +614,20 @@ func TestQuestionAnswer(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					ns,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   "qa_node_key",
 					},
 					{
 						FromNode: "qa_node_key",
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package compose
+package schema
 
 import (
 	"fmt"
@@ -29,9 +29,10 @@ import (
 )
 
 type WorkflowSchema struct {
-	Nodes       []*NodeSchema             `json:"nodes"`
-	Connections []*Connection             `json:"connections"`
-	Hierarchy   map[vo.NodeKey]vo.NodeKey `json:"hierarchy,omitempty"` // child node key-> parent node key
+	Nodes       []*NodeSchema                `json:"nodes"`
+	Connections []*Connection                `json:"connections"`
+	Hierarchy   map[vo.NodeKey]vo.NodeKey    `json:"hierarchy,omitempty"` // child node key-> parent node key
+	Branches    map[vo.NodeKey]*BranchSchema `json:"branches,omitempty"`
 
 	GeneratedNodes []vo.NodeKey `json:"generated_nodes,omitempty"` // generated nodes for the nodes in batch mode
 
@@ -71,9 +72,19 @@ func (w *WorkflowSchema) Init() {
 		w.doGetCompositeNodes()
 
 		for _, node := range w.Nodes {
-			if node.requireCheckpoint() {
-				w.requireCheckPoint = true
-				break
+			if node.Type == entity.NodeTypeSubWorkflow {
+				node.SubWorkflowSchema.Init()
+				if node.SubWorkflowSchema.requireCheckPoint {
+					w.requireCheckPoint = true
+					break
+				}
+			}
+
+			if rc, ok := node.Configs.(RequireCheckpoint); ok {
+				if rc.RequireCheckpoint() {
+					w.requireCheckPoint = true
+					break
+				}
 			}
 		}
 
@@ -95,6 +106,22 @@ func (w *WorkflowSchema) GetCompositeNodes() []*CompositeNode {
 	}
 
 	return w.compositeNodes
+}
+
+func (w *WorkflowSchema) GetBranch(key vo.NodeKey) *BranchSchema {
+	if w.Branches == nil {
+		return nil
+	}
+
+	return w.Branches[key]
+}
+
+func (w *WorkflowSchema) RequireCheckpoint() bool {
+	return w.requireCheckPoint
+}
+
+func (w *WorkflowSchema) RequireStreaming() bool {
+	return w.requireStreaming
 }
 
 func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {
@@ -125,7 +152,7 @@ func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {
 	return cNodes
 }
 
-func isInSameWorkflow(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
+func IsInSameWorkflow(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return true
 	}
@@ -144,7 +171,7 @@ func isInSameWorkflow(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.Node
 	return myParents == theirParents
 }
 
-func isBelowOneLevel(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
+func IsBelowOneLevel(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return false
 	}
@@ -154,7 +181,7 @@ func isBelowOneLevel(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeK
 	return myParentExists && !theirParentExists
 }
 
-func isParentOf(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
+func IsParentOf(n map[vo.NodeKey]vo.NodeKey, nodeKey, otherNodeKey vo.NodeKey) bool {
 	if n == nil {
 		return false
 	}
@@ -230,21 +257,14 @@ func (w *WorkflowSchema) doRequireStreaming() bool {
 	consumers := make(map[vo.NodeKey]bool)
 
 	for _, node := range w.Nodes {
-		meta := entity.NodeMetaByNodeType(node.Type)
-		if meta != nil {
-			sps := meta.ExecutableMeta.StreamingParadigms
-			if _, ok := sps[entity.Stream]; ok {
-				if node.StreamConfigs != nil && node.StreamConfigs.CanGeneratesStream {
-					producers[node.Key] = true
-				}
-			}
-
-			if sps[entity.Transform] || sps[entity.Collect] {
-				if node.StreamConfigs != nil && node.StreamConfigs.RequireStreamingInput {
-					consumers[node.Key] = true
-				}
-			}
+		if node.StreamConfigs != nil && node.StreamConfigs.CanGeneratesStream {
+			producers[node.Key] = true
 		}
+
+		if node.StreamConfigs != nil && node.StreamConfigs.RequireStreamingInput {
+			consumers[node.Key] = true
+		}
+
 	}
 
 	if len(producers) == 0 || len(consumers) == 0 {
@@ -290,7 +310,7 @@ func (w *WorkflowSchema) doRequireStreaming() bool {
 	return false
 }
 
-func (w *WorkflowSchema) fanInMergeConfigs() map[string]compose.FanInMergeConfig {
+func (w *WorkflowSchema) FanInMergeConfigs() map[string]compose.FanInMergeConfig {
 	// what we need to do is to see if the workflow requires streaming, if not, then no fan-in merge configs needed
 	// then we find those nodes that have 'transform' or 'collect' as streaming paradigm,
 	// and see if each of those nodes has multiple data predecessors, if so, it's a fan-in node.
@@ -301,21 +321,15 @@ func (w *WorkflowSchema) fanInMergeConfigs() map[string]compose.FanInMergeConfig
 
 	fanInNodes := make(map[vo.NodeKey]bool)
 	for _, node := range w.Nodes {
-		meta := entity.NodeMetaByNodeType(node.Type)
-		if meta != nil {
-			sps := meta.ExecutableMeta.StreamingParadigms
-			if sps[entity.Transform] || sps[entity.Collect] {
-				if node.StreamConfigs != nil && node.StreamConfigs.RequireStreamingInput {
-					var predecessor *vo.NodeKey
-					for _, source := range node.InputSources {
-						if source.Source.Ref != nil && len(source.Source.Ref.FromNodeKey) > 0 {
-							if predecessor != nil {
-								fanInNodes[node.Key] = true
-								break
-							}
-							predecessor = &source.Source.Ref.FromNodeKey
-						}
+		if node.StreamConfigs != nil && node.StreamConfigs.RequireStreamingInput {
+			var predecessor *vo.NodeKey
+			for _, source := range node.InputSources {
+				if source.Source.Ref != nil && len(source.Source.Ref.FromNodeKey) > 0 {
+					if predecessor != nil {
+						fanInNodes[node.Key] = true
+						break
 					}
+					predecessor = &source.Source.Ref.FromNodeKey
 				}
 			}
 		}

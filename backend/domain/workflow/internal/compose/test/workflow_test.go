@@ -26,26 +26,28 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/selector"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/textprocessor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableaggregator"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
-	entry := &compose2.NodeSchema{
-		Key:  entity.EntryNodeKey,
-		Type: entity.NodeTypeEntry,
-		Configs: map[string]any{
-			"DefaultValues": map[string]any{},
-		}}
+	entryN := &schema.NodeSchema{
+		Key:     entity.EntryNodeKey,
+		Type:    entity.NodeTypeEntry,
+		Configs: &entry.Config{},
+	}
 
-	exit := &compose2.NodeSchema{
+	exitN := &schema.NodeSchema{
 		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
-		Configs: map[string]any{
-			"TerminalPlan": vo.ReturnVariables,
+		Configs: &exit.Config{
+			TerminatePlan: vo.ReturnVariables,
 		},
 		InputSources: []*vo.FieldInfo{
 			{
@@ -84,7 +86,7 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	lambdaNode1 := &compose2.NodeSchema{
+	lambdaNode1 := &schema.NodeSchema{
 		Key:    "lambda1",
 		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda1),
@@ -96,7 +98,7 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	LambdaNode2 := &compose2.NodeSchema{
+	LambdaNode2 := &schema.NodeSchema{
 		Key:    "lambda2",
 		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda2),
@@ -108,16 +110,16 @@ func TestAddSelector(t *testing.T) {
 		}, nil
 	}
 
-	lambdaNode3 := &compose2.NodeSchema{
+	lambdaNode3 := &schema.NodeSchema{
 		Key:    "lambda3",
 		Type:   entity.NodeTypeLambda,
 		Lambda: compose.InvokableLambda(lambda3),
 	}
 
-	ns := &compose2.NodeSchema{
+	ns := &schema.NodeSchema{
 		Key:  "selector",
 		Type: entity.NodeTypeSelector,
-		Configs: map[string]any{"Clauses": []*selector.OneClauseSchema{
+		Configs: &selector.Config{Clauses: []*selector.OneClauseSchema{
 			{
 				Single: ptr.Of(selector.OperatorEqual),
 			},
@@ -136,7 +138,7 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"0", selector.LeftKey},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"key1"},
 					},
 				},
@@ -151,7 +153,7 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"1", "0", selector.LeftKey},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"key2"},
 					},
 				},
@@ -160,7 +162,7 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"1", "0", selector.RightKey},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"key3"},
 					},
 				},
@@ -169,7 +171,7 @@ func TestAddSelector(t *testing.T) {
 				Path: compose.FieldPath{"1", "1", selector.LeftKey},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"key4"},
 					},
 				},
@@ -214,18 +216,18 @@ func TestAddSelector(t *testing.T) {
 		},
 	}
 
-	ws := &compose2.WorkflowSchema{
-		Nodes: []*compose2.NodeSchema{
-			entry,
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entryN,
 			ns,
 			lambdaNode1,
 			LambdaNode2,
 			lambdaNode3,
-			exit,
+			exitN,
 		},
-		Connections: []*compose2.Connection{
+		Connections: []*schema.Connection{
 			{
-				FromNode: entry.Key,
+				FromNode: entryN.Key,
 				ToNode:   "selector",
 			},
 			{
@@ -245,23 +247,27 @@ func TestAddSelector(t *testing.T) {
 			},
 			{
 				FromNode: "selector",
-				ToNode:   exit.Key,
+				ToNode:   exitN.Key,
 				FromPort: ptr.Of("default"),
 			},
 			{
 				FromNode: "lambda1",
-				ToNode:   exit.Key,
+				ToNode:   exitN.Key,
 			},
 			{
 				FromNode: "lambda2",
-				ToNode:   exit.Key,
+				ToNode:   exitN.Key,
 			},
 			{
 				FromNode: "lambda3",
-				ToNode:   exit.Key,
+				ToNode:   exitN.Key,
 			},
 		},
 	}
+
+	branches, err := schema.BuildBranches(ws.Connections)
+	assert.NoError(t, err)
+	ws.Branches = branches
 
 	ws.Init()
 
@@ -303,19 +309,17 @@ func TestAddSelector(t *testing.T) {
 }
 
 func TestVariableAggregator(t *testing.T) {
-	entry := &compose2.NodeSchema{
-		Key:  entity.EntryNodeKey,
-		Type: entity.NodeTypeEntry,
-		Configs: map[string]any{
-			"DefaultValues": map[string]any{},
-		},
+	entryN := &schema.NodeSchema{
+		Key:     entity.EntryNodeKey,
+		Type:    entity.NodeTypeEntry,
+		Configs: &entry.Config{},
 	}
 
-	exit := &compose2.NodeSchema{
+	exitN := &schema.NodeSchema{
 		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
-		Configs: map[string]any{
-			"TerminalPlan": vo.ReturnVariables,
+		Configs: &exit.Config{
+			TerminatePlan: vo.ReturnVariables,
 		},
 		InputSources: []*vo.FieldInfo{
 			{
@@ -339,16 +343,16 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
-	ns := &compose2.NodeSchema{
+	ns := &schema.NodeSchema{
 		Key:  "va",
 		Type: entity.NodeTypeVariableAggregator,
-		Configs: map[string]any{
-			"MergeStrategy": variableaggregator.FirstNotNullValue,
-			"GroupToLen": map[string]int{
+		Configs: &variableaggregator.Config{
+			MergeStrategy: variableaggregator.FirstNotNullValue,
+			GroupLen: map[string]int{
 				"Group1": 1,
 				"Group2": 1,
 			},
-			"GroupOrder": []string{
+			GroupOrder: []string{
 				"Group1",
 				"Group2",
 			},
@@ -358,7 +362,7 @@ func TestVariableAggregator(t *testing.T) {
 				Path: compose.FieldPath{"Group1", "0"},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"Str1"},
 					},
 				},
@@ -367,7 +371,7 @@ func TestVariableAggregator(t *testing.T) {
 				Path: compose.FieldPath{"Group2", "0"},
 				Source: vo.FieldSource{
 					Ref: &vo.Reference{
-						FromNodeKey: entry.Key,
+						FromNodeKey: entryN.Key,
 						FromPath:    compose.FieldPath{"Int1"},
 					},
 				},
@@ -401,20 +405,20 @@ func TestVariableAggregator(t *testing.T) {
 		},
 	}
 
-	ws := &compose2.WorkflowSchema{
-		Nodes: []*compose2.NodeSchema{
-			entry,
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entryN,
 			ns,
-			exit,
+			exitN,
 		},
-		Connections: []*compose2.Connection{
+		Connections: []*schema.Connection{
 			{
-				FromNode: entry.Key,
+				FromNode: entryN.Key,
 				ToNode:   "va",
 			},
 			{
 				FromNode: "va",
-				ToNode:   exit.Key,
+				ToNode:   exitN.Key,
 			},
 		},
 	}
@@ -448,19 +452,17 @@ func TestVariableAggregator(t *testing.T) {
 
 func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-			Configs: map[string]any{
-				"DefaultValues": map[string]any{},
-			},
+		entryN := &schema.NodeSchema{
+			Key:     entity.EntryNodeKey,
+			Type:    entity.NodeTypeEntry,
+			Configs: &entry.Config{},
 		}
 
-		exit := &compose2.NodeSchema{
+		exitN := &schema.NodeSchema{
 			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
+			Configs: &exit.Config{
+				TerminatePlan: vo.ReturnVariables,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
@@ -475,19 +477,19 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ns := &compose2.NodeSchema{
+		ns := &schema.NodeSchema{
 			Key:  "tp",
 			Type: entity.NodeTypeTextProcessor,
-			Configs: map[string]any{
-				"Type":       textprocessor.SplitText,
-				"Separators": []string{"|"},
+			Configs: &textprocessor.Config{
+				Type:       textprocessor.SplitText,
+				Separators: []string{"|"},
 			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"String"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"Str"},
 						},
 					},
@@ -495,20 +497,20 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
 				ns,
-				entry,
-				exit,
+				entryN,
+				exitN,
 			},
-			Connections: []*compose2.Connection{
+			Connections: []*schema.Connection{
 				{
-					FromNode: entry.Key,
+					FromNode: entryN.Key,
 					ToNode:   "tp",
 				},
 				{
 					FromNode: "tp",
-					ToNode:   exit.Key,
+					ToNode:   exitN.Key,
 				},
 			},
 		}
@@ -527,19 +529,17 @@ func TestTextProcessor(t *testing.T) {
 	})
 
 	t.Run("concat", func(t *testing.T) {
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-			Configs: map[string]any{
-				"DefaultValues": map[string]any{},
-			},
+		entryN := &schema.NodeSchema{
+			Key:     entity.EntryNodeKey,
+			Type:    entity.NodeTypeEntry,
+			Configs: &entry.Config{},
 		}
 
-		exit := &compose2.NodeSchema{
+		exitN := &schema.NodeSchema{
 			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
+			Configs: &exit.Config{
+				TerminatePlan: vo.ReturnVariables,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
@@ -554,20 +554,20 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ns := &compose2.NodeSchema{
+		ns := &schema.NodeSchema{
 			Key:  "tp",
 			Type: entity.NodeTypeTextProcessor,
-			Configs: map[string]any{
-				"Type":       textprocessor.ConcatText,
-				"Tpl":        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
-				"ConcatChar": "\t",
+			Configs: &textprocessor.Config{
+				Type:       textprocessor.ConcatText,
+				Tpl:        "{{String1}}_{{String2.f1}}_{{String3.f2[1]}}",
+				ConcatChar: "\t",
 			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"String1"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"Str1"},
 						},
 					},
@@ -576,7 +576,7 @@ func TestTextProcessor(t *testing.T) {
 					Path: compose.FieldPath{"String2"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"Str2"},
 						},
 					},
@@ -585,7 +585,7 @@ func TestTextProcessor(t *testing.T) {
 					Path: compose.FieldPath{"String3"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"Str3"},
 						},
 					},
@@ -593,20 +593,20 @@ func TestTextProcessor(t *testing.T) {
 			},
 		}
 
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
 				ns,
-				entry,
-				exit,
+				entryN,
+				exitN,
 			},
-			Connections: []*compose2.Connection{
+			Connections: []*schema.Connection{
 				{
-					FromNode: entry.Key,
+					FromNode: entryN.Key,
 					ToNode:   "tp",
 				},
 				{
 					FromNode: "tp",
-					ToNode:   exit.Key,
+					ToNode:   exitN.Key,
 				},
 			},
 		}

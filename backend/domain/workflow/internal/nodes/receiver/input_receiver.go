@@ -27,8 +27,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -37,19 +39,27 @@ import (
 )
 
 type Config struct {
-	OutputTypes  map[string]*vo.TypeInfo
-	NodeKey      vo.NodeKey
 	OutputSchema string
 }
 
-type InputReceiver struct {
-	outputTypes   map[string]*vo.TypeInfo
-	interruptData string
-	nodeKey       vo.NodeKey
-	nodeMeta      entity.NodeTypeMeta
+func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	c.OutputSchema = n.Data.Inputs.OutputSchema
+
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeInputReceiver,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
 
-func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
+func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
 	nodeMeta := entity.NodeMetaByNodeType(entity.NodeTypeInputReceiver)
 	if nodeMeta == nil {
 		return nil, errors.New("node meta not found for input receiver")
@@ -57,7 +67,7 @@ func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
 
 	interruptData := map[string]string{
 		"content_type": "form_schema",
-		"content":      cfg.OutputSchema,
+		"content":      c.OutputSchema,
 	}
 
 	interruptDataStr, err := sonic.ConfigStd.MarshalToString(interruptData) // keep the order of the keys
@@ -66,11 +76,22 @@ func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
 	}
 
 	return &InputReceiver{
-		outputTypes:   cfg.OutputTypes,
+		outputTypes:   ns.OutputTypes, // so the node can refer to its output types during execution
 		nodeMeta:      *nodeMeta,
-		nodeKey:       cfg.NodeKey,
+		nodeKey:       ns.Key,
 		interruptData: interruptDataStr,
 	}, nil
+}
+
+func (c *Config) RequireCheckpoint() bool {
+	return true
+}
+
+type InputReceiver struct {
+	outputTypes   map[string]*vo.TypeInfo
+	interruptData string
+	nodeKey       vo.NodeKey
+	nodeMeta      entity.NodeTypeMeta
 }
 
 const (

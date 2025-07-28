@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 func TestNewTextProcessorNodeGenerator(t *testing.T) {
@@ -30,10 +32,10 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 			Type:       SplitText,
 			Separators: []string{",", "|", "."},
 		}
-		p, err := NewTextProcessor(ctx, cfg)
+		p, err := cfg.Build(ctx, &schema2.NodeSchema{})
 		assert.NoError(t, err)
 
-		result, err := p.Invoke(ctx, map[string]any{
+		result, err := p.(*TextProcessor).Invoke(ctx, map[string]any{
 			"String": "a,b|c.d,e|f|g",
 		})
 
@@ -60,9 +62,9 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 			ConcatChar: `\t`,
 			Tpl:        "fx{{a}}=={{b.b1}}=={{b.b2[1]}}=={{c}}",
 		}
-		p, err := NewTextProcessor(context.Background(), cfg)
+		p, err := cfg.Build(context.Background(), &schema2.NodeSchema{})
 
-		result, err := p.Invoke(ctx, in)
+		result, err := p.(*TextProcessor).Invoke(ctx, in)
 		assert.NoError(t, err)
 		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==1\t2\t3==2=={"c1":"1"}`)
 	})
