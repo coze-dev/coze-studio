@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { devtools } from 'zustand/middleware';
 import { create } from 'zustand';
 import { merge } from 'lodash-es';
@@ -49,7 +49,7 @@ const getDefaultTextLocalAddUpdateState: () => UploadTextLocalAddUpdateState =
       parsing_type: ParsingType.AccurateParsing,
       image_extraction: true,
       table_extraction: true,
-      image_ocr: true,
+      image_ocr: false,
     },
     indexStrategy: {},
     filterStrategy: [],
