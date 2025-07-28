@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Set up Elasticsearch
+echo "Setting up Elasticsearch..."
+/app/setup_es.sh --index-dir /app/es_index_schemas
+
 # Start the proxy application in the background
 echo "Starting proxy application..."
 /app/proxy >/tmp/proxy.log 2>&1 &
