@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -34,13 +35,15 @@ func New(ctx context.Context) (Storage, error) {
 	storageType := os.Getenv(consts.StorageType)
 	switch storageType {
 	case "minio":
+		apiHost := os.Getenv("MINIO_API_HOST")
+		useSSL := strings.HasPrefix(apiHost, "https://")
 		return minio.New(
 			ctx,
 			os.Getenv(consts.MinIOEndpoint),
 			os.Getenv(consts.MinIOAK),
 			os.Getenv(consts.MinIOSK),
 			os.Getenv(consts.StorageBucket),
-			false,
+			useSSL,
 		)
 	case "tos":
 		return tos.New(
