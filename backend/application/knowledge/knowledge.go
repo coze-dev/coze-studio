@@ -438,7 +438,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			DocumentID:     domainResp.ProgressList[i].ID,
 			Progress:       int32(domainResp.ProgressList[i].Progress),
 			Status:         convertDocumentStatus2Model(domainResp.ProgressList[i].Status),
-			StatusDescript: ptr.Of(convertDocumentStatus2Model(domainResp.ProgressList[i].Status).String()),
+			StatusDescript: &domainResp.ProgressList[i].StatusMsg,
 			DocumentName:   domainResp.ProgressList[i].Name,
 			RemainingTime:  &domainResp.ProgressList[i].RemainingSec,
 			Size:           &domainResp.ProgressList[i].Size,
