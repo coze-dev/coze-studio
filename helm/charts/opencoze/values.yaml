@@ -12,7 +12,7 @@ mysql:
   rootPassword: "root"
   database: opencoze
   user: coze
-  password: coze123
+  password: root
   persistence:
     storageClassName: "opencoze-data"
     size: "50Gi"
