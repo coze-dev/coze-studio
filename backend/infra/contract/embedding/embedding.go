@@ -18,6 +18,8 @@ package embedding
 
 import (
 	"context"
+	"os"
+	"strconv"
 
 	"github.com/cloudwego/eino/components/embedding"
 )
@@ -34,4 +36,18 @@ type SupportStatus int
 const (
 	SupportDense          SupportStatus = 1
 	SupportDenseAndSparse SupportStatus = 3
+
+	// DefaultEmbeddingBatchSize is the default batch size for embedding operations
+	DefaultEmbeddingBatchSize = 100
 )
+
+// GetEmbeddingBatchSize returns the batch size for embedding operations.
+// It reads from EMBEDDING_BATCH_SIZE environment variable, defaulting to DefaultEmbeddingBatchSize.
+func GetEmbeddingBatchSize() int {
+	if batchSizeStr := os.Getenv("EMBEDDING_BATCH_SIZE"); batchSizeStr != "" {
+		if batchSize, err := strconv.Atoi(batchSizeStr); err == nil && batchSize > 0 {
+			return batchSize
+		}
+	}
+	return DefaultEmbeddingBatchSize // 默认值，符合 API 限制
+}

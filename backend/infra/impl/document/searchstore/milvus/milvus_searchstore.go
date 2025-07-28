@@ -79,7 +79,7 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 		}
 	}
 
-	for _, part := range slices.Chunks(docs, batchSize) {
+	for _, part := range slices.Chunks(docs, embedding.GetEmbeddingBatchSize()) {
 		columns, err := m.documents2Columns(ctx, part, indexingFields)
 		if err != nil {
 			return nil, err

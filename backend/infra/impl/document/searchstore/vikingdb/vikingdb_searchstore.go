@@ -30,6 +30,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -63,7 +64,7 @@ func (v *vkSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 	}
 
 	indexingFields := sets.FromSlice(implSpecOptions.IndexingFields)
-	for _, part := range slices.Chunks(docsWithoutVector, 100) {
+	for _, part := range slices.Chunks(docsWithoutVector, embedding.GetEmbeddingBatchSize()) {
 		docsWithVector, err := v.addEmbedding(ctx, part, indexingFields)
 		if err != nil {
 			return nil, err
@@ -144,7 +145,7 @@ func (v *vkSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 }
 
 func (v *vkSearchStore) Delete(ctx context.Context, ids []string) error {
-	for _, part := range slices.Chunks(ids, 100) {
+	for _, part := range slices.Chunks(ids, embedding.GetEmbeddingBatchSize()) {
 		if err := v.collection.DeleteData(part); err != nil {
 			return err
 		}

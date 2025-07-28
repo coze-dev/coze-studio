@@ -17,6 +17,5 @@
 package milvus
 
 const (
-	batchSize = 100
-	topK      = 4
+	topK = 4
 )

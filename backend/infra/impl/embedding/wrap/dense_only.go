@@ -33,7 +33,7 @@ type denseOnlyWrap struct {
 
 func (d denseOnlyWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	resp := make([][]float64, 0, len(texts))
-	for _, part := range slices.Chunks(texts, 100) {
+	for _, part := range slices.Chunks(texts, contract.GetEmbeddingBatchSize()) {
 		partResult, err := d.Embedder.EmbedStrings(ctx, part, opts...)
 		if err != nil {
 			return nil, err

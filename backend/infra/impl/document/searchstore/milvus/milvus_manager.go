@@ -78,7 +78,7 @@ func NewManager(config *ManagerConfig) (searchstore.Manager, error) {
 		config.ShardNum = 1
 	}
 	if config.BatchSize == 0 {
-		config.BatchSize = 100
+		config.BatchSize = embedding.GetEmbeddingBatchSize()
 	}
 
 	return &milvusManager{config: config}, nil
