@@ -1,26 +1,15 @@
-// 所有声明在 rush.json 中的包，需要在 tags 配置中，添加团队和分级描述。描述的枚举如下
 {
   "$schema": "./rushx-config.schema.json",
-  // 团队情况，可以自行添加
   "team": [
-    // 负责人：@xukai.luics
     "team-automation",
-    // 负责人：@changyang.liu
     "team-builder",
-    // 负责人：@linyibin
     "team-community",
-    // 负责人：@sunshengda
     "team-data",
-    // 负责人：@xuyuantong, @dingquan
     "team-devops",
-    // 负责人：@fanwenjie.fe
     "team-arch",
-    // 负责人：@sunkuo
     "team-studio",
     "team-qa"
   ],
-  // 全部分级包
-  // delete 将被删除包，暂不做分级
   "level": ["level-1", "level-2", "level-3", "level-4"],
   "codecov": {
     "coverage": 20,
@@ -33,7 +22,6 @@
       "coverage": 30,
       "incrementCoverage": 60
     },
-    // 后续逐步提升这个 level 的增量覆盖率
     "level-3": {
       "coverage": 0,
       "incrementCoverage": 0
