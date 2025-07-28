@@ -93,8 +93,6 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 			intelligenceDataList[index] = info
 			return nil
 		})
-
-		s.packIntelligenceData(ctx, data)
 	}
 
 	_ = tasks.Wait()
