@@ -69,6 +69,7 @@ cozeServer:
     ES_VERSION: "v8"
     VECTOR_STORE_TYPE: "milvus"
     EMBEDDING_TYPE: "ark"
+    ARK_EMBEDDING_AK: "your_api_key"
     ARK_EMBEDDING_MODEL: "doubao-embedding-large"
     ARK_EMBEDDING_DIMS: "1024"
     ARK_EMBEDDING_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3/embeddings"
