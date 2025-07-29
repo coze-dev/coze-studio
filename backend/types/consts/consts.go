@@ -109,6 +109,6 @@ const (
 )
 
 const (
-	RegistrationControllerEnabled      = "REGISTRATION_CONTROLLER_ENABLED"
-	RegistrationControllerAllowedEmail = "REGISTRATION_CONTROLLER_ALLOWED_EMAIL"
+	DisableUserRegistration = "DISABLE_USER_REGISTRATION"
+	AllowRegistrationEmail  = "ALLOW_REGISTRATION_EMAIL"
 )

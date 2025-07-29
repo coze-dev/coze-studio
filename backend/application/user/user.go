@@ -87,17 +87,17 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 }
 
 func (u *UserApplicationService) allowRegisterChecker(email string) bool {
-	registrationControllerEnabled := os.Getenv(consts.RegistrationControllerEnabled)
-	if registrationControllerEnabled == "true" || registrationControllerEnabled == "" {
+	disableUserRegistration := os.Getenv(consts.DisableUserRegistration)
+	if disableUserRegistration != "true" {
 		return true
 	}
 
-	allowedEmails := os.Getenv(consts.RegistrationControllerAllowedEmail)
+	allowedEmails := os.Getenv(consts.AllowRegistrationEmail)
 	if allowedEmails == "" {
 		return false
 	}
 
-	return slices.Contains(strings.Split(allowedEmails, ":"), strings.ToLower(email))
+	return slices.Contains(strings.Split(allowedEmails, ","), strings.ToLower(email))
 }
 
 // PassportWebLogoutGet 处理用户登出请求
