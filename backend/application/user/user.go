@@ -88,7 +88,7 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 
 func (u *UserApplicationService) allowRegisterChecker(email string) bool {
 	disableUserRegistration := os.Getenv(consts.DisableUserRegistration)
-	if disableUserRegistration != "true" {
+	if strings.ToLower(disableUserRegistration) != "true" {
 		return true
 	}
 
