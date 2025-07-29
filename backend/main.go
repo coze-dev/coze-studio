@@ -168,6 +168,10 @@ func asyncStartMinioProxyServer(ctx context.Context) {
 		proxyURL = getEnv(consts.TOSBucketEndpoint, "https://opencoze.tos-cn-beijing.volces.com")
 	}
 
+	if storageType == "s3" {
+		proxyURL = getEnv(consts.S3BucketEndpoint, "")
+	}
+
 	minioProxyEndpoint := getEnv(consts.MinIOProxyEndpoint, "")
 	if len(minioProxyEndpoint) == 0 {
 		return

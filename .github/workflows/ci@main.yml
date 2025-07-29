@@ -1,0 +1,72 @@
+# should be optimize as increment build & test
+name: CI@main
+on:
+  push:
+    # test only
+    branches: ['main',"chore/setup-ci"]
+    paths:
+      - 'github/**'
+      - 'idl/**'
+      - 'frontend/**'
+      - 'common/**'
+      - 'rush.json'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - NodeVersion: 22.16.0
+            NodeVersionDisplayName: 22
+            OS: ubuntu-latest
+    name: Node.js v${{ matrix.NodeVersionDisplayName }} (${{ matrix.OS }})
+    runs-on: ${{ matrix.OS }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Config Git User
+        # should be turn to ci user
+        run: |
+          git config --local user.name "flow_bot"
+          git config --local user.email "flow_bot@bytedance.com"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.NodeVersion }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-main
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install
+
+      - name: Build all
+        run: node common/scripts/install-run-rush.js build --verbose
+
+      - name: Test:cov all
+        run: node common/scripts/install-run-rush.js test:cov --verbose
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Lint all
+        run: node common/scripts/install-run-rush.js lint --verbose

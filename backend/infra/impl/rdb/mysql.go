@@ -64,6 +64,8 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 		if col.DefaultValue != nil {
 			if col.DataType == entity2.TypeTimestamp {
 				colDef += fmt.Sprintf(" DEFAULT %s", *col.DefaultValue)
+			} else if col.DataType == entity2.TypeText {
+				// do nothing
 			} else {
 				colDef += fmt.Sprintf(" DEFAULT '%s'", *col.DefaultValue)
 			}

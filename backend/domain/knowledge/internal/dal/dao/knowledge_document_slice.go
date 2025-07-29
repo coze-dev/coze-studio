@@ -58,9 +58,7 @@ func (dao *KnowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []
 func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {
 	s := dao.Query.KnowledgeDocumentSlice
 	updates := map[string]any{s.Status.ColumnName().String(): status}
-	if reason != "" {
-		updates[s.FailReason.ColumnName().String()] = reason
-	}
+	updates[s.FailReason.ColumnName().String()] = reason
 	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Where(s.ID.In(ids...)).Updates(updates)
 	return err

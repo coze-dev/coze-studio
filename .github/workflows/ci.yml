@@ -1,0 +1,294 @@
+name: CI
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'github/**'
+      - 'idl/**'
+      - 'frontend/**'
+      - 'common/**'
+      - 'rush.json'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  setup:
+    strategy:
+      matrix:
+        include:
+          - NodeVersion: 22.16.0
+            NodeVersionDisplayName: 22
+            OS: ubuntu-latest
+    name: Setup and Install Dependencies
+    runs-on: ${{ matrix.OS }}
+    outputs:
+      cache_file: ${{ steps.process-files.outputs.cache_file }}
+      matrix_node_version: ${{ matrix.NodeVersion }}
+      matrix_os: ${{ matrix.OS }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Process changed files
+        id: process-files
+        run: |
+          # 获取所有变更文件
+          all_files="${{ steps.changed-files.outputs.all_changed_files }}"
+
+          # 过滤掉 common/changes 目录下的文件
+          filtered_files=""
+          for file in $all_files; do
+            if [[ ! "$file" =~ ^common/changes/.* ]]; then
+              if [ -z "$filtered_files" ]; then
+                filtered_files="$file"
+              else
+                filtered_files="$filtered_files $file"
+              fi
+            fi
+          done
+
+          # 创建 JSON 格式的缓存文件
+          echo "[$( echo "$filtered_files" | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/' )]" > changed-files-cache.json
+
+          # 输出缓存文件路径供后续步骤使用
+          echo "cache_file=changed-files-cache.json" >> $GITHUB_OUTPUT
+
+          echo "过滤前文件数量: $(echo $all_files | wc -w)"
+          echo "过滤后文件数量: $(echo $filtered_files | wc -w)"
+          echo "已生成缓存文件: changed-files-cache.json"
+
+      - name: Config Git User
+        # should be turn to ci user
+        run: |
+          git config --local user.name "flow_bot"
+          git config --local user.email "flow_bot@bytedance.com"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.NodeVersion }}
+
+      - name: Upload changed files cache
+        uses: actions/upload-artifact@v4
+        with:
+          name: changed-files-cache
+          path: changed-files-cache.json
+          retention-days: 1
+
+  build:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.matrix_os }}
+    name: Increment Build
+    env:
+      BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.setup.outputs.matrix_node_version }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-${{ hashFiles('common/config/subspaces/**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Download changed files cache
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files-cache
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install --to tag:core
+          node common/scripts/install-run-rush.js update-autoinstaller --name plugins
+          node common/scripts/install-run-rush.js increment --action install -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Increment Build
+        run: node common/scripts/install-run-rush.js increment --action build -p "${{ needs.setup.outputs.cache_file }}"
+
+  test:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.matrix_os }}
+    name: Increment Test Coverage
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.setup.outputs.matrix_node_version }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-${{ hashFiles('common/config/subspaces/**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Download changed files cache
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files-cache
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install --to tag:core
+          node common/scripts/install-run-rush.js update-autoinstaller --name plugins
+          node common/scripts/install-run-rush.js increment --action install -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Increment Test:cov
+        run: node common/scripts/install-run-rush.js increment --action test:cov -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+  lint:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.matrix_os }}
+    name: Increment Lint
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.setup.outputs.matrix_node_version }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-${{ hashFiles('common/config/subspaces/**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Download changed files cache
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files-cache
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install --to tag:core
+          node common/scripts/install-run-rush.js update-autoinstaller --name plugins
+          node common/scripts/install-run-rush.js increment --action install -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Increment Lint
+        run: node common/scripts/install-run-rush.js increment --action lint -p "${{ needs.setup.outputs.cache_file }}"
+
+  ts-check:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.matrix_os }}
+    name: Increment TS Check
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.setup.outputs.matrix_node_version }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-${{ hashFiles('common/config/subspaces/**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Download changed files cache
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files-cache
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install --to tag:core
+          node common/scripts/install-run-rush.js update-autoinstaller --name plugins
+          node common/scripts/install-run-rush.js increment --action install -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Increment TS Check
+        run: node common/scripts/install-run-rush.js increment --action ts-check -p "${{ needs.setup.outputs.cache_file }}"
+
+  package-audit:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.matrix_os }}
+    name: Increment Package Audit
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.setup.outputs.matrix_node_version }}
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp/pnpm-local
+            common/temp/pnpm-store
+            common/temp/install-run
+          key: ${{ runner.os }}-rush-store-${{ hashFiles('common/config/subspaces/**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-rush-store-main
+            ${{ runner.os }}-rush-store
+
+      - name: Download changed files cache
+        uses: actions/download-artifact@v4
+        with:
+          name: changed-files-cache
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+          node common/scripts/install-run-rush.js install --to tag:core
+          node common/scripts/install-run-rush.js update-autoinstaller --name plugins
+          node common/scripts/install-run-rush.js increment --action install -p "${{ needs.setup.outputs.cache_file }}"
+
+      - name: Increment Package Audit
+        run: node common/scripts/install-run-rush.js increment --action package-audit -p "${{ needs.setup.outputs.cache_file }}"

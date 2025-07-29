@@ -15,7 +15,7 @@
       "ignoreMissingScript": true,
       "enableParallelism": true,
       "incremental": true,
-      "shellCommand": "eslint ./ --cache",
+      "shellCommand": "eslint ./ --cache --quiet",
       "allowWarningsInSuccessfulBuild": true,
       "summary": "⭐️️ Run lint command for each package",
       "safeForSimultaneousRushProcesses": true

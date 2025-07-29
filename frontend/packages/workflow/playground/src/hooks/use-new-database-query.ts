@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { type WorkflowDatabase, ViewVariableType } from '@coze-workflow/base';
 import { FieldItemType, type DatabaseInfo } from '@coze-arch/bot-api/memory';
@@ -54,6 +54,7 @@ function transformRawDatabaseToDatabase(
     fields: rawDatabase.field_list?.map(field => ({
       id: field.alterId as number,
       name: field.name,
+      // @ts-expect-error fix me late
       type: fieldItemTypeToViewVariableType(field.type),
       required: field.must_required,
       description: field.desc,

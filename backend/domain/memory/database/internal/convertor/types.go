@@ -33,7 +33,7 @@ const (
 func SwitchToDataType(itemType table.FieldItemType) entity.DataType {
 	switch itemType {
 	case table.FieldItemType_Text:
-		return entity.TypeVarchar
+		return entity.TypeText
 	case table.FieldItemType_Number:
 		return entity.TypeBigInt
 	case table.FieldItemType_Date:
