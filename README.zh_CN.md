@@ -74,7 +74,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    cp .env.example .env
    docker compose --profile "*" up -d
    ```
-   服务启动之后，`coze-elasticsearch-setup`、`coze-minio-setup`、`coze-mysql-setup-init-sql`、`coze-mysql-setup-schema` 这几个容器处于退出状态（exit 0），是正常现象。**启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。
+   服务启动之后`coze-minio-setup`、`coze-mysql-setup-init-sql`、`coze-mysql-setup-schema` 这几个容器处于退出状态（exit 0），是正常现象。**启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。
 
 4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
 
@@ -84,7 +84,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    * [模型配置](https://github.com/coze-dev/coze-studio/wiki/3.-模型配置)：部署 Coze Studio 开源版之前，必须配置模型服务，否则无法在搭建智能体、工作流和应用时选择模型。
    * [插件配置](https://github.com/coze-dev/coze-studio/wiki/4.-插件配置)：如需使用插件商店中的官方插件，必须先配置插件，添加第三方服务的鉴权秘钥。
    * [基础组件配置](https://github.com/coze-dev/coze-studio/wiki/5.-基础组件配置)：了解如何配置图片上传等组件，以便在 Coze Studio 中使用上传图片等功能。
-* [API 参考](https://github.com/coze-dev/coze-studio/wiki/6.-API-参考)：和商业版不同，Coze Studio 开源版仅支持个人访问秘钥（PAT）鉴权，并支持对话和工作流相关 API。
+* [API 参考](https://github.com/coze-dev/coze-studio/wiki/6.-API-参考)：Coze Studio 社区版 API 和 Chat SDK 通过个人访问令牌鉴权，提供对话和工作流相关 API。
 * [开发规范](https://github.com/coze-dev/coze-studio/wiki/7.-开发规范)：
    * [项目架构](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84)：了解 Coze Studio 开源版的技术架构与核心组件。
    * [代码开发与测试](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E4%BB%A3%E7%A0%81%E5%BC%80%E5%8F%91%E4%B8%8E%E6%B5%8B%E8%AF%95)：了解如何基于 Coze Studio 开源版进行二次开发与测试。

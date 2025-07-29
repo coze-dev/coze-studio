@@ -545,6 +545,12 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDo
 		if documents[i].Status == int32(entity.DocumentStatusEnable) || documents[i].Status == int32(entity.DocumentStatusFailed) {
 			item.Progress = progressbar.ProcessDone
 		} else {
+			if documents[i].FailReason != "" {
+				item.StatusMsg = documents[i].FailReason
+				item.Status = entity.DocumentStatusFailed
+				progresslist = append(progresslist, &item)
+				continue
+			}
 			err = k.getProgressFromCache(ctx, &item)
 			if err != nil {
 				logs.CtxErrorf(ctx, "get progress from cache failed, err: %v", err)
@@ -564,8 +570,9 @@ func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgres
 	documentProgress.Progress = int(percent)
 	documentProgress.RemainingSec = int64(remainSec)
 	if len(errMsg) != 0 {
-		documentProgress.Progress = 0
-		documentProgress.Status = entity.DocumentStatusChunking
+		documentProgress.Status = entity.DocumentStatusFailed
+		documentProgress.StatusMsg = errMsg
+		return err
 	}
 	return err
 }
@@ -1275,6 +1282,16 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 			}
 			documentEntity.TableInfo.Columns = append(documentEntity.TableInfo.Columns, document.TableInfo.Columns[i])
 		}
+	}
+	switch document.Status {
+	case int32(entity.DocumentStatusChunking), int32(entity.DocumentStatusInit), int32(entity.DocumentStatusUploading):
+		if document.FailReason != "" {
+			documentEntity.Status = entity.DocumentStatusFailed
+			documentEntity.StatusMsg = document.FailReason
+		}
+	case int32(entity.DocumentStatusFailed):
+		documentEntity.StatusMsg = document.FailReason
+	default:
 	}
 	if len(document.URI) != 0 {
 		objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)

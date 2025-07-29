@@ -1,268 +1,273 @@
-* Tecvan-fe
+* @Tecvan-fe @hi-pender
 
-/apps/coze-studio/ @Tecvan-fe @evan-crash @duwenhan2byte
-/packages/agent-ide/agent-publish/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei @catee
-/packages/agent-ide/commons/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/arch/bot-api/ @Tecvan-fe
-/packages/arch/bot-http/ @Tecvan-fe
-/packages/arch/logger/ @Tecvan-fe
-/packages/arch/slardar-interface/ @Tecvan-fe @evan-crash
-/config/eslint-config/ @Tecvan-fe @leeight @soonco
-/infra/eslint-plugin/ @Tecvan-fe
-/config/ts-config/ @leeight @Tecvan-fe
-/config/vitest-config/ @Tecvan-fe
-/packages/arch/bot-env/ @Tecvan-fe @leeight
-/packages/arch/bot-env-adapter/ @dragooncjw @Tecvan-fe @leeight
-/packages/arch/bot-typings/ @Tecvan-fe
-/packages/arch/web-context/ @Tecvan-fe
-/packages/components/bot-semi/ @Tecvan-fe
-/packages/components/bot-icons/ @DingGao-Devin
-/packages/arch/i18n/ @Tecvan-fe @leeight
-/packages/arch/resources/studio-i18n-resource/ @dragooncjw @Tecvan-fe
-/config/stylelint-config/ @Tecvan-fe
-/packages/arch/idl/ @Tecvan-fe
-/infra/utils/fs-enhance/ @Tecvan-fe
-/packages/arch/bot-store/ @Tecvan-fe @catee @duwenhan2byte
-/packages/arch/bot-error/ @haozhenfei @duwenhan2byte
-/packages/foundation/space-store/ @evan-crash @duwenhan2byte
-/packages/arch/bot-flags/ @Tecvan-fe
-/packages/arch/report-events/ @Tecvan-fe
-/packages/foundation/enterprise-store-adapter/ @evan-crash @duwenhan2byte
-/packages/foundation/local-storage/ @duwenhan2byte @evan-crash
-/packages/foundation/space-store-adapter/ @evan-crash @duwenhan2byte
-/packages/arch/bot-tea/ @Tecvan-fe @catee @soonco
-/packages/arch/tea/ @Tecvan-fe @evan-crash @soonco
-/packages/arch/tea-adapter/ @dragooncjw @Tecvan-fe
-/packages/arch/tea-interface/ @dragooncjw @Tecvan-fe
-/packages/studio/stores/bot-detail/ @Hezi-crypto @catee @DingGao-Devin @duwenhan2byte @evan-crash
-/packages/agent-ide/bot-input-length-limit/ @Hezi-crypto @catee @duwenhan2byte
-/packages/agent-ide/tool-config/ @haozhenfei @catee
-/packages/arch/bot-space-api/ @Tecvan-fe @duwenhan2byte
-/packages/arch/bot-utils/ @Tecvan-fe
-/packages/common/uploader-adapter/ @dragooncjw @Tecvan-fe
-/packages/common/uploader-interface/ @dragooncjw @Tecvan-fe
-/packages/studio/user-store/ @duwenhan2byte @catee @lihuiwen
-/packages/arch/foundation-sdk/ @evan-crash @duwenhan2byte
-/packages/common/chat-area/chat-core/ @haozhenfei @Hezi-crypto @evan-crash
-/packages/common/chat-area/utils/ @Hezi-crypto @haozhenfei
-/packages/arch/bot-md-box-adapter/ @Hezi-crypto @iu1340 @dragooncjw @Tecvan-fe
-/packages/studio/common/file-kit/ @haozhenfei @evan-crash
-/packages/arch/slardar-adapter/ @Tecvan-fe @dragooncjw
-/packages/arch/default-slardar/ @Tecvan-fe @evan-crash
-/packages/arch/fetch-stream/ @Hezi-crypto @haozhenfei
-/packages/common/websocket-manager-adapter/ @haozhenfei @Hezi-crypto @catee
-/packages/studio/autosave/ @catee
-/packages/studio/bot-utils/ @catee @soonco @Hezi-crypto
-/packages/common/flowgram-adapter/common/ @zxhfighter @xiamidaxia @dragooncjw
-/packages/common/flowgram-adapter/free-layout-editor/ @zxhfighter @xiamidaxia @dragooncjw
-/packages/agent-ide/space-bot/ @soonco @evan-crash @duwenhan2byte @catee @DingGao-Devin
-/packages/agent-ide/space-bot/src/store/bot-list-filter/ @duwenhan2byte @lihuiwen
-/packages/agent-ide/space-bot/src/store/bot-page/ @DingGao-Devin
-/packages/agent-ide/space-bot/src/store/explore/ @Tecvan-fe
-/packages/agent-ide/space-bot/src/store/risk-warning/ @lihuiwen @catee
-/packages/agent-ide/context/ @evan-crash
-/packages/agent-ide/bot-editor-context-store/ @Hezi-crypto @duwenhan2byte @catee
-/packages/agent-ide/chat-background/ @catee
-/packages/agent-ide/chat-background-config-content-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/chat-background-config-content/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/chat-background-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/common/chat-area/chat-uikit/ @catee @Hezi-crypto @evan-crash @haozhenfei
-/packages/common/chat-area/hooks/ @Hezi-crypto @evan-crash
-/packages/common/chat-area/chat-uikit-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/bot-audit-adapter/ @evan-crash @duwenhan2byte @Hezi-crypto @haozhenfei
-/packages/agent-ide/bot-audit-base/ @evan-crash @duwenhan2byte @Hezi-crypto @haozhenfei
-/packages/studio/components/ @soonco @evan-crash @duwenhan2byte @catee
-/packages/arch/bot-hooks/ @catee @Tecvan-fe @soonco
-/packages/arch/bot-hooks/src/page-jump/ @evan-crash @catee
-/packages/arch/bot-hooks-adapter/ @catee @Tecvan-fe @soonco
-/packages/arch/bot-hooks-base/ @catee @Tecvan-fe @soonco
-/packages/arch/responsive-kit/ @Tecvan-fe @DingGao-Devin
-/packages/common/chat-area/chat-area/ @Hezi-crypto @haozhenfei @evan-crash @haozhenfei
-/packages/data/memory/llm-plugins/ @haozhenfei @catee @Hezi-crypto
-/packages/data/common/reporter/ @soonco @catee @evan-crash
-/packages/components/json-viewer/ @duwenhan2byte
-/packages/components/scroll-view/ @evan-crash
-/packages/common/assets/ @Tecvan-fe @catee
-/packages/common/biz-components/ @duwenhan2byte
-/packages/data/common/e2e/ @soonco @catee @evan-crash @haozhenfei @duwenhan2byte
-/packages/agent-ide/debug-tool-list/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/model-manager/ @Hezi-crypto @catee
-/packages/agent-ide/model-manager/src/components/multi-agent/ @catee
-/packages/agent-ide/tool/ @catee
-/packages/data/knowledge/knowledge-modal-base/ @haozhenfei @catee @Hezi-crypto
-/packages/components/biz-tooltip-ui/ @Hezi-crypto @catee @evan-crash
-/packages/components/table-view/ @lihuiwen
-/packages/components/virtual-list/ @Tecvan-fe
-/packages/data/common/utils/ @soonco @catee @evan-crash
-/packages/data/knowledge/knowledge-resource-processor-core/ @haozhenfei @catee @Hezi-crypto
-/packages/arch/pdfjs-shadow/ @Tecvan-fe
-/packages/data/knowledge/common/stores/ @soonco @catee @evan-crash
-/packages/foundation/global-store/ @duwenhan2byte @evan-crash
-/config/postcss-config/ @Tecvan-fe
-/config/tailwind-config/ @Tecvan-fe
-/infra/utils/monorepo-kits/ @Tecvan-fe @evan-crash
-/packages/studio/premium/premium-components-adapter/ @evan-crash
-/packages/studio/premium/premium-store-adapter/ @evan-crash
-/packages/agent-ide/onboarding/ @Hezi-crypto @catee
-/packages/agent-ide/publish-to-base/ @catee
-/packages/arch/report-tti/ @duwenhan2byte
-/packages/data/memory/database-creator/ @haozhenfei @catee @Hezi-crypto
-/packages/arch/hooks/ @Tecvan-fe @evan-crash
-/packages/common/coze-mitt/ @evan-crash @duwenhan2byte
-/packages/common/editor-plugins/ @haozhenfei @stream-pipe @Hezi-crypto
-/packages/common/md-editor-adapter/ @haozhenfei @Hezi-crypto @catee
-/packages/common/prompt-kit/main/ @haozhenfei @Hezi-crypto @catee
-/packages/common/chat-area/chat-answer-action/ @Hezi-crypto @haozhenfei @lihuiwen
-/packages/common/chat-area/plugin-message-grab/ @Hezi-crypto @haozhenfei
-/packages/common/chat-area/text-grab/ @Hezi-crypto @haozhenfei
-/packages/common/prompt-kit/adapter/ @haozhenfei @Hezi-crypto @catee
-/packages/common/prompt-kit/base/ @haozhenfei @Hezi-crypto @catee
-/packages/data/memory/database/ @haozhenfei @catee @Hezi-crypto
-/packages/data/knowledge/knowledge-resource-processor-base/ @haozhenfei @catee @Hezi-crypto
-/packages/arch/utils/ @Tecvan-fe @evan-crash
-/packages/data/knowledge/common/components/ @haozhenfei @catee @Hezi-crypto
-/packages/data/common/feature-register/ @haozhenfei @catee @Hezi-crypto
-/packages/data/knowledge/common/hooks/ @Hezi-crypto @catee @evan-crash
-/packages/data/knowledge/common/services/ @Hezi-crypto @catee @evan-crash
-/packages/data/memory/database-v2-main/ @haozhenfei @catee @Hezi-crypto
-/packages/data/memory/database-v2-adapter/ @haozhenfei @catee @Hezi-crypto
-/packages/data/memory/database-v2-base/ @haozhenfei @catee @Hezi-crypto
-/packages/data/knowledge/knowledge-data-set-for-agent/ @Hezi-crypto @catee @evan-crash
-/packages/data/knowledge/knowledge-ide-base/ @haozhenfei @catee @Hezi-crypto
-/packages/arch/bot-monaco-editor/ @Tecvan-fe
-/packages/data/knowledge/knowledge-modal-adapter/ @haozhenfei @catee @Hezi-crypto
-/packages/data/knowledge/knowledge-resource-processor-adapter/ @haozhenfei @catee @Hezi-crypto
-/packages/devops/debug/debug-panel/ @soonco @evan-crash @catee
-/packages/devops/json-link-preview/ @Maidang1 @Zhangchi123456
-/packages/devops/common-modules/ @duwenhan2byte @evan-crash @catee
-/packages/foundation/account-adapter/ @duwenhan2byte @evan-crash
-/packages/foundation/account-base/ @evan-crash @duwenhan2byte
-/packages/arch/api-schema/ @Tecvan-fe @evan-crash
-/infra/idl/idl2ts-runtime/ @Tecvan-fe @evan-crash
-/infra/idl/idl2ts-cli/ @Tecvan-fe @evan-crash
-/infra/idl/idl2ts-generator/ @Tecvan-fe @evan-crash
-/infra/idl/idl-parser/ @Tecvan-fe @evan-crash
-/infra/utils/rush-logger/ @catee @Tecvan-fe
-/infra/idl/idl2ts-helper/ @Tecvan-fe @evan-crash
-/infra/idl/idl2ts-plugin/ @Tecvan-fe @evan-crash
-/packages/studio/open-platform/open-env-adapter/ @soonco @Hezi-crypto @DingGao-Devin
-/infra/plugins/pkg-root-webpack-plugin/ @Tecvan-fe
-/packages/studio/publish-manage-hooks/ @duwenhan2byte @evan-crash
-/packages/foundation/layout/ @evan-crash @duwenhan2byte
-/packages/studio/open-platform/open-auth/ @evan-crash @DingGao-Devin
-/packages/agent-ide/entry-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/entry/ @soonco @duwenhan2byte @catee @evan-crash
-/packages/agent-ide/bot-config-area-adapter/ @haozhenfei @Hezi-crypto @duwenhan2byte @catee @evan-crash
-/packages/agent-ide/bot-config-area/ @haozhenfei @Hezi-crypto @duwenhan2byte @catee @evan-crash
-/packages/agent-ide/bot-plugin/entry/ @evan-crash @lihuiwen @catee
-/packages/agent-ide/bot-plugin/export/ @lihuiwen @catee
-/packages/agent-ide/bot-plugin/mock-set/ @lihuiwen @catee @duwenhan2byte
-/packages/studio/mockset-edit-modal-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/mockset-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/mockset-editor/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/mockset-editor-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/bot-plugin/tools/ @lihuiwen @catee
-/packages/studio/stores/bot-plugin/ @lihuiwen @Hezi-crypto @catee
-/packages/studio/plugin-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-modal-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/community/component/ @DingGao-Devin @Hezi-crypto @evan-crash @duwenhan2byte
-/packages/studio/plugin-form-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/workflow/base/ @xiamidaxia @zxhfighter
-/packages/agent-ide/plugin-content-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-content/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-setting-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-setting/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/bot-plugin/plugin-risk-warning/ @catee @evan-crash
-/packages/studio/plugin-publish-ui-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/plugin-tool-columns-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/plugin-tool-columns/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/chat-debug-area/ @soonco @duwenhan2byte @catee @Hezi-crypto @haozhenfei @evan-crash
-/packages/agent-ide/chat-answer-action-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/chat-area-plugin-debug-common/ @Hezi-crypto @haozhenfei
-/packages/agent-ide/chat-components-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/common/chat-area/plugin-chat-background/ @Tecvan-fe
-/packages/common/chat-area/chat-area-plugin-reasoning/ @catee @Hezi-crypto
-/packages/common/chat-area/plugin-resume/ @Tecvan-fe
-/packages/common/chat-area/plugin-chat-shortcuts/ @haozhenfei @duwenhan2byte @Hezi-crypto
-/packages/workflow/sdk/ @zxhfighter @xiamidaxia
-/packages/workflow/components/ @LLLLeeJ @zxhfighter
-/packages/components/loading-button/ @catee
-/packages/components/mouse-pad-selector/ @zxhfighter
-/packages/workflow/adapter/resources/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
-/packages/common/chat-area/chat-workflow-render/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/onboarding-message-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/plugin-area-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/prompt-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/prompt/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/workflow/ @soonco @duwenhan2byte @catee
-/packages/agent-ide/navigate/ @soonco @duwenhan2byte @catee
-/packages/agent-ide/workflow-as-agent-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/workflow-item/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/workflow-card-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/workflow-modal/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/memory-tool-pane-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/skills-pane-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/layout-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/layout/ @soonco @duwenhan2byte @catee
-/packages/agent-ide/chat-area-provider-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/agent-ide/chat-area-provider/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/studio/entity-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/foundation/account-ui-adapter/ @duwenhan2byte @evan-crash
-/packages/foundation/account-ui-base/ @evan-crash @duwenhan2byte
-/packages/foundation/foundation-sdk/ @evan-crash @duwenhan2byte
-/packages/foundation/global/ @evan-crash @duwenhan2byte
-/packages/studio/workspace/project-entity-adapter/ @Hezi-crypto @catee @duwenhan2byte
-/packages/studio/workspace/project-entity-base/ @Hezi-crypto @catee @duwenhan2byte
-/packages/foundation/global-adapter/ @evan-crash @duwenhan2byte
-/packages/foundation/browser-upgrade-banner/ @evan-crash @duwenhan2byte
-/packages/foundation/space-ui-adapter/ @evan-crash @duwenhan2byte
-/packages/foundation/space-ui-base/ @evan-crash @duwenhan2byte
-/packages/common/auth/ @evan-crash @duwenhan2byte
-/packages/common/auth-adapter/ @evan-crash @duwenhan2byte
-/packages/project-ide/main/ @dragooncjw @JxJuly @xiamidaxia @catee @lihuiwen
-/packages/components/resource-tree/ @dragooncjw @xiamidaxia @JxJuly
-/packages/common/flowgram-adapter/fixed-layout-editor/ @zxhfighter @xiamidaxia @dragooncjw
-/packages/project-ide/biz-components/ @zxhfighter @xiamidaxia
-/packages/project-ide/framework/ @dragooncjw @JxJuly @xiamidaxia
-/packages/project-ide/base-adapter/ @dragooncjw @xiamidaxia
-/packages/project-ide/base-interface/ @dragooncjw @xiamidaxia
-/packages/project-ide/client/ @dragooncjw @JxJuly @xiamidaxia
-/packages/project-ide/core/ @dragooncjw @JxJuly @xiamidaxia
-/packages/project-ide/view/ @dragooncjw @JxJuly @xiamidaxia
-/packages/project-ide/biz-data/ @haozhenfei @lihuiwen @catee @soonco
-/packages/data/knowledge/knowledge-ide-adapter/ @haozhenfei @catee @Hezi-crypto
-/packages/data/memory/variables/ @haozhenfei @catee @Hezi-crypto
-/packages/project-ide/biz-plugin/ @xiamidaxia @lihuiwen @catee
-/packages/project-ide/biz-plugin-registry-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
-/packages/project-ide/biz-workflow/ @dragooncjw @JxJuly @xiamidaxia
-/packages/studio/open-platform/open-chat/ @soonco @Hezi-crypto @DingGao-Devin
-/packages/workflow/playground/ @LLLLeeJ @xiamidaxia @luics @zxhfighter
-/packages/arch/load-remote-worker/ @Tecvan-fe
-/packages/devops/mockset-manage/ @soonco @evan-crash @catee
-/packages/devops/testset-manage/ @mocayo @JxJuly
-/packages/workflow/adapter/base/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
-/packages/workflow/adapter/code-editor/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
-/packages/workflow/fabric-canvas/ @xiamidaxia @zxhfighter
-/packages/workflow/feature-encapsulate/ @zxhfighter
-/packages/workflow/nodes/ @xiamidaxia @zxhfighter
-/packages/workflow/setters/ @Tecvan-fe
-/packages/workflow/variable/ @zxhfighter @LLLLeeJ @xiamidaxia
-/packages/workflow/render/ @dragooncjw @xiamidaxia
-/packages/workflow/history/ @xiamidaxia @zxhfighter
-/packages/workflow/adapter/nodes/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
-/packages/workflow/test-run/ @JxJuly @xiamidaxia @luics @zxhfighter @dragooncjw
-/packages/workflow/test-run-next/main/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
-/packages/workflow/test-run-next/form/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
-/packages/workflow/test-run-next/shared/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
-/packages/workflow/test-run-next/trace/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
-/packages/project-ide/ui-adapter/ @dragooncjw @xiamidaxia
-/packages/studio/workspace/project-publish/ @catee @lihuiwen
-/packages/studio/workspace/entry-adapter/ @duwenhan2byte @evan-crash
-/packages/studio/workspace/entry-base/ @duwenhan2byte @catee @evan-crash
-/packages/workflow/adapter/playground/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
-/infra/plugins/import-watch-loader/ @Tecvan-fe
-/config/rsbuild-config/ @Tecvan-fe
-/packages/community/explore/ @evan-crash @duwenhan2byte
-/common/_templates/node-core/ @Tecvan-fe
-/common/_templates/rspack-web/ @Tecvan-fe
+/frontend/apps/coze-studio/ @Tecvan-fe @evan-crash @duwenhan2byte
+/frontend/packages/agent-ide/agent-publish/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei @catee
+/frontend/packages/agent-ide/commons/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/arch/bot-api/ @Tecvan-fe
+/frontend/packages/arch/bot-http/ @Tecvan-fe
+/frontend/packages/arch/logger/ @Tecvan-fe
+/frontend/packages/arch/slardar-interface/ @Tecvan-fe @evan-crash
+/frontend/config/eslint-config/ @Tecvan-fe @leeight @soonco
+/frontend/infra/eslint-plugin/ @Tecvan-fe
+/frontend/config/ts-config/ @leeight @Tecvan-fe
+/frontend/config/vitest-config/ @Tecvan-fe
+/frontend/packages/arch/bot-env/ @Tecvan-fe @leeight
+/frontend/packages/arch/bot-env-adapter/ @dragooncjw @Tecvan-fe @leeight
+/frontend/packages/arch/bot-typings/ @Tecvan-fe
+/frontend/packages/arch/web-context/ @Tecvan-fe
+/frontend/packages/components/bot-semi/ @Tecvan-fe
+/frontend/packages/components/bot-icons/ @DingGao-Devin
+/frontend/packages/arch/i18n/ @Tecvan-fe @leeight
+/frontend/packages/arch/resources/studio-i18n-resource/ @dragooncjw @Tecvan-fe
+/frontend/config/stylelint-config/ @Tecvan-fe
+/frontend/packages/arch/idl/ @Tecvan-fe
+/frontend/infra/utils/fs-enhance/ @Tecvan-fe
+/frontend/packages/arch/bot-store/ @Tecvan-fe @catee @duwenhan2byte
+/frontend/packages/arch/bot-error/ @haozhenfei @duwenhan2byte
+/frontend/packages/foundation/space-store/ @evan-crash @duwenhan2byte
+/frontend/packages/arch/bot-flags/ @Tecvan-fe
+/frontend/packages/arch/report-events/ @Tecvan-fe
+/frontend/packages/foundation/enterprise-store-adapter/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/local-storage/ @duwenhan2byte @evan-crash
+/frontend/packages/foundation/space-store-adapter/ @evan-crash @duwenhan2byte
+/frontend/packages/arch/bot-tea/ @Tecvan-fe @catee @soonco
+/frontend/packages/arch/tea/ @Tecvan-fe @evan-crash @soonco
+/frontend/packages/arch/tea-adapter/ @dragooncjw @Tecvan-fe
+/frontend/packages/arch/tea-interface/ @dragooncjw @Tecvan-fe
+/frontend/packages/studio/stores/bot-detail/ @Hezi-crypto @catee @DingGao-Devin @duwenhan2byte @evan-crash
+/frontend/packages/agent-ide/bot-input-length-limit/ @Hezi-crypto @catee @duwenhan2byte
+/frontend/packages/agent-ide/tool-config/ @haozhenfei @catee
+/frontend/packages/arch/bot-space-api/ @Tecvan-fe @duwenhan2byte
+/frontend/packages/arch/bot-utils/ @Tecvan-fe
+/frontend/packages/common/uploader-adapter/ @dragooncjw @Tecvan-fe
+/frontend/packages/common/uploader-interface/ @dragooncjw @Tecvan-fe
+/frontend/packages/studio/user-store/ @duwenhan2byte @catee @lihuiwen
+/frontend/packages/arch/foundation-sdk/ @evan-crash @duwenhan2byte
+/frontend/packages/common/chat-area/chat-core/ @haozhenfei @Hezi-crypto @evan-crash
+/frontend/packages/common/chat-area/utils/ @Hezi-crypto @haozhenfei
+/frontend/packages/arch/bot-md-box-adapter/ @Hezi-crypto @iu1340 @dragooncjw @Tecvan-fe
+/frontend/packages/studio/common/file-kit/ @haozhenfei @evan-crash
+/frontend/packages/arch/slardar-adapter/ @Tecvan-fe @dragooncjw
+/frontend/packages/arch/default-slardar/ @Tecvan-fe @evan-crash
+/frontend/packages/arch/fetch-stream/ @Hezi-crypto @haozhenfei
+/frontend/packages/common/websocket-manager-adapter/ @haozhenfei @Hezi-crypto @catee
+/frontend/packages/studio/autosave/ @catee
+/frontend/packages/studio/bot-utils/ @catee @soonco @Hezi-crypto
+/frontend/packages/common/flowgram-adapter/common/ @zxhfighter @xiamidaxia @dragooncjw
+/frontend/packages/common/flowgram-adapter/free-layout-editor/ @zxhfighter @xiamidaxia @dragooncjw
+/frontend/packages/agent-ide/space-bot/ @soonco @evan-crash @duwenhan2byte @catee @DingGao-Devin
+/frontend/packages/agent-ide/space-bot/src/store/bot-list-filter/ @duwenhan2byte @lihuiwen
+/frontend/packages/agent-ide/space-bot/src/store/bot-page/ @DingGao-Devin
+/frontend/packages/agent-ide/space-bot/src/store/explore/ @Tecvan-fe
+/frontend/packages/agent-ide/space-bot/src/store/risk-warning/ @lihuiwen @catee
+/frontend/packages/agent-ide/context/ @evan-crash
+/frontend/packages/agent-ide/bot-editor-context-store/ @Hezi-crypto @duwenhan2byte @catee
+/frontend/packages/agent-ide/chat-background/ @catee
+/frontend/packages/agent-ide/chat-background-config-content-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/chat-background-config-content/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/chat-background-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/common/chat-area/chat-uikit/ @catee @Hezi-crypto @evan-crash @haozhenfei
+/frontend/packages/common/chat-area/hooks/ @Hezi-crypto @evan-crash
+/frontend/packages/common/chat-area/chat-uikit-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/bot-audit-adapter/ @evan-crash @duwenhan2byte @Hezi-crypto @haozhenfei
+/frontend/packages/agent-ide/bot-audit-base/ @evan-crash @duwenhan2byte @Hezi-crypto @haozhenfei
+/frontend/packages/studio/components/ @soonco @evan-crash @duwenhan2byte @catee
+/frontend/packages/arch/bot-hooks/ @catee @Tecvan-fe @soonco
+/frontend/packages/arch/bot-hooks/src/page-jump/ @evan-crash @catee
+/frontend/packages/arch/bot-hooks-adapter/ @catee @Tecvan-fe @soonco
+/frontend/packages/arch/bot-hooks-base/ @catee @Tecvan-fe @soonco
+/frontend/packages/arch/responsive-kit/ @Tecvan-fe @DingGao-Devin
+/frontend/packages/common/chat-area/chat-area/ @Hezi-crypto @haozhenfei @evan-crash @haozhenfei
+/frontend/packages/data/memory/llm-plugins/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/common/reporter/ @soonco @catee @evan-crash
+/frontend/packages/components/json-viewer/ @duwenhan2byte
+/frontend/packages/components/scroll-view/ @evan-crash
+/frontend/packages/common/assets/ @Tecvan-fe @catee
+/frontend/packages/common/biz-components/ @duwenhan2byte
+/frontend/packages/data/common/e2e/ @soonco @catee @evan-crash @haozhenfei @duwenhan2byte
+/frontend/packages/agent-ide/debug-tool-list/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/model-manager/ @Hezi-crypto @catee
+/frontend/packages/agent-ide/model-manager/src/components/multi-agent/ @catee
+/frontend/packages/agent-ide/tool/ @catee
+/frontend/packages/data/knowledge/knowledge-modal-base/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/components/biz-tooltip-ui/ @Hezi-crypto @catee @evan-crash
+/frontend/packages/components/table-view/ @lihuiwen
+/frontend/packages/components/virtual-list/ @Tecvan-fe
+/frontend/packages/data/common/utils/ @soonco @catee @evan-crash
+/frontend/packages/data/knowledge/knowledge-resource-processor-core/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/arch/pdfjs-shadow/ @Tecvan-fe
+/frontend/packages/data/knowledge/common/stores/ @soonco @catee @evan-crash
+/frontend/packages/foundation/global-store/ @duwenhan2byte @evan-crash
+/frontend/config/postcss-config/ @Tecvan-fe
+/frontend/config/tailwind-config/ @Tecvan-fe
+/frontend/infra/utils/monorepo-kits/ @Tecvan-fe @evan-crash
+/frontend/packages/studio/premium/premium-components-adapter/ @evan-crash
+/frontend/packages/studio/premium/premium-store-adapter/ @evan-crash
+/frontend/packages/agent-ide/onboarding/ @Hezi-crypto @catee
+/frontend/packages/agent-ide/publish-to-base/ @catee
+/frontend/packages/arch/report-tti/ @duwenhan2byte
+/frontend/packages/data/memory/database-creator/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/arch/hooks/ @Tecvan-fe @evan-crash
+/frontend/packages/common/coze-mitt/ @evan-crash @duwenhan2byte
+/frontend/packages/common/editor-plugins/ @haozhenfei @stream-pipe @Hezi-crypto
+/frontend/packages/common/md-editor-adapter/ @haozhenfei @Hezi-crypto @catee
+/frontend/packages/common/prompt-kit/main/ @haozhenfei @Hezi-crypto @catee
+/frontend/packages/common/chat-area/chat-answer-action/ @Hezi-crypto @haozhenfei @lihuiwen
+/frontend/packages/common/chat-area/plugin-message-grab/ @Hezi-crypto @haozhenfei
+/frontend/packages/common/chat-area/text-grab/ @Hezi-crypto @haozhenfei
+/frontend/packages/common/prompt-kit/adapter/ @haozhenfei @Hezi-crypto @catee
+/frontend/packages/common/prompt-kit/base/ @haozhenfei @Hezi-crypto @catee
+/frontend/packages/data/memory/database/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/knowledge/knowledge-resource-processor-base/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/arch/utils/ @Tecvan-fe @evan-crash
+/frontend/packages/data/knowledge/common/components/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/common/feature-register/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/knowledge/common/hooks/ @Hezi-crypto @catee @evan-crash
+/frontend/packages/data/knowledge/common/services/ @Hezi-crypto @catee @evan-crash
+/frontend/packages/data/memory/database-v2-main/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/memory/database-v2-adapter/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/memory/database-v2-base/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/knowledge/knowledge-data-set-for-agent/ @Hezi-crypto @catee @evan-crash
+/frontend/packages/data/knowledge/knowledge-ide-base/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/arch/bot-monaco-editor/ @Tecvan-fe
+/frontend/packages/data/knowledge/knowledge-modal-adapter/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/knowledge/knowledge-resource-processor-adapter/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/devops/debug/debug-panel/ @soonco @evan-crash @catee
+/frontend/packages/devops/json-link-preview/ @Maidang1 @Zhangchi123456
+/frontend/packages/devops/common-modules/ @duwenhan2byte @evan-crash @catee
+/frontend/packages/foundation/account-adapter/ @duwenhan2byte @evan-crash
+/frontend/packages/foundation/account-base/ @evan-crash @duwenhan2byte
+/frontend/packages/arch/api-schema/ @Tecvan-fe @evan-crash
+/frontend/infra/idl/idl2ts-runtime/ @Tecvan-fe @evan-crash
+/frontend/infra/idl/idl2ts-cli/ @Tecvan-fe @evan-crash
+/frontend/infra/idl/idl2ts-generator/ @Tecvan-fe @evan-crash
+/frontend/infra/idl/idl-parser/ @Tecvan-fe @evan-crash
+/frontend/infra/utils/rush-logger/ @catee @Tecvan-fe
+/frontend/infra/idl/idl2ts-helper/ @Tecvan-fe @evan-crash
+/frontend/infra/idl/idl2ts-plugin/ @Tecvan-fe @evan-crash
+/frontend/packages/studio/open-platform/open-env-adapter/ @soonco @Hezi-crypto @DingGao-Devin
+/frontend/infra/plugins/pkg-root-webpack-plugin/ @Tecvan-fe
+/frontend/packages/studio/publish-manage-hooks/ @duwenhan2byte @evan-crash
+/frontend/packages/foundation/layout/ @evan-crash @duwenhan2byte
+/frontend/packages/studio/open-platform/open-auth/ @evan-crash @DingGao-Devin
+/frontend/packages/agent-ide/entry-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/entry/ @soonco @duwenhan2byte @catee @evan-crash
+/frontend/packages/agent-ide/bot-config-area-adapter/ @haozhenfei @Hezi-crypto @duwenhan2byte @catee @evan-crash
+/frontend/packages/agent-ide/bot-config-area/ @haozhenfei @Hezi-crypto @duwenhan2byte @catee @evan-crash
+/frontend/packages/agent-ide/bot-plugin/entry/ @evan-crash @lihuiwen @catee
+/frontend/packages/agent-ide/bot-plugin/export/ @lihuiwen @catee
+/frontend/packages/agent-ide/bot-plugin/mock-set/ @lihuiwen @catee @duwenhan2byte
+/frontend/packages/studio/mockset-edit-modal-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/mockset-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/mockset-editor/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/mockset-editor-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/bot-plugin/tools/ @lihuiwen @catee
+/frontend/packages/studio/stores/bot-plugin/ @lihuiwen @Hezi-crypto @catee
+/frontend/packages/studio/plugin-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-modal-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-shared/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/community/component/ @DingGao-Devin @Hezi-crypto @evan-crash @duwenhan2byte
+/frontend/packages/studio/plugin-form-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/workflow/base/ @xiamidaxia @zxhfighter
+/frontend/packages/agent-ide/plugin-content-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-content/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-setting-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-setting/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/bot-plugin/plugin-risk-warning/ @catee @evan-crash
+/frontend/packages/studio/plugin-publish-ui-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/plugin-tool-columns-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/plugin-tool-columns/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/chat-debug-area/ @soonco @duwenhan2byte @catee @Hezi-crypto @haozhenfei @evan-crash
+/frontend/packages/agent-ide/chat-answer-action-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/chat-area-plugin-debug-common/ @Hezi-crypto @haozhenfei
+/frontend/packages/agent-ide/chat-components-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/common/chat-area/plugin-chat-background/ @Tecvan-fe
+/frontend/packages/common/chat-area/chat-area-plugin-reasoning/ @catee @Hezi-crypto
+/frontend/packages/common/chat-area/plugin-resume/ @Tecvan-fe
+/frontend/packages/common/chat-area/plugin-chat-shortcuts/ @haozhenfei @duwenhan2byte @Hezi-crypto
+/frontend/packages/workflow/sdk/ @zxhfighter @xiamidaxia
+/frontend/packages/workflow/components/ @LLLLeeJ @zxhfighter
+/frontend/packages/components/loading-button/ @catee
+/frontend/packages/components/mouse-pad-selector/ @zxhfighter
+/frontend/packages/workflow/adapter/resources/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
+/frontend/packages/common/chat-area/chat-workflow-render/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/onboarding-message-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/plugin-area-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/prompt-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/prompt/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/workflow/ @soonco @duwenhan2byte @catee
+/frontend/packages/agent-ide/navigate/ @soonco @duwenhan2byte @catee
+/frontend/packages/agent-ide/workflow-as-agent-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/workflow-item/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/workflow-card-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/workflow-modal/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/memory-tool-pane-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/skills-pane-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/layout-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/layout/ @soonco @duwenhan2byte @catee
+/frontend/packages/agent-ide/chat-area-provider-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/agent-ide/chat-area-provider/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/studio/entity-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/foundation/account-ui-adapter/ @duwenhan2byte @evan-crash
+/frontend/packages/foundation/account-ui-base/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/foundation-sdk/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/global/ @evan-crash @duwenhan2byte
+/frontend/packages/studio/workspace/project-entity-adapter/ @Hezi-crypto @catee @duwenhan2byte
+/frontend/packages/studio/workspace/project-entity-base/ @Hezi-crypto @catee @duwenhan2byte
+/frontend/packages/foundation/global-adapter/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/browser-upgrade-banner/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/space-ui-adapter/ @evan-crash @duwenhan2byte
+/frontend/packages/foundation/space-ui-base/ @evan-crash @duwenhan2byte
+/frontend/packages/common/auth/ @evan-crash @duwenhan2byte
+/frontend/packages/common/auth-adapter/ @evan-crash @duwenhan2byte
+/frontend/packages/project-ide/main/ @dragooncjw @JxJuly @xiamidaxia @catee @lihuiwen
+/frontend/packages/components/resource-tree/ @dragooncjw @xiamidaxia @JxJuly
+/frontend/packages/common/flowgram-adapter/fixed-layout-editor/ @zxhfighter @xiamidaxia @dragooncjw
+/frontend/packages/project-ide/biz-components/ @zxhfighter @xiamidaxia
+/frontend/packages/project-ide/framework/ @dragooncjw @JxJuly @xiamidaxia
+/frontend/packages/project-ide/base-adapter/ @dragooncjw @xiamidaxia
+/frontend/packages/project-ide/base-interface/ @dragooncjw @xiamidaxia
+/frontend/packages/project-ide/client/ @dragooncjw @JxJuly @xiamidaxia
+/frontend/packages/project-ide/core/ @dragooncjw @JxJuly @xiamidaxia
+/frontend/packages/project-ide/view/ @dragooncjw @JxJuly @xiamidaxia
+/frontend/packages/project-ide/biz-data/ @haozhenfei @lihuiwen @catee @soonco
+/frontend/packages/data/knowledge/knowledge-ide-adapter/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/data/memory/variables/ @haozhenfei @catee @Hezi-crypto
+/frontend/packages/project-ide/biz-plugin/ @xiamidaxia @lihuiwen @catee
+/frontend/packages/project-ide/biz-plugin-registry-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
+/frontend/packages/project-ide/biz-workflow/ @dragooncjw @JxJuly @xiamidaxia
+/frontend/packages/studio/open-platform/open-chat/ @soonco @Hezi-crypto @DingGao-Devin
+/frontend/packages/workflow/playground/ @LLLLeeJ @xiamidaxia @luics @zxhfighter
+/frontend/packages/arch/load-remote-worker/ @Tecvan-fe
+/frontend/packages/devops/mockset-manage/ @soonco @evan-crash @catee
+/frontend/packages/devops/testset-manage/ @mocayo @JxJuly
+/frontend/packages/workflow/adapter/base/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
+/frontend/packages/workflow/adapter/code-editor/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
+/frontend/packages/workflow/fabric-canvas/ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/feature-encapsulate/ @zxhfighter
+/frontend/packages/workflow/nodes/ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/setters/ @Tecvan-fe
+/frontend/packages/workflow/variable/ @zxhfighter @LLLLeeJ @xiamidaxia
+/frontend/packages/workflow/render/ @dragooncjw @xiamidaxia
+/frontend/packages/workflow/history/ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/adapter/nodes/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
+/frontend/packages/workflow/test-run/ @JxJuly @xiamidaxia @luics @zxhfighter @dragooncjw
+/frontend/packages/workflow/test-run-next/main/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/test-run-next/form/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/test-run-next/shared/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
+/frontend/packages/workflow/test-run-next/trace/ @JxJuly @LLLLeeJ @xiamidaxia @zxhfighter
+/frontend/packages/project-ide/ui-adapter/ @dragooncjw @xiamidaxia
+/frontend/packages/studio/workspace/project-publish/ @catee @lihuiwen
+/frontend/packages/studio/workspace/entry-adapter/ @duwenhan2byte @evan-crash
+/frontend/packages/studio/workspace/entry-base/ @duwenhan2byte @catee @evan-crash
+/frontend/packages/workflow/adapter/playground/ @LLLLeeJ @JxJuly @xiamidaxia @luics @zxhfighter @stream-pipe
+/frontend/infra/plugins/import-watch-loader/ @Tecvan-fe
+/frontend/config/rsbuild-config/ @Tecvan-fe
+/frontend/packages/community/explore/ @evan-crash @duwenhan2byte
+/frontend/common/_templates/node-core/ @Tecvan-fe
+/frontend/common/_templates/rspack-web/ @Tecvan-fe
+
+
+/backend/ @fanlv @junwen-lee @liuyunchao-1998 @lvxinyu-1117 @hi-pender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125
+/docker/ @fanlv @junwen-lee @liuyunchao-1998 @lvxinyu-1117 @hi-pender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125
+/helm/ @fanlv @junwen-lee @liuyunchao-1998 @lvxinyu-1117 @hi-pender @luohq-bytedance @shentongmartin @mrh997 @meguminnnnnnnnn @N3kox @zhuangjie1125

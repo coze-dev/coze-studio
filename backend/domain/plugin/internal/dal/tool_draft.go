@@ -27,6 +27,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -90,7 +91,8 @@ func (t *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Ex
 }
 
 func (t *ToolDraftDAO) Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error) {
-	id, err := t.idGen.GenID(ctx)
+
+	id, err := t.genToolID(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -106,6 +108,27 @@ func (t *ToolDraftDAO) Create(ctx context.Context, tool *entity.ToolInfo) (toolI
 	})
 	if err != nil {
 		return 0, err
+	}
+
+	return id, nil
+}
+
+func (t *ToolDraftDAO) genToolID(ctx context.Context) (id int64, err error) {
+
+	retryTimes := 5
+
+	for i := 0; i < retryTimes; i++ {
+		id, err = t.idGen.GenID(ctx)
+		if err != nil {
+			return 0, err
+		}
+
+		if _, ok := conf.GetToolProduct(id); !ok {
+			break
+		}
+		if i == retryTimes-1 {
+			return 0, fmt.Errorf("id %d is confilict with product tool id.", id)
+		}
 	}
 
 	return id, nil
@@ -335,7 +358,7 @@ func (t *ToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx,
 	tls := make([]*model.ToolDraft, 0, len(tools))
 
 	for _, tool := range tools {
-		id, err := t.idGen.GenID(ctx)
+		id, err := t.genToolID(ctx)
 		if err != nil {
 			return nil, err
 		}

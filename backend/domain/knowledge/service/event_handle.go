@@ -166,11 +166,22 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			return
 		}
 		if err != nil {
+			var errMsg string
 			var statusError errorx.StatusError
-			if errors.As(err, &statusError) && statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
-				if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
-					logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
+			var status int32
+			if errors.As(err, &statusError) {
+				errMsg = errorx.ErrorWithoutStack(statusError)
+				if statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
+					status = int32(entity.DocumentStatusFailed)
+				} else {
+					status = int32(entity.DocumentStatusChunking)
 				}
+			} else {
+				errMsg = err.Error()
+				status = int32(entity.DocumentStatusChunking)
+			}
+			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, status, errMsg); setStatusErr != nil {
+				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
 			}
 		}
 	}()

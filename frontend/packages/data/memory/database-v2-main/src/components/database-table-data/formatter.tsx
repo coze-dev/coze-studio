@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { type TableMemoryItem } from '@coze-studio/bot-detail-store';
 import {
@@ -22,7 +22,6 @@ import {
 } from '@coze-data/database-v2-base/constants';
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
-import { FieldItemType } from '@coze-arch/bot-api/memory';
 import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   type ColumnProps,
@@ -31,12 +30,14 @@ import {
   Space,
   Typography,
 } from '@coze-arch/coze-design';
+import { FieldItemType } from '@coze-arch/bot-api/memory';
 
 import { type TableRow, type TableField, type TableFieldData } from './type';
 
 export function formatTableStructList(
   structList: TableMemoryItem[],
 ): TableFieldData[] {
+  // @ts-expect-error fix me late
   return structList.map(item => ({
     fieldName: item.name ?? '',
     fieldDescription: item.desc ?? '',
@@ -173,6 +174,7 @@ export const getTableColumns = ({
       title: () => (
         <DatabaseFieldTitle
           field={item.name}
+          // @ts-expect-error fix me late
           type={item.type}
           tip={item.desc}
           required

@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "opencoze.fullname" . }}-es-init-config
-data:
-{{ (.Files.Glob "files/es/*.json").AsConfig | indent 2 }}

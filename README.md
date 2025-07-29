@@ -74,7 +74,7 @@ Deployment steps:
    cp .env.example .env
    docker compose --profile "*" up -d
    ```
-   After the service starts, it is normal for the `coze-elasticsearch-setup` , `coze-minio-setup` , `coze-mysql-setup-init-sql` , and `coze-mysql-setup-schema` containers to be in an exited state (exit 0). For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
+   After the service starts, it is normal for the `coze-minio-setup` , `coze-mysql-setup-init-sql` , and `coze-mysql-setup-schema` containers to be in an exited state (exit 0). For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
 4. After starting the service, you can open Coze Studio by accessing `http://localhost:8888/` through your browser.
 
 
@@ -84,7 +84,7 @@ Deployment steps:
    * [Model Configuration](https://github.com/coze-dev/coze-studio/wiki/3.-Model-configuration): Before deploying the open-source version of Coze Studio, you must configure the model service. Otherwise, you cannot select models when building agents, workflows, and apps.
    * [Plugin Configuration](https://github.com/coze-dev/coze-studio/wiki/4.-Plugin-Configuration): To use official plugins from the plugin store, you must first configure the plugins and add the authentication keys for third-party services.
    * [Basic Component Configuration](https://github.com/coze-dev/coze-studio/wiki/5.-Basic-component-configuration): Learn how to configure components such as image uploaders to use functions like image uploading in Coze Studio .
-* [API Reference](https://github.com/coze-dev/coze-studio/wiki/6.-API-Reference): Unlike the commercial edition, the open-source version of Coze Studio only supports personal access token (PAT) authentication and supports APIs related to chat and workflows.
+* [API Reference](https://github.com/coze-dev/coze-studio/wiki/6.-API-Reference): The Coze Studio Community Edition API and Chat SDK are authenticated using Personal Access Token, providing APIs for conversations and workflows.
 * [Development Guidelines](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards):
    * [Project Architecture](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#project-architecture): Learn about the technical architecture and core components of the open-source version of Coze Studio.
    * [Code Development and Testing](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#code-development-and-testing): Learn how to perform secondary development and testing based on the open-source version of Coze Studio.

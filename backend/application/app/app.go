@@ -60,6 +60,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -183,18 +184,19 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 		logs.CtxErrorf(ctx, "publish project '%d' failed, err=%v", req.ProjectID, err)
 	}
 
-	err = a.deleteAPPResources(ctx, req.ProjectID)
-	if err != nil {
-		logs.CtxErrorf(ctx, "delete app '%d' resources failed, err=%v", req.ProjectID, err)
-	}
+	safego.Go(ctx, func() {
+		// When an app is deleted, resource deletion is currently handled as a weak dependency, meaning some resources might not be deleted, but they will be inaccessible to the user.
+		// TODO:: Application resources need to check the deletion status of the application
+		a.deleteAPPResources(ctx, req.ProjectID)
+	})
 
 	resp = &projectAPI.DraftProjectDeleteResponse{}
 
 	return resp, nil
 }
 
-func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) (err error) {
-	err = plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
+func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) {
+	err := plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete app '%d' plugins failed, err=%v", appID, err)
 	}
@@ -218,8 +220,6 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete app '%d' workflow failed, err=%v", appID, err)
 	}
-
-	return nil
 }
 
 func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *projectAPI.DraftProjectUpdateRequest) (resp *projectAPI.DraftProjectUpdateResponse, err error) {
