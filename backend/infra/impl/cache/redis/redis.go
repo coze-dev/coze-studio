@@ -27,9 +27,11 @@ type Client = redis.Client
 
 func New() *redis.Client {
 	addr := os.Getenv("REDIS_ADDR")
+        password := os.Getenv("REDIS_PASSWORD")
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr, // Redis地址
 		DB:   0,    // 默认数据库
+		Password: password,
 		// 连接池配置
 		PoolSize:        100,             // 最大连接数（建议设置为CPU核心数*10）
 		MinIdleConns:    10,              // 最小空闲连接
