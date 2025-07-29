@@ -36,6 +36,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/http"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
@@ -369,6 +370,21 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		}, dims)
 		if err != nil {
 			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
+		}
+
+
+	case "http":
+		var (
+			httpEmbeddingBaseURL = os.Getenv("HTTP_EMBEDDING_ADDR")
+			httpEmbeddingDims    = os.Getenv("HTTP_EMBEDDING_DIMS")
+		)
+		dims, err := strconv.ParseInt(httpEmbeddingDims, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("init http embedding dims failed, err=%w", err)
+		}
+		emb, err = http.NewEmbedding(httpEmbeddingBaseURL, dims)
+		if err != nil {
+			return nil, fmt.Errorf("init http embedding failed, err=%w", err)
 		}
 
 	default:

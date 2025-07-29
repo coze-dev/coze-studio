@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	opt "github.com/cloudwego/eino/components/embedding"
@@ -30,10 +29,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 )
 
-const (
-	pathDim   = "/dimension"
-	pathEmbed = "/embedding"
-)
+const pathEmbed = "/embedding"
 
 type embedReq struct {
 	Texts      []string `json:"texts"`
@@ -45,32 +41,12 @@ type embedResp struct {
 	Sparse []map[int]float64 `json:"sparse"`
 }
 
-func NewEmbedding(addr string) (embedding.Embedder, error) {
+func NewEmbedding(addr string, dims int64) (embedding.Embedder, error) {
 	cli := &http.Client{Timeout: time.Second * 30}
-	req, err := http.NewRequest(http.MethodGet, addr+pathDim, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cli.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	dim, err := strconv.ParseInt(string(b), 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
 	return &embedder{
 		cli:  cli,
 		addr: addr,
-		dim:  dim,
+		dim:  dims,
 	}, nil
 }
 
