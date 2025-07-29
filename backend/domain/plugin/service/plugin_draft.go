@@ -46,6 +46,7 @@ import (
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
 	mf := entity.NewDefaultPluginManifest()
+	mf.CommonParams = map[model.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{}
 	mf.NameForHuman = req.Name
 	mf.NameForModel = req.Name
 	mf.DescriptionForHuman = req.Desc
@@ -65,11 +66,11 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 			return 0, fmt.Errorf("invalid location '%s'", loc.String())
 		}
 		for _, param := range params {
-			mParams := mf.CommonParams[location]
-			mParams = append(mParams, &plugin_develop_common.CommonParamSchema{
-				Name:  param.Name,
-				Value: param.Value,
-			})
+			mf.CommonParams[location] = append(mf.CommonParams[location],
+				&plugin_develop_common.CommonParamSchema{
+					Name:  param.Name,
+					Value: param.Value,
+				})
 		}
 	}
 

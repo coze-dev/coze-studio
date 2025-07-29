@@ -263,6 +263,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	}
 
 	if sc.Default != nil {
+		apiParam.GlobalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 		apiParam.LocalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 	}
 
