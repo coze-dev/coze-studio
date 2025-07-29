@@ -25,6 +25,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -575,8 +576,19 @@ type Session struct {
 	ExpiresAt time.Time `json:"expires_at"` // 过期时间
 }
 
-// 用于签名的密钥（在实际应用中应从配置中读取或使用环境变量）
-var hmacSecret = []byte("opencoze-session-hmac-key")
+// 用于签名的密钥
+var hmacSecret []byte
+
+func getHmacSecret() []byte {
+	if hmacSecret == nil {
+		secret := os.Getenv("SESSION_SECRET")
+		if secret == "" {
+			secret = "opencoze-session-hmac-key" // 默认的会话密钥
+		}
+		hmacSecret = []byte(secret)
+	}
+	return hmacSecret
+}
 
 // 生成安全的会话密钥
 func generateSessionKey(sessionID int64) (string, error) {
@@ -594,7 +606,7 @@ func generateSessionKey(sessionID int64) (string, error) {
 	}
 
 	// 计算HMAC签名以确保完整性
-	h := hmac.New(sha256.New, hmacSecret)
+	h := hmac.New(sha256.New, getHmacSecret())
 	h.Write(sessionData)
 	signature := h.Sum(nil)
 
@@ -623,7 +635,7 @@ func verifySessionKey(sessionKey string) (*Session, error) {
 	signature := data[len(data)-32:]
 
 	// 验证签名
-	h := hmac.New(sha256.New, hmacSecret)
+	h := hmac.New(sha256.New, getHmacSecret())
 	h.Write(sessionData)
 	expectedSignature := h.Sum(nil)
 
