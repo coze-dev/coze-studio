@@ -88,7 +88,7 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 
 func (u *UserApplicationService) allowRegisterChecker(email string) bool {
 	registrationControllerEnabled := os.Getenv(consts.RegistrationControllerEnabled)
-	if registrationControllerEnabled == "true" {
+	if registrationControllerEnabled == "true" || registrationControllerEnabled == "" {
 		return true
 	}
 
