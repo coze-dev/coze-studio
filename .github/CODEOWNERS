@@ -150,6 +150,7 @@
 /frontend/packages/studio/publish-manage-hooks/ @duwenhan2byte @evan-crash
 /frontend/packages/foundation/layout/ @evan-crash @duwenhan2byte
 /frontend/packages/studio/open-platform/open-auth/ @evan-crash @DingGao-Devin
+/frontend/packages/studio/open-platform/open-chat/ @tomasyu985 @DingGao-Devin
 /frontend/packages/agent-ide/entry-adapter/ @Hezi-crypto @duwenhan2byte @catee @evan-crash @haozhenfei
 /frontend/packages/agent-ide/entry/ @soonco @duwenhan2byte @catee @evan-crash
 /frontend/packages/agent-ide/bot-config-area-adapter/ @haozhenfei @Hezi-crypto @duwenhan2byte @catee @evan-crash
