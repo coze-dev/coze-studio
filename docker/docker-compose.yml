@@ -230,7 +230,7 @@ services:
           cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
 
           elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
-          if [[ "$?" != "0" ]]; then
+          if [[ "$$?" != "0" ]]; then
             echo 'Plugin installation failed, exiting operation';
             rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
             exit 1;
@@ -481,7 +481,7 @@ services:
       - -c
       - |
         set -ex
-        for i in $(seq 1 60); do
+        for i in $$(seq 1 60); do
           DB_HOST="$${MYSQL_HOST}"
           if [ "$${MYSQL_HOST}" = "localhost" ] || [ "$${MYSQL_HOST}" = "127.0.0.1" ]; then
             DB_HOST="mysql"
