@@ -19,7 +19,10 @@ package user
 import (
 	"context"
 	"net/mail"
+	"os"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
@@ -30,7 +33,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	langSlices "github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -56,6 +60,11 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		return nil, "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "Invalid email"))
 	}
 
+	// Allow Register Checker
+	if !u.allowRegisterChecker(req.GetEmail()) {
+		return nil, "", errorx.New(errno.ErrNotAllowedRegisterCode)
+	}
+
 	userInfo, err := u.DomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
@@ -75,6 +84,20 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		Data: userDo2PassportTo(userInfo),
 		Code: 0,
 	}, userInfo.SessionKey, nil
+}
+
+func (u *UserApplicationService) allowRegisterChecker(email string) bool {
+	disableUserRegistration := os.Getenv(consts.DisableUserRegistration)
+	if strings.ToLower(disableUserRegistration) != "true" {
+		return true
+	}
+
+	allowedEmails := os.Getenv(consts.AllowRegistrationEmail)
+	if allowedEmails == "" {
+		return false
+	}
+
+	return slices.Contains(strings.Split(allowedEmails, ","), strings.ToLower(email))
 }
 
 // PassportWebLogoutGet 处理用户登出请求
@@ -204,7 +227,7 @@ func (u *UserApplicationService) GetSpaceListV2(ctx context.Context, req *playgr
 		return nil, err
 	}
 
-	botSpaces := slices.Transform(spaces, func(space *entity.Space) *playground.BotSpaceV2 {
+	botSpaces := langSlices.Transform(spaces, func(space *entity.Space) *playground.BotSpaceV2 {
 		return &playground.BotSpaceV2{
 			ID:          space.ID,
 			Name:        space.Name,
@@ -230,7 +253,7 @@ func (u *UserApplicationService) GetSpaceListV2(ctx context.Context, req *playgr
 func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *playground.MGetUserBasicInfoRequest) (
 	resp *playground.MGetUserBasicInfoResponse, err error,
 ) {
-	userIDs, err := slices.TransformWithErrorCheck(req.GetUserIds(), func(s string) (int64, error) {
+	userIDs, err := langSlices.TransformWithErrorCheck(req.GetUserIds(), func(s string) (int64, error) {
 		return strconv.ParseInt(s, 10, 64)
 	})
 	if err != nil {
@@ -243,7 +266,7 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 	}
 
 	return &playground.MGetUserBasicInfoResponse{
-		UserBasicInfoMap: slices.ToMap(userInfos, func(userInfo *entity.User) (string, *playground.UserBasicInfo) {
+		UserBasicInfoMap: langSlices.ToMap(userInfos, func(userInfo *entity.User) (string, *playground.UserBasicInfo) {
 			return strconv.FormatInt(userInfo.UserID, 10), userDo2PlaygroundTo(userInfo)
 		}),
 		Code: 0,
