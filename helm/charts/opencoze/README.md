@@ -1,27 +1,26 @@
-### 修改 values.yaml 文件
+### Modify values.yaml file
 
-1. 修改各个服务的 storageClassName 字段为对应存储类名称。
+1. Modify the storageClassName field of each service to the corresponding storage class name.
 ```yaml
 storageClassName: your-storageClass
 ```
 
-2. 修改环境变量。
+2. Modify environment variables.
 
 ```yaml
 env:
-    OPENAI_EMBEDDING_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3/embeddings"
-    OPENAI_EMBEDDING_MODEL: "doubao-embedding-large"
-    OPENAI_EMBEDDING_API_KEY: "your-api-key"
-    OPENAI_EMBEDDING_BY_AZURE: "false"
-    OPENAI_EMBEDDING_DIMS: "1024"
+    MINIO_ENDPOINT: "opencoze-minio.your-namespace:9000"
     ...
-    BUILTIN_CM_OPENAI_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-    BUILTIN_CM_OPENAI_API_KEY: "your-api-key"
-    BUILTIN_CM_OPENAI_BY_AZURE: "false"
-    BUILTIN_CM_OPENAI_MODEL: "doubao-seed-1-6"
+    ARK_EMBEDDING_AK: "your_api_key"
+    ARK_EMBEDDING_MODEL: "doubao-embedding-large"
+    ARK_EMBEDDING_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3/embeddings"
+    ...
+    BUILTIN_CM_ARK_API_KEY: "your_api_key"
+    BUILTIN_CM_ARK_MODEL: "doubao-seed-1-6"
+    BUILTIN_CM_ARK_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 ```
 
-### 部署
+### Deployment
 
 ```bash
 cd helm/charts/opencoze
