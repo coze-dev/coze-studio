@@ -24,12 +24,12 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type Config struct {
