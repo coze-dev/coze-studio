@@ -38,7 +38,7 @@ func init() {
 
 	code.Register(
 		ErrNotAllowedRegisterCode,
-		"The registration function has been disabled by the administrator. Please contact the administrator!",
+		"The user registration has been disabled by the administrator. Please contact the administrator!",
 		code.WithAffectStability(false),
 	)
 
