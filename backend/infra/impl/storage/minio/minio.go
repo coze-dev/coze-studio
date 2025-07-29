@@ -23,9 +23,7 @@ import (
 	"io"
 	"log"
 	"math/rand"
-	"net"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -33,6 +31,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
@@ -211,27 +210,9 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	}
 
 	// logs.CtxDebugf(ctx, "[GetObjectUrl] origin presignedURL.String = %s", presignedURL.String())
-
-	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
-	if len(proxyPort) > 0 {
-		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-		if !ok {
-			return presignedURL.String(), nil
-		}
-
-		currentScheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-		if !ok {
-			return presignedURL.String(), nil
-		}
-
-		host, _, err := net.SplitHostPort(currentHost)
-		if err != nil {
-			host = currentHost
-		}
-		minioProxyHost := host + proxyPort
-		presignedURL.Host = minioProxyHost
-		presignedURL.Scheme = currentScheme
-		// logs.CtxDebugf(ctx, "[GetObjectUrl] reset presignedURL.String = %s", presignedURL.String())
+	ok, proxyURL := proxy.CheckIfNeedReplaceHost(ctx, presignedURL.String())
+	if ok {
+		return proxyURL, nil
 	}
 
 	return presignedURL.String(), nil
@@ -265,7 +246,6 @@ func (m *minioClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAut
 }
 
 func (m *minioClient) GetResourceURL(ctx context.Context, uri string, opts ...imagex.GetResourceOpt) (*imagex.ResourceURL, error) {
-
 	url, err := m.GetObjectUrl(ctx, uri)
 	if err != nil {
 		return nil, err
@@ -273,11 +253,12 @@ func (m *minioClient) GetResourceURL(ctx context.Context, uri string, opts ...im
 	return &imagex.ResourceURL{
 		URL: url,
 	}, nil
-
 }
+
 func (m *minioClient) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
 	return nil, nil
 }
+
 func (m *minioClient) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
 	return nil, nil
 }

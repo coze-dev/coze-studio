@@ -21,10 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"time"
 
 	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
@@ -32,6 +29,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -213,34 +211,9 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 		return "", err
 	}
 
-	// url parse
-	url, err := url.Parse(output.SignedUrl)
-	if err != nil {
-		logs.CtxWarnf(ctx, "[GetObjectUrl] url parse failed, err: %v", err)
-		return output.SignedUrl, nil
-	}
-
-	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
-	if len(proxyPort) > 0 {
-		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-		if !ok {
-			return output.SignedUrl, nil
-		}
-
-		currentScheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-		if !ok {
-			return output.SignedUrl, nil
-		}
-
-		host, _, err := net.SplitHostPort(currentHost)
-		if err != nil {
-			host = currentHost
-		}
-		minioProxyHost := host + proxyPort
-		url.Host = minioProxyHost
-		url.Scheme = currentScheme
-		// logs.CtxDebugf(ctx, "[GetObjectUrl] reset \n ORG.URL = %s \n TOS.URL = %s", output.SignedUrl, url.String())
-		return url.String(), nil
+	ok, proxyURL := proxy.CheckIfNeedReplaceHost(ctx, output.SignedUrl)
+	if ok {
+		return proxyURL, nil
 	}
 
 	return output.SignedUrl, nil

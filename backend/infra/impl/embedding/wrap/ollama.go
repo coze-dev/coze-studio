@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ollama"
+
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 )
 

@@ -21,9 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
-	"net/url"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -33,6 +30,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -219,34 +217,9 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 		return "", fmt.Errorf("get object presigned url failed: %v", err)
 	}
 
-	// url parse
-	url, err := url.Parse(req.URL)
-	if err != nil {
-		logs.CtxWarnf(ctx, "[GetObjectUrl] url parse failed, err: %v", err)
-		return req.URL, nil
-	}
-
-	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
-	if len(proxyPort) > 0 {
-		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-		if !ok {
-			return req.URL, nil
-		}
-
-		currentScheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-		if !ok {
-			return req.URL, nil
-		}
-
-		host, _, err := net.SplitHostPort(currentHost)
-		if err != nil {
-			host = currentHost
-		}
-		minioProxyHost := host + proxyPort
-		url.Host = minioProxyHost
-		url.Scheme = currentScheme
-		logs.CtxInfof(ctx, "[GetObjectUrl] reset ORG.URL = %s  TOS.URL = %s", req.URL, url.String())
-		return url.String(), nil
+	ok, proxyURL := proxy.CheckIfNeedReplaceHost(ctx, req.URL)
+	if ok {
+		return proxyURL, nil
 	}
 
 	return req.URL, nil
@@ -258,7 +231,6 @@ func (i *s3Client) GetUploadHost(ctx context.Context) string {
 		return ""
 	}
 	return currentHost + consts.ApplyUploadActionURI
-
 }
 
 func (t *s3Client) GetServerID() string {

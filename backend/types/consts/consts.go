@@ -81,6 +81,10 @@ const (
 	CodeRunnerNodeModulesDir = "CODE_RUNNER_NODE_MODULES_DIR"
 	CodeRunnerTimeoutSeconds = "CODE_RUNNER_TIMEOUT_SECONDS"
 	CodeRunnerMemoryLimitMB  = "CODE_RUNNER_MEMORY_LIMIT_MB"
+
+	UseSSL      = "USE_SSL"
+	SSLCertFile = "SSL_CERT_FILE"
+	SSLKeyFile  = "SSL_KEY_FILE"
 )
 
 const (
