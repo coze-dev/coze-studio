@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { StandardNodeType } from '@coze-workflow/base';
 
 // 默认所有节点可用，可以自定义
@@ -56,7 +56,7 @@ export const getEnabledNodeTypes = (_params: {
     [StandardNodeType.DatabaseDelete]: true,
     [StandardNodeType.DatabaseCreate]: true,
     // [StandardNodeType.JsonParser]: true,
-    // [StandardNodeType.JsonStringify]: true,
+    [StandardNodeType.JsonStringify]: true,
     // [StandardNodeType.UpdateConversation]: true,
     // [StandardNodeType.DeleteConversation]: true,
     // [StandardNodeType.QueryConversationList]: true,
