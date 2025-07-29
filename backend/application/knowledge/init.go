@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
+	ollamaEmb "github.com/cloudwego/eino-ext/components/embedding/ollama"
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	ao "github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
@@ -111,6 +112,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	case "ve":
 		ocrAK := os.Getenv("VE_OCR_AK")
 		ocrSK := os.Getenv("VE_OCR_SK")
+		if ocrAK == "" || ocrSK == "" {
+			logs.Warnf("[ve_ocr] ak / sk not configured, ocr might not work well")
+		}
 		inst := visual.NewInstance()
 		inst.Client.SetAccessKey(ocrAK)
 		inst.Client.SetSecretKey(ocrSK)
@@ -346,6 +350,27 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
 		}
+
+	case "ollama":
+		var (
+			ollamaEmbeddingBaseURL = os.Getenv("OLLAMA_EMBEDDING_BASE_URL")
+			ollamaEmbeddingModel   = os.Getenv("OLLAMA_EMBEDDING_MODEL")
+			ollamaEmbeddingDims    = os.Getenv("OLLAMA_EMBEDDING_DIMS")
+		)
+
+		dims, err := strconv.ParseInt(ollamaEmbeddingDims, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("init ollama embedding dims failed, err=%w", err)
+		}
+
+		emb, err = wrap.NewOllamaEmbedder(ctx, &ollamaEmb.EmbeddingConfig{
+			BaseURL: ollamaEmbeddingBaseURL,
+			Model:   ollamaEmbeddingModel,
+		}, dims)
+		if err != nil {
+			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
+		}
+
 	default:
 		return nil, fmt.Errorf("init knowledge embedding failed, type not configured")
 	}

@@ -24,9 +24,14 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 func NewModelMgr(staticModels []*modelmgr.Model) (modelmgr.Manager, error) {
+	if len(staticModels) == 0 {
+		logs.Warnf("[NewModelMgr] no static models found, please check if the config has been loaded correctly")
+	}
+
 	mapping := make(map[int64]*modelmgr.Model, len(staticModels))
 	for i := range staticModels {
 		mapping[staticModels[i].ID] = staticModels[i]
