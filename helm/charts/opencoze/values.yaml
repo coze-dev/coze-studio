@@ -14,7 +14,7 @@ mysql:
   user: coze
   password: coze123
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
   initScripts:
     - files/mysql/init.sql
@@ -31,7 +31,7 @@ redis:
   allowEmptyPassword: "yes"
   password: ""
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
 
 # -- coze-server configuration
@@ -41,8 +41,9 @@ cozeServer:
   replicaCount: 1
 
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/opencoze
-    pullPolicy: IfNotPresent
+    repository: opencoze/opencoze
+    # -- Keep the mirror up to date
+    pullPolicy: Always
     tag: 'latest'
 
   service:
@@ -106,10 +107,10 @@ rocketmq:
       tag: 5.3.2
     persistence:
       store:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
       logs:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
     resources:
       limits:
@@ -146,10 +147,10 @@ rocketmq:
       flushDiskType = ASYNC_FLUSH
     persistence:
       store:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
       logs:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
     resources:
       limits:
@@ -170,7 +171,7 @@ elasticsearch:
   password: ""
   persistence:
     enabled: true
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     accessModes:
       - ReadWriteOnce
     size: 50Gi
@@ -192,7 +193,7 @@ minio:
     port: 9000
     consolePort: 9001
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
   resources:
     limits:
@@ -208,7 +209,7 @@ etcd:
     repository: bitnami/etcd
     tag: 3.5
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "20Gi"
 
 milvus:
@@ -218,7 +219,7 @@ milvus:
     tag: v2.5.10
   bucketName: milvus
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "20Gi"
 
 kibana:

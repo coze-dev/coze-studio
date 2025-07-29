@@ -81,7 +81,9 @@ spec:
       name: es-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.elasticsearch.persistence.storageClassName }}
       storageClassName: {{ .Values.elasticsearch.persistence.storageClassName | quote }}
+    {{- end }}
       resources:
         requests:
           storage: {{ .Values.elasticsearch.persistence.size | quote }}

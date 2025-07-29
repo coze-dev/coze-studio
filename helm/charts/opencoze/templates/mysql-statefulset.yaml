@@ -55,7 +55,9 @@ spec:
         name: mysql-data
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.mysql.persistence.storageClassName }}
         storageClassName: {{ .Values.mysql.persistence.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.mysql.persistence.size | quote }}
