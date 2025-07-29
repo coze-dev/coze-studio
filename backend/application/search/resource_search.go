@@ -86,25 +86,39 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 	lock := sync.Mutex{}
 	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, 10)
 	resources := make([]*common.ResourceInfo, len(searchResp.Data))
-	for idx := range searchResp.Data {
-		v := searchResp.Data[idx]
-		index := idx
-		tasks.Go(func() error {
-			ri, err := s.packResource(ctx, v)
-			if err != nil {
-				logs.CtxErrorf(ctx, "[LibraryResourceList] packResource failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
-					v.ResID, v.GetName(), v.ResType, err)
-				return err
-			}
+	if len(searchResp.Data) > 1 {
+		for idx := range searchResp.Data[1:] {
+			index := idx + 1
+			v := searchResp.Data[index]
+			tasks.Go(func() error {
+				ri, err := s.packResource(ctx, v)
+				if err != nil {
+					logs.CtxErrorf(ctx, "[LibraryResourceList] packResource failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
+						v.ResID, v.GetName(), v.ResType, err)
+					return err
+				}
 
-			lock.Lock()
-			defer lock.Unlock()
-			resources[index] = ri
-			return nil
-		})
+				lock.Lock()
+				defer lock.Unlock()
+				resources[index] = ri
+				return nil
+			})
+		}
+	}
+	if len(searchResp.Data) != 0 {
+		ri, err := s.packResource(ctx, searchResp.Data[0])
+		if err != nil {
+			return nil, err
+		}
+		lock.Lock()
+		resources[0] = ri
+		lock.Unlock()
+	}
+	err = tasks.Wait()
+	if err != nil {
+		return nil, err
 	}
 
-	_ = tasks.Wait()
 	filterResource := make([]*common.ResourceInfo, 0)
 	for _, res := range resources {
 		if res == nil {
