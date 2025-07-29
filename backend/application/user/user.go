@@ -60,7 +60,7 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		return nil, "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "Invalid email"))
 	}
 
-	// 检查是否允许注册
+	// allow Register Checker
 	if !u.allowRegisterChecker(req.GetEmail()) {
 		return nil, "", errorx.New(errno.ErrNotAllowedRegisterCode)
 	}
