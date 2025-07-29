@@ -112,3 +112,8 @@ const (
 	ApplyUploadActionURI = "/api/common/upload/apply_upload_action"
 	UploadURI            = "/api/common/upload"
 )
+
+const (
+	DisableUserRegistration = "DISABLE_USER_REGISTRATION"
+	AllowRegistrationEmail  = "ALLOW_REGISTRATION_EMAIL"
+)

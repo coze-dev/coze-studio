@@ -31,9 +31,17 @@ const (
 	ErrUserResourceNotFound           = 700000005
 	ErrUserInvalidParamCode           = 700000006
 	ErrUserPermissionCode             = 700000007
+	ErrNotAllowedRegisterCode         = 700000008
 )
 
 func init() {
+
+	code.Register(
+		ErrNotAllowedRegisterCode,
+		"The user registration has been disabled by the administrator. Please contact the administrator!",
+		code.WithAffectStability(false),
+	)
+
 	code.Register(
 		ErrUserPermissionCode,
 		"unauthorized access : {msg}",
