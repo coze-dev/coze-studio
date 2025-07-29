@@ -19,6 +19,7 @@ package workflow
 import (
 	"context"
 
+	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
@@ -96,6 +97,8 @@ type Repository interface {
 
 	compose.CheckPointStore
 	idgen.IDGenerator
+
+	GetKnowledgeRecallChatModel() model.BaseChatModel
 }
 
 var repositorySingleton Repository

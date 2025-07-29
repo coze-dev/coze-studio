@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	model "github.com/cloudwego/eino/components/model"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	workflow "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
@@ -26,7 +27,6 @@ import (
 type MockService struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockServiceMockRecorder is the mock recorder for MockService.
@@ -364,17 +364,17 @@ func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, appID, confi
 }
 
 // Save mocks base method.
-func (m *MockService) Save(ctx context.Context, id int64, arg2 string) error {
+func (m *MockService) Save(ctx context.Context, id int64, schema string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", ctx, id, arg2)
+	ret := m.ctrl.Call(m, "Save", ctx, id, schema)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockServiceMockRecorder) Save(ctx, id, arg2 any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Save(ctx, id, schema any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockService)(nil).Save), ctx, id, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockService)(nil).Save), ctx, id, schema)
 }
 
 // StreamExecute mocks base method.
@@ -528,7 +528,6 @@ func (mr *MockServiceMockRecorder) WorkflowAsModelTool(ctx, policies any) *gomoc
 type MockRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockRepositoryMockRecorder
-	isgomock struct{}
 }
 
 // MockRepositoryMockRecorder is the mock recorder for MockRepository.
@@ -546,6 +545,20 @@ func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
+}
+
+// BatchCreateConnectorWorkflowVersion mocks base method.
+func (m *MockRepository) BatchCreateConnectorWorkflowVersion(ctx context.Context, appID, connectorID int64, workflowIDs []int64, version string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchCreateConnectorWorkflowVersion", ctx, appID, connectorID, workflowIDs, version)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchCreateConnectorWorkflowVersion indicates an expected call of BatchCreateConnectorWorkflowVersion.
+func (mr *MockRepositoryMockRecorder) BatchCreateConnectorWorkflowVersion(ctx, appID, connectorID, workflowIDs, version any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchCreateConnectorWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).BatchCreateConnectorWorkflowVersion), ctx, appID, connectorID, workflowIDs, version)
 }
 
 // CancelAllRunningNodes mocks base method.
@@ -784,6 +797,20 @@ func (mr *MockRepositoryMockRecorder) GetFirstInterruptEvent(ctx, wfExeID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFirstInterruptEvent", reflect.TypeOf((*MockRepository)(nil).GetFirstInterruptEvent), ctx, wfExeID)
 }
 
+// GetKnowledgeRecallChatModel mocks base method.
+func (m *MockRepository) GetKnowledgeRecallChatModel() model.BaseChatModel {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetKnowledgeRecallChatModel")
+	ret0, _ := ret[0].(model.BaseChatModel)
+	return ret0
+}
+
+// GetKnowledgeRecallChatModel indicates an expected call of GetKnowledgeRecallChatModel.
+func (mr *MockRepositoryMockRecorder) GetKnowledgeRecallChatModel() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKnowledgeRecallChatModel", reflect.TypeOf((*MockRepository)(nil).GetKnowledgeRecallChatModel))
+}
+
 // GetLatestVersion mocks base method.
 func (m *MockRepository) GetLatestVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {
 	m.ctrl.T.Helper()
@@ -934,6 +961,21 @@ func (m *MockRepository) GetWorkflowExecution(ctx context.Context, id int64) (*e
 func (mr *MockRepositoryMockRecorder) GetWorkflowExecution(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).GetWorkflowExecution), ctx, id)
+}
+
+// IsApplicationConnectorWorkflowVersion mocks base method.
+func (m *MockRepository) IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsApplicationConnectorWorkflowVersion", ctx, connectorID, workflowID, version)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsApplicationConnectorWorkflowVersion indicates an expected call of IsApplicationConnectorWorkflowVersion.
+func (mr *MockRepositoryMockRecorder) IsApplicationConnectorWorkflowVersion(ctx, connectorID, workflowID, version any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsApplicationConnectorWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).IsApplicationConnectorWorkflowVersion), ctx, connectorID, workflowID, version)
 }
 
 // ListInterruptEvents mocks base method.
@@ -1170,6 +1212,20 @@ func (m *MockRepository) UpdateNodeExecution(ctx context.Context, execution *ent
 func (mr *MockRepositoryMockRecorder) UpdateNodeExecution(ctx, execution any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNodeExecution", reflect.TypeOf((*MockRepository)(nil).UpdateNodeExecution), ctx, execution)
+}
+
+// UpdateNodeExecutionStreaming mocks base method.
+func (m *MockRepository) UpdateNodeExecutionStreaming(ctx context.Context, execution *entity.NodeExecution) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNodeExecutionStreaming", ctx, execution)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNodeExecutionStreaming indicates an expected call of UpdateNodeExecutionStreaming.
+func (mr *MockRepositoryMockRecorder) UpdateNodeExecutionStreaming(ctx, execution any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNodeExecutionStreaming", reflect.TypeOf((*MockRepository)(nil).UpdateNodeExecutionStreaming), ctx, execution)
 }
 
 // UpdateWorkflowDraftTestRunSuccess mocks base method.
