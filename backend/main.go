@@ -74,9 +74,10 @@ func startHttpServer() {
 		server.WithMaxRequestBodySize(int(maxSize)),
 	}
 
-	useSSL := getEnv("USE_SSL", "0")
+	useSSL := getEnv(consts.UseSSL, "0")
 	if useSSL == "1" {
-		cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+		cert, err := tls.LoadX509KeyPair(getEnv(consts.SSLCertFile, ""),
+			getEnv(consts.SSLKeyFile, ""))
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -193,10 +194,12 @@ func asyncStartMinioProxyServer(ctx context.Context) {
 			originDirector(req)
 			req.Host = req.URL.Host
 		}
-		useSSL := getEnv("USE_SSL", "0")
+		useSSL := getEnv(consts.UseSSL, "0")
 		if useSSL == "1" {
 			logs.Infof("Minio proxy server is listening on %s with SSL", minioProxyEndpoint)
-			err := http.ListenAndServeTLS(minioProxyEndpoint, "cert.pem", "key.pem", proxy)
+			err := http.ListenAndServeTLS(minioProxyEndpoint,
+				getEnv(consts.SSLCertFile, ""),
+				getEnv(consts.SSLKeyFile, ""), proxy)
 			if err != nil {
 				log.Fatal(err)
 			}
