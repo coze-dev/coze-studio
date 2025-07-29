@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { StandardNodeType, useWorkflowNode } from '@coze-workflow/base';
 
 import { VariableContent } from '@/node-registries/variable';
@@ -27,6 +27,7 @@ import { PluginContent } from '@/node-registries/plugin';
 import { OutputContent } from '@/node-registries/output';
 import { LtmContent } from '@/node-registries/ltm';
 import { LoopContent } from '@/node-registries/loop';
+import { JsonStringifyContent } from '@/node-registries/json-stringify';
 import { IntentContent } from '@/node-registries/intent';
 import { InputContent } from '@/node-registries/input';
 import { ImageCanvasContent } from '@/node-registries/image-canvas';
@@ -89,6 +90,7 @@ const ContentMap = {
   [StandardNodeType.TriggerRead]: TriggerReadContent,
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
+  [StandardNodeType.JsonStringify]: JsonStringifyContent,
   // cli 脚本插入标识（registry），请勿修改/删除此行注释
 };
 

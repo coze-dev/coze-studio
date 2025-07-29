@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { CODE_NODE_REGISTRY } from './code';
 export { COMMENT_NODE_REGISTRY } from './comment';
 export { DATABASE_NODE_REGISTRY } from './database/database-base';
@@ -47,4 +47,5 @@ export { IF_NODE_REGISTRY } from './if';
 export { PLUGIN_NODE_REGISTRY } from './plugin';
 export { SUB_WORKFLOW_NODE_REGISTRY } from './sub-workflow';
 export { VARIABLE_NODE_REGISTRY } from './variable';
+export { JSON_STRINGIFY_NODE_REGISTRY } from './json-stringify';
 // cli 脚本插入标识（registry），请勿修改/删除此行注释
