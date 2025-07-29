@@ -250,7 +250,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		if req.GetLocation() == common.AuthorizationServiceLocation_Query {
 			loc = model.ParamInQuery
 		} else if req.GetLocation() == common.AuthorizationServiceLocation_Header {
-			loc = model.ParamInPath
+			loc = model.ParamInHeader
 		} else {
 			return nil, fmt.Errorf("invalid location '%s'", req.GetLocation())
 		}
