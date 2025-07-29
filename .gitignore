@@ -52,3 +52,5 @@ common/temp
 
 
 backend/conf/model/*.yaml
+
+*.tsbuildinfo
