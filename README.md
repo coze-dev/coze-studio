@@ -74,7 +74,7 @@ Deployment steps:
    cp .env.example .env
    docker compose --profile "*" up -d
    ```
-   After the service starts, it is normal for the `coze-minio-setup` , `coze-mysql-setup-init-sql` , and `coze-mysql-setup-schema` containers to be in an exited state (exit 0). For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
+   For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
 4. After starting the service, you can open Coze Studio by accessing `http://localhost:8888/` through your browser.
 
 

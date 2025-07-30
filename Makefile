@@ -77,10 +77,10 @@ dump_sql_schema:
 	@echo "Dumping mysql schema to $(MYSQL_SCHEMA)..."
 	@. $(ENV_FILE); \
 	{ echo "SET NAMES utf8mb4;\nCREATE DATABASE IF NOT EXISTS opencoze COLLATE utf8mb4_unicode_ci;"; atlas schema inspect -u $$ATLAS_URL --format "{{ sql . }}" --exclude "atlas_schema_revisions,table_*" | sed 's/CREATE TABLE/CREATE TABLE IF NOT EXISTS/g'; } > $(MYSQL_SCHEMA)
-	@sed -I '' -E 's/(\))[[:space:]]+CHARSET utf8mb4/\1 ENGINE=InnoDB CHARSET utf8mb4/' $(MYSQL_SCHEMA)
+		@sed -i.bak -E 's/(\))[[:space:]]+CHARSET utf8mb4/\1 ENGINE=InnoDB CHARSET utf8mb4/' $(MYSQL_SCHEMA) && rm -f $(MYSQL_SCHEMA).bak
+	@cat $(MYSQL_INIT_SQL) >> $(MYSQL_SCHEMA)
 	@echo "Dumping mysql schema to helm/charts/opencoze/files/mysql ..."
 	@cp $(MYSQL_SCHEMA) ./helm/charts/opencoze/files/mysql/
-	@cp $(MYSQL_INIT_SQL) ./helm/charts/opencoze/files/mysql/
 
 atlas-hash:
 	@echo "Rehash atlas migration files..."
