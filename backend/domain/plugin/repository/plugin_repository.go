@@ -35,6 +35,7 @@ type PluginRepository interface {
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error)
 	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
 	DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error)
+	UpdateDebugExample(ctx context.Context, pluginID int64, openapiDoc *plugin.Openapi3T) (err error)
 
 	GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)

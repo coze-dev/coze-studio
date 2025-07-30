@@ -822,7 +822,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		method = &m
 	}
 
-	updateReq := &service.UpdateToolDraftRequest{
+	updateReq := &service.UpdateDraftToolRequest{
 		PluginID:     req.PluginID,
 		ToolID:       req.APIID,
 		Name:         req.Name,
