@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
-import glob from 'fast-glob';
 import {
   lookupSubPackages,
   getPackageLocation,
@@ -44,8 +43,7 @@ export const getTailwindContents = (projectRoot: string) => {
   contents.push(
     ...packageLocations
       .filter(r => !!r)
-      .map(location => path.resolve(location, 'src/**/*.{ts,tsx}'))
-      .filter(pattern => glob.sync(pattern).length > 0),
+      .map(location => path.resolve(location, 'src/**/*.{ts,tsx}')),
   );
 
   // 兼容 coze-design 内部 tailwind 样式
