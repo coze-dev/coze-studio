@@ -981,8 +981,8 @@ importers:
   ../../../frontend/infra/plugins/pkg-root-webpack-plugin:
     dependencies:
       '@coze-arch/pkg-root-webpack-plugin-origin':
-        specifier: npm:@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.74b402
-        version: /@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.74b402
+        specifier: npm:@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.48aa2e
+        version: /@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.48aa2e
       '@rushstack/rush-sdk':
         specifier: 5.100.2
         version: 5.100.2(@types/node@18.18.9)
@@ -25435,8 +25435,8 @@ packages:
       - acorn
       - supports-color
 
-  /@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.74b402:
-    resolution: {integrity: sha512-2RMxo+vZVcnv2p1ykNugZxR1xecPzIgcGRGIFMhffG+WLLpiXghJ9UDgieL8GEcJybHu3AI+gBuNVQcdD/CeJQ==}
+  /@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.48aa2e:
+    resolution: {integrity: sha512-7lcWQwNS1doiaIoRZmfYmANPQQncSAh5ZFKB+5RyAe1Icv+3Egz6D68dDOubQKbRHLjGdImvttvwFwKda0J5HQ==}
     dependencies:
       micromatch: 4.0.8
     dev: false
