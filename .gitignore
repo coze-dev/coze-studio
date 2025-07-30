@@ -6,6 +6,7 @@
 *.dylib
 
 .env
+.env.debug
 
 # Test binary, built with `go test -c`
 *.test
@@ -52,5 +53,8 @@ common/temp
 
 
 backend/conf/model/*.yaml
+values-dev.yaml
+**/conf/model_ark_doubao-seed-1.6.yaml
 
 *.tsbuildinfo
+

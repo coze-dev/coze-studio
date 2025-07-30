@@ -28,8 +28,9 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ollama"
 	mo "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino-ext/components/model/qwen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"google.golang.org/genai"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 )
 
 func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {

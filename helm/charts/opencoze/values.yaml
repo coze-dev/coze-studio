@@ -62,11 +62,8 @@ cozeServer:
     LOG_LEVEL: "debug"
     MAX_REQUEST_BODY_SIZE: "1073741824"
     STORAGE_TYPE: "minio"
-    STORAGE_BUCKET: "opencoze"
     MINIO_PROXY_ENDPOINT: ":8889"
     COZE_MQ_TYPE: rmq
-    MQ_NAME_SERVER: "127.0.0.1:9876"
-    MINIO_ENDPOINT: "127.0.0.1:9000"
     ES_VERSION: "v8"
     VECTOR_STORE_TYPE: "milvus"
     EMBEDDING_TYPE: "ark"
@@ -96,7 +93,6 @@ cozeServer:
     VE_IMAGEX_DOMAIN: ""
     VE_IMAGEX_TEMPLATE: ""
     VE_IMAGEX_UPLOAD_HOST: "https://imagex.volcengineapi.com"
-    COZE_SERVER_PROXY_URL_LIST: "opencoze-mysql:3306,opencoze-redis:6379,opencoze-elasticsearch:9200,opencoze-milvus:19530,opencoze-minio:9000,opencoze-rocketmq-namesrv:9876"
 
 rocketmq:
   enabled: true
@@ -221,15 +217,6 @@ milvus:
   persistence:
     storageClassName: ""
     size: "20Gi"
-
-kibana:
-  enabled: true
-  image:
-    repository: bitnami/kibana
-    tag: 8.18.0
-  service:
-    type: ClusterIP
-    port: 5601
 
 
 images:

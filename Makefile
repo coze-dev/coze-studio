@@ -8,10 +8,10 @@ SYNC_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_apply.sh
 DUMP_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_dump.sh
 SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
-COMPOSE_FILE := docker/docker-compose.yml
+COMPOSE_FILE := docker/docker-compose-debug.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
-ENV_FILE := ./docker/.env
+ENV_FILE := ./docker/.env.debug
 STATIC_DIR := ./bin/resources/static
 ES_INDEX_SCHEMA := ./docker/volumes/elasticsearch/es_index_schema
 ES_SETUP_SCRIPT := ./docker/volumes/elasticsearch/setup_es.sh
@@ -34,7 +34,7 @@ server: env setup_es_index
 		$(MAKE) fe; \
 	fi
 	@echo "Building and run server..."
-	@bash $(BUILD_SERVER_SCRIPT) -start
+	@APP_ENV=debug bash $(BUILD_SERVER_SCRIPT) -start
 
 build_server:
 	@echo "Building server..."
@@ -59,7 +59,7 @@ middleware:
 
 web:
 	@echo "Start web server in docker"
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d --wait
+	@docker compose -f docker/docker-compose.yml  up -d
 
 down:
 	@echo "Stop all docker containers"
