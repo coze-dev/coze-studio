@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "composite": true,
+    "incremental": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "outDir": "./dist",
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "module": "es2020",
+    "noFallthroughCasesInSwitch": true,
+    // This general feedback will make the code verbose, tentatively follow the original bot's settings, close
+    "noImplicitReturns": false,
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "disableReferencedProjectLoad": true,
+    // "disableSolutionSearching": true,
+    // "disableSourceOfProjectReferenceRedirect": true,
+    "target": "es2018"
+  },
+  "watchOptions": {
+    "fallbackPolling": "dynamicpriority",
+    "synchronousWatchDirectory": false,
+    "watchDirectory": "fixedChunkSizePolling",
+    "watchFile": "useFsEventsOnParentDirectory"
+  }
+}
