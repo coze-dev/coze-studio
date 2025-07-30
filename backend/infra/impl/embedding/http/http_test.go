@@ -31,7 +31,7 @@ func TestHTTPEmbedding(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	emb, err := NewEmbedding("http://127.0.0.1:6543", 1024)
+	emb, err := NewEmbedding("http://127.0.0.1:6543", 1024, 10)
 	assert.NoError(t, err)
 	texts := []string{
 		"hello",

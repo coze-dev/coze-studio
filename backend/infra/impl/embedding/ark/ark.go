@@ -33,23 +33,24 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func NewArkEmbedder(ctx context.Context, config *ark.EmbeddingConfig, dimensions int64) (contract.Embedder, error) {
+func NewArkEmbedder(ctx context.Context, config *ark.EmbeddingConfig, dimensions int64, batchSize int) (contract.Embedder, error) {
 	emb, err := ark.NewEmbedder(ctx, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &embWrap{dims: dimensions, Embedder: emb}, nil
+	return &embWrap{dims: dimensions, batchSize: batchSize, Embedder: emb}, nil
 }
 
 type embWrap struct {
-	dims int64
+	dims      int64
+	batchSize int
 	embedding.Embedder
 }
 
 func (d embWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	resp := make([][]float64, 0, len(texts))
-	for _, part := range slices.Chunks(texts, 100) {
+	for _, part := range slices.Chunks(texts, d.batchSize) {
 		partResult, err := d.Embedder.EmbedStrings(ctx, part, opts...)
 		if err != nil {
 			return nil, err

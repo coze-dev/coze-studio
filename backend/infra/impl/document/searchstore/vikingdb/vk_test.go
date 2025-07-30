@@ -179,7 +179,7 @@ func TestBuiltinEmbeddingIntegration(t *testing.T) {
 		Model:      os.Getenv("OPENAI_EMBEDDING_MODEL"),
 		Dimensions: ptr.Of(1024),
 	}
-	emb, err := wrap.NewOpenAIEmbedder(ctx, embConfig, 1024)
+	emb, err := wrap.NewOpenAIEmbedder(ctx, embConfig, 1024, 100)
 	assert.NoError(t, err)
 
 	cfg := &ManagerConfig{
