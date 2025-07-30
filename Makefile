@@ -9,6 +9,7 @@ DUMP_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_dump.sh
 SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
 COMPOSE_FILE := docker/docker-compose.yml
+COMPOSE_PROJECT_NAME := coze-studio
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env
@@ -42,7 +43,7 @@ build_server:
 
 sync_db:
 	@echo "Syncing database..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile mysql-setup up -d
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) -p $(COMPOSE_PROJECT_NAME) --profile mysql-setup up -d
 
 dump_db: dump_sql_schema
 	@echo "Dumping database..."
@@ -50,20 +51,20 @@ dump_db: dump_sql_schema
 
 sql_init:
 	@echo "Init sql data..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile mysql-setup up -d
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) -p $(COMPOSE_PROJECT_NAME) --profile mysql-setup up -d
 
 middleware:
 	@echo "Start middleware docker environment for opencoze app"
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware up -d --wait
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) -p $(COMPOSE_PROJECT_NAME) --profile middleware up -d --wait
 
 
 web:
 	@echo "Start web server in docker"
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d --wait
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) -p $(COMPOSE_PROJECT_NAME) --profile '*' up -d --wait
 
 down:
 	@echo "Stop all docker containers"
-	@docker compose -f $(COMPOSE_FILE) --profile '*' down
+	@docker compose -f $(COMPOSE_FILE) -p $(COMPOSE_PROJECT_NAME) --profile '*' down
 
 clean: down
 	@echo "Remove docker containers and volumes data"
