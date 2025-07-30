@@ -23,6 +23,7 @@ export type SourceFileLanguage =
   | 'c'
   | 'cpp'
   | 'csharp'
+  | 'thrift'
   | 'other';
 
 /**
