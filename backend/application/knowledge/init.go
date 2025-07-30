@@ -28,25 +28,18 @@ import (
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	ollamaEmb "github.com/cloudwego/eino-ext/components/embedding/ollama"
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
-	ao "github.com/cloudwego/eino-ext/components/model/ark"
-	"github.com/cloudwego/eino-ext/components/model/deepseek"
-	"github.com/cloudwego/eino-ext/components/model/gemini"
-	"github.com/cloudwego/eino-ext/components/model/ollama"
-	mo "github.com/cloudwego/eino-ext/components/model/openai"
-	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/application/internal"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/http"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
-	"google.golang.org/genai"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
@@ -131,7 +124,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 
 	var rewriter messages2query.MessagesToQuery
-	if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
+	if rewriterChatModel, _, err := internal.GetBuiltinChatModel(ctx, "M2Q_"); err != nil {
 		return nil, err
 	} else {
 		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
@@ -146,7 +139,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 
 	var n2s nl2sql.NL2SQL
-	if n2sChatModel, _, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
+	if n2sChatModel, _, err := internal.GetBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
 		return nil, err
 	} else {
 		filePath := filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
@@ -160,7 +153,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		}
 	}
 
-	imageAnnoChatModel, configured, err := getBuiltinChatModel(ctx, "IA_")
+	imageAnnoChatModel, configured, err := internal.GetBuiltinChatModel(ctx, "IA_")
 	if err != nil {
 		return nil, err
 	}
@@ -372,7 +365,6 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
 		}
 
-
 	case "http":
 		var (
 			httpEmbeddingBaseURL = os.Getenv("HTTP_EMBEDDING_ADDR")
@@ -392,81 +384,6 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 	}
 
 	return emb, nil
-}
-
-func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
-	getEnv := func(key string) string {
-		if val := os.Getenv(envPrefix + key); val != "" {
-			return val
-		}
-		return os.Getenv(key)
-	}
-
-	switch getEnv("BUILTIN_CM_TYPE") {
-	case "openai":
-		byAzure, _ := strconv.ParseBool(getEnv("BUILTIN_CM_OPENAI_BY_AZURE"))
-		bcm, err = mo.NewChatModel(ctx, &mo.ChatModelConfig{
-			APIKey:  getEnv("BUILTIN_CM_OPENAI_API_KEY"),
-			ByAzure: byAzure,
-			BaseURL: getEnv("BUILTIN_CM_OPENAI_BASE_URL"),
-			Model:   getEnv("BUILTIN_CM_OPENAI_MODEL"),
-		})
-	case "ark":
-		bcm, err = ao.NewChatModel(ctx, &ao.ChatModelConfig{
-			APIKey:  getEnv("BUILTIN_CM_ARK_API_KEY"),
-			Model:   getEnv("BUILTIN_CM_ARK_MODEL"),
-			BaseURL: getEnv("BUILTIN_CM_ARK_BASE_URL"),
-		})
-	case "deepseek":
-		bcm, err = deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
-			APIKey:  getEnv("BUILTIN_CM_DEEPSEEK_API_KEY"),
-			BaseURL: getEnv("BUILTIN_CM_DEEPSEEK_BASE_URL"),
-			Model:   getEnv("BUILTIN_CM_DEEPSEEK_MODEL"),
-		})
-	case "ollama":
-		bcm, err = ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
-			BaseURL: getEnv("BUILTIN_CM_OLLAMA_BASE_URL"),
-			Model:   getEnv("BUILTIN_CM_OLLAMA_MODEL"),
-		})
-	case "qwen":
-		bcm, err = qwen.NewChatModel(ctx, &qwen.ChatModelConfig{
-			APIKey:  getEnv("BUILTIN_CM_QWEN_API_KEY"),
-			BaseURL: getEnv("BUILTIN_CM_QWEN_BASE_URL"),
-			Model:   getEnv("BUILTIN_CM_QWEN_MODEL"),
-		})
-	case "gemini":
-		backend, convErr := strconv.ParseInt(getEnv("BUILTIN_CM_GEMINI_BACKEND"), 10, 64)
-		if convErr != nil {
-			return nil, false, convErr
-		}
-		c, clientErr := genai.NewClient(ctx, &genai.ClientConfig{
-			APIKey:   getEnv("BUILTIN_CM_GEMINI_API_KEY"),
-			Backend:  genai.Backend(backend),
-			Project:  getEnv("BUILTIN_CM_GEMINI_PROJECT"),
-			Location: getEnv("BUILTIN_CM_GEMINI_LOCATION"),
-			HTTPOptions: genai.HTTPOptions{
-				BaseURL: getEnv("BUILTIN_CM_GEMINI_BASE_URL"),
-			},
-		})
-		if clientErr != nil {
-			return nil, false, clientErr
-		}
-		bcm, err = gemini.NewChatModel(ctx, &gemini.Config{
-			Client: c,
-			Model:  getEnv("BUILTIN_CM_GEMINI_MODEL"),
-		})
-	default:
-		// accept builtin chat model not configured
-	}
-
-	if err != nil {
-		return nil, false, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
-	}
-	if bcm != nil {
-		configured = true
-	}
-
-	return
 }
 
 func readJinja2PromptTemplate(jsonFilePath string) (prompt.ChatTemplate, error) {

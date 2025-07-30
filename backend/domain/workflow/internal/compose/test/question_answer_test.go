@@ -102,7 +102,7 @@ func TestQuestionAnswer(t *testing.T) {
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
 		repo := repo2.NewRepository(mockIDGen, db, redisClient, mockTos,
-			checkpoint.NewRedisStore(redisClient))
+			checkpoint.NewRedisStore(redisClient), nil)
 		mockey.Mock(workflow.GetRepository).Return(repo).Build()
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {

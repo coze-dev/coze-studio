@@ -17,7 +17,11 @@
 package workflow
 
 import (
+	"context"
+
 	"github.com/cloudwego/eino/compose"
+	"github.com/coze-dev/coze-studio/backend/application/internal"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -64,9 +68,16 @@ type ServiceComponents struct {
 	CodeRunner         coderunner.Runner
 }
 
-func InitService(components *ServiceComponents) *ApplicationService {
+func InitService(ctx context.Context, components *ServiceComponents) (*ApplicationService, error) {
+	bcm, ok, err := internal.GetBuiltinChatModel(ctx, "WKR_")
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
+	}
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
-		components.Tos, components.CPStore)
+		components.Tos, components.CPStore, bcm)
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
@@ -84,5 +95,5 @@ func InitService(components *ServiceComponents) *ApplicationService {
 	SVC.TosClient = components.Tos
 	SVC.IDGenerator = components.IDGen
 
-	return SVC
+	return SVC, err
 }
