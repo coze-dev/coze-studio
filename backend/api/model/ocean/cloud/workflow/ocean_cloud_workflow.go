@@ -9,13 +9,13 @@ import (
 )
 
 type WorkflowService interface {
-	// 创建流程
+	// Create process
 	CreateWorkflow(ctx context.Context, request *CreateWorkflowRequest) (r *CreateWorkflowResponse, err error)
-	// 查询流程
+	// query process
 	GetCanvasInfo(ctx context.Context, request *GetCanvasInfoRequest) (r *GetCanvasInfoResponse, err error)
 
 	GetHistorySchema(ctx context.Context, request *GetHistorySchemaRequest) (r *GetHistorySchemaResponse, err error)
-	// 保存流程
+	// save process
 	SaveWorkflow(ctx context.Context, request *SaveWorkflowRequest) (r *SaveWorkflowResponse, err error)
 
 	UpdateWorkflowMeta(ctx context.Context, request *UpdateWorkflowMetaRequest) (r *UpdateWorkflowMetaResponse, err error)
@@ -25,7 +25,7 @@ type WorkflowService interface {
 	BatchDeleteWorkflow(ctx context.Context, request *BatchDeleteWorkflowRequest) (r *BatchDeleteWorkflowResponse, err error)
 
 	GetDeleteStrategy(ctx context.Context, request *GetDeleteStrategyRequest) (r *GetDeleteStrategyResponse, err error)
-	// 发布流程。该接口的用途是发布非 project 内部的流程。
+	// Publish process. The purpose of this interface is to publish processes that are not internal to the project.
 	PublishWorkflow(ctx context.Context, request *PublishWorkflowRequest) (r *PublishWorkflowResponse, err error)
 
 	CopyWorkflow(ctx context.Context, request *CopyWorkflowRequest) (r *CopyWorkflowResponse, err error)
@@ -35,13 +35,13 @@ type WorkflowService interface {
 	GetReleasedWorkflows(ctx context.Context, request *GetReleasedWorkflowsRequest) (r *GetReleasedWorkflowsResponse, err error)
 
 	GetWorkflowReferences(ctx context.Context, request *GetWorkflowReferencesRequest) (r *GetWorkflowReferencesResponse, err error)
-	// 获取示例流程列表
+	// Get a list of sample processes
 	GetExampleWorkFlowList(ctx context.Context, request *GetExampleWorkFlowListRequest) (r *GetExampleWorkFlowListResponse, err error)
-	// 获取流程列表。
+	// Gets a list of processes.
 	GetWorkFlowList(ctx context.Context, request *GetWorkFlowListRequest) (r *GetWorkFlowListResponse, err error)
 
 	QueryWorkflowNodeTypes(ctx context.Context, request *QueryWorkflowNodeTypeRequest) (r *QueryWorkflowNodeTypeResponse, err error)
-	// 画布
+	// Canvas
 	NodeTemplateList(ctx context.Context, request *NodeTemplateListRequest) (r *NodeTemplateListResponse, err error)
 
 	NodePanelSearch(ctx context.Context, request *NodePanelSearchRequest) (r *NodePanelSearchResponse, err error)
@@ -49,13 +49,13 @@ type WorkflowService interface {
 	GetLLMNodeFCSettingsMerged(ctx context.Context, req *GetLLMNodeFCSettingsMergedRequest) (r *GetLLMNodeFCSettingsMergedResponse, err error)
 
 	GetLLMNodeFCSettingDetail(ctx context.Context, req *GetLLMNodeFCSettingDetailRequest) (r *GetLLMNodeFCSettingDetailResponse, err error)
-	// 试运行流程（test run）
+	// Practice running process (test run)
 	WorkFlowTestRun(ctx context.Context, request *WorkFlowTestRunRequest) (r *WorkFlowTestRunResponse, err error)
 
 	WorkFlowTestResume(ctx context.Context, request *WorkflowTestResumeRequest) (r *WorkflowTestResumeResponse, err error)
 
 	CancelWorkFlow(ctx context.Context, request *CancelWorkFlowRequest) (r *CancelWorkFlowResponse, err error)
-	// 查看试运行执行历史。
+	// View practice run history.
 	GetWorkFlowProcess(ctx context.Context, request *GetWorkflowProcessRequest) (r *GetWorkflowProcessResponse, err error)
 
 	GetNodeExecuteHistory(ctx context.Context, request *GetNodeExecuteHistoryRequest) (r *GetNodeExecuteHistoryResponse, err error)
@@ -63,7 +63,7 @@ type WorkflowService interface {
 	GetApiDetail(ctx context.Context, request *GetApiDetailRequest) (r *GetApiDetailResponse, err error)
 
 	WorkflowNodeDebugV2(ctx context.Context, request *WorkflowNodeDebugV2Request) (r *WorkflowNodeDebugV2Response, err error)
-	// 文件上传
+	// file upload
 	GetWorkflowUploadAuthToken(ctx context.Context, request *GetUploadAuthTokenRequest) (r *GetUploadAuthTokenResponse, err error)
 
 	SignImageURL(ctx context.Context, request *SignImageURLRequest) (r *SignImageURLResponse, err error)
@@ -76,7 +76,7 @@ type WorkflowService interface {
 
 	ListProjectConversationDef(ctx context.Context, request *ListProjectConversationRequest) (r *ListProjectConversationResponse, err error)
 	// Trace
-	// 列出历史执行的trace
+	// List traces of historical execution
 	ListRootSpans(ctx context.Context, req *ListRootSpansRequest) (r *ListRootSpansResponse, err error)
 
 	GetTraceSDK(ctx context.Context, req *GetTraceSDKRequest) (r *GetTraceSDKResponse, err error)
@@ -92,7 +92,7 @@ type WorkflowService interface {
 	CreateChatFlowRole(ctx context.Context, request *CreateChatFlowRoleRequest) (r *CreateChatFlowRoleResponse, err error)
 
 	DeleteChatFlowRole(ctx context.Context, request *DeleteChatFlowRoleRequest) (r *DeleteChatFlowRoleResponse, err error)
-	// App 发布管理
+	// App Release Management
 	ListPublishWorkflow(ctx context.Context, request *ListPublishWorkflowRequest) (r *ListPublishWorkflowResponse, err error)
 	// Open API
 	OpenAPIRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIRunFlowResponse, err error)

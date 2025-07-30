@@ -46,9 +46,9 @@ func (p *promptVariables) AssemblePromptVariables(ctx context.Context, req *Agen
 		variables[placeholderOfUserInput] = []*schema.Message{req.Input}
 	}
 
-	// 处理对话历史
+	// Handling conversation history
 	if len(req.History) > 0 {
-		// 将历史消息添加到变量中
+		// Add chat history to variable
 		variables[placeholderOfChatHistory] = req.History
 	}
 

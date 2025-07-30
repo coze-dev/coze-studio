@@ -116,7 +116,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			continue
 		}
 		if targetColumns[i].ID == 0 {
-			// 要新增的列
+			// Columns to be added
 			columnID, err := k.idgen.GenID(ctx)
 			if err != nil {
 				logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
@@ -132,7 +132,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			})
 		} else {
 			if checkColumnExist(targetColumns[i].ID, beforeColumns) {
-				// 要修改的列
+				// Column to modify
 				alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
 					Action: rdbEntity.ModifyColumn,
 					Column: &rdbEntity.Column{
@@ -153,7 +153,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			continue
 		}
 		if !checkColumnExist(beforeColumns[i].ID, targetColumns) {
-			// 要删除的列
+			// Column to delete
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
 				Action: rdbEntity.DropColumn,
 				Column: &rdbEntity.Column{

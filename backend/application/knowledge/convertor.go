@@ -64,7 +64,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 		}, nil
 
 	case document.TableColumnTypeTime:
-		// 支持时间戳和时间字符串
+		// Supports timestamp and time string
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			t := time.Unix(i, 0)

@@ -70,7 +70,7 @@ type singleAgentDraft struct {
 	CreatedAt               field.Int64  // Create Time in Milliseconds
 	UpdatedAt               field.Int64  // Update Time in Milliseconds
 	DeletedAt               field.Field  // delete time in millisecond
-	VariablesMetaID         field.Int64  // variables meta 表 ID
+	VariablesMetaID         field.Int64  // variables meta table ID
 	ModelInfo               field.Field  // Model Configuration Information
 	OnboardingInfo          field.Field  // Onboarding Information
 	Prompt                  field.Field  // Agent Prompt Configuration

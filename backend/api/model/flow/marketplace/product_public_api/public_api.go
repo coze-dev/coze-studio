@@ -3,26 +3,26 @@
 package product_public_api
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/marketplace_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_common"
 	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/marketplace_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_common"
 )
 
 type PluginAuthMode int64
 
 const (
-	// 不需要授权
+	// No authorization required.
 	PluginAuthMode_NoAuth PluginAuthMode = 0
-	// 需要授权，但无授权配置
+	// Authorization required, but no authorization configuration
 	PluginAuthMode_Required PluginAuthMode = 1
-	// 需要授权，且已经配置
+	// Authorization is required and has been configured
 	PluginAuthMode_Configured PluginAuthMode = 2
-	// 需要授权，但授权配置可能是用户级别，可由用户自己配置
+	// Authorization is required, but the authorization configuration may be user-level and can be configured by the user himself
 	PluginAuthMode_Supported PluginAuthMode = 3
 )
 
@@ -1046,32 +1046,32 @@ type GetProductListRequest struct {
 	SortType   product_common.SortType           `thrift:"SortType,3,required" form:"sort_type,required" json:"sort_type,required"`
 	PageNum    int32                             `thrift:"PageNum,4,required" form:"page_num,required" json:"page_num,required"`
 	PageSize   int32                             `thrift:"PageSize,5,required" form:"page_size,required" json:"page_size,required"`
-	// 不为空则搜索
+	// non-empty search
 	Keyword *string `thrift:"Keyword,6,optional" form:"keyword" json:"keyword,omitempty"`
-	// 公开方式：1-开源；2-闭源                                                                                    , // 公开方式
+	// Open mode: 1-open source; 2-closed source,//open mode
 	PublishMode *product_common.ProductPublishMode `thrift:"PublishMode,7,optional" form:"publish_mode" json:"publish_mode,omitempty"`
-	// 发布渠道
+	// publish platforms
 	PublishPlatformIDs []int64 `thrift:"PublishPlatformIDs,8,optional" form:"PublishPlatformIDs" json:"PublishPlatformIDs,string,omitempty" query:"PublishPlatformIDs"`
-	// 列表页 tab; 1-运营推荐
+	// List tab; 1 - Operational recommendations
 	Source *product_common.ProductListSource `thrift:"Source,9,optional" form:"source" json:"source,omitempty"`
-	// 个性化推荐场景, 传入当前的实体信息, 获取推荐的商品
+	// Personalized recommendation scenarios, enter current entity information, and obtain recommended products
 	CurrentEntityType *product_common.ProductEntityType `thrift:"CurrentEntityType,10,optional" form:"current_entity_type" json:"current_entity_type,omitempty"`
-	// 当前实体 ID
+	// Current entity ID
 	CurrentEntityID *int64 `thrift:"CurrentEntityID,11,optional" json:"CurrentEntityID,string,omitempty" query:"current_entity_id"`
-	// 当前实体版本
+	// Current entity version
 	CurrentEntityVersion *int64 `thrift:"CurrentEntityVersion,12,optional" json:"CurrentEntityVersion,string,omitempty" query:"current_entity_version"`
-	// 专题场景
+	// thematic scenario
 	TopicID        *int64  `thrift:"TopicID,13,optional" json:"TopicID,string,omitempty" query:"topic_id"`
 	PreviewTopicID *string `thrift:"PreviewTopicID,14,optional" form:"preview_topic_id" json:"preview_topic_id,omitempty"`
-	// 是否需要过滤出官方商品
+	// Do you need to filter out official products?
 	IsOfficial *bool `thrift:"IsOfficial,15,optional" form:"is_official" json:"is_official,omitempty"`
-	// 是否需要返回额外信息
+	// Do you need to return additional information?
 	NeedExtra *bool `thrift:"NeedExtra,16,optional" form:"need_extra" json:"need_extra,omitempty"`
-	// 商品类型列表, 优先使用该参数，其次使用 EntityType
+	// List of product types, use this parameter first, followed by EntityType
 	EntityTypes []product_common.ProductEntityType `thrift:"EntityTypes,17,optional" form:"entity_types" json:"entity_types,omitempty"`
-	// true = 筛选免费的；false = 筛选付费的；不传则不区分免费和付费
+	// True = filter for free; false = filter for paid; if you don't pass it, you won't distinguish between free and paid.
 	IsFree *bool `thrift:"IsFree,18,optional" form:"is_free" json:"is_free,omitempty"`
-	// 插件类型
+	// plugin type
 	PluginType *product_common.PluginType `thrift:"PluginType,19,optional" form:"plugin_type" json:"plugin_type,omitempty"`
 	ClientIP   *string                    `thrift:"ClientIP,101,optional" header:"Tt-Agw-Client-Ip" json:"ClientIP,omitempty"`
 	Base       *base.Base                 `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -4175,44 +4175,44 @@ func (p *ProductLabel) String() string {
 
 type ProductMetaInfo struct {
 	ID int64 `thrift:"ID,1" form:"id" json:"id,string"`
-	// 商品/模板名称
+	// Product/Template Name
 	Name string `thrift:"Name,2" form:"name" json:"name"`
-	// 素材 ID，由 entity_type 来决定是 bot/plugin 的ID
+	// Creature ID, determined by entity_type is the ID of the bot/plugin
 	EntityID int64 `thrift:"EntityID,3" form:"entity_id" json:"entity_id,string"`
-	// 商品素材类型
+	// Product material type
 	EntityType product_common.ProductEntityType `thrift:"EntityType,4" form:"entity_type" json:"entity_type"`
-	// 商品/模板头像
+	// Product/template avatar
 	IconURL string `thrift:"IconURL,5" form:"icon_url" json:"icon_url"`
-	// 热度：模板热度=复制量（用于卡片展示/排序）；商品热度=不同商品有独立的计算逻辑（仅用于排序）—— heat的计算有一定延迟
+	// Heat: Template heat = copy volume (used for card display/sorting); product heat = different products have independent calculation logic (only used for sorting) - the calculation of heat has a certain delay
 	Heat          int32 `thrift:"Heat,6" form:"heat" json:"heat"`
 	FavoriteCount int32 `thrift:"FavoriteCount,7" form:"favorite_count" json:"favorite_count"`
-	// 废弃,使用UserInfo代替
+	// Obsolete, use UserInfo instead
 	Seller *SellerInfo `thrift:"Seller,8" form:"seller" json:"seller"`
-	// 商品描述
+	// Product description
 	Description string                       `thrift:"Description,9" form:"description" json:"description"`
 	ListedAt    int64                        `thrift:"ListedAt,10" form:"listed_at" json:"listed_at,string"`
 	Status      product_common.ProductStatus `thrift:"Status,11" form:"status" json:"status"`
-	// 商品/模板分类信息
+	// Product/template classification information
 	Category *ProductCategory `thrift:"Category,12,optional" form:"category" json:"category,omitempty"`
-	// 是否收藏
+	// Whether to collect
 	IsFavorited bool `thrift:"IsFavorited,13" form:"is_favorited" json:"is_favorited"`
 	IsFree      bool `thrift:"IsFree,14" form:"is_free" json:"is_free"`
-	// 模板介绍/插件介绍（目前是富文本格式）
+	// Template introduction/plugin introduction (currently in rich text format)
 	Readme        string                   `thrift:"Readme,15" form:"readme" json:"readme"`
 	EntityVersion *int64                   `thrift:"EntityVersion,16,optional" form:"entity_version" json:"entity_version,string,omitempty"`
 	Labels        []*ProductLabel          `thrift:"Labels,17,optional" form:"labels" json:"labels,omitempty"`
 	UserInfo      *product_common.UserInfo `thrift:"UserInfo,18" form:"user_info" json:"user_info"`
 	MediumIconURL string                   `thrift:"MediumIconURL,19" form:"medium_icon_url" json:"medium_icon_url"`
 	OriginIconURL string                   `thrift:"OriginIconURL,20" form:"origin_icon_url" json:"origin_icon_url"`
-	// 模板封面
+	// Template cover
 	Covers []*product_common.ImageInfo `thrift:"Covers,21,optional" form:"covers" json:"covers,omitempty"`
-	// 是否专业版特供
+	// Is the professional version specially available?
 	IsProfessional *bool `thrift:"IsProfessional,22,optional" form:"is_professional" json:"is_professional,omitempty"`
-	// 是否为模板
+	// Is it a template?
 	IsTemplate bool `thrift:"IsTemplate,23" form:"is_template" json:"is_template"`
-	// 是否官方商品
+	// Is it an official product?
 	IsOfficial bool `thrift:"IsOfficial,24" form:"is_official" json:"is_official"`
-	// 价格，当前只有模板有
+	// Price, currently only available in the template.
 	Price *marketplace_common.Price `thrift:"Price,25,optional" form:"price" json:"price,omitempty"`
 }
 
@@ -5520,9 +5520,9 @@ func (p *ProductMetaInfo) String() string {
 }
 
 type UserBehaviorInfo struct {
-	// 用户主页需要返回最近浏览/使用商品的时间
+	// The user homepage needs to return the most recently viewed/used product time.
 	ViewedAt *int64 `thrift:"ViewedAt,1,optional" form:"viewed_at" json:"viewed_at,string,omitempty"`
-	// 最近使用时间戳
+	// Recently used timestamp
 	UsedAt *int64 `thrift:"UsedAt,2,optional" form:"used_at" json:"used_at,string,omitempty"`
 }
 
@@ -5731,18 +5731,18 @@ type PluginExtraInfo struct {
 	Tools         []*PluginToolInfo `thrift:"Tools,1,optional" form:"tools" json:"tools,omitempty"`
 	TotalAPICount int32             `thrift:"TotalAPICount,2" form:"total_api_count" json:"total_api_count"`
 	BotsUseCount  int32             `thrift:"BotsUseCount,3" form:"bots_use_count" json:"bots_use_count"`
-	// 是否有隐私声明, 目前只有 PublicGetProductDetail 会取数据
+	// Is there a privacy statement, currently only PublicGetProductDetail will take the data
 	HasPrivacyStatement *bool `thrift:"HasPrivacyStatement,4,optional" form:"has_private_statement" json:"has_private_statement,omitempty"`
-	// 隐私声明, 目前只有 PublicGetProductDetail 会取数据
+	// Privacy statement, currently only PublicGetProductDetail will access data
 	PrivacyStatement       *string `thrift:"PrivacyStatement,5,optional" form:"private_statement" json:"private_statement,omitempty"`
 	AssociatedBotsUseCount int32   `thrift:"AssociatedBotsUseCount,6" form:"associated_bots_use_count" json:"associated_bots_use_count"`
 	IsPremium              bool    `thrift:"IsPremium,7" form:"is_premium" json:"is_premium"`
 	IsOfficial             bool    `thrift:"IsOfficial,8" form:"is_official" json:"is_official"`
-	// 调用量
+	// call amount
 	CallAmount *int32 `thrift:"CallAmount,9,optional" form:"call_amount" json:"call_amount,omitempty"`
-	// 成功率
+	// success rate
 	SuccessRate *float64 `thrift:"SuccessRate,10,optional" form:"success_rate" json:"success_rate,omitempty"`
-	// 平均执行时长
+	// average execution time
 	AvgExecTime   *float64                   `thrift:"AvgExecTime,11,optional" form:"avg_exec_time" json:"avg_exec_time,omitempty"`
 	IsDefaultIcon *bool                      `thrift:"IsDefaultIcon,12,optional" form:"is_default_icon" json:"is_default_icon,omitempty"`
 	SpaceID       *int64                     `thrift:"SpaceID,13,optional" form:"space_id" json:"space_id,string,omitempty"`
@@ -7096,7 +7096,7 @@ func (p *ToolParameter) String() string {
 
 type CardInfo struct {
 	CardURL string `thrift:"CardURL,1" form:"card_url" json:"card_url"`
-	// 以下只有详情页返回
+	// Only the details page returns
 	CardID         int64  `thrift:"CardID,2" form:"card_id" json:"card_id,string"`
 	MappingRule    string `thrift:"MappingRule,3" form:"MappingRule" json:"MappingRule" query:"MappingRule"`
 	MaxDisplayRows int64  `thrift:"MaxDisplayRows,4" form:"max_display_rows" json:"max_display_rows,string"`
@@ -7605,15 +7605,15 @@ type PluginToolInfo struct {
 	Parameters  []*ToolParameter   `thrift:"Parameters,4,optional" form:"parameters" json:"parameters,omitempty"`
 	CardInfo    *CardInfo          `thrift:"CardInfo,5,optional" form:"card_info" json:"card_info,omitempty"`
 	Example     *PluginToolExample `thrift:"Example,6,optional" form:"example" json:"example,omitempty"`
-	// 调用量
+	// call amount
 	CallAmount *int32 `thrift:"CallAmount,7,optional" form:"call_amount" json:"call_amount,omitempty"`
-	// 成功率
+	// success rate
 	SuccessRate *float64 `thrift:"SuccessRate,8,optional" form:"success_rate" json:"success_rate,omitempty"`
-	// 平均执行时长
+	// average execution time
 	AvgExecTime *float64 `thrift:"AvgExecTime,9,optional" form:"avg_exec_time" json:"avg_exec_time,omitempty"`
-	// tool 被bot引用数
+	// Number of tool bot references
 	BotsUseCount *int32 `thrift:"BotsUseCount,10,optional" form:"bots_use_count" json:"bots_use_count,omitempty"`
-	// 运行模式
+	// operating mode
 	RunMode *PluginRunMode `thrift:"RunMode,11,optional" form:"run_mode" json:"run_mode,omitempty"`
 }
 
@@ -9347,9 +9347,9 @@ func (p *BotVoiceInfo) String() string {
 }
 
 type UserQueryCollectConf struct {
-	// bot用户query收集配置
+	// Bot user query collection configuration
 	IsCollected bool `thrift:"IsCollected,1" form:"is_collected" json:"is_collected"`
-	// 隐私协议链接
+	// Privacy Policy Link
 	PrivatePolicy string `thrift:"PrivatePolicy,2" form:"private_policy" json:"private_policy"`
 }
 
@@ -9533,39 +9533,39 @@ func (p *UserQueryCollectConf) String() string {
 }
 
 type BotConfig struct {
-	// 模型
+	// model
 	Models []*ProductMaterial `thrift:"Models,1,optional" form:"models" json:"models,omitempty"`
-	// 插件
+	// plugin
 	Plugins []*ProductMaterial `thrift:"Plugins,2,optional" form:"plugins" json:"plugins,omitempty"`
-	// 知识库
+	// Knowledge Base
 	Knowledges []*ProductMaterial `thrift:"Knowledges,3,optional" form:"knowledges" json:"knowledges,omitempty"`
-	// 工作流
+	// Workflow
 	Workflows []*ProductMaterial `thrift:"Workflows,4,optional" form:"workflows" json:"workflows,omitempty"`
-	// 私有插件数量
+	// number of private plugins
 	PrivatePluginsCount *int32 `thrift:"PrivatePluginsCount,5,optional" form:"private_plugins_count" json:"private_plugins_count,omitempty"`
-	// 私有知识库数量
+	// Number of private repositories
 	PrivateKnowledgesCount *int32 `thrift:"PrivateKnowledgesCount,6,optional" form:"private_knowledges_count" json:"private_knowledges_count,omitempty"`
-	// 私有工作流数量
+	// number of private workflows
 	PrivateWorkflowsCount *int32 `thrift:"PrivateWorkflowsCount,7,optional" form:"private_workflows_count" json:"private_workflows_count,omitempty"`
-	// 判断 multiagent 是否有 bot 节点
+	// Determine if the multiagent has a bot node
 	HasBotAgent *bool `thrift:"HasBotAgent,8,optional" form:"has_bot_agent" json:"has_bot_agent,omitempty"`
-	// bot 配置的声音列表
+	// List of sounds configured by bot
 	BotVoices []*BotVoiceInfo `thrift:"BotVoices,9,optional" form:"bot_voices" json:"bot_voices,omitempty"`
-	// 所有插件数量
+	// Number of all plugins
 	TotalPluginsCount *int32 `thrift:"TotalPluginsCount,10,optional" form:"total_plugins_count" json:"total_plugins_count,omitempty"`
-	// 所有知识库数量
+	// Number of all knowledge bases
 	TotalKnowledgesCount *int32 `thrift:"TotalKnowledgesCount,11,optional" form:"total_knowledges_count" json:"total_knowledges_count,omitempty"`
-	// 所有工作流数量
+	// Number of all workflows
 	TotalWorkflowsCount *int32 `thrift:"TotalWorkflowsCount,12,optional" form:"total_workflows_count" json:"total_workflows_count,omitempty"`
-	// 时间胶囊模式
+	// Time Capsule Mode
 	TimeCapsuleMode *TimeCapsuleMode `thrift:"TimeCapsuleMode,13,optional" form:"time_capsule_mode" json:"time_capsule_mode,omitempty"`
-	// 文件盒模式
+	// File box mode
 	FileboxMode *FileboxInfoMode `thrift:"FileboxMode,14,optional" form:"filebox_mode" json:"filebox_mode,omitempty"`
-	// 私有图片工作流数量
+	// Number of private image workflows
 	PrivateImageWorkflowCount *int32 `thrift:"PrivateImageWorkflowCount,15,optional" form:"private_image_workflow_count" json:"private_image_workflow_count,omitempty"`
-	// 用户qeury收集配置
+	// User qeury collection configuration
 	UserQueryCollectConf *UserQueryCollectConf `thrift:"UserQueryCollectConf,16,optional" form:"user_query_collect_conf" json:"user_query_collect_conf,omitempty"`
-	// 是否关闭语音通话（默认是打开）
+	// Whether to turn off voice calls (the default is on)
 	IsCloseVoiceCall *bool `thrift:"IsCloseVoiceCall,17,optional" form:"is_close_voice_call" json:"is_close_voice_call,omitempty"`
 }
 
@@ -10694,7 +10694,7 @@ func (p *BotConfig) String() string {
 
 }
 
-// 消息涉及的bot信息,在home分享场景,消息属于多个bot
+// The bot information involved in the message, sharing the scene in the home, the message belongs to multiple bots
 type ConversationRelateBot struct {
 	ID          int64  `thrift:"ID,1" form:"id" json:"id,string"`
 	Name        string `thrift:"Name,2" form:"name" json:"name"`
@@ -10969,7 +10969,7 @@ func (p *ConversationRelateBot) String() string {
 
 }
 
-// 消息涉及的user信息,在home分享场景,消息属于多个user
+// The user information involved in the message, sharing the scene in the home, the message belongs to multiple users
 type ConversationRelateUser struct {
 	UserInfo *product_common.UserInfo `thrift:"UserInfo,1,optional" form:"user_info" json:"user_info,omitempty"`
 }
@@ -11118,21 +11118,21 @@ func (p *ConversationRelateUser) String() string {
 }
 
 type Conversation struct {
-	// 对话示例
+	// conversation example
 	Snippets []string `thrift:"Snippets,1,optional" form:"snippets" json:"snippets,omitempty"`
-	// 对话标题
+	// conversation title
 	Title *string `thrift:"Title,2,optional" form:"title" json:"title,omitempty"`
-	// 对话ID，idGen生成
+	// Conversation ID, generated by idGen
 	ID *int64 `thrift:"ID,3,optional" form:"id" json:"id,string,omitempty"`
-	// 是否需要生成对话
+	// Do you need to generate a conversation?
 	GenTitle *bool `thrift:"GenTitle,4,optional" form:"gen_title" json:"gen_title,omitempty"`
-	// 对话审核状态
+	// conversation moderation status
 	AuditStatus *product_common.AuditStatus `thrift:"AuditStatus,5,optional" form:"audit_status" json:"audit_status,omitempty"`
-	// 开场白
+	// opening statement
 	OpeningDialog *product_common.OpeningDialog `thrift:"OpeningDialog,6,optional" form:"opening_dialog" json:"opening_dialog,omitempty"`
-	// 消息涉及的bot信息,key bot_id
+	// The bot information involved in the message, key bot_id
 	RelateBots map[string]*ConversationRelateBot `thrift:"RelateBots,7,optional" form:"relate_bots" json:"relate_bots,omitempty"`
-	// 消息涉及的user信息,key user_id
+	// The user information involved in the message, key user_id
 	RelateUsers map[string]*ConversationRelateUser `thrift:"RelateUsers,8,optional" form:"relate_users" json:"relate_users,omitempty"`
 }
 
@@ -11744,25 +11744,25 @@ func (p *Conversation) String() string {
 }
 
 type BotExtraInfo struct {
-	// 发布渠道
+	// publish platforms
 	PublishPlatforms []*BotPublishPlatform `thrift:"PublishPlatforms,1" form:"publish_platforms" json:"publish_platforms"`
-	// 用户数
+	// user count
 	UserCount int32 `thrift:"UserCount,2" form:"user_count" json:"user_count"`
-	// 公开方式
+	// public method
 	PublishMode product_common.ProductPublishMode `thrift:"PublishMode,3" form:"publish_mode" json:"publish_mode"`
-	// 详情页特有
+	// Details page unique
 	ConversationSnippets [][]string `thrift:"ConversationSnippets,4,optional" form:"conversation_snippets" json:"conversation_snippets,omitempty"`
-	// 配置
+	// configuration
 	Config *BotConfig `thrift:"Config,5,optional" form:"config" json:"config,omitempty"`
-	// 白名单
+	// whitelist
 	IsInhouseUser *bool `thrift:"IsInhouseUser,6,optional" form:"is_inhouse_user" json:"is_inhouse_user,omitempty"`
-	// 复制创建 bot 数量
+	// Number of copy-created bots
 	DuplicateBotCount *int32 `thrift:"DuplicateBotCount,7,optional" form:"duplicate_bot_count" json:"duplicate_bot_count,omitempty"`
-	// 分享对话
+	// Share the conversation
 	Conversations []*Conversation `thrift:"Conversations,8,optional" form:"conversations" json:"conversations,omitempty"`
-	// 与 Bot 聊天的对话数
+	// Number of conversations with Bot
 	ChatConversationCount *int64 `thrift:"ChatConversationCount,9,optional" form:"chat_conversation_count" json:"chat_conversation_count,string,omitempty"`
-	// 关联商品数
+	// number of related products
 	RelatedProductCount *int64 `thrift:"RelatedProductCount,10,optional" form:"related_product_count" json:"related_product_count,string,omitempty"`
 }
 
@@ -12457,22 +12457,22 @@ type WorkflowParameter struct {
 	IsRequired    bool                     `thrift:"IsRequired,3" form:"is_required" json:"is_required"`
 	InputType     product_common.InputType `thrift:"InputType,4" form:"input_type" json:"input_type"`
 	SubParameters []*WorkflowParameter     `thrift:"SubParameters,5" form:"sub_parameters" json:"sub_parameters"`
-	// 如果Type是数组，则有subtype
+	// If Type is an array, there is a subtype
 	SubType product_common.InputType `thrift:"SubType,6" form:"sub_type" json:"sub_type"`
-	// 如果入参是用户手输 就放这里
+	// If the imported parameter is the user's hand input, put it here
 	Value      *string                               `thrift:"Value,7,optional" form:"value" json:"value,omitempty"`
 	Format     *product_common.PluginParamTypeFormat `thrift:"Format,8,optional" form:"format" json:"format,omitempty"`
 	FromNodeId *string                               `thrift:"FromNodeId,9,optional" form:"from_node_id" json:"from_node_id,omitempty"`
 	FromOutput []string                              `thrift:"FromOutput,10,optional" form:"from_output" json:"from_output,omitempty"`
-	// InputType (+ AssistType) 定义一个变量的最终类型，仅需透传
+	// InputType (+ AssistType) defines the final type of a variable, which only needs to be passed through
 	AssistType *int64 `thrift:"AssistType,11,optional" form:"assist_type" json:"assist_type,omitempty"`
-	// 展示名称（ store 独有的，用于详情页 GUI 展示参数）
+	// Display name (unique to the store, used for details page GUI display parameters)
 	ShowName *string `thrift:"ShowName,12,optional" form:"show_name" json:"show_name,omitempty"`
-	// 如果InputType是数组，则有subassisttype
+	// If the InputType is an array, there is a subassistant type
 	SubAssistType *int64 `thrift:"SubAssistType,13,optional" form:"sub_assist_type" json:"sub_assist_type,omitempty"`
-	// 组件配置，由前端解析并渲染
+	// Component configuration, parsed and rendered by the front end
 	ComponentConfig *string `thrift:"ComponentConfig,14,optional" form:"component_config" json:"component_config,omitempty"`
-	// 组件配置类型，前端展示需要
+	// Component configuration type, required for front-end display
 	ComponentType *string `thrift:"ComponentType,15,optional" form:"component_type" json:"component_type,omitempty"`
 }
 
@@ -13368,9 +13368,9 @@ func (p *WorkflowParameter) String() string {
 }
 
 type WorkflowTerminatePlan struct {
-	// 对应 workflow 结束节点的回答模式：1-返回变量，由Bot生成回答；2-使用设定的内容直接回答
+	// The answer mode corresponding to the end node of the workflow: 1 - Return the variable, and the Bot generates the answer; 2 - Use the set content to answer directly
 	TerminatePlanType int32 `thrift:"TerminatePlanType,1" form:"terminate_plan_type" json:"terminate_plan_type"`
-	// 对应 terminate_plan_type = 2 的场景配置的返回内容
+	// Return content of scene configuration corresponding to terminate_plan_type = 2
 	Content string `thrift:"Content,2" form:"content" json:"content"`
 }
 
@@ -13856,9 +13856,9 @@ type WorkflowNodeInfo struct {
 	NodeID    string                          `thrift:"NodeID,1" form:"node_id" json:"node_id"`
 	NodeType  product_common.WorkflowNodeType `thrift:"NodeType,2" form:"node_type" json:"node_type"`
 	NodeParam *WorkflowNodeParam              `thrift:"NodeParam,3,optional" form:"node_param" json:"node_param,omitempty"`
-	// 节点icon
+	// Node icon
 	NodeIconURL string `thrift:"NodeIconURL,4" form:"node_icon_url" json:"node_icon_url"`
-	// 展示名称（ store 独有的，用于详情页 GUI 展示消息节点的名称）
+	// Presentation name (unique to the store, the name used for the details page GUI display message node)
 	ShowName *string `thrift:"ShowName,5,optional" form:"show_name" json:"show_name,omitempty"`
 }
 
@@ -14193,7 +14193,7 @@ func (p *WorkflowNodeInfo) String() string {
 }
 
 type WorkflowEntity struct {
-	// 商品ID
+	// Product ID
 	ProductID     int64                            `thrift:"ProductID,1" form:"product_id" json:"product_id,string"`
 	Name          string                           `thrift:"Name,2" form:"name" json:"name"`
 	EntityID      int64                            `thrift:"EntityID,3" form:"entity_id" json:"entity_id,string"`
@@ -14203,13 +14203,13 @@ type WorkflowEntity struct {
 	EntityName    string                           `thrift:"EntityName,7" form:"entity_name" json:"entity_name"`
 	Readme        string                           `thrift:"Readme,8" form:"readme" json:"readme"`
 	Category      *ProductCategory                 `thrift:"Category,9" form:"category" json:"category"`
-	// 推荐分类                        ,
+	// Recommended categories,
 	RecommendedCategory *ProductCategory    `thrift:"RecommendedCategory,10,optional" form:"recommended_category" json:"recommended_category,omitempty"`
 	Nodes               []*WorkflowNodeInfo `thrift:"Nodes,11,optional" form:"nodes" json:"nodes,omitempty"`
 	Desc                string              `thrift:"Desc,12" form:"desc" json:"desc"`
-	// 入参 图片icon
+	// Imported parameters Picture icon
 	CaseInputIconURL *string `thrift:"CaseInputIconURL,13,optional" form:"case_input_icon_url" json:"case_input_icon_url,omitempty"`
-	// 出参 图片icon
+	// Exported parameters Image icon
 	CaseOutputIconURL     *string `thrift:"CaseOutputIconURL,14,optional" form:"case_output_icon_url" json:"case_output_icon_url,omitempty"`
 	LatestPublishCommitID *string `thrift:"LatestPublishCommitID,15,optional" form:"latest_publish_commit_id" json:"latest_publish_commit_id,omitempty"`
 }
@@ -15044,10 +15044,10 @@ func (p *WorkflowEntity) String() string {
 }
 
 type WorkflowGUIConfig struct {
-	// 用于将 workflow 的输入/输出/中间消息节点节点转为用户可视化配置
+	// Used to convert the input/output/intermediate message node of a workflow into a user visual configuration
 	StartNode *WorkflowNodeInfo `thrift:"StartNode,1" form:"start_node" json:"start_node"`
 	EndNode   *WorkflowNodeInfo `thrift:"EndNode,2" form:"end_node" json:"end_node"`
-	// 消息节点会输出中间过程，也需要展示
+	// The message node will output the intermediate process, which also needs to be displayed.
 	MessageNodes []*WorkflowNodeInfo `thrift:"MessageNodes,3,optional" form:"message_nodes" json:"message_nodes,omitempty"`
 }
 
@@ -15320,25 +15320,25 @@ func (p *WorkflowGUIConfig) String() string {
 type WorkflowExtraInfo struct {
 	RelatedWorkflows []*WorkflowEntity `thrift:"RelatedWorkflows,1" form:"related_workflows" json:"related_workflows"`
 	DuplicateCount   *int32            `thrift:"DuplicateCount,2,optional" form:"duplicate_count" json:"duplicate_count,omitempty"`
-	// workflow画布信息
+	// Workflow canvas information
 	WorkflowSchema *string `thrift:"WorkflowSchema,3,optional" form:"workflow_schema" json:"workflow_schema,omitempty"`
 	// /api/workflowV2/query  schema_json
 	RecommendedCategory *ProductCategory    `thrift:"RecommendedCategory,4,optional" form:"recommended_category" json:"recommended_category,omitempty"`
 	Nodes               []*WorkflowNodeInfo `thrift:"Nodes,5,optional" form:"nodes" json:"nodes,omitempty"`
 	StartNode           *WorkflowNodeInfo   `thrift:"StartNode,6,optional" form:"start_node" json:"start_node,omitempty"`
-	// 实体名称(用于展示)
+	// Entity name (for presentation)
 	EntityName *string `thrift:"EntityName,7,optional" form:"entity_name" json:"entity_name,omitempty"`
-	// 用例图入参
+	// Use case diagrams imported parameters
 	CaseInputIconURL *string `thrift:"CaseInputIconURL,8,optional" form:"case_input_icon_url" json:"case_input_icon_url,omitempty"`
-	// 用例图出参
+	// Use case diagram exported parameters
 	CaseOutputIconURL *string `thrift:"CaseOutputIconURL,9,optional" form:"case_output_icon_url" json:"case_output_icon_url,omitempty"`
-	// 案例执行ID
+	// case execution ID
 	CaseExecuteID         *int64  `thrift:"CaseExecuteID,10,optional" form:"case_execute_id" json:"case_execute_id,string,omitempty"`
 	HoverText             *string `thrift:"HoverText,11,optional" form:"hover_text" json:"hover_text,omitempty"`
 	LatestPublishCommitID *string `thrift:"LatestPublishCommitID,12,optional" form:"latest_publish_commit_id" json:"latest_publish_commit_id,omitempty"`
-	// 试运行次数，从数仓取
+	// Practice running times, take from the number of warehouses
 	UsedCount *int32 `thrift:"UsedCount,13,optional" form:"used_count" json:"used_count,omitempty"`
-	// 用于将 workflow 的输入/输出/中间消息节点节点转为用户可视化配置
+	// Used to convert the input/output/intermediate message node of a workflow into a user visual configuration
 	GUIConfig *WorkflowGUIConfig `thrift:"GUIConfig,14,optional" form:"gui_config" json:"gui_config,omitempty"`
 }
 
@@ -16453,13 +16453,13 @@ func (p *SocialScenePlayerInfo) String() string {
 }
 
 type SocialSceneExtraInfo struct {
-	// 角色
+	// role
 	Players []*SocialScenePlayerInfo `thrift:"Players,1,optional" form:"players" json:"players,omitempty"`
-	// 使用过的人数
+	// Number of people used
 	UsedCount int64 `thrift:"UsedCount,2" form:"used_count" json:"used_count,string"`
-	// 开始过的次数
+	// number of times started
 	StartedCount int64 `thrift:"StartedCount,3" form:"started_count" json:"started_count,string"`
-	// 开闭源
+	// publish_mode
 	PublishMode product_common.ProductPublishMode `thrift:"PublishMode,4" form:"publish_mode" json:"publish_mode"`
 }
 
@@ -16762,13 +16762,13 @@ func (p *SocialSceneExtraInfo) String() string {
 }
 
 type ProjectConfig struct {
-	// 插件数量
+	// number of plugins
 	PluginCount int32 `thrift:"PluginCount,1" form:"plugin_count" json:"plugin_count"`
-	// 工作流数量
+	// number of workflows
 	WorkflowCount int32 `thrift:"WorkflowCount,2" form:"workflow_count" json:"workflow_count"`
-	// 知识库数量
+	// Number of knowledge bases
 	KnowledgeCount int32 `thrift:"KnowledgeCount,3" form:"knowledge_count" json:"knowledge_count"`
-	// 数据库数量
+	// Number of databases
 	DatabaseCount int32 `thrift:"DatabaseCount,4" form:"database_count" json:"database_count"`
 }
 
@@ -17040,20 +17040,20 @@ func (p *ProjectConfig) String() string {
 }
 
 type ProjectExtraInfo struct {
-	// Project 上架为模板前生成一个模板副本，使用或者复制模板，需要用 TemplateProjectID 和 TemplateProjectVersion
+	// Generate a copy of the template before Project is put on the shelves. To use or copy the template, you need to use TemplateProjectID and TemplateProjectVersion
 	TemplateProjectID      int64 `thrift:"TemplateProjectID,1" form:"template_project_id" json:"template_project_id,string"`
 	TemplateProjectVersion int64 `thrift:"TemplateProjectVersion,2" form:"template_project_version" json:"template_project_version,string"`
-	// Project 绑定的 UI 支持的预览类型
+	// Project-bound UI supported preview types
 	PreviewTypes []product_common.UIPreviewType `thrift:"PreviewTypes,3" form:"preview_types" json:"preview_types"`
-	// 用户数
+	// user count
 	UserCount int32 `thrift:"UserCount,4" form:"user_count" json:"user_count"`
-	// 运行数
+	// number of runs
 	ExecuteCount int32 `thrift:"ExecuteCount,5" form:"execute_count" json:"execute_count"`
-	// 发布渠道
+	// publish platforms
 	PublishPlatforms []*BotPublishPlatform `thrift:"PublishPlatforms,6" form:"publish_platforms" json:"publish_platforms"`
-	// 近实时复制量，从数仓接口获取（复制 - 上报埋点 - 数仓计算落库）
+	// Near real-time copy volume, obtained from the data warehouse interface (copy-report event tracking-data warehouse calculation drop library)
 	DupliacateCount int32 `thrift:"DupliacateCount,7" form:"duplicate_count" json:"duplicate_count"`
-	// 配置
+	// configuration
 	Config *ProjectConfig `thrift:"Config,8,optional" form:"config" json:"config,omitempty"`
 }
 
@@ -17552,7 +17552,7 @@ type GetProductDetailRequest struct {
 	ProductID  *int64                            `thrift:"ProductID,1,optional" json:"ProductID,string,omitempty" query:"product_id"`
 	EntityType *product_common.ProductEntityType `thrift:"EntityType,2,optional" form:"entity_type" json:"entity_type,omitempty"`
 	EntityID   *int64                            `thrift:"EntityID,3,optional" json:"EntityID,string,omitempty" query:"entity_id"`
-	// 是否查看最新的审核失败草稿
+	// Whether to check the latest audit failure draft
 	NeedAuditFailed *bool      `thrift:"NeedAuditFailed,4,optional" form:"need_audit_failed" json:"need_audit_failed,omitempty"`
 	ClientIP        *string    `thrift:"ClientIP,101,optional" header:"Tt-Agw-Client-Ip" json:"ClientIP,omitempty"`
 	Base            *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -18511,7 +18511,7 @@ func (p *Price) String() string {
 
 type SKUInfo struct {
 	ID int64 `thrift:"ID,1" form:"id" json:"id,string"`
-	// 待废弃
+	// to be abandoned
 	Price           []*Price                       `thrift:"Price,2" form:"price" json:"price"`
 	Description     string                         `thrift:"Description,3" form:"description" json:"description"`
 	PriceV2         []*marketplace_common.Price    `thrift:"PriceV2,4" form:"price_v2" json:"price_v2"`
@@ -19313,7 +19313,7 @@ func (p *SellAttr) String() string {
 type SellInfo struct {
 	SKUs map[int64]*SKUInfo `thrift:"SKUs,1" form:"skus" json:"skus,string"`
 	Attr []*SellAttr        `thrift:"Attr,2" form:"attr" json:"attr"`
-	// Key 是 attrkey:attrvalue 路径，value 是 skuID
+	// Key is attrkey: attrvalue path, value is skuID
 	SKUAttrRef map[string]int64 `thrift:"SKUAttrRef,3" form:"sku_attr_ref" json:"sku_attr_ref,string"`
 }
 
@@ -19623,12 +19623,12 @@ type Topic struct {
 	Name        string `thrift:"Name,2" form:"name" json:"name"`
 	Description string `thrift:"Description,3" form:"description" json:"description"`
 	BannerURL   string `thrift:"BannerURL,4" form:"banner_url" json:"banner_url"`
-	// 背景小图，前端优先加载
+	// Small background image, front-end priority loading
 	BannerURLSmall string `thrift:"BannerURLSmall,5" form:"banner_url_small" json:"banner_url_small"`
 	Reason         string `thrift:"Reason,6" form:"reason" json:"reason"`
-	// 运营提供的专题介绍文档，用户可见
+	// The presentation document provided by the operation is visible to users
 	IntroductionURL string `thrift:"IntroductionURL,7" form:"introduction_url" json:"introduction_url"`
-	// 用户是否收藏专题
+	// Does the user collect the topic?
 	IsFavorite bool `thrift:"IsFavorite,8" form:"is_favorite" json:"is_favorite"`
 }
 
@@ -20076,7 +20076,7 @@ func (p *Topic) String() string {
 }
 
 type ProductDataIndicator struct {
-	// 数据分析指标，来源数仓，比如模板购买量、复制量等
+	// Data analytics metrics, source number, such as template purchases, replicas, etc
 	PurchaseCount *int32 `thrift:"PurchaseCount,1,optional" form:"purchase_count" json:"purchase_count,omitempty"`
 }
 
@@ -20227,17 +20227,17 @@ func (p *ProductDataIndicator) String() string {
 }
 
 type GetProductDetailData struct {
-	// 下架的商品只返回非 optional 字段
+	// Products removed from the shelves only return non-optional fields
 	MetaInfo *ProductMetaInfo `thrift:"MetaInfo,1,required" form:"meta_info,required" json:"meta_info,required"`
-	// 用以区分主/客态
+	// To distinguish between host and guest states
 	IsOwner bool `thrift:"IsOwner,2,required" form:"is_owner,required" json:"is_owner,required"`
-	// 审核状态，主态下返回需要关注，如果主态且审核中，需要展示审核中状态
+	// Audit status, return in the main state, you need to pay attention. If the main state is under review, you need to show the status under review.
 	AuditStatus product_common.ProductDraftStatus `thrift:"AuditStatus,3" form:"audit_status" json:"audit_status"`
 	SellInfo    *SellInfo                         `thrift:"SellInfo,4,optional" form:"sell_info" json:"sell_info,omitempty"`
 	SpaceID     *int64                            `thrift:"SpaceID,5,optional" form:"space_id" json:"space_id,string,omitempty"`
-	// 详情页返回
+	// Details page Back
 	Topic *Topic `thrift:"Topic,6,optional" form:"topic" json:"topic,omitempty"`
-	// 详情页返回
+	// Details page Back
 	CanDuplicate      *bool                             `thrift:"CanDuplicate,7,optional" form:"can_duplicate" json:"can_duplicate,omitempty"`
 	CommercialSetting *product_common.CommercialSetting `thrift:"CommercialSetting,8,optional" form:"commercial_setting" json:"commercial_setting,omitempty"`
 	PluginExtra       *PluginExtraInfo                  `thrift:"PluginExtra,20,optional" form:"plugin_extra" json:"plugin_extra,omitempty"`
@@ -21071,23 +21071,23 @@ func (p *GetProductDetailData) String() string {
 }
 
 type GetUserFavoriteListV2Request struct {
-	// 第一页不传，后续调用时传上一次返回的cursor_id
+	// The first page is not passed, and the last returned cursor_id is passed when subsequent calls are made
 	CursorID   *string                           `thrift:"CursorID,1,optional" json:"CursorID,omitempty" query:"cursor_id"`
 	PageSize   int32                             `thrift:"PageSize,2,required" json:"PageSize,required" query:"page_size,required"`
 	EntityType *product_common.ProductEntityType `thrift:"EntityType,3,optional" json:"EntityType,omitempty" query:"entity_type"`
 	SortType   product_common.SortType           `thrift:"SortType,4,required" json:"SortType,required" query:"sort_type,required"`
-	// 不为空则搜索
+	// Search keyword,optional
 	Keyword *string `thrift:"Keyword,5,optional" json:"Keyword,omitempty" query:"keyword"`
-	// 列表页 tab
+	// List page tab
 	Source *product_common.FavoriteListSource `thrift:"Source,6,optional" json:"Source,omitempty" query:"source"`
-	// 是否需要查询用户对Bot的触发器配置，为true时，才会返回EntityUserTriggerConfig
+	// Whether you need to query the user's trigger configuration for the Bot, when true, it will return EntityUserTriggerConfig
 	NeedUserTriggerConfig *bool `thrift:"NeedUserTriggerConfig,7,optional" json:"NeedUserTriggerConfig,omitempty" query:"need_user_trigger_config"`
-	// 筛选收藏时间
+	// Filter collection time
 	BeginAt *int64 `thrift:"BeginAt,8,optional" json:"BeginAt,string,omitempty" query:"begin_at"`
-	// 筛选收藏时间
+	// Filter collection time
 	EndAt       *int64                             `thrift:"EndAt,9,optional" json:"EndAt,string,omitempty" query:"end_at"`
 	EntityTypes []product_common.ProductEntityType `thrift:"EntityTypes,10,optional" json:"EntityTypes,omitempty" query:"entity_types"`
-	// 组织ID，企业版想获取用户收藏的所有内容时需传递
+	// Organization ID, Enterprise Edition needs to be passed when you want to get all the content in the user's collection
 	OrganizationID *int64     `thrift:"OrganizationID,11,optional" json:"OrganizationID,omitempty" query:"organization_id"`
 	Base           *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -22164,7 +22164,7 @@ type GetUserFavoriteListDataV2 struct {
 	FavoriteEntities []*product_common.FavoriteEntity `thrift:"FavoriteEntities,1" form:"favorite_entities" json:"favorite_entities"`
 	CursorID         string                           `thrift:"CursorID,2" form:"cursor_id" json:"cursor_id"`
 	HasMore          bool                             `thrift:"HasMore,3" form:"has_more" json:"has_more"`
-	// 用户定时任务配置，对应flow.bot.task服务的TriggerEnabled
+	// User timed task configuration, corresponding to flow.bot TriggerEnabled of the task service
 	EntityUserTriggerConfig map[int64]*UserTriggerConfig `thrift:"EntityUserTriggerConfig,4" form:"entity_user_trigger_config" json:"entity_user_trigger_config"`
 }
 
@@ -23347,9 +23347,9 @@ func (p *DuplicateProductResponse) String() string {
 }
 
 type DuplicateProductData struct {
-	// 复制后的新id
+	// New ID after copy
 	NewEntityID int64 `thrift:"NewEntityID,1" form:"new_entity_id" json:"new_entity_id,string"`
-	// workflow对应的插件id
+	// Plugin ID for workflow
 	NewPluginID *int64 `thrift:"NewPluginID,2,optional" form:"new_plugin_id" json:"new_plugin_id,string,omitempty"`
 }
 

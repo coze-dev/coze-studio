@@ -38,7 +38,7 @@ const (
 	NormalKey  IndexType = "KEY"
 )
 
-// AlterTableAction 定义修改表的动作类型
+// AlterTableAction defines the type of action to modify a table
 type AlterTableAction string
 
 const (
@@ -79,8 +79,8 @@ const (
 type SortDirection string
 
 const (
-	SortDirectionAsc  SortDirection = "ASC"  // 升序
-	SortDirectionDesc SortDirection = "DESC" // 降序
+	SortDirectionAsc  SortDirection = "ASC"  // ascending order
+	SortDirectionDesc SortDirection = "DESC" // descending order
 )
 
 type SQLType int32

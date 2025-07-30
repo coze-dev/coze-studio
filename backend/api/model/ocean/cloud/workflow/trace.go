@@ -3,21 +3,21 @@
 package workflow
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type FrontedTagType int64
 
 const (
-	// 文本
+	// Text
 	FrontedTagType_TEXT FrontedTagType = 0
-	// 时间，用时间戳，单位是毫秒
+	// Time, with timestamp, in milliseconds
 	FrontedTagType_TIME FrontedTagType = 1
-	// 时间间隔，单位是毫秒
+	// Time interval, in milliseconds
 	FrontedTagType_TIME_DURATION FrontedTagType = 2
 )
 
@@ -229,11 +229,11 @@ func (p *TagType) Value() (driver.Value, error) {
 type QueryScene int64
 
 const (
-	// doubao cici 全链路调试台
+	// Doubao cici full link debugging station
 	QueryScene_ALICE_OP QueryScene = 0
-	// doubao cici debug 功能
+	// Doubao cici debugging function
 	QueryScene_DOUBAO_CICI_DEBUG QueryScene = 1
-	// workflow debug 功能
+	// Workflow debugging
 	QueryScene_WORKFLOW_DEBUG QueryScene = 2
 )
 
@@ -321,7 +321,7 @@ func (p *TenantLevel) Value() (driver.Value, error) {
 type InputOutputType int64
 
 const (
-	// 文本类型
+	// Text type
 	InputOutputType_TEXT InputOutputType = 0
 )
 
@@ -1008,9 +1008,9 @@ func (p *FilterTag) String() string {
 }
 
 type ListRootSpansRequest struct {
-	// 单位是毫秒
+	// It's in milliseconds.
 	StartAt int64 `thrift:"StartAt,2,required" json:"start_at" form:"start_at,required" `
-	// 单位是毫秒
+	// It's in milliseconds.
 	EndAt           int64       `thrift:"EndAt,3,required" json:"end_at" form:"end_at,required" `
 	Limit           *int16      `thrift:"Limit,4,optional" json:"limit" form:"limit" `
 	DescByStartTime *bool       `thrift:"DescByStartTime,5,optional" json:"desc_by_start_time" form:"desc_by_start_time" `
@@ -1018,7 +1018,7 @@ type ListRootSpansRequest struct {
 	WorkflowID      string      `thrift:"WorkflowID,7,required" json:"workflow_id" form:"workflow_id,required" `
 	Input           *string     `thrift:"Input,8,optional" json:"input" form:"input" `
 	Status          *SpanStatus `thrift:"Status,9,optional" json:"status" form:"status" `
-	// 正式运行/试运行/节点Debug
+	// Formal run/practice run/Node Debug
 	ExecuteMode *int32     `thrift:"ExecuteMode,10,optional" json:"execute_mode" form:"execute_mode" `
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -1661,9 +1661,9 @@ type Span struct {
 	Type     string `thrift:"Type,7" json:"type" form:"Type" query:"Type"`
 	Name     string `thrift:"Name,8" json:"name" form:"Name" query:"Name"`
 	ParentID string `thrift:"ParentID,9" json:"parent_id" form:"ParentID" query:"ParentID"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	Duration int64 `thrift:"Duration,10" json:"duration" form:"Duration" query:"Duration"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	StartTime  int64       `thrift:"StartTime,11" json:"start_time" form:"StartTime" query:"StartTime"`
 	StatusCode int32       `thrift:"StatusCode,12" json:"status_code" form:"StatusCode" query:"StatusCode"`
 	Tags       []*TraceTag `thrift:"Tags,13" json:"tags" form:"Tags" query:"Tags"`
@@ -2951,9 +2951,9 @@ func (p *ListRootSpansResponse) String() string {
 
 type GetTraceSDKRequest struct {
 	LogID *string `thrift:"LogID,2,optional" json:"log_id" query:"log_id" `
-	// 单位是毫秒
+	// It's in milliseconds.
 	StartAt *int64 `thrift:"StartAt,4,optional" json:"start_at" query:"start_at" `
-	// 单位是毫秒
+	// It's in milliseconds.
 	EndAt      *int64     `thrift:"EndAt,5,optional" json:"end_at" query:"end_at" `
 	WorkflowID *int64     `thrift:"WorkflowID,6,optional" json:"workflow_id" query:"workflow_id" `
 	ExecuteID  *int64     `thrift:"ExecuteID,7,optional" json:"execute_id" query:"execute_id" `
@@ -3579,22 +3579,22 @@ func (p *GetTraceSDKResponse) String() string {
 }
 
 type KeyScene struct {
-	// 场景，如"拆分搜索词"\"搜索"
+	// Scenarios such as "Split search terms"\ "Search"
 	Scene *string `thrift:"Scene,1,optional" json:"scene" form:"Scene" query:"Scene"`
-	// 状态信息
+	// status information
 	StatusMessage *string `thrift:"StatusMessage,2,optional" json:"status_message" form:"StatusMessage" query:"StatusMessage"`
 	System        *string `thrift:"System,3,optional" json:"system" form:"System" query:"System"`
-	// 历史消息
+	// chat history
 	HistoryMessages []*MessageItem `thrift:"HistoryMessages,4,optional" json:"history_messages" form:"HistoryMessages" query:"HistoryMessages"`
-	// 输入
+	// input
 	Input *KeySceneInput `thrift:"Input,5,optional" json:"input" form:"Input" query:"Input"`
-	// 输出
+	// output
 	Output *KeySceneOutput `thrift:"Output,6,optional" json:"output" form:"Output" query:"Output"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	Duration *int64 `thrift:"Duration,7,optional" json:"duration" form:"Duration" query:"Duration"`
-	// 开始时间，用于排序，单位是毫秒
+	// Start time, used for sorting, in milliseconds
 	StartTime *int64 `thrift:"StartTime,8,optional" json:"start_time" form:"start_time" `
-	// 子场景
+	// subscene
 	SubKeyScenes []*KeyScene `thrift:"SubKeyScenes,9,optional" json:"sub_key_scenes" form:"SubKeyScenes" query:"SubKeyScenes"`
 }
 
@@ -4671,9 +4671,9 @@ func (p *KeySceneOutput) String() string {
 }
 
 type TraceSummaryContent struct {
-	// 键
+	// key
 	Key *string `thrift:"Key,1,optional" json:"key" form:"Key" query:"Key"`
-	// 内容
+	// content
 	Content *string `thrift:"Content,2,optional" json:"content" form:"Content" query:"Content"`
 }
 
@@ -4879,9 +4879,9 @@ func (p *TraceSummaryContent) String() string {
 }
 
 type MessageItem struct {
-	// 角色
+	// role
 	Role *string `thrift:"Role,1,optional" json:"role" form:"Role" query:"Role"`
-	// 内容
+	// content
 	Content *string `thrift:"Content,2,optional" json:"content" form:"Content" query:"Content"`
 }
 
@@ -5258,13 +5258,13 @@ func (p *SpanSummary) String() string {
 
 type FrontendTag struct {
 	Key string `thrift:"Key,1,required" json:"key" form:"Key,required" query:"Key,required"`
-	// 多语，如无配置时值沿用 key
+	// Multilingual, if there is no configuration value, use the key
 	KeyAlias *string `thrift:"KeyAlias,2,optional" json:"key_alias" form:"KeyAlias" query:"KeyAlias"`
 	TagType  TagType `thrift:"TagType,3,required" json:"tag_type" form:"TagType,required" query:"TagType,required"`
 	Value    *Value  `thrift:"Value,4,optional" json:"value" form:"Value" query:"Value"`
-	// 前端类型，用于前端处理
+	// Front-end type for front-end processing
 	FrontendTagType *FrontedTagType `thrift:"FrontendTagType,5,optional" json:"frontend_tag_type" form:"FrontendTagType" query:"FrontendTagType"`
-	// 是否可复制
+	// Can it be copied?
 	CanCopy *bool `thrift:"canCopy,6,optional" json:"can_copy" form:"canCopy" query:"canCopy"`
 }
 
@@ -5681,18 +5681,18 @@ func (p *FrontendTag) String() string {
 }
 
 type TraceSummary struct {
-	// 一级 System 的文本
+	// System 1 text
 	System *string `thrift:"System,1,optional" json:"system" form:"System" query:"System"`
-	// 一级历史消息
+	// Level 1 chat history
 	HistoryMessages []*MessageItem `thrift:"HistoryMessages,2,optional" json:"history_messages" form:"HistoryMessages" query:"HistoryMessages"`
 	KeyScenes       []*KeyScene    `thrift:"KeyScenes,3,optional" json:"key_scenes" form:"KeyScenes" query:"KeyScenes"`
-	// 输入
+	// input
 	Input *string `thrift:"Input,4,optional" json:"input" form:"Input" query:"Input"`
-	// 输出
+	// output
 	Output *string `thrift:"Output,5,optional" json:"output" form:"Output" query:"Output"`
-	// 一级当前对话的耗时, 单位是毫秒
+	// The duration of the current conversation, in milliseconds
 	Duration *int64 `thrift:"Duration,6,optional" json:"duration" form:"Duration" query:"Duration"`
-	// 用户ID
+	// user ID
 	UserID *string `thrift:"UserID,7,optional" json:"user_id" form:"UserID" query:"UserID"`
 }
 
@@ -6213,15 +6213,15 @@ func (p *TraceSummary) String() string {
 }
 
 type TraceHeader struct {
-	// 单位是毫秒
+	// It's in milliseconds.
 	Duration *int64 `thrift:"Duration,1,optional" json:"duration" form:"Duration" query:"Duration"`
-	// 输入消耗token数
+	// Enter the number of tokens consumed
 	Tokens     *int32         `thrift:"Tokens,2,optional" form:"Tokens" json:"Tokens,omitempty" query:"Tokens"`
 	StatusCode *int32         `thrift:"StatusCode,3,optional" json:"status_code" form:"StatusCode" query:"StatusCode"`
 	Tags       []*FrontendTag `thrift:"Tags,4,optional" json:"tags" form:"Tags" query:"Tags"`
-	// 消息ID
+	// Message ID
 	MessageID *string `thrift:"MessageID,5,optional" json:"message_id" form:"MessageID" query:"MessageID"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	StartTime *int64 `thrift:"StartTime,6,optional" json:"start_time" form:"StartTime" query:"StartTime"`
 }
 
@@ -7381,25 +7381,25 @@ type TraceFrontendSpan struct {
 	Name      string `thrift:"Name,5" json:"name" form:"Name" query:"Name"`
 	AliasName string `thrift:"AliasName,6" json:"alias_name" form:"AliasName" query:"AliasName"`
 	ParentID  string `thrift:"ParentID,7" json:"parent_id" form:"ParentID" query:"ParentID"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	Duration int64 `thrift:"Duration,8" json:"duration" form:"Duration" query:"Duration"`
-	// 单位是毫秒
+	// It's in milliseconds.
 	StartTime  int64       `thrift:"StartTime,9" json:"start_time" form:"StartTime" query:"StartTime"`
 	StatusCode int32       `thrift:"StatusCode,10" json:"status_code" form:"StatusCode" query:"StatusCode"`
 	Tags       []*TraceTag `thrift:"Tags,11,optional" json:"tags" form:"Tags" query:"Tags"`
-	// 节点详情
+	// node details
 	Summary *SpanSummary     `thrift:"summary,12,optional" json:"summary" form:"summary" query:"summary"`
 	Input   *SpanInputOutput `thrift:"Input,13,optional" json:"input" form:"Input" query:"Input"`
 	Output  *SpanInputOutput `thrift:"Output,14,optional" json:"output" form:"Output" query:"Output"`
-	// 是否是入口节点
+	// Is it an entry node?
 	IsEntry *bool `thrift:"IsEntry,15,optional" json:"is_entry" form:"IsEntry" query:"IsEntry"`
-	// 产品线
+	// product line
 	ProductLine *string `thrift:"ProductLine,16,optional" json:"product_line" form:"ProductLine" query:"ProductLine"`
-	// 是否是关键节点
+	// Is it a key node?
 	IsKeySpan *bool `thrift:"IsKeySpan,17,optional" json:"is_key_span" form:"IsKeySpan" query:"IsKeySpan"`
-	// 节点负责人列表, 邮箱前缀
+	// Node owner list, mailbox prefix
 	OwnerList []string `thrift:"OwnerList,18,optional" json:"owner_list" form:"OwnerList" query:"OwnerList"`
-	// 节点详情文档
+	// Node Details Document
 	RundownDocURL *string `thrift:"RundownDocURL,19,optional" json:"rundown_doc_url" form:"RundownDocURL" query:"RundownDocURL"`
 }
 

@@ -3,10 +3,10 @@
 package task
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/task_struct"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/task_struct"
 )
 
 type DraftProjectInnerTaskListRequest struct {

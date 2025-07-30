@@ -432,7 +432,7 @@ paths:
                                 type: object
                               type: array
                             resource_type:
-                              description: 工作表类型，sheet：工作表，bitable：多维表格，#UNSUPPORTED_TYPE：不支持的类型
+                              description: 工作表类型，sheet：工作表，bitable：多维表格，#UNSUPPORTED_TYPE: Unsupported types
                               type: string
                             sheet_id:
                               description: 工作表 ID

@@ -101,8 +101,8 @@ const (
 - 输出按照下面结构体格式返回，包含提取到的字段或者追问的问题
 - 不要回复和提取无关的问题
 type Output struct {
-fields FieldInfo // 根据字段说明已经提取到的字段
-question string // 新一轮追问的问题
+fields FieldInfo // According to the field description, the fields that have been extracted
+question string // Follow-up question for the next round
 }`
 	extractUserPromptSuffix = `
 - 严格以 json 格式返回答案。

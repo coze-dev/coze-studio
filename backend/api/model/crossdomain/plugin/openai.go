@@ -261,7 +261,7 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 			result[paramName] = paramInfo
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return result, nil
@@ -375,8 +375,8 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 		return nil
 	}
 
-	// default status 不处理
-	// 只处理 '200' status
+	// Default status not processed
+	// Only process' 200 'status
 	if len(responses) != 1 {
 		if len(responses) != 2 {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,

@@ -326,7 +326,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		afcMarshal, _ := json.Marshal(afc)
 		msg.Content = string(afcMarshal)
 
-		// 添加 ext 用于保存到 context_message
+		// Add ext to save to context_message
 		interruptByte, err := json.Marshal(chunk.Interrupt)
 		if err == nil {
 			buildExt[string(msgEntity.ExtKeyResumeInfo)] = string(interruptByte)

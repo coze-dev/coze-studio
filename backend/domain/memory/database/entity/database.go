@@ -25,7 +25,7 @@ import (
 
 type Database = database.Database
 
-// DatabaseFilter 数据库过滤条件
+// DatabaseFilter Database filter criteria
 type DatabaseFilter struct {
 	CreatorID *int64
 	SpaceID   *int64
@@ -64,19 +64,19 @@ type TableReaderSheetData struct {
 
 type ExcelExtraInfo struct {
 	Sheets        []*common.DocTableSheet
-	ExtensionName string // 扩展名
-	FileSize      int64  // 文件大小
+	ExtensionName string // extension
+	FileSize      int64  // file size
 	SourceFileID  int64
 	TosURI        string
 }
 
 type LocalTableMeta struct {
-	ExcelFile      *excelize.File // xlsx格式文件
-	RawLines       [][]string     // csv|xls 的全部内容
+	ExcelFile      *excelize.File // XLSX format file
+	RawLines       [][]string     // All content of csv | xls
 	SheetsNameList []string
 	SheetsRowCount []int
-	ExtensionName  string // 扩展名
-	FileSize       int64  // 文件大小
+	ExtensionName  string // extension
+	FileSize       int64  // file size
 }
 
 type ColumnInfo struct {

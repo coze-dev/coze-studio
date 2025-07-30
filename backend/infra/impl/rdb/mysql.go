@@ -550,7 +550,7 @@ func (m *mysqlService) UpsertData(ctx context.Context, req *rdb.UpsertDataReques
 			}
 		}
 
-		// ON DUPLICATE KEY UPDATE部分
+		// ON DUPLICATE KEY UPDATE PART
 		updateClauses := make([]string, 0, len(fields))
 		for _, field := range fields {
 			isKey := false
@@ -622,7 +622,7 @@ func (m *mysqlService) getTablePrimaryKeys(ctx context.Context, tableName string
 	return primaryKeys, nil
 }
 
-// calculateInsertedUpdated 函数保持不变
+// calculateInsertedUpdated function remains unchanged
 func calculateInsertedUpdated(affectedRows int64, batchSize int) (int64, int64, int64) {
 	updated := int64(0)
 	inserted := affectedRows

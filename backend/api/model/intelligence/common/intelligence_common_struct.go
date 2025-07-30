@@ -15,11 +15,11 @@ const (
 	IntelligenceStatus_Using   IntelligenceStatus = 1
 	IntelligenceStatus_Deleted IntelligenceStatus = 2
 	IntelligenceStatus_Banned  IntelligenceStatus = 3
-	// 迁移失败
+	// Migration failed
 	IntelligenceStatus_MoveFailed IntelligenceStatus = 4
-	// 复制中
+	// Copying
 	IntelligenceStatus_Copying IntelligenceStatus = 5
-	// 复制失败
+	// Copy failed
 	IntelligenceStatus_CopyFailed IntelligenceStatus = 6
 )
 

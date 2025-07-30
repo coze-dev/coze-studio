@@ -203,16 +203,16 @@ type RetrieveRequest = knowledge.RetrieveRequest
 
 type RetrieveContext struct {
 	Ctx              context.Context
-	OriginQuery      string                   // 原始 query
-	RewrittenQuery   *string                  // 改写后的 query, 如果没有改写，就是 nil, 会在执行过程中添加上去
-	ChatHistory      []*schema.Message        // 如果没有对话历史或者不需要历史，则为 nil
-	KnowledgeIDs     sets.Set[int64]          // 本次检索涉及的知识库id
-	KnowledgeInfoMap map[int64]*KnowledgeInfo // 知识库id到文档id的映射
-	// 召回策略
+	OriginQuery      string                   // Original query
+	RewrittenQuery   *string                  // The rewritten query, if not rewritten, is nil, which will be added during execution
+	ChatHistory      []*schema.Message        // Nil if there is no dialogue history or no history is required
+	KnowledgeIDs     sets.Set[int64]          // The knowledge base ID involved in this search
+	KnowledgeInfoMap map[int64]*KnowledgeInfo // Mapping of Knowledge Base IDs to Document IDs
+	// recall strategy
 	Strategy *entity.RetrievalStrategy
-	// 检索涉及的 document 信息
+	// Retrieve the document information involved
 	Documents []*model.KnowledgeDocument
-	// 用于 nl2sql 和 message to query 的 chat model
+	// A chat model for nl2sql and message to query
 	ChatModel chatmodel.BaseChatModel
 }
 
@@ -254,9 +254,9 @@ type TableSchemaResponse struct {
 type TableDataType int32
 
 const (
-	AllData     TableDataType = 0 // schema sheets 和 preview data
-	OnlySchema  TableDataType = 1 // 只需要 schema 结构 & Sheets
-	OnlyPreview TableDataType = 2 // 只需要 preview data
+	AllData     TableDataType = 0 // Schema sheets and preview data
+	OnlySchema  TableDataType = 1 // Only need schema structure & Sheets
+	OnlyPreview TableDataType = 2 // Just preview the data
 )
 
 type GetDocumentTableInfoRequest struct {

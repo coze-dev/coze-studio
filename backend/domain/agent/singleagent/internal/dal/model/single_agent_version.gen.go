@@ -23,7 +23,7 @@ type SingleAgentVersion struct {
 	CreatedAt               int64                             `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`        // Create Time in Milliseconds
 	UpdatedAt               int64                             `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`        // Update Time in Milliseconds
 	DeletedAt               gorm.DeletedAt                    `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                       // delete time in millisecond
-	VariablesMetaID         *int64                            `gorm:"column:variables_meta_id;comment:variables meta 表 ID" json:"variables_meta_id"`                                // variables meta 表 ID
+	VariablesMetaID         *int64                            `gorm:"column:variables_meta_id;comment:variables meta table ID" json:"variables_meta_id"`                            // variables meta table ID
 	ModelInfo               *bot_common.ModelInfo             `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`                  // Model Configuration Information
 	OnboardingInfo          *bot_common.OnboardingInfo        `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"`                 // Onboarding Information
 	Prompt                  *bot_common.PromptInfo            `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`                               // Agent Prompt Configuration

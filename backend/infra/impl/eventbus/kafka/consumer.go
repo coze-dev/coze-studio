@@ -38,7 +38,7 @@ type consumerImpl struct {
 
 func RegisterConsumer(broker string, topic, groupID string, handler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	config := sarama.NewConfig()
-	config.Consumer.Offsets.Initial = sarama.OffsetOldest // 从最早消息开始消费
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest // Start consuming from the earliest message
 	config.Consumer.Group.Session.Timeout = 30 * time.Second
 
 	o := &eventbus.ConsumerOption{}
@@ -102,7 +102,7 @@ func (c *consumerImpl) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sara
 			continue
 		}
 
-		sess.MarkMessage(msg, "") // TODO: 消费策略可以配置
+		sess.MarkMessage(msg, "") // TODO: Consumer policies can be configured
 	}
 	return nil
 }

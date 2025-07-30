@@ -66,7 +66,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		AppID:           database.AppID,
 		SpaceID:         database.SpaceID,
 		RelatedOnlineID: onlineID,
-		IsVisible:       1, // 默认可见
+		IsVisible:       1, // visible by default
 		PromptDisabled: func() int32 {
 			if database.PromptDisabled {
 				return 1
@@ -98,7 +98,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	return database, nil
 }
 
-// Get 获取草稿数据库信息
+// Get draft database information
 func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error) {
 	res := d.query.DraftDatabaseInfo
 
@@ -110,7 +110,7 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		return nil, fmt.Errorf("query draft database failed: %v", err)
 	}
 
-	// 构建返回的数据库对象
+	// Build the returned database object
 	db := &entity.Database{
 		ID:        info.ID,
 		SpaceID:   info.SpaceID,
@@ -178,7 +178,7 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 	return databases, nil
 }
 
-// UpdateWithTX 使用事务更新草稿数据库信息
+// UpdateWithTX updates draft database information using transactions
 func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error) {
 	fieldJson, err := json.Marshal(database.FieldList)
 	if err != nil {
@@ -204,7 +204,7 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		"updated_at": now,
 	}
 
-	// 执行更新
+	// execute update
 	res := tx.DraftDatabaseInfo
 	_, err = res.WithContext(ctx).Where(res.ID.Eq(database.ID)).Updates(updates)
 	if err != nil {
@@ -228,13 +228,13 @@ func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 	return nil
 }
 
-// List 列出符合条件的数据库信息
+// List eligible database information
 func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := d.query.DraftDatabaseInfo
 
 	q := res.WithContext(ctx)
 
-	// 添加过滤条件
+	// Add filter criteria
 	if filter != nil {
 		if filter.CreatorID != nil {
 			q = q.Where(res.CreatorID.Eq(*filter.CreatorID))

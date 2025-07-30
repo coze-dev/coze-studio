@@ -444,7 +444,7 @@ func parametersDo2Vo(op *plugin.Openapi3Operation) []*playground.PluginParameter
 			}
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params

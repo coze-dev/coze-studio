@@ -54,7 +54,7 @@ func TestAgentRun(t *testing.T) {
 	// content := []*entity.InputMetaData{
 	// 	{
 	// 		Type: entity.InputTypeText,
-	// 		Text: "你是谁",
+	// 		Text: "Who are you",
 	// 	},
 	// 	{
 	// 		Type: entity.InputTypeImage,

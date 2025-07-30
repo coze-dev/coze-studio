@@ -132,7 +132,7 @@ func (c *es8Client) query2ESQuery(q *Query) *types.Query {
 			Wildcard: map[string]types.WildcardQuery{
 				q.KV.Key: {
 					Value:           ptr.Of(fmt.Sprintf("*%s*", q.KV.Value)),
-					CaseInsensitive: ptr.Of(true), // 忽略大小写
+					CaseInsensitive: ptr.Of(true), // Ignore case
 				},
 			},
 		}

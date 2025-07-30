@@ -45,23 +45,23 @@ func newKnowledge(db *gorm.DB, opts ...gen.DOOption) knowledge {
 	return _knowledge
 }
 
-// knowledge 知识库表
+// knowledge knowledge tabke
 type knowledge struct {
 	knowledgeDo
 
 	ALL         field.Asterisk
-	ID          field.Int64  // 主键ID
-	Name        field.String // 名称
-	AppID       field.Int64  // 项目ID，标识该资源是否是项目独有
-	CreatorID   field.Int64  // ID
-	SpaceID     field.Int64  // 空间ID
+	ID          field.Int64  // id
+	Name        field.String // knowledge's name
+	AppID       field.Int64  // app id
+	CreatorID   field.Int64  // creator id
+	SpaceID     field.Int64  // space id
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
-	DeletedAt   field.Field  // Delete Time in Milliseconds
-	Status      field.Int32  // 0 初始化, 1 生效 2 失效
-	Description field.String // 描述
-	IconURI     field.String // 头像uri
-	FormatType  field.Int32  // 0:文本 1:表格 2:图片
+	DeletedAt   field.Field  // Delete Time
+	Status      field.Int32  // 0 initialization, 1 effective, 2 invalid
+	Description field.String // description
+	IconURI     field.String // icon uri
+	FormatType  field.Int32  // 0: Text 1: Table 2: Images
 
 	fieldMap map[string]field.Expr
 }

@@ -62,7 +62,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 				ValTime: ptr.Of(emptyTime),
 			}, nil
 		}
-		// 支持时间戳和时间字符串
+		// Supports timestamp and time string
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			t := time.Unix(i, 0)
@@ -152,7 +152,7 @@ func assertValAsForce(typ document.TableColumnType, val string, nullable bool) *
 }
 
 func assertVal(val string) document.ColumnData {
-	// TODO: 先不处理 image
+	// TODO: Do not process images first
 	if val == "" {
 		return document.ColumnData{
 			Type:      document.TableColumnTypeUnknown,

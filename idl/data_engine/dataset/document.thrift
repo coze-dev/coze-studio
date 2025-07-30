@@ -8,7 +8,7 @@ struct ListDocumentRequest {
     2: optional list<string> document_ids (agw.js_conv='str')
     3: optional i32 page
     4: optional i32 size
-    5: optional string keyword       // 根据名称搜索
+    5: optional string keyword       // Search by name
 
     255: optional base.Base Base
 }
@@ -25,59 +25,59 @@ struct ListDocumentResponse {
 struct DocumentInfo {
     1:  string             name
     2:  i64             document_id(agw.js_conv='str', api.js_conv='true')
-    3:  optional string    tos_uri         // 文件链接
-    5:  i32                create_time     // 创建时间
-    6:  i32                update_time     // 更新时间
-    7:  optional i64    creator_id (agw.js_conv="str", api.js_conv='true', api.body="creator_id")      // 创建人
-    8:  i32                slice_count     // 包含分段数量
-    9:  string             type            // 文件后缀 csv, pdf 等
-    10: i32                size            // 文件大小 字节数
-    11: i32                char_count      // 字符数
-    12: common.DocumentStatus status       // 状态
-    13: i32                hit_count       // 命中次数
-    14: common.DocumentSource     source_type     // 来源
-    18: common.FormatType  format_type     // 文件类型
-    19: optional list<TableColumn>  table_meta   // 表格类型元数据
-    20: optional string    web_url         // url 地址
-    21: optional string    status_descript // 状态的详细信息；如果切片失败，返回失败信息
-    24: optional i64    space_id(agw.js_conv="str", api.js_conv="true") // 空间id
+    3:  optional string    tos_uri         // file link
+    5:  i32                create_time     // create_time
+    6:  i32                update_time     // update time
+    7:  optional i64    creator_id (agw.js_conv="str", api.js_conv='true', api.body="creator_id")      // creator_id
+    8:  i32                slice_count     // number of segments included
+    9:  string             type            // File suffix csv, pdf, etc
+    10: i32                size            // File size, number of bytes
+    11: i32                char_count      // character count
+    12: common.DocumentStatus status       // status
+    13: i32                hit_count       // hit count
+    14: common.DocumentSource     source_type     // source
+    18: common.FormatType  format_type     // file type
+    19: optional list<TableColumn>  table_meta   // Table type metadata
+    20: optional string    web_url         // URL address
+    21: optional string    status_descript // Details of the status; if the slice fails, return the failure information
+    24: optional i64    space_id(agw.js_conv="str", api.js_conv="true") // Space ID
 
-    // 以下字段仅针对重构后的表格类型有用，用于前端判断
-    26: optional bool  editable_append_content  // 仅针对表格类型，是否允许添加内容、修改表结构
-    27: common.ChunkStrategy  chunk_strategy           // 切片规则
+    // The following fields are only useful for the reconstructed table type and are used for front-end judgment
+    26: optional bool  editable_append_content  // Only for table types, are you allowed to add content and modify the table structure?
+    27: common.ChunkStrategy  chunk_strategy           // slicing rule
 
-    28: optional string     imagex_uri      // imagex 存储的文件链接
-    29: optional string     doc_outline     // 层级分段文档树Json (未使用)
-    30: optional common.ParsingStrategy     parsing_strategy // 解析策略
-    32: optional common.FilterStrategy      filter_strategy // 过滤策略
-    33: optional string     doc_tree_tos_url // 层级分段文档树 tos_url
-    34: optional string     preview_tos_url  // 预览用的原文档 tos_url
-    35: optional i64        review_id  // 预览用的原文档 tos_url
+    28: optional string     imagex_uri      // File links stored by ImageX
+    29: optional string     doc_outline     // Hierarchical Segmentation Document Tree Json (unused)
+    30: optional common.ParsingStrategy     parsing_strategy // parsing strategy
+    32: optional common.FilterStrategy      filter_strategy // filtering strategy
+    33: optional string     doc_tree_tos_url // Hierarchical segmented document tree tos_url
+    34: optional string     preview_tos_url  // Preview the original document tos_url
+    35: optional i64        review_id  // Preview the original document tos_url
 }
 
 struct TableColumn {
-    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id")            // 列 id
-    2: string   column_name                                    // 列名
-    3: bool     is_semantic   // 是否为语义匹配列
-    4: i64      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence")// 列原本在 excel 的序号
-    5: optional ColumnType column_type // 列类型
+    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id")            // Column ID
+    2: string   column_name                                    // column_name
+    3: bool     is_semantic   // Is it a semantically matched column?
+    4: i64      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence")// List the serial number originally in excel
+    5: optional ColumnType column_type // column type
     6: optional bool contains_empty_value
-    7: optional string   desc          // 描述
+    7: optional string   desc          // describe
 }
 
 
 enum ColumnType {
     Unknown = 0
-    Text    = 1                 // 文本
-    Number  = 2                 // 数字
-    Date    = 3                 // 时间
+    Text    = 1                 // Text
+    Number  = 2                 // number
+    Date    = 3                 // time
     Float   = 4                 // float
     Boolean = 5                 // bool
-    Image   = 6                 // 图片
+    Image   = 6                 // picture
 }
 
 struct DeleteDocumentRequest {
-    2: list<string> document_ids // 要删除的文档ID列表
+    2: list<string> document_ids // List of document IDs to delete
 
     255: optional base.Base Base
 }
@@ -91,12 +91,12 @@ struct DeleteDocumentResponse {
 struct UpdateDocumentRequest{
     1: i64                 document_id (agw.js_conv="str", api.js_conv="true")
 
-    // 需要更新就传, 更新名称
+    // If you need to update, please upload it and update the name.
     3: optional string     document_name
 
 
-    // 更新表结构
-    5: optional list<TableColumn> table_meta      // 表格元数据
+    // Update table structure
+    5: optional list<TableColumn> table_meta      // Table metadata
 
     255: optional base.Base Base
 }
@@ -109,8 +109,8 @@ struct UpdateDocumentResponse {
 
 
 struct UpdatePhotoCaptionRequest {
-    1: required i64 document_id(agw.js_conv='str', api.js_conv='true') // 文档ID
-    2: required string caption  // 要更新的图片描述信息
+    1: required i64 document_id(agw.js_conv='str', api.js_conv='true') // Document ID
+    2: required string caption  // Picture description information to be updated
 
     255: optional base.Base Base
 }
@@ -122,18 +122,18 @@ struct UpdatePhotoCaptionResponse {
 }
 
 struct ListPhotoRequest {
-    1: required i64  dataset_id(agw.js_conv='str', api.js_conv='true') // 知识库ID
-    2: optional i32 page // 页数，从 1 开始
-    3: optional i32 size // 每页大小
+    1: required i64  dataset_id(agw.js_conv='str', api.js_conv='true') // Knowledge ID
+    2: optional i32 page // Number of pages, starting from 1
+    3: optional i32 size // page size
     4: optional PhotoFilter filter
 
     255: optional base.Base Base
 }
 
 struct PhotoFilter {
-    1: optional bool has_caption // true 筛选 “已标注” 的图片，false 筛选 “未标注” 的图片
-    2: optional string keyword // 搜索关键字，对图片名称和图片描述进行搜索
-    3: optional common.DocumentStatus status // 状态
+    1: optional bool has_caption // True to filter "marked" images, false to filter "unmarked" images
+    2: optional string keyword // Search keywords, search for image names and picture descriptions
+    3: optional common.DocumentStatus status // status
 }
 
 struct ListPhotoResponse {
@@ -145,44 +145,44 @@ struct ListPhotoResponse {
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
-struct PhotoInfo { // 图片型知识库一个图片对应一个文档
-    1:  string             name  // 图片名称
-    2:  i64                document_id(agw.js_conv='str', api.js_conv='true') // 文档ID
-    3:  string             url             // 图片链接
-    4:  string             caption         // 图片描述信息
-    5:  i32                create_time     // 创建时间
-    6:  i32                update_time     // 更新时间
-    7:  i64                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // 创建人
-    8:  string             type            // 图片后缀 jpg, png 等
-    9: i32                size            // 图片大小
-    10: common.DocumentStatus status       // 状态
-    11: common.DocumentSource source_type     // 来源
+struct PhotoInfo { // Picture Knowledge Base One picture corresponds to one document
+    1:  string             name  // image name
+    2:  i64                document_id(agw.js_conv='str', api.js_conv='true') // Document ID
+    3:  string             url             // image link
+    4:  string             caption         // picture description information
+    5:  i32                create_time     // create_time
+    6:  i32                update_time     // update time
+    7:  i64                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // creator_id
+    8:  string             type            // Image suffix jpg, png, etc
+    9: i32                size            // image size
+    10: common.DocumentStatus status       // status
+    11: common.DocumentSource source_type     // source
 }
 
 struct PhotoDetailRequest {
-    1: required list<string>  document_ids (agw.js_conv='str') // 文档ID列表
-    2: required i64        dataset_id(agw.js_conv='str', api.js_conv='true') // 知识库ID
+    1: required list<string>  document_ids (agw.js_conv='str') // Document ID List
+    2: required i64        dataset_id(agw.js_conv='str', api.js_conv='true') // Knowledge ID
     255: optional base.Base Base
 }
 
 struct PhotoDetailResponse {
-    1: map<string, PhotoInfo> photo_infos // 文档ID到图片信息的映射
+    1: map<string, PhotoInfo> photo_infos // Mapping document ID to image information
     253: required i64 code
     254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
 struct ResegmentRequest {
-    1: i64 dataset_id (agw.js_conv="str", api.js_conv="true") // 知识库ID
-    2: list<string> document_ids // 要重新分段的文档
-    3: common.ChunkStrategy   chunk_strategy             // 分段策略
-    5: optional common.ParsingStrategy     parsing_strategy // 解析策略
-    7: optional common.FilterStrategy      filter_strategy; // 过滤策略
+    1: i64 dataset_id (agw.js_conv="str", api.js_conv="true") // Knowledge ID
+    2: list<string> document_ids // Document to be re-segmented
+    3: common.ChunkStrategy   chunk_strategy             // segmentation strategy
+    5: optional common.ParsingStrategy     parsing_strategy // parsing strategy
+    7: optional common.FilterStrategy      filter_strategy; // filtering strategy
     255: optional base.Base Base
 }
 
 struct ResegmentResponse {
-    1: list<DocumentInfo> document_infos  // 老版需要. 仅返回id 和名称即可
+    1: list<DocumentInfo> document_infos  // The old version requires. Just return the id and name.
 
     253: required i64 code
     254: required string msg
@@ -190,16 +190,16 @@ struct ResegmentResponse {
 }
 
 struct CreateDocumentRequest {
-    1:  i64                       dataset_id(agw.js_conv='str', api.js_conv='true') // 要插入文档的知识库id
+    1:  i64                       dataset_id(agw.js_conv='str', api.js_conv='true') // The knowledge base id of the document to insert.
 
-    4:  common.FormatType         format_type // 知识库的类型，目前支持文本、表格、图片三种知识库
+    4:  common.FormatType         format_type // Types of knowledge bases, currently supporting text, tables, and images
 
-    // 表格类型一次只能创建一个
-    6:  list<DocumentBase>        document_bases      // 待创建的文档信息
+    // Only one table type can be created at a time
+    6:  list<DocumentBase>        document_bases      // Document information to be created
 
-    17: optional common.ChunkStrategy chunk_strategy  // 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片
-    31: optional bool is_append               // 为 true 时向已有的 document 追加内容。text 类型不能使用
-    32: optional common.ParsingStrategy     parsing_strategy // 解析策略
+    17: optional common.ChunkStrategy chunk_strategy  // Only when there is no document in the knowledge base, it needs to be passed, and if there is one, it will be obtained from the knowledge base. Slicing rules, if it is empty, it will be automatically sliced by paragraph
+    31: optional bool is_append               // Appends content to an existing document when true. The text type cannot be used
+    32: optional common.ParsingStrategy     parsing_strategy // parsing strategy
 
     255: optional base.Base Base
 }
@@ -212,37 +212,37 @@ struct CreateDocumentResponse {
     255: required base.BaseResp BaseResp
 }
 
-// 用于创建文档的基本信息
+// Basic information for creating a document
 struct DocumentBase{
-    1: string name // 文档名称
+    1: string name // Document name
     2: SourceInfo source_info
-     // 以下参数表格类型需要传递
-    4: optional list<TableColumn> table_meta          // 表格元数据
-    5: optional TableSheet        table_sheet         // 表格解析信息
-    6: optional common.FilterStrategy      filter_strategy  // 过滤策略
-    7: optional string caption                        // 图片类型知识库，人工标注时的图片描述
+     // The following parameter table types need to be passed
+    4: optional list<TableColumn> table_meta          // Table metadata
+    5: optional TableSheet        table_sheet         // Table parsing information
+    6: optional common.FilterStrategy      filter_strategy  // filtering strategy
+    7: optional string caption                        // Image type knowledge base, picture description when manually annotated
 }
 
-// 支持多种数据源
+// Supports multiple data sources
 struct SourceInfo {
-    1: optional string tos_uri (api.body="tos_uri"); // 本地上传返回的 uri
+    1: optional string tos_uri (api.body="tos_uri"); // Upload the returned URI locally.
 
     4: optional common.DocumentSource document_source (api.body="document_source");
 
-    // document_source 自定义原始内容: 表格型知识库需要符合的格式：json list<map<string, string>>
+    // document_source custom raw content: Format required for a tabular knowledge base: json list < map < string, string > >
     5: optional string custom_content (api.body="custom_content")
 
-    // document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
-    7: optional string file_base64 // 文件经过 base64 后的字符串
-    8: optional string file_type // 文件类型, 比如 pdf
+    // document_source local: If you don't send the tos address, you need to send the file base64, type
+    7: optional string file_base64 // File string after base64
+    8: optional string file_type // File type, such as PDF
 
-    // imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
+    // imagex_uri, and tos_uri choose one, imagex_uri priority, need to get data and sign url through imagex method
     10: optional string imagex_uri
 }
 struct TableSheet {
-    1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id", api.js_conv="true", api.body="sheet_id")       , // 用户选择的 sheet id
-    2: i64 header_line_idx (agw.js_conv="str", agw.key="header_line_idx", api.js_conv="true", api.body="header_line_idx"), // 用户选择的表头行数，从 0 开始编号
-    3: i64 start_line_idx  (agw.js_conv="str", agw.key="start_line_idx", api.js_conv="true", api.body="start_line_idx") , // 用户选择的起始行号，从 0 开始编号
+    1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id", api.js_conv="true", api.body="sheet_id")       , // User selected sheet id
+    2: i64 header_line_idx (agw.js_conv="str", agw.key="header_line_idx", api.js_conv="true", api.body="header_line_idx"), // The number of header rows selected by the user, numbered from 0
+    3: i64 start_line_idx  (agw.js_conv="str", agw.key="start_line_idx", api.js_conv="true", api.body="start_line_idx") , // User-selected starting line number, numbered from 0
 }
 
 
@@ -261,63 +261,63 @@ struct GetDocumentProgressResponse {
 
 struct DocumentProgress {
     1: i64               document_id(agw.js_conv="str", api.js_conv='true')
-    2: i32                  progress // 知识库进度百分比
+    2: i32                  progress // Knowledge Base Progress Percentage
     3: common.DocumentStatus status
-    4: optional string     status_descript  // 状态的详细描述；如果切片失败，返回失败信息
+    4: optional string     status_descript  // A detailed description of the status; if the slice fails, a failure message is returned
     5: string document_name
-    6: optional i64     remaining_time // 剩余时间单位秒
+    6: optional i64     remaining_time // Remaining time in seconds
     7: optional i64     size
     8: optional string  type
     9: optional string  url
 }
 
-// 获取 database 上传的表格文件元信息
+// Get the table file meta information uploaded by the database
 struct GetTableSchemaRequest {
-   1: optional TableSheet  table_sheet;                                                // 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
-   2: optional TableDataType table_data_type;                                          // 不传默认返回所有数据
-   3: optional i64 document_id(agw.js_conv="str", agw.key="document_id", api.js_conv="true", api.body="document_id");              // 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
-   4: optional SourceInfo source_file;                                                 // source file 的信息，新增 segment / 之前逻辑迁移到这里
-   5: optional list<TableColumn> origin_table_meta;                                    // 表格预览前端需要传递原始的数据表结构
-   6: optional list<TableColumn> preview_table_meta;                                   // 表格预览前端需要传递用户编辑之后的数据表结构
+   1: optional TableSheet  table_sheet;                                                // Table parsing information, the default initial value is 0, 0, 1, which represents the first table, the first row of the table header, and the data row starts from the second row
+   2: optional TableDataType table_data_type;                                          // All data is returned by default without passing it on.
+   3: optional i64 document_id(agw.js_conv="str", agw.key="document_id", api.js_conv="true", api.body="document_id");              // Compatible with pre-refactoring versions: pass this value if you need to pull the schema of the current document
+   4: optional SourceInfo source_file;                                                 // Source file information, add segment/before logic migrate here
+   5: optional list<TableColumn> origin_table_meta;                                    // The table preview front end needs to pass the original data table structure
+   6: optional list<TableColumn> preview_table_meta;                                   // The table preview front end needs to pass the data table structure edited by the user
 
    255: optional base.Base Base
 }
 
 enum TableDataType {
-    AllData     = 0    // schema sheets 和 preview data
-    OnlySchema  = 1    // 只需要 schema 结构 & Sheets
-    OnlyPreview = 2    // 只需要 preview data
+    AllData     = 0    // Schema sheets and preview data
+    OnlySchema  = 1    // Only need schema structure & Sheets
+    OnlyPreview = 2    // Just preview the data
 }
 
 struct DocTableSheet {
-    1: i64 id;            // sheet 的编号
-    2: string sheet_name; // sheet 名
-    3: i64 total_row;     // 总行数
+    1: i64 id;            // Number of sheet
+    2: string sheet_name; // Sheet name
+    3: i64 total_row;     // total number of rows
 }
 
 struct GetTableSchemaResponse {
     1: required i32 code
     2: required string msg
     3: list<DocTableSheet>   sheet_list
-    4: list<TableColumn>  table_meta                                        // 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
-    5: list<map<string,string>> preview_data(api.body="preview_data")  // knowledge table 场景中会返回
+    4: list<TableColumn>  table_meta                                        // The schema of the selected sheet, not selected to return the first sheet by default
+    5: list<map<string,string>> preview_data(api.body="preview_data")  // The knowledge table will return
 
     255: optional base.BaseResp BaseResp(api.none="true")
 }
 
-// 判断用户配置的 schema 是否和对应 document id 的一致
+// Determine whether the schema configured by the user is consistent with the corresponding document id
 struct ValidateTableSchemaRequest {
-    1: i64 space_id           (agw.js_conv="str", agw.key="space_id", api.js_conv="true", api.body="space_id") // 空间ID
-    2: i64 document_id        (agw.js_conv="str", agw.key="document_id", api.js_conv="true", api.body="document_id") // 要校验的文档ID
-    3: SourceInfo source_info (api.body="source_file")               // source file 的信息
-    4: TableSheet table_sheet (api.body="table_sheet")               // 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
+    1: i64 space_id           (agw.js_conv="str", agw.key="space_id", api.js_conv="true", api.body="space_id") // Space ID
+    2: i64 document_id        (agw.js_conv="str", agw.key="document_id", api.js_conv="true", api.body="document_id") // Document ID to verify
+    3: SourceInfo source_info (api.body="source_file")               // Information from the source file
+    4: TableSheet table_sheet (api.body="table_sheet")               // Table parsing information, the default initial value is 0, 0, 1, which represents the first table, the first row of the table header, and the data row starts from the second row
 
     255: optional base.Base Base
 }
 
 struct ValidateTableSchemaResponse {
     1: optional map<string,string> ColumnValidResult (api.body="column_valid_result");
-    // 如果失败会返回错误码
+    // If it fails, an error code will be returned.
     253: required i64 code
     254: required string msg
     255: optional base.BaseResp BaseResp(api.none="true")
@@ -330,7 +330,7 @@ struct ExtractPhotoCaptionRequest {
 }
 
 struct ExtractPhotoCaptionResponse {
-    1: string caption   // 图片描述
+    1: string caption   // picture description
     253: required i64 code
     254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")

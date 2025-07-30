@@ -272,7 +272,7 @@ func (m *milvusManager) convertFields(fields []*searchstore.Field) ([]*mentity.F
 			if f.Type != searchstore.FieldTypeText {
 				return nil, fmt.Errorf("[convertFields] milvus only support text field indexing, field=%s, type=%d", f.Name, f.Type)
 			}
-			// indexing 时只有 content 存储原文
+			// Only content is stored when indexing
 			if f.Name == searchstore.FieldTextContent {
 				resp = append(resp, mentity.NewField().
 					WithName(f.Name).

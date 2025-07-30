@@ -18,7 +18,7 @@ package impl
 
 import "github.com/coze-dev/coze-studio/backend/pkg/logs"
 
-// 用户输入自定义内容后创建文档
+// Create a document after the user enters custom content
 type customDocProcessor struct {
 	baseDocProcessor
 }

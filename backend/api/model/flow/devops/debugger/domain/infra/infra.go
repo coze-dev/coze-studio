@@ -9,7 +9,7 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
-// ComponentType 支持组件类型
+// ComponentType Supports component types
 type ComponentType int64
 
 const (
@@ -20,23 +20,23 @@ const (
 	ComponentType_CozeTool ComponentType = 10001
 	// Coze Workflow
 	ComponentType_CozeWorkflow ComponentType = 10002
-	// Coze SubWorkflow，即在Workflow中被引用的子Workflow
+	// Coze SubWorkflow, which is referenced in Workflow.
 	ComponentType_CozeSubWorkflow ComponentType = 10003
-	// Coze workflow中的LLM节点
+	// LLM nodes in Coze workflow
 	ComponentType_CozeLLMNode ComponentType = 10004
-	// Coze workflow中的Code节点
+	// Coding nodes in a Coze workflow
 	ComponentType_CozeCodeNode ComponentType = 10005
-	// Coze workflow中的Knowledge节点
+	// Knowledge nodes in Coze workflow
 	ComponentType_CozeKnowledgeNode ComponentType = 10006
-	// Coze workflow中的Tool节点
+	// Tools nodes in Coze workflow
 	ComponentType_CozeToolNode ComponentType = 10007
-	// Coze workflow中的start节点
+	// Coze workflow start node
 	ComponentType_CozeStartNode ComponentType = 10008
-	// Coze workflow中的variable节点
+	// Cozing variable nodes in workflow
 	ComponentType_CozeVariableNode ComponentType = 10009
-	// Coze 虚拟节点用于标识 variable 依赖的bot
+	// Coze virtual nodes to identify variable dependent bots
 	ComponentType_CozeVariableBot ComponentType = 20000
-	// Coze 虚拟节点用于标识 variable 依赖的chat
+	// Coze virtual nodes to identify variable dependent chats
 	ComponentType_CozeVariableChat ComponentType = 20001
 )
 
@@ -119,18 +119,18 @@ func (p *ComponentType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// TrafficScene 流量请求场景
+// TrafficScene traffic request scenario
 type TrafficScene int64
 
 const (
 	TrafficScene_Undefined TrafficScene = 0
-	// 单Agent调试页
+	// Single Agent Debug Page
 	TrafficScene_CozeSingleAgentDebug TrafficScene = 10000
-	// 多Agent调试页
+	// Multi-Agent Debug Page
 	TrafficScene_CozeMultiAgentDebug TrafficScene = 10001
-	// Tool调试页
+	// Tool Debug Page
 	TrafficScene_CozeToolDebug TrafficScene = 10002
-	// Workflow调试页
+	// Workflow debugging page
 	TrafficScene_CozeWorkflowDebug TrafficScene = 10003
 )
 
@@ -181,7 +181,7 @@ func (p *TrafficScene) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// ComponentMappingType 组件映射类型
+// ComponentMappingType Component Mapping Types
 type ComponentMappingType int64
 
 const (
@@ -264,7 +264,7 @@ func (p *OrderBy) Value() (driver.Value, error) {
 type DebugScene int64
 
 const (
-	// 默认play ground Debug场景
+	// Default play ground Debug scene
 	DebugScene_Debug DebugScene = 0
 )
 
@@ -302,7 +302,7 @@ func (p *DebugScene) Value() (driver.Value, error) {
 type CozeChannel int64
 
 const (
-	// 默认为Coze, 未来扩展到其他渠道
+	// Default to Coze, expand to other channels in the future
 	CozeChannel_Coze CozeChannel = 0
 )
 
@@ -337,19 +337,19 @@ func (p *CozeChannel) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// BizCtx 业务上下文
+// BizCtx Business Context
 type BizCtx struct {
 	// connectorID
 	ConnectorID *string `thrift:"connectorID,1,optional" form:"connectorID" json:"connectorID,omitempty" query:"connectorID"`
-	// connector下用户ID
+	// User ID under connector
 	ConnectorUID *string `thrift:"connectorUID,2,optional" form:"connectorUID" json:"connectorUID,omitempty" query:"connectorUID"`
-	// 业务场景
+	// business scenario
 	TrafficScene *TrafficScene `thrift:"trafficScene,3,optional" form:"trafficScene" json:"trafficScene,omitempty" query:"trafficScene"`
-	// 业务场景组件ID，比如Bot调试页，则trafficSceneID为BotID
+	// Business Scenario Component ID, such as Bot Debug Page, where trafficSceneID is BotID
 	TrafficCallerID *string `thrift:"trafficCallerID,4,optional" form:"trafficCallerID" json:"trafficCallerID,omitempty" query:"trafficCallerID"`
-	// 业务线SpaceID，用于访问控制
+	// Line of business SpaceID for access control
 	BizSpaceID *string `thrift:"bizSpaceID,5,optional" form:"bizSpaceID" json:"bizSpaceID,omitempty" query:"bizSpaceID"`
-	// 额外信息
+	// Additional information
 	Ext map[string]string `thrift:"ext,6,optional" form:"ext" json:"ext,omitempty" query:"ext"`
 }
 
@@ -804,15 +804,15 @@ func (p *BizCtx) String() string {
 
 }
 
-// ComponentSubject 业务组件的二级结构
+// Secondary structure of the ComponentSubject business component
 type ComponentSubject struct {
-	// 组件ID，例如Tool ID、Node ID等
+	// Component IDs, such as Tool ID, Node ID, etc
 	ComponentID *string `thrift:"componentID,1,optional" form:"componentID" json:"componentID,omitempty" query:"componentID"`
-	// 组件类型
+	// component type
 	ComponentType *ComponentType `thrift:"componentType,2,optional" form:"componentType" json:"componentType,omitempty" query:"componentType"`
-	// 父组件ID，例如Tool->Plugin, Node->Workflow
+	// Parent component ID, e.g. Tool- > Plugin, Node- > Workflow
 	ParentComponentID *string `thrift:"parentComponentID,3,optional" form:"parentComponentID" json:"parentComponentID,omitempty" query:"parentComponentID"`
-	// 父组件类型
+	// Parent component type
 	ParentComponentType *ComponentType `thrift:"parentComponentType,4,optional" form:"parentComponentType" json:"parentComponentType,omitempty" query:"parentComponentType"`
 }
 

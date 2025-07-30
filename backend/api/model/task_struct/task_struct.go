@@ -8,7 +8,7 @@ import (
 )
 
 type ProjectInnerTaskInfo struct {
-	// 任务id
+	// Task ID
 	TaskID int64 `thrift:"task_id,1" form:"task_id" json:"task_id,string" query:"task_id"`
 }
 

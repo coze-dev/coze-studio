@@ -25,15 +25,15 @@ import (
 
 type IndexerOptions struct {
 	PartitionKey   *string
-	Partition      *string // 存储分片映射
+	Partition      *string // Storage sharding map
 	IndexingFields []string
 	ProgressBar    progressbar.ProgressBar
 }
 
 type RetrieverOptions struct {
-	MultiMatch   *MultiMatch // 多 field 查询
+	MultiMatch   *MultiMatch // Multi-field query
 	PartitionKey *string
-	Partitions   []string // 查询分片映射
+	Partitions   []string // Query sharding map
 }
 
 type MultiMatch struct {

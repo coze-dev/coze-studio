@@ -3,10 +3,10 @@
 package bot_open_api
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type OauthAuthorizationCodeReq struct {

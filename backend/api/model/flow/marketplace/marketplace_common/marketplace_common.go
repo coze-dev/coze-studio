@@ -12,13 +12,13 @@ import (
 type FollowType int64
 
 const (
-	// 无关系
+	// Unknown
 	FollowType_Unknown FollowType = 0
-	// 关注
+	// followee
 	FollowType_Followee FollowType = 1
-	// 粉丝
+	// follower
 	FollowType_Follower FollowType = 2
-	// 互相关注
+	// MutualFollow
 	FollowType_MutualFollow FollowType = 3
 )
 
@@ -66,11 +66,11 @@ func (p *FollowType) Value() (driver.Value, error) {
 }
 
 type Price struct {
-	// 金额
+	// amount
 	Amount int64 `thrift:"Amount,1" form:"amount" json:"amount,string"`
-	// 币种，如USD、CNY
+	// Currencies such as USD and CNY
 	Currency string `thrift:"Currency,2" form:"currency" json:"currency"`
-	// 小数位数
+	// decimal places
 	DecimalNum int8 `thrift:"DecimalNum,3" form:"decimal_num" json:"decimal_num"`
 }
 

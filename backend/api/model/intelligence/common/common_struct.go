@@ -13,11 +13,11 @@ import (
 type AuditStatus int64
 
 const (
-	// 审核中
+	// Under review.
 	AuditStatus_Auditing AuditStatus = 0
-	// 审核通过
+	// approved
 	AuditStatus_Success AuditStatus = 1
-	// 审核失败
+	// audit failed
 	AuditStatus_Failed AuditStatus = 2
 )
 
@@ -225,11 +225,11 @@ func (p *OrderByType) Value() (driver.Value, error) {
 type PermissionType int64
 
 const (
-	//不能查看详情
+	//Can't view details
 	PermissionType_NoDetail PermissionType = 1
-	//可以查看详情
+	//You can check the details.
 	PermissionType_Detail PermissionType = 2
-	//可以查看和操作
+	//Can be viewed and operated
 	PermissionType_Operate PermissionType = 3
 )
 
@@ -635,13 +635,13 @@ func (p *UserLabel) String() string {
 
 type User struct {
 	UserID int64 `thrift:"user_id,1" form:"user_id" json:"user_id,string" query:"user_id"`
-	// 用户昵称
+	// user nickname
 	Nickname string `thrift:"nickname,2" form:"nickname" json:"nickname" query:"nickname"`
-	// 用户头像
+	// user avatar
 	AvatarURL string `thrift:"avatar_url,3" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	// 用户名
+	// user name
 	UserUniqueName string `thrift:"user_unique_name,4" form:"user_unique_name" json:"user_unique_name" query:"user_unique_name"`
-	// 用户标签
+	// user tag
 	UserLabel *UserLabel `thrift:"user_label,5" form:"user_label" json:"user_label" query:"user_label"`
 }
 
@@ -1225,11 +1225,11 @@ func (p *AuditInfo) String() string {
 
 }
 
-// 审核结果
+// Audit results
 type AuditData struct {
-	// true：机审校验不通过
+	// True: The machine audit verification failed
 	CheckNotPass bool `thrift:"check_not_pass,1" form:"check_not_pass" json:"check_not_pass" query:"check_not_pass"`
-	// 机审校验不通过文案
+	// The machine audit verification failed the copy.
 	CheckNotPassMsg *string `thrift:"check_not_pass_msg,2,optional" form:"check_not_pass_msg" json:"check_not_pass_msg,omitempty" query:"check_not_pass_msg"`
 }
 

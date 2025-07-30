@@ -200,7 +200,7 @@ func (k *knowledgeSVC) copyKnowledge(ctx context.Context, copyCtx *knowledgeCopy
 }
 
 func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *knowledgeCopyCtx) (err error) {
-	// 查询document信息（仅处理完成的文档）
+	// Query document information (only processed documents)
 	documents, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{copyCtx.OriginData.ID},
 		StatusIn:     []int32{int32(entity.DocumentStatusEnable), int32(entity.DocumentStatusInit)},
@@ -248,7 +248,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 	}
-	// 表格类复制
+	// table copy
 	eg := errgroup.Group{}
 	eg.SetLimit(10)
 	mu := sync.Mutex{}
@@ -286,7 +286,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 }
 
 func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyCtx, doc *model.KnowledgeDocument, newDocID int64) (err error) {
-	// 表格类文档复制
+	// tabular document replication
 	newDoc := model.KnowledgeDocument{
 		ID:            newDocID,
 		KnowledgeID:   copyCtx.CopyTask.TargetDataID,
@@ -307,7 +307,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		ParseRule:     doc.ParseRule,
 	}
 	columnMap := map[int64]int64{}
-	// 如果是表格型知识库->创建新的表格
+	// If it is a tabular knowledge base - > create a new table
 	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		if doc.TableInfo != nil {
 			newTableInfo := entity.TableInfo{}
@@ -472,7 +472,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 	return nil
 }
 func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocument) error {
-	// 表格型知识库，创建表
+	// Tabular knowledge base, creating tables
 	rdbColumns := []*rdbEntity.Column{}
 	tableColumns := doc.TableInfo.Columns
 	columnIDs, err := k.genMultiIDs(ctx, len(tableColumns)+1)
@@ -495,13 +495,13 @@ func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocu
 		Indexing:    false,
 		Sequence:    -1,
 	})
-	// 为每个表格增加个主键ID
+	// Add a primary key ID to each table
 	rdbColumns = append(rdbColumns, &rdbEntity.Column{
 		Name:     consts.RDBFieldID,
 		DataType: rdbEntity.TypeBigInt,
 		NotNull:  true,
 	})
-	// 创建一个数据表
+	// Create a data table
 	resp, err := k.rdb.CreateTable(ctx, &rdb.CreateTableRequest{
 		Table: &rdbEntity.Table{
 			Columns: rdbColumns,

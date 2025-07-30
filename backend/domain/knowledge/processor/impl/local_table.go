@@ -65,7 +65,7 @@ func (l *localTableProcessor) BuildDBModel() error {
 
 func (l *localTableProcessor) InsertDBModel() error {
 	if isTableAppend(l.Documents) {
-		// 追加场景，设置文档为处理中状态
+		// Append the scene and set the document to the processing state
 		err := l.documentRepo.SetStatus(l.ctx, l.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
 		if err != nil {
 			logs.CtxErrorf(l.ctx, "document set status err:%v", err)

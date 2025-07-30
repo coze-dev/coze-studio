@@ -64,7 +64,7 @@ const (
 
 type FieldName = string
 
-// 内置 field name
+// Built-in field name
 const (
 	FieldID          FieldName = "id"           // int64
 	FieldCreatorID   FieldName = "creator_id"   // int64

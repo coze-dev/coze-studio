@@ -26,14 +26,14 @@ const (
 )
 
 type Options struct {
-	absRepoRoot string // yaml文件root前缀的绝对路径
-	useJson     bool   // 需要bind json文件，不指定默认bind yaml
+	absRepoRoot string // Absolute path to root prefix of yaml file
+	useJson     bool   // Requires bind json file, does not specify default bind yaml
 	groups      []string
 }
 
 type OptFunc func(o *Options)
 
-// WithAbsRepoRoot 传入自定义指定读取绝对路径/xx下的config.<xx>.(yaml,json)，例如/opt/tiger/xxx
+// WithAbsRepoRoot pass in a custom specified read config. < xx >. (yaml, json) under the absolute path/xx, for example/opt/tiger/xxx
 func WithAbsRepoRoot(absRepoRoot string) OptFunc {
 	return func(o *Options) {
 		if len(absRepoRoot) > 0 {
@@ -42,7 +42,7 @@ func WithAbsRepoRoot(absRepoRoot string) OptFunc {
 	}
 }
 
-// WithUseJSONType 需要查找xx.json结尾的文
+// WithUseJSONType needs to find the text at the end of xx.json
 func WithUseJSONType(useJson bool) OptFunc {
 	return func(o *Options) {
 		o.useJson = useJson
@@ -66,7 +66,7 @@ func loadOpts(opts ...OptFunc) *Options {
 
 var configers sync.Map // key: abs path, value: configer
 
-// New 可传入local_config_dir指定读取自定义的绝对路径文件 `<local_config_dir>/config.<env>.<region>.<cluster>.yaml`
+// New can be passed in local_config_dir specify to read the custom absolute path file '< local_config_dir >/config. < env >. < region >. < cluster > .yaml'
 func getOrCreateConf(opts ...OptFunc) (configer, error) {
 	options := loadOpts(opts...)
 	if options.absRepoRoot == "" {
@@ -102,7 +102,7 @@ func getOrCreateConf(opts ...OptFunc) (configer, error) {
 			return nil, err
 		}
 	} else {
-		cfg, err = NewConfYaml(dir, options.groups) // 默认使用yaml
+		cfg, err = NewConfYaml(dir, options.groups) // Default use yaml
 		if err != nil {
 			return nil, err
 		}
@@ -113,8 +113,8 @@ func getOrCreateConf(opts ...OptFunc) (configer, error) {
 	return cfg, nil
 }
 
-// JSONBind 不传dir值，按默认路径，优先级读取/opt/tiger/flowdevops/confcenter/psm/p.s.m/config.<env>.<region>.<cluster>.json
-// 可使用WithAbsRepoRoot 传入自定义指定读取
+// JSONBind does not pass the dir value, according to the default path, the priority is to read/opt/tiger/flowdevops/confcenter/psm/p.s.m/config. < env >. < region >. < cluster > .json
+// Custom specified reads can be passed in using WithAbsRepoRoot
 func JSONBind(structPtr interface{}, opts ...OptFunc) error {
 	opts = append(opts, WithUseJSONType(true))
 	conf, err := getOrCreateConf(opts...)
@@ -124,8 +124,8 @@ func JSONBind(structPtr interface{}, opts ...OptFunc) error {
 	return bindAndValidate(structPtr, conf)
 }
 
-// YAMLBind 不传dir值，按默认路径，按优先级读取/opt/tiger/flowdevops/confcenter/psm/p.s.m/config.<env>.<region>.<cluster>.yaml
-// 可使用WithAbsRepoRoot 传入自定义指定读取
+// YAMLBind does not pass the dir value, according to the default path, read/opt/tiger/flowdevops/confcenter/psm/p.s.m/config by priority. < env >. < region >. < cluster > .yaml
+// Custom specified reads can be passed in using WithAbsRepoRoot
 func YAMLBind(structPtr interface{}, opts ...OptFunc) error {
 	conf, err := getOrCreateConf(opts...)
 	if err != nil {

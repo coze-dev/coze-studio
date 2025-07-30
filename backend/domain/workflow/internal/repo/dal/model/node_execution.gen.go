@@ -6,7 +6,7 @@ package model
 
 const TableNameNodeExecution = "node_execution"
 
-// NodeExecution node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息
+// NodeExecution Node run record, used to record the status information of each node during each workflow execution
 type NodeExecution struct {
 	ID                 int64  `gorm:"column:id;primaryKey;comment:node execution id" json:"id"`                                                                      // node execution id
 	ExecuteID          int64  `gorm:"column:execute_id;not null;comment:the workflow execute id this node execution belongs to" json:"execute_id"`                   // the workflow execute id this node execution belongs to

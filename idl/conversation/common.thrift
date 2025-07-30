@@ -6,10 +6,10 @@ enum Scene{
     Explore  = 1,
     BotStore = 2,
     CozeHome = 3,
-    Playground = 4, //调试
-    Evaluation = 5, // 评测平台
+    Playground = 4, //debugging
+    Evaluation = 5, // evaluation platform
     AgentAPP = 6,
-    PromptOptimize = 7, //prompt优化
-    GenerateAgentInfo = 8 // createbot的nl2bot功能
+    PromptOptimize = 7, //Prompt optimization
+    GenerateAgentInfo = 8 // Createbot's nl2bot features
     SceneOpenApi = 9, //openapi
 }

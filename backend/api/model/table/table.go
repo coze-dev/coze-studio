@@ -3,11 +3,11 @@
 package table
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type RefType int64
@@ -60,9 +60,9 @@ func (p *RefType) Value() (driver.Value, error) {
 type BotTableStatus int64
 
 const (
-	// 已上线
+	// online
 	BotTableStatus_Online BotTableStatus = 1
-	// 删除
+	// delete
 	BotTableStatus_Delete BotTableStatus = 2
 )
 
@@ -104,11 +104,11 @@ func (p *BotTableStatus) Value() (driver.Value, error) {
 type FieldItemType int64
 
 const (
-	// 文本
+	// Text
 	FieldItemType_Text FieldItemType = 1
-	// 数字
+	// number
 	FieldItemType_Number FieldItemType = 2
-	// 时间
+	// time
 	FieldItemType_Date FieldItemType = 3
 	// float
 	FieldItemType_Float FieldItemType = 4
@@ -166,13 +166,13 @@ func (p *FieldItemType) Value() (driver.Value, error) {
 type BotTableRWMode int64
 
 const (
-	// 单用户模式
+	// single user mode
 	BotTableRWMode_LimitedReadWrite BotTableRWMode = 1
-	// 只读模式
+	// read-only mode
 	BotTableRWMode_ReadOnly BotTableRWMode = 2
-	// 多用户模式
+	// multi-user mode
 	BotTableRWMode_UnlimitedReadWrite BotTableRWMode = 3
-	// Max 边界值
+	// Max boundary value
 	BotTableRWMode_RWModeMax BotTableRWMode = 4
 )
 
@@ -264,9 +264,9 @@ func (p *SortDirection) Value() (driver.Value, error) {
 type TableType int64
 
 const (
-	// 草稿
+	// draft
 	TableType_DraftTable TableType = 1
-	// 线上
+	// online
 	TableType_OnlineTable TableType = 2
 )
 
@@ -308,9 +308,9 @@ func (p *TableType) Value() (driver.Value, error) {
 type SceneType int64
 
 const (
-	// bot 个性描述
+	// bot personality description
 	SceneType_BotPersona SceneType = 1
-	// 开发者给的模型文本描述
+	// Text description of the model given by the developer
 	SceneType_ModelDesc SceneType = 2
 )
 
@@ -352,15 +352,15 @@ func (p *SceneType) Value() (driver.Value, error) {
 type ActionKey int64
 
 const (
-	//复制
+	//copy
 	ActionKey_Copy ActionKey = 1
-	//删除
+	//delete
 	ActionKey_Delete ActionKey = 2
-	//启用/禁用
+	//enable/disable
 	ActionKey_EnableSwitch ActionKey = 3
-	//编辑
+	//edit
 	ActionKey_Edit ActionKey = 4
-	// 跨空间复制
+	// Cross-space copy
 	ActionKey_CrossSpaceCopy ActionKey = 10
 )
 
@@ -414,9 +414,9 @@ func (p *ActionKey) Value() (driver.Value, error) {
 type PublishStatus int64
 
 const (
-	//未发布
+	//unpublished
 	PublishStatus_UnPublished PublishStatus = 1
-	//已发布
+	//Published
 	PublishStatus_Published PublishStatus = 2
 )
 
@@ -512,7 +512,7 @@ type Operation int64
 const (
 	// "="
 	Operation_EQUAL Operation = 1
-	// "<>" 或 "!="
+	// "< >" or "! ="
 	Operation_NOT_EQUAL Operation = 2
 	// ">"
 	Operation_GREATER_THAN Operation = 3
@@ -530,9 +530,9 @@ const (
 	Operation_IS_NULL Operation = 9
 	// "IS NOT NULL"
 	Operation_IS_NOT_NULL Operation = 10
-	// "LIKE" 模糊匹配字符串
+	// "LIKE" fuzzy match string
 	Operation_LIKE Operation = 11
-	// "NOT LIKE" 反向模糊匹配
+	// "NOT LIKE" inverse fuzzy match
 	Operation_NOT_LIKE Operation = 12
 )
 
@@ -614,11 +614,11 @@ func (p *Operation) Value() (driver.Value, error) {
 type TableDataType int64
 
 const (
-	// schema sheets 和 preview data
+	// Schema sheets and preview data
 	TableDataType_AllData TableDataType = 0
-	// 只需要 schema 结构 & Sheets
+	// Only need schema structure & Sheets
 	TableDataType_OnlySchema TableDataType = 1
-	// 只需要 preview data
+	// Just preview the data
 	TableDataType_OnlyPreview TableDataType = 2
 )
 
@@ -665,17 +665,17 @@ type ColumnType int64
 
 const (
 	ColumnType_Unknown ColumnType = 0
-	// 文本
+	// Text
 	ColumnType_Text ColumnType = 1
-	// 数字
+	// number
 	ColumnType_Number ColumnType = 2
-	// 时间
+	// time
 	ColumnType_Date ColumnType = 3
 	// float
 	ColumnType_Float ColumnType = 4
 	// bool
 	ColumnType_Boolean ColumnType = 5
-	// 图片
+	// picture
 	ColumnType_Image ColumnType = 6
 )
 
@@ -741,9 +741,9 @@ func NewGetDatabaseTemplateRequest() *GetDatabaseTemplateRequest {
 }
 
 type RefInfo struct {
-	// 引用类型
+	// reference type
 	RefType RefType `thrift:"ref_type,1" form:"ref_type" json:"ref_type" query:"ref_type"`
-	// 引用 id
+	// reference id
 	RefID string `thrift:"ref_id,2" form:"ref_id" json:"ref_id" query:"ref_id"`
 }
 
@@ -931,11 +931,11 @@ type FieldItem struct {
 	Desc         string        `thrift:"desc,2" form:"desc" json:"desc" query:"desc"`
 	Type         FieldItemType `thrift:"type,3" form:"type" json:"type" query:"type"`
 	MustRequired bool          `thrift:"must_required,4" form:"must_required" json:"must_required" query:"must_required"`
-	// 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
+	// This field is only used to determine whether it is published. If it is not 0, it is published. The front end cannot modify the field type for the published field.
 	ID int64 `thrift:"id,5" form:"id" json:"id" query:"id"`
-	// 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
+	// When modifying a field (alter, publish), it is used to judge additions and deletions. 0 means new additions, and non-0 means modification or deletion.
 	AlterId int64 `thrift:"alterId,6" form:"alterId" json:"alterId" query:"alterId"`
-	// 是否是系统字段
+	// Is it a system field?
 	IsSystemField bool `thrift:"is_system_field,7" form:"is_system_field" json:"is_system_field" query:"is_system_field"`
 }
 
@@ -1727,25 +1727,25 @@ func (p *Criterion) String() string {
 }
 
 type ListDatabaseRequest struct {
-	// 获取创建者为某个用户的的数据库
+	// Get a database created by a user
 	CreatorID *int64 `thrift:"creator_id,1,optional" form:"creator_id" json:"creator_id,string,omitempty" query:"creator_id"`
-	// 获取project下的数据库
+	// Get the database under the project
 	ProjectID *int64 `thrift:"project_id,2,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
-	//获取空间下的可见数据库
+	//Get the visible database under space
 	SpaceID *int64 `thrift:"space_id,3,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
-	//对bot_id进行过滤，过滤掉已经添加到bot中的database
+	//Filter bot_id to filter out databases that have been added to the bot
 	BotID *int64 `thrift:"bot_id,4,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
-	// 表格名称，模糊搜索
+	// Table name, fuzzy search
 	TableName *string `thrift:"table_name,5,optional" form:"table_name" json:"table_name,omitempty" query:"table_name"`
-	// 查草稿态database
+	// Draft database
 	TableType TableType `thrift:"table_type,6,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
-	// 排序
+	// sort
 	OrderBy []*OrderBy `thrift:"order_by,7,optional" form:"order_by" json:"order_by,omitempty" query:"order_by"`
 	Offset  *int32     `thrift:"offset,8,optional" form:"offset" json:"offset,omitempty" query:"offset"`
 	Limit   *int32     `thrift:"limit,9,optional" form:"limit" json:"limit,omitempty" query:"limit"`
-	//筛选条件
+	//filter criteria
 	FilterCriterion *Criterion `thrift:"filter_criterion,10,optional" form:"filter_criterion" json:"filter_criterion,omitempty" query:"filter_criterion"`
-	//排序条件
+	//sort condition
 	OrderByList []*OrderBy `thrift:"order_by_list,11,optional" form:"order_by_list" json:"order_by_list,omitempty" query:"order_by_list"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -2533,47 +2533,47 @@ func (p *ListDatabaseRequest) String() string {
 }
 
 type DatabaseInfo struct {
-	// online_database_info的主键id
+	// online_database_info primary key id
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	// 空间的id
+	// ID of space
 	SpaceID int64 `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
 	// project id
 	ProjectID int64 `thrift:"project_id,3" form:"project_id" json:"project_id,string" query:"project_id"`
-	// datamodel侧的表id
+	// Table ID on the datamodel side
 	DatamodelTableID string `thrift:"datamodel_table_id,4" form:"datamodel_table_id" json:"datamodel_table_id" query:"datamodel_table_id"`
-	// 头像url
+	// avatar url
 	IconURL string `thrift:"icon_url,5" form:"icon_url" json:"icon_url" query:"icon_url"`
-	// 头像url
+	// avatar url
 	IconURI string `thrift:"icon_uri,6" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	// 表名
+	// table name
 	TableName string `thrift:"table_name,7" form:"table_name" json:"table_name" query:"table_name"`
-	// 表描述
+	// table description
 	TableDesc string `thrift:"table_desc,8" form:"table_desc" json:"table_desc" query:"table_desc"`
-	// 状态
+	// status
 	Status BotTableStatus `thrift:"status,9" form:"status" json:"status" query:"status"`
-	// 创建者id
+	// creator id
 	CreatorID int64 `thrift:"creator_id,10" form:"creator_id" json:"creator_id,string" query:"creator_id"`
-	// 创建时间
+	// create_time
 	CreateTime int64 `thrift:"create_time,11" form:"create_time" json:"create_time" query:"create_time"`
-	// 更新时间
+	// update time
 	UpdateTime int64 `thrift:"update_time,12" form:"update_time" json:"update_time" query:"update_time"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem `thrift:"field_list,13" form:"field_list" json:"field_list" query:"field_list"`
-	// 数据表实际名称
+	// Data table actual name
 	ActualTableName string `thrift:"actual_table_name,14" form:"actual_table_name" json:"actual_table_name" query:"actual_table_name"`
-	// 读写模式
+	// read and write mode
 	RwMode BotTableRWMode `thrift:"rw_mode,15" form:"rw_mode" json:"rw_mode" query:"rw_mode"`
-	// 是否支持prompt调用
+	// Whether to support prompt calls
 	PromptDisabled bool `thrift:"prompt_disabled,16" form:"prompt_disabled" json:"prompt_disabled" query:"prompt_disabled"`
-	// 是否可见
+	// Is it visible?
 	IsVisible bool `thrift:"is_visible,17" form:"is_visible" json:"is_visible" query:"is_visible"`
-	// 对应草稿态的id
+	// ID corresponding to draft state
 	DraftID *int64 `thrift:"draft_id,18,optional" form:"draft_id" json:"draft_id,string,omitempty" query:"draft_id"`
-	// 相关id. bot_id，老的有，新的没有
+	// Related id. bot_id, the old one is available, the new one is not.
 	BotID *int64 `thrift:"bot_id,19,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
-	// 扩展信息
+	// extended information
 	ExtraInfo map[string]string `thrift:"extra_info,20,optional" form:"extra_info" json:"extra_info,omitempty" query:"extra_info"`
-	// 是否已经添加到bot中
+	// Has it been added to the bot?
 	IsAddedToBot *bool `thrift:"is_added_to_bot,21,optional" form:"is_added_to_bot" json:"is_added_to_bot,omitempty" query:"is_added_to_bot"`
 }
 
@@ -4098,13 +4098,13 @@ func (p *ListDatabaseResponse) String() string {
 }
 
 type SingleDatabaseRequest struct {
-	// database_info的主键id
+	// database_info primary key id
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	//传入的是否是草稿态数据，默认是false
+	//Whether the incoming data is in draft form, the default is false.
 	IsDraft bool `thrift:"is_draft,2" form:"is_draft" json:"is_draft" query:"is_draft"`
-	//是否需要系统字段
+	//Do you need system fields?
 	NeedSysFields bool `thrift:"need_sys_fields,3" form:"need_sys_fields" json:"need_sys_fields" query:"need_sys_fields"`
-	// 版本号，不传默认是最新的
+	// The version number is not passed on, and the default is the latest.
 	Version int64      `thrift:"version,4" form:"version" json:"version,string" query:"version"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -4737,25 +4737,25 @@ func (p *SingleDatabaseResponse) String() string {
 }
 
 type AddDatabaseRequest struct {
-	// 创建者id
+	// creator id
 	CreatorID int64 `thrift:"creator_id,1" form:"creator_id" json:"creator_id,string" query:"creator_id"`
-	// 空间的id
+	// ID of space
 	SpaceID int64 `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
 	// project id
 	ProjectID int64 `thrift:"project_id,3" form:"project_id" json:"project_id,string" query:"project_id"`
-	// 头像url
+	// avatar url
 	IconURI string `thrift:"icon_uri,4" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	// 表名
+	// table name
 	TableName string `thrift:"table_name,5" form:"table_name" json:"table_name" query:"table_name"`
-	// 表描述
+	// table description
 	TableDesc string `thrift:"table_desc,6" form:"table_desc" json:"table_desc" query:"table_desc"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem `thrift:"field_list,7" form:"field_list" json:"field_list" query:"field_list"`
-	// 读写模式，单用户模式/多用户模式
+	// Read and write mode, single user mode/multi-user mode
 	RwMode BotTableRWMode `thrift:"rw_mode,8" form:"rw_mode" json:"rw_mode" query:"rw_mode"`
-	// 是否支持prompt调用
+	// Whether to support prompt calls
 	PromptDisabled bool `thrift:"prompt_disabled,9" form:"prompt_disabled" json:"prompt_disabled" query:"prompt_disabled"`
-	// 扩展信息
+	// extended information
 	ExtraInfo map[string]string `thrift:"extra_info,10,optional" form:"extra_info" json:"extra_info,omitempty" query:"extra_info"`
 	Base      *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -5404,21 +5404,21 @@ func (p *AddDatabaseRequest) String() string {
 }
 
 type UpdateDatabaseRequest struct {
-	// database_info的主键id
+	// database_info primary key id
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	// 头像url
+	// avatar url
 	IconURI string `thrift:"icon_uri,2" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	// 表名
+	// table name
 	TableName string `thrift:"table_name,3" form:"table_name" json:"table_name" query:"table_name"`
-	// 表描述
+	// table description
 	TableDesc string `thrift:"table_desc,5" form:"table_desc" json:"table_desc" query:"table_desc"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem `thrift:"field_list,6" form:"field_list" json:"field_list" query:"field_list"`
-	// 读写模式，单用户模式/多用户模式
+	// Read and write mode, single user mode/multi-user mode
 	RwMode BotTableRWMode `thrift:"rw_mode,7" form:"rw_mode" json:"rw_mode" query:"rw_mode"`
-	// 是否支持prompt调用
+	// Whether to support prompt calls
 	PromptDisabled bool `thrift:"prompt_disabled,8" form:"prompt_disabled" json:"prompt_disabled" query:"prompt_disabled"`
-	// 扩展信息
+	// extended information
 	ExtraInfo map[string]string `thrift:"extra_info,9,optional" form:"extra_info" json:"extra_info,omitempty" query:"extra_info"`
 	Base      *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -5979,7 +5979,7 @@ func (p *UpdateDatabaseRequest) String() string {
 }
 
 type DeleteDatabaseRequest struct {
-	// database_info的主键id
+	// database_info primary key id
 	ID   int64      `thrift:"id,1" form:"id" json:"id,string" query:"id"`
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -6424,7 +6424,7 @@ func (p *DeleteDatabaseResponse) String() string {
 }
 
 type BindDatabaseToBotRequest struct {
-	// 草稿态数据database表主键id，注意是草稿态哈
+	// Draft data database table primary key id, note that it is draft state
 	DatabaseID int64 `thrift:"database_id,1" form:"database_id" json:"database_id,string" query:"database_id"`
 	// bot_id
 	BotID int64      `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
@@ -6917,25 +6917,25 @@ func (p *BindDatabaseToBotResponse) String() string {
 type ListDatabaseRecordsRequest struct {
 	// database_id
 	DatabaseID int64 `thrift:"database_id,1,required" form:"database_id,required" json:"database_id,string,required" query:"database_id,required"`
-	// bot id，这里是查找bot关联的草稿态数据的时候填这个
+	// bot id, here is to fill in this when looking for the draft state data associated with the bot
 	BotID *int64 `thrift:"bot_id,2,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
-	// workflow_id，，这里是查找wk_flow关联的草稿态表的时候填这个
+	// workflow_id,, here is to fill in this when looking up wk_flow associated draft status sheet
 	WorkflowID *int64 `thrift:"workflow_id,3,optional" form:"workflow_id" json:"workflow_id,string,omitempty" query:"workflow_id"`
-	// 为true不根据user_id进行过滤Records
+	// Is true does not filter by user_id Records
 	NotFilterByUserID *bool `thrift:"not_filter_by_user_id,4,optional" form:"not_filter_by_user_id" json:"not_filter_by_user_id,omitempty" query:"not_filter_by_user_id"`
-	// 为true不根据ConnectorID进行过滤Records
+	// Records not filtered by ConnectorID
 	NotFilterByConnectorID *bool `thrift:"not_filter_by_connector_id,5,optional" form:"not_filter_by_connector_id" json:"not_filter_by_connector_id,omitempty" query:"not_filter_by_connector_id"`
-	// 要查的是草稿态还是线上态
+	// Do you want to check the draft state or the online state?
 	TableType TableType `thrift:"table_type,6" form:"table_type" json:"table_type" query:"table_type"`
-	// 别超过100，建议50
+	// Do not exceed 100, 50 is recommended.
 	Limit int64 `thrift:"limit,7" form:"limit" json:"limit" query:"limit"`
-	// 偏移量
+	// Offset
 	Offset int64 `thrift:"offset,8" form:"offset" json:"offset" query:"offset"`
-	// 同个project下数据不隔离
+	// Data is not isolated under the same project
 	ProjectID *int64 `thrift:"project_id,9,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
-	//筛选条件
+	//filter criteria
 	FilterCriterion *ComplexCondition `thrift:"filter_criterion,10,optional" form:"filter_criterion" json:"filter_criterion,omitempty" query:"filter_criterion"`
-	//排序条件
+	//sort condition
 	OrderByList []*OrderBy `thrift:"order_by_list,11,optional" form:"order_by_list" json:"order_by_list,omitempty" query:"order_by_list"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -7672,13 +7672,13 @@ func (p *ListDatabaseRecordsRequest) String() string {
 type ListDatabaseRecordsRequestRPC struct {
 	// database_id
 	DatabaseID int64 `thrift:"database_id,1,required" form:"database_id,required" json:"database_id,string,required" query:"database_id,required"`
-	// 要查的是草稿态还是线上态
+	// Do you want to check the draft state or the online state?
 	TableType TableType `thrift:"table_type,2" form:"table_type" json:"table_type" query:"table_type"`
-	// 别超过100，建议50
+	// Do not exceed 100, 50 is recommended.
 	Limit int64 `thrift:"limit,3" form:"limit" json:"limit" query:"limit"`
-	// 偏移量
+	// Offset
 	Offset int64 `thrift:"offset,4" form:"offset" json:"offset" query:"offset"`
-	// 用户id
+	// user id
 	UserID string     `thrift:"user_id,5" form:"user_id" json:"user_id" query:"user_id"`
 	Base   *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -8058,7 +8058,7 @@ type ListDatabaseRecordsResponseRPC struct {
 	Data     []map[string]string `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
 	HasMore  bool                `thrift:"HasMore,2,required" form:"HasMore,required" json:"HasMore,required" query:"HasMore,required"`
 	TotalNum int32               `thrift:"TotalNum,3,required" form:"TotalNum,required" json:"TotalNum,required" query:"TotalNum,required"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem   `thrift:"field_list,4" form:"field_list" json:"field_list" query:"field_list"`
 	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -8486,7 +8486,7 @@ type ListDatabaseRecordsResponse struct {
 	Data     []map[string]string `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
 	HasMore  bool                `thrift:"HasMore,2,required" form:"HasMore,required" json:"HasMore,required" query:"HasMore,required"`
 	TotalNum int32               `thrift:"TotalNum,3,required" form:"TotalNum,required" json:"TotalNum,required" query:"TotalNum,required"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem   `thrift:"field_list,4,optional" form:"field_list" json:"field_list,omitempty" query:"field_list"`
 	Code      int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg       string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -9028,15 +9028,15 @@ func (p *ListDatabaseRecordsResponse) String() string {
 type UpdateDatabaseRecordsRequest struct {
 	// database_id
 	DatabaseID int64 `thrift:"database_id,1,required" form:"database_id,required" json:"database_id,string,required" query:"database_id,required"`
-	// 新增的
+	// new
 	RecordDataAdd []map[string]string `thrift:"record_data_add,2,optional" form:"record_data_add" json:"record_data_add,omitempty" query:"record_data_add"`
-	// 修改的
+	// modified
 	RecordDataAlter []map[string]string `thrift:"record_data_alter,3,optional" form:"record_data_alter" json:"record_data_alter,omitempty" query:"record_data_alter"`
-	// 删除的
+	// deleted
 	RecordDataDelete []map[string]string `thrift:"record_data_delete,4,optional" form:"record_data_delete" json:"record_data_delete,omitempty" query:"record_data_delete"`
-	// 要更新的的是草稿态还是线上态
+	// Is the draft state or online state to be updated?
 	TableType *TableType `thrift:"table_type,5,optional" form:"table_type" json:"table_type,omitempty" query:"table_type"`
-	// 更新时需穿入connector id
+	// The connector id needs to be inserted when updating.
 	OriConnectorID *string    `thrift:"ori_connector_id,6,optional" form:"ori_connector_id" json:"ori_connector_id,omitempty" query:"ori_connector_id"`
 	Base           *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -10018,7 +10018,7 @@ func (p *UpdateDatabaseRecordsResponse) String() string {
 }
 
 type GetOnlineDatabaseIdRequest struct {
-	// draft 的database_id
+	// The draft database_id
 	ID   int64      `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -10219,7 +10219,7 @@ func (p *GetOnlineDatabaseIdRequest) String() string {
 }
 
 type GetOnlineDatabaseIdResponse struct {
-	// 根据草稿的id查询线上的id
+	// Check the online id according to the id of the draft.
 	ID       *int64         `thrift:"id,1,optional" form:"id" json:"id,string,omitempty" query:"id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -10533,31 +10533,31 @@ func (p *GetOnlineDatabaseIdResponse) String() string {
 }
 
 type BotTable struct {
-	// 自增id，table id
+	// Autoincrement id, table id
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	// 相关id. bot_id
+	// Related id bot_id
 	BotID int64 `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
 	// table_id
 	TableID string `thrift:"table_id,3" form:"table_id" json:"table_id" query:"table_id"`
-	// 表名
+	// table name
 	TableName string `thrift:"table_name,4" form:"table_name" json:"table_name" query:"table_name"`
-	// 表描述
+	// table description
 	TableDesc string `thrift:"table_desc,5" form:"table_desc" json:"table_desc" query:"table_desc"`
-	// 状态
+	// status
 	Status BotTableStatus `thrift:"status,6" form:"status" json:"status" query:"status"`
-	// 创建着id
+	// Creating the ID.
 	CreatorID int64 `thrift:"creator_id,7" form:"creator_id" json:"creator_id" query:"creator_id"`
-	// 创建时间
+	// create_time
 	CreateTime int64 `thrift:"create_time,8" form:"create_time" json:"create_time" query:"create_time"`
-	// 更新时间
+	// update time
 	UpdateTime int64 `thrift:"update_time,9" form:"update_time" json:"update_time" query:"update_time"`
-	// 字段信息
+	// Field information
 	FieldList []*FieldItem `thrift:"field_list,10" form:"field_list" json:"field_list" query:"field_list"`
-	// 数据表实际名称
+	// Data table actual name
 	ActualTableName string `thrift:"actual_table_name,11" form:"actual_table_name" json:"actual_table_name" query:"actual_table_name"`
-	// 读写模式
+	// read and write mode
 	RwMode BotTableRWMode `thrift:"rw_mode,12" form:"rw_mode" json:"rw_mode" query:"rw_mode"`
-	// 扩展信息
+	// extended information
 	ExtraInfo map[string]string `thrift:"extra_info,13,optional" form:"extra_info" json:"extra_info,omitempty" query:"extra_info"`
 }
 
@@ -11285,7 +11285,7 @@ func (p *BotTable) String() string {
 }
 
 type InsertBotTableRequest struct {
-	// 保存表信息
+	// Save table information
 	BotTable *BotTable  `thrift:"bot_table,1" form:"bot_table" json:"bot_table" query:"bot_table"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -11683,7 +11683,7 @@ func (p *InsertBotTableResponse) String() string {
 }
 
 type AlterBotTableRequest struct {
-	// 修改表信息
+	// Modify table information
 	BotTable *BotTable  `thrift:"bot_table,1" form:"bot_table" json:"bot_table" query:"bot_table"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -13298,9 +13298,9 @@ func (p *GetBotTableResponse) String() string {
 }
 
 type CopyDatabaseRequest struct {
-	//ID生成器生成
+	//ID generator generation
 	IdempotentId string `thrift:"IdempotentId,1,required" form:"IdempotentId,required" json:"IdempotentId,required" query:"IdempotentId,required"`
-	//原来的tableId
+	//Original tableId
 	TableIds  []int64    `thrift:"TableIds,2,required" form:"TableIds,required" json:"TableIds,required" query:"TableIds,required"`
 	ToSpaceId int64      `thrift:"ToSpaceId,3,required" form:"ToSpaceId,required" json:"ToSpaceId,required" query:"ToSpaceId,required"`
 	ToUserId  int64      `thrift:"ToUserId,4,required" form:"ToUserId,required" json:"ToUserId,required" query:"ToUserId,required"`
@@ -14014,9 +14014,9 @@ func (p *CopyDatabaseResponse) String() string {
 }
 
 type CopyDatabaseRollbackRequest struct {
-	// ID生成器生成
+	// ID generator generation
 	IdempotentId string `thrift:"IdempotentId,1,required" form:"IdempotentId,required" json:"IdempotentId,required" query:"IdempotentId,required"`
-	// CopyDatabaseResponse返回的参数
+	// Parameters returned CopyDatabaseResponse
 	TableIdsMapping map[int64]int64 `thrift:"TableIdsMapping,2,required" form:"TableIdsMapping,required" json:"TableIdsMapping,required" query:"TableIdsMapping,required"`
 	Base            *base.Base      `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -14502,17 +14502,17 @@ func (p *CopyDatabaseRollbackResponce) String() string {
 }
 
 type GetNL2SQLRequest struct {
-	// 数据库请求的自然语言描述
+	// Natural language description of database requests
 	Text string `thrift:"text,1,required" form:"text,required" json:"text,required" query:"text,required"`
 	// bot id
 	BotID int64 `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID *int64 `thrift:"connector_id,3,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID *string `thrift:"connector_uid,4,optional" form:"connector_uid" json:"connector_uid,omitempty" query:"connector_uid"`
-	// table类型，分 draft 和 online 两种
+	// Table types, draft and online
 	TableType TableType `thrift:"table_type,5,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
-	// 数据库id
+	// Database ID
 	DatabaseID *int64     `thrift:"database_id,6,optional" form:"database_id" json:"database_id,string,omitempty" query:"database_id"`
 	Base       *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -15357,9 +15357,9 @@ func (p *GetNL2SQLResponse) String() string {
 type GetModeConfigRequest struct {
 	// bot id
 	BotID int64 `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID *int64 `thrift:"connector_id,2,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID *string    `thrift:"connector_uid,3,optional" form:"connector_uid" json:"connector_uid,omitempty" query:"connector_uid"`
 	Base         *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -16181,15 +16181,15 @@ type ResetBotTableRequest struct {
 	BotID     *int64    `thrift:"bot_id,2,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
 	TableID   *int64    `thrift:"table_id,3,optional" form:"table_id" json:"table_id,string,omitempty" query:"table_id"`
 	TableType TableType `thrift:"table_type,4,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID *int64 `thrift:"connector_id,5,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID *string `thrift:"connector_uid,6,optional" form:"connector_uid" json:"connector_uid,omitempty" query:"connector_uid"`
-	// 工作流id
+	// Workflow ID
 	WorkflowID *int64 `thrift:"workflow_id,7,optional" form:"workflow_id" json:"workflow_id,string,omitempty" query:"workflow_id"`
-	// 用户id
+	// user id
 	DatabaseInfoID *int64 `thrift:"database_info_id,8,optional" form:"database_info_id" json:"database_info_id,string,omitempty" query:"database_info_id"`
-	// 项目id
+	// Project ID
 	ProjectID *int64     `thrift:"project_id,9,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -17097,13 +17097,13 @@ func (p *ResetBotTableResponse) String() string {
 /********  bot_table end     ********/
 /********      Bytedoc  bot_table_info  start   ********/
 type BatchInsertBotTableInfoRequest struct {
-	// 数据库名称
+	// database name
 	DbName string `thrift:"db_name,1" form:"db_name" json:"db_name" query:"db_name"`
-	// 集合名
+	// collection name
 	CollectionName string `thrift:"collection_name,2" form:"collection_name" json:"collection_name" query:"collection_name"`
-	// 保存数据
+	// save data
 	Data []map[string]string `thrift:"data,3" form:"data" json:"data" query:"data"`
-	// 用户id
+	// user id
 	UserID int64 `thrift:"user_id,4" form:"user_id" json:"user_id" query:"user_id"`
 	// bot id
 	BotID int64      `thrift:"bot_id,5" form:"bot_id" json:"bot_id" query:"bot_id"`
@@ -17676,13 +17676,13 @@ func (p *BatchInsertBotTableInfoResponse) String() string {
 }
 
 type UpdateBotTableInfoRequest struct {
-	// 数据库名称
+	// database name
 	DbName string `thrift:"db_name,1" form:"db_name" json:"db_name" query:"db_name"`
-	// 集合名
+	// collection name
 	CollectionName string `thrift:"collection_name,2" form:"collection_name" json:"collection_name" query:"collection_name"`
-	// 更新数据
+	// update data
 	DataList []map[string]string `thrift:"data_list,3" form:"data_list" json:"data_list" query:"data_list"`
-	// 用户id
+	// user id
 	UserID int64 `thrift:"user_id,4" form:"user_id" json:"user_id" query:"user_id"`
 	// bot id
 	BotID int64      `thrift:"bot_id,5" form:"bot_id" json:"bot_id" query:"bot_id"`
@@ -18255,13 +18255,13 @@ func (p *UpdateBotTableInfoResponse) String() string {
 }
 
 type DeleteBotTableInfoRequest struct {
-	// 数据库名称
+	// database name
 	DbName string `thrift:"db_name,1" form:"db_name" json:"db_name" query:"db_name"`
-	// 集合名
+	// collection name
 	CollectionName string `thrift:"collection_name,2" form:"collection_name" json:"collection_name" query:"collection_name"`
-	// 删除id 列表
+	// Delete id list
 	Ids []string `thrift:"ids,3" form:"ids" json:"ids" query:"ids"`
-	// 用户id
+	// user id
 	UserID int64 `thrift:"user_id,4" form:"user_id" json:"user_id" query:"user_id"`
 	// bot id
 	BotID int64      `thrift:"bot_id,5" form:"bot_id" json:"bot_id" query:"bot_id"`
@@ -18805,19 +18805,19 @@ func (p *DeleteBotTableInfoResponse) String() string {
 }
 
 type SearchBotTableInfoRequest struct {
-	// 搜素词,目前忽略
+	// Search term, currently ignored
 	KeyWord string `thrift:"key_word,1" form:"key_word" json:"key_word" query:"key_word"`
 	Limit   int64  `thrift:"limit,2" form:"limit" json:"limit" query:"limit"`
 	Offset  int64  `thrift:"offset,3" form:"offset" json:"offset" query:"offset"`
-	// 用户id
+	// user id
 	ConnectorUID string `thrift:"connector_uid,4" form:"connector_uid" json:"connector_uid" query:"connector_uid"`
 	ConnectorID  int64  `thrift:"connector_id,5" form:"connector_id" json:"connector_id" query:"connector_id"`
 	// bot id
 	BotID int64 `thrift:"bot_id,6" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	// 目前忽略
+	// Currently ignored
 	TableName string `thrift:"table_name,7" form:"table_name" json:"table_name" query:"table_name"`
 	TableID   int64  `thrift:"table_id,8" form:"table_id" json:"table_id,string" query:"table_id"`
-	// 引用信息
+	// citation information
 	RefInfo *RefInfo   `thrift:"ref_info,9,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -19732,27 +19732,27 @@ func (p *SearchBotTableInfoResponse) String() string {
 }
 
 type ExecuteSqlRequest struct {
-	// RunCommand 能执行的sql
+	// SQL that RunCommand can execute
 	SQL string `thrift:"sql,1" form:"sql" json:"sql" query:"sql"`
 	// bot id
 	BotID int64 `thrift:"bot_id,2" form:"bot_id" json:"bot_id" query:"bot_id"`
-	// 业务线id
+	// line of business id
 	ConnectorID int64 `thrift:"connector_id,3" form:"connector_id" json:"connector_id" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID string `thrift:"connector_uid,4" form:"connector_uid" json:"connector_uid" query:"connector_uid"`
-	// table类型
+	// Table type
 	TableType TableType `thrift:"table_type,5" form:"table_type" json:"table_type" query:"table_type"`
-	// workflow test run 标识
+	// Workflow test run identification
 	WftestID string `thrift:"wftest_id,6" form:"wftest_id" json:"wftest_id" query:"wftest_id"`
-	// 引用信息
+	// citation information
 	RefInfo *RefInfo `thrift:"ref_info,7,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	// SQL params
 	SqlParams []*SqlParamVal `thrift:"SqlParams,8,optional" form:"SqlParams" json:"SqlParams,omitempty" query:"SqlParams"`
-	// database info 的id
+	// Database info id
 	DatabaseInfoID int64 `thrift:"database_info_id,9" form:"database_info_id" json:"database_info_id" query:"database_info_id"`
 	// workflow id
 	WorkflowID int64 `thrift:"workflow_id,10" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
-	// 项目id
+	// Project ID
 	ProjectID int64      `thrift:"project_id,11" form:"project_id" json:"project_id" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -20990,9 +20990,9 @@ func (p *ExecuteSqlResponse) String() string {
 
 type BotTablePublishReq struct {
 	BotID int64 `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID *int64 `thrift:"connector_id,2,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID *string    `thrift:"connector_uid,3,optional" form:"connector_uid" json:"connector_uid,omitempty" query:"connector_uid"`
 	Base         *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -21303,9 +21303,9 @@ func (p *BotTablePublishReq) String() string {
 }
 
 type BotTablePublishResp struct {
-	// 执行状态： 0-执行成功 1-执行全部失败 2-执行部分失败
+	// Execution status: 0-successful execution 1-failed execution all 2-failed execution part
 	Status int64 `thrift:"status,1" form:"status" json:"status" query:"status"`
-	// 错误信息
+	// error message
 	Msg      string         `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
@@ -21542,15 +21542,15 @@ func (p *BotTablePublishResp) String() string {
 }
 
 type NL2SQLRequest struct {
-	// 数据库请求的自然语言描述
+	// Natural language description of database requests
 	Text string `thrift:"text,1,required" form:"text,required" json:"text,required" query:"text,required"`
 	// bot id
 	BotID int64 `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID *int64 `thrift:"connector_id,3,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID *string `thrift:"connector_uid,4,optional" form:"connector_uid" json:"connector_uid,omitempty" query:"connector_uid"`
-	// table类型，分 draft 和 online 两种
+	// Table types, draft and online
 	TableType TableType  `thrift:"table_type,5,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -22248,19 +22248,19 @@ func (p *NL2SQLResponse) String() string {
 }
 
 type QueryTableByNLRequest struct {
-	// 数据库请求的自然语言描述
+	// Natural language description of database requests
 	Text string `thrift:"text,1,required" form:"text,required" json:"text,required" query:"text,required"`
 	// bot id
 	BotID int64 `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
-	// 业务线id
+	// line of business id
 	ConnectorID int64 `thrift:"connector_id,3,required" form:"connector_id,required" json:"connector_id,required" query:"connector_id,required"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID string `thrift:"connector_uid,4,required" form:"connector_uid,required" json:"connector_uid,required" query:"connector_uid,required"`
-	// table类型，分 draft 和 online 两种
+	// Table types, draft and online
 	TableType TableType `thrift:"table_type,5,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
-	// chat history 透传到 nl2query 服务，由 nl2query 进行解析
+	// The chat history is passed to the nl2query service, which is parsed by nl2query
 	XAipluginTakoBotHistory *string `thrift:"x_aiplugin_tako_bot_history,6,optional" form:"x_aiplugin_tako_bot_history" json:"x_aiplugin_tako_bot_history,omitempty" query:"x_aiplugin_tako_bot_history"`
-	// bot_system_message 透传到 nl2query 服务，由 nl2query 进行解析
+	// bot_system_message passed to the nl2query service, which is parsed by nl2query
 	XAipluginBotSystemMessage *string    `thrift:"x_aiplugin_bot_system_message,7,optional" form:"x_aiplugin_bot_system_message" json:"x_aiplugin_bot_system_message,omitempty" query:"x_aiplugin_bot_system_message"`
 	Base                      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -24544,11 +24544,11 @@ func (p *MigrateDatabaseResponse) String() string {
 }
 
 type MigrateOldDataRequest struct {
-	// 迁移哪个表
+	// Which table to migrate
 	BotType TableType `thrift:"bot_type,1" form:"bot_type" json:"bot_type" query:"bot_type"`
-	// 迁移哪个bot
+	// Which bot to migrate?
 	BotID int64 `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	// 失败重试
+	// Failed retry
 	TableIds []int64    `thrift:"table_ids,3" form:"table_ids" json:"table_ids,string" query:"table_ids"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -25106,9 +25106,9 @@ func (p *MigrateOldDataResponse) String() string {
 }
 
 type MGetDisplayResourceInfoRequest struct {
-	// 最大传一页的数量，实现方可以限制最大100个
+	// The maximum number of one page can be transferred, and the implementer can limit the maximum to 100.
 	ResIDs []int64 `thrift:"ResIDs,1" form:"ResIDs" json:"ResIDs" query:"ResIDs"`
-	// 当前的用户，实现方用于判断权限
+	// The current user, the implementation is used to determine the authority
 	CurrentUserID int64      `thrift:"CurrentUserID,2" form:"CurrentUserID" json:"CurrentUserID" query:"CurrentUserID"`
 	Base          *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -25580,11 +25580,11 @@ func (p *MGetDisplayResourceInfoResponse) String() string {
 
 }
 
-// Library资源操作
+// Library Resource Operations
 type ResourceAction struct {
-	// 一个操作对应一个唯一的key，key由资源侧约束
+	// An operation corresponds to a unique key, and the key is constrained by the resource side
 	Key ActionKey `thrift:"Key,1,required" json:"key" form:"Key,required" query:"Key,required"`
-	//ture=可以操作该Action，false=置灰
+	//ture = can operate this Action, false = grey out
 	Enable bool `thrift:"Enable,2,required" json:"enable" form:"Enable,required" query:"Enable,required"`
 }
 
@@ -25782,29 +25782,29 @@ func (p *ResourceAction) String() string {
 
 }
 
-// 展示用，实现方提供展示信息
+// For display, the implementer provides display information
 type DisplayResourceInfo struct {
-	// 资源id
+	// Resource ID
 	ResID *int64 `thrift:"ResID,1,optional" form:"ResID" json:"ResID,omitempty" query:"ResID"`
-	// 资源描述
+	// resource description
 	Desc *string `thrift:"Desc,5,optional" form:"Desc" json:"Desc,omitempty" query:"Desc"`
-	// 资源Icon，完整url
+	// Resource Icon, full url
 	Icon *string `thrift:"Icon,6,optional" form:"Icon" json:"Icon,omitempty" query:"Icon"`
-	// 资源状态，各类型资源自身定义
+	// Resource status, each type of resource defines itself
 	BizResStatus *int32 `thrift:"BizResStatus,12,optional" form:"BizResStatus" json:"BizResStatus,omitempty" query:"BizResStatus"`
-	// 是否开启多人编辑
+	// Whether to enable multi-person editing
 	CollaborationEnable *bool `thrift:"CollaborationEnable,13,optional" form:"CollaborationEnable" json:"CollaborationEnable,omitempty" query:"CollaborationEnable"`
-	// 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
+	// Business carry extended information to res_type distinguish, each res_type defined schema and meaning is not the same, need to judge before use res_type
 	BizExtend map[string]string `thrift:"BizExtend,16,optional" form:"BizExtend" json:"BizExtend,omitempty" query:"BizExtend"`
-	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
+	// Different types of different operation buttons are agreed upon by the resource implementer and the front end. Return is displayed, if you want to hide a button, do not return;
 	Actions []*ResourceAction `thrift:"Actions,17,optional" form:"Actions" json:"Actions,omitempty" query:"Actions"`
-	// 是否禁止进详情页
+	// Whether to ban entering the details page
 	DetailDisable *bool `thrift:"DetailDisable,18,optional" form:"DetailDisable" json:"DetailDisable,omitempty" query:"DetailDisable"`
-	// 资源名称
+	// resource name
 	Name *string `thrift:"Name,19,optional" form:"Name" json:"Name,omitempty" query:"Name"`
-	// 资源发布状态，1-未发布，2-已发布
+	// Resource release status, 1 - unpublished, 2 - published
 	PublishStatus *PublishStatus `thrift:"PublishStatus,20,optional" form:"PublishStatus" json:"PublishStatus,omitempty" query:"PublishStatus"`
-	// 最近编辑时间, unix秒级时间戳
+	// Last edited, unix timestamp
 	EditTime *int64 `thrift:"EditTime,21,optional" form:"EditTime" json:"EditTime,omitempty" query:"EditTime"`
 }
 
@@ -26774,10 +26774,10 @@ func (p *SelectFieldList) String() string {
 }
 
 type Condition struct {
-	// 左值填字段名
+	// Lvalue field name
 	Left      string    `thrift:"left,1,required" form:"left,required" json:"left,required" query:"left,required"`
 	Operation Operation `thrift:"operation,2,required" form:"operation,required" json:"operation,required" query:"operation,required"`
-	// 右值
+	// rvalue
 	Right string `thrift:"right,3,required" form:"right,required" json:"right,required" query:"right,required"`
 }
 
@@ -27028,9 +27028,9 @@ func (p *Condition) String() string {
 
 type ComplexCondition struct {
 	Conditions []*Condition `thrift:"conditions,1,optional" form:"conditions" json:"conditions,omitempty" query:"conditions"`
-	// 为了拓展，先不用
+	// In order to expand, we don't need to
 	NestedConditions *ComplexCondition `thrift:"nestedConditions,2,optional" form:"nestedConditions" json:"nestedConditions,omitempty" query:"nestedConditions"`
-	// "AND" 或 "OR"
+	// "AND" or "OR"
 	Logic string `thrift:"logic,3,required" form:"logic,required" json:"logic,required" query:"logic,required"`
 }
 
@@ -27648,39 +27648,39 @@ func (p *Row) String() string {
 }
 
 type CRUDDatabaseRequest struct {
-	// database的id
+	// Database id
 	DatabaseInfoID int64 `thrift:"database_info_id,1,required" form:"database_info_id,required" json:"database_info_id,required" query:"database_info_id,required"`
-	// workflow id，wk flow纬度数据隔离
+	// Workflow id, wk flow latitude data isolation
 	WorkflowID int64 `thrift:"workflow_id,2" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
-	// 项目id，同project下不隔离
+	// Project id, not isolated under the same project
 	ProjectID int64 `thrift:"project_id,3" form:"project_id" json:"project_id" query:"project_id"`
 	// bot id
 	BotID int64 `thrift:"bot_id,4" form:"bot_id" json:"bot_id" query:"bot_id"`
-	// 业务线id
+	// line of business id
 	ConnectorID int64 `thrift:"connector_id,5" form:"connector_id" json:"connector_id" query:"connector_id"`
-	// 业务线用户id
+	// line of business user id
 	ConnectorUID string `thrift:"connector_uid,6" form:"connector_uid" json:"connector_uid" query:"connector_uid"`
-	// table类型
+	// Table type
 	TableType TableType `thrift:"table_type,7,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
-	// workflow test run 标识
+	// Workflow test run identification
 	WftestID string `thrift:"wftest_id,8" form:"wftest_id" json:"wftest_id" query:"wftest_id"`
-	// 引用信息
+	// citation information
 	RefInfo *RefInfo `thrift:"ref_info,9,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	// SQL params
 	SQLParams []*SqlParamVal `thrift:"sql_params,10,optional" form:"sql_params" json:"sql_params,omitempty" query:"sql_params"`
-	// 操作类型
+	// operation type
 	OperateType OperateType `thrift:"operate_type,11,required" form:"operate_type,required" json:"operate_type,required" query:"operate_type,required"`
-	// select时要查询的字段列表
+	// List of fields to query when selected
 	FieldList *SelectFieldList `thrift:"field_list,12,optional" form:"field_list" json:"field_list,omitempty" query:"field_list"`
-	// order by 字段列表
+	// Order by field list
 	OrderByList []*OrderBy `thrift:"order_by_list,13,optional" form:"order_by_list" json:"order_by_list,omitempty" query:"order_by_list"`
 	// limit
 	Limit *int64 `thrift:"limit,14,optional" form:"limit" json:"limit,omitempty" query:"limit"`
 	// offset
 	Offset *int64 `thrift:"offset,15,optional" form:"offset" json:"offset,omitempty" query:"offset"`
-	// 查询条件
+	// query condition
 	Condition *ComplexCondition `thrift:"condition,16,optional" form:"condition" json:"condition,omitempty" query:"condition"`
-	// 需要upsert的数据
+	// Data to upsert
 	Rows []*Row `thrift:"rows,17,optional" form:"rows" json:"rows,omitempty" query:"rows"`
 }
 
@@ -28685,9 +28685,9 @@ func (p *CRUDDatabaseRequest) String() string {
 }
 
 type SourceInfo struct {
-	// 本地文件上传的 tos 地址
+	// TOS address for local file upload
 	TosURI *string `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	// imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
+	// imagex_uri, and tos_uri choose one, imagex_uri priority, need to get data and sign url through imagex method
 	ImagexURI *string `thrift:"imagex_uri,2,optional" form:"imagex_uri" json:"imagex_uri,omitempty" query:"imagex_uri"`
 }
 
@@ -28895,7 +28895,7 @@ func (p *SourceInfo) String() string {
 type ValidateTableSchemaRequest struct {
 	SpaceID    int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string" query:"space_id"`
 	DatabaseID int64 `thrift:"database_id,2" form:"database_id" json:"database_id,string" query:"database_id"`
-	// source file 的信息
+	// Information from the source file
 	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_file" json:"source_file"`
 	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet" query:"table_sheet"`
 	TableType  TableType   `thrift:"table_type,5" form:"table_type" json:"table_type" query:"table_type"`
@@ -29278,11 +29278,11 @@ func (p *ValidateTableSchemaRequest) String() string {
 }
 
 type TableSheet struct {
-	// 用户选择的 sheet id
+	// User selected sheet id
 	SheetID int64 `thrift:"sheet_id,1" form:"sheet_id" json:"sheet_id,string" query:"sheet_id"`
-	// 用户选择的表头行数，从 0 开始编号
+	// The number of header rows selected by the user, numbered from 0
 	HeaderLineIdx int64 `thrift:"header_line_idx,2" form:"header_line_idx" json:"header_line_idx,string" query:"header_line_idx"`
-	// 用户选择的起始行号，从 0 开始编号
+	// User-selected starting line number, numbered from 0
 	StartLineIdx int64 `thrift:"start_line_idx,3" form:"start_line_idx" json:"start_line_idx,string" query:"start_line_idx"`
 }
 
@@ -29511,7 +29511,7 @@ func (p *TableSheet) String() string {
 
 type ValidateTableSchemaResponse struct {
 	SchemaValidResult map[string]string `thrift:"SchemaValidResult,1,optional" form:"SchemaValidResult" json:"SchemaValidResult,omitempty" query:"SchemaValidResult"`
-	// 如果失败会返回错误码
+	// If it fails, an error code will be returned.
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
@@ -29848,13 +29848,13 @@ func (p *ValidateTableSchemaResponse) String() string {
 }
 
 type GetTableSchemaRequest struct {
-	// 表格解析信息, 默认初始值0,0,1
+	// Table parsing information, default initial value 0, 0, 1
 	TableSheet *TableSheet `thrift:"table_sheet,1,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
-	// 不传默认返回所有数据
+	// All data is returned by default without passing it on.
 	TableDataType *TableDataType `thrift:"table_data_type,2,optional" form:"table_data_type" json:"table_data_type,omitempty" query:"table_data_type"`
-	// 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
+	// Compatible with pre-refactoring versions: pass this value if you need to pull the schema of the current document
 	DatabaseID *int64 `thrift:"database_id,3,optional" form:"database_id" json:"database_id,string,omitempty" query:"database_id"`
-	// source file 的信息，新增 segment / 之前逻辑迁移到这里
+	// Source file information, add segment/before logic migrate here
 	SourceFile *SourceInfo `thrift:"source_file,4,optional" form:"source_file" json:"source_file,omitempty" query:"source_file"`
 	Base       *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -30218,11 +30218,11 @@ func (p *GetTableSchemaRequest) String() string {
 }
 
 type DocTableSheet struct {
-	// sheet 的编号
+	// Number of sheet
 	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
-	// sheet 名
+	// Sheet name
 	SheetName string `thrift:"sheet_name,2" form:"sheet_name" json:"sheet_name" query:"sheet_name"`
-	// 总行数
+	// total number of rows
 	TotalRow int64 `thrift:"total_row,3" form:"total_row" json:"total_row" query:"total_row"`
 }
 
@@ -30450,16 +30450,16 @@ func (p *DocTableSheet) String() string {
 }
 
 type TableColumn struct {
-	// 列 id
+	// Column ID
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	// 列名
+	// column_name
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
-	// 列原本在 excel 的序号
+	// List the serial number originally in excel
 	Sequence int64 `thrift:"sequence,3" form:"sequence" json:"sequence,string" query:"sequence"`
-	// 列类型
+	// column type
 	ColumnType         *ColumnType `thrift:"column_type,4,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,5,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
-	// 描述
+	// describe
 	Desc *string `thrift:"desc,6,optional" form:"desc" json:"desc,omitempty" query:"desc"`
 }
 
@@ -30854,7 +30854,7 @@ func (p *TableColumn) String() string {
 
 type GetDatabaseFileProgressRequest struct {
 	DatabaseID int64 `thrift:"database_id,1" form:"database_id" json:"database_id,string" query:"database_id"`
-	// table类型
+	// Table type
 	TableType TableType  `thrift:"table_type,2,required" form:"table_type,required" json:"table_type,required" query:"table_type,required"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -31404,7 +31404,7 @@ func (p *GetDatabaseFileProgressResponse) String() string {
 type DatabaseFileProgressData struct {
 	FileName string `thrift:"file_name,1" form:"file_name" json:"file_name" query:"file_name"`
 	Progress int32  `thrift:"progress,2" form:"progress" json:"progress" query:"progress"`
-	//描述信息，如果有代表文件处理失败
+	//Describe the information if there is a representative file processing failure
 	StatusDescript *string `thrift:"status_descript,3,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
 }
 
@@ -31645,10 +31645,10 @@ func (p *DatabaseFileProgressData) String() string {
 type SubmitDatabaseInsertRequest struct {
 	DatabaseID int64  `thrift:"database_id,1" form:"database_id" json:"database_id,string" query:"database_id"`
 	FileURI    string `thrift:"file_uri,2" form:"file_uri" json:"file_uri" query:"file_uri"`
-	// table类型，要往草稿表插入还是线上表插入
+	// Table type, do you want to insert into the draft table or the online table?
 	TableType  TableType   `thrift:"table_type,3" form:"table_type" json:"table_type" query:"table_type"`
 	TableSheet *TableSheet `thrift:"table_sheet,4,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
-	// 要写入的渠道id
+	// Channel ID to write to
 	ConnectorID *int64     `thrift:"connector_id,5,optional" form:"connector_id" json:"connector_id,string,omitempty" query:"connector_id"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -33602,7 +33602,7 @@ func (p *ConnectorInfo) String() string {
 }
 
 type GetDatabaseTemplateResponse struct {
-	// 下载地址
+	// Download address
 	TosUrl   string         `thrift:"TosUrl,1" form:"TosUrl" json:"TosUrl" query:"TosUrl"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -33902,7 +33902,7 @@ func (p *GetDatabaseTemplateResponse) String() string {
 type UpdateDatabaseBotSwitchRequest struct {
 	BotID      int64 `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,string,required" query:"bot_id,required"`
 	DatabaseID int64 `thrift:"database_id,2,required" form:"database_id,required" json:"database_id,string,required" query:"database_id,required"`
-	// 是否禁用prompt
+	// Whether to disable prompt
 	PromptDisable bool       `thrift:"prompt_disable,3,required" form:"prompt_disable,required" json:"prompt_disable,required" query:"prompt_disable,required"`
 	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }

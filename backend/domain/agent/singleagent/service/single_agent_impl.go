@@ -288,7 +288,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 		maxCount          = pageSize * pageIndex
 	)
 
-	// 全量拉取符合条件的记录
+	// Pull all eligible records
 	for {
 		pageData, err := s.AgentVersionRepo.List(ctx, agentID, currentPage, 50)
 		if err != nil {
@@ -298,7 +298,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 			break
 		}
 
-		// 过滤当前页数据
+		// Filter current page data
 		for _, item := range pageData {
 			for _, cID := range item.ConnectorIds {
 				if cID == *connectorID {

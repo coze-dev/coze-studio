@@ -159,7 +159,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.UserUpdateAvatarRequest
 
-	// 获取上传的文件
+	// Get the uploaded file
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		logs.CtxErrorf(ctx, "Get Avatar Fail failed, err=%v", err)
@@ -167,13 +167,13 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// 检查文件类型
+	// Check file type
 	if !strings.HasPrefix(file.Header.Get("Content-Type"), "image/") {
 		invalidParamRequestResponse(c, "invalid file type, only image allowed")
 		return
 	}
 
-	// 读取文件内容
+	// Read file content
 	src, err := file.Open()
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)

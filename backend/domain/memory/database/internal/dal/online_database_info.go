@@ -65,7 +65,7 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		AppID:          database.AppID,
 		SpaceID:        database.SpaceID,
 		RelatedDraftID: draftID,
-		IsVisible:      1, // 默认可见
+		IsVisible:      1, // visible by default
 		PromptDisabled: func() int32 {
 			if database.PromptDisabled {
 				return 1
@@ -97,7 +97,7 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	return database, nil
 }
 
-// Get 获取线上数据库信息
+// Get online database information
 func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error) {
 	res := o.query.OnlineDatabaseInfo
 
@@ -131,7 +131,7 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 	return db, nil
 }
 
-// UpdateWithTX 使用事务更新线上数据库信息
+// UpdateWithTX updates online database information using transactions
 func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error) {
 	fieldJson, err := json.Marshal(database.FieldList)
 	if err != nil {
@@ -141,7 +141,7 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	fieldJsonStr := string(fieldJson)
 	now := time.Now().UnixMilli()
 
-	// 构建更新内容
+	// Build update content
 	updates := map[string]interface{}{
 		"app_id":      database.AppID,
 		"table_name":  database.TableName,
@@ -158,7 +158,7 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 		"updated_at": now,
 	}
 
-	// 执行更新
+	// execute update
 	res := tx.OnlineDatabaseInfo
 	_, err = res.WithContext(ctx).Where(res.ID.Eq(database.ID)).Updates(updates)
 	if err != nil {
@@ -184,7 +184,7 @@ func (o *OlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 	return nil
 }
 
-// MGet 批量获取在线数据库信息
+// MGet batch acquisition of online database information
 func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, error) {
 	if len(ids) == 0 {
 		return []*entity.Database{}, nil
@@ -192,7 +192,7 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 
 	res := o.query.OnlineDatabaseInfo
 
-	// 查询未删除的、ID在给定列表中的记录
+	// Query undeleted records with IDs in the given list
 	records, err := res.WithContext(ctx).
 		Where(res.ID.In(ids...)).
 		Find()
@@ -200,7 +200,7 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 		return nil, fmt.Errorf("batch query online database failed: %v", err)
 	}
 
-	// 构建返回结果
+	// Build returns results
 	databases := make([]*entity.Database, 0, len(records))
 	for _, info := range records {
 		db := &entity.Database{
@@ -231,14 +231,14 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 	return databases, nil
 }
 
-// List 列出符合条件的数据库信息
+// List eligible database information
 func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := o.query.OnlineDatabaseInfo
 
-	// 构建基础查询
+	// Build basic query
 	q := res.WithContext(ctx)
 
-	// 添加过滤条件
+	// Add filter criteria
 	if filter != nil {
 		if filter.CreatorID != nil {
 			q = q.Where(res.CreatorID.Eq(*filter.CreatorID))
@@ -274,7 +274,7 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		offset = page.Offset
 	}
 
-	// 处理排序
+	// processing sort
 	if len(orderBy) > 0 {
 		for _, order := range orderBy {
 			switch order.Field {

@@ -4,7 +4,7 @@ include "common.thrift"
 namespace go flow.dataengine.dataset
 
 struct DeleteSliceRequest {
-    4:  optional list<string> slice_ids (api.body="slice_ids") // 要删除的分片ID列表
+    4:  optional list<string> slice_ids (api.body="slice_ids") // List of sharding IDs to delete
     255: optional base.Base Base
 }
 
@@ -15,14 +15,14 @@ struct DeleteSliceResponse {
 }
 
 struct CreateSliceRequest {
-    2: required i64 document_id(agw.js_conv="str", api.js_conv="true") // 新增分片插入的文档ID
-    5: optional string raw_text  // 新增分片的内容
-    6: optional i64 sequence(agw.js_conv="str", api.js_conv="true") // 分片插入位置，1表示文档开头，最大值为最后一个分片位置+1
+    2: required i64 document_id(agw.js_conv="str", api.js_conv="true") // Add sharding inserted document ID
+    5: optional string raw_text  // Add sharding content
+    6: optional i64 sequence(agw.js_conv="str", api.js_conv="true") // Sharding insertion position, 1 indicates the beginning of the document, and the maximum value is the last sharding position + 1
     255: optional base.Base Base
 }
 
 struct CreateSliceResponse {
-    1: i64  slice_id (agw.js_conv="str", api.js_conv="true") // 新增分片ID
+    1: i64  slice_id (agw.js_conv="str", api.js_conv="true") // Add sharding ID
 
     253: required i64 code
     254: required string msg
@@ -30,15 +30,15 @@ struct CreateSliceResponse {
 }
 
 struct UpdateSliceRequest {
-    2: required i64 slice_id (agw.js_conv="str", api.js_conv="true") // 要更新的分片ID
-    7: optional string  raw_text   // 要更新的内容
+    2: required i64 slice_id (agw.js_conv="str", api.js_conv="true") // The sharding ID to update
+    7: optional string  raw_text   // Content to be updated
     255: optional base.Base Base
 }
 
 enum SliceStatus {
-    PendingVectoring = 0 // 未向量化
-    FinishVectoring  = 1 // 已向量化
-    Deactive         = 9 // 禁用
+    PendingVectoring = 0 // unvectorized
+    FinishVectoring  = 1 // vectorized
+    Deactive         = 9 // disable
 }
 
 struct UpdateSliceResponse {
@@ -48,18 +48,18 @@ struct UpdateSliceResponse {
 }
 
 struct ListSliceRequest {
-    2:  optional i64    document_id(agw.js_conv="str", api.js_conv="true") // 要list的分片所属的文档ID
-    3:  optional i64    sequence(agw.js_conv="str", api.js_conv="true")    // 分片序号，表示从该序号的分片开始list
-    4:  optional string keyword                         // 查询关键字
-    5:  optional i64    dataset_id (agw.js_conv="str", api.js_conv="true")  // 如果只传 dataset_id，则返回该知识库下的分片
-    21:          i64    page_size(agw.js_conv="str", api.js_conv="true")  // 每页大小
+    2:  optional i64    document_id(agw.js_conv="str", api.js_conv="true") // The document ID of the sharding to list
+    3:  optional i64    sequence(agw.js_conv="str", api.js_conv="true")    // Sharding serial number, indicating that the list starts from the sharding of this serial number
+    4:  optional string keyword                         // query keyword
+    5:  optional i64    dataset_id (agw.js_conv="str", api.js_conv="true")  // If only dataset_id, return sharding under that knowledge base
+    21:          i64    page_size(agw.js_conv="str", api.js_conv="true")  // page size
     255: optional base.Base Base
 }
 
 struct ListSliceResponse {
-    1: list<SliceInfo> slices  // 返回的分片列表
-    2: i64 total(agw.js_conv="str", api.js_conv="true") // 总分片数
-    3: bool hasmore // 是否还有更多分片
+    1: list<SliceInfo> slices  // Returned list of shardings
+    2: i64 total(agw.js_conv="str", api.js_conv="true") // Total shardings
+    3: bool hasmore // Is there more sharding?
 
     253: required i64 code
     254: required string msg
@@ -67,12 +67,12 @@ struct ListSliceResponse {
 }
 
 struct SliceInfo {
-    1: i64         slice_id  (agw.js_conv="str", api.js_conv="true") // 分片ID
-    2: string      content // 分片内容
-    3: SliceStatus status // 分片状态
-    4: i64         hit_count(agw.js_conv="str", api.js_conv="true")   // 命中次数
-    5: i64         char_count(agw.js_conv="str", api.js_conv="true")  // 字符数
-    7: i64         sequence(agw.js_conv="str", api.js_conv="true")    // 序号
-    8: i64         document_id(agw.js_conv="str", api.js_conv="true") // 分片所属的文档ID
-    9: string      chunk_info // 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
+    1: i64         slice_id  (agw.js_conv="str", api.js_conv="true") // Sharding ID
+    2: string      content // Sharding content
+    3: SliceStatus status // Sharding state
+    4: i64         hit_count(agw.js_conv="str", api.js_conv="true")   // hit count
+    5: i64         char_count(agw.js_conv="str", api.js_conv="true")  // character count
+    7: i64         sequence(agw.js_conv="str", api.js_conv="true")    // serial number
+    8: i64         document_id(agw.js_conv="str", api.js_conv="true") // The document ID to which sharding belongs
+    9: string      chunk_info // Meta information related to sharding, extra- > chunk_info field in the transparent slice table (json)
 }
