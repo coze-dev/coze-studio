@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: AppConfig = {
       'yaml', 'yml', 'toml', 'ini', 'conf', 'config',
       'sh', 'bash', 'zsh', 'fish', 'py', 'css', 'scss', 'sass', 'less',
       'html', 'htm', 'xml', 'php', 'rb', 'rs', 'java', 'c', 'h',
-      'cpp', 'cxx', 'cc', 'hpp', 'cs'
+      'cpp', 'cxx', 'cc', 'hpp', 'cs', 'thrift'
     ],
     outputFormat: 'console'
   },

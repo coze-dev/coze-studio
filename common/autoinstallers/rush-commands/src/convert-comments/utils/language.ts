@@ -43,7 +43,8 @@ export const detectLanguage = (filePath: string): SourceFileLanguage => {
     'cxx': 'cpp',
     'cc': 'cpp',
     'hpp': 'cpp',
-    'cs': 'csharp'
+    'cs': 'csharp',
+    'thrift': 'thrift'
   };
 
   return languageMap[ext || ''] || 'other';
@@ -63,7 +64,7 @@ export const filterFilesByExtensions = (
       '.yaml', '.yml', '.toml', '.ini', '.conf', '.config',
       '.sh', '.bash', '.zsh', '.fish', '.py', '.css', '.scss', '.sass', '.less',
       '.html', '.htm', '.xml', '.php', '.rb', '.rs', '.java', '.c', '.h',
-      '.cpp', '.cxx', '.cc', '.hpp', '.cs'
+      '.cpp', '.cxx', '.cc', '.hpp', '.cs', '.thrift'
     ];
     return files.filter(file =>
       defaultExtensions.some(ext => file.toLowerCase().endsWith(ext))
@@ -191,6 +192,11 @@ export const getCommentPatterns = (language: SourceFileLanguage): CommentPattern
       multiStart: /\/\*/g,
       multiEnd: /\*\//g
     },
+    thrift: {
+      single: /\/\/(.*)$/gm,
+      multiStart: /\/\*/g,
+      multiEnd: /\*\//g
+    },
     other: {
       single: /\/\/(.*)$/gm,
       multiStart: /\/\*/g,
@@ -218,7 +224,7 @@ export const isTextFile = (filePath: string): boolean => {
     '.css', '.scss', '.sass', '.less', '.html', '.htm', '.xml',
     '.yaml', '.yml', '.toml', '.ini', '.conf', '.config',
     '.sh', '.bash', '.zsh', '.fish', '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs',
-    '.php', '.rb', '.rs', '.kt', '.swift', '.dart', '.scala'
+    '.php', '.rb', '.rs', '.kt', '.swift', '.dart', '.scala', '.thrift'
   ];
 
   return textExtensions.some(ext =>

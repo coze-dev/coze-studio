@@ -57,9 +57,7 @@ export const getSourceFiles = async (config: FileScanConfig): Promise<Result<str
     files = files.filter(isTextFile);
 
     // 根据扩展名过滤
-    if (extensions.length > 0) {
-      files = filterFilesByExtensions(files, extensions);
-    }
+    files = filterFilesByExtensions(files, extensions);
 
     return files;
   });
