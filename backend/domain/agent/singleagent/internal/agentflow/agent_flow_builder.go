@@ -163,7 +163,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		isReActAgent = true
 		requireCheckpoint = true
 		if modelInfo.Meta.Capability != nil && !modelInfo.Meta.Capability.FunctionCall {
-			return nil, fmt.Errorf("model %v does not support function call", modelInfo.Meta.Name)
+			return nil, fmt.Errorf("model %v does not support function call", modelInfo.Name)
 		}
 	}
 

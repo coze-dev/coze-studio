@@ -123,7 +123,6 @@ func (p *Parameter) GetString(tp DefaultType) (string, error) {
 }
 
 type ModelMeta struct {
-	Name       string             `yaml:"name"`
 	Protocol   chatmodel.Protocol `yaml:"protocol"`    // 模型通信协议
 	Capability *Capability        `yaml:"capability"`  // 模型能力
 	ConnConfig *chatmodel.Config  `yaml:"conn_config"` // 模型连接配置
