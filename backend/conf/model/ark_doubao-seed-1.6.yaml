@@ -106,10 +106,10 @@ meta:
         reasoning: true
         prefill_response: false
     conn_config:
-        base_url: "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+        base_url: "https://ark.cn-beijing.volces.com/api/v3"
         api_key: "6e00ab82-d1db-44be-8678-3798c6279fee"
         timeout: 0s
-        model: ""
+        model: "doubao-seed-1-6-250615"
         temperature: 0.1
         frequency_penalty: 0
         presence_penalty: 0

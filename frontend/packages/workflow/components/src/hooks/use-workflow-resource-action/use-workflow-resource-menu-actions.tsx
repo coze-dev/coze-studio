@@ -21,7 +21,7 @@ import {
   type FrontWorkflowInfo,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Table, type TableActionProps } from '@coze-arch/coze-design';
+import { Table, type TableActionProps, Toast } from '@coze-arch/coze-design';
 import { useFlags } from '@coze-arch/bot-flags';
 import {
   resource_resource_common,
@@ -29,6 +29,10 @@ import {
   ResType,
 } from '@coze-arch/bot-api/plugin_develop';
 
+import {
+  useWorkflowImportExport,
+  extractWorkflowIdFromResource,
+} from '../use-workflow-import-export';
 import {
   parseWorkflowResourceBizExtend,
   transformResourceToWorkflowEditInfo,
@@ -65,6 +69,37 @@ export const useWorkflowResourceMenuActions = (
     spaceId: props.spaceId ?? '',
     refreshPage: props.refreshPage,
   });
+
+  const { exportWorkflow } = useWorkflowImportExport({
+    spaceId: props.spaceId ?? '',
+    onSuccess: () => {
+      Toast.success(
+        I18n.t('workflow_export_success') || 'Workflow exported successfully',
+      );
+    },
+    onError: error => {
+      Toast.error(
+        `${I18n.t('workflow_export_failed') || 'Export failed'}: ${
+          error.message
+        }`,
+      );
+    },
+  });
+
+  // 导出工作流功能
+  const handleExportWorkflow = async (record: ResourceInfo) => {
+    try {
+      const workflowId = extractWorkflowIdFromResource(record);
+      await exportWorkflow({
+        workflowIds: [workflowId],
+        spaceId: props.spaceId ?? '',
+        includeDependencies: true,
+        includeVersions: false,
+      });
+    } catch (error) {
+      console.error('Export workflow failed:', error);
+    }
+  };
   const actionMap = {
     [ActionKey.Copy]: copyAction,
     [ActionKey.Delete]: deleteAction,
@@ -77,7 +112,7 @@ export const useWorkflowResourceMenuActions = (
   };
 
   const { enablePublishEntry } = useWorkflowPublishEntry();
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity -- Complex function for handling workflow resource actions
   const renderWorkflowResourceActions = (record: ResourceInfo): ReactNode => {
     const bizExtend = parseWorkflowResourceBizExtend(record.biz_extend);
     const productDraftStatus = bizExtend?.product_draft_status;
@@ -121,6 +156,13 @@ export const useWorkflowResourceMenuActions = (
         actionKey: 'switchWorkflow',
         actionText: I18n.t('wf_chatflow_121', { flowMode: I18n.t('Workflow') }),
         handler: () => actionMap?.[ActionKey.SwitchToFuncflow]?.(record),
+      },
+      {
+        hide: false, // 导出功能始终可用
+        disabled: false,
+        actionKey: 'export',
+        actionText: I18n.t('导出') || 'Export',
+        handler: () => handleExportWorkflow(record),
       },
       ...(getCommonActions?.(record) ?? []),
       {

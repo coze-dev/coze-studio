@@ -22,6 +22,12 @@ service WorkflowService {
     workflow.PublishWorkflowResponse PublishWorkflow(1:workflow.PublishWorkflowRequest request) (api.post='/api/workflow_api/publish', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.CopyWorkflowResponse CopyWorkflow(1:workflow.CopyWorkflowRequest request) (api.post='/api/workflow_api/copy', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.CopyWkTemplateApiResponse CopyWkTemplateApi(1:workflow.CopyWkTemplateApiRequest request) (api.post='/api/workflow_api/copy_wk_template', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 导出工作流
+    workflow.ExportWorkflowResponse ExportWorkflow(1:workflow.ExportWorkflowRequest request) (api.post='/api/workflow_api/export', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 导入工作流
+    workflow.ImportWorkflowResponse ImportWorkflow(1:workflow.ImportWorkflowRequest request) (api.post='/api/workflow_api/import', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 验证导入包
+    workflow.ValidateImportResponse ValidateImport(1:workflow.ValidateImportRequest request) (api.post='/api/workflow_api/validate_import', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetReleasedWorkflowsResponse GetReleasedWorkflows(1: workflow.GetReleasedWorkflowsRequest request) (api.post='/api/workflow_api/released_workflows', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetWorkflowReferencesResponse GetWorkflowReferences(1: workflow.GetWorkflowReferencesRequest request) (api.post='/api/workflow_api/workflow_references', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 获取示例流程列表

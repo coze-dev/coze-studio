@@ -1711,3 +1711,283 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 	}
 	return nil
 }
+
+// ExportWorkflow exports workflows as a package with their dependencies
+func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy vo.ExportWorkflowPolicy) (*vo.WorkflowExportPackage, error) {
+	if len(workflowIDs) == 0 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("workflow IDs cannot be empty"))
+	}
+
+	// Export each workflow
+	workflows := make([]vo.WorkflowExportData, 0, len(workflowIDs))
+	var globalDeps *vo.GlobalDependencyInfo
+	
+	if policy.IncludeDependencies {
+		globalDeps = &vo.GlobalDependencyInfo{
+			Plugins:   make(map[int64]*vo.PluginEntity),
+			Knowledge: make(map[int64]string),
+			Databases: make(map[int64]string),
+			Workflows: make(map[int64]string),
+		}
+	}
+
+	for _, workflowID := range workflowIDs {
+		exportData, err := i.repo.ExportWorkflowData(ctx, workflowID)
+		if err != nil {
+			return nil, err
+		}
+		
+		// Collect global dependencies if requested
+		if policy.IncludeDependencies && exportData.Dependencies != nil {
+			// Collect plugin dependencies
+			for _, pluginID := range exportData.Dependencies.PluginIDs {
+				if _, exists := globalDeps.Plugins[pluginID]; !exists {
+					globalDeps.Plugins[pluginID] = &vo.PluginEntity{
+						PluginID:      pluginID,
+						PluginVersion: nil, // Use latest version
+					}
+				}
+			}
+			
+			// Collect knowledge dependencies (ID -> name mapping)
+			for _, knowledgeID := range exportData.Dependencies.KnowledgeIDs {
+				if _, exists := globalDeps.Knowledge[knowledgeID]; !exists {
+					globalDeps.Knowledge[knowledgeID] = fmt.Sprintf("Knowledge_%d", knowledgeID)
+				}
+			}
+			
+			// Collect database dependencies (ID -> name mapping)
+			for _, databaseID := range exportData.Dependencies.DatabaseIDs {
+				if _, exists := globalDeps.Databases[databaseID]; !exists {
+					globalDeps.Databases[databaseID] = fmt.Sprintf("Database_%d", databaseID)
+				}
+			}
+		}
+		
+		workflows = append(workflows, *exportData)
+	}
+
+	// Create export package
+	exportPackage := &vo.WorkflowExportPackage{
+		Version:            "1.0",
+		ExportedAt:         time.Now(),
+		ExportedBy:         ctxutil.MustGetUIDFromCtx(ctx),
+		Source:             "coze-studio",
+		Description:        fmt.Sprintf("Export of %d workflow(s)", len(workflowIDs)),
+		Workflows:          workflows,
+		GlobalDependencies: globalDeps,
+		ExportPolicy:       policy,
+	}
+
+	return exportPackage, nil
+}
+
+// ImportWorkflow imports workflows from an export package
+func (i *impl) ImportWorkflow(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ImportResult, error) {
+	if importPackage == nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("import package cannot be nil"))
+	}
+
+	if len(importPackage.Workflows) == 0 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("import package contains no workflows"))
+	}
+
+	// Validate import package first
+	validationResult, err := i.ValidateImportPackage(ctx, importPackage, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	if !validationResult.IsValid {
+		return &vo.ImportResult{
+			ImportedWorkflows: []vo.ImportedWorkflowInfo{},
+			SkippedWorkflows:  []vo.SkippedWorkflowInfo{},
+			FailedWorkflows: slices.Transform(validationResult.Errors, func(validationError vo.ValidationError) vo.FailedWorkflowInfo {
+				originalID := int64(0)
+				if validationError.WorkflowID != nil {
+					originalID = *validationError.WorkflowID
+				}
+				return vo.FailedWorkflowInfo{
+					OriginalID: originalID,
+					Name:       "Unknown",
+					Error:      validationError.Message,
+				}
+			}),
+			DependencyIssues: []vo.DependencyIssue{},
+		}, nil
+	}
+
+	// Import workflows one by one
+	result := &vo.ImportResult{
+		ImportedWorkflows: []vo.ImportedWorkflowInfo{},
+		SkippedWorkflows:  []vo.SkippedWorkflowInfo{},
+		FailedWorkflows:   []vo.FailedWorkflowInfo{},
+		DependencyIssues:  []vo.DependencyIssue{},
+	}
+
+	for _, workflowData := range importPackage.Workflows {
+		importInfo, err := i.importSingleWorkflow(ctx, &workflowData, policy)
+		if err != nil {
+			result.FailedWorkflows = append(result.FailedWorkflows, vo.FailedWorkflowInfo{
+				OriginalID: workflowData.OriginalID,
+				Name:       workflowData.Meta.Name,
+				Error:      err.Error(),
+			})
+		} else {
+			result.ImportedWorkflows = append(result.ImportedWorkflows, *importInfo)
+		}
+	}
+
+	return result, nil
+}
+
+// ValidateImportPackage validates an import package without importing
+func (i *impl) ValidateImportPackage(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ValidationResult, error) {
+	if importPackage == nil {
+		return &vo.ValidationResult{
+			IsValid: false,
+			Errors: []vo.ValidationError{
+				{
+					Code:     "INVALID_PACKAGE",
+					Message:  "Import package cannot be nil",
+					Severity: "error",
+				},
+			},
+		}, nil
+	}
+
+	validationResult := &vo.ValidationResult{
+		IsValid:       true,
+		Errors:        []vo.ValidationError{},
+		Warnings:      []vo.ValidationError{},
+		FormatVersion: importPackage.Version,
+		SourceSystem:  importPackage.Source,
+		WorkflowCount: len(importPackage.Workflows),
+	}
+
+	// Validate format version
+	if importPackage.Version != "1.0" {
+		validationResult.Warnings = append(validationResult.Warnings, vo.ValidationError{
+			Code:     "VERSION_MISMATCH",
+			Message:  fmt.Sprintf("Package version %s may not be fully compatible", importPackage.Version),
+			Severity: "warning",
+		})
+	}
+
+	// Validate each workflow
+	for idx, workflowData := range importPackage.Workflows {
+		workflowID := workflowData.OriginalID
+		
+		// Check required fields
+		if workflowData.Meta == nil {
+			validationResult.Errors = append(validationResult.Errors, vo.ValidationError{
+				Code:       "MISSING_META",
+				Message:    "Workflow metadata is missing",
+				WorkflowID: &workflowID,
+				FieldPath:  fmt.Sprintf("workflows[%d].meta", idx),
+				Severity:   "error",
+			})
+			continue
+		}
+
+		if workflowData.CanvasInfo == nil {
+			validationResult.Errors = append(validationResult.Errors, vo.ValidationError{
+				Code:       "MISSING_CANVAS",
+				Message:    "Workflow canvas info is missing",
+				WorkflowID: &workflowID,
+				FieldPath:  fmt.Sprintf("workflows[%d].canvas_info", idx),
+				Severity:   "error",
+			})
+			continue
+		}
+
+		// Validate workflow name
+		if workflowData.Meta.Name == "" {
+			validationResult.Errors = append(validationResult.Errors, vo.ValidationError{
+				Code:       "EMPTY_NAME",
+				Message:    "Workflow name cannot be empty",
+				WorkflowID: &workflowID,
+				FieldPath:  fmt.Sprintf("workflows[%d].meta.name", idx),
+				Severity:   "error",
+			})
+		}
+
+		// Check for name conflicts if target space is specified
+		if policy.TargetSpaceID != nil && policy.ConflictResolution == vo.ConflictStrategy_Skip {
+			// Check if workflow with same name exists in target space
+			existingMetas, _, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
+				Name:    &workflowData.Meta.Name,
+				SpaceID: policy.TargetSpaceID,
+			})
+			if err != nil {
+				logs.Warnf("Failed to check for existing workflows: %v", err)
+			} else if len(existingMetas) > 0 {
+				validationResult.Warnings = append(validationResult.Warnings, vo.ValidationError{
+					Code:       "NAME_CONFLICT",
+					Message:    fmt.Sprintf("Workflow with name '%s' already exists and will be skipped", workflowData.Meta.Name),
+					WorkflowID: &workflowID,
+					Severity:   "warning",
+				})
+			}
+		}
+
+		// Validate canvas JSON
+		if workflowData.CanvasInfo.Canvas != "" {
+			var canvas vo.Canvas
+			if err := sonic.UnmarshalString(workflowData.CanvasInfo.Canvas, &canvas); err != nil {
+				validationResult.Errors = append(validationResult.Errors, vo.ValidationError{
+					Code:       "INVALID_CANVAS",
+					Message:    fmt.Sprintf("Invalid canvas JSON: %v", err),
+					WorkflowID: &workflowID,
+					FieldPath:  fmt.Sprintf("workflows[%d].canvas_info.canvas", idx),
+					Severity:   "error",
+				})
+			}
+		}
+	}
+
+	// Mark as invalid if there are any errors
+	if len(validationResult.Errors) > 0 {
+		validationResult.IsValid = false
+	}
+
+	return validationResult, nil
+}
+
+// importSingleWorkflow imports a single workflow from export data
+func (i *impl) importSingleWorkflow(ctx context.Context, workflowData *vo.WorkflowExportData, policy vo.ImportWorkflowPolicy) (*vo.ImportedWorkflowInfo, error) {
+	// Import the workflow using repository layer
+	importedWorkflow, err := i.repo.ImportWorkflowData(ctx, workflowData, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Publish search resource (same as copy workflow)
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
+		WorkflowID:    importedWorkflow.ID,
+		URI:           &importedWorkflow.Meta.IconURI,
+		Name:          &importedWorkflow.Meta.Name,
+		Desc:          &importedWorkflow.Meta.Desc,
+		APPID:         importedWorkflow.Meta.AppID,
+		SpaceID:       &importedWorkflow.Meta.SpaceID,
+		OwnerID:       &importedWorkflow.Meta.CreatorID,
+		PublishStatus: ptr.Of(search.UnPublished),
+		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
+	})
+
+	if err != nil {
+		logs.Warnf("Failed to publish search resource for imported workflow %d: %v", importedWorkflow.ID, err)
+		// Don't fail the import for search indexing issues
+	}
+
+	// Determine if workflow was renamed
+	wasRenamed := workflowData.Meta.Name != importedWorkflow.Meta.Name
+
+	return &vo.ImportedWorkflowInfo{
+		OriginalID: workflowData.OriginalID,
+		NewID:      importedWorkflow.ID,
+		Name:       workflowData.Meta.Name,
+		WasRenamed: wasRenamed,
+		NewName:    importedWorkflow.Meta.Name,
+	}, nil
+}

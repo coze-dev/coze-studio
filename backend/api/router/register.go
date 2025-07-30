@@ -28,6 +28,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 
 	coze "github.com/coze-dev/coze-studio/backend/api/router/coze"
+	cozeHandler "github.com/coze-dev/coze-studio/backend/api/handler/coze"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -35,6 +36,8 @@ import (
 func GeneratedRegister(r *server.Hertz) {
 	// INSERT_POINT: DO NOT DELETE THIS LINE!
 	coze.Register(r)
+	// Manually register import/export routes until IDL is regenerated
+	manualRegisterImportExport(r)
 	staticFileRegister(r)
 }
 
@@ -74,4 +77,16 @@ func staticFileRegister(r *server.Hertz) {
 		ctx.File(staticFile)
 	})
 
+}
+
+// manualRegisterImportExport manually registers import/export routes
+// TODO: Remove this when IDL is regenerated with import/export definitions
+func manualRegisterImportExport(r *server.Hertz) {
+	api := r.Group("/api")
+	workflowAPI := api.Group("/workflow_api")
+	
+	// Register import/export routes
+	workflowAPI.POST("/export", cozeHandler.ExportWorkflow)
+	workflowAPI.POST("/import", cozeHandler.ImportWorkflow)
+	workflowAPI.POST("/validate_import", cozeHandler.ValidateImport)
 }

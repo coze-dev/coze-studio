@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @coze-arch/no-batch-import-or-export */
+
+/* eslint-disable @coze-arch/no-batch-import-or-export -- Batch exports for workflow components */
 export { CreateWorkflowModal } from './workflow-edit';
 export { FlowShortcutsHelp } from './flow-shortcuts-help';
 export { WorkflowCommitList } from './workflow-commit-list';
@@ -64,3 +64,7 @@ export { useWorkflowAction } from './workflow-modal/hooks/use-workflow-action';
 export { WorkflowModalContext, WorkflowModalContextValue };
 export { useOpenWorkflowDetail } from './hooks/use-open-workflow-detail';
 export { VoiceSelect } from './voice-select';
+export {
+  useWorkflowImportExport,
+  extractWorkflowIdFromResource,
+} from './hooks/use-workflow-import-export';

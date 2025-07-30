@@ -1128,3 +1128,63 @@ func GetExampleWorkFlowList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ExportWorkflow exports workflows as a downloadable package
+// @router /api/workflow_api/export [POST]
+func ExportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ExportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ImportWorkflow imports workflows from an upload package
+// @router /api/workflow_api/import [POST]
+func ImportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ImportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ImportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ValidateImport validates an import package without actually importing
+// @router /api/workflow_api/validate_import [POST]
+func ValidateImport(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ValidateImportRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ValidateImport(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

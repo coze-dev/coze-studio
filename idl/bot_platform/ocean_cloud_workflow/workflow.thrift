@@ -2191,3 +2191,50 @@ struct OpenAPIGetWorkflowInfoResponse{
 
     255: required base.BaseResp BaseResp
 }
+
+// Workflow Export Request
+struct ExportWorkflowRequest {
+    1  : required list<string> workflow_ids       (go.tag="json:\"workflow_ids\""),
+    2  : required string       space_id           (go.tag="json:\"space_id\""),
+    3  : optional bool         include_dependencies (go.tag="json:\"include_dependencies\""),
+    4  : optional bool         include_versions   (go.tag="json:\"include_versions\""),
+    255: optional base.Base    Base,
+}
+
+struct ExportWorkflowResponse {
+    1  : required string        export_data      (go.tag="json:\"export_data\""),
+    253: required i64           code,
+    254: required string        msg,
+    255: required base.BaseResp BaseResp,
+}
+
+// Workflow Import Request
+struct ImportWorkflowRequest {
+    1  : required string       import_package         (go.tag="json:\"import_package\""),
+    2  : optional string       target_space_id       (go.tag="json:\"target_space_id\""),
+    3  : optional string       target_app_id         (go.tag="json:\"target_app_id\""),
+    4  : optional string       conflict_resolution   (go.tag="json:\"conflict_resolution\""),
+    5  : optional bool         should_modify_workflow_name (go.tag="json:\"should_modify_workflow_name\""),
+    255: optional base.Base    Base,
+}
+
+struct ImportWorkflowResponse {
+    1  : required string        import_result       (go.tag="json:\"import_result\""),
+    253: required i64           code,
+    254: required string        msg,
+    255: required base.BaseResp BaseResp,
+}
+
+// Workflow Import Validation Request
+struct ValidateImportRequest {
+    1  : required string       import_package      (go.tag="json:\"import_package\""),
+    2  : optional string       target_space_id    (go.tag="json:\"target_space_id\""),
+    255: optional base.Base    Base,
+}
+
+struct ValidateImportResponse {
+    1  : required string        validation_result  (go.tag="json:\"validation_result\""),
+    253: required i64           code,
+    254: required string        msg,
+    255: required base.BaseResp BaseResp,
+}
