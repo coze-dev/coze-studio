@@ -49,7 +49,7 @@
     "@coze-common/biz-components": "workspace:*",
     "@coze-common/loading-button": "workspace:*",
     "@coze-common/mouse-pad-selector": "workspace:*",
-    "@coze-editor/editor": "0.1.0-alpha.d92d50",
+    "@coze-editor/editor": "0.1.0-alpha.dd871b",
     "@coze-studio/components": "workspace:*",
     "@coze-workflow/base": "workspace:*",
     "@coze-workflow/resources-adapter": "workspace:*",

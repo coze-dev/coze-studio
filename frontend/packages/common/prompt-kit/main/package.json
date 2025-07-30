@@ -57,7 +57,7 @@
     "@coze-common/prompt-kit-adapter": "workspace:*",
     "@coze-common/prompt-kit-base": "workspace:*",
     "@coze-common/scroll-view": "workspace:*",
-    "@coze-editor/editor": "0.1.0-alpha.d92d50",
+    "@coze-editor/editor": "0.1.0-alpha.dd871b",
     "@coze-foundation/local-storage": "workspace:*",
     "@lezer/common": "^1.2.2",
     "ahooks": "^3.7.8",
