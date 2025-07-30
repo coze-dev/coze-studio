@@ -59,7 +59,7 @@ middleware:
 
 web:
 	@echo "Start web server in docker"
-	@docker compose -f docker/docker-compose.yml  up -d
+	@docker compose -f $(COMPOSE_FILE)  up -d
 
 down:
 	@echo "Stop all docker containers"
