@@ -21,9 +21,10 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/jinzhu/copier"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"

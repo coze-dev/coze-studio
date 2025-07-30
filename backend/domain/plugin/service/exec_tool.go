@@ -596,7 +596,7 @@ func genRequestString(req *http.Request, body []byte) (string, error) {
 		return "", fmt.Errorf("[genRequestString] marshal failed, err=%s", err)
 	}
 
-	if body != nil {
+	if len(body) > 0 {
 		requestStr, err = sjson.SetRaw(requestStr, "body", string(body))
 		if err != nil {
 			return "", fmt.Errorf("[genRequestString] set body failed, err=%s", err)
