@@ -25,6 +25,7 @@ import (
 	"time"
 
 	opt "github.com/cloudwego/eino/components/embedding"
+
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
