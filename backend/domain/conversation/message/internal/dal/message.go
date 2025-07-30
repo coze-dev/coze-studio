@@ -309,10 +309,12 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 		multiContent = append(multiContent, one)
 	}
 	if len(multiContent) > 0 {
-		multiContent = append(multiContent, schema.ChatMessagePart{
-			Type: schema.ChatMessagePartTypeText,
-			Text: msgDO.Content,
-		})
+		if len(msgDO.Content) > 0 {
+			multiContent = append(multiContent, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: msgDO.Content,
+			})
+		}
 	} else {
 		modelContentObj.Content = msgDO.Content
 	}
