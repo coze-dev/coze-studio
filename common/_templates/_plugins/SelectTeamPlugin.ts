@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type {
   IPlugin,
   IHooks,
@@ -56,7 +56,7 @@ export default class SelectTeamPlugin implements IPlugin {
       projectFolderPrompt.default = (answers) => {
         // 文件夹名去除scope，如 @coze-arch/foo -> foo
         const folderDir = answers.packageName.split('/').slice(-1)[0];
-        return `packages/${answers.team}/${folderDir}`
+        return `frontend/packages/${answers.team}/${folderDir}`;
       }
     });
   }
