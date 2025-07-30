@@ -651,7 +651,7 @@ func (mr *MockPluginServiceMockRecorder) UpdateDraftPluginWithCode(ctx, req any)
 }
 
 // UpdateDraftTool mocks base method.
-func (m *MockPluginService) UpdateDraftTool(ctx context.Context, req *service.UpdateToolDraftRequest) error {
+func (m *MockPluginService) UpdateDraftTool(ctx context.Context, req *service.UpdateDraftToolRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDraftTool", ctx, req)
 	ret0, _ := ret[0].(error)

@@ -853,3 +853,11 @@ func (p *pluginRepoImpl) MoveAPPPluginToLibrary(ctx context.Context, draftPlugin
 
 	return nil
 }
+
+func (p *pluginRepoImpl) UpdateDebugExample(ctx context.Context, pluginID int64, openapiDoc *model.Openapi3T) (err error) {
+	updatedPlugin := entity.NewPluginInfo(&model.PluginInfo{
+		ID:         pluginID,
+		OpenapiDoc: openapiDoc,
+	})
+	return p.pluginDraftDAO.Update(ctx, updatedPlugin)
+}

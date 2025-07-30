@@ -88,6 +88,15 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 	}
 
+	if reqParams != nil {
+		if !hasSetParams {
+			op.Parameters = []*openapi3.ParameterRef{}
+		}
+		if !hasSetReqBody {
+			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+		}
+	}
+
 	hasSetRespBody := false
 
 	for _, apiParam := range respParams {
@@ -127,13 +136,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 	}
 
-	if op.Parameters == nil {
-		op.Parameters = []*openapi3.ParameterRef{}
-	}
-	if op.RequestBody == nil {
-		op.RequestBody = entity.DefaultOpenapi3RequestBody()
-	}
-	if op.Responses == nil {
+	if respParams != nil && !hasSetRespBody {
 		op.Responses = entity.DefaultOpenapi3Responses()
 	}
 

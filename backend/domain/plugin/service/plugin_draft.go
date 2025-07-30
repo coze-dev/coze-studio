@@ -578,7 +578,7 @@ func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, toolIDs []int64)
 	return tools, nil
 }
 
-func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error) {
+func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateDraftToolRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
@@ -595,6 +595,14 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
+	if req.SaveExample != nil {
+		return p.updateDraftToolDebugExample(ctx, draftPlugin, draftTool, *req.SaveExample, req.DebugExample)
+	}
+
+	return p.updateDraftTool(ctx, req, draftTool)
+}
+
+func (p *pluginServiceImpl) updateDraftTool(ctx context.Context, req *UpdateDraftToolRequest, draftTool *entity.ToolInfo) (err error) {
 	if req.Method != nil && req.SubURL != nil {
 		api := entity.UniqueToolAPI{
 			SubURL: ptr.FromOrDefault(req.SubURL, ""),
@@ -634,9 +642,6 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	if req.Desc != nil {
 		op.Summary = *req.Desc
 	}
-	if req.Parameters != nil {
-		op.Parameters = req.Parameters
-	}
 	if req.APIExtend != nil {
 		if op.Extensions == nil {
 			op.Extensions = map[string]any{}
@@ -647,6 +652,12 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		}
 	}
 
+	// update request parameters
+	if req.Parameters != nil {
+		op.Parameters = req.Parameters
+	}
+
+	// update request body
 	if req.RequestBody == nil {
 		op.RequestBody = draftTool.Operation.RequestBody
 	} else {
@@ -664,6 +675,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
 	}
 
+	// update responses
 	if req.Responses == nil {
 		op.Responses = draftTool.Operation.Responses
 	} else {
@@ -707,11 +719,24 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		Operation:       op,
 	}
 
+	err = p.toolRepo.UpdateDraftTool(ctx, updatedTool)
+	if err != nil {
+		return errorx.Wrapf(err, "UpdateDraftTool failed, toolID=%d", req.ToolID)
+	}
+
+	return nil
+}
+
+func (p *pluginServiceImpl) updateDraftToolDebugExample(ctx context.Context, draftPlugin *entity.PluginInfo,
+	draftTool *entity.ToolInfo, save bool, example *common.DebugExample) (err error) {
+
 	components := draftPlugin.OpenapiDoc.Components
-	if req.SaveExample != nil && !*req.SaveExample &&
-		components != nil && components.Examples != nil {
+
+	if !save && components != nil && components.Examples != nil {
 		delete(components.Examples, draftTool.Operation.OperationID)
-	} else if req.DebugExample != nil {
+	}
+
+	if save {
 		if components == nil {
 			components = &openapi3.Components{}
 		}
@@ -722,14 +747,14 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		draftPlugin.OpenapiDoc.Components = components
 
 		reqExample, respExample := map[string]any{}, map[string]any{}
-		if req.DebugExample.ReqExample != "" {
-			err = sonic.UnmarshalString(req.DebugExample.ReqExample, &reqExample)
+		if example.ReqExample != "" {
+			err = sonic.UnmarshalString(example.ReqExample, &reqExample)
 			if err != nil {
 				return errorx.WrapByCode(err, errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "invalid request example"))
 			}
 		}
-		if req.DebugExample.RespExample != "" {
-			err = sonic.UnmarshalString(req.DebugExample.RespExample, &respExample)
+		if example.RespExample != "" {
+			err = sonic.UnmarshalString(example.RespExample, &respExample)
 			if err != nil {
 				return errorx.WrapByCode(err, errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "invalid response example"))
 			}
@@ -745,9 +770,9 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		}
 	}
 
-	err = p.toolRepo.UpdateDraftToolAndDebugExample(ctx, draftPlugin.ID, draftPlugin.OpenapiDoc, updatedTool)
+	err = p.pluginRepo.UpdateDebugExample(ctx, draftPlugin.ID, draftPlugin.OpenapiDoc)
 	if err != nil {
-		return errorx.Wrapf(err, "UpdateDraftToolAndDebugExample failed, pluginID=%d, toolID=%d", draftPlugin.ID, req.ToolID)
+		return errorx.Wrapf(err, "UpdateDebugExample failed, pluginID=%d", draftPlugin.ID)
 	}
 
 	return nil

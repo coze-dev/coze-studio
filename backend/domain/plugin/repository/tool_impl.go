@@ -23,7 +23,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
@@ -388,42 +387,4 @@ func (t *toolRepoImpl) MGetVersionAgentTool(ctx context.Context, agentID int64, 
 
 func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID int64, agentVersion string, tools []*entity.ToolInfo) (err error) {
 	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, agentVersion, tools)
-}
-
-func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
-	tx := t.query.Begin()
-	if tx.Error != nil {
-		return tx.Error
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
-			}
-			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
-			return
-		}
-		if err != nil {
-			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
-			}
-		}
-	}()
-
-	err = t.toolDraftDAO.UpdateWithTX(ctx, tx, updatedTool)
-	if err != nil {
-		return err
-	}
-
-	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
-		ID:         pluginID,
-		OpenapiDoc: doc,
-	})
-	err = t.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
 }
