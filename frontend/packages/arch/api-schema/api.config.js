@@ -4,7 +4,7 @@ const path = require('path');
 
 const config = [
   {
-    idlRoot: '../../../../opencoze', // IDL root directory
+    idlRoot: path.resolve(__dirname, '../../../../'), // IDL root directory
     entries: {
       passport: './idl/passport/passport.thrift', // Entry service name and path
       explore:

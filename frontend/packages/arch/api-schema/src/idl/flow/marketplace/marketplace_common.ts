@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as base from './../../base';
 export { base };
 export interface Price {
-  /** amount */
+  /** 金额 */
   amount: string,
-  /** Currencies such as USD and CNY */
+  /** 币种，如USD、CNY */
   currency: string,
-  /** decimal places */
+  /** 小数位数 */
   decimal_num: number,
 }
 export enum FollowType {
-  /** It doesn't matter. */
+  /** 无关系 */
   Unknown = 0,
-  /** follow */
+  /** 关注 */
   Followee = 1,
-  /** fan */
+  /** 粉丝 */
   Follower = 2,
-  /** Follow each other */
+  /** 互相关注 */
   MutualFollow = 3,
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as marketplace_common from './../marketplace_common';
 export { marketplace_common };
 export enum ProductEntityType {
@@ -22,36 +22,36 @@ export enum ProductEntityType {
   /** Workflow = 3 , */
   SocialScene = 4,
   Project = 6,
-  /** History workflow, no more in the future (abandoned) */
+  /** 历史工作流，后续不会再有（废弃） */
   WorkflowTemplate = 13,
-  /** Historical image stream template, no more in the future (obsolete) */
+  /** 历史图像流模板，后续不会再有（废弃） */
   ImageflowTemplate = 15,
-  /** Template universal identification, only used to bind template-related configurations, not bind products */
+  /** 模板通用标识，仅用于绑定模板相关的配置，不绑定商品 */
   TemplateCommon = 20,
-  /** Bot template */
+  /** Bot 模板 */
   BotTemplate = 21,
-  /** workflow template */
+  /** 工作流模板 */
   WorkflowTemplateV2 = 23,
-  /** Image stream template (this type has been offline and merged into workflow, but historical data will be preserved, and the front end will be treated as workflow display) */
+  /** 图像流模板（该类型已下线，合并入 workflow，但历史数据会保留，前端视作 workflow 展示） */
   ImageflowTemplateV2 = 25,
-  /** project template */
+  /** 项目模板 */
   ProjectTemplate = 26,
-  /** Coze token products, theoretically there will only be one */
+  /** coze token 类商品，理论上只会有一个 */
   CozeToken = 50,
-  /** Subscribe to the traffic package of credit, theoretically there will only be one */
+  /** 订阅 credit 的流量包，理论上只会有一个 */
   MsgCredit = 55,
-  /** There is only one subscription product in theory */
+  /** 消息订阅类商品，理论上只有一个 */
   SubsMsgCredit = 60,
   Common = 99,
-  /** Special Topics (Compatible with previous designs) */
+  /** 专题（兼容之前的设计） */
   Topic = 101,
 }
 export enum SortType {
   Heat = 1,
   Newest = 2,
-  /** collection time */
+  /** 收藏时间 */
   FavoriteTime = 3,
-  /** Correlation, only for search scenarios */
+  /** 相关性，只用于搜索场景 */
   Relative = 4,
 }
 export enum ProductPublishMode {
@@ -59,9 +59,9 @@ export enum ProductPublishMode {
   ClosedSource = 2,
 }
 export enum ProductListSource {
-  /** recommended list page */
+  /** 推荐列表页 */
   Recommend = 1,
-  /** personalized recommendation */
+  /** 个性化推荐 */
   CustomizedRecommend = 2,
 }
 export enum PluginType {
@@ -77,7 +77,7 @@ export interface CommercialSetting {
   commercial_type: ProductPaidType
 }
 export enum ProductStatus {
-  /** It never hit the shelves. */
+  /** 从未上架 */
   NeverListed = 0,
   Listed = 1,
   Unlisted = 2,
@@ -103,20 +103,20 @@ export interface ImageInfo {
   url: string,
 }
 export enum ProductDraftStatus {
-  /** default */
+  /** 默认 */
   Default = 0,
-  /** Under review. */
+  /** 审核中 */
   Pending = 1,
-  /** approved */
+  /** 审核通过 */
   Approved = 2,
-  /** The review failed. */
+  /** 审核不通过 */
   Rejected = 3,
-  /** Abandoned */
+  /** 已废弃 */
   Abandoned = 4,
 }
 export type AuditStatus = ProductDraftStatus;
 export interface OpeningDialog {
-  /** Bot opening line */
+  /** Bot开场白 */
   content: string
 }
 export enum InputType {
@@ -131,27 +131,27 @@ export enum PluginParamTypeFormat {
   ImageUrl = 1,
 }
 export enum WorkflowNodeType {
-  /** start */
+  /** 开始 */
   Start = 1,
-  /** end */
+  /** 结束 */
   End = 2,
-  /** Large model */
+  /** 大模型 */
   LLM = 3,
-  /** plugin */
+  /** 插件 */
   Api = 4,
-  /** code */
+  /** 代码 */
   Code = 5,
-  /** Knowledge Base */
+  /** 知识库 */
   Dataset = 6,
-  /** selector */
+  /** 选择器 */
   If = 8,
-  /** Workflow */
+  /** 工作流 */
   SubWorkflow = 9,
-  /** variable */
+  /** 变量 */
   Variable = 11,
-  /** database */
+  /** 数据库 */
   Database = 12,
-  /** message */
+  /** 消息 */
   Message = 13,
 }
 export enum SocialSceneRoleType {
@@ -161,11 +161,11 @@ export enum SocialSceneRoleType {
 }
 export enum UIPreviewType {
   /**
-   * UI preview type, defining alignment UI Builder, currently used in Project
-   * web page
+   * UI 预览类型，定义对齐 UI Builder，目前用于 Project
+   * 网页端
   */
   Web = 1,
-  /** mobile end */
+  /** 移动端 */
   Client = 2,
 }
 export interface ChargeSKUExtra {
@@ -173,7 +173,7 @@ export interface ChargeSKUExtra {
   is_self_define: boolean,
 }
 export enum FavoriteListSource {
-  /** Created by users themselves */
+  /** 用户自己创建的 */
   CreatedByMe = 1,
 }
 export interface FavoriteEntity {
@@ -182,13 +182,13 @@ export interface FavoriteEntity {
   name: string,
   icon_url: string,
   description: string,
-  /** Abandoned, using UserInfo */
+  /** 废弃，使用UserInfo */
   seller: SellerInfo,
-  /** Use to jump to the bot edit page */
+  /** 用于跳转到Bot编辑页 */
   space_id: string,
-  /** Does the user have permissions to the space where the entity is located? */
+  /** 用户是否有该实体所在Space的权限 */
   has_space_permission: boolean,
-  /** collection time */
+  /** 收藏时间 */
   favorite_at: string,
   product_extra?: FavoriteProductExtra,
   user_info: UserInfo,
