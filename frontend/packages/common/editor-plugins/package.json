@@ -68,7 +68,7 @@
     "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
-    "@coze-editor/editor": "0.1.0-alpha.d92d50",
+    "@coze-editor/editor": "0.1.0-alpha.dd871b",
     "@lezer/common": "^1.2.2",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
