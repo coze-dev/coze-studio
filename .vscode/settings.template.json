@@ -52,7 +52,7 @@
     "README": "markdown",
     "**/coverage/**/*.*": "plaintext",
     "OWNERS": "yaml",
-    // 需要将 pnpm-lock file 设置为 plaintext，不做解析，否则打开文件时 vscode 容易卡死
+    // Set the pnpm-lock file to plaintext to avoid parsing; otherwise, VSCode may freeze when opening the file
     "**/pnpm-lock.yaml": "plaintext",
     "**/dist/**": "plaintext",
     "**/dist_*/**": "plaintext",
