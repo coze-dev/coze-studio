@@ -153,12 +153,32 @@ services:
       - ./data/minio:/data
       - ./volumes/minio/default_icon/:/default_icon
       - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
-      - ./volumes/minio/initialize.sh:/initialize.sh
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
-    entrypoint: ['/bin/sh', '/initialize.sh']
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # Run initialization in background
+        (
+          # Wait for MinIO to be ready
+          until (/usr/bin/mc alias set localminio http://localhost:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}) do
+            echo "Waiting for MinIO to be ready..."
+            sleep 1
+          done
+
+          # Create bucket and copy files
+          /usr/bin/mc mb --ignore-existing localminio/$${STORAGE_BUCKET}
+          /usr/bin/mc cp --recursive /default_icon/ localminio/$${STORAGE_BUCKET}/default_icon/
+          /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/$${STORAGE_BUCKET}/official_plugin_icon/
+
+          echo "MinIO initialization complete."
+        ) &
+
+        # Start minio server in foreground
+        exec minio server /data --console-address ":9001"
     healthcheck:
       test:
         [
