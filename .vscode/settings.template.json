@@ -101,7 +101,7 @@
   "typescript.referencesCodeLens.enabled": false,
   "typescript.preferGoToSourceDefinition": true,
   "typescript.updateImportsOnFileMove.enabled": "never",
-  // tsserver log 不会自动删除，日积月累，导致磁盘空间不足，因此默认关闭
+  // tsserver logs are not automatically deleted and accumulate over time, causing disk space issues, so disabled by default
   "typescript.tsserver.log": "off",
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.workspaceSymbols.excludeLibrarySymbols": true,
