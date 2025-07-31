@@ -33,7 +33,7 @@ export default class SelectTeamPlugin implements IPlugin {
   apply(hooks: IHooks): void {
     hooks.prompts.tap("SelectTeamPlugin", (prompts: IPromptsHookParams) => {
 
-      // 只留下以team-为前缀的
+      // Leave only the prefix team-
       const teamNamePrefix = /^team-/;
       const choices = rushJson.allowedProjectTags.filter(
         teamName => teamNamePrefix.test(teamName)
@@ -41,20 +41,20 @@ export default class SelectTeamPlugin implements IPlugin {
         teamName => teamName.replace(teamNamePrefix, '')
       );
 
-      // unshift一个问题，使得用户选择完模版后展示该问题。
+      // Unshift an issue, causing the user to display the issue after selecting a template.
       prompts.promptQueue.unshift({
         type: "list",
         name: "team",
         message: "Select your team",
         choices,
-        default: 0, // 默认选择choices[0]
+        default: 0, // Default choices [0]
       });
 
       const projectFolderPrompt = prompts.promptQueue.find(
         item => item.name === 'projectFolder'
       );
       projectFolderPrompt.default = (answers) => {
-        // 文件夹名去除scope，如 @coze-arch/foo -> foo
+        // Remove the scope from the folder name, such as @code-arch/foo - > foo
         const folderDir = answers.packageName.split('/').slice(-1)[0];
         return `frontend/packages/${answers.team}/${folderDir}`;
       }

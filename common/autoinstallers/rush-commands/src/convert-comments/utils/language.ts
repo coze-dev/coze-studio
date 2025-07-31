@@ -1,7 +1,7 @@
 import { SourceFileLanguage, CommentPattern } from '../types/index';
 
 /**
- * 根据文件扩展名识别编程语言
+ * Identify programming languages by file extension
  */
 export const detectLanguage = (filePath: string): SourceFileLanguage => {
   const ext = filePath.toLowerCase().split('.').pop();
@@ -51,14 +51,14 @@ export const detectLanguage = (filePath: string): SourceFileLanguage => {
 };
 
 /**
- * 根据文件扩展名过滤文件
+ * Filter files by file extension
  */
 export const filterFilesByExtensions = (
   files: string[],
   extensions: string[]
 ): string[] => {
   if (extensions.length === 0) {
-    // 默认支持的文本文件扩展名
+    // Default supported text file extensions
     const defaultExtensions = [
       '.ts', '.tsx', '.js', '.jsx', '.go', '.md', '.txt', '.json',
       '.yaml', '.yml', '.toml', '.ini', '.conf', '.config',
@@ -75,7 +75,7 @@ export const filterFilesByExtensions = (
     const lowerFile = file.toLowerCase();
     return extensions.some(ext => {
       const lowerExt = ext.toLowerCase();
-      // 如果扩展名已经有点号，直接使用；否则添加点号
+      // If the extension is already numbered, use it directly; otherwise, add a dot.
       const extWithDot = lowerExt.startsWith('.') ? lowerExt : `.${lowerExt}`;
       return lowerFile.endsWith(extWithDot);
     });
@@ -83,7 +83,7 @@ export const filterFilesByExtensions = (
 };
 
 /**
- * 获取不同编程语言的注释模式
+ * Obtain comment modes for different programming languages
  */
 export const getCommentPatterns = (language: SourceFileLanguage): CommentPattern | null => {
   const commentPatterns: Record<SourceFileLanguage, CommentPattern> = {
@@ -108,33 +108,33 @@ export const getCommentPatterns = (language: SourceFileLanguage): CommentPattern
       multiEnd: /-->/g
     },
     text: {
-      single: /^(.*)$/gm, // 文本文件每行都可能是注释
+      single: /^(.*)$/gm, // Every line of a text file can be a comment
       multiStart: /^/g,
       multiEnd: /$/g
     },
     json: {
-      single: /\/\/(.*)$/gm, // JSON通常不支持注释，但一些工具支持
+      single: /\/\/(.*)$/gm, // JSON usually doesn't support comments, but some tools do
       multiStart: /\/\*/g,
       multiEnd: /\*\//g
     },
     yaml: {
       single: /#(.*)$/gm,
-      multiStart: /^$/g, // YAML不支持多行注释
+      multiStart: /^$/g, // YAML does not support multi-line comments
       multiEnd: /^$/g
     },
     toml: {
       single: /#(.*)$/gm,
-      multiStart: /^$/g, // TOML不支持多行注释
+      multiStart: /^$/g, // TOML does not support multi-line comments
       multiEnd: /^$/g
     },
     ini: {
-      single: /[;#](.*)$/gm, // INI文件支持 ; 和 # 作为注释
-      multiStart: /^$/g, // INI不支持多行注释
+      single: /[;#](.*)$/gm, // INI file support; and #as comments
+      multiStart: /^$/g, // INI does not support multi-line comments
       multiEnd: /^$/g
     },
     shell: {
       single: /#(.*)$/gm,
-      multiStart: /^$/g, // Shell脚本不支持多行注释
+      multiStart: /^$/g, // Shell scripts do not support multi-line comments
       multiEnd: /^$/g
     },
     python: {
@@ -143,22 +143,22 @@ export const getCommentPatterns = (language: SourceFileLanguage): CommentPattern
       multiEnd: /[\s\S]*?"""/gm
     },
     css: {
-      single: /^$/g, // CSS不支持单行注释
+      single: /^$/g, // CSS does not support single-line comments
       multiStart: /\/\*/g,
       multiEnd: /\*\//g
     },
     html: {
-      single: /^$/g, // HTML不支持单行注释
+      single: /^$/g, // HTML does not support single-line comments
       multiStart: /<!--/g,
       multiEnd: /-->/g
     },
     xml: {
-      single: /^$/g, // XML不支持单行注释
+      single: /^$/g, // XML does not support single-line comments
       multiStart: /<!--/g,
       multiEnd: /-->/g
     },
     php: {
-      single: /(?:\/\/|#)(.*)$/gm, // PHP支持 // 和 # 作为单行注释
+      single: /(?:\/\/|#)(.*)$/gm, // PHP supports//and #as single-line comments
       multiStart: /\/\*/g,
       multiEnd: /\*\//g
     },
@@ -208,7 +208,7 @@ export const getCommentPatterns = (language: SourceFileLanguage): CommentPattern
 };
 
 /**
- * 检查文件是否支持处理
+ * Check if the file supports processing
  */
 export const isSupportedFile = (filePath: string): boolean => {
   const language = detectLanguage(filePath);
@@ -216,7 +216,7 @@ export const isSupportedFile = (filePath: string): boolean => {
 };
 
 /**
- * 获取文件的MIME类型（用于判断是否为文本文件）
+ * Get the MIME type of the file (used to determine whether it is a text file)
  */
 export const isTextFile = (filePath: string): boolean => {
   const textExtensions = [

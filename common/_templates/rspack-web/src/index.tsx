@@ -17,7 +17,7 @@
 import { RouterProvider } from 'react-router-dom';
 
 import { createRoot } from 'react-dom/client';
-import browserClient from '@slardar/web'; // 默认引入的是CN地区的
+import browserClient from '@slardar/web'; // The default introduction is the CN region
 import { reporter } from '@coze-arch/logger';
 
 import { router } from '@/router';

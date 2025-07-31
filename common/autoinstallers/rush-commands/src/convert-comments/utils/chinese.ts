@@ -1,25 +1,25 @@
 /**
- * 中文字符的Unicode范围正则表达式
+ * Unicode Range Regular Expressions for Chinese Characters
  */
 const CHINESE_REGEX = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
 const CHINESE_EXTRACT_REGEX = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+/g;
 
 /**
- * 检测文本是否包含中文字符
+ * Detect whether the text contains Chinese characters
  */
 export const containsChinese = (text: string): boolean => {
   return CHINESE_REGEX.test(text);
 };
 
 /**
- * 提取文本中的中文部分
+ * Extract the Chinese part of the text
  */
 export const extractChineseParts = (text: string): string[] => {
   return text.match(CHINESE_EXTRACT_REGEX) || [];
 };
 
 /**
- * 计算文本中中文字符的数量
+ * Count the number of Chinese characters in a text
  */
 export const countChineseCharacters = (text: string): number => {
   const matches = text.match(CHINESE_EXTRACT_REGEX);
@@ -29,7 +29,7 @@ export const countChineseCharacters = (text: string): number => {
 };
 
 /**
- * 检测文本是否主要由中文组成
+ * Detect whether the text is mainly composed of Chinese
  */
 export const isPrimarilyChinese = (text: string, threshold: number = 0.5): boolean => {
   const totalLength = text.length;
@@ -40,7 +40,7 @@ export const isPrimarilyChinese = (text: string, threshold: number = 0.5): boole
 };
 
 /**
- * 清理注释文本，移除注释符号和多余空格
+ * Clean up comment text, remove comment symbols and extra spaces
  */
 export const cleanCommentText = (
   text: string, 
@@ -50,7 +50,7 @@ export const cleanCommentText = (
   let cleaned = text;
 
   if (commentType === 'single-line') {
-    // 根据语言类型移除不同的单行注释符号
+    // Remove different single-line comment symbols based on language type
     switch (language) {
       case 'yaml':
       case 'toml':
@@ -70,7 +70,7 @@ export const cleanCommentText = (
         cleaned = cleaned.replace(/^\/\/\s*/, '');
     }
   } else if (commentType === 'multi-line') {
-    // 根据语言类型移除不同的多行注释符号
+    // Remove different multi-line comment symbols based on language type
     switch (language) {
       case 'html':
       case 'xml':
@@ -86,32 +86,32 @@ export const cleanCommentText = (
       default:
         // JavaScript/TypeScript/Go/Java/C/C++/C#/CSS style
         cleaned = cleaned.replace(/^\/\*\s*/, '').replace(/\s*\*\/$/, '');
-        // 移除每行开头的 * 符号
+        // Remove the * symbol at the beginning of each line
         cleaned = cleaned.replace(/^\s*\*\s?/gm, '');
     }
   }
 
-  // 移除多余的空格和换行
+  // Remove extra spaces and newlines
   cleaned = cleaned.trim();
 
   return cleaned;
 };
 
 /**
- * 验证翻译结果是否有效
+ * Verify whether the translation result is valid.
  */
 export const isValidTranslation = (original: string, translated: string): boolean => {
-  // 基本验证
+  // basic verification
   if (!translated || translated.trim().length === 0) {
     return false;
   }
 
-  // 检查是否还包含中文（可能翻译失败）
+  // Check if Chinese is also included (translation may fail)
   if (containsChinese(translated)) {
     return false;
   }
 
-  // 检查长度是否合理（翻译后的文本不应该比原文长太多）
+  // Check if the length is reasonable (the translated text should not be much longer than the original).
   if (translated.length > original.length * 3) {
     return false;
   }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 设置默认值
+# Set default value
 TARGET_BRANCH=${targetBranch}
 CI_MODE=${CI:-false}
 
@@ -36,11 +36,11 @@ else
   files=$(git diff --name-only --diff-filter=AM --cached $EXCLUDE_STRING)
 fi
 
-# 体积限制为512KB
+# The volume limit is 512KB.
 size_limit=$((512))
 large_files_info=""
 
-IFS=$'\n' # 处理文件名存在空格情况
+IFS=$'\n' # Handling the existence of spaces in the file name
 for file in $files; do
   file_size=$(wc -c <"$file" 2>/dev/null)
   if [ $? -ne 0 ]; then

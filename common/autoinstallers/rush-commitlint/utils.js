@@ -19,7 +19,7 @@ function getChangedPackages(changedFiles) {
     const lookup = rushConfiguration.getProjectLookupForRoot(rushJsonFolder)
     for (const file of changedFiles) {
       const project = lookup.findChildPath(file)
-      // 如果没找到注册的包信息，则认为是通用文件更改
+      // If the registered package information is not found, it is considered a generic file change
       const packageName = project?.packageName || 'misc'
       if (!changedPackages.has(packageName)) {
         changedPackages.add(packageName)

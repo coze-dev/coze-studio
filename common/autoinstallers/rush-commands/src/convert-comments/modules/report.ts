@@ -5,7 +5,7 @@ import {
 } from '../types/index.js';
 
 /**
- * 报告收集器类
+ * report collector class
  */
 export class ReportCollector {
   private stats: ProcessingStats = {
@@ -21,7 +21,7 @@ export class ReportCollector {
   private fileDetails: Map<string, FileProcessingDetail> = new Map();
 
   /**
-   * 记录文件处理开始
+   * Record file processing begins
    */
   recordFileStart(filePath: string): void {
     this.stats.totalFiles++;
@@ -34,7 +34,7 @@ export class ReportCollector {
   }
 
   /**
-   * 记录文件处理完成
+   * Record file processing completed
    */
   recordFileComplete(filePath: string, commentCount: number): void {
     const detail = this.fileDetails.get(filePath);
@@ -48,7 +48,7 @@ export class ReportCollector {
   }
 
   /**
-   * 记录文件跳过
+   * log file skip
    */
   recordFileSkipped(filePath: string, reason?: string): void {
     const detail = this.fileDetails.get(filePath);
@@ -61,7 +61,7 @@ export class ReportCollector {
   }
 
   /**
-   * 记录处理错误
+   * Log processing errors
    */
   recordError(filePath: string, error: Error): void {
     const detail = this.fileDetails.get(filePath);
@@ -74,28 +74,28 @@ export class ReportCollector {
   }
 
   /**
-   * 完成统计
+   * Complete statistics
    */
   finalize(): void {
     this.stats.endTime = Date.now();
   }
 
   /**
-   * 获取统计信息
+   * Obtain statistical information
    */
   getStats(): ProcessingStats {
     return { ...this.stats };
   }
 
   /**
-   * 获取文件详情
+   * Get file details
    */
   getFileDetails(): FileProcessingDetail[] {
     return Array.from(this.fileDetails.values());
   }
 
   /**
-   * 生成完整报告
+   * Generate a full report
    */
   generateReport(): ProcessingReport {
     this.finalize();
@@ -109,7 +109,7 @@ export class ReportCollector {
   }
 
   /**
-   * 重置收集器
+   * Reset collector
    */
   reset(): void {
     this.stats = {
@@ -126,7 +126,7 @@ export class ReportCollector {
 }
 
 /**
- * 生成控制台报告
+ * Generate console reports
  */
 export const generateConsoleReport = (report: ProcessingReport): string => {
   const { stats, duration } = report;
@@ -160,7 +160,7 @@ export const generateConsoleReport = (report: ProcessingReport): string => {
 };
 
 /**
- * 生成Markdown报告
+ * Generating Markdown Reports
  */
 export const generateMarkdownReport = (report: ProcessingReport): string => {
   const { stats, details, duration } = report;
@@ -217,14 +217,14 @@ export const generateMarkdownReport = (report: ProcessingReport): string => {
 };
 
 /**
- * 生成JSON报告
+ * Generate JSON reports
  */
 export const generateJsonReport = (report: ProcessingReport): string => {
   return JSON.stringify(report, null, 2);
 };
 
 /**
- * 根据格式生成报告
+ * Generate reports according to the format
  */
 export const generateReport = (
   report: ProcessingReport,
@@ -242,7 +242,7 @@ export const generateReport = (
 };
 
 /**
- * 保存报告到文件
+ * Save report to file
  */
 export const saveReportToFile = async (
   report: ProcessingReport,
@@ -255,7 +255,7 @@ export const saveReportToFile = async (
 };
 
 /**
- * 在控制台显示实时进度
+ * Display real-time progress on the console
  */
 export class ProgressDisplay {
   private total: number = 0;
@@ -267,7 +267,7 @@ export class ProgressDisplay {
   }
 
   /**
-   * 更新进度
+   * update progress
    */
   update(current: number, currentFile?: string): void {
     this.current = current;
@@ -286,7 +286,7 @@ export class ProgressDisplay {
       line += ` | 当前: ${currentFile}`;
     }
 
-    // 清除当前行并输出新进度
+    // Clear the current line and output the new progress
     process.stdout.write(
       '\r' + ' '.repeat(process.stdout.columns || 80) + '\r',
     );
@@ -294,7 +294,7 @@ export class ProgressDisplay {
   }
 
   /**
-   * 完成进度显示
+   * completion progress display
    */
   complete(): void {
     process.stdout.write('\n');

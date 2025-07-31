@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { CliOptions } from '../types/config';
 
 /**
- * 创建命令行程序
+ * Create a command line program
  */
 export const createProgram = (): Command => {
   const program = new Command();
@@ -32,7 +32,7 @@ export const createProgram = (): Command => {
 };
 
 /**
- * 解析命令行选项
+ * Parse command line options
  */
 export const parseOptions = (program: Command): CliOptions => {
   const options = program.opts();
@@ -53,7 +53,7 @@ export const parseOptions = (program: Command): CliOptions => {
 };
 
 /**
- * 显示帮助信息
+ * Display help information
  */
 export const showHelp = (): void => {
   console.log(`
@@ -101,7 +101,7 @@ export const showHelp = (): void => {
 };
 
 /**
- * 显示版本信息
+ * Show version information
  */
 export const showVersion = (): void => {
   console.log('ai-translate version 1.0.0');

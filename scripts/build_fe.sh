@@ -16,7 +16,7 @@ BUILD_BRANCH=opencoze-local rush rebuild -o @coze-studio/app --verbose
 
 popd
 
-# 复制构建产物到后端静态目录
+# Copy bundle to backend static directory
 echo -e "${YELLOW}正在复制构建产物到后端静态目录...${NC}"
 BACKEND_STATIC_DIR="${SCRIPT_DIR}/../backend/static"
 BIN_STATIC_DIR="${SCRIPT_DIR}/../bin/resources/static"
@@ -27,7 +27,7 @@ rm -rf "${BIN_STATIC_DIR}"
 mkdir -p "${BACKEND_STATIC_DIR}"
 mkdir -p "${BIN_STATIC_DIR}"
 
-# 清空目标目录并复制新的构建产物
+# Clear the target directory and copy the new bundle
 rm -rf "${BACKEND_STATIC_DIR}"/*
 cp -r "${FRONTEND_DIST_DIR}"/* "${BACKEND_STATIC_DIR}/"
 cp -r "${FRONTEND_DIST_DIR}"/* "${BIN_STATIC_DIR}/"

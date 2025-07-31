@@ -5,7 +5,7 @@ import { getGitTrackedFiles, getAllGitFiles } from '../utils/git';
 import { tryCatch } from '../utils/fp';
 
 /**
- * 读取文件内容并创建SourceFile对象
+ * Read the file contents and create a SourceFile object
  */
 export const readSourceFile = async (filePath: string): Promise<Result<SourceFile>> => {
   return tryCatch(async () => {
@@ -21,7 +21,7 @@ export const readSourceFile = async (filePath: string): Promise<Result<SourceFil
 };
 
 /**
- * 批量读取源文件
+ * Batch reading of source files
  */
 export const readSourceFiles = async (filePaths: string[]): Promise<SourceFile[]> => {
   const results = await Promise.allSettled(
@@ -36,13 +36,13 @@ export const readSourceFiles = async (filePaths: string[]): Promise<SourceFile[]
 };
 
 /**
- * 获取Git仓库中的源码文件
+ * Get the source code file in the Git repository
  */
 export const getSourceFiles = async (config: FileScanConfig): Promise<Result<string[]>> => {
   const { root, extensions, includeUntracked } = config;
 
   return tryCatch(async () => {
-    // 获取Git文件列表
+    // Get a list of Git files
     const gitFilesResult = includeUntracked
       ? await getAllGitFiles(root)
       : await getGitTrackedFiles(root);
@@ -53,10 +53,10 @@ export const getSourceFiles = async (config: FileScanConfig): Promise<Result<str
 
     let files = gitFilesResult.data;
 
-    // 过滤文本文件
+    // Filter text files
     files = files.filter(isTextFile);
 
-    // 根据扩展名过滤
+    // Filter by extension
     files = filterFilesByExtensions(files, extensions);
 
     return files;
@@ -64,7 +64,7 @@ export const getSourceFiles = async (config: FileScanConfig): Promise<Result<str
 };
 
 /**
- * 扫描并读取所有源码文件
+ * Scan and read all source code files
  */
 export const scanSourceFiles = async (config: FileScanConfig): Promise<Result<SourceFile[]>> => {
   return tryCatch(async () => {
@@ -80,7 +80,7 @@ export const scanSourceFiles = async (config: FileScanConfig): Promise<Result<So
 };
 
 /**
- * 检查文件是否存在且可读
+ * Check if the file exists and is readable
  */
 export const isFileAccessible = async (filePath: string): Promise<boolean> => {
   try {
@@ -92,7 +92,7 @@ export const isFileAccessible = async (filePath: string): Promise<boolean> => {
 };
 
 /**
- * 获取文件统计信息
+ * Get file statistics
  */
 export const getFileStats = async (filePaths: string[]): Promise<{
   total: number;

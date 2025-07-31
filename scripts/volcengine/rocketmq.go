@@ -165,7 +165,7 @@ func CreateRocketMQAccessKey(instanceID string) (string, string, error) {
 			InstanceId:   volcengine.String(instanceID),
 		}
 
-		// 复制代码运行示例，请自行打印API返回值。
+		// Copy the code to run the example, please print the API return value yourself.
 		_, err = svc.CreateAccessKey(createAccessKeyInput)
 		if err != nil {
 			return "", "", err
@@ -245,7 +245,7 @@ func CreateRocketMQTopic(ak, instanceID string) error {
 			TopicName:      volcengine.String(topicName),
 		}
 
-		// 复制代码运行示例，请自行打印API返回值。
+		// Copy the code to run the example, please print the API return value yourself.
 		_, err = svc.CreateTopic(createTopicInput)
 		if err != nil {
 			return err

@@ -2,7 +2,7 @@ import { AppConfig, CliOptions, TranslationConfig, ProcessingConfig } from '../t
 import { deepMerge } from '../utils/fp';
 
 /**
- * 默认配置
+ * default configuration
  */
 const DEFAULT_CONFIG: AppConfig = {
   translation: {
@@ -32,7 +32,7 @@ const DEFAULT_CONFIG: AppConfig = {
 };
 
 /**
- * 从文件加载配置
+ * Load configuration from file
  */
 export const loadConfigFromFile = async (configPath: string): Promise<Partial<AppConfig>> => {
   try {
@@ -46,12 +46,12 @@ export const loadConfigFromFile = async (configPath: string): Promise<Partial<Ap
 };
 
 /**
- * 从命令行选项创建配置
+ * Create configuration from command line options
  */
 export const createConfigFromOptions = (options: CliOptions): Partial<AppConfig> => {
   const config: Partial<AppConfig> = {};
 
-  // 翻译配置
+  // translation configuration
   if (options.accessKeyId || options.secretAccessKey || options.region || options.sourceLanguage || options.targetLanguage) {
     config.translation = {} as Partial<TranslationConfig>;
     if (options.accessKeyId) {
@@ -71,10 +71,10 @@ export const createConfigFromOptions = (options: CliOptions): Partial<AppConfig>
     }
   }
 
-  // 处理配置
+  // handle configuration
   if (options.output) {
     config.processing = {} as Partial<ProcessingConfig>;
-    // 根据输出文件扩展名推断格式
+    // Infer format based on output file extension
     const ext = options.output.toLowerCase().split('.').pop();
     if (ext === 'json') {
       config.processing!.outputFormat = 'json';
@@ -87,7 +87,7 @@ export const createConfigFromOptions = (options: CliOptions): Partial<AppConfig>
 };
 
 /**
- * 合并配置
+ * merge configuration
  */
 export const mergeConfigs = (...configs: Partial<AppConfig>[]): AppConfig => {
   return configs.reduce(
@@ -97,18 +97,18 @@ export const mergeConfigs = (...configs: Partial<AppConfig>[]): AppConfig => {
 };
 
 /**
- * 加载完整配置
+ * Load full configuration
  */
 export const loadConfig = async (options: CliOptions): Promise<AppConfig> => {
   const configs: Partial<AppConfig>[] = [DEFAULT_CONFIG];
 
-  // 加载配置文件
+  // Load configuration file
   if (options.config) {
     const fileConfig = await loadConfigFromFile(options.config);
     configs.push(fileConfig);
   }
 
-  // 加载命令行选项配置
+  // Load command line options configuration
   const optionsConfig = createConfigFromOptions(options);
   configs.push(optionsConfig);
 
@@ -116,28 +116,28 @@ export const loadConfig = async (options: CliOptions): Promise<AppConfig> => {
 };
 
 /**
- * 验证配置
+ * verify configuration
  */
 export const validateConfig = (config: AppConfig): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
-  // 验证火山引擎 Access Key ID
+  // Verify Volcano Engine Access Key ID
   if (!config.translation.accessKeyId) {
     errors.push('火山引擎 Access Key ID 未设置，请通过环境变量VOLC_ACCESS_KEY_ID或--access-key-id参数提供');
   }
 
-  // 验证火山引擎 Secret Access Key
+  // Verify Volcano Engine Secret Access Key
   if (!config.translation.secretAccessKey) {
     errors.push('火山引擎 Secret Access Key 未设置，请通过环境变量VOLC_SECRET_ACCESS_KEY或--secret-access-key参数提供');
   }
 
-  // 验证区域
+  // validation area
   const validRegions = ['cn-beijing', 'ap-southeast-1', 'us-east-1'];
   if (!validRegions.includes(config.translation.region)) {
     console.warn(`未知的区域: ${config.translation.region}，建议使用: ${validRegions.join(', ')}`);
   }
 
-  // 验证语言代码
+  // Verify language code
   const validLanguages = ['zh', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt', 'ru'];
   if (!validLanguages.includes(config.translation.sourceLanguage)) {
     console.warn(`未知的源语言: ${config.translation.sourceLanguage}，建议使用: ${validLanguages.join(', ')}`);
@@ -146,12 +146,12 @@ export const validateConfig = (config: AppConfig): { valid: boolean; errors: str
     console.warn(`未知的目标语言: ${config.translation.targetLanguage}，建议使用: ${validLanguages.join(', ')}`);
   }
 
-  // 验证并发数
+  // validation concurrency
   if (config.translation.concurrency < 1 || config.translation.concurrency > 10) {
     errors.push('并发数应该在1-10之间');
   }
 
-  // 验证超时时间
+  // verification timeout
   if (config.translation.timeout < 1000 || config.translation.timeout > 300000) {
     errors.push('超时时间应该在1000-300000毫秒之间');
   }
@@ -160,7 +160,7 @@ export const validateConfig = (config: AppConfig): { valid: boolean; errors: str
 };
 
 /**
- * 打印配置信息
+ * Print configuration information
  */
 export const printConfigInfo = (config: AppConfig, verbose: boolean = false): void => {
   console.log('🔧 当前配置:');

@@ -29,6 +29,6 @@ export const createUserInfoSlice: StateCreator<
 > = set => ({
   userInfo: '',
   iniUserInfo: () => {
-    // TODO: 用户信息相关方法获取
+    // TODO: User information related methods
   },
 });
