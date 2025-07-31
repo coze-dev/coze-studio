@@ -21,7 +21,6 @@ spec:
         - |
           mysql -h {{ .Release.Name }}-mysql -u root -p"{{ .Values.mysql.rootPassword }}" -e "CREATE USER IF NOT EXISTS '{{ .Values.mysql.user }}'@'%' IDENTIFIED BY '{{ .Values.mysql.password }}';GRANT ALL PRIVILEGES ON {{ .Values.mysql.database }}.* TO '{{ .Values.mysql.user }}'@'%';FLUSH PRIVILEGES;"
           mysql -h {{ .Release.Name }}-mysql -u {{ .Values.mysql.user }} -p"{{ .Values.mysql.password }}" {{ .Values.mysql.database }} < /sql/schema.sql
-          mysql -h {{ .Release.Name }}-mysql -u {{ .Values.mysql.user }} -p"{{ .Values.mysql.password }}" {{ .Values.mysql.database }} < /sql/sql_init.sql
         volumeMounts:
         - name: schema-sql
           mountPath: /sql/schema.sql
