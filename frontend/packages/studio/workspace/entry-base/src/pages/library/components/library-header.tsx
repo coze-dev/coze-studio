@@ -156,7 +156,10 @@ export const LibraryHeader: React.FC<{
     spaceId,
     onSuccess: () => {
       Toast.success('Workflow imported successfully');
-      onRefresh?.();
+      // 添加小延迟确保后端数据已完全写入
+      setTimeout(() => {
+        onRefresh?.();
+      }, 100);
     },
     onError: error => {
       Toast.error(`Import failed: ${error.message}`);
@@ -166,7 +169,6 @@ export const LibraryHeader: React.FC<{
   const handleImportWorkflow = async (file: File) => {
     try {
       await processImportFile(file, validateImportPackage, importWorkflow);
-      Toast.success('Workflow imported successfully');
     } catch (error: unknown) {
       console.error('Failed to import workflow:', error);
       const errorMessage =
