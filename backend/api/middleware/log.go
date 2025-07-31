@@ -50,7 +50,7 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
+		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d | %s",
 			string(ctx.GetRequest().Scheme()), ctx.Host(), status,
 			latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
 
