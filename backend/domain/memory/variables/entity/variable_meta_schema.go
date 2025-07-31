@@ -34,8 +34,6 @@ const (
 	variableMetaSchemaTypeNumber  = "float"
 )
 
-// TODO: remove me later
-// {"name":"app_var_arr","enable":true,"description":"121222","type":"list","readonly":false,"schema":{"type":"integer"}}
 type VariableMetaSchema struct {
 	Type        string          `json:"type,omitempty"`
 	Name        string          `json:"name,omitempty"`
