@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const SUCCESSFUL_UPLOAD_PROGRESS = 100;
 
 export const POLLING_TIME = 3000;
@@ -39,8 +39,8 @@ const textUploadChannelConfigMap: Record<Channel, TextUploadChannelConfig> = {
     addUnitMaxLimit: 100,
   },
   DEFAULT: {
-    acceptFileTypes: ['.pdf', '.txt', '.doc', '.docx', '.md'],
-    fileFormatString: 'PDF、TXT、DOC、DOCX、MD',
+    acceptFileTypes: ['.pdf', '.txt', '.docx', '.md'],
+    fileFormatString: 'PDF、TXT、DOCX、MD',
     addUnitMaxLimit: 300,
   },
 };
