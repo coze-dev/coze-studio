@@ -946,14 +946,10 @@ func fillManifestWithOpenapiDoc(mf *entity.PluginManifest, doc *model.Openapi3T)
 }
 
 func addHTTPProtocolHeadIfNeed(url string) string {
-	if strings.HasPrefix(url, "https://") {
+	if strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://") {
 		return url
 	}
-	if strings.HasPrefix(url, "http://") {
-		url = strings.Replace(url, "http://", "https://", 1)
-		return url
-	}
-	return "https://" + url
+	return "http://" + url
 }
 
 func fillNecessaryInfoForOpenapi3Doc(doc *model.Openapi3T) {
