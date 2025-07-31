@@ -90,7 +90,7 @@ func init() {
 
 	code.Register(
 		ErrPluginRecordNotFound,
-		fmt.Sprintf("record not found"),
+		"record not found",
 		code.WithAffectStability(false),
 	)
 
