@@ -5,7 +5,7 @@ const { getChangedPackages } = require('./utils')
 
 
 /**
- * 针对不同类型的 commit prefix message
+ * For different types of commit prefix messages
  */
 const typesConfig = [
   { value: 'feat', name: 'A new feature' },

@@ -21,9 +21,9 @@ import type {
   IPromptsHookParams,
 } from 'rush-init-project-plugin';
 // FIXME:
-// 按照 https://github.com/bytemate/rush-plugins/blob/main/rush-plugins/rush-init-project-plugin/docs/init_project_configuration.md
-// 一文的指引，无法正确 resolve 到对应模块，暂时没找到解决方案，故此处先用相对路径引用
-// 未来需要调整为正常的 node_modules 引用方式
+// According to https://github.com/bytemate/rush-plugins/blob/main/rush-plugins/rush-init-project-plugin/docs/init_project_configuration.md
+// The guidelines of this article cannot be correctly resolved to the corresponding module, and a solution has not been found for the time being, so the relative path reference is used here first
+// Future needs to be adjusted to normal node_modules citation
 import {
   getTemplatesFolder,
   getTemplateNameList,

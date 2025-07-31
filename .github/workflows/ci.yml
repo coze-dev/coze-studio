@@ -37,10 +37,10 @@ jobs:
       - name: Process changed files
         id: process-files
         run: |
-          # 获取所有变更文件
+          # Get all change files
           all_files="${{ steps.changed-files.outputs.all_changed_files }}"
 
-          # 过滤掉 common/changes 目录下的文件
+          # Filter out files in the common/changes directory
           filtered_files=""
           for file in $all_files; do
             if [[ ! "$file" =~ ^common/changes/.* ]]; then
@@ -52,10 +52,10 @@ jobs:
             fi
           done
 
-          # 创建 JSON 格式的缓存文件
+          # Create cached files in JSON format
           echo "[$( echo "$filtered_files" | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/$/"/' )]" > changed-files-cache.json
 
-          # 输出缓存文件路径供后续步骤使用
+          # Output cache file path for subsequent steps
           echo "cache_file=changed-files-cache.json" >> $GITHUB_OUTPUT
 
           echo "过滤前文件数量: $(echo $all_files | wc -w)"

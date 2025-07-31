@@ -1,7 +1,7 @@
 import { Result } from '../types/index';
 
 /**
- * 函数组合 - 从左到右执行
+ * Function composition - executed from left to right
  */
 export const pipe =
   <T>(...fns: Function[]) =>
@@ -9,7 +9,7 @@ export const pipe =
     fns.reduce((acc, fn) => fn(acc), value);
 
 /**
- * 函数组合 - 从右到左执行
+ * Function composition - executed from right to left
  */
 export const compose =
   <T>(...fns: Function[]) =>
@@ -17,7 +17,7 @@ export const compose =
     fns.reduceRight((acc, fn) => fn(acc), value);
 
 /**
- * 柯里化函数
+ * currying function
  */
 export const curry =
   (fn: Function) =>
@@ -27,7 +27,7 @@ export const curry =
       : (...more: any[]) => curry(fn)(...args, ...more);
 
 /**
- * 异步映射
+ * asynchronous mapping
  */
 export const asyncMap = curry(
   async <T, U>(fn: (item: T) => Promise<U>, items: T[]): Promise<U[]> =>
@@ -35,7 +35,7 @@ export const asyncMap = curry(
 );
 
 /**
- * 异步过滤
+ * asynchronous filtering
  */
 export const asyncFilter = curry(
   async <T>(
@@ -48,7 +48,7 @@ export const asyncFilter = curry(
 );
 
 /**
- * 异步归约
+ * asynchronous reduction
  */
 export const asyncReduce = curry(
   async <T, U>(
@@ -65,12 +65,12 @@ export const asyncReduce = curry(
 );
 
 /**
- * 创建成功结果
+ * Create a successful result
  */
 export const success = <T>(data: T): Result<T> => ({ success: true, data });
 
 /**
- * 创建失败结果
+ * Create failed result
  */
 export const failure = <E>(error: E): Result<never, E> => ({
   success: false,
@@ -78,7 +78,7 @@ export const failure = <E>(error: E): Result<never, E> => ({
 });
 
 /**
- * 安全的异步操作包装
+ * Safe asynchronous packaging
  */
 export const tryCatch = async <T>(fn: () => Promise<T>): Promise<Result<T>> => {
   try {
@@ -90,7 +90,7 @@ export const tryCatch = async <T>(fn: () => Promise<T>): Promise<Result<T>> => {
 };
 
 /**
- * 同步版本的安全操作包装
+ * Synchronized version of the security operation wrapper
  */
 export const tryCatchSync = <T>(fn: () => T): Result<T> => {
   try {
@@ -102,7 +102,7 @@ export const tryCatchSync = <T>(fn: () => T): Result<T> => {
 };
 
 /**
- * 数组分块
+ * Array chunking
  */
 export const chunk = <T>(array: T[], size: number): T[][] => {
   const chunks: T[][] = [];
@@ -113,13 +113,13 @@ export const chunk = <T>(array: T[], size: number): T[][] => {
 };
 
 /**
- * 延迟执行
+ * delayed execution
  */
 export const delay = (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * 重试机制
+ * retry mechanism
  */
 export const retry = async <T>(
   fn: () => Promise<T>,
@@ -135,7 +135,7 @@ export const retry = async <T>(
       lastError = error instanceof Error ? error : new Error(String(error));
 
       if (attempt < maxAttempts) {
-        await delay(delayMs * attempt); // 指数退避
+        await delay(delayMs * attempt); // exponential backoff
       }
     }
   }
@@ -144,7 +144,7 @@ export const retry = async <T>(
 };
 
 /**
- * 深度合并对象
+ * deep merge object
  */
 export const deepMerge = <T extends Record<string, any>>(
   target: T,

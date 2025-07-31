@@ -1,5 +1,5 @@
 /**
- * 信号量并发控制类
+ * semaphore concurrency control class
  */
 export class Semaphore {
   private permits: number;
@@ -10,7 +10,7 @@ export class Semaphore {
   }
 
   /**
-   * 获取许可
+   * Get permission
    */
   async acquire(): Promise<void> {
     if (this.permits > 0) {
@@ -24,7 +24,7 @@ export class Semaphore {
   }
 
   /**
-   * 释放许可
+   * release permission
    */
   release(): void {
     this.permits++;
@@ -36,14 +36,14 @@ export class Semaphore {
   }
 
   /**
-   * 获取当前可用许可数
+   * Get the number of currently available licenses
    */
   available(): number {
     return this.permits;
   }
 
   /**
-   * 获取等待队列长度
+   * Get the waiting queue length
    */
   waitingCount(): number {
     return this.waiting.length;
