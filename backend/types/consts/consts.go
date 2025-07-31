@@ -38,6 +38,7 @@ const (
 	MinIOEndpoint      = "MINIO_ENDPOINT"
 	MinIOProxyEndpoint = "MINIO_PROXY_ENDPOINT"
 	MinIOAPIHost       = "MINIO_API_HOST"
+	UseMinIOProxy      = "USE_MINIO_PROXY"
 	StorageBucket      = "STORAGE_BUCKET"
 	TOSAccessKey       = "TOS_ACCESS_KEY"
 	TOSSecretKey       = "TOS_SECRET_KEY"

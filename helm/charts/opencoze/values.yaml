@@ -63,9 +63,11 @@ cozeServer:
     STORAGE_TYPE: "minio"
     STORAGE_BUCKET: "opencoze"
     MINIO_PROXY_ENDPOINT: ":8889"
+    USE_MINIO_PROXY: "true"
     COZE_MQ_TYPE: rmq
     MQ_NAME_SERVER: "127.0.0.1:9876"
     MINIO_ENDPOINT: "127.0.0.1:9000"
+    MINIO_API_HOST: "http://127.0.0.1:9000"
     ES_VERSION: "v8"
     VECTOR_STORE_TYPE: "milvus"
     EMBEDDING_TYPE: "ark"

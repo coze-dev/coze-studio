@@ -236,6 +236,12 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 		if err != nil {
 			host = currentHost
 		}
+
+		usePort := os.Getenv(consts.UseMinIOProxy)
+		if usePort != "true" {
+			proxyPort = ""
+		}
+
 		minioProxyHost := host + proxyPort
 		url.Host = minioProxyHost
 		url.Scheme = currentScheme

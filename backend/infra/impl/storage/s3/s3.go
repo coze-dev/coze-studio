@@ -242,6 +242,12 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 		if err != nil {
 			host = currentHost
 		}
+
+		usePort := os.Getenv(consts.UseMinIOProxy)
+		if usePort != "true" {
+			proxyPort = ""
+		}
+
 		minioProxyHost := host + proxyPort
 		url.Host = minioProxyHost
 		url.Scheme = currentScheme

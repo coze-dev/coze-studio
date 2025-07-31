@@ -9,7 +9,10 @@ storageClassName: your-storageClass
 
 ```yaml
 env:
-    MINIO_ENDPOINT: "opencoze-minio.your-namespace:9000"
+    MQ_NAME_SERVER: "http://opencoze-rocketmq-namesrv:9876"
+    MINIO_ENDPOINT: "opencoze-minio:9000"
+    MINIO_API_HOST: "http://opencoze-minio:9000"
+    USE_MINIO_PROXY: "false"
     ...
     ARK_EMBEDDING_AK: "your_api_key"
     ARK_EMBEDDING_MODEL: "doubao-embedding-large"
