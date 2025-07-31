@@ -51,7 +51,7 @@ export interface VariableTreeProps {
   className?: string;
   style?: React.CSSProperties;
   showAddButton?: boolean;
-  /** 默认变量类型 */
+  /** Default variable type */
   defaultVariableType?: ViewVariableType;
   defaultCollapse?: boolean;
   children?: React.ReactNode;
@@ -172,7 +172,7 @@ export function Index(
     });
   };
 
-  // 树节点的 change 方法
+  // Tree node change method
   const onTreeNodeChange = (mode: ChangeMode, param: TreeNodeCustomData) => {
     const findResult = findAndModifyVariable(
       groupId,
@@ -194,7 +194,7 @@ export function Index(
         });
         addChildVariable(childVariable);
 
-        // 当前节点下新增节点 展开当前节点
+        // Add a new node under the current node and expand the current node
         if (findResult?.variableId) {
           expandTreeNode(findResult.variableId);
         }
@@ -231,13 +231,13 @@ export function Index(
       }
       case ChangeMode.UpdateEnabled: {
         findResult.enabled = param.enabled;
-        // 一键关闭所有子节点
+        // Close all sub-nodes with one click
         traverse<TreeNodeCustomData>(findResult, node => {
           if (!param.enabled) {
             node.enabled = param.enabled;
           }
         });
-        // 子点开启，父节点也开启
+        // The child point is turned on, and the parent node is also turned on.
         if (findResult.parentId && findResult.enabled) {
           const parentData = findAndModifyVariable(
             groupId,
@@ -284,11 +284,11 @@ export function Index(
     <VariableTreeContext.Provider value={{ groupId, variables: flatTreeData }}>
       <div
         className={classNames(
-          // 基础容器样式
+          // basic container style
           'relative h-full',
-          // 交互状态
+          // interaction state
           !readonly && 'cursor-default',
-          // 自定义类名
+          // custom class name
           className,
         )}
         style={style}
@@ -301,20 +301,20 @@ export function Index(
           }}
           disabled={readonly}
           className={classNames(
-            // 基础滚动行为
+            // basic scrolling behavior
             'overflow-x-auto',
 
-            // Tree 列表基础样式
+            // Tree list base style
             [
-              // 列表容器样式
+              // list container style
               '[&_.semi-tree-option-list]:overflow-visible',
               '[&_.semi-tree-option-list]:p-0',
               '[&_.semi-tree-option-list>div:first-child]:mt-0',
-              // 选项样式
+              // Option style
               '[&_.semi-tree-option]:!pl-2',
             ].join(' '),
 
-            // 交互状态样式
+            // interaction state style
             readonly
               ? '[&_.semi-tree-option-list-block_.semi-tree-option:hover]:bg-inherit'
               : [
@@ -371,5 +371,5 @@ export function Index(
   );
 }
 
-// 导出可调用ref方法的组件
+// Export components that can call the ref method
 export const VariableTree = React.forwardRef(Index);

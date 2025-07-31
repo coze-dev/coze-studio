@@ -73,7 +73,7 @@ export const MutableVariableAssign: FC<MutableVariableAssignSetterProps> = ({
     }
     return (
       inputParameters
-        .filter((_, i) => i !== index) // 过滤自身
+        .filter((_, i) => i !== index) // Filter itself
         .map(input => input?.left?.content?.keyPath)
         .filter(Boolean)
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -83,10 +83,10 @@ export const MutableVariableAssign: FC<MutableVariableAssignSetterProps> = ({
 
   useEffect(() => {
     if (!leftVariable && !rightVariable) {
-      // 初始化不触发表单校验
+      // Initialization does not trigger form validation
       return;
     }
-    // 右值变更触发表单校验
+    // Rvalue change triggers form validation
     onChange?.(value);
   }, [right]);
 
@@ -138,7 +138,7 @@ export const MutableVariableAssign: FC<MutableVariableAssignSetterProps> = ({
         hideDeleteIcon={true}
         customFilterVar={({ meta: _meta, path }) => {
           if (path?.length !== 2) {
-            // 异常处理
+            // exception handling
             return false;
           }
           if (
@@ -146,21 +146,21 @@ export const MutableVariableAssign: FC<MutableVariableAssignSetterProps> = ({
             rightVariable &&
             _meta.type !== rightVariable.type
           ) {
-            // 左右值类型不匹配
+            // Left and right value types do not match
             return false;
           }
           if (!_meta?.mutable) {
-            // 不是可变类型变量
+            // Not a variable of mutable type
             return false;
           }
           const stringPath = path.join('.');
           if (rightStringPaths.includes(stringPath)) {
-            // 变量重复赋值
+            // variable repeated assignment
             return false;
           }
           const rightStringPath = rightKeyPath.join('.');
           if (rightStringPath === stringPath) {
-            // 左右值相等
+            // Left and right values are equal
             return false;
           }
           return true;

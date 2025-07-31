@@ -118,14 +118,14 @@ describe('bot-error-certain-error', () => {
       sendCertainError(new Error(), handle);
       expect(handle).toHaveBeenCalled();
     });
-    // notInstanceError json stringify 失败的单测
+    // notInstanceError json stringified single test
     errorFuncList.forEach(item => {
       const handle = vi.fn();
       if (item.name !== 'notInstanceError') {
         return;
       }
       (item.func as Mock).mockReturnValue(true);
-      // JSON stringify 会报错的 case
+      // JSON stringify will report an error case
       const b = { a: {} };
       const a = { b: {}, name: 'notInstanceError' };
       b.a = a;

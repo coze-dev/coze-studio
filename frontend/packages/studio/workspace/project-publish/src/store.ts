@@ -33,39 +33,39 @@ import { type ProjectPublishDraft } from './publish-main/utils/publish-draft';
 export type StoreBindKey = 'display_screen' | 'category_id';
 
 export interface ProjectPublishStore {
-  /** 页面加载状态 */
+  /** page load status */
   pageLoading: boolean;
-  /** 渠道列表 */
+  /** Channel list */
   connectorList: PublishConnectorInfo[];
-  /** 需要聚合的渠道列表，key 是 PublishConnectorInfo['connector_union_id'] */
+  /** List of channels that need to be aggregated, the key is PublishConnectorInfo ['connector_union_id'] */
   connectorUnionMap: Record<string, ConnectorUnionInfo>;
-  /** 渠道选择的id */
+  /** ID of channel selection */
   selectedConnectorIds: string[];
-  /** 是否展示发布结果 */
+  /** Whether to display the published results */
   showPublishResult: boolean;
-  /** 上次发布的版本号 */
+  /** Last released version number */
   lastVersionNumber: string;
-  /** 版本号 */
+  /** version number */
   versionNumber: string;
-  /** 版本描述 */
+  /** version description */
   versionDescription: string;
-  /** 渠道选择的Workflow/ChatFlow */
+  /** Channel Selection Workflow/ChatFlow */
   connectorPublishConfig: Record<string, ConnectorPublishConfig>;
-  /** 社交平台渠道统一选择的 chatflow */
+  /** Chatflow for unified selection of social platform channels */
   socialPlatformChatflow: ConnectorPublishConfig;
-  /** 发布配置信息，key代表connector_id，value是渠道发布的参数 */
+  /** Release configuration information, key represents connector_id, value is the parameter of channel release */
   connectors: Record<string, Record<string, string>>;
-  /** 聚合渠道的选择信息，key代表connector_union_id，value是union的选择信息 */
+  /** Aggregate channel selection information, key represents connector_union_id, value is union selection information */
   unions: Record<string, string>;
-  /** 是否已经配置过模板信息 */
+  /** Whether the template information has been configured */
   templateConfigured: boolean;
-  /** 发布结果详情（轮询接口返回值） */
+  /** Publish result details (poll interface return value) */
   publishRecordDetail: PublishRecordDetail &
-    // 该信息由 PublishProject 接口返回
-    // 但为了符合现有数据流转逻辑（PublishProject 拿到 id，用 id 轮询 GetPublishRecordDetail 拿到结果作为唯一数据源）
-    // 因此前端手动将该值拼到轮询结果中
+    // This information is returned by the PublishProject interface
+    // But in order to conform to the existing data flow logic (PublishProject gets the id, polls with the id GetPublishRecordDetail gets the result as the only data source)
+    // So the frontend manually spells the value into the polling results
     Pick<PublishProjectData, 'publish_monetization_result'>;
-  /** 付费配置 */
+  /** paid configuration */
   monetizeConfig?: BotMonetizationConfigData;
 }
 
@@ -99,7 +99,7 @@ const initialStore: ProjectPublishStore = {
   versionDescription: '',
   connectorPublishConfig: {},
   socialPlatformChatflow: {},
-  // 默认已经配置过模板信息（不影响模板渠道默认勾选），当 template-bind 组件初始化获取到模板信息后，再按需设置为 false
+  // The template information has been configured by default (it does not affect the template channel is checked by default). When the template-bind component initializes to obtain the template information, it is set to false on demand.
   templateConfigured: true,
   connectors: {},
   unions: {},

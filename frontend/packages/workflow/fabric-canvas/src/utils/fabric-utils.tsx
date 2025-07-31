@@ -25,7 +25,7 @@ import {
 import { Mode, type FabricObjectWithCustomProps } from '../typings';
 
 /**
- * 缩放到指定点
+ * Zoom to the specified point
  */
 export const zoomToPoint = ({
   canvas,
@@ -40,17 +40,17 @@ export const zoomToPoint = ({
   minZoom: number;
   maxZoom: number;
 }): TMat2D => {
-  // 设置缩放级别的限制
-  zoomLevel = Math.max(zoomLevel, minZoom); // 最小缩放级别
-  zoomLevel = Math.min(zoomLevel, maxZoom); // 最大缩放级别
+  // Set limits on zoom levels
+  zoomLevel = Math.max(zoomLevel, minZoom); // minimum zoom level
+  zoomLevel = Math.min(zoomLevel, maxZoom); // Maximum zoom level
 
-  // 以鼠标位置为中心进行缩放
+  // Zoom centered on mouse position
   canvas?.zoomToPoint(point, zoomLevel);
   return [...(canvas?.viewportTransform as TMat2D)];
 };
 
 /**
- * 设置 canvas 视图
+ * Set canvas view
  */
 export const setViewport = ({
   canvas,
@@ -65,7 +65,7 @@ export const setViewport = ({
 };
 
 /**
- * 画布坐标点距离画布左上角距离（单位：px）
+ * Canvas coordinate point distance from the upper left corner of the canvas (unit: px)
  */
 export const canvasXYToScreen = ({
   canvas,
@@ -76,10 +76,10 @@ export const canvasXYToScreen = ({
   scale: number;
   point: { x: number; y: number };
 }) => {
-  // 获取画布的变换矩阵
+  // Get the transformation matrix of the canvas
   const transform = canvas.viewportTransform;
 
-  // 应用缩放和平移
+  // Apply scaling and panning
   const zoomX = transform[0];
   const zoomY = transform[3];
   const translateX = transform[4];
@@ -88,11 +88,11 @@ export const canvasXYToScreen = ({
   const screenX = (point.x * zoomX + translateX) * scale;
   const screenY = (point.y * zoomY + translateY) * scale;
 
-  // 获取画布在屏幕上的位置
+  // Get the position of the canvas on the screen
   const x = screenX;
   const y = screenY;
 
-  // 不做限制
+  // No restrictions
   return {
     x,
     y,
@@ -100,7 +100,7 @@ export const canvasXYToScreen = ({
 };
 
 /**
- * 得到选中元素的屏幕坐标（左上 tl、右下 br）
+ * Get the screen coordinates of the selected element (upper left tl, lower right br)
  */
 export const getPopPosition = ({
   canvas,
@@ -113,13 +113,13 @@ export const getPopPosition = ({
   if (canvas && selection) {
     const boundingRect = selection.getBoundingRect();
 
-    // 左上角坐标
+    // upper left coordinate
     const tl = {
       x: boundingRect.left,
       y: boundingRect.top,
     };
 
-    // 右下角坐标
+    // Lower right corner coordinates
     const br = {
       x: boundingRect.left + boundingRect.width,
       y: boundingRect.top + boundingRect.height,

@@ -44,7 +44,7 @@ export const isQueryWithinOneWeek = (logId: string) => {
     return false;
   }
   const oneWeekAgoTime = dayjs().subtract(1, 'week');
-  // 最近 6 天，从 0 点开始
+  // The last 6 days, starting from 0:00
   return logIdTime.isAfter(oneWeekAgoTime, 'day');
 };
 
@@ -128,8 +128,8 @@ const ActionBarWithMultiActions = () => {
 };
 
 /**
- * 带有标题的footer
- * 1、中间消息，用于展示Plugin、workflow的中间调用状态
+ * Footer with title
+ * 1. Intermediate message, used to display the intermediate call status of Plugin and workflow
  */
 const ActionBarWithTitle = () => {
   const { message } = useMessageBoxContext();

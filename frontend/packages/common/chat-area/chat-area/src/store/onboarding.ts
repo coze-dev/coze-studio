@@ -25,7 +25,7 @@ export type OnboardingStoreStateAction = OnboardingState & OnboardingAction;
 
 interface OnboardingState {
   prologue: string;
-  /** 这里仅做存档，以 message store 控制上屏 */
+  /** This is only for archiving, and the message store controls the upper screen. */
   suggestions: OnboardingSuggestionItem[];
   avatar: string;
   name: string;
@@ -38,7 +38,7 @@ interface OnboardingAction {
   ) => void;
   // todo remove
   /**
-   * @deprecated 后面使用标准bot id从senderInfoStore进行索引; onboardingStore记录开场白bot id
+   * @Deprecated followed by indexing from senderInfoStore with standard bot id; onboardingStore records opening bot id
    */
   recordBotInfo: (params: { name?: string; avatar?: string }) => void;
   immerUpdateSuggestionById: (id: string, content: string) => void;
@@ -60,7 +60,7 @@ export const createOnboardingStore = (mark: string) =>
         clearOnboardingStore: () =>
           set({ prologue: '', suggestions: [] }, false, 'clearOnboardingStore'),
         /**
-         * 已经不 partial 了 zustand 不会过滤 undefined
+         * It is no longer partial. Zustand will not filter undefined.
          */
         partialUpdateOnboardingData: (prologue, suggestions) =>
           set(

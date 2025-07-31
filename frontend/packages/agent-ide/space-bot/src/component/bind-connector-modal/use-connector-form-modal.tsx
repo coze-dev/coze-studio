@@ -87,7 +87,7 @@ export const useConnectorFormModal = ({
     if (onUnbind) {
       onUnbind();
     } else {
-      // 兼容历史逻辑，未传入 onUnbind 时，解绑后也调用 onSuccess
+      // Compatible with historical logic, when onUnbind is not passed in, onSuccess is also called after unbinding.
       onSuccess({
         ...(initValue as BotPublishConnectorInfo),
         bind_info: {},
@@ -138,9 +138,9 @@ export const useConnectorFormModal = ({
   const { schema_area_pages: schemaPages = [] } = connectorConfigInfo ?? {};
 
   const bindCb = (data: BindConnectorResponse) => {
-    /** 适用Kv+Auth授权场景：KvAuthBind = 4
-     * reddit渠道：若成功返回client_id，则覆盖auth_login_info中的client_id，并附带加密state跳转授权页面
-     * 其余渠道：若成功返回auth_params，则合并auth_login_info作为授权链接参数跳转
+    /** Applicable to Kv + Auth authorization scenarios: KvAuthBind = 4
+     * Reddit channel: If the client_id is successfully returned, the client_id in the auth_login_info will be overwritten and the encrypted state jump authorization page will be attached
+     * Other channels: If the auth_params is successfully returned, the merge auth_login_info jump as the authorization link parameter
      * */
     if (
       initValue?.bind_type === BindType.KvAuthBind &&
@@ -254,7 +254,7 @@ export const useConnectorFormModal = ({
         {schemaPages?.length &&
         step !== 0 &&
         schemaPages[step]?.api_action !== SchemaAreaPageApi.NotQuery ? (
-          // 页面按钮不执行任何操作时 不展示上一步
+          // When the page button does not perform any action, the previous step is not displayed
           <UIButton
             theme="solid"
             onClick={() => {

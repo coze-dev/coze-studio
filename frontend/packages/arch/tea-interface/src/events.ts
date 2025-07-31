@@ -29,7 +29,7 @@ import {
   type PlaygroundSettingParams,
 } from './playground';
 import { type TeamInviteParams } from './coze-pro';
-// TODO view_bot & view_database 后续考虑下掉
+// TODO view_bot & view_database for further consideration
 
 export {
   ProductEventSource,
@@ -39,34 +39,34 @@ export {
 } from './product';
 
 export enum EVENT_NAMES {
-  sign_up_front = 'sign_up_front', // 注册登录事件
-  page_from = 'page_from', // 上报 referer
-  page_view = 'page_view', // 浏览 我的Bot
-  view_bot = 'view_bot', // 浏览 我的Bot
-  view_database = 'view_database', // 浏览 知识库管理
-  click_create_bot_confirm = 'click_create_bot_confirm', // 点击 创建Bot
-  click_prompt_edit = 'click_prompt_edit', // 点击 人设与回复逻辑编辑
-  click_tool_select = 'click_tool_select', // 点击 调整Bot工具调用
-  click_database_select = 'click_database_select', // 点击 调整Bot知识库调用
-  click_welcome_message_edit = 'click_welcome_message_edit', // 点击 调整开场白
-  click_send_message = 'click_send_message', // 点击 发送调试消息
-  delete_rec_plugin = 'delete_rec_plugin', // 删除ai生成的插件
-  submit_rec_plugin = 'submit_rec_plugin', // 发布ai生成的插件
-  bot_show = 'bot_show', //  bot卡片曝光
-  bot_click = 'bot_click', //  点击bot卡片
-  click_bot_duplicate = 'click_bot_duplicate', //TODO explore bot点击复制旧埋点先保留 切换至bot_duplicate_click_front后下线
-  bot_duplicate_click_front = 'bot_duplicate_click_front', // bot点击复制 统一切换至埋点
-  coze_space_sidenavi_ck = 'coze_space_sidenavi_ck', // 菜单栏点击公共埋点
-  coze_enterprise_sidenavi_ck = 'coze_enterprise_sidenavi_ck', // 菜单栏点击公共埋点
-  // 绑定变量相关埋点
+  sign_up_front = 'sign_up_front', // Register login event
+  page_from = 'page_from', // Report to referer
+  page_view = 'page_view', // Browse, My Bot
+  view_bot = 'view_bot', // Browse, My Bot
+  view_database = 'view_database', // Browsing, Knowledge Base Management
+  click_create_bot_confirm = 'click_create_bot_confirm', // Click to create Bot
+  click_prompt_edit = 'click_prompt_edit', // Click, persona, and reply logic editor
+  click_tool_select = 'click_tool_select', // Click to adjust the Bot tool call
+  click_database_select = 'click_database_select', // Click to adjust the Bot Knowledge Base call
+  click_welcome_message_edit = 'click_welcome_message_edit', // Click to adjust the opening line
+  click_send_message = 'click_send_message', // Click to send a debug message
+  delete_rec_plugin = 'delete_rec_plugin', // Delete AI-generated plugins
+  submit_rec_plugin = 'submit_rec_plugin', // Release AI-generated plugins
+  bot_show = 'bot_show', //  Bot card exposure
+  bot_click = 'bot_click', //  Click on the bot card
+  click_bot_duplicate = 'click_bot_duplicate', //TODO explore bot Click to copy the old event tracking Keep it first, switch to bot_duplicate_click_front and then go offline.
+  bot_duplicate_click_front = 'bot_duplicate_click_front', // Bot click copy and switch to event tracking uniformly.
+  coze_space_sidenavi_ck = 'coze_space_sidenavi_ck', // Menu bar Click on public event tracking
+  coze_enterprise_sidenavi_ck = 'coze_enterprise_sidenavi_ck', // Menu bar Click on public event tracking
+  // Binding variable related event tracking
   binding_card_list = 'binding_card_list',
   binding_card_add = 'binding_card_add',
   binding_card_update = 'binding_card_update',
   binding_card_preview = 'binding_card_preview',
-  // #region suggestion 相关
+  // #region suggestion related
   edited_suggestion = 'edited_suggestion',
   // #endregion
-  // 卡片编辑器埋点
+  // Card editor event tracking
   builder_editor_view = 'builder_editor_view',
   builder_plugin_info = 'builder_plugin_info',
   builder_plugin_channel = 'builder_plugin_channel',
@@ -74,17 +74,17 @@ export enum EVENT_NAMES {
   builder_plugin_structure = 'builder_plugin_structure',
   builder_plugin_component = 'builder_plugin_component',
   builder_plugin_canvas = 'builder_plugin_canvas',
-  builder_plugin_set = 'builder_plugin_set', // 属性面板
+  builder_plugin_set = 'builder_plugin_set', // properties panel
   builder_plugin_preview = 'builder_plugin_preview',
   builder_plugin_publish = 'builder_plugin_publish',
-  // ui_builder埋点
+  // ui_builder event tracking
   ui_builder_exposure = 'ui_builder_exposure',
   ui_builder_initialization = 'ui_builder_initialization',
   ui_builder_component_usage = 'ui_builder_component_usage',
   ui_builder_setter_usage = 'ui_builder_setter_usage',
-  // 模板埋点
+  // Template event tracking
   builder_plugin_template = 'builder_plugin_template',
-  // Ai埋点
+  // Ai event tracking
   builder_plugin_copilot_enter_click = 'builder_plugin_copilot_enter_click',
   builder_plugin_copilot_gen_click = 'builder_plugin_copilot_gen_click',
   builder_editor_show = 'builder_editor_show',
@@ -94,18 +94,18 @@ export enum EVENT_NAMES {
   BuilderPluginStructure = 'BuilderPluginStructure',
   BuilderPluginCanvas = 'BuilderPluginCanvas',
   card_builder_show = 'card_builder_show',
-  select_scheduled_tasks_timezone = 'select_scheduled_tasks_timezone', // 选择预设定时任务时区
-  log_not_supported_timezone = 'log_not_supported_timezone', // 当前环境不支持的时区标识符
+  select_scheduled_tasks_timezone = 'select_scheduled_tasks_timezone', // Select the default timed task time zone
+  log_not_supported_timezone = 'log_not_supported_timezone', // Time zone identifiers not supported by the current environment
   cookie_click = 'cookie_click',
   cookie_show = 'cookie_show',
-  // Agent App 埋点
+  // Agent App event tracking
   agent_app_home_view = 'agent_app_home_view',
   agent_app_instance_click = 'agent_app_instance_click',
   agent_app_instance_create = 'agent_app_instance_create',
   agent_app_detail_view = 'agent_app_detail_view',
   agent_app_shortcut_command = 'agent_app_shortcut_command',
   agent_app_send_message = 'agent_app_send_message',
-  // 用户视频教程埋点
+  // User video tutorial event tracking
   tutorial_enter_ck = 'tutorial_enter_ck',
   tutorial_list_pv = 'tutorial_list_pv',
   tutorial_item_ck = 'tutorial_item_ck',
@@ -113,65 +113,65 @@ export enum EVENT_NAMES {
 
   // coze home
   home_page_view = 'home_page_view',
-  // 全局侧边栏导航埋点
-  tab_click = 'tab_click', // 一级菜单项的点击
-  workspace_tab_expose = 'workspace_tab_expose', // Workspace 中各板块的曝光
+  // Global sidebar navigation event tracking
+  tab_click = 'tab_click', // Click on a first-level menu item
+  workspace_tab_expose = 'workspace_tab_expose', // Exposure of Plates in Workspace
 
-  // #region 团队空间 key
-  create_workspace_click = 'create_workspace_click', // 创建 Workspace 的点击
-  create_workspace_result = 'create_workspace_result', // 创建 Workspace 的结果
-  /** 禁止子用户创建空间开关点击 */
+  // #region team space key
+  create_workspace_click = 'create_workspace_click', // Click to create Workspace
+  create_workspace_result = 'create_workspace_result', // The result of creating a workspace
+  /** Disable child users from creating space switch clicks */
   enterprise_switch_child_create_space_click = 'enterprise_switch_child_create_space_click',
-  /** 禁止添加非子用户进入空间开关点击 */
+  /** Prohibit adding non-sub-users to enter the space switch and click */
   enterprise_switch_add_outside_user_click = 'enterprise_switch_add_outside_user_click',
-  /** 禁止加入外部空间开关点击 */
+  /** Disable joining external space switch click */
   enterprise_switch_join_outside_space_click = 'enterprise_switch_join_outside_space_click',
-  /** 空间切换面板展示 */
+  /** Space switch panel display */
   space_switch_show = 'space_switch_show',
-  /** 空间切换面板点击 */
+  /** Click on the space switch panel */
   space_switch_click = 'space_switch_click',
-  /** 成员与设置按钮点击 */
+  /** Members and Settings button click */
   space_admins_button_click = 'space_admins_button_click',
-  /** 成员管理页面展示 */
+  /** Member management page display */
   space_members_page_show = 'space_members_page_show',
-  /** 成员管理页面点击 */
+  /** Member Management Page Click */
   space_members_page_click = 'space_members_page_click',
-  /** 移除成员二次弹窗展示 */
+  /** Remove member secondary pop-up display */
   space_member_remove_pop_show = 'space_member_remove_pop_show',
-  /** 移除成员二次弹窗点击 */
+  /** Remove member secondary pop-up click */
   space_member_remove_pop_click = 'space_member_remove_pop_click',
-  /** 邀请管理页面展示 */
+  /** Invitation management page display */
   space_invitation_page_show = 'space_invitation_page_show',
-  /** 邀请管理页面点击 */
+  /** Click on the invitation management page */
   space_invitation_page_click = 'space_invitation_page_click',
-  /** 撤销邀请二级弹窗展示 */
+  /** Cancel the invitation secondary pop-up window display */
   space_invitation_revoke_pop_show = 'space_invitation_revoke_pop_show',
-  /** 撤销邀请二级弹窗点击 */
+  /** Cancel the invitation and click on the secondary pop-up window. */
   space_invitation_revoke_pop_click = 'space_invitation_revoke_pop_click',
 
-  /** 团队设置页面展示 */
+  /** Team settings page display */
   space_settings_page_show = 'space_settings_page_show',
-  /** 团队设置页面点击 */
+  /** Click on the team settings page */
   space_settings_page_click = 'space_settings_page_click',
-  /** 成员团队设置按钮点击 */
+  /** Member Team Settings button click */
   space_settings_button_click = 'space_settings_button_click',
-  /** 分享链接弹窗展示 */
+  /** Share link pop-up display */
   space_share_link_popup_show = 'space_share_link_popup_show',
-  /** 分享链接弹窗点击 */
+  /** Share link pop-up click */
   space_share_link_popup_click = 'space_share_link_popup_click',
-  /** 添加成员弹窗展示 */
+  /** Add member pop-up display */
   space_add_members_popup_show = 'space_add_members_popup_show',
-  /** 添加成员弹窗点击 */
+  /** Add member pop-up click */
   space_add_members_popup_click = 'space_add_members_popup_click',
-  /** 离开团队弹窗展示 */
+  /** Leave the team pop-up display */
   space_settings_secondary_pop_show = 'space_settings_secondary_pop_show',
   space_settings_secondary_pop_click = 'space_settings_secondary_pop_click',
   // #endregion
 
-  create_bot_click = 'create_bot_click', // 创建 Bot 的点击
-  create_bot_result = 'create_bot_result', // 创建 Bot 的结果
-  bot_duplicate_click = 'bot_duplicate_click', // Bot 复制的点击
-  bot_duplicate_result = 'bot_duplicate_result', // Bot 复制的结果
+  create_bot_click = 'create_bot_click', // Click to create Bot
+  create_bot_result = 'create_bot_result', // The result of creating a Bot
+  bot_duplicate_click = 'bot_duplicate_click', // Bot clicks copied
+  bot_duplicate_result = 'bot_duplicate_result', // Bot copy result
   bot_submit = 'bot_submit',
   bot_submit_difference = 'bot_submit_difference',
   bot_submit_confirm_click = 'bot_submit_confirm_click',
@@ -182,35 +182,35 @@ export enum EVENT_NAMES {
   bot_merge_manual = 'bot_merge_manual',
   workspace_action_front = 'workspace_action_front',
   search_front = 'search_front',
-  //商品曝光
+  //product exposure
   product_show = 'product_show',
   product_click = 'product_click',
-  //bot商品曝光
+  //Bot product exposure
   product_show_front = 'product_show_front',
   product_click_front = 'product_click_front',
   click_open_in_front = 'click_open_in_front',
   favorite_click_front = 'favorite_click_front',
 
-  // 商品操作事件
+  // product operation event
   product_run_front = 'product_run_front',
 
-  // 素材商店上架
+  // Material store shelves
   entity_publish_click_front = 'entity_publish_click_front',
 
-  // bot详情
+  // bot details
   share_front = 'share_front',
   bot_detail_page_front = 'bot_detail_page_front',
-  share_recall_page_front = 'share_recall_page_front', // 分享回流
+  share_recall_page_front = 'share_recall_page_front', // share stream
 
-  // Bot研发埋点
-  dev_bot_share_screenshot_front = 'dev_bot_share_screenshot_front', // Bot分享截图
+  // Bot event tracking
+  dev_bot_share_screenshot_front = 'dev_bot_share_screenshot_front', // Bot share screenshots
 
   // TTS
-  bot_tts_configure = 'bot_tts_configure', // TTS 开关配置
-  bot_tts_select_click = 'bot_tts_select_click', // 选择音色按钮的点击
-  bot_tts_select_confirm = 'bot_tts_select_confirm', // 选择音色确认按钮的点击
+  bot_tts_configure = 'bot_tts_configure', // TTS switch configuration
+  bot_tts_select_click = 'bot_tts_select_click', // Select the tone button with a click
+  bot_tts_select_confirm = 'bot_tts_select_confirm', // Select the tone confirmation button with a click
 
-  // 语音通话
+  // voice call
   voice_chat_call = 'voice_chat_call',
   voice_chat_opening_dialog = 'voice_chat_opening_dialog',
   voice_chat_connect = 'voice_chat_connect',
@@ -220,23 +220,23 @@ export enum EVENT_NAMES {
   voice_chat_hang_up = 'voice_chat_hang_up',
   voice_chat_error = 'voice_chat_error',
 
-  // token激励
-  task_click = 'task_click', // 任务按钮点击
-  task_show = 'task_show', // 任务展现
-  buy_token_click = 'coze_token_buy_click', // 点击购买token按钮
-  choose_amount_click = 'coze_token_buy_amount_click', // 选择token购买额度
-  confirm_checkout_click = 'coze_token_buy_confirm_click', // 确认发起支付
+  // Token incentive
+  task_click = 'task_click', // Task button click
+  task_show = 'task_show', // mission presentation
+  buy_token_click = 'coze_token_buy_click', // Click the Buy token button
+  choose_amount_click = 'coze_token_buy_amount_click', // Select token purchase quota
+  confirm_checkout_click = 'coze_token_buy_confirm_click', // Confirm the initiation of payment
 
-  token_insufficiency_pop_up = 'token_insufficiency_pop_up', // coze token不足
-  // publish 埋点
+  token_insufficiency_pop_up = 'token_insufficiency_pop_up', // Insufficient coze tokens
+  // Publish event tracking
   click_auto_gen_changelog_button = 'click_auto_gen_changelog_button',
   click_stop_auto_gen_changelog_button = 'click_stop_auto_gen_changelog_button',
   auto_gen_changelog_finish = 'auto_gen_changelog_finish',
   bot_publish = 'bot_publish',
-  bot_publish_button_click = 'bot_publish_button_click', // 发布按钮点击
-  bot_publish_audit_pop_up = 'bot_publish_audit_pop_up', // 发布审核拦截弹窗
+  bot_publish_button_click = 'bot_publish_button_click', // Publish button click
+  bot_publish_audit_pop_up = 'bot_publish_audit_pop_up', // Publish moderation to block pop-ups
 
-  // 运营 banner
+  // Operation banner
   banner_expose_front = 'banner_expose_front',
   banner_click_front = 'banner_click_front',
   banner_close_front = 'banner_close_front',
@@ -249,7 +249,7 @@ export enum EVENT_NAMES {
   create_table_click = 'create_table_click',
   edit_table_click = 'edit_table_click',
 
-  // mockset 埋点
+  // Mockset event tracking
   create_mockset_front = 'create_mockset_front',
   del_mockset_front = 'del_mockset_front',
   create_mock_front = 'create_mock_front',
@@ -257,69 +257,69 @@ export enum EVENT_NAMES {
   use_mockset_front = 'use_mockset_front',
   use_mockgen_front = 'use_mockgen_front',
 
-  // plugin隐私声明
+  // Plugin Privacy Statement
   privacy_plugin_popup_front = 'privacy_plugin_popup_front',
   privacy_plugin_form_front = 'privacy_plugin_form_front',
   privacy_plugin_form_server = 'privacy_plugin_form_server',
   privacy_store_privacy_front = 'privacy_store_privacy_front',
-  // 引导弹窗
+  // boot pop-up
   bot_desc_dialog_front = 'bot_desc_dialog_front',
-  // plugin/tool导入导出
+  // Plugin/tool import export
   create_plugin_front = 'create_plugin_front',
   create_plugin_tool_front = 'create_plugin_tool_front',
   code_snippet_front = 'code_snippet_front',
 
-  // Workflow调测优化需求[PRD]()
-  /** 节点单独调试 */
+  // Workflow optimization requirements [PRD] ()
+  /** Node debugging alone */
   workflow_test_node = 'workflow_test_node',
-  /** 创建测试集成功 */
+  /** Created test set successfully */
   workflow_create_testset = 'workflow_create_testset',
-  /** AI生成入参 */
+  /** AI generated imported parameters */
   workflow_aigc_params = 'workflow_aigc_params',
-  /** TestRun时的数据来源 */
+  /** Data sources during TestRun */
   workflow_testrun_source = 'workflow_testrun_source',
   /**
-   * workflow Testrun结果
+   * Workflow Testrun Results
    * 
    */
   workflow_testrun_result_front = 'workflow_testrun_result_front',
   /**
-   * ! workflow Testrun节点详情, 当前仅定义, 未埋点
+   * ! workflow Testrun node details, currently defined only, no event tracking
    * 
    */
   workflow_testrun_detailed_front = 'workflow_testrun_detailed_front',
-  /** 预发布按钮点击 */
+  /** Pre-release button click */
   workflow_pre_release_ppe = 'workflow_pre_release_ppe',
-  /** ppe 发布版本选择 */
+  /** PPE release version selection */
   workflow_ppe_version_select = 'workflow_ppe_version_select',
-  /** 发布 ppe 环境 */
+  /** Publish ppe environment */
   workflow_ppe_release_event = 'workflow_ppe_release_event',
-  /** 历史版本展示 */
+  /** Historical version display */
   workflow_history_show = 'workflow_history_show',
-  /** 环境删除 */
+  /** environment removal */
   workflow_ppe_offline = 'workflow_ppe_offline',
-  /* 点击_workflow版本提交 */
+  /* Click _workflow version to submit */
   workflow_submit = 'workflow_submit',
-  /* 点击_查看 workflow submit difference */
+  /* Click _ to view workflow submit difference */
   workflow_submit_difference = 'workflow_submit_difference',
-  /* 点击_查看 workflow publish difference */
+  /* Click _ view workflow publish difference */
   workflow_publish_difference = 'workflow_publish_difference',
-  /* 浏览_workflow merge */
+  /* Browse _workflow merge */
   workflow_merge_page = 'workflow_merge_page',
-  /* 点击_合并 */
+  /* Click _ merge */
   workflow_merge = 'workflow_merge',
-  /* 浏览_workflow 提交版本列表 */
+  /* Browse the list of _workflow submissions */
   workflow_submit_version_history = 'workflow_submit_version_history',
-  /* 点击_恢复 workflow 提交版本 */
+  /* Click _ restore workflow commit version */
   workflow_submit_version_revert = 'workflow_submit_version_revert',
-  /* 点击_查看 workflow 提交版本 */
+  /* Click _ to view the workflow submission version */
   workflow_submit_version_view = 'workflow_submit_version_view',
-  /* 点击workflow协作开关 */
+  /* Click on the workflow collaboration switch */
   workflow_cooperation_switch_click = 'workflow_cooperation_switch_click',
-  /* 帮助文档 */
+  /* Help Documentation */
   workflow_test_run_click = 'workflow_test_run_click',
 
-  // widget 埋点
+  // Widget event tracking
   widget_create_click = 'widget_create_click',
   widget_duplicate_click = 'widget_duplicate_click',
   widget_delete_click = 'widget_delete_click',
@@ -327,7 +327,7 @@ export enum EVENT_NAMES {
   // devops -> query-trace
   analytics_tab_view = 'analytics_tab_view',
   analytics_tab_view_duration = 'analytics_tab_view_duration',
-  // 列表页
+  // list page
   query_trace_list_view = 'query_trace_list_view',
   query_trace_columns_update = 'query_trace_columns_update',
   query_trace_filters_update = 'query_trace_filters_update',
@@ -355,32 +355,32 @@ export enum EVENT_NAMES {
   query_new_trace_quick_filter_latency_first_resp_update = 'query_new_trace_quick_filter_latency_first_resp_update',
   query_new_trace_quick_filter_time_update = 'query_new_trace_quick_filter_time_update',
 
-  // 详情页
+  // details page
   query_trace_graph_tab_click = 'query_trace_graph_tab_click',
   query_trace_tree_node_click = 'query_trace_tree_node_click',
   query_trace_flamethread_node_click = 'query_trace_flamethread_node_click',
   query_trace_input_copy = 'query_trace_input_copy',
   query_trace_output_copy = 'query_trace_output_copy',
-  // 年龄门
+  // age gate
   age_gate_show = 'age_gate_show',
   age_gate_click = 'age_gate_click',
-  // 调试台
+  // debugging bench
   open_debug_panel = 'open_debug_panel',
   debug_page_show = 'debug_page_show',
 
-  // 智能分析助手
+  // Intelligent Analytics Assistant
   ai_analysis_assistant_entry_click = 'ai_analysis_assistant_entry_click',
   ai_analysis_assistant_send_click = 'ai_analysis_assistant_send_click',
   // devops -> performance
   performance_view = 'performance_view',
-  // devops - query分析
+  // Devops - query analysis
   query_analytics_select_channel = 'query_analytics_select_channel',
   query_analytics_intent_jump_queries = 'query_analytics_intent_jump_queries',
-  // devops - 运营指标
+  // DevOps - Operational Metrics
   analysis_indicator_interval = 'analysis_indicator_interval',
   analysis_indicator_auto_refresh_interval = 'analysis_indicator_auto_refresh_interval',
 
-  // 评测
+  // review
   create_dataset = 'create_dataset',
   create_rule = 'create_rule',
   add_rule_type = 'add_rule_type',
@@ -389,7 +389,7 @@ export enum EVENT_NAMES {
 
   get_start = 'get_start',
 
-  // coze-dev bot多版本在线
+  // Coze-dev bot multi-version online
   bot_deployment_details = 'bot_deployment_details',
   bot_pre_release_ppe = 'bot_pre_release_ppe',
   bot_ppe_version_select = 'bot_ppe_version_select',
@@ -398,30 +398,30 @@ export enum EVENT_NAMES {
   bot_ppe_offline = 'bot_ppe_offline',
   bot_gray_publish = 'bot_gray_publish',
 
-  // 搜索
+  // Search
   store_search_page_front = 'store_search_page_front',
   store_search_front = 'store_search_front',
 
-  // 商品讨论区
+  // Product discussion forum
   content_show_front = 'content_show_front',
   content_click_front = 'content_click_front',
 
-  // 个人主页
+  // personal homepage
   profile_entrance = 'profile_entrance',
   profile_share = 'profile_share',
   profile_follow = 'profile_follow',
 
-  //专题
+  //special topic
   share_topic = 'share_topic',
   landing_topic = 'landing_topic',
   collect_topic = 'collect_topic',
   view_all = 'view_all',
   click_topic = 'click_topic',
 
-  //切换语言
+  //Switch language
   language_switch_show = 'language_switch_show',
   language_switch_click = 'language_switch_click',
-  // bot竞技场
+  // Bot Arena
   arena_bot_show_front = 'arena_bot_show_front',
   arena_bot_click_front = 'arena_bot_click_front',
   arena_bot_front = 'arena_bot_front',
@@ -435,19 +435,19 @@ export enum EVENT_NAMES {
   flow_store_list_click = 'flow_store_list_click',
   flow_store_detail_click = 'flow_store_detail_click',
 
-  // 流程商店 
+  // Process Store
   flow_creation_click = 'flow_creation_click',
   flow_duplicate_click = 'flow_duplicate_click',
-  // 评测
+  // review
   eval_panel_show = 'coze_panel_show',
   eval_task_operation = 'eval_task_operation',
   eval_panel_tab_show = 'eval_panel_tab_show',
   eval_result_show = 'eval_result_show',
   eval_result_tab_show = 'eval_result_tab_show',
   eval_result_detail_sort = 'eval_result_detail_sort',
-  // 快捷指令
+  // Quick Instruction
   shortcut_use = 'shortcut_use',
-  // 多模态预览
+  // multimodal preview
   preview_link_click = 'preview_link_click',
   // nl2prompt
   prompt_optimize_front = 'prompt_optimize_front',
@@ -456,43 +456,43 @@ export enum EVENT_NAMES {
   template_action_front = 'template_action_front',
   // coze assistant
   coze_agent_front = 'coze_agent_front',
-  // 首页通知相关埋点
+  // Home Notifications Related event tracking
   notification_front = 'notification_front',
   notification_center_show_front = 'notification_center_show_front',
   notification_center_click_front = 'notification_center_click_front',
-  // 专业版相关埋点
-  coze_pro_popup_front = 'coze_pro_popup_front', // 专业版权益弹窗
-  coze_landing_front = 'coze_landing_front', // coze主页点击登录按钮
+  // Pro related event tracking
+  coze_pro_popup_front = 'coze_pro_popup_front', // Professional version rights pop-up window
+  coze_landing_front = 'coze_landing_front', // Coze homepage Click the login button
 
   add_member_pop_up_show = 'add_member_pop_up_show_front',
-  oauth_page_stay_time_front = 'oauth_page_stay_time_front', //	OAuth授权页面停留时长
-  oauth_page_show_front = 'oauth_page_show_front', //	OAuth授权页面展示
-  oauth_page_click_front = 'oauth_page_click_front', // OAuth授权页面点击
-  account_upgrade_page_show_front = 'account_upgrade_page_show_front', //	升级成功弹窗展示
-  account_upgrade_page_click_front = 'account_upgrade_page_click_front', // 升级成功弹窗点击
+  oauth_page_stay_time_front = 'oauth_page_stay_time_front', //	OAuth authorization page dwell time
+  oauth_page_show_front = 'oauth_page_show_front', //	OAuth authorization page display
+  oauth_page_click_front = 'oauth_page_click_front', // Click on the OAuth authorization page.
+  account_upgrade_page_show_front = 'account_upgrade_page_show_front', //	The upgrade was successful pop-up display
+  account_upgrade_page_click_front = 'account_upgrade_page_click_front', // Click on the pop-up window of successful upgrade.
 
-  coze_pro_popup_plan_buy_token = 'coze_pro_popup_plan_buy_token', // 购买资源点
+  coze_pro_popup_plan_buy_token = 'coze_pro_popup_plan_buy_token', // Purchase resource points
 
-  // playground埋点
-  playground_click_front = 'playground_click_front', // 点击事件
-  playground_set_front = 'playground_set_front', // 配置行为上报
-  playground_authorize_front = 'playground_authorize_front', // 授权行为上报
-  // coze-doc埋点
-  doc_click_front = 'doc_click_front', // 点击事件
-  docs_page_view_front = 'docs_page_view_front', // 文档页面浏览
+  // Playground event tracking
+  playground_click_front = 'playground_click_front', // click event
+  playground_set_front = 'playground_set_front', // configuration behavior reporting
+  playground_authorize_front = 'playground_authorize_front', // Authorization behavior report
+  // coze-doc event tracking
+  doc_click_front = 'doc_click_front', // click event
+  docs_page_view_front = 'docs_page_view_front', // Document page view
 
-  // 渠道 OAuth 授权埋点
+  // Channel OAuth authorization event tracking
   publish_oauth_button_click = 'publish_oauth_button_click',
   settings_oauth_page_show = 'settings_oauth_page_show',
   settings_oauth_button_click = 'settings_oauth_button_click',
 
-  // 提示词相关埋点
-  prompt_library_front = 'prompt_library_front', // 提示词资源相关前端埋点
+  // Cue related event tracking
+  prompt_library_front = 'prompt_library_front', // Tip word resource related front-end event tracking
 
-  // 对比相关埋点
-  compare_mode_front = 'compare_mode_front', // 对比相关前端埋点
+  // Compare related event tracking
+  compare_mode_front = 'compare_mode_front', // Compare related front-end event tracking
 
-  // 通用站点切换点击
+  // universal site toggle click
   site_change_click = 'site_change_click',
 }
 
@@ -519,7 +519,7 @@ export interface DocClickCommonParams {
   helpful_type?: '1' | '0';
 }
 
-// explore bot 卡片通用埋点参数
+// Explore bot card common event tracking parameters
 export interface ExploreBotCardCommonParams {
   bot_id?: string;
   bot_name?: string;
@@ -567,7 +567,7 @@ export interface SideNavClickCommonParams {
 interface TimezoneLogParams {
   timezone: string;
 }
-/** Int64类型其实是 string | number */
+/** Int64 type is actually string | number */
 type StrOrNumber = Int64;
 
 export enum AddPluginToStoreEntry {
@@ -585,7 +585,7 @@ export enum AddBotToStoreEntry {
   'BOTS_PUBLISH' = 'bots_publish',
 }
 
-// 埋点
+// Event Tracking
 export enum AddWorkflowToStoreEntry {
   'EXPLORE_CARD' = 'explore_card',
   'EXPLORE_WORKFLOW_DETAILPAGE' = 'explore_workflow_detailpage',
@@ -597,10 +597,10 @@ export enum AddWorkflowToStoreEntry {
 }
 
 export enum PublishAction {
-  Click = 1, // 点击上架
-  Confirm = 2, // 确认上架
-  Remove = 3, // 确定下架
-  Resume = 4, // 恢复上架
+  Click = 1, // Click to list
+  Confirm = 2, // Confirm listing
+  Remove = 3, // Confirm to remove from the shelves
+  Resume = 4, // Back on the shelves
 }
 
 export enum BotDetailPageAction {
@@ -615,16 +615,16 @@ export enum BotDetailPageAction {
 }
 
 export enum PluginPrivacyAction {
-  Show = 1, // 弹窗展示
-  Cancel = 2, // 取消
-  Confirm = 3, // 确定
-  Close = 4, // 关闭
+  Show = 1, // pop-up display
+  Cancel = 2, // cancel
+  Confirm = 3, // OK
+  Close = 4, // close
 }
 
 export enum PluginMockDataGenerateMode {
-  MANUAL = 0, // 手动创建
-  RANDOM = 1, // 随机生成
-  LLM = 2, // 大模型生成
+  MANUAL = 0, // create manually
+  RANDOM = 1, // random generation
+  LLM = 2, // large model generation
 }
 
 export enum BotShareConversationClick {
@@ -634,28 +634,28 @@ export enum BotShareConversationClick {
 }
 
 /**
- * UG 线索回传参数
+ * UG thread return parameter
  * 
  */
 export interface UserGrowthEventParams {
   /**
-   * 实际收到用户访问时的完整 url
+   * The full URL when the user's visit was actually received.
    */
   LandingPageUrl: string;
   /**
-   * 与 UG 约定的 AppId
+   * AppId agreed with UG
    */
   AppId: number;
   /**
-   * 与 UG 约定的 EventName
+   * EventName agreed with UG
    */
   EventName: string;
   /**
-   * 秒时间戳 Math.floor(Date.now() / 1000)
+   * Secondtimestamp Math.floor (Date.now ()/1000)
    */
   EventTs: number;
   /**
-   * 固定值 '4'
+   * Fixed value '4'
    */
   growth_deepevent: '4';
 }
@@ -666,8 +666,8 @@ export interface ParamsTypeDefine {
     page_from: string;
   };
   [EVENT_NAMES.page_view]: {
-    need_login: boolean; // 访问当前 URL 是否需要登录
-    have_access: boolean; // 是否在 waitlist 中
+    need_login: boolean; // Is a login required to access the current URL?
+    have_access: boolean; // Is it in the waitlist?
     URL: string;
     is_inhouse: boolean;
     full_url: string;
@@ -916,7 +916,7 @@ export interface ParamsTypeDefine {
     tab_name: string;
   };
 
-  // #region 团队空间 参数
+  // #region team space, parameters
   [EVENT_NAMES.create_workspace_click]: Record<string, never>;
   [EVENT_NAMES.create_workspace_result]: {
     result: 'success' | 'failed';
@@ -1126,7 +1126,7 @@ export interface ParamsTypeDefine {
     bot_name: string;
   };
 
-  //商品bot
+  //Product bot
   [EVENT_NAMES.product_show_front]: ProductShowFrontParams;
   [EVENT_NAMES.product_run_front]: ProductRunFrontParams;
   [EVENT_NAMES.product_click_front]: ProductClickFrontParams;
@@ -1389,7 +1389,7 @@ export interface ParamsTypeDefine {
     method?: 'volcengine' | 'douyin' | 'google' | 'phone';
     result?: 'success' | 'failed';
     redirect_domain?: string;
-    /** 从哪里登录的 */
+    /** Where did you log in from? */
     login_from?: string;
   };
   [EVENT_NAMES.workflow_test_node]: Record<string, unknown>;
@@ -1401,25 +1401,25 @@ export interface ParamsTypeDefine {
     space_id: string;
     testrun_id?: string;
     /**
-     * 操作类型
-     * - testrun_start: 触发
-     * - testrun_end: 结束
-     * - manual_end: 用户取消
+     * operation type
+     * - testrun_start: trigger
+     * - testrun_end: over
+     * - manual_end: user canceled
      */
     action: 'testrun_start' | 'testrun_end' | 'manual_end';
     results?: 'success' | 'fail';
     /**
-     * 拦截端
-     * - front_end: 前端拦截
-     * - server_end: 后端拦截
+     * Intercept end
+     * - front_end: Front end interception
+     * - server_end: backend interception
      */
     fail_end?: 'front_end' | 'server_end';
     /**
-     * 失败类型:
-     * - flow_validate: 流程校验失败
-     * - trigger_error: 触发 TestRun 失败
-     * - save_flow_error: 流程保存失败
-     * - run_error: 运行报错
+     * Type of failure:
+     * - flow_validate: Process validation failed
+     * - trigger_error: Failed to trigger TestRun
+     * - save_flow_error: Process save failed
+     * - run_error: Error
      */
     errtype?:
       | 'flow_validate'
@@ -1435,24 +1435,24 @@ export interface ParamsTypeDefine {
     nodes_id: string;
     nodes_type: string;
     /**
-     * 拦截端
-     * - front_end: 前端拦截
-     * - server_end: 后端拦截
+     * Intercept end
+     * - front_end: Front end interception
+     * - server_end: backend interception
      */
     fail_end?: 'front_end' | 'server_end';
-    /** 失败类型 */
+    /** failure type */
     nodes_errortype?: string;
-    /** 失败详情 */
+    /** failure details */
     nodes_errdetail?: string;
   };
   [EVENT_NAMES.workflow_pre_release_ppe]: {
     workspace_id: string;
     workflow_id: string;
     /**
-     * 入口类型:
-     * - 0: 发布按钮下拉
-     * - 1: 历史抽屉底部按钮
-     * - 2: 历史卡片下拉菜单
+     * Type of entry:
+     * - 0: Publish button drop down
+     * - 1: History drawer bottom button
+     * - 2: History Cards drop-down menu
      */
     channel: number;
   };
@@ -1464,9 +1464,9 @@ export interface ParamsTypeDefine {
     workspace_id: string;
     workflow_id: string;
     /**
-     * 状态：
-     * - 0: 成功
-     * - 1: 失败
+     * Status:
+     * - 0: success
+     * - 1: Fail
      */
     status: number;
     ppe_lane: string;
@@ -1476,13 +1476,13 @@ export interface ParamsTypeDefine {
     workspace_id: string;
     workflow_id: string;
     /**
-     * 查看历史版本的入口：
-     * - 0: workflowIDE入口
-     * - 1: workflowIDE的PPE发布页面入口
+     * View the entry to the historical version:
+     * - 0: workflowIDE entrance
+     * - 1: workflowIDE PPE release page entry
      */
     from: number;
     /**
-     * 查看历史版本的类型
+     * View the type of historical version
      */
     channel: OperateType;
   };
@@ -1490,9 +1490,9 @@ export interface ParamsTypeDefine {
     workspace_id: string;
     workflow_id: string;
     /**
-     * 状态：
-     * - 0: 成功
-     * - 1: 失败
+     * Status:
+     * - 0: success
+     * - 1: Fail
      */
     status: number;
     ppe_lane: string;
@@ -1575,9 +1575,9 @@ export interface ParamsTypeDefine {
   };
   [EVENT_NAMES.get_start]: {
     URL: string;
-    is_login: boolean; // 访问当前 URL 是否需要登录
+    is_login: boolean; // Is a login required to access the current URL?
     action: 'click_get_started' | 'click_pro_started';
-    /** 当前页面 */
+    /** current page */
     source:
       | 'landing'
       | 'search'
@@ -1587,7 +1587,7 @@ export interface ParamsTypeDefine {
       | 'developer'
       | 'evaluate'
       | 'cases';
-    /** 上一级页面 */
+    /** previous page */
     from?: string;
   };
   [EVENT_NAMES.bot_deployment_details]: CozeDevPublishCommonParams;
@@ -1689,9 +1689,9 @@ export interface ParamsTypeDefine {
   [EVENT_NAMES.dev_bot_share_screenshot_front]: {
     bot_id: string;
     stage: 'client' | 'server' | 'full';
-    stage_time: number; // 阶段耗时，单位毫秒
-    stage_status: boolean; // 阶段状态
-    stage_extra?: string; // 额外内容，stage=full时会使用该字段记录哪个阶段为最终结果
+    stage_time: number; // Phase time, in milliseconds
+    stage_status: boolean; // phase state
+    stage_extra?: string; // Extra content, stage = full will use this field to record which stage is the final result
   };
   [EVENT_NAMES.language_switch_show]: {
     country_code: string;
@@ -1699,7 +1699,7 @@ export interface ParamsTypeDefine {
   [EVENT_NAMES.language_switch_click]: {
     country_code: string;
   };
-  // 模型竞技场
+  // Model Arena
   [EVENT_NAMES.arena_bot_show_front]: {
     product_id: string;
     product_name: string;
@@ -1765,18 +1765,18 @@ export interface ParamsTypeDefine {
     host?: string;
   };
 
-  // 个人主页
+  // personal homepage
   [EVENT_NAMES.profile_entrance]: {
     /**
-     * my_profile：点击「我的主页」进入我的主页
-      share_my_link：点击我自己主页的分享链接后，也可以进入我的主页进入他人主页的入口：
-      bot_detail：商店 bot 详情页
-      plugin_detail：商店插件详情页
-      workflow_detail：商店工作流详情页
-      bot_community：bot 详情页讨论区
-      my_profile_Interactive_panel：我的主页的互动面板（关注、粉丝）
-      my_profile_visit_history：我的主页的访问历史
-      share_others_link：通过分享链接进入了他人的主页"
+     * my_profile: Click "My Homepage" to enter my homepage
+      share_my_link: After clicking on the share link of my own homepage, you can also enter my homepage to enter the entrance of other people's homepages:
+      bot_detail: Store bot details page
+      plugin_detail: store plugins details page
+      workflow_detail: Store workflow details page
+      bot_community: bot details page
+      my_profile_Interactive_panel: Interactive panel for my homepage (followers, fans)
+      my_profile_visit_history: Visit history of my homepage
+      share_others_link: went to someone else's homepage by sharing the link "
      */
     access_entrance:
       | 'my_profile'
@@ -1874,7 +1874,7 @@ export interface ParamsTypeDefine {
     store_type: FlowStoreType;
   };
 
-  // 流程商店事件 
+  // Process store event
   [EVENT_NAMES.flow_creation_click]: {
     action: string;
     store_type: string;
@@ -1954,7 +1954,7 @@ export interface ParamsTypeDefine {
   [EVENT_NAMES.tutorial_tips_pv]: {
     type_id: string;
   };
-  // 参数含义见：
+  // For parameter meanings, see:
   [EVENT_NAMES.home_action_front]: {
     home_type: 'banner' | 'quick_start' | 'recommends' | 'Following';
     item: string;
@@ -1997,12 +1997,12 @@ export interface ParamsTypeDefine {
           | 'voice';
       }
   );
-  /** 字段含义见  */
+  /** Field meaning see  */
   [EVENT_NAMES.template_action_front]: {
     template_id: string;
     template_name: string;
     entity_id: string;
-    /** project 模板会有个 project 副本 id */
+    /** The project template will have a project copy id. */
     entity_copy_id?: string;
     template_tag_prize: 'free' | 'paid';
     template_type: 'workflow' | 'imageflow' | 'bot' | 'project' | 'unknown';
@@ -2022,7 +2022,7 @@ export interface ParamsTypeDefine {
       | 'buy_agreement_unchecked';
     after_id?: string;
     after_name?: string;
-    /** 当前页面 */
+    /** current page */
     source?:
       | 'landing'
       | 'search'

@@ -86,8 +86,8 @@ function workflowJsonToJsonSchema(workflowJson: any) {
 }
 
 /**
- * 自定义表单的额外参数
- * 目前只对array和object表单加jsonSchema校验
+ * Customize the form's additional parameters
+ * Currently only jsonSchema validation is applied to array and object forms
  */
 export function getTestsetFormItemCustomProps(
   formItemSchema: FormItemSchema,

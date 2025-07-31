@@ -21,7 +21,7 @@ import { VariableTypeDTO } from '@coze-workflow/base';
 import { type FormData, type NodeDataDTO, TerminatePlan } from './types';
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   value: NodeDataDTO,
@@ -36,7 +36,7 @@ export const transformOnInit = (
       content: get(value, 'inputs.content.value.content') as string | undefined,
     },
   };
-  // 设置各字段初始值
+  // Set the initial value of each field
   if (typeof finalValue.inputs.inputParameters === 'undefined') {
     set(finalValue, 'inputs.inputParameters', [{ name: 'output' }]);
   }
@@ -56,7 +56,7 @@ export const transformOnInit = (
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

@@ -94,14 +94,14 @@ export const HeaderTags = ({
           </Tag>
         )}
 
-        {/* 图片来源 */}
+        {/* Image source */}
         {formatType === FormatType.Image && (
           <Tag size="mini" color="primary">
             {I18n.t('dataset_detail_source_local')}
           </Tag>
         )}
 
-        {/* 图片数量 */}
+        {/* number of pictures */}
         {formatType === FormatType.Image && !!dataSetDetail?.doc_count && (
           <Tag size="mini" color="primary">
             {I18n.t('knowledge_photo_015', {
@@ -110,7 +110,7 @@ export const HeaderTags = ({
           </Tag>
         )}
 
-        {/*  未添加文档时不展示 */}
+        {/*  Do not display when no document is added */}
         {formatType !== FormatType.Image && !!dataSetDetail?.doc_count && (
           <>
             {/* slice count  */}

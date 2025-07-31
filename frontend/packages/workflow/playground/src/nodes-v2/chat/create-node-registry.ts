@@ -76,7 +76,7 @@ export const createNodeRegistry = (
     },
     size: { width: NODE_WIDTH, height: NODE_HEIGHT },
     nodeMetaPath: DEFAULT_NODE_META_PATH,
-    inputParametersPath: INPUT_PATH, // 入参路径，试运行等功能依赖该路径提取参数
+    inputParametersPath: INPUT_PATH, // Imported parameter path, practice running and other functions rely on this path to extract parameters
     getInputVariableTag(name, input, extra) {
       const field = fieldConfig[name || ''];
 
@@ -86,16 +86,16 @@ export const createNodeRegistry = (
         const content = input?.content as RefExpressionContent;
         const isRef = content?.keyPath?.length > 0;
 
-        // 初始化流程时，可能变量模块还没有初始化，这里会获取不到变量...
+        // When initializing the process, it is possible that the variable module has not been initialized, and the variable will not be obtained here...
         const variable = extra?.variableService.getWorkflowVariableByKeyPath(
           content?.keyPath,
           { node: extra?.node, checkScope: true },
         );
 
-        // 必填场景，如果：
-        // 1. 为空，报错
-        // 2. 不为空
-        //   2.1 引用变量，且变量不存在，报错
+        // Required scene if:
+        // 1. Empty, error reported
+        // 2. Not empty
+        //   2.1 Reference to a variable, and the variable does not exist, an error is reported
         invalid = ValueExpression.isEmpty(input) || (isRef && !variable);
       }
 
@@ -117,7 +117,7 @@ export const createNodeRegistry = (
       [],
     ) as InputValueDTO[];
 
-    // 对于固定参数类型，需要将 type 字段设置为预定义的类型，而不是右侧填入的变量类型
+    // For fixed parameter types, you need to set the type field to a predefined type, rather than the variable type populated on the right
     inputParameters.forEach(param => {
       const config = fieldConfig[param.name || ''];
       if (config && param.input.type) {

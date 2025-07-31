@@ -92,7 +92,7 @@ export const FileUploadItem: FC<{
           const { uploading, uri, url, name, type } = fileState;
 
           /**
-           * 回显 只有一个url(string)，需要兼容 => 不展示icon,url作为文件名
+           * Echo, only one url (string), need to be compatible = > do not show icon, url as file name
            */
           const onlyUrlString = !!url && !uri;
           const displayName = onlyUrlString ? value : name;
@@ -113,7 +113,7 @@ export const FileUploadItem: FC<{
           if (uploading) {
             return uploadButton;
           } else if (onlyUrlString && type === FileTypeEnum.IMAGE) {
-            /** image不是即时上传的无法确认其为合法资源路径 */
+            /** The image is not uploaded immediately and cannot be confirmed as a legitimate resource path. */
             icon = fileUnknownIcon;
           } else if (!isImageString) {
             // @ts-expect-error -- linter-disable-autofix

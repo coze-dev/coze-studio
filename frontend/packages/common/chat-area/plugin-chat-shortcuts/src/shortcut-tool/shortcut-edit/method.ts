@@ -32,7 +32,7 @@ export const getSubmitValue = (
   const newValues = { ...values };
 
   /**
-   * 最先执行 根据是否包含 components_list 设置 send_type
+   * Execute first, depending on whether components_list is included send_type
    */
   mutableSendType(newValues);
 
@@ -50,7 +50,7 @@ export const getSubmitValue = (
   if (!use_tool) {
     mutableInitNotUseToolFormValues(newValues);
   }
-  // TODO: hzf干掉不合理
+  // TODO: hzf killing is unreasonable
   return newValues as ShortCutCommand;
 };
 
@@ -63,7 +63,7 @@ const mutableSendType = (value: ShortcutEditFormValues) => {
 };
 
 /**
- * 为了兼容,需要在修改components_list的default_value,hide的时候同步修改toolParams
+ * For compatibility, you need to modify the toolParams synchronously when modifying the default_value and hide of the components_list
  * 1.components_list.hide => !toolParams.refer_component
  * 2.components_list.default_value => refer_component：false && toolParams.default_value
  */
@@ -90,7 +90,7 @@ export const findToolParamsByComponent = (
   component: Components,
 ) => params?.find(param => param.name === component.parameter);
 
-// 初始化query类型的表单参数
+// Initialize form parameters for query types
 const mutableInitQueryFormValues = (values: ShortcutEditFormValues): void => {
   values.tool_type = undefined;
   values.plugin_id = '';
@@ -104,7 +104,7 @@ const mutableInitQueryFormValues = (values: ShortcutEditFormValues): void => {
   values.card_schema = '';
 };
 
-// 初始化使用插件组件的时候表单参数
+// Initialize form parameters when using plug-in components
 const mutableInitNotUseToolFormValues = (
   values: ShortcutEditFormValues,
 ): void => {
@@ -137,10 +137,10 @@ const mutableFormatCommandName = (values: ShortcutEditFormValues): void => {
 };
 
 /**
- * 筛选toolParams存在,components中不存在的变量
- * 并且refer_component=false,
- * 转化为components_list
- * 用于向前兼容,旧指令中tool的默认参数放在toolParams中
+ * Filter toolParams exists, variables that do not exist in components
+ * And refer_component = false,
+ * Converted to components_list
+ * For forward compatibility, the default parameters of tool in the old directive are placed in toolParams
  */
 export const initComponentsListFromToolParams = (
   components: Components[],
@@ -167,10 +167,10 @@ export const initComponentsListFromToolParams = (
 };
 
 /**
- * 兼容旧指令
- * 如果InputType为  UploadImage, UploadDoc, UploadTable, UploadAudio,
- * 判断upload_options是否为空
- * 为空,加上对应的upload_options
+ * Compatible with outdated instructions
+ * If the InputType is UploadImage, UploadDoc, UploadTable, UploadAudio,
+ * Determine if upload_options is empty
+ * Is empty, plus the corresponding upload_options
  */
 export const initComponentsUploadOptions = (
   components: Components[],
@@ -198,14 +198,14 @@ export const initComponentsUploadOptions = (
 export const getInitialValues = (
   initShortcut?: ShortCutCommand,
 ): ShortcutEditFormValues => {
-  // 初始化
+  // initialization
   if (!initShortcut) {
     return {
       send_type: SendType.SendTypeQuery,
       use_tool: false,
     };
   }
-  // 回显
+  // echo
   const {
     shortcut_command,
     tool_type,

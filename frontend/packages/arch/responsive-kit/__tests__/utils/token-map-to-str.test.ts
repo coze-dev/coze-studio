@@ -57,7 +57,7 @@ describe('tokenMapToStr', () => {
 
     const result = tokenMapToStr(tokenMap, 'prefix');
 
-    // 根据实际实现，undefined值会被转换为字符串"undefined"
+    // Depending on the actual implementation, the undefined value is converted to the string "undefined".
     expect(result).toBe('sm:prefix-1 md:prefix-undefined lg:prefix-3');
   });
 

@@ -33,7 +33,7 @@ export class WorkflowTemplateStateEntity extends ConfigEntity<WorkflowTemplateSt
   previewInfo: Workflow;
   dataList: Workflow[];
 
-  // 更新后触发
+  // Triggered after update
   onPreviewUpdatedEmitter = new Emitter();
   onPreviewUpdated = this.onPreviewUpdatedEmitter.event;
 

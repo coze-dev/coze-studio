@@ -14,12 +14,12 @@
  * limitations under the License.
  */
  
-/** pick from master，若有冲突请以 master 为准 */
+/** Pick from master, if there is any conflict, please refer to master */
 import { useGlobalState } from '@/hooks';
 
 /**
- * 打开 workflow
- * TODO：有一部分依赖还没有迁移完，暂时先把这个hook放在这里，后面还需要迁移
+ * Open workflow
+ * TODO: Some dependencies have not been migrated yet. For the time being, put this hook here first, and you need to migrate later.
  */
 export const useOpenWorkflow = () => {
   const { projectId, getProjectApi } = useGlobalState();
@@ -29,7 +29,7 @@ export const useOpenWorkflow = () => {
     const projectApi = getProjectApi();
 
     if (projectId && projectApi) {
-      // 应用内跳转
+      // in-app jump
       projectApi.sendMsgOpenWidget(`/workflow/${workflowId}`, {
         name: 'debug',
         data: {
@@ -38,20 +38,20 @@ export const useOpenWorkflow = () => {
         },
       });
     } else {
-      // 资源库或者运维平台跳转
+      // Resource library or operation and maintenance platform jump
       const url = new URL(window.location.href);
       const params = new URLSearchParams();
 
-      // 新增/更新查询参数，只保留这 4 个参数，包括 space_id
+      // Add/update query parameters to keep only these 4 parameters, including space_id
       params.append('space_id', url.searchParams.get('space_id') || '0');
       params.append('workflow_id', workflowId);
       params.append('execute_id', executeId);
       params.append('sub_execute_id', subExecuteId);
 
-      // 构建新 URL
+      // Build a new URL
       url.search = params.toString();
 
-      // 在新标签页打开
+      // Open in a new tab
       window.open(url.toString(), '_blank');
     }
   };

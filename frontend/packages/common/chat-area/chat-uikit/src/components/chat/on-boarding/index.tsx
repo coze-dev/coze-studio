@@ -57,13 +57,13 @@ interface OnBoardingProps {
   prologue?: string;
   suggestionList?: IMessage[];
   /**
-   * suggestionList是否换行展示, 默认false
+   * SuggestionList Whether to wrap display, default false
    */
   suggestionsWrap?: boolean;
   readonly?: boolean;
   suggestionListWithString?: string[];
   /**
-   * suggestionListWithString是否换行展示, 默认false
+   * suggestionListWithString whether to wrap, default false
    */
   suggestionsWithStringWrap?: boolean;
   onSuggestionClick?: (content: string) => void;

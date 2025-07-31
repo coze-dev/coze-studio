@@ -86,7 +86,7 @@ function useWorkflowNode(node: FlowNodeEntity) {
     new WorkflowNode(node),
   );
 
-  // 监听底层实例数据变化 并更新业务层实例
+  // Monitor the underlying instance data changes and update the business layer instance
   useEffect(() => {
     const updateWorkflowNode = () => {
       startTransition(() => {

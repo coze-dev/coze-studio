@@ -45,10 +45,10 @@ export type MultimodalContentProps = IImageMessageContentProps &
   };
 
 /**
- * 这个组件并不单纯 实际上并不应该叫 Content
+ * This component is not simple and should not actually be called Content.
  */
 
-// TODO: @liushuoyan 提供开关啊～～
+// TODO: @liushuoyan provides the switch~~
 export const MultimodalContent: React.FC<MultimodalContentProps> = ({
   renderTextContentAddonTop,
   message,
@@ -66,7 +66,7 @@ export const MultimodalContent: React.FC<MultimodalContentProps> = ({
 }) => {
   const { content_obj } = message;
   if (!isMultimodalContentListLike(content_obj)) {
-    // TODO: broke 的消息应该需要加一个统一的兜底和上报
+    // TODO: Broke news should need to add a unified bottom line and report
     return null;
   }
 

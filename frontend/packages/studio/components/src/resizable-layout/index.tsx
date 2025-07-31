@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   Children,
   type PropsWithChildren,
@@ -61,7 +61,7 @@ export const ResizableLayout: FC<PropsWithChildren<ResizableLayoutProps>> = ({
         return;
       }
       const totalSize = sum(state.itemWidth);
-      // 排除还没有进行过拖拽的情况，此时本地 state 中没有记录上次分配的宽度
+      // Exclude the case where no drag has been performed, and the last allocated width is not recorded in the local state at this time
       if (totalSize <= 0) {
         return;
       }
@@ -107,7 +107,7 @@ export const ResizableLayout: FC<PropsWithChildren<ResizableLayoutProps>> = ({
                     );
                   }
                 }
-                // @ts-expect-error -- 跳过类型体操
+                // @ts-expect-error -- skip type gymnastics
                 const { ref } = child;
                 if (typeof ref === 'function') {
                   ref(target);
@@ -144,7 +144,7 @@ export const ResizableLayout: FC<PropsWithChildren<ResizableLayoutProps>> = ({
                     ),
                   });
                 }}
-                // 相对于初始位置的偏移量
+                // Offset from the initial position
                 onMove={offset => {
                   const pre = index - 1;
                   childRef.current[pre].style.width = `${
@@ -156,7 +156,7 @@ export const ResizableLayout: FC<PropsWithChildren<ResizableLayoutProps>> = ({
                 }}
                 onMoveEnd={() => {
                   setState({
-                    // 拖拽结束后，记录真实宽度
+                    // After dragging, record the true width
                     itemWidth: childRef.current.map(
                       item => item.clientWidth ?? 0,
                     ),

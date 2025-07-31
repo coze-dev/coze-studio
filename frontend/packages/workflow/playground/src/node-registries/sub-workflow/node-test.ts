@@ -42,7 +42,7 @@ export const test: NodeTestMeta = {
       .formModel.getFormItemValueByPath('/');
     const inputData = formData?.inputs?.inputParameters || {};
     const conversationName = inputData?.[CONVERSATION_NAME];
-    /** 具有引用的会话名称 */
+    /** Session name with reference */
     const isConversationNameRef =
       conversationName && ValueExpression.isRef(conversationName);
     if (isInProject) {
@@ -53,10 +53,10 @@ export const test: NodeTestMeta = {
     }
     const related = await getRelatedInfo({ workflowId, spaceId });
     if (isChatflowNode) {
-      // 如果是 chatflow 则必需要应用选择器和会话选择器
+      // If it is a chatflow, you must apply a selector and a session selector
       related.isNeedBot = true;
       related.isNeedConversation = true;
-      // chatflow 不能选择 bot 作为关联环境
+      // Chatflow cannot select bot as associated environment
       related.disableBot = true;
       related.disableBotTooltip = I18n.t('wf_chatflow_141');
     }
@@ -91,7 +91,7 @@ export const test: NodeTestMeta = {
 
     const inputData = formData?.inputs?.inputParameters || {};
     const inputParameters = inputDefs
-      // chatflow 中 CONVERSATION_NAME 参数不需要提取，需要有专门的会话选择组件
+      // CONVERSATION_NAME parameters in chatflow do not need to be extracted, and a dedicated session selection component is required
       .filter(i => (isChatflowNode ? i.name !== CONVERSATION_NAME : true))
       .map(i => ({
         input: inputData[i.name],

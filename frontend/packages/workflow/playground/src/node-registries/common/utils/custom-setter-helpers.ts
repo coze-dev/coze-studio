@@ -24,14 +24,14 @@ import {
 } from '@coze-workflow/base';
 
 /**
- * 获取自定义 setter 的值
+ * Get the value of a custom setter
  * @param value
  * @param field
  * @returns
  */
 export const getCustomVal = (
   value: ValueExpression,
-  // 通过 number 提取单个输入项的类型
+  // Extracting the type of a single input item by number
   field: ApiNodeDetailDTO['inputs'][number],
 ) => {
   if (!field?.type) {
@@ -58,7 +58,7 @@ export const getCustomVal = (
 };
 
 /**
- * 根据plugin扩展协议， 获取自定义setter的属性
+ * Get the properties of the custom setter according to the plugin extension protocol
  */
 export const getCustomSetterProps = (
   input: ApiNodeDetailDTO['inputs'][number],
@@ -77,7 +77,7 @@ export const getCustomSetterProps = (
   const isEnum = !!inputEnum;
   const isSlider = !isNil(minimum) && !isNil(maximum);
 
-  // 例如这个插件：cutout（智能抠图）：store/plugin/7438917083918024738
+  // For example, this plugin: cutout: store/plugin/7438917083918024738
   if (isEnum) {
     return {
       key: 'Select',
@@ -89,7 +89,7 @@ export const getCustomSetterProps = (
     };
   }
 
-  // 例如这个插件：change（调整）：store/plugin/7438921446090637312
+  // For example, this plugin: change: store/plugin/7438921446090637312
   if (isSlider) {
     let step = 1;
     try {

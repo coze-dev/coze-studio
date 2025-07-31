@@ -15,7 +15,7 @@
  */
  
 // re-export everything from semi ui
-// 这里保留具名导出，未来那些 component 需要做修改的时候，补充文件修改即可
+// Keep the named export here. When those components need to be modified in the future, you can modify the supplementary file.
 export {
   Anchor,
   AutoComplete,
@@ -25,7 +25,7 @@ export {
   Badge,
   Banner,
   Breadcrumb,
-  // FIXME: Button 这个名字已经被上层占用，需要先修复上层所有被调用的地方，之后才能导出这个组件
+  // The name FIXME: Button has been taken by the upper layer. You need to fix all the places where the upper layer is called before exporting this component.
   // Button,
   ButtonGroup,
   Calendar,
@@ -53,7 +53,7 @@ export {
   List,
   IconButton,
   Icon,
-  // FIXME: Input 这个名字已经被上层占用，需要先修复上层所有被调用的地方，之后才能导出这个组件
+  // FIXME: The name Input is already occupied by the upper layer. You need to fix all the places where the upper layer is called before exporting this component.
   // Input,
   InputGroup,
   TextArea,

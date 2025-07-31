@@ -25,15 +25,15 @@ export interface UseSortParams {
   value: Array<any>;
   onChange?: (val: Array<any>) => void;
   /**
-   * 拖拽开始回调
+   * Drag to start callback
    */
   onDragStart?: (startIndex: number) => void;
   /**
-   * 拖拽顺序改变回调
+   * Drag and drop order to change callbacks
    */
   onDragMove?: (startIndex: number, endIndex: number) => void;
   /**
-   * 拖拽结束回调
+   * Drag end callback
    */
   onDragEnd?: (startIndex: number, endIndex: number) => void;
 }
@@ -41,7 +41,7 @@ export interface UseSortParams {
 export const useSort = (params: UseSortParams) => {
   const { value = [], onChange, onDragStart, onDragMove, onDragEnd } = params;
 
-  // 为 value 添加 dragItemId
+  // Add dragItemId to value
   const [data, setData] = useState<
     Array<{
       value: any;
@@ -65,7 +65,7 @@ export const useSort = (params: UseSortParams) => {
 
   const [draggingId, setDraggingId] = useState<string | undefined>('');
 
-  // 初始化一个唯一id，用于区分不同拖拽类型的预览
+  // Initialize a unique ID to distinguish between different drag and drop types
   const [dragItemType] = useState(nanoid());
 
   const isDragging = !!draggingId;

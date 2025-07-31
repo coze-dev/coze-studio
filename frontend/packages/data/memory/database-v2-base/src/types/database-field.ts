@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type DatabaseInfo } from '@coze-studio/bot-detail-store';
 import {
   type AlterBotTableResponse,
@@ -24,17 +24,17 @@ export type OnSave = (params: {
   response: InsertBotTableResponse | AlterBotTableResponse;
 }) => Promise<void>;
 
-/* eslint-disable @typescript-eslint/naming-convention -- 历史文件拷贝 */
+/* eslint-disable @typescript-eslint/naming-convention -- history file copy */
 export enum CreateType {
   custom = 'custom',
   template = 'template',
   excel = 'excel',
-  // 推荐建表
+  // recommended table
   recommend = 'recommend',
-  // 输入自然语言建表
+  // Enter natural language to build a table
   naturalLanguage = 'naturalLanguage',
 }
-/* eslint-enable @typescript-eslint/naming-convention -- 历史文件拷贝 */
+/* eslint-enable @typescript-eslint/naming-convention -- history file copy */
 
 export interface MapperItem {
   label: string;
@@ -43,7 +43,7 @@ export interface MapperItem {
     type: VerifyType;
     message: string;
   }[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 历史文件拷贝
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- historical file copy
   defaultValue: any;
   require: boolean;
 }

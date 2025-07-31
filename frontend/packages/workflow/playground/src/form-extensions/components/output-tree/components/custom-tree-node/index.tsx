@@ -53,14 +53,14 @@ export interface CustomTreeNodeProps extends RenderFullLabelProps {
   needRenderAppendChild?: boolean;
   onChange: (mode: ChangeMode, param: TreeNodeCustomData) => void;
   hasObjectLike?: boolean;
-  // Description 组件变换为多行时，其下面第一个 child 需被记录
+  // When the Description component is transformed into multiple rows, the first child below it needs to be recorded
   onActiveMultiInfoChange?: (info: ActiveMultiInfo) => void;
   activeMultiInfo?: ActiveMultiInfo;
   withDescription?: boolean;
   withRequired?: boolean;
-  /** 不支持使用的类型 */
+  /** Types not supported */
   disabledTypes?: ViewVariableType[];
-  /** 隐藏类型 */
+  /** hidden type */
   hiddenTypes?: ViewVariableType[];
   disableDelete?: boolean;
   disabled?: boolean;
@@ -101,21 +101,21 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     readonlyTooltip,
   } = props;
 
-  // 当前值
+  // current value
   const value = data as TreeNodeCustomData;
   const treeNodeRef = useRef<HTMLDivElement>(null);
   const columnsStyle = useColumnsStyle(columnsRatio, level);
 
-  // 删除时
+  // When deleting
   const onDelete = () => {
     onChange(ChangeMode.Delete, value);
   };
 
-  // 新增子项时
+  // When adding a child
   const onAppend = () => {
     onChange(ChangeMode.Append, value);
   };
-  // 类型切换时
+  // When switching types
   const onSelectChange = (
     val?: string | number | Array<unknown> | Record<string, unknown>,
   ) => {
@@ -125,7 +125,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     if (isNumber(val)) {
       const isObjectLike = ObjectLikeTypes.includes(val);
       if (!isObjectLike) {
-        // 如果不是类Object，判断是否有children，如果有，删除掉
+        // If it is not a class Object, determine whether there are children. If so, delete it
         if (value.children) {
           delete value.children;
         }
@@ -139,7 +139,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     }
   };
 
-  // 更新名称
+  // update name
   const onNameChange = (name: string) => {
     if (value.name === name) {
       return;
@@ -147,7 +147,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     onChange(ChangeMode.Update, { ...value, name });
   };
 
-  // 更新描述
+  // Update description
   const onDescriptionChange = useCallback(
     (description: string) => {
       if (value.description === description) {
@@ -161,7 +161,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     [onChange, value],
   );
 
-  // 更新默认值
+  // Update default values
   const onDefaultValueChange = useMemoizedFn(
     (defaultValue: DefaultValueType | null) => {
       if (value.defaultValue === defaultValue) {
@@ -174,11 +174,11 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     },
   );
 
-  // 默认值、描述展开状态，保存在前端
+  // Default value, describes the expanded state, saved in the front end
   const [expand, setExpand] = useState(defaultExpand);
-  // 默认值输入类型，前端选择的状态
+  // Default input type, state of front-end selection
   const [defaultValueInputType, setDefaultValueInputType] = useState('');
-  // 更新是否必选
+  // Is the update required?
   const onRequiredChange = useCallback(
     (required: boolean) => {
       onChange(ChangeMode.Update, { ...value, required });
@@ -187,7 +187,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
   );
 
   /**
-   * Description 组件单行 / 多行变换时，其下面第一个 child 的竖线需要缩短 / 延长
+   * Description When the component converts single/multiple rows, the vertical line of the first child below it needs to be shortened/lengthened
    */
   // const onDescriptionLineChange = useCallback(
   //   (type: DescriptionLine) => {
@@ -256,7 +256,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
         style={columnsStyle.type}
       />
       {/* {withDescription ? (
-        // 先注释，未来响应式布局还要留着用
+        //Comment first, future responsive layouts will be saved future responsive layouts will be saved
         // <ParamDescription
         //   disabled={disabled || isPreset}
         //   data={value}

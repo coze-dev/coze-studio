@@ -29,18 +29,18 @@ const SUPPORT_NEGATIVE_SCROLL_TOP = supportNegativeScrollTop();
 import styles from './index.module.less';
 
 export interface UseScrollViewControllerAndStateParams {
-  /** 滚动方向 */
+  /** scroll direction */
   reverse: boolean;
-  /** 滚动状态，自动吸顶/吸底时依赖，当Top时自动吸顶，当Bottom时自动吸底 */
+  /** Scroll state, automatic ceiling/bottom dependence, automatic ceiling when Top, automatic bottom when Bottom */
   scrollStatusRef?: RefObject<ScrollStatus>;
 }
 
 export interface UseScrollViewControllerAndStateReturnValue {
-  /** 注入到滚动容器的引用 */
+  /** Reference injected into the scrolling container */
   ref: RefObject<HTMLDivElement>;
-  /** 滚动容器外层 dom 的引用 */
+  /** Reference to the outer dom of a rolling container */
   wrapperRef: RefObject<HTMLDivElement>;
-  /** 控制器 */
+  /** controller */
   controller: ScrollViewController;
 }
 
@@ -141,7 +141,7 @@ export const useScrollViewControllerAndState = ({
 
     const { offsetHeight, scrollHeight } = container;
 
-    /** 当当前不是滚动状态时，不调整滚动进度 */
+    /** When the current state is not scrolling, the scrolling progress is not adjusted */
     if (scrollHeight <= offsetHeight) {
       return;
     }
@@ -261,18 +261,18 @@ export const useScrollViewControllerAndState = ({
 };
 
 export interface UseAutoAnchorWhenPrependOnSafariParams {
-  /** 滚动方法 */
+  /** rolling method */
   scrollTo: ScrollViewController['scrollTo'];
-  /** 获取当前滚动距底部距离 */
+  /** Get the current scroll distance to the bottom */
   getScrollBottom: ScrollViewController['getScrollTop'];
-  /** 滚动方向 */
+  /** scroll direction */
   reverse: boolean;
-  /** 启用锚定时离边界的最小值，默认为10 */
+  /** The minimum value from the boundary when anchoring is enabled, defaults to 10 */
   enableThreshold?: number;
 }
 
 /**
- * 处理y-reverse在Safari下，向下插入元素时自动锚定的问题（safari不支持overflow-anchor属性）
+ * Handle the issue of automatic anchoring when y-reverse inserts elements down in Safari (Safari does not support overflow-anchor attribute)
  */
 export const useAutoAnchorWhenAppendOnSafari = ({
   scrollTo,
@@ -300,7 +300,7 @@ export const useAutoAnchorWhenAppendOnSafari = ({
         const currentContainerHeight = container.getBoundingClientRect().height;
 
         if (prevLastChild && isNumber(prevContainerHeight)) {
-          /** 末尾元素变了，同时高度变了，那就断定为末尾元素插入，但是仅当超过阈值时才锚定 */
+          /** The end element has changed, and the height has changed at the same time, so it is concluded that the end element is inserted, but it is only anchored when the threshold is exceeded */
           if (
             prevContainerHeight !== currentContainerHeight &&
             currentLastChild !== prevLastChild &&

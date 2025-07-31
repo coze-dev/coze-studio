@@ -23,7 +23,7 @@ import {
   AssistTypeDTO,
 } from '@coze-workflow/base';
 
-// 需要转化的类型映射
+// Type mapping to be converted
 const VariableType2JsonSchemaProps = {
   [VariableTypeDTO.object]: {
     type: 'object',
@@ -78,7 +78,7 @@ const inputToJsonSchema = (
       items: inputToJsonSchema(_input.schema, level + 1, transformer),
     };
   }
-  // 基础类型不需要生成jsonSchema, 图片类型不需要jsonSchema, 直接抛异常跳出递归
+  // The basic type does not need to generate jsonSchema, and the image type does not need jsonSchema. It directly throws an exception and jumps out of recursion.
   if (
     level === 0 ||
     type === 'image' ||

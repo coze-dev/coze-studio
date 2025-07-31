@@ -56,7 +56,7 @@ export const AgentSkillView: FC<PropsWithChildren<IProps>> = ({
 
   useSubscribeToolStore(AbilityScope.AGENT_SKILL, agentId);
 
-  // 前置注册
+  // pre-registration
   useEffect(() => {
     Children.map(children, child => {
       if (!hasValidAgentSkillKey(child)) {

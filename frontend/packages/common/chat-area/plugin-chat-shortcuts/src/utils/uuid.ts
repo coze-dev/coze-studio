@@ -14,12 +14,12 @@
  * limitations under the License.
  */
  
-// 对齐 card-builder 生成 ID 的逻辑，暂时拷贝一份，未来计划直接使用 card-buidler 的底层能力
+// Align the logic of card-builder generating ID, make a copy temporarily, and plan to use the underlying capabilities of card-buidler directly in the future
 import { nanoid, customAlphabet } from 'nanoid';
 
 /**
- * @param prefix - id前缀
- * @param options - alphabet: 字母表; length: 长度，默认10;
+ * @param prefix - id prefix
+ * @Param options - alphabet; length: length, default 10;
  */
 export const shortid = (
   prefix = '',

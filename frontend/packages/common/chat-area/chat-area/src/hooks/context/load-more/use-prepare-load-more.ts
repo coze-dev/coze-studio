@@ -72,7 +72,7 @@ export const usePrepareLoadMore = ({
   useEffect(() => forceDispose, []);
 
   const loadMoreEnv = useMemo(() => {
-    // action 都是稳定引用，无需现场计算
+    // Actions are all stable references, no on-site calculations required
     const {
       updateCursor,
       updateIndex,
@@ -112,7 +112,7 @@ export const usePrepareLoadMore = ({
             useGlobalInitStore.getState().conversationId ||
             '',
         }),
-      // 取值，需要运行时现场计算
+      // Value, requires on-site calculation at runtime
       readEnvValues: () => {
         const state = useMessageIndexStore.getState();
         const waitingState = useWaitingStore.getState();

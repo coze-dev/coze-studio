@@ -60,7 +60,7 @@ export const usePluginFormState = (): UsePluginFormStateReturn => {
   const [headerList, setHeaderList] = useState<commonParamSchema[]>([
     { name: 'User-Agent', value: 'Coze/1.0' },
   ]);
-  // 合规审核结果
+  // Compliance audit results
   const [isValidCheckResult, setIsValidCheckResult] = useState(true);
   const [pluginTypeCreationMethod, setPluginTypeCreationMethod] =
     useState<string>();

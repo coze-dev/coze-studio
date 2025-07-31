@@ -15,7 +15,7 @@
  */
  
 /**
- * 业务层流程节点类 (对节点业务规则的封装)
+ * Business layer process node class (encapsulation of node business rules)
  */
 import {
   FlowNodeErrorData,
@@ -69,7 +69,7 @@ export class WorkflowNode {
     }
   }
 
-  // 这个方法建议暂时先不要使用 原因是该方法没有体现业务逻辑 只是底层方法的简化
+  // This method is recommended not to be used for the time being, because it does not reflect business logic, but is a simplification of the underlying method
   protected getFormValueByPathEnds<T = unknown>(
     pathEnds: string,
   ): T | undefined {

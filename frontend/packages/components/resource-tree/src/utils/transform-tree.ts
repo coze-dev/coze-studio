@@ -125,18 +125,18 @@ const findNode = (
 };
 
 /**
- * 判断是否循环
+ * Determine whether to cycle
  */
 export const isLoop = (id: string, json: DependencyTree) => {
   const node = findNode(json, id);
-  // 只有 workflow 会存在循环，因此只需要关注 workflow_version
+  // Only workflow has loops, so just focus on workflow_version
   if (node?.dependency?.workflow_version?.length) {
     return hasSameId(id, node.dependency.workflow_version, json);
   }
   return false;
 };
 
-// 判断循环
+// judgment loop
 const hasSameId = (
   id: string,
   arr: WorkflowVersionInfo[],

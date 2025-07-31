@@ -33,7 +33,7 @@ import { WorkflowCopyShortcutsContribution } from '../copy';
 import { safeFn } from '../../utils';
 
 /**
- * 导出快捷键
+ * Export shortcut
  */
 @injectable()
 export class WorkflowExportShortcutsContribution
@@ -47,7 +47,7 @@ export class WorkflowExportShortcutsContribution
   private globalState: WorkflowGlobalStateEntity;
   @inject(WorkflowCopyShortcutsContribution)
   private copyShortcuts: WorkflowCopyShortcutsContribution;
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowExportShortcutsContribution.type,
@@ -82,12 +82,12 @@ export class WorkflowExportShortcutsContribution
     filename: string;
   }): void {
     const { data, filename } = params;
-    // 创建 Blob 对象
+    // Create Blob Object
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
     });
 
-    // 创建下载链接并触发下载
+    // Create a download link and trigger the download
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -95,7 +95,7 @@ export class WorkflowExportShortcutsContribution
     document.body.appendChild(link);
     link.click();
 
-    // 清理
+    // clean up
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }

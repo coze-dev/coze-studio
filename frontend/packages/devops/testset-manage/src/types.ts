@@ -47,13 +47,13 @@ export type ObjectFieldSchema = {
 }[];
 
 export interface FormItemSchema {
-  // 扩展为枚举
+  // Expand to enumeration
   type: string;
   name: string;
   description?: string;
   required?: boolean;
   value?: string | number | boolean;
-  /** object/array复杂类型有schema定义 */
+  /** Object/array complex types have schema definitions */
   schema?: ArrayFieldSchema | ObjectFieldSchema;
 }
 

@@ -42,7 +42,7 @@ export const passportApi = {
 
   updatePassword: async (params: { password: string; email: string }) => {
     await passport.PassportWebEmailPasswordResetGet({ ...params, code: '' });
-    // 更新密码后，当前登录态失效，重置 store
+    // After updating the password, the current login state is invalid, reset the store
     resetUserStore();
   },
 

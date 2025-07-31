@@ -31,7 +31,7 @@ import {
 import { type BoundSkills } from '@/nodes-v2/llm/skills/types';
 
 /**
- * 节点上缓存一份技能名称和icon的数据
+ * Cache a skill name and icon data on the node
  * @param node
  * @param fcParam
  * @param skillsDetail

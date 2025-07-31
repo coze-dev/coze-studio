@@ -18,8 +18,8 @@ import { useWorkflowNode } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 
 /**
- * 这里要跟表单内的 knowledge list 用同一个 useDataSetInfos
- * useDataSetInfos 内部会缓存数据，当表单内选中新的知识库时，不用重新发请求拉数据
+ * Use the same useDataSetInfos as the knowledge list in the form.
+ * useDataSetInfos will cache the data internally. When a new knowledge base is selected in the form, there is no need to resend the request to pull the data.
  */
 
 import { useDataSetInfos } from '@/hooks';
@@ -38,7 +38,7 @@ export function Knowledge() {
     >
       <OverflowTagList
         value={dataSets.map(d => ({
-          // 运维平台直接展示 ID 即可，因为运维平台无法拉取到实际的知识库信息
+          // The operation and maintenance platform can directly display the ID, because the operation and maintenance platform cannot pull the actual knowledge base information.
           label: IS_BOT_OP ? d.dataset_id : d.name,
           icon: (
             <img className="w-[16px] h-[16px] rounded-mini" src={d.icon_url} />

@@ -32,7 +32,7 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
     <SingleAgentModelViewBase
       {...props}
       triggerRender={m => (
-        // 模型临期时强制完整展示临期提示
+        // Forced full display of Advent prompts during model Advent
         <Collapsible
           itemKey={itemKey}
           fullContent={

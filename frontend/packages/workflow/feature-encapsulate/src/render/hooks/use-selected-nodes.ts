@@ -20,7 +20,7 @@ import { useService } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowSelectService } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 选中节点
+ * selected node
  */
 export function useSelectedNodes() {
   const selectService = useService<WorkflowSelectService>(

@@ -22,7 +22,7 @@ import {
   ASTNodeFlags,
 } from '@flowgram-adapter/free-layout-editor';
 
-// 获取所有的子 AST 节点
+// Get all child AST nodes
 export function getAllChildren(ast: ASTNode): ASTNode[] {
   return [
     ...ast.children,
@@ -30,7 +30,7 @@ export function getAllChildren(ast: ASTNode): ASTNode[] {
   ];
 }
 
-// 获取父 Fields
+// Get Parent Fields
 export function getParentFields(ast: ASTNode): BaseVariableField[] {
   let curr = ast.parent;
   const res: BaseVariableField[] = [];
@@ -45,7 +45,7 @@ export function getParentFields(ast: ASTNode): BaseVariableField[] {
   return res;
 }
 
-// 获取所有子 AST 引用的变量
+// Get all variables referenced by the child AST
 export function getAllRefs(ast: ASTNode): BaseVariableField[] {
   return getAllChildren(ast)
     .filter(_child => _child.flags & ASTNodeFlags.Expression)
@@ -55,16 +55,16 @@ export function getAllRefs(ast: ASTNode): BaseVariableField[] {
 }
 
 /**
- * 检测是否成环
- * @param curr 当前表达式
- * @param refNode 引用的变量节点
- * @returns 是否成环
+ * Check if it is a ring.
+ * @param curr current expression
+ * Variable node referenced by @param refNode
+ * @Returns is a loop
  */
 export function checkRefCycle(
   curr: BaseExpression,
   refNodes: (BaseVariableField | undefined)[],
 ): boolean {
-  // 作用域没有成环，则不可能成环
+  // If the scope is not cyclic, it cannot be cyclic
   if (
     intersection(
       curr.scope.coverScopes,
@@ -74,7 +74,7 @@ export function checkRefCycle(
     return false;
   }
 
-  // BFS 遍历
+  // BFS Traversal
   const visited = new Set<BaseVariableField>();
   const queue = [...refNodes];
 
@@ -90,6 +90,6 @@ export function checkRefCycle(
     }
   }
 
-  // 引用的变量中，包含表达式的父变量，则成环
+  // If the referenced variable contains the parent variable of the expression, it forms a ring
   return intersection(Array.from(visited), getParentFields(curr)).length > 0;
 }

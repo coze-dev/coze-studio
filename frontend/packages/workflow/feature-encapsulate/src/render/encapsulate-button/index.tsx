@@ -31,7 +31,7 @@ import styles from './styles.module.less';
 const HOVER_DELAY = 200;
 
 /**
- * 封装按钮
+ * encapsulation button
  */
 export function EncapsulateButton() {
   const encapsulateRenderService = useService<EncapsulateRenderService>(

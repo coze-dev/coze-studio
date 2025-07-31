@@ -25,26 +25,26 @@ interface Config {
 }
 
 /**
- * 目前仅支持高度可变
+ * Currently only highly variable is supported
  */
 export const useResize = (config: Config) => {
   const [dragging, setDragging] = useState(false);
   const [height, setHeight] = useState(config.default);
   const ref = useRef<HTMLDivElement>(null);
   /**
-   * 拖拽过程中
+   * Dragging process
    */
   const resizing = useRef(false);
   /**
-   * y 轴变化
+   * Y-axis variation
    */
   const startY = useRef(0);
-  /** 开始位置 */
+  /** starting position */
   const start = useRef(0);
 
   const handleMouseMove = useMemoizedFn(e => {
     if (resizing.current) {
-      const newHeight = start.current - (e.clientY - startY.current); // 计算新的高度
+      const newHeight = start.current - (e.clientY - startY.current); // Calculate the new height
       if (config.max && newHeight > config.max) {
         setHeight(config.max);
       } else if (config.min && newHeight < config.min) {
@@ -57,17 +57,17 @@ export const useResize = (config: Config) => {
   const handleMouseUp = useCallback(() => {
     resizing.current = false;
     setDragging(false);
-    document.removeEventListener('mousemove', handleMouseMove); // 取消监听
-    document.removeEventListener('mouseup', handleMouseUp); // 取消监听
+    document.removeEventListener('mousemove', handleMouseMove); // Cancel listening
+    document.removeEventListener('mouseup', handleMouseUp); // Cancel listening
   }, [handleMouseMove]);
 
   const handleMouseDown = useMemoizedFn(e => {
     resizing.current = true;
     setDragging(true);
-    startY.current = e.clientY; // 记录鼠标开始拖拽时的 Y 轴坐标
+    startY.current = e.clientY; // Record the Y-axis coordinates when the mouse starts dragging
     start.current = ref.current?.offsetHeight || 0;
-    document.addEventListener('mousemove', handleMouseMove); // 监听鼠标移动事件
-    document.addEventListener('mouseup', handleMouseUp); // 监听鼠标抬起事件
+    document.addEventListener('mousemove', handleMouseMove); // Monitor mouse movement events
+    document.addEventListener('mouseup', handleMouseUp); // Monitor mouse lift events
   });
 
   return {

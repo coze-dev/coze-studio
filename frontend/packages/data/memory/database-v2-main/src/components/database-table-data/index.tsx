@@ -153,7 +153,7 @@ export function DatabaseTableData({
         database_id: databaseId,
         table_type: tableType,
         record_data_alter: [values],
-        // 编辑行时，要带上原始的 connector_id，后端需要判断数据是否来自/目标为“豆包”渠道
+        // When editing the line, bring the original connector_id, and the backend needs to determine whether the data comes from/targets the "bean bag" channel
         ori_connector_id: originalConnectorId,
       });
     }
@@ -230,7 +230,7 @@ export function DatabaseTableData({
           },
           rowKey: (record: TableRow) => record?.bstudio_id?.value as string,
           scroll: {
-            // 128 = ToolButtonsBar(52) + 表头(28) + Pagination(48)
+            // 128 = ToolButtonsBar (52) + Header (28) + Pagination (48)
             y: tableHeight > 128 ? tableHeight - 128 : 'auto',
           },
           pagination: {
@@ -259,7 +259,7 @@ export function DatabaseTableData({
           ),
         }}
         wrapperClassName={classNames(styles['table-wrapper'], {
-          // database 数据表格在 Project IDE 中要使用 coz-bg-max 白色背景
+          // Use coz-bg-max white background for database data tables in Project IDE
           [styles['table-wrapper-project']]: enterFrom === 'project',
         })}
         empty={

@@ -73,11 +73,11 @@ export const WorkflowPortRender: React.FC<WorkflowPortRenderProps> =
     );
 
     useEffect(() => {
-      // useEffect 时序问题可能导致 port.hasError 非最新，需重新触发一次 validate
+      // useEffect timing issue may cause port.hasError to be not up-to-date, and validate needs to be triggered again
       props.entity.validate();
       setHasError(props.entity.hasError);
       const dispose = props.entity.onEntityChange(() => {
-        // 如果有挂载的节点，不需要更新位置信息
+        // If there are mounted nodes, there is no need to update the location information
         if (entity.targetElement) {
           if (entity.targetElement !== targetElement) {
             setTargetElement(entity.targetElement);
@@ -85,7 +85,7 @@ export const WorkflowPortRender: React.FC<WorkflowPortRenderProps> =
           return;
         }
         const newPos = props.entity.relativePosition;
-        // 加上 round 避免点位抖动
+        // Add round to avoid point jitter
         updatePosX(Math.round(newPos.x));
         updatePosY(Math.round(newPos.y));
       });
@@ -108,11 +108,11 @@ export const WorkflowPortRender: React.FC<WorkflowPortRenderProps> =
       };
     }, [props.entity, hoverService, entity, targetElement, linesManager]);
 
-    // 监听变化
+    // Monitor changes
     const className = classNames(styles.workflowPoint, {
       [styles.hovered]:
         !readonly && hovered && !disabled && portType !== 'input',
-      // 有线条链接的时候深蓝色小圆点
+      // Dark blue dots when there are line links.
       [styles.linked]: linked,
     });
 

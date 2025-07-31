@@ -17,26 +17,26 @@
 import { execSync } from 'child_process';
 
 /**
- * 获取当前 git 分支名称
- * @returns 当前分支名称，如果不在 git 仓库中或发生错误则返回 undefined
+ * Get the current git branch name
+ * @Returns the current branch name, or undefined if not in the git repository or an error occurs
  */
 export function getCurrentBranch(): string | undefined {
   try {
-    // 使用 git rev-parse 获取当前分支名
-    // --abbrev-ref 参数返回分支名而不是 commit hash
-    // HEAD 表示当前位置
+    // Use git rev-parse to get the current branch name
+    // --Abbrev-ref parameter returns branch name instead of commit hash
+    // HEAD represents the current location
     const branch = execSync('git rev-parse --abbrev-ref HEAD', {
       encoding: 'utf-8',
     }).trim();
 
-    // 如果在 detached HEAD 状态，返回 undefined
+    // If in the detached HEAD state, return undefined
     if (branch === 'HEAD') {
       return undefined;
     }
 
     return branch;
   } catch (error) {
-    // 如果执行出错（比如不在 git 仓库中），返回 undefined
+    // If there is an execution error (e.g. not in the git repository), return undefined.
     return '';
   }
 }

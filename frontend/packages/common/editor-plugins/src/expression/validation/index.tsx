@@ -70,9 +70,9 @@ function Validation({ variableTree }: Props) {
 
           if (
             cursor.name === 'JinjaExpression' &&
-            // 由于 parser 存在容错能力
-            // 可能出现缺少右花括号也被正常解析为 Interpolation 的情况
-            // 如：{{variable
+            // Due to the fault tolerance of the parser
+            // It is possible that the missing right curly brace is also parsed normally as Interpolation
+            // Such as: {{variable
             cursor.node.firstChild?.name === 'JinjaExpressionStart' &&
             cursor.node.lastChild?.name === 'JinjaExpressionEnd'
           ) {

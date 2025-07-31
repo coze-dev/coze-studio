@@ -17,7 +17,7 @@
 import BigNumber from 'bignumber.js';
 
 /**
- * 是不是大数字
+ * Is it a big number?
  * @param value
  * @returns
  */
@@ -26,7 +26,7 @@ export function isBigNumber(value: unknown): value is BigNumber {
 }
 
 /**
- * 大数字转字符串
+ * Large number to string
  * @param value
  * @returns
  */

@@ -15,21 +15,21 @@
  */
  
 /**
- * 承接所有 sdk 的 slardar 自定义事件
+ * Undertake all sdk slardar custom events
  */
 export enum SlardarEvents {
-  // 拉取历史异常
+  // pull historical exception
   MESSAGE_FETCH_HISTORY_ERROR = 'message_fetch_history_error',
-  // 清空上下文异常
+  // clear context exception
   MESSAGE_CLEAR_CONTEXT_ERROR = 'message_clear_context_error',
-  // 清空历史异常
+  // Clear historical anomalies
   MESSAGE_CLEAR_HISTORY_ERROR = 'message_clear_history_error',
-  // 删除消息异常
+  // Delete message exception
   MESSAGE_DELETE_ERROR = 'message_delete_error',
-  // 打断消息
+  // interrupt message
   MESSAGE_INTERRUPT_ERROR = 'message_interrupt_error',
-  // 点赞/点踩消息
+  // Like/click on the message
   MESSAGE_REPORT_ERROR = 'message_report_error',
-  // 语音转文字
+  // speech-to-text
   CHAT_ASR_ERROR = 'chat_asr_error',
 }

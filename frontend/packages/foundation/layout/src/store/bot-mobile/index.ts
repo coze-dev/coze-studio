@@ -18,7 +18,7 @@ import { devtools } from 'zustand/middleware';
 import { create } from 'zustand';
 
 interface SignMobileStore {
-  /** 标识有没有弹出过提示 */
+  /** Has the logo ever popped up? */
   mobileTips: boolean;
 }
 

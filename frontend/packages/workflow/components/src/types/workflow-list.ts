@@ -26,35 +26,35 @@ interface Auth {
 export type WorkflowInfo = Workflow & Auth;
 
 /**
- * 打开弹窗场景, 主要用于 log
+ * Open the pop-up scene, mainly for logging
  *
- * WorkflowAddNode 场景有特殊处理
+ * WorkflowAddNode scenes have special handling
  */
 export enum WorkflowModalFrom {
-  /** 流程详情添加子流程 */
+  /** Process details Add subprocess */
   WorkflowAddNode = 'workflow_addNode',
-  /** 在 bot skills 打开 */
+  /** Open in bot skills */
   BotSkills = 'bot_skills',
-  /** 在抖音分身场景的 ide 打开 */
+  /** Open ide in Douyin doppelganger scene */
   BotSkillsDouyin = 'bot_skills_douyin_ide',
-  /** 在 bot 多 agent skills 打开 */
+  /** Open in bot multi-agent skills */
   BotMultiSkills = 'bot_multi_skills',
-  /** 在 bot triggers 打开  */
+  /** Open in bot triggers  */
   BotTrigger = 'bot_trigger',
-  /** bot 快捷方式打开 */
+  /** Bot shortcut open */
   BotShortcut = 'bot_shortcut',
-  /** 空间下流程列表 */
+  /** process list under space */
   SpaceWorkflowList = 'space_workflow_list',
-  /** 来自 workflow as agent */
+  /** From workflow as agent */
   WorkflowAgent = 'workflow_agent',
-  /** 社会场景 workflow 列表 */
+  /** Social scene workflow list */
   SocialSceneHost = 'social_scene_host',
-  /** 项目引入资源库文件 */
+  /** project import repository file */
   ProjectImportLibrary = 'project_import_library',
-  /** 项目内 workflow 画布添加子流程 */
+  /** Add subflow to workflow canvas in project */
   ProjectWorkflowAddNode = 'project_workflow_addNode',
   /**
-   * 项目内 workflow 资源列表添加 workflow 资源
+   * List of workflow resources in the project Add workflow resources
    */
   ProjectAddWorkflowResource = 'project_add_workflow_resource',
 }

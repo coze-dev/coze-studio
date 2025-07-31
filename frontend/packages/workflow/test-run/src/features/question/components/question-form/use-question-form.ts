@@ -33,7 +33,7 @@ export const useQuestionForm = (questionEvent: NodeEvent | undefined) => {
     patch: store.patch,
   }));
   const eventSync = useMemoizedFn((event: NodeEvent | undefined) => {
-    // 结束
+    // end
     if (!event) {
       testRunService.continueTestRun();
       return;

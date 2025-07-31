@@ -59,7 +59,7 @@ export const ChatBackground: React.FC<ITextToSpeechProps> = ({ title }) => {
 
   const defaultExpand = useDefaultExPandCheck({
     blockKey: SkillKeyEnum.BACKGROUND_IMAGE_BLOCK,
-    configured: hasBackGroundImage || showDot, // 无图 有进行中的状态也展示背景图模块不允许被隐藏
+    configured: hasBackGroundImage || showDot, // No picture, there is a status in progress, and the background cover module is not allowed to be hidden.
   });
 
   const userInfo = userStoreService.useUserInfo();

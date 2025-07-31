@@ -123,7 +123,7 @@ export const GlobalVariableSelect = (props: Props) => {
 
   const keyPath = get(value, 'content.keyPath') as string[] | undefined;
 
-  // 监听联动变量变化，从而重新触发 effect
+  // Monitor changes in linkage variables to re-trigger the effect
   useEffect(() => {
     const hasDisabledTypes =
       Array.isArray(disabledTypes) && disabledTypes.length > 0;
@@ -135,7 +135,7 @@ export const GlobalVariableSelect = (props: Props) => {
     const listener = variableService.onListenVariableTypeChange(
       keyPath,
       v => {
-        // 如果变量类型变化后，位于 disabledTypes 中，那么需要清空
+        // If the variable type changes and is located in disabledTypes, it needs to be cleared
         if (v && (disabledTypes || []).includes(v.type)) {
           onChange?.({
             type: ValueExpressionType.REF,
@@ -281,7 +281,7 @@ export const GlobalVariableSelect = (props: Props) => {
         ? null
         : optionList.map(option => (
             <Select.Option
-              // disabled 变化 Option 不会重新渲染，先通过设置 key 的方式兼容一下
+              // Disabled Change Option will not be re-rendered. Please set the key to be compatible first.
               key={`${option.value}-${option.disabled}`}
               value={option.value}
               className={s['global-var-option']}

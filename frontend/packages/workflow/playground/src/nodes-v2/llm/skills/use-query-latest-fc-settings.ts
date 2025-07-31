@@ -41,13 +41,13 @@ import {
 //                     sub_type: 1,
 //                     location: 1, // Path   = 1, Query  = 2, Body   = 3, Header = 4,
 //                     is_required: false,
-//                     local_default: '', // 默认值
-//                     local_disable: false, // 是否启用
+//                     local_default : '', // default
+//                     local_disable: false,//enabled
 //                     assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //                   },
 //                 ],
-//                 local_default: '', // 默认值
-//                 local_disable: false, // 是否启用
+//                 local_default : '', // default
+//                 local_disable: false,//enabled
 //                 assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //               },
 //             ],
@@ -65,18 +65,18 @@ import {
 //                     sub_type: 1,
 //                     location: 1, // Path   = 1, Query  = 2, Body   = 3, Header = 4,
 //                     is_required: false,
-//                     local_default: '', // 默认值
-//                     local_disable: false, // 是否启用
+//                     local_default : '', // default
+//                     local_disable: false,//enabled
 //                     assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //                   },
 //                 ],
-//                 local_default: '', // 默认值
-//                 local_disable: false, // 是否启用
+//                 local_default : '', // default
+//                 local_disable: false,//enabled
 //                 assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //               },
 //             ],
 //             response_style: {
-//               mode: 1, // Raw      = 0, // 原始输出 Card     = 1, // 渲染成卡片 Template = 2, // 包含变量的模板内容，用jinja2渲染 TODO
+//               Mode: 1,//Raw = 0,//Raw Output Card = 1,//Render as Card Template = 2,//Template content containing variables, render TODO with jinja2
 //             },
 //           },
 //           workflow_fc_setting: {
@@ -94,13 +94,13 @@ import {
 //                     sub_type: 1,
 //                     location: 1, // Path   = 1, Query  = 2, Body   = 3, Header = 4,
 //                     is_required: false,
-//                     local_default: '', // 默认值
-//                     local_disable: false, // 是否启用
+//                     local_default : '', // default
+//                     local_disable: false,//enabled
 //                     assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //                   },
 //                 ],
-//                 local_default: '', // 默认值
-//                 local_disable: false, // 是否启用
+//                 local_default : '', // default
+//                 local_disable: false,//enabled
 //                 assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //               },
 //             ],
@@ -118,30 +118,30 @@ import {
 //                     sub_type: 1,
 //                     location: 1, // Path   = 1, Query  = 2, Body   = 3, Header = 4,
 //                     is_required: false,
-//                     local_default: '', // 默认值
-//                     local_disable: false, // 是否启用
+//                     local_default : '', // default
+//                     local_disable: false,//enabled
 //                     assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //                   },
 //                 ],
-//                 local_default: '', // 默认值
-//                 local_disable: false, // 是否启用
+//                 local_default : '', // default
+//                 local_disable: false,//enabled
 //                 assist_type: 1, //DEFAULT = 1, IMAGE   = 2, DOC     = 3,CODE    = 4,PPT     = 5, TXT     = 6, EXCEL   = 7, AUDIO   = 8, ZIP     = 9,VIDEO   = 10,
 //               },
 //             ],
 //             response_style: {
-//               mode: 1, // Raw      = 0, // 原始输出 Card     = 1, // 渲染成卡片 Template = 2, // 包含变量的模板内容，用jinja2渲染 TODO
+//               Mode: 1,//Raw = 0,//Raw Output Card = 1,//Render as Card Template = 2,//Template content containing variables, render TODO with jinja2
 //             },
 //           },
 //           dataset_fc_setting: {
-//             top_k: 5, // 召回数量
-//             min_score: 0.46, // 召回的最小相似度阈值
-//             auto: true, // 是否自动召回
-//             search_mode: 1, // 搜索策略
-//             no_recall_reply_mode: 1, // 无召回回复mode，默认0
+//             top_k: 5,//Recall Quantity
+//             min_score: 0.46,//minimum similarity threshold for recall
+//             Auto: true,//whether to recall automatically
+//             search_mode: 1,//search strategy
+//             no_recall_reply_mode: 1,//no recall reply mode, default 0
 //             no_recall_reply_customize_prompt:
-//               '抱歉，您的问题超出了我的知识范围，并且无法在当前阶段回答', // 无召回回复时自定义prompt，当NoRecallReplyMode=1时生效
-//             show_source: true, // 是否展示来源
-//             show_source_mode: 1, // 来源展示方式 默认值0 卡片列表方式
+//               'Sorry, your question is beyond my knowledge and cannot be answered at this stage ',//Custom prompt when no recall reply, takes effect when NoRecallReplyMode = 1
+//             show_source: true,//whether to show the source
+//             show_source_mode: 1,//source display method, default value 0 card list method
 //           },
 //         }
 

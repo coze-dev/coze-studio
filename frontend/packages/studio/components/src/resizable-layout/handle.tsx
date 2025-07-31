@@ -26,7 +26,7 @@ import classnames from 'classnames';
 
 import s from './handle.module.less';
 
-// 目前只支持水平方向，按需扩展吧
+// Currently only supports horizontal direction, expand it on demand.
 export interface ResizableLayoutHandleProps {
   className?: string;
   hotZoneClassName?: string;
@@ -94,7 +94,7 @@ export const ResizableLayoutHandle: FC<ResizableLayoutHandleProps> = ({
 
   const offEvents = () => {
     window.removeEventListener('pointermove', move, false);
-    // 适配移动端出现多点触控的情况
+    // Adapt to the situation of multi-touch on the mobile end
     window.removeEventListener('pointerdown', moveEnd, false);
     window.removeEventListener('pointerup', moveEnd, false);
     window.removeEventListener('pointercancel', moveEnd, false);
@@ -108,12 +108,12 @@ export const ResizableLayoutHandle: FC<ResizableLayoutHandleProps> = ({
     setMoving(true);
     callbackRef.current.onMoveStart();
     window.addEventListener('pointermove', move, false);
-    // 适配移动端出现多点触控的情况
+    // Adapt to the situation of multi-touch on the mobile end
     window.addEventListener('pointerdown', moveEnd, false);
     window.addEventListener('pointerup', moveEnd, false);
     window.addEventListener('pointercancel', moveEnd, false);
   };
-  //  TODO hover 样式 & 热区宽度需要和 UI 对齐
+  //  TODO hover style & hotzone width needs to be aligned with UI
   return (
     <div
       className={classnames(hotZoneStyle, hotZoneClassName)}

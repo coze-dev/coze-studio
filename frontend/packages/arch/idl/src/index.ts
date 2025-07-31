@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 临时文件，后续删除
+// Temporary files, later deleted
 
 export { SuggestReplyMode } from './auto-generated/developer_api/namespaces/developer_api';
 export { TaskType as CopyTaskType } from './auto-generated/intelligence_api/namespaces/method_struct';

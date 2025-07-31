@@ -90,8 +90,8 @@ export function WebSdkBind({ checked, record, onClick }: WebSdkBindProps) {
         renderOptionItem={(option: optionRenderProps) => (
           <OptionWithTooltip option={option} tooltip={option.tooltip} />
         )}
-        // onChange 负责处理数据清空的逻辑
-        // onSelect 处理数据选择的逻辑
+        // onChange is responsible for handling the logic of data emptying
+        // onSelect handles data selection logic
         onChange={values => {
           if (typeof values !== 'undefined') {
             return;
@@ -106,7 +106,7 @@ export function WebSdkBind({ checked, record, onClick }: WebSdkBindProps) {
             required: checked,
             message: I18n.t('project_release_Please_select'),
           },
-          // 校验已选择的 chatflow 是否存在 && 未被禁用
+          // Verify that the selected chatflow exists & & is not disabled
           {
             validator: (_rule: unknown, value: unknown) => {
               if (!checked) {

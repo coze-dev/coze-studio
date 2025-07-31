@@ -224,7 +224,7 @@ export class TabBarRenderer extends TabBar.Renderer {
         data.title.label,
       );
     } else {
-      // 业务侧自己的 react 组件
+      // The business side's own react component
       const virtualIconDOM = {
         render: (host: HTMLElement) => {
           const currentRoot = this.labelNodeRoot.get(host);
@@ -264,10 +264,10 @@ export class TabBarRenderer extends TabBar.Renderer {
     const baseClassName = this.createIconClass(data);
 
     if (typeof data.title.iconLabel === 'string') {
-      // 使用 vscode iconClass
+      // Using vscode iconClass
       return h.i({ className: codicon(data.title.iconLabel) });
     } else {
-      // 业务侧自己的 react 组件
+      // The business side's own react component
       const virtualIconDOM = {
         render: (host: HTMLElement) => {
           const currentRoot = this.iconNodeRoot.get(host);
@@ -303,7 +303,7 @@ export class TabBarRenderer extends TabBar.Renderer {
       if (title) {
         const label = title.label || title.caption;
         if (this.tabBar.orientation === 'horizontal') {
-          // 老的 preview
+          // Old preview
           // this.hoverService.requestHover({
           //   content: this.renderEnhancedPreview(title),
           //   target: event.currentTarget,
@@ -311,7 +311,7 @@ export class TabBarRenderer extends TabBar.Renderer {
           //   cssClasses: ['extended-tab-preview'],
           //   visualPreview: width => this.renderVisualPreview(width, title),
           // });
-          // 使用外部的 tooltip 组件
+          // Using an external tooltip component
           label &&
             this.hoverService.requestHover({
               content: label,
@@ -342,7 +342,7 @@ export class TabBarRenderer extends TabBar.Renderer {
           Command.Default.VIEW_SAVING_WIDGET_CLOSE_CONFIRM,
           [title],
         );
-        // 保存关闭提示
+        // Save close prompt
       } else {
         title?.owner.close();
       }
@@ -353,12 +353,12 @@ export class TabBarRenderer extends TabBar.Renderer {
     event: MouseEvent,
     title?: CustomTitleType,
   ) => {
-    // 禁用全屏时禁止 tab 双击触发全屏
+    // Disable full screen when disabling tab double-clicking to trigger full screen
     if (this.shell.disableFullScreen) {
       return;
     }
     const isMainPanel = title?.owner?.parent?.id === MAIN_PANEL_ID;
-    // 主编辑区才会触发全屏
+    // The main editing area will only trigger full screen.
     if (
       this.tabBar &&
       event.currentTarget instanceof HTMLElement &&

@@ -44,7 +44,7 @@ const useTestRunStatus = (nodeId: string) => {
     [loading, frozen, saving],
   );
 
-  /** 是否是本节点触发的锁 */
+  /** Is it a lock triggered by this node? */
   const isMineRunning = useMemo(
     () => frozen && frozen === nodeId,
     [frozen, nodeId],

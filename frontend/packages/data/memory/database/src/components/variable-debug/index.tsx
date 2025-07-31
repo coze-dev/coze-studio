@@ -252,7 +252,7 @@ export const VariableDebug = () => {
                   {i.keyword}
                 </Paragraph>
               </div>
-              {/* 是否为系统字段 */}
+              {/* Is it a system field? */}
               {i.is_system ? (
                 <Paragraph
                   data-dtestid={`${BotE2e.BotVariableDebugModalValueInput}.${i.keyword}`}

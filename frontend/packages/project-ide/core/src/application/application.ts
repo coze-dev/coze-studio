@@ -50,7 +50,7 @@ export class Application {
   }
 
   /**
-   * 开始应用
+   * Start application
    */
   async start(): Promise<void> {
     const contribs = this.contributionProvider.getContributions();
@@ -69,7 +69,7 @@ export class Application {
   }
 
   /**
-   * 结束应用
+   * end application
    */
 
   async dispose(): Promise<void> {

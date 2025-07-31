@@ -20,7 +20,7 @@ import { type IRegisteredToolKeyConfig } from '../../store/tool-area';
 import { useAbilityAreaContext } from '../../context/ability-area-context';
 
 /**
- * 用于内部注册Tool使用
+ * For Internal Registration Tool Use
  */
 export const useRegisterToolKey = () => {
   const {

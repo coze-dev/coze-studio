@@ -26,7 +26,7 @@ interface PropertyWithKey {
 }
 
 export class FormSchema implements IFormSchema {
-  /** IFormSchema 透传属性 */
+  /** IFormSchema pass-through properties */
   type?: string | undefined;
   title?: ReactNode;
   description?: ReactNode;
@@ -34,7 +34,7 @@ export class FormSchema implements IFormSchema {
   properties?: Record<string, IFormSchema>;
   defaultValue?: any;
 
-  /** 模型属性 */
+  /** Model Properties */
   uiState = new ReactiveState<FormSchemaUIState>({ disabled: false });
   path: string[] = [];
 
@@ -64,7 +64,7 @@ export class FormSchema implements IFormSchema {
   }
 
   /**
-   * 获得有序的 properties
+   * Obtain ordered properties
    */
   static getProperties(schema: FormSchema | IFormSchema) {
     const orderProperties: PropertyWithKey[] = [];

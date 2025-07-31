@@ -26,7 +26,7 @@ const useEditConfirm = () => {
   const { savingInfo } = usePageRuntimeStore.getState();
   const leaveWarningInfo = I18n.t('pop_edit_save_confirm');
 
-  // 保存navigate和location.pathname的引用
+  // Save navigate and location.pathname references
   const navigateRef = useRef(navigate);
   const locationRef = useRef(location.pathname);
   const debouncingRef = useRef(savingInfo.debouncing);
@@ -45,7 +45,7 @@ const useEditConfirm = () => {
   }
 
   useEffect(() => {
-    // popstate 执行回调的时候，由于产生了闭包，会保存支持的值，所以需要在这里处理一下
+    // When popstate executes the callback, it will save the supported values due to the closure generated, so it needs to be dealt with here.
     navigateRef.current = navigate;
     locationRef.current = location.pathname;
 
@@ -62,7 +62,7 @@ const useEditConfirm = () => {
   }, [navigate, location]);
 
   useEffect(() => {
-    // 刷新页面 & 关闭页面情况，用 beforeunload
+    // Refresh page & close page condition, use beforeunload
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {

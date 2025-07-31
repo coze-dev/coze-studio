@@ -45,7 +45,7 @@ export interface ConnectorFormProps {
 
 const DEFAULT_FORM_STEP = 2;
 
-// 多选 Select 在 Form 中的 value 是 string[]，但提交到后端需要转换成 JSON string
+// Multiple Select The value in the Form is string [], but it needs to be converted to a JSON string when submitted to the backend.
 type FormValues = Record<string, string | string[]>;
 
 export const ConnectorForm = forwardRef(
@@ -75,7 +75,7 @@ export const ConnectorForm = forwardRef(
     }));
 
     useEffect(() => {
-      // 解决formApiRef.current取值不实时问题
+      // Solve the problem that the value of formApiRef.current is not real-time
       update();
       // eslint-disable-next-line react-hooks/exhaustive-deps -- ignore
     }, [schemaAreaInfo]);

@@ -43,7 +43,7 @@ import {
 import { NullableChatAreaContext } from './context';
 
 /**
- * requestToInit 变化可能导致重新初始化(extendDataLifecycle会影响)
+ * requestToInit changes may cause reinitialization (extendDataLifecycle affects)
  */
 export const ChatAreaProviderNew = forwardRef<
   ChatAreaProviderMethod,
@@ -120,7 +120,7 @@ export const ChatAreaProviderNew = forwardRef<
     [],
   );
 
-  /* TODO: 拆分一下 context */
+  /* TODO: Split the context */
   return (
     <NullableChatAreaContext.Provider
       value={{

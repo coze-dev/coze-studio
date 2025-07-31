@@ -15,6 +15,6 @@
  */
  
 /**
- * 解析运行结果的组件
+ * Components that parse run results
  */
 export { LogDetail } from './log-detail';

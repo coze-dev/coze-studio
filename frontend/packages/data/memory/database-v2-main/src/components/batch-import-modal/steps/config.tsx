@@ -65,7 +65,7 @@ export function StepConfig({
   onTableSheetChange,
 }: StepConfigProps) {
   const [tableData, setTableData] = useState<TableSettingsData>();
-  // 默认值：使用第1个数据表，第1行是表头，第2行开始是数据
+  // Default: Use the first data table, the first row is the header, and the second row starts with data
   const [tableSettings, setTableSettings] = useState<TableSettings>({
     sheet_id: 0,
     header_line_idx: 0,
@@ -86,12 +86,12 @@ export function StepConfig({
       onSuccess: res => {
         setTableData({
           sheet_list: res.sheet_list,
-          preview_data: {}, // TableSettingBar 并没有读取 preview_data，但是在判断它非空
+          preview_data: {}, // TableSettingBar does not read preview_data, but it is not empty
         });
         if (res.table_meta) {
           setTableStructure(
             res.table_meta.map(column => {
-              // 表结构中有同名字段时，使用原本的类型及描述
+              // When there are fields with the same name in the table structure, use the original type and description
               const matchedField = tableFields.find(
                 field => field.fieldName === column.column_name,
               );

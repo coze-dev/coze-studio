@@ -77,7 +77,7 @@ export function PublishTitleBar() {
   );
   const [publishing, setPublishing] = useState(false);
   const { publishHeaderHeight, setPublishHeaderHeight } = usePublishContainer();
-  // 发布结果轮询
+  // publish results poll
   const { run: getPublishRecordDetail, cancel } = useRequest(
     async (params: GetPublishRecordDetailRequest) =>
       await intelligenceApi.GetPublishRecordDetail(params),
@@ -123,7 +123,7 @@ export function PublishTitleBar() {
         selectedConnectorIds.forEach(id => {
           const connectorId = unions[id] ?? id;
           publishConnectors[connectorId] = connectors[connectorId] ?? {};
-          // 社交平台的 chatflow 选项统一
+          // Unified chatflow options for social platforms
           if (
             connectorList.find(c => c.id === connectorId)
               ?.connector_classification ===
@@ -154,7 +154,7 @@ export function PublishTitleBar() {
           });
         }
       } catch (error) {
-        // 校验的错误还需要Toast提示出来
+        // Verification errors also need to be Toast Notification
         if (typeof Object.values(error as Error)[0] === 'string') {
           Toast.error(Object.values(error as Error)[0]);
         }

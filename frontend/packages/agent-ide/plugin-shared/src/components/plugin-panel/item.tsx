@@ -109,7 +109,7 @@ export const PluginItem: React.FC<PluginItemProps> = ({
     </UITag>
   );
   const isDisabled = marketStatus === ProductStatus?.Unlisted;
-  // 端插件且未添加过 提示适用渠道
+  // The end plug-in has not been added, and the applicable channel is prompted.
   const showAddConfirm =
     isLocalPlugin &&
     ((!isFromWorkflow && !isAdded) || (isFromWorkflow && count === 0));
@@ -131,7 +131,7 @@ export const PluginItem: React.FC<PluginItemProps> = ({
             >
               {name}
             </Typography.Text>
-            {/* 预览预置卡片 */}
+            {/* Preview preview card */}
             {pluginApi?.card_binding_info?.thumbnail ? (
               <CardThumbnailPopover
                 url={pluginApi?.card_binding_info?.thumbnail}

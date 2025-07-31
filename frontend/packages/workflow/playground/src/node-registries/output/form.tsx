@@ -47,7 +47,7 @@ export const FormRender = withNodeConfigForm(() => {
         enableStreamingOutput
         switchLabel={I18n.t('workflow_message_streaming_name')}
         switchTooltip={I18n.t('workflow_message_streaming_tooltips')}
-        // 适配旧的 testId 格式
+        // Adapt to the old testId format
         testId={`/${ANSWER_CONTENT_PATH.split('.').join('/')}`}
         switchTestId={STREAMING_OUTPUT_PATH.split('.')?.at(-1)}
         inputParameters={inputParameters}

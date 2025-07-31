@@ -61,7 +61,7 @@ describe('encapsulate-lines-service', () => {
     expect(outputLines).toEqual([]);
   });
 
-  // 解封节点有多个输入，且解封流程start节点有多个输出，不能创建输入连线
+  // The unblocking node has multiple inputs, and the unblocking process start node has multiple outputs, so an input connection cannot be created
   it('should not create decapsulate input lines', async () => {
     const json = {
       ...cloneDeep(complexMock),
@@ -97,7 +97,7 @@ describe('encapsulate-lines-service', () => {
     expect(inputLines).toEqual([]);
   });
 
-  // 解封节点有多个输出，且解封流程end节点有多个输入，不能创建输出连线
+  // The unblocking node has multiple outputs, and the unblocking process end node has multiple inputs, so an output connection cannot be created
   it('should not create decapsulate output lines', async () => {
     const json = {
       ...cloneDeep(complexMock),

@@ -138,9 +138,9 @@ function PackStep(props: { record: PublishRecordDetail }) {
   const stepProps = toPackStepProps(props.record, ref, maxTagCount);
 
   /**
-   * TagGroup 仅支持设置 maxTagCount 控制展示 Tag 的数量，不支持设置展示行数。
-   * 这里通过遍历所有 Tag 的 offsetTop 来判断其所在的行数，并将 maxTagCount
-   * 设置为刚好能展示两行的数量。
+   * TagGroup only supports setting maxTagCount to control the number of display tags, not the number of display rows.
+   * Here, the number of rows it is in is determined by iterating over the offsetTop of all Tags, and maxTagCount
+   * Set to just enough to display the number of two rows.
    */
   useLayoutEffect(() => {
     if (!ref.current) {
@@ -159,7 +159,7 @@ function PackStep(props: { record: PublishRecordDetail }) {
       if (top !== tagTop) {
         top = tagTop;
         rowCount++;
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- offsetTop 第三次变化，当前 Tag 处于第三行
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- offsetTop The third change, the current Tag is in the third line
         if (rowCount >= 3) {
           setMaxTagCount(i);
           break;
@@ -234,7 +234,7 @@ function getConnectorsPublishStatus(
     item => item.connector_publish_status === ConnectorPublishStatus.Failed,
   ).length;
   if (failedCount > 0) {
-    // 所有渠道均失败，显示红色叉号；部分渠道失败，显示黄色感叹号
+    // All channels failed with a red cross; some channels failed with a yellow exclamation mark
     return failedCount === connectorResults.length ? 'error' : 'warn';
   }
   const publishingCount = connectorResults.filter(
@@ -243,7 +243,7 @@ function getConnectorsPublishStatus(
       item.connector_publish_status === ConnectorPublishStatus.Auditing,
   ).length;
   if (publishingCount > 0) {
-    // 部分渠道在发布中，显示时钟图标
+    // Some channels are in the release, showing the clock icon.
     return 'process';
   }
   return 'finish';
@@ -257,7 +257,7 @@ function toPublishStepProps(
   if (typeof record.publish_status !== 'number') {
     return getDefaultStepProps(title);
   }
-  // 未到达“渠道审核与发布”步骤，显示默认的灰色时钟图标
+  // The "Channel Review and Publish" step has not been reached, the default gray clock icon is displayed
   if (record.publish_status < PublishRecordStatus.ConnectorPublishing) {
     return {
       ...getDefaultStepProps(title),
@@ -272,7 +272,7 @@ function toPublishStepProps(
       <PublishStepTitle
         title={title}
         {...(IS_OVERSEA &&
-          // publish_monetization_result 为 nil 表示可能是接口失败，也不展示
+          // publish_monetization_result nil indicates that the interface may fail and does not show
           record.publish_monetization_result === false && {
             tag: I18n.t('monetization_publish_fail'),
             color: 'red',

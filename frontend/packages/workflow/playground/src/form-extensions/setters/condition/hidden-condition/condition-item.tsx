@@ -30,17 +30,17 @@ export const HiddenConditionItem: FC<HiddenConditionItemProps> = props => {
   const { data, onDataChange } = props;
   const doc = useService<WorkflowDocument>(WorkflowDocument);
 
-  // 监听联动变量变化，从而重新触发 effect
+  // Monitor changes in linkage variables to re-trigger the effect
   useVariableTypeChange({
     keyPath: data.left?.content?.keyPath,
     onTypeChange: ({ variableMeta }) => {
-      // HACK 历史版本加载到草稿时（加载到草稿操作，调了画布reload方法，导致触发了一次副作用），不触发UI联动
+      // When the HACK historical version is loaded into the draft (loading into the draft operation, the canvas reload method is adjusted, resulting in a side effect being triggered), the UI linkage is not triggered
       if (doc.loading) {
         return;
       }
 
       if (!variableMeta) {
-        // 变量被删除了
+        // Variables have been deleted
         onDataChange?.({});
         return;
       }

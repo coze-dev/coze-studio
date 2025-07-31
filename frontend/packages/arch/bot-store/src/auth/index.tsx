@@ -36,10 +36,10 @@ import {
 } from '@coze-arch/bot-api';
 
 interface AuthStoreState {
-  /* 两层map
+  /* Two layer map
     {
-      资源类型: {
-        资源ID: 协作者
+      Resource Type: {
+        Resource ID: Collaborator
       }
     }
   */
@@ -78,15 +78,15 @@ interface AuthStoreAction {
     resource: ResourceIdentifier;
     users: Creator[];
     options?: BotAPIRequestConfig;
-    // 第三个参数是error code
+    // The third argument is the error code
     roles?: Array<CollaboratorType>;
   }) => Promise<[Creator[], Creator[], number]>;
-  // permission 服务新增的批量添加接口
+  // New batch addition interface for permission service
   batchAddCollaboratorsServer: (params: {
     resource: ResourceIdentifier;
     users: Creator[];
     options?: BotAPIRequestConfig;
-    // 第三个参数是error code
+    // The third argument is the error code
     roles?: Array<CollaboratorType>;
   }) => Promise<boolean>;
 }
@@ -224,7 +224,7 @@ export const useAuthStore = create<AuthStoreState & AuthStoreAction>()(
         },
       }));
     },
-    // 暂时由前端批量处理
+    // Temporarily batch processed by the front end
     batchRemoveCollaborators: async (resource, userIds, options) => {
       const resultArr = await Promise.all(
         userIds.map(
@@ -343,14 +343,14 @@ export const useAuthStore = create<AuthStoreState & AuthStoreAction>()(
             ),
         ),
       );
-      // 目前的批量实现需要对单个添加的接口的code进行排序，拿到最高优先级的message来透出
+      // Current batch implementations need to sort the code of individual added interfaces to get the highest priority message to reveal
       let errorCode = 0;
       const [addedUsers, failedUsers] = resultArr.reduce<
         [Creator[], Creator[]]
       >(
         ([r, f], finish, index) => {
           const user = users[index];
-          // 这么写是为了ts能正确类型推导。ts@5.0.4
+          // This is written so that ts can derive the correct type. ts@5.0.4
           if (finish.result === true) {
             return [[...r, user], f];
           }
@@ -360,12 +360,12 @@ export const useAuthStore = create<AuthStoreState & AuthStoreAction>()(
               message?: string;
               msg?: string;
             };
-            // 比较code
+            // Comparison code
             if (Number(error.code) > errorCode) {
               errorCode = Number(error.code);
             }
           }
-          // 错误时，需要比较code然后复制message
+          // Error, you need to compare the code and then copy the message
           return [r, [...f, user]];
         },
         [[], []],

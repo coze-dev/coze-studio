@@ -170,11 +170,11 @@ export { ChatInput, type ChatInputProps } from './components/chat-input';
 export { useGetRegisteredPlugin } from './hooks/plugins/use-get-chatcore-plugin';
 export { FileStatus } from './store/types';
 /**
- * @deprecated 废弃，后续会移除对外导出
+ * @Deprecated, the export will be removed later
  */
 export { useChatAreaContext } from './hooks/context/use-chat-area-context';
 /**
- * @deprecated 废弃，后续会移除对外导出
+ * @Deprecated, the export will be removed later
  */
 export { useChatAreaStoreSet } from './hooks/context/use-chat-area-context';
 
@@ -187,7 +187,7 @@ export { getContentConfigs } from './constants/content';
 
 export { useFile } from './hooks/public/use-file';
 /**
- * 插件化系统导出 Start
+ * Plug-in System Export Start
  */
 export { usePluginPublicMethods } from './plugin/hooks/use-plugin-public-methods';
 
@@ -280,7 +280,7 @@ export {
   ReadonlyRenderLifeCycleServiceGenerator,
 } from './plugin/types/utils/create-life-cycle-service';
 /**
- * 插件化系统导出 End
+ * Plug-in System Export End
  */
 export { useLatestSectionId } from './hooks/public/use-latest-section-id';
 export { PluginAsyncQuote } from './components/plugin-async-quote';

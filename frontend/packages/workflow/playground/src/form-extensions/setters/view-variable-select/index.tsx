@@ -86,7 +86,7 @@ function ViewVariableSelectSetter(
         return;
       }
 
-      // 禁用类型，清空
+      // Disable type, clear
       if (disabledTypes.includes(variableMeta.type)) {
         setValidation({ status: 'error' });
         onChange({ type: ValueExpressionType.REF });

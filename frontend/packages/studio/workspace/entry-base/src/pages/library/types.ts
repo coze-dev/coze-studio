@@ -25,61 +25,61 @@ import {
 
 export interface LibraryEntityConfig {
   /**
-   * 资源类型筛选器配置，传入级联选择器的数据类型
+   * Resource type filter configuration, passing in the data type of the cascading selector
    **/
   typeFilter?: CascaderData & ({ filterName: string } | { label: string });
 
   /**
-   * 允许各个业务定制请求参数的格式化逻辑，避免特化逻辑侵入到底层组件中
-   * @param params 原始的 query 参数
-   * @returns 格式化后的 query 参数
+   * Allows each business to customize the formatting logic of request parameters to avoid intrusion of specialized logic into the underlying components
+   * @Param params original query parameters
+   * @Returns formatted query parameters
    */
   parseParams?: (
     params: LibraryResourceListRequest,
   ) => LibraryResourceListRequest;
 
   /**
-   * 渲染创建菜单
-   * @param params 相关参数
-   * @params params.spaceId 空间 ID
-   * @params params.isPersonalSpace 是否是个人空间
-   * @params params.reloadList 刷新列表 API
-   * @returns 渲染结果
+   * Render Create Menu
+   * @param params related parameters
+   * @Params params.spaceId Space ID
+   * @Params params.isPersonalSpace is a personal space
+   * @Params params.reloadList Refresh List API
+   * @Returns render result
    */
   renderCreateMenu?: () => ReactNode;
 
-  // #region 表格配置
+  // #region table configuration
   /**
-   * 匹配数据项是否由当前配置控制渲染
+   * Whether matching data items are rendered by the current configuration
    */
   target: ResType[];
   /**
-   * 表格行点击事件回调，一般用于打开详情弹窗或者跳转详情页
-   * @param item 点击行数据;
+   * Table row click event callback, usually used to open the details pop-up window or jump to the details page
+   * @param item click row data;
    * @returns void;
    */
   onItemClick: (item: ResourceInfo) => void;
   /**
-   * 渲染表格资源信息列内容,不传则默认使用通用组件进行渲染
-   * @param item 行数据
-   * @returns 渲染结果
+   * Render the content of the table resource information column. If it is not passed, it will be rendered using general components by default.
+   * @param item row data
+   * @Returns render result
    */
   renderItem?: (item: ResourceInfo) => ReactNode;
   /**
-   * 渲染资源类型文案，缺省会使用 typeFilter 中的 label
+   * Render the resource type copy, using the label in the typeFilter by default
    * @param resType
    * @returns
    */
   renderResType?: (item: ResourceInfo) => string | undefined;
   /**
-   * 渲染表格操作列内容
-   * @param item 行数据
-   * @param reloadList 刷新列表 API
-   * @returns 渲染结果
+   * Render table operation column content
+   * @param item row data
+   * @param reloadList API
+   * @Returns render result
    */
   renderActions: (item: ResourceInfo, reloadList: () => void) => ReactNode;
 
-  // #endregion 表格配置
+  // #endregion table configuration
 }
 
 export interface ListData {

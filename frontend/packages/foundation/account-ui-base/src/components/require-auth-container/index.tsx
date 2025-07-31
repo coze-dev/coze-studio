@@ -43,7 +43,7 @@ const Mask: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-// 在需要时渲染错误状态 & loading
+// Rendering error states when needed & loading
 const LoginCheckMask: FC<{ needLogin: boolean; loginOptional: boolean }> = ({
   needLogin,
   loginOptional,

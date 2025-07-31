@@ -49,9 +49,9 @@ import {
 
 import s from './index.module.less';
 /**
- * 当有无开场白的状态变化时, 会依次一次 reflow 同时高度发生变化, useSize 监听变化后, marginTop 改变触发一次 repaint, 导致会有两次渲染, 产生抖动
- * 现在需要调和这两次渲染
- * 需要优化 onboarding dom 结构, 使得 onboarding 的居中能力是 css 实现的, 解决这个问题
+ * When there is a state change with or without the opening line, it will reflow and change the height in sequence. After the useSize listens to the change, the marginTop change triggers a repaint, resulting in two renders, resulting in jitter.
+ * Now we need to reconcile these two renders
+ * It is necessary to optimize the onboarding dom structure so that the centering ability of onboarding is implemented by css to solve this problem
  *                       not-needed
  *                           |
  *                           |

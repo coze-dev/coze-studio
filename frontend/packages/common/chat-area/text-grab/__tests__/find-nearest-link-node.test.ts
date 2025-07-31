@@ -17,7 +17,7 @@
 import { findNearestAnchor } from '../src/utils/helper/find-nearest-link-node';
 
 describe('findNearestAnchor', () => {
-  // 设置 DOM 环境
+  // Setting up the DOM environment
   document.body.innerHTML = `
     <div>
       <a id="anchor1" href="#">

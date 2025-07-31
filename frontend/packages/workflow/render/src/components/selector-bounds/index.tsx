@@ -25,7 +25,7 @@ import { getSelectionBounds } from '../../utils/selection-utils';
 import styles from './index.module.less';
 
 /**
- * 选择框
+ * select box
  * @param props
  * @constructor
  */

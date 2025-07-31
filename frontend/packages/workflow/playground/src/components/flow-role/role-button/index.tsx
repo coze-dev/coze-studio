@@ -49,7 +49,7 @@ export const RoleButton = () => {
 
   const ref = useRef(null);
   /**
-   * 是否是初次打开角色配置面板
+   * Is this the first time to open the role configuration panel?
    */
   const isInitRef = useRef(false);
 
@@ -68,18 +68,18 @@ export const RoleButton = () => {
   });
 
   /**
-   * 初始化请求角色数据
+   * Initialize request role data
    */
   useEffect(() => {
     roleService.load();
   }, [roleService]);
 
   /**
-   * 是否自动打开配置面板
+   * Whether to automatically open the configuration panel
    */
   useEffect(() => {
     /**
-     * 未经修改的流程 & 未配置过角色配置 => 自动展开角色面板
+     * Unmodified Process & Unconfigured Role Configuration = > Automatically Expand Role Panel
      */
     if (isInitWorkflow && isReady && data === null) {
       floatLayoutService.open(LayoutPanelKey.RoleConfig);
@@ -88,7 +88,7 @@ export const RoleButton = () => {
   }, [isReady, isInitWorkflow, data, floatLayoutService]);
 
   /**
-   * 关闭面板时是否打开 onboarding
+   * Whether onboarding is turned on when closing the panel
    */
   useEffect(() => {
     const disposable = floatLayoutService.onUnmount(handlePanelClose);

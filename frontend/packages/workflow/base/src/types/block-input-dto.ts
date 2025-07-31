@@ -18,12 +18,12 @@ import { ViewVariableType } from './view-variable-type';
 import { type DTODefine, type InputValueDTO } from './dto';
 
 /**
- * BlockInput是后端定义的类型，对应的就是 InputValueDTO
+ * BlockInput is a type defined by the backend, which corresponds to InputValueDTO.
  */
 export type BlockInput = InputValueDTO;
 
 /**
- * BlockInput 转换方法
+ * BlockInput conversion method
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BlockInput {

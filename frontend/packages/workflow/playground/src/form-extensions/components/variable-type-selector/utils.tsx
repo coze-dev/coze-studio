@@ -55,15 +55,15 @@ export const VARIABLE_TYPE_DIVIDER = 'divider';
 
 export type VariableTypeOption =
   | {
-      // 类型的值， 非叶子节点时可能为空
+      // Value of type, possibly empty when not a leaf node
       value: number | string;
-      // 选项的展示名称
+      // The display name of the option
       label: ReactNode;
-      // 回显的展示名称
+      // Echoed display name
       display?: string;
-      // 类型是否禁用
+      // Is the type disabled?
       disabled?: boolean;
-      // 子类型
+      // subtype
       children?: VariableTypeOption[];
       path?: Array<number | string>;
     }
@@ -87,8 +87,8 @@ const getFileChildren = (
     VARIABLE_TYPE_DIVIDER,
     generateVariableOption({ type: ViewVariableType.Audio, parentPath }),
     generateVariableOption({ type: ViewVariableType.Video, parentPath }),
-    // 1. 是否开启了auto start节点支持音色字段能力
-    // 2. 是否开启了语音资源功能
+    // 1. Whether the auto start node is enabled to support the timbre field ability
+    // 2. Whether the voice resource function is turned on
     FLAGS['bot.automation.start_support_voice'] &&
     FLAGS['bot.studio.library_voice_resource']
       ? generateVariableOption({ type: ViewVariableType.Voice })
@@ -213,9 +213,9 @@ const filterTypes = (
     }
 
     /**
-     * 1. 命中 hideType 时隐藏
-     * 2. 有 children，但 children 全隐藏时，父级也隐藏
-     * 3. File类型不允许嵌套
+     * 1. Hide when hitting hideType
+     * 2. There are children, but when the children are all hidden, the parent is also hidden
+     * 3. File types do not allow nesting
      */
     const hidden =
       hiddenTypes.some(type => type === newOption.value) ||
@@ -225,8 +225,8 @@ const filterTypes = (
         ViewVariableType.isFileType(newOption.value as ViewVariableType));
 
     /**
-     * 1. 命中 disabledTypes 时禁用
-     * 2. 到达层级限制时禁用 ObjectLike 类型，避免嵌套过深
+     * 1. Disable when hitting disabledTypes
+     * 2. Disable the ObjectLike type when the level limit is reached to avoid too deep nesting
      */
     const disabled = Boolean(
       disabledTypes?.includes(Number(newOption.value)) ||
@@ -247,7 +247,7 @@ const filterTypes = (
       },
     ];
   }, [] as Array<VariableTypeOption>);
-  // 如果分隔符在开始和末尾，则去掉
+  // If the separator is at the beginning and end, remove it
   while (result[0] === VARIABLE_TYPE_DIVIDER) {
     result.shift();
   }
@@ -267,7 +267,7 @@ export const getVariableTypeList = options =>
   filterTypes(allVariableTypeList, options);
 
 /**
- * 获取类型在选项列表中的路径
+ * Get the path of the type in the options list
  */
 export const getSelectedValuePath = (
   originalVal: ViewVariableType,

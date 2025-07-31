@@ -76,12 +76,12 @@ function Index<T extends object>(props: InfiniteListProps<T>, ref) {
     onChangeState?.(isLoading, dataList);
   }, [dataList, isLoading]);
 
-  // 根据白名单对列表移动端进行移动端适配
+  // Adapt the mobile end of the list according to the whitelist
 
   return (
     <div className={cls(s['height-whole-100'], containerClassName)}>
       {!dataList?.length || !canShowData ? (
-        /** 数据为空的时候，操作如何显示空页面 */
+        /** How to display an empty page when the data is empty */
         <Empty
           isError={canShowData ? isLoadingError : false}
           isSearching={isSearching}
@@ -123,7 +123,7 @@ function Index<T extends object>(props: InfiniteListProps<T>, ref) {
               className={
                 typeof itemClassName === 'string'
                   ? itemClassName
-                  : itemClassName?.(item) // 支持动态行className
+                  : itemClassName?.(item) // Support dynamic row className
               }
             >
               {renderItem?.(item, number)}

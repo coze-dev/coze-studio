@@ -19,7 +19,7 @@ import { isNil, set } from 'lodash-es';
 import { BlockInput, ViewVariableType } from '@coze-workflow/base';
 
 export function transformOnInit(value) {
-  // 新拖入节点初始化
+  // New drag-in node initialization
   if (!value) {
     return {
       nodeMeta: undefined,
@@ -66,7 +66,7 @@ export function transformOnInit(value) {
   );
   formData.inputs.datasetParameters.datasetParam = datasetParam[0]?.input.value
     .content as string[];
-  // 初始创建 / 存量数据的场景下，top_k 和 min_score 为空，在 dataset-setting 组件内处理初始默认值
+  // In the case of initial creation/stock data, the top_k and min_score are empty, and the initial default value is processed in the dataset-settings component
   formData.inputs.datasetParameters.datasetSetting = {
     top_k: datasetParam.find(item => item.name === 'topK')?.input.value
       .content as number,
@@ -144,14 +144,14 @@ export function transformOnSubmit(value) {
     ),
   ]);
 
-  // 没有表格知识库则不传 use_nl2sql 字段
+  // No fields are passed without a table knowledge base use_nl2sql
   if (!isNil(datasetSetting?.use_nl2sql)) {
     actualData.inputs.datasetParam.push(
       BlockInput.createBoolean('useNl2sql', datasetSetting?.use_nl2sql),
     );
   }
 
-  // strategy 可能为 fulltext
+  // Strategy may be fulltext
   if (datasetSetting?.min_score) {
     actualData.inputs.datasetParam.push({
       name: 'minScore',
@@ -165,8 +165,8 @@ export function transformOnSubmit(value) {
     });
   }
 
-  // 新增检索策略配置, 不在灰度中的可能没有 strategy 数据
-  // strategy 有可能会为 0
+  // Added search policy configuration, there may be no strategy data not in grey release
+  // Strategy may be 0
   if (!isNil(datasetSetting?.strategy)) {
     actualData.inputs.datasetParam.push({
       name: 'strategy',

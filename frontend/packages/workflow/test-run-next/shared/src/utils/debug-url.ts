@@ -23,7 +23,7 @@ interface DebugUrlParams {
 }
 
 /**
- * 计算 DebugUrl
+ * Calculate DebugUrl
  */
 const getDebugUrl = (params: DebugUrlParams) => {
   const { spaceId, workflowId, executeId, subExecuteId, nodeId } = params;

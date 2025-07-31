@@ -53,9 +53,9 @@ export class TreeService {
   edges: EdgeItem[] = [];
 
   treeHistory: {
-    // 唯一标识符
+    // unique device identifier
     id: string;
-    // 判断是否已经存在的两个条件
+    // To determine whether two conditions already exist
     resourceId: string;
     version?: string;
     depth: number;
@@ -73,7 +73,7 @@ export class TreeService {
   }
 
   /**
-   * 用于检查是否有重复项
+   * Used to check for duplicates
    */
   getNodeDuplicateFromTree = (id: string, version?: string) => {
     let duplicate = false;
@@ -122,7 +122,7 @@ export class TreeService {
   }
 
   /**
-   * 处理 knowledge、plugin、table 的逻辑
+   * Handling knowledge, plugins, table logic
    */
   transformDuplicateInfo = (
     id: string,
@@ -144,13 +144,13 @@ export class TreeService {
     } else {
       newSchema = transformTable(depth + 1, info);
     }
-    // 如果重复，判断添加线还是节点
+    // If repeated, determine whether to add a line or a node
     if (duplicate) {
       for (const [i, d] of dupDepth.entries()) {
-        // 只要有一个匹配，就加线。
-        // 兜底走加节点的逻辑
+        // As long as there is a match, add the line.
+        // The logic of adding nodes at the bottom
         if (depth + 1 === d) {
-          // 存到线条中
+          // Save in line
           this.edges.push({
             from: fromId,
             to: dupId[i],
@@ -160,7 +160,7 @@ export class TreeService {
       }
       return newSchema;
     }
-    // 否则，正常往 blocks 里添加数据
+    // Otherwise, add data to blocks normally
     return newSchema;
   };
 
@@ -202,7 +202,7 @@ export class TreeService {
         }
       }
       const loop = node.id && isLoop(node.id, this.globalJson);
-      // 重复节点，停止继续往下
+      // Repeat node, stop, continue down
       const endData = {
         id: nodeId,
         type: 'custom',
@@ -315,7 +315,7 @@ export class TreeService {
           undefined,
           nodeId,
         );
-        // 检测 workflow 的重复
+        // Detect duplication of workflow
         if (subWorkflowSchema) {
           this.treeHistory.push({
             id: subWorkflowSchema.id,
@@ -353,7 +353,7 @@ export class TreeService {
     };
   };
 
-  // 展开所有的子元素
+  // Expand all child elements
   dfsCloneCollapsedOpen(node: TreeNode): TreeNode {
     const children = node.children?.map(c => this.dfsCloneCollapsedOpen(c));
     return {
@@ -366,14 +366,14 @@ export class TreeService {
     };
   }
 
-  // 根据 edges，移动节点到另一个 TreeNode 的 children 下。
-  // 需要将内部的 collapsed 全部变成 open
+  // According to edges, move the node to the children of another TreeNode.
+  // It needs to be collapsed and opened
   cloneNode(node: TreeNode) {
     return this.dfsCloneCollapsedOpen(node);
   }
 
   /**
-   * 绑定父元素 parent
+   * Bind parent element parent
    */
   bindTreeParent(node: TreeNode, parent?: TreeNode) {
     if (parent) {
@@ -393,7 +393,7 @@ export class TreeService {
   }
 
   /**
-   * 初始化数据，将数据从后端数据 json 变成 tree 结构
+   * Initialize the data and turn the data from the back-end data json into a tree structure
    */
   transformSchema(json: DependencyTree) {
     this.globalJson = json;
@@ -465,7 +465,7 @@ export class TreeService {
         this.addNode(block, addItem);
       });
     }
-    // 可能因此原本设置为结束的节点现在有 child 了
+    // Perhaps because of this, the node that was originally set to end now has children
     if (json.blocks?.length) {
       if (json.type === 'custom') {
         json.type = 'split';

@@ -15,7 +15,7 @@
  */
  
 /**
- * 覆盖在整个画布上的布局浮层，承载一些有联动关系的悬浮组件
+ * Layout floating layer covering the entire canvas, carrying some linked suspension components
  */
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
@@ -47,7 +47,7 @@ export const FloatLayout: React.FC<
   const size = useSize(ref);
 
   useLayoutEffect(() => {
-    // 只触发一次
+    // Only trigger once
     floatLayoutService.register(components);
   }, []);
 
@@ -73,7 +73,7 @@ export const FloatLayout: React.FC<
       templateState.openTemplate();
     } else {
       templateState.closeTemplate();
-      // 流程模版关闭动画为 200 ms , 待动画结束后关闭 bottom 面板
+      // Process template closing animation for 200 ms, close bottom panel after animation
       setTimeout(() => {
         floatLayoutService.close('bottom');
       }, 300);
@@ -83,14 +83,14 @@ export const FloatLayout: React.FC<
   return (
     <div className={styles['float-layout']} ref={ref}>
       <div className={styles['left-panel']}>
-        {/* 主面板 */}
+        {/* main panel */}
         <div className={styles['left-main-panel']}>{children}</div>
-        {/* 底部面板，优先级比主区域高，默认高度为 0，一旦有高度会挤压主面板 */}
+        {/* Bottom panel, the priority is higher than the main area, the default height is 0, once there is a height, it will squeeze the main panel */}
         <div className={styles['left-bottom-panel']}>
           <FloatPanel panel={floatLayoutService.bottom} />
         </div>
       </div>
-      {/* 右侧区域，优先级最高，默认宽度为 0，一旦有宽度就会挤压左侧 */}
+      {/* The right area has the highest priority. The default width is 0. Once there is a width, the left side will be squeezed. */}
       <div className={styles['right-panel']}>
         <FloatPanel panel={floatLayoutService.right} />
       </div>

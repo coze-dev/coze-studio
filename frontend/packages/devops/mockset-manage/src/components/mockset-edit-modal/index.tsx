@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @coze-arch/max-line-per-function -- 迁移代码 */
+
+/* eslint-disable @coze-arch/max-line-per-function -- migrating code */
 import { useRef } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -87,10 +87,10 @@ export const MockSetEditModal = ({
 
   const [FLAGS] = useFlags();
 
-  // 根据是否传入 id 判断是否为创建场景
+  // Determine whether to create a scene based on whether to pass in the id
   const isCreate = !initialInfo.id;
 
-  // space信息
+  // Space information
   const spaceType = useSpaceStore(s => s.space.space_type);
   const isPersonal = spaceType === SpaceType.Personal;
 
@@ -216,7 +216,7 @@ export const MockSetEditModal = ({
       >
         {({ formState }) => (
           <>
-            {/* mockSet名称 */}
+            {/* mockSet name */}
             {disabled ? (
               <Form.Slot
                 label={{
@@ -244,7 +244,7 @@ export const MockSetEditModal = ({
                 rules={mockSetInfoRules.name}
               />
             )}
-            {/* mockSet描述 */}
+            {/* mockSet description */}
             {disabled ? (
               <Form.Slot
                 label={{
@@ -273,8 +273,8 @@ export const MockSetEditModal = ({
                 }}
               />
             )}
-            {/* 二期支持autoGenerate*/}
-            {/* 社区版暂不支持该功能 */}
+            {/* Phase II supports autoGenerate*/}
+            {/* The community edition does not support this function for the time being */}
             {isCreate && FLAGS['bot.devops.mockset_auto_generate'] ? (
               <>
                 <Form.Checkbox

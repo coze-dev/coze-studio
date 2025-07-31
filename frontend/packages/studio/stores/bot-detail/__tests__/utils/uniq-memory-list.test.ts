@@ -38,7 +38,7 @@ describe('uniqMemoryList', () => {
   it('应该正确标记重复的键为 KEY_NAME_USED', () => {
     const list = [
       { key: 'key1', value: 'value1' },
-      { key: 'key1', value: 'value2' }, // 重复的键
+      { key: 'key1', value: 'value2' }, // Duplicate key
       { key: 'key3', value: 'value3' },
     ];
 
@@ -52,7 +52,7 @@ describe('uniqMemoryList', () => {
 
   it('应该正确标记空键为 KEY_IS_NULL', () => {
     const list = [
-      { key: '', value: 'value1' }, // 空键
+      { key: '', value: 'value1' }, // empty key
       { key: 'key2', value: 'value2' },
       { key: 'key3', value: 'value3' },
     ];

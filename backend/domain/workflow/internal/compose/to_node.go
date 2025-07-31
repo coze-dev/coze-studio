@@ -223,9 +223,9 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		}
 
 		if fcParams.KnowledgeFCParam != nil && len(fcParams.KnowledgeFCParam.KnowledgeList) > 0 {
-			kwChatModel, err := knowledgeRecallChatModel(ctx)
-			if err != nil {
-				return nil, err
+			kwChatModel := workflow2.GetRepository().GetKnowledgeRecallChatModel()
+			if kwChatModel == nil {
+				return nil, fmt.Errorf("workflow builtin chat model for knowledge recall not configured")
 			}
 			knowledgeOperator := crossknowledge.GetKnowledgeOperator()
 			setting := fcParams.KnowledgeFCParam.GlobalSetting
@@ -649,16 +649,4 @@ func totRetrievalSearchType(s int64) (crossknowledge.SearchType, error) {
 	default:
 		return "", fmt.Errorf("invalid retrieval search type %v", s)
 	}
-}
-
-// knowledgeRecallChatModel the chat model used by the knowledge base recall in the LLM node, not the user-configured model
-func knowledgeRecallChatModel(ctx context.Context) (einomodel.BaseChatModel, error) {
-	defaultChatModelParma := &model.LLMParams{
-		ModelName:   "豆包·1.5·Pro·32k",
-		ModelType:   1,
-		Temperature: ptr.Of(0.5),
-		MaxTokens:   4096,
-	}
-	m, _, err := model.GetManager().GetModel(ctx, defaultChatModelParma)
-	return m, err
 }

@@ -15,7 +15,7 @@
  */
  
 /**
- * 监听 widget 事件而需要执行的业务逻辑
+ * Business logic that needs to be executed to listen for widget events
  */
 import { inject, injectable } from 'inversify';
 import {
@@ -58,14 +58,14 @@ export class WidgetEventService {
   }
 
   /**
-   * 1. 有 widget 打开时需要关闭默认页
-   * 2. 关闭所有 widget 时需要打开默认页
+   * 1. You need to close the default page when a widget is opened
+   * 2. When closing all widgets, you need to open the default page
    */
   toggleDefaultWidget(widget) {
     if ((widget as ReactWidget)?.uri) {
       const widgetUri = widget?.uri;
       if (widgetUri.displayName !== 'default') {
-        // 关闭默认的 widget
+        // Close the default widget
         const defaultWidget = this.widgetManager.getWidgetFromURI(
           MAIN_PANEL_DEFAULT_URI,
         );
@@ -78,12 +78,12 @@ export class WidgetEventService {
   }
 
   /**
-   * 同步切换资源 tab 时的 url 变化
+   * Synchronize url changes when switching resource tabs
    */
   syncURL(widget) {
     if (widget) {
       const widgetUri = widget?.uri;
-      // 默认页无需同步 url
+      // Default page does not need to synchronize URLs
       if (compareURI(widgetUri, MAIN_PANEL_DEFAULT_URI)) {
         return;
       }

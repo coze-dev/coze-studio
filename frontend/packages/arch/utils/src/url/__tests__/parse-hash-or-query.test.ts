@@ -24,7 +24,7 @@ const expectResult = {
   '?!a': '?!a',
 };
 
-// 老版本 parseHashOrQuery 实现，验证一下输出一致
+// The old version of parseHashOrQuery is implemented, verify that the output is consistent.
 const parseHashOrQueryOld = (hashFragmentOrQueryString: string) => {
   const targetString =
     hashFragmentOrQueryString.startsWith('#') ||

@@ -15,7 +15,7 @@
  */
  
 /**
- * types由于多个位置都会使用，避免循环依赖，故提到最上层
+ * Types Since multiple locations are used to avoid circular dependencies, the top layer is mentioned
  */
 export type {
   SemanticValidate,

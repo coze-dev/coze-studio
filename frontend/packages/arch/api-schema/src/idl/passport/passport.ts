@@ -19,7 +19,7 @@ export interface AppUserInfo {
   user_unique_name: string
 }
 export interface User {
-  /** 与原接口字段名对齐 */
+  /** Align with the original interface field name */
   user_id_str: string,
   name: string,
   user_unique_name: string,
@@ -92,7 +92,7 @@ export interface UserUpdateProfileResponse {
   code: number,
   msg: string,
 }
-/** 邮箱密码注册 */
+/** Email password registration */
 export const PassportWebEmailRegisterV2Post = /*#__PURE__*/createAPI<PassportWebEmailRegisterV2PostRequest, PassportWebEmailRegisterV2PostResponse>({
   "url": "/api/passport/web/email/register/v2/",
   "method": "POST",
@@ -105,7 +105,7 @@ export const PassportWebEmailRegisterV2Post = /*#__PURE__*/createAPI<PassportWeb
   "schemaRoot": "api://schemas/idl_passport_passport",
   "service": "passport"
 });
-/** 退出登录 */
+/** log out */
 export const PassportWebLogoutGet = /*#__PURE__*/createAPI<PassportWebLogoutGetRequest, PassportWebLogoutGetResponse>({
   "url": "/api/passport/web/logout/",
   "method": "GET",
@@ -116,7 +116,7 @@ export const PassportWebLogoutGet = /*#__PURE__*/createAPI<PassportWebLogoutGetR
   "schemaRoot": "api://schemas/idl_passport_passport",
   "service": "passport"
 });
-/** 邮箱帐密登录 */
+/** Email account password login */
 export const PassportWebEmailLoginPost = /*#__PURE__*/createAPI<PassportWebEmailLoginPostRequest, PassportWebEmailLoginPostResponse>({
   "url": "/api/passport/web/email/login/",
   "method": "POST",
@@ -129,7 +129,7 @@ export const PassportWebEmailLoginPost = /*#__PURE__*/createAPI<PassportWebEmail
   "schemaRoot": "api://schemas/idl_passport_passport",
   "service": "passport"
 });
-/** 通过邮箱重置密码 */
+/** Reset password via email */
 export const PassportWebEmailPasswordResetGet = /*#__PURE__*/createAPI<PassportWebEmailPasswordResetGetRequest, PassportWebEmailPasswordResetGetResponse>({
   "url": "/api/passport/web/email/password/reset/",
   "method": "GET",
@@ -142,7 +142,7 @@ export const PassportWebEmailPasswordResetGet = /*#__PURE__*/createAPI<PassportW
   "schemaRoot": "api://schemas/idl_passport_passport",
   "service": "passport"
 });
-/** 账号信息 */
+/** account information */
 export const PassportAccountInfoV2 = /*#__PURE__*/createAPI<PassportAccountInfoV2Request, PassportAccountInfoV2Response>({
   "url": "/api/passport/account/info/v2/",
   "method": "POST",

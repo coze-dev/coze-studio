@@ -26,42 +26,42 @@ export interface CommandItem<T> {
 }
 
 export interface ShortcutItem {
-  // 命令系统中绑定的 id
+  // ID bound in the command system
   commandId: string;
-  // 快捷键
+  // shortcut
   keybinding: string;
-  // 是否阻止浏览器原生行为
+  // Whether to block browser native behavior
   preventDefault: boolean;
 }
 
 export interface CommandService {
-  execute: (id: string, ...args: any[]) => void; // 执行命令
+  execute: (id: string, ...args: any[]) => void; // execute the command
 }
 
 export interface MenuItem {
   /**
-   * 使用已经注册的 command 的 id
+   * Use the id of a registered command
    */
   commandId: string;
   /**
-   * 元素选择器
-   * 类：.class
+   * element selector
+   * Class:. class
    * id：#id
    */
   selector: string;
   /**
-   * 子菜单
+   * submenu
    */
   submenu?: MenuItem[];
 }
 
 export interface ContextMenuService {
-  open: (e: React.MouseEvent) => boolean; // 没有任何菜单注册项，返回 false
-  registerContextMenu: (options: MenuItem[], match?: RegExp) => void; // 入参形同 widgetRegistry 里的 registerContextMenu
+  open: (e: React.MouseEvent) => boolean; // There are no menu registration items, return false
+  registerContextMenu: (options: MenuItem[], match?: RegExp) => void; // Imported parameters are like registerContextMenu in widgetRegistry
 }
 
 export interface ProjectIDEServices {
-  contextmenu: ContextMenuService; // 右键菜单服务
-  command: CommandService; // 命令服务
+  contextmenu: ContextMenuService; // Right-click menu service
+  command: CommandService; // command service
   view: ViewService;
 }

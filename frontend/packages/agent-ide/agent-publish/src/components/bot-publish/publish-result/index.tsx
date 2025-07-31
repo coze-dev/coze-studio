@@ -51,7 +51,7 @@ import { PublishResultArea } from './component/publish-result-area';
 import styles from '../index.module.less';
 
 interface PublishResultProps {
-  // 隐藏Banner
+  // Hidden Banner
   hiddenBanner?: boolean;
   publishResult?: PublishResultInfo;
 }
@@ -212,7 +212,7 @@ export const PublishResult = ({
                   ? `⚠️ ${I18n.t('publish_result_all_failed')}`
                   : `🎉  ${I18n.t('publish_success')}`}
               </div>
-              {/* 开源版暂不支持该功能 */}
+              {/* The open-source version does not currently support this function */}
               {IS_OVERSEA && !publishResult?.monetizeConfigSuccess ? (
                 <div className="mt-[12px] flex items-center gap-[8px] coz-fg-primary">
                   <IconCozInfoCircleFill className="coz-fg-hglt-yellow" />
@@ -221,7 +221,7 @@ export const PublishResult = ({
                   </span>
                 </div>
               ) : null}
-              {/* 开源版暂不支持该功能 */}
+              {/* The open-source version does not currently support this function */}
               {FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE ? (
                 <div className="coz-fg-dim text-[12px]">
                   {I18n.t('release_management_detail1', {

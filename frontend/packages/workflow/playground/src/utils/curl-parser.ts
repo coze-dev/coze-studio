@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 直接从 yargs-parser 导出会因为不支持浏览器环境而报错 */
+/** Exporting directly from yargs-parser will cause an error because the browser environment is not supported */
 import yargsParser from 'yargs-parser/browser';
 import multipart from 'parse-multipart';
 import { cloneDeep } from 'lodash-es';
@@ -42,12 +42,12 @@ class CURLParser {
     if (!cURLStr.startsWith('curl')) {
       throw new Error('curl syntax error');
     }
-    // 删除换行
+    // Delete newline
     const newLineFound = /\r|\n/.exec(cURLStr);
     if (newLineFound) {
       cURLStr = cURLStr.replace(/\\\r|\\\n/g, '');
     }
-    // 改成通用写法
+    // Change to universal spelling
     cURLStr = cURLStr.replace(/ -XPOST/, ' -X POST');
     cURLStr = cURLStr.replace(/ -XGET/, ' -X GET');
     cURLStr = cURLStr.replace(/ -XPUT/, ' -X PUT');
@@ -65,7 +65,7 @@ class CURLParser {
     cURLStr = cURLStr.replace(/^curl/, '');
     return cURLStr;
   }
-  /** 如果有误写的两个相同参数，取最后一个 */
+  /** If there are two identical arguments written by mistake, take the last one */
   getFirstItem(key: string) {
     const e = this.yargObj[key];
     if (!Array.isArray(e)) {
@@ -153,20 +153,20 @@ class CURLParser {
     }
     if (Reflect.has(yargObj, 'F')) {
       if (!yargObj.F) {
-        // 存在 -F 参数但为空，则为错误 curl
+        // If there is a -F parameter but it is empty, it is an error curl.
         throw new Error('curl -F params syntax error');
       }
       return 'POST';
     }
     if (Reflect.has(yargObj, 'f')) {
       if (!yargObj.f) {
-        // 存在 --form 参数但为空，则为错误 curl
+        // If the --form parameter exists but is empty, it is an error curl.
         throw new Error('curl --form params syntax error');
       }
       return 'POST';
     }
     if (Reflect.has(yargObj, 'd')) {
-      // 存在 --data 参数，但值为空的场景，默认是 GET 请求
+      // Scenes where the --data parameter exists, but the value is empty, the default is a GET request
       me = !yargObj?.d ? 'GET' : 'POST';
     }
     return (me ?? ('GET' as string)).toUpperCase();
@@ -229,7 +229,7 @@ class CURLParser {
           JSON.parse(paramsD);
           type = 'application/json';
         } catch (error) {
-          // data 不是 json string 时 type 取 form-urlencoded
+          // Type takes form-urlencoded when data is not a json string
           type = 'application/x-www-form-urlencoded';
         }
       }

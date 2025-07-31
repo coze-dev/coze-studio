@@ -24,7 +24,7 @@ import { INTENT_NODE_MODE, DEFAULT_OUTPUTS_PATH } from '@coze-workflow/nodes';
 import { WorkflowLinesService } from '@/services/workflow-line-service';
 import { getDefaultOutputs } from '@/node-registries/intent/constants';
 
-/** 表单创建后，重新赋值，需要等待个延时时间 */
+/** After the form is created, reassign the value and wait for a delay. */
 const DELAY_TIME = 200;
 const MAX_COUNT_IN_MINIMAL_MODE = 10;
 
@@ -39,21 +39,21 @@ export const handleIntentModeChange: Effect = props => {
     return;
   }
 
-  // formData 为格式化后的后端数据
+  // formData is the formatted backend data
   const formData = context.node.getData(FlowNodeFormData);
   const lineService =
     context.node?.getService<WorkflowLinesService>(WorkflowLinesService);
 
   const lines = lineService.getAllLines();
 
-  // 获取所有从该节点出发的连线
+  // Get all connections originating from this node
   const linesFrom = lines.filter(line => line.from.id === context.node.id);
 
   setTimeout(() => {
     const outputsFormItem =
       formData.formModel.getFormItemByPath(DEFAULT_OUTPUTS_PATH);
 
-    // 同步输出，标准模式和极简模式不一致
+    // Synchronous output, standard mode and minimalist mode are inconsistent
     if (outputsFormItem) {
       outputsFormItem.value = getDefaultOutputs(value);
     }
@@ -63,7 +63,7 @@ export const handleIntentModeChange: Effect = props => {
     const quickIntentsFormItem =
       formData.formModel.getFormItemByPath('/quickIntents');
 
-    // 从标准模式切换到极简模式，如果原来设置的意图数量大于极简模式的最大值，需要截断
+    // Switch from standard mode to minimalist mode, if the number of intents originally set is greater than the maximum value of minimalist mode, it needs to be truncated
     if (
       quickIntentsFormItem &&
       isMinimal &&
@@ -74,12 +74,12 @@ export const handleIntentModeChange: Effect = props => {
         quickIntentsLength <= 1 &&
         isEmptyIntents(quickIntentsFormItem.value)
       ) {
-        // 极速模式，如果当前极速模式没有意图，则从完整模式的意图中截取
+        // Quick Mode, if the current Quick Mode has no intent, is taken from the intent of the full mode
         quickIntentsFormItem.value = cloneDeep(
           intentsFormItem?.value.slice(0, MAX_COUNT_IN_MINIMAL_MODE),
         );
 
-        // 重新连线
+        // Reconnect
         linesFrom.forEach(line => {
           lineService.createLine({
             from: line.from.id,
@@ -94,10 +94,10 @@ export const handleIntentModeChange: Effect = props => {
     if (intentsFormItem && !isMinimal && Array.isArray(intentsFormItem.value)) {
       const intentsLength = intentsFormItem.value.length;
       if (intentsLength <= 1 && isEmptyIntents(intentsFormItem.value)) {
-        // 完整模式，如果当前完整模式没有意图，则从极简模式的意图中截取
+        // Full mode, if the current full mode has no intention, it is taken from the intent of the minimalist mode
         intentsFormItem.value = cloneDeep(quickIntentsFormItem?.value);
 
-        // 重新连线
+        // Reconnect
         linesFrom.forEach(line => {
           lineService.createLine({
             from: line.from.id,
@@ -109,7 +109,7 @@ export const handleIntentModeChange: Effect = props => {
       }
     }
 
-    // 触发一次校验
+    // Trigger a validation
     formData.formModel.validate();
   }, DELAY_TIME);
 };

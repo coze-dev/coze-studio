@@ -16,7 +16,7 @@
  
 import { I18n } from '@coze-arch/i18n';
 
-// 默认会话 unique_id
+// Default session unique_id
 export const DEFAULT_UNIQUE_ID = '0';
 
 export const DEFAULT_CONVERSATION_NAME = 'Default';
@@ -31,7 +31,7 @@ export enum ErrorCode {
 export const MAX_INPUT_LEN = 200;
 
 /**
- * 调试的渠道 id
+ * Debug channel id
  */
 export const DEBUG_CONNECTOR_ID = '_10000010';
 
@@ -45,12 +45,12 @@ export const API_CONNECTOR_ID = '1024';
 export const CHAT_SDK_CONNECTOR_ID = '999';
 export const COZE_CONNECTOR_IDS = [COZE_CONNECTOR_ID, '10000122', '10000129'];
 /**
- * 不存在的会话
+ * Conversation that does not exist
  */
 export const DISABLED_CONVERSATION = '0';
 
 /**
- * 只展示这些线上渠道，其他的后端不支持 @qiangshunliang
+ * Only show these online channels, other backends do not support @qiangshunliang.
  */
 export const ALLOW_CONNECTORS = [
   COZE_CONNECTOR_ID,

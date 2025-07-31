@@ -29,7 +29,7 @@ describe('is-general-workflow', () => {
   });
 
   it('应该在 flowMode 为其他值时返回 false', () => {
-    // 测试其他可能的 WorkflowMode 值
+    // Test other possible WorkflowMode values
     expect(isGeneralWorkflow(WorkflowMode.Imageflow)).toBe(false);
   });
 });

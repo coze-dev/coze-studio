@@ -17,10 +17,10 @@
 import { type RefObject, useEffect } from 'react';
 
 /**
- * 点击赞、踩按钮，可以关闭打开原因填写面板
- * 填写面板关闭的时候, 会造成一次 Reflow。此时赞、踩按钮的位置会发生变化， 鼠标已经不在按钮上，但是对应按钮元素不会处罚 mouseleave 事件
- * 由于不触发 mouseleave 造成按钮上的 tooltip 不消失、错位等问题
- * 所以需要在面板 visible 变化时 patch 一个 mouseleave 事件
+ * Click the like and step on the button to close the reason for opening and fill in the panel.
+ * When the fill panel is closed, a Reflow will be caused. At this time, the position of the like and step buttons will change, and the mouse is no longer on the button, but the corresponding button element will not penalize the mouseleave event.
+ * Because the mouseleave is not triggered, the tooltip on the button does not disappear, misplaced, etc.
+ * So you need to patch a mouseleave event when the panel changes visible
  */
 export const useDispatchMouseLeave = (
   ref: RefObject<HTMLDivElement>,

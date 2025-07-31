@@ -16,14 +16,14 @@
  
 import { useLocation } from 'react-router-dom';
 
-/** 清空认证数据的路由参数 */
+/** Clear the routing parameters of the authentication data */
 export const resetAuthLoginDataFromRoute = () => {
   window.history.replaceState({}, '');
 };
 export function useResetLocationState() {
   const location = useLocation();
   return () => {
-    // 清空location的state
+    // Clear the state of the location
     location.state = {};
     resetAuthLoginDataFromRoute();
   };

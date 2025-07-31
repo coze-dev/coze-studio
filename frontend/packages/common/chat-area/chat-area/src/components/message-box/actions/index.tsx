@@ -45,7 +45,7 @@ export const Actions = ({ message }: { message: Message }) => {
       },
     },
   ];
-  // TODO: 加Trigger类型适配
+  // TODO: Trigger type adaptation
   return (
     <div className={styles.actions}>
       {menuConfigs.map((prop, idx) => (

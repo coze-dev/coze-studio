@@ -15,12 +15,12 @@
  */
  
 /**
- * 这个模块是干什么的
- * 在 workflow 的 node 模型中，默认对于数据的存储只有表单，即 formMeta。这部分数据实际上代表的是提交给后端用来做 workflow 运行的数据
- * 然而实际业务场景中，我们需要的不仅是提交给后端用来做运行的数据，还有一些前端业务场景下需要消费，而后端用不到的数据。比如：
- *  1. api 节点的 spaceId、发布状态
- *  2. 子流程节点的 spaceId、发布状态
- * 所以这个模块增加一个 NodeData 实体，来管理每一个node 上的一些数据，让业务层消费使用
+ * What is this module for?
+ * In the node model of workflow, the default storage for data is only the form, that is, formMeta. This part of the data actually represents the data submitted to the backend for workflow execution
+ * However, in the actual business scenario, we need not only the data submitted to the back-end for operation, but also some data that needs to be consumed in the front-end business scenario, but not used by the back-end. For example:
+ *  1. spaceId and release status of the api node
+ *  2. SpaceId and publication status of the child process node
+ * So this module adds a NodeData entity to manage some data on each node for consumption and use by the business layer
  */
 import { EntityData } from '@flowgram-adapter/free-layout-editor';
 
@@ -43,12 +43,12 @@ export class WorkflowNodeData extends EntityData {
   /**
    *
    * @param data
-   * 设置节点上除form之外的数据
-   * 泛型必须传入节点类型 StandardNodeType
+   * Set up data other than form on the node
+   * Generics must pass in the node type StandardNodeType
    */
   setNodeData<T extends keyof NodeData = never>(data: NodeData[T]) {
     if (this.hasSetNodeData) {
-      // 撤销重做时会重复设置，没必要报错
+      // The settings will be repeated when undoing and redoing, there is no need to report an error.
       console.warn(`node ${this.entity.id} has already set WorkflowNodeData`);
       return;
     }
@@ -60,8 +60,8 @@ export class WorkflowNodeData extends EntityData {
   /**
    *
    * @param data
-   * 更新数据，只放非readonly字段的更新
-   * 泛型必须传入节点类型 StandardNodeType
+   * Update data, put only non-readonly field updates
+   * Generics must pass in the node type StandardNodeType
    */
   updateNodeData<T extends keyof NodeData = never>(
     data: Partial<EditAbleNodeData<T>>,
@@ -71,7 +71,7 @@ export class WorkflowNodeData extends EntityData {
   /**
    *
    * @returns
-   * 获取节点上除form之外的数据
+   * Get data other than form on the node
    */
   getNodeData<T extends keyof NodeData>(): NodeData[T] {
     return this.nodeData;

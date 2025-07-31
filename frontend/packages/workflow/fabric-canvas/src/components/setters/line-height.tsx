@@ -71,8 +71,8 @@ export const LineHeight: FC<IProps> = props => {
           }
           {...rest}
           /**
-           * 因为开启了 allowCreate，所以 optionList 不会再响应动态变化
-           * 这里给个 key ，重新渲染 select，保证 optionList 符合预期
+           * Since allowCreate is enabled, the optionList will no longer respond to dynamic changes
+           * Give a key here, re-render select, and ensure that the optionList meets expectations
            */
           key={_optionsList.map(d => d.label).join()}
           filter

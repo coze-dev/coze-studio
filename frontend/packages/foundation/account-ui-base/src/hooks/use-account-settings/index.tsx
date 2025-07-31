@@ -28,7 +28,7 @@ export interface TabItem {
   id: string;
   tabName: string;
   /**
-   * @param close 关闭setting弹窗
+   * @param close settings pop-up
    * @returns ReactElement
    */
   content: (close?: () => void) => ReactElement;

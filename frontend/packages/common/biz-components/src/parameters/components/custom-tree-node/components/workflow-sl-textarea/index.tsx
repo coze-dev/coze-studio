@@ -54,8 +54,8 @@ export type WorkflowSLTextAreaProps = ComponentProps<typeof TextArea> & {
 };
 
 /**
- * @component TextArea 在 Workflow 场景下的二次封装;
- * focus(inputting) 的时候提供多行滚动输入能力，blur 的时候提供 ellipsis 和 tooltip 提示能力
+ * @Component TextArea secondary encapsulation in Workflow scenarios;
+ * When focusing (inputting), it provides multi-line scrolling input capability, and when blur, it provides ellipsis and tooltip prompt capability.
  */
 export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
   const { ellipsis = true } = props;
@@ -84,7 +84,7 @@ export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
     $state.inputOnFocus = false;
     props?.handleBlur?.($state.value || '');
     props?.onBlur?.(e);
-    // 失焦的时候，滚动到最顶端
+    // When out of focus, scroll to the top
     if (textAreaRef?.current) {
       textAreaRef.current.scrollTop = 0;
     }
@@ -95,7 +95,7 @@ export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
     props?.handleChange?.(v);
   };
 
-  // 输入法输入结束
+  // Input method input end
   const onCompositionEnd = (e: React.CompositionEvent<HTMLTextAreaElement>) => {
     const target = e.target as HTMLTextAreaElement;
 
@@ -126,7 +126,7 @@ export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
     $state.value = props.value;
   }, [props.value]);
 
-  /** 是否处于失焦缩略状态 */
+  /** Is it in an out-of-focus thumbnail state? */
   const ellipsisWithBlur = useMemo(
     () => !$state.inputOnFocus && hasEllipsis,
     [hasEllipsis, $state.inputOnFocus],

@@ -131,7 +131,7 @@ const TipsImplForKnowledge: FC<{
         ? ModelFuncConfigType.KnowledgeAutoCall
         : ModelFuncConfigType.KnowledgeOnDemandCall
     ];
-  // 根据自动调用还是按需调用，获取另一个 status，取合并
+  // According to the automatic call or on-demand call, get another status, take and merge
   const [configStatus, modelName] = modelCapabilityConfig[configType];
   const mergedStatus = mergeModelFuncConfigStatus(
     autoConfigStatus,
@@ -152,7 +152,7 @@ const TipsImplForKnowledge: FC<{
     <TipsDisplay
       status={mergedStatus}
       modelName={mergedStatus === autoConfigStatus ? autoModelName : modelName}
-      // 因为按需调用的提示合并到了这里，知识库显示 tips 时，需要显示具体不支持的能力（按需调用 / 知识库）
+      // Because the prompts for on-demand calls are merged here, when the knowledge base displays tips, it needs to display specific unsupported capabilities (on-demand calls/knowledge base)
       toolName={mergedToolTittle.join(', ')}
     />
   );
@@ -167,9 +167,9 @@ const ModelCapabilityTipsImpl = () => {
     ? abilityKey2ModelFunctionConfigType(abilityKey)
     : undefined;
 
-  // 降低 useModelCapabilityConfig 调用频率
+  // Reduce the frequency of useModelCapabilityConfig calls
   if (toolConfig && configType) {
-    // 知识库需要引入一个额外的判断是否是按需调用
+    // The knowledge base needs to introduce an additional judgment whether it is called on demand
     if (toolConfig.toolGroupKey === ToolGroupKey.KNOWLEDGE) {
       return (
         <TipsImplForKnowledge
@@ -180,7 +180,7 @@ const ModelCapabilityTipsImpl = () => {
     }
     return <TipsImpl configType={configType} />;
   }
-  // 不需要渲染任何内容
+  // No need to render anything
   return null;
 };
 

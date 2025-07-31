@@ -22,7 +22,7 @@ import '@testing-library/jest-dom';
 
 import { TextRender } from '../../../src/components/renders/text-render';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/coze-design', () => ({
   TextArea: ({
     value,
@@ -80,10 +80,10 @@ describe('TextRender', () => {
       />,
     );
 
-    // 验证文本内容被正确渲染
+    // Verify that the text content is rendered correctly
     expect(screen.getByText('测试文本')).toBeInTheDocument();
 
-    // 验证 TextArea 不可见
+    // Verify that the TextArea is not visible
     expect(screen.queryByTestId('text-area')).not.toBeInTheDocument();
   });
 
@@ -99,13 +99,13 @@ describe('TextRender', () => {
       />,
     );
 
-    // 验证文本内容被正确渲染
+    // Verify that the text content is rendered correctly
     expect(screen.getByText('测试文本')).toBeInTheDocument();
 
-    // 点击文本进入编辑模式
+    // Click on the text to enter edit mode
     fireEvent.click(screen.getByText('测试文本'));
 
-    // 验证 TextArea 可见
+    // Verify that the TextArea is visible
     expect(screen.getByTestId('text-area')).toBeInTheDocument();
     expect(screen.getByTestId('text-area')).toHaveValue('测试文本');
   });
@@ -122,20 +122,20 @@ describe('TextRender', () => {
       />,
     );
 
-    // 点击文本进入编辑模式
+    // Click on the text to enter edit mode
     fireEvent.click(screen.getByText('测试文本'));
 
-    // 修改输入值
+    // Modify input value
     fireEvent.change(screen.getByTestId('text-area'), {
       target: { value: '新文本' },
     });
 
-    // 验证 onChange 被调用
+    // Verify that onChange is invoked
     expect(mockOnChange).toHaveBeenCalledWith('新文本', mockRecord, mockIndex);
   });
 
   test('应该在失去焦点时调用 onBlur', async () => {
-    // 使用 dataIndex 属性
+    // Using the dataIndex property
     render(
       <TextRender
         value="测试文本"
@@ -144,33 +144,33 @@ describe('TextRender', () => {
         onBlur={mockOnBlur}
         onChange={mockOnChange}
         editable={true}
-        dataIndex="name" // 添加 dataIndex 属性
+        dataIndex="name" // Add dataIndex property
       />,
     );
 
-    // 点击文本进入编辑模式
+    // Click on the text to enter edit mode
     fireEvent.click(screen.getByText('测试文本'));
 
-    // 修改输入值
+    // Modify input value
     fireEvent.change(screen.getByTestId('text-area'), {
       target: { value: '新文本' },
     });
 
-    // 失去焦点
+    // Lost focus
     fireEvent.blur(screen.getByTestId('text-area'));
 
-    // 验证 onBlur 被调用，并且传递了正确的参数
-    // 根据组件实现，onBlur 会被调用，参数是 inputValue, updateRecord, index
-    // 其中 updateRecord 是 { ...record, [dataIndex]: inputValue } 并且删除了 tableViewKey
+    // Verify that onBlur is called and the correct parameters are passed
+    // Depending on the component implementation, onBlur will be called with the parameters inputValue, updateRecord, index
+    // Where updateRecord is {... record, [dataIndex]: inputValue} and removed tableViewKey
     await waitFor(() => {
       expect(mockOnBlur).toHaveBeenCalledWith(
         '新文本',
-        { id: '1', name: '新文本' }, // 更新后的 record
+        { id: '1', name: '新文本' }, // Updated records
         mockIndex,
       );
     });
 
-    // 验证组件回到只读模式
+    // Verify that the component returns to read-only mode
     await waitFor(() => {
       expect(screen.queryByTestId('text-area')).not.toBeInTheDocument();
       expect(screen.getByText('新文本')).toBeInTheDocument();
@@ -179,7 +179,7 @@ describe('TextRender', () => {
 
   test('应该在验证失败时显示错误提示', () => {
     const mockValidator = {
-      validate: vi.fn().mockReturnValue(true), // 返回 true 表示验证失败
+      validate: vi.fn().mockReturnValue(true), // Returning true indicates that the verification failed.
       errorMsg: '输入不合法',
     };
 
@@ -192,32 +192,32 @@ describe('TextRender', () => {
         onChange={mockOnChange}
         editable={true}
         validator={mockValidator}
-        isEditing={true} // 直接进入编辑模式
+        isEditing={true} // Go straight to edit mode
       />,
     );
 
-    // 验证 TextArea 可见
+    // Verify that the TextArea is visible
     expect(screen.getByTestId('text-area')).toBeInTheDocument();
 
-    // 修改输入值
+    // Modify input value
     fireEvent.change(screen.getByTestId('text-area'), {
       target: { value: '新文本' },
     });
 
-    // 验证验证函数被调用
+    // The validation function is called
     expect(mockValidator.validate).toHaveBeenCalledWith(
       '新文本',
       mockRecord,
       mockIndex,
     );
 
-    // 验证错误状态
+    // validation error status
     expect(screen.getByTestId('text-area')).toHaveAttribute(
       'data-validate-status',
       'error',
     );
 
-    // 验证错误图标和提示被显示
+    // Validation error icons and prompts are displayed
     expect(screen.getByTestId('error-icon')).toBeInTheDocument();
     expect(screen.getByTestId('tooltip')).toHaveAttribute(
       'data-content',
@@ -238,7 +238,7 @@ describe('TextRender', () => {
       />,
     );
 
-    // 验证 TextArea 直接可见
+    // Verify that the TextArea is directly visible
     expect(screen.getByTestId('text-area')).toBeInTheDocument();
     expect(screen.getByTestId('text-area')).toHaveValue('测试文本');
   });
@@ -256,10 +256,10 @@ describe('TextRender', () => {
       />,
     );
 
-    // 验证 TextArea 直接可见
+    // Verify that the TextArea is directly visible
     expect(screen.getByTestId('text-area')).toBeInTheDocument();
 
-    // 重新渲染组件，isEditing 为 undefined
+    // Render the component again, isEditing is undefined
     rerender(
       <TextRender
         value="测试文本"
@@ -271,7 +271,7 @@ describe('TextRender', () => {
       />,
     );
 
-    // 验证组件回到只读模式
+    // Verify that the component returns to read-only mode
     await waitFor(() => {
       expect(screen.queryByTestId('text-area')).not.toBeInTheDocument();
       expect(screen.getByText('测试文本')).toBeInTheDocument();

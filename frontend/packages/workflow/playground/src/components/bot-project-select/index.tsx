@@ -69,7 +69,7 @@ export const BotProjectSelect: React.FC<BotSelectProps> = ({
   ...props
 }) => {
   let value = originValue;
-  // 兼容历史数据
+  // Compatible with historical data
   if (typeof originValue === 'string') {
     value = {
       id: originValue,
@@ -109,7 +109,7 @@ export const BotProjectSelect: React.FC<BotSelectProps> = ({
     (hasVariableNode || hasVariableAssignNode) &&
     !hideVariblesForce;
 
-  // 试运行都是临时搞了一个会话，这里把 bot 聊天历史展示可能会误导，先隐藏
+  // Practice running is a temporary session, here the bot chat history display may be misleading, first hide
   const showChatHistory = false;
   // const showChatHistory =
   //   botSelected && !isChatHistoryLoading && hasChatHistoryEnabledLLM;

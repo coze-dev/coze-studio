@@ -30,9 +30,9 @@ interface UploadValidateRule {
 }
 
 /**
- * 格式化文件大小
- * @param bytes 文件大小
- * @param decimals 小数位数, 默认 2 位
+ * Format file size
+ * @param bytes file size
+ * @Param decimals, default 2 digits
  * @example
  * formatBytes(1024);       // 1KB
  * formatBytes('1024');     // 1KB
@@ -50,7 +50,7 @@ export function formatBytes(bytes: number, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))}${sizes[i]}`;
 }
 
-/** 文件大小校验  */
+/** file size verification  */
 export const sizeValidate = (
   size: number,
   maxSize: number = MAX_FILE_SIZE,
@@ -71,7 +71,7 @@ export interface ImageSizeRule {
 }
 
 /**
- * 获取图片的宽高
+ * Get the width and height of the image
  */
 export async function getImageSize(
   file: FileItem,
@@ -93,7 +93,7 @@ export async function getImageSize(
   });
 }
 
-/** 图像宽高校验  */
+/** image width check  */
 // eslint-disable-next-line complexity
 export const imageSizeValidate = async (
   file: FileItem,
@@ -101,7 +101,7 @@ export const imageSizeValidate = async (
 ): Promise<string | undefined> => {
   const { maxWidth, minWidth, maxHeight, minHeight, aspectRatio } = rule || {};
 
-  // 未定义时不校验
+  // No validation when undefined
   if (isNil(maxWidth || minWidth || maxHeight || minHeight || aspectRatio)) {
     return;
   }
@@ -145,7 +145,7 @@ export const acceptValidate = (fileName: string, accept?: string) => {
   const fileExtension = getFileExtension(fileName);
   const mimeType = mime.lookup(fileExtension);
 
-  // image/* 匹配所有的图片类型
+  // Image/* matches all image types
   if (acceptList.includes('image/*') && mimeType?.startsWith?.('image/')) {
     return undefined;
   }

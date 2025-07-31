@@ -32,7 +32,7 @@ export const useWorkflowResourceClick = (spaceId?: string) => {
     goWorkflowDetail(workflowId, spaceId);
   };
 
-  /** 打开流程编辑页 */
+  /** Open the process edit page */
   const goWorkflowDetail = (workflowId?: string, sId?: string) => {
     if (!workflowId || !sId) {
       return;

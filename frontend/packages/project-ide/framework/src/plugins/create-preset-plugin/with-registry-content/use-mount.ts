@@ -15,7 +15,7 @@
  */
  
 /**
- * 控制组件真正的挂载时机
+ * True mount timing of cgroup pieces
  */
 import {
   useEffect,
@@ -36,21 +36,21 @@ export const useMount = (
   widget: ProjectIDEWidget,
 ) => {
   /**
-   * 是否已经挂载
+   * Is it already mounted?
    */
   const [mounted, setMounted] = useState(widget.isVisible);
   const [version, setVersion] = useState(0);
   const mountedRef = useRef(widget.isVisible);
 
   /**
-   * 是否已加载完成
+   * Is it loaded?
    */
   const [loaded, setLoaded] = useState(!registry.load);
 
   /**
-   * renderContent 函数结果缓存
-   * 由于 registry 和 widget 基本不变，可以保证在同一个 widget 中 renderContent 函数只会运行一次
-   * 除非 WidgetComp 组件被卸载 =.=
+   * renderContent function result cache
+   * Since the registry and widget are essentially unchanged, it is guaranteed that the renderContent function will only run once within the same widget
+   * Unless the WidgetComp component is uninstalled =. =
    */
   const content = useMemo(() => {
     if (!isFunction(registry.renderContent)) {
@@ -61,7 +61,7 @@ export const useMount = (
   }, [registry, widget, version]);
 
   /**
-   * 支持 registry 定义加载函数
+   * Support registry definition load function
    */
   const load = useCallback(async () => {
     if (!registry.load || !isFunction(registry.load)) {
@@ -72,7 +72,7 @@ export const useMount = (
   }, [registry, widget, setLoaded]);
 
   /**
-   * 监听 widget 的显示隐藏状态，若 widget 显示且未挂载，则需要主动挂载一次
+   * Monitor the display hidden state of the widget. If the widget is displayed and not mounted, you need to actively mount it once.
    */
   const watchWidgetStatus = useCallback(
     (w: ProjectIDEWidget) => {
@@ -92,7 +92,7 @@ export const useMount = (
   );
 
   /**
-   * 监听器可以较早挂载，避免多渲染一次
+   * Listeners can be mounted earlier to avoid multiple renders
    */
   useLayoutEffect(() => {
     const dispose = watchWidgetStatus(widget);
@@ -106,7 +106,7 @@ export const useMount = (
   }, [widget, watchWidgetStatus]);
 
   /**
-   * 加载函数时机暂无特殊设计，先保持和历史逻辑一致
+   * There is no special design for loading function timing, so keep it consistent with historical logic
    */
   useEffect(() => {
     load();

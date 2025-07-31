@@ -87,7 +87,7 @@ export const useSubscribeStore = ({
     useMessageIndexStore,
   } = storeSet;
 
-  // 初始化时录入
+  // Enter during initialization
   useEffect(() => {
     if (extendDataLifecycle === 'full-site') {
       recordLifecycleExtendedData(scene, storeSet);
@@ -229,7 +229,7 @@ export const useCreateAllStoreSet = ({
     [],
   );
 
-  // TODO: 后续把插件注册的时机提前，解决渲染中变更state的问题 @lihuiwen @liushuoyan
+  // TODO: In the future, the timing of plugin registration will be advanced to solve the problem of changing state during rendering @lihuiwen @liushuoyan
   onAfterCallback({
     messageIndexStore: getMessageIndexStoreMethods(useMessageIndexStore),
   });

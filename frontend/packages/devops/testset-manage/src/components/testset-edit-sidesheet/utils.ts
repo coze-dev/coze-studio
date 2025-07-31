@@ -33,7 +33,7 @@ import {
 } from '../../types';
 
 let ajv: Ajv | undefined;
-/** jsonStr转为节点表单schema（简单的`JSON.parse`） */
+/** jsonStr converts to a node form schema (simply'JSON.parse ') */
 export function toNodeFormSchemas(jsonStr?: string): NodeFormSchema[] {
   if (!jsonStr) {
     return [];
@@ -48,7 +48,7 @@ export function toNodeFormSchemas(jsonStr?: string): NodeFormSchema[] {
   }
 }
 
-/** 空值判断，null/undefined/NaN */
+/** Null value judgment, null/undefined/NaN */
 export function isNil(val: unknown) {
   return (
     typeof val === 'undefined' ||
@@ -61,7 +61,7 @@ function isNumberType(t: string) {
   return t === FormItemSchemaType.NUMBER || t === FormItemSchemaType.FLOAT;
 }
 
-/** 判断类型一致，**特化：**`number`和`float`视为同一类型 */
+/** Determine that the type is consistent, ** specialization: ** 'number' and'float 'are regarded as the same type */
 export function isSameType(t1?: string, t2?: string) {
   if (typeof t1 === 'undefined' || typeof t2 === 'undefined') {
     return false;
@@ -70,7 +70,7 @@ export function isSameType(t1?: string, t2?: string) {
   return isNumberType(t1) ? isNumberType(t2) : t1 === t2;
 }
 
-/** 两层for遍历schema (经常需要遍历，单独抽一个的函数） */
+/** Two layers for traversing schema (often need to traverse, draw a single function) */
 export function traverseNodeFormSchemas(
   schemas: NodeFormSchema[],
   cb: (s: NodeFormSchema, ip: FormItemSchema) => any,
@@ -83,9 +83,9 @@ export function traverseNodeFormSchemas(
 }
 
 /**
- * 校验名称格式（参考插件名称）
- * - 海外：仅支持输入字母、数字、下划线或空格
- * - 国内：仅支持输入中文、字母、数字、下划线或空格
+ * Verification name format (refer to plug-in name)
+ * - Overseas: Only support entering letters, numbers, underscores or spaces
+ * - Domestic: Only supports entering Chinese, letters, numbers, underscores or spaces
  */
 function validateNamePattern(
   name: string,
@@ -109,19 +109,19 @@ interface GetTestsetNameRulesProps {
   bizCtx?: BizCtx;
   /** bizComponentSubject */
   bizComponentSubject?: ComponentSubject;
-  /** 原始值 */
+  /** raw value */
   originVal?: string;
-  /** 是否为海外（海外不允许输入中文 ，与PluginName校验规则对齐） */
+  /** Whether it is overseas (overseas is not allowed to enter Chinese, it is aligned with the PluginName verification rule) */
   isOversea?: boolean;
 }
 
 /**
- * Testset名称表单校验规则
+ * TestSet Name Form Validation Rules
  *
  * @param param.bizCtx - bizCtx
  * @param param.bizComponentSubject - bizComponentSubject
- * @param param.originVal - 原始值
- * @param param.isOversea - 是否为海外（海外不允许输入中文 ，与PluginName校验规则对齐）
+ * @Param param.originVal - original value
+ * @Param param.isOverseas - whether it is overseas (overseas is not allowed to enter Chinese, it is aligned with the PluginName verification rule)
  */
 export function getTestsetNameRules({
   bizCtx,
@@ -143,12 +143,12 @@ export function getTestsetNameRules({
           return;
         }
 
-        // 编辑模式下，名称与原名相同时跳过
+        // In edit mode, skip when the name is the same as the original name
         if (originVal && value === originVal) {
           return;
         }
 
-        // 中文、字母等等等等
+        // Chinese, letters, etc., etc
         const formatMsg = validateNamePattern(value, isOversea);
 
         if (formatMsg) {
@@ -156,7 +156,7 @@ export function getTestsetNameRules({
           return;
         }
 
-        // 检查重复
+        // Check for duplicates
         try {
           const { isPass } = await debuggerApi.CheckCaseDuplicate({
             bizCtx,
@@ -179,9 +179,9 @@ export function getTestsetNameRules({
 }
 
 /**
- * 表单label
- * - bot：选择你需要的Bot
- * - 其他：字段名
+ * Form label
+ * - bot: choose the bot you need
+ * - Other: field names
  */
 export function getLabel(formSchema: FormItemSchema) {
   return formSchema.type === FormItemSchemaType.BOT
@@ -207,7 +207,7 @@ function getSubType(type: string) {
   }
 }
 
-/** 类型标签 */
+/** type label */
 export function getTypeLabel(formSchema: FormItemSchema) {
   switch (formSchema.type) {
     case FormItemSchemaType.STRING:
@@ -230,8 +230,8 @@ export function getTypeLabel(formSchema: FormItemSchema) {
 
 /**
  * placeholder
- * - bot：请选择bot
- * - 其他：xx必填
+ * - bot: Please select bot
+ * - Other: xx required
  */
 export function getPlaceholder({ name, type }: FormItemSchema) {
   if (type === FormItemSchemaType.BOT) {
@@ -245,7 +245,7 @@ export function getPlaceholder({ name, type }: FormItemSchema) {
   });
 }
 
-/** 字段在表单中的唯一字段名 */
+/** The unique field name of the field in the form */
 export function getSubFieldName(
   formSchema: NodeFormSchema,
   itemSchema: FormItemSchema,
@@ -322,8 +322,8 @@ function validateByJsonSchema(val: any, jsonSchema: any) {
 }
 
 /**
- * 自定义表单的额外参数
- * 目前只对array和object表单加jsonSchema校验
+ * Customize the form's additional parameters
+ * Currently only jsonSchema validation is applied to array and object forms
  */
 export function getCustomProps(formItemSchema: FormItemSchema) {
   switch (formItemSchema.type) {
@@ -368,7 +368,7 @@ export enum ValuesForBoolSelect {
   UNDEFINED = 'undefined',
 }
 
-/** 布尔类型选项 */
+/** Boolean Type Options */
 export const optionsForBoolSelect = [
   {
     value: ValuesForBoolSelect.TRUE,

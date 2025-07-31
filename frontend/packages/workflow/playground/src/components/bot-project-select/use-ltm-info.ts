@@ -28,7 +28,7 @@ export const useLTMInfo = (botId?: string) => {
   );
 
   return {
-    // 是否开启长期记忆
+    // Is long-term memory switched on?
     ltmEnabled: timeCapsuleMode === TimeCapsuleMode.On,
     isLoading,
   };

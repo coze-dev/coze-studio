@@ -40,7 +40,7 @@ interface Props {
 }
 
 /**
- * 分组变量
+ * grouping variables
  * @param param0
  * @returns
  */
@@ -108,20 +108,20 @@ export const GroupVariables: FC<Props> = ({
               onChange={v => {
                 const val = v as ValueExpression;
 
-                // 如果是字面量或者空值，则缓存到 variableFieldCandidate
+                // If it is a literal or null value, it is cached to variableFieldCandidate
                 if (
                   ValueExpression.isLiteral(val) ||
                   ValueExpression.isEmpty(val)
                 ) {
                   updateVariableFieldCandidate(val);
                 } else {
-                  // 不为空的 ref 变量，append 到 variablesField 中
+                  // Non-empty ref variable, append to variablesField
                   updateVariableFieldCandidate(undefined);
                   variablesField.append(val);
                 }
               }}
               onBlur={() => {
-                // literal 变量，在失焦时，如果 variableFieldCandidate 有值，则 append 到 variablesField 中
+                // Literal variable, when out of focus, append to variablesField if variableFieldCandidate have a value
                 if (
                   variableFieldCandidateRef.current &&
                   ValueExpression.isLiteral(variableFieldCandidateRef.current)

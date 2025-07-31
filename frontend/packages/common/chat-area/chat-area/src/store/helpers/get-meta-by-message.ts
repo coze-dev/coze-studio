@@ -31,7 +31,7 @@ export const getInitMetaByMessage = ({
   if (!msg) {
     throw new Error(`get message exception: invalid index: ${index}`);
   }
-  // TODO: 这里可以留一个 adapter 的口子
+  // TODO: You can leave an adapter opening here
   return {
     _fromHistory: msg._fromHistory,
     showActions: false,

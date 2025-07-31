@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -40,7 +40,7 @@ const KEY_MAP = {
   [AbilityScope.AGENT_SKILL]: AGENT_SKILL_KEY_MAP,
 };
 
-// 访问全局状态机中的状态
+// Access state in the global fine-state machine
 export function useToolStore<U>(selector: (state: BotSkillStore) => U): U {
   const { abilityKey } = useAbilityConfig();
 
@@ -51,7 +51,7 @@ export function useToolStore<U>(selector: (state: BotSkillStore) => U): U {
   return useBotSkillStore(selector) as U;
 }
 
-// 访问全局状态机中的方法
+// Access methods in the global fine-state machine
 export function useToolStoreAction<U>(
   selector: (state: BotSkillAction) => U,
 ): U {
@@ -64,7 +64,7 @@ export function useToolStoreAction<U>(
   return useBotSkillStore(selector) as U;
 }
 
-// 提交数据
+// submit data
 export function useToolDispatch<T>() {
   const { abilityKey, scope } = useAbilityConfig();
 
@@ -78,16 +78,16 @@ export function useToolDispatch<T>() {
     setState({
       [scope]: {
         ...state[scope],
-        // @ts-expect-error -- 以后想着解决一下这里的类型问题
+        // @ts-expect-error -- I want to solve the type problem here in the future
         [KEY_MAP[scope][abilityKey]]: newState,
       },
     });
   };
 }
 
-// 监听 tool 状态机数据变化，并同步到 bot detail store
+// Monitor tool fine-state machine data changes and sync to bot detail store
 export function useSubscribeToolStore(scope: AbilityScope, agentId?: string) {
-  // bot detail store 更新方法
+  // Bot detail store update method
   const { setBotSkill } = useBotSkillStore(
     useShallow(state => ({
       setBotSkill: state.setBotSkill,
@@ -99,11 +99,11 @@ export function useSubscribeToolStore(scope: AbilityScope, agentId?: string) {
     })),
   );
 
-  // tools store 数据
+  // Tools store data
   const { state } = useAbilityStoreContext();
   const newState = state[scope];
 
-  // 同步数据
+  // synchronize data
   useEffect(() => {
     if (size(newState)) {
       if (!newState) {

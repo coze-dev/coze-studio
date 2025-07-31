@@ -134,7 +134,7 @@ export class WidgetManager {
   }
 
   /**
-   * 使用工厂模式注册
+   * Register with factory mode
    */
   async getOrCreateWidgetFromURI<T extends ReactWidget>(
     uri: URI,

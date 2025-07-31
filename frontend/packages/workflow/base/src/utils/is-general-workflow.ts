@@ -18,7 +18,7 @@ import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
 
 /**
  *
- * @param flowMode 是否广义上的 workflow，包含原来的 Workflow 和 Coze 2.0 新增的 Chatflow
+ * @Param flowMode Whether it is a workflow in a broad sense, including the original Workflow and the Chatflow added by Coze 2.0
  * @returns
  */
 export const isGeneralWorkflow = (flowMode: WorkflowMode) =>

@@ -45,11 +45,11 @@ function getIsInitStartOuputs(
 
 /**
  *
- * 判断当前工作流是否是初始状态
- * - 节点数量为 2
- * - 没有边
- * - 开始节点只有一个输入 或者 有两个输入，但第二个输入参数为默认状态
- * - 结束节点只有一个有效输出 或者 表单配置了多个输出变量，但都为默认状态
+ * Determine whether the current workflow is in an initial state
+ * The number of nodes is 2.
+ * - no edge
+ * - The start node has only one input, or, there are two inputs, but the second input parameter is the default state
+ * - The end node has only one valid output, or the form has multiple output variables configured, but all are in the default state
  */
 export const getIsInitWorkflow = (
   workflowShcmaJson: WorkflowJSON,

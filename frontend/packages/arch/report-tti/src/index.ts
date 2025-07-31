@@ -24,7 +24,7 @@ import {
 export interface ReportTtiParams {
   isLive: boolean;
   extra?: Record<string, string>;
-  scene?: string; // 一个页面默认只上报一次tti，设置不同的scene可上报多次
+  scene?: string; // A page only reports tti once by default, and different scenes can be reported multiple times.
 }
 
 export const useReportTti = ({
@@ -34,8 +34,8 @@ export const useReportTti = ({
 }: ReportTtiParams) => {
   useEffect(() => {
     if (isLive) {
-      // TODO useEffect 与真实 DOM 渲染之间会有 gap，需要考虑如何抹平差异
-      // settimeout 在网页后台会挂起，导致 TTI 严重不准
+      // There will be a gap between TODO useEffect and real DOM rendering, you need to consider how to smooth the difference
+      // SetTimeout hangs in the background of the page, causing TTI to be severely inaccurate
       reportTti(extra, scene);
     }
   }, [isLive]);

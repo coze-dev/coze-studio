@@ -135,13 +135,13 @@ const FileUpload = ({
     return newVal;
   }, [fileList, multiple]);
 
-  // 当fileList更新时，触发onChange
+  // When the fileList is updated, onChange is triggered.
   useUpdateEffect(() => {
     const newVal = getSubmitValue();
     onChange?.(newVal);
   }, [getSubmitValue]);
 
-  // 当表单值更新时，同步到fileList
+  // When the form value is updated, sync to fileList
   useEffect(() => {
     const val = getSubmitValue();
     if (val !== value) {

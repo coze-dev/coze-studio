@@ -26,7 +26,7 @@ export interface CreatorProps {
 
 export const Creator: FC<CreatorProps> = ({ avatar, name, extra }) => (
   <div className="flex items-center gap-x-[4px] h-[16px] coz-fg-secondary text-[12px] leading-16px">
-    {/* 开源版无多人协作功能，不展示资源所有者信息 */}
+    {/* The open-source version has no multi-person collaboration function and does not display resource owner information */}
     {IS_OPEN_SOURCE ? null : (
       <>
         <Avatar className="w-[16px] h-[16px] flex-shrink-0" src={avatar} />

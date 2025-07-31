@@ -175,7 +175,7 @@ export function tableDataCleaning({
     },
   }));
 
-  // 增加操作列
+  // Add action column
   tableColumns.push({
     title: <></>,
     width: 100,

@@ -17,7 +17,7 @@
 function hexToRgb(hex) {
   hex = hex.replace('#', '');
 
-  // 验证 hex 格式
+  // Verify hex format
   if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$|^[0-9A-Fa-f]{8}$/.test(hex)) {
     throw new Error('Invalid hex color format');
   }
@@ -49,24 +49,24 @@ function hexToRgb(hex) {
 
 // eslint-disable-next-line max-params
 function rgbaToHexWithBackground(r, g, b, a, bgR = 255, bgG = 255, bgB = 255) {
-  // 确保 RGB 和 Alpha 值在正确范围内
+  // Make sure the RGB and Alpha values are within the correct range
   r = Math.min(255, Math.max(0, Math.round(r)));
   g = Math.min(255, Math.max(0, Math.round(g)));
   b = Math.min(255, Math.max(0, Math.round(b)));
   a = Math.min(1, Math.max(0, a));
 
-  // 计算新的 RGB 值
+  // Calculate the new RGB value
   const newR = Math.round(r * a + bgR * (1 - a));
   const newG = Math.round(g * a + bgG * (1 - a));
   const newB = Math.round(b * a + bgB * (1 - a));
 
-  // 转换为十六进制并确保两位数
+  // Convert to hexadecimal and ensure two digits
   const toHex = n => {
     const hex = n.toString(16);
     return hex.length === 1 ? `0${hex}` : hex;
   };
 
-  // 返回 6 位十六进制颜色值
+  // Returns 6 hexadecimal color values
   return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
 

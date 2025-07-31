@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 辅助函数，用于获取选区内的所有节点
+// Helper function to obtain all nodes in the selection
 export const getAllNodesInRange = (range: Range): Node[] => {
   const nodes: Node[] = [];
   const treeWalker = document.createTreeWalker(
@@ -28,7 +28,7 @@ export const getAllNodesInRange = (range: Range): Node[] => {
     },
   );
 
-  // eslint-disable-next-line prefer-destructuring -- 符合预期，因为要改数据并且允许为空
+  // eslint-disable-next-line prefer-destructuring -- as expected, because the data is to be changed and allowed to be empty
   let currentNode: Node | null = treeWalker.currentNode;
 
   while (currentNode) {

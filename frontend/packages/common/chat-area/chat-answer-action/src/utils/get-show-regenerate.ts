@@ -28,12 +28,12 @@ export const getShowRegenerate = ({
   meta: Pick<MessageMeta, 'isFromLatestGroup' | 'sectionId'>;
   latestSectionId: string;
 }): boolean => {
-  // 是否是推送的消息
+  // Is it a pushed message?
   const isPushedMessage = getIsPushedMessage(message);
   if (isPushedMessage) {
     return false;
   }
 
-  // 来自最后一个消息组
+  // From the last message group
   return getIsLastGroup({ meta, latestSectionId });
 };

@@ -85,7 +85,7 @@ export const DEFAULT_TTS_CONFIG = (): TTSInfo => ({
 
 export const DEFAULT_TIME_CAPSULE_CONFIG = (): TimeCapsuleConfig => ({
   time_capsule_mode: 0,
-  disable_prompt_calling: 0, // 默认支持在prompt调用
+  disable_prompt_calling: 0, // Default support for prompt calls
   time_capsule_time_to_live: '0',
 });
 

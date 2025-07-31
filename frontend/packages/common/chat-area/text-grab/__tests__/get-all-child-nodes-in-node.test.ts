@@ -20,7 +20,7 @@ describe('getAllChildNodesInNode', () => {
   let root: HTMLElement;
 
   beforeEach(() => {
-    // 在每个测试用例之前设置 DOM 结构
+    // Setting up the DOM structure before each test case
     document.body.innerHTML = `
       <div id="root">
         <span>Text 1</span>
@@ -46,8 +46,8 @@ describe('getAllChildNodesInNode', () => {
 
   it('should correctly handle text and element nodes', () => {
     const nodes = getAllChildNodesInNode(root);
-    // 检查返回的节点类型是否正确
-    expect(nodes.some(node => node.nodeType === Node.TEXT_NODE)).toBe(true); // 至少有一个文本节点
-    expect(nodes.some(node => node.nodeType === Node.ELEMENT_NODE)).toBe(true); // 至少有一个元素节点
+    // Check if the returned node type is correct
+    expect(nodes.some(node => node.nodeType === Node.TEXT_NODE)).toBe(true); // At least one text node
+    expect(nodes.some(node => node.nodeType === Node.ELEMENT_NODE)).toBe(true); // There is at least one element node
   });
 });

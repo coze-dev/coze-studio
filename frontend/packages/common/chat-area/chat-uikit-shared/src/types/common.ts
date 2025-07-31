@@ -51,7 +51,7 @@ export interface IContentConfig<T = Record<string, unknown>> {
 }
 
 /**
- * 后续维护注意，需要扩展参数的类型的卡片默认关闭
+ * Follow-up maintenance Note that cards of types that require extended parameters are turned off by default
  */
 export type IContentConfigs = Partial<{
   [ContentBoxType.TAKO]: IContentConfig;

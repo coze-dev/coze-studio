@@ -21,7 +21,7 @@ import type { CommentEditorBlock, CommentEditorLeaf } from '../type';
 import { CommentEditorBlockFormat, CommentEditorLeafFormat } from '../constant';
 
 export namespace CommentEditorHTMLParser {
-  // 转换叶子节点为 HTML
+  // Convert leaf nodes to HTML
   const convertLeafToHtml = (leaf: CommentEditorLeaf): string => {
     let result: string = leaf.text;
 
@@ -44,7 +44,7 @@ export namespace CommentEditorHTMLParser {
     return result;
   };
 
-  // 转换段落为 HTML
+  // Convert paragraphs to HTML
   const convertParagraphToHtml = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -57,7 +57,7 @@ export namespace CommentEditorHTMLParser {
     return `<p>${content}</p>`;
   };
 
-  // 转换标题为 HTML
+  // Convert title to HTML
   const convertHeadingToHtml = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -76,9 +76,9 @@ export namespace CommentEditorHTMLParser {
     return `<h${level}>${content}</h${level}>`;
   };
 
-  // 转换引用为 HTML
+  // Convert reference to HTML
   const convertBlockquoteToHtml = (block: CommentEditorBlock): string => {
-    // 处理引用块中的内容
+    // Process the content in the reference block
     const processQuoteContent = (
       child: CommentEditorLeaf | CommentEditorBlock,
     ): string => {
@@ -88,14 +88,14 @@ export namespace CommentEditorHTMLParser {
       return convertBlockToHtml(child);
     };
 
-    // 处理所有子元素
+    // Handle all child elements
     const content: string = block.children.map(processQuoteContent).join('');
 
-    // 将内容包装在 <p> 标签内，然后放入 <blockquote> 标签
+    // Wrap the content inside a < p > tag, then put in a < blockquote > tag
     return `<blockquote><p>${content}</p></blockquote>`;
   };
 
-  // 转换列表为 HTML
+  // Convert list to HTML
   const convertListToHtml = (block: CommentEditorBlock): string => {
     const isNumbered: boolean =
       block.type === CommentEditorBlockFormat.NumberedList;
@@ -131,7 +131,7 @@ export namespace CommentEditorHTMLParser {
     return `<${listTag}>${content}</${listTag}>`;
   };
 
-  // 转换块为 HTML
+  // Convert block to HTML
   const convertBlockToHtml = (block: CommentEditorBlock): string => {
     switch (block.type) {
       case CommentEditorBlockFormat.Paragraph:
@@ -150,7 +150,7 @@ export namespace CommentEditorHTMLParser {
     }
   };
 
-  // 主函数：将整个 schema 转换为 HTML
+  // Main function: Converts the entire schema to HTML
   export const to = (schema: CommentEditorBlock[]): string => {
     const html: string = schema
       .map(block => convertBlockToHtml(block))

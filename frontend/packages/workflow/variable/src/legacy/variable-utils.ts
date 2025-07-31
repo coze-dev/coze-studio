@@ -73,7 +73,7 @@ export namespace variableUtils {
   }, {});
 
   /**
-   * 转换处 list 之外的类型
+   * Types other than the conversion list
    * @param type·
    * @private
    */
@@ -106,7 +106,7 @@ export namespace variableUtils {
 
       case VariableTypeDTO.object:
         return ViewVariableType.Object;
-      // 原后端 type: image 兼容
+      // Original backend type: image compatible
       case VariableTypeDTO.image:
         return ViewVariableType.Image;
       case VariableTypeDTO.list:
@@ -151,7 +151,7 @@ export namespace variableUtils {
     assistType?: AssistTypeDTO;
     subAssistType?: AssistTypeDTO;
   } {
-    // 如果是数组类型的变量
+    // If it is a variable of array type
     if (ViewVariableType.isArrayType(type)) {
       const subViewType = ViewVariableType.getArraySubType(type);
       const { type: subType, assistType: subAssistType } =
@@ -164,7 +164,7 @@ export namespace variableUtils {
       };
     }
 
-    // AssistType 映射
+    // AssistType Mapping
     const assistType = VIEW_TYPE_TO_ASSIST_TYPE[type];
     if (assistType) {
       return {
@@ -173,7 +173,7 @@ export namespace variableUtils {
       };
     }
 
-    // 普通类型映射
+    // Normal type mapping
     switch (type) {
       case ViewVariableType.String:
         return { type: VariableTypeDTO.string };
@@ -201,7 +201,7 @@ export namespace variableUtils {
   export const ARRAY_TYPES = ViewVariableType.ArrayTypes;
 
   /**
-   * 校验下Meta合法性，不合法上报错误
+   * Check the legitimacy of Meta, and report an error if it is not legal.
    * @param meta
    */
   function checkDtoMetaValid(meta: VariableMetaDTO) {
@@ -209,7 +209,7 @@ export namespace variableUtils {
       return;
     }
 
-    // 非object和list类型，schema有值的场景上报, 比如 { type: 'string', schema: []}
+    // Non-object and list types, schema scenarios with values are reported, such as {type: 'string', schema: []}
     if (
       ![VariableTypeDTO.list, VariableTypeDTO.object].includes(meta.type) &&
       meta.schema
@@ -224,7 +224,7 @@ export namespace variableUtils {
   }
 
   /**
-   * 后端变量转前端变量，并补齐 key
+   * Back-end variable to front-end variable, and fill in the key
    * @param meta
    */
   export function dtoMetaToViewMeta(meta: VariableMetaDTO): ViewVariableMeta {
@@ -238,7 +238,7 @@ export namespace variableUtils {
             assistType: meta.schema?.assistType,
           }),
           name: meta.name,
-          // 数组要多下钻一层
+          // The array needs to be drilled down one more layer.
           children: meta.schema?.schema?.map(subMeta =>
             dtoMetaToViewMeta(subMeta),
           ),
@@ -271,7 +271,7 @@ export namespace variableUtils {
     let schema: any = meta.children?.map(child => viewMetaToDTOMeta(child));
     if (subType) {
       if (!schema || schema.length === 0) {
-        // 空的object 需要加上空数组
+        // Empty objects need to add empty arrays
         if (subType === VariableTypeDTO.object) {
           schema = [];
         } else {
@@ -284,7 +284,7 @@ export namespace variableUtils {
         schema,
       };
     } else if (type === VariableTypeDTO.object && !schema) {
-      // 空 object 需要加上空数组
+      // Empty object needs to add empty array
       schema = [];
     }
     return {
@@ -300,7 +300,7 @@ export namespace variableUtils {
   }
 
   /**
-   * @deprecated 使用 viewTypeToDTOType
+   * @deprecated using viewTypeToDTOType
    * @param type
    * @returns
    */
@@ -318,7 +318,7 @@ export namespace variableUtils {
   }
 
   /**
-   * 前端表达式转后端数据
+   * Front-end expression to back-end data
    * @param value
    */
   export function valueExpressionToDTO(
@@ -336,7 +336,7 @@ export namespace variableUtils {
       } = viewTypeToDTOType(viewType);
       if (value.type === ValueExpressionType.LITERAL) {
         let schema: any = undefined;
-        // Array<T> 类型的 schema 指定 array 的泛型类型
+        // A schema of type Array < T > specifies the generic type of an array
         if (dtoType === VariableTypeDTO.list) {
           schema = {
             type: subType,
@@ -345,11 +345,11 @@ export namespace variableUtils {
           if (subType === VariableTypeDTO.object) {
             schema.schema = [];
           }
-          // object 类型的 schema 指定成空数组，字面量没有下钻字段信息
+          // The schema of the object type is specified as an empty array, and the literal has no drill-down field information
         } else if (dtoType === VariableTypeDTO.object) {
           schema = [];
         }
-        // 其他基础类型（string、int、number、boolean）以及 image 等带 assistType 额类型，不传 schema。
+        // Other base types (string, int, number, boolean), as well as image types with an auxType amount, do not pass schema.
         const res: ValueExpressionDTO = {
           type: dtoType,
           assistType,
@@ -377,13 +377,13 @@ export namespace variableUtils {
             }
           : refExpression.schema;
 
-        // 变量选择复杂类型，再将类型手动改成简单类型，会有schema残留
-        // 只有 object 和 list 类型才需要 schema
+        // Variable select complex type, and then manually change the type to simple type, there will be schema residue
+        // Only object and list types require schemas.
         if (![VariableTypeDTO.object, VariableTypeDTO.list].includes(dtoType)) {
           schema = undefined;
         }
 
-        // rawMeta 里有类型时，使用 rawMeta 里的类型，后端会对引用变量进行类型转换
+        // When there is a type in rawMeta, using the type in rawMeta, the backend will perform type conversion on the reference variable
         return {
           type: dtoType,
           assistType,
@@ -395,11 +395,11 @@ export namespace variableUtils {
         };
       }
     }
-    // rawMeta 不存在时，需要走兜底逻辑
+    // When rawMeta does not exist, fallback logic is required
     if (value && value.type === ValueExpressionType.LITERAL) {
       const assistType = getAssistTypeByViewType(value?.rawMeta?.type);
 
-      // TODO 这里获取不到变量类型，只能简单先这么处理，需要重构解决
+      // TODO can't get the variable type here, so it can only be handled this way first, and it needs to be refactored.
       if (Array.isArray(value.content)) {
         const listRes: ValueExpressionDTO = {
           type: 'list',
@@ -478,7 +478,7 @@ export namespace variableUtils {
       );
       const refVariableType = workflowVariable?.viewType;
 
-      // 如果 rawMetaType 不存在或者 rawMetaType 与 refVariableType 相同，则直接返回 workflowVariable?.dtoMeta
+      // If rawMetaType does not exist or rawMetaType is the same as refVariableType, return workflowVariable? .dtoMeta directly
       if (!rawMetaType || refVariableType === rawMetaType) {
         return workflowVariable?.dtoMeta;
       }
@@ -486,7 +486,7 @@ export namespace variableUtils {
     if (!rawMetaType) {
       return undefined;
     }
-    // 如果 rawMetaType 存在但与 refVariableType 不同，说明发生了类型转换，则需要根据 rawMetaType 转换为 VariableMetaDTO
+    // If rawMetaType exists but is different from refVariableType, a type conversion has occurred and needs to be converted to VariableMetaDTO according to rawMetaType
     return viewMetaToDTOMeta({
       key: nanoid(),
       name: String(value.content ?? ''),
@@ -495,7 +495,7 @@ export namespace variableUtils {
   }
 
   /**
-   * 优先使用 literalExpression rawMeta.type 字段获取 literal 类型, 参考 variableUtils.valueExpressionToDTO
+   * Priority is given to using the literalExpression rawMeta.type field to obtain the literal type, refer to variableUtils.valueExpressionToDTO
    * @param content
    * @returns
    */
@@ -529,14 +529,14 @@ export namespace variableUtils {
   }
 
   /**
-   * 后端表达式转前端数据
+   * Back-end expression to front-end data
    * @param value
    */
   export function valueExpressionToVO(
     value: ValueExpressionDTO,
     service: WorkflowVariableService,
   ): ValueExpression {
-    // 空数据兜底
+    // empty data bottom line
     if (!value?.value?.type) {
       return {} as any;
     }
@@ -636,7 +636,7 @@ export namespace variableUtils {
   }
 
   /**
-   * input-type-value 前端格式转后端格式
+   * input-type-value front-end format to back-end format
    */
   export function inputTypeValueVOToDTO(
     value: InputTypeValueVO[],
@@ -654,7 +654,7 @@ export namespace variableUtils {
   }
 
   /**
-   * input-type-value 后端格式转前端格式
+   * input-type-value backend format to frontend format
    */
   export function inputTypeValueDTOToVO(
     value: InputTypeValueDTO[],

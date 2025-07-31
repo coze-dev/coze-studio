@@ -39,7 +39,7 @@ interface CollapsibleIconButtonContextValue {
   setItems: Dispatch<SetStateAction<ContextItems | undefined>>;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention -- 这是 context
+// eslint-disable-next-line @typescript-eslint/naming-convention -- this is context
 export const CollapsibleIconButtonContext =
   createContext<CollapsibleIconButtonContextValue>({
     showText: true,
@@ -56,7 +56,7 @@ export const useItem = (key: symbol, ref: RefObject<HTMLElement>) => {
     }));
   }, [size?.width]);
 
-  // 组件销毁后移除
+  // Component destruction and removal
   useEffect(
     () => () => {
       setItems(items => omit(items, key));

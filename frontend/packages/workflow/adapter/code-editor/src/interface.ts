@@ -35,7 +35,7 @@ export interface Output {
   children?: Output[];
 }
 
-// javascript 为历史数据，目前只会有 python ｜ typescript
+// Javascript is historical data, currently only python | typescript is available.
 export type LanguageType = 'python' | 'typescript' | 'javascript';
 
 export interface PreviewerProps {
@@ -67,7 +67,7 @@ export interface EditorProps {
   onTestRun?: () => void;
   testRunIcon?: ReactNode;
   /**
-   * @deprecated onTestRunStateChange 已失效，线上也未使用到
+   * @Deprecated onTestRunStateChange has expired and is not used online
    */
   onTestRunStateChange?: (status: string) => void;
 }

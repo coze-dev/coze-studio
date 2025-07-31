@@ -24,7 +24,7 @@ export enum ChangeMode {
   Replace,
 }
 
-// JSON类型
+// JSON type
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const JSONLikeTypes = [
   ViewVariableType.Object,

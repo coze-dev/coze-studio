@@ -18,7 +18,7 @@ import classNames from 'classnames';
 
 export const getEditorTableClassname = () =>
   classNames(
-    // 表格样式
+    // table style
     '[&_table]:border-collapse [&_table]:m-0 [&_table]:w-full [&_table]:table-fixed [&_table]:overflow-hidden [&_table]:text-[0.9em]',
     '[&_table_td]:border [&_table_th]:border [&_table_td]:border-[#ddd] [&_table_th]:border-[#ddd]',
     '[&_table_td]:p-2 [&_table_th]:p-2',

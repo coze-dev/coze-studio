@@ -30,7 +30,7 @@ export class ChatCoreError extends Error {
   }
 
   /**
-   * 扁平化错误信息，方便在slardar中筛选错误信息
+   * Flatten error messages for easy filtering of error messages in slardar
    */
   flatten = () => {
     const { message, ext } = this;

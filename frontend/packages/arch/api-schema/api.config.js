@@ -4,15 +4,15 @@ const path = require('path');
 
 const config = [
   {
-    idlRoot: '../../../../opencoze', // idl 根目录
+    idlRoot: '../../../../opencoze', // IDL root directory
     entries: {
-      passport: './idl/passport/passport.thrift', // 入口服务名称及路径
+      passport: './idl/passport/passport.thrift', // Entry service name and path
       explore:
         './idl/flow/marketplace/flow_marketplace_product/public_api.thrift',
     },
-    commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // 自定义配置文件
-    output: './src', // 产物所在位置
-    plugins: [], // 自定义插件
+    commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
+    output: './src', // Product location
+    plugins: [], // custom plugin
   },
 ];
 

@@ -19,7 +19,7 @@ import { type MutableRefObject } from 'react';
 
 import { type TableViewMethods } from '@coze-common/table-view';
 
-// 表格 UI 相关的 Context
+// Context related to table UI
 interface TableUIContextType {
   tableViewRef: MutableRefObject<TableViewMethods | null>;
   isLoadingMoreSliceList: boolean;

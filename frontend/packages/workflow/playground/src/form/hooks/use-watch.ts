@@ -19,10 +19,10 @@ import { useWatch as useBaseWatch } from '@flowgram-adapter/free-layout-editor';
 import { type FieldName } from '../type';
 
 /**
- * 监视指定字段的值。
+ * Monitors the value of the specified field.
  *
- * @param name 字段名。
- * @returns 字段的值。
+ * @Param name field name.
+ * @Returns the value of the field.
  */
 export function useWatch<Value = unknown>(
   name: FieldName | { name: FieldName },

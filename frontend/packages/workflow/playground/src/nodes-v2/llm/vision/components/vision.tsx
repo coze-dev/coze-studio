@@ -39,7 +39,7 @@ interface VisionProps {
 }
 
 /**
- * 视觉理解配置
+ * Visual understanding configuration
  */
 export const Vision: FC<VisionProps> = () => {
   const enabledTypes = useModelEnabledTypes();

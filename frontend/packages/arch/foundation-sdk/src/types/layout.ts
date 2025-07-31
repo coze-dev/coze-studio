@@ -18,18 +18,18 @@ export interface BackButtonProps {
   onClickBack: () => void;
 }
 
-/** 导航栏自定义按钮属性 */
+/** Navigation bar custom button properties */
 export interface NavBtnProps {
-  // 必填，Nav.Item导航组件唯一key，路由匹配时高亮
+  // Required, Nav. Item navigation component unique key, highlighted when the route matches
   navKey: string;
-  //按钮图标
+  //button icon
   icon?: React.ReactNode;
-  // 按钮名称
+  // button name
   label: string | React.ReactNode;
-  // 后缀节点
+  // Suffix Node
   suffix?: string | React.ReactNode;
-  // 仅在左侧导航栏默认模式中展示
+  // Show only in the default mode of the left navigation bar
   onlyShowInDefault?: boolean;
-  // 按钮点击回调
+  // Button click callback
   onClick: (e: React.MouseEvent) => void;
 }

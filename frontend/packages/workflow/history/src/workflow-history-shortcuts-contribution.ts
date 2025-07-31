@@ -28,7 +28,7 @@ import { reporter } from '@coze-workflow/base';
 import { WorkflowHistoryConfig } from './workflow-history-config';
 
 /**
- * history 快捷键
+ * History shortcut
  */
 @injectable()
 export class WorkflowHistoryShortcutsContribution
@@ -44,7 +44,7 @@ export class WorkflowHistoryShortcutsContribution
   registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers(
       /**
-       * 撤销
+       * revoke
        */
       {
         commandId: WorkflowCommands.UNDO,
@@ -61,7 +61,7 @@ export class WorkflowHistoryShortcutsContribution
         },
       },
       /**
-       * 重做
+       * redo
        */
       {
         commandId: WorkflowCommands.REDO,

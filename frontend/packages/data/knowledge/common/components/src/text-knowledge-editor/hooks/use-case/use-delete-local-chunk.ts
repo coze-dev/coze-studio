@@ -27,7 +27,7 @@ export const useDeleteLocalChunk = ({
   onChunksChange,
 }: UseDeleteLocalChunkProps) => {
   /**
-   * 处理本地分片的删除操作
+   * Handle deletion of local shardings
    */
   const deleteLocalChunk = (chunk: Chunk) => {
     if (!chunk.local_slice_id) {

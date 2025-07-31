@@ -61,7 +61,7 @@ export const PluginModal: React.FC<PluginModalProps> = ({
     return openMode === OpenModeType.OnlyOnceAdd ? [] : pluginApis;
   };
   const { sider, filter, content } = usePluginModalParts({
-    // 如果是仅添加一次，清空默认选中
+    // If it is added only once, clear the default selection.
     pluginApiList: getPluginApiList(),
     onPluginApiListChange: updateSkillPluginApis,
     openMode,

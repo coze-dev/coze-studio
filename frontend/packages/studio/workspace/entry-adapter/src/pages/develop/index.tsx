@@ -75,7 +75,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
     state => state.space.space_type === SpaceType.Personal,
   );
 
-  // 关键字检索 & 筛选
+  // Keyword Search & Filtering
   const [filterParams, setFilterParams, debouncedSetSearchValue] =
     useCachedQueryParams();
 
@@ -98,7 +98,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
       hasPublished: getPublishRequestParam(filterParams.isPublish),
       recentlyOpen: filterParams.recentlyOpen,
       searchScope: filterParams.searchScope,
-      // 固定值，来自历史代码
+      // Fixed value, from historical code
       orderBy: filterParams.isPublish
         ? search.OrderBy.PublishTime
         : search.OrderBy.UpdateTime,
@@ -134,7 +134,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
     });
 
   /**
-   * 创建 project
+   * Create project
    */
   const { contextHolder, actions } = useIntelligenceActions({
     spaceId,
@@ -172,7 +172,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                     val as (typeof TYPE_FILTER_OPTIONS)[number]['value'],
                 }));
 
-                // tea 埋点
+                // Tea event tracking
                 sendTeaEvent(EVENT_NAMES.workspace_action_front, {
                   space_id: spaceId,
                   space_type: isPersonal ? 'personal' : 'teamspace',
@@ -195,8 +195,8 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
             {!isPersonal ? (
               /**
                * Search Scope
-               * 所有人
-               * 由我创建
+               * Everybody.
+               * Created by me
                */
               <Select
                 className="min-w-[128px]"
@@ -220,7 +220,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                       searchScope: val,
                     };
                   });
-                  // tea 埋点
+                  // Tea event tracking
                   sendTeaEvent(EVENT_NAMES.workspace_action_front, {
                     space_id: spaceId,
                     space_type: isPersonal ? 'personal' : 'teamspace',
@@ -242,9 +242,9 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
               </Select>
             ) : null}
             {/*
-              全部
-              已发布
-              最近打开
+              all
+              Published
+              Recently opened
             */}
             <Select
               className="min-w-[128px]"
@@ -265,7 +265,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                     ? val
                     : DevelopCustomPublishStatus.All,
                 }));
-                // tea 埋点
+                // Tea event tracking
                 sendTeaEvent(EVENT_NAMES.workspace_action_front, {
                   space_id: spaceId,
                   space_type: isPersonal ? 'personal' : 'teamspace',
@@ -302,7 +302,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
         </SubHeader>
         <Content ref={containerRef}>
           <Spin spinning={loading} wrapperClassName="w-full !h-[80vh]">
-            {/* 有数据时 */}
+            {/* When data is available */}
             {data?.list.length ? (
               <div
                 className={classNames(
@@ -378,7 +378,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
               />
             ) : null}
 
-            {/* 展示底部的 loading */}
+            {/* Show loading at the bottom. */}
             {data?.list.length && loadingMore ? (
               <div className="flex items-center justify-center w-full h-[38px] my-[20px] coz-fg-secondary text-[12px]">
                 <IconButton
@@ -389,7 +389,7 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                 <div>{I18n.t('Loading')}...</div>
               </div>
             ) : null}
-            {/* 没有更多数据的时候要展示个占位 */}
+            {/* Show a placeholder when there is no more data */}
             {noMore && data?.list.length ? (
               <div className="h-[38px] my-[20px]"></div>
             ) : null}

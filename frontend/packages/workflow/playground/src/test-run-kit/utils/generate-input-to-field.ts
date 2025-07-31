@@ -28,9 +28,9 @@ import {
 } from '@coze-workflow/base';
 
 /**
- * 将结构化的 input 转化为 Field
+ * Transform structured inputs into Fields
  * fork from packages/workflow/playground/src/components/test-run/utils/generate-test-form-fields.ts
- * 在全量前需要及时观测两者变动
+ * It is necessary to observe the changes of the two in time before the full amount.
  */
 
 export const generateInputToField = (
@@ -94,8 +94,8 @@ export const generateInputToField = (
     description: data.description,
     validateJsonSchema: jsonSchema,
     /**
-     * 部分创建变量的位置可以设置变量的默认值
-     * 在引用变量的位置，通过 meta 拿到默认值作为表单默认值
+     * The location where the variable is partially created can set the default value of the variable
+     * In the position of the reference variable, get the default value as the form default value through meta
      */
     defaultValue: viewVariable?.defaultValue,
     extra: {

@@ -37,9 +37,9 @@ export enum ResourceTypeEnum {
 export type ItemType = ResourceTypeEnum | string;
 
 export interface ResourceStatusType {
-  // 是否是草稿态
+  // Is it a draft?
   draft?: boolean;
-  // 错误内容 & 个数
+  // Error content & number
   problem?: {
     status?: 'normal' | 'error' | 'warning';
     number?: number;
@@ -110,7 +110,7 @@ export interface CommonComponentProps {
   isDragging: boolean;
   isExpand?: boolean;
   /**
-   * 是否处于乐观 ui 的保存阶段
+   * Is it in the preservation stage of optimistic UI?
    */
   isOptimismSaving?: boolean;
   useOptimismUI?:
@@ -172,7 +172,7 @@ export interface CommonRenderProps {
   resource: ResourceType;
   isSelected?: boolean;
   isTempSelected?: boolean;
-  isExpand?: boolean /** 只有 resource.type === folder 的时候才会有该字段 */;
+  isExpand?: boolean /** This field is only available when resource.type === folder */;
 }
 
 export interface ContextType {
@@ -222,9 +222,9 @@ export interface CustomValidatorPropsType {
 
 export interface ValidatorConfigType {
   /**
-   * @param label 当前输入框的文本
-   * @param parentPath 从 root 开始到 父级的路径
-   * @param resourceTree 当前的资源树
+   * @param label the text of the current text box
+   * @Param parentPath, path from root to parent
+   * @Param resourceTree The current resource tree
    * @returns Promise<string>
    */
   /** */
@@ -233,8 +233,8 @@ export interface ValidatorConfigType {
   ) => string | Promise<string>;
 
   /**
-   * 默认: absolute;
-   * absolute: 不占用树的文档流，错误文案覆盖上去;
+   * Default: absolute;
+   * Absolute: document flow that does not occupy the tree, and error copy is overwritten;
    */
   errorMsgPosition?: 'absolute';
   errorMsgStyle?: React.CSSProperties;
@@ -268,12 +268,12 @@ export interface CommandOption {
   onClick?: () => void;
 }
 
-/** 内置的顶部工具栏的按钮组 */
+/** Built-in button group for top toolbar */
 export enum BuildInToolOperations {
-  /** 搜索过滤按钮 */
+  /** Search filter button */
   CreateFile = 'CreateFile',
   CreateFolder = 'CreateFolder',
-  /** 展开收起文件夹 */
+  /** Expand Collapse Folder */
   ExpandFolder = 'ExpandFolder',
 }
 
@@ -287,41 +287,41 @@ export type RightPanelConfigType =
       tooltip?: string;
 
       /**
-       * 这里有两类 命令。
-       * 1. 不在外部插件中提前注册好的，需要组件内部动态注册的。往往是该组件树定制化的菜单项。比如 校验并运行该资源
-       *   那这个 execute 字段是一个必填项
-       * 2. 在外部插件中提前注册好的，往往是需要配合快捷键一起使用的，并且具有一定的普适性的命令。比如创建资源，复制资源等。
-       *   那这个 execute 不需要配置，的回调在 plugin 中注册的地方触发
-       *   上下文可以通过 RESOURCE_FOLDER_CONTEXT_KEY 这个 key 从 ide 上下文中获取
+       * Here are two categories of orders.
+       * 1. If it is not registered in advance in the external plug-in, it needs to be dynamically registered inside the component. Often it is a menu item customized by the component tree. For example, check and run the resource
+       *   Then this execute field is a required field
+       * 2. Registered in advance in external plugins, often need to be used with shortcuts, and have certain universal commands. Such as creating resources, copying resources, etc.
+       *   Then this execute does not need to be configured, and the callback is triggered where it is registered in the plugin.
+       *   The context can be obtained from the IDE context by RESOURCE_FOLDER_CONTEXT_KEY this key
        */
       execute?: () => void;
     }
   | {
-      // 分割线
+      // dividing line
       type: 'separator';
     };
 
 export interface ConfigType {
   /**
-   * 每个资源的高度
+   * The height of each resource
    */
   itemHeight?: number;
   /**
-   * 半个 icon 的宽度，用于左侧折线的计算。
+   * The width of half an icon is used for the calculation of the left polyline.
    */
   halfIconWidth?: number;
   /**
-   * 每个文件夹下缩进的宽度
+   * The width of indentation under each folder
    */
   tabSize?: number;
 
   /**
-   * 文件夹下钻最大的深度
+   * Folder drill down to maximum depth
    */
   maxDeep?: number;
 
   /**
-   * 资源 name 输入框配置
+   * Resource name text box configuration
    */
   input?: {
     className?: string;
@@ -330,14 +330,14 @@ export interface ConfigType {
   };
 
   /**
-   * 拖拽过程中的预览框配置项
+   * Preview box configuration items during drag and drop
    */
   dragUi?: {
     disable?: boolean;
     wrapperClassName?: string;
 
     /**
-     * 特别说明： 可以通过配置这里的 top 和 left 来设置相对鼠标的偏移量
+     * Special note: You can set the offset relative to the mouse by configuring top and left here
      */
     wrapperStyle?: React.CSSProperties;
   };
@@ -346,9 +346,9 @@ export interface ConfigType {
 }
 
 export interface ResourceFolderContextType {
-  id?: string; // folder 组件唯一的 id
-  currentSelectedId?: IdType; // 当前选中的资源 id
-  tempSelectedMap?: Record<string, ResourceType>; // 当前临时选中的资源 map
+  id?: string; // Folder component unique id
+  currentSelectedId?: IdType; // The currently selected resource ID.
+  tempSelectedMap?: Record<string, ResourceType>; // Currently temporarily selected resource map
   onEnter?: () => void;
   onDelete?: () => void;
   onCreateFolder?: () => void;

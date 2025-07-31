@@ -72,7 +72,7 @@ export const TemplateCard = ({
     try {
       let schemaJson = workflowTemplate?.schema_json;
       if (!schemaJson) {
-        // 先请求 schema_json
+        // Ask for schema_json
         const res = await workflowApi.GetCanvasInfo({
           space_id: workflowTemplate.space_id ?? PUBLIC_SPACE_ID,
           workflow_id: workflowTemplate.workflow_id,
@@ -85,10 +85,10 @@ export const TemplateCard = ({
       });
       saveService.highPrioritySave();
       Toast.success(I18n.t('workflow_example_succeed'));
-      // 先关闭上一次试运行的结果
+      // The result of closing a practice run first
       runService.clearTestRun();
       templateState.closeTemplate();
-      // 流程模版关闭动画为 200 ms , 待动画结束后关闭 bottom 面板
+      // Process template closing animation for 200 ms, close bottom panel after animation
       setTimeout(() => {
         floatLayoutService.close('bottom');
       }, 300);

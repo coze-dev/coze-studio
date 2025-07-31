@@ -29,8 +29,8 @@ interface GenerateFieldValidatorOptions {
 }
 
 /**
- * ajv 实例缓存
- * 无需导入创建或者多次创建，优化内存开销
+ * AJV instance cache
+ * No need to import or create multiple times, optimizing memory overhead
  */
 let ajvCache: undefined | Ajv;
 
@@ -45,7 +45,7 @@ export const generateFieldValidator = (
         param_name: title || name,
       });
     }
-    // 如果有结构化描述，还需要对值进行反序列化校验
+    // If there is a structured description, the value also needs to be deserialized
     if (validateJsonSchema && value !== undefined) {
       if (!ajvCache) {
         ajvCache = new Ajv();
@@ -57,9 +57,9 @@ export const generateFieldValidator = (
         return valid ? undefined : I18n.t('workflow_debug_wrong_json');
       } catch {
         /**
-         * 报错有多种可能，预期结果都是校验不通过
-         * 1. 值反序列化失败
-         * 2. 反序列化的值不合法
+         * There are many possibilities for error reporting, and the expected result is that the verification fails.
+         * 1. Value deserialization failed
+         * 2. The deserialized value is not legal
          */
         return I18n.t('workflow_debug_wrong_json');
       }

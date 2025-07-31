@@ -55,7 +55,7 @@ export class WorkflowVariableFacade {
     // do nothing
   }
 
-  // 获取 variableMeta 结构
+  // Get the variableMeta structure
   get viewMeta(): ViewVariableMeta | undefined {
     if (this._fieldVersion !== this.field.version) {
       this._variableMeta = getViewVariableByField(this.field);
@@ -123,7 +123,7 @@ export class WorkflowVariableFacade {
       return {
         key: this.globalVariableKey,
         label: GLOBAL_VAR_ALIAS_MAP[this.globalVariableKey],
-        // 全局变量 icon 无 url
+        // Global variable icon no url
         icon: '',
       };
     }
@@ -166,7 +166,7 @@ export class WorkflowVariableFacade {
     };
   }
 
-  // 当前变量所处的节点
+  // The node where the current variable is located
   get node(): FlowNodeEntity {
     return this.field.scope.meta?.node;
   }
@@ -181,7 +181,7 @@ export class WorkflowVariableFacade {
     return;
   }
 
-  // 获取 keyPath 路径
+  // Get the keyPath path
   get keyPath(): string[] {
     if (!this._keyPath) {
       this._keyPath = getNamePathByField(this.field);
@@ -189,21 +189,21 @@ export class WorkflowVariableFacade {
     return this._keyPath;
   }
 
-  // 对应节点是否可以访问它
+  // Whether the corresponding node can access it
   canAccessByNode(nodeId: string) {
     return !!this.field.scope.coverScopes.find(_scope => _scope.id === nodeId);
   }
 
   /**
-   * @deprecated 变量销毁存在部分 Bad Case
-   * - 全局变量因切换 Project 销毁后，变量引用会被置空，导致变量引用失效
+   * @Deprecated Variable Destruction Partial Bad Case
+   * - After the global variable is destroyed due to the switch Project, the variable reference will be set empty, resulting in the invalidation of the variable reference
    *
-   * 监听变量删除
+   * Listen variable removal
    */
   onDispose(cb?: () => void): Disposable {
     const toDispose = new DisposableCollection();
 
-    // 删除回调只要执行一次
+    // Delete the callback only once
     let cbCalled = false;
     const cbOnce = () => {
       if (!cbCalled) {
@@ -220,7 +220,7 @@ export class WorkflowVariableFacade {
     }
 
     toDispose.pushAll([
-      // 遍历除 Rename 外的所有 Dispose 情况
+      // Traverse All Dispose Cases Except Rename
       this._facadeService.fieldRenameService.onDisposeInList(_disposeField => {
         if (allASTs.includes(_disposeField)) {
           cbOnce();
@@ -229,7 +229,7 @@ export class WorkflowVariableFacade {
       this.field.scope.event.on('DisposeAST', ({ ast }) => {
         if (
           ast &&
-          // TODO Object 删除也有可能是 Rename 导致的，需要重新判断
+          // TODO Object deletion may also be caused by Rename and needs to be re-judged.
           [ASTKind.VariableDeclarationList].includes(ast?.kind as ASTKind) &&
           allASTs.includes(ast)
         ) {
@@ -267,7 +267,7 @@ export class WorkflowVariableFacade {
 
   onTypeChange(cb?: (facade: WorkflowVariableFacade) => void): Disposable {
     return this.field.subscribe(() => cb?.(this), {
-      // 当前层级的类型发时变化时，才触发 onTypeChange
+      // onTypeChange is only triggered when the type of the current level changes
       selector: field => {
         const { type } = getViewVariableTypeByAST(field.type);
         return type;

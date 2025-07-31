@@ -69,7 +69,7 @@ export const WorkflowRender: ComponentTypesMap['contentBox'] = props => {
       multimodalTextContentAddonTop={
         <>
           {customTextMessageInnerTopSlotList.map(
-            // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期的命名
+            // eslint-disable-next-line @typescript-eslint/naming-convention -- matches the expected naming
             ({ pluginName, Component }, index) => (
               <PluginScopeContextProvider
                 pluginName={pluginName}

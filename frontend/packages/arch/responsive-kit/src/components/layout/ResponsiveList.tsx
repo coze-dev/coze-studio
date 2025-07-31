@@ -31,12 +31,12 @@ interface ResponsiveListProps<T> {
 
   footer?: React.ReactNode;
 
-  gridCols?: ResponsiveTokenMap<ScreenRange>; // 响应式列数
-  gridGapXs?: ResponsiveTokenMap<ScreenRange>; // 响应式X轴gap
-  gridGapYs?: ResponsiveTokenMap<ScreenRange>; // 响应式Y轴gap
+  gridCols?: ResponsiveTokenMap<ScreenRange>; // number of responsive columns
+  gridGapXs?: ResponsiveTokenMap<ScreenRange>; // Responsive X-axis gap
+  gridGapYs?: ResponsiveTokenMap<ScreenRange>; // Responsive Y-axis gap
 }
 
-// 通过tailwind动态根据媒体查询设置List列数
+// List columns dynamically set by media query with tailwind
 export const ResponsiveList = <T extends object>({
   dataSource,
   renderItem,

@@ -56,7 +56,7 @@ const mockSetInfoRules: {
           message: I18n.t('create_plugin_modal_nameerror'),
         }
       : {
-          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // 国内增加支持中文
+          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // Increased domestic support for Chinese
           message: I18n.t('create_plugin_modal_nameerror_cn'),
         },
   ],
@@ -115,10 +115,10 @@ export const MockSetEditModal = ({
 }: MockSetEditModalProps) => {
   const formApiRef = useRef<FormApi<EditMockSetInfo>>();
 
-  // 根据是否传入 id 判断是否为创建场景
+  // Determine whether to create a scene based on whether to pass in the id
   const isCreate = !initialInfo.id;
 
-  // space信息
+  // Space information
   const spaceType = useSpaceStore(s => s.space.space_type);
   const isPersonal = spaceType === SpaceType.Personal;
 
@@ -213,7 +213,7 @@ export const MockSetEditModal = ({
       >
         {({ formState }) => (
           <>
-            {/* mockSet名称 */}
+            {/* mockSet name */}
             {disabled ? (
               <Form.Slot
                 label={{
@@ -241,7 +241,7 @@ export const MockSetEditModal = ({
                 rules={mockSetInfoRules.name}
               />
             )}
-            {/* mockSet描述 */}
+            {/* mockSet description */}
             {disabled ? (
               <Form.Slot
                 label={{

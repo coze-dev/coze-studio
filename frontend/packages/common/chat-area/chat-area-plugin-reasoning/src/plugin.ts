@@ -28,19 +28,19 @@ import { BizMessageInnerAddonBottom } from './custom-components/message-inner-ad
 
 export class BizPlugin extends ReadonlyChatAreaPlugin<PluginBizContext> {
   /**
-   * 插件类型
-   * PluginMode.Readonly = 只读模式
-   * PluginMode.Writeable = 可写模式
+   * plugin type
+   * PluginMode. Readonly = read-only mode
+   * PluginMode. Writeable = Writable Mode
    */
   public pluginMode = PluginMode.Readonly;
   /**
-   * 插件名称
-   * 请点 PluginName 里面去定义
+   * plugin name
+   * Please click PluginName to define it.
    */
   public pluginName = PluginName.Demo;
 
   /**
-   * 生命周期服务
+   * lifecycle services
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public lifeCycleServices: any = createReadonlyLifeCycleServices(
@@ -49,7 +49,7 @@ export class BizPlugin extends ReadonlyChatAreaPlugin<PluginBizContext> {
   );
 
   /**
-   * 自定义组件
+   * custom component
    */
   public customComponents = createCustomComponents({
     TextMessageInnerTopSlot: BizMessageInnerAddonBottom,

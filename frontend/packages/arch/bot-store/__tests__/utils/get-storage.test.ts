@@ -16,7 +16,7 @@
  
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// 导入被测试的模块
+// Import the tested module
 import localForage from 'localforage';
 
 import { getStorage, clearStorage } from '../../src/utils/get-storage';

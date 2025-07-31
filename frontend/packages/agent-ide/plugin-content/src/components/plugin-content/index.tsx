@@ -98,7 +98,7 @@ export const PluginContent: FC<PluginContentProps> = ({
   ) => {
     updateSkillPluginApis(
       pluginApis.filter(
-        // 兼容历史数据，有一些 api_id 是 '0'，会导致被一起删除
+        // Compatible with historical data, some api_id are '0' and will be deleted together
         a => getPluginApiKey(a) !== getPluginApiKey(api),
       ) as PluginApi[],
     );
@@ -135,7 +135,7 @@ export const PluginContent: FC<PluginContentProps> = ({
               key={index}
               title={`${plugin.info?.name ?? ''} / ${plugin.api.name}`}
               tags={
-                // 端插件需要加入tag标识
+                // The end plug-in needs to be tagged.
                 plugin.info?.plugin_type === PluginType.LOCAL ? (
                   <Tag color="cyan" size="mini">
                     {I18n.t('local_plugin_label')}
@@ -151,7 +151,7 @@ export const PluginContent: FC<PluginContentProps> = ({
                     <span className="coz-fg-primary mr-[8px]">
                       {I18n.t('Plugin_delisted')}
                     </span>
-                    {/* Action 删除 */}
+                    {/* Action Delete */}
                     <IconButton
                       icon={<IconCozTrashCan />}
                       onClick={() => handleDelete(plugin.api, plugin.info)}
@@ -240,7 +240,7 @@ const Actions: FC<ActionsProps> = ({
 
   return (
     <>
-      {/* Icon - Info提示 */}
+      {/* Icons - Info Tips */}
       <ParametersPopover
         pluginApi={plugin?.api as PluginApi}
         position="bottom"
@@ -252,7 +252,7 @@ const Actions: FC<ActionsProps> = ({
       >
         <ToolItemIconInfo />
       </ParametersPopover>
-      {/* Action 拷贝 */}
+      {/* Action copy */}
       <ToolItemActionCopy
         tooltips={I18n.t('bot_edit_page_plugin_copy_tool_name_tip')}
         onClick={() => handleCopy(plugin.api.name ?? '')}
@@ -262,7 +262,7 @@ const Actions: FC<ActionsProps> = ({
       {!readonly && (
         <>
           {slot}
-          {/* Action 设置 */}
+          {/* Action settings */}
           <PluginSettingEnter
             bindSubjectInfo={{
               componentType: ComponentType.CozeTool,
@@ -282,7 +282,7 @@ const Actions: FC<ActionsProps> = ({
             devId={plugin.info?.creator?.id}
             disabled={isBanned}
           />
-          {/* Action 删除 */}
+          {/* Action Delete */}
           <ToolItemActionDelete
             tooltips={I18n.t('Remove')}
             onClick={() => handleDelete(plugin.api, plugin.info)}

@@ -20,7 +20,7 @@ import { MemoryApi } from '@coze-arch/bot-api';
 import { generateArrayInputParameters } from './generate-test-form-fields';
 
 /**
- * 生成数据库新增数据节点试运行表单项
+ * Generate database new data node practice run table entry
  */
 export async function generateDatabaseCreateTestRunFormFields(
   formData,
@@ -45,7 +45,7 @@ export async function generateDatabaseCreateTestRunFormFields(
 }
 
 /**
- * 生成数据库更新数据节点试运行表单项
+ * Generate database update data node practice run table entry
  */
 export async function generateDatabaseUpdateTestRunFormFields(
   formData,
@@ -74,7 +74,7 @@ export async function generateDatabaseUpdateTestRunFormFields(
 }
 
 /**
- * 生成数据库删除数据节点试运行表单项
+ * Generate database Delete data node practice run table entry
  */
 export function generateDatabaseDeleteTestRunFormFields(formData, context) {
   const conditionList =
@@ -87,7 +87,7 @@ export function generateDatabaseDeleteTestRunFormFields(formData, context) {
 }
 
 /**
- * 生成数据库查询数据节点试运行表单项
+ * Generate database query data node practice run table entry
  */
 export function generateDatabaseQueryTestRunFormFields(formData, context) {
   const conditionList =

@@ -55,15 +55,15 @@ export type LoadMoreClientMethod = Pick<
   | 'clearMessageIndexStore'
 >;
 /**
- * 使用 context 保证是单例
+ * The use of context guarantees is a singleton
  */
 export class LoadMoreClient {
   constructor(private loadEnv: LoadMoreEnvTools) {}
 
   /**
-   * 初始化加载时不需要主动发送请求
-   * 1. 做数据录入处理
-   * 2. 滚动定位至未读第一条
+   * No active request is required when initializing the load
+   * 1. Do data entry processing
+   * 2. Scroll to the first unread item
    */
   public handleInitialLoadIndex = async (data: MixInitResponse) => {
     await new OnInitialLoadEffect(this.loadEnv, data).runAsync();
@@ -93,13 +93,13 @@ export class LoadMoreClient {
 
   public onMessageIndexChange = async (endIndex: string) => {
     const { ignoreIndexAndHistoryMessages } = this.loadEnv.readEnvValues();
-    // 忽略消息推送（home bot分享落地页续聊场景）
+    // Ignore push notification (home bot sharing landing page continuation scene)
     if (ignoreIndexAndHistoryMessages) {
       return;
     }
 
-    // 等待初始化完成再继续进行 index 变更事件响应
-    // 受异步过程影响，需要重新读取 env values
+    // Wait for initialization to complete before proceeding with index change event response
+    // Affected by asynchronous process, need to re-read env values
     await this.loadEnv.waitChatCoreReady();
     const { maxLoadIndex } = this.loadEnv.readEnvValues();
 
@@ -113,10 +113,10 @@ export class LoadMoreClient {
           endIndex,
         },
       });
-      // 后端没做避让 先去掉判断
+      // The back-end did not evade, so remove the judgment first.
       // return;
     }
-    // 避让输出中的回复
+    // Avoid reply in output
     await this.loadEnv.waitChatProcessFinish();
     const shouldBeSilent = getIsDiffWithinRange(
       endIndex,

@@ -21,7 +21,7 @@
 import { numberEqual } from '../util';
 import { Snap } from '../../../typings';
 
-// 获取对象的底部点
+// Get the bottom point of the object
 const getBottomPoint = (p: Snap.ObjectPointsWithMiddle) => {
   let point = p.tl;
   Object.values(p).forEach(d => {
@@ -31,7 +31,7 @@ const getBottomPoint = (p: Snap.ObjectPointsWithMiddle) => {
   });
   return point;
 };
-// 获取对象的顶部点
+// Get the top point of the object
 const getTopPoint = (p: Snap.ObjectPointsWithMiddle) => {
   let point = p.tl;
   Object.values(p).forEach(d => {
@@ -42,7 +42,7 @@ const getTopPoint = (p: Snap.ObjectPointsWithMiddle) => {
   return point;
 };
 
-// 获取对象的左侧点
+// Get the left point of the object
 const getLeftPoint = (p: Snap.ObjectPointsWithMiddle) => {
   let point = p.tl;
   Object.values(p).forEach(d => {
@@ -53,7 +53,7 @@ const getLeftPoint = (p: Snap.ObjectPointsWithMiddle) => {
   return point;
 };
 
-// 获取对象的右侧点
+// Get the right point of the object
 const getRightPoint = (p: Snap.ObjectPointsWithMiddle) => {
   let point = p.tl;
   Object.values(p).forEach(d => {
@@ -64,7 +64,7 @@ const getRightPoint = (p: Snap.ObjectPointsWithMiddle) => {
   return point;
 };
 
-// 判断两段范围是否重叠
+// Determine whether the two ranges overlap
 const isInDuration = (
   target: {
     min: number;
@@ -93,7 +93,7 @@ const getMiddle = (
   return target.max - (target.max - duration.min) / 2;
 };
 
-// 找到指定方向（横/纵）距离最近的左右两个对象的相关信息
+// Find the relevant information about the two objects closest to the specified direction (horizontal/vertical)
 const findLatestObject = ({
   otherPoints: _otherPoints,
   targetPoint,
@@ -204,7 +204,7 @@ const findLatestObject = ({
   return rs;
 };
 
-// 等距吸附规则
+// isometric adsorption rule
 export const paddingRule: Snap.Rule = ({
   otherPoints,
   targetPoint,
@@ -224,19 +224,19 @@ export const paddingRule: Snap.Rule = ({
     },
   };
 
-  // 如果没有其他对象，则直接返回结果
+  // If there are no other objects, the result is returned directly
   if (!otherPoints || otherPoints.length === 0) {
     return rs;
   }
 
-  // 横向 padding 判断
+  // Horizontal padding judgment
   const latestXObj = findLatestObject({
     otherPoints,
     targetPoint,
     direction: 'x',
   });
 
-  // 遍历得到横向的右边对象
+  // Traverse to get the horizontal right object
   let next = [];
   let i = latestXObj.durationObjects.findIndex(
     d => d === latestXObj.next.point,
@@ -256,7 +256,7 @@ export const paddingRule: Snap.Rule = ({
     }
   }
 
-  // 遍历得到横向的左边对象
+  // Traverse to get the horizontal left object
   let prev = [];
   i = latestXObj.durationObjects.findIndex(d => d === latestXObj.prev.point);
   if (i !== -1) {
@@ -409,7 +409,7 @@ export const paddingRule: Snap.Rule = ({
       let latestDistance = 999;
       let latestItem = next[0];
 
-      // 从左侧所有 padding 中，找到最接近的吸附距离
+      // Find the closest adsorption distance from all the padding on the left
       next.forEach(n => {
         const distance = n.distance - latestXObj.next.distance;
         if (Math.abs(distance) < Math.abs(latestDistance)) {
@@ -418,20 +418,20 @@ export const paddingRule: Snap.Rule = ({
         }
       });
 
-      // 如果距离小于阈值，则进行吸附
+      // If the distance is less than the threshold, adsorption is performed
       if (Math.abs(latestDistance) <= threshold) {
-        // 如果找到的 所有 padding 距离 = 最接近的距离，则将这些 padding 添加到 mins 中
+        // If found, all padding distances = closest distance, add those padding to mins
         next.forEach(n => {
           if (numberEqual(n.distance, latestItem.distance)) {
             mins.push(n);
           }
         });
 
-        // 如果 mins 不为空，则进行吸附
+        // If mins is not empty, perform adsorption
         if (mins.length > 0) {
-          // 计算吸附距离
+          // Calculate the adsorption distance
           let staff = latestXObj.next.distance - mins[0].distance;
-          // 是拖拽右侧 resize 控制点
+          // Yes drag right resize control point
           if (
             [
               Snap.ControlType.TopRight,
@@ -442,7 +442,7 @@ export const paddingRule: Snap.Rule = ({
             staff = -(latestXObj.next.distance - mins[0].distance);
           }
 
-          // 计算目标对象的中间点
+          // Calculate the midpoint of the target object
           const nextMiddle = getMiddle(
             {
               min: getTopPoint(latestXObj.next.point).y,
@@ -454,10 +454,10 @@ export const paddingRule: Snap.Rule = ({
             },
           );
 
-          // 计算辅助线 x 坐标
+          // Calculate auxiliary line x coordinates
           let nextX = staff + targetPoint.tr.x;
 
-          // 如果是拖拽右侧 resize 控制点，计算方式不同
+          // If you drag and drop the right to resize the control point, the calculation method is different.
           if (
             [
               Snap.ControlType.TopRight,
@@ -941,7 +941,7 @@ export const paddingRule: Snap.Rule = ({
     }
   }
 
-  // 根据控制点，处理属性变化值
+  // According to the control point, process the property change value
   if (
     [
       Snap.ControlType.TopLeft,

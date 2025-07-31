@@ -82,7 +82,7 @@ export const BackgroundConfigContent: React.FC<
         state.setGenerateBackgroundModalByImmer,
     })),
   );
-  // 初始化展示在拖拽框的图: AI生成成功的展示生成的 > 历史设置的背景图 > 空
+  // Initialize the display in the drag-and-drop box of the graph: AI-generated successful display generated > history settings background cover > empty
   const initPicture = getInitBackground({
     isGenerateSuccess,
     originBackground: backgroundValue,
@@ -98,7 +98,7 @@ export const BackgroundConfigContent: React.FC<
   const pictureUrl = pictureValue?.url;
 
   useEffect(() => {
-    // 初始化逻辑: 初始化图 不是 选中的图，更新候选图选中态
+    // Initialization logic: Initialize the graph, not the selected graph, update the selected state of the candidate graph
     if (initPicture.url !== selectedImageInfo?.tar_url) {
       setGenerateBackgroundModalByImmer(state => {
         state.selectedImage = {
@@ -112,7 +112,7 @@ export const BackgroundConfigContent: React.FC<
   }, []);
 
   useEffect(() => {
-    // 收到AI生图成功后，更新当前展示在裁剪框的图片
+    // After receiving the AI generated picture successfully, update the picture currently displayed in the crop box.
     if (selectedImageInfo) {
       setPictureValue({
         uri: selectedImageInfo?.tar_uri,

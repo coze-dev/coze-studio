@@ -38,7 +38,7 @@ export const useCommonOperation = ({ canvas }: { canvas?: Canvas }) => {
     direct: 'left' | 'right' | 'up' | 'down',
     offsetValue = 1,
   ) => {
-    // 这里不用额外考虑框选 case ，框选时会形成一个临时的组，对组做位移，会影响到组内的每一个元素
+    // There is no need to consider the box selection case here. The box selection will form a temporary group, and the displacement of the group will affect every element in the group
     const activeSelection = canvas?.getActiveObject();
 
     switch (direct) {
@@ -59,12 +59,12 @@ export const useCommonOperation = ({ canvas }: { canvas?: Canvas }) => {
     }
 
     /**
-     * 键盘上下左右触发的图形位移，需要主动触发
+     * The graphic displacement triggered by the keyboard up, down, left and right needs to be triggered actively.
      * 1. moving
      * if (activeSelection) canvas.fire('object:moving')
      * else activeSelection.fire('moving')
      *
-     * 2. object:modified ,用来触发保存
+     * 2. object: modified, used to trigger save
      */
     const isActiveSelection = activeSelection?.isType('activeselection');
     const fabricObject = (
@@ -116,7 +116,7 @@ export const useCommonOperation = ({ canvas }: { canvas?: Canvas }) => {
           canvas.sendObjectBackwards(obj);
         });
       }
-      // 主动触发一次自定义事件:zIndex 变化
+      // Actively trigger a custom event: zIndex change
       canvas.fire('object:modified-zIndex' as keyof CanvasEvents);
       canvas.requestRenderAll();
     }

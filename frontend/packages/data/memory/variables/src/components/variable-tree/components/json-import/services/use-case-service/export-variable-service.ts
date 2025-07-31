@@ -23,10 +23,10 @@ import { type Variable } from '@/store';
 import { type SchemaNode } from '../../../json-editor/service/convert-schema-service';
 
 /**
- * 将转换后的数据转换为Variable
- * @param data 转换后的数据
- * @param baseInfo 基础信息
- * @param originalVariable 原始变量，用于保持variableId
+ * Converting Converted Data to Variables
+ * @param data converted data
+ * @param baseInfo
+ * @param originalVariable to hold variableId
  * @returns Variable[]
  */
 export const exportVariableService = (
@@ -44,7 +44,7 @@ export const exportVariableService = (
     parentId = '',
     originalNode?: Variable,
   ): Variable => {
-    // 使用store中的createVariable方法创建基础变量
+    // Create the underlying variable using the createVariable method in the store
     const baseVariable = store.createVariable({
       variableType: node.type as ViewVariableType,
       groupId: baseInfo.groupId,
@@ -52,17 +52,17 @@ export const exportVariableService = (
       channel: baseInfo.channel,
     });
 
-    // 如果存在原始节点，保持其variableId
+    // If the original node exists, keep its variableId.
     if (originalNode) {
       baseVariable.variableId = originalNode.variableId;
       baseVariable.description = originalNode.description;
     }
 
-    // 更新变量的基本信息
+    // Update basic information about variables
     baseVariable.name = node.name;
     baseVariable.defaultValue = node.defaultValue;
 
-    // 递归处理子节点，尝试匹配原始子节点
+    // Recursively process the sub-node and try to match the original sub-node.
     if (node.children?.length) {
       baseVariable.children = node.children.map((child, index) => {
         const originalChild = originalNode?.children?.[index];
@@ -75,7 +75,7 @@ export const exportVariableService = (
 
   const variables = data.map(node => convertNode(node, '', originalVariable));
 
-  // 使用store中的updateMeta方法更新meta信息
+  // Update meta information using the updateMeta method in the store
   store.updateMeta({ variables });
 
   return variables;

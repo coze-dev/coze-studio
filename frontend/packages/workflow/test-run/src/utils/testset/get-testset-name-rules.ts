@@ -27,16 +27,16 @@ interface GetTestsetNameRulesProps {
   bizCtx?: BizCtx;
   /** bizComponentSubject */
   bizComponentSubject?: ComponentSubject;
-  /** 原始值 */
+  /** raw value */
   originVal?: string;
-  /** 是否为海外（海外不允许输入中文 ，与PluginName校验规则对齐） */
+  /** Whether it is overseas (overseas is not allowed to enter Chinese, it is aligned with the PluginName verification rule) */
   isOversea?: boolean;
 }
 
 /**
- * 校验名称格式（参考插件名称）
- * - 海外：仅支持输入字母、数字、下划线或空格
- * - 国内：仅支持输入中文、字母、数字、下划线或空格
+ * Verification name format (refer to plug-in name)
+ * - Overseas: Only support entering letters, numbers, underscores or spaces
+ * - Domestic: Only supports entering Chinese, letters, numbers, underscores or spaces
  */
 function validateNamePattern(
   name: string,
@@ -56,12 +56,12 @@ function validateNamePattern(
 }
 
 /**
- * Testset名称表单校验规则
+ * TestSet Name Form Validation Rules
  *
  * @param param.bizCtx - bizCtx
  * @param param.bizComponentSubject - bizComponentSubject
- * @param param.originVal - 原始值
- * @param param.isOversea - 是否为海外（海外不允许输入中文 ，与PluginName校验规则对齐）
+ * @Param param.originVal - original value
+ * @Param param.isOverseas - whether it is overseas (overseas is not allowed to enter Chinese, it is aligned with the PluginName verification rule)
  */
 export function getTestsetNameRules({
   bizCtx,
@@ -83,12 +83,12 @@ export function getTestsetNameRules({
           return;
         }
 
-        // 编辑模式下，名称与原名相同时跳过
+        // In edit mode, skip when the name is the same as the original name
         if (originVal && value === originVal) {
           return;
         }
 
-        // 中文、字母等等等等
+        // Chinese, letters, etc., etc
         const formatMsg = validateNamePattern(value, isOversea);
 
         if (formatMsg) {
@@ -96,7 +96,7 @@ export function getTestsetNameRules({
           return;
         }
 
-        // 检查重复
+        // Check for duplicates
         try {
           const { isPass } = await debuggerApi.CheckCaseDuplicate({
             bizCtx,

@@ -60,17 +60,17 @@ export async function initPublishStore(
     const { connector_ids = [], connector_publish_config = {} } =
       last_publish_info;
 
-    // 初始化默认选中的渠道
+    // Initialize the default selected channel
     const initSelectedConnectors: string[] = [];
     const initConnectors: Record<string, Record<string, string>> = {};
     for (const id of connector_ids) {
       const connector = connector_list.find(c => c.id === id);
-      // 过滤掉不允许发布的渠道
+      // Filter out channels that are not allowed to publish
       if (!connector || getDisabledPublish(connector)) {
         continue;
       }
       if (connector.connector_union_id) {
-        // 对于 union 的 connector ，选中其 union id
+        // For the connector of union, select its union id.
         initSelectedConnectors.push(connector.connector_union_id);
         initConnectors[connector.id] = connector.bind_info;
       } else {
@@ -79,7 +79,7 @@ export async function initPublishStore(
       }
     }
 
-    // 初始化每个 union 选中的 connector，如果上次没发布该渠道，则选中第一个
+    // Initialize the connector selected by each union, and select the first one if the channel was not published last time
     const initUnions: Record<string, string> = {};
     for (const [unionId, info] of Object.entries(connector_union_info_map)) {
       initUnions[unionId] =
@@ -87,9 +87,9 @@ export async function initPublishStore(
           ?.connector_id ?? info.connector_options[0].connector_id;
     }
 
-    // 回填社交渠道选择的 chatflow，优先级：
-    // 1. draft 中保存的 chatflow
-    // 2. 上次发布的第一个 SocialPlatform 选择的 chatflow
+    // Backfill the chatflow of social channel selection, priority:
+    // 1. Saved chatflows in drafts
+    // 2. Chatflow selected by the first SocialPlatform released last time
     let lastSocialPlatformChatflow: ConnectorPublishConfig | undefined;
     if (draft?.socialPlatformConfig?.selected_workflows?.[0].workflow_id) {
       lastSocialPlatformChatflow = draft.socialPlatformConfig;
@@ -109,7 +109,7 @@ export async function initPublishStore(
       }
     }
 
-    // 根据 draft 中保存的信息回填 WebSDK 渠道选择的 chatflow
+    // Backfill the chatflow selected by the WebSDK channel based on the information saved in the draft
     if (draft?.sdkConfig?.selected_workflows?.[0].workflow_id) {
       connector_publish_config[WEB_SDK_CONNECTOR_ID] = draft.sdkConfig;
     }
@@ -119,7 +119,7 @@ export async function initPublishStore(
     );
 
     const lastPublishVersionNumber = last_publish_info.version_number;
-    // 用户没有 draft 并且存在发布过的版本 则将上一次发布的版本号进行处理
+    // If the user does not have a draft and there is a published version, the last released version number will be processed
     const fixedVersionNumber = getFixedVersionNumber({
       lastPublishVersionNumber,
       draftVersionNumber: draft?.versionNumber,

@@ -33,5 +33,5 @@ export const CONTINUE_NODE_REGISTRY: WorkflowNodeRegistry = {
     nodeMetaPath: DEFAULT_NODE_META_PATH,
   },
   formMeta: CONTINUE_FORM_META,
-  getOutputPoints: () => [], // Continue 节点没有输出
+  getOutputPoints: () => [], // Continue node has no output
 };

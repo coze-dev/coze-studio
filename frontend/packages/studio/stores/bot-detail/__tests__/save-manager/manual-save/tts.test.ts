@@ -25,7 +25,7 @@ import {
 import { ItemTypeExtra } from '../../../src/save-manager/types';
 import { saveTTSConfig } from '../../../src/save-manager/manual-save/tts';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('lodash-es', () => ({
   cloneDeep: vi.fn(obj => JSON.parse(JSON.stringify(obj))),
   merge: vi.fn((target, ...sources) => Object.assign({}, target, ...sources)),
@@ -73,7 +73,7 @@ describe('tts save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotSkillStore.getState as any).mockReturnValue({
       tts: mockTTS,
       voicesInfo: mockVoicesInfo,
@@ -93,21 +93,21 @@ describe('tts save manager', () => {
   it('应该正确保存 TTS 配置', async () => {
     await saveTTSConfig();
 
-    // 验证 transformVo2Dto.tts 被调用
+    // Verify that transformVo2To.tts is called
     expect(mockTransformVo2Dto.tts).toHaveBeenCalledTimes(1);
 
-    // 验证传递给 transformVo2Dto.tts 的参数是 tts 的克隆
+    // Verify that the parameter passed to transformVo2To.tts is a clone of tts
     const ttsArg = mockTransformVo2Dto.tts.mock.calls[0][0];
     expect(ttsArg).toEqual(mockTTS);
-    expect(ttsArg).not.toBe(mockTTS); // 确保是克隆而不是原始对象
+    expect(ttsArg).not.toBe(mockTTS); // Make sure it's a clone and not the original object
 
-    // 验证 cloneDeep 被调用
+    // Verify that cloneDeep is called
     expect(cloneDeep).toHaveBeenCalledTimes(3);
 
-    // 验证 transformVo2Dto.voicesInfo 被调用
+    // Verify that transformVo2To.voicesInfo is called
     expect(mockTransformVo2Dto.voicesInfo).toHaveBeenCalledWith(mockVoicesInfo);
 
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       voices_info: {
         muted: mockTTS.muted,
@@ -120,7 +120,7 @@ describe('tts save manager', () => {
       },
     });
 
-    // 验证 saveFetcher 被调用，并且参数正确
+    // Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemTypeExtra.TTS,

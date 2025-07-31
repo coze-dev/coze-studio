@@ -36,10 +36,10 @@ import styles from './index.module.less';
 
 export interface CustomTreeNodeProps extends RenderFullLabelProps {
   onChange: (mode: ChangeMode, param: TreeNodeCustomData) => void;
-  // Description 组件变换为多行时，其下面第一个 child 需被记录
+  // When the Description component is transformed into multiple rows, the first child below it needs to be recorded
   onActiveMultiInfoChange?: (info: ActiveMultiInfo) => void;
   activeMultiInfo?: ActiveMultiInfo;
-  // 不支持使用的类型
+  // Types not supported
   disabledTypes?: ParamTypeAlias[];
 }
 
@@ -59,7 +59,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
   } = props;
   const { allowValueEmpty, readonly, hasObjectLike, withDescription } =
     useConfig();
-  // 当前值
+  // current value
   const value = data as TreeNodeCustomData;
   const isTopLevel = level === 0;
   const isOnlyOneData = value.isSingle && isTopLevel;
@@ -71,15 +71,15 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
   const disableDelete = Boolean(
     !allowValueEmpty && isOnlyOneData && isTopLevel,
   );
-  // 删除时
+  // When deleting
   const onDelete = () => {
     onChange(ChangeMode.Delete, value);
   };
-  // 新增子项时
+  // When adding a child
   const onAppend = () => {
     onChange(ChangeMode.Append, value);
   };
-  // 类型切换时
+  // When switching types
   const onSelectChange = (
     val?: string | number | Array<unknown> | Record<string, unknown>,
   ) => {
@@ -90,7 +90,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     if (isNumber(val)) {
       const isObjectLike = ObjectLikeTypes.includes(val);
       if (!isObjectLike) {
-        // 如果不是类Object，判断是否有children，如果有，删除掉
+        // If it is not a class Object, determine whether there are children. If so, delete it
         if (value.children && value.children.length > 0) {
           delete value.children;
         }
@@ -99,14 +99,14 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
       onChange(ChangeMode.Update, { ...value, type: val });
     }
 
-    // 更新type
+    // Update type
   };
-  // 更新
+  // update
   const onNameChange = (name: string) => {
     onChange(ChangeMode.Update, { ...value, name });
   };
 
-  // 更新
+  // update
   const onDescriptionChange = useCallback(
     (description: string) => {
       onChange(ChangeMode.Update, { ...value, description });
@@ -115,7 +115,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
   );
 
   /**
-   * Description 组件单行 / 多行变换时，其下面第一个 child 的竖线需要缩短 / 延长
+   * Description When the component converts single/multiple rows, the vertical line of the first child below it needs to be shortened/lengthened
    */
   const onDescriptionLineChange = useCallback(
     (type: DescriptionLine) => {
@@ -140,7 +140,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
 
   if (readonly) {
     return (
-      // 提高class的css 权重
+      // Increase the CSS weight of the class
       <div
         className={classNames(
           styles['readonly-icon-container'],
@@ -170,7 +170,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
         })}
         ref={treeNodeRef}
       >
-        {/* 每增加一级多15长度 */}
+        {/* 15 more lengths for each additional level */}
         <div
           style={{ width: IndentationWidth }}
           className={styles['level-icon']}
@@ -196,7 +196,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
             level={level}
             disabledTypes={disabledTypes}
           />
-          {/* LLM 节点输出才有 description */}
+          {/* The LLM node output has a description. */}
           {withDescription ? (
             <ParamDescription
               data={value}

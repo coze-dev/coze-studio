@@ -28,13 +28,13 @@ export function setValueIn(
   nextValue: unknown,
 ) {
   const formData = node.getData(FlowNodeFormData);
-  // 新表单引擎更新数据
+  // New form engine updates data
   if (isFormV2(node)) {
     (formData.formModel as FormModelV2).setValueIn(path, nextValue);
     return;
   }
 
-  // 老表单引擎更新数据
+  // Old form engine updates data
   const fullData = formData.formModel.getFormItemValueByPath('/');
   set(fullData, path, nextValue);
 

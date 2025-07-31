@@ -24,12 +24,12 @@ interface GetPositionProps {
 }
 
 export const useGetPosition = ({ getPositionSuccess }: GetPositionProps) => {
-  // 位置授权按钮loading态
+  // Position authorization button loading state
   const [loading, setLoading] = useState(false);
 
   const getSysPosition = () => {
     setLoading(true);
-    /** 获取系统地理位置信息 */
+    /** Acquire system location information */
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         position => {

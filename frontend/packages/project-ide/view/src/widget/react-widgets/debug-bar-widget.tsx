@@ -176,7 +176,7 @@ export class DebugBarWidget extends ReactWidget {
 
   render() {
     return (
-      // 不走 lumino widget 逻辑，通过 css 控制显隐
+      // Do not use the lumino widget logic, control the hidden through css
       <div
         className="debug-bar-widget-container"
         ref={this.ref}

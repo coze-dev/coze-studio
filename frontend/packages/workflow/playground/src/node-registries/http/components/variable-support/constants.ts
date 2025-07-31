@@ -21,11 +21,11 @@ export enum MenuType {
 
 export enum DropdownType {
   /**
-   * 用户输入唤起
+   * user input evocation
    */
   Input = 'Input',
   /**
-   * 点击变量唤起
+   * click variable arousal
    */
   Update = 'Update',
 }

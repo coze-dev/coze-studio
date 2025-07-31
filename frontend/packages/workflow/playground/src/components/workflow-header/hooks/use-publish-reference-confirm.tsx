@@ -15,7 +15,7 @@
  */
  
 /**
- * 流程发布前检查引用关系确认
+ * Check the reference relationship before the process is published
  */
 import { isEmpty } from 'lodash-es';
 import { Modal } from '@coze-arch/bot-semi';

@@ -33,18 +33,18 @@ export const getValueByType = <T,>(value, type?: ModelParamType): T => {
   return _value;
 };
 
-// 内存级缓存
+// memory level cache
 const cacheData: {
   [k: string]: unknown;
 } = {
-  //记录展开/收起状态
+  //Record expanded/stowed status
   expand: undefined,
 };
 export { cacheData };
 
 /**
- * 根据 modelParams 生成默认值
- * 如果传入 value 则优先使用 value（可以理解为对 value 做 min max 校验）
+ * Generate default values from modelParams
+ * If you pass in value, use value first (it can be understood as a min max check for value)
  */
 export const generateDefaultValueByMeta = ({
   modelParams,
@@ -65,20 +65,20 @@ export const generateDefaultValueByMeta = ({
     modelParams?.forEach(p => {
       const key = getCamelNameName(p.name ?? '');
 
-      // 优先从 value 中取，取不到再从 meta 里取。【自定义】默认值兜底
+      // Priority is given to taking from the value, and if you can't get it, you can take it from the meta. [Custom] The default value is the bottom.
       let _v =
         value?.[key] ??
         p.default_val?.[generationDiversity] ??
         p.default_val?.[GenerationDiversity.Customize];
 
-      // 防御代码：这里是为了校验后端返回默认值，理论上默认值必须合法，但万一呢。数字类型的默认值需要保证 max >= v >= min
+      // Defense code: This is to verify that the backend returns the default value. Theoretically, the default value must be legal, but what if. The default value of the number type needs to be guaranteed max > = v > = min.
       if (
         p.type &&
         [ModelParamType.Float, ModelParamType.Int].includes(p.type)
       ) {
         const { min, max } = p;
 
-        // 数字类型的，实在取不到值了就用 0
+        // For numeric types, if you really can't get the value, use 0.
         if (['', undefined].includes(_v)) {
           _v = 0;
         }

@@ -55,7 +55,7 @@ export type CozeImageProps = MdBoxImageProps & {
 
 const TIME_OUT = 10000;
 
-// TODO: @liushuoyan 看看这里能不能搞一个插槽之类的东西
+// TODO: @liushuoyan see if you can get a slot or something here
 // eslint-disable-next-line @typescript-eslint/naming-convention, @coze-arch/max-line-per-function
 export const _CozeImage: FC<CozeImageProps> = props => {
   const [showPreview, setShowPreview] = useState(false);
@@ -110,7 +110,7 @@ export const _CozeImage: FC<CozeImageProps> = props => {
   const originImageInfoRef = useRef<OriginImageInfo>({});
   const [imageStyles, setImageStyles] = useState<CSSProperties>({});
 
-  // 加载状态
+  // loading status
   const [loading, setLoading] = useState(true);
   const [imageSrc, setImageSrc] = useState(DefaultImage);
 

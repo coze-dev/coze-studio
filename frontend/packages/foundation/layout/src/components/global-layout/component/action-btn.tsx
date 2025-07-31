@@ -65,7 +65,7 @@ export const GlobalLayoutActionBtn: FC<LayoutButtonItem> = ({
       data-testid={dataTestId}
     />
   );
-  // 如果 tooltip 为空，则不显示 tooltip
+  // If tooltip is empty, tooltip is not displayed
   return (
     <>
       {tooltip ? (

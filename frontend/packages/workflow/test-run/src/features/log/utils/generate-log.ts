@@ -75,20 +75,20 @@ const generateBatchData = (result: NodeResult): Log => {
 
 const generateInput = (logs: Log[], result: NodeResult) => {
   const { NodeType: type } = result;
-  /** input 不可能是 string，所以使用 {} 兜底，异常情况直接展示空即可 */
+  /** The input cannot be a string, so use {} to cover the bottom, and the exception can be directly displayed empty. */
   const inputData = (typeSafeJSONParse(result.input, {
     emptyValue: result.input,
     enableBigInt,
   }) || {}) as LogValueType;
-  /** step 1.1: condition 节点单独处理 */
+  /** Step 1.1: condition node handled separately */
   if (type === 'If') {
     const normalizeConditions = normalizeConditionInputData(inputData);
     const conditions = normalizeConditions.map(branch => ({
       conditions: branch.conditions.map(condition => {
-        /** 右值不一定存在 */
+        /** An rvalue doesn't necessarily exist */
         const { left, right = {}, operator } = condition;
         const operatorFn = totalConditionValueMap[operator];
-        /** 后端的 operator 枚举值通过 i18n 转化为文本 */
+        /** Back-end operator enumeration values are converted to text via i18n */
         const operatorData = isFunction(operatorFn) ? operatorFn() : operator;
         const leftData = left?.key ? { [left?.key]: left?.value } : left?.value;
         const rightData =
@@ -108,7 +108,7 @@ const generateInput = (logs: Log[], result: NodeResult) => {
     }));
     logs.push({ conditions, type: LogType.Condition });
   } else {
-    /** end、Message 节点的 label 不同，输入即输出 */
+    /** Different labels of end and message nodes, input is output */
     const isOutputNode = type === 'End' || type === 'Message';
     const label = isOutputNode
       ? I18n.t('workflow_detail_end_output')
@@ -142,26 +142,26 @@ const generateOutput = (
   const { hitStatus: mockHitStatus, mockSetName } =
     (typeSafeJSONParse(mockHitInfo) as any) || {};
   /**
-   * case1: output 解析成功，可能是对象或者字符串
-   * case2: output 解析失败，可能是字符串
-   * case3: output 为空值，兜底展示空对象
+   * Case1: output parsed successfully, may be an object or string
+   * Case2: output parsing failed, possibly string
+   * Case3: output is null, the empty object is displayed at the bottom
    */
   let outputData =
     typeSafeJSONParse(result.output, { enableBigInt }) || result.output || {};
-  /** step 2.1: 处理 rawOutput */
+  /** Step 2.1: Handling rawOutput */
   /**
-   * case1: output 解析成功，可能是对象或者字符串
-   * case2: output 解析失败，可能是字符串，由于是原始输出空值也视为有意义
+   * Case1: output parsed successfully, may be an object or string
+   * Case2: output parsing failed, it may be a string, because it is the original output null value, it is also considered meaningful
    */
   const rawData =
     typeSafeJSONParse(result.raw_output, { enableBigInt }) || result.raw_output;
 
-  /** Code、Llm 节点需要展示 raw */
+  /** Code, Llm nodes need to display raw */
   const textHasRawout = type === 'Text' && hasStringOutput(rawData);
   const hasRawOutput =
     (type && ['Code', 'LLM', 'Question'].includes(type)) || textHasRawout;
 
-  /** step 2.2: 处理 errorInfo */
+  /** Step 2.2: Handling errorInfo */
   if (errorInfo) {
     const errorData = {
       [errorLevel === 'Error'
@@ -169,9 +169,9 @@ const generateOutput = (
         : LogObjSpecialKey.Warning]: errorInfo,
     };
     /**
-     * 错误放到 output 中展示，output 的展示优先级最高
-     * 若 output 为对象则直接 assign error
-     * 否则 output 需要被赋值到 output 字段并和 error 组成一个对象
+     * Errors are displayed in output, and output has the highest priority
+     * If the output is an object, directly assign error
+     * Otherwise, output needs to be assigned to the output field and formed into an object with error
      */
     outputData = isObject(outputData)
       ? {
@@ -269,19 +269,19 @@ export const generateLog = (
 
   const logs: Log[] = [];
 
-  /** step 0: 处理 batch data */
+  /** Step 0: Processing batch data */
   if (isBatch) {
     logs.push(generateBatchData(result));
   }
 
-  /** step 1: 处理 input */
+  /** Step 1: Process the input */
   generateInput(logs, result);
 
-  /** step 2: 处理 output */
+  /** Step 2: Process the output */
 
   generateOutput(logs, result, node);
 
-  /** step 3: 对于子工作流节点，生成额外的跳转链接 */
+  /** Step 3: For child workflow nodes, generate additional jump links */
   generateExternalLink(logs, result, node);
 
   return {

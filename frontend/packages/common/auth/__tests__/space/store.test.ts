@@ -18,18 +18,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-hooks';
 import { SpaceRoleType } from '@coze-arch/idl/developer_api';
 
-// 模拟全局变量
+// simulated global variable
 vi.stubGlobal('IS_DEV_MODE', true);
 
 describe('Space Auth Store', () => {
   beforeEach(() => {
-    // 重置模块缓存，确保每个测试都使用新的 store 实例
+    // Reset the module cache to ensure that each test uses a new store instance
     vi.resetModules();
   });
 
   describe('setRoles', () => {
     it('应该正确设置空间角色', async () => {
-      // 动态导入 store 模块，确保每次测试都获取新的实例
+      // Dynamically import the store module to ensure that each test gets a new instance
       const { useSpaceAuthStore } = await vi.importActual(
         '../../src/space/store',
       );
@@ -137,22 +137,22 @@ describe('Space Auth Store', () => {
       const { result } = renderHook(() => useSpaceAuthStore());
       const roles = [SpaceRoleType.Owner];
 
-      // 设置初始数据
+      // Set initial data
       await act(() => {
         result.current.setRoles('space1', roles);
         result.current.setIsReady('space1', true);
       });
 
-      // 验证数据已设置
+      // Verify that the data is set
       expect(result.current.roles.space1).toEqual(roles);
       expect(result.current.isReady.space1).toBe(true);
 
-      // 销毁数据
+      // Destroy data
       await act(() => {
         result.current.destory('space1');
       });
 
-      // 验证数据已清除
+      // Verify that the data has been cleared
       expect(result.current.roles.space1).toEqual([]);
       expect(result.current.isReady.space1).toBeUndefined();
     });
@@ -163,7 +163,7 @@ describe('Space Auth Store', () => {
       );
       const { result } = renderHook(() => useSpaceAuthStore());
 
-      // 设置两个空间的数据
+      // Set data for two spaces
       await act(() => {
         result.current.setRoles('space1', [SpaceRoleType.Owner]);
         result.current.setIsReady('space1', true);
@@ -171,16 +171,16 @@ describe('Space Auth Store', () => {
         result.current.setIsReady('space2', true);
       });
 
-      // 只销毁 space1 的数据
+      // Only destroy space1 data
       await act(() => {
         result.current.destory('space1');
       });
 
-      // 验证 space1 的数据已清除
+      // Verify that Space1's data has been cleared
       expect(result.current.roles.space1).toEqual([]);
       expect(result.current.isReady.space1).toBeUndefined();
 
-      // 验证 space2 的数据保持不变
+      // Verify that Space2's data remains unchanged
       expect(result.current.roles.space2).toEqual([SpaceRoleType.Member]);
       expect(result.current.isReady.space2).toBe(true);
     });
@@ -193,14 +193,14 @@ describe('Space Auth Store', () => {
       );
       const { result } = renderHook(() => useSpaceAuthStore());
 
-      // 重置 store 确保测试环境干净
+      // Reset store to ensure testing environment is clean
       await act(() => {
         Object.keys(result.current.roles).forEach(spaceId => {
           result.current.destory(spaceId);
         });
       });
 
-      // 验证初始状态
+      // Verify the initial state
       expect(result.current.roles).toEqual({});
       expect(result.current.isReady).toEqual({});
     });

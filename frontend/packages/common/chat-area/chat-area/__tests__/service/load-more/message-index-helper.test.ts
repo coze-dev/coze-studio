@@ -42,7 +42,7 @@ vi.mock('@coze-common/chat-core', () => ({
   },
 }));
 
-// 固定一下参数
+// Fix the parameters
 vi.mock('../../../src/constants/message', () => ({
   MIN_MESSAGE_INDEX_DIFF_TO_ABORT_CURRENT: 10,
 }));

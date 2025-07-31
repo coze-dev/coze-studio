@@ -21,8 +21,8 @@ import { FormItemSchemaType } from '../../constants';
 
 /**
  * placeholder
- * - bot：请选择bot
- * - 其他：xx必填
+ * - bot: Please select bot
+ * - Other: xx required
  */
 export function getTestsetFormItemPlaceholder({ name, type }: FormItemSchema) {
   if (type === FormItemSchemaType.BOT) {

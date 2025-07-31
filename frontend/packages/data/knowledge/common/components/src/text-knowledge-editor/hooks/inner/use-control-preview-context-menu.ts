@@ -26,7 +26,7 @@ export const useControlPreviewContextMenu = () => {
   } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
-  // 处理右键点击事件
+  // Handling right-click events
   const openContextMenu = (e: React.MouseEvent, chunk: Chunk) => {
     e.preventDefault();
     setContextMenuInfo({
@@ -36,12 +36,12 @@ export const useControlPreviewContextMenu = () => {
     });
   };
 
-  // 关闭右键菜单
+  // Close the right-click menu
   const closeContextMenu = () => {
     setContextMenuInfo(null);
   };
 
-  // 点击文档其他位置关闭右键菜单
+  // Click elsewhere in the document to close the right-click menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

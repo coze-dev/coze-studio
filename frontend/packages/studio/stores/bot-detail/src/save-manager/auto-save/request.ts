@@ -24,7 +24,7 @@ import { type BizKey, type ScopeStateType } from '@/save-manager/types';
 import { saveFetcher } from '../utils/save-fetcher';
 
 /**
- * 自动保存统一请求方法
+ * Autosave Uniform Request Method
  */
 export const saveRequest: SaveRequest<ScopeStateType, BizKey> = async (
   payload: ScopeStateType,

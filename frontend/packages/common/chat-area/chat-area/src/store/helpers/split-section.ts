@@ -26,9 +26,9 @@ export interface UpdateSectionContextDividerParam {
 }
 
 /**
- * 从后向前扫描
- * 当前消息是第一条answer&
- * 前面有jumpVerbose消息才展示agent分割线
+ * Scan from back to front
+ * Current message is the first answer &
+ * The agent split line is only displayed if there is a jumpVerbose message in front of it.
  */
 export const updateMetaListDivider = (
   param: UpdateSectionContextDividerParam,
@@ -59,8 +59,8 @@ const updateDividerByScanList = (
     return;
   }
 
-  // messageList 顺序是最新的存在前面
-  // 渲染的时候有 reverse 需要注意
+  // messageList order is up-to-date presence preceding
+  // There is reverse to be paid attention to when rendering.
   for (let i = visibleMessageMeta.length - 1; i > 0; i--) {
     const next = visibleMessageMeta[i - 1];
     const current = visibleMessageMeta[i];
@@ -69,7 +69,7 @@ const updateDividerByScanList = (
       return;
     }
 
-    // 当前消息是第一条answer&前面有jumpVerbose消息才展示agent分割线
+    // The current message is the first answer & there is a jumpVerbose message in front of it to show the agent split line
     if (next.beforeHasJumpVerbose && next.isGroupFirstAnswer) {
       next.showMultiAgentDivider = true;
     }

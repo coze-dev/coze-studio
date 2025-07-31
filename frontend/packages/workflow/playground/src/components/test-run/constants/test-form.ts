@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * test form 相关常量
+ * Test form correlation constants
  */
 import get from 'lodash-es/get';
 import { FILE_TYPES, ViewVariableType } from '@coze-workflow/base';
@@ -30,28 +30,28 @@ import { type ValueType } from '@/components/bot-project-select/types';
 import { genFileTypeByViewVarType } from '../utils/common';
 import { type TestFormField } from '../types';
 
-/** 约定给 testset 的 key */
+/** The agreed key for testset */
 export { TESTSET_BOT_NAME } from '@coze-workflow/test-run/constants';
 
-/** 约定给 testset 的对话 key */
+/** Engage the dialogue key for testset */
 export const TESTSET_CHAT_NAME = '_WORKFLOW_VARIABLE_NODE_CHAT_ID';
 
-/** test form 类型 */
+/** Test form type */
 export enum TestFormType {
-  /** 全量运行 */
+  /** in full operation */
   Default,
-  /** 单节点运行 */
+  /** single node operation */
   Single,
 }
 
-/** 运行 test run 所用数据的来源 */
+/** Sources of data used for test runs */
 export enum TestRunDataSource {
   Aigc = 'aigc',
   Testset = 'testset',
   User = 'user',
 }
 
-/** 固定的 field name */
+/** Fixed field name */
 export enum FieldName {
   Node = '_node',
   Batch = '_batch',
@@ -66,7 +66,7 @@ export enum FieldName {
   JSON = '_json',
 }
 
-/** field 的基本模版 */
+/** Basic template for fields */
 export const DEFAULT_FIELD_TEMPLATE = {
   required: true,
   decorator: {
@@ -74,7 +74,7 @@ export const DEFAULT_FIELD_TEMPLATE = {
   },
 };
 
-/** node 节点的基本模版 */
+/** Node basic template */
 export const NODE_FIELD_TEMPLATE = {
   type: 'FormObject',
   name: FieldName.Node,
@@ -91,7 +91,7 @@ export const SETTING_FIELD_TEMPLATE = {
   },
 };
 
-/** 批处理的模版 */
+/** batch template */
 export const BATCH_FIELD_TEMPLATE = {
   type: 'FormObject',
   name: FieldName.Batch,
@@ -100,7 +100,7 @@ export const BATCH_FIELD_TEMPLATE = {
   },
 };
 
-/** 输入的模版 */
+/** input template */
 export const INPUT_FIELD_TEMPLATE = {
   type: 'FormObject',
   name: FieldName.Input,
@@ -109,7 +109,7 @@ export const INPUT_FIELD_TEMPLATE = {
   },
 };
 
-/** 整个 JSON 输入的模版 */
+/** The template for the entire JSON input */
 export const INPUT_JSON_FIELD_TEMPLATE = {
   type: 'FormObject',
   name: FieldName.JSON,
@@ -126,7 +126,7 @@ export const getConversationTemplate = chatFlowService => {
     component: {
       type: 'ConversationSelect',
       props: {
-        // 传入 bot 组件的 projectId（选择项为 bot 的场景不展示）
+        // Pass in the projectId of the bot component (the scene where the selection is bot is not displayed)
         projectId: `{{$parent.children?.find(item => item.type?.name === "${FieldName.Bot}")?.value}}`,
       },
     },
@@ -136,8 +136,8 @@ export const getConversationTemplate = chatFlowService => {
         tooltip: I18n.t('wf_chatflow_154'),
       },
     },
-    // bot / project 不选择的时候，conversation 不会展示
-    // 初始化设置 false，其余回显逻辑在 packages/workflow/playground/src/components/test-run/test-form-sheet-v2/form-v2.tsx
+    // When the bot/project is not selected, the conversation will not be displayed
+    // The initialization setting is false, and the rest of the echo logic is in packages/workflow/playground/src/components/test-run/test-form-sheet-v2/form-v2.tsx
     visible: conversationDefaultVisible,
     validator: [
       {
@@ -162,7 +162,7 @@ export const getConversationTemplate = chatFlowService => {
 
 export const getBotFieldTemplate = (isNeedBotEnv, showBot, chatflowService) => {
   const { hasLTMNode = false } = isNeedBotEnv || {};
-  /** 选择 bot 的模版 */
+  /** Select the template for the bot */
   const BOT_FIELD_TEMPLATE = {
     type: 'FormVoid',
     title: I18n.t('wf_chatflow_72'),
@@ -206,7 +206,7 @@ export const getBotFieldTemplate = (isNeedBotEnv, showBot, chatflowService) => {
                     chatflowService?.selectItem?.type ===
                       IntelligenceType.Project ||
                     (value as ValueType)?.type === IntelligenceType.Project;
-                  // 仅智能体支持 onBlur 逻辑，项目场景不支持
+                  // Only the agent supports onBlur logic, not the project scenario
                   if (isProject) {
                     return true;
                   }
@@ -243,7 +243,7 @@ export const getBotFieldTemplate = (isNeedBotEnv, showBot, chatflowService) => {
   return BOT_FIELD_TEMPLATE;
 };
 
-/** 保存到 datasets 的模版 */
+/** Save template to datasets */
 export const DATASETS_FIELD_TEMPLATE = {
   type: 'FormObject',
   name: FieldName.Datasets,
@@ -309,7 +309,7 @@ export const DATASETS_FIELD_TEMPLATE = {
 };
 
 /**
- * 一些公共的 field 字段
+ * Some common fields
  */
 export const COMMON_FIELD = {
   required: true,
@@ -379,7 +379,7 @@ const FILE_TYPE_FIELD_MAP: Record<FileTypes, TestFormField> = FILE_TYPES.reduce(
   {},
 ) as Record<FileTypes, TestFormField>;
 
-/** 各类型到 field 的映射 */
+/** Mapping of types to fields */
 export const NOT_FILE_TYPE_FIELD_MAP: Record<
   Exclude<ViewVariableType, FileTypes>,
   TestFormField

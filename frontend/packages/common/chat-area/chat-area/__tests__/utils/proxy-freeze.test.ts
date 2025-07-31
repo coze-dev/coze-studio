@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { proxyFreeze } from '../../src/utils/proxy-freeze';
 
 vi.stubGlobal('IS_DEV_MODE', true);
@@ -21,7 +21,7 @@ vi.stubGlobal('IS_DEV_MODE', true);
 describe('proxyFreeze', () => {
   it('should return the same object for non-objects', () => {
     const nonObject = 42;
-    // @ts-expect-error -- 测试使用
+    // @ts-expect-error -- test use
     expect(proxyFreeze(nonObject)).toBe(nonObject);
   });
 

@@ -16,7 +16,7 @@
  
 import { isAppleDevice } from './device';
 
-// 键盘事件 keyCode 别名
+// Keyboard Event keyCode Alias
 const aliasKeyCodeMap: Record<string, number | number[]> = {
   '0': 48,
   '1': 49,
@@ -135,7 +135,7 @@ const modifierKey: any = {
   },
 };
 
-// 根据 event 计算激活键数量
+// Number of activation keys based on event
 function countKeyByEvent(event: KeyboardEvent): number {
   const countOfModifier = Object.keys(modifierKey).reduce((total, key) => {
     if (modifierKey[key](event)) {
@@ -145,7 +145,7 @@ function countKeyByEvent(event: KeyboardEvent): number {
     return total;
   }, 0);
 
-  // 16 17 18 91 92 是修饰键的 keyCode，如果 keyCode 是修饰键，那么激活数量就是修饰键的数量，如果不是，那么就需要 +1
+  // 16 17 18 91 92 is the keyCode of the modifier key. If keyCode is a modifier key, then the number of activations is the number of modifier keys. If not, then + 1 is required.
   return [16, 17, 18, 91, 92].includes(event.keyCode)
     ? countOfModifier
     : countOfModifier + 1;
@@ -162,11 +162,11 @@ export function isKeyStringMatch(
   keyString: string,
   exactMatch = true,
 ): boolean {
-  // 浏览器自动补全 input 的时候，会触发 keyDown、keyUp 事件，但此时 event.key 等为空
+  // When the browser automatically completes the input, keyDown and keyUp events will be triggered, but at this time event.key, etc. are empty
   if (!event.key || !keyString) {
     return false;
   }
-  // 字符串依次判断是否有组合键
+  // String in turn determines whether there is a key combination
   const genArr = keyString.split(/\s+/);
   let genLen = 0;
 
@@ -177,9 +177,9 @@ export function isKeyStringMatch(
   // }
 
   for (const key of genArr) {
-    // 组合键
+    // key combination
     const genModifier = modifierKey[key];
-    // keyCode 别名
+    // keyCode alias
     const aliasKeyCode: number | number[] = aliasKeyCodeMap[key.toLowerCase()];
 
     if (
@@ -191,10 +191,10 @@ export function isKeyStringMatch(
   }
 
   /**
-   * 需要判断触发的键位和监听的键位完全一致，判断方法就是触发的键位里有且等于监听的键位
-   * genLen === genArr.length 能判断出来触发的键位里有监听的键位
-   * countKeyByEvent(event) === genArr.length 判断出来触发的键位数量里有且等于监听的键位数量
-   * 主要用来防止按组合键其子集也会触发的情况，例如监听 ctrl+a 会触发监听 ctrl 和 a 两个键的事件。
+   * It is necessary to determine that the triggered key is exactly the same as the monitored key. The judgment method is that the triggered key is equal to the monitored key.
+   * genLen == genArr.length can determine that there is a listening key among the triggered keys
+   * countKeyByEvent (event) === genArr.length The number of keys triggered by the judgment is equal to the number of keys listened to
+   * It is mainly used to prevent the situation that pressing a subset of the key combination will also trigger, such as listening to the event that ctrl + a will trigger listening to the two keys ctrl and a.
    */
   if (exactMatch) {
     return genLen === genArr.length && countKeyByEvent(event) === genArr.length;

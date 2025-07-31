@@ -90,14 +90,14 @@ export const getShuffledSuggestions = ({
     suggestion => suggestion.id,
   );
 
-  // chatArea 数据中比交集多的就是要删除的
+  // There are more than intersections in the chatArea data that need to be deleted.
   const toDeleteSuggestion = xorBy(
     shuffledSuggestions,
     intersectionSuggestion,
     suggestion => suggestion.id,
   );
 
-  // bot 调试页面数据中比交集多的就是要添加的
+  // There is more than intersection in the data of the bot debugging page, which needs to be added.
   const toAddSuggestion = preVisibleSuggestion.slice(
     0,
     maxLength - intersectionSuggestion.length,

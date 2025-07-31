@@ -32,100 +32,100 @@ import {
 } from './life-cycle-service';
 
 /**
- * ! 希望你注意到生命周期的上下文信息都放在ctx中
- * ! 如果判断只是上下文，请你注意收敛到ctx中，请勿增加新的参数
- * ! CodeReview的时候辛苦也注重一下这里
+ * ! Hope you noticed that the context information for the lifecycle is placed in ctx
+ * ! If the judgment is just context, please pay attention to the convergence into ctx and do not add new parameters
+ * ! Please pay attention here when CodeReview.
  */
 export abstract class ReadonlyCommandLifeCycleService<
   T = unknown,
   K = unknown,
 > extends ReadonlyLifeCycleService<T, K> {
   /**
-   * 清除历史消息之前
+   * Before clearing chat history
    */
   onBeforeClearHistory?(): Promise<void> | void;
   /**
-   * 清除历史消息之后
+   * After clearing the chat history
    */
   onAfterClearHistory?(): Promise<void> | void;
   /**
-   * 清除上下文之前
+   * Before clearing the context
    */
   onBeforeClearContext?(ctx: OnBeforeClearContextContext): Promise<void> | void;
   /**
-   * 清除上下文之后
+   * After clearing the context
    */
   onAfterClearContext?(): Promise<void> | void;
   /**
-   * 清除上下文失败
+   * Failed to clear context
    */
   onClearContextError?(): Promise<void> | void;
   /**
-   * 停止响应之前
+   * Before stopping responding
    */
   onBeforeStopResponding?(): Promise<void> | void;
   /**
-   * 停止响应之后
+   * After stopping responding
    */
   onAfterStopResponding?(): Promise<void> | void;
   /**
-   * 停止响应失败
+   * Stop response failed
    */
   onStopRespondingError?(
     ctx: OnStopRespondingErrorContext,
   ): Promise<void> | void;
   /**
-   * 开场白选中事件
+   * Opening remarks Selected events
    */
   onOnboardingSelectChange?(
     ctx: OnOnboardingSelectChangeContext,
   ): Promise<void> | void;
   /**
-   * input点击事件
+   * Input click event
    */
   onInputClick?(): Promise<void> | void;
   /**
-   * selection store数据发生变化
+   * Selection store data changes
    */
   onSelectionChange?(ctx: OnSelectionChangeContext): Promise<void> | void;
   /**
-   * 图片点击事件
+   * image click event
    */
   onImageClick?(ctx: OnImageClickContext): Promise<void> | void;
   /**
-   * 输入框粘贴事件
+   * Text box paste event
    */
   onInputPaste?(ctx: OnInputPasteContext): Promise<void> | void;
   /**
-   * 滚动事件处理
+   * rolling event handling
    */
   onViewScroll?(): void;
   /**
-   * 卡片类型的链接鼠标移入（包括图片）按照 CardBuilder 开发者的意思，后续只要是类似场景都复用这个
+   * The link of the card type is moved by mouse (including pictures). According to the meaning of the CardBuilder developers, this will be reused in the future as long as it is a similar scene.
    */
   onCardLinkElementMouseEnter?(ctx: OnLinkElementContext): void;
   /**
-   * 卡片类型的链接鼠标移出（包括图片）按照 CardBuilder 开发者的意思，后续只要是类似场景都复用这个
+   * The link of the card type is moved out with the mouse (including pictures). According to the meaning of the CardBuilder developers, this will be reused in the future as long as it is a similar scene.
    */
   onCardLinkElementMouseLeave?(ctx: OnLinkElementContext): void;
   /**
-   * MdBox类型的图片鼠标移入
+   * MdBox type image mouse in
    */
   onMdBoxImageElementMouseEnter?(ctx: OnImageElementContext): void;
   /**
-   * MdBox类型的图片鼠标移出
+   * MdBox type image mouse out
    */
   onMdBoxImageElementMouseLeave?(ctx: OnImageElementContext): void;
   /**
-   * MdBox类型的Link鼠标移入
+   * MdBox Type Link Mouse In
    */
   onMdBoxLinkElementMouseEnter?(ctx: OnLinkElementContext): void;
   /**
-   * MdBox类型的Link鼠标移出
+   * MdBox type Link mouse out
    */
   onMdBoxLinkElementMouseLeave?(ctx: OnLinkElementContext): void;
   /**
-   * Link 点击
+   * Link Click
    */
   onMessageLinkClick?(ctx: Omit<OnMessageLinkClickContext, 'event'>): void;
 }
@@ -135,95 +135,95 @@ export abstract class WriteableCommandLifeCycleService<
   K = unknown,
 > extends WriteableLifeCycleService<T, K> {
   /**
-   * 清除历史消息之前
+   * Before clearing chat history
    */
   onBeforeClearHistory?(): Promise<void> | void;
   /**
-   * 清除历史消息之后
+   * After clearing the chat history
    */
   onAfterClearHistory?(): Promise<void> | void;
   /**
-   * 清除上下文之前
+   * Before clearing the context
    */
   onBeforeClearContext?(
     ctx: OnBeforeClearContextContext,
   ): Promise<OnBeforeClearContextContext> | OnBeforeClearContextContext;
   /**
-   * 清除上下文之后
+   * After clearing the context
    */
   onAfterClearContext?(): Promise<void> | void;
   /**
-   * 清除上下文失败
+   * Failed to clear context
    */
   onClearContextError?(): Promise<void> | void;
   /**
-   * 停止响应之前
+   * Before stopping responding
    */
   onBeforeStopResponding?(): Promise<void> | void;
   /**
-   * 停止响应之后
+   * After stopping responding
    */
   onAfterStopResponding?(
     ctx: OnAfterStopRespondingContext,
   ): Promise<void> | void;
   /**
-   * 停止响应失败
+   * Stop response failed
    */
   onStopRespondingError?(
     ctx: OnStopRespondingErrorContext,
   ): Promise<void> | void;
   /**
-   * 开场白选中事件
+   * Opening remarks Selected events
    */
   onOnboardingSelectChange?(
     ctx: OnOnboardingSelectChangeContext,
   ): Promise<void> | void;
   /**
-   * input点击事件
+   * Input click event
    */
   onInputClick?(): Promise<void> | void;
   /**
-   * selection store数据发生变化
+   * Selection store data changes
    */
   onSelectionChange?(ctx: OnSelectionChangeContext): Promise<void> | void;
   /**
-   * 图片点击事件
+   * image click event
    */
   onImageClick?(ctx: OnImageClickContext): Promise<void> | void;
   /**
-   * 输入框粘贴事件
+   * Text box paste event
    */
   onInputPaste?(ctx: OnInputPasteContext): Promise<void> | void;
   /**
-   * 滚动事件处理
+   * rolling event handling
    */
   onViewScroll?(): void;
   /**
-   * 卡片类型的链接鼠标移入（包括图片）按照 CardBuilder 开发者的意思，后续只要是类似场景都复用这个
+   * The link of the card type is moved by mouse (including pictures). According to the meaning of the CardBuilder developers, this will be reused in the future as long as it is a similar scene.
    */
   onCardLinkElementMouseEnter?(ctx: OnLinkElementContext): void;
   /**
-   * 卡片类型的链接鼠标移出（包括图片）按照 CardBuilder 开发者的意思，后续只要是类似场景都复用这个
+   * The link of the card type is moved out with the mouse (including pictures). According to the meaning of the CardBuilder developers, this will be reused in the future as long as it is a similar scene.
    */
   onCardLinkElementMouseLeave?(ctx: OnLinkElementContext): void;
   /**
-   * MdBox类型的图片鼠标移入
+   * MdBox type image mouse in
    */
   onMdBoxImageElementMouseEnter?(ctx: OnImageElementContext): void;
   /**
-   * MdBox类型的图片鼠标移出
+   * MdBox type image mouse out
    */
   onMdBoxImageElementMouseLeave?(ctx: OnImageElementContext): void;
   /**
-   * MdBox类型的Link鼠标移入
+   * MdBox Type Link Mouse In
    */
   onMdBoxLinkElementMouseEnter?(ctx: OnLinkElementContext): void;
   /**
-   * MdBox类型的Link鼠标移出
+   * MdBox type Link mouse out
    */
   onMdBoxLinkElementMouseLeave?(ctx: OnLinkElementContext): void;
   /**
-   * Link 点击
+   * Link Click
    */
   onMessageLinkClick?(ctx: OnMessageLinkClickContext): void;
 }

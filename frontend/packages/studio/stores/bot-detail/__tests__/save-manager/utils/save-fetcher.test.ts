@@ -28,7 +28,7 @@ import {
   updateBotRequest,
 } from '../../../src/save-manager/utils/save-fetcher';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/logger', () => ({
   reporter: {
     successEvent: vi.fn(),
@@ -84,7 +84,7 @@ describe('save-fetcher utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (usePageRuntimeStore.getState as any).mockReturnValue({
       editable: true,
       isPreview: false,
@@ -118,7 +118,7 @@ describe('save-fetcher utils', () => {
 
   describe('saveFetcher', () => {
     it('应该在只读模式下不执行任何操作', async () => {
-      // 设置为只读模式
+      // Set to read-only mode
       (usePageRuntimeStore.getState as any).mockReturnValue({
         editable: false,
         isPreview: false,
@@ -134,7 +134,7 @@ describe('save-fetcher utils', () => {
     });
 
     it('应该在预览模式下不执行任何操作', async () => {
-      // 设置为预览模式
+      // Set to preview mode
       (usePageRuntimeStore.getState as any).mockReturnValue({
         editable: true,
         isPreview: true,
@@ -150,7 +150,7 @@ describe('save-fetcher utils', () => {
     });
 
     it('应该在探索模式下不执行任何操作', async () => {
-      // 设置为探索模式
+      // Set to exploration mode
       (usePageRuntimeStore.getState as any).mockReturnValue({
         editable: true,
         isPreview: false,
@@ -166,7 +166,7 @@ describe('save-fetcher utils', () => {
     });
 
     it('应该在未初始化时不执行任何操作', async () => {
-      // 设置为未初始化
+      // Set to uninitialized
       (usePageRuntimeStore.getState as any).mockReturnValue({
         editable: true,
         isPreview: false,
@@ -184,32 +184,32 @@ describe('save-fetcher utils', () => {
     it('应该在可编辑模式下正确执行保存操作', async () => {
       await saveFetcher(mockSaveRequest, mockScopeKey as any);
 
-      // 验证设置保存状态
+      // Verify settings save state
       expect(mockSetPageRuntimeByImmer).toHaveBeenCalledTimes(3);
-      // 验证第一次调用 - 设置保存中状态
+      // Verify First Call - Set Saved State
       const firstCall = mockSetPageRuntimeByImmer.mock.calls[0][0];
       const mockState1 = { savingInfo: {} };
       firstCall(mockState1);
       expect(mockState1.savingInfo.saving).toBe(true);
       expect(mockState1.savingInfo.scopeKey).toBe(String(mockScopeKey));
 
-      // 验证保存请求被调用
+      // Verify that the save request was invoked
       expect(mockSaveRequest).toHaveBeenCalledTimes(1);
 
-      // 验证第二次调用 - 设置保存完成状态
+      // Verify Second Call - Set Save Complete Status
       const secondCall = mockSetPageRuntimeByImmer.mock.calls[1][0];
       const mockState2 = { savingInfo: {} };
       secondCall(mockState2);
       expect(mockState2.savingInfo.saving).toBe(false);
       expect(mockState2.savingInfo.time).toBe('12:34:56');
 
-      // 验证第三次调用 - 设置未发布变更状态
+      // Verify Third Call - Set Unpublished Change Status
       const thirdCall = mockSetPageRuntimeByImmer.mock.calls[2][0];
       const mockState3 = {};
       thirdCall(mockState3);
       expect(mockState3.hasUnpublishChange).toBe(true);
 
-      // 验证设置协作状态
+      // Verify settings collaboration status
       expect(mockSetCollaborationByImmer).toHaveBeenCalledTimes(1);
       const collaborationCall = mockSetCollaborationByImmer.mock.calls[0][0];
       const mockCollabState = { branch: { id: 'branch-id' } };
@@ -217,7 +217,7 @@ describe('save-fetcher utils', () => {
       expect(mockCollabState.sameWithOnline).toBe(false);
       expect(mockCollabState.branch).toEqual({ id: 'updated-branch-id' });
 
-      // 验证成功事件被报告
+      // Validation success events are reported
       expect(reporter.successEvent).toHaveBeenCalledWith({
         eventName: REPORT_EVENTS.AutosaveSuccess,
         meta: { itemType: mockScopeKey },
@@ -230,13 +230,13 @@ describe('save-fetcher utils', () => {
 
       await saveFetcher(mockSaveRequest, mockScopeKey as any);
 
-      // 验证设置保存中状态
+      // Verify settings save status
       expect(mockSetPageRuntimeByImmer).toHaveBeenCalledTimes(1);
 
-      // 验证保存请求被调用
+      // Verify that the save request was invoked
       expect(mockSaveRequest).toHaveBeenCalledTimes(1);
 
-      // 验证错误事件被报告
+      // Validation error events are reported
       expect(reporter.errorEvent).toHaveBeenCalledWith({
         eventName: REPORT_EVENTS.AutosaveError,
         error: mockError,
@@ -249,19 +249,19 @@ describe('save-fetcher utils', () => {
         data: {
           has_change: true,
           same_with_online: false,
-          // 没有 branch 信息
+          // No branch information
         },
       });
 
       await saveFetcher(mockSaveRequest, mockScopeKey as any);
 
-      // 验证设置协作状态
+      // Verify settings collaboration status
       expect(mockSetCollaborationByImmer).toHaveBeenCalledTimes(1);
       const collaborationCall = mockSetCollaborationByImmer.mock.calls[0][0];
       const mockCollabState = { branch: { id: 'branch-id' } };
       collaborationCall(mockCollabState);
       expect(mockCollabState.sameWithOnline).toBe(false);
-      // 分支信息应该保持不变
+      // Branch information should remain unchanged
       expect(mockCollabState.branch).toEqual({ id: 'branch-id' });
     });
   });

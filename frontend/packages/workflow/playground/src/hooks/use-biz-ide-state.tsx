@@ -15,7 +15,7 @@
  */
  
 /**
- * 全局hook，管理 Biz IDE 的状态，与 React 组件交互
+ * Global hook to manage the state of the Biz IDE and interact with React components
  */
 
 import { create } from 'zustand';
@@ -25,21 +25,21 @@ import { IconWarningInfo } from '@coze-arch/bot-icons';
 
 import { useSingletonInnerSideSheet } from '../components/workflow-inner-side-sheet';
 
-// TODO: 改成 UIModal
+// TODO: Change to UIModal
 
 import styles from './use-biz-ide-state.module.less';
 
 interface BizIDEState {
   /**
-   * 当前开启的 BizIDE 唯一标识
+   * The currently enabled BizIDE unique identifier
    */
   uniqueId: string | null;
   /**
-   * 当前是否有 BizIDE 开启
+   * Is BizIDE currently turned on?
    */
   isBizIDEOpen: boolean;
   /**
-   * 当前开启的 BizIDE 是否在 test 运行中
+   * Is the currently enabled BizIDE in the test run?
    */
   isBizIDETesting: boolean;
 }
@@ -100,7 +100,7 @@ export const useBizIDEState = () => {
   };
 
   const closeConfirm = async (id?: string): Promise<boolean> => {
-    // 当传入id时，表示关闭指定id的弹窗。当id和当前nodeId不一致时，说明已经关闭了
+    // When passing in the id, it means to close the pop-up window of the specified id. When the id is inconsistent with the current nodeId, it means that it has been closed
     if (id && id !== uniqueId) {
       return true;
     }
@@ -160,17 +160,17 @@ export const useBizIDEState = () => {
     setIsBizIDEOpen,
     setIsBizIDETesting,
     /**
-      * 关闭 Biz IDE
-      * 检测是否正在运行中，包括 confirm 对话框的出现也封装在这里
-      * 外部只需要调用这个 hook 即可
-      * 在三种情况下会 resolve true，并关闭 BizIDE
-      *   1. BizIDE 没有被打开
-          2. BizIDE 被打开了，但是不在运行中
-          3. BizIDE 在运行中，但是用户点击了 confirm 确认
+      * Close Biz IDE
+      * Check whether it is running, including the appearance of the confirm dialog box is also encapsulated here
+      * You only need to call this hook externally.
+      * In three cases it resolves true and closes BizIDE.
+      *   1. BizIDE is not opened
+          2. BizIDE is open, but not running
+          3. BizIDE is running, but the user clicks confirm to confirm
       */
     closeBizIDE,
     /**
-     * 强制关闭 Biz IDE，不管是否在运行中
+     * Force shutdown of Biz IDE, whether running or not
      */
     openBizIDE,
     forceCloseBizIDE,

@@ -41,7 +41,7 @@ export const reportTti = (extra?: Record<string, string>, scene?: string) => {
     CustomPerfMarkNames.RouteChange,
   ) as PerformanceMark[];
   const lastRoute = routeChangeEntries.at(-1);
-  // 当前页面已经上报过
+  // The current page has been reported
   if (
     lastRoute?.detail?.location?.pathname &&
     lastRoute.detail.location.pathname === lastRouteNameRef.name &&
@@ -50,7 +50,7 @@ export const reportTti = (extra?: Record<string, string>, scene?: string) => {
     return;
   }
   if (document.visibilityState === 'hidden') {
-    // 页签处于后台，FCP / TTI 均不准确，放弃上报
+    // The tab is in the background, the FCP/TTI is inaccurate, and the reporting is abandoned.
     reporter.info({
       message: 'page_hidden_on_tti_report',
       namespace: 'performance',
@@ -60,21 +60,21 @@ export const reportTti = (extra?: Record<string, string>, scene?: string) => {
   lastRouteNameRef.name = lastRoute?.detail?.location?.pathname;
   lastRouteNameRef.reportScene.push(sceneKey);
 
-  // 首个路由视为冷启动，否则视为热启动，因为预期 TTI 时间差异会比较大，这里上报到不同的埋点上
+  // The first route is regarded as a cold start, otherwise it is regarded as a hot start, because the expected TTI time difference will be relatively large, and it will be reported to different event tracking here.
   if (routeChangeEntries.length > 1) {
-    // startTime 是相对于 performance.timeOrigin 的一个偏移量
+    // StartTime is an offset from the performance .timeOrigin
     executeSendTtiHot(value - (lastRoute?.startTime ?? 0), extra);
     return;
   }
   const fcp = performance.getEntriesByName(fcpEntryName)[0];
   if (fcp) {
-    // 已发生 FCP，比较 TTI 与 FCP 时间，取耗时更长的一个
+    // FCP has occurred, compare TTI and FCP times, and take the longer one.
     executeSendTti(value > fcp.startTime ? value : fcp.startTime, {
       ...extra,
       fcpTime: `${fcp.startTime}`,
     });
   } else if (window.PerformanceObserver) {
-    // 还未发生 FCP 时，监听 FCP 作为 TTI 上报
+    // When no FCP has occurred, monitor the FCP and report it as a TTI
     const observer = new PerformanceObserver(list => {
       const fcpEntry = list.getEntriesByName(fcpEntryName)[0];
       if (fcpEntry) {
@@ -88,7 +88,7 @@ export const reportTti = (extra?: Record<string, string>, scene?: string) => {
     try {
       observer.observe({ type: 'paint', buffered: true });
     } catch (error) {
-      // 处理兼容性问题 Failed to execute 'observe' on 'PerformanceObserver': required member entryTypes is undefined.
+      // Handling compatibility issues Failed to execute'observe 'on'PerformanceObserver': required member entryTypes is undefined.
       if (PerformanceObserver.supportedEntryTypes?.includes('paint')) {
         try {
           observer.observe({ entryTypes: ['paint'] });
@@ -111,7 +111,7 @@ const executeSendTti = (value: number, extra?: Record<string, string>) => {
   getSlardarInstance()?.('sendCustomPerfMetric', {
     value,
     name: PerfMetricNames.TTI,
-    /** 性能指标类型， perf => 传统性能, spa => SPA 性能, mf => 微前端性能 */
+    /** Performance index type, perf = > traditional performance, spa = > SPA performance, mf = > micro frontend performance */
     type: 'perf',
     extra: {
       ...extra,
@@ -128,7 +128,7 @@ const executeSendTtiHot = (value: number, extra?: Record<string, string>) => {
   getSlardarInstance()?.('sendCustomPerfMetric', {
     value,
     name: PerfMetricNames.TTI_HOT,
-    /** 性能指标类型， perf => 传统性能, spa => SPA 性能, mf => 微前端性能 */
+    /** Performance index type, perf = > traditional performance, spa = > SPA performance, mf = > micro frontend performance */
     type: 'perf',
     extra: {
       ...extra,

@@ -37,25 +37,25 @@ import { useSlotNode } from './use-slot-node';
 import styles from './style.module.less';
 
 type Props = {
-  /** 选项列表 */
+  /** list of options */
   options: SelectProps['optionList'];
 
-  /** 是否多选，默认为 false */
+  /** Whether to select multiple, the default is false */
   multiple?: boolean;
 
-  /** 是否允许自定义添加，默认为 false */
+  /** Whether to allow custom addition, the default is false */
   enableCustom?: boolean;
 
-  /** 是否为只读态 */
+  /** Is it read-only? */
   readonly?: boolean;
 
-  /** 自定义 placeholder */
+  /** Custom placeholder */
   inputPlaceholder?: string;
 
-  /** 允许自定义添加时（enableCustom 为 true），添加选项事件 */
+  /** When allowing custom addition (enableCustom is true), add option events */
   onAdd?: (value: string) => Promise<boolean>;
 
-  /** 允许自定义添加时（enableCustom 为 true），删除选项事件 */
+  /** When allowing custom addition (enableCustom is true), remove the option event */
   onDelete?: (value: string) => Promise<boolean>;
 } & SelectProps;
 
@@ -66,7 +66,7 @@ interface OptionNode {
 }
 
 const TagContent = (props: OptionNode) => {
-  // \n，\t 默认会展示成空格，这里具象化为 \n 和 \t
+  // \ N,\ t will be displayed as spaces by default, here concretized as\ n and\ t
   const mapChars = {
     '\n': '\\n',
     '\t': '\\t',
@@ -99,7 +99,7 @@ const TagSelector: React.FC<Props> = props => {
 
   const selectRef = useRef<SemiSelect>(null);
 
-  /** 处理删除，考虑到将来可能异步删除的场景，这里还是通过异步方式调用 */
+  /** Processing deletion. Considering the scenarios that may be deleted asynchronously in the future, this is still called asynchronously. */
   const handleDelete = async (input: string) => {
     await onDelete?.(input);
   };
@@ -136,9 +136,9 @@ const TagSelector: React.FC<Props> = props => {
     const { isDefault } = rest;
 
     // Notice：
-    // 1.props传入的style需在wrapper dom上进行消费，否则在虚拟化场景下会无法正常使用
-    // 2.选中(selected)、聚焦(focused)、禁用(disabled)等状态的样式需自行加上，你可以从props中获取到相对的boolean值
-    // 3.onMouseEnter需在wrapper dom上绑定，否则上下键盘操作时显示会有问题
+    // 1. the style passed by props needs to be consumed on the wrapper dom, otherwise it will not work normally in the virtualization scene
+    // 2. The styles of selected, focused, disabled, etc. need to be added by yourself. You can get the relative boolean value from props.
+    // 3.onMouseEnter needs to be bound on the wrapper dom, otherwise there will be problems when operating on the upper and lower keyboards.
     const optionCls = cls({
       ['custom-option-render']: true,
       ['custom-option-render-focused']: focused,
@@ -188,13 +188,13 @@ const TagSelector: React.FC<Props> = props => {
 
   const renderSelectedItem = optionNode => {
     if (multiple) {
-      // 多选
+      // multiple choice
       return {
         isRenderInTag: true,
         content: <TagContent {...optionNode} />,
       };
     } else {
-      // 单选
+      // radio
       return <TagContent {...optionNode} />;
     }
   };

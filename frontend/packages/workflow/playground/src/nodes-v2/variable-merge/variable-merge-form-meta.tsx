@@ -38,7 +38,7 @@ export const VARIABLE_MERGE_FORM_META: FormMetaV2<FormData> = {
     'inputs.mergeGroups.*.variables': variablesChangeEffects,
   },
   render: props => <VariableMergeForm {...props} />,
-  // 校验
+  // validation
   validateTrigger: ValidateTrigger.onChange,
   validate: {
     nodeMeta: nodeMetaValidate,
@@ -51,8 +51,8 @@ export const VARIABLE_MERGE_FORM_META: FormMetaV2<FormData> = {
     const { playgroundContext } = context;
     const { variableService } = playgroundContext;
 
-    // 初始值设置
-    // 不在此设置初始值不会触发表单的 onValueInit 时间
+    // initial value setting
+    // Failure to set the initial value here will not trigger the form's onValueInit time
     const initValue = value || {
       inputs: {
         mergeGroups: [

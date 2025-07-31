@@ -90,7 +90,7 @@ const TraceTree: FC<TraceTreeProps> = props => {
       newWindow: true,
     });
   };
-  // 初始化flamethreadData
+  // Initialize flamethreadData
   useEffect(() => {
     if (dataType === DataSourceTypeEnum.SpanData && spanData) {
       if (spanData?.length === 0 && treeData === undefined) {

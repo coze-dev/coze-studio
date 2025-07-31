@@ -78,10 +78,10 @@ const ExpressionEditorContainer = forwardRef<
   useEffect(() => model.setVariableTree(variableTree), [variableTree]);
   useEffect(() => model.setFocus(focus), [focus]);
 
-  // 同步表单值变化
+  // Synchronize form value changes
   useEffect(() => {
     if (model.value === formValue) {
-      // 无需同步
+      // No synchronization required
       return;
     }
     model.setValue(formValue);

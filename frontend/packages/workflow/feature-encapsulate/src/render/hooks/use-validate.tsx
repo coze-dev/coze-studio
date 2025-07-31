@@ -30,7 +30,7 @@ import { useSelectedNodes } from './use-selected-nodes';
 const DEBOUNCE_DELAY = 100;
 
 /**
- * 校验
+ * validation
  */
 export function useValidate() {
   const { selectedNodes } = useSelectedNodes();
@@ -38,7 +38,7 @@ export function useValidate() {
 
   const [validating, setValidating] = useState(false);
   const [errors, setErrors] = useState<EncapsulateValidateError[]>([]);
-  const validationIdRef = useRef(0); // 新增校验ID跟踪
+  const validationIdRef = useRef(0); // Added Verification ID Tracking
 
   const handleValidate = async () => {
     if (selectedNodes.length <= 1) {
@@ -46,13 +46,13 @@ export function useValidate() {
     }
 
     setValidating(true);
-    // 生成当前校验ID
+    // Generate the current verification ID
     const currentValidationId = ++validationIdRef.current;
 
     try {
       const validateResult = await encapsulateService.validate();
 
-      // 只处理最后一次校验结果
+      // Only process the last verification result
       if (currentValidationId === validationIdRef.current) {
         setErrors(validateResult.getErrors());
         setValidating(false);

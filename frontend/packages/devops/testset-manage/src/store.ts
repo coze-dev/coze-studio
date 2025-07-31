@@ -26,11 +26,11 @@ import { type TestsetManageEventName } from './events';
 export interface TestsetManageState {
   bizCtx?: BizCtx;
   bizComponentSubject?: ComponentSubject;
-  /** 编辑权限 */
+  /** edit permission */
   editable?: boolean;
-  /** 表单渲染组件 */
+  /** form rendering component */
   formRenders?: Partial<Record<FormItemSchemaType, NodeFormItem>>;
-  /** 埋点事件上报 */
+  /** Event tracking event reporting */
   reportEvent?: (
     name: TestsetManageEventName,
     params?: Record<string, unknown>,
@@ -38,7 +38,7 @@ export interface TestsetManageState {
 }
 
 export interface TestsetManageAction {
-  /** 更新状态 */
+  /** update status */
   patch: (s: Partial<TestsetManageState>) => void;
 }
 

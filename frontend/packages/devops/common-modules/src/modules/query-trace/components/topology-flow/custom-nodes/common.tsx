@@ -45,7 +45,7 @@ export const CommonNode = (props: NodeProps<NodeData>) => {
     data: { name, icon, layoutDirection, dynamicSpanNode },
   } = props;
 
-  // 特化逻辑：动态tracing中没有workflow_start节点，topo中workflow_start节点默认高亮
+  // Specialization logic: There are no workflow_start nodes in dynamic tracing, workflow_start nodes in topo are highlighted by default
   const topologyNodeStatus =
     Number(type) === SpanCategory.WorkflowStart
       ? TopologyEdgeStatus.DYNAMIC

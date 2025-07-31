@@ -100,7 +100,7 @@ export const useDataSetDetailReq = (
       }
     },
     {
-      // 不自动请求
+      // No automatic request
       manual: true,
       onError: error => {
         Toast.error({
@@ -156,7 +156,7 @@ export const usePollingDatasetProcess = () => {
       }
     },
     {
-      // 不自动请求
+      // No automatic request
       manual: true,
       pollingInterval: POLLING_TIME,
       onError: error => {

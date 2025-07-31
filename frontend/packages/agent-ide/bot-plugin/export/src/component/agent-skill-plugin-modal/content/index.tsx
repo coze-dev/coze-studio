@@ -51,7 +51,7 @@ export interface PluginModalContentProps extends PluginModalModeProps {
   setQuery: (value: Partial<PluginQuery>, refreshPage?: boolean) => void;
 }
 export type PluginModalContentListItem = PluginInfoForPlayground & {
-  // 当前数据属于列表的第几页
+  // The current data belongs to the page of the list
   belong_page?: number;
 };
 
@@ -99,7 +99,7 @@ export const PluginModalContent: FC<PluginModalContentProps> = ({
   onCopyPluginCallback,
   clickProjectPluginCallback,
 }) => {
-  // 状态hook
+  // Status hook
   const {
     type,
     mineActive,
@@ -112,9 +112,9 @@ export const PluginModalContent: FC<PluginModalContentProps> = ({
     pluginType,
   } = query;
   const id = useSpaceStore(store => store.space.id);
-  // scroll的container
+  // Scroll container
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  // 当前active的key
+  // Currently active key
   const [activeKey, setActivekey] = useState<string | string[] | undefined>([]);
   const refInfiniteScroll = useRef<InfiniteListRef>(null);
   const {
@@ -140,10 +140,10 @@ export const PluginModalContent: FC<PluginModalContentProps> = ({
       nodes: state.nodes,
     })),
   );
-  // 首次effect不执行，这个是切换状态的effect
+  // The first effect is not executed, this is the effect of switching the state
   useUpdateEffect(() => {
-    scroll2Top(); // 当筛选项改变时，回到顶部
-    // 只要是query中非page改变，就执行此effect
+    scroll2Top(); // When the filter item changes, return to the top
+    // Perform this effect whenever a non-page change is made in the query
   }, []);
   return (
     <UICompositionModalMain>

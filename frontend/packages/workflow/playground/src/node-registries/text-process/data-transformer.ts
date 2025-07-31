@@ -29,7 +29,7 @@ import {
 } from './constants';
 
 /**
- * 查找 InputValueDTO 中的某个字段
+ * Find a field in InputValueDTO
  * @param params
  * @param name
  * @returns
@@ -39,12 +39,12 @@ function getParam(params: InputValueDTO[], name: string) {
 }
 
 /**
- * 后端数据 -> 前端表单数据
+ * Backend Data - > Frontend Form Data
  * @param value
  * @returns
  */
 export const formatOnInit = (value: BackendData) => {
-  // 初始化没有值时，返回字符串拼接默认设置
+  // When initialization has no value, return string concatenation default settings
   if (!value) {
     return {
       method: StringMethod.Concat,
@@ -70,24 +70,24 @@ export const formatOnInit = (value: BackendData) => {
 
   const isSplit = isSplitMethod(method);
 
-  // 字符串拼接参数初始化处理
+  // String concatenation parameter initialization
   if (!isSplit && Array.isArray(concatParams)) {
-    // 拼接结果
+    // Splicing result
     const resultItem = getParam(concatParams, FIELD_NAME_MAP.concatResult);
 
-    // 拼接字符
+    // concatenated characters
     const charItem = getParam(
       concatParams,
       BACK_END_NAME_MAP.arrayItemConcatChar,
     );
 
-    // 所有拼接字符
+    // All splicing characters
     const charOptions = getParam(
       concatParams,
       BACK_END_NAME_MAP.allArrayItemConcatChars,
     );
 
-    // 如果存在拼接字符
+    // If there are splicing characters
     const hasChatOptions =
       charOptions &&
       (BlockInput.toLiteral(charOptions) as unknown[]).length > 0;
@@ -103,7 +103,7 @@ export const formatOnInit = (value: BackendData) => {
       };
     }
   } else if (method === StringMethod.Split) {
-    // 字符串分隔初始化处理
+    // String delimited initialization
     if (!inputParameters?.length) {
       Object.assign(baseValue, {
         inputParameters: [{ name: PREFIX_STR }],
@@ -111,19 +111,19 @@ export const formatOnInit = (value: BackendData) => {
     }
 
     if (Array.isArray(splitParams)) {
-      // 当前选择分隔符
+      // Current selection separator
       const delimiterValueItem = getParam(
         splitParams,
         BACK_END_NAME_MAP.delimiters,
       );
 
-      // 所有分隔符
+      // All separators
       const delimiterOptionsItem = getParam(
         splitParams,
         BACK_END_NAME_MAP.allDelimiters,
       );
 
-      // 是否存在分隔符选项
+      // Is there a delimiter option?
       const hasDelimiterOptions =
         delimiterOptionsItem &&
         (BlockInput.toLiteral(delimiterOptionsItem) as unknown[]).length > 0;
@@ -141,7 +141,7 @@ export const formatOnInit = (value: BackendData) => {
 };
 
 /**
- * 前端表单结构数据 -> 后端数据
+ * Front-end form structure data - > back-end data
  * @param value
  * @returns
  */
@@ -149,33 +149,33 @@ export const formatOnSubmit = (value: FormData) => {
   const method = get(value, FIELD_NAME_MAP.method);
   const nodeMeta = get(value, 'nodeMeta');
 
-  // 拼接模式-拼接字符
+  // Splicing Mode - Splicing Characters
   const arrayItemConcatChar = get(
     value,
     `${FIELD_NAME_MAP.concatChar}.value`,
     '',
   );
 
-  // 拼接模式-所有拼接字符（包括自定义）
+  // Splicing mode - all splicing characters (including customizations)
   const allArrayItemConcatChars = get(
     value,
     `${FIELD_NAME_MAP.concatChar}.options`,
     [],
   );
 
-  // 拼接模式-拼接结果
+  // Splicing Mode - Splicing Results
   const concatResult = get(value, FIELD_NAME_MAP.concatResult, '');
 
-  // 入参变量
+  // Imported parameter variable
   const inputParameters = get(value, 'inputParameters', []);
 
-  // 分隔模式-分隔符
+  // Separator Mode - Separator
   const delimiterValue = get(value, `${FIELD_NAME_MAP.delimiter}.value`, []);
 
-  // 分隔模式-所有分隔符（包括自定义）
+  // Separation mode - all separators (including customizations)
   const allDelimiters = get(value, `${FIELD_NAME_MAP.delimiter}.options`, []);
 
-  // 输出变量
+  // output variable
   const outputs = get(value, FIELD_NAME_MAP.outputs);
 
   const baseValue = {
@@ -195,16 +195,16 @@ export const formatOnSubmit = (value: FormData) => {
     case StringMethod.Concat:
       Object.assign(baseValue.inputs, {
         concatParams: [
-          // 拼接结果
+          // Splicing result
           BlockInput.createString(FIELD_NAME_MAP.concatResult, concatResult),
 
-          // 当前选择拼接符
+          // Current selection splice
           BlockInput.createString(
             BACK_END_NAME_MAP.arrayItemConcatChar,
             arrayItemConcatChar,
           ),
 
-          // 当前所有拼接符
+          // All current splices
           BlockInput.createArray(
             BACK_END_NAME_MAP.allArrayItemConcatChars,
             allArrayItemConcatChars,
@@ -216,12 +216,12 @@ export const formatOnSubmit = (value: FormData) => {
     case StringMethod.Split:
       Object.assign(baseValue.inputs, {
         splitParams: [
-          // 当前选择分隔符（多个）
+          // Current selection separator (multiple)
           BlockInput.createArray(BACK_END_NAME_MAP.delimiters, delimiterValue, {
             type: 'string',
           }),
 
-          // 当前所有分隔符
+          // All current separators
           BlockInput.createArray(
             BACK_END_NAME_MAP.allDelimiters,
             allDelimiters,

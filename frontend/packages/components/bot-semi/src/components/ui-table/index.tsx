@@ -92,7 +92,7 @@ export const UITable = forwardRef<UITableMethods, UITableProps>(
     const showTable = initialized && !!dataSource?.length;
 
     /**
-     * TODO：处理触底加载，一坨💩，待优化
+     * TODO: handle bottom loading, a lump of 💩, to be optimized
      */
     const IndicatorRoot = useRef<Root>();
 
@@ -133,7 +133,7 @@ export const UITable = forwardRef<UITableMethods, UITableProps>(
     useEffect(() => {
       if (tableRef.current && enableLoad && needRenderIndicator) {
         const tableContainer =
-          // FIXME: 这段代码这么多层 ref，需要优化
+          // FIXME: This code has so many layers of refs and needs to be optimized
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (tableRef.current as any).tableRef.current.bodyWrapRef.current;
 
@@ -196,7 +196,7 @@ export const UITable = forwardRef<UITableMethods, UITableProps>(
           />
         ) : null}
 
-        {/* 空状态 */}
+        {/* empty state */}
         {initialized && !tableProps?.loading && !dataSource?.length ? (
           <div className={styles['empty-content']}>{empty}</div>
         ) : null}
@@ -205,7 +205,7 @@ export const UITable = forwardRef<UITableMethods, UITableProps>(
   },
 );
 
-// Indicatore 组件
+// Indicatore component
 interface IndicatorState {
   done: boolean;
 }

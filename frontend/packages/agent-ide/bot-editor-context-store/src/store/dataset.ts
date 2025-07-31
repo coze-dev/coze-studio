@@ -35,8 +35,8 @@ const getDefaultState = (): DraftBotDataSetStoreState => ({
   datasetsMap: {},
 });
 
-// 目前 work_info 里的 dataset 只包含了很少量的元信息，
-// 为了方便判断引入的 dataset 类型（用于分组、模型能力检查等等），这里统一缓存当下使用的 dataset
+// At present, the dataset in the work_info contains only a small amount of meta information.
+// In order to facilitate the determination of the type of dataset introduced (for grouping, model capability checking, etc.), the dataset currently in use is cached here
 export const createDraftBotDatasetsStore = () =>
   create<DraftBotDataSetStoreState & DraftBotDataSetStoreAction>()(
     devtools(

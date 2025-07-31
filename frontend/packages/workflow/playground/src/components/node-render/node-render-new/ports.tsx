@@ -47,7 +47,7 @@ const useClickPort = () => {
   const getContainer = (fromNode: WorkflowNodeEntity) => {
     const fromContainer = fromNode?.parent;
     if (fromNode?.flowNodeType === FlowNodeBaseType.SUB_CANVAS) {
-      // 子画布内部输入连线
+      // Subcanvas internal input wiring
       return fromNode;
     }
     if (fromContainer?.flowNodeType === FlowNodeBaseType.ROOT) {

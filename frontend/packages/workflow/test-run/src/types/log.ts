@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** log 中的 value 可能值 */
+/** Possible values in the log */
 export type LogValueType =
   | string
   | null
@@ -28,7 +28,7 @@ interface MockInfo {
   mockSetName?: string;
 }
 
-/** 通常的日志结构 */
+/** Normal log structure */
 export interface BaseLog {
   label: string;
   source: LogValueType;
@@ -37,7 +37,7 @@ export interface BaseLog {
   mockInfo?: MockInfo;
   type: 'input' | 'output' | 'raw_output' | 'batch';
 }
-/** condition 的日志结构 */
+/** Log structure for conditions */
 export interface ConditionLog {
   conditions: Array<{
     conditions: {
@@ -51,7 +51,7 @@ export interface ConditionLog {
   }>;
 }
 
-/** 嵌套的日志结构 */
+/** Nested log structure */
 export interface TreeLog {
   label: string;
   children: (BaseLog | ConditionLog)[];
@@ -59,7 +59,7 @@ export interface TreeLog {
 
 export type Log = BaseLog | ConditionLog | TreeLog;
 
-/** 格式化之后的 condition log */
+/** Formatted condition log */
 export interface ConditionFormatLog {
   leftData: LogValueType;
   rightData: LogValueType;

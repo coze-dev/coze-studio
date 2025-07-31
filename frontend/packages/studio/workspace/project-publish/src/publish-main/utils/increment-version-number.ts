@@ -15,15 +15,15 @@
  */
  
 export const incrementVersionNumber = (input: string) => {
-  // 定义正则表达式，匹配 "数字.数字.数字" 的模式
+  // Define regular expressions that match the pattern of "number. number. number"
   const regex = /(\d+)\.(\d+)\.(\d+)/g;
 
-  // 使用 replace 方法和回调函数对匹配的部分进行替换
+  // Use the replace method and callback function to replace the matching part
   // eslint-disable-next-line max-params
   const result = input.replace(regex, (_match, p1, p2, p3) => {
-    // 将最后一个数字加 1
+    // Add 1 to the last number.
     const incrementedP3 = parseInt(String(p3), 10) + 1;
-    // 返回新的字符串
+    // Return a new string
     return `${p1}.${p2}.${incrementedP3}`;
   });
 

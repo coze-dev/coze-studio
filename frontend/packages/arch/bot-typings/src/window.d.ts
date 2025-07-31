@@ -21,7 +21,7 @@ declare type MicroComponentsMapItem = {
 
 interface Window {
   /**
-   * IDE plugin iframe 中挂载的用于卸载的方法
+   * IDE plugin iframe mount method for unmounting
    */
   editorDispose?: any;
   MonacoEnvironment?: any;

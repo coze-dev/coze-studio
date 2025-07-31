@@ -36,7 +36,7 @@ export class CustomLinesManager {
 
   @inject(EntityManager) declare entityManager: EntityManager;
 
-  // 额外的连线
+  // Additional connection
   @inject(TreeService) declare treeService: TreeService;
 
   get edges(): EdgeItem[] {
@@ -58,7 +58,7 @@ export class CustomLinesManager {
   }
 
   /**
-   * 过滤其他的非渲染节点
+   * Filter other non-rendering nodes
    */
   filterTreeNode(nodes: FlowNodeEntity[]) {
     return nodes.filter(
@@ -94,7 +94,7 @@ export class CustomLinesManager {
         if (node.flowNodeType === 'root') {
           queue.push(node.children[0]);
         } else if (node.flowNodeType === 'split') {
-          // 分支逻辑特殊处理
+          // Branch logic special handling
           const inlineBlocksChildren = node.children[1]?.children || [];
           const branchChildren =
             inlineBlocksChildren
@@ -138,7 +138,7 @@ export class CustomLinesManager {
   }
 
   renderLines() {
-    // 下一帧渲染，保证线条数据最新
+    // The next frame is rendered to ensure the latest line data
     requestAnimationFrame(() => {
       const lines = this.bfsAddLine(this.document.originTree.root);
       const extraLines: CustomLine[] = (this.edges || [])

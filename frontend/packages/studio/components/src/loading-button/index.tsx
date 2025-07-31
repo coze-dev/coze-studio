@@ -22,7 +22,7 @@ import { type ButtonProps } from '@coze-arch/bot-semi/Button';
 import { UIButton, Toast, Spin } from '@coze-arch/bot-semi';
 
 export type LoadingButtonProps = ButtonProps & {
-  /** 加载中的 toast 文案 */
+  /** Loading toast copy */
   loadingToast?: string | Omit<ToastReactProps, 'type'>;
 };
 

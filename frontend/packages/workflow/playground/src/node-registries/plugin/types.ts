@@ -27,10 +27,10 @@ import {
 
 import type { NodeMeta, SettingOnErrorDTO, SettingOnErrorVO } from '@/typing';
 
-// 输入参数对应的类型，不过需要注意的是，自定义扩展的字段，值不一定是 ValueExpression 类型
+// The type corresponding to the input parameter, but it should be noted that the value of the custom extended field does not necessarily have to be the ValueExpression type
 export type InputParametersMap = Record<string, ValueExpression>;
 
-/** 前端表单结构，后端数据结构参考 ApiNodeDataDTO */
+/** Front-end form structure, back-end data structure reference ApiNodeDataDTO */
 export interface ApiNodeFormData {
   nodeMeta: NodeMeta;
   inputs: {
@@ -46,7 +46,7 @@ export interface ApiNodeFormData {
 }
 
 /**
- * 插件节点数据部分结构定义
+ * Plug-in node data part structure definition
  */
 export interface ApiNodeDTOData<
   InputType = InputValueDTO,
@@ -65,9 +65,9 @@ export interface ApiNodeDTOData<
 }
 
 /**
- * 插件节点数据部分结构定义，经过 workflow-json-format 转换后的数据结构
- * - outputs 从 VariableMetaDTO 转换为 ViewVariableMeta
- * - inputs.inputParameters 从 BlockInput 转换为 InputValueVO
+ * Plug-in node data part structure definition, data structure after workflow-json-format transformation
+ * - outputs converted from VariableMetaDTO to ViewVariableMeta
+ * - Inputs.inputParameters converted from BlockInput to InputValueVO
  */
 export type ApiNodeDTODataWhenOnInit = ApiNodeDTOData<
   InputValueVO,

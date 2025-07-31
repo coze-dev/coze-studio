@@ -31,7 +31,7 @@ export interface FieldArrayProps<T = unknown>
 
 /**
  * @deprecated
- * 这个组件会导致数组表单项删除后index错乱，请直接使用:
+ * This component will cause the index to be confused after the array list entry is deleted, please use it directly:
  *
  * `import { FieldArray } from '@flowgram-adapter/free-layout-editor'`
  */

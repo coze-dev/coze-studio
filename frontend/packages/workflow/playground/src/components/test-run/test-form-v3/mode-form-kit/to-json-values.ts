@@ -32,7 +32,7 @@ export const toJsonValues = (
     return values;
   }
   const jsonValue = get(values, TestFormFieldName.Node);
-  /** 如果无法正常解析，也直接忽略 */
+  /** If it cannot be parsed normally, it will be ignored directly. */
   if (!jsonValue) {
     return values;
   }

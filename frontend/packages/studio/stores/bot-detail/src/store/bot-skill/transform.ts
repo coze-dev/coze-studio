@@ -74,7 +74,7 @@ import {
   DEFAULT_TTS_CONFIG,
 } from './defaults';
 
-// 结构化 BotInfo 接口后的 数据转换
+// After the structured BotInfo interface, data transformation
 export const transformDto2Vo = {
   plugin: (
     data?: PluginInfo[],
@@ -96,12 +96,12 @@ export const transformDto2Vo = {
           parameters:
             api?.parameters?.map(i => ({
               ...i,
-              // 兼容开源页接口字段命名不同
+              // Compatible with open-source pages. Interface fields are named differently
               desc: i.description,
               required: i.is_required,
             })) || [],
           is_official: plugin?.is_official,
-          // 这个类型历史原因 在服务端侧各服务不统一，实际业务使用为 枚举类型
+          // The historical reason for this type is that each service on the server level is not unified, and the actual business use is the enumeration type
           plugin_type: plugin?.plugin_type as unknown as PluginType,
           status: plugin?.plugin_status as unknown as PluginStatus,
         };
@@ -130,7 +130,7 @@ export const transformDto2Vo = {
             })) || [],
         };
       }) ?? [],
-  // 知识库
+  // Knowledge Base
   knowledge: (
     data?: Knowledge,
     config?: Record<string, KnowledgeDetail>,
@@ -212,7 +212,7 @@ export const transformDto2Vo = {
               i => ({
                 ...i,
                 nanoid: nanoid(),
-                // 服务端 rpc 已使用 string 的 id 难以修改，这里兼容一下后续链路需要的 number
+                // Server level rpc has used the id of the string, which is difficult to modify. Here is compatible with the number required for subsequent links.
                 id: Number(i.id),
               }),
             ),
@@ -224,7 +224,7 @@ export const transformDto2Vo = {
   },
 
   timeCapsule: (data?: TimeCapsuleInfo): TimeCapsuleConfig => ({
-    //@ts-expect-error 接口枚举类型取值重定义
+    // @ts-expect-error interface enumeration type value redefinition
     time_capsule_mode: data?.time_capsule_mode ?? TimeCapsuleMode.Off,
     disable_prompt_calling:
       data?.disable_prompt_calling ?? DisablePromptCalling.Off,
@@ -253,7 +253,7 @@ export const transformDto2Vo = {
     const defaultSuggestionConfig: BotSuggestionConfig = isBotNode
       ? DEFAULT_BOT_NODE_SUGGESTION_CONFIG()
       : DEFAULT_SUGGESTION_CONFIG();
-    //@ts-expect-error xxxxxxxxxxxxx SuggestReplyMode 两个文件定义不一致
+    // @ts-expect-error xxxxxxxxxxx SuggestReplyMode The two file definitions are inconsistent
     const suggestionConfig: BotSuggestionConfig = isNumber(
       data?.suggest_reply_mode,
     )
@@ -301,7 +301,7 @@ export const transformDto2Vo = {
     config?: ShortcutCommand[],
   ): ShortCutStruct => ({
     shortcut_sort: shortcutSortList,
-    //@ts-expect-error   ShortCutCommand 前后端定义不一致，前端分化做了类型约束
+    // @ts-expect-error ShortCutCommand The definition of the front and back ends is inconsistent, and the front-end differentiation is subject to type constraints
     shortcut_list: config,
   }),
 
@@ -427,6 +427,6 @@ export const transformVo2Dto = {
     shortcut.shortcut_sort,
 
   layoutInfo: (info: LayoutInfo): BotInfoForUpdate['layout_info'] =>
-    // undefined 会被 axios 过滤，这里后端需要有 key
+    // Undefined will be filtered by axios, where the backend needs to have a key.
     mapValues(info, (val?: string) => val ?? ''),
 };

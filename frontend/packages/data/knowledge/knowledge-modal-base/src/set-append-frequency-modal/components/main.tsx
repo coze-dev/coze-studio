@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useEffect } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -45,7 +45,7 @@ export const SetAppendFrequencyModal = (props: {
 
   return (
     <Modal
-      // @ts-expect-error --TODO:hzf 需要修改为i18n
+      // @ts-expect-error --TODO: hzf needs to be changed to i18n.
       title={I18n.t('设置追加频率')}
       className="w-[520px]"
       centered
@@ -78,7 +78,7 @@ export const SetAppendFrequencyModal = (props: {
     >
       <>
         <div className="text-[14px] coz-fg-primary mb-[30px]">
-          {/**@ts-expect-error --TODO:hzf 需要修改为i18n */}
+          {/* @ts-expect-error --TODO: hzf needs to be changed to i18n. */}
           {I18n.t('设置追加频率后，当前频率自动追加')}
         </div>
         <div className="flex flex-col gap-2">

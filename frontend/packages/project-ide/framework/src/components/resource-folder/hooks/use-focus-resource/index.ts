@@ -57,7 +57,7 @@ const useFocusResource = ({
       itemHeight: config?.itemHeight || ITEM_HEIGHT,
     });
 
-    // 如果在视图内， 则不滚
+    // If in view, do not roll
     if (
       scrollTop > scrollWrapper.current.scrollTop &&
       scrollTop <

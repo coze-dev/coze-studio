@@ -24,15 +24,15 @@ import { type ModelPresetValues } from './type';
 import { getModelPresetValues } from './helpers/get-model-preset-values';
 
 export interface ModelState {
-  // 当前环境所有合法的模型列表
+  // List of all valid models in the current environment
   onlineModelList: Model[];
-  /* 不属于当前环境的特殊模型 key === modelId
-   * 例如: 在 cn-inhouse 选择 GPT 模型, 然后切换到 cn-release, 当前 bot 模型列表 = 正常模型列表 + 1个特殊模型(GPT)
-   * MultiAgent 模式下, 每个 Agent 模型列表 = 正常模型列表 + 1个特殊模型(可能存在)
-   * 从特殊模型切换到正常模型后, 不被允许切换回特殊模型
+  /* Special models that do not belong to the current environment key === modelId
+   * For example: select the GPT model in cn-inhouse, then switch to cn-release, the current bot model list = normal model list + 1 special model (GPT)
+   * In MultiAgent mode, each Agent model list = normal model list + 1 special model (may exist)
+   * After switching from the special model to the normal model, it is not allowed to switch back to the special model
    */
   offlineModelMap: Record<string, Model>;
-  // 纯计算属性, 由 specialModel 和 baseModel 计算而来 key === modelId
+  // Pure computational properties, calculated from specialModel and baseModel key === modelId
   // key === modelId
   modelPresetValuesMap: Record<string, ModelPresetValues>;
 }

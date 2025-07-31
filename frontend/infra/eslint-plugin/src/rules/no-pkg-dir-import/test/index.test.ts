@@ -32,7 +32,7 @@ vi.mock('eslint-module-utils/readPkgUp', () => ({
 const validCases = [
   {
     code: 'import "xxx"',
-    modulePath: undefined, // modulePath 为 空
+    modulePath: undefined, // modulePath is empty
     moduleRealPath: undefined,
     importPkgPath: 'path/to/import/pkg',
     currentPkgPath: 'path/to/current/pkg',
@@ -48,7 +48,7 @@ const validCases = [
     importPkgPath: 'path/to/import/pkg',
     currentPkgPath: 'path/to/current/pkg',
     pkg: {
-      name: 'some/pkg', // 包名称与引用路径相同
+      name: 'some/pkg', // The package name is the same as the reference path
       exports: {},
     },
   },
@@ -59,7 +59,7 @@ const validCases = [
     importPkgPath: 'path/to/import/pkg',
     currentPkgPath: 'path/to/current/pkg',
     pkg: {
-      name: undefined, // 解析到不规范配置的package.json
+      name: undefined, // Parse to the non-canonical package.json
     },
   },
   {
@@ -69,7 +69,7 @@ const validCases = [
     importPkgPath: 'path/to/import/pkg',
     currentPkgPath: 'path/to/current/pkg',
     pkg: {
-      name: '@types/pkg', // 解析到类型包
+      name: '@types/pkg', // Parse to type package
       exports: {},
     },
   },
@@ -77,7 +77,7 @@ const validCases = [
     code: "import pkg from 'pkg';",
     modulePath: 'path/to/module',
     moduleRealPath: 'path/to/module',
-    importPkgPath: 'path/to/same/pkg', // 相同路径
+    importPkgPath: 'path/to/same/pkg', // same path
     currentPkgPath: 'path/to/same/pkg',
     pkg: {
       name: '@types/pkg',
@@ -98,7 +98,7 @@ const validCases = [
   {
     code: "import pkg from 'pkg';",
     modulePath: 'path/to/module',
-    moduleRealPath: 'path/to/node_modules/pkg', // 解析到node_modules
+    moduleRealPath: 'path/to/node_modules/pkg', // Parse to node_modules
     importPkgPath: 'path/to/import/pkg',
     currentPkgPath: 'path/to/current/pkg',
     pkg: {
@@ -134,7 +134,7 @@ const validCases = [
   if (!c.modulePath) {
     return {
       code: c.code,
-      // TODO: 避免eslint duplication检测。可能需要改为其他方式
+      // TODO: Avoid eslint duplication. It may need to be changed to another way
       settings: c,
     };
   }
@@ -167,7 +167,7 @@ const invalidCases = [
     currentPkgPath: 'path/to/current/pkg',
     pkg: {
       name: 'pkg',
-      exports: undefined, // 为空
+      exports: undefined, // empty
     },
     messageId: 'noExportsCfg',
   },

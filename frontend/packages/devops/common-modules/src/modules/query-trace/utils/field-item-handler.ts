@@ -165,7 +165,7 @@ const getFieldInput = (span: CSpan): FieldItem => ({
 
 const getStreamOutput = (span: CSpan): FieldItem => {
   const value = getSpanProp(span, 'streaming_output') as StreamingOutputStatus;
-  // key 为 starling key
+  // Key to starling key
   return {
     key: I18n.t('query_stream_output'),
     value: streamingOutputStatusConfigMap[value]?.label,

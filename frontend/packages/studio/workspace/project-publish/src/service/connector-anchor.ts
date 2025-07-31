@@ -38,7 +38,7 @@ class PublishAnchorService {
       const stringifyLocalData = localStorage.getItem(this.PUBLISH_ANCHOR_KEY);
       const localData = typeSafeJSONParse(stringifyLocalData);
       const validData = publishAnchorSchema.parse(localData);
-      // 使用 zod 对 localData 进行类型校验
+      // Using zod to type-check localData
       this.anchorValues = validData;
     } catch {
       this.anchorValues = {};

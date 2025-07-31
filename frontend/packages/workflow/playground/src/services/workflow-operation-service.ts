@@ -52,8 +52,8 @@ export const WorkflowOperationServiceProvider = Symbol(
 );
 
 /**
- * workflow增删改查等操作接口调用
- * 由于多人协作和非多人模式存在两套不同接口，将判断逻辑统一收敛到这里, 减少脏代码入侵
+ * Workflow addition, deletion, modification and other operation interface calls
+ * Due to the existence of two different interfaces in multi-person collaboration and non-multiplayer modes, the judgment logic is uniformly converged here to reduce dirty code intrusion
  */
 @injectable()
 export class WorkflowOperationService {
@@ -90,9 +90,9 @@ export class WorkflowOperationService {
       const data = await workflowApi.PublishWorkflow({
         workflow_id: this.workflowId,
         space_id: this.spaceId,
-        // 已废弃，待删除
+        // Abandoned, to be deleted
         has_collaborator: false,
-        // 发布都不经过 testrun 校验
+        // Published without testrun verification
         force: true,
         ...obj,
       });
@@ -151,7 +151,7 @@ export class WorkflowOperationService {
       submit_commit_id: vcsData?.submit_commit_id || '',
       ignore_status_transfer: ignoreStatusTransfer,
     };
-    // 仅 project 内需要
+    // Required within the project only
     if (
       this.globalState.projectId &&
       FLAGS?.['bot.automation.project_multi_tab']
@@ -160,7 +160,7 @@ export class WorkflowOperationService {
     }
     await workflowApi.SaveWorkflow(reqParams);
     if (this.globalState.projectId) {
-      // 为了解决 canvas 接口获取 saveVersion 和 长链推送 saveVersion 不同步的问题，在这里手动更新
+      // In order to solve the problem that the canvas interface gets saveVersion and the long-chain push saveVersion are not synchronized, manually update here
       this.dependencyEntity.addSaveVersion();
     }
   };
@@ -173,7 +173,7 @@ export class WorkflowOperationService {
       ...this.mocksetFgOption,
     };
 
-    // 1. 查看历史试运行时，需要传入commitId. 2.协作模式下非草稿态时试运行传入commitId防止回退为草稿
+    // 1. When the practice runs to view the history, you need to pass in the commitId. 2. When the practice runs in non-draft mode in cooperation mode, pass in the commitId to prevent the fallback to draft
     const commitId =
       this.globalState.isViewHistory ||
       (this.globalState.isCollaboratorMode &&
@@ -211,7 +211,7 @@ export class WorkflowOperationService {
       params.log_id = this.logId;
     }
 
-    // 如果是子流程的日志，暂时不走异步查询，后端有 bug
+    // If it is the log of the subprocess, the asynchronous query will not be done for the time being, and there is a bug in the backend.
     params.need_async = !subExecuteId;
 
     const executeResult = await workflowApi.GetWorkFlowProcess(params);

@@ -21,12 +21,12 @@ import { type Layout } from '@coze-common/chat-uikit-shared';
 
 import { type Message } from '../../store/types';
 
-// TODO: 需要和服务端对接
+// TODO: Needs to interface with server level
 
 export type MessageExt = Message['extra_info'];
 export enum MessageUnitRole {
   DATA_SET = 'dataSet',
-  VERBOSE = 'verbose', //新版debug协议。例如：agent节点跳转
+  VERBOSE = 'verbose', //New debug protocol. For example: agent node jump
   TOOL = 'tool',
   HOOKS = 'hooks',
 }
@@ -44,11 +44,11 @@ export interface FunctionCallMessageUnit extends BaseMessageUnit {
   llmOutput: Message;
   apiResponse?: Message;
   apiIndexMark?: number;
-  // stream的uuid
+  // Streaming uuid
   streamUuid?: string;
-  // 流式插件的response需要verbose进行更新
+  // Streaming plugin responses need to be updated verbose
   isFinish?: boolean;
-  // function_call和tool_response匹配的id，通用方案
+  // function_call and tool_response matching IDs, common scheme
   callId?: string;
 }
 
@@ -63,39 +63,39 @@ export interface CollapsePanelHeaderProps {
   isPanelOpen?: boolean;
 
   /**
-   * message 对应的一轮对话中所有工具是否调用成功
+   * Whether all tools in the conversation corresponding to the message were called successfully
    */
   isRelatedChatAllFunctionCallSuccess: boolean;
 
   /**
-   * message 对应的一轮对话是否结束 没被打断 final answer 有返回完毕
+   * Whether the conversation corresponding to the message is over and not interrupted, the final answer has been returned
    */
   isRelatedChatComplete: boolean;
 
   /**
-   * 是不是有关对话的最后一条 function call 消息
+   * Is it the last function call message about the conversation?
    */
   isLatestFunctionCallOfRelatedChat: boolean;
 
   /**
-   * 这条 message 是否来自正在进行的对话
+   * Is this message from an ongoing conversation?
    */
   isMessageFromOngoingChat: boolean;
   /**
-   * 这组消息 是否是假意打断场景
+   * Is this set of messages pretending to interrupt the scene?
    */
   isFakeInterruptAnswer: boolean;
   /**
-   * 是否可展开
+   * Can it be expanded?
    */
   expandable: boolean;
 
   /*
-   * function call 是否命中 mockset
+   * Function call hits mockset
    */
   hitMockSet?: boolean;
   /**
-   * 是否是移动端
+   * Is it a mobile end?
    */
   layout?: Layout;
 }
@@ -113,7 +113,7 @@ export interface THeaderConfig {
   status: ProcessStatus;
 }
 
-// 接口返回结构
+// interface return structure
 export interface ExecuteDisplayName {
   name_executed: string;
   name_execute_failed: string;

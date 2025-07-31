@@ -32,14 +32,14 @@ const generateErrors2Problems = (errors: ValidationState['errors']) => {
     const nodeErrors = list.filter(i => i.errorType === 'node');
     const lineErrors = list.filter(i => i.errorType === 'line');
 
-    // 处理节点错误
+    // Handling node errors
     const nodeLevelErrors = nodeErrors.filter(
       item => item.errorLevel === 'error',
     );
     const nodeLevelWarnings = nodeErrors.filter(
       item => item.errorLevel === 'warning',
     );
-    // errors 优先，其次才显示 warning
+    // Errors first, warnings second
     const nodeCurrentErrors = nodeLevelErrors.length
       ? nodeLevelErrors
       : nodeLevelWarnings;
@@ -55,7 +55,7 @@ const generateErrors2Problems = (errors: ValidationState['errors']) => {
       nodeProblems.push(nodeProblem);
     }
 
-    // 处理线错误
+    // processing line error
     if (lineErrors.length) {
       lineProblems.push(...lineErrors);
     }

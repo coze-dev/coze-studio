@@ -102,11 +102,11 @@ export const ErrorForm: React.FC<ErrorFormProps> = ({
     if (!isOpen) {
       return { rs: true };
     } else {
-      // 如果有外部传进来的 error 直接报错就好
+      // If there is an external error, just report the error directly.
       if (errorMsg) {
         return { rs: false, msg: errorMsg };
       }
-      // 初次 isOpen = true 时，会给 json 默认值，有一瞬间的 json = undefined。返回 true 就好，否则会闪一下
+      // When isOpen = true for the first time, json will be given the default value, and json = undefined for a moment. Just return true, otherwise it will flash.
       if (json === undefined) {
         return { rs: true };
       }

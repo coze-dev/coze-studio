@@ -19,7 +19,7 @@ import { type IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { Emitter, type Event } from '@flowgram-adapter/common';
 
 /**
- * chatflow testrun 选中的 item 信息
+ * Chatflow testrun item info
  */
 export interface SelectItem {
   name: string;

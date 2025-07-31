@@ -157,7 +157,7 @@ meta:
         top_k: 0
         stop: []
         openai:
-            by_azure: true
+            by_azure: false
             api_version: ""
             response_format:
                 type: text

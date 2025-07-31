@@ -20,10 +20,10 @@ import { type PluginBizContext } from './types/biz-context';
 import { BizPlugin } from './plugin';
 
 export const getDebugCommonPluginRegistry = (props: PluginBizContext) => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 插件命名大写开头符合预期
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- Plugin names start with uppercase as expected
   const BizPluginRegistry: PluginRegistryEntry<PluginBizContext> = {
     /**
-     * 贯穿插件生命周期、组件的上下文
+     * Context of components throughout the plug-in lifecycle
      */
     createPluginBizContext() {
       return {
@@ -31,7 +31,7 @@ export const getDebugCommonPluginRegistry = (props: PluginBizContext) => {
       };
     },
     /**
-     * 插件本体
+     * plug-in ontology
      */
     Plugin: BizPlugin,
   };

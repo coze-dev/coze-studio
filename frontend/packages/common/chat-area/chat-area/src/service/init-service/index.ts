@@ -100,35 +100,35 @@ const enum InitStatus {
 export class InitService {
   private latestRequestIndex = 0;
   /**
-   * 当前使用的上下文信息
+   * Context information currently in use
    */
   private context: InitContext;
   /**
-   * 存储下一轮可供使用的上下文信息（重新初始化）
+   * Store context information available for the next round (reinitialization)
    */
   private nextContext: InitContext | null = null;
   /**
-   * 是否取消请求标志位
+   * Whether to cancel the request flag
    */
   private requestAborted = false;
   /**
-   * store mark 信息
+   * Store mark information
    */
   private mark!: Biz;
   /**
-   * 前置初始化 Store 服务
+   * Front Initialization Store Service
    */
   private preInitStoreService!: PreInitStoreService;
   /**
-   * Store 服务
+   * Store service
    */
   private initStoreService!: InitStoreService;
   /**
-   * 加载更多取消监听事件
+   * Load more unlistening events
    */
   private loadMoreDispose!: () => void;
   /**
-   * 销毁插件事件
+   * plugin destruction event
    */
   private destroyPlugins!: () => void;
 
@@ -137,33 +137,33 @@ export class InitService {
    */
   public reporter!: Reporter;
   /**
-   * 生命周期服务
+   * lifecycle services
    */
   public lifeCycleService!: SystemLifeCycleService;
   /**
-   * 锁服务
+   * Lock service
    */
   public chatActionLockService!: ChatActionLockService;
   /**
-   * 事件中心
+   * Event Center
    */
   public eventCenter: Emitter<EventCenter> = mitt<EventCenter>();
   /**
-   * 加载更多服务
+   * Load more services
    */
   public loadMoreClient!: LoadMoreClient;
   /**
-   * 加载更多服务环境工具
+   * Load more service environment tools
    */
   public loadMoreEnvTools!: LoadMoreEnvTools;
   /**
-   * Store Set 信息
+   * Store Set Information
    */
   public storeSet!: StoreSet;
-  // ! 你要加属性了吗？请注意使用 ! 是明确的情况下，并且需要补充运行时检查到 assertInitialized 函数中
+  // ! Are you going to add properties? Please note that using! is explicit and needs to be supplemented with runtime checks into the assertInitialized function
 
   /**
-   * 构造方法
+   * construction method
    */
   constructor(context: InitContext) {
     this.context = context;
@@ -171,13 +171,13 @@ export class InitService {
     this.initServices();
     this.assertInitialized();
 
-    // 创建 LoadMore 后执行定位到消息
+    // After creating LoadMore, perform a location to the message
     this.locateToUnreadMessage();
     this.init();
   }
 
   /**
-   * 运行时判断初始化必备数据是否正确
+   * When running, determine whether the necessary data for initialization is correct
    */
   private assertInitialized() {
     const {
@@ -194,7 +194,7 @@ export class InitService {
       storeSet,
     } = this;
 
-    // 类型检查貌似写不出来-。- 不能获取 private 属性的数据，所以这里就不检查了
+    // The type check can't seem to be written -. - can't get the data of the private property, so I won't check it here
 
     if (
       !loadMoreClient ||
@@ -214,7 +214,7 @@ export class InitService {
   }
 
   /**
-   * 初始化服务
+   * initialization service
    */
   private initServices() {
     this.mark = generateChatCoreBiz(this.context.scene);
@@ -222,7 +222,7 @@ export class InitService {
       namespace: 'bot-platform',
     });
 
-    // 创建前置 Store 初始化服务
+    // Create Pre-Store Initialization Service
     this.preInitStoreService = new PreInitStoreService({
       mark: this.mark,
       scene: this.context.scene,
@@ -230,14 +230,14 @@ export class InitService {
       reporter: this.reporter,
     });
 
-    // 创建系统生命周期服务
+    // Create a system lifecycle service
     this.lifeCycleService = new SystemLifeCycleService({
       reporter: this.reporter,
       usePluginStore:
         this.preInitStoreService.prePositionedStoreSet.usePluginStore,
     });
 
-    // 创建普通 Store 初始化服务
+    // Create Normal Store Initialization Service
     this.initStoreService = new InitStoreService({
       scene: this.context.scene,
       mark: this.mark,
@@ -254,10 +254,10 @@ export class InitService {
       ...this.preInitStoreService.prePositionedStoreSet,
     };
 
-    // 执行创建互斥锁
+    // Create mutual exclusions
     this.chatActionLockService = this.createChatActionLockService();
 
-    // 创建 LoadMore 服务
+    // Create a LoadMore service
     const { loadMoreClient, loadMoreDispose, loadMoreEnvTools } =
       this.createLoadMoreService();
     const commonDeps: MethodCommonDeps = {
@@ -272,7 +272,7 @@ export class InitService {
       },
       storeSet: this.storeSet,
     };
-    // 注册插件系统
+    // registration plugin system
     this.destroyPlugins = initPlugins({
       pluginRegistryList: this.context.pluginRegistryList,
       storeSet: this.storeSet,
@@ -283,7 +283,7 @@ export class InitService {
       getCommonDeps: () => commonDeps,
     });
 
-    // 等待插件注册完毕后在执行相关生命周期
+    // Wait for the plugin to be registered before executing the relevant life cycle
     this.initStoreService.runCreateLifeCycle();
     this.loadMoreClient = loadMoreClient;
     this.loadMoreDispose = loadMoreDispose;
@@ -291,7 +291,7 @@ export class InitService {
   }
 
   /**
-   * 动态更新 Context
+   * Dynamic Update Context
    */
   public updateContext = (
     context: Pick<
@@ -314,10 +314,10 @@ export class InitService {
     };
   };
   /**
-   * 初始化主方法
+   * Initialize the main method
    */
   public init = async () => {
-    // 如果之前已经初始化成功了，就不在进行初始化了
+    // If it has been initialized successfully before, it will not be initialized.
     if (
       this.storeSet.useGlobalInitStore.getState().initStatus ===
       InitStatus.Success
@@ -344,8 +344,8 @@ export class InitService {
   };
 
   /**
-   * @experimental 实验性质的功能，并未进行测试回归，使用时请重点测试
-   * 刷新消息列表
+   * @Experimental experimental function, not re-tested, please focus on testing when using it
+   * Refresh message list
    */
   public refreshMessageList = async () => {
     this.lifeCycleService.app.onBeforeRefreshMessageList();
@@ -382,10 +382,10 @@ export class InitService {
   };
 
   /**
-   * 创建操作互斥锁服务
+   * Creating an operational mutual exclusion service
    */
   private createChatActionLockService() {
-    // 创建 Action 互斥锁
+    // Action mutual exclusion
     const {
       getAnswerActionLockMap,
       getGlobalActionLock,
@@ -406,7 +406,7 @@ export class InitService {
   }
 
   /**
-   * 创建 LoadMore 服务
+   * Create a LoadMore service
    */
   private createLoadMoreService() {
     const { useMessageIndexStore, useGlobalInitStore, useWaitingStore } =
@@ -418,7 +418,7 @@ export class InitService {
     this.loadMoreDispose = forceDispose;
 
     const loadMoreEnv = (() => {
-      // action 都是稳定引用，无需现场计算
+      // Actions are all stable references, no on-site calculations required
       const {
         updateCursor,
         updateIndex,
@@ -458,7 +458,7 @@ export class InitService {
               useGlobalInitStore.getState().conversationId ||
               '',
           }),
-        // 取值，需要运行时现场计算
+        // Value, requires on-site calculation at runtime
         readEnvValues: () => {
           const state = useMessageIndexStore.getState();
           const waitingState = useWaitingStore.getState();
@@ -483,7 +483,7 @@ export class InitService {
   }
 
   /**
-   * 定位到未读消息
+   * Locate unread messages
    */
   private locateToUnreadMessage() {
     this.loadMoreClient.locateToUnreadMessage({
@@ -493,7 +493,7 @@ export class InitService {
   }
 
   /**
-   * 清除副作用的函数
+   * Function to clear side effects
    */
   private clearInitSideEffect() {
     this.initStoreService.clearStoreSet();
@@ -501,7 +501,7 @@ export class InitService {
   }
 
   /**
-   * 销毁 ChatArea
+   * ChatArea Destruction
    */
   public destroy = (params?: { disableSkip: boolean }) => {
     const ableToSkip = this.getIsSkipInit();
@@ -529,7 +529,7 @@ export class InitService {
   };
 
   /**
-   * 请求初始化数据
+   * Request initialization data
    */
   private async requestInitData({
     onBefore,
@@ -581,14 +581,14 @@ export class InitService {
   }
 
   /**
-   * 初始化过程
+   * initialization process
    */
   private async processInit() {
     this.setInitStatus(InitStatus.Loading);
 
     this.requestAborted = false;
 
-    // 先去尝试获取初始化数据
+    // First try to get the initialization data.
     const requestData = await this.requestInitData({
       onError: () => {
         this.setInitStatus(InitStatus.Failed);
@@ -597,7 +597,7 @@ export class InitService {
       },
     });
 
-    // 判断是不是存在空数据则不进行处理了
+    // Determine whether there is empty data and do not process it.
     if (!requestData || this.requestAborted) {
       return;
     }
@@ -620,14 +620,14 @@ export class InitService {
   }
 
   /**
-   * 取消请求（严格意义上并没真正取消，只是从数据维度返回取消了）
+   * Cancel request (not really cancelled in the strict sense, just cancelled from the data dimension)
    */
   public abortRequest = () => {
     this.requestAborted = true;
   };
 
   /**
-   * 创建和记录 ChatCore & 创建监听
+   * Create and record ChatCore & create listeners
    */
   private createAndRecordChatCore({
     requestData,
@@ -703,7 +703,7 @@ export class InitService {
   }
 
   /**
-   * 处理记录历史消息、开场白、SectionId 和 Suggestions
+   * Handling chat history, openers, SectionId and Suggestions
    */
   private recordConversationParams({
     requestData,
@@ -744,7 +744,7 @@ export class InitService {
   }
 
   /**
-   * 初始化上传插件（注意，依赖 Chat Core 先行初始化）
+   * Initialize the upload plugin (note that it relies on Chat Core to initialize first)
    */
   public registerUploadPlugin = () => {
     const { chatCore } = this.storeSet.useGlobalInitStore.getState();
@@ -770,7 +770,7 @@ export class InitService {
   };
 
   /**
-   * 记录用户信息和 Bot 信息
+   * Record user information and bot information
    */
   public recordUserAndBotInfo = ({
     requestData,
@@ -787,7 +787,7 @@ export class InitService {
     if (botInfoMap) {
       setBotInfoMap(botInfoMap);
 
-      // todo: remove 临时逻辑
+      // Todo: remove temporary logic
       const botInfo = Object.values(botInfoMap).at(0);
       recordBotInfo({
         name: botInfo?.nickname,
@@ -811,7 +811,7 @@ export class InitService {
   };
 
   /**
-   * 设置初始化状态并同步至 Store
+   * Set the initialization state and sync to the Store
    */
   private setInitStatus(initStatus: InitStatus) {
     const { setInitStatus } = this.storeSet.useGlobalInitStore.getState();
@@ -820,7 +820,7 @@ export class InitService {
   }
 
   /**
-   * 是否可以跳过初始化 / 销毁 阶段
+   * Can I skip the initialization/destruction phase?
    */
   private getIsSkipInit() {
     const initSuccess =

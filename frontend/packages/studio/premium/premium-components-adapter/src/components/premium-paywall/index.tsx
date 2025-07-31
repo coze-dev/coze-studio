@@ -15,27 +15,27 @@
  */
  
 export enum PremiumPaywallScene {
-  // 创建新空间
+  // Create a new space
   AddSpace,
-  // 新模型体验
+  // New model experience
   NewModel,
-  // 付费用户模板
+  // paid user template
   ProTemplate,
-  // 添加空间成员
+  // Add space member
   AddSpaceMember,
-  // 协作
+  // collaboration
   Collaborate,
-  // 跨空间资源复制
+  // Cross-spatial resource replication
   CopyResourceCrossSpace,
-  // 发布到API或者SDK
+  // Publish to API or SDK
   API,
-  // 添加音色资源
+  // Add Timbre Resources
   AddVoice,
-  // 实时语音对话
+  // real-time voice conversation
   RTC,
-  // 导出日志
+  // export log
   ExportLog,
-  // 查询日志
+  // query log
   FilterLog,
 }
 export function useBenefitAvailable(_props: unknown) {

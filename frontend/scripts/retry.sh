@@ -1,6 +1,6 @@
 retry() {
-  local retries=$1   # 重试次数
-  local wait_time=$2 # 等待时间
+  local retries=$1   # number of retries
+  local wait_time=$2 # waiting time
   shift 2
   local count=0
 

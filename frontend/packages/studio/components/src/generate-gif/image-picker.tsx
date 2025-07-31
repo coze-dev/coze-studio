@@ -86,7 +86,7 @@ export default function ImagePicker(props: ImagePickerProps) {
               maxSize={2 * 1024}
               onSizeError={() => {
                 Toast.error({
-                  // starling 切换
+                  // Starling toggle
                   content: withSlardarIdButton(
                     I18n.t(
                       'dataset_upload_image_warning',

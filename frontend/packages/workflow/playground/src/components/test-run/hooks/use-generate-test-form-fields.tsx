@@ -120,7 +120,7 @@ export const useGenerateTestFormFieldsMap = () => {
               return {
                 name: input.name,
                 title: input.name,
-                // 变量配置的默认值直接写入到 schema 中，而不是表单完成初始化之后再注入
+                // Default values for variable configurations are written directly into the schema, rather than injected after the form is initialized
                 initialValue: input.defaultValue,
                 ...generateField(
                   startNodeOldType2VariableType(input.type),
@@ -132,7 +132,7 @@ export const useGenerateTestFormFieldsMap = () => {
             }
           })
           .filter(Boolean)
-          // 把完善场景玩家信息(即 role_information)放到最后
+          // Put the perfect scene player information (i.e. role_information) at the end
           .sort((a, b) => {
             if (a.name === roleInformationKeyword && isSceneFlow) {
               return 1;
@@ -173,7 +173,7 @@ export const useGenerateTestFormFieldsMap = () => {
 
       const inputData = formData?.inputs?.inputParameters || {};
       const inputParameters = inputDefs
-        // chatflow 中 CONVERSATION_NAME 参数不需要提取，需要有专门的会话选择组件
+        // CONVERSATION_NAME parameters in chatflow do not need to be extracted, and a dedicated session selection component is required
         .filter(i => (_isChatflow ? i.name !== CONVERSATION_NAME : true))
         .map(i => ({
           input: inputData[i.name],
@@ -242,7 +242,7 @@ export const useGenerateTestFormFieldsMap = () => {
         },
         nodesService,
       );
-      // name 字段是提交给后端的 key
+      // The name field is the key submitted to the backend
       const paramsFormFields = generateArrayInputParameters(
         formData?.inputs?.params,
         context,
@@ -425,7 +425,7 @@ export const useGenerateTestFormFieldsMap = () => {
     // default: (formData, context) => {
     //   const { node } = context;
     //   const registry = node.getNodeRegistry();
-    //   // 部分路径需要处理，例如有部分是以反斜杠开头的，需要去掉
+    //   //Part of the path needs to be processed, for example, some parts start with a backslash and need to be removed
     //   const inputParametersPath =
     //     registry?.meta?.inputParametersPath ?? 'inputParameters';
 
@@ -458,7 +458,7 @@ export const useGenerateTestFormFieldsMap = () => {
         .formModel.getFormItemValueByPath(path);
       return generateArrayInputParameters(batchData?.inputLists, context).map(
         i => {
-          /** batch 需要加上 tag 标签 */
+          /** Batch needs to be tagged. */
           if (i.decorator.type === 'FormItem') {
             const decorator = {
               ...i?.decorator,

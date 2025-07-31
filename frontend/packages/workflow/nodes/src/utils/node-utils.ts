@@ -141,7 +141,7 @@ export namespace nodeUtils {
   }
 
   /**
-   * @deprecated 使用 variableUtils.valueExpressionToDTO)
+   * @Deprecated using variableUtils.valueExpressionToDTO)
    * @param value
    * @param nodeFormContext
    * @returns
@@ -165,7 +165,7 @@ export namespace nodeUtils {
   }
 
   /**
-   * @deprecated 使用 variableUtils.valueExpressionToDTO
+   * @Deprecated using variableUtils.valueExpressionToDTO
    * @param value
    * @returns
    */
@@ -201,7 +201,7 @@ export namespace nodeUtils {
   }
 
   /**
-   * @deprecated 使用 variableUtils.valueExpressionToVO
+   * @deprecated using variableUtils.valueExpressionToVO
    * @param value
    * @param nodeFormContext
    * @returns
@@ -217,7 +217,7 @@ export namespace nodeUtils {
   }
 
   /**
-   * @deprecated 使用 variableUtils.valueExpressionToVO
+   * @deprecated using variableUtils.valueExpressionToVO
    * @param input
    * @returns
    */
@@ -233,7 +233,7 @@ export namespace nodeUtils {
     };
   }
 
-  // 获取batch表单项默认值
+  // Get the default value of batch order item
   export function getBatchInputListFormDefaultValue(index: number) {
     return {
       name: `item${index}`,
@@ -244,9 +244,9 @@ export namespace nodeUtils {
     };
   }
 
-  // 节点支持批量
+  // Node support batch
   export function getBatchModeFormMeta(isBatchV2: boolean): IFormItemMeta {
-    // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
+    // TODO DELETE schemaGray temporary field, backend grey release brush data mark, delete after full amount
     return {
       name: 'batchMode',
       type: 'string',
@@ -294,7 +294,7 @@ export namespace nodeUtils {
     };
   }
 
-  // formValueToDto & dtoToFormValue 只迁移了api-node中对inputParameters、batch的适配
+  // formValueToDto & dtoToFormValue only migrates the adaptation of inputParameters and batch in api-node
   export function formValueToDto(value: any, context) {
     const inputParams = get(value, INPUT_PARAMS_PATH);
     const formattedInputParams = inputParams

@@ -184,7 +184,7 @@ export default function LevelLine({
   style,
   multiInfo = { multiline: false },
 }: LevelLineProps) {
-  // getLineShowResult 返回数据，暂时没涉及到 root 画线
+  // getLineShowResult returns data, no root drawing is involved for the time being
   const lineShowResult = getLineShowResult({ level, data });
   const showMap: Record<LineShowResult, React.ReactNode> = {
     [LineShowResult.HalfTopRoot]: (
@@ -203,7 +203,7 @@ export default function LevelLine({
     [LineShowResult.FullRootWithChildren]: (
       <FullRootWithChildren className={className} style={style} />
     ),
-    // 在 output tree 中，暂时没涉及到 root 画线
+    // In the output tree, there is no root drawing involved for the time being
     [LineShowResult.HalfTopChild]: (
       <HalfTopChild
         className={classNames(

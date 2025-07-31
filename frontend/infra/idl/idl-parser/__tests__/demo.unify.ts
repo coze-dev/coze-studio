@@ -46,8 +46,8 @@ enum Gender {
 }
 
 // const map<Gender, string> genderMap = {
-//   Gender.Male: '男性',
-//   Gender.Female: '女性', 
+//   Gender. Male: 'Male',
+//   Gender. Female: 'Female',
 // }
 
 union FuncRequest {

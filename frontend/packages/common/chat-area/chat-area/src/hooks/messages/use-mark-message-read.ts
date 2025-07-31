@@ -38,7 +38,7 @@ export const usePrepareMarkMessageReadService = () => {
   });
 
   const controller = useMemo(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- 哥,指定有
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- brother, specify yes
     () => new MarkReadService(() => helperRef.current!),
     [],
   );
@@ -46,8 +46,8 @@ export const usePrepareMarkMessageReadService = () => {
 };
 
 /**
- * UI 组件用这个,进行消息已读上报.
- * 遵守 `enableMarkRead` (默认为 false)配置
+ * The UI component uses this to read and report the message.
+ * Comply with'enableMarkRead ' (default false) configuration
  */
 export const useMarkMessageRead = () => {
   const markReadService = useMarkReadService();

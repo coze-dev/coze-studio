@@ -212,8 +212,8 @@ export const fontSvg = [
   '47-Bolderslant.svg',
   '48-PinyonScript.svg',
   '49-ZYLAADeepblue.svg',
-  // 站酷庆科黄油体 加载总是失败 ，找不到原因，暂时屏蔽
-  // '5-站酷庆科黄油体.svg',
+  // Station Kuqingke butter body, the loading always fails, the reason cannot be found, and it is temporarily blocked.
+  // '5-Station Kuqingke Butter Body.svg ',
   '50-ZYLAASylph.svg',
   '51-ZYENAFetching.svg',
   '52-ZYLAACosy.svg',

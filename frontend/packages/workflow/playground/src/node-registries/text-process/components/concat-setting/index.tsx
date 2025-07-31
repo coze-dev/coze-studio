@@ -55,10 +55,10 @@ const ExpressionEditorField = withField<
 });
 
 interface Props {
-  /** 字符串拼接符号字段名 */
+  /** String Splice symbol field name */
   concatCharFieldName: string;
 
-  /** 字符串拼接结果字段名 */
+  /** String Splicing result field name */
   concatResultFieldName: string;
 }
 

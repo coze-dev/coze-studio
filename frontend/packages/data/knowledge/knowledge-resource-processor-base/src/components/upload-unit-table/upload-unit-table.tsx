@@ -56,7 +56,7 @@ export const UploadUnitTable: FC<UploadUnitTableProps> = props => {
         const curStatus = getProcessStatus(item?.status);
         const statusDescript = item?.statusDescript || '';
 
-        // 使用getColumns获取每个项目的信息
+        // Use getColumns to obtain information for each item
         const columnInfo: ColumnInfo = getColumns
           ? getColumns(item, index)
           : {};

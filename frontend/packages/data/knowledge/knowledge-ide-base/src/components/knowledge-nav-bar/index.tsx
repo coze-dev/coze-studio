@@ -124,7 +124,7 @@ export const KnowledgeIDENavBar = ({
       ].includes(unitType),
     [unitType],
   );
-  // link 或者 action 二选一存在时才展示
+  // Link or action will only be displayed when one exists
   const showTableConfigButton =
     (isShowLinkUrl || canEdit) && isTableFormat && documentList?.length;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type RefObject, useMemo, useRef, useState } from 'react';
 
 import cls from 'classnames';
@@ -61,7 +61,7 @@ export const SwitchAgent = (props: SwitchAgentProps) => {
     if (!editedShortcut.agent_id) {
       return {
         defaultAgentId: '',
-        // @ts-expect-error --后面替换
+        // @ts-expect-error -- replace later
         defaultName: I18n.t('Do not specify'),
       };
     }

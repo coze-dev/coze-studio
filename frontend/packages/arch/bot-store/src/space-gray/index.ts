@@ -58,7 +58,7 @@ const fetchTccConfig = async spaceId => {
   }
 };
 
-/* 通过 tcc 动态配置的 space 粒度的灰度 */
+/* Dynamically configured grey release of space granularity via tcc */
 export const useSpaceGrayStore = create<TccStore & TccAction>()(
   devtools(
     (set, get) => ({

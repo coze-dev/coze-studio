@@ -25,47 +25,47 @@ import { useTestRunFlow } from '../components/test-run/hooks/use-test-run-flow';
 import { useExecStateEntity } from './use-exec-state-entity';
 
 export interface TestRunInstanceAction {
-  /* 触发全流程 testrun */
+  /* Trigger full process testrun */
   handleTestRun: () => Promise<void>;
   cancelTestRun: () => Promise<void>;
   pauseTestRun: () => void;
   continueTestRun: () => void;
 
   getTestRunHistory: (config: {
-    /** 是否展示节点结果 */
+    /** Whether to display node results */
     showNodeResults?: boolean;
-    /** 指定执行 ID, 若不填, 则展示最近一次运行结果 */
+    /** Specify the execution ID, if not, the last run result will be displayed */
     executeId?: string;
   }) => Promise<GetWorkFlowProcessData>;
 }
 
 export interface TestRunInstanceState {
-  /* 是否执行中 */
+  /* Is it in progress? */
   isExecuting: boolean;
-  /* 是否执行成功 */
+  /* Was the execution successful? */
   isSucceed: boolean;
-  /* 是否执行失败 */
+  /* Whether the execution failed */
   isFailed: boolean;
-  /* 是否取消执行 */
+  /* Whether to cancel the execution */
   isCanceled: boolean;
-  /* 是否暂停 */
+  /* Whether to pause */
   isPaused: boolean;
-  /* 是否运行结束 */
+  /* Is the run over? */
   isEnd: boolean;
 }
 
 export interface TestRunInstanceCallback {
-  /** testRun 执行前回调 */
+  /** Callback before testRun execution */
   onBeforeTestRun?: () => void;
-  /** testRun 开始执行回调 */
+  /** testRun starts executing callbacks */
   onTestRunStart?: (executeId: string, isSingleMode?: boolean) => void;
-  /** testRun 取消回调 */
+  /** testRun cancels callback */
   onTestRunCanceled?: (executeId: string) => void;
-  /** testRun 失败回调 */
+  /** testRun failed callback */
   onTestRunFailed?: (executeId: string) => void;
-  /** testRun 成功回调 */
+  /** testRun successful callback */
   onTestRunSucceed?: (executeId: string) => void;
-  /** testRun 结束回调 */
+  /** testRun end callback */
   onTestRunEnd?: (testRunState: TestRunState, executeId: string) => void;
 }
 
@@ -120,7 +120,7 @@ export const useTestRun = (props?: {
   };
 
   useEffect(() => {
-    // 处理testRun回调
+    // Handling testRun callbacks
     const dispose = onTestRunStateChange(({ prevState, curState }) => {
       if (
         [

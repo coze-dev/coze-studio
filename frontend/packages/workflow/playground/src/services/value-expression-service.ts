@@ -23,38 +23,38 @@ import {
 
 export abstract class ValueExpressionService {
   /**
-   * 判断值是否为值表达式
-   * @param value 值
-   * @returns 是否为值表达式
+   * Determine whether a value is a value expression
+   * @param value
+   * @Returns is a value expression
    */
   abstract isValueExpression(value: unknown): boolean;
 
   /**
-   * 判断值是否为值表达式DTO
-   * @param value 值
-   * @returns 是否为值表达式DTO
+   * Determine whether a value is a value expression DTO
+   * @param value
+   * @Returns is a value expression DTO
    */
   abstract isValueExpressionDTO(value: unknown): boolean;
 
   /**
-   * 判断值是否为引用表达式
-   * @param value 值
-   * @returns 是否为引用表达式
+   * Determine whether the value is a reference expression
+   * @param value
+   * @Returns is a reference expression
    */
   abstract isRefExpression(value: unknown): boolean;
 
   /**
-   * 判断值是否为字面量表达式
-   * @param value 值
-   * @returns 是否为字面量表达式
+   * Determine whether the value is a literal expression
+   * @param value
+   * @Returns is a literal expression
    */
   abstract isLiteralExpression(value: RefExpression): boolean;
 
   /**
-   * 判断引用表达式变量是否存在
-   * @param value 引用表达式
-   * @param node 当前节点
-   * @returns 是否存在
+   * Determine whether a reference expression variable exists
+   * @param value reference expression
+   * @param node Current node
+   * Does @returns exist
    */
   abstract isRefExpressionVariableExists(
     value: RefExpression,
@@ -62,10 +62,10 @@ export abstract class ValueExpressionService {
   ): boolean;
 
   /**
-   * 将值表达式转换为DTO
-   * @param valueExpression 值表达式
-   * @param currentNode 当前节点
-   * @returns 值表达式DTO
+   * Convert value expressions to DTO
+   * @param valueExpression
+   * @param currentNode
+   * @Returns value expression DTO
    */
   abstract toDTO(
     valueExpression?: ValueExpression,
@@ -73,9 +73,9 @@ export abstract class ValueExpressionService {
   ): ValueExpressionDTO | undefined;
 
   /**
-   * 将值表达式DTO转换为值表达式
-   * @param dto 值表达式DTO
-   * @returns 值表达式
+   * Converting a value expression DTO to a value expression
+   * @param dto value expression DTO
+   * @Returns value expression
    */
   abstract toVO(dto?: ValueExpressionDTO): ValueExpression | undefined;
 }

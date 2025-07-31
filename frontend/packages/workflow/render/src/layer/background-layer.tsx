@@ -34,7 +34,7 @@ const RENDER_SIZE = 20;
 const DOT_SIZE = 1;
 
 /**
- * dot 网格背景
+ * Dot grid background
  */
 export class BackgroundLayer extends Layer {
   static type = 'WorkflowBackgroundLayer';
@@ -46,7 +46,7 @@ export class BackgroundLayer extends Layer {
   grid: HTMLElement = document.createElement('div');
 
   /**
-   * 当前缩放比
+   * current zoom ratio
    */
   get zoom(): number {
     return this.config.finalScale;
@@ -54,14 +54,14 @@ export class BackgroundLayer extends Layer {
 
   onReady() {
     const { firstChild } = this.pipelineNode;
-    // 背景插入到最下边
+    // Insert the background to the bottom
     this.pipelineNode.insertBefore(this.node, firstChild);
-    // 初始化设置最大 200% 最小 10% 缩放
+    // Initialization settings Maximum 200% Minimum 10% Zoom
     this.playgroundConfigEntity.updateConfig({
       minZoom: 0.1,
       maxZoom: 2,
     });
-    // 确保点的位置在线条的下方
+    // Make sure the dot is located below the line
     this.grid.style.zIndex = '-1';
     this.grid.style.position = 'relative';
     this.node.appendChild(this.grid);
@@ -69,19 +69,19 @@ export class BackgroundLayer extends Layer {
   }
 
   /**
-   * 最小单元格大小
+   * Minimum cell size
    */
   getScaleUnit(): BackgroundScaleUnit {
     const { zoom } = this;
 
     return {
-      realSize: RENDER_SIZE, // 一个单元格代表的真实大小
-      renderSize: Math.round(RENDER_SIZE * zoom * 100) / 100, // 一个单元格渲染的大小值
-      zoom, // 缩放比
+      realSize: RENDER_SIZE, // The actual size represented by a cell
+      renderSize: Math.round(RENDER_SIZE * zoom * 100) / 100, // The size value of a cell rendering
+      zoom, // zoom ratio
     };
   }
   /**
-   * 绘制
+   * draw
    */
   autorun(): void {
     const playgroundConfig = this.playgroundConfigEntity.config;
@@ -98,7 +98,7 @@ export class BackgroundLayer extends Layer {
       top: scrollY - SCALE_WIDTH,
     });
     this.drawGrid(scaleUnit);
-    // 设置网格
+    // Set Grid
     this.setSVGStyle(this.grid, {
       width: viewBoxWidth,
       height: viewBoxHeight,
@@ -108,7 +108,7 @@ export class BackgroundLayer extends Layer {
   }
 
   /**
-   * 绘制网格
+   * Draw mesh
    */
   protected drawGrid(unit: BackgroundScaleUnit): void {
     const minor = unit.renderSize;
@@ -147,12 +147,12 @@ export class BackgroundLayer extends Layer {
   }
 
   /**
-   * 获取相对滚动距离
+   * Get the relative scroll distance
    * @param realScroll
    * @param mod
    */
   protected getScrollDelta(realScroll: number, mod: number): number {
-    // 正向滚动不用补差
+    // There is no need to make up for the difference in forward scrolling.
     if (realScroll >= 0) {
       return realScroll % mod;
     }

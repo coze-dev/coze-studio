@@ -21,7 +21,7 @@ import { WorkflowModelsService } from '@/services';
 import { useModelType } from '../hooks/use-model-type';
 
 /**
- * 判断模型是不是支持技能
+ * Is the judgment model a supporting skill?
  */
 export function useModelSkillDisabled() {
   const modelType = useModelType();

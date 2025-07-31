@@ -20,26 +20,26 @@ export const isEqual = (
   obj1: Record<string, boolean> | undefined,
   obj2: Record<string, boolean> | undefined,
 ) => {
-  // 有任意一个不是对象时，则直接返回 false
+  // If any one is not an object, return false directly.
   if (!isObject(obj1) || !isObject(obj2)) {
     return false;
   }
   const o1 = obj1 as Record<string, boolean>;
   const o2 = obj2 as Record<string, boolean>;
 
-  // 检查两个对象有相同的键数，如果数量不同，则一定不相等
+  // Check that two objects have the same number of keys. If the numbers are different, they must not be equal
   if (Object.keys(o1).length !== Object.keys(o2).length) {
     return false;
   }
 
-  // 如果键数相同，然后我们检查每个键的值
+  // If the number of keys is the same, then we check the value of each key
   for (const key in o1) {
-    // 如果键不存在于第二个对象，或者值不同，返回false
+    // If the key does not exist in the second object, or the values are different, return false.
     if (!(key in o2) || o1[key] !== o2[key]) {
       return false;
     }
   }
 
-  // 如果所有键都存在于两个对象，并且所有的值都相同，返回 true
+  // Returns true if all keys exist in both objects and all values are the same.
   return true;
 };

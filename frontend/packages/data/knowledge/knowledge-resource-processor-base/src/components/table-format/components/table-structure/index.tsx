@@ -221,7 +221,7 @@ const InputRender = ({
   );
 };
 
-// TODO 待解
+// TODO to be solved
 // eslint-disable-next-line @coze-arch/max-line-per-function
 export const TableStructure: React.FC<TableStructureProps> = ({
   data = [],
@@ -487,7 +487,7 @@ export const TableStructure: React.FC<TableStructureProps> = ({
     },
   ];
 
-  // 预览场景下，不需要操作列
+  // In the preview scenario, no operation column is required
   if (isPreview) {
     columns.pop();
   }

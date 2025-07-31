@@ -62,7 +62,7 @@ export const ConversationContent: React.FC<ConversationContentProps> = ({
   canEdit,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  // 顶部的创建弹窗
+  // Create pop-up window at the top
   const [inputVisible, setInputVisible] = useState(false);
   const [activateChat, setActivateChat] = useState<
     ProjectConversation | undefined
@@ -97,7 +97,7 @@ export const ConversationContent: React.FC<ConversationContentProps> = ({
   });
 
   useEffect(() => {
-    // 初始化选中接口返回数据。conversationId 可能为 0 要展示空
+    // Initialize the selected interface to return data. conversationId may be 0 to display empty
     if (!activateChat && staticList?.length) {
       handleSelectChat(staticList[0]);
     }
@@ -155,7 +155,7 @@ export const ConversationContent: React.FC<ConversationContentProps> = ({
     ) : null;
 
   useEffect(() => {
-    // 判断会话页是否显示,实现切换tab时刷新列表效果
+    // Determine whether the session page is displayed, and achieve the effect of refreshing the list when switching tabs
     const value = getURIPathByPathname(pathname);
     if (value && CONVERSATION_URI.displayName === value) {
       fetch();

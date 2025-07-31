@@ -70,7 +70,7 @@ export const getRelatedInfo = async (options: GetRelatedInfoOptions) => {
     [StandardNodeType.SubWorkflow].includes(it as StandardNodeType),
   );
 
-  // 流程中（包含 subflow 下钻节点）有 Variable、Database、开启 chat history 的LLM || subflow 节点有 subflow
+  // The process (including the subflow drill-down node) has Variable, Database, and LLM for opening chat history | | subflow nodes have subflow
   const isNeedBot =
     hasNodeUseGlobalVariable ||
     hasVariableAssignNode ||
@@ -91,10 +91,10 @@ export const getRelatedInfo = async (options: GetRelatedInfoOptions) => {
     hasLTMNode,
     hasChatHistoryEnabledLLM,
     hasConversationNode,
-    // 当包含会话类节点，需要禁用 bot 选项
+    // When including a session class node, you need to disable the bot option
     disableBot: hasConversationNode,
     disableBotTooltip: hasConversationNode ? I18n.t('wf_chatflow_141') : '',
-    // 包含 LTM 节点，需要禁用项目选项
+    // Includes LTM nodes, project option needs to be disabled
     disableProject: hasLTMNode,
     disableProjectTooltip: hasLTMNode ? I18n.t('wf_chatflow_142') : '',
   };

@@ -31,7 +31,7 @@ export const Zoom = () => {
     const zoomValue = tools.zoom * 100;
     return zoomValue.toFixed(0);
   }, [tools.zoom]);
-  // 为了覆盖 coze design 的样式，不能用 tailwind css
+  // In order to override the style of the cozed design, you cannot use tailwind css.
   const zoomOptionStyle: CSSProperties = {
     padding: '8px',
     lineHeight: '16px',

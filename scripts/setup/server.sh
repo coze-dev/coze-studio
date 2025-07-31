@@ -7,7 +7,14 @@ BIN_DIR="$BASE_DIR/bin"
 CONFIG_DIR="$BIN_DIR/resources/conf"
 RESOURCES_DIR="$BIN_DIR/resources/"
 DOCKER_DIR="$BASE_DIR/docker"
-source "$DOCKER_DIR/.env"
+# source "$DOCKER_DIR/.env"
+ENV_FILE="$DOCKER_DIR/.env"
+
+if [[ "$APP_ENV" == "debug" ]]; then
+    ENV_FILE="$DOCKER_DIR/.env.debug"
+fi
+
+source "$ENV_FILE"
 
 if [[ "$CODE_RUNNER_TYPE" == "sandbox" ]] && ! command -v deno &> /dev/null; then
     echo "deno is not installed, installing now..."
@@ -47,20 +54,13 @@ fi
 echo "✅ Build completed successfully!"
 
 echo "📑 Copying environment file..."
-if [ -f "$DOCKER_DIR/.env" ]; then
-    cp "$DOCKER_DIR/.env" "$BIN_DIR/.env"
+if [ -f "$ENV_FILE" ]; then
+    cp "$ENV_FILE" "$BIN_DIR"
 else
     echo "❌ .env file not found in $DOCKER_DIR"
     exit 1
 fi
 
-if [ -f "$DOCKER_DIR/cert.pem" ]; then
-    cp "$DOCKER_DIR/cert.pem" "$BIN_DIR/cert.pem"
-fi
-
-if [ -f "$DOCKER_DIR/key.pem" ]; then
-    cp "$DOCKER_DIR/key.pem" "$BIN_DIR/key.pem"
-fi
 
 echo "📑 Cleaning configuration files..."
 rm -rf "$CONFIG_DIR"

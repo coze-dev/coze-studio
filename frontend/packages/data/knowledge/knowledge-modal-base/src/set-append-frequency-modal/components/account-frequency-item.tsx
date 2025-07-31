@@ -26,7 +26,7 @@ interface AccountFrequencyItemProps {
   onFrequencyChange: (account: AuthFrequencyInfo) => void;
 }
 
-// TODO: hzf 需要修改为i18n
+// TODO: hzf needs to be changed to i18n.
 const FREQUENCY_OPTIONS = [
   { label: I18n.t('knowledge_weixin_015'), value: FrequencyType.None },
   { label: I18n.t('knowledge_weixin_016'), value: FrequencyType.EveryDay },

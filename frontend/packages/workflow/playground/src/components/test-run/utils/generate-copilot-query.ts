@@ -28,7 +28,7 @@ interface CopilotGenerateItem {
 }
 
 /**
- * 生成copilot的query
+ * Generate copilot queries
  * @param node
  * @returns
  */

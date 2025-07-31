@@ -63,7 +63,7 @@ export const useBackgroundContent = (props?: UseBackgroundContentProps) => {
   );
 
   const botId = useBotInfoStore(s => s.botId);
-  //最新的 静图与动图 未读 - 生成中/成功/失败，展示原点状态
+  //The latest static and dynamic graphs, unread-generating/success/failure, show the origin state
   const showDot = getShowDot(imageDotStatus, gifDotStatus);
 
   const hasDotType =
@@ -89,12 +89,12 @@ export const useBackgroundContent = (props?: UseBackgroundContentProps) => {
   const markRead = async () => {
     if (showDot) {
       setGenerateBackgroundModalByImmer(state => {
-        // 设置当前tab
+        // Set the current tab
         state.activeKey =
           imageDotStatus !== DotStatus.None
             ? GenerateType.Static
             : GenerateType.Gif;
-        // 设置已读状态：失败/成功需要设置已读，进行中/无状态 不需要
+        // Set read status: Failure/success requires setting read, in progress/stateless, not required
         if (
           imageReadExpression(imageDotStatus) &&
           hasDotType === PicType.BackgroundStatic
@@ -119,14 +119,14 @@ export const useBackgroundContent = (props?: UseBackgroundContentProps) => {
   };
 
   const handleEdit = () => {
-    // 打开编辑弹窗
+    // Open the editing pop-up window
     openConfig?.();
   };
 
   const handleRemove = async () => {
-    // 存在进行中的任务时
+    // When there is an ongoing task
     if (generatingType) {
-      // 取消继续生成
+      // Cancel to continue generating
       const generatingTaskId = messageList.find(
         item => item.type === generatingType,
       )?.id;
@@ -145,9 +145,9 @@ export const useBackgroundContent = (props?: UseBackgroundContentProps) => {
         state.generatingTaskId = '';
       });
     }
-    // 有状态的标记已读
+    // A stateful tag has been read
     await markRead();
-    // 清空当前渲染的背景图
+    // Clear the background cover of the current render
     setBackgroundImageInfoList?.([]);
   };
 

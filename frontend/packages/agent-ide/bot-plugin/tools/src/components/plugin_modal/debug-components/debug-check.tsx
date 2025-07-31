@@ -83,7 +83,7 @@ const ProcessContent: FC<PropsWithChildren> = ({ children }) => (
   <div className={s['process-content']}>{children}</div>
 );
 
-/** stringify 缩进 */
+/** Stringify indent */
 const INDENTATION_SPACES = 2;
 const LLMAndAPIContent: FC<{
   toolMessageUnit: CheckParamsProps;

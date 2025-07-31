@@ -15,7 +15,7 @@
  */
  
 /**
- * 新增数据时，筛出不重复的部分
+ * When adding data, filter out non-duplicate parts
  */
 
 import { type Message } from '../types';

@@ -112,18 +112,18 @@ export const UseMcpConfigModal = ({
     },
   );
 
-  // 只能选中未禁用的workflow
+  // Only undisabled workflows can be selected.
   const filterPassList = data?.list?.filter(
     item =>
       find(item?.check_result, {
         type: CheckType.MCPPublish,
       })?.is_pass,
   );
-  //半选状态
+  //Half selection state
   const indeterminate =
     checkedList.length > 0 &&
     checkedList.length < (filterPassList?.length || 0);
-  //全选状态
+  //Select All
   const checkAll = checkedList.length === (filterPassList?.length || 0);
 
   const close = () => {
@@ -155,7 +155,7 @@ export const UseMcpConfigModal = ({
         }
         return item;
       }),
-      selectedConnectorIds: union(selectedConnectorIds, [record.id]), //ID合并去重
+      selectedConnectorIds: union(selectedConnectorIds, [record.id]), //ID merge deduplicate
     });
     close();
   };
@@ -273,14 +273,14 @@ export const UseMcpConfigModal = ({
                 })}
               </Checkbox.Group>
 
-              {/* 加载中 */}
+              {/* Loading */}
               {loadingMore && data?.list.length ? (
                 <div className="text-center">
                   <Spin size="small" />
                 </div>
               ) : null}
 
-              {/* 空状态 */}
+              {/* empty state */}
               {!data?.list.length ? (
                 <EmptyState
                   className="my-[80px] mx-auto"

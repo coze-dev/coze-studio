@@ -56,7 +56,7 @@ export { UploadGenerateButton } from './upload-generate-button';
 
 export { usePluginLimitModal, transPricingRules } from './plugin-limit-info';
 
-// 曝光埋点上报组件，进入视图上报
+// Exposure event tracking report component, enter the view report
 export { TeaExposure } from './tea-exposure';
 export { Sticky } from './sticky';
 
@@ -67,6 +67,6 @@ export {
   appendCopySuffix,
 } from './project-duplicate-modal';
 export { SpaceFormSelect } from './space-form-select';
-// !Notice 以下模块只允许导出类型，避免首屏加载 react-dnd,@blueprintjs/core 等相关代码
+// ! Notice that the following modules only allow export types, avoid loading react-dnd, @blueprintjs/core and other related codes on the first screen
 export { type TItemRender, type ITemRenderProps } from './sortable-list';
 export { type ConnectDnd, type OnMove } from './sortable-list/hooks';

@@ -56,7 +56,7 @@ const getKvBindStatus = (record: PublishConnectorInfo): ConfigStatusUI => {
     [ConnectorConfigStatus.NotConfigured]: I18n.t(
       'bot_publish_columns_status_not_configured',
     ),
-    // 业务不会走到下面3个case
+    // Business will not go to the following 3 cases
     [ConnectorConfigStatus.Configuring]: '',
     [ConnectorConfigStatus.Disconnected]: '',
     [ConnectorConfigStatus.NeedReconfiguring]: '',

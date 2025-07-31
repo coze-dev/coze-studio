@@ -20,15 +20,15 @@ import { type ValueExpression } from '@coze-workflow/variable';
 import { type RoleType } from '@coze-arch/idl/social_api';
 
 export interface RoleInformation {
-  /** 场景下角色的唯一id */
+  /** The unique ID of the character in the scene. */
   biz_role_id: string;
-  /** 角色名 */
+  /** character name */
   role: string;
-  /** 角色昵称 */
+  /** character nickname */
   nickname?: string;
-  /** 角色类型 */
+  /** character type */
   role_type: RoleType;
-  /** 角色描述 */
+  /** Role Description */
   description?: string;
 }
 

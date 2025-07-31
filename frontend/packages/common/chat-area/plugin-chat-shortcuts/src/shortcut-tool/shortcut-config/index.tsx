@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 快捷指令在IDE中的配置tool
+// Quick instructions in the IDE configuration tool
 import React, { type FC, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -85,7 +85,7 @@ export const ShortcutToolConfig: FC<ShortcutToolConfigProps> = props => {
   const getSpaceId = useSpaceStore(state => state.getSpaceId);
   const setHasValidData = useToolValidData();
 
-  // single不展示指定agent的快捷指令
+  // Single command that does not show the specified agent
   const singleShortcuts = initShortcuts?.filter(shortcut => !shortcut.agent_id);
   const shortcuts =
     botMode === BotMode.SingleMode ? singleShortcuts : initShortcuts;
@@ -174,7 +174,7 @@ export const ShortcutToolConfig: FC<ShortcutToolConfigProps> = props => {
         },
         { __disableErrorToast: true },
       );
-      // TODO: hzf 得加上
+      // TODO: hzf has to be added
       // if (res && res.data?.check_not_pass) {
       //   Toast.error(I18n.t('shortcut_modal_illegal_keyword_detected_error'));
       //   onFail();
@@ -214,7 +214,7 @@ export const ShortcutToolConfig: FC<ShortcutToolConfigProps> = props => {
           { __disableErrorToast: true },
         );
       const strictShortcuts = newShortcut && getStrictShortcuts([newShortcut]);
-      // 一次只能添加一个快捷指令
+      // Only one shortcut can be added at a time
       const strictShortcut = strictShortcuts?.[0];
       if (!strictShortcut) {
         Toast.error('Please fill in the required fields');

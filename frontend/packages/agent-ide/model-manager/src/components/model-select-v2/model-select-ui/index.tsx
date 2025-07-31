@@ -31,17 +31,17 @@ import { ModelOptionThumb } from '../model-option-thumb';
 
 export interface ModelSelectUIProps {
   /**
-   * 是否禁止弹出 popover
+   * Whether to ban popovers
    *
-   * 目前内部实现既支持 disabled 时直接不允许弹出 popover（与历史逻辑一致）
-   * 也支持允许弹出 popover 和查看详细配置但禁止编辑
-   * 需求变更时可灵活修改
+   * The current internal implementation supports both disabled and directly does not allow popovers (consistent with historical logic).
+   * Also supports allowing popovers and viewing detailed configuration but prohibiting editing
+   * Flexible modification when requirements change
    */
   disabled?: boolean;
-  /** 当前选中的模型 */
+  /** The currently selected model */
   selectedModelId: string;
   /**
-   * 是否展示跳转到模型详情页（/space/:space_id/model/:model_id）按钮
+   * Whether to display the jump to model details page (/space/: space_id/model/: model_id) button
    * @default false
    */
   enableJumpDetail?:
@@ -50,22 +50,22 @@ export interface ModelSelectUIProps {
       }
     | false;
   /**
-   * 模型选择的变更事件
+   * Model-selected change events
    *
-   * 返回值表示是否成功切换，对部分后续事件会有影响，比如自动关闭 popover
-   * 不显式 return 则视为 true
+   * The return value indicates whether the switch was successful, which will affect some subsequent events, such as automatically closing the popover.
+   * No explicit return is considered true
    */
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- 要实现【要么不用 return，要么必须 return boolean】没别的办法了啊
+  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- there is no other way to implement [either do not return, or must return boolean]
   onModelChange: (model: Model) => boolean | void;
   modelList: Model[];
   /**
-   * 允许业务侧自定义触发器展示，命名对齐 semi select 组件
+   * Allows business side custom trigger display, named alignment semi selected components
    *
-   * @param model - 当 selectedModelId 找不到对应的 model 时，这里则会传入 undefined
+   * @Param model - when selectedModelId cannot find the corresponding model, this will pass undefined
    */
   triggerRender?: (model?: Model, popoverVisible?: boolean) => ReactNode;
   /**
-   * workflow 等不允许详细配置的业务会有 clickToHide 的诉求
+   * Businesses such as workflow that do not allow detailed configuration will have clickToHide demands.
    * @default false
    */
   clickToHide?: boolean;
@@ -73,27 +73,27 @@ export interface ModelSelectUIProps {
   popoverPosition?: PopoverProps['position'];
   /** @default true */
   popoverAutoAdjustOverflow?: boolean;
-  /** trigger 的 className。若传入 triggerRender 则完全由 triggerRender 接管渲染，该参数不再起作用 */
+  /** The className of the trigger. If you pass in triggerRender, triggerRender takes over the rendering completely. This parameter no longer has any effect */
   className?: string;
   popoverClassName?: string;
   /**
-   * 若业务侧自行在组件外部插入 Modal，则点击 Modal 也会触发 onClickOutSide 导致 popover 关闭
-   * 若不希望 popover 意外关闭，则需要将 Modal 通过 modalSlot 传入
+   * If the business side inserts a Modal outside the component by itself, clicking Modal will also trigger onClickOutSide and cause the popover to close.
+   * If you don't want the popover to close unexpectedly, you need to pass Modal through modalSlot
    *
-   * （甚至不需要设置 getPopupContainer，此时 Modal 的挂载层和 ModelSelect 的 Popover 的挂载层依然不同，但却神秘地不会再触发 onClickOutSide 了，semi 牛逼）
+   * (You don't even need to set getPopupContainer, the mount layer of Modal and the mount layer of ModelSelect's Popover are still different, but mysteriously no longer trigger onClickOutSide, semi awesome)
    */
   modalSlot?: ReactNode;
 
-  /** 模型详细配置信息，不传则隐藏详细配置的按钮入口 */
+  /** The detailed configuration information of the model will be hidden if the button entrance of the detailed configuration is not passed. */
   modelConfigProps?: ModelConfigProps;
 
-  /** 弹窗有多种渲染场景，提供选项来定制渲染层级已避免覆盖 */
+  /** The pop-up window has a variety of rendering scenarios, providing options to customize the rendering hierarchy to avoid overwriting */
   zIndex?: number;
 
-  /** 模型列表额外头部插槽 */
+  /** Model List Extra Head Slots */
   modelListExtraHeaderSlot?: ReactNode;
 
-  /** 是否默认展开模型列表 */
+  /** Whether to expand the model list by default */
   defaultOpen?: boolean;
 }
 
@@ -115,7 +115,7 @@ export function ModelSelectUI({
   zIndex = 999,
   defaultOpen = false,
 }: ModelSelectUIProps) {
-  /** 为了实现 Popover 跟 Select 宽度一致，通过该 ref 获取 Select 宽度（若传入 triggerRender 则不再需要保持一致） */
+  /** In order to achieve the same width as Select for Popover, get the Select width through this ref (if you pass in triggerRender, you no longer need to keep it consistent) */
   const selectRef = useRef<HTMLDivElement>(null);
   const [popoverVisible, setPopoverVisible] = useState(defaultOpen);
   const [detailConfigVisible, setDetailConfigVisible] = useState(false);
@@ -124,7 +124,7 @@ export function ModelSelectUI({
     ({ model_type }) => selectedModelId === String(model_type),
   );
 
-  // 需要实现 group + custom option 效果，Select 组件兼容性不佳，不得不自行实现 Popover
+  // Need to implement group + custom option effect, Select component compatibility is not good, have to implement Popover
   return (
     <Popover
       zIndex={zIndex}
@@ -161,7 +161,7 @@ export function ModelSelectUI({
           ) : null}
 
           <PopoverModelListView
-            // 用 hidden 而不是直接条件性挂载以便保留 scrollTop，设计师的小心思
+            // Use hidden instead of direct conditional mount to preserve scrollTop, designer's care
             hidden={detailConfigVisible}
             disabled={disabled}
             selectedModelId={selectedModelId}

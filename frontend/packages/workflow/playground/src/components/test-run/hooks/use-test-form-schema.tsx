@@ -153,16 +153,16 @@ interface OptionsType {
 }
 
 /**
- * 根据节点 formData 推导出 testFormSchema
- * 整个 schema 目前会构造成这种结构：
- * - node[] // 未来会有多个 node，所以 node 需要分维度
- *   // batch 和 input 会到两个分组中，因为 batch 和 input 的 filed.name 是可能重复的
+ * Derive testFormSchema from node formData
+ * The entire schema is currently constructed as follows:
+ * - node []//There will be multiple nodes in the future, so nodes need to be divided into dimensionsdes in the future, so nodes need to be divided into dimensions
+ *   //batch and input will be in two groups, because the filed.name of batch and input may be duplicatedame of batch and input may be duplicated
  *   - batch
  *   - input
  *     - string
  *     - number
  *     - ...
- * - bot // 他是独立的只有一个
+ * - bot//he is independent only oneependent and there is only one
  * - testset
  *   - is
  *   - name
@@ -187,7 +187,7 @@ export const useTestFormSchema = (
 
   const bizCtx = useTestsetBizCtx();
 
-  /** 如果是 start 节点代表是全量运行，否则是单节点运行 */
+  /** If it is a start node, it means it is running in full, otherwise it is running on a single node. */
   const testFormType = useMemo(() => {
     if (!node || node.flowNodeType === StandardNodeType.Start) {
       return TestFormType.Default;
@@ -218,7 +218,7 @@ export const useTestFormSchema = (
       .formModel.getFormItemValueByPath('/');
     const nodeTitle = formData?.nodeMeta?.title;
 
-    /** part 计算节点壳子的部分 */
+    /** Part of the computing node shell */
     const nodeField: TestFormField = {
       ...NODE_FIELD_TEMPLATE,
       title: I18n.t('workflow_debug_testonenode_group', {
@@ -234,7 +234,7 @@ export const useTestFormSchema = (
       children: [],
     };
 
-    /** part 计算节点批处理部分 */
+    /** Part Compute Node Batch Part */
     const batchFields = generateTestFormFieldsMap.batch(formData, {
       node: current,
     });
@@ -245,7 +245,7 @@ export const useTestFormSchema = (
       });
     }
 
-    /** part 计算非 input 的内容 */
+    /** Part of computing non-input content */
     const settingFields = generateTestFormFieldsMap.setting(formData, {
       node: current,
     });
@@ -256,7 +256,7 @@ export const useTestFormSchema = (
       });
     }
 
-    /** part 计算节点输入 */
+    /** Parts Compute Node Input */
     const generateFn =
       generateTestFormFieldsMap[current.flowNodeType as StandardNodeType] ||
       generateTestFormFieldsMap.default;
@@ -289,9 +289,9 @@ export const useTestFormSchema = (
     const subflowIsChatflow =
       get(nodeData, 'flow_mode') === WorkflowMode.ChatFlow;
 
-    // 逻辑在 testset 中也实现了：packages/workflow/playground/src/components/test-run/chat-flow-test-form-panel/testset-bot-project-select.tsx
-    // 会话类节点，子流程（Chatflow）不能选择 Bot，因为Bot不支持多会话
-    // LTM 节点不能选择 Project，因为 Project 还没有 LTM 能力
+    // The logic is also implemented in the testset: packages/workflow/playground/src/components/test-run/chat-flow-test-form-panel/testset-bot-project-select
+    // Session class nodes, subflows (Chatflow) cannot select Bot because Bot does not support multi-session
+    // The LTM node cannot select Project because Project does not yet have LTM capabilities
     const needDisableBot =
       hasConversationNode || (isSubflow && subflowIsChatflow);
 
@@ -321,13 +321,13 @@ export const useTestFormSchema = (
           },
         });
 
-        // 拉取全局变量
+        // Pull global variable
         Object.assign(botTemplate.children[0], {
           events: {
             onFormValueChange: _v => {
               const currentValue = _v.currentTarget?.value || {};
 
-              // 切换时拉取全局变量
+              // Pull global variable when switching
               globalVariableService.loadGlobalVariables(
                 currentValue.type === 1 ? 'bot' : 'project',
                 currentValue.id,
@@ -357,13 +357,13 @@ export const useTestFormSchema = (
       fields.push(nodeField);
     }
 
-    /**如果是场景工作流，需要提供场景关联的 botID */
+    /**If it is a scene workflow, you need to provide the botID associated with the scene. */
     if (needSceneBot) {
       fields.push(sceneBotSchema);
     }
 
-    /** part 计算 表单 testset field */
-    /** 如果需要填写入参且是默认模式，则还要显示是否保存到 datasets */
+    /** Parts calculation, form testset field */
+    /** If you need to fill in imported parameters and it is the default mode, also show whether to save to datasets */
     if (
       canTestset &&
       fields.length &&

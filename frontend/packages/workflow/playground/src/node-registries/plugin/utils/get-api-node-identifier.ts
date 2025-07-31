@@ -21,7 +21,7 @@ import { BlockInput } from '@coze-workflow/base';
 export function getApiNodeIdentifier(
   apiParam: BlockInput[],
 ): ApiNodeIdentifier {
-  // 定义要提取的字段及其转换方式
+  // Define the fields to be extracted and how they are converted
   const fieldsToExtract = [
     { name: 'apiName', key: 'apiName' },
     { name: 'pluginID', key: 'pluginID' },
@@ -29,7 +29,7 @@ export function getApiNodeIdentifier(
     { name: 'pluginVersion', key: 'plugin_version', optional: true },
   ];
 
-  // 使用reduce构建结果对象
+  // Using reduce to build the resulting object
   return fieldsToExtract.reduce(
     (result, field) => {
       const blockInput = apiParam.find(

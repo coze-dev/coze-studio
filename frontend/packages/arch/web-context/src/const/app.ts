@@ -16,20 +16,20 @@
  
 // extract from apps/bot/src/constant/app.ts
 export enum BaseEnum {
-  Home = 'home', //首页
-  Explore = 'explore', //探索
-  Store = 'store', // 商店
-  Model = 'model', //模型竞技场
-  Space = 'space', //空间内
-  Workflow = 'work_flow', //兼容 workflow 编辑页
-  Invite = 'invite', // 邀请链接
+  Home = 'home', //Home
+  Explore = 'explore', //explore
+  Store = 'store', // store
+  Model = 'model', //Model Arena
+  Space = 'space', //In space
+  Workflow = 'work_flow', //Compatible workflow edit page
+  Invite = 'invite', // invite link
   Token = 'token', // token
-  Open = 'open', // 开放平台
+  Open = 'open', // open API
   PluginMockSet = 'plugin_mock_set',
-  Search = 'search', // 搜索
-  Premium = 'premium', // 订阅服务
-  User = 'user', // 个人主页
-  Enterprise = 'enterprise', // 企业管理
+  Search = 'search', // Search
+  Premium = 'premium', // subscription service
+  User = 'user', // personal homepage
+  Enterprise = 'enterprise', // Business Management
 }
 
 export enum SpaceAppEnum {

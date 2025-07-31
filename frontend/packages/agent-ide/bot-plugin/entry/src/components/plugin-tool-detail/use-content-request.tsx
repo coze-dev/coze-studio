@@ -58,11 +58,11 @@ export const useContentRequest = ({
   onSuccess,
   renderParamsComponent,
 }: UseContentRequestProps) => {
-  // 是否显示安全检查失败信息
+  // Is the security check failure message displayed?
   const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
     useState(false);
   const [isRequestParamsDisabled, setIsRequestParamsDisabled] = useState(true);
-  // 设置请求参数
+  // Set request parameters
   const { requestParamsNode, submitRequestParams, nlTool } = useRequestParams({
     apiInfo,
     pluginId: plugin_id || '',
@@ -107,7 +107,7 @@ export const useContentRequest = ({
             onClick={async e => {
               e.stopPropagation();
               const status = await submitRequestParams();
-              // 更新成功后进入下一步
+              // After the update is successful, proceed to the next step
               if (status) {
                 handleInit();
                 setIsRequestParamsDisabled(true);

@@ -38,8 +38,8 @@ export const getFixedModelFormValues = (
     const parameterType = targetParameter.type;
     const { options } = targetParameter;
 
-    // 修正 枚举 类型的参数不在枚举范围内
-    // IDL 无法写范型 转换成 string 比较
+    // Fixed that parameters of type enumeration are not in the scope of enumeration
+    // IDL cannot write paradigm, converted to string comparison
     if (options?.length) {
       if (options.findIndex(option => option.value === String(value)) >= 0) {
         return;
@@ -50,7 +50,7 @@ export const getFixedModelFormValues = (
       );
     }
 
-    // 修正 number 类型的参数超过最大、最小值
+    // Fixed number type parameters exceeding maximum and minimum values
     if (
       parameterType === ModelParamType.Float ||
       parameterType === ModelParamType.Int

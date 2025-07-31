@@ -126,7 +126,7 @@ export const useMarkdownEditor = ({
     ref.current.focus();
     const { selectionEnd } = ref.current;
     /**
-     * 选中文字时点击 action bar, 将内容插入到文字的末尾
+     * When the text is selected, click the action bar to insert the content at the end of the text
      */
     const insertTextAtPosition = getInsertTextAtPosition({
       text: value,

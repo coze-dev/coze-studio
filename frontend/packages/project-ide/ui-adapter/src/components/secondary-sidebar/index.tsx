@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// @file 开源版暂时不提供历史记录功能，本文件中导出的方法用于未来拓展使用。
+// The @file open-source version does not provide historical recording for the time being. The methods exported in this file are for future expansion.
 import React from 'react';
 
 export const SecondarySidebar = () => <div />;

@@ -28,7 +28,7 @@ export const acceptValidate = (fileName: string, accept?: string) => {
   const fileExtension = getFileExtension(fileName);
   const mimeType = mime.lookup(fileExtension);
 
-  // image/* 匹配所有的图片类型
+  // Image/* matches all image types
   if (acceptList.includes('image/*') && mimeType?.startsWith?.('image/')) {
     return undefined;
   }

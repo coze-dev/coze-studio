@@ -36,7 +36,7 @@ export const customLayout = (
 
   const leftRightSplitLayout = createBoxLayout(
     [
-      // 左边的不可伸缩 bar
+      // Unretractable bar on the left
       shell.primarySidebar,
       middleContentPanel,
     ],

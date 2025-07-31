@@ -26,7 +26,7 @@ export interface CollapsePanelProps extends PropsWithChildren {
 }
 
 /**
- * 用 Collapsible 封装的更符合 UI 设计的折叠面板
+ * A collapsible panel with Collapsible for better UI design
  */
 export function CollapsePanel({
   header,

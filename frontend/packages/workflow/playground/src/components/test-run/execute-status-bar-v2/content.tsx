@@ -73,7 +73,7 @@ export const ExecuteStatusBarContent: React.FC<ExecuteStatusBarProps> = ({
   const settingOnErrorDesc = useSettingOnErrorDesc(id);
   const { selectNode } = useNodeRender();
 
-  // 节点 4 个状态
+  // Node 4 states
   const isNodeSuccess = nodeStatus === NodeExeStatus.Success;
   const isNodeRunning = nodeStatus === NodeExeStatus.Running;
 
@@ -81,13 +81,13 @@ export const ExecuteStatusBarContent: React.FC<ExecuteStatusBarProps> = ({
   const isNodeError = errorLevel === 'error';
   const isNodePending = errorLevel === 'pending';
 
-  /** 结果默认展开模式, 支持外部配置, 若外部没有配置则: 图像流默认展开 */
+  /** Results The default expansion mode supports external configuration. If there is no external configuration, the image stream is expanded by default. */
   const defaultResultCollapseMode = playgroundProps.defaultResultCollapseMode
     ? 'all'
     : 'end';
   /**
-   * 默认展开模式
-   * 报错节点默认展开
+   * Default expansion mode
+   * Error reporting node expanded by default
    */
   const defaultShowPanel = defaultResultCollapseMode === 'all';
 
@@ -241,7 +241,7 @@ export const ExecuteStatusBarContent: React.FC<ExecuteStatusBarProps> = ({
           const projectApi = getProjectApi();
 
           if (projectId && projectApi) {
-            // 应用内跳转
+            // in-app jump
             projectApi.sendMsgOpenWidget(`/workflow/${workflowId}`, {
               name: 'debug',
               data: {
@@ -250,20 +250,20 @@ export const ExecuteStatusBarContent: React.FC<ExecuteStatusBarProps> = ({
               },
             });
           } else {
-            // 资源库或者运维平台跳转
+            // Resource library or operation and maintenance platform jump
             const url = new URL(window.location.href);
             const params = new URLSearchParams();
 
-            // 新增/更新查询参数，只保留这 4 个参数，包括 space_id
+            // Add/update query parameters to keep only these 4 parameters, including space_id
             params.append('space_id', url.searchParams.get('space_id') || '0');
             params.append('workflow_id', workflowId);
             params.append('execute_id', executeId);
             params.append('sub_execute_id', subExecuteId);
 
-            // 构建新 URL
+            // Build a new URL
             url.search = params.toString();
 
-            // 在新标签页打开
+            // Open in a new tab
             window.open(url.toString(), '_blank');
           }
         }}

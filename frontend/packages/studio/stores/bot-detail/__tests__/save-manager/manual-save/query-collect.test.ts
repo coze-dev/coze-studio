@@ -25,7 +25,7 @@ import {
 import { ItemTypeExtra } from '../../../src/save-manager/types';
 import { updateQueryCollect } from '../../../src/save-manager/manual-save/query-collect';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../../src/store/query-collect', () => ({
   useQueryCollectStore: {
     getState: vi.fn(),
@@ -46,7 +46,7 @@ describe('query-collect save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useQueryCollectStore.getState as any).mockReturnValue({
       ...mockQueryCollect,
     });
@@ -62,18 +62,18 @@ describe('query-collect save manager', () => {
   });
 
   it('应该正确保存 query collect 配置', async () => {
-    // 创建一个符合 UserQueryCollectConf 类型的对象作为参数
+    // Create an object of UserQueryCollectConf type as a parameter
     const queryCollectConf =
       mockQueryCollect as unknown as UserQueryCollectConf;
 
     await updateQueryCollect(queryCollectConf);
 
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       user_query_collect_conf: queryCollectConf,
     });
 
-    // 验证 saveFetcher 被调用，并且参数正确
+    // Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemTypeExtra.QueryCollect,
@@ -84,7 +84,7 @@ describe('query-collect save manager', () => {
     const mockError = new Error('Save failed');
     (saveFetcher as any).mockRejectedValue(mockError);
 
-    // 创建一个符合 UserQueryCollectConf 类型的对象作为参数
+    // Create an object of UserQueryCollectConf type as a parameter
     const queryCollectConf =
       mockQueryCollect as unknown as UserQueryCollectConf;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   useState,
   useRef,
@@ -31,13 +31,13 @@ import {
 
 import { type ScrollProps, type InfiniteListDataProps } from './type';
 
-/* 滚动Hooks */
+/* Rolling Hooks */
 
 function useForwardFunc<T>(
   dataInfo: InfiniteListDataProps<T>,
   mutate: Dispatch<SetStateAction<InfiniteListDataProps<T>>>,
 ) {
-  // 手动插入数据，不通过接口
+  // Insert data manually, without going through the interface
   const insertData = (item: T, index: number) => {
     dataInfo.list.splice(index, 0, item);
     mutate({
@@ -46,7 +46,7 @@ function useForwardFunc<T>(
     });
   };
 
-  // 手动删除数据，不通过接口
+  // Delete data manually, without going through the interface
   const removeData = (index: number) => {
     dataInfo.list.splice(index, 1);
     mutate({
@@ -60,7 +60,7 @@ function useForwardFunc<T>(
   return { insertData, removeData, getDataList };
 }
 
-// eslint-disable-next-line max-lines-per-function, @coze-arch/max-line-per-function  -- 看了下代码行数不太好优化
+// eslint-disable-next-line max-lines-per-function, @coze-arch/max-line-per-function -- the number of lines of code is not very good optimization
 function useScroll<T>(props: ScrollProps<T>) {
   const {
     targetRef,
@@ -84,16 +84,16 @@ function useScroll<T>(props: ScrollProps<T>) {
     reload,
   } = useInfiniteScroll<InfiniteListDataProps<T>>(
     async current => {
-      // 此处逻辑如此复杂，是解决Scroll中的bug。
-      // useInfiniteScroll中的cancel只是取消了一次请求，但是数据会根据current重新设置一遍。
+      // The logic here is so complex that it solves the bug in Scroll.
+      // The cancel in useInfiniteScroll simply cancels a request, but the data is reset based on the current.
       const defaultData = {
         cursor: '0',
         list: [],
       };
       const fetchNo = refFetchNo.current;
       if (refResolve.current) {
-        // 保证顺序执行，如果有当前方法，就取消上一次的请求，防止出现由于网络原因导致数据覆盖问题
-        // 同时发出A1,A2,三次请求，但是A1先到达，然后请求了B1, 但是A1过慢，导致了A1覆盖了B1的请求。
+        // Guaranteed sequential execution, if there is a current method, cancel the last request to prevent data overwriting problems due to network reasons
+        // At the same time, A1, A2, and three requests were issued, but A1 arrived first, and then B1 was requested, but A1 was too slow, causing A1 to overwrite B1's request.
         refResolve.current({
           ...defaultData,
           ...(current || {}),
@@ -110,7 +110,7 @@ function useScroll<T>(props: ScrollProps<T>) {
       // @ts-expect-error -- linter-disable-autofix
       refResolve.current = null;
 
-      // 切换Tab的时候，如果此时正在请求，防止数据的残留界面显示
+      // When switching tabs, if you are requesting at this time, prevent the residual interface display of the data
       if (refFetchNo.current !== fetchNo) {
         if (current) {
           current.list = [];
@@ -123,7 +123,7 @@ function useScroll<T>(props: ScrollProps<T>) {
       return result as InfiniteListDataProps<T>;
     },
     {
-      target: isLoadingError || isNeedBtnLoadMore ? null : targetRef, //失败的时候，通过去掉target的事件绑定，禁止滚动加载。
+      target: isLoadingError || isNeedBtnLoadMore ? null : targetRef, //When it fails, scrolling loading is prohibited by removing the event binding of the target.
       threshold,
       onBefore: () => {
         //setIsLoadingError(false);
@@ -135,8 +135,8 @@ function useScroll<T>(props: ScrollProps<T>) {
         }
       },
       onError: e => {
-        // 如果在请求第一页数据时发生错误，并且当前列表不为空，则reset数据
-        // 这个case只有当resetDataIfReload设置为false时才会发生
+        // If an error occurs when requesting the first page of data and the current list is not empty, reset the data
+        // This case only occurs when resetDataIfReload is set to false
         // @ts-expect-error -- linter-disable-autofix
         if (dataInfo.cursor === '0' && (dataInfo?.list?.length ?? 0) > 0) {
           // @ts-expect-error -- linter-disable-autofix
@@ -205,7 +205,7 @@ function useScroll<T>(props: ScrollProps<T>) {
     isLoading,
     loadMore: () => {
       if (!isLoading) {
-        //如果已经有数据加载中了，需要禁止重复加载。
+        //If there is already data loading, you need to prohibit repeated loading.
         loadMore();
       }
     },

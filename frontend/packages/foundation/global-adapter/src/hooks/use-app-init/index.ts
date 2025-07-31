@@ -31,8 +31,8 @@ import { useResetStoreOnLogout } from './use-reset-store-on-logout';
 import { useInitCommonConfig } from './use-init-common-config';
 
 /**
- * 所有初始化的逻辑收敛到这里
- * 注意登录态需要自行处理
+ * All initialization logic converges here
+ * Note that the login status needs to be handled by yourself.
  */
 export const useAppInit = () => {
   const { requireAuth, requireAuthOptional, loginFallbackPath } =

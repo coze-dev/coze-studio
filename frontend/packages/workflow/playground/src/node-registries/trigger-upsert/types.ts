@@ -51,7 +51,7 @@ export namespace TriggerForm {
 
   export type FormMeta = _FormMeta;
 
-  // 表单值
+  // form value
 }
 
 export enum CronJobType {

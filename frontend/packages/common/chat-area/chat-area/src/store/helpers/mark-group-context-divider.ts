@@ -19,7 +19,7 @@ import { getMessagesByGroup } from '../../utils/message-group/get-message-by-gro
 
 /**
  * !!! mutate
- * @param group 会被改变
+ * @Param group will be changed
  */
 export const markGroupShowContextDivider = ({
   group,
@@ -37,7 +37,7 @@ export const markGroupShowContextDivider = ({
 
   const groupMessages = getMessagesByGroup(group, messages);
 
-  // 安全策略
+  // security policy
   if (
     groupMessages.some(message => Boolean(message.extra_info.new_section_id))
   ) {

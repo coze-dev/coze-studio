@@ -18,7 +18,7 @@ import { useCallback, useRef, useEffect, type ReactNode, useMemo } from 'react';
 
 import { merge } from 'lodash-es';
 import { Renderer, Placeholder, useEditor } from '@coze-editor/editor/react';
-// promptPreset是针对Prompt提供了一系列内置扩展的集合
+// promptPreset is a collection of built-in extensions for Prompt
 import promptPreset, {
   type EditorAPI,
 } from '@coze-editor/editor/preset-prompt';
@@ -29,7 +29,7 @@ import { LanguageSupport } from '@coze-common/editor-plugins/language-support';
 import { defaultTheme } from '@/theme/default';
 
 export interface PromptEditorRenderProps {
-  readonly?: boolean; // 所有插入编辑器相关操作禁用：action-bar
+  readonly?: boolean; // All insert editor related operations are disabled: action-bar
   placeholder?: ReactNode;
   className?: string;
   dataTestID?: string;
@@ -39,11 +39,11 @@ export interface PromptEditorRenderProps {
   onChange?: (value: string) => void;
   onFocus?: () => void;
   /**
-   * 光标焦点丢失
+   * Cursor focus lost
    */
   onBlur?: () => void;
   options?: Record<string, string | number>;
-  isControled?: boolean; // 是否受控
+  isControled?: boolean; // Is it controlled
   getEditor?: (editor: EditorAPI) => void;
 }
 
@@ -89,7 +89,7 @@ export const PromptEditorRender: React.FC<PromptEditorRenderProps> = props => {
     };
   }, [editor, onFocus]);
 
-  // 值受控
+  // value controlled
   useEffect(() => {
     const curEditor = apiRef.current;
 

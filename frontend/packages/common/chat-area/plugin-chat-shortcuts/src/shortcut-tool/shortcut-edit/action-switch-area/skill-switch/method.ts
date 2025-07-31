@@ -14,16 +14,16 @@
  * limitations under the License.
  */
  
-// format选择的插件参数列表
+// Format selected plugin parameter list
 import { type WorkFlowItemType } from '@coze-studio/bot-detail-store';
 import { type PluginApi, ToolType } from '@coze-arch/bot-api/playground_api';
 
 import { type ToolInfo } from '../../../types';
 
-// 最多勾选10个，如果入参数量超过10个，仅勾选其中10个，优先勾选required参数；勾满10个时，其他checkbox置灰不可继续勾选。
+// Check up to 10 parameters. If the number of input parameters exceeds 10, only 10 of them will be checked, and the required parameters will be selected first; when 10 parameters are checked, other checkboxes out grey cannot be checked.
 export const MAX_TOOL_PARAMS_COUNT = 10;
 
-// 初始化工具列表参数
+// Initialization tool list parameters
 export const initToolInfoByToolApi = (
   toolApi?: WorkFlowItemType | PluginApi,
 ): ToolInfo | null => {
@@ -38,7 +38,7 @@ export const initToolInfoByToolApi = (
 
   const { tool_params_list } = workflowPluginProcessedToolInfo;
 
-  // 对params进行排序，将required=true的字段排在前面
+  // Sort params to rank fields with required = true first
   const sortedParams = tool_params_list?.sort(
     (a, b) => (b.required ? 1 : -1) - (a.required ? 1 : -1),
   );
@@ -60,7 +60,7 @@ export const initToolInfoByToolApi = (
   };
 };
 
-// workflow参数转化为toolParams
+// Convert workflow parameters to toolParams
 export const initToolInfoByWorkFlow = (
   workFlow: WorkFlowItemType,
 ): ToolInfo => {
@@ -86,7 +86,7 @@ export const initToolInfoByPlugin = (plugin: PluginApi): ToolInfo => {
   };
 };
 
-// 获取skillModal开启的tab
+// Get tabs opened by skillModal
 export const getSkillModalTab = (): (
   | 'plugin'
   | 'workflow'

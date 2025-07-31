@@ -41,7 +41,7 @@ class PkgRootWebpackPlugin extends OriginPkgRootWebpackPlugin {
     const mergedOptions = Object.assign({}, options || {}, {
       root: '@',
       packagesDirs: rushJsonPackagesDir,
-      // 排除apps/*，减少处理时间
+      // Exclude apps/* to reduce processing time
       excludeFolders: [],
     });
     super(mergedOptions);

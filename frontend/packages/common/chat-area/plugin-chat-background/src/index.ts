@@ -33,7 +33,7 @@ export {
 export const createChatBackgroundPlugin = () => {
   const useChatBackgroundContext = createBackgroundImageStore('chatBackground');
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 插件命名大写开头符合预期
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- Plugin names start with uppercase as expected
   const ChatBackgroundPlugin: PluginRegistryEntry<BackgroundPluginBizContext> =
     {
       createPluginBizContext() {

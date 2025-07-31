@@ -15,7 +15,7 @@
  */
  
 /**
- * 这些是迁移的变量定义，可以不用关注
+ * These are the variable definitions for migration, you can ignore them.
  */
 
 import { type ValueExpressionRawMeta } from './vo';
@@ -63,7 +63,7 @@ export namespace DTODefine {
     rawMeta?: ValueExpressionRawMeta;
   }
 
-  // 当 schema 为 string 时表示原始的 FDL 类型export type ListVariableSchema = VariableTypeDef & Omit<VariableOption, 'name'>
+  // Represents the original FDL type when schema is string export type ListVariableSchema = VariableTypeDef & Omit < VariableOption, 'name' >
   export type ObjectVariableSchema = InputVariableDTO[];
   export type ListVariableSchema = VariableTypeDef &
     Omit<VariableOption, 'name'>;
@@ -109,21 +109,21 @@ export namespace DTODefine {
 }
 
 /**
- * 后端定义的表达式格式
+ * Expression formats defined by the backend
  * @example
  * - literal
  * {
  *     type: 'string',
  *     value: {
  *         type: 'liteal',
- *         content: '浙江'
+ *         Content: 'Zhejiang'
  *     }
  * }
  *
  * - ref
- * // 普通引用类型
+ * //Common reference typery reference type
  * {
- *     type: 'string', // 由引用的变量类型判断
+ *     Type: 'string',//Determined by the type of the referenced variable the type of variable being referenced
  *     value: {
  *         type: 'ref',
  *         content: {
@@ -134,10 +134,10 @@ export namespace DTODefine {
  *     }
  * }
  *
- * // list or object 引用类型
+ * //list or object reference typerence type
  * {
- *     type: 'list', // 由引用的变量路径的最后一个值类型判断, 如果list.a.c, 则为c的格式
- *     schema: { // 只有list和object有schema
+ *     Type: 'list',//Determined by the last value type of the referenced variable path, if list.a.c, the format of che referenced variable path, if list.a.c, the format of c
+ *     Schema : { // only list and object have schemasts have schemas
  *          type: 'object',
  *          schema: [
  *             { name: 'role', type: 'string' },
@@ -149,7 +149,7 @@ export namespace DTODefine {
  *         content: {
  *             source: 'block-output',
  *             blockID: '1002',
- *             name: 'list.a.c' // 这里存的是引用的路径
+ *             Name: 'list.a.c'//Here is the path of the referencee path to the reference
  *         },
  *     }
  * }
@@ -168,7 +168,7 @@ export interface ValueExpressionDTO {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ValueExpressionDTO {
   /**
-   * 空引用
+   * null reference
    */
   export function createEmpty(): ValueExpressionDTO {
     return {
@@ -219,7 +219,7 @@ export enum AssistTypeDTO {
 }
 
 /**
- * 后端的变量格式
+ * Variable format for the backend
  * @example
  * 1. simple
  *  {
@@ -256,19 +256,19 @@ export enum AssistTypeDTO {
  */
 export interface VariableMetaDTO {
   /**
-   * 变量类型
+   * Variable type
    */
   type: VariableTypeDTO;
   /**
-   * 辅助类型，如：string 类型的变量可以是 file 或者 image
+   * Auxiliary types, such as: string type variables can be file or image
    */
   assistType?: AssistTypeDTO;
   /**
-   * 变量名，在节点内不可重复
+   * Variable names are not repeatable within a node
    */
   name: string;
   /**
-   * 变量数据结构，仅object 和 list 类型变量有
+   * Variable data structures, only object and list variables are available
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema?: any; // BlockVariableDefine.ObjectVariableSchema | BlockVariableDefine.ListVariableSchema
@@ -282,7 +282,7 @@ export interface VariableMetaDTO {
 export interface BatchDTOInputList {
   name?: string;
   input: ValueExpressionDTO;
-  // 初始化后存在，服务端数据不存在
+  // Exists after initialization, server level data does not exist
   id?: string;
 }
 

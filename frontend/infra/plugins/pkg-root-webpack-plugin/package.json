@@ -15,7 +15,7 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-arch/pkg-root-webpack-plugin-origin": "npm:@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.74b402",
+    "@coze-arch/pkg-root-webpack-plugin-origin": "npm:@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.48aa2e",
     "@rushstack/rush-sdk": "5.100.2"
   },
   "devDependencies": {

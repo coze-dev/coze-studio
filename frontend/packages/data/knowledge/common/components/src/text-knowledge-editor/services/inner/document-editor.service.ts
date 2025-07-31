@@ -17,7 +17,7 @@
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
 
 /**
- * 更新文档分片内容
+ * Update document sharding content
  */
 export const updateChunkContent = (chunk: Chunk, content: string): Chunk => ({
   ...chunk,
@@ -25,13 +25,13 @@ export const updateChunkContent = (chunk: Chunk, content: string): Chunk => ({
 });
 
 /**
- * 更新chunks
+ * Update chunks
  */
 export const updateChunks = (chunks: Chunk[], chunk: Chunk): Chunk[] =>
   chunks.map(c => (c.slice_id === chunk.slice_id ? chunk : c));
 
 /**
- * 获取激活的分片
+ * Get active sharding
  */
 export const getActiveChunk = (
   chunks: Chunk[],
@@ -44,15 +44,15 @@ export const getActiveChunk = (
 };
 
 /**
- * 处理编辑器输出的HTML内容
- * 移除不必要的外层<p>标签，保持与原始内容格式一致
+ * Process the HTML content output by the editor
+ * Remove unnecessary outer < p > tags to maintain the original content format
  */
 export const processEditorContent = (content: string): string => {
   if (!content) {
     return '';
   }
 
-  // 如果内容被<p>标签包裹，并且只有一个<p>标签
+  // If the content is wrapped with < p > tags, and there is only one < p > tag
   const singleParagraphMatch = content.match(/^<p>(.*?)<\/p>$/s);
   if (singleParagraphMatch) {
     return singleParagraphMatch[1];

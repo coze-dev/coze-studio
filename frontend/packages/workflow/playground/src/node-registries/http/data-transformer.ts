@@ -44,7 +44,7 @@ interface FormData {
 }
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   value: NodeDataDTO,
@@ -76,7 +76,7 @@ export const transformOnInit = (
         },
       },
       setting: {
-        timeout: 120, //单位秒
+        timeout: 120, //unit second
         retryTimes: 3,
       },
     },
@@ -206,8 +206,8 @@ export const transformOnInit = (
       const basicTypeDTO = get(parsedTypeMapping, `${param.name}.basicType`);
       let type = fileTypeDTOToVO[basicTypeDTO];
       /*
-       * 兼容复杂数据类型
-       * rawMeta.type 存储的是 ViewVariableType
+       * Compatible with complex data types
+       * rawMeta.type stores ViewVariableType
        */
       if (param.input?.value?.rawMeta?.type) {
         type = param.input?.value?.rawMeta?.type;
@@ -248,7 +248,7 @@ export const transformOnInit = (
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  */
 export const transformOnSubmit = (
   value: FormData,
@@ -272,7 +272,7 @@ export const transformOnSubmit = (
         },
       )
       .map(param => ({
-        // 后端不需要 type
+        // Backend does not require type
         name: param.name,
         input: param.input,
       }));
@@ -290,7 +290,7 @@ export const transformOnSubmit = (
         },
       )
       .map(param => ({
-        // 后端不需要 type
+        // Backend does not require type
         name: param.name,
         input: param.input,
       }));
@@ -335,7 +335,7 @@ export const transformOnSubmit = (
         },
       )
       .map(param => ({
-        // 后端不需要 type
+        // Backend does not require type
         name: param.name,
         input: param.input,
       }));

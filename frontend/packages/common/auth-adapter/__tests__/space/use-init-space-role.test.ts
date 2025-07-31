@@ -49,11 +49,11 @@ describe('useInitSpaceRole', () => {
     const spaceId = 'space-1';
     const { result } = renderHook(() => useInitSpaceRole(spaceId));
 
-    // 验证是否调用了 setRoles 和 setIsReady
+    // Verify that setRoles and setIsReady are called
     expect(mockSetRoles).toHaveBeenCalledWith(spaceId, [SpaceRoleType.Owner]);
     expect(mockSetIsReady).toHaveBeenCalledWith(spaceId, true);
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toBe(true);
   });
 
@@ -68,7 +68,7 @@ describe('useInitSpaceRole', () => {
     expect(mockSetRoles).toHaveBeenCalledWith(spaceId1, [SpaceRoleType.Owner]);
     expect(mockSetIsReady).toHaveBeenCalledWith(spaceId1, true);
 
-    // 重新渲染，使用新的 spaceId
+    // Render again, using the new spaceId.
     rerender({ id: spaceId2 });
 
     expect(mockSetRoles).toHaveBeenCalledWith(spaceId2, [SpaceRoleType.Owner]);

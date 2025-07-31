@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 固定的 field name */
+/** Fixed field name */
 export enum FieldName {
   Node = '_node',
   Batch = '_batch',

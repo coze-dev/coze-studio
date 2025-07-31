@@ -26,7 +26,7 @@ import {
 import { usePageParams } from './hooks/use-page-params';
 import { useNavigateBack } from './hooks';
 
-// 添加节点放在工具栏了，原来侧边栏不需要了
+// The added node is placed in the toolbar, but the original sidebar is no longer needed.
 const EmptySidebar = React.forwardRef<AddNodeRef, unknown>(
   (_props, _addNodeRef) => null,
 );
@@ -48,7 +48,7 @@ export function WorkflowPage(): React.ReactNode {
   const [initOnce, setInitOnce] = useState(false);
   const { navigateBack } = useNavigateBack();
 
-  /** 是否只读模式, 来源于流程探索模块 */
+  /** Whether it is read-only mode, derived from the process exploration module */
   const readonly = from === 'explore';
 
   if (!workflowId || !spaceId) {
@@ -75,14 +75,14 @@ export function WorkflowPage(): React.ReactNode {
             });
           }
 
-          // onInit可能被多次调用 这里只需要执行一次
+          // onInit may be called multiple times, it only needs to be executed once
           if (!initOnce) {
-            // 读取链接上的node_id参数 滚动到对应节点
+            // Read the node_id parameters on the link and scroll to the corresponding node
             if (nodeId) {
               workflowPlaygroundRef.current?.scrollToNode(nodeId);
             }
 
-            // 读取execute_id 展示对应执行结果
+            // Read execute_id show the corresponding execution result
             if (executeId) {
               workflowPlaygroundRef.current?.showTestRunResult(
                 executeId,

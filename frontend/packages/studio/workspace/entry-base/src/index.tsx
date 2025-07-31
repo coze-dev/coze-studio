@@ -19,7 +19,7 @@ export { default as Tool } from './pages/tool';
 export { default as MocksetDetail } from './pages/mockset';
 export { default as MocksetList } from './pages/mockset-list';
 
-// !Notice 禁止直接导出 knowledge 相关代码，避免首屏加载
+// ! Notice prohibits the direct export of knowledge-related codes to avoid first-screen loading
 // export { default as KnowledgePreviewPage } from './pages/knowledge-preview';
 // export { default as KnowledgeUploadPage } from './pages/knowledge-upload';
 export { default as DatabaseDetailPage } from './pages/database';
@@ -29,7 +29,7 @@ export {
   compareObjects,
 } from './utils';
 
-// 公共组件
+// common component
 export { Creator } from './components/creator';
 export {
   Content,

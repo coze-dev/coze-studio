@@ -21,7 +21,7 @@ import { type StoreSet } from '../context/chat-area-context/type';
 import { findMessageById } from './message';
 
 /**
- * 发送resume消息，打断续聊场景
+ * Send resume message, break chat scene
  */
 export const createAndSendResumeMessage =
   ({
@@ -40,7 +40,7 @@ export const createAndSendResumeMessage =
     const { messages } = useMessagesStore.getState();
     const { startWaiting } = useWaitingStore.getState();
 
-    // 查找中断之前的提问message
+    // Find the message before the interruption
     const questionMessage = findMessageById(messages, replyId);
 
     const defaultSendMessageOptions = {
@@ -58,9 +58,9 @@ export const createAndSendResumeMessage =
       throw new Error('chatCore is not ready');
     }
 
-    // 续聊开启query waiting状态
+    // Continue chatting Open query waiting status
     startWaiting(questionMessage);
 
-    /** 若为resume消息，则不维护本地message状态，只发送请求 */
+    /** If it is a resume message, the local message state is not maintained, only the request is sent */
     chatCore.resumeMessage(questionMessage, mergedOptions);
   };

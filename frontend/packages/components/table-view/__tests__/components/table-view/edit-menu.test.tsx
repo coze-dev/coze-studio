@@ -26,7 +26,7 @@ import {
   EditToolBar,
 } from '../../../src/components/table-view/edit-menu';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/i18n', () => ({
   I18n: {
     t: (key: string, options?: any) => {
@@ -82,7 +82,7 @@ vi.mock('@coze-arch/coze-design/icons', () => ({
   IconCozTrashCan: () => <div data-testid="icon-trash"></div>,
 }));
 
-// 模拟样式
+// simulation style
 vi.mock('../../../src/components/table-view/index.module.less', () => ({
   default: {
     'table-edit-menu': 'table-edit-menu-class',
@@ -207,11 +207,11 @@ describe('EditMenu 组件', () => {
       expect.any(Function),
     );
 
-    // 触发点击事件
+    // trigger click event
     window.dispatchEvent(new Event('click'));
     expect(mockOnExit).toHaveBeenCalled();
 
-    // 卸载组件
+    // uninstall components
     unmount();
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'click',
@@ -260,7 +260,7 @@ describe('EditToolBar 组件', () => {
 
     expect(screen.getByTestId('button-group')).toBeInTheDocument();
     expect(screen.getByText('已选择 2 项')).toBeInTheDocument();
-    expect(screen.getAllByTestId('button')).toHaveLength(3); // 编辑、删除和关闭按钮
+    expect(screen.getAllByTestId('button')).toHaveLength(3); // Edit, delete, and close buttons
   });
 
   test('点击编辑按钮应调用onEdit回调', () => {
@@ -352,7 +352,7 @@ describe('EditToolBar 组件', () => {
     const toolbar = screen.getByTestId('button-group').parentElement;
     expect(toolbar).toHaveStyle('margin-left: -145px');
 
-    // 重新渲染，只选择一个项目
+    // Re-render, select only one item
     rerender(
       <EditToolBar
         configs={[]}

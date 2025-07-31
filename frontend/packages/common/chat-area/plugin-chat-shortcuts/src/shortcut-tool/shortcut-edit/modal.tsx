@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type Dispatch,
   type FC,
@@ -106,7 +106,7 @@ export const ShortcutEditModal: FC<ShortcutEditModalProps> = props => {
     getInitialValues(shortcut),
   );
 
-  // 使用技能 & 未选择工具 => 禁止提交
+  // Use Skills & Unselected Tools = > Forbid Submissions
   const disableSubmit =
     editedShortcut?.use_tool && !editedShortcut?.tool_info?.tool_name;
 
@@ -127,7 +127,7 @@ export const ShortcutEditModal: FC<ShortcutEditModalProps> = props => {
     console.log('onConfirm', formattedValues);
 
     if (mode === 'create') {
-      // TODO: hzf add的类型应该没有command_id
+      // TODO: hzf add type should have no command_id
       onAdd?.(formattedValues, () => {
         setConfirmLoading(false);
       });
@@ -146,7 +146,7 @@ export const ShortcutEditModal: FC<ShortcutEditModalProps> = props => {
       await formRef.current?.formApi.validate();
 
       return actionSwitchAreaRef.current?.validate();
-      // eslint-disable-next-line @coze-arch/use-error-in-catch -- 正常表单校验不需要处理e
+      // eslint-disable-next-line @coze-arch/use-error-in-catch -- normal form validation does not require processing e
     } catch (e) {
       return false;
     }
@@ -166,7 +166,7 @@ export const ShortcutEditModal: FC<ShortcutEditModalProps> = props => {
 
   const { data: pluginData } = useRequest(
     async () => {
-      // 方便类型推断
+      // convenient type inference
       if (shortcut?.plugin_id && spaceId) {
         const res = await PluginDevelopApi.GetPlaygroundPluginList({
           page: 1,

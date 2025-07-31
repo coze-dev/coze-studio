@@ -70,134 +70,134 @@ export interface SendButtonProps {
 
 export interface IChatInputProps {
   /**
-   * submit 过程
-   * 用户操作触发事件 -> 执行 submit -> 执行清空输入框内容
-   * @returns false 阻止 submit 流程
+   * Submit process
+   * User action trigger event - > execute submit - > execute clear text box content
+   * @Returns false block submit process
    */
   onBeforeSubmit?: () => boolean;
   /**
-   * input focus 事件回调
+   * Input focus event callback
    */
   onFocus?: FocusEventHandler<HTMLTextAreaElement>;
   /**
-   * input blur 事件回调
+   * Input blur event callback
    */
   onBlur?: FocusEventHandler<HTMLTextAreaElement>;
   /**
-   * 发送消息Message事件回调
+   * Send Message Event Callback
    */
   onSendMessage?: (payload: SendTextMessagePayload) => void;
 
   /**
-   * 清除上下文事件回调
+   * Clear context event callback
    */
   onClearContext?: () => void;
 
   /**
-   * 清除历史事件回调
+   * Clear historical event callback
    */
   onClearHistory?: () => void;
 
   /**
-   * 上传事件回调
-   * @param uploadType 上传类型 [IMAGE=0 FILE=1]
-   * @param file 文件
+   * Upload event callback
+   * @param uploadType [IMAGE = 0 FILE = 1]
+   * @param file
    * @returns void
    */
   onUpload?: (uploadType: UploadType, payload: SendFileMessagePayload) => void;
 
   /**
-   * 整个输入框组件是否只读（包括按钮）
+   * Is the entire text box component read-only (including buttons)
    */
   isReadonly?: boolean;
 
   /**
-   * 输入框是否只读
+   * Text box read-only
    */
   isInputReadonly?: boolean;
 
   /**
-   * 文案配置
+   * copywriting configuration
    */
   copywritingConfig?: IChatInputCopywritingConfig;
 
   /**
-   * 左侧插槽
+   * Left Slot
    */
   leftActions?: ReactNode;
 
   /**
-   * 右侧插槽
+   * Right Slot
    */
   rightActions?: ReactNode;
 
   /**
-   * 自定义发送按钮
+   * Custom send button
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CustomSendButton?: ComponentType<SendButtonProps>;
 
   /**
-   * 顶部插槽
+   * Top Slot
    */
   addonTop?: ReactNode;
   /**
-   * 左侧插槽
+   * Left Slot
    */
   addonLeft?: ReactNode;
   /**
-   * 整个 textarea 顶部插槽，mentionList 放在这里
+   * The entire textarea top slot, the MentionList goes here
    */
   aboveOutside?: ReactNode;
 
   /**
-   * 内置按钮置灰状态
+   * Built-in button grey out
    */
   buildInButtonStatus?: Partial<UiKitChatInputButtonStatus>;
 
   /**
-   * 内置按钮配置
+   * Built-in button configuration
    */
   buildInButtonConfig?: Partial<UiKitChatInputButtonConfig>;
   /**
-   * 输入框点击事件
+   * Text box click event
    * @returns void
    */
   onInputClick?: () => void;
   /**
-   * @deprecated 废弃不消费
+   * @deprecated no consumption
    */
   className?: string;
   /**
-   * 外容器的 classname
+   * The classname of the outer container
    */
   wrapperClassName?: string;
   /**
-   * 除了输入框中的文字 用户也输入了别的可以发送的内容
-   * 目的是适配文件消息同时发送需求
+   * In addition to the text in the text box, the user also enters other content that can be sent
+   * The purpose is to adapt the file message and send the requirements at the same time
    */
   hasOtherContentToSend?: boolean;
 
   /**
-   * 布局方式
+   * layout
    */
   layout: Layout;
 
   /**
-   * 可上传文件是否超过数量
+   * Whether the number of uploadable files exceeds
    */
   isFileCountExceedsLimit: (fileCount: number) => boolean;
   inputTooltip?: ComponentType<PropsWithChildren>;
   /**
-   * 是否是背景图模式
+   * Is it background cover mode?
    */
   showBackground?: boolean;
   /**
-   * 限制文件数量
+   * Limit the number of files
    */
   limitFileCount?: number;
   /**
-   * 粘贴事件的回调
+   * Callback for paste events
    */
   onPaste?: ClipboardEventHandler<HTMLTextAreaElement>;
   inputNativeCallbacks?: InputNativeCallbacks;

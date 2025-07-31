@@ -77,7 +77,7 @@ export namespace TriggerForm {
 
   export type FormMeta = FormItemMeta[];
 
-  // 表单值
+  // form value
   export interface FormValue {
     [TriggerFormIsOpenName]?: boolean;
     [TriggerFormEventTypeName]?: TriggerFormEventType;

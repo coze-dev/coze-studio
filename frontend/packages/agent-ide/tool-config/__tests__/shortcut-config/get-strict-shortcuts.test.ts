@@ -33,7 +33,7 @@ describe('getStrictShortcuts', () => {
         plugin_id: 'plugin1',
       },
       {
-        // 没有 command_id
+        // No command_id
         tool_type: ToolType.ToolTypeWorkFlow,
         plugin_id: 'plugin2',
       },
@@ -54,7 +54,7 @@ describe('getStrictShortcuts', () => {
       {
         command_id: '2',
         tool_type: ToolType.ToolTypeWorkFlow,
-        // 没有 plugin_id
+        // No plugin_id
       },
     ];
 
@@ -73,7 +73,7 @@ describe('getStrictShortcuts', () => {
       {
         command_id: '2',
         tool_type: ToolType.ToolTypePlugin,
-        // 没有 plugin_id
+        // No plugin_id
       },
     ];
 
@@ -96,7 +96,7 @@ describe('getStrictShortcuts', () => {
       },
       {
         command_id: '3',
-        // 使用其他工具类型
+        // Use other tool types
         tool_type: ToolType.ToolTypeNone,
       },
     ];

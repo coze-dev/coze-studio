@@ -157,7 +157,6 @@ func NewDefaultPluginManifest() *PluginManifest {
 					Value: "Coze/1.0",
 				},
 			},
-			model.ParamInPath:  {},
 			model.ParamInQuery: {},
 		},
 	}

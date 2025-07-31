@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines */
 /* eslint-disable @coze-arch/max-line-per-function */
 
-/* eslint-disable max-lines-per-function, complexity -- PluginItem 的 onApiToggle 后续可以提取优化 */
+/* eslint-disable max-lines-per-function, complexity -- onApiToggle of PluginItem can be extracted and optimized later */
 /* eslint-disable import/order */
 import {
   type MutableRefObject,
@@ -182,13 +182,13 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
   const refTarget = useRef(null);
   const refHasReport = useRef(false);
 
-  // 记录当前点击插件的 apiId
+  // Record the apiId of the currently clicked plugin
   const currentApiId = useRef('');
 
-  // 记录当前是否在拉取 store 的最新插件数据
+  // Record whether the latest plug-in data of the store is currently being pulled
   const [isFetching, setIsFetching] = useState(false);
 
-  // 例如 { 'pluginID_apiID': [node1, node2, node3, ...] }
+  // For example {'pluginID_apiID': [node1, node2, node3,...]}
   const pluginApiNodesMap = useMemo(
     () =>
       groupBy(workflowNodes || [], item => {
@@ -300,7 +300,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
           <div className={s['header-main']}>
             <div className={s['header-name']}>
               <Space spacing={8} className="flex-1">
-                {/* 插件名称最长30字符，无需ellipsis */}
+                {/* Plugin name up to 30 characters, no ellipsis required */}
                 <Typography.Text>
                   <Highlight
                     sourceString={name}
@@ -370,7 +370,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
 
             <div className="my-[8px] leading-[16px]">
               <Space spacing={4}>
-                {/* 条件 */}
+                {/* condition */}
 
                 {addonBefore}
                 {productInfo?.plugin_type === ProductPluginType.LocalPlugin ? (
@@ -523,7 +523,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                 });
               } else {
                 let apiToSend: PluginApi | undefined;
-                // api所在的plugin的信息，添加后存入store，避免GetPlaygroundPluginList多次请求
+                // The information of the plugin where the api is located is added and stored in the store to avoid GetPlaygroundPluginList multiple requests
                 const pluginInfo = {
                   plugin_icon,
                   plugin_type,
@@ -532,7 +532,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                   version_name,
                   version_ts,
                 };
-                // 检测当前要添加的 Plugins名称在已添加列表里是否有重名的情况（模型不支持，所以加此处理）
+                // Check whether the name of the Plugins currently to be added has a duplicate name in the added list (the model does not support it, so this is added)
                 if (
                   pluginApiList
                     .map(i => (i.plugin_name ?? '') + i.name)
@@ -549,7 +549,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                       setIsFetching(true);
                       currentApiId.current = api.api_id;
 
-                      // 从market 过来的数据，需要重新拉取最新数据。
+                      // Data from the market needs to be re-pulled to the latest data.
                       const result =
                         await PluginDevelopApi.GetPlaygroundPluginList({
                           page: 1,
@@ -585,7 +585,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                     );
                   }
                   if (apiToSend) {
-                    // 如果仅可添加一次，则添加后调用callback，并且关闭弹窗
+                    // If it can only be added once, call callback after adding and close the pop-up window
                     if (
                       openMode === OpenModeType.OnlyOnceAdd ||
                       (from &&
@@ -599,14 +599,14 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                         ...apiToSend,
                         ...pluginInfo,
                       });
-                      /** 允许添加失败的场景  */
+                      /** Allow to add failed scenarios  */
                       if (isBoolean(cbResult)) {
                         return cbResult;
                       }
                       return isSuccess;
                     }
                     if (!IS_OPEN_SOURCE) {
-                      // 添加plugin成功后，快速绑定预设卡片信息
+                      // After successfully adding the plugin, quickly bind the preset card information
                       await PluginDevelopApi.QuickBindPluginPresetCard({
                         plugin_id: apiToSend.plugin_id,
                         api_name: apiToSend.name,

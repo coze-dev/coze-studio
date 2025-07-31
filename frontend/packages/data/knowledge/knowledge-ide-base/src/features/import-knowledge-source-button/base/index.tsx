@@ -78,7 +78,7 @@ export const ImportKnowledgeSourceButton = ({
           onSourceChange(unitType);
           return;
         }
-        /** 默认跳转到upload */
+        /** Default jump to upload */
         const formatType = dataSetDetail?.format_type;
         const docID = documentList?.[0]?.document_id;
         const params: Record<string, string> = {

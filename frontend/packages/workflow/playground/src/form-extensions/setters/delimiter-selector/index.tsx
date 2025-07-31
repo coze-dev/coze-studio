@@ -38,23 +38,23 @@ interface Props {
   onChange: (v: DelimiterSelectorValue) => void;
 
   /**
-   * 节点引擎全局readonly
+   * Node engine global readonly
    */
   readonly: boolean;
   hasError?: boolean;
   children?: React.ReactNode;
 
   options: SetterAbilityOptions & {
-    /** 是否多选 */
+    /** Whether to choose more */
     multiple: boolean;
 
-    /** 是否允许自定义 */
+    /** Whether to allow customization */
     enableCustom?: boolean;
 
-    /** 最大自定义个数 */
+    /** Maximum number of customizations */
     maxCustomLength?: number;
 
-    /** 输入框提示 */
+    /** Text box prompt */
     inputPlaceholder?: string;
   };
 }

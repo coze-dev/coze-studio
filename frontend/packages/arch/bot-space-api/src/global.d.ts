@@ -18,7 +18,7 @@
 
 interface Window {
   /**
-   * tea 实例
+   * Tea example
    */
   Tea?: any;
 }

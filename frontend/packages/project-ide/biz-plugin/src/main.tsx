@@ -55,7 +55,7 @@ interface PluginProviderContentProps extends MainProps {
   version: string;
 }
 
-// 新增的 PluginProviderContent 组件
+// Added PluginProviderContent Components
 const PluginProviderContent: React.FC<PluginProviderContentProps> = ({
   pluginID,
   spaceID,
@@ -153,9 +153,9 @@ const Main: React.FC<MainProps> = props => {
       projectID={projectID}
       version={version}
       onUpdateDisplayName={displayName => {
-        widget.setTitle(displayName); // 设置 tab 标题
+        widget.setTitle(displayName); // Set tab title
         if (displayName && displayName !== title) {
-          refetch(); // 更新侧边栏 name
+          refetch(); // Update sidebar name
         }
       }}
       onStatusChange={status => {

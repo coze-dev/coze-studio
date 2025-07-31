@@ -52,8 +52,8 @@ export type WorkflowSLTextAreaProps = ComponentProps<typeof TextArea> & {
 };
 
 /**
- * @component TextArea 在 Workflow 场景下的二次封装;
- * focus(inputting) 的时候提供多行滚动输入能力，blur 的时候提供 ellipsis 和 tooltip 提示能力
+ * @Component TextArea secondary encapsulation in Workflow scenarios;
+ * When focusing (inputting), it provides multi-line scrolling input capability, and when blur, it provides ellipsis and tooltip prompt capability.
  */
 export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
   const { value, handleChange, inputFocusProps, inputBlurProps, disabled } =
@@ -78,15 +78,15 @@ export default function WorkflowSLTextArea(props: WorkflowSLTextAreaProps) {
     return clientHeight < scrollHeight - 1 && (value as string).length > 0;
   })();
 
-  /* 非focus状态下仅用于展示，溢出时提供tooltip */
+  /* In the non-focus state, it is only used for display, and tooltip is provided when overflowing. */
   const InputDisplay = () => {
     const handleFocus = async () => {
-      // 1. 获取光标位置，focus后定位到相同位置
+      // 1. Get the cursor position, focus to the same position
       await sleep(50);
       selectionCacheRef.current = blurInputRef.current?.selectionStart;
       setFocus(true);
 
-      // 2. 触发真正输入组件的focus
+      // 2. Trigger the focus of the real input component
       await sleep(50);
       focusInputRef.current?.focus();
     };

@@ -15,10 +15,10 @@
  */
  
 /**
- * 这个模块是为了做校验设计的一个临时方案
- * 由于校验和值完全分离，所以存在状态同步的问题
- * 但由于时间有限，所以先这样简单搞了
- * 后面希望有一天能有时间对校验和值做统一建模，或者完全对接 rehaje 搞定
+ * This module is a temporary solution for doing verification design
+ * Due to the complete separation of the checksum values, there is a problem with state synchronization
+ * But due to time constraints, it's simple to do this first
+ * I hope one day I can have time to model the checksum values uniformly, or completely connect with rehaje.
  */
 
 import { isNil, isEmpty } from 'lodash-es';
@@ -38,7 +38,7 @@ import { valueExpressionValidator } from '../../../../validators';
 
 enum ValidateStatus {
   /**
-   * 没有触发过校验，初始状态
+   * No verification has been triggered, initial state
    */
   DEFAULT = 'default',
   SUCCESS = 'success',
@@ -211,7 +211,7 @@ export const validateAllBranches = (
  * @param conditions
  * @param context
  * @returns
- * 外部触发的整体校验，需要告诉外部源数据是否校验通过
+ * External triggered overall verification, you need to tell the external source whether the data has passed the verification.
  */
 export const validateAllBranchesFromOutside = (
   branches: ConditionBranchValue[],

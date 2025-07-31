@@ -97,10 +97,10 @@ export interface DatabaseTableStructureProps {
   loading?: boolean;
   loadingTips?: string;
   /**
-   * excel: 单用户模式｜只读模式
-   * normal: 单用户模式｜只读模式
-   * expert: 单用户模式｜只读模式｜多用户模式
-   * undefined: 不支持读写模式
+   * Excel: single user mode | read-only mode
+   * Normal: Single user mode | Read-only mode
+   * Expert: Single user mode | Read-only mode | Multi-user mode
+   * Undefined: Read and write modes are not supported
    */
   readAndWriteModeOptions?: ReadAndWriteModeOptions;
   enableAdd?: boolean;
@@ -219,11 +219,11 @@ export const DatabaseTableStructure = forwardRef<
   };
 
   const verifyAllBeforeSave = async (): Promise<boolean> => {
-    // 触发 tableFields 校验
+    // Trigger tableFields validation
     const validatedTableFieldsList = validateFields(tableFieldsList, 'save');
     setTableFieldsList(validatedTableFieldsList);
 
-    // 触发并校验 tableBasicInfo
+    // Trigger and validate tableBasicInfo
     try {
       // @ts-expect-error -- linter-disable-autofix
       await tableBasicInfoFormRef.current.formApi.validate(['name']);
@@ -231,7 +231,7 @@ export const DatabaseTableStructure = forwardRef<
       return false;
     }
 
-    // 校验 tableFields
+    // Validation tableFields
     if (
       validatedTableFieldsList.find(i =>
         Object.keys(i.errorMapper || {}).find(
@@ -242,7 +242,7 @@ export const DatabaseTableStructure = forwardRef<
       return false;
     }
 
-    // 校验 tableFields 是否为空
+    // Verify that tableFields is empty
     if (isEmptyList) {
       return false;
     }
@@ -354,7 +354,7 @@ export const DatabaseTableStructure = forwardRef<
     }
   };
 
-  // 初始化 ref 属性
+  // Initialize ref attribute
   useImperativeHandle<DatabaseTableStructureRef, DatabaseTableStructureRef>(
     ref,
     () => ({
@@ -374,7 +374,7 @@ export const DatabaseTableStructure = forwardRef<
     [isReadonly, tableFieldsList, tableBasicInfoFormRef],
   );
 
-  // 自定义表单项组件
+  // Custom form item component
   const FormInputInner: FC<any> = useCallback(
     p => {
       const { onChange, value, onBlur, validateStatus } = p;
@@ -413,7 +413,7 @@ export const DatabaseTableStructure = forwardRef<
     [],
   );
 
-  // 校验是否 disable 下一步按钮
+  // Verify that the Next button is disabled
   useComputingEnableGoToNextStep?.(tableFieldsList);
 
   const dataSource = enableAdd

@@ -49,7 +49,7 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
     this.lock = false;
     this.config = config;
 
-    // 订阅字段初始化
+    // Subscription field initialization
     this.initSubscribe();
   }
 
@@ -65,7 +65,7 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
     if (typeof this.config.selector === 'function') {
       return this.config.selector;
     } else {
-      // 使用createSelector创建可记忆化的选择器
+      // Create a memorable selector with createSelector
       const { deps, transformer } = this.config.selector;
       return createSelector(deps, transformer);
     }
@@ -75,7 +75,7 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
     console.log('nextState :>> ', nextState);
     console.log('prevState :>> ', prevState);
 
-    // selector 返回的 state
+    // The state returned by the selector
     this.nextState = nextState;
     this.prevState = prevState;
 
@@ -110,12 +110,12 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
   };
 
   private parsedSaveFunc = async () => {
-    // 中间件-保存前
+    // Middleware - Before saving
     const beforeSavePayload = await getPayloadByFormatter<ScopeStateType>(
       this.nextState,
       this.config?.middleware?.onBeforeSave,
     );
-    // 生命周期-保存前
+    // Life cycle - before saving
     await this.config?.eventCallBacks?.onBeforeSave?.({
       key: this.config.key,
       data: beforeSavePayload,
@@ -129,21 +129,21 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
         this.diff,
       );
 
-      // 中间件-保存后
+      // Middleware - after saving
       const afterSavePayload = await getPayloadByFormatter<ScopeStateType>(
         this.nextState,
         this.config?.middleware?.onAfterSave,
       );
       console.log('afterSavePayload:>>', afterSavePayload);
 
-      // 生命周期-保存后
+      // Life cycle - after saving
       await this.config?.eventCallBacks?.onAfterSave?.({
         key: this.config.key,
         data: afterSavePayload,
       });
     } catch (error) {
       console.log('error:>>', error);
-      // 生命周期-异常
+      // Life Cycle - Abnormal
       this.config?.eventCallBacks?.onError?.({
         key: this.config.key,
         error: error as Error,
@@ -152,7 +152,7 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 取消订阅
+   * unsubscribe
    */
   public close = () => {
     this.debouncedSaveFunc?.flush();
@@ -161,10 +161,10 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 获取状态变更带来的触发延时时间
-   * @param prevState selector 选择的 store 的内容
-   * @param diffChange 前后比对的diff
-   * @returns 延时时间
+   * Get the trigger delay time caused by the state change
+   * @param prevState selector to store content
+   * @param diffChange the diff before and after comparison
+   * @returns delay time
    */
   private getTriggerDelayTime = (
     prevState?: ScopeStateType,
@@ -232,7 +232,7 @@ export class AutosaveObserver<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 获取变更与 trigger 声明配置对应的 key
+   * Gets the key that changes the configuration corresponding to the trigger declaration
    * @param changePath diff path
    * @returns path key
    */

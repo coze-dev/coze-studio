@@ -27,7 +27,7 @@ export const CustomDragLayer: FC<{
 
   const playground = usePlayground();
 
-  // 画布的缩放比例
+  // Canvas scaling
   const playgroundScale = playground.config.finalScale;
 
   const { item, itemType, isDragging, initialOffset, currentOffset } =
@@ -40,14 +40,14 @@ export const CustomDragLayer: FC<{
     }));
 
   function renderItem() {
-    // 仅针对传入的type进行展示，其他拖拽元素不展示
+    // Display only for the passed type, other drag and drop elements are not displayed
     if (itemType === type) {
       return previewRender(item.value, item.index);
     }
     return null;
   }
 
-  // 根据画布缩放比例，对拖拽预览进行缩放
+  // Zoom the drag-and-drop preview according to the canvas zoom ratio
   function getItemStyles() {
     if (!initialOffset || !currentOffset || !layerRef.current) {
       return {
@@ -58,7 +58,7 @@ export const CustomDragLayer: FC<{
 
     let { x, y } = currentOffset;
 
-    // 在 2.0 的新交互下，setter 渲染在右侧面板里，不受画布缩放的影响，所以如果是 2.0， 缩放比例默认为1
+    // In the new interaction of 2.0, setters are rendered in the right panel and are not affected by canvas scaling, so if it is 2.0, the scaling ratio defaults to 1.
     const scale = 1;
 
     x -= layerOffset.x;

@@ -34,11 +34,11 @@ async function clickNumberButtonUp(container: HTMLElement) {
 }
 
 async function clickNumberButton(container: HTMLElement, arrow: 'up' | 'down') {
-  // 先触发 hover
+  // Trigger the hover first
   const numberContainer = container.firstChild as HTMLElement;
   fireEvent.mouseEnter(numberContainer);
 
-  // 等待下一个事件循环
+  // Wait for the next event loop
   await Promise.resolve();
 
   const upButton = container.querySelector(

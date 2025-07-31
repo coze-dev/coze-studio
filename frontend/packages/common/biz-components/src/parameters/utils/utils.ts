@@ -32,7 +32,7 @@ interface ChildrenFindResult {
 
 export type FindDataResult = RootFindResult | ChildrenFindResult | null;
 /**
- * 根据target数组，找到key在该项的值和位置，主要是获取位置，方便操作parent的children
+ * According to the target array, find the value and position of the key in the item, mainly to obtain the position, which is convenient for operating the children of the parent.
  */
 export function findCustomTreeNodeDataResult(
   target: Array<TreeNodeCustomData>,
@@ -40,7 +40,7 @@ export function findCustomTreeNodeDataResult(
 ): FindDataResult {
   const dataInRoot = target.find(item => item.field === findField);
   if (dataInRoot) {
-    // 如果是根节点
+    // If it is the root node
     return {
       isRoot: true,
       parentData: null,
@@ -87,7 +87,7 @@ export function formatTreeData(data: Array<TreeNodeCustomData>) {
   function resolveActionParamList(
     list: Array<TreeNodeCustomData>,
     field: string,
-    // 主要是用来辅助展示线的判断的
+    // It is mainly used to assist the judgment of the display line.
     {
       parentData,
       level,
@@ -99,16 +99,16 @@ export function formatTreeData(data: Array<TreeNodeCustomData>) {
     list?.forEach((item, index) => {
       const keyField = field ? `${field}.${index}` : `${index}`;
       hasObjectLike = hasObjectLike || ObjectLikeTypes.includes(item.type);
-      // 赋值children
+      // Assignment children
       item.key = item.key ?? item.fieldRandomKey ?? nanoid();
       item.field = keyField;
       item.isFirst = index === 0;
       item.isLast = index === list.length - 1;
       item.isSingle = item.isFirst && item.isLast;
       item.level = level;
-      // 第一级不展示辅助线，需要判断level
-      // 也就是第二级（level = 1）只需要自身的层级线
-      // 在第三级（level = 2）之后需要辅助线展示上一级的辅助线
+      // The first level does not show the auxiliary line, you need to judge the level
+      // That is, the second level (level = 1) only needs its own level line
+      // After the third level (level = 2), the guide line is required to show the guide line of the previous level
       item.helpLineShow =
         parentData && level >= MAX_LINE_LEVEL
           ? (parentData.helpLineShow || []).concat(!parentData.isLast)
@@ -165,7 +165,7 @@ export function getLineShowResult({
       item ? LineShowResult.HelpLineBlock : LineShowResult.EmptyBlock,
     ) || [];
   const isRoot = isRootWithoutChildren || isRootWithChildren;
-  // 根节点不需要展示线，只有非根节点才需要辅助线
+  // The root node does not need a display line, only non-root nodes need auxiliary lines.
   if (!isRoot) {
     if (isChildWithChildren) {
       if (data.isLast) {

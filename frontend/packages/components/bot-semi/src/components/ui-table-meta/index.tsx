@@ -25,14 +25,14 @@ import s from './index.module.less';
 export interface UITableMetaProps {
   className?: string;
   avatarClassName?: string;
-  icon_url?: string; //icon图标
-  icon?: ReactElement; //支持传入icon标签
-  name?: string; //名称
-  description?: string; //描述
-  suffix?: ReactElement; //额外元素
+  icon_url?: string; //icon icon
+  icon?: ReactElement; //Support for incoming icon tags
+  name?: string; //name
+  description?: string; //describe
+  suffix?: ReactElement; //Extra Element
 }
 
-//Table表头详情组件
+//Table header details component
 export const UITableMeta: React.FC<UITableMetaProps> = ({
   className,
   avatarClassName,

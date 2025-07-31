@@ -27,7 +27,7 @@ export interface TemplatePreviewCardProps {
   description?: string;
 }
 
-// 基本是复制的 packages/studio/template/pages/src/components/template-list-card/index.tsx
+// Basically copied packages/studio/template/pages/src/components/template-list-card/index.tsx
 export function TemplatePreviewCard({
   userInfo,
   cover,

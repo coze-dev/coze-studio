@@ -20,23 +20,23 @@ import { type StoreApi, type UseBoundStore } from 'zustand';
 import type { Diff } from 'deep-diff';
 
 /**
- * 防抖延迟时间
+ * stabilization delay time
  * @readonly
  * @enum {number}
  */
 export enum DebounceTime {
-  /** 用于需要立即响应的保存操作，如按钮或下拉选择等操作  */
+  /** For saving operations that require an immediate response, such as buttons or drop-down selections  */
   Immediate = 0,
-  /** 用于需要较短时间响应的保存操作，如拖拽等操作 */
+  /** For saving operations that require a short response time, such as dragging and dropping */
   Medium = 500,
-  /** 适合于文本输入等操作 */
+  /** Suitable for operations such as text input */
   Long = 1000,
 }
 
-/** trigger 配置声明时的函数形式，用于在运行时指定字段触发时机 */
+/** Functional form when the trigger configuration is declared, used to specify when the field will trigger at runtime */
 export type FunctionDebounceTime = () => DebounceTime;
 
-/** trigger 配置声明时的数组形式，用于分别指定数组内容变化时的触发时机 */
+/** The array form when the trigger configuration is declared, which is used to specify the trigger timing when the array content changes */
 export interface ArrayDebounceTime {
   arrayType: boolean;
   action:
@@ -48,7 +48,7 @@ export interface ArrayDebounceTime {
       };
 }
 
-/** trigger 配置声明时的对象形式，用于分别指定多字段触发时机 */
+/** The object form when the trigger configuration declaration is used to specify the triggering time of multiple fields separately */
 export interface ObjectDebounceTime {
   default: DebounceTime;
   [index: string]: DebounceTime | ArrayDebounceTime;
@@ -79,21 +79,21 @@ export type SelectorType<StoreType, ScopeStateType> =
     };
 
 export interface AutosaveObserverConfig<StoreType, ScopeKey, ScopeStateType> {
-  /** 被托管的数据字段的类型 */
+  /** The type of data field being hosted */
   key: ScopeKey;
-  /** 防抖延迟时间 */
+  /** stabilization delay time */
   debounce?: DebounceConfig;
-  /** store 需要被监听的属性选择器，支持配置依赖 */
+  /** Store property selectors that need to be listened to, support configuration dependencies */
   selector: SelectorType<StoreType, ScopeStateType>;
-  /** 中间件 支持业务链式处理监听数据 */
+  /** Middleware, which supports business chain processing of monitoring data */
   middleware?: MiddlewareHanderMap<ScopeStateType>;
-  /** 是否立即保存当前字段 */
+  /** Whether to save the current field immediately */
   immediate?: boolean;
-  /** 保存的请求 */
+  /** saved request */
   saveRequest: SaveRequest<ScopeStateType, ScopeKey>;
-  /** 被托管的数据取消订阅时进行的回调 */
+  /** Callbacks when hosted data is unsubscribed */
   unobserver?: () => void;
-  /** 生命周期 */
+  /** Life Cycle */
   eventCallBacks?: EventCallBacks<ScopeStateType, ScopeKey>;
 }
 
@@ -108,28 +108,28 @@ export type SaveMiddlewareHander<ScopeStateType> = (
 ) => Promise<FlexibleState<ScopeStateType>> | FlexibleState<ScopeStateType>;
 
 export interface MiddlewareHanderMap<ScopeStateType> {
-  /** 生命周期-检测变更后 */
+  /** Lifecycle - After detecting changes */
   onBeforeSave?: SaveMiddlewareHander<ScopeStateType>;
-  /** 生命周期-成功保存后 */
+  /** Lifecycle - after successful saving */
   onAfterSave?: SaveMiddlewareHander<ScopeStateType>;
 }
 
 export interface EventCallBacks<ScopeStateType, ScopeKey> {
-  /** 生命周期-检测变更后 */
+  /** Lifecycle - After detecting changes */
   onBeforeSave?: (params: {
     data: FlexibleState<ScopeStateType>;
     key: ScopeKey;
   }) => void | Promise<void>;
-  /** 生命周期-成功保存后 */
+  /** Lifecycle - after successful saving */
   onAfterSave?: (params: {
     data: FlexibleState<ScopeStateType>;
     key: ScopeKey;
   }) => void | Promise<void>;
-  /** 生命周期-异常 */
+  /** Life Cycle - Abnormal */
   onError?: (params: { error: Error; key: ScopeKey }) => void;
 }
 
-// 比对出来的被变化的 key 的 path， number 形式对应数组
+// The path of the changed key compared, corresponding to the array in the form of number
 export type PathType = string | number;
 
 export interface UseStoreType<StoreType, ScopeStateType> {

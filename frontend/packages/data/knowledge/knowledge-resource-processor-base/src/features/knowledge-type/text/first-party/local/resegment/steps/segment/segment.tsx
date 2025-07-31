@@ -37,7 +37,7 @@ import {
 import type { UploadTextLocalResegmentStore } from '../../store';
 import { TextLocalResegmentStep } from '../../constants';
 
-// ! 本地文档上传
+// ! Local file upload
 export const TextSegment: FC<
   ContentProps<UploadTextLocalResegmentStore>
 > = props => {
@@ -89,7 +89,7 @@ export const TextSegment: FC<
     setDocumentInfo(resDocumentInfo);
   });
 
-  // TODO: 切回来
+  // TODO: Cut back
   useEffect(() => {
     if (docID) {
       listDocumentReq({

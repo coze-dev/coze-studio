@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/no-shadow */
@@ -61,9 +61,9 @@ export interface SimpleTreeNodeCustomData {
 
 export interface InputTreeProps {
   testId?: string;
-  // 是否允许新增根节点，默认为 true
+  // Whether to allow new root nodes, the default is true
   allowAppendRootData?: boolean;
-  // 是否是批处理
+  // Is it batch processing?
   isBatch?: boolean;
   treeProps?: TreeProps;
   readonly?: boolean;
@@ -81,30 +81,30 @@ export interface InputTreeProps {
   addItemTitle?: string;
   defaultCollapse?: boolean;
 
-  // 最外层输出是否默认折叠
+  // Is the outermost output folded by default?
   formCardDefaultCollapse?: boolean;
   children?: React.ReactNode;
   maxLimit?: number;
   /**
-   * 列宽比 如 6:4 代表名称占6份，类型占4份
+   * Column widths such as 6:4 represent 6 copies of the name and 4 copies of the type
    */
   columnsRatio?: string;
   /**
-   * 名称是纯文本
+   * Name is plain text
    */
   isNamePureText?: boolean;
   /**
-   * 默认添加的值
+   * Default added value
    * @param items
    * @returns
    */
   defaultAppendValue?: (items: TreeNodeCustomData[]) => any;
   /**
-   * 第几个可以删除
+   * The first one can be deleted.
    */
   nthCannotDeleted?: number;
   /**
-   * 不允许删除
+   * Delete not allowed
    */
   disableDelete?: boolean;
 }
@@ -177,7 +177,7 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
     disableDelete,
   } = props;
 
-  // 监听该值的变化
+  // Monitor for changes in this value
   const cardRef = useRef<HTMLDivElement>(null);
   const isValueEmpty = !value || value.length === 0;
   const {
@@ -205,19 +205,19 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
       onChange(
         (formattedTreeData || []).concat({
           ...getDefaultAppendValue(formattedTreeData, defaultAppendValue),
-          // 增加 field
+          // Add field
           field: `[${formattedTreeData.length}]`,
-          // 此时不需要指定 type，所以用了 as as 取消类型报错
+          // At this time, there is no need to specify the type, so as as is used to cancel the type and report an error.
         } as unknown as TreeNodeCustomData) as InputValueVO[],
       );
     }
   };
 
-  // 该组件的 change 方法
+  // How to change this component
   const onValueChange = (freshValue?: Array<TreeNodeCustomData>) => {
     if (onChange) {
       freshValue = (freshValue || []).concat([]);
-      // 清理掉无用字段
+      // Clean up useless fields
       traverse<TreeNodeCustomData>(freshValue, node => {
         const { key, name, input, children } = node;
         // eslint-disable-next-line guard-for-in
@@ -237,7 +237,7 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
   };
 
   const convertObjectRef = (mode: ChangeMode, data: TreeNodeCustomData) => {
-    // 如果是对象, 第一次添加子节点需要转成object ref
+    // If it is an object, the first time you add a sub-node, you need to convert it to object ref.
     if (mode === ChangeMode.Append) {
       if (
         data.input?.rawMeta?.type === ViewVariableType.Object &&
@@ -253,7 +253,7 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
       }
     }
 
-    // 删除子节点时，如果清空了所有子节点，则回退到object literal
+    // When deleting a sub-node, fallback to object literal if all sub-nodes are cleared.
     if ([ChangeMode.Delete, ChangeMode.DeleteChildren].includes(mode)) {
       if (
         data.input?.rawMeta?.type === ViewVariableType.Object &&
@@ -271,9 +271,9 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
     return data;
   };
 
-  // 树节点的 change 方法
+  // Tree node change method
   const onTreeNodeChange = (mode: ChangeMode, param: TreeNodeCustomData) => {
-    // 先clone一份，因为Tree内部会对treeData执行isEqual，克隆一份一定是false
+    // Clone one first, because the Tree will execute isEqual on treeData, cloning one must be false.
     const cloneDeepTreeData = cloneDeep(
       formattedTreeData,
     ) as Array<TreeNodeCustomData>;
@@ -286,21 +286,21 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
     if (findResult) {
       switch (mode) {
         case ChangeMode.Append: {
-          // 新增不可以用 parentData 做标准，要在当前 data 下新增
+          // You can't use parentData as a standard for adding, you need to add it under the current data.
           const { data } = findResult;
           const currentChildren = data.children || [];
 
           convertObjectRef(mode, data);
-          // @ts-expect-error 有些值不需要此时指定，因为在 rerender 的时候会执行 format
+          // @ts-expect-error Some values do not need to be specified at this time because format is executed during rerender
           data.children = currentChildren.concat({
             ...getDefaultAppendValue(currentChildren, defaultAppendValue),
-            // 增加 field
+            // Add field
             field: `${data.field}.children[${currentChildren.length}]`,
           });
 
           onValueChange(cloneDeepTreeData);
 
-          // 当前节点下新增节点 展开当前节点
+          // Add a new node under the current node and expand the current node
           if (findResult?.data?.key) {
             expandTreeNode(findResult.data.key);
           }
@@ -453,14 +453,14 @@ export function InputTree(props: PropsWithChildren<InputTreeProps>) {
                 <p className={styles.emptyPlaceholder}>{emptyPlaceholder}</p>
               )
             }
-            expandedKeys={[...expandedKeys, nanoid()]} // 加nanoid是为了防止组件内部memo状态导致不同步，强制重新计算显隐
+            expandedKeys={[...expandedKeys, nanoid()]} // The nanoid is added to prevent the internal memo state of the component from causing out of sync, and force a recalculation of the hidden state
             treeData={formattedTreeData}
             {...treeProps}
           />
           {showAddButton ? (
             <AddItemButton
               className="absolute right-0 top-0"
-              // 解决 Button 位移导致 onClick 不触发问题
+              // Solve the problem that onClick does not trigger due to Button displacement
               onMouseDown={onAdd}
               disabled={isBatch || disabled}
               disabledTooltip={disabledTooltip}

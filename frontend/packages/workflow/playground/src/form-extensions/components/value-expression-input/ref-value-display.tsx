@@ -52,11 +52,11 @@ export interface RefValueDisplayProps {
   onClose: () => void;
   tagColor?: RefTagColor;
   style?: CSSProperties;
-  /* 类型限制，引用类型不满足限制时，显示警告信息 */
+  /* Type restrictions, when the reference type does not meet the restrictions, a warning message is displayed */
   variableTypeConstraints?: {
-    /** 主类型限制，子类型限制为可选*/
+    /** Main type restrictions, subtype restrictions are optional*/
     mainType: ViewVariableType;
-    /** 子类型限制，主要为文件类型的子类型 */
+    /** Subtype restrictions, mainly for subtypes of file types */
     subType?: ViewVariableType[];
   };
   readonly?: boolean;

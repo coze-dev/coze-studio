@@ -38,7 +38,7 @@ interface InputSliderProps {
   marks?: SliderProps['marks'];
   className?: string;
 
-  /** 是否使用 rc-slider 替换 semi-slider，目前 semi-slider 存在一个比较明显的 bug，在缩放场景下，拖拽定位存在问题，已经反馈等待修复 */
+  /** Whether to use rc-slider to replace semi-slider? At present, there is an obvious bug in semi-slider. In the zoom scene, there is a problem with drag and drop positioning, which has been fed back and is waiting to be fixed. */
   useRcSlider?: boolean;
 }
 

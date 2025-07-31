@@ -27,7 +27,7 @@ console.log(`Got ${contents.length} contents for tailwind`);
 
 export default {
   content: contents,
-  // safelist的内容可以允许动态生成tailwind className
+  // Safelist content can allow dynamic tailwind className
   safelist: [
     {
       pattern: /(gap-|grid-).+/,
@@ -47,7 +47,7 @@ export default {
     },
   },
   corePlugins: {
-    preflight: false, // 关闭@tailwind base默认样式，避免对现有样式影响
+    preflight: false, // Turn off @tailwind base default styles to avoid affecting existing styles
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require('@coze-arch/tailwind-config/coze')],

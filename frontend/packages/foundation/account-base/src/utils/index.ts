@@ -21,14 +21,14 @@ import { type UserInfo, type LoginStatus } from '../types';
 import { useUserStore } from '../store/user';
 
 /**
- * 获取用户信息
- * @returns UserInfo 用户信息
+ * Acquire user information
+ * @returns UserInfo
  */
 export const getUserInfo = () => useUserStore.getState().userInfo;
 
 /**
- * 获取登录状态
- * @returns LoginStatus 登录状态
+ * Get login status
+ * @returns LoginStatus
  */
 export const getLoginStatus = (): LoginStatus => {
   const state = useUserStore.getState();

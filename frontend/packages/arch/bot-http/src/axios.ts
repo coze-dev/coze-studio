@@ -55,7 +55,7 @@ axiosInstance.interceptors.response.use(
     });
     const { data = {} } = response;
 
-    // 新增接口返回message字段
+    // Added interface return message field
     const { code, msg, message } = data;
 
     if (code !== 0) {
@@ -107,7 +107,7 @@ axiosInstance.interceptors.response.use(
     if (isAxiosError(error)) {
       reportHttpError(ReportEventNames.NetworkError, error);
       if (error.response?.status === HTTP_STATUS_COE_UNAUTHORIZED) {
-        // 401 身份过期&没有身份
+        // 401 Identity Expired & No Identity
         if (typeof error.response.data === 'object') {
           const unauthorizedData = error.response.data as UnauthorizedResponse;
           const redirectUri = unauthorizedData?.data?.redirect_uri;
@@ -141,10 +141,10 @@ axiosInstance.interceptors.request.use(config => {
     ['post', 'get'].includes(config.method?.toLowerCase() ?? '') &&
     !getHeader('content-type')
   ) {
-    // 新的 csrf 防护需要 post/get 请求全部带上这个 header
+    // The new CSRF protection requires all post/get requests to have this header.
     setHeader('content-type', 'application/json');
     if (!config.data) {
-      // axios 会自动在 data 为空时清除 content-type，所以需要设置一个空对象
+      // Axios will automatically clear the content-type when the data is empty, so you need to set an empty object
       config.data = {};
     }
   }
@@ -153,15 +153,15 @@ axiosInstance.interceptors.request.use(config => {
 
 type AddRequestInterceptorShape = typeof axiosInstance.interceptors.request.use;
 /**
- * 添加全局 axios 的 interceptor 处理器，方便在上层扩展 axios 行为。
- * 请注意，该接口会影响所有 bot-http 下的请求，请注意保证行为的稳定性
+ * Add an interceptor handler for global axios to easily extend axios behavior on top.
+ * Please note that this interface will affect all requests under bot-http. Please ensure the stability of the behavior
  */
 export const addGlobalRequestInterceptor: AddRequestInterceptorShape = (
   onFulfilled,
   onRejected?,
 ) => {
-  // PS: 这里不期望直接暴露 axios 实例到上层，因为不知道会被怎么修改使用
-  // 因此，这里需要暴露若干方法，将行为与副作用限制在可控范围内
+  // PS: It is not expected to directly expose the axios instance to the upper layer, because it is not known how it will be modified and used
+  // Therefore, several methods need to be exposed to keep behavior and side effects under control
   const id = axiosInstance.interceptors.request.use(onFulfilled, onRejected);
   return id;
 };
@@ -169,7 +169,7 @@ export const addGlobalRequestInterceptor: AddRequestInterceptorShape = (
 type RemoveRequestInterceptorShape =
   typeof axiosInstance.interceptors.request.eject;
 /**
- * 删除全局 axios 的 interceptor 处理器，其中，id 参数为调用 addGlobalRequestInterceptor 返回的值
+ * Removes the interceptor handler of the global axios where the id parameter is the value returned by the calling addGlobalRequestInterceptor
  */
 export const removeGlobalRequestInterceptor: RemoveRequestInterceptorShape = (
   id: number,

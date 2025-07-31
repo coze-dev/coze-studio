@@ -64,7 +64,7 @@ describe('AutosaveObserver', () => {
   };
 
   beforeEach(() => {
-    vi.useFakeTimers(); // 使用假定时器
+    vi.useFakeTimers(); // Use a hypothetical timer
 
     observer = new AutosaveObserver({
       store: mockStore,
@@ -74,7 +74,7 @@ describe('AutosaveObserver', () => {
 
   afterEach(() => {
     vi.resetAllMocks();
-    vi.useRealTimers(); // 恢复真实的定时器
+    vi.useRealTimers(); // Restore the real timer
   });
 
   it('should initialize and set initial values correctly', () => {
@@ -119,9 +119,9 @@ describe('AutosaveObserver', () => {
 
     expect(observer.debouncedSaveFunc).toBeInstanceOf(Function);
 
-    vi.runAllTimers(); // 手动推进定时器时间以触发防抖函数
+    vi.runAllTimers(); // Manually advance the timer time to trigger the stabilization function
 
-    await vi.runAllTimersAsync(); // 确保所有异步操作完成
+    await vi.runAllTimersAsync(); // Make sure all asynchronous operations are completed
 
     expect(saveRequest).toHaveBeenCalledWith(nextState, 'testKey', diffChange);
   });

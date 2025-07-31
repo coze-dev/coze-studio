@@ -61,7 +61,7 @@ export const ConnectorTabbar = forwardRef<
   <div
     ref={ref}
     className={classNames(
-      // ! 80px 高度影响 styles.mask 计算
+      // ! 80Px height affects styles.mask calculation
       'flex items-center gap-x-8px h-[80px] relative',
       styles.mask,
       className,

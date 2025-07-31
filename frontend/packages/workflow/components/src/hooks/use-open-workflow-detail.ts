@@ -20,7 +20,7 @@ import { useParams } from 'react-router-dom';
 export const useOpenWorkflowDetail = () => {
   const { bot_id: botId } = useParams<DynamicParams>();
 
-  /** 打开流程详情页 */
+  /** Open the process details page */
   const openWorkflowDetailPage = ({
     workflowId,
     spaceId,

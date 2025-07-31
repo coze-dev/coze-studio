@@ -17,26 +17,26 @@
 import { type ViewVariableType } from './view-variable-type';
 
 /**
- * 参数定义
+ * parameter definition
  *
- * 递归定义，包含了复杂类型的层级结构
+ * Recursive definition, including a hierarchy of complex types
  */
 export interface RecursedParamDefinition {
   name?: string;
-  /** Tree 组件要求每一个节点都有 key，而 key 不适合用名称（前后缀）等任何方式赋值，最终确定由接口转换层一次性提供随机 key */
+  /** The Tree component requires each node to have a key, and the key is not suitable for assignment in any way such as name (before and after). Finally, the interface conversion layer provides a random key at one time. */
   fieldRandomKey?: string;
   desc?: string;
   required?: boolean;
   type: ViewVariableType;
   children?: RecursedParamDefinition[];
-  // region 参数值定义
-  // 输入参数的值可以来自上游变量引用，也可以是用户输入的定值（复杂类型则只允许引用）
-  // 如果是定值，传 fixedValue
-  // 如果是引用，传 quotedValue
+  // Region parameter value definition
+  // The value of the input parameter can come from an upstream variable reference, or it can be a fixed value entered by the user (for complex types, only references are allowed).
+  // If it is a fixed value, pass the fixedValue.
+  // If it is a reference, pass the quotedValue.
   isQuote?: ParamValueType;
-  /** 参数定值 */
+  /** parameter setting */
   fixedValue?: string;
-  /** 参数引用 */
+  /** parameter reference */
   quotedValue?: [nodeId: string, ...path: string[]]; // string[]
   // endregion
 }

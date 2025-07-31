@@ -27,18 +27,18 @@ export const useFreePencil = ({ canvas }: { canvas?: Canvas }) => {
     if (!canvas) {
       return;
     }
-    // 启用自由绘图模式
+    // Enable free drawing mode
     canvas.isDrawingMode = true;
 
-    // 设置 PencilBrush 为当前的画笔
+    // Set PencilBrush to the current brush
     canvas.freeDrawingBrush = new PencilBrush(canvas);
 
-    // 设置画笔的一些属性
-    canvas.freeDrawingBrush.color = defaultProps[Mode.PENCIL].stroke as string; // 画笔颜色
+    // Set some properties of the brush
+    canvas.freeDrawingBrush.color = defaultProps[Mode.PENCIL].stroke as string; // Brush color
     canvas.freeDrawingBrush.width = defaultProps[Mode.PENCIL]
-      .strokeWidth as number; // 画笔宽度
+      .strokeWidth as number; // Brush Width
 
-    // 你也可以设置其他属性，比如 opacity (不透明度)
+    // You can also set other properties, such as opacity.
     // canvas.freeDrawingBrush.opacity = 0.6;
   };
 
@@ -55,7 +55,7 @@ export const useFreePencil = ({ canvas }: { canvas?: Canvas }) => {
         element: path,
       });
 
-      // 得触发一次 object:added ，以触发 onSave，否则 schema 里并不会包含 commonOptions
+      // You must fire object: added once to trigger onSave, otherwise the schema will not contain commonOptions.
       canvas.fire('object:modified');
     });
 
@@ -68,7 +68,7 @@ export const useFreePencil = ({ canvas }: { canvas?: Canvas }) => {
     if (!canvas) {
       return;
     }
-    // 禁用自由绘图模式
+    // Disable free drawing mode
     canvas.isDrawingMode = false;
   };
 

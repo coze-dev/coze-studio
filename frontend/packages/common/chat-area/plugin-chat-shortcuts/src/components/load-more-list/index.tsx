@@ -138,7 +138,7 @@ export const LoadMoreList = <TData extends object>(
             onSelect?.(item);
           }}
           onMouseEnter={() => {
-            // 鼠标位于滚动条中，会触发该事件，设置仅在移动鼠标过程中进行更新
+            // The mouse is in the scroll bar, which triggers the event, and the settings are only updated during mouse movement
             if (mouseMovingRef.current) {
               focusTo(item);
               listRef.current?.focus();

@@ -18,8 +18,8 @@ import { type interfaces } from 'inversify';
 import { useIDEContainer } from '@coze-project-ide/client';
 
 /**
- * 获取 IDE 的 IOC 模块
- * 和 flow-ide/client 包内容相同，但可以支持在业务侧如 workflow 内调用
+ * Get the IOC module of the IDE
+ * The same content as the flow-ide/client package, but it can be called on the business side such as workflow
  * @param identifier
  */
 export function useIDEServiceInBiz<T>(

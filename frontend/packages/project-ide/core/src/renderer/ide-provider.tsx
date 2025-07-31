@@ -29,9 +29,9 @@ import { Application, IDEContainerModule } from '../application';
 import { IDEContainerContext } from './context';
 
 export interface IDEProviderProps {
-  containerModules?: interfaces.ContainerModule[]; // 注入的 IOC 包
+  containerModules?: interfaces.ContainerModule[]; // Injected IOC packet
   container?: interfaces.Container;
-  customPluginContext?: (container: interfaces.Container) => PluginContext; // 自定义插件的上下文
+  customPluginContext?: (container: interfaces.Container) => PluginContext; // Customize the plugin's context
   plugins?: PluginsProvider<any>;
   children?: React.ReactElement<any, any> | null;
 }
@@ -41,7 +41,7 @@ export interface IDEProviderRef {
 }
 
 /**
- * IDE 容器
+ * IDE Container
  */
 const IDEProviderWithRef: ForwardRefRenderFunction<
   IDEProviderRef,
@@ -55,7 +55,7 @@ const IDEProviderWithRef: ForwardRefRenderFunction<
   } = props;
 
   /**
-   * 创建 IOC 包
+   * Create IOC package
    */
   const container = useMemo(() => {
     const mainContainer: interfaces.Container =
@@ -74,7 +74,7 @@ const IDEProviderWithRef: ForwardRefRenderFunction<
     }
     mainContainer.get(Application).init();
     return mainContainer;
-    // @action 这里 props 数据如果更改不会触发刷新，不允许修改
+    // @action Here props data will not trigger a refresh if changed, no modification is allowed
   }, []);
 
   useEffect(() => {

@@ -77,38 +77,38 @@ export const useInitSpace = ({
           return;
         }
 
-        // 如果未指定spaceId，则跳转到兜底的space下的项目开发子路由
+        // If spaceId is not specified, jump to the project development subroute under the space of the backseat
         if (!spaceId) {
-          // 拉取空间列表
+          // Pull space list
           await useSpaceStore.getState().fetchSpaces(true);
-          // 获取个人空间Id
+          // Get Personal Space Id
           const personalSpaceID = useSpaceStore.getState().getPersonalSpaceID();
-          // 空间列表的第一个空间
+          // The first space in the space list
           const firstSpaceID = useSpaceStore.getState().spaceList[0]?.id;
-          // 未指定spaceId的兜底空间
+          // SpaceId not specified
           const fallbackSpaceID = personalSpaceID ?? firstSpaceID ?? '';
-          // 检查指定的spaceId是否可以访问
+          // Checks if the specified spaceId is accessible
           const { checkSpaceID } = useSpaceStore.getState();
 
-          // 无工作空间，提示创建
+          // No workspace, prompt to create
           if (!fallbackSpaceID) {
             Toast.warning(I18n.t('enterprise_workspace_default_tips2_toast'));
           } else {
-            // 获取兜底的跳转URL
+            // Get the jump URL of the back cover.
             const targetURL = await getFallbackWorkspaceURL(
               fallbackSpaceID,
               'develop',
               checkSpaceID,
             );
-            // 跳转
+            // jump
             navigate(targetURL);
           }
         } else {
-          // 拉取空间列表
+          // Pull space list
           await fetchSpacesWithSpaceId?.(spaceId);
 
           if (!useSpaceStore.getState().checkSpaceID(spaceId)) {
-            // 当 space id 在space 列表找不到时，抛出错误
+            // Throws an error when the space id cannot be found in the space list
             capture(
               new CustomError(ReportEventNames.errorPath, 'space id error', {
                 customGlobalErrorConfig: {
@@ -119,7 +119,7 @@ export const useInitSpace = ({
               }),
             );
           } else {
-            // 更新space store的spaceId
+            // Update space store spaceId
             useSpaceStore.getState().setSpace(spaceId);
           }
         }

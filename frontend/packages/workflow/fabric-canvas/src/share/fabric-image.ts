@@ -15,8 +15,8 @@
  */
  
 /**
- * 这个文件仅实现 setImageFixed 一个函数就好
- * nodejs 图片渲染同样需要计算位置。要在 packages/workflow/nodejs/fabric-render 实现一份功能完全一致的 js 版
+ * This file only implements one function setImageFixed
+ * Nodejs image rendering also needs to calculate the position. To implement a fully functional js version in packages/workflow/nodejs/fabricate-render
  */
 import {
   type FabricImage,
@@ -28,7 +28,7 @@ import {
 import { ImageFixedType, type FabricObjectWithCustomProps } from './typings';
 
 /**
- * 调整 img 位置
+ * Adjust img position
  */
 export const setImageFixed = ({ element }: { element: FabricObject }) => {
   const { width, height } = element;
@@ -38,7 +38,7 @@ export const setImageFixed = ({ element }: { element: FabricObject }) => {
   const borderRect = (element as Group).getObjects()[1] as Rect;
   const { strokeWidth = 0 } = borderRect;
 
-  // 填充/拉伸时，框适配 group 大小即可
+  // When filling/stretching, the box fits the group size
   const borderRectWidth = width - strokeWidth;
   const borderRectHeight = height - strokeWidth;
   borderRect.set({
@@ -51,11 +51,11 @@ export const setImageFixed = ({ element }: { element: FabricObject }) => {
   const { width: originWidth, height: originHeight } = img.getOriginalSize();
 
   /**
-   * 为什么 +1？
-   * 经过计算后，存储位数有限，不管是 scaleX/Y width/height top/left，都会丢失一点点精度
-   * 这点精度反馈到图片上，就是图片与边框有一点点间隙
-   * 这里 +1 让图片显示的稍微大一点，弥补精度带来的间隙。
-   * 弊端：边框会覆盖一点点图片（覆盖多少看缩放比），用户基本无感
+   * Why + 1?
+   * After calculation, the number of storage bits is limited, whether it is scaleX/Y width/height top/left, a little precision will be lost
+   * This accuracy is fed back to the picture, that is, there is a little gap between the picture and the border.
+   * Here + 1 makes the image appear slightly larger to make up for the gap in accuracy.
+   * Disadvantages: The border will cover a little bit of the picture (how much to cover depends on the zoom ratio), and the user basically has no feeling
    */
   const realScaleX = (width - strokeWidth * 2 + 1) / originWidth;
   const realScaleY = (height - strokeWidth * 2 + 1) / originHeight;
@@ -74,7 +74,7 @@ export const setImageFixed = ({ element }: { element: FabricObject }) => {
   const imgLeft = -(originWidth * scaleX) / 2;
   const imgTop = -(originHeight * scaleY) / 2;
 
-  // 自适应时需要对图片描边
+  // When adapting, you need to stroke the picture
   if (customFixedType === ImageFixedType.AUTO) {
     borderRect.set({
       width: Math.min(borderRectWidth, originWidth * scaleX + strokeWidth),

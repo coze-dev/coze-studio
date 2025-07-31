@@ -17,7 +17,7 @@
 import { FileTypeEnum, type TFileTypeConfig } from './const';
 
 /**
- * 文件类型
+ * file type
  * {@link 
  * {@link https://www.iana.org/assignments/media-types/media-types.xhtml#image}
  */
@@ -37,7 +37,7 @@ export const FILE_TYPE_CONFIG: readonly TFileTypeConfig[] = [
       '.ogg',
       '.wma',
       '.alac',
-      // .midi 和 .mid 都是MIDI（Musical Instrument Digital Interface）文件的扩展名 - GPT
+      // Both .midi and .mid are extensions for MIDI (Musical Instrument Digital Interface) files - GPT
       '.mid',
       '.midi',
       '.ac3',

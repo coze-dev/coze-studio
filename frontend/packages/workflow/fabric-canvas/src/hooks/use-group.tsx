@@ -15,20 +15,20 @@
  */
  
 /**
- * 这是个半成品，暂时不做了，后面再考虑
- * 1. 成组后要支持下钻继续选择
- *  实现思路：
- *    a.双击解组，并记录组关系；
- *    b.下钻选择子组，继续解组，并记录组关系；
- *    c.点击画布（没有任何选中元素时），恢复组（要注意 z-index）。
+ * This is a work in progress, I won't do it for the time being, I'll think about it later.
+ * 1. After forming a group, support drilling down and continue to select.
+ *  Realization idea:
+ *    A. Double-click to ungroup and record the group relationship;
+ *    B. Drill down to select subgroups, continue to ungroup, and record group relationships;
+ *    Click on the canvas (when no elements are selected) and restore the group (note the z-index).
  *
- * 2. 复制粘贴组时，需要排除掉引用元素
- * 3. 删除组是，也需要排除引用元素
- * 4. 因为组的引入，打破了所有元素都是拍平的原则，要注意这个改动的破坏性。
+ * 2. When copying and pasting groups, you need to exclude reference elements
+ * 3. Delete group Yes, also need to exclude reference elements
+ * 4. Due to the introduction of the group, the principle that all elements are flattened is broken. Be aware of the destructive nature of this change.
  *  eg：
- *    a. 获取所有元素
- *    b. 元素的位置计算是由每层父元素叠加来的
- *    c. 服务端渲染：遍历找所有的图片元素。完成图片下载后恢复组
+ *    A. Get all elements
+ *    B. The position calculation of the element is superimposed by each layer of parent elements
+ *    C.server-side rendering: Iterate to find all image elements. Restore group after finishing image download
  */
 import { useCallback } from 'react';
 
@@ -47,7 +47,7 @@ export const useGroup = ({ canvas }: { canvas?: Canvas }) => {
   const group = useCallback(async () => {
     const activeObject = canvas?.getActiveObject();
     const objects = (activeObject as ActiveSelection)?.getObjects();
-    // 选中了多个元素时，才可以 group
+    // You can only group when multiple elements are selected.
     if ((objects?.length ?? 0) > 1) {
       const _group = await createElement({
         mode: Mode.GROUP,
@@ -69,7 +69,7 @@ export const useGroup = ({ canvas }: { canvas?: Canvas }) => {
   const unGroup = useCallback(async () => {
     const activeObject = canvas?.getActiveObject();
 
-    // 仅选中了一个 group 元素时，才可以 ungroup
+    // Ungroup can only be done if a group element is selected
     if (isGroupElement(activeObject)) {
       const _group = activeObject as Group;
       const objects = _group.getObjects();

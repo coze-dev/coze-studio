@@ -60,7 +60,7 @@ export const getColumns = (
     const dataWidth = width ? width : initWidth;
     const isLast = index === _list.length - 1;
     switch (i.type) {
-      // 文本
+      // Text
       case FieldItemType.Text:
         res = {
           // @ts-expect-error -- linter-disable-autofix
@@ -71,7 +71,7 @@ export const getColumns = (
           width: isLast ? undefined : dataWidth,
         };
         break;
-      // 整数
+      // integer
       case FieldItemType.Number:
         res = {
           // @ts-expect-error -- linter-disable-autofix
@@ -82,7 +82,7 @@ export const getColumns = (
           width: isLast ? undefined : dataWidth,
         };
         break;
-      // 数字
+      // number
       case FieldItemType.Float:
         res = {
           // @ts-expect-error -- linter-disable-autofix
@@ -93,7 +93,7 @@ export const getColumns = (
           width: isLast ? undefined : dataWidth,
         };
         break;
-      // 时间
+      // time
       case FieldItemType.Date:
         res = {
           // @ts-expect-error -- linter-disable-autofix
@@ -104,7 +104,7 @@ export const getColumns = (
           width: isLast ? undefined : dataWidth,
         };
         break;
-      // 布尔
+      // Boolean
       case FieldItemType.Boolean:
         res = {
           // @ts-expect-error -- linter-disable-autofix

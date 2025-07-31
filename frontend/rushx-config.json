@@ -11,6 +11,16 @@
     "team-qa"
   ],
   "level": ["level-1", "level-2", "level-3", "level-4"],
+  "packageAudit": {
+    "enable": true,
+    "rules": [
+      [
+        "essential-config-file",
+        "error",
+        { "essentialFiles": ["eslint.config.js"] }
+      ]
+    ]
+  },
   "codecov": {
     "coverage": 20,
     "incrementCoverage": 80,

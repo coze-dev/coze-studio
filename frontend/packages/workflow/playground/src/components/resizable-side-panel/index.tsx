@@ -15,7 +15,7 @@
  */
  
 /**
- * 可调节宽度的节点侧拉窗
+ * Nodal side window with adjustable width
  */
 import { type FC } from 'react';
 

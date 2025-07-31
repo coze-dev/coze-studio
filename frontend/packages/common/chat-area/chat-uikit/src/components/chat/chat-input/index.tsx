@@ -181,15 +181,15 @@ export const ChatInput = forwardRef<InputRefObject, IChatInputProps>(
       onClearContext?.();
     };
     /**
-     * 处理清除历史记录按钮点击事件
+     * Handle the Clear History button click event
      */
     const handleClearHistoryButtonClick = () => {
       onClearHistory?.();
     };
 
     /**
-     * 处理用户发送消息
-     * @param text 用户发送消息的文本
+     * Handle user sending messages
+     * @Param text The text of the message sent by the user
      */
     const handleSendMessage = (text: string) => {
       onSendMessage?.({
@@ -223,7 +223,7 @@ export const ChatInput = forwardRef<InputRefObject, IChatInputProps>(
       if (
         !isMultiLines &&
         height > DEFAULT_HEIGHT &&
-        // 通过 inputText 长度判断，排除 placeholder 导致的 resize 不处理
+        // Judging by the length of inputText, excluding the resize caused by placeholder will not be processed.
         inputText?.trim()?.length !== 0
       ) {
         setIsMultiLines(true);
@@ -238,7 +238,7 @@ export const ChatInput = forwardRef<InputRefObject, IChatInputProps>(
       }
     };
 
-    /** 计算出复合条件的readonly值 */
+    /** Calculate the readonly value of the compound condition */
     const finalClearHistoryButtonDisable =
       isClearHistoryButtonDisabled || isReadonly;
     const finalSendButtonDisable =

@@ -25,7 +25,7 @@ import {
 describe('plugin-apis', () => {
   describe('getPluginApisFilterExample', () => {
     it('应该过滤掉所有插件API中的debug_example字段', () => {
-      // 使用 as unknown as PluginApi[] 来绕过类型检查
+      // Use as unknown as PluginApi [] to bypass type checking
       const mockPluginApis = [
         {
           name: 'plugin1',
@@ -56,7 +56,7 @@ describe('plugin-apis', () => {
 
   describe('getSinglePluginApiFilterExample', () => {
     it('应该过滤掉单个插件API中的debug_example字段', () => {
-      // 使用 as unknown as PluginApi 来绕过类型检查
+      // Use as unknown as PluginApi to bypass type checking
       const mockPluginApi = {
         name: 'plugin1',
         debug_example: 'example1',

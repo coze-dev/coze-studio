@@ -59,7 +59,7 @@ interface ExpressionEditorContainerProps {
 }
 
 /**
- * 业务逻辑和编辑器逻辑的聚合层
+ * Aggregation layer for business logic and editor logic
  */
 export const ExpressionEditorContainer: FC<
   ExpressionEditorContainerProps
@@ -72,13 +72,13 @@ export const ExpressionEditorContainer: FC<
     onBlur,
     onFocus,
     isError,
-    // maxLength, // 临时禁用
+    // maxLength,//temporarily disabled
     readonly = false,
     disableSuggestion = false,
     disableCounter = true,
     minRows = 4,
   } = props;
-  const maxLength = undefined; // 临时禁用
+  const maxLength = undefined; // Temporary Disable
   const variableTree: ExpressionEditorTreeNode[] = useVariableTree();
   const [focus, _setFocus] = useState<boolean>(false);
   const { getNodeSetterId } = useNodeTestId();
@@ -98,7 +98,7 @@ export const ExpressionEditorContainer: FC<
   model.setVariableTree(variableTree);
   model.setFocus(focus);
 
-  // 设置防抖防止 onFocus / onBlur 在点击时出现抖动
+  // Set anti-shake to prevent onFocus/onBlur from shaking when clicked
   const setFocus = useCallback(
     debounce((newFocusValue: boolean) => {
       _setFocus(newFocusValue);
@@ -134,8 +134,8 @@ export const ExpressionEditorContainer: FC<
   }
 
   /**
-   * 存在输入中文时 value 和 editor.getValue() 始终不一致，导致重渲染的情况
-   * 所以改为 onBlur 时更新表单数据
+   * There is a situation where value and editor.getValue () are always inconsistent when entering Chinese, resulting in re-rendering
+   * So update the form data when changing to onBlur
    */
   const handleOnBlur = () => {
     onChange?.(curEditorVal);

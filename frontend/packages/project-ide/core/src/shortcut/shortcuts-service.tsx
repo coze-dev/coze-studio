@@ -34,27 +34,27 @@ import { type Keybinding, KeybindingRegistry } from './keybinding';
 export interface ShortcutsHandler
   extends Partial<Pick<CommandHandler, 'execute' | 'isEnabled'>> {
   /**
-   * 注册快捷键 Id
+   * Register shortcut IDs
    */
   commandId: string;
   /**
-   * 注册快捷键 label
+   * Register shortcut label
    */
   commandLabel?: string;
   /**
-   * 执行上下文
+   * execution context
    */
   when?: string;
   /**
-   * 涉及到的快捷键
+   * The shortcuts involved
    */
   keybinding: string[] | string;
   /**
-   * 是否阻止浏览器的默认行为
+   * Whether to block the browser's default behavior
    */
   preventDefault?: boolean;
   /**
-   * 快捷键来源
+   * Shortcut source
    */
   source?: string;
 }
@@ -67,7 +67,7 @@ export interface ShortcutsContribution {
 
 export interface ShortcutsRegistry {
   /**
-   * 新增 shortcutHandlers
+   * Add shortcutHandlers
    */
   registerHandlers: (...handlers: ShortcutsHandler[]) => void;
 }
@@ -108,14 +108,14 @@ export class ShortcutsService
   }
 
   /**
-   * IDE 初始化阶段注册 listener
+   * IDE initialization phase registration listener
    */
   onInit(): void {
     document.addEventListener('keydown', this.listener);
   }
 
   /**
-   * IDE 销毁阶段移除 listener
+   * IDE destruction phase to remove listeners
    */
   onDispose(): void {
     document.removeEventListener('keydown', this.listener);
@@ -135,7 +135,7 @@ export class ShortcutsService
     logger.log('ShortcutsRegistry - listener', ev, keybindings);
     keybindings.forEach(keybinding => {
       /**
-       * 定义的全局快捷键不生效于输入组件，避免冲突
+       * Defined global shortcuts do not take effect on input components to avoid conflicts
        */
       if (domEditable(ev.target as HTMLElement) && !keybinding.when) {
         return;
@@ -146,7 +146,7 @@ export class ShortcutsService
   };
 
   registerHandlers(...handlers: ShortcutsHandler[]): void {
-    // 注册 handler
+    // Registration handler
     handlers.forEach(handler => {
       const keybindings = Array.isArray(handler.keybinding)
         ? handler.keybinding
@@ -273,14 +273,14 @@ export class ShortcutsService
   }
 
   /**
-   * 根据 source 获取 ShortcutsHandler
+   * Get ShortcutsHandler from source
    */
   public getShortcutsBySource(source: string): ShortcutsHandler[] {
     return this.shortcutsHandlers.filter(v => v.source === source);
   }
 
   /**
-   * 根据键盘事件获取 keybinding
+   * Get keybinding based on keyboard events
    */
   public getKeybindingMatchKeyEvent(
     keybindings: Keybinding[],
@@ -292,7 +292,7 @@ export class ShortcutsService
   }
 
   /**
-   * 执行 keybinding
+   * Execute keybinding
    */
   public executeKeybinding(keybinding: Keybinding, ev: KeyboardEvent) {
     this.commandRegistry.executeCommand(keybinding.command, keybinding.args);

@@ -57,7 +57,7 @@ export const FileContent: FC<IProps> = props => {
   const { content_obj = safeJSONParse(message.content) } = message;
 
   /**
-   * 判断是否为文件类型的卡片 或者 没有配置file属性config则拒绝使用该卡片
+   * Determine whether it is a card of file type, or refuse to use the card without configuring the file attribute config
    */
   if (
     !isFile(content_obj) ||
@@ -68,21 +68,21 @@ export const FileContent: FC<IProps> = props => {
   }
 
   /**
-   * 处理点击取消上传的事件
+   * Handle the event of clicking Cancel Upload
    */
   const handleCancel = () => {
     onCancel?.({ message, extra: {} });
   };
 
   /**
-   * 处理重试上传的事件
+   * Handling events that retry uploads
    */
   const handleRetry = () => {
     onRetry?.({ message, extra: {} });
   };
 
   /**
-   * 处理拷贝文件地址的事件
+   * Handling events that copy file addresses
    */
   const handleCopy = (fileIndex?: number) => {
     onCopy?.({ message, extra: { fileIndex } });

@@ -62,7 +62,7 @@ export const createGrabPlugin = (params: CreateGrabPluginParams) => {
 
       const eventCenter = mitt<EventCenter>();
 
-      // 默认注入preference
+      // Default injection preference
       storeSet.usePreferenceStore
         .getState()
         .updateEnableGrab(preference.enableGrab);

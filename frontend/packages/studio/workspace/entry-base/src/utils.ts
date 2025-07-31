@@ -19,11 +19,11 @@ import { pick } from 'lodash-es';
 import { type PluginNavType } from '@coze-studio/bot-plugin-store/src/context';
 
 /**
- * 比较两个对象是否相等，只比较指定的 key，通过 JSON.stringify 实现
- * @param obj1 对象1
- * @param obj2 对象2
- * @param keys 需要比较的 key
- * @returns 是否相等
+ * Compares two objects for equality, comparing only the specified key, implemented by JSON.stringify
+ * @param obj1
+ * @param obj2
+ * @Param keys The key to compare
+ * @Returns is equal
  */
 export function compareObjects<T>(
   obj1: T,

@@ -38,7 +38,7 @@ export const variablesChangeEffects = [
       return;
     }
 
-    // todo any类型需要sdk导出
+    // Todo any type requires sdk export
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (formModel.getField(params.name) as any)?.map(child => {
       child?.validate();

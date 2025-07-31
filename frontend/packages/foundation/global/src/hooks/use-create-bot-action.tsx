@@ -29,7 +29,7 @@ export const useCreateBotAction = ({
   urlSearch?: string;
   currentSpaceId?: string;
 }) => {
-  // 创建 bot 功能
+  // Create bot function
   const newWindowRef = useRef<Window | null>(null);
   const openWindow = () => {
     newWindowRef.current = window.open();

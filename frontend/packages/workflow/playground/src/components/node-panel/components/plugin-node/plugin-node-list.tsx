@@ -63,7 +63,7 @@ export const PluginNodeList: FC<PluginNodeListProps> = ({
 }) => {
   const { keyword, enableDrag, onSelect, onAddingNode } = useNodePanelContext();
 
-  // 计算需要显示的节点列表，第一页 5 个，后面每页增加 4 个（5,5+4,5+4+4,5+4+4+4...）
+  // Calculate the list of nodes to be displayed, 5 on the first page, and 4 on each subsequent page (5, 5 + 4, 5 + 4 + 4, 5 + 4 + 4 + 4...)
   const displayPluginNodeList = useMemo<PluginNodeListWithLoadMore>(() => {
     const nodeList: PluginNodeListWithLoadMore = pluginNodeList;
     if (!nodeList) {
@@ -74,7 +74,7 @@ export const PluginNodeList: FC<PluginNodeListProps> = ({
       return nodeList;
     }
     const rawPageNum = (len - INIT_PAGE_SIZE) / LOAD_MORE_PAGE_SIZE;
-    // 如果 rawPageNum 有小数部分，
+    // If rawPageNum has a fractional part,
     if (rawPageNum % 1 > 0) {
       const displayLen =
         Math.floor(rawPageNum) * LOAD_MORE_PAGE_SIZE + INIT_PAGE_SIZE;
@@ -84,7 +84,7 @@ export const PluginNodeList: FC<PluginNodeListProps> = ({
   }, [pluginNodeList, hasMore]);
 
   const [expandPluginIndex, setExpandPluginIndex] = useState<number>();
-  // tools 列表插入的位置
+  // Tools list insert location
   const pluginToolsDisplayIndex = useMemo<number | undefined>(() => {
     if (!isNumber(expandPluginIndex)) {
       return;

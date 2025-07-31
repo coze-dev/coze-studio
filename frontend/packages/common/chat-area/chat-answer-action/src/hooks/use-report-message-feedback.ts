@@ -30,7 +30,7 @@ import { ReportEventNames } from '../report-events';
 import { useReportMessageFeedbackFn } from '../context/report-message-feedback';
 
 /**
- * @description 消息点赞/点踩
+ * @description Message Like/Click
  */
 export const useReportMessageFeedback = () => {
   const { reporter } = useChatArea();
@@ -64,19 +64,19 @@ export const useReportMessageFeedback = () => {
 };
 
 /**
- * @description 获取 点赞按钮组件/点踩按钮组件/点踩原因填写面板组件 props
+ * @description Get, like button component/click button component/click button reason Fill in the panel component props
  */
 
 export const useReportMessageFeedbackHelpers = () => {
-  // 点赞成功标识
+  // Like success logo
   const [isThumbsUpSuccessful, { toggle: toogleIsThumbsUpSuccessful }] =
     useToggle<boolean>(false);
 
-  // 点踩成功标识
+  // Click on the success sign
   const [isFrownUponSuccessful, { toggle: toogleIsFrownUponSuccessful }] =
     useToggle<boolean>(false);
 
-  // 点踩原因填写面板展示
+  // Click on the reason to fill in the panel display
   const [
     isFrownUponPanelVisible,
     {
@@ -85,20 +85,20 @@ export const useReportMessageFeedbackHelpers = () => {
     },
   ] = useToggle<boolean>(false);
 
-  // 点赞按钮组件onClick事件
+  // Like button component onClick event
   const thumbsUpOnClick = () => {
     toogleIsThumbsUpSuccessful();
-    // 点赞/点踩互斥
+    // Like/click on mutual exclusion
     if (!isThumbsUpSuccessful && isFrownUponSuccessful) {
       toogleIsFrownUponSuccessful();
       setIsFrownUponPanelVisibleFalse();
     }
   };
 
-  // 点踩按钮组件onClick事件
+  // Click button component onClick event
   const frownUponOnClick = () => {
     toogleIsFrownUponSuccessful();
-    // 点赞/点踩互斥
+    // Like/click on mutual exclusion
     if (!isFrownUponSuccessful && isThumbsUpSuccessful) {
       toogleIsThumbsUpSuccessful();
     }
@@ -110,15 +110,15 @@ export const useReportMessageFeedbackHelpers = () => {
     }
   };
 
-  // 点踩原因填写面板组件onCancel事件
+  // Click on the reason to fill in the panel component onCancel event
   const frownUponPanelonCancel = () => {
     setIsFrownUponPanelVisibleFalse();
   };
 
-  // 点踩原因填写面板组件onSubmit事件
+  // Click on the reason to fill in the panel component onSubmit event
   const frownUponPanelonSubmit = () => {
     setIsFrownUponPanelVisibleFalse();
-    // 点赞/点踩互斥
+    // Like/click on mutual exclusion
     if (isThumbsUpSuccessful) {
       toogleIsThumbsUpSuccessful();
     }

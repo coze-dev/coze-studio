@@ -38,19 +38,19 @@ import { transformOnInit, transformOnSubmit } from './data-transformer';
 import { BATCH_INPUT_LIST_PATH, BATCH_MODE_PATH } from './constants';
 
 export const PLUGIN_FORM_META: FormMetaV2<ApiNodeFormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: props => <FormRender {...props} />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
 
-    // 校验入参
+    // Verify imported parameters
     'inputs.inputParameters.*': createValueExpressionInputValidate({
-      // 是否必填需要根据函数来计算，获取对应字段的必填值
+      // Whether it is required or not needs to be calculated according to the function to obtain the required value of the corresponding field
       required: ({ name, context }) => {
         const { node } = context;
 
@@ -68,7 +68,7 @@ export const PLUGIN_FORM_META: FormMetaV2<ApiNodeFormData> = {
       },
     }),
 
-    // 校验批处理入参的名称
+    // Verify the names of batch imported parameters
     'inputs.batch.inputLists.*.name': createNodeInputNameValidate({
       getNames: ({ formValues }) =>
         (get(formValues, 'batch.inputLists') || []).map(item => item.name),
@@ -76,7 +76,7 @@ export const PLUGIN_FORM_META: FormMetaV2<ApiNodeFormData> = {
         formValues?.inputs?.batchMode === 'single',
     }),
 
-    // 校验批处理入参的值
+    // Validation of batch imported parameters
     'inputs.batch.inputLists.*.input': createValueExpressionInputValidate({
       required: true,
       skipValidate: ({ formValues }) =>
@@ -84,7 +84,7 @@ export const PLUGIN_FORM_META: FormMetaV2<ApiNodeFormData> = {
     }),
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
 
@@ -101,9 +101,9 @@ export const PLUGIN_FORM_META: FormMetaV2<ApiNodeFormData> = {
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

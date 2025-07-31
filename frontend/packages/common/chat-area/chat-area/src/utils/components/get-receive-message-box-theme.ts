@@ -47,7 +47,7 @@ export const getReceiveMessageBoxTheme = ({
     return 'none';
   }
 
-  //  启用 uikit 重构后, home 为 whiteness 其余场景为 grey
+  //  After enabling uikit refactoring, home is whiteness and the rest of the scenes are grey
   if (bizTheme === 'home') {
     return 'whiteness';
   }

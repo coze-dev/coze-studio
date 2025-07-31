@@ -39,11 +39,11 @@ export class OnInitialLoadEffect extends LoadAsyncEffect {
     super(envTools);
   }
   /**
-   * 录入数据
-   * 刷一次 index 数据
-   * 刷吧刷吧
-   * 后端又不加字段
-   * 不刷怎么办
+   * Enter data
+   * Swipe index data once
+   * Brush it, brush it
+   * No fields on the backend
+   * What if you don't swipe?
    */
   async runAsync() {
     const { data, envTools } = this;
@@ -102,8 +102,8 @@ export class InitialLoadLocating extends LoadEffect {
   }
 
   /**
-   * 尝试找 read message index 对应的消息，
-   * 找不到就用当前的
+   * Try to find the message corresponding to the read message index,
+   * If you can't find it, use the current one.
    */
   private getNextReadMessageDom({
     messages,

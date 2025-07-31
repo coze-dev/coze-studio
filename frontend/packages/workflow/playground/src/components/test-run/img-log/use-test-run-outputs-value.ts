@@ -25,7 +25,7 @@ interface BatchItem {
 
 type Batch = BatchItem[];
 
-// 获取节点调试输出
+// Get node debug output
 export function useTestRunOutputsValue() {
   let outputsValue;
   const testRunResult = useTestRunResult();
@@ -34,7 +34,7 @@ export function useTestRunOutputsValue() {
     return;
   }
 
-  // 批量模式
+  // batch mode
   if (testRunResult?.batch) {
     const batch = typeSafeJSONParse(testRunResult.batch) as Batch;
     const outputList = batch.map(item => typeSafeJSONParse(item.output));

@@ -60,7 +60,7 @@ export const ResizeArea: FC<IResizeArea> = props => {
     const { resizing, resizeEnd } = onResize();
     model.setFocus(false);
     selectNode(mouseDownEvent);
-    playground.node.focus(); // 防止节点无法被删除
+    playground.node.focus(); // Prevent nodes from being deleted
 
     const startX = mouseDownEvent.clientX;
     const startY = mouseDownEvent.clientY;

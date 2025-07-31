@@ -42,7 +42,7 @@ export interface SectionProps {
 }
 
 /**
- * 表单分组
+ * form grouping
  */
 export const Section = forwardRef(
   (

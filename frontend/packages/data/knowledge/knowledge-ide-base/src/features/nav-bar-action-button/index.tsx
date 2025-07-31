@@ -121,12 +121,12 @@ export const getUpdatedDataset = (
   actionType: ActionType,
   dataSetDetail: Dataset,
 ): KnowledgeInfo[] => {
-  // 更新后的bot知识库
+  // Updated bot knowledge base
   let updatedDatasetList: KnowledgeInfo[] = [];
-  // 原本的bot知识库内容
+  // The original bot knowledge base content
   let originDataset: KnowledgeInfo[] = [];
 
-  // 兼容json版本的dataset，FG全量后删除
+  // Compatible with the json version of dataset, delete it after FG is full
   if ('dataset' in dataset) {
     originDataset = dataset?.dataset ?? [];
   } else {
@@ -147,7 +147,7 @@ export const getUpdatedDataset = (
   return updatedDatasetList;
 };
 
-// 更新bot知识库逻辑
+// Update bot knowledge base logic
 export const handleDatasetUpdate = async ({
   botInfo,
   botId,
@@ -181,7 +181,7 @@ export const handleDatasetUpdate = async ({
   updateSuccess();
 };
 
-// 根据不同botInfo信息 获取不同的bot原有的dataset
+// Get the original dataset of different bots according to different botInfo information
 export const getDatasetInfo = (
   botInfo: GetDraftBotInfoAgwData | undefined,
   agentId: string,

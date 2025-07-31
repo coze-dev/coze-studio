@@ -33,33 +33,33 @@ export const DocumentChunkPreview = ({
   <div
     id={locateId}
     className={classNames(
-      // 布局
+      // layout
       'relative',
-      // 间距
+      // spacing
       'mb-2 p-2',
-      // 文字样式
+      // Text Style
       'text-sm leading-5',
-      // 颜色
+      // color
       'coz-fg-primary hover:coz-mg-hglt-secondary-hovered coz-mg-secondary',
-      // 边框
+      // border
       'border border-solid coz-stroke-primary rounded-lg',
-      // 表格样式
+      // table style
       getEditorTableClassname(),
-      // 图片样式
+      // image style
       getEditorImgClassname(),
-      // 换行
+      // line feed
       getEditorWordsCls(),
     )}
   >
     <p
-      // 已使用 DOMPurify 过滤 xss
+      // Filtered xss with DOMPurify
       // eslint-disable-next-line risxss/catch-potential-xss-react
       dangerouslySetInnerHTML={{
         __html:
           DOMPurify.sanitize(getRenderHtmlContent(chunk.content ?? ''), {
             /**
-             * 1. 防止CSS注入攻击
-             * 2. 防止用户误写入style标签，导致全局样式被修改，页面展示异常
+             * 1. Prevent CSS injection attacks
+             * 2. Prevent users from writing the style tag by mistake, resulting in the global style being modified and the page display being abnormal
              */
             FORBID_TAGS: ['style'],
           }) ?? '',

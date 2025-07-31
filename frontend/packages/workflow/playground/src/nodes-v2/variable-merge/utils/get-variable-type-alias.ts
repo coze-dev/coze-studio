@@ -24,7 +24,7 @@ import {
 import { getVariableViewType } from './get-variable-view-type';
 
 /**
- * 获取变量别名
+ * Get variable alias
  */
 export function getVariableTypeAlias(
   variable: ValueExpression | undefined,

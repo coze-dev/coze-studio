@@ -19,7 +19,7 @@ import { I18n } from '@coze-arch/i18n';
 
 import { WORKFLOW_LIST_STATUS_ALL } from '@/workflow-modal/type';
 
-/** 流程所有者选项, 全部/我的 */
+/** Process Owner Options, All/Mine */
 export const scopeOptions = [
   {
     label: I18n.t('workflow_list_scope_all'),
@@ -31,7 +31,7 @@ export const scopeOptions = [
   },
 ];
 
-/** 流程状态选项, 全部/已发布/未发布 */
+/** Process Status Options, All/Published/Unpublished */
 export const statusOptions = [
   {
     label: I18n.t('workflow_list_status_all'),
@@ -47,7 +47,7 @@ export const statusOptions = [
   },
 ];
 
-/** 流程排序选项, 创建时间/更新时间 */
+/** Process sorting options, creation time/update time */
 export const sortOptions = [
   {
     label: I18n.t('workflow_list_sort_create_time'),

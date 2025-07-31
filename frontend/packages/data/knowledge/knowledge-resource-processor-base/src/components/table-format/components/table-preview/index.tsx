@@ -54,17 +54,17 @@ export const TablePreview: React.FC<TablePreviewProps> = ({
 }) => {
   const { sheet_list = [], table_meta = {}, preview_data = {} } = data;
   const startRow = Number(settings[TableSettingFormFields.DATA_START_ROW]) || 0;
-  // 选中的表id
+  // Selected table id
   const sheetId = useMemo(
     () => settings[TableSettingFormFields.SHEET] || 0,
     [settings],
   );
-  // 选中的表名
+  // Selected table name
   const sheetName = useMemo(
     () => (sheet_list || []).find(sheet => sheet?.id === sheetId)?.sheet_name,
     [sheet_list, sheetId],
   );
-  // 选中的表的数据量
+  // The amount of data for the selected table
   const total = useMemo(
     () =>
       Number(

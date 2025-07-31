@@ -21,7 +21,7 @@ import { workflowApi } from '@coze-workflow/base';
 
 import { useGlobalState } from './use-global-state';
 
-// 判断当前是否有协作者
+// Determine if there are currently collaborators
 export function useHaveCollaborators() {
   const { spaceId, workflowId } = useGlobalState();
   const [haveCollaborators, setHaveCollaborators] = useState<

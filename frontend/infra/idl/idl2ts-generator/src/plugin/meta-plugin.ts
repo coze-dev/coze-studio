@@ -56,7 +56,7 @@ export class MetaPlugin implements IPlugin {
       ctx => {
         const node = ctx.node as ServiceDefinition;
         node.functions.forEach(fun => {
-          // 过滤非泛化接口
+          // Filtering non-generalized interfaces
           if (!fun.extensionConfig?.method) {
             return;
           }
@@ -103,7 +103,7 @@ export class MetaPlugin implements IPlugin {
       schemaRoot: getSchemaRootByPath(ast.idlPath, this.options.idlRoot),
       service,
     } as IMeta;
-    // 不是 json 时，需要加上 serializer 标识
+    // When not json, you need to add the serializer flag.
     if (extensionConfig?.serializer && extensionConfig?.serializer !== 'json') {
       res.serializer = extensionConfig?.serializer;
     }
@@ -117,7 +117,7 @@ export class MetaPlugin implements IPlugin {
       if (isStructDefinition(statement)) {
         const wholeBody = statement.fields.find(isFullBody);
         if (wholeBody) {
-          // 处理 api.body="." 以及 api.full_body=''
+          // Handle api.body = "." and api.full_body = "
           return `${id.value}['${getFieldsAlias(wholeBody)}']`;
         } else {
           return id.value;
@@ -184,7 +184,7 @@ export class MetaPlugin implements IPlugin {
           }
         });
       }
-      // 如果没有指定，根据method默认指定为query 或者 body
+      // If not specified, it is specified as query or body by default according to method.
       if (!specificPositionFiled.has(alias)) {
         const filedMapping = mapping[defaultPosition];
         mapping[defaultPosition] = filedMapping

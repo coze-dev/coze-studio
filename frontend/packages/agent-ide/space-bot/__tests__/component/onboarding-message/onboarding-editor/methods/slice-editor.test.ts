@@ -16,7 +16,7 @@
  
 import { sliceEditor } from '@/component/onboarding-message/onboarding-editor/method/slice-editor';
 
-// vi.mock需要在顶部，因为它会被提升
+// Vi.mock needs to be at the top because it will be promoted
 vi.mock('@coze-common/md-editor-adapter', () => ({
   ZoneDelta: vi.fn().mockImplementation(() => ({
     retain: vi.fn().mockReturnThis(),
@@ -24,7 +24,7 @@ vi.mock('@coze-common/md-editor-adapter', () => ({
   })),
 }));
 
-// 导入模拟后的ZoneDelta
+// Import the simulated ZoneDelta
 import { ZoneDelta } from '@coze-common/md-editor-adapter';
 
 describe('sliceEditor', () => {
@@ -36,13 +36,13 @@ describe('sliceEditor', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // 创建一个新的模拟实例
+    // Create a new simulation instance
     mockZoneDeltaInstance = {
       retain: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
     };
 
-    // 重置ZoneDelta构造函数的实现
+    // Implementation of Reset ZoneDelta Constructor
     vi.mocked(ZoneDelta).mockImplementation(() => mockZoneDeltaInstance);
 
     mockedEditor = {
@@ -110,7 +110,7 @@ describe('sliceEditor', () => {
 
     expect(ZoneDelta).toHaveBeenCalledWith({ zoneId: 'zone1' });
     expect(mockZoneDeltaInstance.retain).toHaveBeenCalledWith(maxCount);
-    expect(mockZoneDeltaInstance.delete).toHaveBeenCalledWith(1); // 实际计算出的值是1
+    expect(mockZoneDeltaInstance.delete).toHaveBeenCalledWith(1); // The actual calculated value is 1.
     expect(mockApply).toHaveBeenCalled();
   });
 });

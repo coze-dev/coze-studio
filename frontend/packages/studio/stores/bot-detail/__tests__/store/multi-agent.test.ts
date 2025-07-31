@@ -665,9 +665,9 @@ describe('resetHostAgent', () => {
       });
 
     useBotInfoStore.getState().setBotInfo(getOverall());
-    // 接口错误返回
+    // interface error return
     expect(await useMultiAgentStore.getState().addAgent({})).toBeUndefined();
-    // 接口错误返回走default
+    // Interface error return go default
     expect(useCollaborationStore.getState().sameWithOnline).toEqual(
       getDefaultCollaborationStore().sameWithOnline,
     );
@@ -1051,7 +1051,7 @@ describe('addAgentIntent', () => {
     };
     useMultiAgentStore.getState().addAgent2Store(agent);
     const findAgent = useMultiAgentStore.getState().agents?.[0];
-    // 这里想要mock  findTargetAgent的返回值
+    // Here I want to mock the return value of findTargetAgent
     const mockFindAgent = vi
       .spyOn(findAgentModule, 'findTargetAgent')
       .mockReturnValueOnce({

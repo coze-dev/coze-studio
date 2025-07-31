@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -24,36 +24,36 @@ import { Toast } from '@coze-arch/coze-design';
 import ImageUploader, { ImgUploadErrNo } from './image-uploader';
 
 interface UseImageUploaderParams {
-  /** 图片限制条件 */
+  /** image restrictions */
   rules?: ImageUploader['rules'];
-  /** 上传模式 */
+  /** upload mode */
   mode?: ImageUploader['mode'];
-  /** 上传配置 */
+  /** upload configuration */
   timeout?: ImageUploader['timeout'];
 }
 
 interface UseImageUploaderReturn {
-  /** 图片标识, 用于提交给服务 */
+  /** Image ID for submission to the service */
   uri: string;
-  /** 图片展示地址 */
+  /** Picture display address */
   url: string;
-  /** 文件名 */
+  /** file name */
   fileName: string;
-  /** 上传中状态 */
+  /** Uploading status */
   loading: boolean;
-  /** 上传失败状态 */
+  /** Upload failed status */
   isError: boolean;
-  /** 上传图片 */
+  /** Upload image */
   uploadImg: (file: File) => Promise<ImageUploader['uploadResult']>;
-  /** 清除已上传图片 */
+  /** Clear uploaded images */
   clearImg: () => void;
-  /** 上传失败后重试 */
+  /** Retry after upload failure */
   retryUploadImg: () => Promise<ImageUploader['uploadResult']>;
   /**
-   * 设置初始状态, 用于回显服务下发的数据
+   * Set the initial state for echoing data sent by the service
    *
-   * @param val 对应值
-   * @param isMerge 是否 merge 模式, merge 模式仅更新传入字段. 默认 false
+   * @param val corresponding value
+   * @Param isMerge Whether to merge mode, merge mode only updates incoming fields. Default false
    */
   setImgValue: (
     val: { uri?: string; url?: string; fileName?: string },
@@ -61,7 +61,7 @@ interface UseImageUploaderReturn {
   ) => void;
 }
 
-/** 缓存文件名 */
+/** cache filename */
 const fileNameCache: Record<string, string> = Object.create(null);
 
 // eslint-disable-next-line max-lines-per-function
@@ -102,14 +102,14 @@ export default function useImageUploader(
         setFileName(targetFileName);
       }
 
-      // 非 Merge 模式, 未设置的值清空
+      // Non-Merge mode, unset values are cleared
       if (!isMerge) {
         setUrl(targetDisplayUrl ?? '');
         setUri(targetUri ?? '');
         setFileName(targetFileName ?? '');
       }
 
-      // 文件名特殊逻辑, 根据 uri 从缓存重映射文件名
+      // Filename special logic, remapping filenames from cache based on URIs
       if (!targetFileName) {
         if (targetUri && fileNameCache[targetUri]) {
           setFileName(fileNameCache[targetUri]);
@@ -130,12 +130,12 @@ export default function useImageUploader(
   const uploadImg = useCallback(
     async (file: File): Promise<ImageUploader['uploadResult'] | undefined> => {
       await uploaderRef.current.select(file);
-      // 图片校验不通过
+      // The picture verification failed.
       if (!uploaderRef.current.validateResult?.isSuccess) {
         Toast.error(
           uploaderRef.current.validateResult?.msg || '图片不符合要求',
         );
-        // @ts-expect-error 此处 validateResult.isSuccess 为 false
+        // @ts-expect-error here validateResult.isSuccess is false
         return uploaderRef.current.validateResult;
       }
 
@@ -146,10 +146,10 @@ export default function useImageUploader(
       await uploaderRef.current.upload();
       setLoading(false);
 
-      // 上传结果
+      // Upload result
       const { uploadResult } = uploaderRef.current;
 
-      // 无上传结果说明上传取消
+      // No upload result indicates that the upload is cancelled.
       if (!uploadResult) {
         return;
       }
@@ -159,7 +159,7 @@ export default function useImageUploader(
       if (uploadResult.isSuccess) {
         Toast.success(I18n.t('file_upload_success'));
         setUri(uploadResult.uri);
-        // FIXME: 合理的设计应该用 uri 进行缓存, 但是 Imageflow 初期只存储了 url, 使用 url 作为临时方案
+        // FIXME: A reasonable design should cache with URIs, but Imageflow initially only stored URLs, using URLs as a temporary solution
         fileNameCache[uploadResult.url] = `${file.name}`;
       } else {
         Toast.error(uploadResult.msg);
@@ -172,7 +172,7 @@ export default function useImageUploader(
   const retryUploadImg = useCallback(async (): Promise<
     ImageUploader['uploadResult']
   > => {
-    // 重传前置检查, 有文件且校验通过
+    // Resend pre-check, there is a file and the verification is passed
     if (
       !uploaderRef.current?.file ||
       !uploaderRef.current?.validateResult?.isSuccess
@@ -189,7 +189,7 @@ export default function useImageUploader(
     await uploaderRef.current.upload();
     setLoading(false);
 
-    // 上传结果
+    // Upload result
     const uploadResult = uploaderRef.current.uploadResult || {
       isSuccess: false,
       errNo: ImgUploadErrNo.UploadFail,

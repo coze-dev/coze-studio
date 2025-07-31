@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/* eslint-disable @typescript-eslint/no-magic-numbers  -- 本组件中会有很多位置计算的数字，无须处理*/
+/* eslint-disable @typescript-eslint/no-magic-numbers -- there will be many numbers calculated in this component, no need to deal with them*/
 import { type FC, useCallback, useMemo, useState } from 'react';
 
 import { isFunction, mergeWith } from 'lodash-es';
@@ -72,8 +72,8 @@ const Tree: FC<TreeProps> = ({
   );
 
   /**
-   * 使得指定的selectKey的Line置于顶层。
-   * 通过调整line顺序，来实现z-index效果：key为${selectKey}的line在最上层
+   * Causes the Line of the specified selectKey to be placed at the top level.
+   * By adjusting the line order, the z-index effect is achieved: the line with the key ${selectKey} is at the top
    */
   const adjustLineOrder = useCallback(
     (lines: Line[]): Line[] => {
@@ -90,7 +90,7 @@ const Tree: FC<TreeProps> = ({
         }
       }
 
-      // 支持根据zIndex控制高度
+      // Support controlling height according to zIndex
       lines.sort((lineA, lineB) => {
         const zIndexA = lineA.endNode.zIndex ?? -1;
         const zIndexB = lineB.endNode.zIndex ?? -1;
@@ -141,7 +141,7 @@ const Tree: FC<TreeProps> = ({
   );
 
   /**
-   * 根据line信息生成svg path。 colNo, rowNum都从0开始
+   * Generate svg path from line information. colNo, rowNum all start from 0
    */
   const genSvgPath = useCallback(
     (line: Line): string => {
@@ -155,41 +155,41 @@ const Tree: FC<TreeProps> = ({
       const { lineRadius = 0, lineGap = 0 } = normalLineStyle;
       const nodeHeight = nodeBoxHeight + verticalInterval;
 
-      // 起始点
+      // starting point
       const startX = startColNo * indent + offsetX;
       const startY =
         startRowNo * nodeHeight + (nodeBoxHeight + verticalInterval / 2);
 
       if (startColNo === endColNo) {
-        // 竖线的长度
+        // The length of the vertical line
         const lineASize =
           (endRowNo - startRowNo - 1) * nodeHeight + verticalInterval;
-        // 移动到起始点
+        // Move to the starting point
         const moveToStartPoint = `M ${startX} ${startY + lineGap}`;
-        // 竖线
+        // vertical line
         const lineA = `L ${startX} ${startY + lineASize}`;
         return `${moveToStartPoint} ${lineA}`;
       } else {
-        // 竖线的长度
+        // The length of the vertical line
         const lineASize =
           (endRowNo - startRowNo - 1) * nodeHeight +
           verticalInterval / 2 +
           nodeHeight / 2 -
           lineRadius;
-        // 横线的长度
+        // The length of the horizontal line
         const lineBSize =
           (endColNo - startColNo) * indent - offsetX - lineRadius;
-        // 结束点的坐标
+        // Coordinates of the end point
         const endX = startX + lineBSize + lineRadius;
         const endY = startY + lineASize + lineRadius;
 
-        // 移动到起始点
+        // Move to the starting point
         const moveToStartPoint = `M ${startX} ${startY + lineGap}`;
-        // 竖线
+        // vertical line
         const lineA = `L ${startX} ${startY + lineASize}`;
-        // 二次贝塞尔曲线
+        // Quadratic Bézier Curve
         const qbc = `Q ${startX} ${endY} ${startX + lineRadius} ${endY}`;
-        // 横线
+        // horizontal line
         const lineB = `L ${endX - lineGap} ${endY}`;
         return `${moveToStartPoint} ${lineA} ${qbc} ${lineB}`;
       }

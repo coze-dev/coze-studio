@@ -17,12 +17,12 @@
 import { nanoid } from 'nanoid';
 import { ViewVariableType } from '@coze-workflow/variable';
 
-// 路径
+// path
 export const INPUT_PATH = 'inputParameters';
 export const CODE_PATH = 'codeParams';
 export const OUTPUT_PATH = 'outputs';
 
-// 默认值
+// default value
 export const DEFAULT_OUTPUTS = [
   {
     key: nanoid(),

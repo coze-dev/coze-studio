@@ -21,7 +21,7 @@ import {
 
 import { type ToolInfo } from '../shortcut-tool/types';
 
-// 根据shortcut获取toolInfo
+// Get toolInfo by shortcut
 export const getToolInfoByShortcut = (
   shortcut: shortcut_command.ShortcutCommand | undefined,
 ): ToolInfo => {
@@ -51,11 +51,11 @@ export const getToolInfoByShortcut = (
   };
 };
 
-// 校验string：数字 + 英文 + _ & 不能是纯数字
+// Check string: number + English + _ & cannot be pure numbers
 export const validateCmdString = (value: string) =>
   /^[a-zA-Z0-9_]+$/.test(value) && !/^[0-9]+$/.test(value);
 
-// 根据tool_type判断是否开启了tool
+// According to tool_type determine whether the tool is turned on.
 export const initToolEnabledByToolTYpe = (
   toolType: shortcut_command.ToolType | undefined,
 ) =>
@@ -65,7 +65,7 @@ export const initToolEnabledByToolTYpe = (
     shortcut_command.ToolType.ToolTypePlugin,
   ].includes(toolType);
 
-// 校验plugin和workflow参数是否为string|integer类型,不支持复杂的对象类型
+// Verify that the plugin and workflow parameters are of type string | integer, and do not support complex object types
 export const validatePluginAndWorkflowParams = (
   params: ToolParams[],
   enableEmpty = false,
@@ -89,7 +89,7 @@ export const validatePluginAndWorkflowParams = (
   };
 };
 
-// 校验shortcut_command是否重复
+// Check if shortcut_command duplicate
 export const validateCommandNameRepeat = (
   checkShortcut: shortcut_command.ShortcutCommand,
   shortcuts: shortcut_command.ShortcutCommand[],
@@ -101,7 +101,7 @@ export const validateCommandNameRepeat = (
       shortcut.shortcut_command === shortcutCommand,
   );
 };
-// 校验按钮名称command_name是否重复
+// Check button name command_name duplicate
 export const validateButtonNameRepeat = (
   checkShortcut: shortcut_command.ShortcutCommand,
   shortcuts: shortcut_command.ShortcutCommand[],

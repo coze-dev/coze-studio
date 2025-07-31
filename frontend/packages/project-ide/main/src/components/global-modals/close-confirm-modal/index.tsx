@@ -48,23 +48,23 @@ export const CloseConfirmModal = () => {
   }, []);
 
   useEffect(() => {
-    // 浏览器维度的 dispose 监听
+    // Dispose listening in the browser dimension
     const chromeDispose = windowService.onBeforeUnload(e => {
-      // 路由判断
+      // route judgment
       const titles = viewService.getOpenTitles();
       const hasUnsaved = titles.some(title => title.saving);
 
-      // 当存在未保存的项的时候，需要阻止
+      // When there are unsaved items, they need to be blocked
       if (hasUnsaved) {
-        // 每次浏览器关闭之前都打开阻止关闭的弹窗
-        // 兼容不同浏览器的行为
+        // Open the pop-up window that prevents closing before each browser is closed.
+        // Compatible with the behavior of different browsers
         e.preventDefault();
         e.stopPropagation();
         e.returnValue = '';
         return '';
       }
     });
-    // 资源维度的 dispose 监听
+    // Dispose monitoring of the resource dimension
     const resourceDisposable = modalService.onModalVisibleChange(opt => {
       const { type, options, visible: vis = true } = opt;
       if (type === ModalType.CLOSE_CONFIRM) {

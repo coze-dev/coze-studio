@@ -59,7 +59,7 @@ export const StepFooter: FC = () => {
       }
       const res = await callbackResult;
 
-      // 返回 false 则直接 return
+      // If it returns false, it will be returned directly.
       if (typeof res === 'boolean' && res === false) {
         setSubmitButtonLoading(false);
         return;
@@ -71,7 +71,7 @@ export const StepFooter: FC = () => {
 
     // onSubmit
     try {
-      // 判断传入的 submit 函数如果是异步，则按钮 loading
+      // Determine if the passed submit function is asynchronous, then the button loading
       const callbackResult = onSubmit?.();
       if (callbackResult instanceof Promise) {
         setSubmitButtonLoading(true);
@@ -79,10 +79,10 @@ export const StepFooter: FC = () => {
       await callbackResult;
 
       if (isLastStep) {
-        //关闭
+        //close
         onCancel?.();
       } else {
-        // 下一步
+        // Next step
         useStepStore.setState(state => ({
           step: Math.min(state.step + 1, lastStep),
         }));
@@ -95,10 +95,10 @@ export const StepFooter: FC = () => {
   const handleClickPrev = () => {
     getCallbacks()?.onPrevious?.();
     if (isFirstStep) {
-      // 关闭
+      // close
       onCancel?.();
     } else {
-      // 上一步
+      // previous step
       useStepStore.setState(state => ({
         step: Math.max(state.step - 1, firstStep),
       }));

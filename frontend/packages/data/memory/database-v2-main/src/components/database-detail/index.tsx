@@ -130,7 +130,7 @@ export const DatabaseDetail = ({
     }
   };
 
-  // 需要一个 store，后续改造
+  // Need a store, follow-up renovation
   const isReadOnlyMode = databaseInfo.creator_id !== userId || !!version;
 
   const tableInitData: DatabaseInitInfo = useMemo(
@@ -355,7 +355,7 @@ export const DatabaseDetail = ({
                 databaseId={databaseId}
                 tableType={TableType.DraftTable}
                 tableFields={databaseInfo.field_list || []}
-                // 测试数据无需控制权限，只要能看到的数据就能修改删除
+                // Test data does not require control rights, as long as the data can be seen, it can be modified and deleted
                 isReadonlyMode={false}
                 enterFrom={enterFrom}
                 onAfterEditRecords={onAfterEditRecords}

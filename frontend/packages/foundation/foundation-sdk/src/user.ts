@@ -41,21 +41,21 @@ import {
   subscribeUserAuthInfos as subscribeUserAuthInfosImpl,
 } from '@coze-foundation/account-adapter';
 
-/** @deprecated 使用 getLoginStatus */
+/** @deprecated using getLoginStatus */
 export const getIsSettled = (() =>
   getLoginStatus() !== 'settling') satisfies typeof getIsSettledOfSdk;
-/** @deprecated 使用 getLoginStatus */
+/** @deprecated using getLoginStatus */
 export const getIsLogined = (() =>
   getLoginStatus() === 'logined') satisfies typeof getIsLoginedOfSdk;
 export const getUserInfo = getUserInfoImpl satisfies typeof getUserInfoOfSdk;
 export const getUserAuthInfos =
   getUserAuthInfosImpl satisfies typeof getUserAuthInfosOfSdk;
-/** @deprecated 使用 useLoginStatus */
+/** @deprecated useLoginStatus */
 export const useIsSettled = (() => {
   const status = useLoginStatus();
   return status !== 'settling';
 }) satisfies typeof useIsSettledOfSdk;
-/** @deprecated 使用 useLoginStatus */
+/** @deprecated useLoginStatus */
 export const useIsLogined = (() => {
   const status = useLoginStatus();
   return status === 'logined';

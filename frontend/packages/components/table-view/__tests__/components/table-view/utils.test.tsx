@@ -127,34 +127,34 @@ describe('utils', () => {
         onDelete,
       });
 
-      // 验证返回的配置对象包含正确的菜单项
+      // Verify that the returned configuration object contains the correct menu items
       expect(result).toHaveProperty(EditMenuItem.EDIT);
       expect(result).toHaveProperty(EditMenuItem.DELETE);
       expect(result).toHaveProperty(EditMenuItem.DELETEALL);
 
-      // 验证编辑菜单项
+      // Verify edit menu item
       expect(result[EditMenuItem.EDIT].text).toBe('knowledge_tableview_01');
       expect(result[EditMenuItem.EDIT].icon).toBeDefined();
 
-      // 验证删除菜单项
+      // Verify deletion of menu items
       expect(result[EditMenuItem.DELETE].text).toBe('knowledge_tableview_02');
       expect(result[EditMenuItem.DELETE].icon).toBeDefined();
 
-      // 验证批量删除菜单项
+      // Verify bulk deletion of menu items
       expect(result[EditMenuItem.DELETEALL].text).toBe(
         'knowledge_tableview_02',
       );
       expect(result[EditMenuItem.DELETEALL].icon).toBeDefined();
 
-      // 测试点击编辑菜单项
+      // Test click edit menu item
       result[EditMenuItem.EDIT].onClick();
       expect(onEdit).toHaveBeenCalledWith(record, indexs[0]);
 
-      // 测试点击删除菜单项
+      // Test Click Delete Menu Item
       result[EditMenuItem.DELETE].onClick();
       expect(onDelete).toHaveBeenCalledWith(indexs);
 
-      // 测试点击批量删除菜单项
+      // Test click to delete menu items in bulk
       result[EditMenuItem.DELETEALL].onClick();
       expect(onDelete).toHaveBeenCalledWith(indexs);
     });
@@ -167,18 +167,18 @@ describe('utils', () => {
         selected: { record, indexs },
       });
 
-      // 验证返回的配置对象包含正确的菜单项
+      // Verify that the returned configuration object contains the correct menu items
       expect(result).toHaveProperty(EditMenuItem.EDIT);
       expect(result).toHaveProperty(EditMenuItem.DELETE);
       expect(result).toHaveProperty(EditMenuItem.DELETEALL);
 
-      // 测试点击编辑菜单项不应该抛出错误
+      // Tests that clicking on the edit menu item should not throw an error
       expect(() => result[EditMenuItem.EDIT].onClick()).not.toThrow();
 
-      // 测试点击删除菜单项不应该抛出错误
+      // Test that clicking on the delete menu item should not throw an error
       expect(() => result[EditMenuItem.DELETE].onClick()).not.toThrow();
 
-      // 测试点击批量删除菜单项不应该抛出错误
+      // Test clicking to delete menu items in bulk should not throw an error
       expect(() => result[EditMenuItem.DELETEALL].onClick()).not.toThrow();
     });
   });

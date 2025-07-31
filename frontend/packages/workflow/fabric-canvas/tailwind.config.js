@@ -5,7 +5,7 @@ module.exports = {
   important: '',
   content: ['./src/**/*.{ts,tsx}'],
   corePlugins: {
-    preflight: false, // 关闭@tailwind base默认样式，避免对现有样式影响
+    preflight: false, // Turn off @tailwind base default styles to avoid affecting existing styles
   },
   plugins: [require('@coze-arch/tailwind-config/coze')],
 };

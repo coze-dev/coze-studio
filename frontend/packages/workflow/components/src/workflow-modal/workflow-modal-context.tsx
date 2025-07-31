@@ -31,22 +31,22 @@ export interface WorkflowModalContextValue {
   spaceType: SpaceType;
   bindBizId?: string;
   bindBizType?: BindBizType;
-  /** 当前项目 id，只在项目内的 workflow 有该字段 */
+  /** The current project id, only the workflow within the project has this field */
   projectId?: string;
-  /** 工作流类型，此参数由 WorkflowModal 弹窗创建时由 props 传进来，可能的值是 Workflow、Imageflow。用于区分添加哪种工作流 */
+  /** Workflow type, this parameter is passed in by props when created by WorkflowModal pop-up window, possible values are Workflow, Imageflow. Used to distinguish which workflow to add */
   flowMode: WorkflowMode;
   modalState: WorkflowModalState;
-  /** 更新弹窗状态, merge 的模式 */
+  /** Update popup status, merge mode */
   updateModalState: (newState: Partial<WorkflowModalState>) => void;
   orderBy: OrderBy;
   setOrderBy: React.Dispatch<React.SetStateAction<OrderBy>>;
   createModalVisible: boolean;
   setCreateModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 
-  /** 获取当前弹窗状态, 可用于恢复弹窗状态 */
+  /** Get the current pop-up state, which can be used to restore the pop-up state */
   getModalState: (ctx: WorkflowModalContextValue) => WorkflowModalState;
 
-  /** 自定义 i18n 文案 */
+  /** Custom i18n copy */
   i18nMap?: Partial<Record<ModalI18nKey, I18nKey>>;
 }
 

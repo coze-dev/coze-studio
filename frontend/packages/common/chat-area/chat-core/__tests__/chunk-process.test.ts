@@ -65,10 +65,10 @@ const randomChunkRawList: ChunkRaw[] = Mock.mock({
         content: '@string',
         reasoning_content: '@string',
         message_status: '@RANDOM_MESSAGE_STATUS',
-        message_id: '@string', // 后端消息 id, 可能有多条回复
-        reply_id: '999999999', // 回复 id，query的messageId
+        message_id: '@string', // Backend message id, there may be multiple replies
+        reply_id: '999999999', // Reply id, query messageId
         extra_info: {
-          local_message_id: '88888888888', // 前端消息 id, 用于预发送消息体更新
+          local_message_id: '88888888888', // Front-end message id, used to pre-send message body updates
         },
       },
     },
@@ -113,16 +113,16 @@ describe('消息接收测试', () => {
         reasoning_content: 'I am the last!!!',
         reply_id: firstTextChunk?.message.reply_id ?? '',
         extra_info: {
-          input_tokens: '', // 用户 query 消耗的 token
-          output_tokens: '', // llm 输出消耗的 token
-          token: '', // 总的 token 消耗
+          input_tokens: '', // User query consumed token
+          output_tokens: '', // LLM output consumed token
+          token: '', // Total token consumption
           plugin_status: 'success', // "success" or "fail"
-          time_cost: '', // 中间调用过程的时间
+          time_cost: '', // Intermediate invocation time of procedure
           workflow_tokens: '',
           bot_state: '', // {   bot_id?: string;agent_id?: string;agent_name?: string; }
-          plugin_request: '', // plugin 请求的参数
-          tool_name: '', // 调用的 plugin 下具体的 api 名称
-          plugin: '', // 调用的 plugin 名称
+          plugin_request: '', // Parameters of the plugin request
+          tool_name: '', // Specific API name under the invoked plugin
+          plugin: '', // Name of the plugin invoked
           local_message_id:
             firstTextChunk?.message.extra_info.local_message_id ?? '',
         },

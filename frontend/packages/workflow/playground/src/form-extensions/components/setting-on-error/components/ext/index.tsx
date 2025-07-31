@@ -40,7 +40,7 @@ type Props = SettingOnErrorItemProps<SettingOnErrorExt> & {
 };
 
 /**
- * 其他配置
+ * Other configurations
  */
 export const Ext: FC<Props> = ({
   value,

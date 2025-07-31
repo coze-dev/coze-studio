@@ -41,6 +41,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
+	cm "github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -66,10 +67,11 @@ type RepositoryImpl struct {
 	workflow.InterruptEventStore
 	workflow.CancelSignalStore
 	workflow.ExecuteHistoryStore
+	builtinModel cm.BaseChatModel
 }
 
 func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore) workflow.Repository {
+	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel) workflow.Repository {
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
 		query:           query.Use(db),
@@ -86,6 +88,7 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, to
 			query: query.Use(db),
 			redis: redis,
 		},
+		builtinModel: chatModel,
 	}
 }
 
@@ -1581,6 +1584,10 @@ func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context
 	}
 
 	return nil
+}
+
+func (r *RepositoryImpl) GetKnowledgeRecallChatModel() cm.BaseChatModel {
+	return r.builtinModel
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

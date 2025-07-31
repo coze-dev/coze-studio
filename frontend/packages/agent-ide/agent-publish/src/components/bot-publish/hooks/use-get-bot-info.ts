@@ -41,7 +41,7 @@ const DEFAULT_BOT_INFO: PublisherBotInfo = {
   prompt: '',
 };
 
-// 获取plugin收费插件信息
+// Get plugin charging plugin information
 const getPricingRules: (
   pluginApiDetailMap?: Record<string | number, PluginAPIDetal>,
 ) => Promise<PluginPricingRule[] | undefined> = async pluginApiDetailMap => {
@@ -58,7 +58,7 @@ const getPricingRules: (
   return pricing_rules;
 };
 
-// 是否有plugin
+// Is there a plugin?
 const hasPluginApi: (
   pluginApiDetailMap?: Record<string | number, PluginAPIDetal>,
 ) => boolean = pluginApiDetailMap =>
@@ -113,7 +113,7 @@ export const useGetPublisherInitInfo: () => {
           bot_option_data,
         } = botInfoResp?.data ?? {};
 
-        // 获取plugin扣费信息
+        // Get plugin deduction information
         let pluginPricingRules: Array<PluginPricingRule> = [];
         if (
           hasPluginApi(bot_option_data?.plugin_api_detail_map) &&

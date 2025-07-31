@@ -80,7 +80,7 @@ export const CustomDragLayer: FC<CustomDragLayerProps> = props => {
 
     let { x, y } = currentOffset;
 
-    // 在 2.0 的新交互下，setter 渲染在右侧面板里，不受画布缩放的影响，所以如果是 2.0， 缩放比例默认为1
+    // In the new interaction of 2.0, setters are rendered in the right panel and are not affected by canvas scaling, so if it is 2.0, the scaling ratio defaults to 1.
     const zoomRatio = 1;
 
     x -= layerOffset.x;

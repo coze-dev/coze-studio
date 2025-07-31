@@ -74,7 +74,7 @@ export default function useVoice({
       hiddenPopover: () => void;
     },
   ) => {
-    // 目前只有语音类型有额外的选项
+    // Currently only voice types have additional options.
     if (ViewVariableType.isVoiceType(inputType)) {
       const handleClickVoiceOption = () => {
         openSelectVoiceModal();

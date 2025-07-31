@@ -48,7 +48,7 @@ const isCocoLink = (link: string) => {
   return parsedLink.protocol === 'coco:';
 };
 
-/** 被链接元素替换成的组件 */
+/** Components replaced by linked elements */
 export const CozeLink: FC<
   MdBoxLinkProps & {
     onLinkElementEnter?: (params: {

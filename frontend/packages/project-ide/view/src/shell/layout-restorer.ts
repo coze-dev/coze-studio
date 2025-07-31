@@ -33,16 +33,16 @@ import { type LayoutData } from './types';
 import { ApplicationShell } from './application-shell';
 
 /**
- * 在会话之间存储和恢复 widget 其内部状态的接口
+ * Interface for storing and restoring the internal state of widgets between sessions
  */
 interface StatefulWidget {
   /**
-   * widget 内部的状态，返回 undefined 将不会保存
+   * The internal state of the widget, returning undefined will not save
    */
   storeState(): object | undefined;
 
   /**
-   * 复原存储的状态
+   * Restore the stored state
    */
   restoreState(state: object): void;
 }
@@ -57,30 +57,30 @@ const CustomPreferenceContribution = Symbol('CustomPreferenceContribution');
 
 interface CustomPreferenceContribution {
   /**
-   * 注册 command
+   * Registration command
    */
   registerCustomPreferences(restorer: LayoutRestorer): void;
 }
 
 export interface CustomPreferenceConfig {
   /**
-   * 该配置唯一 key
+   * Unique key for this configuration
    */
   key: string;
   /**
-   * 标题
+   * title
    */
   title: string;
   /**
-   * 描述
+   * describe
    */
   descprition?: string;
   /**
-   * 顺序
+   * order
    */
   order: number;
   /**
-   * 值设置器配置
+   * value setter configuration
    */
   setting:
     | {
@@ -100,7 +100,7 @@ export interface CustomPreferenceConfig {
         }>;
       };
   /**
-   * 默认值
+   * default value
    */
   default: any;
 }
@@ -125,29 +125,29 @@ type RestoreState = LayoutData & {
 };
 
 /**
- * 整个 restore 的流程：
+ * The entire restore process:
  *
- * -------------------- 初始化 --------------------
- * 1. 读取 options 配置，等待 DockPanel、SplitLayout 实例化完成
- * 2. 从数据源 (目前是 localStorage) 读取持久化数据，包含 layoutData 和 innerState
- * 3. 遍历 layoutData 中的 widget uri 根据保存的 uri 线索重新创建 widget
- *   3.1. 根据 uri 找到 Factory，根据 uri 和 Factory 创建 widget
- *   3.2. 用 portal 挂载，这是本 ide widget 的挂载方式决定的
- *   3.3. 运行 widget.init，这是 ReactWidget 决定的
- *   3.4. shell.stack(widget)，持久化的 widget 全部都需要被 stack
- * 4. 依次 restore 各个 panel 和 layout
+ * -------------------- initialization --------------------
+ * 1. Read the options configuration and wait for the DockPanel and SplitLayout instantiation to complete
+ * 2. Read persistent data from a data source (currently localStorage), including layoutData and innerState
+ * 3. Traverse the widget URIs in layoutData and recreate the widget according to the saved URI clues.
+ *   3.1. Find Factory according to URI, create widget according to URI and Factory
+ *   3.2. Mount with portal, which is determined by the mounting method of this ide widget
+ *   3.3. Run widget.init, which is determined by ReactWidget
+ *   3.4. Shell.stack (widget), all persistent widgets need to be stacked
+ * 4. Sequentially restore panels and layouts
  *
- * -------------------- 运行中 --------------------
- * 5. widget dispose 时，将 state 存于 innerState
- * 6. widget create 时，从 innerState 中取数据回填
- * (注意，这里都是和内存交互，和持久化数据源无关)
+ * -------------------- running --------------------
+ * 5. widget disposed, save state in innerState
+ * 6. When the widget is created, backfill the data from innerState
+ * (Note that this is all about interacting with memory and has nothing to do with persistent data sources.)
  *
- * -------------------- 销毁 --------------------
- * 7. 应用销毁前读取 layoutData，和 innerState 一起存入持久化数据源
- *   7.1. layoutData 中的 widget 对象仅保留它的 uri，并且会转化为 string 的形式存储
+ * -------------------- destroy --------------------
+ * 7. Read the layoutData before the application is destroyed, and store it in the persistent data source together with innerState
+ *   7.1. A widget object in layoutData only retains its URI and is stored as a string
  *
- * Q：为什么 innerState 作为内存 state 也需要被存储？
- * A：被打开又被关闭的 widget state 只存在 inner 中，没有被 layoutData 囊括
+ * Q: Why does innerState need to be stored as memory state?
+ * A: The widget state that is opened and closed only exists in inner, not included by layoutData
  */
 
 @injectable()
@@ -170,7 +170,7 @@ class LayoutRestorer {
   protected readonly widgetManager: WidgetManager;
 
   /**
-   * 维护在内存中的持久化数据，在应用初始化时从源读取，但不会用于持久化初始化
+   * Maintains persistent data in memory that is read from the source during application initialization, but not used for persistent initialization
    */
   innerState: Record<string, any> = {};
 
@@ -200,7 +200,7 @@ class LayoutRestorer {
   private unloadEvent: undefined | Disposable;
 
   public init(options: ViewPluginOptions) {
-    /** 没地方放，暂时放这里 */
+    /** No place to put it, put it here for now */
     this.windowService.onStart();
     this.viewOptions = options;
     const { getStorageKey } = options || {};
@@ -394,7 +394,7 @@ class LayoutRestorer {
   }
 
   /**
-   * 持久化布局数据
+   * persistent layout data
    */
   storeLayout() {
     if (this.disabled) {
@@ -413,7 +413,7 @@ class LayoutRestorer {
   }
 
   /**
-   * 取出布局数据
+   * Retrieve layout data
    */
   async restoreLayout() {
     if (this.disabled) {

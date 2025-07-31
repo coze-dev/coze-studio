@@ -15,6 +15,6 @@
  */
  
 /**
- * 检查没有遗漏的项
+ * Check for no missing items
  */
 export const exhaustiveCheckSimple = (_: never) => undefined;

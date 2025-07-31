@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any -- 一些历史any 改不动 */
+/* eslint-disable @typescript-eslint/no-explicit-any -- some history can't be changed */
 import { nanoid } from 'nanoid';
 import { cloneDeep, has, isEmpty, isNumber, isObject } from 'lodash-es';
 import {
@@ -28,7 +28,7 @@ import {
 
 import { ARRAYTAG, ROWKEY, childrenRecordName } from './config';
 
-// 遍历树，返回目标id路径
+// Traverse the tree and return the target ID path
 export const findPathById = ({
   data,
   callback,
@@ -55,7 +55,7 @@ export const findPathById = ({
   }
 };
 
-// 给每层对象增加层级深度标识
+// Add layer depth markers to each layer of objects
 export const addDepthAndValue = (
   tree: any,
   valKey: 'global_default' | 'local_default' = 'global_default',
@@ -64,28 +64,28 @@ export const addDepthAndValue = (
   if (!Array.isArray(tree)) {
     return;
   }
-  // 遍历树中的每个节点
+  // Traverse each node in the tree
   for (const node of tree) {
-    // 为当前节点添加深度标识符
+    // Add a depth identifier to the current node
     node.deep = depth;
     if (node[valKey]) {
       node.value = node[valKey];
     }
-    // 如果当前节点有子节点，则递归地为子节点添加深度标识符
+    // If the current node has a sub-node, add a depth identifier to the sub-node recursively
     if (node[childrenRecordName]) {
       addDepthAndValue(node[childrenRecordName], valKey, depth + 1);
     }
   }
 };
 
-// 将深度信息push到一个数组里，最后取最大值
+// Push the depth information into an array, and finally take the maximum value
 export const handleDeepArr = (tree: any, deepArr: Array<number> = []) => {
   if (!Array.isArray(tree)) {
     return;
   }
-  // 遍历树中的每个节点
+  // Traverse each node in the tree
   for (const node of tree) {
-    // 为当前节点添加深度标识符
+    // Add a depth identifier to the current node
     if (isNumber(node.deep)) {
       deepArr.push(node.deep);
     }
@@ -96,7 +96,7 @@ export const handleDeepArr = (tree: any, deepArr: Array<number> = []) => {
   }
 };
 
-// 返回最大深度
+// Return to maximum depth
 export const maxDeep = (tree: any) => {
   if (!Array.isArray(tree) || tree.length === 0) {
     return 0;
@@ -112,7 +112,7 @@ interface DefaultNode {
   deep?: number;
 }
 
-// 默认子节点
+// Default sub-node
 export const defaultNode = ({
   isArray = false,
   iscChildren = false,
@@ -128,7 +128,7 @@ export const defaultNode = ({
   deep,
 });
 
-// 删除当前节点
+// Delete the current node
 export const deleteNode = (data: any, targetKey: string) => {
   for (let i = 0; i < data.length; i++) {
     if (data[i][ROWKEY] === targetKey) {
@@ -146,7 +146,7 @@ export const deleteNode = (data: any, targetKey: string) => {
   return false;
 };
 
-// 删除全部子节点
+// Delete all sub-nodes
 export const deleteAllChildNode = (data: any, targetKey: string) => {
   for (const item of data) {
     if (item[ROWKEY] === targetKey) {
@@ -169,7 +169,7 @@ interface UpdateNodeById {
   targetKey: string;
   field: string;
   value: any;
-  /** 数组的子节点是否需要继承父节点的字段值，当前只有可见性开关需要继承 */
+  /** Whether the sub-node of the array needs to inherit the field values of the parent node, currently only the visibility switch needs to inherit */
   inherit?: boolean;
 }
 
@@ -182,7 +182,7 @@ const updateNodeByVal = (data: any, field: any, val: any) => {
   }
 };
 
-// 更新节点信息
+// Update node information
 export const updateNodeById = ({
   data,
   targetKey,
@@ -216,19 +216,19 @@ export const updateNodeById = ({
   }
 };
 
-// 根据路径找对应模版值
+// Find the corresponding template value according to the path
 export const findTemplateNodeByPath = (
   dsl: any,
   path: Array<string | number>,
 ) => {
   let node = cloneDeep(dsl);
-  const newPath = [...path]; //创建新的路径，避免修改原路径
+  const newPath = [...path]; //Create a new path to avoid modifying the original path
   for (let i = 0; i < path.length; i++) {
-    // 如果存在节点，说明是源数据节点上增加子节点
+    // If there is a node, it means that a sub-node is added to the source data node.
     if (node[path[i]]) {
       node = node[path[i]];
     } else {
-      // 如果不存在，说明是新增的节点增加子节点，这时需要将路径指向原始节点（第一个节点）
+      // If it doesn't exist, it means that the newly added node adds a sub-node. At this time, you need to point the path to the original node (the first node).
       node = node[0];
       newPath[i] = 0;
     }
@@ -236,9 +236,9 @@ export const findTemplateNodeByPath = (
   return newPath;
 };
 
-// 树转换成对象
+// Converting trees to objects
 export const transformTreeToObj = (tree: any, checkType = true): any =>
-  // 树的每一层级表示一个对象的属性集
+  // Each level of the tree represents a set of properties of an object
 
   tree.reduce((acc: any, item: any) => {
     let arrTemp = [];
@@ -278,8 +278,8 @@ export const transformTreeToObj = (tree: any, checkType = true): any =>
         break;
       case ParameterType.Array:
         /**
-         * 如果是数组，需要过滤掉空的项（且数组的子项非object和array）
-         * 这里用temp接收过滤后的子项，避免直接修改原数组（因为原数组和页面数据绑定，不能直接删除空项）
+         * If it is an array, you need to filter out empty items (and the children of the array are not object and array).
+         * Here, use temp to receive the filtered sub-items to avoid directly modifying the original array (because the original array and page data are bound, empty items cannot be directly deleted)
          */
         arrTemp = item.sub_parameters;
         if (
@@ -296,21 +296,21 @@ export const transformTreeToObj = (tree: any, checkType = true): any =>
           break;
         }
         acc[item.name] = arrTemp.map((subItem: any) => {
-          // boolean类型匹配字符串true/false
+          // Boolean type matching string true/false
           if ([ParameterType.Bool].includes(subItem.type)) {
             return checkType ? subItem.value === 'true' : subItem.value;
           }
-          // 数字类型转为number
+          // Number type to number
           if (
             [ParameterType.Integer, ParameterType.Number].includes(subItem.type)
           ) {
             return checkType ? Number(subItem.value) : subItem.value;
           }
-          // 字符串类型直接返回（进到这里的已经是过滤完空值的数组）
+          // The string type is returned directly (the array entered here is already an array of filtered null values)
           if ([ParameterType.String].includes(subItem.type)) {
             return subItem.value;
           }
-          // 如果是对象，递归遍历
+          // If it is an object, recursive traversal
           if (subItem.type === ParameterType.Object) {
             return transformTreeToObj(subItem.sub_parameters, checkType);
           }
@@ -322,28 +322,28 @@ export const transformTreeToObj = (tree: any, checkType = true): any =>
     return acc;
   }, {});
 
-// 克隆节点，修改key及清空value
+// Clone the node, modify the key and clear the value
 export const cloneWithRandomKey = (obj: any) => {
-  // 创建新对象储存值
+  // Create a new object stored value
   const clone: any = {};
 
-  // 遍历原对象的所有属性
+  // Iterate through all properties of the original object
   for (const prop in obj) {
-    // 如果原对象的这个属性是一个对象，递归调用 cloneWithRandomKey 函数
+    // If this property of the original object is an object, recursively call the cloneWithRandomKey function
     if (obj[prop]?.constructor === Object) {
       clone[prop] = cloneWithRandomKey(obj[prop]);
     } else {
-      // 否则，直接复制这个属性
+      // Otherwise, copy this property directly
       clone[prop] = obj[prop];
     }
   }
 
-  // 如果这个对象有 sub_parameters 属性，需要遍历它
+  // If this object has sub_parameters properties, you need to iterate over it
   if ('sub_parameters' in clone) {
     clone.sub_parameters = clone.sub_parameters?.map(cloneWithRandomKey);
   }
 
-  // 生成一个新的随机 key
+  // Generate a new random key
   if (clone[ROWKEY]) {
     clone[ROWKEY] = nanoid();
   }
@@ -351,10 +351,10 @@ export const cloneWithRandomKey = (obj: any) => {
     clone.value = null;
   }
 
-  // 返回克隆的对象
+  // Returns the cloned object
   return clone;
 };
-// 判断参数是否显示删除按钮 先判断是否是根节点，根节点允许删除
+// To determine whether the parameter shows the delete button, first determine whether it is the root node, and the root node allows deletion.
 export const handleIsShowDelete = (
   data: any,
   targetKey: string | undefined,
@@ -366,7 +366,7 @@ export const handleIsShowDelete = (
   return isShowDelete(data, targetKey);
 };
 
-// 检查是否存在相同名称
+// Check if the same name exists
 export const checkSameName = (
   data: Array<APIParameter>,
   targetKey: string,
@@ -389,7 +389,7 @@ export const checkSameName = (
   }
 };
 
-// 检查是否有array类型（用来判断response是否需要操作列）
+// Check if there is an array type (used to determine whether the response requires an operation column)
 export const checkHasArray = (data: unknown) => {
   if (!Array.isArray(data)) {
     return false;
@@ -401,7 +401,7 @@ export const checkHasArray = (data: unknown) => {
       Array.isArray(item[childrenRecordName]) &&
       item[childrenRecordName].length > 0
     ) {
-      // 调整 循环退出时机
+      // Adjustment, loop exit timing
       if (checkHasArray(item[childrenRecordName])) {
         return true;
       }
@@ -410,7 +410,7 @@ export const checkHasArray = (data: unknown) => {
   return false;
 };
 
-// 判断参数是否显示删除按钮（object类型最后一个不允许删除）
+// Determine whether the parameter shows the delete button (the last one of the object type is not allowed to be deleted)
 export const isShowDelete = (data: any, targetKey: string | undefined) => {
   for (const item of data) {
     if (item[ROWKEY] === targetKey) {
@@ -433,14 +433,14 @@ export const sleep = (time: number) =>
     }, time);
   });
 
-// 该方法兼容chrome、Arch、Safari浏览器及iPad，增加兼容firefox
+// This method is compatible with Chrome, Arch, Safari and iPad, and is compatible with Firefox.
 export const scrollToErrorElement = (className: string) => {
   const errorElement = document.querySelector(className);
   if (errorElement) {
     if (typeof (errorElement as any).scrollIntoViewIfNeeded === 'function') {
       (errorElement as any).scrollIntoViewIfNeeded();
     } else {
-      // 兼容性处理，如 Firefox
+      // Compatibility handling, such as Firefox
       errorElement.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
@@ -470,7 +470,7 @@ export const initParamsDefault = (
     if (!obj[keyDefault]) {
       obj[keyDefault] = '';
     }
-    // bot非引用+必填+local默认值为空+不可见，是异常场景，需手动拨正
+    // bot non-reference + required + local default value is empty + invisible, it is an abnormal scene and needs to be manually dialed
     const isUnusual =
       obj.default_param_source === DefaultParamSource.Input &&
       keyDefault === 'local_default' &&
@@ -529,7 +529,7 @@ export const transformArrayToTree = (array, template: Array<APIParameter>) => {
 
 const createSubTree = (arrItem: any, tem: any) => {
   let subTree: APIParameter & { value?: unknown } = {};
-  // 数组
+  // array
   if (Array.isArray(arrItem)) {
     subTree = {
       ...tem,
@@ -593,7 +593,7 @@ export const transformParamsToTree = (params: Array<APIParameter>) => {
         result[i].sub_parameters = tree;
       }
     } else {
-      // 对象嵌数组有问题 被覆盖了 需要重置
+      // There is a problem with the object embedded array, it is overwritten and needs to be reset.
       result[i].sub_parameters = transformParamsToTree(
         result[i].sub_parameters || [],
       );
@@ -601,7 +601,7 @@ export const transformParamsToTree = (params: Array<APIParameter>) => {
   }
   return result;
 };
-// data 额外加工 / 如果本身没有 global_default === undefined 就设置 global_disable 也是 undefined，最后将所有的 global_default 设置成 undefined
+// Data extra processing/If there is no global_default === undefined, set global_disable is also undefined, and finally set all global_default to undefined
 export const doRemoveDefaultFromResponseParams = (
   data: APIParameter[],
   hasRequired = false,

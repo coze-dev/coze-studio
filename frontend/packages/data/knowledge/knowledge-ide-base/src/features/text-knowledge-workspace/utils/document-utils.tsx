@@ -35,7 +35,7 @@ import { type ProgressMap } from '@/types';
 const FINISH_PROGRESS = 100;
 
 /**
- * 创建基础文档块
+ * Create base document block
  */
 export const createBaseDocumentChunkBySliceInfo = (
   props: SliceInfo,
@@ -45,7 +45,7 @@ export const createBaseDocumentChunkBySliceInfo = (
 });
 
 /**
- * 创建层级文档块
+ * Create hierarchical document blocks
  */
 export const createLevelDocumentChunkByLevelSegment = (
   props: ILevelSegment,
@@ -57,7 +57,7 @@ export const createLevelDocumentChunkByLevelSegment = (
 });
 
 /**
- * 获取文档选项
+ * Get document options
  */
 export const getDocumentOptions = (
   documentList: DocumentInfo[],

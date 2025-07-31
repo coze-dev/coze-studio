@@ -88,7 +88,7 @@ export class MessageIndexHelper {
   };
 
   /**
-   * 执行 load 后更新 index prevHasMore 等数据
+   * Update index prevHasMore and other data after loading
    */
   public async updateIndexAndHasMoreAfterLoad(
     data: CommonLoadIndex,
@@ -105,7 +105,7 @@ export class MessageIndexHelper {
     updateOnlyDefined(updateIndex, {
       readIndex: data.read_message_index,
     });
-    // 基于校正过的 hasMore 进行 hasMore、cursor 更新
+    // Update hasMore and cursor based on corrected hasMore
     const hasMoreInfo = this.getHasMoreByDirection(data, loadDirection);
     updateOnlyDefined(updateHasMore, hasMoreInfo);
     const cursorInfo = this.getCursorByDirection(data, loadDirection);
@@ -127,17 +127,17 @@ export class MessageIndexHelper {
       nextHasMore,
     };
     if (prevHasMore && loadDirection === LoadDirection.Next) {
-      // load next 关你 prevHasMore 什么事
+      // Load next to you prevHasMore
       delete res.prevHasMore;
     }
     if (nextHasMore && loadDirection === LoadDirection.Prev) {
-      // load prev 关你 nextHasMore 什么事
+      // Load prev nextHasMore
       delete res.nextHasMore;
     }
     return res;
   }
 
-  /** 这里有个问题：load-eagerly 理应更新所有 cursor，但是 loadDirection 传参为 Prev */
+  /** Here's a problem: load-eagerly is supposed to update all cursors, but loadDirection is passed as Prev */
   public getCursorByDirection(
     data: Pick<GetHistoryMessageResponse, 'cursor' | 'next_cursor'>,
     loadDirection: LoadDirection,
@@ -153,8 +153,8 @@ export class MessageIndexHelper {
   }
 
   /**
-   * 通过发送请求校验一次 index 数据
-   * home 场景不需要通过 conversationId 过滤 store / debug 场景需要
+   * Verify index data once by sending a request
+   * Home Scene No need to store/debug by conversationId Filter Scene Yes
    */
   private async refreshIndexByRequest(conversationId: string | null) {
     const { requestMessageIndex, reporter, updateIndex } = this.envTools;

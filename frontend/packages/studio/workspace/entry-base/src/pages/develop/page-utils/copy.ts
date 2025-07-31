@@ -32,7 +32,7 @@ export const produceCopyIntelligenceData = ({
     basicInfo: IntelligenceBasicInfo;
   };
 }) => {
-  // 这是 fallback
+  // This is fallback
   const userInfo = getUserInfo();
   const userLabel = getUserLabel();
   return produce<IntelligenceData>(originTemplateData, draft => {

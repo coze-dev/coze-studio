@@ -53,12 +53,12 @@ export interface OptionItemProps {
   avatar: string | undefined;
   name: string | undefined;
   searchWords?: string[];
-  endPointName?: string; // 接入点名称（专业版有）
+  endPointName?: string; // Access point name (available in the professional version)
   showEndPointName?: boolean;
   className?: string;
   /**
    * @deprecated
-   * 原先只会有「限额」标签，M-5395720900 后会有大量新标签，避免兼容问题产品同意先简单隐藏掉标签展示
+   * Originally, there would only be "limit" labels. After M-5395720900, there will be a large number of new labels to avoid compatibility problems. The product agrees to simply hide the label display first.
    */
   tags?: OptionItemTag[];
 }
@@ -77,12 +77,12 @@ export const ModelOptionItem: React.FC<OptionItemProps> = ({
   const tags: OptionItemTag[] = [];
 
   const shouldShowEndPoint = showEndPointName && endPointName;
-  // 即将支持，敬请期待
+  // Support soon, so stay tuned.
   const displayName = FLAGS['bot.studio.model_select_switch_end_point_name_pos']
     ? endPointName || name
     : name;
 
-  // 即将支持，敬请期待
+  // Support soon, so stay tuned.
   const displayEndPointName = FLAGS[
     'bot.studio.model_select_switch_end_point_name_pos'
   ]

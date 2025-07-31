@@ -33,7 +33,7 @@ import { usePreference } from '../../context/preference-context';
 import styles from './index.module.less';
 
 /**
- * 分组容器
+ * Packet container
  * @see 
  */
 
@@ -47,7 +47,7 @@ interface IProps {
 
 export const GroupingContainer: FC<IProps> = props => {
   const { children, title, toolGroupKey, actionNodes, className } = props;
-  // 容器在页面中的展示位置，不同位置样式有区别
+  // The placement of the container on the page is different in different position styles
   const { placement } = useLayoutContext();
 
   const { isReadonly } = usePreference();

@@ -20,7 +20,7 @@ import { setterActionFactory } from '../../src/utils/setter-factory';
 
 describe('setterActionFactory', () => {
   it('应该创建一个增量更新函数', () => {
-    // 创建模拟的 set 函数
+    // Create a simulated set function
     const mockSet = vi.fn(updater => {
       if (typeof updater === 'function') {
         return updater({ a: 1, b: 2 });
@@ -28,37 +28,37 @@ describe('setterActionFactory', () => {
       return updater;
     });
 
-    // 创建 setter 函数
+    // Create a setter function
     const setter = setterActionFactory(mockSet);
 
-    // 调用 setter 进行增量更新
+    // Call setter for incremental update
     setter({ a: 3 });
 
-    // 验证 set 函数被调用
+    // Verify that the set function is called
     expect(mockSet).toHaveBeenCalled();
 
-    // 验证更新后的状态
+    // Verify the updated status
     const updater = mockSet.mock.calls[0][0];
     const result = updater({ a: 1, b: 2 });
     expect(result).toEqual({ a: 3, b: 2 });
   });
 
   it('应该创建一个全量更新函数', () => {
-    // 创建模拟的 set 函数
+    // Create a simulated set function
     const mockSet = vi.fn();
 
-    // 创建 setter 函数
+    // Create a setter function
     const setter = setterActionFactory(mockSet);
 
-    // 调用 setter 进行全量更新
+    // Call setter for full update
     setter({ a: 3 }, { replace: true });
 
-    // 验证 set 函数被调用，并且传入了正确的参数
+    // Verify that the set function is called and the correct parameters are passed in
     expect(mockSet).toHaveBeenCalledWith({ a: 3 });
   });
 
   it('应该处理空对象的增量更新', () => {
-    // 创建模拟的 set 函数
+    // Create a simulated set function
     const mockSet = vi.fn(updater => {
       if (typeof updater === 'function') {
         return updater({});
@@ -66,43 +66,43 @@ describe('setterActionFactory', () => {
       return updater;
     });
 
-    // 创建 setter 函数
+    // Create a setter function
     const setter = setterActionFactory(mockSet);
 
-    // 调用 setter 进行增量更新
+    // Call setter for incremental update
     setter({ a: 1 });
 
-    // 验证 set 函数被调用
+    // Verify that the set function is called
     expect(mockSet).toHaveBeenCalled();
 
-    // 验证更新后的状态
+    // Verify the updated status
     const updater = mockSet.mock.calls[0][0];
     const result = updater({});
     expect(result).toEqual({ a: 1 });
   });
 
   it('应该处理空对象的全量更新', () => {
-    // 创建模拟的 set 函数
+    // Create a simulated set function
     const mockSet = vi.fn();
 
-    // 创建 setter 函数
+    // Create a setter function
     const setter = setterActionFactory(mockSet);
 
-    // 调用 setter 进行全量更新
+    // Call setter for full update
     setter({}, { replace: true });
 
-    // 验证 set 函数被调用，并且传入了正确的参数
+    // Verify that the set function is called and the correct parameters are passed in
     expect(mockSet).toHaveBeenCalledWith({});
   });
 
   it('应该处理复杂对象的增量更新', () => {
-    // 创建一个复杂的初始状态
+    // Create a complex initial state
     const initialState = {
       user: { name: 'John', age: 30 },
       settings: { theme: 'dark', notifications: true },
     };
 
-    // 创建模拟的 set 函数
+    // Create a simulated set function
     const mockSet = vi.fn(updater => {
       if (typeof updater === 'function') {
         return updater(initialState);
@@ -110,22 +110,22 @@ describe('setterActionFactory', () => {
       return updater;
     });
 
-    // 创建 setter 函数
+    // Create a setter function
     const setter = setterActionFactory(mockSet);
 
-    // 调用 setter 进行增量更新
+    // Call setter for incremental update
     setter({
       user: { name: 'Jane', age: 25 },
     });
 
-    // 验证 set 函数被调用
+    // Verify that the set function is called
     expect(mockSet).toHaveBeenCalled();
 
-    // 验证更新后的状态
+    // Verify the updated status
     const updater = mockSet.mock.calls[0][0];
     const result = updater(initialState);
 
-    // 检查结果是否正确合并了对象
+    // Check if the result is correct and the objects are merged.
     expect(result).toEqual({
       user: { name: 'Jane', age: 25 },
       settings: { theme: 'dark', notifications: true },

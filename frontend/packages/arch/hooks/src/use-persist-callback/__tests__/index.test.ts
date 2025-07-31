@@ -18,7 +18,7 @@ import { act, renderHook, type RenderHookResult } from '@testing-library/react-h
 import { useState } from 'react';
 import usePersistCallback from '..';
 
-// 函数变化，但是地址不变
+// The function changes, but the address remains the same
 
 const TestHooks = () => {
   const [count, setCount] = useState(0);

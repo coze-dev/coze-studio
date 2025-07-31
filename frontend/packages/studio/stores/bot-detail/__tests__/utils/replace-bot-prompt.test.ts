@@ -30,20 +30,20 @@ describe('replacedBotPrompt', () => {
 
     expect(result).toHaveLength(3);
 
-    // 检查系统提示
+    // Check system prompt
     expect(result[0]).toEqual({
       prompt_type: PromptType.SYSTEM,
       data: '这是一个系统提示',
       record_id: '123456',
     });
 
-    // 检查用户前缀
+    // Check user prefix
     expect(result[1]).toEqual({
       prompt_type: PromptType.USERPREFIX,
       data: '',
     });
 
-    // 检查用户后缀
+    // Check user suffix
     expect(result[2]).toEqual({
       prompt_type: PromptType.USERSUFFIX,
       data: '',
@@ -60,20 +60,20 @@ describe('replacedBotPrompt', () => {
 
     expect(result).toHaveLength(3);
 
-    // 检查系统提示
+    // Check system prompt
     expect(result[0]).toEqual({
       prompt_type: PromptType.SYSTEM,
       data: '',
       record_id: '',
     });
 
-    // 检查用户前缀
+    // Check user prefix
     expect(result[1]).toEqual({
       prompt_type: PromptType.USERPREFIX,
       data: '',
     });
 
-    // 检查用户后缀
+    // Check user suffix
     expect(result[2]).toEqual({
       prompt_type: PromptType.USERSUFFIX,
       data: '',
@@ -89,7 +89,7 @@ describe('replacedBotPrompt', () => {
 
     expect(result).toHaveLength(3);
 
-    // 检查系统提示
+    // Check system prompt
     expect(result[0]).toEqual({
       prompt_type: PromptType.SYSTEM,
       data: '这是一个系统提示',

@@ -48,7 +48,7 @@ export class WorkflowShortcutsRegistry {
   @inject(CommandRegistry) protected commandRegistry: CommandRegistry;
   readonly shortcutsHandlers: ShorcutsHandler[] = [];
   addHandlers(...handlers: ShorcutsHandler[]): void {
-    // 注册 command
+    // Registration command
     handlers.forEach(handler => {
       this.commandRegistry.registerCommand(
         { id: handler.commandId },

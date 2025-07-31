@@ -58,8 +58,8 @@ import { WorkflowModalContent } from '../content';
 import { reporter } from '../../utils';
 import { ModalI18nKey, WORKFLOW_MODAL_I18N_KEY_MAP } from './use-i18n-text';
 /**
- * 返回流程弹窗的各部分组件, 内容,侧边,筛选组件, 拆分组件可用于不同布局
- * 本用于流程选择
+ * Return to the parts of the process pop-up window Components, content, sides, filter components, split components can be used for different layouts
+ * This is for process selection
  */
 // eslint-disable-next-line @coze-arch/max-line-per-function
 export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
@@ -102,7 +102,7 @@ export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
     [modalState],
   );
 
-  // 排序规则(流程数据源)
+  // Sorting rules (process data sources)
   const [orderBy, setOrderBy] = useState(OrderBy.UpdateTime);
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
@@ -162,7 +162,7 @@ export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
   const isBindDouyin = bindBizType === BindBizType.DouYinBot;
   const hideSidebar = hideSider || isBindDouyin;
 
-  /** 侧边栏组件 */
+  /** Sidebar Component */
   const sider = hideSidebar ? null : (
     <QueryClientProvider client={workflowQueryClient}>
       <WorkflowModalContext.Provider value={contextValue}>
@@ -171,7 +171,7 @@ export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
     </QueryClientProvider>
   );
 
-  /** 流程列表组件 */
+  /** process list component */
   const content = (
     <QueryClientProvider client={workflowQueryClient}>
       <WorkflowModalContext.Provider value={contextValue}>
@@ -215,7 +215,7 @@ export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
     </QueryClientProvider>
   );
 
-  /** 筛选组件 */
+  /** filter component */
   let filter = (
     <QueryClientProvider client={workflowQueryClient}>
       <WorkflowModalContext.Provider value={contextValue}>
@@ -228,7 +228,7 @@ export const useWorkflowModalParts = (props: WorkFlowModalModeProps) => {
     </QueryClientProvider>
   );
 
-  // 隐藏 sider 后，把 title 放到 filter 上边
+  // After hiding the sider, put the title on the filter
   if (hideSidebar && !isBindDouyin) {
     const title = I18n.t(
       WORKFLOW_MODAL_I18N_KEY_MAP[flowMode]?.[

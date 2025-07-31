@@ -47,23 +47,23 @@ const formatValue = (dValue: string | Date | Date[] | string[] | undefined) => {
 
   try {
     if (dValue instanceof Date) {
-      // 单个Date对象
+      // Single Date Object
       formattedValue = format(dValue, 'yyyy-MM-dd HH:mm:ss');
     } else if (Array.isArray(dValue)) {
-      // Date[] 或 string[]
+      // Date [] or string []
       formattedValue = dValue
         .map(item => {
           if (item instanceof Date) {
             return format(item, 'yyyy-MM-dd HH:mm:ss');
           } else if (typeof item === 'string') {
-            // 假设字符串为有效日期格式
+            // Assume string is in valid date format
             return format(new Date(item), 'yyyy-MM-dd HH:mm:ss');
           }
           return '';
         })
-        .join(', '); // 使用逗号分隔不同的日期
+        .join(', '); // Use commas to separate different dates
     } else if (typeof dValue === 'string') {
-      // 单个字符串
+      // Single string
       formattedValue = format(new Date(dValue), 'yyyy-MM-dd HH:mm:ss');
     }
   } catch {

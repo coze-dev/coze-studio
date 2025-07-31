@@ -57,7 +57,7 @@ export interface FrownUponUIProps extends FrownUponProps {
   isMobile: boolean;
 }
 
-// 点踩按钮
+// Click the button
 export const FrownUpon: React.FC<PropsWithChildren<FrownUponProps>> = ({
   onClick,
   isFrownUponPanelVisible,
@@ -81,7 +81,7 @@ export const FrownUpon: React.FC<PropsWithChildren<FrownUponProps>> = ({
           : [MessageFeedbackDetailType.UnlikeDefault],
       },
     }).then(() => {
-      // 接口调用后再切换展示状态
+      // Switch the display state after the interface is called.
       onClick?.();
     });
   };
@@ -108,7 +108,7 @@ export const FrownUponUI: React.FC<FrownUponUIProps> = ({
 }) => {
   const toolTipWrapperRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(toolTipWrapperRef);
-  // 解决点踩填写原因面板展开收起过程中，点踩按钮的tooltip展示错乱问题
+  // Solve the problem that the tooltip display of the click button is disordered during the process of clicking and filling in the reason panel.
   useDispatchMouseLeave(toolTipWrapperRef, isFrownUponPanelVisible);
   return (
     <div style={{ position: 'relative' }} ref={toolTipWrapperRef}>
@@ -172,7 +172,7 @@ export interface FrownUponPanelUIProps {
   wrapReasons: boolean | undefined;
   style?: CSSProperties;
 }
-// 点踩填写原因面板
+// Click to fill in the reason panel
 export const FrownUponPanel: React.FC<
   PropsWithChildren<FrownUponPanelProps>
 > = ({ containerStyle, onCancel, onSubmit, wrapReasons }) => {
@@ -191,7 +191,7 @@ export const FrownUponPanel: React.FC<
           : undefined,
       },
     }).then(() => {
-      // 接口调用后再切换展示状态
+      // Switch the display state after the interface is called.
       onSubmit?.();
     });
   };

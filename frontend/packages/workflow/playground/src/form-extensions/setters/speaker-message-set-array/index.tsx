@@ -65,7 +65,7 @@ export const speakerMessageSetArray: any = {
       )
       .refine(
         val => {
-          // 如果没有 biz_role_id ，说明是nickname variable，不做校验
+          // If there is no biz_role_id, it means it is a nickname variable, no verification is done
           if (!val?.biz_role_id) {
             return true;
           }
@@ -73,12 +73,12 @@ export const speakerMessageSetArray: any = {
             role => role.biz_role_id === val?.biz_role_id,
           );
 
-          // 如果没找到对应的角色，说明已经被删除，角色已失效
+          // If the corresponding role is not found, it means that it has been deleted and the role has expired
           if (!existRole) {
             return false;
           }
 
-          // 如果没有nickname，说明原角色变成了空位角色，这里提示已失效
+          // If there is no nickname, it means that the original character has become an empty character, and the prompt here has expired
           if (val?.nickname && !existRole.nickname) {
             return false;
           }

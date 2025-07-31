@@ -103,7 +103,7 @@ export const fixedMiddlePoint = (
   };
 };
 
-// 寻找距离指定点，最近元素及点位
+// Find the specified point, the nearest element, and the point
 export const findLatestObject = (
   otherPoints: Snap.ObjectPointsWithMiddle[],
   targets: number[],
@@ -146,10 +146,10 @@ export const getLatestSnapRs = (
   const sortedSnapRs = snapRsFilterEmpty.sort(
     (a, b) => a.snapDistance - b.snapDistance,
   );
-  // 找到最近的距离
+  // Find the nearest distance
   const latestSnapRs = sortedSnapRs[0];
 
-  // 找到最近的距离的 helplines，最近的距离可能有多个，要把 helplines 合并
+  // Find the helplines with the closest distance, there may be multiple closest distances, and merge the helplines.
   const helplinesRs = snapRsFilterEmpty
     .filter(rs => numberEqual(rs.snapDistance, latestSnapRs.snapDistance))
     .map(rs => rs.helplines)

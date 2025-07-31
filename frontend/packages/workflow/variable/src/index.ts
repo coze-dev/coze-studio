@@ -17,7 +17,7 @@
 /* eslint-disable @coze-arch/no-batch-import-or-export */
 export { FlowNodeVariableData } from '@flowgram-adapter/free-layout-editor';
 export * from './hooks';
-// 老变量引擎代码，等待替换中。。。
+// Old variable engine code, waiting to be replaced.........
 export * from './legacy';
 export * from './typings';
 export * from './core';

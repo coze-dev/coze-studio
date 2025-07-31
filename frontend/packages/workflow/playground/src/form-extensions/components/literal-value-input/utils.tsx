@@ -45,8 +45,8 @@ const uriMap: Record<
 };
 
 /**
- * 生成一个随机的 json 文件 uri
- * @param schemaUri jsonSchema 的唯一标识
+ * Generate a random JSON file URI
+ * @param schemaUri jsonSchema unique identifier
  * @returns
  */
 export const generateJsonFileUri = (schemaUri: string) =>

@@ -16,8 +16,8 @@
  
 import { getFlags } from '@coze-arch/bot-flags';
 /**
- * 校验是否可以封装
- * @returns 是否可以封装
+ * Verify whether it can be encapsulated
+ * Can @returns be encapsulated?
  */
 export function checkEncapsulateGray() {
   const FLAGS = getFlags();

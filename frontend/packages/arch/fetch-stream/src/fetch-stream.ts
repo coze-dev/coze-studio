@@ -32,7 +32,7 @@ import {
 } from './utils';
 import { type FetchSteamConfig } from './type';
 
-/** 发起流式消息拉取的请求 */
+/** Initiate a request for a streaming message pull */
 export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
   requestInfo: RequestInfo,
   {
@@ -79,11 +79,11 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     let betweenChunkTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * clear 时机
-     * 所有异常退出
-     * create 函数 return
-     * readStream 结束
-     * abortSignal 触发
+     * Clear time
+     * All abnormal exits
+     * Create function return
+     * readStream ends
+     * abortSignal trigger
      */
     const clearTotalFetchTimer = () => {
       if (!totalFetchTimer) {
@@ -94,8 +94,8 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     };
 
     /**
-     * set 时机
-     * fetch 之间 set 一次, 只此一次
+     * Set the timing
+     * Fetch set once, only once
      */
     const setTotalFetchTimer = () => {
       if (totalFetchTimeout && onTotalFetchTimeout) {
@@ -107,11 +107,11 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     };
 
     /**
-     * clear 时机
-     * readStream 异常退出
-     * readStream 结束
-     * 收到了新 chunk
-     * abortSignal 触发
+     * Clear time
+     * readStream exits abnormally
+     * readStream ends
+     * Got a new chunk
+     * abortSignal trigger
      */
     const clearBetweenChunkTimer = () => {
       if (!betweenChunkTimer) {
@@ -122,9 +122,9 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     };
 
     /**
-     * set 时机
-     * readStream 之前 set 一次
-     * 每次收到 chunk 并执行了 clearBetweenChunkTimer 时 set 一次
+     * Set the timing
+     * readStream is set once before
+     * Set every time a chunk is received and clearBetweenChunkTimer executed
      */
     const setBetweenChunkTimer = () => {
       if (betweenChunkTimeout && onBetweenChunkTimeout) {
@@ -136,7 +136,7 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     };
 
     signal?.addEventListener('abort', () => {
-      // 此处 abort 后下方 readableStream 与 writableStream 都会停止
+      // After aborting here, both the readableStream and writableStream below will stop.
       clearTotalFetchTimer();
       clearBetweenChunkTimer();
       resolve();
@@ -160,13 +160,13 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
         return response;
       } catch (error) {
         /**
-         * 这里会被 catch 的错误
-         * fetch 服务端返回异常
-         * js error，例如被 onStart 抛出的
-         * fetch 过程中 signal 被 abort
+         * Mistakes that will be caught here
+         * Fetch server level returned exception
+         * Js error, such as thrown by onStart
+         * The signal was aborted during fetching
          */
 
-        // 被 abort 不认为是异常，不调用 onError
+        // Being aborted is not considered an exception, and onError is not called.
         if (isAbortError(error)) {
           return;
         }
@@ -214,11 +214,11 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
             //
             validateChunk(decodedChunk);
 
-            // 上方 start 会在 TransformStream 被构建的同时执行，所以此处执行时能取到 parser
+            // The above start will be executed at the same time as the TransformStream is built, so the parser can be fetched when executed here.
             parser.feed(decodedChunk);
           } catch (chunkError) {
-            // 处理 validateChunk 抛出的业务错误
-            // 服务端不会流式返回业务错误，错误结构：{ msg: 'xxx', code: 123456 }
+            // Handling business errors thrown by validateChunk
+            // The server level does not stream back business errors. Error structure: {msg: 'xxx', code: 123456}
             controller.error(chunkError);
           }
         },
@@ -226,14 +226,14 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
 
       const streamWriter = new WritableStream<Message>({
         async write(chunk, controller) {
-          // 写消息异步化 避免回调中的错误 panic 管道流
+          // Write messages asynchronously to avoid false panic pipeline flow in callbacks
           await Promise.resolve();
           const param = { message: chunk, dataClump };
           const validateResult = validateMessage?.(param);
 
           if (validateResult && validateResult.status === 'error') {
             /**
-             * 会中断 WritableStream, 即使还有数据也会被中断, 不会再写了
+             * WritableStream will be interrupted, even if there is still data, it will not be written again
              */
             throw validateResult.error;
           }
@@ -262,14 +262,14 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
         resolve();
       } catch (streamError) {
         /**
-         * 这里会被 catch 的错误
-         * 流式返回中服务端异常
+         * Mistakes that will be caught here
+         * Exception at server level in streaming return
          * js error
-         * 流式返回过程中被 signal 被 abort
-         * 上方 onParseErrorFn 被调用
+         * The signal was aborted during streaming return
+         * The above onParseErrorFn is called
          */
 
-        // 被 abort 不认为是异常，不调用 onError
+        // Being aborted is not considered an exception, and onError is not called.
         if (isAbortError(streamError)) {
           return;
         }
@@ -287,7 +287,7 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
     async function create(): Promise<void> {
       const response = await fetchAndVerifyResponse();
       const body = response?.body;
-      // response 不合法与没有 body 的错误在上方 onStart 中处理过
+      // The response invalid and no body errors are handled in onStart above
       if (!body) {
         clearTotalFetchTimer();
         return;

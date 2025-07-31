@@ -30,7 +30,7 @@ const getTestDataByTestset = (testsetData?: CaseDataDetail) => {
   let nodeData: Record<string, unknown> | undefined;
 
   dataArray.forEach(data => {
-    /** 特殊虚拟节点 */
+    /** Special Virtual Node */
     if (data?.component_type === ComponentType.CozeVariableBot) {
       botData = data.inputs?.[0]?.value;
     } else if (data?.component_type === ComponentType.CozeVariableChat) {

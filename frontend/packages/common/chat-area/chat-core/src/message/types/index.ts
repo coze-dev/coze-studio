@@ -27,20 +27,20 @@ import { type Scene } from '../../chat-sdk/types/interface';
 
 type JSONstring<T = object> = T extends object ? string : never;
 
-/** follow copilot 定义的枚举 */
+/** Enumeration following copilot definition */
 export enum ChatMessageMetaType {
   /** Compatible value */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Default_0,
-  /** 端侧直接替换 */
+  /** End-to-side direct replacement */
   Replaceable,
-  /** 插入引用 */
+  /** insert reference */
   Insertable,
-  /** 文档引用 */
+  /** document citation */
   DocumentRef,
-  /** 知识库引用卡片 */
+  /** Knowledge Base Reference Card */
   KnowledgeCard,
-  /** 嵌入的多媒体信息，只是alice给端上用的，因为全链路复用这一个字段，所以在这儿改了 */
+  /** The embedded multimedia information is only used by Alice for the end. Because full link multiplexing uses this field, it has been changed here. */
   EmbeddedMultimedia = 100,
 }
 
@@ -49,7 +49,7 @@ export interface ChatMessageMetaInfo {
   info?: JSONstring;
 }
 
-// 服务端返回的chunk
+// Server level returned chunks
 export interface ChunkRaw {
   index: number;
   seq_id: number;
@@ -58,85 +58,85 @@ export interface ChunkRaw {
 }
 
 export interface MessageExtraInfo {
-  local_message_id: string; // 前端消息 id, 用于预发送消息体更新
-  input_tokens: string; // 用户 query 消耗的 token
-  output_tokens: string; // llm 输出消耗的 token
-  token: string; // 总的 token 消耗
+  local_message_id: string; // Front-end message id, used to pre-send message body updates
+  input_tokens: string; // User query consumed token
+  output_tokens: string; // LLM output consumed token
+  token: string; // Total token consumption
   plugin_status: string; // "0" === success or "1" === fail
-  time_cost: string; // 中间调用过程的时间
+  time_cost: string; // Intermediate invocation time of procedure
   workflow_tokens: string;
   bot_state: string; // {   bot_id?: string;agent_id?: string;agent_name?: string; }
-  plugin_request: string; // plugin 请求的参数
-  tool_name: string; // 调用的 plugin 下具体的 api 名称
-  plugin: string; // 调用的 plugin 名称
-  log_id?: string; // chat 的 logId
-  mock_hit_info?: string; // plugin 命中 mockset 信息
-  execute_display_name: string; // 展示名称
-  /** 流式plugin返回的用于替换tool response内容的标识，普通plugin没有 */
+  plugin_request: string; // Parameters of the plugin request
+  tool_name: string; // Specific API name under the invoked plugin
+  plugin: string; // Name of the plugin invoked
+  log_id?: string; // Chat logId
+  mock_hit_info?: string; // Plugin hit mockset info
+  execute_display_name: string; // display name
+  /** The identifier returned by the streaming plugin to replace the tool response content, which is not available in the normal plugin */
   stream_plugin_running?: string;
-  /** 目前仅有中间消息返回*/
+  /** Currently only intermediate messages are returned.*/
   message_title?: string;
-  remove_query_id?: string; // 有此字段代表触发擦除用户 qeury 安全策略, 值为需要擦出的用户消息的 message_id
-  new_section_id?: string; // 有此字段代表触发清除上下文安全策略
-  /** 对应定时任务task_type，1-预设任务，2-用户任务，3-Plugin后台任务 */
+  remove_query_id?: string; // This field represents the trigger to erase the user qeury security policy, and the value is the message_id of the user message that needs to be erased
+  new_section_id?: string; // This field represents the trigger to clear the context security policy
+  /** Corresponding to timed task task_type, 1-preset task, 2-user task, 3-Plugin background task */
   task_type?: string;
-  call_id?: string; // function_call和tool_response匹配的id
+  call_id?: string; // function_call and tool_response matching IDs
 }
 
-// 服务端返回的原始Message结构
+// Message structure returned by server level
 export interface MessageRaw {
-  role: MessageInfoRole; // 信息发出方的角色
-  type: MessageType; // 主要用于区分role=assistant的bot返回信息类型
+  role: MessageInfoRole; // The role of the sender of the message
+  type: MessageType; // Mainly used to distinguish the type of bot return information for role = assistant
   section_id: string;
   content_type: ContentType;
   content: string;
   reasoning_content?: string;
-  content_time?: number; // 消息发送时间，服务端是 Int64，接口拿到需要转一下
-  user?: string; // 用户唯一标识
+  content_time?: number; // Message sending time, server level is Int64, you need to transfer it when you get the interface.
+  user?: string; // user unique identity
   /**
-   * 仅拉取历史返回
+   * Pull history only
    */
   message_status?: MessageStatus;
-  message_id: string; // 后端消息 id, 可能有多条回复
-  reply_id: string; // 回复 id，query的messageId
-  broken_pos?: number; // 打断位置,仅对type = 'answer'生效
-  /** 拉流 ack 有, 后续没有 */
+  message_id: string; // Backend message id, there may be multiple replies
+  reply_id: string; // Reply id, query messageId
+  broken_pos?: number; // Interrupt position, only valid for type = 'answer'
+  /** LaLiu ack has it, no follow-up */
   mention_list?: MessageMentionListFields['mention_list'];
-  /** 发送者 id */
+  /** Sender ID */
   sender_id?: string;
   extra_info: MessageExtraInfo;
   source?: MessageSource;
   reply_message?: Message<ContentType>;
   meta_infos?: Array<ChatMessageMetaInfo>;
-  /** 中断消息服务端透传中台的参数，获取中断场景、续聊id */
+  /** Interrupt message server level pass through the parameters of the middle station, get the interrupt scene, continue chat id */
   required_action?: RequiredAction;
-  /** 卡片状态 */
+  /** Card Status */
   card_status?: Record<string, string>;
 }
 
 export const messageSource = {
-  /** 普通聊天消息 */
+  /** normal chat message */
   Chat: 0,
-  /** 定时任务 */
+  /** timed task */
   TaskManualTrigger: 1,
-  /** 通知 */
+  /** notify */
   Notice: 2,
-  /** 异步结果 */
+  /** asynchronous result */
   AsyncResult: 3,
 } as const;
 
 export const taskType = {
-  /** 预设任务 */
+  /** preset task */
   PresetTask: '1',
-  /** 用户任务 */
+  /** user task */
   CreatedByUserTask: '2',
-  /** Plugin 后台任务 */
+  /** Plugin background task */
   PluginTask: '3',
 } as const;
 
 export type MessageSource = (typeof messageSource)[keyof typeof messageSource];
 
-// 经过Processor处理后的chunk
+// Processor processed chunks
 export interface Chunk<T extends ContentType> {
   index: number;
   seq_id: number;
@@ -144,45 +144,45 @@ export interface Chunk<T extends ContentType> {
   message: Message<T>;
 }
 
-// 经过Processor处理后的Message
+// Message processed by Processor
 export type Message<T extends ContentType, V = unknown> = MessageRaw &
   MessageMentionListFields & {
     bot_id?: string;
     preset_bot?: string;
-    index?: number; // 临时状态，message在一次 response 的排序
-    is_finish?: boolean; // 临时状态，标识消息是否拉取完成
+    index?: number; // Temporary state, ordering of messages in a response
+    is_finish?: boolean; // Temporary state that identifies whether the message has been pulled
     /**
-     * content 经过反序列化
+     * Content is deserialized
      */
     content_obj: MessageContent<T, V>;
     /**
-     * sdk开启了enableDebug模式，每条回复消息新增debug_messages字段，包含channel 吐出的所有 chunk消息
+     * SDK has enabled the enableDebug mode, and each reply message adds debug_messages field, including all chunk messages spit out by the channel
      */
     debug_messages?: ChunkRaw[];
     stream_chunk_buffer?: ChunkRaw[];
     stream_message_buffer?: Message<ContentType>[];
     /**
-     * 旧接口未必有该字段；仅 query、answer、notice 等常见显示类型会进行计数。
-     * - int64 类型，计数从 "1" 开始。
-     * - 尽管我不认为单聊会有超过 Number.MAX_SAFE_INTEGER 的数值，但是还是用了 big-integer 库来进行处理。
-     * - 不刷旧数据，因此 ① 旧数据 ② 非常规消息 的值取 "0"
+     * Older interfaces may not have this field; only common display types such as query, answer, notice, etc. are counted.
+     * - int64 type, counting starts at "1".
+     * - Although I don't think there will be more than Number. MAX_SAFE_INTEGER alone, I still use the big-integer library to handle it.
+     * - Do not brush old data, so ① old data ② unconventional messages, the value is "0"
      */
     message_index?: string;
     /**
-     * 仅预发送消息返回
+     * Pre-send message return only
      */
-    file_upload_result?: 'success' | 'fail'; // 文件上传状态
+    file_upload_result?: 'success' | 'fail'; // file upload status
     /**
-     * 本地消息状态, 仅预发送消息返回
+     * Local message status, only pre-sent messages are returned
      */
     local_message_status?: LocalMessageStatus;
     /**
-     * 仅即使消息返回，拉取历史消息无
+     * Only if the message returns, pull chat history None
      */
-    logId?: string; // chat 的 logId
+    logId?: string; // Chat logId
   };
 
-// 发送给服务端的消息结构
+// The structure of the message sent to the server
 export interface SendMessage
   extends MessageMentionListFields,
     ResumeMessage,
@@ -194,21 +194,21 @@ export interface SendMessage
   user?: string;
   query: string;
   extra: Record<string, string>;
-  draft_mode?: boolean; // 草稿bot or 线上bot
-  content_type?: string; // 文件 file 图片 image 等
-  regen_message_id?: string; // 重试消息id
-  local_message_id: string; // 前端本地的message_id 在extra_info 里面透传返回
-  chat_history?: Message<ContentType>[]; // 指定聊天上下文, 服务端不落库
+  draft_mode?: boolean; // Draft bot or online bot
+  content_type?: string; // Files files pictures images etc
+  regen_message_id?: string; // Retry message id
+  local_message_id: string; // The local message_id on the front end is passed back in the extra_info
+  chat_history?: Message<ContentType>[]; // Specify the chat context, server level does not drop library
 }
-// 发送给服务端的resume结构体，chat类型本身有缺失，本期只补充resume相关
+// The resume structure sent to the server, the chat type itself is missing, and this issue only supplements resume-related
 export interface ResumeMessage {
   conversation_id: string;
-  scene?: Scene; // 场景值
-  resume_message_id?: string; // 续聊场景服务端所需id，即reply_id
-  interrupt_message_id?: string; // 中断的verbose消息id
+  scene?: Scene; // scene value
+  resume_message_id?: string; // Continue chatting with the ID required for the scene server level, which is reply_id
+  interrupt_message_id?: string; // Interrupted verbose message id
   tool_outputs?: {
-    tool_call_id?: string; // 透传中断verbose消息中的tool_call.id
-    output?: string; // 地理位置授权场景传经纬度
+    tool_call_id?: string; // Password interrupt tool_call.id in verbose messages
+    output?: string; // Geographical location authorization scene transmission longitude and latitude
   }[];
 }
 
@@ -333,7 +333,7 @@ export interface MessageExtProps {
 }
 
 export interface MessageMentionListFields {
-  /** \@bot 功能，在输入时提及的 bot id */
+  /** \ @bot function, the bot id mentioned when entering */
   mention_list: { id: string }[];
 }
 
@@ -426,11 +426,11 @@ export interface SendMessageOptions {
   betweenChunkTimeout?: number;
   stream?: boolean;
   chatHistory?: Message<ContentType>[];
-  // 参数会透传给 chat 接口
+  // Parameters will be passed through to the chat interface
   extendFiled?: Record<string, unknown>;
-  // 透传的header
+  // Password header
   headers?: HeadersInit;
-  // 是否为重新生成消息, 默认false
+  // Whether to regenerate the message, the default is false
   isRegenMessage?: boolean;
 }
 
@@ -444,28 +444,28 @@ export interface CreateMessageOptions {
 }
 
 export enum VerboseMsgType {
-  /** 跳转节点 */
+  /** jump node */
   JUMP_TO = 'multi_agents_jump_to_agent',
-  /** 回溯节点 */
+  /** backtracking node */
   BACK_WORD = 'multi_agents_backwards',
-  /** 长期记忆节点 */
+  /** long-term memory node */
   LONG_TERM_MEMORY = 'time_capsule_recall',
   /** finish answer*/
   GENERATE_ANSWER_FINISH = 'generate_answer_finish',
-  /** 流式插件调用状态 */
+  /** Streaming plugin call status */
   STREAM_PLUGIN_FINISH = 'stream_plugin_finish',
-  /** 知识库召回 */
+  /** knowledge base recall */
   KNOWLEDGE_RECALL = 'knowledge_recall',
-  /** 中断消息：目前用于地理位置授权 / workflow question 待回复 */
+  /** Interrupt message: Currently used for geolocation authorization/workflow question pending reply */
   INTERRUPT = 'interrupt',
-  /** hooks调用 */
+  /** Hooks call */
   HOOK_CALL = 'hook_call',
 }
 
 export enum InterruptToolCallsType {
-  FunctionType = 'function', // tool 结果上报
-  RequireInfoType = 'require_info', // 需要信息，如地理位置
-  ReplyMessage = 'reply_message', // question 节点
+  FunctionType = 'function', // Tool result reporting
+  RequireInfoType = 'require_info', // Required information, such as geographical location
+  ReplyMessage = 'reply_message', // Question Node
 }
 
 export interface VerboseContent {
@@ -474,9 +474,9 @@ export interface VerboseContent {
 }
 
 export enum FinishReasonType {
-  /** 正常回答全部结束 */
+  /** Normal answer all over */
   ALL_FINISH = 0,
-  /** 中断结束 */
+  /** end of interrupt */
   INTERRUPT = 1,
 }
 

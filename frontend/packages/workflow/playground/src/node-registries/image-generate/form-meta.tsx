@@ -34,13 +34,13 @@ import { type FormData } from './types';
 import { FormRender } from './form';
 
 export const IMAGE_GENERATE_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <FormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
     ['inputs.modelSetting.model']: ({ value, formValues }) => {
@@ -51,13 +51,13 @@ export const IMAGE_GENERATE_FORM_META: FormMetaV2<FormData> = {
         6: [6, 7],
       };
 
-      // 获取references字段
+      // Get references field
       const references = formValues?.inputs?.references || [];
 
-      // 获取value对应的无效preprocessor值数组
+      // Gets an array of invalid preprocessor values corresponding to the value
       const invalidValues = invalidPreprocessors[value] || [];
 
-      // 检查references中的preprocessor是否包含无效值
+      // Check if the preprocessor in the references contains invalid values
       for (const reference of references) {
         if (invalidValues.includes(reference?.preprocessor)) {
           return I18n.t('Imageflow_not_support');
@@ -71,13 +71,13 @@ export const IMAGE_GENERATE_FORM_META: FormMetaV2<FormData> = {
     },
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 默认值
+  // default value
   defaultValues: () => ({
     inputs: {
       modelSetting: {

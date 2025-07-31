@@ -56,7 +56,7 @@ export const TableSelectAllPopover: FC<
       >
         {I18n.t('publish_permission_control_page_remove_choose_all')}
       </Checkbox>
-      {/* 确保全选和右侧区域有一个最小间隔 */}
+      {/* Make sure there is a minimum interval between Select All and the right area */}
       <div className="flex-1 min-w-[40px]" />
       {renderCount ? (
         <div>

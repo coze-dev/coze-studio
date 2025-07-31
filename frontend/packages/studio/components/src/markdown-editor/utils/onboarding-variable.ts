@@ -31,11 +31,11 @@ export const matchAllTemplateRanges = (
   text: string,
   template: string,
 ): { start: number; end: number }[] => {
-  // 正则表达式，用于匹配双花括号内的内容
+  // Regular expressions to match the contents of double curly braces
   const templateRegex = new RegExp(getFixedVariableTemplate(template), 'g');
   const matches: { start: number; end: number }[] = [];
 
-  // 循环查找所有匹配项
+  // Loop through all matches
   while (true) {
     const match = templateRegex.exec(text);
 

@@ -21,78 +21,78 @@ import { type ScreenRange } from '@coze-arch/responsive-kit';
 
 export interface TRouteConfigGlobal {
   /**
-   * 展示小助手
+   * display assistant
    * @default true
-   * @import 开源版不支持该字段
+   * @Import open source version does not support this field
    */
   showAssistant?: boolean;
   /**
-   * 展示小助手引导提示
+   * Show assistant guide prompt
    * @default false
-   * @import 开源版不支持该字段
+   * @Import open source version does not support this field
    */
   showAssistantGuideTip?: boolean;
   /**
-   * 当企业ID发生变化时的回调函数。
-   * @import 开源版不支持该字段
-   * @param enterpriseId - 变化后的企业ID。
-   * @param params - 包含导航函数和当前路径名的对象。
+   * Callback function when the enterprise ID changes.
+   * @Import open source version does not support this field
+   * @Param enterpriseId - Changed enterprise ID.
+   * @Param params - An object containing the navigation function and the current pathname.
    */
   onEnterpriseChange?: (
     enterpriseId: string,
     params: {
-      navigate: NavigateFunction; // 导航函数，用于路由跳转。
-      pathname: string; // 当前路径名，用于构建新的路径。
+      navigate: NavigateFunction; // Navigation function for routing jumps.
+      pathname: string; // The current path name is used to build a new path.
     },
   ) => void;
   /**
-   * 是否展示侧边栏
+   * Whether to display the sidebar
    * @default false
    */
   hasSider?: boolean;
   /**
-   * 展示移动端不适配提示文案
+   * Display mobile end does not fit prompt copy
    * @default false
    */
   showMobileTips?: boolean;
   /**
-   * 是否需要身份验证
+   * Is authentication required?
    * @default false
    */
   requireAuth?: boolean;
   /**
-   * 登录失效时的回退地址
+   * The fallback address when the login fails
    * @default /sign
    */
   loginFallbackPath?: string;
   /**
    * @deprecated
-   * 是否允许身份验证为可选
+   * Whether to allow authentication is optional
    * @default false
    */
   requireAuthOptional?: boolean;
   /**
-   * 设置为 true 时自动应用缺省值 { rangeMax: ScreenRange.LG, include: false } 对应之前绝大多数支持响应式路由的配置
+   * The default value {rangeMax: ScreenRange. LG, include: false} is automatically applied when set to true for most previous configurations that support responsive routing
    * @default false
    */
   responsive?: { rangeMax: ScreenRange; include?: boolean } | true;
   /**
-   * 子菜单组件
+   * submenu component
    * @default undefined
    */
   subMenu?: FC<Record<string, never>>;
   /**
-   * 一级导航菜单项 key
+   * Primary navigation menu item key
    * @default undefined
    */
   menuKey?: string;
   /**
-   * 二级导航菜单项 key
+   * Secondary navigation menu item key
    * @default undefined
    */
   subMenuKey?: string;
   /**
-   * 控制是否根据 query 中的 page_mode 字段判断页面模式: 默认侧边导航模式 or 全屏popover模式
+   * Controls whether page mode is determined based on page_mode fields in the query: default side navigation mode or full screen popover mode
    * @default false
    */
   pageModeByQuery?: boolean;
@@ -102,7 +102,7 @@ export const useRouteConfig = <
   TConfig extends TRouteConfigGlobal = TRouteConfigGlobal,
 >(
   defaults?: TConfig,
-  // 强制所有字段可能为空
+  // Force all fields to be empty
 ): Partial<TConfig> => {
   const matches = useMatches();
 

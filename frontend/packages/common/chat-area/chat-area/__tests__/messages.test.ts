@@ -161,8 +161,8 @@ const testUserMessage: TextMessage = {
     plugin: '',
     execute_display_name: '',
   },
-  /** 正常、打断状态 拉消息列表时使用，chat运行时没有这个字段 */
-  /** 打断位置 */
+  /** Normal, interrupted state, used when pulling the message list, this field is not available when chat is running. */
+  /** interrupt position */
   broken_pos: 9999999,
   sender_id: '',
   mention_list: [],
@@ -225,8 +225,8 @@ const randomTestMessageList: Message<ContentType>[] = Mock.mock({
         tool_name: '@string',
         plugin: '@string',
       },
-      /** 正常、打断状态 拉消息列表时使用，chat运行时没有这个字段 */
-      /** 打断位置 */
+      /** Normal, interrupted state, used when pulling the message list, this field is not available when chat is running. */
+      /** interrupt position */
       broken_pos: 9999999,
       sender_id: '77777',
       mention_list: [],

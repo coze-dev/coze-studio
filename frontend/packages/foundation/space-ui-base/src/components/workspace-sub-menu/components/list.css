@@ -1,4 +1,4 @@
-/* 定义滚动条默认隐藏样式 styled-scrollbar-hidden */
+/* Define the scrollbar default hidden style styled-scrollbar-hidden */
 .styled-scrollbar-hidden {
   scrollbar-width: none; /* Firefox */
 
@@ -44,7 +44,7 @@
 
 .list-bottom-mask::after,
 .list-top-mask::before {
-  pointer-events: none; /* 确保伪元素不阻挡用户交互 */
+  pointer-events: none; /* Make sure that pseudo-elements do not block user interaction */
   content: '';
 
   position: absolute;

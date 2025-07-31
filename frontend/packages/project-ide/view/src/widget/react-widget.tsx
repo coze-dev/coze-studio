@@ -35,8 +35,8 @@ export abstract class ReactWidget extends AbstractWidget {
   uri?: URI;
 
   /**
-   * 容器 widget
-   * 该属性只会在子面板内存在。方便通过父容器访问属性。
+   * Container widget
+   * This property only exists in the child panel. It is convenient to access the property through the parent container.
    */
   wrapperWidget?: ReactWidget;
 
@@ -71,8 +71,8 @@ export abstract class ReactWidget extends AbstractWidget {
 
   /**
    *
-   * @param uri 初始化的 uri
-   * @param childContainer view props 传入 widget 属性的时候才会有 childContainer
+   * @Param uri Initialized uri
+   * @param childContainer view props will only have childContainer when the widget property is passed in
    */
   init(uri: URI, childContainer?: interfaces.Container): void {
     this.uri = uri;

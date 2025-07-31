@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type shortcut_command } from '@coze-arch/bot-api/playground_api';
 
 import { type DSL } from '../../types';
@@ -25,7 +25,7 @@ import {
   getLayoutDSL,
 } from './templates';
 
-// 通过 Components 生成完整的 DSL
+// Generating a complete DSL with Components
 export const getDSLFromComponents = (
   params: shortcut_command.Components[],
 ): DSL => {
@@ -36,7 +36,7 @@ export const getDSLFromComponents = (
   [...formItemsDSL, ...layoutDSL].forEach(
     item => (template.elements[item.id] = item),
   );
-  // @ts-expect-error 支持直接传递 props
+  // @ts-expect-error supports direct delivery of props
   template.elements.submitButton.props.formFields = formItemsDSL.map(
     item => item.id,
   );
@@ -45,7 +45,7 @@ export const getDSLFromComponents = (
 
 type DSLElement = DSL['elements'][string];
 
-// 通过 Components 创建 DSL 中对应的表单元素 Element
+// Create the corresponding form element Element in the DSL through Components
 export const getFormElementFromComponent = (
   param: shortcut_command.Components,
 ): DSLElement => {
@@ -55,12 +55,12 @@ export const getFormElementFromComponent = (
   return getFormItemPlaceholderDSL();
 };
 
-// 用于生成 DSL 语法中双列布局的容器元素
+// Container elements for generating two-column layouts in DSL syntax
 const ITEMS_PER_LINE = 2;
 export const getElementsLayout = (elements: DSLElement[]): DSLElement[] => {
   const res: DSLElement[] = [];
   const elementsCopy = [...elements];
-  // 如出现奇数个，最后一行占满
+  // If an odd number appears, the last line is full
   while (elementsCopy.length) {
     res.push(getLayoutDSL(elementsCopy.splice(0, ITEMS_PER_LINE)));
   }

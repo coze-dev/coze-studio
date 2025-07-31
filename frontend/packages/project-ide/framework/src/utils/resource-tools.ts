@@ -19,7 +19,7 @@ import { URI } from '@coze-project-ide/client';
 import { URI_SCHEME } from '../constants';
 
 /**
- * 从给定的 url 字符串中解析出 resourceType 和 resourceId;
+ * Resolve the resourceType and resourceId from the given url string;
  */
 export const getResourceByPathname = (pathname: string) => {
   let resourceType: undefined | string;
@@ -45,11 +45,11 @@ export const getURIPathByPathname = (pathname: string) => {
 };
 
 /**
- * 从 uri 上解析 resourceType 和 resourceId
+ * Parse resourceType and resourceId from URIs
  */
 export const getResourceByURI = (uri: URI) => {
   /**
-   * TODO: 这样解析有些粗暴了，后面要调整一下
+   * TODO: This analysis is a bit rough, and it will be adjusted later.
    */
   const resourceType = uri.path.dir.base;
   const resourceId = uri.path.base;
@@ -63,7 +63,7 @@ export const getResourceByURI = (uri: URI) => {
 export const getPathnameByURI = (uri: URI) => uri.path.toString();
 
 /**
- * 根据 resourceType 和 resourceId 生成 URI
+ * Generate URIs from resourceType and resourceId
  */
 export const getURIByResource = (
   resourceType: string,
@@ -78,7 +78,7 @@ export const getURIByPath = (path: string) =>
   new URI(`${URI_SCHEME}:///${path}`);
 
 /**
- * 将 uri 转化为 url
+ * Convert URI to URL
  */
 export const getURLByURI = (uri: URI) =>
   `${uri.path.toString()}${uri.query ? `${uri.query}` : ''}${
@@ -86,7 +86,7 @@ export const getURLByURI = (uri: URI) =>
   }`;
 
 /**
- * 执行 URI 比对，完全一致返回 true，否则返回 false
+ * Perform URI alignment, return true exactly, otherwise return false
  */
 export const compareURI = (uri1?: URI, uri2?: URI) => {
   if (!uri1 || !uri2) {

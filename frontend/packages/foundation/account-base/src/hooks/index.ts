@@ -22,8 +22,8 @@ import { type LoginStatus } from '../types';
 import { useUserStore } from '../store/user';
 
 /**
- * @description 用于获取用户登录状态
- * @returns 登录状态
+ * @Description is used to obtain user login status
+ * @returns login status
  */
 export const useLoginStatus = (): LoginStatus =>
   useUserStore(state => {
@@ -34,21 +34,21 @@ export const useLoginStatus = (): LoginStatus =>
   });
 
 /**
- * @description 用于获取用户信息
- * @returns 用户信息
+ * @Description is used to obtain user information
+ * @returns user information
  */
 export const useUserInfo = () => useUserStore(state => state.userInfo);
 
 /**
- * @description 当前是否为错误状态
- * @returns 是否为错误状态
+ * @Description Whether it is currently in an error state
+ * @Returns whether it is an error
  */
 export const useHasError = () => useUserStore(state => state.hasError);
 
 const currentUidLSKey = 'coze_current_uid';
 /**
- * 用于打开多页签情况下，探测其它页签下发生的登出事件并在当前触发提示
- * @param alert 触发提示的具体实现
+ * It is used to detect logout events that occur under other tabs when multiple tabs are opened and trigger a prompt at the current time
+ * @Param alert trigger prompt specific implementation
  */
 export const useAlterOnLogout = (alert: () => void) => {
   const visibility = useDocumentVisibility();
@@ -62,7 +62,7 @@ export const useAlterOnLogout = (alert: () => void) => {
   useEffect(() => {
     if (visibility === 'hidden' && isLogined) {
       const lastUserId = useUserStore.getState().userInfo?.user_id_str;
-      // 登录态下，每次页面从后台回到前台，重新检查一次登录用户是否发生了变化
+      // In the login state, each time the page returns to the foreground from the background, re-check whether the logged in user has changed.
       return () => {
         const latestUserId = localStorage.getItem(currentUidLSKey);
         if (lastUserId !== latestUserId) {
@@ -72,7 +72,7 @@ export const useAlterOnLogout = (alert: () => void) => {
     }
   }, [visibility, isLogined]);
 
-  // 在登录态变化后，更新本地缓存状态
+  // Update local cache status after login status changes
   useEffect(() => {
     if (loginStatus !== 'settling') {
       localStorage.setItem(

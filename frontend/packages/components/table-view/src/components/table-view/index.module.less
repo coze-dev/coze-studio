@@ -9,9 +9,9 @@
 
   .table-wrapper {
     :global {
-      /** 公共样式 **/
+      /** Common Style **/
 
-      /** 重置table背景色 */
+      /** Reset table background color */
       .semi-table-tbody>.semi-table-row,
       .semi-table-thead>.semi-table-row>.semi-table-row-head,
       .semi-table-tbody>.semi-table-row>.semi-table-cell-fixed-left,
@@ -37,7 +37,7 @@
       }
 
 
-      /** table header样式 **/
+      /** Table header style **/
       .semi-table-thead {
         // 拖拽列宽度的图标样式
         &:hover {
@@ -85,13 +85,13 @@
         }
       }
 
-      /** table body部分样式 **/
+      /** Table body part style **/
       .semi-table-tbody {
         .semi-table-row {
           >.semi-table-row-cell {
             /**
-             * table 开启虚拟滚动后 单元格会加上 overflow: hidden
-             * 未开启虚拟滚动情况下正常展示溢出内容
+             * After table turns on virtual scrolling, the cell will be added with overflow: hidden.
+             * Display overflow content normally without virtual scrolling enabled
             */
             overflow: visible;
             border-top: 1px solid var(--coz-stroke-primary);

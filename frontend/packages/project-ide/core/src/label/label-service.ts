@@ -21,33 +21,33 @@ import { type LabelChangeEvent } from './label-handler';
 
 export const LabelService = Symbol('LabelService');
 /**
- * 提供 全局的 label 数据获取
+ * Provide, global label data acquisition
  */
 export interface LabelService {
   /**
-   * label 变化后触发
+   * Triggered after label change
    */
   get onChange(): Event<LabelChangeEvent>;
 
   /**
-   * 获取 label 的 icon
+   * Get label icon
    * @param element
    */
   getIcon: (element: URI) => string | React.ReactNode;
 
   /**
-   * 获取 label 的自定义渲染
+   * Get custom rendering of label
    */
   renderer: (element: URI, opts?: any) => React.ReactNode;
 
   /**
-   *  获取 label 名字
+   *  Get label name
    * @param element
    */
   getName: (element: URI) => string;
 
   /**
-   * 获取 label 的描述
+   * Get the description of the label
    * @param element
    */
   getDescription: (element: URI) => string;

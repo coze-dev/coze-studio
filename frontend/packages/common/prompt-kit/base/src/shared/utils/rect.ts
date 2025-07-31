@@ -23,13 +23,13 @@ export const getSelectionBoundary = (editor: EditorAPI) => {
     return { left: 0, top: 0, width: 0, height: 0 };
   }
 
-  // 初始化最大矩形
+  // Initialize the largest rectangle
   let maxLeft = Infinity;
   let maxTop = Infinity;
   let maxRight = -Infinity;
   let maxBottom = -Infinity;
 
-  // 遍历所有矩形，计算包围盒的边界
+  // Iterate through all rectangles and calculate the bounding box boundary
   rects.forEach(rect => {
     maxLeft = Math.min(maxLeft, rect.left);
     maxTop = Math.min(maxTop, rect.top);
@@ -37,18 +37,18 @@ export const getSelectionBoundary = (editor: EditorAPI) => {
     maxBottom = Math.max(maxBottom, rect.top + (rect.height ?? 0));
   });
 
-  // 计算最终的宽度和高度
+  // Calculate the final width and height
   const width = maxRight - maxLeft;
   const height = maxBottom - maxTop;
 
-  // 获取编辑器的滚动位置
+  // Get the scroll position of the editor
   const { scrollLeft } = editor.$view.scrollDOM;
   const { scrollTop } = editor.$view.scrollDOM;
 
-  // 获取编辑器容器的位置
+  // Get the location of the editor container
   const editorRect = editor.$view.dom.getBoundingClientRect();
 
-  // 计算相对于视口的绝对位置
+  // Calculate the absolute position relative to the viewport
   const absoluteLeft = editorRect.left + maxLeft - scrollLeft;
   const absoluteTop = editorRect.top + maxTop - scrollTop;
   const absoluteBottom = editorRect.top + maxBottom - scrollTop;

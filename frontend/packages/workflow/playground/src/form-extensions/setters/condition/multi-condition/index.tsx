@@ -90,7 +90,7 @@ export function ConditionSetter(props: ConditionProps): JSX.Element {
   }, []);
 
   useEffect(() => {
-    // 监听画布保存表单提交时，进行一次整体校验
+    // Monitor the canvas to save the form, and perform an overall verification when submitting
     const disposable = context.onFormValidate(() => {
       validateAllBranches(branches);
     });
@@ -113,8 +113,8 @@ export function ConditionSetter(props: ConditionProps): JSX.Element {
   }, [branches, draggingBranchUid]);
 
   useEffect(() => {
-    // 这里需要判断下外部的value 是否与 state里的 branches 一致
-    // 只有在不一致的时候才更新 branches，避免死循环
+    // Here we need to determine whether the external value is consistent with the branches in the state
+    // Update branches only when they are inconsistent to avoid endless loops
     if (
       !isEqual(
         value,
@@ -184,7 +184,7 @@ export function ConditionSetter(props: ConditionProps): JSX.Element {
   };
 
   const handleDeleteBranch = index => () => {
-    // 将要被删除的端口移动到最后，这样删除时不会对其他连线顺序产生影响
+    // Move the port to be deleted to the end so that the deletion does not affect other connection sequences
     updateSortedPortLines(index, value.length);
     setBranches(branches.filter((item, innerIndex) => innerIndex !== index));
   };
@@ -205,7 +205,7 @@ export function ConditionSetter(props: ConditionProps): JSX.Element {
 
   const handleDragEnd = (startIndex: number, endIndex: number) => {
     setDraggingBranchUid(undefined);
-    // 连线服务重新计算端口的时候，dom 可能还没更新完成，所以这里加上延迟确保重新计算的时候dom已经更新完成了
+    // When the connection service recalculates the port, the dom may not have been updated yet, so add a delay here to ensure that the dom has been updated when the recalculation is completed
     setTimeout(() => {
       updateSortedPortLines(startIndex, endIndex);
     }, 0);

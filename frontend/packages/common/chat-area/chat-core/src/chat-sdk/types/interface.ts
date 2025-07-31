@@ -39,9 +39,9 @@ export type BotUnique =
     }
   | {
       /**
-       * 使用的bot模版 代替bot_id bot_version draft_mode参数
-       * 非安全考虑，仅不想暴露bot_id的情况下使用
-       * botId、presetBot必传其一
+       * Use the bot template instead of bot_id bot_version draft_mode parameters
+       * For non-safety reasons, use only if you don't want to expose bot_id
+       * botId, presetBot must pass one
        */
       preset_bot: PresetBot;
     };
@@ -53,66 +53,66 @@ export const isPresetBotUnique = <T extends BotUnique>(
 
 export type CreateProps = BotUnique & {
   /**
-   * 用于计算资源点消耗
+   * For computing resource point consumption
    */
   space_id?: string;
   /**
-   * 业务方标识，用于埋点记录
+   * Business party ID for event tracking
    */
   biz: Biz;
   /**
-   * bot 版本号
+   * bot version number
    */
   bot_version?: string;
 
   /**
-   *  草稿bot or 线上bot,
+   *  Draft bots or online bots,
    */
   draft_mode?: boolean;
 
   /**
-   * 会话 id
+   * session id
    */
   conversation_id: string;
 
   /**
-   * 指定发送的唯一用户
+   * Specify the unique user to send
    */
   user?: string;
 
   /**
-   * 场景值,主要用于服务端鉴权, 默认 0 default
+   * Scene value, mainly used for server level authentication, default 0 default
    */
   scene?: Scene;
 
   /**
-   * 环境变量，区分测试环境和线上环境
-   * 用于日志上报
+   * Environment variables to distinguish between testing environment and online environment
+   * For log reporting
    */
   env: ENV;
 
   /**
-   * 区分部署版本
+   * Differentiate deployment versions
    */
 
   deployVersion: DeployVersion;
 
   /**
-   * 是否开启 debug模式，目前主要给 bot editor 使用
-   * 开启后，每条回复消息新增debug_messages字段，包含channel 吐出的所有 chunk消息
+   * Whether to enable debug mode, currently mainly used by the bot editor
+   * After opening, each reply message adds debug_messages field, including all chunk messages spat out by the channel
    **/
   enableDebug?: boolean;
   /**
-   * sdk 控制台日志等级，默认error, 后面层级会包含前面层级
+   * SDK console log level, default error, the following level will contain the previous level
    **/
   logLevel?: LogLevel;
   /**
-   接口拦截器
+   Interface blocker
    **/
   requestManagerOptions?: RequestManagerOptions;
 
   /**
-   * token 刷新机制
+   * Token refresh mechanism
    */
   tokenManager?: TokenManager;
 };
@@ -142,15 +142,15 @@ export interface SdkPullingStatusEvent {
   name: SdkEventsEnum;
   data: {
     /**
-     * 拉取回复消息状态
+     * Pull reply message status
      */
     pullingStatus: PullingStatus;
     /**
-     * query 的本地 id
+     * Local ID of the query
      */
     local_message_id: string;
     /**
-     * query 的服务端 message_id
+     * The server level of the query message_id
      */
     reply_id: string;
   };
@@ -158,7 +158,7 @@ export interface SdkPullingStatusEvent {
   error?: ChatCoreError;
 
   /**
-   * timeout 状态下返回，用于终止拉取
+   * Returns in timeout state to terminate the pull
    * @returns
    */
   abort?: () => void;
@@ -180,17 +180,17 @@ export type PluginValue<
 > = T extends 'upload-plugin' ? UploadPluginConstructor<P> : never;
 
 /**
- * 接入的业务方向
- * 目前采用枚举接入，控制接入方向
- * third_part给open_api sdk使用，暴露给第三方
+ * Access business direction
+ * Currently, enumeration access is used to control the access direction
+ * third_part used by open_api SDK, exposed to third parties
  */
 export type Biz = 'coze_home' | 'bot_editor' | 'third_part';
 
 export type PresetBot = 'coze_home' | 'prompt_optimize' | '';
 
 /**
- * 接口也有这个定义 enum Scene.
- * 注意前端定义与接口完全对齐:
+ * Interfaces also have this definition enum Scene.
+ * Note that the front-end definition is fully aligned with the interface.
  * src/auto-generate/developer_api/namespaces/developer_api.ts
  */
 export const enum Scene {
@@ -198,18 +198,18 @@ export const enum Scene {
   Explore = 1,
   BotStore = 2,
   CozeHome = 3,
-  // 调试区 命名和服务端对齐的
+  // Debug area, named and server level aligned
   Playground = 4,
   AgentAPP = 6,
   PromptOptimize = 7,
   /**
-   * TODO: 前端单独增加，需要和后端对齐固定一个枚举
+   * TODO: The front end is increased separately, and an enumeration needs to be aligned with the back end.
    */
   OpenAipSdk = 1000,
 }
 
 /**
- * 对齐 developer_api/namespaces/developer_api.ts
+ * Align developer_api/namespaces/developer_api
  */
 export const enum LoadDirection {
   Unknown = 0,

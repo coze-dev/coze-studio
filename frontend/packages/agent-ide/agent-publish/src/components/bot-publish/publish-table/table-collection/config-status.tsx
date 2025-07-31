@@ -100,8 +100,8 @@ export const PublishConnectorAction: React.FC<ActionColumnProps> = ({
 
   const action = (() => {
     switch (record.bind_type) {
-      case BindType.KvBind: //仅绑定
-      case BindType.KvAuthBind: //绑定+授权，取消绑定后自动取消授权
+      case BindType.KvBind: //bind only
+      case BindType.KvAuthBind: //Bind + authorization, automatically cancel the authorization after unbinding
         return (
           <KvBindButton
             record={record}
@@ -181,7 +181,7 @@ export const ConfigStatusColumn: React.FC<ActionColumnProps> = props => {
             tagProps={{
               color,
               style: { margin: 0 },
-              // 覆盖原来的orange-tag
+              // Overwrite the original orange-tag.
               className: styles['common-tag'],
             }}
           />

@@ -63,7 +63,7 @@ export const useIsGroupAnswerFinish = ({ memberSet }: MessageGroup) => {
   });
 };
 
-// 非真实运行中止的消息
+// Message of non-real operation abort
 export const useIsGroupFakeInterruptAnswer = ({ memberSet }: MessageGroup) => {
   const { useMessagesStore } = useChatAreaStoreSet();
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   forwardRef,
   useImperativeHandle,
@@ -86,7 +86,7 @@ export const TemplateConfigForm = forwardRef<
   // eslint-disable-next-line @coze-arch/max-line-per-function
 >(({ record, userInfo }, ref) => {
   const [FLAGS] = useFlags();
-  // 即将支持，敬请期待
+  // Support soon, so stay tuned.
   const customRequest = FLAGS['bot.studio.project_publish_imagex']
     ? uploadCustomRequestImageX
     : uploadCustomRequest;
@@ -96,7 +96,7 @@ export const TemplateConfigForm = forwardRef<
   const editorRef = useRef<Editor>();
   const onEditorInit = (editor: Editor) => {
     editorRef.current = editor;
-    // EditorFullInput 的 form value 为纯文本，但这里需要提交 editor-kit 富文本内容
+    // EditorFullInput's form value is plain text, but here you need to submit editor-kit rich text content
     editor.on(EditorEventType.CONTENT_CHANGE, _ => {
       formRef.current?.formApi?.setValue(
         'readme',
@@ -121,7 +121,7 @@ export const TemplateConfigForm = forwardRef<
           new DeltaSet(normalizeSchema(readme as DeltaSetOptions)),
         );
       }
-      // @ts-expect-error -- values 就是 TemplateForm 类型
+      // @ts-expect-error -- values is the TemplateForm type
       Object.keys(values).forEach(key => formApi.setError(key, null));
     },
     validate: () => formRef.current?.formApi?.validate(),
@@ -148,7 +148,7 @@ export const TemplateConfigForm = forwardRef<
           className="mt-[16px]"
           rules={[
             {
-              // 必须勾选同意协议才能通过验证
+              // The consent agreement must be checked to pass the verification.
               validator: (_rule: unknown, value: unknown) =>
                 (value as boolean) === true,
               message: I18n.t('template_buy_paid_agreement_toast'),
@@ -195,7 +195,7 @@ export const TemplateConfigForm = forwardRef<
                 (value as FileItem[] | undefined)?.every(
                   item => !item._sizeInvalid && item.status === 'success',
                 ) === true,
-              message: '', // 校验文件大小是否符合限制 && 上传是否成功，Upload 组件会显示错误信息
+              message: '', // Verify whether the file size meets the limit & & whether the upload was successful, the Upload component will display an error message
             },
           ]}
         >

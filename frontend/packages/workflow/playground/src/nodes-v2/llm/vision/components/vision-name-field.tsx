@@ -40,7 +40,7 @@ interface VisionNameFieldProps {
 }
 
 /**
- * 输入名称字段
+ * Enter name field
  */
 export const VisionNameField: FC<VisionNameFieldProps> = ({
   inputField,

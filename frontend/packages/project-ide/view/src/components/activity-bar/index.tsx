@@ -37,9 +37,9 @@ interface ActivityBarProps {
 }
 
 /**
- * activitybar 有两种状态
- * - 选中态 select 同时高亮和左侧有蓝色竖线
- * - 激活态 active 仅高亮
+ * Activitybar has two states
+ * - Select state with both highlight and blue vertical bar on the left
+ * - active only highlighted
  */
 export const ActivityBar: React.FC<ActivityBarProps> = ({
   list,

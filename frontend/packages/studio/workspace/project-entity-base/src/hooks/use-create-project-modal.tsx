@@ -58,8 +58,8 @@ export interface CreateProjectHookProps
   onBeforeCopyProjectTemplate?: BeforeProjectTemplateCopyCallback;
   onProjectTemplateCopyError?: () => void;
   /**
-   * navi 导航栏
-   * space workspace 右上角的按钮
+   * Navigation bar
+   * Button in the upper right corner of the space workspace
    * */
   bizCreateFrom: 'navi' | 'space';
   renderAutoGenerate?: (params: RenderAutoGenerateParams) => React.ReactNode;
@@ -100,7 +100,7 @@ export const useCreateProjectModalBase = ({
     setGuideModalVisible(false);
 
     if (guideType === 'project') {
-      // 海外版和开源版不支持项目模板
+      // The overseas version and the open-source version do not support project templates
       if (IS_OVERSEA || IS_OPEN_SOURCE) {
         setProjectModalVisible(true);
         return;

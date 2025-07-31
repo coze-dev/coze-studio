@@ -45,7 +45,7 @@ export const BATCH_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     size: BatchSize,
     nodeMetaPath: DEFAULT_NODE_META_PATH,
     outputsPath: DEFAULT_OUTPUTS_PATH,
-    inputParametersPath: BatchPath.Inputs, // 入参路径，试运行等功能依赖该路径提取参数
+    inputParametersPath: BatchPath.Inputs, // Imported parameter path, practice running and other functions rely on this path to extract parameters
     useDynamicPort: true,
     defaultPorts: [
       { type: 'input' },
@@ -73,7 +73,7 @@ export const BATCH_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     outputsPathList: [],
     inputsPathList: [
       BatchPath.Inputs,
-      // 'outputs', // WARNING: 加上 outputs 会导致这一数据清空
+      // 'Outputs',//WARNING: Adding outputs will cause this data to be cleared
     ],
   },
   formMeta: BATCH_FORM_META,

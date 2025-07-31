@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable max-lines -- 待拆分 */
+
+/* eslint-disable max-lines -- to be split */
 
 import { extractEnvValue } from './utils/config-helper';
 import { volcanoConfigs } from './configs/volcano';
@@ -98,9 +98,9 @@ const SEC_SDK_ASSERT_URL = extractEnvValue<string | null>({
     release: null,
   },
   sg: {
-    // 非 release 环境使用默认内网公用 SCM， tos 无上传权限，也无脱敏需要，直接使用风控提供的 tos 地址
+    // The non-release environment uses the default intranet public SCM, tos has no upload permission and no desensitization need. Directly use the tos address provided by risk control
     inhouse: '',
-    // release 上传至独立 SCM CDN
+    // Release and upload to the independent SCM CDN
     release: '',
   },
   va: {
@@ -239,7 +239,7 @@ const BYTE_UPLOADER_REGION = extractEnvValue<
   | 'gcp'
 >({
   cn: {
-    // TODO 确认下这里
+    // TODO confirm here.
     boe: 'boe',
     inhouse: 'cn-north-1',
     release: 'cn-north-1',
@@ -255,7 +255,7 @@ const BYTE_UPLOADER_REGION = extractEnvValue<
 
 const IMAGE_FALLBACK_HOST = extractEnvValue<string>({
   cn: {
-    // TODO 确认下这里
+    // TODO confirm here.
     boe: '',
     inhouse: '',
     release: '',
@@ -299,7 +299,7 @@ const GOOGLE_PLATFORM_ID = extractEnvValue<null | number>({
   },
 });
 
-// 曾经计划 facebook 登录 然后需求变动后没有了
+// I used to plan to log in to Facebook, but after the requirements changed, it was gone.
 const FACEBOOK_APP_ID = extractEnvValue<null | string>({
   cn: {
     boe: null,

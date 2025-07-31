@@ -36,7 +36,7 @@ interface JsonViewerProviderProps {
 }
 
 /**
- * 根只有一项且其可以下钻时，默认展开它
+ * When the root has only one item and it can be drilled down, it is expanded by default
  */
 const generateInitialExpandValue = (fields: Field[], expandAll?: boolean) => {
   if (expandAll) {
@@ -68,7 +68,7 @@ export const JsonViewerContext = createContext<JsonViewerContextType>({
 export const JsonViewerProvider: React.FC<
   PropsWithChildren<JsonViewerProviderProps>
 > = ({ fields, children, defaultExpandAllFields }) => {
-  /** 因为存在不属于单项的逻辑，所以集中管理展开折叠的状态 */
+  /** Because there is logic that does not belong to a single item, the state of unfolding and folding is managed centrally */
   const [expand, setExpand] = useState<JsonViewerContextType['expand'] | null>(
     null,
   );
@@ -78,8 +78,8 @@ export const JsonViewerProvider: React.FC<
   );
 
   /**
-   * fields 是动态更新的，这里要注意固化 expand 数据，因为 fields 总是由少增多
-   * 由于存在自动展开逻辑，所以从 0 => 1 变化时需要赋值
+   * Fields are dynamically updated, pay attention to solidifying expand data here, because fields are always increased by less
+   * Due to the existence of automatic expansion logic, assignment is required when changing from 0 = > 1
    */
   useEffect(() => {
     if (!expand) {

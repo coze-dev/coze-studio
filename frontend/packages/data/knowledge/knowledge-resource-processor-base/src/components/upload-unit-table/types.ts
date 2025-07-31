@@ -30,7 +30,7 @@ export interface UploadStateProps {
   needLoading?: boolean;
   overlayClassName?: string;
   disableRetry?: boolean;
-  // 不显示重试文案
+  // Do not show retry copy
   noRetry?: boolean;
 }
 

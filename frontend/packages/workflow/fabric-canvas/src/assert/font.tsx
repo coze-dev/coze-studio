@@ -48,7 +48,7 @@ const fontsFormat: {
   const group = dArr[2];
 
   return {
-    // 原本的名称
+    // Original name
     value: dArr[1],
     label: (
       <img
@@ -57,11 +57,11 @@ const fontsFormat: {
         src={`${cdnPrefix}/image-canvas-fonts-preview-svg/${d}`}
       />
     ),
-    // 顺序
+    // order
     order: Number(dArr[0]),
-    // 一级分组名称
+    // first-level grouping name
     name,
-    // 属于哪个分组
+    // Which group does it belong to?
     groupName: group,
   };
 });

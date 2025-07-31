@@ -91,7 +91,7 @@ import {
 
 import styles from './index.module.less';
 
-/** 默认会话轮数 */
+/** Default session rounds */
 const DEFAULT_CHAT_ROUND = 3;
 
 const Render = ({ form }: FormRenderProps<FormData>) => {
@@ -384,7 +384,7 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
     const models = modelsService.getModels();
     let llmParam = get(value, 'inputs.llmParam');
 
-    // 初次拖入画布时：从后端返回值里，解析出来默认值。
+    // When first dragged into the canvas: Parse out the default value from the backend return value.
     if (!llmParam) {
       llmParam = getDefaultLLMParams(models);
     }
@@ -412,14 +412,14 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
           ? [{ name: 'input', input: { type: ValueExpressionType.REF } }]
           : inputParameters,
         chatHistorySetting: {
-          // 是否开启会话历史
+          // Whether to open session history
           enableChatHistory:
             get(
               llmParam.find(item => item.name === 'enableChatHistory'),
               'input.value.content',
             ) || false,
 
-          // 会话轮数，默认为 3 轮
+          // Number of session rounds, the default is 3 rounds
           chatHistoryRound: Number(
             get(
               llmParam.find(item => item.name === 'chatHistoryRound'),
@@ -438,8 +438,8 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
             modelType: model.modelType as number,
           }),
 
-      // model 会根据 llmParam 重新填充值，此时也会将之前的 chatHistoryRound 也填充上去
-      // 由于在 submit 时会重新添加一个 chatHistoryRound，这里先忽略掉，避免出现问题
+      // The model will re-fill the value according to llmParam, and the previous chatHistoryRound will also be filled at this time.
+      // Since a chatHistoryRound will be re-added when submitting, it will be ignored here to avoid problems.
       model: omit(model, ['chatHistoryRound']),
       $$prompt_decorator$$: {
         prompt,
@@ -453,7 +453,7 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
       fcParam: formatFcParamOnInit(get(value, 'inputs.fcParam')),
     };
 
-    // 获取后端下发 version 信息
+    // Get the version information sent by the backend
     const schema = JSON.parse(
       playgroundContext.globalState.info?.schema_json || '{}',
     );
@@ -462,7 +462,7 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
       parseInt(curNode?.data?.version) >= parseInt(NEW_NODE_DEFAULT_VERSION)
         ? curNode?.data?.version
         : NEW_NODE_DEFAULT_VERSION;
-    // 「LLM 节点订正需求 新增节点默认为 3」
+    // [LLM node revised requirements, new node defaults to 3]
     set(initValue, 'version', versionFromBackend);
 
     return initValue;
@@ -488,7 +488,7 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
 
     const enableChatHistory = BlockInput.createBoolean(
       'enableChatHistory',
-      // 工作流没有会话历史，需要设置成 false，会话流按照实际勾选的来
+      // The workflow has no session history, it needs to be set to false, and the session flow is checked according to the actual check.
       globalState.isChatflow
         ? Boolean(
             get(
@@ -523,8 +523,8 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
       },
       outputs: formatReasoningContentOnSubmit(value.outputs, isBatch),
       /**
-       * - 「LLM 节点 format优化」需求，将 outputs 内容整合到 prompt 中限制输出格式，后端需要标志位区分逻辑，版本为 2
-       * - 「LLM 节点订正需求 兜底逻辑」，版本为 3
+       * - "LLM node format optimization" requirement, integrate the output content into the prompt to limit the output format, the backend needs flag distinction logic, version 2
+       * - "LLM node revised requirements fallback logic", version 3
        */
 
       version: NEW_NODE_DEFAULT_VERSION,

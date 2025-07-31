@@ -34,14 +34,14 @@ interface InnerContainerProps {
 }
 
 /**
- * 表单内编辑器容器，对 foucs error 状态下边框样式进行封装
+ * The editor container in the form encapsulates the border style in the foucs error state
  * @param name
  * @param onBlur
  * @param onFocus
  * @param isError
  * @param onMouseEnter
  * @param onMouseLeave
- * @param className 编辑器外层样式
+ * @param className editor outer style
  * @param children
  */
 export const InnerEditorContainer: FC<InnerContainerProps> = props => {
@@ -61,7 +61,7 @@ export const InnerEditorContainer: FC<InnerContainerProps> = props => {
   const { getNodeSetterId } = useNodeTestId();
   const dataTestID = getNodeSetterId(name);
 
-  // 设置防抖防止 onFocus / onBlur 在点击时出现抖动
+  // Set anti-shake to prevent onFocus/onBlur from shaking when clicked
   const setFocus = useCallback(
     debounce((newFocusValue: boolean) => {
       _setFocus(newFocusValue);

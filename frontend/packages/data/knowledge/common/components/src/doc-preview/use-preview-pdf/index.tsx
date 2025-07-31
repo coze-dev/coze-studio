@@ -42,7 +42,7 @@ const options = {
         `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/cmaps/`
       : // cp-disable-next-line
         `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/cmaps/`,
-  // 提升性能
+  // Boost performance
   cMapPacked: true,
 };
 

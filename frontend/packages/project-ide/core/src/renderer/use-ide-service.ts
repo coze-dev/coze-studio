@@ -19,7 +19,7 @@ import { type interfaces } from 'inversify';
 import { useIDEContainer } from './use-ide-container';
 
 /**
- * 获取IDE的 IOC 模块
+ * Get the IOC module of the IDE
  * @param identifier
  */
 export function useIDEService<T>(identifier: interfaces.ServiceIdentifier): T {

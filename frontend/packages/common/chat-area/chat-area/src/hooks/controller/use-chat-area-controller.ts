@@ -64,7 +64,7 @@ export const useChatAreaController = () => {
       .messageGroupList.filter(messageGroup => messageGroup.selectable);
 
     const replyIdList = selectableMessageGroupList
-      // TODO: 需要确认下 发送的消息 ack 前 groupId 不是 replyId
+      // TODO: You need to confirm that the groupId before the ack is not a replyId.
       .map(messageGroup => messageGroup.groupId)
       .filter((id): id is string => Boolean(id));
 

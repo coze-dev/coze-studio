@@ -15,7 +15,7 @@
  */
  
 /**
- * 从列表中截取 center 位置左右各 side 大小的一段，减小搜索计算量
+ * Cut a section of the size of the left and right sides of the center position from the list to reduce the amount of search calculation
  */
 export const sliceArrayByIndexRange = <T>(
   array: T[],

@@ -48,7 +48,7 @@ import {
 } from './typings';
 
 /**
- * 全局转换表单数据，这里主要处理变量生成逻辑
+ * Transform form data globally, where variable generation logic is primarily handled
  */
 @injectable()
 export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
@@ -67,7 +67,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
   }
 
   /**
-   * 转换节点变量
+   * Convert node variable
    * @param json
    * @protected
    */
@@ -93,7 +93,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
   }
 
   /**
-   * 兼容仅有单个batch变量的历史数据
+   * Compatible with historical data with only a single batch variable
    */
   protected transformBatchVariable(
     json: WorkflowNodeJSON,
@@ -104,21 +104,21 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     }
     const input: ValueExpressionDTO = get(json.data, 'inputs.batch.inputList');
     if (!input || isEmpty(input)) {
-      // 无需兼容
+      // No compatibility required
       return;
     }
     const inputList: BatchDTOInputList = {
-      name: 'item', // 按照PRD，写死即可
+      name: 'item', // According to PRD, just write it dead.
       input,
     };
-    // 在json中填充新数据
+    // Filling in new data in JSON
     json.data.inputs.batch.inputLists = [inputList];
-    // 删掉旧数据
+    // Delete old data
     delete json.data.inputs.batch.inputList;
   }
 
   /**
-   * 修复变量引用逻辑
+   * Fix variable reference logic
    * @param json
    * @param doc
    * @protected
@@ -148,7 +148,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
   }
 
   /**
-   * 处理节点元数据 & 静态文案
+   * Processing node metadata & static copy
    * @param json
    * @param doc
    * @protected
@@ -157,7 +157,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     json: WorkflowNodeJSON,
     doc: WorkflowDocument,
   ): void {
-    // API 插件节点暂时不需要处理文案
+    // The API plug-in node does not need to process copywriting for the time being.
     if (
       json?.type &&
       [StandardNodeType.Api, StandardNodeType.SubWorkflow].includes(
@@ -168,7 +168,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     }
 
     const nodeMeta = get(json, 'data.nodeMeta');
-    // 拉取的最新配置数据
+    // Latest configuration data pulled
     const meta = this.playgroundContext.getNodeTemplateInfoByType(json.type);
 
     if (
@@ -177,7 +177,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
       meta &&
       typeof meta === 'object'
     ) {
-      // 根据后端配置确定，不由用户控制节点元数据
+      // Determined according to the backend configuration, the node metadata is not controlled by the user
       const staticMeta = pick(meta, ['icon', 'subTitle']);
 
       set(json, 'data.nodeMeta', {
@@ -188,7 +188,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
   }
 
   /**
-   * 初始化节点
+   * initialize node
    * @param json
    * @param doc
    * @param isClone
@@ -198,7 +198,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     doc: WorkflowDocument,
     isClone?: boolean,
   ): WorkflowNodeJSON {
-    // 非 clone 在 formatOnInit 已经触发
+    // Non-cloning has been triggered in formatOnInit
     if (!isClone) {
       return json;
     }
@@ -208,7 +208,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
   }
 
   /**
-   * 提交节点
+   * commit node
    * @param json
    * @param doc
    */
@@ -222,7 +222,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     ).meta;
     const variablesMeta = this.getVariablesMeta(json.type, doc);
     if (json.data) {
-      // 转换 output
+      // Convert output
       variablesMeta.outputsPathList!.forEach(outputsPath => {
         const variableMetas = get(json.data, outputsPath) as ViewVariableMeta[];
         if (variableMetas && Array.isArray(variableMetas)) {
@@ -235,7 +235,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
           });
         }
       });
-      // 转换 input
+      // Conversion input
       variablesMeta.inputsPathList!.forEach(inputsPath => {
         const inputValues: InputValueVO[] = get(
           json.data,
@@ -254,7 +254,7 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
               }),
             );
           });
-          // 过滤掉空值
+          // Filter out null values
           set(json.data, inputsPath, inputValues.filter(Boolean));
         }
       });
@@ -263,27 +263,27 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     return json;
   }
   /**
-   * 初始化时候转换变量数据
+   * Convert variable data during initialization
    * @param json
    * @param document
    */
   formatOnInit(json: WorkflowJSON, document: WorkflowDocument): WorkflowJSON {
-    // Step0: batch 兼容处理
+    // Step0: batch compatible processing
     json.nodes.forEach(node => this.transformBatchVariable(node, document));
 
-    // Step1: 创建输出变量
+    // Step1: Create an output variable
     json.nodes.forEach(node => this.formatOutputVariables(node, document));
 
-    // Step2: 处理input中值转换
+    // Step2: Handle input median conversion
     json.nodes.forEach(node => this.formatInputVariables(node, document));
 
-    // Step3: 处理节点 description & subTitle 等静态文案数据 (不从落库数据中取，而是根据最新节点数据中获取)
+    // Step3: Process static copy data such as node description & subTitle (not from the drop database data, but from the latest node data)
     json.nodes.forEach(node => this.formatNodeMeta(node, document));
     return json;
   }
 
   /**
-   * 提交时候转换变量数据
+   * Convert variable data at commit time
    * @param json
    */
   formatOnSubmit(json: WorkflowJSON, document: WorkflowDocument): WorkflowJSON {

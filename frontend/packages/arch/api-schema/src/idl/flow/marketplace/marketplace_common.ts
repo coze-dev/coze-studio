@@ -17,20 +17,20 @@
 import * as base from './../../base';
 export { base };
 export interface Price {
-  /** 金额 */
+  /** amount */
   amount: string,
-  /** 币种，如USD、CNY */
+  /** Currencies such as USD and CNY */
   currency: string,
-  /** 小数位数 */
+  /** decimal places */
   decimal_num: number,
 }
 export enum FollowType {
-  /** 无关系 */
+  /** It doesn't matter. */
   Unknown = 0,
-  /** 关注 */
+  /** follow */
   Followee = 1,
-  /** 粉丝 */
+  /** fan */
   Follower = 2,
-  /** 互相关注 */
+  /** Follow each other */
   MutualFollow = 3,
 }

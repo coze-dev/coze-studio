@@ -20,7 +20,7 @@ import type { CommentEditorBlock, CommentEditorLeaf } from '../type';
 import { CommentEditorBlockFormat, CommentEditorLeafFormat } from '../constant';
 
 export namespace CommentEditorMarkdownParser {
-  // 转换叶子节点为 Markdown
+  // Convert leaf nodes to Markdown
   const convertLeafToMarkdown = (leaf: CommentEditorLeaf): string => {
     let result: string = leaf.text;
 
@@ -43,7 +43,7 @@ export namespace CommentEditorMarkdownParser {
     return result;
   };
 
-  // 转换段落为 Markdown
+  // Convert paragraphs to Markdown
   const convertParagraphToMarkdown = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -56,7 +56,7 @@ export namespace CommentEditorMarkdownParser {
     return `${content}\n\n`;
   };
 
-  // 转换标题为 Markdown
+  // Convert headings to Markdown
   const convertHeadingToMarkdown = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -75,9 +75,9 @@ export namespace CommentEditorMarkdownParser {
     return `${'#'.repeat(level)} ${content}\n\n`;
   };
 
-  // 转换引用为 Markdown
+  // Convert Reference to Markdown
   const convertBlockquoteToMarkdown = (block: CommentEditorBlock): string => {
-    // 处理引用块中的内容
+    // Process the content in the reference block
     const processQuoteContent = (
       child: CommentEditorLeaf | CommentEditorBlock,
     ): string => {
@@ -90,24 +90,24 @@ export namespace CommentEditorMarkdownParser {
       return convertBlockToMarkdown(child);
     };
 
-    // 将内容转换为引用格式
+    // Convert content to citation format
     const convertToQuoteFormat = (content: string): string =>
       content
         .split('\n')
         .map((line: string): string => `> ${line}`)
         .join('\n');
 
-    // 处理所有子元素
+    // Handle all child elements
     const content: string = block.children
       .map(processQuoteContent)
       .join('\n')
       .trim();
 
-    // 转换为引用格式并添加额外的换行符
+    // Convert to reference format and add extra line breaks
     return `${convertToQuoteFormat(content)}\n\n`;
   };
 
-  // 转换列表为 Markdown
+  // Convert List to Markdown
   const convertListToMarkdown = (
     block: CommentEditorBlock,
     indent = '',
@@ -148,7 +148,7 @@ export namespace CommentEditorMarkdownParser {
     return `${content}\n`;
   };
 
-  // 转换块为 Markdown
+  // Convert block to Markdown
   const convertBlockToMarkdown = (block: CommentEditorBlock): string => {
     switch (block.type) {
       case CommentEditorBlockFormat.Paragraph:
@@ -167,7 +167,7 @@ export namespace CommentEditorMarkdownParser {
     }
   };
 
-  // 主函数：将整个 schema 转换为 Markdown
+  // Main function: Converts the entire schema to Markdown
   export const to = (schema: CommentEditorBlock[]): string => {
     const markdown: string = schema
       .map(block => convertBlockToMarkdown(block))

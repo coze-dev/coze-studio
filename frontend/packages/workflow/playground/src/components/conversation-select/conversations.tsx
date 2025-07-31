@@ -106,7 +106,7 @@ export const Conversations: React.FC<ConversationsProps> = ({
     globalState.projectId ||
     '';
 
-  // 接口得到的总数并非真实的总数，前端可能会拼接 options
+  // The total number obtained by the interface is not the real total, and the front end may splice options.
   const listMaxHeight = useMemo(() => {
     const realTotal = (staticList?.length || 0) + (dynamicList?.length || 0);
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -123,14 +123,14 @@ export const Conversations: React.FC<ConversationsProps> = ({
 
   const initFn = async () => {
     const list = await fetchList();
-    // 从开始节点拿数据设置初始值
+    // Get the data from the start node to set the initial value
     if (startNode && !value) {
       const outputs = getStartNodeOutputs();
       const defaultName =
         outputs.find(output => output.name === CONVERSATION_NAME)
           ?.defaultValue || '';
       const findItem = list.find(item => item.label === defaultName);
-      // 默认选中开始节点的 conversation_name，如果没有，默认选中 Default 默认会话
+      // The conversation_name of the start node is selected by default, if not, Default default session is selected by default
       handleChange(findItem?.value || '0', findItem);
     }
   };
@@ -142,8 +142,8 @@ export const Conversations: React.FC<ConversationsProps> = ({
   }, [projectId]);
 
   useEffect(() => {
-    // 加锁，确保当前列表内容和传入的 projectId 一致，然后从列表中搜索对应的项
-    // 初始化任何一个 list 没有 ready 不走后续逻辑
+    // Lock to ensure that the current list content is consistent with the incoming projectId, and then search for the corresponding item from the list
+    // Initialize any list without getting ready for follow-up logic
     if (fetchingProjectId !== projectId || !staticList || !dynamicList) {
       return;
     }

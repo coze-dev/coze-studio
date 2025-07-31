@@ -16,7 +16,7 @@
  
 import { MODE_CONFIG } from './const';
 
-// 输入透明度系数 和color 返回新的颜色
+// Enter the transparency factor and color to return a new color
 export function addAlpha(color: string, alpha: number): string {
   const regex = /^rgba\((\d{1,3}),(\d{1,3}),(\d{1,3})\)$/;
   if (!regex.test(color)) {
@@ -31,11 +31,11 @@ export function addAlpha(color: string, alpha: number): string {
   return newColor;
 }
 
-// 图片的宽高比
+// Image aspect ratio
 export const getStandardRatio = (mode: 'pc' | 'mobile'): number =>
   MODE_CONFIG[mode].size.width / MODE_CONFIG[mode].size.height;
 
-// 计算是否展示渐变阴影 = 屏幕宽度 > 图片宽度 * （1- 2 * 左/右阴影位置）
+// Calculate whether to display gradual change Shadow = Screen Width > Image Width * (1- 2 * Left/Right Shadow Position)
 export const computeShowGradient = (
   width: number,
   imgWidth: number,

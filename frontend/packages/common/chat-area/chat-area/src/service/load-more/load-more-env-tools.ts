@@ -35,7 +35,7 @@ import { LoadLockErrorHelper } from './helper/load-lock-error-helper';
 export type LoadMoreEnvValues = {
   enableTwoWayLoad: boolean;
   enableMarkRead: boolean;
-  /** 正在发送或接收回复中 */
+  /** Sending or receiving a reply */
   isProcessingChat: boolean;
 } & MessageIndexState;
 
@@ -87,7 +87,7 @@ export class LoadMoreEnvTools {
     >
   >;
   public readEnvValues: () => LoadMoreEnvValues;
-  /** 仅在更大值出现时执行更新，随便调 */
+  /** Update only when a larger value appears, call it casually */
   public updateIndex: MessageIndexAction['updateIndex'];
   public insertMessages: (
     param: GetHistoryMessageResponse,

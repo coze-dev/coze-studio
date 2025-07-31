@@ -17,9 +17,9 @@
 import { isFunction } from 'lodash-es';
 
 /**
- * 将 { value: label } 形式的结构体转成Select需要的options Array<{ label, value }>
- *   computedValue：将value值转化一次作为options的value
- *   passItem：判断当前value值是否需要跳过遍历
+ * Convert a structure of the form {value: label} into the options Array < {label, value} > required by Select
+ *   computedValue: Convert the value value once as the value of options
+ *   passItem: Determine whether the current value needs to skip the traversal
  */
 export default function convertMaptoOptions<Value = number>(
   map: Record<string, unknown>,
@@ -27,9 +27,9 @@ export default function convertMaptoOptions<Value = number>(
     computedValue?: (val: unknown) => Value;
     passItem?: (val: unknown) => boolean;
     /**
-     * 由于 i18n 的实现方式问题，写成常量的文案需要惰性加载
-     * 因此涉及到 i18n 的 { value: label } 结构一律需要写成 { value: () => label }
-     * 该属性启用时，会额外进行一次惰性加载
+     * Due to the implementation of i18n, the copy written as a constant needs to be loaded lazily
+     * Therefore, the {value: label} structure involving i18n needs to be written as {value : () => label}
+     * When this property is enabled, an additional lazy load is performed
      * @default false
      * @link 
      */

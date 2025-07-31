@@ -69,7 +69,7 @@ export const InputAndVariableItem = ({
       onChange={val => {
         onSourceChange?.(Number(val));
 
-        // 切换来源，清空默认值
+        // Switch source, clear default
         onReferenceChange?.('');
         onValueChange?.('');
       }}

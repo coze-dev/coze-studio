@@ -21,7 +21,7 @@ import { type MergeGroup } from '../types';
 import { getVariableTypeAlias } from './get-variable-type-alias';
 
 /**
- * 获取分组类型别名
+ * Get group type alias
  */
 export function getGroupTypeAlias(
   mergeGroup: MergeGroup,

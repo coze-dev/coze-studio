@@ -59,7 +59,7 @@ export const DragTooltip = () => {
       return false;
     }
     if (!message) {
-      // 仅在有消息时展示
+      // Show only when there is news
       return false;
     }
     return true;
@@ -68,7 +68,7 @@ export const DragTooltip = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const offset = useMemo(() => {
     const isInProject = Boolean(globalState.projectId);
-    // 初始位置为画布左上角，currentOffset 为距离屏幕左上角的偏移，需要减去画布距离屏幕左上角偏移
+    // The initial position is the upper left corner of the canvas, and currentOffset is the offset from the upper left corner of the screen. You need to subtract the offset of the canvas from the upper left corner of the screen.
     const playgroundOffsetX = isInProject ? 276 : 0;
     const playgroundOffsetY = isInProject ? 100 : 73;
 

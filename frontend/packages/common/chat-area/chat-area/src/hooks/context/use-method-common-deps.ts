@@ -23,7 +23,7 @@ import {
 } from './use-chat-area-context';
 
 /**
- * 获取容器，供非响应式环境使用
+ * Acquire containers for use in non-responsive environments
  */
 export const useMethodCommonDeps = (): MethodCommonDeps => {
   const context = useChatAreaContext();

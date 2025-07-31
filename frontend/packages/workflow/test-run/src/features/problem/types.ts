@@ -24,14 +24,14 @@ export type WorkflowProblem = WorkflowValidateError & {
 };
 
 export interface ProblemItem {
-  // 错误描述
+  // error description
   errorInfo: string;
-  // 错误等级
+  // error level
   errorLevel: FeedbackStatus;
-  // 错误类型： 节点 / 连线
+  // Error Type: Node/Connection
   errorType: 'node' | 'line';
-  // 节点id
+  // Node ID
   nodeId: string;
-  // 若为连线错误，还需要目标节点来确认这条连线
+  // In the case of a connection error, the target node is also required to confirm the connection
   targetNodeId?: string;
 }

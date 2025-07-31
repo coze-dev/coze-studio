@@ -27,10 +27,10 @@ export const useOutEditorMode = ({
   exclude,
   onExitEditMode,
 }: UseOutEditorModeProps) => {
-  // 处理点击文档其他位置
+  // Process Click Document Other Locations
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // 如果点击的是编辑器外部，则退出编辑模式
+      // If you click outside the editor, exit editing mode
       if (
         editorRef.current &&
         !editorRef.current.contains(event.target as Node) &&

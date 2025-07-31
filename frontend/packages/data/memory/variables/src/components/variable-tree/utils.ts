@@ -32,7 +32,7 @@ interface ChildrenFindResult {
 
 export type FindDataResult = RootFindResult | ChildrenFindResult | null;
 /**
- * 根据target数组，找到key在该项的值和位置，主要是获取位置，方便操作parent的children
+ * According to the target array, find the value and position of the key in the item, mainly to obtain the position, which is convenient for operating the children of the parent.
  */
 export function findCustomTreeNodeDataResult(
   target: Array<TreeNodeCustomData>,
@@ -40,7 +40,7 @@ export function findCustomTreeNodeDataResult(
 ): FindDataResult {
   const dataInRoot = target.find(item => item.variableId === variableId);
   if (dataInRoot) {
-    // 如果是根节点
+    // If it is the root node
     return {
       isRoot: true,
       parentData: null,
@@ -81,7 +81,7 @@ export function findCustomTreeNodeDataResult(
   return findDataInChildrenLoop(target);
 }
 
-// 将groupVariableMeta打平为viewVariableTreeNode[]
+// Flatten groupVariableMeta to viewVariableTreeNode []
 export function flatGroupVariableMeta(
   groupVariableMeta: VariableGroup[],
   maxDepth = Infinity,

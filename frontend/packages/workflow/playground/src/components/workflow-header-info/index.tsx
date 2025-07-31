@@ -45,7 +45,7 @@ export const WorkflowInfo = () => {
 
   const { autoSaveTime, savingError, preview } = config;
 
-  // 当前流程是否已发布过
+  // Has the current process been published?
   const isPublished = info.plugin_id !== '0';
 
   return (
@@ -97,7 +97,7 @@ export const WorkflowInfo = () => {
           <PublishStatus />
         ) : null}
 
-        {/* 自动保存时间 tag */}
+        {/* Auto save time tag */}
         {!readonly && !isCollaboratorMode && (
           <Tag size="mini" color="primary">
             {I18n.t('workflow_detail_title_saved_2', {
@@ -105,14 +105,14 @@ export const WorkflowInfo = () => {
             })}
           </Tag>
         )}
-        {/* 保存错误 tag */}
+        {/* Save error tag */}
         {!readonly && !!savingError && (
           <Tag size="mini" color="red">
             {I18n.t('workflow_detail_node_save_error')}
           </Tag>
         )}
 
-        {/* 预览中 tag */}
+        {/* Preview tag */}
         {!isNil(info) && preview ? (
           <Tag size="mini" color="blue">
             {I18n.t('workflow_detail_title_previewing')}
@@ -121,7 +121,7 @@ export const WorkflowInfo = () => {
 
         {!readonly && <WorkflowReferencesTip />}
 
-        {/* 提示有修改但未发布的 tag */}
+        {/* Prompt for modified but unpublished tags */}
         {hasChanged && !readonly ? (
           <Tag size="mini" color="primary">
             {I18n.t('workflow_unpublish_change')}

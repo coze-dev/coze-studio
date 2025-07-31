@@ -40,9 +40,9 @@ export type TCustomUpload = (uploadParams: {
 export interface DSLContext {
   dsl: DSL;
   uploadFile?: TCustomUpload;
-  onChange?: (value: Record<string, TValue>) => void; // 需要兼容 file
+  onChange?: (value: Record<string, TValue>) => void; // Compatible files required
   onSubmit?: (value: Record<string, TValue>) => void;
-  readonly?: boolean; // 支持搭建时的预览模式
+  readonly?: boolean; // Support preview mode during build
 }
 
 export interface DSLFormFieldCommonProps {

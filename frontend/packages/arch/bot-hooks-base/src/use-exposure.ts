@@ -22,20 +22,20 @@ import { useInViewport } from 'ahooks';
 import { type EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 
 export interface UseExposureParams {
-  /** 曝光元素 */
+  /** Exposure element */
   target: BasicTarget;
-  /** Intersection observer参数 */
+  /** Intersection observer parameters */
   options?: Options;
-  /** 上报事件名称 */
+  /** event name reported */
   eventName?: EVENT_NAMES;
-  /** 上报参数 */
+  /** reporting parameters */
   reportParams?: Record<string, unknown>;
-  /** 是否进行上报 默认为true */
+  /** Whether to report, the default is true */
   needReport?: boolean;
   isReportOnce?: boolean;
 }
 
-/** 曝光埋点上报 */
+/** Exposure event tracking report */
 export const useExposure = ({
   target,
   options,
@@ -49,7 +49,7 @@ export const useExposure = ({
 
   useEffect(() => {
     if (isReportOnce && refHasReport.current) {
-      //已上报过数据，就直接返回
+      //If the data has been reported, please return directly.
       return;
     }
     if (needReport && isInView) {

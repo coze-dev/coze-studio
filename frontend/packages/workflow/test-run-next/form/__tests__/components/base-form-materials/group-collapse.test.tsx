@@ -23,7 +23,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { GroupCollapse } from '../../../src/components/base-form-materials/group-collapse/collapse';
 
 describe('GroupCollapse', () => {
-  // 测试基本渲染
+  // Test basic rendering
   it('should render label and initial content', () => {
     const label = 'Test Label';
     const childContent = 'Child Content';
@@ -36,7 +36,7 @@ describe('GroupCollapse', () => {
     expect(childElement).toBeInTheDocument();
   });
 
-  // 测试提示信息渲染
+  // Test prompt information rendering
   it('should render tooltip', () => {
     const tooltipText = 'This is a tooltip';
     const el = render(
@@ -51,7 +51,7 @@ describe('GroupCollapse', () => {
     expect(tooltipIcon).toBeInTheDocument();
   });
 
-  // 测试额外内容渲染
+  // Test Extra Content Rendering
   it('should render extra content', () => {
     const extraText = 'Extra Content';
     render(
@@ -64,26 +64,26 @@ describe('GroupCollapse', () => {
     expect(extraElement).toBeInTheDocument();
   });
 
-  // 测试点击标题展开/折叠功能
+  // Test click title to expand/collapse function
   it('should toggle content when clicking the title', () => {
     const childContent = 'Child Content';
     const { getByText, queryByText } = render(
       <GroupCollapse label="Test">{childContent}</GroupCollapse>,
     );
 
-    // 初始状态下内容应该可见
+    // The content should be visible in the initial state
     expect(queryByText(childContent)).toBeInTheDocument();
 
-    // 点击标题
+    // Click on the title
     act(() => {
       fireEvent.click(getByText('Test'));
     });
 
-    // 点击后内容应该隐藏
+    // Content should be hidden after clicking
     expect(queryByText(childContent)).toBeNull();
   });
 
-  // 测试粘性状态样式
+  // Test sticky state style
   it('should apply sticky class when out of viewport or closed', async () => {
     const { useInViewport } = await vi.importMock('ahooks');
     (useInViewport as any).mockReturnValue([false]);

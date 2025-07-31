@@ -20,18 +20,18 @@ export enum EventName {
   TryStart = 'workflow_testrun_sdk_try_start',
   RunEnd = 'workflow_testrun_sdk_run_end',
   /*****************************************************************************
-   * form 相关
+   * Form related
    */
-  /** 表单 schema 计算 */
+  /** Form schema calculation */
   FormSchemaGen = 'workflow_testrun_sdk_form_schema_gen',
-  /** 表单 UI 模式 */
+  /** Form UI Pattern */
   FormRunUIMode = 'workflow_testrun_sdk_form_run_ui_mode',
-  /** 表单数据填充 */
+  /** form data filling */
   FormGenDataOrigin = 'workflow_testrun_sdk_form_gen_data_origin',
-  /** log 相关 */
+  /** log related */
   LogOutputDifference = 'workflow_testrun_sdk_log_output_difference',
   LogOutputMarkdown = 'workflow_testrun_sdk_log_output_markdown',
-  /** trace 相关 */
+  /** Trace correlation */
   TraceOpen = 'workflow_testrun_sdk_trace_open',
 }
 
@@ -87,14 +87,14 @@ export type PickReporterParams<
 > = Pick<Params[T], X>;
 
 export interface TestRunReporterService {
-  /** 日志原始输出异同解析 */
+  /** Log original output similarities and differences analysis */
   logRawOutputDifference: (
     params: Pick<
       Params[EventName.LogOutputDifference],
       'error_msg' | 'log_node_type' | 'is_difference'
     >,
   ) => void;
-  /** 日志 Markdown 解析 */
+  /** log Markdown parsing */
   logOutputMarkdown: (
     params: PickReporterParams<EventName.LogOutputMarkdown, 'action_type'>,
   ) => void;

@@ -30,7 +30,7 @@ import {
 } from '../plugin-class/plugin';
 
 /**
- * 创建 可写生命周期 的辅助函数
+ * To create a helper function for a writable lifecycle
  */
 export const createWriteableLifeCycleServices = <T = unknown, K = unknown>(
   plugin: WriteableChatAreaPlugin<T, K>,
@@ -38,7 +38,7 @@ export const createWriteableLifeCycleServices = <T = unknown, K = unknown>(
 ): WriteableLifeCycleServiceCollection<T, K> => {
   const lifeCycleService = generator(plugin);
 
-  // 为了不影响历史逻辑，返回值会过滤掉 pluginInstance 属性
+  // In order not to affect the historical logic, the return value filters out the pluginInstance property
   bindPluginInstance<T, K>(
     lifeCycleService as unknown as WriteableLifeCycleServiceCollection<T, K>,
     plugin,
@@ -51,7 +51,7 @@ export const createWriteableLifeCycleServices = <T = unknown, K = unknown>(
 };
 
 /**
- * 创建 可写生命周期 的辅助函数
+ * To create a helper function for a writable lifecycle
  */
 export const createReadonlyLifeCycleServices = <T = unknown, K = unknown>(
   plugin: ReadonlyChatAreaPlugin<T, K>,
@@ -59,7 +59,7 @@ export const createReadonlyLifeCycleServices = <T = unknown, K = unknown>(
 ): ReadonlyLifeCycleServiceCollection<T, K> => {
   const lifeCycleService = generator(plugin);
 
-  // 为了不影响历史逻辑，返回值会过滤掉 pluginInstance 属性
+  // In order not to affect the historical logic, the return value filters out the pluginInstance property
   bindPluginInstance<T, K>(
     lifeCycleService as unknown as ReadonlyLifeCycleServiceCollection<T, K>,
     plugin,
@@ -72,7 +72,7 @@ export const createReadonlyLifeCycleServices = <T = unknown, K = unknown>(
 };
 
 /**
- * 针对历史逻辑的适配，支持通过 pluginInstance 继续访问数据
+ * For adaptation of historical logic, support for continued access to data through pluginInstance
  */
 const bindPluginInstance = <T = unknown, K = unknown>(
   lifeCycleService:

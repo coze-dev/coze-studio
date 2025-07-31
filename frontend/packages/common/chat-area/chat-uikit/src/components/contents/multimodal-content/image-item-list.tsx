@@ -60,7 +60,7 @@ export const ImageItemList: FC<ImageItemListProps> = ({
           />
         ) : (
           <div
-            // 这里借用了 messageBoxInner 的样式风格
+            // Here we borrow the style of messageBoxInner
             className={typeSafeMessageBoxInnerVariants({
               color: 'whiteness',
               border: null,

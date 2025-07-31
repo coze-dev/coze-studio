@@ -119,7 +119,7 @@ export const getIconByExtension = (extension: string) => {
   return fileIcon;
 };
 
-/** 获取文件名后缀 */
+/** Get filename suffix */
 export function getFileExtension(name?: string) {
   if (!name) {
     return '';

@@ -33,11 +33,11 @@ export const generateStr2Link = (str: string, avoidEscape?: boolean) => {
   }
 
   /**
-   * 更严格的 url 匹配规则，防止过度匹配
-   * 协议：http、https
-   * 域名：允许使用 -、a-z、A-Z、0-9，其中 - 不能开头，每一级域名长度不会超过 63
-   * 端口：支持带端口 0 - 65535
-   * URL：严格型不匹配中文等转译前的文字，否则一旦命中将会识别整段字符串
+   * Stricter URL matching rules to prevent over-matching
+   * Protocol: http, https
+   * Domain names: -, a-z, A-Z, 0-9 are allowed, where - cannot start, and the length of each level of domain name will not exceed 63.
+   * Port: Support with port 0 - 65535
+   * URL: Strict does not match the text before translation such as Chinese, otherwise the entire string will be recognized once hit
    */
   const urlReg = new RegExp(
     'http(s)?://' +
@@ -48,12 +48,12 @@ export const generateStr2Link = (str: string, avoidEscape?: boolean) => {
   );
   const matches = [...str.matchAll(urlReg)];
   /**
-   * 切割字符串，url 嵌套为 link 的样式，切割步骤：
-   * 1. 匹配字符串中所有的 url
-   * 2. 倒序 matches，从末尾开始切，原因是 match.index 是从头开始计数，从头切增加计算量
-   * 3. 每一个 match 切两刀成三段，头尾是普通字符串，中间为 url
-   * 4. 按照 end、url、start 的顺序 push 到栈中，下次 match 会直接取 start 继续切
-   * 5. 切割完成后做一次倒序
+   * Cut string, url nested as link style, cutting steps:
+   * 1. Match all URLs in the string
+   * 2. Reverse matches, cut from the end, the reason is that match.index counts from scratch, and cut from scratch increases the amount of calculation
+   * 3. Each match is cut into three sections, the head and tail are ordinary strings, and the middle is url.
+   * 4. Push to the stack in the order of end, url, and start, and the next match will directly take start and continue to cut
+   * 5. Do a reverse sequence after the cutting is completed
    */
   return matches
     .reverse()

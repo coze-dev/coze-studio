@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 BASE_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 
-# 某些系统可能没有 realpath 命令，
+# Some systems may not have the realpath command.
 if ! command -v realpath &>/dev/null; then
     echo "未找到 realpath 命令"
     echo "请执行以下命令安装必要依赖"

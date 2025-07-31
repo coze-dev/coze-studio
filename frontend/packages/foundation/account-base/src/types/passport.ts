@@ -18,25 +18,25 @@ export type OAuth2StateType = 'login' | 'delete_account' | 'oauth';
 
 export interface OAuth2RedirectConfig {
   /**
-   * 最终的OAuth2鉴权信息将作为路由参数跳转，这个参数指定目标路由地址，注意在目标路由上使用
-   * useAuthLoginDataRouteFromOAuth2来提取路由参数，并转换成用户中台三方登陆服务（authLogin）的参数；
-   * 默认值为当前路径名称，即不传navigatePath参数时，当前路由一定要注册useAuthLoginDataRouteFromOAuth2才有效
+   * The final OAuth2 authentication information will be redirected as a route parameter, which specifies the target route address. Be careful to use it on the target route
+   * useAuthLoginDataRouteFromOAuth2 to extract the routing parameters and convert them into the parameters of the user's mid-platform three-party login service (authLogin);
+   * The default value is the current path name, that is, when the navigatePath parameter is not passed, the current route must be registered useAuthLoginDataRouteFromOAuth2 to be valid
    */
   navigatePath?: string;
   /**
-   * OAuth2回调后拿到的鉴权信息的使用场景，用于在一些路由组件中区分，不符合对应场景的不能用于消费
+   * The usage scenario of the authentication information obtained after the OAuth2 callback is used to distinguish among some routing components. Those that do not meet the corresponding scenario cannot be used for consumption
    */
   type: OAuth2StateType;
   /**
-   * 传递给OAuth2服务器的state字段，会在回调时传回，用于恢复网页状态
+   * The state field passed to the OAuth2 server is returned during the callback to restore the state of the webpage
    */
 
   extra?: {
     // @ts-expect-error -- linter-disable-autofix
     origin?: string;
-    [x: string]: string; // 用于安全监测
+    [x: string]: string; // For safety monitoring
     // @ts-expect-error -- linter-disable-autofix
-    encrypt_state?: string; //加密state，bind_type 为 4时使用
+    encrypt_state?: string; //Encrypted state, used when bind_type 4
   };
   scope?: string;
   optionalScope?: string;

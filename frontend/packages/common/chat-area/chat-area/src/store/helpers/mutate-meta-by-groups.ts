@@ -21,7 +21,7 @@ import { flatMessageGroupIdList } from '../../utils/message-group/flat-message-g
 import { checkMessageHasUniqId } from '../../utils/message';
 
 /**
- * 用于更新 meta.isLatestGroupAnswer
+ * Use to update meta.isLatestGroupAnswer
  */
 export const mutateUpdateMetaByGroupInfo = (
   metaList: MessageMeta[],

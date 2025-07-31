@@ -19,7 +19,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createStorage, storage } from '../../src/utils/storage';
 import { useCollaborationStore } from '../../src/store/collaboration';
 
-// 模拟 useCollaborationStore
+// Analog useCollaborationStore
 vi.mock('../../src/store/collaboration', () => ({
   useCollaborationStore: {
     getState: vi.fn().mockReturnValue({
@@ -32,7 +32,7 @@ describe('storage utils', () => {
   let mockStorage: Storage;
 
   beforeEach(() => {
-    // 创建模拟的 Storage 对象
+    // Create a simulated Storage object
     mockStorage = {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -55,19 +55,19 @@ describe('storage utils', () => {
         prefix,
       );
 
-      // 测试设置值
+      // test settings
       proxy.testKey = 'testValue';
       expect(mockStorage.setItem).toHaveBeenCalledWith(
         `${prefix}.testKey`,
         'testValue',
       );
 
-      // 测试获取值
+      // Test Get Value
       (mockStorage.getItem as any).mockReturnValueOnce('storedValue');
       expect(proxy.testKey).toBe('storedValue');
       expect(mockStorage.getItem).toHaveBeenCalledWith(`${prefix}.testKey`);
 
-      // 测试删除值
+      // Test Delete Value
       delete proxy.testKey;
       expect(mockStorage.removeItem).toHaveBeenCalledWith(`${prefix}.testKey`);
     });
@@ -76,22 +76,22 @@ describe('storage utils', () => {
       const target: Record<string, any> = {};
       const proxy = createStorage<Record<string, any>>(mockStorage, target);
 
-      // 设置字符串值应该成功
+      // Setting string value should succeed
       proxy.key1 = 'value1';
       expect(mockStorage.setItem).toHaveBeenCalledTimes(1);
 
-      // 注意：在实际代码中，设置非字符串值会返回 false，但不会抛出错误
-      // 在测试中，我们只验证 setItem 没有被再次调用
+      // Note: In actual code, setting a non-string value will return false, but no error will be thrown
+      // In the test, we only verify that setItem is not called again
       try {
-        // 这里可能会抛出错误，但我们不关心错误本身
+        // Errors may be thrown here, but we don't care about the errors themselves
         proxy.key2 = 123 as any;
-        // 如果没有抛出错误，我们期望 setItem 不会被再次调用
+        // If no error is thrown, we expect that setItem will not be called again
       } catch (e) {
-        // 如果抛出错误，我们也期望 setItem 不会被再次调用
+        // If an error is thrown, we also expect that setItem will not be called again
         console.log('捕获到错误，但这是预期的行为');
       }
 
-      // 无论是否抛出错误，我们都期望 setItem 不会被再次调用
+      // Whether an error is thrown or not, we expect that setItem will not be called again
       expect(mockStorage.setItem).toHaveBeenCalledTimes(1);
     });
 
@@ -114,17 +114,17 @@ describe('storage utils', () => {
 
     it('设置 baseVersion 应该打印错误', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-        /* 空函数 */
+        /* empty function */
       });
 
-      // 注意：在实际代码中，设置 baseVersion 会返回 false 并打印错误，但不会抛出错误
-      // 在测试中，我们只验证 console.error 被调用
+      // Note: In the actual code, setting baseVersion will return false and print an error, but no error will be thrown
+      // In testing, we only verify that console.error is called
       try {
-        // 这里可能会抛出错误，但我们不关心错误本身
+        // Errors may be thrown here, but we don't care about the errors themselves
         storage.baseVersion = 'new-version';
-        // 如果没有抛出错误，我们期望 console.error 被调用
+        // If no error is thrown, we expect console.error to be called
       } catch (e) {
-        // 如果抛出错误，我们也期望 console.error 被调用
+        // If an error is thrown, we also expect console.error to be called
         console.log('捕获到错误，但这是预期的行为');
       }
 

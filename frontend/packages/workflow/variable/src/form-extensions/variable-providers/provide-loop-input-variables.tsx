@@ -46,7 +46,7 @@ export const parseLoopInputsByViewVariableMeta = (
   );
 
   const variableProperties = uniqInputs(variableParameters).map(_input => {
-    // 没有 rawMeta 时，可能是历史数据，走下面的兜底逻辑
+    // Without rawMeta, it may be historical data, follow the fallback logic below
     if (_input?.input?.rawMeta?.type) {
       return ASTFactory.createProperty({
         key: _input?.name,
@@ -65,7 +65,7 @@ export const parseLoopInputsByViewVariableMeta = (
         meta: {
           mutable: true,
         },
-        // 直接引用变量
+        // Direct reference to variables
         initializer: ASTFactory.createKeyPathExpression({
           keyPath: _input?.input?.content?.keyPath || [],
         }),
@@ -105,7 +105,7 @@ export const parseLoopInputsByViewVariableMeta = (
 };
 
 /**
- * 循环输入变量同步
+ * loop input variable synchronization
  */
 export const provideLoopInputsVariables: VariableProviderAbilityOptions = {
   key: 'provide-loop-input-variables',

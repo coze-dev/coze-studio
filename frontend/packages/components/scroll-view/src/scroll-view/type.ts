@@ -17,31 +17,31 @@
 import { type RefObject } from 'react';
 
 export interface ScrollViewController {
-  /** 滚动到  */
+  /** Scroll to  */
   scrollTo: (update: (prev: number) => number) => void;
-  /** 滚动到可滚动高度的指定百分比的位置，以容器顶部为参考基线；当滚动完毕后回调callback */
+  /** Scroll to a specified percentage of the scrollable height, using the top of the container as a reference baseline; callback when scrolling is complete */
   scrollToPercentage: (ratio: number) => Promise<void> | void;
-  /** 获取当前滚动百分比 */
+  /** Get the current scroll percentage */
   getScrollPercentage: () => number;
-  /** 获取当前滚动状态距离顶部的距离，适配y方向和y-reverse方向的情况 */
+  /** Get the distance from the top of the current scrolling state, adapt the y-direction and y-reverse direction */
   getScrollTop: () => number;
-  /** 获取原始的 scroll top 值，不做换算 */
+  /** Get the original scroll top value without conversion */
   getOriginScrollInfo: () => {
     scrollHeight: number;
     scrollTop: number;
     rect: null | DOMRect;
   };
-  /** 获取当前滚动状态距离顶部的距离，适配y方向和y-reverse方向的情况 */
+  /** Get the distance from the top of the current scrolling state, adapt the y-direction and y-reverse direction */
   getScrollBottom: () => number;
-  /** 更新吸顶/吸底状态，当数据有更新时主动调用此API */
+  /** Update the ceiling/bottom suction status, and actively call this API when the data is updated */
   refreshAnchor: () => void;
-  /** 禁止容器滚动 */
+  /** Disable container scrolling */
   disableScroll: () => void;
-  /** 使得容器可滚动 */
+  /** Makes the container scrollable */
   enableScroll: () => void;
-  /** 检查内容充满容器（用于初始状态高度较小的情况，防止无法触发 scroll 事件） */
+  /** Check that the content fills the container (used when the initial state height is small to prevent the scroll event from being triggered) */
   checkContentIsFull: () => boolean;
-  /** 获取 scroll 外层容器的引用 */
+  /** Get a reference to the scroll outer container */
   getScrollViewWrapper: () => RefObject<HTMLDivElement>;
 }
 
@@ -63,35 +63,35 @@ export interface ScrollViewProps
   innerBefore?:
     | ((controller: ScrollViewController) => JSX.Element)
     | JSX.Element;
-  /** 是否反转，从下往上滚动 */
+  /** Whether to reverse, scroll from bottom to top */
   reverse?: boolean;
-  /** 剩余滚动至顶部距离小于多少时触发，默认为offsetHeight */
+  /** Triggered when the remaining scroll to the top is less than the distance, the default is offsetHeight */
   reachTopThreshold?: number;
-  /* 滚动到达顶部阈值 */
+  /* Scroll to the top threshold */
   onReachTop?: () => unknown;
-  /* 滚动离开顶部阈值 */
+  /* Scroll away from the top threshold */
   onLeaveTop?: () => unknown;
 
-  /** 剩余滚动至底部距离小于多少时触发，默认为offsetHeight */
+  /** Triggered when the remaining scroll to the bottom distance is less than, the default is offsetHeight */
   reachBottomThreshold?: number;
-  /** 滚动到达底部阈值 */
+  /** Scroll to the bottom threshold */
   onReachBottom?: () => unknown;
-  /** 滚动离开底部阈值 */
+  /** Scroll away from the bottom threshold */
   onLeaveBottom?: () => unknown;
-  /** 不管内容是否超出 container 都展示 scrollBar */
+  /** Show scrollBar regardless of whether the content exceeds the container. */
   showScrollbar?: boolean;
-  /** 内容超出 container 时才展示 scrollBar，若未超出，不展示 scrollBar */
+  /** The scrollBar is only displayed when the content exceeds the container. If it does not exceed, the scrollBar is not displayed. */
   autoShowScrollbar?: boolean;
-  /** 完全隐藏 scrollbar */
+  /** Completely hide scrollbar */
   scrollbarWidthNone?: boolean;
 }
 
-/** 滚动状态 */
+/** scrolling state */
 export enum ScrollStatus {
-  /** 吸顶 */
+  /** Ceiling */
   Top = 'top',
-  /** 吸底 */
+  /** bottom suction */
   Bottom = 'bottom',
-  /** 中间可双向滚动 */
+  /** Two-way scrolling in the middle */
   Inner = 'inner',
 }

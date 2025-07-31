@@ -46,28 +46,28 @@ export interface ModelConfigProps
   extends Pick<ModelFormContextProps, 'hideDiversityCollapseButton'> {
   modelStore: UseHandleModelFormProps['modelStore'];
   /**
-   * 模型配置更新
+   * model configuration update
    *
-   * 需要注意切换模型时，会先触发 onModelChange，由外部传入更新后的 selectedModelId，此后内部会计算新模型的 config 并触发 onConfigChange
+   * It should be noted that when switching models, onModelChange will be triggered first, and the updated selectedModelId will be passed externally. After that, the new model's config will be calculated internally and onConfigChange will be triggered.
    *
-   * 理想数据流是切换模型触发 onModelChange 后，外部一并传入新的 selectedModelId 和 currentConfig。或者由 onModelChange 同时抛出新的 modelId 和 config。
-   * 目前这样虽然有点挫，但由于历史设计原因，改造成上述方式成本略高，暂保持现状。
+   * The ideal data flow is when the switch model triggers onModelChange, and the new selectedModelId and currentConfig are passed externally. Or onModelChange throws a new modelId and config at the same time.
+   * Although the current situation is a bit frustrating, due to historical design reasons, the cost of transforming it into the above method is slightly higher, and the status quo is maintained for the time being.
    */
   onConfigChange: (value: ModelInfo) => void;
   currentConfig: ModelInfo;
-  /** 当前 agent 是 single 还是 mulit */
+  /** Is the current agent single or mulit? */
   agentType: 'single' | 'multi';
-  /** 明确diff类型, 透传给getSchema。model-diff情况下不展示携带上下文轮数影响 */
+  /** Clarify the diff type and pass it through to getSchema. In the case of model-diff, the number of rounds carrying the context is not displayed */
   diffType?: 'prompt-diff' | 'model-diff';
 }
 
 interface PopoverModelConfigViewProps {
   /**
-   * 需要持续保留表单实例，以便复用无比复杂的「切换模型时初始化详细配置」的逻辑
+   * You need to keep the form instance continuously in order to reuse the extremely complex "initialize detailed configuration when switching models" logic
    *
-   * 理想做法是在外层业务侧 onModelChange 时重置 config 值
-   * 但一是该逻辑过于复杂，难以独立抽出初始化方法；
-   * 二是 useHandleModelForm 使用成本又极高，不适合放到最外层业务侧去调用
+   * The ideal approach is to reset the config value when onModelChange occurs on the outer business side
+   * But firstly, the logic is too complicated to extract the initialization method independently.
+   * Second, useHandleModelForm is very expensive to use and is not suitable for being called on the outermost business side
    */
   visible: boolean;
   disabled?: boolean;
@@ -76,7 +76,7 @@ interface PopoverModelConfigViewProps {
   modelConfigProps: ModelConfigProps;
 }
 
-/** Popover 的 模型配置状态，对应列表状态。单纯为了避免组件过大而做的拆分 */
+/** Popover's model configuration state corresponds to the list state. Splitting purely to avoid components being too large */
 export function PopoverModelConfigView({
   visible,
   disabled,
@@ -131,7 +131,7 @@ function ModelForm({
   disabled,
   currentModelId,
   formilyCore,
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- FormProvider 不适合用别的格式
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- FormProvider is not suitable for other formats
   formilyReact: { createSchemaField, FormProvider },
   modelConfigProps: {
     currentConfig,
@@ -170,7 +170,7 @@ function ModelForm({
   );
 
   useEffect(() => {
-    // 在 promise executor 中执行回调，其中的错误会异步产生 promise rejection ，而不是导致页面白屏
+    // Execute a callback in a promise executor where an error causes a promise rejection asynchronously instead of a white screen
     new Promise(() => handleFormInit(form, formilyCore));
 
     return handleFormUnmount;
@@ -211,13 +211,13 @@ function useInitFormily():
       node: (
         <div className="h-full flex items-center gap-y-[8px] text-[14px]">
           <IconCozWarningCircleFill
-            // 该值迁移自 src/components/model-form/index.tsx
+            // The value is migrated from src/components/model-form/index.tsx
             className="text-[#FF2710]"
           />
           <div className="font-semibold leading-[22px]">
             <span>{I18n.t('model_form_fail_text')}</span>
             <span
-              // 该值迁移自 src/components/model-form/index.tsx
+              // The value is migrated from src/components/model-form/index.tsx
               className="cursor-pointer text-[#4D53E8]"
               onClick={retryImportFormily}
             >

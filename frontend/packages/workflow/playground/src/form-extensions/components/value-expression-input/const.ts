@@ -19,7 +19,7 @@ import { I18n } from '@coze-arch/i18n';
 
 import { type InputType } from './InputField';
 
-/** 输入类型选项 */
+/** input type options */
 export const TYPE_OPTIONS = (
   inputType: InputType,
 ): {
@@ -47,13 +47,13 @@ const EMPTY_REF = {
   type: ValueExpressionType.REF,
 };
 
-/** 各输入类型的空值 */
+/** Null values for each input type */
 export const EMPTY_VALUE = {
   [ValueExpressionType.REF]: EMPTY_REF,
   [ValueExpressionType.LITERAL]: EMPTY_LITERAL,
 };
 
-/** 默认值 */
+/** default value */
 export const DEFAULT_VALUE = EMPTY_REF;
 
 export const VARIABLE_SELECTOR_STYLE = {

@@ -1,4 +1,4 @@
-{{- if .Values.rocketmq.enabled }}
+{{- if and (eq (lower (default "rmq" .Values.cozeServer.env.COZE_MQ_TYPE)) "rmq") .Values.rocketmq.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

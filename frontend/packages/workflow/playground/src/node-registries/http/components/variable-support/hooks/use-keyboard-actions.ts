@@ -43,9 +43,9 @@ export const useKeyboardActions = ({
   );
 
   /**
-   * 推荐面板出现时，禁用 ArrowUp/ArrowDown/Enter 的默认行为
-   * 改为上下键切换推荐项
-   * 左键关闭变量列表，右键打开变量列表，回车插入
+   * Disable the default behavior of ArrowUp/ArrowDown/Enter when the recommendation panel appears
+   * Change up and down keys to switch recommendations
+   * Left-click to close the variable list, right-click to open the variable list, and press Enter to insert.
    */
   useEffect(() => {
     if (!editor) {
@@ -61,7 +61,7 @@ export const useKeyboardActions = ({
       ]);
     }
 
-    // 检测到变量列表存在时，再禁用回车
+    // When the variable list is detected, disable carriage return
     if (isOptionsVisible) {
       editor.disableKeybindings([
         'Enter',
@@ -90,7 +90,7 @@ export const useKeyboardActions = ({
     applyNode,
   });
 
-  // 上下键切换推荐项，回车填入
+  // Press the up and down keys to switch the recommended items, and press Enter to fill in.
   useKeyboard(dropDownVisible, {
     ArrowUp: prev,
     ArrowDown: next,
@@ -99,7 +99,7 @@ export const useKeyboardActions = ({
     Enter: apply,
   });
 
-  // ESC 关闭
+  // ESC Close
   useKeyboard(dropDownVisible, {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     Escape() {

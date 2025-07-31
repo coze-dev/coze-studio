@@ -21,43 +21,43 @@ import { type LogValueType } from '../../../types';
 const REASONING_CONTENT_NAME = 'reasoning_content';
 
 interface isDifferentOutputArgs {
-  /** 节点输出 */
+  /** Node output */
   nodeOutput: LogValueType;
-  /** 原始输出 */
+  /** raw output */
   rawOutput: LogValueType;
-  /** 是否是大模型节点 */
+  /** Is it a large model node? */
   isLLM?: boolean;
 }
 
 /**
- * 通用的节点输出判异
+ * General Node Output Decision
  */
 const isDifferentCommonOutput = (args: isDifferentOutputArgs) => {
   const { nodeOutput, rawOutput } = args;
   /**
    * case1: rawOutput === undefined
-   * 可以无须比较，直接返回假
+   * You can directly return to the fake without comparison.
    */
   if (isUndefined(rawOutput)) {
     return false;
   }
   const nodeOutputType = typeof nodeOutput;
   const rawOutputType = typeof rawOutput;
-  /** case2: 两者类型不同 */
+  /** Case2: The two types are different */
   if (nodeOutputType !== rawOutputType) {
     return true;
   }
-  /** case4: 深度比较 */
+  /** Case4: Depth comparison */
   return !isEqual(nodeOutput, rawOutput);
 };
 
 /**
- * 大模型节点特有的判断逻辑
+ * The Unique Judgment Logic of Large Model Nodes
  */
 const isDifferentLLMOutput = (args: isDifferentOutputArgs) => {
   const { nodeOutput } = args;
 
-  /** 如果节点输出是对象，则去除系统字段 */
+  /** If the node output is an object, remove the system field */
   const readNodeOutput = isObject(nodeOutput)
     ? omit(nodeOutput, [REASONING_CONTENT_NAME])
     : nodeOutput;
@@ -65,21 +65,21 @@ const isDifferentLLMOutput = (args: isDifferentOutputArgs) => {
     ...args,
     nodeOutput: readNodeOutput,
   });
-  /** 常规判断已经判同，则直接返回 */
+  /** If the conventional judgment has been approved, it will return directly. */
   if (!isDiffCommon) {
     return isDiffCommon;
   }
-  /** 如果不是节点输出不是对象，直接判异 */
+  /** If it is not a node, the output is not an object, and the direct judgment is */
   if (!isObject(readNodeOutput)) {
     return true;
   }
 
   const arr = Object.entries(readNodeOutput);
-  /** 如果排除系统字段，仍然超过多个字段，则无须进一步比较，直接判异 */
+  /** If the system field is excluded and there are still more than one field, there is no need for further comparison and a direct judgment is made */
   if (arr.length !== 1) {
     return true;
   }
-  /** 用唯一的值与节点输出做异同判断 */
+  /** Use unique values to judge similarities and differences with node outputs */
   return isDifferentCommonOutput({
     ...args,
     nodeOutput: arr[0][1],
@@ -87,22 +87,22 @@ const isDifferentLLMOutput = (args: isDifferentOutputArgs) => {
 };
 
 /**
- * 精细的判断节点输出和原始输出是否相同
+ * Fine determination of whether the node output and the original output are the same
  */
 export const isDifferentOutput = (
   args: isDifferentOutputArgs,
 ): [boolean, any] => {
   /**
-   * nodeOutput 可能值：
+   * Possible nodeOutput values:
    * 1. undefined
    * 2. string
-   * 3. 包涵一个自定义字段、reasoning_content、LogObjSpecialKey
-   * 4. 包涵多个自定义字段
-   * rawOutput 可能值：
+   * 3. Includes a custom field, reasoning_content, LogObjSpecialKey
+   * 4. Include multiple custom fields
+   * rawOutput possible values:
    * 1. undefined
    * 2. string
-   * 4. 任意对象
-   * 5. 任意数组
+   * 4. Any object
+   * 5. Arbitrary array
    */
   try {
     const { isLLM } = args;
@@ -111,7 +111,7 @@ export const isDifferentOutput = (
       : isDifferentCommonOutput(args);
     return [result, undefined];
   } catch (err) {
-    /** 该函数会深入解析日志结构，不排除出现异常的可能性，出现异常则判异， */
+    /** This function will deeply analyze the log structure and do not rule out the possibility of abnormalities. */
     return [true, err];
   }
 };

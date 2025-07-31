@@ -39,7 +39,7 @@ export class VariablePrefixWidget extends WidgetType {
     super();
   }
 
-  // 插入 editor 中的变量块 dom
+  // Insert variable block dom in editor
   toDOM() {
     const { range, varaibleInfo, nodeName, isDarkTheme, languageId } =
       this.variableContext;

@@ -74,7 +74,7 @@ export const useShortcut = ({
     horizontalAverage: () => void;
   };
 }) => {
-  // 上下左右微调元素位置
+  // Fine-tune element positions up, down, left, right
   useKeyPress(
     ['uparrow', 'downarrow', 'leftarrow', 'rightarrow'],
     e => {
@@ -101,7 +101,7 @@ export const useShortcut = ({
     },
   );
 
-  // 删除元素
+  // Delete element
   useKeyPress(
     ['backspace', 'delete'],
     e => {
@@ -118,7 +118,7 @@ export const useShortcut = ({
   useKeyPress(
     ['ctrl.z', 'meta.z'],
     e => {
-      // 一定要加，否则会命中浏览器乱七八糟的默认行为
+      // Be sure to add it, otherwise it will hit the browser's messy default behavior.
       e.preventDefault();
       if (e.shiftKey) {
         redo();
@@ -133,7 +133,7 @@ export const useShortcut = ({
   );
 
   /**
-   * 功能开发暂停了，原因详见 packages/workflow/fabric-canvas/src/hooks/use-group.tsx
+   * Functional development has been suspended. For the reasons, see packages/workflow/fabricate-canvas/src/hooks/use-group.tsx
    */
   // useKeyPress(
   //   ['ctrl.g', 'meta.g'],
@@ -181,11 +181,11 @@ export const useShortcut = ({
     },
   );
 
-  // 生成副本
+  // make a copy
   useKeyPress(
     ['ctrl.d', 'meta.d'],
     async e => {
-      // 必须阻止默认行为，否则会触发添加标签
+      // The default behavior must be blocked or the add label will be triggered
       e.preventDefault();
       await copy(CopyMode.CtrlD);
       paste({
@@ -199,7 +199,7 @@ export const useShortcut = ({
     },
   );
 
-  // [ 下移一层
+  // [Move down one floor
   useKeyPress(
     ['openbracket'],
     e => {
@@ -214,7 +214,7 @@ export const useShortcut = ({
     },
   );
 
-  // ] 上移一层
+  // Move up one layer
   useKeyPress(
     ['closebracket'],
     e => {
@@ -228,7 +228,7 @@ export const useShortcut = ({
       target: ref,
     },
   );
-  // ⌘ + [、⌘ + ] 禁止浏览器默认行为 前进、后退
+  // ⌘ + [、⌘ + ] disable browser default behavior, forward and backward
   useKeyPress(
     ['meta.openbracket', 'meta.closebracket'],
     e => {
@@ -243,7 +243,7 @@ export const useShortcut = ({
     },
   );
 
-  // ⌘ + [ 置底
+  // < unk > +
   useKeyPress(
     ['meta.openbracket'],
     e => {
@@ -258,7 +258,7 @@ export const useShortcut = ({
     },
   );
 
-  // ⌘ + ] 置顶
+  // 🥰 +] top
   useKeyPress(
     ['meta.closebracket'],
     e => {
@@ -273,7 +273,7 @@ export const useShortcut = ({
     },
   );
 
-  // 水平居左
+  // Horizontal left
   useKeyPress(
     ['alt.a'],
     e => {
@@ -287,7 +287,7 @@ export const useShortcut = ({
     },
   );
 
-  // 水平居右
+  // Horizontal right
   useKeyPress(
     ['alt.d'],
     e => {
@@ -301,7 +301,7 @@ export const useShortcut = ({
     },
   );
 
-  // 水平居中
+  // centered text
   useKeyPress(
     ['alt.h'],
     e => {
@@ -315,7 +315,7 @@ export const useShortcut = ({
     },
   );
 
-  // 垂直居上
+  // vertical top
   useKeyPress(
     ['alt.w'],
     e => {
@@ -329,7 +329,7 @@ export const useShortcut = ({
     },
   );
 
-  // 垂直居下
+  // vertical
   useKeyPress(
     ['alt.s'],
     e => {
@@ -343,7 +343,7 @@ export const useShortcut = ({
     },
   );
 
-  // 垂直居中
+  // Vertically centered
   useKeyPress(
     ['alt.v'],
     e => {
@@ -357,7 +357,7 @@ export const useShortcut = ({
     },
   );
 
-  // 水平均分
+  // horizontal average fraction
   useKeyPress(
     ['alt.ctrl.h'],
     e => {
@@ -371,7 +371,7 @@ export const useShortcut = ({
     },
   );
 
-  // 垂直均分
+  // vertical equipartition
   useKeyPress(
     ['alt.ctrl.v'],
     e => {

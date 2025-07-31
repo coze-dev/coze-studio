@@ -83,7 +83,7 @@ export const TextProcessing: FC<
           },
         },
       ],
-      // 非首次添加时，不需要传分段规则
+      // When not added for the first time, no segmentation rules are required
       chunk_strategy: getCustomValues(segmentMode, segmentRule),
       storage_strategy:
         IS_CN_REGION && enableStorageStrategy

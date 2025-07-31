@@ -37,7 +37,7 @@ export interface WorkflowDatabase {
 }
 
 /**
- * 数据库配置字段
+ * Database configuration field
  */
 export interface DatabaseSettingField {
   fieldID: number;
@@ -66,7 +66,7 @@ export type DatabaseSettingFieldDTO = [
 ];
 
 /**
- * 数据库条件
+ * database conditions
  */
 export type DatabaseConditionOperator = ConditionOperator;
 export type DatabaseConditionLeft = string;
@@ -89,7 +89,7 @@ export interface DatabaseConditionLeftDTO {
 }
 
 export interface DatabaseConditionOperatorDTO {
-  // 对操作符的翻译前后端没有统一
+  // Translation of operators is not uniform between front and back ends
   name: 'operation';
   input: {
     type: 'string';

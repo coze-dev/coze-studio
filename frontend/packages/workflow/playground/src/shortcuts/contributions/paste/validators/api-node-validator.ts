@@ -31,7 +31,7 @@ export class ApiNodeValidator extends BaseNodeValidator {
       return null;
     }
 
-    // 不允许跨空间复制未上架的插件节点
+    // Cross-spatial copying of unshelved plug-in nodes is not allowed
     const apiNodeData = node._temp.externalData as ApiNodeData;
     const isListed =
       apiNodeData?.pluginProductStatus === PluginProductStatus.Listed;

@@ -29,7 +29,7 @@ import {
 
 import type { NodeInputNameFormat } from './type';
 
-/** 根据 StandardNodeType 的值获取对应的键名 */
+/** Get the corresponding key name according to the value of StandardNodeType */
 export function getStandardNodeTypeKey(
   value: string,
 ): keyof typeof StandardNodeType | undefined {
@@ -38,19 +38,19 @@ export function getStandardNodeTypeKey(
   return found ? (found[0] as keyof typeof StandardNodeType) : undefined;
 }
 
-/** 获取变量名称 */
+/** Get variable name */
 export const getVariableName = (params: {
-  /** 变量表达式 */
+  /** variable expression */
   input: RefExpression;
-  /** 前缀 */
+  /** prefix */
   prefix?: string;
-  /** 后缀 */
+  /** suffix */
   suffix?: string;
-  /** 名称自定义格式化 */
+  /** Name custom formatting */
   format?: NodeInputNameFormat;
-  /** 节点 */
+  /** Node */
   node: WorkflowNodeEntity;
-  /** 变量服务 */
+  /** Variable service */
   variableService: WorkflowVariableFacadeService;
 }): string | undefined => {
   const { input, node, variableService, prefix = '', suffix = '' } = params;
@@ -96,7 +96,7 @@ export const getVariableName = (params: {
   return `${prefix}${name}${suffix}`;
 };
 
-/** 检测是否有相同名称 */
+/** Check if they have the same name */
 const checkSameName = (
   name: string,
   inputParameters: InputValueVO[],
@@ -107,7 +107,7 @@ const checkSameName = (
   return sameNameVariables.length;
 };
 
-/** 生成不重复的名称 */
+/** Generate non-duplicate names */
 export const getUniqueName = (params: {
   variableName: string;
   inputParameters: InputValueVO[];
@@ -121,7 +121,7 @@ export const getUniqueName = (params: {
     return variableName;
   }
   let nameIndex = 1;
-  /** 如果存在重名，则生成一个新的名称 */
+  /** If there is a duplicate name, generate a new name */
   while (true) {
     const currentName = `${variableName}${nameIndex}`;
     const currentSameNames = checkSameName(currentName, inputParameters);

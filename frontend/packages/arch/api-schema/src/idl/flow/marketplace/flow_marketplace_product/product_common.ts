@@ -22,36 +22,36 @@ export enum ProductEntityType {
   /** Workflow = 3 , */
   SocialScene = 4,
   Project = 6,
-  /** 历史工作流，后续不会再有（废弃） */
+  /** History workflow, no more in the future (abandoned) */
   WorkflowTemplate = 13,
-  /** 历史图像流模板，后续不会再有（废弃） */
+  /** Historical image stream template, no more in the future (obsolete) */
   ImageflowTemplate = 15,
-  /** 模板通用标识，仅用于绑定模板相关的配置，不绑定商品 */
+  /** Template universal identification, only used to bind template-related configurations, not bind products */
   TemplateCommon = 20,
-  /** Bot 模板 */
+  /** Bot template */
   BotTemplate = 21,
-  /** 工作流模板 */
+  /** workflow template */
   WorkflowTemplateV2 = 23,
-  /** 图像流模板（该类型已下线，合并入 workflow，但历史数据会保留，前端视作 workflow 展示） */
+  /** Image stream template (this type has been offline and merged into workflow, but historical data will be preserved, and the front end will be treated as workflow display) */
   ImageflowTemplateV2 = 25,
-  /** 项目模板 */
+  /** project template */
   ProjectTemplate = 26,
-  /** coze token 类商品，理论上只会有一个 */
+  /** Coze token products, theoretically there will only be one */
   CozeToken = 50,
-  /** 订阅 credit 的流量包，理论上只会有一个 */
+  /** Subscribe to the traffic package of credit, theoretically there will only be one */
   MsgCredit = 55,
-  /** 消息订阅类商品，理论上只有一个 */
+  /** There is only one subscription product in theory */
   SubsMsgCredit = 60,
   Common = 99,
-  /** 专题（兼容之前的设计） */
+  /** Special Topics (Compatible with previous designs) */
   Topic = 101,
 }
 export enum SortType {
   Heat = 1,
   Newest = 2,
-  /** 收藏时间 */
+  /** collection time */
   FavoriteTime = 3,
-  /** 相关性，只用于搜索场景 */
+  /** Correlation, only for search scenarios */
   Relative = 4,
 }
 export enum ProductPublishMode {
@@ -59,9 +59,9 @@ export enum ProductPublishMode {
   ClosedSource = 2,
 }
 export enum ProductListSource {
-  /** 推荐列表页 */
+  /** recommended list page */
   Recommend = 1,
-  /** 个性化推荐 */
+  /** personalized recommendation */
   CustomizedRecommend = 2,
 }
 export enum PluginType {
@@ -77,7 +77,7 @@ export interface CommercialSetting {
   commercial_type: ProductPaidType
 }
 export enum ProductStatus {
-  /** 从未上架 */
+  /** It never hit the shelves. */
   NeverListed = 0,
   Listed = 1,
   Unlisted = 2,
@@ -103,20 +103,20 @@ export interface ImageInfo {
   url: string,
 }
 export enum ProductDraftStatus {
-  /** 默认 */
+  /** default */
   Default = 0,
-  /** 审核中 */
+  /** Under review. */
   Pending = 1,
-  /** 审核通过 */
+  /** approved */
   Approved = 2,
-  /** 审核不通过 */
+  /** The review failed. */
   Rejected = 3,
-  /** 已废弃 */
+  /** Abandoned */
   Abandoned = 4,
 }
 export type AuditStatus = ProductDraftStatus;
 export interface OpeningDialog {
-  /** Bot开场白 */
+  /** Bot opening line */
   content: string
 }
 export enum InputType {
@@ -131,27 +131,27 @@ export enum PluginParamTypeFormat {
   ImageUrl = 1,
 }
 export enum WorkflowNodeType {
-  /** 开始 */
+  /** start */
   Start = 1,
-  /** 结束 */
+  /** end */
   End = 2,
-  /** 大模型 */
+  /** Large model */
   LLM = 3,
-  /** 插件 */
+  /** plugin */
   Api = 4,
-  /** 代码 */
+  /** code */
   Code = 5,
-  /** 知识库 */
+  /** Knowledge Base */
   Dataset = 6,
-  /** 选择器 */
+  /** selector */
   If = 8,
-  /** 工作流 */
+  /** Workflow */
   SubWorkflow = 9,
-  /** 变量 */
+  /** variable */
   Variable = 11,
-  /** 数据库 */
+  /** database */
   Database = 12,
-  /** 消息 */
+  /** message */
   Message = 13,
 }
 export enum SocialSceneRoleType {
@@ -161,11 +161,11 @@ export enum SocialSceneRoleType {
 }
 export enum UIPreviewType {
   /**
-   * UI 预览类型，定义对齐 UI Builder，目前用于 Project
-   * 网页端
+   * UI preview type, defining alignment UI Builder, currently used in Project
+   * web page
   */
   Web = 1,
-  /** 移动端 */
+  /** mobile end */
   Client = 2,
 }
 export interface ChargeSKUExtra {
@@ -173,7 +173,7 @@ export interface ChargeSKUExtra {
   is_self_define: boolean,
 }
 export enum FavoriteListSource {
-  /** 用户自己创建的 */
+  /** Created by users themselves */
   CreatedByMe = 1,
 }
 export interface FavoriteEntity {
@@ -182,13 +182,13 @@ export interface FavoriteEntity {
   name: string,
   icon_url: string,
   description: string,
-  /** 废弃，使用UserInfo */
+  /** Abandoned, using UserInfo */
   seller: SellerInfo,
-  /** 用于跳转到Bot编辑页 */
+  /** Use to jump to the bot edit page */
   space_id: string,
-  /** 用户是否有该实体所在Space的权限 */
+  /** Does the user have permissions to the space where the entity is located? */
   has_space_permission: boolean,
-  /** 收藏时间 */
+  /** collection time */
   favorite_at: string,
   product_extra?: FavoriteProductExtra,
   user_info: UserInfo,

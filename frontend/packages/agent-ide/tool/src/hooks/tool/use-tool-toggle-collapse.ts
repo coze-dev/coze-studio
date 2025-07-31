@@ -21,7 +21,7 @@ import { EventCenterEventName } from '../../typings/scoped-events';
 import { type IToggleContentBlockEventParams } from '../../typings/event';
 
 /**
- * 私有的hooks，不对外暴露使用
+ * Private hooks, not exposed to the outside world
  * @returns
  */
 

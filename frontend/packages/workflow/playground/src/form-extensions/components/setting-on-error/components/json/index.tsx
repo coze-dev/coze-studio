@@ -40,7 +40,7 @@ type Props = Pick<
 };
 
 /**
- * 返回内容
+ * Return to content
  */
 export const Json: FC<Props> = ({
   isOpen,

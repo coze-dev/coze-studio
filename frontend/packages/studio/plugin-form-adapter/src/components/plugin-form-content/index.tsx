@@ -110,7 +110,7 @@ export const PluginForm: FC<{
   const [mainAuthType, setMainAuthType] = useState<number>(0);
   const [authType, setAuthType] = useState<number>(0);
   const [disableEditUrl, setDisableEditUrl] = useState<boolean>(false);
-  // 合规审核结果
+  // Compliance audit results
   const changeVal = () => {
     if (!isValidCheckResult) {
       setIsValidCheckResult(true);
@@ -147,7 +147,7 @@ export const PluginForm: FC<{
     },
   );
   /**
-   * 获取默认icon, 并设置到form中
+   * Get the default icon, and set it to the form
    */
   const getIcon = async () => {
     try {
@@ -175,16 +175,16 @@ export const PluginForm: FC<{
     }
     if (!isCreate && editInfo) {
       /**
-       * 以下的 useState 都是更新插件
+       * The following useStates are all update plugins
        */
       /**
-       * service在本次需求中被拓展了二级菜单，service的一级菜单为1，二级菜单为0，1，2
-       * 后端为了不改动历史逻辑，新增一个sub_auth_type的字段，去记录service下的二级菜单的值，但是authType依旧是一个length为1的数组，并且值为1
-       * 因此前端需要手动判断auth_type为1的时候，把sub_auth_type塞进去，组成一个length为2的数组，才能让casdar菜单回填editInfo的内容
-       * 5，6，7是给前端用的，用来判断选中的是哪个。5是apiKey、6是zero、7是oicd
-       * 好问题来了。authType是一个数组，但是长度不固定：
-       * 1. 当auth_type长度为1时，代表是service，内容有且只有1，此时sub_auth_type为0，1，2中的一个
-       * 2. 当auth_type长度为2时，代表是oAuth，内容为[3,4]此时没有sub_auth_type
+       * Service has been expanded to the secondary menu in this demand. The primary menu of service is 1, and the secondary menu is 0, 1, 2.
+       * In order not to change the history logic, the backend adds a sub_auth_type field to record the value of the secondary menu under the service, but the authType is still an array of length 1 and the value is 1.
+       * Therefore, when the front end needs to manually determine that the auth_type is 1, the sub_auth_type is stuffed in to form an array of length 2, so that the casdar menu can backfill the content of editInfo
+       * 5, 6, and 7 are for the front end to determine which one is selected. 5 is apiKey, 6 is zero, and 7 is oicd.
+       * Good question. AuthType is an array, but the length is not fixed:
+       * When the length of the auth_type is 1, it means that it is a service, and the content has and only 1. At this time, the sub_auth_type is one of 0, 1, and 2
+       * 2. When the auth_type length is 2, it means oAuth, and the content is [3,4]. There is no sub_auth_type at this time
        */
       if (editInfo.meta_info?.auth_type?.at(0) === 1) {
         switch (editInfo.meta_info?.sub_auth_type) {
@@ -220,7 +220,7 @@ export const PluginForm: FC<{
         `${editInfo.plugin_type}-${editInfo.creation_method}`,
       );
 
-      // 如果存在私网连接，则禁用编辑URL
+      // Disable editing URLs if there is a private network connection
       if (
         editInfo?.meta_info?.private_link_id &&
         compareLevel === UserLevel.Enterprise &&
@@ -234,7 +234,7 @@ export const PluginForm: FC<{
   }, [visible]);
 
   const reset = () => {
-    //重置插件
+    //Reset plugin
     getIcon();
     setAuthType(0);
     setAuthType(0);
@@ -244,20 +244,20 @@ export const PluginForm: FC<{
     setPluginTypeCreationMethod(undefined);
   };
 
-  /** 添加header */
+  /** Add header */
   const addHeader = () => {
     setHeaderList(list => [...list, { name: '', value: '' }]);
   };
-  /** 删除header */
+  /** Delete header */
   const deleteHeader = (index: number) => {
-    // 若为最后一个header，则只清空内容，不删除
+    // If it is the last header, only empty the content, not delete it
     setHeaderList(list =>
       list.length <= 1
         ? [{ name: '', value: '' }]
         : list.filter((_, i) => i !== index),
     );
   };
-  /** 编辑header */
+  /** Edit header */
   const editHeader = (index: number, header: commonParamSchema) => {
     setHeaderList(list => list.map((item, i) => (i === index ? header : item)));
   };
@@ -267,17 +267,17 @@ export const PluginForm: FC<{
     if (!editInfo) {
       authTypeInitValue = [0];
     }
-    // 是 OAuth 的情况
+    // It's OAuth's case
     if (editInfo?.meta_info?.auth_type?.length === 2) {
       authTypeInitValue = editInfo?.meta_info?.auth_type;
     }
     // service & no auth
     else {
-      // 不需要授权，自然没有sub_auth_type
+      // No authorization required, naturally no sub_auth_type
       if (editInfo?.meta_info?.auth_type?.at(0) === 0) {
         authTypeInitValue = editInfo?.meta_info?.auth_type;
       }
-      // service, 有sub_auth_type
+      // Service, with sub_auth_type
       else {
         if (typeof editInfo?.meta_info?.sub_auth_type !== 'undefined') {
           authTypeInitValue = [
@@ -316,7 +316,7 @@ export const PluginForm: FC<{
           />
         ) : null}
 
-        {/* 插件URL */}
+        {/* plugin URL */}
         {!disabled ? (
           <FormInput
             disabled={disableEditUrl}
@@ -335,7 +335,7 @@ export const PluginForm: FC<{
             rules={disableEditUrl ? [] : formRuleList.url}
           />
         ) : null}
-        {/* 插件Header */}
+        {/* Plugin Header */}
         <Form.Slot
           className={s['header-list']}
           label={{
@@ -424,7 +424,7 @@ export const PluginForm: FC<{
           </div>
         </Form.Slot>
 
-        {/* 授权方式 */}
+        {/* Authorization method */}
 
         <FormCascader
           disabled={disabled}
@@ -455,7 +455,7 @@ export const PluginForm: FC<{
           }}
         />
 
-        {/* 授权方式 - Service - Service Token / API Key */}
+        {/* Authorization - Service - Service Token/API Key */}
         {mainAuthType === 1 && authType === 5 && (
           <>
             <Form.RadioGroup
@@ -500,7 +500,7 @@ export const PluginForm: FC<{
           </>
         )}
 
-        {/* 服务端动态返回授权项 */}
+        {/* Server level dynamic return authorization */}
         {/* Service - OIDC & OAuth - Standard Mode */}
         {extItems?.map((item, index) => {
           let formInfo: Record<string, any> = {};
@@ -592,7 +592,7 @@ export const PluginForm: FC<{
               case 1:
                 setAuthType(6);
                 break;
-              //@ts-expect-error 授权类型兼容
+              // @ts-expect-error Authorization type compatible
               case 2:
                 setAuthType(7);
                 break;
@@ -609,7 +609,7 @@ export const PluginForm: FC<{
         }
       }}
     >
-      {/* 插件头像 */}
+      {/* plugin avatar */}
       <PictureUpload
         noLabel
         disabled={disabled}
@@ -621,7 +621,7 @@ export const PluginForm: FC<{
         onChange={changeVal}
       />
 
-      {/* 插件名称/插件描述/url/插件类型 */}
+      {/* Plugin name/plugin description/url/plugin type */}
       <>
         <FormTextArea
           disabled={disabled}
@@ -662,7 +662,7 @@ export const PluginForm: FC<{
           onChange={changeVal}
           rules={formRuleList.desc}
         />
-        {/* 插件类型 */}
+        {/* plugin type */}
         <Form.Slot
           label={{
             text: I18n.t('plugin_creation_method'),

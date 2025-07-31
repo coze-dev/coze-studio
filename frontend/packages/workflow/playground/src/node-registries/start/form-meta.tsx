@@ -35,16 +35,16 @@ import { type FormData } from './types';
 import { FormRender } from './form';
 import { transformOnInit, transformOnSubmit } from './data-transformer';
 export const START_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <FormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
-    // 必填
+    // Required
     outputs: createOutputsValidator({
       uniqueName: true,
     }),
@@ -63,7 +63,7 @@ export const START_FORM_META: FormMetaV2<FormData> = {
 
         if (required) {
           let isEmpty = false;
-          // （特化）crontab 结构特殊
+          // (Specialized) crontab structure special
           if (name === 'trigger.dynamicInputs.crontab') {
             isEmpty = !value?.content?.content;
           } else {
@@ -95,15 +95,15 @@ export const START_FORM_META: FormMetaV2<FormData> = {
   //   [TriggerForm.TabName]: TriggerForm.Tab.Basic,
   // } as any,
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

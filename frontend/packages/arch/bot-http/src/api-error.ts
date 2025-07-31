@@ -17,7 +17,7 @@
 import { AxiosError, type AxiosResponse } from 'axios';
 import { logger } from '@coze-arch/logger';
 
-// 上报事件枚举
+// Enumeration of reported events
 export enum ReportEventNames {
   NetworkError = 'flow-infra-network-error',
   ApiError = 'flow-infra-api-error',
@@ -52,7 +52,7 @@ export class ApiError extends AxiosError {
 export const isApiError = (error: unknown): error is ApiError =>
   error instanceof ApiError;
 
-// 上报http错误，apiError&axiosError
+// Report http errors, apiError & axiosError
 export const reportHttpError = (
   eventName: ReportEventNames,
   error: AxiosError,

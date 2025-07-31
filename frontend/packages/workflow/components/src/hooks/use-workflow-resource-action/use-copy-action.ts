@@ -28,7 +28,7 @@ import { type CommonActionProps, type CommonActionReturn } from './type';
 export const useCopyAction = (props: CommonActionProps): CommonActionReturn => {
   const { spaceId } = props;
   const navigate = useNavigate();
-  // 复制
+  // copy
   const handleCopy = async (item: ResourceInfo) => {
     if (!item.res_id || !spaceId) {
       throw new CustomError('normal_error', 'miss workflowId or spaceID');
@@ -73,9 +73,9 @@ export const useCopyAction = (props: CommonActionProps): CommonActionReturn => {
         },
       });
 
-      // 兜底服务主从延迟
+      // Bottom line leader/follower delay
       await wait(300);
-      // 复制后跳转到详情页
+      // After copying, jump to the details page
       navigate(
         `/work_flow?workflow_id=${data.workflow_id}&space_id=${spaceId}`,
       );

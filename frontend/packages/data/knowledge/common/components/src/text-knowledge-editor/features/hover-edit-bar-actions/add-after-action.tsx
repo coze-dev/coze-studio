@@ -31,7 +31,7 @@ export const AddAfterAction: React.FC<HoverEditBarActionProps> = ({
   chunks,
   disabled,
 }) => {
-  // 在特定分片后添加新分片
+  // Add new shardings after specific shardings
   const { addEmptyChunkAfter } = useAddEmptyChunkAction({
     chunks: chunks || [],
     onChunksChange: ({ newChunk, chunks: newChunks }) => {

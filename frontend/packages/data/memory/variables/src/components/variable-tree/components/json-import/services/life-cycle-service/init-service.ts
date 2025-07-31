@@ -65,14 +65,14 @@ export const getEditorViewVariableJson = (treeData: TreeNodeCustomData) => {
     );
   }
 
-  // 如果没有name,返回空对象
+  // If there is no name, return an empty object
   if (!name) {
     return '{}';
   }
 
   const isArray = isArrayType(type);
 
-  // 递归处理children
+  // Recursive processing of children
   const processChildren = (
     nodes?: TreeNodeCustomData[],
     parentType?: ViewVariableType,
@@ -87,7 +87,7 @@ export const getEditorViewVariableJson = (treeData: TreeNodeCustomData) => {
         return [];
       }
 
-      // 如果是数组类型，根据第一个子元素的类型生成默认值
+      // If it is an array type, generate a default value based on the type of the first child element
       const result = {};
       if (firstChild.children && firstChild.children.length > 0) {
         result[firstChild.name] = processChildren(
@@ -117,7 +117,7 @@ export const getEditorViewVariableJson = (treeData: TreeNodeCustomData) => {
     );
   };
 
-  // 生成最终的JSON结构
+  // Generate the final JSON structure
   const result = {
     [name]: processChildren(children),
   };

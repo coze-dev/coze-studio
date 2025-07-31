@@ -29,7 +29,7 @@ export const initialStore: BotModeStore = {
   isCollaboration: false,
 };
 
-//TODO  后续改成context或者迁移到package内。
+//TODO is subsequently changed to context or migrated to the package.
 export const useBotModeStore = create<BotModeStore & BotModeAction>()(
   devtools(
     (set, get) => ({

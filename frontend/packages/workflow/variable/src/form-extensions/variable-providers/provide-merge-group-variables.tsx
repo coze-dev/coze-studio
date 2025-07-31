@@ -38,7 +38,7 @@ interface MergeGroup {
 }
 
 /**
- * 合并组变量同步
+ * merge group variable synchronization
  */
 export const provideMergeGroupVariables: VariableProviderAbilityOptions = {
   key: 'provide-merge-group-variables',
@@ -72,7 +72,7 @@ export const provideMergeGroupVariables: VariableProviderAbilityOptions = {
     const facadeService = ctx.node.getService(WorkflowVariableFacadeService);
 
     return ctx.scope.ast.subscribe(() => {
-      // 监听输出变量变化，回填到表单的 outputs
+      // Monitor output variable changes and backfill to the form's outputs.
       const outputVariable = ctx.scope.output.variables[0];
       if (outputVariable?.type?.kind === ASTKind.Object) {
         const { properties } = outputVariable.type as ObjectType;
@@ -80,7 +80,7 @@ export const provideMergeGroupVariables: VariableProviderAbilityOptions = {
         const nextOutputs = properties
           .map(
             _property =>
-              // OutputTree 组件中，所有树节点的 key 需要保证是唯一的
+              // In the OutputTree component, the keys of all tree nodes need to be guaranteed to be unique
               facadeService.getVariableFacadeByField(_property)
                 .viewMetaWithUniqKey,
           )

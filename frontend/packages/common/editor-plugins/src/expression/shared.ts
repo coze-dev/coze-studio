@@ -33,10 +33,10 @@ function useLatest<T>(value: T): MutableRefObject<T> {
   return ref;
 }
 
-// 解除 parent 导致的循环依赖（否则无法深比较）
+// Remove circular dependencies caused by parents (otherwise no deep comparison is possible)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function cloneWithout(target: any, keys: string[]) {
-  // target 为 undefined 时会抛错
+  // An error is thrown when target is undefined
   try {
     return JSON.parse(
       JSON.stringify(target, function (key, value) {
@@ -85,7 +85,7 @@ function getSearchValue(textBefore: string) {
   const lastSegment =
     segments[segments.length - 1].type ===
     ExpressionEditorSegmentType.ArrayIndex
-      ? segments[segments.length - 2] // 数组索引属于上一层级，需要去除防止影响到搜索值
+      ? segments[segments.length - 2] // The array index belongs to the previous level and needs to be removed to prevent it from affecting the search value
       : segments[segments.length - 1];
   if (
     !lastSegment ||

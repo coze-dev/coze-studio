@@ -25,7 +25,7 @@ import { useBotSkillStore } from '../../../src/store/bot-skill';
 import { useBotInfoStore } from '../../../src/store/bot-info';
 import { getBotDetailDtoInfo } from '../../../src/save-manager/utils/bot-dto-info';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/report-events', () => ({
   REPORT_EVENTS: {
     botDebugSaveAll: 'botDebugSaveAll',
@@ -130,7 +130,7 @@ describe('bot-dto-info utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotInfoStore.getState as any).mockReturnValue({
       mode: BotMode.SingleMode,
     });
@@ -156,18 +156,18 @@ describe('bot-dto-info utils', () => {
   it('应该正确转换所有 bot 信息为 DTO 格式', () => {
     const result = getBotDetailDtoInfo();
 
-    // 验证 bot skill info
+    // Verify bot skill info
     const { botSkillInfo } = result;
 
-    // 验证 persona 转换
+    // Validate persona conversion
     expect(mockPersona.transformVo2Dto).toHaveBeenCalledWith(
       mockPersona.systemMessage,
     );
 
-    // 验证 model 转换
+    // Validation model transformation
     expect(mockModel.transformVo2Dto).toHaveBeenCalledWith(mockModel.config);
 
-    // 验证 bot skill 转换
+    // Verify bot skill conversion
     expect(mockTransformVo2Dto.knowledge).toHaveBeenCalledWith(
       mockBotSkill.knowledge,
     );
@@ -203,17 +203,17 @@ describe('bot-dto-info utils', () => {
       mockBotSkill.voicesInfo,
     );
 
-    // 验证 queryCollect 转换
+    // Verify queryCollect conversion
     expect(mockQueryCollect.transformVo2Dto).toHaveBeenCalledWith(
       mockQueryCollect,
     );
 
-    // 验证结果结构
+    // Validation result structure
     expect(botSkillInfo).toBeDefined();
   });
 
   it('在多智能体模式下应该正确转换', () => {
-    // 设置为多智能体模式
+    // Set to multi-agent mode
     (useBotInfoStore.getState as any).mockReturnValue({
       mode: BotMode.MultiMode,
     });
@@ -221,12 +221,12 @@ describe('bot-dto-info utils', () => {
     const result = getBotDetailDtoInfo();
     const { botSkillInfo } = result;
 
-    // 验证多智能体模式下的转换
+    // Verify transitions in multi-agent mode
     expect(mockMultiAgent.transformVo2Dto.agent).toHaveBeenCalledWith(
       mockMultiAgent.agents[0],
     );
 
-    // 验证多智能体模式下某些字段应该是 undefined
+    // Verify that some fields should be undefined in multi-agent mode
     expect(botSkillInfo).toBeDefined();
   });
 });

@@ -104,7 +104,7 @@ function RecallSlice(props: { llmOutput: LLMOutput; index: number }) {
     [meta.document],
   );
 
-  // 后面改成 staring
+  // Change the back to staring.
   const sliceTag = `Recall slice ${index + 1}`;
 
   const filteredSlice = filterUnnecessaryContentFromSlice(slice);

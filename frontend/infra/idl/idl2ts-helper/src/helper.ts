@@ -68,7 +68,7 @@ export function formatCode(code: string, root = '.') {
     printWidth: 120,
     singleQuote: true,
   };
-  const file = path.resolve(process.cwd(), root, './for-prettier-bug'); // 这里一定要加多一级目录
+  const file = path.resolve(process.cwd(), root, './for-prettier-bug'); // Be sure to add an extra level catalog here.
   const config = prettier.resolveConfig(file, { editorconfig: true });
   return prettier.format(code, {
     ...(config || defaultConfig),
@@ -166,7 +166,7 @@ export function parseId(id: string) {
 
 export function uniformNs(ns: string) {
   if (ReservedKeyWord.includes(ns)) {
-    // 命中保留字，处理为下划线开头
+    // Hit the reserved word, treated as an underscore
     return `_${ns}`;
   }
   return ns.replace(/\./g, '_');
@@ -182,7 +182,7 @@ export function getValuesFromEnum(params: h.EnumDefinition) {
       if (h.isIntegerLiteral(initializer.value)) {
         currentVal = Number(initializer.value.value);
       } else if (h.isHexLiteral(initializer.value)) {
-        // 16进制
+        // hexadecimal
         currentVal = Number(initializer.value.value);
       }
       enumArr.push(currentVal);
@@ -322,8 +322,8 @@ export function hasDynamicJsonAnnotation(annotations?: h.Annotations) {
 }
 
 /**
- * 从 api.(request|response).converter 中解析出前端与网关之间的真实类型，
- * 能搞出这两个注解来，这个协议着实恶心😭
+ * Parse the real type between the front end and the gateway from api. (request | response).converter.
+ * To be able to come up with these two annotations, this protocol is disgusting😭
  * @param annotations
  * @returns
  */

@@ -15,7 +15,7 @@
  */
  
 /**
- * @file 开源版暂时不提供企业管理功能，本文件中导出的方法用于未来拓展使用。
+ * The @file open-source version does not provide enterprise management functions for the time being. The methods exported in this file are for future expansion.
  */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { devtools } from 'zustand/middleware';
@@ -74,7 +74,7 @@ export const useEnterpriseStore = create<
       setIsEnterpriseListInit: (_: boolean) => {},
       setEnterpriseList: (_: ListEnterpriseResponseData) => {},
       setIsEnterpriseExist: (_: boolean) => {},
-      // 获取企业信息，可连续调用，不存在异步竞争问题。
+      // Obtaining enterprise information can be continuously invoked without asynchronous competition.
       fetchEnterprise: (_: string) => {},
     }),
     {

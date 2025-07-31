@@ -173,7 +173,7 @@ describe('getLLMModels', () => {
   it('should set model_scene when isBindDouyin is true', async () => {
     const mockInfo = { schema_json: JSON.stringify(mockSchemaForLLM) };
 
-    // 上一个接口有 3s 缓存，需要等待 3s 后再调用
+    // The previous interface has 3s cache, you need to wait 3s before calling it.
     await new Promise(resolve => setTimeout(resolve, 3100));
 
     // Act
@@ -197,7 +197,7 @@ describe('getLLMModels', () => {
     const apiError = new Error('API Error');
     vi.mocked(developerApi.GetTypeList).mockRejectedValue(apiError);
 
-    // 上一个接口有 3s 缓存，需要等待 3s 后再调用
+    // The previous interface has 3s cache, you need to wait 3s before calling it.
     await new Promise(resolve => setTimeout(resolve, 3100));
 
     const models = await getLLMModels({

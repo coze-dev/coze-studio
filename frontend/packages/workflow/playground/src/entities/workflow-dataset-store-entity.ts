@@ -21,7 +21,7 @@ import { type Dataset } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi as knowledgeApi } from '@coze-arch/bot-api';
 
 /**
- * 知识库全局状态管理 (单例)
+ * Knowledge Base Global State Management (Singleton)
  */
 export class DataSetStore {
   private dataSetInfosMap: { [k: string]: Dataset } = {};
@@ -59,31 +59,31 @@ export class DataSetStore {
       }
     });
 
-    // 如果全部命中缓存，直接返回
+    // If all hits cache, return directly
     if (needQueryInfoIds.length === 0) {
       callback(existDataInfoIds.map(id => this.dataSetInfosMap[id]));
       return;
     }
 
-    // 否则注册队列，等待查询完成后调用 callback
+    // Otherwise, register the queue and call the callback after the query is completed.
     this.listeners.push({
       ids,
       callback,
     });
 
-    // 分析出需要额外查询的 ids
+    // Analyze IDs that require additional queries
     const needAddToQueryQueueIds = needQueryInfoIds.filter(
       id => !this.queryQueue.includes(id),
     );
 
-    // 如果没有需要额外查询的 ids ,就等着吧
+    // If there are no ids that require additional queries, just wait
     if (needAddToQueryQueueIds.length === 0) {
       return;
     }
 
-    // 如果有需要额外的查询的 ids ,就扔到待查询队列里
+    // If there are ids that require additional queries, throw them into the queue to be queried
     this.queryQueue = this.queryQueue.concat(needAddToQueryQueueIds);
-    // 调用 query
+    // Invoke query
     this.query(spaceId);
   }
 
@@ -143,7 +143,7 @@ export class DataSetStore {
       if (!this.dataSetInfosMap[d.dataset_id as string]) {
         this.dataSetInfosMap[d.dataset_id as string] = d;
       } else {
-        // 更新缓存的知识库信息
+        // Update cached knowledge base information
         this.dataSetInfosMap[d.dataset_id as string] = {
           ...this.dataSetInfosMap[d.dataset_id as string],
           ...d,

@@ -47,10 +47,10 @@ class SnapService {
   testPoints: Snap.Point[] = [];
 
   snapOpen = true;
-  // 开发模式，开启后，按下 shift 会显示激活元素的 5 个点位
+  // Development mode, when turned on, pressing shift will display 5 points of the active element
   devMode = false;
   onKeyDown = (event: KeyboardEvent) => {
-    // 按下 cmd 键，关闭吸附（与截图冲突，暂时隐藏）
+    // Press the cmd key to turn off the adsorption (conflicts with screenshots, temporarily hidden)
     if (event.key.toLowerCase() === 'meta') {
       // this.snapOpen = false;
     } else if (event.key.toLowerCase() === 'shift' && this.devMode) {
@@ -64,7 +64,7 @@ class SnapService {
   };
 
   onKeyUp = (event: KeyboardEvent) => {
-    // 松手 cmd 键，打开吸附（与截图冲突，暂时隐藏）
+    // Let go of the cmd button and turn on the adsorption (conflicts with screenshots, temporarily hidden)
     if (event.key.toLowerCase() === 'meta') {
       // this.snapOpen = true;
       // this.helpline.hide();
@@ -152,14 +152,14 @@ class SnapService {
     return newAttrs;
   };
 
-  // move 和 resize 影响到的属性不同，所以分开。move 仅影响 left top
+  // Move and resize affect different properties, so they are separated. move only affects left top
   move = (target: FabricObject) =>
     this._move({
       target,
       controlType: Snap.ControlType.Center,
     });
 
-  // resize 根据控制点的不同，可能影响到多个属性
+  // Resize may affect multiple properties depending on the control point
   resize = (target: FabricObject, controlType: Snap.ControlType) => {
     if (target.angle !== 0) {
       return;

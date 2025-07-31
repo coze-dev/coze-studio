@@ -46,8 +46,8 @@ export const PluginModalFilter: FC<PluginModalFilterProp> = ({
   setQuery,
 }) => {
   /**
-   * 空间插件：创建、编辑时间排序
-   * 公共插件：热度、发布时间排序
+   * Space Plugin: Create and Edit Time Sorting
+   * Public plugins: popularity, release time ranking
    * */
   const getFilterItem = () => {
     if (

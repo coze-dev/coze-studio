@@ -24,7 +24,7 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 
 interface AgentModelFuncConfigCheckContext {
-  // agent 中的 dataset 可能缺少元信息，需要获取完整数据的方法
+  // The dataset in the agent may lack meta information and require a way to obtain the complete data
   getDatasetById: (id: string) => Dataset | undefined;
   config: Model['func_config'];
 }

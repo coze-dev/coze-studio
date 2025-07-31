@@ -33,7 +33,7 @@ export const EditInput = ({
 }: {
   ref?: React.Ref<HTMLInputElement>;
   /**
-   * 默认值
+   * default value
    */
   defaultValue?: string;
   /**
@@ -41,11 +41,11 @@ export const EditInput = ({
    */
   loading: boolean;
   /**
-   * 失焦 / 回车后执行的行为
+   * Behavior performed after out of focus/enter
    */
   onBlur?: (input?: string, error?: ErrorCode) => void;
   /**
-   * 校验函数，返回 true 标识校验通过
+   * Verification function, returns true to indicate that the verification passed
    */
   onValidate?: (input: string) => ErrorCode | undefined;
 }) => {

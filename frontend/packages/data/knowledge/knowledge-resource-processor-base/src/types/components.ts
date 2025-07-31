@@ -33,7 +33,7 @@ export enum UploadMode {
   Error = 'error',
 }
 
-// Select时保存的数据结构
+// Data Structure Saved When Selecting
 export interface FileInfo {
   id: FileId;
   name?: string;
@@ -41,7 +41,7 @@ export interface FileInfo {
   hasChildren?: boolean;
   file_type?: string;
   file_url?: string;
-  // 飞书 Wiki 空间需要使用
+  // Feishu Wiki space is required
   space_id?: string;
   obj_token?: string;
 }

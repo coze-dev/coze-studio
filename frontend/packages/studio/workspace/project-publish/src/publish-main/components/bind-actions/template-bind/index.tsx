@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-// @file 开源版暂不支持模版渠道绑定，用于未来拓展
+
+// @File open source version does not support template channel binding for future expansion
 import { useParams } from 'react-router-dom';
 import { type MouseEventHandler, useEffect, useRef, useState } from 'react';
 
@@ -62,7 +62,7 @@ export function TemplateBind({
 
   const { project_id = '' } = useParams<DynamicParams>();
 
-  // 回填模板配置
+  // Backfill template configuration
   const fillTemplateFrom = async () => {
     const productInfo = await ProductApi.PublicGetProductEntityInfo({
       entity_id: project_id,
@@ -78,7 +78,7 @@ export function TemplateBind({
         templateConfigured: formValues.agreement === true,
         connectors: {
           ...connectors,
-          // @ts-expect-error 可以接受 Partial
+          // @ts-expect-error can accept Partial
           [record.id]: templateFormToBindInfo(formValues),
         },
       });

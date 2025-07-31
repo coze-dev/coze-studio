@@ -67,7 +67,7 @@ export {
   type BasicStandardNodeTypes,
 } from './node-type';
 export { type WorkflowJSON, type WorkflowNodeJSON } from './node';
-// !Notice data-set.ts 在用 io-ts 做运行时类型检查，禁止直接导出，避免 io-ts 被打到其它页面中
+// ! Notice data-set.ts is using io-ts for runtime type checking, and direct export is prohibited to avoid io-ts being hit into other pages
 // export { datasetParams, type DatasetParams } from './data-set';
 import { InputType } from '@coze-arch/bot-api/developer_api';
 
@@ -78,7 +78,7 @@ import {
 import { AssistTypeDTO } from './dto';
 
 export { type ValueOf, type WithCustomStyle } from './utils';
-// 和后端定义撞了，注释
+// Bumped with the back-end definition, comment
 export { type WorkflowInfo as FrontWorkflowInfo } from './workflow';
 
 export {
@@ -88,8 +88,8 @@ export {
 } from './registry';
 
 /**
- * 参数类型展示文案
- * @tips workflow 编辑页请使用 {PARAM_TYPE_ALIAS_MAP}
+ * Parameter type display copy
+ * @Tips workflow edit page please use {PARAM_TYPE_ALIAS_MAP}
  */
 export const PARAM_TYPE_LABEL_MAP: Record<InputType, string> = {
   [InputType.String]: 'String',
@@ -116,9 +116,9 @@ export const STRING_ASSIST_TYPE_LABEL_MAP = {
 
 export enum WorkflowExecStatus {
   DEFAULT = 'default',
-  /** 执行中 */
+  /** in progress */
   EXECUTING = 'executing',
-  /** 执行结束（此时依然有执行结束 banner，且工作流为 disable 状态） */
+  /** End of execution (there is still an end of execution banner at this time, and the workflow is disabled) */
   DONE = 'done',
 }
 

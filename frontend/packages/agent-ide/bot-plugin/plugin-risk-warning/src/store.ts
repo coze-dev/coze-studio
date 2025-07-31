@@ -31,7 +31,7 @@ interface RiskAction {
 const initialStore: RiskStore = {
   pluginRiskIsRead: true,
   toolHiddenModeNewbieGuideIsRead: true,
-  // 支持扩展其它风险提示...
+  // Support for expanding other risk alerts...
 };
 
 export const useRiskWarningStore = create<RiskStore & RiskAction>()(

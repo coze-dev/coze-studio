@@ -59,7 +59,7 @@ export const Debug: React.FC<{
   debugExample?: DebugExample;
   setDebugStatus?: (status: STATUS | undefined) => void;
   setDebugExample?: (v: DebugExample) => void;
-  isViewExample?: boolean; // 查看 example 模式 标题不一样
+  isViewExample?: boolean; // Look at the example mode, the title is different
   onSuccessCallback?: () => void;
 }> = ({
   disabled,
@@ -94,7 +94,7 @@ export const Debug: React.FC<{
     setDebugStatus?.(innerStatus);
     innerStatus === STATUS.PASS &&
       setDebugExample?.({ req_example: request, resp_example: response });
-    // 调试成功后回调
+    // Callback after successful debugging
     innerStatus === STATUS.PASS && onSuccessCallback?.();
   };
 

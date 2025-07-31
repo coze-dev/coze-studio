@@ -74,7 +74,7 @@ export const ExecuteState = ({ hiddenStateText, extra, onClick }: Props) => {
 
   const { isCanceled } = useTestRun();
 
-  // 含有 warning 仍视为运行成功
+  // Containing warnings is still considered successful
   const hasError = useHasError({
     withWarning: false,
   });
@@ -83,7 +83,7 @@ export const ExecuteState = ({ hiddenStateText, extra, onClick }: Props) => {
     viewStatus === WorkflowExecStatus.EXECUTING ||
     executeStatus === WorkflowExeStatus.Running;
 
-  // 即没有运行结果，也没有校验报错，说明还没运行过，无运行状态。
+  // That is, there is no running result, and there is no verification error, indicating that it has not been run and has no running state.
   if (!hasNodeResult && !hasError && !loading) {
     return extra ? (
       <span

@@ -37,17 +37,17 @@ import s from './more-selector.module.less';
 
 interface MoreSelectorProps {
   /**
-   * 运行结果数组
+   * Run result array
    */
   data: (NodeResult | null)[];
-  /** 当前选择索引 */
+  /** current selection index */
   paging: number;
   fixedCount: number;
 
   /** placeholder */
   placeholder: string;
 
-  /** 选择索引变更事件 */
+  /** Select index change event */
   onChange: (p: number) => void;
 }
 

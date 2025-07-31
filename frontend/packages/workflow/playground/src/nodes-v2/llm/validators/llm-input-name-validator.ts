@@ -24,7 +24,7 @@ import { isVisionEqual, isVisionInput } from '../vision';
 export const llmInputNameValidator = ({ value, formValues, name }) => {
   const validatorRule = nameValidationRule;
 
-  /** 命名校验 */
+  /** name check */
   if (!validatorRule.test(value)) {
     return I18n.t('workflow_detail_node_error_format');
   }
@@ -43,13 +43,13 @@ export const llmInputNameValidator = ({ value, formValues, name }) => {
     item => item.name === value && isVisionEqual(item, inputValue),
   );
 
-  // 都是输入或者视觉理解的场景直接返回重名
+  // All scenes are input or visually understood, and the same name is directly returned.
   if (sameVisionInputs.length > 1) {
     return I18n.t('workflow_detail_node_input_duplicated');
   }
 
-  // 输入和视觉理解参数重名的场景，返回不能和视觉理解参数重名
-  // 视觉理解参数和输入重名，返回不能和输入重名
+  // Scenes with the same name as the input and visual understanding parameters are returned that cannot be the same name as the visual understanding parameters
+  // Visual understanding of parameters and input duplicate names, return cannot duplicate input names
   const differentVisionInputs = inputValues.filter(
     item => item.name === value && !isVisionEqual(item, inputValue),
   );

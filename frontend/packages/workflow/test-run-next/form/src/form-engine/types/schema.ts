@@ -33,65 +33,65 @@ export interface FormSchemaUIState {
 
 export interface IFormSchema<FrameworkComponent = React.ReactNode> {
   /*******************************************************
-   * 核心属性
+   * core attributes
    */
   version?: string;
   name?: string;
   type?: FormSchemaTypes;
-  /** 默认值，“default” 是 jsonSchema 标准字段，但其为 js 关键字，遂使用 defaultValue */
+  /** Default value, "default" is the jsonSchema standard field, but it is the js keyword, so defaultValue is used */
   defaultValue?: any;
 
   /*******************************************************
-   * 下钻属性
+   * drill down properties
    */
   properties?: Record<string, IFormSchema<FrameworkComponent>>;
   items?: IFormSchema<FrameworkComponent>[];
 
   /*******************************************************
-   * ui 属性
+   * UI attribute
    */
   title?: FrameworkComponent | string;
   description?: FrameworkComponent | string;
-  /** 顺序 */
+  /** order */
   ['x-index']?: number;
   ['x-visible']?: boolean;
   ['x-hidden']?: boolean;
   ['x-disabled']?: boolean;
-  /** 渲染的组件 */
+  /** Rendered components */
   ['x-component']?: string;
   ['x-component-props']?: Record<string, unknown>;
-  /** 装饰器 */
+  /** decorator */
   ['x-decorator']?: string;
   ['x-decorator-props']?: Record<string, unknown>;
 
   /*******************************************************
-   * 合法性属性
+   * Legitimacy Attribute
    */
   required?: boolean;
   ['x-validator']?: IFormSchemaValidate;
 
   /*******************************************************
-   * 不常用或实现成本较高
+   * Less commonly used or more expensive to implement
    */
   ['x-reactions']?: any;
   ['x-content']?: FrameworkComponent;
-  /** 通配符字段 */
+  /** wild-card field */
   patternProperties?: Record<string, IFormSchema<FrameworkComponent>>;
-  /** 定义之外的字段 */
+  /** Fields outside the definition */
   additionalProperties?: IFormSchema<FrameworkComponent>;
-  /** 定义之外的项 */
+  /** Items outside the definition */
   additionalItems?: IFormSchema<FrameworkComponent>;
 
   /*******************************************************
-   * 业务自定义字段
+   * business custom field
    */
-  /** 节点 id */
+  /** Node ID */
   ['x-node-id']?: string;
-  /** 节点类型 */
+  /** Node type */
   ['x-node-type']?: string;
-  /** 表单模式 */
+  /** form mode */
   ['x-form-mode']?: 'form' | 'json';
-  /** 字段对应变量原始类型 */
+  /** Field corresponding variable primitive type */
   ['x-origin-type']?: string;
   [key: string]: any;
 }

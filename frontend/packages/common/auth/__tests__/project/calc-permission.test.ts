@@ -32,37 +32,37 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Personal,
       };
 
-      // 个人空间应该有查看权限
+      // Personal space should have viewing permission
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 个人空间应该有编辑信息权限
+      // Personal space should have permission to edit information
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(true);
 
-      // 个人空间应该有删除权限
+      // Personal space should have deletion permission
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(true);
 
-      // 个人空间应该有发布权限
+      // Personal space should have publishing permission
       expect(calcPermission(EProjectPermission.PUBLISH, params)).toBe(true);
 
-      // 个人空间应该有创建资源权限
+      // Personal space should have permission to create resources
       expect(calcPermission(EProjectPermission.CREATE_RESOURCE, params)).toBe(
         true,
       );
 
-      // 个人空间应该有复制资源权限
+      // Personal space should have permission to copy resources
       expect(calcPermission(EProjectPermission.COPY_RESOURCE, params)).toBe(
         true,
       );
 
-      // 个人空间应该有复制项目权限
+      // Personal space should have permission to copy items
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 个人空间应该有测试运行插件权限
+      // Personal space should have test run plug-in permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_PLUGIN, params)).toBe(
         true,
       );
 
-      // 个人空间应该有测试运行工作流权限
+      // Personal space should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
@@ -75,12 +75,12 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Personal,
       };
 
-      // 个人空间不应该有添加协作者权限
+      // Personal Spaces should not have Add Collaborators permissions
       expect(calcPermission(EProjectPermission.ADD_COLLABORATOR, params)).toBe(
         false,
       );
 
-      // 个人空间不应该有删除协作者权限
+      // Personal space should not have permission to delete collaborators
       expect(
         calcPermission(EProjectPermission.DELETE_COLLABORATOR, params),
       ).toBe(false);
@@ -95,47 +95,47 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 项目所有者应该有查看权限
+      // The project owner should have viewing rights
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 项目所有者应该有编辑信息权限
+      // The project owner should have permission to edit the information
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(true);
 
-      // 项目所有者应该有删除权限
+      // The project owner should have delete permissions
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(true);
 
-      // 项目所有者应该有发布权限
+      // The project owner should have publishing rights
       expect(calcPermission(EProjectPermission.PUBLISH, params)).toBe(true);
 
-      // 项目所有者应该有创建资源权限
+      // The project owner should have the Create Resource permission
       expect(calcPermission(EProjectPermission.CREATE_RESOURCE, params)).toBe(
         true,
       );
 
-      // 项目所有者应该有复制资源权限
+      // The project owner should have permission to copy the resource
       expect(calcPermission(EProjectPermission.COPY_RESOURCE, params)).toBe(
         true,
       );
 
-      // 项目所有者应该有复制项目权限
+      // The project owner should have permission to copy the project
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 项目所有者应该有测试运行插件权限
+      // The project owner should have test run plug-in permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_PLUGIN, params)).toBe(
         true,
       );
 
-      // 项目所有者应该有测试运行工作流权限
+      // The project owner should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
 
-      // 项目所有者应该有添加协作者权限
+      // The project owner should have permission to add collaborators
       expect(calcPermission(EProjectPermission.ADD_COLLABORATOR, params)).toBe(
         true,
       );
 
-      // 项目所有者应该有删除协作者权限
+      // The project owner should have the Delete Collaborator permission
       expect(
         calcPermission(EProjectPermission.DELETE_COLLABORATOR, params),
       ).toBe(true);
@@ -148,47 +148,47 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 项目编辑者应该有查看权限
+      // Project editors should have viewing rights
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 项目编辑者应该有编辑信息权限
+      // Project editors should have permission to edit information
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(true);
 
-      // 项目编辑者应该有创建资源权限
+      // Project editors should have the Create Resource permission
       expect(calcPermission(EProjectPermission.CREATE_RESOURCE, params)).toBe(
         true,
       );
 
-      // 项目编辑者应该有复制资源权限
+      // Project editors should have permission to copy resources
       expect(calcPermission(EProjectPermission.COPY_RESOURCE, params)).toBe(
         true,
       );
 
-      // 项目编辑者应该有复制项目权限
+      // The project editor should have permission to copy the project
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 项目编辑者应该有测试运行插件权限
+      // Project editors should have test run plug-in permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_PLUGIN, params)).toBe(
         true,
       );
 
-      // 项目编辑者应该有测试运行工作流权限
+      // The project editor should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
 
-      // 项目编辑者应该有添加协作者权限
+      // Project editors should have Add Collaborators permission
       expect(calcPermission(EProjectPermission.ADD_COLLABORATOR, params)).toBe(
         true,
       );
 
-      // 项目编辑者不应该有删除权限
+      // Project editors should not have delete permissions
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(false);
 
-      // 项目编辑者不应该有发布权限
+      // Project editors should not have permission to publish
       expect(calcPermission(EProjectPermission.PUBLISH, params)).toBe(false);
 
-      // 项目编辑者不应该有删除协作者权限
+      // Project editors should not have permission to delete collaborators
       expect(
         calcPermission(EProjectPermission.DELETE_COLLABORATOR, params),
       ).toBe(false);
@@ -203,47 +203,47 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 空间成员应该有查看权限
+      // Space members should have viewing rights
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 空间成员应该有复制项目权限
+      // Space members should have permission to copy items
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 空间成员应该有测试运行工作流权限
+      // Space members should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
 
-      // 空间成员不应该有编辑信息权限
+      // Space members should not have permission to edit information
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(false);
 
-      // 空间成员不应该有删除权限
+      // Space members should not have delete permissions
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(false);
 
-      // 空间成员不应该有发布权限
+      // Space members should not have publishing privileges
       expect(calcPermission(EProjectPermission.PUBLISH, params)).toBe(false);
 
-      // 空间成员不应该有创建资源权限
+      // Space members should not have permission to create resources
       expect(calcPermission(EProjectPermission.CREATE_RESOURCE, params)).toBe(
         false,
       );
 
-      // 空间成员不应该有复制资源权限
+      // Space members should not have permission to copy resources
       expect(calcPermission(EProjectPermission.COPY_RESOURCE, params)).toBe(
         false,
       );
 
-      // 空间成员不应该有测试运行插件权限
+      // Space members should not have test run plug-in permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_PLUGIN, params)).toBe(
         false,
       );
 
-      // 空间成员不应该有添加协作者权限
+      // Space members should not have Add Collaborator permissions
       expect(calcPermission(EProjectPermission.ADD_COLLABORATOR, params)).toBe(
         false,
       );
 
-      // 空间成员不应该有删除协作者权限
+      // Space members should not have permission to delete collaborators
       expect(
         calcPermission(EProjectPermission.DELETE_COLLABORATOR, params),
       ).toBe(false);
@@ -256,13 +256,13 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 空间所有者应该有查看权限
+      // Space owners should have viewing rights
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 空间所有者应该有复制项目权限
+      // The space owner should have permission to copy items
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 空间所有者应该有测试运行工作流权限
+      // Space owners should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
@@ -275,13 +275,13 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 空间管理员应该有查看权限
+      // The space administrator should have viewing rights
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
 
-      // 空间管理员应该有复制项目权限
+      // The space administrator should have permission to copy items
       expect(calcPermission(EProjectPermission.COPY, params)).toBe(true);
 
-      // 空间管理员应该有测试运行工作流权限
+      // The space administrator should have test run workflow permissions
       expect(calcPermission(EProjectPermission.TEST_RUN_WORKFLOW, params)).toBe(
         true,
       );
@@ -294,7 +294,7 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 默认角色不应该有任何权限
+      // The default role should not have any permissions
       expect(calcPermission(EProjectPermission.View, params)).toBe(false);
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(false);
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(false);
@@ -329,7 +329,7 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 应该有项目编辑者的所有权限
+      // Should have all the permissions of the project editor
       expect(calcPermission(EProjectPermission.View, params)).toBe(true);
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(true);
       expect(calcPermission(EProjectPermission.CREATE_RESOURCE, params)).toBe(
@@ -349,7 +349,7 @@ describe('Project Calc Permission', () => {
         true,
       );
 
-      // 不应该有项目编辑者没有的权限
+      // There should be no permissions that the project editor does not have
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(false);
       expect(calcPermission(EProjectPermission.PUBLISH, params)).toBe(false);
       expect(
@@ -364,7 +364,7 @@ describe('Project Calc Permission', () => {
         spaceType: SpaceType.Team,
       };
 
-      // 没有角色不应该有任何权限
+      // No role should have no permissions
       expect(calcPermission(EProjectPermission.View, params)).toBe(false);
       expect(calcPermission(EProjectPermission.EDIT_INFO, params)).toBe(false);
       expect(calcPermission(EProjectPermission.DELETE, params)).toBe(false);

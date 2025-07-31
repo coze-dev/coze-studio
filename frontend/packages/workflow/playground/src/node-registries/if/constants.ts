@@ -20,7 +20,7 @@ import { ViewVariableType } from '@coze-workflow/variable';
 export const CONDITION_PATH = 'condition';
 export const ELSE_PATH = 'else';
 
-// 定义固定出参
+// Define fixed exported parameters
 export const OUTPUTS = [
   {
     key: nanoid(),

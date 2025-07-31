@@ -23,7 +23,7 @@ vi.stubGlobal('SAMI_APP_KEY', vi.fn());
 vi.stubGlobal('IS_DEV_MODE', false);
 vi.stubGlobal('IS_OVERSEA', false);
 
-// Mock Canvas API 完整版本
+// Mock Canvas API full version
 const createMockCanvas = () => ({
   getContext: vi.fn(() => ({
     fillRect: vi.fn(),
@@ -82,14 +82,14 @@ if (global.document) {
   });
 }
 
-// CSS 文件 mock
+// CSS file mock
 vi.mock('*.css', () => ({}));
 vi.mock('*.scss', () => ({}));
 vi.mock('*.sass', () => ({}));
 vi.mock('*.less', () => ({}));
 vi.mock('*.styl', () => ({}));
 
-// Mock lottie-web 完整版本
+// Mock lottie-web full version
 vi.mock('lottie-web', () => ({
   default: {
     loadAnimation: vi.fn(() => ({

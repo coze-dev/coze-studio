@@ -39,7 +39,7 @@ export const initComponentsByToolParams = (
     };
   });
 
-// 获取没有被使用的组件
+// Get unused components
 export const getUnusedComponents = (
   shortcut: ShortcutEditFormValues,
 ): shortcut_command.Components[] => {

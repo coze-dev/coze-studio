@@ -28,12 +28,12 @@ import { useTableData } from '../../context/table-data-context';
 import { useTableActions } from '../../context/table-actions-context';
 
 export const useDeleteSliceModal = () => {
-  // 外部数据
+  // external data
   const dataSetDetail = useKnowledgeStore(state => state.dataSetDetail);
   const setDataSetDetail = useKnowledgeStore(state => state.setDataSetDetail);
   const documentList = useKnowledgeStore(state => state.documentList);
 
-  // 内部数据
+  // internal data
   const { sliceListData, delSliceIds } = useTableData();
   const { tableViewRef } = useTableUI();
   const { mutateSliceListData } = useTableActions();
@@ -41,7 +41,7 @@ export const useDeleteSliceModal = () => {
   const curDoc = documentList?.[0];
   const slices = sliceListData?.list;
 
-  // 删除切片弹窗
+  // Delete slice pop-up
   const { node: deleteSliceModalNode, delete: openDeleteSliceModal } =
     useSliceDeleteModal({
       onDel: async () => {

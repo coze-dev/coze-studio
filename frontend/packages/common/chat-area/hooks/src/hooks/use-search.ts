@@ -27,8 +27,8 @@ export interface UseSearchConfig<Payload, Res> {
   onSuccess?: (searchRes: Res, payload: Payload) => void;
 }
 
-// todo 补充关于 res 重置的测试 case
-/** 小心 service 引用变化! 一旦变化会触发重新加载 */
+// Todo adds test case on res reset
+/** Beware of service reference changes! Once changed, a reload will be triggered */
 export const useSearch = <Payload, Res>(
   service: (payload: Payload) => Promise<Res>,
   {
@@ -87,11 +87,11 @@ export const useSearch = <Payload, Res>(
     doSearch();
   }, [payload, service, triggerId]);
   return {
-    /** 注意清空时设置为 null */
+    /** Note that null is set when emptying. */
     setPayload,
     searchStage,
     res,
-    /** 主要用于重试 */
+    /** Mainly used for retrying */
     run: () => setTriggerId(c => c + 1),
   };
 };

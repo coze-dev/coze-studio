@@ -97,7 +97,7 @@ export const Canvas: FC<{ variables?: InputVariable[] }> = ({
     setFullscreenPanel(fabricEditor);
   }, [setFullscreenPanel]);
 
-  // 更新节点
+  // update node
   useEffect(() => {
     if (fabricEditor && fullscreenPanelVisible) {
       setFullscreenPanel(fabricEditor);

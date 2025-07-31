@@ -78,10 +78,10 @@ export class WorkflowDependencyService {
     this.onSubWrokflowVersionChangeEmitter.event;
 
   /**
-   * 可能的 badcase:
-   * - save 接口返回较慢，导致长链刷新先于版本冲突报错的刷新弹窗,但是该场景比较极限，后续有必要再优化
-   * - canvas 接口返回较慢，导致长链消息推送了一条和当前版本一致的消息，导致一次额外刷新。
-   * 通过刷新前再判断一次版本号，避免该问题。
+   * Possible badcases:
+   * - The save interface returns slowly, resulting in the refresh pop-up window of the long chain refresh before the version conflict error, but this scenario is relatively limited, and it is necessary to optimize it later.
+   * - Canvas interface returns slowly, resulting in a long chain push notification message consistent with the current version, resulting in an additional refresh.
+   * Avoid this problem by judging the version number again before refreshing.
    */
   private workflowDocumentReload = debounce(
     (callback, messageVersion?: bigint) => {
@@ -106,7 +106,7 @@ export class WorkflowDependencyService {
       n => n.flowNodeType === StandardNodeType.LLM,
     );
 
-    // LLM 节点技能更新
+    // LLM Node Skill Update
     llmNodes?.forEach(node => {
       const formData = node.getData(FlowNodeFormData);
       const formValue = formData.toJSON();
@@ -142,21 +142,21 @@ export class WorkflowDependencyService {
       ) => Promise<void> | void;
     } = {
       [DependencySourceType.Workflow]: (_nodes, resource) => {
-        // 当前工作流在其他页面被更新
+        // The current workflow is updated on other pages
         if (resource?.resId === this.globalState.workflowId) {
-          // 修改工作流名称或描述的情况 saveVersion 不会更新
+          // If you modify the workflow name or description, saveVersion will not be updated
           const isMetaUpdate =
             resource?.operateType === MessageOperateType.MetaUpdate;
-          // 切换工作流类型场景需要刷新
+          // Switch workflow type scene needs to be refreshed
           const isFlowModeChange =
             resource?.extra?.flowMode !== undefined &&
             this.globalState.flowMode.toString() !== resource.extra.flowMode;
           const metaUpdateNeedRefresh = isMetaUpdate && isFlowModeChange;
-          // 试运行过程中不需要刷新
+          // No refresh required during practice runs
           const isTestRunning =
             this.testRunService.testRunState === TestRunState.Executing ||
             this.testRunService.testRunState === TestRunState.Paused;
-          // 当前版本大于其他页面保存版本，不需要刷新
+          // The current version is larger than the saved version of other pages and does not need to be refreshed.
           const resourceVersion = BigInt(resource?.saveVersion ?? 0);
           const isCurVersionNewer = saveVersion > resourceVersion;
           if (
@@ -181,7 +181,7 @@ export class WorkflowDependencyService {
           const formData = node.getData(FlowNodeFormData);
           const formValue = formData.toJSON();
           const { workflowId } = formValue.inputs;
-          // 当前工作流内子工作流被更新
+          // The child workflows within the current workflow are updated
           if (resource?.resId === workflowId) {
             needUpdateNodeIds.push(workflowId);
           }
@@ -225,7 +225,7 @@ export class WorkflowDependencyService {
         this.onDependencyChangeEmitter.fire(nextProps);
       },
       [DependencySourceType.DataSet]: (_, resource) => {
-        // 清空知识库缓存
+        // Clear the knowledge base cache
         this.globalState.sharedDataSetStore.clearDataSetInfosMap();
         this.onDependencyChangeEmitter.fire(resource);
       },
@@ -238,7 +238,7 @@ export class WorkflowDependencyService {
     };
 
     if (props?.bizType) {
-      // 设置刷新弹窗中的刷新方法
+      // Set the refresh method in the refresh pop-up window
       this.dependencyEntity.setRefreshFunc(() => {
         callback?.();
       });

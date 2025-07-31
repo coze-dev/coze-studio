@@ -20,7 +20,7 @@ import { type Branch, type Committer } from '@coze-arch/bot-api/developer_api';
 import { updateHeaderStatus } from '../../src/utils/handle-status';
 import { useCollaborationStore } from '../../src/store/collaboration';
 
-// 模拟 useCollaborationStore
+// Analog useCollaborationStore
 vi.mock('../../src/store/collaboration', () => ({
   useCollaborationStore: {
     getState: vi.fn().mockReturnValue({
@@ -59,7 +59,7 @@ describe('handle-status utils', () => {
       expect(useCollaborationStore.getState).toHaveBeenCalled();
       expect(mockSetCollaborationByImmer).toHaveBeenCalled();
 
-      // 验证 setCollaborationByImmer 的回调函数
+      // Validate setCollaborationByImmer callback function
       const callback = mockSetCollaborationByImmer.mock.calls[0][0];
       const mockStore = {
         sameWithOnline: false,
@@ -91,7 +91,7 @@ describe('handle-status utils', () => {
         setCollaborationByImmer: mockSetCollaborationByImmer,
       });
 
-      // 只提供部分参数
+      // Only some parameters are provided
       const mockProps = {
         same_with_online: true,
       };
@@ -101,7 +101,7 @@ describe('handle-status utils', () => {
       expect(useCollaborationStore.getState).toHaveBeenCalled();
       expect(mockSetCollaborationByImmer).toHaveBeenCalled();
 
-      // 验证 setCollaborationByImmer 的回调函数
+      // Validate setCollaborationByImmer callback function
       const callback = mockSetCollaborationByImmer.mock.calls[0][0];
       const mockStore = {
         sameWithOnline: false,
@@ -114,7 +114,7 @@ describe('handle-status utils', () => {
 
       callback(mockStore);
 
-      // 只有 sameWithOnline 应该被更新
+      // Only sameWithOnline should be updated
       expect(mockStore).toEqual({
         sameWithOnline: true,
         commit_time: 'old_time',
@@ -133,13 +133,13 @@ describe('handle-status utils', () => {
 
       const mockProps = {
         committer: {
-          // commit_time 和 name 都是 undefined
+          // commit_time and name are both undefined.
         } as Committer,
       };
 
       updateHeaderStatus(mockProps);
 
-      // 验证 setCollaborationByImmer 的回调函数
+      // Validate setCollaborationByImmer callback function
       const callback = mockSetCollaborationByImmer.mock.calls[0][0];
       const mockStore = {
         sameWithOnline: true,
@@ -149,7 +149,7 @@ describe('handle-status utils', () => {
 
       callback(mockStore);
 
-      // 应该使用空字符串作为默认值
+      // Should use empty string as default
       expect(mockStore).toEqual({
         sameWithOnline: false,
         commit_time: '',

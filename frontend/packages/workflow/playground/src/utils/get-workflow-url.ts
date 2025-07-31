@@ -17,9 +17,9 @@
 const workflowPath = 'work_flow';
 
 /**
- * 获取 Workflow 页面 url
- * @param params 相关参数
- * @returns Workflow 页面 url
+ * Get Workflow page url
+ * @param params related parameters
+ * @returns Workflow page url
  */
 export const getWorkflowUrl = (params: {
   space_id: string;

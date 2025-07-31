@@ -91,7 +91,7 @@ export const MockDataList = forwardRef(
     const [deleteModalVisible, setDeleteModalVisible] =
       useState<boolean>(false);
     const [deleting, setDeleting] = useState<boolean>(false);
-    // 当前选中状态
+    // Currently selected
     const [currentSelect, setCurrentSelect] = useState<
       MockDataInfo | undefined
     >();
@@ -99,7 +99,7 @@ export const MockDataList = forwardRef(
     const routeResponse = usePageJumpResponse(PageType.PLUGIN_MOCK_DATA);
 
     const { mock_set_id, space_id, tool_id } = useParams<DynamicParams>();
-    // space信息
+    // Space information
     const spaceType = useSpaceStore(store => store.space.space_type);
     const isPersonal = spaceType === SpaceType.Personal;
 
@@ -113,7 +113,7 @@ export const MockDataList = forwardRef(
       setDeleteModalVisible(true);
     };
 
-    // 获取当前 mock set 下的 mock data
+    // Get the mock data under the current mock set
     const getMockData = async (needScrollToTop?: boolean) => {
       try {
         setLoading(true);
@@ -181,11 +181,11 @@ export const MockDataList = forwardRef(
       }
     };
 
-    // 前端更新
+    // frontend update
     const updateList = (data: MockRule, action: RuleActions) => {
       let len = 0;
       if (action === RuleActions.CREATE) {
-        // 创建场景直接 force update
+        // Create scenes to force updates directly
         getMockData(true);
       } else if (action === RuleActions.DELETE) {
         len = mockDataList.length - 1;
@@ -228,7 +228,7 @@ export const MockDataList = forwardRef(
 
     useEffect(() => {
       if (routeResponse?.generationMode) {
-        // 清除跳转参数
+        // Clear jump parameters
         const state = {
           ...history.state,
           usr: { ...(history.state.usr || {}), generationMode: undefined },

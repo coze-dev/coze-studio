@@ -23,7 +23,7 @@ import {
 
 import { type NLPromptModalVisibilityProps } from './type';
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt 不认 interface
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt do not recognize interface
 type VisibilityEvent = {
   visibilitychange:
     | { isShow: true; openModalSource: OpenModalSource }

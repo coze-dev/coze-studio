@@ -25,7 +25,7 @@ import { type FabricObjectSchema } from './share/typings';
 export interface FormMetaItem {
   name?: string;
   title?: string;
-  // 临时存储，不保存到后端
+  // Temporary storage, not saved to the backend
   cacheSave?: boolean;
   visible?: (formValue: Partial<FabricObjectSchema>) => boolean;
   setter:

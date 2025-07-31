@@ -28,7 +28,7 @@ export function useWorkflowSearch() {
   const context = useContext(WorkflowModalContext);
   const { run: debounceChangeSearch, cancel } = useDebounceFn(
     (search: string) => {
-      /** 搜索最大字符数 */
+      /** Search maximum number of characters */
       const maxCount = 100;
       if (search.length > maxCount) {
         updateSearchQuery(search.substring(0, maxCount));
@@ -49,7 +49,7 @@ export function useWorkflowSearch() {
   const updateSearchQuery = (search?: string) => {
     const newState: Partial<WorkflowModalState> = { query: search ?? '' };
     if (dataSourceType === DataSourceType.Workflow) {
-      // 搜索时如果有标签, 重置全部
+      // If there are tags when searching, reset all
       newState.workflowTag = isSpaceWorkflow ? 0 : 1;
       newState.sortType = undefined;
     }
@@ -73,11 +73,11 @@ export function useWorkflowSearch() {
       data-testid="workflow.modal.search"
       onSearch={search => {
         if (!search) {
-          // 如果search清空了，那么立即更新query
+          // If the search is empty, update the query immediately
           cancel();
           updateSearchQuery('');
         } else {
-          // 如果search有值，那么防抖更新
+          // If search has a value, then anti-shake update
           debounceChangeSearch(search);
         }
       }}

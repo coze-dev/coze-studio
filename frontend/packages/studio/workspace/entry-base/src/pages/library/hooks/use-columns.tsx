@@ -35,7 +35,7 @@ import { BaseLibraryItem } from '../components/base-library-item';
 
 const { Text } = Typography;
 
-// 预设表格cell最小宽度
+// Default table cell minimum width
 const NAME_COL_WIDTH = 260;
 const ACTIONS_COL_WIDTH = 60;
 const TYPE_COL_WIDTH = 100;
@@ -43,7 +43,7 @@ const CREATOR_COL_WIDTH = 231;
 const EDITED_TIME_COL_WIDTH = 150;
 
 const stopPro = (e: MouseEvent<HTMLDivElement>) => {
-  e.stopPropagation(); //阻止冒泡
+  e.stopPropagation(); //Stop bubbling
 };
 
 const getResTypeLabelFromConfigMap = (

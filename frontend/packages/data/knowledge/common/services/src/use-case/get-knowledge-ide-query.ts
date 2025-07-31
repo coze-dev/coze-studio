@@ -30,6 +30,6 @@ export const getKnowledgeIDEQuery = (): KnowledgeIDEQuery => {
     agent_id: queryParams.get('agent_id'),
     page_mode: queryParams.get('page_mode') as KnowledgeIDEQuery['page_mode'],
   };
-  // 过滤掉空值，避免产生多余的 querystring
+  // Filter out null values to avoid generating extra querystrings.
   return Object.fromEntries(Object.entries(knowledgeQuery).filter(e => !!e[1]));
 };

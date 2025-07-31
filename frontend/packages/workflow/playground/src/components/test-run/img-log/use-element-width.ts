@@ -21,21 +21,21 @@ export function useElementWidth<T extends HTMLElement>() {
   const [width, setWidth] = useState(0);
 
   useLayoutEffect(() => {
-    // 定义更新尺寸的函数
+    // Function to define the updated size
     const updateSize = () => {
       setWidth(ref.current ? ref.current.offsetWidth : 0);
     };
 
-    // 创建ResizeObserver实例并观察目标元素
+    // Create a ResizeObserver instance and observe the target element
     const observer = new ResizeObserver(updateSize);
     if (ref.current) {
       observer.observe(ref.current);
     }
 
-    // 当组件加载时更新一次尺寸
+    // Update the size once when the component is loaded
     updateSize();
 
-    // 清理函数
+    // cleanup function
     return () => {
       observer.disconnect();
     };

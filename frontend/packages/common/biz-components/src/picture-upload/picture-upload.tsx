@@ -65,12 +65,12 @@ interface PackageUploadProps {
   triggerClassName?: string;
   maskIcon?: React.ReactNode;
   /**
-   * 编辑遮罩的展示模式
-   * - full-center(默认): 整体覆盖黑色透明遮罩, Icon 居中展示. hover 展示
-   * - right-bottom: 右下角遮罩, 长期展示
+   * Edit the display mode of the mask
+   * - full-center (default): overall cover black transparent mask, Icon centered show.hover display
+   * - right-bottom: lower right masking, long display
    */
   maskMode?: 'full-center' | 'right-bottom';
-  /** 编辑遮罩的 className */
+  /** Edit the className of the mask */
   editMaskClassName?: string;
   /** max size */
   maxSize?: number;
@@ -81,7 +81,7 @@ interface PackageUploadProps {
     contentNotLegalText?: string;
   };
   /**
-   * 自动生成的最大候选数量
+   * Maximum number of candidates automatically generated
    * @default 5
    */
   maxCandidateCount?: number;
@@ -91,14 +91,14 @@ interface PackageUploadProps {
   onGenerateStaticImageClick?: React.MouseEventHandler<HTMLButtonElement>;
   onGenerateGifClick?: React.MouseEventHandler<HTMLButtonElement>;
   onSizeError?: () => void;
-  // 自定义自定生成图片逻辑
+  // Custom custom generated image logic
   renderAutoGenerate?: (params: RenderAutoGenerateParams) => React.ReactNode;
   testId?: string;
 }
 
 // eslint-disable-next-line @coze-arch/max-line-per-function
 const _PictureUpload = (props: PackageUploadProps) => {
-  //   业务
+  //   business
   const {
     onChange,
     value,
@@ -225,7 +225,7 @@ const _PictureUpload = (props: PackageUploadProps) => {
             return;
           }
           Toast.error({
-            // starling 切换
+            // Starling toggle
             content: I18n.t(
               'dataset_upload_image_warning',
               {},

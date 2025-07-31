@@ -49,7 +49,7 @@ import { WorkflowFloatLayoutService } from './workflow-float-layout-service';
 import { WorkflowCustomDragService } from './workflow-drag-service';
 
 /**
- * 调用画布编辑服务
+ * Invoke the canvas editing service
  */
 @injectable()
 export class WorkflowEditService {
@@ -69,7 +69,7 @@ export class WorkflowEditService {
   protected context: WorkflowPlaygroundContext;
 
   /**
-   * 创建节点
+   * Create Node
    * @param type
    * @param nodeJson
    * @param event
@@ -96,13 +96,13 @@ export class WorkflowEditService {
     }
 
     if (!event) {
-      // 异常处理
+      // exception handling
       this.dragService.endDrag();
       return;
     }
 
     try {
-      // 节点初始化逻辑
+      // node initialization logic
       const nodeV2Registry = getNodeV2Registry(type);
       await nodeV2Registry?.onInit?.(
         nodeJson as WorkflowNodeJSON,
@@ -117,7 +117,7 @@ export class WorkflowEditService {
     }
 
     if (isDrag) {
-      // 拖拽生成节点
+      // Drag and drop to generate nodes
       dragNode = await this.dragService.dropCard(
         type,
         event,
@@ -125,7 +125,7 @@ export class WorkflowEditService {
         this.dragService.state.dropNode,
       );
     } else {
-      // @deprecated 这里的逻辑目前跑不到这里来，后续可以考虑删掉
+      // @Deprecated The logic here cannot run here at present, you can consider deleting it later.
       let position: IPoint;
       const nodeMeta =
         this.workflowDocument.getNodeRegister<WorkflowNodeRegistry>(type).meta;
@@ -189,7 +189,7 @@ export class WorkflowEditService {
   }
 
   /**
-   * 复制节点
+   * copy node
    * @param node
    */
   copyNode = async (node: WorkflowNodeEntity): Promise<WorkflowNodeEntity> => {
@@ -217,7 +217,7 @@ export class WorkflowEditService {
   };
 
   /**
-   * 删除线条
+   * Delete lines
    */
   deleteNode = (node: WorkflowNodeEntity, noConfirm?: boolean) => {
     if (noConfirm) {
@@ -235,7 +235,7 @@ export class WorkflowEditService {
   };
 
   /**
-   * 在销毁节点之前，运行节点自定义的 onDispose 方法
+   * Before destroying the node, run the node's custom onDispose method
    * @param node
    */
   private disposeNode(node: WorkflowNodeEntity) {
@@ -255,11 +255,11 @@ export class WorkflowEditService {
     titleCache: string[] = [],
     shouldReplaceId = true,
   ): WorkflowNodeJSON {
-    // 覆写 ID
+    // Override ID
     if (shouldReplaceId) {
       nodeJSON.id = this.nodesService.createUniqID();
     }
-    // 覆写标题
+    // Override title
     if (nodeJSON.data?.nodeMeta?.title) {
       set(
         nodeJSON,
@@ -272,7 +272,7 @@ export class WorkflowEditService {
       );
       titleCache.push(nodeJSON.data.nodeMeta.title);
     }
-    // 对子节点做递归处理
+    // Recursive processing of sub-nodes
     if (nodeJSON.blocks) {
       nodeJSON.blocks = nodeJSON.blocks.map(n =>
         this.recreateNodeJSON(n, titleCache),
@@ -281,7 +281,7 @@ export class WorkflowEditService {
     return nodeJSON;
   }
 
-  /** 选中节点，如果右侧浮动面板是节点表单，则切换节点 */
+  /** Select the node and switch the node if the floating panel on the right is a node form */
   focusNode(node?: WorkflowNodeEntity): void {
     if (node) {
       this.selectService.selectNodeAndFocus(node);

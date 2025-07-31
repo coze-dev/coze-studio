@@ -31,15 +31,15 @@ const initFlags = () => {
 };
 
 const main = () => {
-  // 初始化功能开关的值
+  // Initialize the value of the function switch
   initFlags();
-  // 初始化i18n
+  // Initialize i18n
   initI18nInstance({
     lng: (localStorage.getItem('i18next') ?? (IS_OVERSEA ? 'en' : 'zh-CN')) as
       | 'en'
       | 'zh-CN',
   });
-  // 动态导入mdbox 样式
+  // Import mdbox styles dynamically
   dynamicImportMdBoxStyle();
 
   const $root = document.getElementById('root');

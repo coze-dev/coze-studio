@@ -73,7 +73,7 @@ export const usePhotoDetailModal = (params: UsePhotoDetailModalParams) => {
 
   const status = progressMap[document_id || '']?.status || originStatus;
 
-  // 处理中获处理失败的photo，不允许更新 caption
+  // The photo that failed to be processed is not allowed to update the caption.
   const disableUpdate =
     status === DocumentStatus.Processing ||
     status === DocumentStatus.Failed ||
@@ -86,7 +86,7 @@ export const usePhotoDetailModal = (params: UsePhotoDetailModalParams) => {
     }
   }, [
     visible,
-    // 切换图片时需要更新初始状态
+    // The initial state needs to be updated when switching pictures.
     document_id,
   ]);
 
@@ -136,12 +136,12 @@ export const usePhotoDetailModal = (params: UsePhotoDetailModalParams) => {
         <div className={styles['modal-content']}>
           <div className={styles['photo-large']}>
             <Image
-              // 仅设置高度，宽度会按图片原比例自动缩放
+              // Only set the height, and the width will be automatically scaled according to the original scale of the picture.
               height={300}
               src={photo.url}
             />
             {
-              // 未找到，或者为第一个，不展示 pre 按钮
+              // Not found, or for the first one, the pre button is not displayed
               currentIndex < 1 ? null : (
                 <IconButton
                   icon={<Icon svg={<SvgArrowLeft />} />}
@@ -158,7 +158,7 @@ export const usePhotoDetailModal = (params: UsePhotoDetailModalParams) => {
               )
             }
             {
-              // 未找到，或者为最后一个，不展示 pre 按钮
+              // Not found, or for the last one, the pre button is not displayed
               currentIndex === -1 ||
               currentIndex === photoList.length - 1 ? null : (
                 <IconButton

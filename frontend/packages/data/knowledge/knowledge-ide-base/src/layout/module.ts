@@ -28,47 +28,47 @@ export interface KnowledgeIDEBaseLayoutProps {
 }
 
 /**
- * 知识库查询相关操作
+ * Knowledge base query related operations
  */
 export interface KnowledgeDataActions {
-  /** 重新加载知识库数据与文档列表 */
+  /** Reload the knowledge base data and document list */
   refreshData: () => void;
-  /** 更新知识库数据集详情 */
+  /** Update Knowledge Base Dataset Details */
   updateDataSetDetail: (data: Dataset) => void;
-  /** 更新文档列表数据 */
+  /** Update document list data */
   updateDocumentList: (data: DocumentInfo[]) => void;
 }
 
 /**
- * 知识库状态信息
+ * Knowledge Base Status Information
  */
 export interface KnowledgeStatusInfo {
-  /** 知识库是否正在加载 */
+  /** Is the knowledge base loading? */
   isReloading: boolean;
-  /** 文件处理进度信息 */
+  /** File processing progress information */
   progressMap: ProgressMap;
 }
 
 /**
- * 知识库数据信息
+ * Knowledge base data information
  */
 export interface KnowledgeDataInfo {
-  /** 知识库数据集详情 */
+  /** Knowledge Base Dataset Details */
   dataSetDetail: Dataset;
-  /** 文档列表 */
+  /** document list */
   documentList: DocumentInfo[];
 }
 
 /**
- * 知识库渲染上下文
+ * knowledge base rendering context
  */
 export interface KnowledgeRenderContext {
-  /** 组件属性配置 */
+  /** Component property configuration */
   layoutProps: KnowledgeIDEBaseLayoutProps;
-  /** 知识库数据信息 */
+  /** Knowledge base data information */
   dataInfo: KnowledgeDataInfo;
-  /** 知识库状态信息 */
+  /** Knowledge Base Status Information */
   statusInfo: KnowledgeStatusInfo;
-  /** 知识库数据操作 */
+  /** Knowledge base data manipulation */
   dataActions: KnowledgeDataActions;
 }

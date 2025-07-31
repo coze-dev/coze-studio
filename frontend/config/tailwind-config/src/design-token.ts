@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 消费者和生产者公共的 tailwind 配置和工具函数
+// Common tailwind configurations and tool functions for consumers and producers
 
 export function designTokenToTailwindConfig(
   tokenJson: Record<string, unknown>,
@@ -103,6 +103,6 @@ function borderRadiusTransformer(borderRadiusObj: Record<string, string>) {
   return res;
 }
 
-// 获取其他packages，并且拼接上 /src/**/*.{ts,tsx}
+// Get other packages and splice /src /**/*.{ ts, tsx}
 
 export { getTailwindContents } from './tailwind-contents';

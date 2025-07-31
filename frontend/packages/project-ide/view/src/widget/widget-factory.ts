@@ -23,49 +23,49 @@ import { type ReactWidget } from './react-widget';
 export const WidgetFactory = Symbol('WidgetFactory');
 
 export interface ToolbarItem {
-  // 1. 携带 commandId 走命令模式
+  // 1. Carry the commandId into command mode
   commandId?: string;
   tooltip?: string;
-  // 2. 携带 render 走直接渲染的模式
+  // 2. Carry the render to the direct rendering mode
   render?: (widget: ReactWidget) => React.ReactElement<any, any> | null;
 
   /**
-   * toolbar 对齐位置，默认是 ToolbarAlign.TRAILING
+   * Toolbar alignment position, the default is ToolbarAlign. TRAILING
    */
   align?: ToolbarAlign;
 }
 
 export interface WidgetFactory {
   /**
-   * widget 面板所在的区域
+   * The area where the widget panel is located
    */
   area: LayoutPanelType;
   /**
-   * widget 面板的 toolbar，只有 dockpanel 才会渲染
+   * The toolbar of the widget panel, only dockpanel will render
    */
   toolbarItems?: ToolbarItem[];
   /**
-   * 通过 render 方法注入
+   * Injection via render method
    */
   render?: () => React.ReactElement<any, any> | null;
   /**
-   * 通过 widget 方式注入
+   * Inject via widget
    */
   createWidget?: (uri: URI) => MaybePromise<ReactWidget>;
   /**
-   * 指定 widget class
+   * Specify the widget class
    */
   widget?: AsClass<ReactWidget>;
   /**
-   * 根据 uri 进行面板匹配
+   * Panel matching based on URI
    */
   canHandle?: (uri: URI) => boolean;
   /**
-   * 通过 uri 生成 widget id
+   * Generate widget id by URI
    */
   getId?: (uri: URI) => string;
   /**
-   * 业务侧通过 uri 正则匹配
+   * Business side regular matching through URI
    */
   match?: RegExp;
 }

@@ -15,7 +15,7 @@
  */
  
 /**
- * @file 开源版暂不支持后台配置，用于未来拓展
+ * @File open source version does not support background configuration for future expansion
  */
 import { useEffect } from 'react';
 

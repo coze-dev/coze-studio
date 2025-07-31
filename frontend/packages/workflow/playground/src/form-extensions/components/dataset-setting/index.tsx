@@ -31,11 +31,11 @@ import { TitleArea, SliderArea, SearchStrategy } from './components';
 
 import s from './index.module.less';
 
-/** 超出此数值进行提示 */
+/** Prompt beyond this value */
 const SUGGEST_TOP_K = 5;
-/** 默认最小匹配度 */
+/** default minimum match */
 const DEFAULT_MIN_SCORE = 0.5;
-/** 默认最大召回数  */
+/** default maximum recall  */
 const DEFAULT_TOP_K = 5;
 
 export interface DataSetSettingProps {
@@ -78,7 +78,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
 
   const { getNodeSetterId } = useNodeTestId();
 
-  // 设置默认值
+  // Set default value
   useEffect(() => {
     if (isDatasetEmpty) {
       return;
@@ -104,19 +104,19 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
         set(initDataSetInfo, 'is_personal_only', true);
       }
 
-      // 新增节点的搜索策略默认为 Hybird
+      // The search policy for new nodes defaults to Hybird
       onDataSetInfoChange?.({
         ...dataSetInfo,
         ...initDataSetInfo,
       });
     } else if (isNil(strategy)) {
-      // 存量流程的搜索策略默认为 Hybird
+      // The search policy for existing processes defaults to Hybird
       onDataSetInfoChange?.({
         ...dataSetInfo,
         strategy: Strategy.Hybird,
       });
     } else if (
-      // 存量流程补充默认值
+      // stock process supplement default value
       isNil(useRerank) &&
       isNil(useRewrite) &&
       isNil(isPersonalOnly) &&
@@ -132,7 +132,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
   }, [dataSetInfo, isDatasetWriteActive, isContainSqlDataSet, isDatasetEmpty]);
 
   useEffect(() => {
-    // 避免未请求到知识库列表数据导致 isContainSqlDataSet 状态错误的情况
+    // Avoid situations where unrequested Knowledge Base List data results in an isContainSqlDataSet status error
     if (!isReady) {
       return;
     }
@@ -145,7 +145,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
         onDataSetInfoChange(nextDataSetInfo as DataSetInfo);
       }
     } else {
-      // 无表格数据库清除该字段
+      // No table database Clear this field
       if (!isContainSqlDataSet) {
         const nextDataSetInfo = omit(dataSetInfo, ['use_nl2sql']);
         onDataSetInfoChange(nextDataSetInfo as DataSetInfo);
@@ -157,7 +157,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
     if (!isReady) {
       return;
     }
-    // 无数据库时清空数据
+    // Empty data when no database exists
     setDatasetEmpty(!dataSets?.length);
     if (!dataSets?.length) {
       const nextDataSetInfo = {};
@@ -203,7 +203,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
   }
 
   return (
-    // 设置定位防止滑动条偏移过度
+    // Set the positioning to prevent the slider from overshifting
     <div className={s.setting} style={{ ...style, position: 'relative' }}>
       <div className={s['setting-item']}>
         <TitleArea
@@ -222,7 +222,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
                   }
                 : {
                     ...dataSetInfo,
-                    // 从 fulltext -> 其余策略，需要默认添加 min_score
+                    // From fulltext - > rest policies, you need to add min_score by default
                     min_score: dataSetInfo?.min_score || DEFAULT_MIN_SCORE,
                     strategy: v,
                   },
@@ -266,7 +266,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
               isDataSet
               marks={{
                 markKey: DEFAULT_TOP_K,
-                // 设置 margin-left 避免和数字 1 重合
+                // Set margin-left to avoid overlap with number 1
                 markText: <span className="ml-2">Default</span>,
               }}
               onChange={v => {
@@ -286,7 +286,7 @@ export const DataSetSetting: FC<DataSetSettingProps> = ({
                   top_k: DEFAULT_TOP_K,
                 });
               }}
-              // semi版本不够高
+              // Semi version is not high enough
               // onMouseUp={e => {
               //   console.info('e', { e });
               // if (v > SUGGEST_TOP_K) {

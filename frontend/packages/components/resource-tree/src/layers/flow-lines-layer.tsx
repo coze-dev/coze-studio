@@ -48,7 +48,7 @@ export class FlowLinesLayer extends Layer {
   protected declare renderState: CustomRenderStateEntity;
 
   /**
-   * 可视区域变化
+   * Visual area change
    */
   onViewportChange = throttle(() => {
     this.render();
@@ -85,7 +85,7 @@ export class FlowLinesLayer extends Layer {
 
   render(): JSX.Element {
     const isViewportVisible = this.config.isViewportVisible.bind(this.config);
-    // 还没初始化
+    // Not initialized yet
     if (this.documentTransformer?.loading) {
       return <></>;
     }

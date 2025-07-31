@@ -37,7 +37,7 @@ export const ListTab: React.FC<PropsWithChildren<BotListHeaderProps>> = ({
     {...props}
     tabPaneMotion={false}
     type="button"
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- react 组件
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- react component
     renderTabBar={(innerProps, Node) => (
       <div className={cs(s.header, containerClass)}>
         <Node {...innerProps} />

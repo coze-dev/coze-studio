@@ -19,14 +19,14 @@ import type { Config, STSToken } from '@coze-arch/uploader-interface';
 
 import { getUploader, type FileOption, type CozeUploader } from '../src/index';
 
-// 在 vi.mock 工厂函数中定义所有 mock
+// Define all mock in vi.mock factory function
 vi.mock('tt-uploader', () => {
   const mockAddImageFile = vi.fn().mockReturnValue('mock-key');
   const mockUploader = vi.fn().mockImplementation(() => ({
     addImageFile: mockAddImageFile,
   }));
 
-  // 将 mock 函数挂载到 global 对象上，以便测试用例访问
+  // Mount the mock function on the global object for test case access
   (global as any).__mockAddImageFile = mockAddImageFile;
   (global as any).__mockUploader = mockUploader;
 
@@ -36,7 +36,7 @@ vi.mock('tt-uploader', () => {
   };
 });
 
-// 从 global 对象获取 mock 函数
+// Get mock function from global object
 const mockAddImageFile = (global as any).__mockAddImageFile;
 const mockUploader = (global as any).__mockUploader;
 

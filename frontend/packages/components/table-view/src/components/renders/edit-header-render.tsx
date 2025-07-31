@@ -25,20 +25,20 @@ import styles from './index.module.less';
 export interface EditHeaderRenderProps {
   value: string;
   deleteProps?: {
-    // 禁用删除
+    // disable deletion
     disabled: boolean;
-    // 删除回调
+    // Delete callback
     onDelete?: (v: string) => void;
   };
   editProps?: {
-    // 编辑回调
+    // edit callback
     onChange?: (v: string) => void;
-    // 失焦回调
+    // out of focus callback
     onBlur?: (v: string) => void;
   };
-  // 失焦回调
+  // out of focus callback
   onBlur: (v: string) => void;
-  // 表头校验逻辑
+  // header check logic
   validator: ValidatorProps;
   editable?: boolean;
 }
@@ -75,7 +75,7 @@ export const EditHeaderRender = ({
   const isError = useMemo(() => validate && validate(value), [inputValue]);
   return (
     <div className={styles['edit-header-render']}>
-      {/* 编辑态组件 */}
+      {/* edit state component */}
       {isEditCom && (
         <UIInput
           autoFocus
@@ -100,7 +100,7 @@ export const EditHeaderRender = ({
         />
       )}
 
-      {/* 预览态组件 */}
+      {/* preview component */}
       {!isEditCom && (
         <div
           className={styles['header-preview']}
@@ -110,7 +110,7 @@ export const EditHeaderRender = ({
         </div>
       )}
 
-      {/* 列删除按钮 */}
+      {/* column delete button */}
       {editable && (
         <UIButton
           disabled={deleteDisabled}

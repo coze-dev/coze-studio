@@ -60,7 +60,7 @@ export const usePhotoList = (
               ? true
               : filterPhotoType === FilterPhotoType.NoCaption
                 ? false
-                : // 传 undefined 代表返回全部
+                : // Pass undefined to return all
                   undefined,
         },
       });

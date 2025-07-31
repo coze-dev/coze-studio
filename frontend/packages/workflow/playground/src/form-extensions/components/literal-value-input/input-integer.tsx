@@ -47,7 +47,7 @@ export const InputInteger: FC<LiteralValueInputProps> = ({
       value={value as number}
       onChange={onChange}
       onBlur={e => {
-        // 拿到取整后的值
+        // Get the rounded value
         setTimeout(() => {
           onBlur?.(e.target.value);
         }, 15);

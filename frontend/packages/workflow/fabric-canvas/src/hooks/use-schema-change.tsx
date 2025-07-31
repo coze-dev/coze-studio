@@ -22,8 +22,8 @@ import { setElementAfterLoad } from '../utils';
 import { type FabricSchema } from '../typings';
 
 /**
- * 监听 schema 变化，reload canvas
- * 仅只读态需要
+ * Listen for schema changes, reload canvas
+ * Read-only state required
  */
 export const useSchemaChange = ({
   canvas,
@@ -39,7 +39,7 @@ export const useSchemaChange = ({
     setLoading(true);
     canvas
       ?.loadFromJSON(JSON.stringify(schema), (elementSchema, element) => {
-        // 这里是 schema 中每个元素被加载后的回调
+        // Here is the callback for each element in the schema after it has been loaded
         setElementAfterLoad({
           element: element as FabricObject,
           options: { readonly },

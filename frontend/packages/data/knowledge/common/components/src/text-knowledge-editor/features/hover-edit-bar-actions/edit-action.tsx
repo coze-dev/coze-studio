@@ -26,10 +26,10 @@ import { eventBus } from '@/text-knowledge-editor/event';
 import { type HoverEditBarActionProps } from './module';
 
 /**
- * 编辑操作组件
+ * Edit action component
  *
- * 内部实现了激活特定分片的编辑模式的逻辑
- * 如果传入了 onEdit 回调，则会在点击时调用
+ * The logic to activate the edit mode for specific shardings is implemented internally
+ * If an onEdit callback is passed, it will be called on click
  */
 export const EditAction: React.FC<HoverEditBarActionProps> = ({
   chunk,

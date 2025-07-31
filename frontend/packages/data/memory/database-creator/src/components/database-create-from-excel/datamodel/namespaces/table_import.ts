@@ -33,15 +33,15 @@ export interface AddTableRequest {
 }
 
 export interface AddTableResponse {
-  /** 相关id. bot_id */
+  /** Related id bot_id */
   bot_id: string;
   /** table_id */
   table_id: string;
-  /** 表名 */
+  /** table name */
   table_name: string;
-  /** 上传 TableFile 的 task id，用于后期查询使用.
-DataModelService 使用 GID 保证 task_id 全局唯一，后续查询时只需要 task_id.
-DataModel 服务会记录 table 的 lastTaskID, 查询时可以通过 table_id 查到唯一的
+  /** Upload the task id of TableFile for later query use.
+DataModelService uses GID to ensure that task_id globally unique, and subsequent queries only require task_id.
+The DataModel service will record the lastTaskID of the table, which can be found by table_id when querying
 task_id */
   task_id: Int64;
   code: number;
@@ -51,24 +51,24 @@ task_id */
 export interface FileInfo {
   /** tos uri */
   tos_uri: string;
-  /** Excel 行号 */
+  /** Excel line number */
   header_row: Int64;
-  /** Excel 数据开始行 */
+  /** Excel data start line */
   start_data_row: Int64;
   /** Excel sheet id, 0 for default */
   sheet_id?: number;
 }
 
 export interface ImportTableInfo {
-  /** table 所属的 bot_id */
+  /** Table belongs to bot_id */
   bot_id: string;
-  /** 表名 */
+  /** table name */
   table_name: string;
-  /** 表描述 */
+  /** table description */
   table_desc?: string;
-  /** 字段信息 */
+  /** Field information */
   table_meta: Array<table_base.FieldItem>;
-  /** 空间ID */
+  /** Space ID */
   space_id: string;
 }
 

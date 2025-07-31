@@ -79,7 +79,7 @@ export class CustomTabBar extends TabBar<Widget> {
 
     this.scrollBarFactory = () =>
       new PerfectScrollbar(this.scrollContainer, {
-        // 兼容鼠标模式下的滚动
+        // Compatible scrolling in mouse mode
         useBothWheelAxes: true,
         suppressScrollY: true,
       });
@@ -106,7 +106,7 @@ export class CustomTabBar extends TabBar<Widget> {
   handleEvent(event: Event): void {
     const canSuperHandle = this.getHandleEvent(event.target as HTMLElement);
 
-    // 不能阻塞 pointerup，否则 toolbar 展示会触发分屏拖拽
+    // Cannot block pointerup, otherwise the toolbar display will trigger split-screen drag
     if (canSuperHandle || event.type === 'pointerup') {
       super.handleEvent(event);
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import TeaNew, {
   type EVENT_NAMES,
   type UserGrowthEventParams,
@@ -50,9 +50,9 @@ export {
 export const LANDING_PAGE_URL_KEY = 'coze_landing_page_url';
 
 /**
- * UG 期望上报的 LandingPageUrl 是“网民最初点击到的页面完整 URL”，
- * 即使打开了新的页面，也应该上报第一次打开的落地页 URL
- * 
+ * The LandingPageUrl that UG expects to report is "the full URL of the page that netizens initially clicked on."
+ * Even if you open a new page, you should report the URL of the landing page you opened for the first time.
+ *
  */
 export const initBotLandingPageUrl = () => {
   const saved = window.sessionStorage.getItem(LANDING_PAGE_URL_KEY);
@@ -74,14 +74,14 @@ export const sendTeaEvent = <TEventName extends EVENT_NAMES>(
   if (FEATURE_ENABLE_TEA_UG) {
     const ugParams: UserGrowthEventParams = {
       LandingPageUrl: getBotLandingPageUrl(),
-      // 与 UG 约定的 AppId，固定值
+      // AppId agreed with UG, fixed value
       AppId: 510023,
       EventName: event,
-      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 秒时间戳
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- timestamp
       EventTs: Math.floor(Date.now() / 1000),
       growth_deepevent: '4',
     };
-    // @ts-expect-error -- UG 额外参数
+    // @ts-expect-error -- UG extra parameters
     params = { ...ugParams, ...(rawParams ?? {}) };
   }
   logger.info({

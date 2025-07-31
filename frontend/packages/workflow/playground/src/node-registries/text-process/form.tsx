@@ -31,25 +31,25 @@ import {
 } from './components';
 
 const Render = () => {
-  // 监听字符处理方法变更
+  // Listen for character handling method changes
   const method = useWatch<StringMethod>({ name: 'method' });
 
-  // 是否为字符串分割
+  // Whether to split strings
   const isSplit = isSplitMethod(method);
 
   return (
     <NodeConfigForm>
-      {/* 选择字符串应用 */}
+      {/* Select string application */}
       <MethodSelectorSetter name="method" />
 
-      {/* 输入 */}
+      {/* input */}
       <Inputs
         name="inputParameters"
         defaultValue={CONCAT_DEFAULT_INPUTS}
-        // 字符串分隔只能有一个输入
+        // String delimited with only one input
         minItems={isSplit ? 1 : 0}
         maxItems={isSplit ? 1 : Number.MAX_SAFE_INTEGER}
-        // 字符串分割只能输入字符串
+        // String splitting can only enter strings
         inputType={isSplit ? ViewVariableType.String : undefined}
         disabledTypes={
           isSplit
@@ -58,7 +58,7 @@ const Render = () => {
         }
       />
 
-      {/* 字符串分割/拼接设置 */}
+      {/* String split/stitch settings */}
       {isSplit ? (
         <DelimiterSelectorField name="delimiter" hasFeedback={false} />
       ) : (
@@ -68,7 +68,7 @@ const Render = () => {
         />
       )}
 
-      {/* 输出 */}
+      {/* output */}
       <OutputsField
         name="outputs"
         title={I18n.t('workflow_detail_node_output')}

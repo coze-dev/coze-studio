@@ -15,7 +15,7 @@
  */
  
 /**
- * 这个 hooks 用于在 side sheet 面板被打开后，处理画布的缩放比例，保证宿主节点居中可见
+ * This hooks is used to handle the scaling of the canvas after the side sheet panel is opened, ensuring that the host node is centered and visible
  */
 import { useEffect } from 'react';
 
@@ -30,7 +30,7 @@ import { SizeSchema } from '@flowgram-adapter/common';
 const SCROLL_TO_VIEW_TIMEOUT = 200;
 const BOUNDS_PAD = 30;
 
-/** side sheet 面板打开时，重置画布比例到适合宿主节点的大小 */
+/** Reset the canvas scale to the appropriate size for the host node when the side sheet panel is open */
 export const useFitViewport = (params: {
   enable?: boolean;
   nodeId?: string;

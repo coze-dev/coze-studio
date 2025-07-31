@@ -39,13 +39,13 @@ import { transformOnInit, transformOnSubmit } from './data-transformer';
 import { LoopPath } from './constants';
 
 export const LOOP_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <LoopFormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
     [`${LoopPath.LoopArray}.*.name`]: LoopArrayNameValidator,
@@ -56,16 +56,16 @@ export const LOOP_FORM_META: FormMetaV2<FormData> = {
     [`${LoopPath.LoopOutputs}.*.input`]: LoopInputValueValidator,
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     inputs: provideLoopInputsVariablesEffect,
     outputs: provideLoopOutputsVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

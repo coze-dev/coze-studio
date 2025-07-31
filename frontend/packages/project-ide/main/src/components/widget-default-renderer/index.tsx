@@ -39,8 +39,8 @@ import { ShortcutItem } from './shortcut-item';
 
 import styles from './styles.module.less';
 
-// coze 快捷键需要绑定 starling 文案。没有绑定文案的暂时不展示
-// 避免添加快捷键导致新增误展示
+// Coze shortcut needs to bind starling copy. If there is no bound copy, it will not be displayed for the time being.
+// Avoid adding shortcuts to cause new wrong display
 const SHOW_SHORTCUTS: string[] = [
   Command.Default.VIEW_CLOSE_ALL_WIDGET,
   Command.Default.VIEW_CLOSE_CURRENT_WIDGET,

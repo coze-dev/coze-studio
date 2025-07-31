@@ -135,7 +135,7 @@ export const ActionBar: React.FC<PropsWithChildren<ActionBarProps>> = props => {
     // }
 
     editor.$on('mousedown', handleMousedown);
-    // 不使用 editor.$on 监听 mouseup 事件，因为鼠标可能不在编辑器内
+    // Do not use editor. $on to listen for mouseup events because the mouse may not be in the editor
     document.addEventListener('mouseup', handleMouseup);
     editor.$on('selectionChange', handleSelectionChange);
     // editor.$on('blur', handleBlur);

@@ -40,16 +40,16 @@ export const useInitEditor = ({
   editorProps,
   onChange,
 }: UseDocumentEditorProps) => {
-  // 创建编辑器实例
+  // Create an editor instance
   const editor: Editor | null = useEditor({
     extensions: [
       StarterKit.configure({
         hardBreak: {
-          // 强制换行
+          // force wrap
           keepMarks: false,
         },
         paragraph: {
-          // 配置段落，避免生成多余的空段落
+          // Configure paragraphs to avoid generating extra empty paragraphs
           HTMLAttributes: {
             class: 'text-knowledge-tiptap-editor-paragraph',
           },
@@ -88,30 +88,30 @@ export const useInitEditor = ({
         }
         const text = event.clipboardData?.getData('text/plain');
 
-        // 如果粘贴的纯文本中包含换行符
+        // If the pasted plain text contains a newline character
         if (text?.includes('\n')) {
-          event.preventDefault(); // 阻止默认粘贴行为
+          event.preventDefault(); // Block default paste behavior
 
           const html = getRenderHtmlContent(text);
 
-          // 将转换后的 HTML 插入编辑器
+          // Insert the converted HTML into the editor
           editor.chain().focus().insertContent(html).run();
 
-          return true; // 表示我们已处理
+          return true; // It means we have dealt with it.
         }
 
-        return false; // 使用默认行为
+        return false; // Use default behavior
       },
     },
   });
 
-  // 当激活的分片改变时，更新编辑器内容
+  // Update editor content when active sharding changes
   useEffect(() => {
     if (!editor || !chunk) {
       return;
     }
     const htmlContent = getRenderHtmlContent(chunk.content || '');
-    // 设置内容，保留换行符
+    // Set content, keep newlines
     editor.commands.setContent(htmlContent || '', false, {
       preserveWhitespace: 'full',
     });

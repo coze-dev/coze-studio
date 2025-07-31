@@ -30,20 +30,20 @@ import type {
 import type { BotDetailSkill, BotSuggestionConfig } from './skill';
 import type { RequiredBotPrompt } from './persona';
 
-/** multi agent 相关数据 */
+/** Multi agent related data */
 export interface BotMultiAgent {
   agents: Agent[];
   edges: WorkflowEdgeJSON[];
   connector_type: LineType;
-  /** 用于保存 bot 类型节点的 bot 信息 */
+  /** Use to save bot information for bot type nodes */
   botAgentInfos: DraftBotVo[];
   /**
-   * 会话接管方式配置
-   * 默认为 flow 模式
+   * Session takeover configuration
+   * Default to flow mode
    */
   chatModeConfig: ChatModeConfig;
 }
-/** 业务用到的 */
+/** For business use */
 export interface AgentBizInfo {
   focused?: boolean;
 }
@@ -61,7 +61,7 @@ export type Agent = PartialRequired<Omit<AgentInfo, 'work_info'>, 'id'> & {
   suggestion: BotSuggestionConfig;
 };
 
-/** api 返回的 bot 信息中，部分字段是 json，本类型是 parse 后的类型 */
+/** In the bot information returned by the api, some fields are json, and this type is the parse type. */
 export type DraftBotVo = Omit<DraftBotApi, 'work_info'> & {
   work_info: {
     suggest_reply: BotSuggestionConfig;
@@ -70,13 +70,13 @@ export type DraftBotVo = Omit<DraftBotApi, 'work_info'> & {
 
 export type ChatModeConfig =
   | {
-      /** 会话接管方式 */
+      /** Session takeover */
       type: MultiAgentSessionType.Flow;
     }
   | {
-      /** 会话接管方式 */
+      /** Session takeover */
       type: MultiAgentSessionType.Host;
-      /** 当前的 host 节点 id */
+      /** Current host node id */
       currentHostId: string;
     };
 

@@ -35,16 +35,16 @@ export {
 } from './auth';
 
 /**
- * 获得bot详情页的path，非explore页面
- * @param {String} spaceID - 空间ID
+ * Get the path to bot details pages, not explore pages
+ * @param {String} spaceID - space ID
  * @param {String} botID - bot ID
  */
 export const getBotDetailPagePath = (spaceID: string, botID: string) =>
   `/space/${spaceID}/bot/${botID}`;
 
 /**
- * 打平bot diff data，flat数组内的子树结构，并添加层级到每个节点中
- * @param {Array<DiffDisplayNode & { level?: number }>} dataSource - 空间ID
+ * Flatten bot diff data, flat subtree structure within array, and add hierarchy to each node
+ * @param {Array < DiffDisplayNode & {level?: number} >} dataSource - space ID
  * @param {String} botID - bot ID
  */
 export const flatDataSource = (
@@ -71,13 +71,13 @@ export const setPCBodyWithDebugPanel = () => {
   htmlStyle.minWidth = '1680px';
 };
 
-// 旧的要下线的服务号id
+// The old service number id to be offline.
 export const OLD_WX_FWH_ID = '10000114';
 
-// 新的微信服务号id
+// New WeChat service ID
 export const NEW_WX_FWH_ID = '10000120';
 
-// store渠道的id
+// Store channel id
 export const STORE_CONNECTOR_ID = '10000122';
 
 export const getPublishResult: (
@@ -100,7 +100,7 @@ export const getPublishResult: (
   });
 };
 
-// 新旧微信公众号迁移特判逻辑：当绑定新微信渠道时，提示先解绑已绑定的旧的渠道，防止同bot重复绑定
+// New and old WeChat official account migration special judgment logic: When binding a new WeChat channel, it is prompted to unbind the bound old channel first to prevent repeated binding with the bot
 export const isWeChatMigration = (
   record: PublishConnectorInfo,
   dataSource: PublishConnectorInfo[],

@@ -56,7 +56,7 @@ vi.mock('../../src/utils', () => ({
 describe('useNodeTestId', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // 设置 concatTestId 的默认行为
+    // Set the default behavior of concatTestId
     mockConcatTestId.mockImplementation((...args: string[]) => args.join('.'));
   });
 
@@ -99,8 +99,8 @@ describe('useNodeTestId', () => {
   it('应该返回正确的节点设置器 ID', () => {
     mockUseCurrentEntity.mockReturnValue({ id: '123' });
     mockConcatTestId
-      .mockReturnValueOnce('playground.node.123') // 用于 getNodeTestId
-      .mockReturnValueOnce('playground.node.123.llm'); // 用于 getNodeSetterId
+      .mockReturnValueOnce('playground.node.123') // For getNodeTestId
+      .mockReturnValueOnce('playground.node.123.llm'); // For getNodeSetterId
 
     const { result } = renderHook(() => useNodeTestId());
 
@@ -140,7 +140,7 @@ describe('useNodeTestId', () => {
   });
 
   it('应该在多个组件中返回不同的节点测试 ID', () => {
-    // 第一个组件
+    // The first component
     mockUseCurrentEntity.mockReturnValue({ id: '123' });
     mockConcatTestId.mockReturnValueOnce('playground.node.123');
 
@@ -148,7 +148,7 @@ describe('useNodeTestId', () => {
     expect(result1.current.getNodeTestId()).toBe('playground.node.123');
     expect(mockConcatTestId).toHaveBeenCalledWith('playground.node', '123');
 
-    // 第二个组件
+    // The second component
     mockUseCurrentEntity.mockReturnValue({ id: '456' });
     mockConcatTestId.mockReturnValueOnce('playground.node.456');
 
@@ -158,11 +158,11 @@ describe('useNodeTestId', () => {
   });
 
   it('应该在多个组件中返回不同的节点设置器 ID', () => {
-    // 第一个组件
+    // The first component
     mockUseCurrentEntity.mockReturnValue({ id: '123' });
     mockConcatTestId
-      .mockReturnValueOnce('playground.node.123') // 用于 getNodeTestId
-      .mockReturnValueOnce('playground.node.123.llm'); // 用于 getNodeSetterId
+      .mockReturnValueOnce('playground.node.123') // For getNodeTestId
+      .mockReturnValueOnce('playground.node.123.llm'); // For getNodeSetterId
 
     const { result: result1 } = renderHook(() => useNodeTestId());
     expect(result1.current.getNodeSetterId('llm')).toBe(
@@ -179,11 +179,11 @@ describe('useNodeTestId', () => {
       'llm',
     );
 
-    // 第二个组件
+    // The second component
     mockUseCurrentEntity.mockReturnValue({ id: '456' });
     mockConcatTestId
-      .mockReturnValueOnce('playground.node.456') // 用于 getNodeTestId
-      .mockReturnValueOnce('playground.node.456.llm'); // 用于 getNodeSetterId
+      .mockReturnValueOnce('playground.node.456') // For getNodeTestId
+      .mockReturnValueOnce('playground.node.456.llm'); // For getNodeSetterId
 
     const { result: result2 } = renderHook(() => useNodeTestId());
     expect(result2.current.getNodeSetterId('llm')).toBe(
