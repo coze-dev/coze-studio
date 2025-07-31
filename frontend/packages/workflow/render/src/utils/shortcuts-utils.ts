@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const isAppleDevice = /(mac|iphone|ipod|ipad)/i.test(
   typeof navigator !== 'undefined' ? navigator?.platform : '',
 );

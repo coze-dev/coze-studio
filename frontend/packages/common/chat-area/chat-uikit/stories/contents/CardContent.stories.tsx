@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import CardContent from '../../src/components/contents/card-content';
 
 export default {

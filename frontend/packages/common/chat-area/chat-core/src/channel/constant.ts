@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const FONTIER_LOGID_PLACEHOLDER = 'FONTIER_LOGID_PLACEHOLDER';
 export const ABORT_HTTP_CHUNK_MESSAGE = 'ABORT_FETCH';

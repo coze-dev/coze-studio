@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FileTypeEnum } from '@coze-common/chat-core/shared/const';
 
 import EXCELSuccess from '../../../../../assets/file/xlsx-success.svg';

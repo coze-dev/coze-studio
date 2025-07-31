@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { CustomRenderStateEntity } from './render-state-entity';
 export { CustomRenderStateConfigEntity } from './custom-render-state';

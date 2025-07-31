@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   DEFAULT_AVATAR_LANGUAGES,
   DEFAULT_IDE_PYTHON_CODE_PARAMS,
@@ -27,8 +27,8 @@ function getLanguageTemplates(options?: { isBindDouyin?: boolean }) {
   return IS_OPEN_SOURCE
     ? DEFAULT_OPEN_SOURCE_LANGUAGES
     : options?.isBindDouyin
-      ? DEFAULT_AVATAR_LANGUAGES
-      : DEFAULT_LANGUAGES;
+    ? DEFAULT_AVATAR_LANGUAGES
+    : DEFAULT_LANGUAGES;
 }
 
 function getDefaultValue(options?: { isBindDouyin?: boolean }) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode, type SVGAttributes } from 'react';
 
 import { type SpanNode } from '../../typings/graph';

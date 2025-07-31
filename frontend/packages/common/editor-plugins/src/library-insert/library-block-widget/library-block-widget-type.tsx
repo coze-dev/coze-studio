@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type RefObject, useLayoutEffect, useState } from 'react';
 
 import { type Root, createRoot } from 'react-dom/client';

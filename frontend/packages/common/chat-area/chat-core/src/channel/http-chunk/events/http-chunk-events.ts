@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum HttpChunkEvents {
   // Received message
   MESSAGE_RECEIVED = 'http_chunk_message_received',

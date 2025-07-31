@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type UpdateDraftBotInfoAgwResponse } from '@coze-arch/idl/playground_api';
 import { type UserQueryCollectConf } from '@coze-arch/bot-api/developer_api';
 

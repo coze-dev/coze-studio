@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
-import { DisposableCollection, addEventListener } from '@flowgram-adapter/common';
+import {
+  DisposableCollection,
+  addEventListener,
+} from '@flowgram-adapter/common';
 
 import {
   type ShortcutsContribution,

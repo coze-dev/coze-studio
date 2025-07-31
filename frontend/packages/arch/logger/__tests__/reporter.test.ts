@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type TraceDuration } from '../src/reporter/duration-tracer';
 import { Reporter, reporter as rawReporter } from '../src/reporter';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ModalI18nKey } from '@coze-workflow/components/workflow-modal';
 import {
   WorkflowModalFrom,

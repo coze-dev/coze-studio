@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { type AsClass, bindContributionProvider } from '@flowgram-adapter/common';
+
+import {
+  type AsClass,
+  bindContributionProvider,
+} from '@flowgram-adapter/common';
 
 // import { LabelHandler } from '../label';
 import { definePluginCreator } from '../common';

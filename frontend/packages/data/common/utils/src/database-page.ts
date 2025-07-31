@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 interface DatabasePageQuery {
   page_mode?: 'modal' | 'normal';
   from?: 'bot' | 'workflow' | 'library' | 'create';

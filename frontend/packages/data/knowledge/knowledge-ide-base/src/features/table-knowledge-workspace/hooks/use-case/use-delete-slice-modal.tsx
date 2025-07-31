@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
 import { useKnowledgeStore } from '@coze-data/knowledge-stores';
 import { useSliceDeleteModal } from '@coze-data/knowledge-modal-base';

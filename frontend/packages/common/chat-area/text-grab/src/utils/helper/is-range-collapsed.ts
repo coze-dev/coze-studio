@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const hasVisibleSelection = (range: Range): boolean => {
   // Clone all nodes within the Range
   const documentFragment = range.cloneContents();

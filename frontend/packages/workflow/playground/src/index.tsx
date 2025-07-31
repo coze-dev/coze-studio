@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { WorkflowGlobalState } from './entities';
 export { WorkflowGlobalStateEntity } from './typing';
 export { WorkflowPlayground } from './workflow-playground';

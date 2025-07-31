@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-params */
 import { provideNodeOutputVariables } from 'src/form-extensions/variable-providers/provide-node-output-variables';
 import { provideNodeBatchVariables } from 'src/form-extensions/variable-providers/provide-node-batch-variables';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ImportKnowledgeSourceSelectModuleProps } from '../module';
 import { ImageLocal } from '../../import-knowledge-source/image-local';
 import { SourceSelect } from '../../../components/source-select';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import { pluginSvgr } from '@rsbuild/plugin-svgr';
@@ -48,7 +48,9 @@ export const overrideBrowserslist = [
 
 const generateCdnPrefix = () => {
   if (process.env.CDN_INNER_CN) {
-    return `https://${process.env.CDN_INNER_CN}/${process.env.CDN_PATH_PREFIX ? `${process.env.CDN_PATH_PREFIX}/` : ''}`;
+    return `https://${process.env.CDN_INNER_CN}/${
+      process.env.CDN_PATH_PREFIX ? `${process.env.CDN_PATH_PREFIX}/` : ''
+    }`;
   }
   return '/';
 };

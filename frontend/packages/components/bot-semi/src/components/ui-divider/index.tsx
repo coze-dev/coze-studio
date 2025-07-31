@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { Divider as UIDivider } from '@douyinfe/semi-ui';

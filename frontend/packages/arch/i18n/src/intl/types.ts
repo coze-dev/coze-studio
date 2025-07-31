@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @stylistic/ts/comma-dangle */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable prettier/prettier */
@@ -46,17 +46,26 @@ export enum IntlModuleType {
   languageDetector = 'languageDetector',
   postProcessor = 'postProcessor',
   i18nFormat = 'i18nFormat',
-  '3rdParty' = '3rdParty'
+  '3rdParty' = '3rdParty',
 }
 
-export interface IntlModule<T extends keyof typeof IntlModuleType = keyof typeof IntlModuleType> {
-  type: T
-  name?: string
-  init?: (i18n: any) => void | Promise<any>
+export interface IntlModule<
+  T extends keyof typeof IntlModuleType = keyof typeof IntlModuleType,
+> {
+  type: T;
+  name?: string;
+  init?: (i18n: any) => void | Promise<any>;
 }
 
 export type TFunctionKeys = string | TemplateStringsArray;
 
-export type TFunctionResult = string | object | Array<string | object> | undefined | null;
+export type TFunctionResult =
+  | string
+  | object
+  | Array<string | object>
+  | undefined
+  | null;
 
-export interface StringMap { [key: string]: any }
+export interface StringMap {
+  [key: string]: any;
+}

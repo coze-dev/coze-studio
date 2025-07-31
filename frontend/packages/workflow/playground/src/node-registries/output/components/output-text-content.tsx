@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-export { MessageOutput as OutputTextContent } from '@/components/node-render/node-render-new/fields/message-output'
+
+export { MessageOutput as OutputTextContent } from '@/components/node-render/node-render-new/fields/message-output';

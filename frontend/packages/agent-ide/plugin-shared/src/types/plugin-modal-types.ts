@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { OpenModeType } from '@coze-arch/bot-hooks';
 import {
   type PluginType,
@@ -22,10 +22,7 @@ import {
   type SortType,
 } from '@coze-arch/bot-api/product_api';
 import { type PluginInfoForPlayground } from '@coze-arch/bot-api/plugin_develop';
-import {
-  type OrderBy,
-  type PluginApi,
-} from '@coze-arch/bot-api/developer_api';
+import { type OrderBy, type PluginApi } from '@coze-arch/bot-api/developer_api';
 
 import { type MineActiveEnum } from '../constants/plugin-modal-constants';
 

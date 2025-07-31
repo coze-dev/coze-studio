@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import { useRequest } from 'ahooks';
@@ -105,8 +105,9 @@ export const useBaseUpdateOrCopyProjectModal = ({
         icon_uri: uriList?.at(0)?.uid,
         description,
       };
-      const response =
-        await intelligenceApi.DraftProjectUpdate(requestFormValues);
+      const response = await intelligenceApi.DraftProjectUpdate(
+        requestFormValues,
+      );
       const { audit_data } = response.data ?? {};
       return {
         ...audit_data,
@@ -133,8 +134,9 @@ export const useBaseUpdateOrCopyProjectModal = ({
         ...restValues,
         icon_uri: uriList?.at(0)?.uid,
       };
-      const response =
-        await intelligenceApi.DraftProjectCopy(requestFormValues);
+      const response = await intelligenceApi.DraftProjectCopy(
+        requestFormValues,
+      );
       const { audit_data, basic_info, user_info } = response.data ?? {};
       return {
         ...audit_data,

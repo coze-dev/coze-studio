@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 import { RuleTester } from 'eslint';
 
 import parser from '@typescript-eslint/parser';
 import { tsxNoLeakedRender } from '.';
-
 
 const ruleTester = new RuleTester({
   languageOptions: {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { connect } from '@formily/react';
 
 import { BaseInputNumberAdapter } from './base-input-number';

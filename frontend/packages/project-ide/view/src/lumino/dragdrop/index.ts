@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { DisposableDelegate, type IDisposable } from '../disposable';
 import { type MimeData } from '../coreutils';
 

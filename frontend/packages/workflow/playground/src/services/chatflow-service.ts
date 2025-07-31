@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable } from 'inversify';
 import { type IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { Emitter, type Event } from '@flowgram-adapter/common';

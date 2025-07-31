@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { LineShowResult, type LineData } from './types';
 
 // eslint-disable-next-line complexity

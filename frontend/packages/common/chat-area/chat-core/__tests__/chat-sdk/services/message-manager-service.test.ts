@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { MessageManagerService } from '@/chat-sdk/services/message-manager-service';
 
 describe('MessageManagerService', () => {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TraceListPanel, TraceListPanelProps } from './trace-list-panel';
 export {
   TraceDetailPanel,

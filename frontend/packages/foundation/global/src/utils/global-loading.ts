@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export function removeGlobalLoading() {
   const spin = document.querySelector('#global-spin-wrapper');
   // Hide loading directly for browsers that do not support MutationObserver to avoid affecting the display of normal pages

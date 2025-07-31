@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { escapeHtml } from '@/text-knowledge-editor/utils/escape-html';
 
 /**

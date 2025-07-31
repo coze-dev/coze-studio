@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { MODE_CONFIG } from './const';
 
 // Enter the transparency factor and color to return a new color

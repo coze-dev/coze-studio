@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -69,8 +69,8 @@ export function ModelSelect({
   const canSelectSuperiorModel = isBoolean(canSelectSuperiorModelProps)
     ? canSelectSuperiorModelProps
     : IS_OVERSEA
-      ? !isFree
-      : isBenefitAvailable;
+    ? !isFree
+    : isBenefitAvailable;
   const [upgradeModalState, setUpgradeModalState] = useState<{
     type?: 'new' | 'advance';
     visible: boolean;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { merge, omit } from 'lodash-es';
 import classNames from 'classnames';
 import { type ParsingStrategy, ParsingType } from '@coze-arch/idl/knowledge';

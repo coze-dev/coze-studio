@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isImage } from '../utils/batch-file-upload';
 import { type EventPayloadMap, UploadPlugin } from './upload-plugin';
 

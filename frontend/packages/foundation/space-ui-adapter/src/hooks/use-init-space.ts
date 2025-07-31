@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useInitSpace as useBaseInitSpace } from '@coze-foundation/space-ui-base';
 import { useSpaceStore } from '@coze-foundation/space-store';
 

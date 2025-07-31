@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const PANEL_WIDTH = 440;
 export const THROTTLE_INTERVAL = 300;
 export const PAGE_SIZE = 9;

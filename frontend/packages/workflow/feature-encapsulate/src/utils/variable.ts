@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isObject, get, has, isArray } from 'lodash-es';
 import { type WorkflowVariable } from '@coze-workflow/variable';
 import { type DTODefine } from '@coze-workflow/base';

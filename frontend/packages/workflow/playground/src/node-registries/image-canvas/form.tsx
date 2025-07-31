@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { nanoid } from 'nanoid';
 import { type InputValueVO, ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
@@ -37,7 +37,7 @@ export const FormRender = () => (
       onAppend={() =>
         ({
           id: nanoid(),
-        }) as unknown as InputValueVO
+        } as unknown as InputValueVO)
       }
       disabledTypes={ViewVariableType.getComplement([
         ViewVariableType.String,

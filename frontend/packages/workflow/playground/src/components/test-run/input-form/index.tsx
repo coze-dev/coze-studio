@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InputForm as InputFormCore } from '@coze-workflow/test-run/input';
 import { EventType } from '@coze-arch/bot-api/workflow_api';
 

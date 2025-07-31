@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type EdgeProps } from 'reactflow';
 
 import { SpanCategory } from '@coze-arch/bot-api/ob_query_api';

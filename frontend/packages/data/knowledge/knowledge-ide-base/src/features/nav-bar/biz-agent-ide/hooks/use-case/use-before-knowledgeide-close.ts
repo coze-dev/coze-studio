@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
-import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useKnowledgeParams,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 import { I18n } from '@coze-arch/i18n';
 import { SceneType, usePageJumpService } from '@coze-arch/bot-hooks';
 import { StorageLocation } from '@coze-arch/bot-api/knowledge';

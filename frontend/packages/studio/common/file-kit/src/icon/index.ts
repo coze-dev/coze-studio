@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { default as ZipIcon } from '../assets/file/zip-success.svg';
 export { default as XlsxIcon } from '../assets/file/xlsx-success.svg';
 export { default as VideoIcon } from '../assets/file/video-success.svg';

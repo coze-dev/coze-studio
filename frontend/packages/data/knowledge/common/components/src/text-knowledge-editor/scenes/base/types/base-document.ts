@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SliceInfo } from '@coze-arch/bot-api/knowledge';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';

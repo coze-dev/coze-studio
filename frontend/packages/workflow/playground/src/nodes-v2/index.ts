@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { NODES_V2, NODE_V2_TYPES } from './constants';
 
 export { isNodeV2, isNodeV2registry, getNodeV2Registry } from './utils';

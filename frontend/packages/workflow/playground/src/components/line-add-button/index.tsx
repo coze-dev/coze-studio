@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type StandardNodeType } from '@coze-workflow/base';
 import { Toast } from '@coze-arch/coze-design';
 import { WorkflowNodePanelService } from '@flowgram-adapter/free-layout-editor';

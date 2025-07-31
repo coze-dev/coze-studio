@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-magic-numbers -- no need */
 /* eslint-disable @typescript-eslint/no-namespace -- namespace is necessary */
 
@@ -71,8 +71,8 @@ export namespace CommentEditorHTMLParser {
       block.type === CommentEditorBlockFormat.HeadingOne
         ? 1
         : block.type === CommentEditorBlockFormat.HeadingTwo
-          ? 2
-          : 3;
+        ? 2
+        : 3;
     return `<h${level}>${content}</h${level}>`;
   };
 

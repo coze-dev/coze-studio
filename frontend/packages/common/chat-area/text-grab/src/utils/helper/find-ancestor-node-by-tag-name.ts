@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Find ancestor nodes (including itself) by TagName
  * @param node Node | null

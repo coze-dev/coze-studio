@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { Rule } from 'eslint';
 
 export const noNewErrorRule: Rule.RuleModule = {
@@ -37,8 +37,14 @@ export const noNewErrorRule: Rule.RuleModule = {
             node,
             messageId: 'no-new-error',
             fix(fixer) {
-              const args = node.arguments.map(arg => context.sourceCode.getText(arg)).join(',') || '\'custom error\'';
-              return fixer.replaceText(node, `new CustomError('normal_error', ${args})`);
+              const args =
+                node.arguments
+                  .map(arg => context.sourceCode.getText(arg))
+                  .join(',') || "'custom error'";
+              return fixer.replaceText(
+                node,
+                `new CustomError('normal_error', ${args})`,
+              );
             },
           });
         }

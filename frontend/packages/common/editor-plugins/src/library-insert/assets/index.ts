@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { default as pluginIcon } from './plugin.svg';
 export { default as workflowIcon } from './workflow.svg';
 export { default as imageflowIcon } from './imageflow.svg';

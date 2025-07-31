@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Make a simple style encapsulation for the banner of semi-ui, which conforms to the UX design draft specification
  */

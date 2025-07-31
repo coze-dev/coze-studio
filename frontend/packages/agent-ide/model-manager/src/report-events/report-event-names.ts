@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum ReportEventNames {
   ImportFormilyModuleError = 'import_formily_module_error',
   GetTypeListError = 'get_type_list_error',

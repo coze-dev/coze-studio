@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { faker } from '@faker-js/faker';
 import {
   type IPlugin,
@@ -196,7 +196,9 @@ export class MockTransformerPlugin implements IPlugin {
         const { name, returnType, fields } = f;
         const reqType = fields[0].fieldType as any;
         const resType = this.processReqResPramsType(returnType, ctx.ast);
-        return `${name.value}:{req:${parseId(reqType.value)},res:${parseId(resType)}}`;
+        return `${name.value}:{req:${parseId(reqType.value)},res:${parseId(
+          resType,
+        )}}`;
       })}}`,
     ) as t.ExpressionStatement;
     return variableDeclaration;
@@ -260,8 +262,8 @@ export class MockTransformerPlugin implements IPlugin {
           const key = t.isStringLiteral(i.key)
             ? i.key.value
             : t.isIdentifier(i.key)
-              ? i.key.name
-              : '';
+            ? i.key.name
+            : '';
           fieldNames.delete(key);
         }
         newPros.push(i);

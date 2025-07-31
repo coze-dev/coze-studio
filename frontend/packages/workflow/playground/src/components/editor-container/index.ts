@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ExpandEditorContainer } from './expand-editor';
 export { InnerEditorContainer } from './inner-editor';
 export { EditorThemeProvider } from './theme-provider';

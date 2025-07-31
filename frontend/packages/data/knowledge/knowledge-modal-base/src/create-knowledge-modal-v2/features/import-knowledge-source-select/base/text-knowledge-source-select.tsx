@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ImportKnowledgeSourceSelectModuleProps } from '../module';
 import { TextLocal } from '../../import-knowledge-source/text-local';
 import { TextCustom } from '../../import-knowledge-source/text-custom';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useUserInfo } from '@coze-arch/foundation-sdk';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { useParams } from 'react-router-dom';

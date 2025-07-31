@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useState, useEffect } from 'react';
 
 import { uniq } from 'lodash-es';
@@ -229,9 +229,7 @@ export const TypedValueExpressionInput = ({
   };
 
   const keyPath =
-    value && ValueExpression.isRef(value)
-      ? (value?.content?.keyPath ?? [])
-      : [];
+    value && ValueExpression.isRef(value) ? value?.content?.keyPath ?? [] : [];
   // Externally modified variable type
   useVariableTypeChange({
     keyPath,

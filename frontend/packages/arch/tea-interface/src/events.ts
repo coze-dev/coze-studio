@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines */
 import { type OperateType } from '@coze-arch/bot-api/workflow_api';
 import { type ChannelType } from '@coze-arch/bot-api/ui-builder';
@@ -280,12 +280,12 @@ export enum EVENT_NAMES {
   workflow_testrun_source = 'workflow_testrun_source',
   /**
    * Workflow Testrun Results
-   * 
+   *
    */
   workflow_testrun_result_front = 'workflow_testrun_result_front',
   /**
    * ! workflow Testrun node details, currently defined only, no event tracking
-   * 
+   *
    */
   workflow_testrun_detailed_front = 'workflow_testrun_detailed_front',
   /** Pre-release button click */
@@ -635,7 +635,7 @@ export enum BotShareConversationClick {
 
 /**
  * UG thread return parameter
- * 
+ *
  */
 export interface UserGrowthEventParams {
   /**
@@ -679,7 +679,7 @@ export interface ParamsTypeDefine {
       | 'cn-boe';
     second_environment?: 'cn-coze-pro' | 'cn-coze-basic';
   };
-  // see 
+  // see
   [EVENT_NAMES.view_bot]: { tab: 'my_bots' | 'starred_bots' };
   [EVENT_NAMES.view_database]: never;
   [EVENT_NAMES.click_create_bot_confirm]: {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export function compareVersion(version1: string, version2: string): number {
   // Split the version number string into an array of numbers, here use map (Number) to ensure conversion to numeric type
   const parts1 = version1.split('.').map(Number);

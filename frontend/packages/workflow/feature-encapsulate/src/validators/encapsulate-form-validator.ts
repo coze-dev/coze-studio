@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { ValidationService } from '@coze-workflow/base/services';
 import { StandardNodeType } from '@coze-workflow/base';

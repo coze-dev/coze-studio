@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ContentType } from '@coze-common/chat-core';
 import { type InsertedElementItem } from '@coze-arch/bot-md-box-adapter';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type PropsWithChildren } from 'react';
 
 import { type ChatInputProps, ChatInputPropsContext } from './context';

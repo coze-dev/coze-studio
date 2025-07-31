@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SchemaObject } from 'ajv';
 import { type MonacoEditor } from '@coze-arch/bot-monaco-editor/types';
 

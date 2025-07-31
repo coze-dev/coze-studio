@@ -284,10 +284,10 @@
   },
   "dependencies": {
     "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
     "@douyinfe/semi-icons": "^2.36.0",
     "@douyinfe/semi-illustrations": "^2.36.0",
     "@douyinfe/semi-ui": "~2.72.3",
-    "@coze-arch/i18n": "workspace:*",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
     "lodash-es": "^4.17.21",

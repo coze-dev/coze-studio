@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable, inject } from 'inversify';
 
 import { type URI } from '../common';

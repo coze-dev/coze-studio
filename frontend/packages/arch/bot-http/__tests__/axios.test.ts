@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import MockAdapter from 'axios-mock-adapter';
 import { AxiosError, isAxiosError } from 'axios';
 import { redirect } from '@coze-arch/web-context';

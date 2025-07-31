@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { performSimpleObjectTypeCheck } from './src/perform-simple-type-check';
 export { typeSafeJsonParse, typeSafeJsonParseEnhanced } from './src/json-parse';
 export { getReportError } from './src/get-report-error';

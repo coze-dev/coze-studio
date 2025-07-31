@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** ************************************************* */
 /** This file is auto generate by `rush flags` */
 /** Please don't update manually.                   */
@@ -3336,7 +3336,7 @@ export interface FEATURE_FLAGS extends Record<string, boolean> {
   /**
    *
    * coze2.0 评测
-   * 
+   *
    *
    * Creator: ** zhangyifei.sky **
    *
@@ -4457,7 +4457,7 @@ export interface FEATURE_FLAGS extends Record<string, boolean> {
   /**
    *
    * 付费配置
-   * 
+   *
    *
    * Creator: ** zhanghaochen.z **
    *

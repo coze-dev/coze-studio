@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { PromptEditorRender } from './render';
 export { PromptEditorProvider } from './context';
 export { useEditor, ActiveLinePlaceholder } from '@coze-editor/editor/react';

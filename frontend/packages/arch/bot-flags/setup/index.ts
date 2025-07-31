@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const log = {
   info: vi.fn().mockImplementation(console.log.bind(console, '[info]')),
   error: vi.fn().mockImplementation(console.error.bind(console, '[error]')),

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Common tailwind configurations and tool functions for consumers and producers
 
 export function designTokenToTailwindConfig(

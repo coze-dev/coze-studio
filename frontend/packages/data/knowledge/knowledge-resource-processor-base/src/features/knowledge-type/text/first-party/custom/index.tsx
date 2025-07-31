@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TextCustomAddUpdateConfig } from './add/config';
 export { UploadTextCustomAddUpdateStore } from './add/store';
 export { TextCustomAddUpdateStep } from './add/constants';

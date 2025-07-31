@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import SuggestionItem from '../../src/components/contents/suggestion-content/components/suggestion-item/index';
 
 export default {

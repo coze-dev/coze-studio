@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GrabNode } from '@coze-common/text-grab';
 import { WriteableAppLifeCycleService } from '@coze-common/chat-area';
 

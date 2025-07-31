@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type ReactNode,
   useCallback,
@@ -250,15 +250,16 @@ export const useWorkflowResource = (): UseWorkflowResourceReturn => {
 
   const iconRender: ResourceFolderCozeProps['iconRender'] = useMemo(
     () =>
-      ({ resource }) => (
-        <>
-          {
-            WORKFLOW_SUB_TYPE_ICON_MAP[
-              resource.res_sub_type || WorkflowMode.Workflow
-            ]
-          }
-        </>
-      ),
+      ({ resource }) =>
+        (
+          <>
+            {
+              WORKFLOW_SUB_TYPE_ICON_MAP[
+                resource.res_sub_type || WorkflowMode.Workflow
+              ]
+            }
+          </>
+        ),
     [],
   );
 

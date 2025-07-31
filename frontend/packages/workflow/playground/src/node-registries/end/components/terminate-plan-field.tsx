@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TERMINATE_PLAN_PATH, defaultTerminalPlanOptions } from '../constants';
 import { RadioSetterField } from '../../common/fields';
 

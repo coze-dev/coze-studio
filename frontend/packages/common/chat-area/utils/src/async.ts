@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const sleep = (t = 0) => new Promise(resolve => setTimeout(resolve, t));
 
 export class Deferred<T = void> {

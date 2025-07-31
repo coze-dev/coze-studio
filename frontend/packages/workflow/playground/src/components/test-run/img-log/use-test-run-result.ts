@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useExecStateEntity } from '../../../hooks';
 import { useCurrentNode } from './use-current-node';
 

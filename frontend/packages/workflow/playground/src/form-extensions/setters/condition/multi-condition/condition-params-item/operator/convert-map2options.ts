@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isFunction } from 'lodash-es';
 
 /**
@@ -31,7 +31,7 @@ export default function convertMap2options<Value extends number = number>(
      * Therefore, the {value: label} structure involving i18n needs to be written as {value : () => label}
      * When this property is enabled, an additional lazy load is performed
      * @default false
-     * @link 
+     * @link
      */
     i18n?: boolean;
   } = {},

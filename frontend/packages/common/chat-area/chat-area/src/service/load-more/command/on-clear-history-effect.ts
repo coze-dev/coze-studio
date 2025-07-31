@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { LoadEffect } from '../load-command';
 import { ReportErrorEventNames } from '../../../report-events/report-event-names';
 import { ReportEventNames } from '../../../report-events';

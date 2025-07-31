@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type {
   WorkflowDocument,
   WorkflowNodeEntity,
@@ -46,8 +46,9 @@ export const createBatchFunction = async (
     y: batchPosition.y + offset.y,
   };
   const batchFunctionJSON = createBatchFunctionJSON(id, position);
-  const batchFunctionNode =
-    await document.createWorkflowNode(batchFunctionJSON);
+  const batchFunctionNode = await document.createWorkflowNode(
+    batchFunctionJSON,
+  );
   createBatchFunctionTemplateData(batchNode, batchFunctionNode);
   createBatchFunctionLines({
     document,

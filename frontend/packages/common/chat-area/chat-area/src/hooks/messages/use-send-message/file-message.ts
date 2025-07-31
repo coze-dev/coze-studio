@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { cloneDeep } from 'lodash-es';
 import { type ContentType } from '@coze-common/chat-uikit';

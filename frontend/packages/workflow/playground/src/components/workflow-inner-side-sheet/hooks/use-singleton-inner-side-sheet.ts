@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useInnerSideSheetStoreShallow } from './use-inner-side-sheet-store';
 
 export const useSingletonInnerSideSheet = (sideSheetId: string) => {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ComponentAdapterCommonProps } from '../../types';
 import { FieldName } from '../../constants';
 import { type ValueType } from '../../../bot-project-select/types';

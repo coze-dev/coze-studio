@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type RightPanelConfigType } from '../../type';
 import { ContextMenuConfigMap } from './constant';
 

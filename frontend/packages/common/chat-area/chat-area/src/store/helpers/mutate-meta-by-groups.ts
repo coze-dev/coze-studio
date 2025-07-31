@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { safeAsyncThrow } from '@coze-common/chat-area-utils';
 
 import type { MessageGroup, MessageGroupMember, MessageMeta } from '../types';

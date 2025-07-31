@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type WaitingStoreStateAction } from '../../../store/waiting';
 import { type SelectionStoreStateAction } from '../../../store/selection';
 import { type PluginStore } from '../../../store/plugins';

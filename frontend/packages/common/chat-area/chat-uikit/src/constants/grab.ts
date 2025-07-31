@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const NO_MESSAGE_ID_MARK = 'NO_MESSAGE_ID';

@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useLayoutEffect, useMemo, useEffect } from 'react';
 
-import { reportTti } from '@coze-arch/report-tti/custom-perf-metric';
 import { FlowRendererRegistry } from '@flowgram-adapter/free-layout-editor';
-import { LoggerEvent, LoggerService, useService } from '@flowgram-adapter/free-layout-editor';
+import {
+  LoggerEvent,
+  LoggerService,
+  useService,
+} from '@flowgram-adapter/free-layout-editor';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
+import { reportTti } from '@coze-arch/report-tti/custom-perf-metric';
 
 import styles from './index.module.less';
 

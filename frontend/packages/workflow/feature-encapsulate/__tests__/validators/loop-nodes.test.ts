@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, beforeEach } from 'vitest';
 import { StandardNodeType } from '@coze-workflow/base';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';

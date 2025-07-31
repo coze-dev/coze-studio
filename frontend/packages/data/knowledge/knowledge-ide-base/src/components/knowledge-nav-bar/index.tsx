@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable complexity */
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 
 import classNames from 'classnames';
-import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useKnowledgeParams,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { useEditKnowledgeModal } from '@coze-data/knowledge-modal-adapter';
 import { KnowledgeE2e } from '@coze-data/e2e';

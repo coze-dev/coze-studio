@@ -74,7 +74,7 @@ export enum ProductPaidType {
   Paid = 1,
 }
 export interface CommercialSetting {
-  commercial_type: ProductPaidType
+  commercial_type: ProductPaidType;
 }
 export enum ProductStatus {
   /** 从未上架 */
@@ -84,23 +84,23 @@ export enum ProductStatus {
   Banned = 3,
 }
 export interface UserLabel {
-  label_id: string,
-  label_name: string,
-  icon_uri: string,
-  icon_url: string,
-  jump_link: string,
+  label_id: string;
+  label_name: string;
+  icon_uri: string;
+  icon_url: string;
+  jump_link: string;
 }
 export interface UserInfo {
-  user_id: string,
-  user_name: string,
-  name: string,
-  avatar_url: string,
-  user_label?: UserLabel,
-  follow_type?: marketplace_common.FollowType,
+  user_id: string;
+  user_name: string;
+  name: string;
+  avatar_url: string;
+  user_label?: UserLabel;
+  follow_type?: marketplace_common.FollowType;
 }
 export interface ImageInfo {
-  uri: string,
-  url: string,
+  uri: string;
+  url: string;
 }
 export enum ProductDraftStatus {
   /** 默认 */
@@ -117,7 +117,7 @@ export enum ProductDraftStatus {
 export type AuditStatus = ProductDraftStatus;
 export interface OpeningDialog {
   /** Bot开场白 */
-  content: string
+  content: string;
 }
 export enum InputType {
   String = 1,
@@ -163,51 +163,51 @@ export enum UIPreviewType {
   /**
    * UI 预览类型，定义对齐 UI Builder，目前用于 Project
    * 网页端
-  */
+   */
   Web = 1,
   /** 移动端 */
   Client = 2,
 }
 export interface ChargeSKUExtra {
-  quantity: string,
-  is_self_define: boolean,
+  quantity: string;
+  is_self_define: boolean;
 }
 export enum FavoriteListSource {
   /** 用户自己创建的 */
   CreatedByMe = 1,
 }
 export interface FavoriteEntity {
-  entity_id: string,
-  entity_type: ProductEntityType,
-  name: string,
-  icon_url: string,
-  description: string,
+  entity_id: string;
+  entity_type: ProductEntityType;
+  name: string;
+  icon_url: string;
+  description: string;
   /** 废弃，使用UserInfo */
-  seller: SellerInfo,
+  seller: SellerInfo;
   /** 用于跳转到Bot编辑页 */
-  space_id: string,
+  space_id: string;
   /** 用户是否有该实体所在Space的权限 */
-  has_space_permission: boolean,
+  has_space_permission: boolean;
   /** 收藏时间 */
-  favorite_at: string,
-  product_extra?: FavoriteProductExtra,
-  user_info: UserInfo,
-  plugin_extra?: FavoritePluginExtra,
+  favorite_at: string;
+  product_extra?: FavoriteProductExtra;
+  user_info: UserInfo;
+  plugin_extra?: FavoritePluginExtra;
 }
 export interface SellerInfo {
-  user_id: string,
-  user_name: string,
-  avatar_url: string,
+  user_id: string;
+  user_name: string;
+  avatar_url: string;
 }
 export interface FavoriteProductExtra {
-  product_id: string,
-  product_status: ProductStatus,
+  product_id: string;
+  product_status: ProductStatus;
 }
 export interface FavoritePluginExtra {
-  tools: PluginTool[]
+  tools: PluginTool[];
 }
 export interface PluginTool {
-  id: string,
-  name: string,
-  description: string,
+  id: string;
+  name: string;
+  description: string;
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { RequestScene } from '@/request-manager/types';
 import { getDefaultSceneConfig } from '@/request-manager/request-config';
 import { ApiError } from '@/request-manager/api-error';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InputType } from '@coze-arch/bot-api/playground_api';
 
 import { type ShortcutEditFormValues } from '../../../../../src/shortcut-tool/types';

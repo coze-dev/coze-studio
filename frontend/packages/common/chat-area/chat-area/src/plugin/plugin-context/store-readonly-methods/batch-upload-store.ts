@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type BatchFileUploadStore } from '../../../store/batch-upload-file';
 
 export const createGetBatchFileStoreReadonlyMethods =

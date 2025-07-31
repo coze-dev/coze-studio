@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get, isEmpty } from 'lodash-es';
 import { VariableTypeDTO } from '@coze-workflow/base';
 

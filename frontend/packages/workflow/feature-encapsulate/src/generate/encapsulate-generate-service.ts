@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { uniqBy } from 'lodash-es';
 import { injectable, inject } from 'inversify';
 import { StandardNodeType } from '@coze-workflow/base/types';
@@ -207,7 +207,9 @@ export class EncapsulateGenerateServiceImpl
   }
 
   private getCompareEdgeId(edge) {
-    return `${edge.sourceNodeID || ''}:${edge.sourcePortID || ''}-${edge.targetNodeID || ''}:${edge.targetPortID || ''}`;
+    return `${edge.sourceNodeID || ''}:${edge.sourcePortID || ''}-${
+      edge.targetNodeID || ''
+    }:${edge.targetPortID || ''}`;
   }
 
   /**

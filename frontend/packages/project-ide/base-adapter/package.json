@@ -13,9 +13,9 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
     "@coze-project-ide/base-interface": "workspace:*",
     "@coze-project-ide/client": "workspace:*",
-    "@coze-arch/bot-typings": "workspace:*",
     "inversify": "^6.0.1",
     "react-router-dom": "^6.22.0"
   },

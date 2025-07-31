@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type MessageType } from '@coze-common/chat-core';
 
 export const MESSAGE_TYPE_VALID_IN_TEXT_LIST: Omit<MessageType[], ''> = [

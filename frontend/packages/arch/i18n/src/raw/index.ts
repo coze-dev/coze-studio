@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 import locale from '../resource';

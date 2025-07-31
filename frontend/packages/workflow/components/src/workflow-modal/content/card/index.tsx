@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import React, { type FC, useContext } from 'react';
 
@@ -186,12 +186,12 @@ export const WorkflowCard: FC<WorkflowCardProps> = props => {
               data.create_time,
             )}`
           : status === WorkFlowListStatus.HadPublished
-            ? `${I18n.t('workflow_add_list_publised')} ${formatTime(
-                data.update_time,
-              )}`
-            : `${I18n.t('workflow_add_list_updated')} ${formatTime(
-                data.update_time,
-              )}`;
+          ? `${I18n.t('workflow_add_list_publised')} ${formatTime(
+              data.update_time,
+            )}`
+          : `${I18n.t('workflow_add_list_updated')} ${formatTime(
+              data.update_time,
+            )}`;
       return (
         <div className={styles.info}>
           {showCreator ? (

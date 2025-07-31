@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { AST_NODE_TYPES, TSESTree } from '@typescript-eslint/utils';
 import { createRule, getZustandSetting, isNameMatchPattern } from '../utils';
 

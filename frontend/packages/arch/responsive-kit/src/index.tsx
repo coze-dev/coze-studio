@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { SCREENS_TOKENS, ScreenRange } from './constant';
 
 export { useMediaQuery, useCustomMediaQuery } from './hooks/media-query';

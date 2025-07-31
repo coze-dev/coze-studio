@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type NodeFormContext } from '@flowgram-adapter/free-layout-editor';
 import {
   variableUtils,
@@ -102,7 +102,7 @@ export const transformOnSubmit = (
           },
         ),
         id,
-      }) as unknown as InputValueDTO;
+      } as unknown as InputValueDTO);
     value.inputs.inputParameters = value.inputs.inputParameters.map(d =>
       variableVOToDTO(
         d.name ?? '',

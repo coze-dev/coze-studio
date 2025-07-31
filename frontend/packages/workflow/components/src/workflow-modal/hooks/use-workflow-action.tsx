@@ -224,7 +224,7 @@ export function useWorkflowAction({
       flow_mode:
         target?.plugin_type === PluginType.IMAGEFLOW
           ? WorkflowMode.Imageflow
-          : (config.flowMode ?? WorkflowMode.Workflow),
+          : config.flowMode ?? WorkflowMode.Workflow,
     };
 
     return newWorkflow;

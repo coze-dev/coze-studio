@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { nanoid } from '@flowgram-adapter/free-layout-editor';
 import { variableUtils } from '@coze-workflow/variable';
 import { ViewVariableType } from '@coze-workflow/nodes';

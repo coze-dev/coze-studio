@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Connection point radius
 
 export const STROKE_WIDTH_SLECTED = 3;

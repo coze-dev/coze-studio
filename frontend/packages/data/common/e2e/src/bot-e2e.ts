@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum BotE2e {
   BotTab = 'bot.tab',
   BotListSearch = 'bot.list.search.input',

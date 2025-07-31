@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type NonNullableType } from '../typing/util-types';
 
 export const isValidContext = <T extends object>(

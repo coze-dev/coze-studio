@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint import/prefer-default-export: off */
 import * as path from 'path';
 import * as fs from 'fs';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { EntityManager } from '@flowgram-adapter/free-layout-editor';
 import { nanoid } from '@flowgram-adapter/free-layout-editor';

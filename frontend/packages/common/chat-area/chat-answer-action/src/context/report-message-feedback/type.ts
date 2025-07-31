@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ChatCore } from '@coze-common/chat-core';
 export type ReportMessageFeedbackFn = ChatCore['reportMessage'];
 

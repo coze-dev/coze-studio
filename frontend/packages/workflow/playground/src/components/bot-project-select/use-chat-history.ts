@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useQuery } from '@tanstack/react-query';
 import { Scene } from '@coze-arch/bot-api/developer_api';
 import { DeveloperApi } from '@coze-arch/bot-api';

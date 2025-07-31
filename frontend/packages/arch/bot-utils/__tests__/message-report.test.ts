@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createReportEvent } from '@coze-arch/report-events';
 
 import { messageReportEvent } from '../src/message-report';

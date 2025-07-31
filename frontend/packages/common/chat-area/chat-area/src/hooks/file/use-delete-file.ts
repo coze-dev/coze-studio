@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useChatAreaStoreSet } from '../context/use-chat-area-context';
 import { useUploadController } from '../../context/upload-controller-context';
 

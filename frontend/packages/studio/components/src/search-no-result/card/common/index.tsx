@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ThemeFactory, type COZTheme } from '../../factory';
 import { CommonNoResultDark } from './CommonNoResultDark';
 import { CommonNoResult } from './CommonNoResult';

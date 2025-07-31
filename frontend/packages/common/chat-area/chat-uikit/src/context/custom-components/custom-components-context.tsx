@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createContext, type ComponentType, type ReactNode } from 'react';
 
 import { type SendButtonProps } from '@coze-common/chat-uikit-shared';

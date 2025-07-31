@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { MethodSelectorSetter } from './method-selector';
 export { Inputs } from './inputs';
 export { ConcatSetting } from './concat-setting';

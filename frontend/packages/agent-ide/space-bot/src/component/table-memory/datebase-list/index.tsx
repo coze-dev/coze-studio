@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { ToolItem, ToolItemAction, ToolItemList } from '@coze-agent-ide/tool';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';

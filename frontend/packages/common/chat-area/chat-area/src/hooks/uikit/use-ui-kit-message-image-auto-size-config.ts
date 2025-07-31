@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isUndefined } from 'lodash-es';
 import {
   EXPECT_CONTEXT_WIDTH_MOBILE,

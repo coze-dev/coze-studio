@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useEffect } from 'react';
 
-import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeParams,
+} from '@coze-data/knowledge-stores';
 import {
   type ContentProps,
   FooterBtnStatus,

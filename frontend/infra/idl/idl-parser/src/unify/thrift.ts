@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint no-param-reassign: ["error", { "props": false }], import/prefer-default-export: off */
 import * as path from 'path';
 import * as fs from 'fs';
@@ -317,13 +317,15 @@ function createAddNamespaceReferValue(
       const identifierValue = (fieldType as Identifier).value;
 
       if (!identifierValue.includes('.')) {
-        (fieldType as Identifier).namespaceValue =
-          `${namespace}.${identifierValue}`;
+        (
+          fieldType as Identifier
+        ).namespaceValue = `${namespace}.${identifierValue}`;
       } else {
         const parts = identifierValue.split('.');
         if (parts.length === 2 && enumNames.includes(parts[0])) {
-          (fieldType as Identifier).namespaceValue =
-            `${namespace}.${identifierValue}`;
+          (
+            fieldType as Identifier
+          ).namespaceValue = `${namespace}.${identifierValue}`;
         } else {
           for (const regExp of regExpNamespaceMap.keys()) {
             if (regExp.test(identifierValue)) {

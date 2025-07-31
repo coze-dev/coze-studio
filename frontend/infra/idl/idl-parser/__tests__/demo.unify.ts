@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable */
 
 import * as t from '../src/unify/index';
@@ -182,7 +182,7 @@ const document = t.parse(
     'index.proto': indexContent,
     'base.proto': baseContent,
     'extra.proto': extraContent,
-  }
+  },
 );
 const statement = document.statements[0] as t.InterfaceWithFields;
 console.log(statement);

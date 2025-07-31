@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { cva, type VariantProps } from 'class-variance-authority';
 
 export const messageBoxContainerVariants = cva(['flex', 'flex-row', 'my-0'], {

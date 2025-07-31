@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as path from 'path';
 
 import { parse, type UnifyDocument } from '@coze-arch/idl-parser';

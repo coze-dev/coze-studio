@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Gets which other workflows or bots are referenced by the current workflow
  * At present, bots has no data, only workflow.

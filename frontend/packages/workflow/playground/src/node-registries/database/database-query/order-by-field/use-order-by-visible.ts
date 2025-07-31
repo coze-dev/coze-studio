@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useQueryFieldIDs } from './use-query-field-ids';
 
 // Currently, if the query field is empty, the sorting field is not displayed

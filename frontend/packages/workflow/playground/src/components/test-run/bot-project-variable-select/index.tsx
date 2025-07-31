@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { EmptyVariableContent } from '@/components/bot-project-select/bot-project-variable-select';
 
 import BotProjectVariableSelect from './select';

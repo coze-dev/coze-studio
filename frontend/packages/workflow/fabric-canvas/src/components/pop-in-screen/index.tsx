@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import { useEffect, useRef, useState, type FC } from 'react';
 
@@ -100,7 +100,7 @@ export const PopInScreen: FC<IProps> = props => {
         top: getNumberBetween({
           value: top,
           max: (limitRect?.height ?? Infinity) - (childrenSize?.height ?? 0),
-          min: position === 'top-center' ? (childrenSize?.height ?? 0) : 0,
+          min: position === 'top-center' ? childrenSize?.height ?? 0 : 0,
         }),
 
         zIndex,

@@ -1,4 +1,20 @@
 #!/bin/bash
+#
+# Copyright 2025 coze-dev Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 
 # Set default value
 TARGET_BRANCH=${targetBranch}
@@ -67,14 +83,13 @@ if [ -n "$large_files_info" ]; then
       \"name\": \"文件体积\",
       \"conclusion\": \"failed\",
       \"output\": {
-        \"summary\": \"<h1>错误: 文件体积过大</h1> <br />  以下文件体积超过限制 (${size_limit}KB): \\n \\n $large_files_info  \\n \\n <br /> 你可以将资源上传到CDN并通过URL使用。详情请参考此[文档](https://bytedance.larkoffice.com/wiki/MjoIwfyGyiVCBFkBgnXc8LFTniX)。<br /> 如遇紧急情况,可以联系 [@fanwenjie.fe](https://code.byted.org/fanwenjie.fe) 跳过此错误。\"
+        \"summary\": \"<h1>错误: 文件体积过大</h1> <br />  以下文件体积超过限制 (${size_limit}KB): \\n \\n $large_files_info  \\n \\n <br /> \"
       }
     }"
     output_conclusion "$CONCLUSION"
   else
     echo "错误: 以下文件体积超过限制 (${size_limit}KB):"
     echo -e "$large_files_info"
-    echo "请将大文件上传到CDN并通过URL使用。详情请参考: https://bytedance.larkoffice.com/wiki/MjoIwfyGyiVCBFkBgnXc8LFTniX"
     exit 1
   fi
 else

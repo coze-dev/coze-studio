@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { UploadImageButton } from '@coze-data/knowledge-common-components/text-knowledge-editor/features/editor-actions/upload-image';
 import {
   createEditorActionFeatureRegistry,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SyntaxNode } from '@lezer/common';
 import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { type SelectionEnlargerSpec } from '@coze-editor/editor';

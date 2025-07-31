@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
 import type { IExternalStore } from './external-store';

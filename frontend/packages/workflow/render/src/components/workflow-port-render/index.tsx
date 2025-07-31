@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ReactDOM from 'react-dom';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import classNames from 'classnames';
-import { Tooltip } from '@coze-arch/coze-design';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import {
   usePlaygroundReadonlyState,
@@ -27,6 +26,7 @@ import {
   WorkflowLinesManager,
   type WorkflowPortEntity,
 } from '@flowgram-adapter/free-layout-editor';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { PORT_BG_CLASS_NAME } from '../../constants/points';
 import { Warning } from './warning';

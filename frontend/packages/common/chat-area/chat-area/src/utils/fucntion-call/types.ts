@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode } from 'react';
 
 import { type MockHitStatus } from '@coze-arch/bot-api/debugger_api';

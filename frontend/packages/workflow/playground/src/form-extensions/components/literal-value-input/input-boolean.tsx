@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useRef } from 'react';
 
 import { I18n } from '@coze-arch/i18n';

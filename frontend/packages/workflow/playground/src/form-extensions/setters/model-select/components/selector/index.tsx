@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type CSSProperties } from 'react';
 
 import { type Model } from '@coze-arch/bot-api/developer_api';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { parse as yamlParse, stringify as yamlStringify } from 'yaml';
 import { isObject } from 'lodash-es';
 import axios from 'axios';

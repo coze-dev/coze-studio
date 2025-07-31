@@ -13,12 +13,12 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-arch/bot-error": "workspace:*",
-    "@coze-foundation/space-store": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/logger": "workspace:*",
     "@coze-arch/report-events": "workspace:*",
+    "@coze-foundation/space-store": "workspace:*",
     "immer": "^10.0.3",
     "localforage": "^1.9.0",
     "lodash-es": "^4.17.21",

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
 import { useState } from 'react';
 
@@ -134,8 +134,7 @@ export const useUpload = (props?: UploadConfig) => {
   const validateFile = async (file: FileItem): Promise<string | undefined> => {
     const validateMsg = await validate(file, {
       customValidate,
-      maxSize:
-        (maxSize ?? fileType === 'image') ? MAX_IMAGE_SIZE : MAX_FILE_SIZE,
+      maxSize: maxSize ?? fileType === 'image' ? MAX_IMAGE_SIZE : MAX_FILE_SIZE,
       accept,
     });
     if (validateMsg) {

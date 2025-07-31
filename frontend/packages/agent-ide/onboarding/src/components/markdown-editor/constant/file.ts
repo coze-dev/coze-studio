@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { I18n } from '@coze-arch/i18n';
 
 export const MAX_FILE_SIZE = 20 * 1024 * 1024;

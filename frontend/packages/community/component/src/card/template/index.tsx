@@ -63,7 +63,9 @@ export const TemplateCard: FC<TemplateCardProps> = props => {
         <DuplicateModal
           productId={props.meta_info.id}
           entityType={props.meta_info.entity_type}
-          defaultTitle={`${props.meta_info?.name}(${I18n.t('duplicate_rename_copy')})`}
+          defaultTitle={`${props.meta_info?.name}(${I18n.t(
+            'duplicate_rename_copy',
+          )})`}
           hide={() => setVisible(false)}
         />
       ) : null}

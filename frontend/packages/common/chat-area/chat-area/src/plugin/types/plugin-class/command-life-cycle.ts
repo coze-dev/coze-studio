@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ClipboardEvent, type MouseEvent } from 'react';
 
 import { type ClearMessageContextParams } from '@coze-common/chat-core';

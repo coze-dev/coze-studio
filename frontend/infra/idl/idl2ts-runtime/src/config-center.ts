@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { IdlConfig } from './utils';
 
 class ConfigCenter {
@@ -30,7 +30,9 @@ export const configCenter = new ConfigCenter();
 
 export function registerConfig(service: string, config: IdlConfig): void {
   if (configCenter.getConfig(service)) {
-    console.warn(`${service} api config has already been set,make sure they are the same`);
+    console.warn(
+      `${service} api config has already been set,make sure they are the same`,
+    );
   }
   configCenter.register(service, config);
 }

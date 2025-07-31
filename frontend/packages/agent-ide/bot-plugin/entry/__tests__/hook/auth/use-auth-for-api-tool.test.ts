@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-hooks';
 import { OAuthStatus } from '@coze-arch/bot-api/plugin_develop';

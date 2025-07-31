@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isWorkflowImageTypeURL } from '../utils';
 import { type SchemaExtractorOutputsParser } from '../type';
 import { AssistTypeDTO, VariableTypeDTO } from '../../../types/dto';

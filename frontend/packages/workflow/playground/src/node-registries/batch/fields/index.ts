@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { BatchConcurrentSizeField } from './batch-concurrent-size';
 export { BatchInputsField } from './batch-inputs';
 export { BatchOutputsField } from './batch-outputs';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Tooltip, Typography } from '@coze-arch/coze-design';
 import { IconInfo } from '@coze-arch/bot-icons';
 

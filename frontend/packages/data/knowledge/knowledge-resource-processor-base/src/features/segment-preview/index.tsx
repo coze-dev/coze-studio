@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable complexity */
@@ -86,8 +86,8 @@ export const SegmentPreview = (props: ISegmentPreviewProps) => {
   const fileType = currentReview?.document_type;
   // The front end is not good to display docx, so you need to use the URL in pdf format converted by the back end.
   const fileUrl = ['docx', 'doc'].includes(fileType ?? '')
-    ? (currentReview?.preview_tos_url ?? '')
-    : (currentReview?.tos_url ?? '');
+    ? currentReview?.preview_tos_url ?? ''
+    : currentReview?.tos_url ?? '';
   const segmentTosUrl = currentReview?.doc_tree_tos_url ?? '';
   // Save review when switching documents
   const { loading: saveLoading, runAsync: saveDocumentReview } = useRequest(

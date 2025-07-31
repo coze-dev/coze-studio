@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const CONTENT_ATTRIBUTE_NAME = 'data-grab-mark';
 
 export const MESSAGE_SOURCE_ATTRIBUTE_NAME = 'data-grab-source';

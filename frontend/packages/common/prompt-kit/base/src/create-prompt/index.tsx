@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { usePromptConfiguratorModal } from './use-modal';
 export type { PromptConfiguratorModalProps } from './types';
 export { ImportPromptWhenEmptyPlaceholder } from './components/placeholder/import-prompt-when-empty';

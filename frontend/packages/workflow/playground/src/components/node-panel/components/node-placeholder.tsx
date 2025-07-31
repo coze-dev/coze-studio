@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Placeholder } from '@/components/node-render/node-render-new/placeholder';
 
 import styles from './styles.module.less';

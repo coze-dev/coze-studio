@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { bindContributions } from '@flowgram-adapter/common';
 
 import { ShortcutsContribution } from '../shortcut/shortcuts-service';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useDiffConfirm } from './use-diff-confirm';
 export { useMergeConfirm } from './use-merge-confirm';
 export { usePublishReferenceConfirm } from './use-publish-reference-confirm';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-empty-function */
 import type { StoryObj, Meta } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';

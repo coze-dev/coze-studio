@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const isMobile = (): boolean => {
   const MOBILE_WIDTH_TH = 640;
   const width = document.documentElement.clientWidth;

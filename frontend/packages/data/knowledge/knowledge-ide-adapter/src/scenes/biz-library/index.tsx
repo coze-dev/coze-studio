@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BaseKnowledgeIDE, type BaseKnowledgeIDEProps } from '../base';
 export type BizLibraryKnowledgeIDEProps = BaseKnowledgeIDEProps;
 export const BizLibraryKnowledgeIDE = (props: BizLibraryKnowledgeIDEProps) => (

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { sleep } from './async';
 
 type Fn<ARGS extends unknown[], Ret = unknown> = (...args: ARGS) => Ret;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import ReactMarkdown from 'react-markdown';
 import { type MouseEventHandler, useEffect, useRef } from 'react';

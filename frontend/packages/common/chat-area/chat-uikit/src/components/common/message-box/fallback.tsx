@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, useEffect, type ComponentType } from 'react';
 
 import { type FallbackProps } from '@coze-arch/logger';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const fonts = [
   '1-中等-思源黑体.otf',
   '1-常规体-思源黑体.otf',

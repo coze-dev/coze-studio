@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 
 import thumbnail8 from '../../assets/8.png';

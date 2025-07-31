@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { getKnowledgeIDEQuery } from '@coze-data/knowledge-common-services';
-import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeParams,
+} from '@coze-data/knowledge-stores';
 import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
 import { IconButton, Typography } from '@coze-arch/coze-design';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import md5 from 'md5';
 import { get } from 'lodash-es';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
@@ -167,7 +167,9 @@ const generateBody = (node: WorkflowNodeEntity) => {
       [
         {
           name: `__${dataPath.replaceAll('.', '_')}_fileURL`,
-          title: `${I18n.t('node_http_body')}-${I18n.t('node_http_body_binary')}`,
+          title: `${I18n.t('node_http_body')}-${I18n.t(
+            'node_http_body_binary',
+          )}`,
           input: parameters?.fileURL,
         },
       ],

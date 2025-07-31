@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * TODO: This hooks is temporarily used to get the inputsParameters of the current node and the type corresponding to each variable
  */

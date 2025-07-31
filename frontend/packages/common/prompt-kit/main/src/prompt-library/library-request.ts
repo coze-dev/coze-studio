@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ResourceAction, ResType } from '@coze-arch/idl/plugin_develop';
 import { PlaygroundApi, PluginDevelopApi } from '@coze-arch/bot-api';
 export interface LibraryInfo {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ObQueryApiService from './idl/ob_query_api';
 import { axiosInstance, type BotAPIRequestConfig } from './axios';
 

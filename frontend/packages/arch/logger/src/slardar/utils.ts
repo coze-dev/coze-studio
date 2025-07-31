@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { LogLevel, type ApiErrorOption, ErrorType } from '../types';
 
 function isObject<T>(it: T): it is object extends T

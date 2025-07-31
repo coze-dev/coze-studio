@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { vi } from 'vitest';
 
 // Define a simulated Worker class
 class MockWorker {
-  constructor(
-    public scriptURL: string,
-    public options: any,
-  ) {}
+  constructor(public scriptURL: string, public options: any) {}
 
   // Methods required to add a Worker interface
   terminate(): void {
@@ -43,10 +40,7 @@ global.URL = {
 } as any;
 
 global.Blob = class MockBlob {
-  constructor(
-    public array: any[],
-    public options: any,
-  ) {}
+  constructor(public array: any[], public options: any) {}
 } as any;
 
 global.location = {

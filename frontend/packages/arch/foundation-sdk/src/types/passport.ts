@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * The uses of the access_token representing the OAuth2 callback are currently:
  * 1. Login: When logging in, perform user mid-platform three-party login (auth/login)

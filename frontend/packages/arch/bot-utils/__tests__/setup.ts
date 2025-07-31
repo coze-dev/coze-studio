@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 global.IS_OVERSEA = false;
 global.APP_ID = '';
 global.IMAGE_FALLBACK_HOST = '';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-magic-numbers -- no need */
 /* eslint-disable @typescript-eslint/no-namespace -- namespace is necessary */
 import type { CommentEditorBlock, CommentEditorLeaf } from '../type';
@@ -70,8 +70,8 @@ export namespace CommentEditorMarkdownParser {
       block.type === CommentEditorBlockFormat.HeadingOne
         ? 1
         : block.type === CommentEditorBlockFormat.HeadingTwo
-          ? 2
-          : 3;
+        ? 2
+        : 3;
     return `${'#'.repeat(level)} ${content}\n\n`;
   };
 

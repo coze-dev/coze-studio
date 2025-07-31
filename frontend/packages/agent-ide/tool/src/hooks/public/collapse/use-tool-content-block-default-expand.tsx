@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -36,7 +36,7 @@ import { toolKeyToApiStatusKeyTransformer } from '../../../utils/tool-content-bl
  * @param configured whether there is configuration content
  * Check when @param
  *
- * @see 
+ * @see
  */
 export const useToolContentBlockDefaultExpand = (
   $params: {

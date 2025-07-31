@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useState, useEffect } from 'react';
 
 import { usePlayground } from '@flowgram-adapter/free-layout-editor';

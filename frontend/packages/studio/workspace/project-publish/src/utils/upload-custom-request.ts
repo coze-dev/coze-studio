@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { AxiosError } from 'axios';
 import { type UploadProps } from '@coze-arch/coze-design';
 import { upLoadFile } from '@coze-arch/bot-utils';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import 'reflect-metadata';
 
 import { HTML5Backend } from 'react-dnd-html5-backend';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Workflow store, currently holds the nodes and edges data of the flow
 
 import { devtools } from 'zustand/middleware';

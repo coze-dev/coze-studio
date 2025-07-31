@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FilterPageConfig } from '@/features/knowledge-type/text/interface';
 
 export const mapPDFFilterConfig = (list: FilterPageConfig[]) =>

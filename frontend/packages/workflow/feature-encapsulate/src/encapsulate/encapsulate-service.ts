@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable, inject } from 'inversify';
 import { WorkflowMode } from '@coze-workflow/base/api';
 import {
@@ -105,7 +105,9 @@ export class EncapsulateServiceImpl implements EncapsulateService {
       return this.encapsulateError('encapsulating');
     }
 
-    const name = `${this.encapsulateContext.flowName || ''}_sub_${randomNameSuffix()}`;
+    const name = `${
+      this.encapsulateContext.flowName || ''
+    }_sub_${randomNameSuffix()}`;
     const { selectedNodes } = this.workflowSelectService;
 
     if (selectedNodes.length < 2) {

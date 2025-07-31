@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { FIELD_TYPE_OPTIONS } from './database-field';
 export { TEMPLATE_INFO } from './database-field';
 export { SYSTEM_FIELDS, SYSTEM_FIELD_ROW_INDEX } from './database-field';

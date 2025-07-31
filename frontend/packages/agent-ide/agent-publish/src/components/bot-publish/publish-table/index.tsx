@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useParams } from 'react-router-dom';
 import {
@@ -36,7 +36,10 @@ import {
   getPublishResult,
 } from '@coze-agent-ide/space-bot';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty, IconCozInfoCircleFill } from '@coze-arch/coze-design/icons';
+import {
+  IconCozEmpty,
+  IconCozInfoCircleFill,
+} from '@coze-arch/coze-design/icons';
 import { Tooltip } from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';

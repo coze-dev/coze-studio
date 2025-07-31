@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 enum PreProcessRule {
   REMOVE_SPACES = 'remove_extra_spaces',
   REMOVE_EMAILS = 'remove_urls_emails',

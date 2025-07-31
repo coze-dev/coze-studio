@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type BindConnectorResponse,
   type GetBindConnectorConfigResponse,
@@ -55,7 +55,9 @@ export const ConnectorError = ({ errorMessage }: ConnectorErrorProps) => {
                 <Typography.Text
                   className={styles['error-link-underline']}
                   link={{
-                    href: `/space/${res.bind_space_id}/${res.bind_agent_type === 1 ? 'project-ide' : 'bot'}/${res.bind_bot_id}`,
+                    href: `/space/${res.bind_space_id}/${
+                      res.bind_agent_type === 1 ? 'project-ide' : 'bot'
+                    }/${res.bind_bot_id}`,
                   }}
                   ellipsis={{
                     showTooltip: {

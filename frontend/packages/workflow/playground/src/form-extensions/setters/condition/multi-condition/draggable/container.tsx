@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const ConditionDraggableContainer = props => (
   <div className="relative">{props.children}</div>
 );

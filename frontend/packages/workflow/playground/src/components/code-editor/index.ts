@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { EditorProvider } from '@coze-editor/editor/react';
 export { CodeEditor } from './code-editor';
 export { TextEditor } from './text-editor';

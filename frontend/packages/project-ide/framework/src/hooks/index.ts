@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useSpaceId } from './use-space-id';
 export { useProjectIDEServices } from './use-project-ide-services';
 export { useCurrentWidgetContext } from './use-current-widget-context';

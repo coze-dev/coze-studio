@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Bezier } from 'bezier-js';
 import { type IPoint, Point } from '@flowgram-adapter/fixed-layout-editor';
 

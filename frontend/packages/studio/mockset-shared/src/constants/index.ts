@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const FORMAT_SPACE_SETTING = 4;
 export const MAX_SUBMIT_LENGTH = 102400;
 export const RANDOM_BOOL_THRESHOLD = 0.5;

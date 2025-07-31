@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isWriteablePlugin } from '../../utils/is-writeable-plugin';
 import {
   type OnTextContentRenderingContext,

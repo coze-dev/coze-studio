@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { default as TitleBar } from './title-bar';
 export { default as MergeTable } from './merge-table';
 export { default as MergeBanner } from './merge-banner';

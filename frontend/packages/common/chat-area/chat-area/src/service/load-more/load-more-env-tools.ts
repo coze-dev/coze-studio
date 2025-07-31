@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Reporter } from '@coze-arch/logger';
 import { type GetConversationParticipantsReadIndexResponse } from '@coze-arch/bot-api/developer_api';
 import { type ScrollViewController } from '@coze-common/scroll-view';

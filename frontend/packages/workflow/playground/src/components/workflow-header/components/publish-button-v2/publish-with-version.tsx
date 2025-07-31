@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useRef, useEffect } from 'react';
 
 import semver from 'semver';
 import { I18n } from '@coze-arch/i18n';
-import {
-  Form,
-  Button,
-  Popover,
-  type useFormApi,
-} from '@coze-arch/coze-design';
+import { Form, Button, Popover, type useFormApi } from '@coze-arch/coze-design';
 import { type PublishWorkflowRequest } from '@coze-arch/bot-api/workflow_api';
 
 import { useGlobalState } from '@/hooks';

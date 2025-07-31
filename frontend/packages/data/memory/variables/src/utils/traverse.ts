@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // eslint-disable-next-line max-params
 export function traverse<
   T extends { [key in K]?: T[] },

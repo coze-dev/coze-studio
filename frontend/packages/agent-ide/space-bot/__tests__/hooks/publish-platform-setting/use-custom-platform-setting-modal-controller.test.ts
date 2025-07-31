@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { renderHook } from '@testing-library/react-hooks';
 
 import { useCustomPlatformSettingModalController } from '@/hook/publish-platform-setting/use-custom-platform-setting-modal-controller';

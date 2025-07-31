@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useEffect, useState, useCallback } from 'react';
 
 import { type Editor } from '@tiptap/react';

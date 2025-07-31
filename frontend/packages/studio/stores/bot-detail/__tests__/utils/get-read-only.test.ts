@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BotPageFromEnum } from '@coze-arch/bot-typings/common';
 
 import { getBotDetailIsReadonlyByState } from '../../src/utils/get-read-only';

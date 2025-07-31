@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 //Backend undefined, derived from workflow_info profile_memory in bot_info
 export interface Variable {
   key: string;

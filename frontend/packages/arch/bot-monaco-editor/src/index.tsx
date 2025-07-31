@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Suspense, lazy } from 'react';
 
 import { type EditorProps, type DiffEditorProps } from '@monaco-editor/react';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState, useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -38,7 +38,13 @@ import {
 } from '@coze-arch/bot-api/workflow_api';
 import { workflowApi } from '@coze-arch/bot-api';
 import { IconCozCross, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
-import { Modal, Button, Tooltip, Loading, Typography } from '@coze-arch/coze-design';
+import {
+  Modal,
+  Button,
+  Tooltip,
+  Loading,
+  Typography,
+} from '@coze-arch/coze-design';
 
 import { ResourceContent } from './resource-content';
 

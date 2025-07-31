@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type RefObject, useState, useCallback, useEffect } from 'react';
 
 import { ReactEditor } from 'slate-react';
-import { type PositionSchema, usePlayground } from '@flowgram-adapter/free-layout-editor';
+import {
+  type PositionSchema,
+  usePlayground,
+} from '@flowgram-adapter/free-layout-editor';
 
 import type { CommentEditorModel } from '../../model';
 import { CommentEditorEvent } from '../../constant';

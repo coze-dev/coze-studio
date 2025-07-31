@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum ChatRoomEvents {
   PayloadSocietyStateEmpty = 'chat_room_ws_payload_society_state_empty',
 }

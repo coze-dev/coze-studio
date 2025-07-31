@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** Possible values in the log */
 export type LogValueType =
   | string

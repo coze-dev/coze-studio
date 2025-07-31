@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SchemaExtractorDbConditionsParser } from '../type';
 import { inputParametersParser } from './input-parameters';
 export const dbConditionsParser: SchemaExtractorDbConditionsParser =

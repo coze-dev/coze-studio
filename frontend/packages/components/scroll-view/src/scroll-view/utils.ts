@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * From: https://stackoverflow.com/questions/4900436/how-to-detect-the-installed-chrome-version
  */

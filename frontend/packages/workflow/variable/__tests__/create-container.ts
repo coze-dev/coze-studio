@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContainerModule, injectable } from 'inversify';
 import {
   type PlaygroundContext,
@@ -63,7 +63,7 @@ export class MockWorkflowForm
       () =>
         ({
           formModelFactory,
-        }) as any,
+        } as any),
     );
   }
 }
