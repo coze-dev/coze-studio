@@ -1,3 +1,4 @@
+name: coze-studio
 x-env-file: &env_file
   - .env
 

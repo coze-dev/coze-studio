@@ -1,3 +1,5 @@
+name: coze-studio-debug
+
 x-env-file: &env_file
   - .env.debug
 
@@ -502,46 +504,6 @@ services:
     networks:
       - coze-network
     restart: 'no'
-
-  coze-server:
-    # build:
-    #   context: ../
-    #   dockerfile: backend/Dockerfile
-    image: opencoze/opencoze:latest
-    container_name: coze-server
-    profiles: ['run-server']
-    env_file: *env_file
-    environment:
-      LISTEN_ADDR: 0.0.0.0:8888
-    networks:
-      - coze-network
-    ports:
-      - '8888:8888'
-      - '8889:8889'
-    volumes:
-      - .env:/app/.env
-      - ../backend/conf:/app/resources/conf
-      # - ../backend/static:/app/resources/static
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      # rocketmq-namesrv:
-      #   condition: service_healthy
-      # rocketmq-broker:
-      #   condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      milvus:
-        condition: service_healthy
-      minio-setup:
-        condition: service_completed_successfully
-      mysql-setup-init-sql:
-        condition: service_completed_successfully
-    command: ['/app/bootstrap.sh']
 
 networks:
   coze-network:

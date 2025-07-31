@@ -72,7 +72,7 @@ Deployment steps:
    # Start the service
    cd docker
    cp .env.example .env
-   docker compose --profile "*" up -d
+   docker compose up -d
    ```
    For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
 4. After starting the service, you can open Coze Studio by accessing `http://localhost:8888/` through your browser.
