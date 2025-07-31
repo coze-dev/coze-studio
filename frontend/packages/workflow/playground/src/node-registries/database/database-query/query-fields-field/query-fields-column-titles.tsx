@@ -29,7 +29,7 @@ export function QueryFieldsColumnTitles() {
           },
         },
         // {
-        //   label: I18n.t('workflow_query_fields_remove_duplicates', {}, '去重'),
+        //   Label: I18n.t ('workflow_query_fields_remove_duplicates ', {}, ' deduplicate'),
         // },
       ]}
     />

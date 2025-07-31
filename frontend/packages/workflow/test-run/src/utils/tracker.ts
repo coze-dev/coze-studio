@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid';
 export type ExtraType = Record<string, any>;
 
 /**
- * cache 类型
+ * cache type
  */
 export interface CacheMapType {
   start: number;
@@ -37,7 +37,7 @@ export class Tracker {
     const value = {
       start,
       extra,
-      // 如果已经存在，则永久禁用该事件上报
+      // If it already exists, permanently disable the event reporting
       disabled: !!prev,
     };
     this.cache.set(key, value);
@@ -49,7 +49,7 @@ export class Tracker {
       return null;
     }
     const duration = performance.now() - prev.start;
-    // 成功上报重置状态，等待下一次上报
+    // Successfully report the reset status and wait for the next report.
     this.cache.delete(key);
     return { ...prev, duration };
   }

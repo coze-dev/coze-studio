@@ -31,7 +31,7 @@ export enum BranchType {
 type BranchInfo = Record<
   string,
   | {
-      // 纵向连接线
+      // Longitudinal cable
       v: BranchType[];
       isLast: boolean;
     }
@@ -42,7 +42,7 @@ export function useGenTreeBranch(mockData?: MockDataWithStatus) {
   const [branchInfo, setBranchInfo] = useState<BranchInfo>({});
   const [pruned, setPruned] = useState<MockDataWithStatus>();
 
-  // 裁剪树枝
+  // Cut branches
   // @ts-expect-error -- linter-disable-autofix
   const pruning = (data?: MockDataWithStatus) => {
     if (!data?.children) {

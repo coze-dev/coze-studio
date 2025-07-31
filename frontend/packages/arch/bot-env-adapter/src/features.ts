@@ -17,7 +17,7 @@
 import { base } from './base';
 const { IS_RELEASE_VERSION, IS_OVERSEA, IS_BOE } = base;
 export const features = {
-  // 与志强&产品沟通后，下掉boe环境的sso
+  // After communicating with Zhiqiang & products, remove the sso of boe environment.
   FEATURE_ENABLE_SSO: !IS_RELEASE_VERSION && !IS_BOE,
   FEATURE_ENABLE_APP_GUIDE: !IS_RELEASE_VERSION || IS_OVERSEA,
   FEATURE_ENABLE_FEEDBACK_MAILTO: IS_RELEASE_VERSION,
@@ -27,47 +27,47 @@ export const features = {
   // FEATURE_ENABLE_RUYI_CARD: false,
   FEATURE_ENABLE_VARIABLE: false,
   /**
-   * 是否开启新的注销流程，目前只有cn开启
+   * Whether to start a new cancellation process? Currently only cn is open.
    */
   FEATURE_ENABLE_NEW_DELETE_ACCOUNT: !IS_OVERSEA,
   FEATURE_AWEME_LOGIN: !IS_OVERSEA,
   FEATURE_GOOGLE_LOGIN: IS_OVERSEA,
 
   /**
-   * @description 只在boe环境和inhouse-cn环境支持 workflow code 节点编辑 python 代码
+   * @Description Only supports workflow code node editing python code in boe environment and inhouse-cn environment
    */
   FEATURE_ENABLE_CODE_PYTHON: !IS_OVERSEA && !IS_RELEASE_VERSION,
 
   /**
-   * 暂时隐藏banner，后续可能用于运营位置
+   * Temporarily hide the banner, it may be used later to operate the location
    */
   FEATURE_ENABLE_BANNER: false,
 
   /**
-   * Database tooltip示例区分图海外和国内
+   * Database tooltip example distinguishes between overseas and domestic
    */
   FEATURE_ENABLE_DATABASE_TABLE: !IS_OVERSEA,
 
   /**
-   * bot市场中国区入口
+   * Bot Market China Entrance
    */
   FEATURE_ENABLE_BOT_STORE: true,
   /**
-   * workflow llm 计费只在海外或者 in-house 显示
+   * Workflow llm billing is only displayed overseas or in-house.
    */
   FEATURE_ENABLE_WORKFLOW_LLM_PAYMENT: IS_OVERSEA || !IS_RELEASE_VERSION,
 
   /**
-   * 豆包 cici 特殊需求，只在inhouse上线
+   * Bean bag cici special needs, only online in inhouse
    */
   FEATURE_ENABLE_QUERY_ENTRY: !IS_RELEASE_VERSION,
   /**
-   * coze接入审核增加，用于发布机审弹窗提前、版本历史Publish类审核结果展示。目前仅CN生效。
+   * Coze access audit has been added, which is used for the advance of the publishing machine audit pop-up window and the display of the version history Publishing audit results. Currently only CN is effective.
    */
   FEATURE_ENABLE_TCS: !IS_OVERSEA,
 
   /**
-   * Tea 上报数据增加 UG 线索回传参数，仅 cn release 需要
+   * Add UG clue return parameters to the data reported by Tea, which is only required for cn release.
    * 
    */
   FEATURE_ENABLE_TEA_UG: IS_RELEASE_VERSION && !IS_OVERSEA,

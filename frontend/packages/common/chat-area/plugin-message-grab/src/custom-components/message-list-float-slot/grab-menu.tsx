@@ -37,21 +37,21 @@ import {
 import { FILTER_MESSAGE_SOURCE } from '../../constants/filter-message';
 
 export const GrabMenu: MessageListFloatSlot = ({ contentRef }) => {
-  // 获取插件实例
+  // Get plugin instance
   const plugin = useWriteablePlugin<GrabPluginBizContext>(
     PluginName.MessageGrab,
   );
 
-  // 获取插件的业务上下文信息
+  // Get business context information for the plug-in
   const { pluginBizContext } = plugin;
   const { eventCenter, storeSet } = pluginBizContext;
   const { usePreferenceStore, useSelectionStore } = storeSet;
 
-  // 事件中心监听函数
+  // Event Center Listener Function
   const { on, off } = eventCenter;
 
   /**
-   * Float Menu 的 Ref
+   * Floating Menu Ref
    */
   const floatMenuRef = useRef<MenuListRef>(null);
 
@@ -65,23 +65,23 @@ export const GrabMenu: MessageListFloatSlot = ({ contentRef }) => {
     );
 
   /**
-   * 是否启用 Grab 插件
+   * Whether to enable the Grab plugin
    */
   const enableGrab = usePreferenceStore(state => state.enableGrab);
 
   /**
-   * 处理位置信息的回调
+   * Callbacks to handle location information
    */
   const handlePositionChange = (_position: GrabPosition | null) => {
-    // 更新浮动菜单在 Store 中的数据
+    // Update Floating Menu Data in Store
     updateFloatMenuPosition(_position);
 
-    // 清空栈后调用刷新的逻辑 （因为 floatMenu 在 hidden 状态下 通过 ref 拿到的 rect 信息是空，所以需要延迟一会儿获取）
+    // Call the refresh logic after clearing the stack (because the floatMenu is in the hidden state, the rect information obtained through ref is empty, so it needs to be delayed for a while)
     defer(() => floatMenuRef.current?.refreshOpacity());
   };
 
   /**
-   * 处理选区的变化
+   * Handling changes in constituencies
    */
   const handleSelectChange = (selectionData: SelectionData | null) => {
     const {
@@ -93,9 +93,9 @@ export const GrabMenu: MessageListFloatSlot = ({ contentRef }) => {
     } = plugin.pluginBizContext.storeSet.useSelectionStore.getState();
 
     /**
-     * 过滤特殊类型的消息
-     * 目前只有通过消息来源进行判断 messageSource
-     * 1. 通知类型 （禁止选择）
+     * Filtering for special types of messages
+     * Currently only judged by the source messageSource
+     * 1. Notification type (no selection)
      */
     if (
       selectionData &&
@@ -104,29 +104,29 @@ export const GrabMenu: MessageListFloatSlot = ({ contentRef }) => {
       return;
     }
 
-    // 更新选区数据
+    // Update constituency data
     updateSelectionData(selectionData);
 
-    // 更新展示浮动菜单的状态
+    // Update the status of displaying the floating menu
     updateIsFloatMenuVisible(!!selectionData);
 
-    // 拿取 MessageId
+    // Get MessageId
     const messageId = selectionData?.ancestorAttributeValue;
 
-    // 判断是否是特殊消息
+    // Determine whether it is a special message
     const isSpecialMessage = messageId === NO_MESSAGE_ID_MARK;
 
-    // 如果拿不到消息 ID，就证明选区不在消息哪
+    // If you can't get the message ID, it proves that the constituency is not in the message.
     if (!messageId) {
       return;
     }
 
-    // 特殊处理，需要判断是否是回复中的消息
+    // Special processing, you need to determine whether it is a message in the reply.
     const { is_finish } =
       plugin.chatAreaPluginContext.readonlyAPI.message.findMessage(messageId) ??
       {};
 
-    // 如果消息回复没完成 并且 不是一个特殊的消息 那么就不展示，否则展示
+    // If the message reply is not completed, and it is not a special message, then it will not be displayed, otherwise it will be displayed
     if (!is_finish && !isSpecialMessage) {
       updateIsFloatMenuVisible(false);
       return;
@@ -158,7 +158,7 @@ export const GrabMenu: MessageListFloatSlot = ({ contentRef }) => {
     };
   }, []);
 
-  // 如果没有开启 Grab 插件，那么就隐藏了当然
+  // If the Grab plugin is not enabled, it will be hidden, of course.
   if (!enableGrab) {
     return null;
   }

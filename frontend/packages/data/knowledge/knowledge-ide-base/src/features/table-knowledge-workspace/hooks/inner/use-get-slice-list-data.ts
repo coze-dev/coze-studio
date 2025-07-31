@@ -25,7 +25,7 @@ import { useScrollListSliceReq } from '@/service';
 export const useGetSliceListData = () => {
   const documentList = useKnowledgeStore(state => state.documentList);
   const curDocId = documentList?.[0]?.document_id;
-  // 加载数据
+  // load data
   const {
     data: sliceListData,
     mutate: mutateSliceListData,

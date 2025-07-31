@@ -19,12 +19,12 @@ export enum FeatureEvents {
   /**
    * space event
    */
-  createSpace = 'create_space', // 创建空间
-  updateSpace = 'update_space', // 更新空间
+  createSpace = 'create_space', // Create space
+  updateSpace = 'update_space', // update space
   transferSpace = 'transfer_space',
   spaceMemberSearch = 'space_member_search',
-  spaceMemberDetail = 'space_member_detail', // 获取空间成员
-  spaceMemberAdd = 'space_member_add', // 空间添加成员
+  spaceMemberDetail = 'space_member_detail', // Get space member
+  spaceMemberAdd = 'space_member_add', // Space Add Member
   deleteSpace = 'delete_space',
   leaveSpace = 'leave_space',
   spaceParseMemberCsv = 'space_parse_member_csv',
@@ -36,7 +36,7 @@ export enum FeatureEvents {
   updateUserProfileCheck = 'update_user_profile_check',
   getUserAuthList = 'user_auth_list',
   /**
-   * http 图片转化测试用
+   * HTTP image conversion test
    */
   convertHttpImg = 'convert_http_img',
 
@@ -52,21 +52,21 @@ export enum FeatureEvents {
   /**
    * passport
    */
-  passportService = 'passport_service', // passport相关的全部请求
-  passportHttpRequestFail = 'passport_http_request_fail', // passport 请求失败（非业务失败）
+  passportService = 'passport_service', // All passport related requests
+  passportHttpRequestFail = 'passport_http_request_fail', // Passport request failed (non-business failure)
   InviteLinkCopySuccess = 'invite_link_copy_success',
   JoinSpaceSuccess = 'join_space_success',
   unhandledrejection = 'unhandledrejection',
   oauthLogin = 'oauth_login',
   /**
-   * 消息链路事件 
+   * Message Link Event 
    */
-  botDebugMessageSubmit = 'bot_debug_message_submit', // Bot执行调试（发送消息）
+  botDebugMessageSubmit = 'bot_debug_message_submit', // Bot to perform debugging (send messages)
   receiveMessage = 'receive_message',
   emptyReceiveMessage = 'empty_receive_message',
   messageReceiveSuggests = 'message_receive_suggests',
   receiveTotalMessages = 'receive_total_messages',
-  getCategoryList = 'get_category_list', // explore获取分类列表
+  getCategoryList = 'get_category_list', // Explore Get Category List
   /**
    * coze token
    */
@@ -80,13 +80,13 @@ export enum FeatureEvents {
   openGetPatList = 'open_get_pat_list',
   openPatAction = 'open_pat_action',
   /**
-   * 协作模式长链接
+   * Collaboration Mode Long Link
    */
   editWebSocketInit = 'edit_web_socket_init',
-  pluginIdeInit = 'plugin_ide_init', // plugin ide初始化监控
-  pluginIdeInitTrace = 'plugin_ide_init_trace', // plugin ide初始化性能监控
+  pluginIdeInit = 'plugin_ide_init', // Plugin ide initialization monitoring
+  pluginIdeInitTrace = 'plugin_ide_init_trace', // Plugin ide initialization performance monitoring
   pluginIdeDispose = 'plugin_ide_dispose', // plugin ide dispose
 
-  // 路由重定向
+  // route redirection
   pathFallbackRedirect = 'path_fallback_redirect',
 }

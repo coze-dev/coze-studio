@@ -44,27 +44,27 @@ export const setLineControlVisible = ({
   const { x1, x2, y1, y2 } = element as Line;
   if ((x1 < x2 && y1 < y2) || (x1 > x2 && y1 > y2)) {
     element.setControlsVisibility({
-      ml: false, // 中点左
-      mr: false, // 中点右
-      mt: false, // 中点上
-      mb: false, // 中点下
-      bl: false, // 底部左
-      br: true, // 底部右
-      tl: true, // 顶部左
-      tr: false, // 顶部右
-      mtr: false, // 旋转控制点
+      ml: false, // Midpoint left
+      mr: false, // Midpoint right
+      mt: false, // midpoint
+      mb: false, // midpoint
+      bl: false, // Bottom left
+      br: true, // Bottom right
+      tl: true, // Top Left
+      tr: false, // Top right
+      mtr: false, // Rotation Control Point
     });
   } else {
     element.setControlsVisibility({
-      ml: false, // 中点左
-      mr: false, // 中点右
-      mt: false, // 中点上
-      mb: false, // 中点下
-      bl: true, // 底部左
-      br: false, // 底部右
-      tl: false, // 顶部左
-      tr: true, // 顶部右
-      mtr: false, // 旋转控制点
+      ml: false, // Midpoint left
+      mr: false, // Midpoint right
+      mt: false, // midpoint
+      mb: false, // midpoint
+      bl: true, // Bottom left
+      br: false, // Bottom right
+      tl: false, // Top Left
+      tr: true, // Top right
+      mtr: false, // Rotation Control Point
     });
   }
 };
@@ -82,50 +82,50 @@ const getCommonControl = ({
   needResetScaleAndSnap?: boolean;
 }) => {
   element.setControlsVisibility({
-    mtr: false, // 旋转控制点
+    mtr: false, // Rotation Control Point
   });
   // resize
-  // 上左
+  // upper left
   element.controls.tl = getResizeTLControl({
     needResetScaleAndSnap,
   });
-  // 上中
+  // upper middle school
   element.controls.mt = getResizeMTControl({
     needResetScaleAndSnap,
   });
-  // 上右
+  // upper right
   element.controls.tr = getResizeTRControl({
     needResetScaleAndSnap,
   });
-  // 中左
+  // center left
   element.controls.ml = getResizeMLControl({
     needResetScaleAndSnap,
   });
-  // 中右
+  // center right
   element.controls.mr = getResizeMRControl({
     needResetScaleAndSnap,
   });
-  // 下左
+  // Lower left
   element.controls.bl = getResizeBLControl({
     needResetScaleAndSnap,
   });
-  // 下中
+  // lower middle
   element.controls.mb = getResizeMBControl({
     needResetScaleAndSnap,
   });
-  // 下右
+  // Lower right
   element.controls.br = getResizeBRControl({
     needResetScaleAndSnap,
   });
 
   // rotate
-  // 上左
+  // upper left
   element.controls.tlr = getRotateTLControl();
-  // 上右
+  // upper right
   element.controls.trr = getRotateTRControl();
-  // 下左
+  // Lower left
   element.controls.blr = getRotateBLControl();
-  // 下右
+  // Lower right
   element.controls.brr = getRotateBRControl();
 };
 
@@ -135,27 +135,27 @@ export const createControls: Partial<
   [Mode.STRAIGHT_LINE]: ({ element }) => {
     setLineControlVisible({ element });
 
-    // 左上
+    // top left
     element.controls.tl = getLineStartControl({
       x: -0.5,
       y: -0.5,
       callback: setLineControlVisible,
     });
-    // 右上
+    // top right
     element.controls.tr = getLineStartControl({
       x: 0.5,
       y: -0.5,
       callback: setLineControlVisible,
     });
 
-    // 左下
+    // lower left
     element.controls.bl = getLineEndControl({
       x: -0.5,
       y: 0.5,
       callback: setLineControlVisible,
     });
 
-    // 右下
+    // lower right
     element.controls.br = getLineEndControl({
       x: 0.5,
       y: 0.5,
@@ -173,7 +173,7 @@ export const createControls: Partial<
   },
   [Mode.CIRCLE]: ({ element }) => {
     element.setControlsVisibility({
-      mtr: false, // 旋转控制点
+      mtr: false, // Rotation Control Point
     });
 
     const controlProps = {
@@ -195,7 +195,7 @@ export const createControls: Partial<
   },
   [Mode.BLOCK_TEXT]: ({ element }) => {
     element.setControlsVisibility({
-      mtr: false, // 旋转控制点
+      mtr: false, // Rotation Control Point
     });
 
     const controlProps = {
@@ -220,7 +220,7 @@ export const createControls: Partial<
   },
   [Mode.INLINE_TEXT]: ({ element }) => {
     element.setControlsVisibility({
-      mtr: false, // 旋转控制点
+      mtr: false, // Rotation Control Point
     });
 
     element.controls.tlr = getRotateTLControl();
@@ -230,7 +230,7 @@ export const createControls: Partial<
   },
   [Mode.IMAGE]: ({ element }) => {
     element.setControlsVisibility({
-      mtr: false, // 旋转控制点
+      mtr: false, // Rotation Control Point
     });
 
     const controlProps = {

@@ -69,7 +69,7 @@ export interface FormCardProps {
   feedbackText?: FormItemErrorProps['feedbackText'];
   feedbackStatus?: FormItemErrorProps['feedbackStatus'];
   disableFeedback?: boolean;
-  portInfo?: { portID: string; portType: WorkflowPortType }; // 点位
+  portInfo?: { portID: string; portType: WorkflowPortType }; // point
   testId?: string;
   motion?: boolean;
   required?: boolean;
@@ -81,7 +81,7 @@ export interface ContentRef {
   setOpen?: (isOpen: boolean) => void;
 }
 
-/** 自定义操作按钮类名，用于判断点击事件是否触发折叠 */
+/** Customize the action button class name to determine whether the click event triggers the collapse */
 const CUSTOM_ACTION_BUTTON_CLASS = 'custom-action-button';
 
 const { Slots, Slot } = createSlots(['Action']);
@@ -147,10 +147,10 @@ const FormCard: React.FC<PropsWithChildren<FormCardProps>> & {
     const target = childNodeRef.current;
     if (autoExpandWhenDomChange && target) {
       const config = { attributes: true, childList: true, subtree: true };
-      // 只有开启了dom改变自动展开功能才启动
+      // Only when the dom change auto-unfold function is turned on
       const callback: MutationCallback = mutationList => {
         if (mutationList.length > 0 && !isOpen) {
-          // 当dom改变并且没有开启时，会自动开启
+          // When the dom changes and is not turned on, it will automatically turn on
           setIsOpen(!isOpen);
         }
       };
@@ -196,9 +196,9 @@ const FormCard: React.FC<PropsWithChildren<FormCardProps>> & {
               if (!collapsible) {
                 return;
               }
-              // region 检查 click 事件是否来自操作按钮，不对点击按钮的事件进行折叠行为
-              // Q: 为什么不直接在 操作按钮 stopPropagation？
-              // A：为了不阻碍顶层捕获卡片点击事件，用以给卡片置顶
+              // Region checks whether the click event comes from the action button and does not collapse the click button event
+              // Q: Why not directly in the operation button stopPropagation?
+              // A: In order not to hinder the top-level capture card click event, it is used to put the card on the top
               let el = e.target as HTMLElement;
               // eslint-disable-next-line @typescript-eslint/no-magic-numbers
               for (let i = 0; i <= 8; i++) {

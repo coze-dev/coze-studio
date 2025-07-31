@@ -23,146 +23,146 @@ import { calcPermission } from '../../src/space/calc-permission';
 describe('Space Calc Permission', () => {
   describe('calcPermission', () => {
     it('应该为 Owner 角色返回正确的权限', () => {
-      // Owner 应该有更新空间的权限
+      // Owner should have permission to update the space
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [SpaceRoleType.Owner]),
       ).toBe(true);
 
-      // Owner 应该有删除空间的权限
+      // Owner should have permission to delete space
       expect(
         calcPermission(ESpacePermisson.DeleteSpace, [SpaceRoleType.Owner]),
       ).toBe(true);
 
-      // Owner 应该有添加成员的权限
+      // Owner should have permission to add members
       expect(
         calcPermission(ESpacePermisson.AddBotSpaceMember, [
           SpaceRoleType.Owner,
         ]),
       ).toBe(true);
 
-      // Owner 应该有移除成员的权限
+      // Owner should have permission to remove members
       expect(
         calcPermission(ESpacePermisson.RemoveSpaceMember, [
           SpaceRoleType.Owner,
         ]),
       ).toBe(true);
 
-      // Owner 应该有转移所有权的权限
+      // Owner should have the right to transfer ownership
       expect(
         calcPermission(ESpacePermisson.TransferSpace, [SpaceRoleType.Owner]),
       ).toBe(true);
 
-      // Owner 应该有更新成员的权限
+      // Owner should have permission to update members
       expect(
         calcPermission(ESpacePermisson.UpdateSpaceMember, [
           SpaceRoleType.Owner,
         ]),
       ).toBe(true);
 
-      // Owner 应该有管理 API 的权限
+      // Owner should have permission to manage the API
       expect(calcPermission(ESpacePermisson.API, [SpaceRoleType.Owner])).toBe(
         true,
       );
     });
 
     it('应该为 Admin 角色返回正确的权限', () => {
-      // Admin 应该有添加成员的权限
+      // Admin should have permission to add members
       expect(
         calcPermission(ESpacePermisson.AddBotSpaceMember, [
           SpaceRoleType.Admin,
         ]),
       ).toBe(true);
 
-      // Admin 应该有移除成员的权限
+      // Admin should have permission to remove members
       expect(
         calcPermission(ESpacePermisson.RemoveSpaceMember, [
           SpaceRoleType.Admin,
         ]),
       ).toBe(true);
 
-      // Admin 应该有退出空间的权限
+      // Admin should have permission to exit the space
       expect(
         calcPermission(ESpacePermisson.ExitSpace, [SpaceRoleType.Admin]),
       ).toBe(true);
 
-      // Admin 应该有更新成员的权限
+      // Admin should have permission to update members
       expect(
         calcPermission(ESpacePermisson.UpdateSpaceMember, [
           SpaceRoleType.Admin,
         ]),
       ).toBe(true);
 
-      // Admin 不应该有更新空间的权限
+      // Admin should not have permission to update the space
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [SpaceRoleType.Admin]),
       ).toBe(false);
 
-      // Admin 不应该有删除空间的权限
+      // Admin should not have permission to delete space
       expect(
         calcPermission(ESpacePermisson.DeleteSpace, [SpaceRoleType.Admin]),
       ).toBe(false);
 
-      // Admin 不应该有转移所有权的权限
+      // Admin should not have permission to transfer ownership
       expect(
         calcPermission(ESpacePermisson.TransferSpace, [SpaceRoleType.Admin]),
       ).toBe(false);
 
-      // Admin 不应该有管理 API 的权限
+      // Admin should not have permission to manage APIs
       expect(calcPermission(ESpacePermisson.API, [SpaceRoleType.Admin])).toBe(
         false,
       );
     });
 
     it('应该为 Member 角色返回正确的权限', () => {
-      // Member 应该有退出空间的权限
+      // Members should have permission to exit the space
       expect(
         calcPermission(ESpacePermisson.ExitSpace, [SpaceRoleType.Member]),
       ).toBe(true);
 
-      // Member 不应该有更新空间的权限
+      // Members should not have permission to update space
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [SpaceRoleType.Member]),
       ).toBe(false);
 
-      // Member 不应该有删除空间的权限
+      // Members should not have permission to delete space
       expect(
         calcPermission(ESpacePermisson.DeleteSpace, [SpaceRoleType.Member]),
       ).toBe(false);
 
-      // Member 不应该有添加成员的权限
+      // Members should not have permission to add members
       expect(
         calcPermission(ESpacePermisson.AddBotSpaceMember, [
           SpaceRoleType.Member,
         ]),
       ).toBe(false);
 
-      // Member 不应该有移除成员的权限
+      // Members should not have permission to remove members
       expect(
         calcPermission(ESpacePermisson.RemoveSpaceMember, [
           SpaceRoleType.Member,
         ]),
       ).toBe(false);
 
-      // Member 不应该有转移所有权的权限
+      // Members should not have permission to transfer ownership
       expect(
         calcPermission(ESpacePermisson.TransferSpace, [SpaceRoleType.Member]),
       ).toBe(false);
 
-      // Member 不应该有更新成员的权限
+      // Members should not have permission to update members
       expect(
         calcPermission(ESpacePermisson.UpdateSpaceMember, [
           SpaceRoleType.Member,
         ]),
       ).toBe(false);
 
-      // Member 不应该有管理 API 的权限
+      // Members should not have permission to manage APIs
       expect(calcPermission(ESpacePermisson.API, [SpaceRoleType.Member])).toBe(
         false,
       );
     });
 
     it('应该为 Default 角色返回正确的权限', () => {
-      // Default 不应该有任何权限
+      // Default should not have any permissions
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [SpaceRoleType.Default]),
       ).toBe(false);
@@ -196,7 +196,7 @@ describe('Space Calc Permission', () => {
     });
 
     it('应该处理多个角色的情况', () => {
-      // 当用户同时拥有 Member 和 Admin 角色时，应该有两个角色的所有权限
+      // When a user has both the Member and Admin roles, they should have all the permissions of both roles
       expect(
         calcPermission(ESpacePermisson.ExitSpace, [
           SpaceRoleType.Member,
@@ -211,7 +211,7 @@ describe('Space Calc Permission', () => {
         ]),
       ).toBe(true);
 
-      // 即使其中一个角色没有权限，只要有一个角色有权限，就应该返回 true
+      // Even if one of the roles has no permissions, it should return true as long as one of the roles has permissions.
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [
           SpaceRoleType.Member,
@@ -221,13 +221,13 @@ describe('Space Calc Permission', () => {
     });
 
     it('应该处理空角色数组', () => {
-      // 当没有角色时，应该返回 false
+      // When there is no role, it should return false.
       expect(calcPermission(ESpacePermisson.UpdateSpace, [])).toBe(false);
       expect(calcPermission(ESpacePermisson.ExitSpace, [])).toBe(false);
     });
 
     it('应该处理未知角色', () => {
-      // 当角色未知时，应该返回 false
+      // When the character is unknown, it should return false.
       expect(
         calcPermission(ESpacePermisson.UpdateSpace, [
           'UnknownRole' as unknown as SpaceRoleType,

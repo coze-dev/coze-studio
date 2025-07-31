@@ -45,7 +45,7 @@ export const initGenerateImageStore = async () => {
       return;
     }
 
-    // 初始化一下，防止从创建页跳到编辑页把创建页的状态带过来
+    // Initialize it to prevent jumping from the create page to the edit page and bring the state of the created page
     clearGenerateImageStore();
 
     const resp = await PlaygroundApi.GetPicTask({

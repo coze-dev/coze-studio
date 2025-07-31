@@ -103,7 +103,7 @@ const getCheckboxProps = (record: PublishConnectorInfo, disabled: boolean) => {
   return {
     disabled: !!disableTip || disabled,
     id: record.id,
-    // Offline状态没有tooltip
+    // Offline status No tooltip
     children: disableTip ? (
       <Tooltip content={disableTip}>
         <span className={styles['disable-tooltip']} />
@@ -152,7 +152,7 @@ export const TableCollection = (props: PublishTableProps) => {
     [dataSourceForChannel, connectorBrandInfoMap],
   );
 
-  // 无全选按钮因此所有表格使用相同check配置
+  // There is no select all button, so all tables use the same check configuration
   const baseConfigForChecker = {
     hidden: true,
     fixed: 'left' as const,
@@ -212,9 +212,9 @@ export const TableCollection = (props: PublishTableProps) => {
             : [record.id, ...ids],
         );
       }
-    }, // 点击行选中
-    onMouseEnter: () => onMouseEnter(record), // 鼠标移入行
-    onMouseLeave: () => onMouseLeave(record), // 鼠标移出行
+    }, // Click on the line to select
+    onMouseEnter: () => onMouseEnter(record), // mouseover
+    onMouseLeave: () => onMouseLeave(record), // mouse movement
   });
   const tableCommonProps = {
     className: classNames(styles['publish-table']),
@@ -285,7 +285,7 @@ function TableTittleExtra({
   platforms: PublishConnectorInfo[];
   botInfo: PublisherBotInfo;
 }) {
-  // 付费墙
+  // paywall
   const isAvailable = useBenefitAvailable({
     scene: PremiumPaywallScene.API,
   });

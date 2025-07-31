@@ -27,7 +27,7 @@ import { useBotInfoStore } from '@/store/bot-info';
 import { saveFetcher } from '../utils/save-fetcher';
 import { ItemTypeExtra } from '../types';
 
-// skill结构化的接口
+// Skills Structured Interface
 export async function saveUpdateAgents(agent: Agent) {
   return await saveFetcher(
     () =>

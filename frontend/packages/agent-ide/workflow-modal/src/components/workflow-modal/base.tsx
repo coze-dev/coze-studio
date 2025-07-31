@@ -36,9 +36,9 @@ import { Toast, Space, Typography, Button } from '@coze-arch/coze-design';
 const { Text } = Typography;
 
 /**
- * Bot 编辑中流程选择弹窗, 自带 Bot 相关逻辑
+ * Bot editing process selection pop-up window, with its own Bot related logic
  *
- * 如果仅需要流程选择弹窗, 请使用 `apps/bot/src/routes/space/[space_id]/workflow/components/workflow-modal`
+ * If you only need the process selection pop-up, use'apps/bot/src/routes/space/[space_id]/workflow/components/workflow-modal'
  */
 export function BotWorkflowModal({
   flowMode = WorkflowMode.Workflow,
@@ -128,7 +128,7 @@ export function BotWorkflowModal({
       bindBizType={bindBizType}
       onWorkFlowListChange={$newList => {
         updateSkillWorkflows($newList);
-        // 配置项有调整时自动展开能力模块
+        // Automatically expand the capability module when the configuration item is adjusted
         if ($newList.length > 0) {
           emitEvent(
             flowMode === WorkflowMode.Imageflow

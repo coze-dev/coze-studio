@@ -37,7 +37,7 @@ export function isObject(value: DebounceConfig): value is ObjectDebounceTime {
 }
 
 /**
- * 获取保存接口调用时候需要的参数
+ * Get the parameters required to save the interface call
  */
 export const getPayloadByFormatter = async <T>(
   state: T,

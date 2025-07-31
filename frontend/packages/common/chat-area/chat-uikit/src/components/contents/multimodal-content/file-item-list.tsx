@@ -56,21 +56,21 @@ export const FileItemList: FC<FileItemListProps> = ({
   showBackground,
 }) => {
   /**
-   * 处理点击取消上传的事件
+   * Handle the event of clicking Cancel Upload
    */
   const handleCancel = () => {
     onCancel?.({ message, extra: {} });
   };
 
   /**
-   * 处理重试上传的事件
+   * Handling events that retry uploads
    */
   const handleRetry = () => {
     onRetry?.({ message, extra: {} });
   };
 
   /**
-   * 处理拷贝文件地址的事件
+   * Handling events that copy file addresses
    */
   const handleCopy = () => {
     onCopy?.({ message, extra: {} });

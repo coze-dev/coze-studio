@@ -28,7 +28,7 @@ interface FieldInitStrategy {
 }
 
 /**
- * 用户修改模型“生成多样性”参数时，切换为“自定义”模式
+ * Switch to "Custom" mode when the user modifies the model "Generate Diversity" parameter
  */
 class CustomModelStyleStrategy implements FieldInitStrategy {
   handler: (_field: DataField, form: Form) => void = (_field, form) =>
@@ -49,7 +49,7 @@ function isDataField(field: GeneralField): field is DataField {
 }
 
 /**
- * 当某个字段值小于阈值时，使用 field.feedbacks 显示提示文案
+ * When a field value is less than the threshold, use field.feedbacks to display prompt text
  * https://core.formilyjs.org/zh-CN/api/models/field#ifieldfeedback
  */
 class MinimumValueStrategy implements FieldInitStrategy {
@@ -80,8 +80,8 @@ class MinimumValueStrategy implements FieldInitStrategy {
 
 export const fieldInitStrategies = [
   new CustomModelStyleStrategy(),
-  // 重复语句惩罚 < 0 时，显示提示文案
+  // When the repeated sentence penalty is < 0, the prompt copy is displayed
   new MinimumValueStrategy('frequency_penalty', 0, 'model_setting_alert'),
-  // 最大回复长度 < 100 时，显示提示文案
+  // When the maximum reply length is < 100, the prompt copy is displayed
   new MinimumValueStrategy('max_tokens', 100, 'model_setting_alert_2'),
 ];

@@ -26,7 +26,7 @@ import { type StoreApi } from 'zustand';
 import { type IFormSchema } from '../form-engine';
 
 /**
- * 单一表单内的全局性质状态集中管理
+ * Global nature state centralized management within a single form
  */
 export interface TestRunFormState {
   schema: IFormSchema | null;

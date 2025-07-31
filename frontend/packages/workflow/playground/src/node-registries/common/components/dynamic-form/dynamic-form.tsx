@@ -25,7 +25,7 @@ export interface DynamicFormProps {
   name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   components: Record<string, FC<DynamicComponentProps<any>>>;
-  // 禁用做触发
+  // Disable trigger
   onChange?: () => void;
 }
 

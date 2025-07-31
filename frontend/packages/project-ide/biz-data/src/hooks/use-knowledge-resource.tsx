@@ -59,7 +59,7 @@ const useKnowledgeResource = (): UseKnowledgeResourceReturn => {
   const IDENav = useIDENavigate();
   // const openResource = useOpenResource();
 
-  // 创建knowledge
+  // Creating knowledge
   const {
     modal: createKnowledgeModal,
     open: openCreateKnowledgeModal,
@@ -75,7 +75,7 @@ const useKnowledgeResource = (): UseKnowledgeResourceReturn => {
     },
   });
 
-  // 更新 knowledge 状态，主要用于禁用启用
+  // Update knowledge status, mainly to disable enable
   const updateKnowledge = async (
     datasetID: string,
     datasetName: string,

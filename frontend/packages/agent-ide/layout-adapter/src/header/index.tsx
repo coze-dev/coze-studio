@@ -45,24 +45,24 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
   );
   return (
     <div className="flex items-center gap-2">
-      {/** 3.1 状态区 */}
+      {/** 3.1 State Zone */}
       <div className="flex items-center gap-2">
-        {/*  3.1.1 草稿状态 | 协作状态 */}
+        {/*  3.1.1 Draft Status | Collaboration Status */}
         {!isReadonly ? <OriginStatus /> : null}
       </div>
-      {/** TODO: hzf 隐式关联按钮，后续可以抽离 */}
+      {/** TODO: hzf implicitly associated button, which can be extracted later */}
       {editable ? (
         <Divider layout="vertical" style={{ height: '20px' }} />
       ) : null}
-      {/** 3.2 按钮区 */}
+      {/** 3.2 Button area */}
       <div className="flex items-center gap-2">
         {!isEditLocked ? (
           <>
             <div className="flex items-center gap-2">
-              {/** 功能按钮区域 */}
+              {/** Function button area */}
               <MoreMenuButton />
             </div>
-            {/** 提交发布相关按钮 */}
+            {/** Submit post related button */}
             <div className="flex items-center gap-2">
               {editable ? <DeployButton /> : null}
               {!editable && botInfo && botId ? (

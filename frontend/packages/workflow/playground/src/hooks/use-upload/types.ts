@@ -24,13 +24,13 @@ export enum FileItemStatus {
 }
 
 export interface FileItem extends File {
-  // 唯一标识
+  // unique identifier
   uid?: string;
-  // 文件地址
+  // File address
   url?: string;
-  // 上传进度
+  // upload progress
   percent?: number;
-  // 校验信息
+  // verification information
   validateMessage?: string;
   status?: FileItemStatus;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

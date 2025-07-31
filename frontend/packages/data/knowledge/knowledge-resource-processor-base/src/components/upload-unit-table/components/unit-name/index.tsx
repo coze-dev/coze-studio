@@ -34,7 +34,7 @@ export const UnitName: React.FC<UnitNameProps> = ({
   formatType,
 }) => {
   const { type, name, validateMessage } = record;
-  const [value, setValue] = useState(name); // 需要用自身state，否则出现无法输入中文的bug
+  const [value, setValue] = useState(name); // You need to use your own state, otherwise there will be a bug that cannot enter Chinese.
   const getValidateMessage = (val: string) =>
     !val ? I18n.t('datasets_unit_exception_name_empty') : validateMessage;
   useEffect(() => {

@@ -36,7 +36,7 @@ export const LocalQuoteInnerTopSlot: CustomTextMessageInnerTopSlot = ({
 
   const { useQuoteStore } = plugin.pluginBizContext.storeSet;
 
-  // 优先用本地映射的
+  // Preference is given to locally mapped
   const localNodeList = useQuoteStore(
     useShallow(state => state.quoteContentMap[localMessageId]),
   );

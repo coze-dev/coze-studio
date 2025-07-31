@@ -38,90 +38,90 @@ import {
 } from './life-cycle-service';
 
 /**
- * ! 希望你注意到生命周期的上下文信息都放在ctx中
- * ! 如果判断只是上下文，请你注意收敛到ctx中，请勿增加新的参数
- * ! CodeReview的时候辛苦也注重一下这里
+ * ! Hope you noticed that the context information for the lifecycle is placed in ctx
+ * ! If the judgment is just context, please pay attention to the convergence into ctx and do not add new parameters
+ * ! Please pay attention here when CodeReview.
  */
 export abstract class ReadonlyMessageLifeCycleService<
   T = unknown,
   K = unknown,
 > extends ReadonlyLifeCycleService<T, K> {
   /**
-   * 发送消息之前
+   * Before sending a message
    */
   onBeforeSendMessage?(ctx: OnBeforeSendMessageContext): Promise<void> | void;
   /**
-   * 发送消息之后
+   * After sending the message
    */
   onAfterSendMessage?(ctx: OnAfterSendMessageContext): Promise<void> | void;
   /**
-   * 发送消息失败
+   * Failed to send message
    */
   onSendMessageError?(ctx: OnSendMessageErrorContext): Promise<void> | void;
   /**
-   * 处理某条消息的时候开始处理之前(消息过滤之前)
+   * When processing a message, before starting processing (before message filtering)
    */
   onBeforeReceiveMessage?(ctx: OnBeforeReceiveMessageContext): void;
   /**
-   * 处理某条消息的时候开始处理之前
+   * When processing a message, before starting processing
    */
   onBeforeProcessReceiveMessage?(
     ctx: OnBeforeProcessReceiveMessageContext,
   ): void;
   /**
-   * 处理消息组
+   * Processing message groups
    */
   onBeforeMessageGroupListUpdate?(
     ctx: OnBeforeMessageGroupListUpdateContext,
   ): void;
   /**
-   * 接收消息处理之后的时候
+   * When receiving the message after processing
    */
   onAfterProcessReceiveMessage?(ctx: OnAfterProcessReceiveMessageContext): void;
   /**
-   * 删除消息之前
+   * Before deleting the message
    */
   onBeforeDeleteMessage?(
     ctx: OnBeforeDeleteMessageContext,
   ): Promise<void> | void;
   /**
-   * 删除消息之后
+   * After deleting the message
    */
   onAfterDeleteMessage?(ctx: OnAfterDeleteMessageContext): Promise<void> | void;
   /**
-   * 删除消息失败
+   * Failed to delete message
    */
   onDeleteMessageError?(ctx: OnDeleteMessageErrorContext): Promise<void> | void;
   /**
-   * 获取历史消息之前
+   * Before getting chat history
    */
   onBeforeGetMessageHistoryList?(
     ctx: OnBeforeGetMessageHistoryListContext,
   ): Promise<void> | void;
   /**
-   * 发送者消息进入Store之前（假消息上屏前）
+   * Before the sender message enters the Store (before the fake message is displayed on the screen)
    */
   onBeforeAppendSenderMessageIntoStore?(
     ctx: OnBeforeAppendSenderMessageIntoStore,
   ): Promise<void> | void;
   /**
-   * 发送者消息进入Store之后（假消息上屏后）
+   * After the sender message enters the Store (after the fake message is uploaded to the screen)
    */
   onAfterAppendSenderMessageIntoStore?(
     ctx: OnAfterAppendSenderMessageIntoStore,
   ): Promise<void> | void;
   /**
-   * MemberSet分类
+   * MemberSet classification
    */
   onBeforeDistributeMessageIntoMemberSet?(
     ctx: OnBeforeDistributeMessageIntoMemberSetContent,
   ): void;
   /**
-   * 消息拉流状态错误
+   * Message pull status error
    */
   onMessagePullingError?(ctx: OnMessagePullingErrorContext): void;
   /**
-   * 消息拉流状态成功
+   * Message pull flow status successful
    */
   onMessagePullingSuccess?(ctx: OnMessagePullingSuccessContext): void;
 }
@@ -131,55 +131,55 @@ export abstract class WriteableMessageLifeCycleService<
   K = unknown,
 > extends WriteableLifeCycleService<T, K> {
   /**
-   * 发送消息之前
+   * Before sending a message
    */
   onBeforeSendMessage?(
     ctx: OnBeforeSendMessageContext,
   ): Promise<OnBeforeSendMessageContext> | OnBeforeSendMessageContext;
   /**
-   * 发送消息之后
+   * After sending the message
    */
   onAfterSendMessage?(ctx: OnAfterSendMessageContext): Promise<void> | void;
   /**
-   * 发送消息失败
+   * Failed to send message
    */
   onSendMessageError?(ctx: OnSendMessageErrorContext): Promise<void> | void;
   /**
-   * 处理某条消息的时候开始处理之前(消息过滤之前)
+   * When processing a message, before starting processing (before message filtering)
    */
   onBeforeReceiveMessage?(ctx: OnBeforeReceiveMessageContext): void;
   /**
-   * 处理某条消息的时候开始处理之前
+   * When processing a message, before starting processing
    */
   onBeforeProcessReceiveMessage?(
     ctx: OnBeforeProcessReceiveMessageContext,
   ): OnBeforeProcessReceiveMessageContext;
   /**
-   * 处理消息组并更新数据
+   * Process message groups and update data
    */
   onBeforeMessageGroupListUpdate?(
     ctx: OnBeforeMessageGroupListUpdateContext,
   ): OnBeforeMessageGroupListUpdateContext;
   /**
-   * 接收消息处理之后的时候
+   * When receiving the message after processing
    */
   onAfterProcessReceiveMessage?(ctx: OnAfterProcessReceiveMessageContext): void;
   /**
-   * 删除消息之前
+   * Before deleting the message
    */
   onBeforeDeleteMessage?(
     ctx: OnBeforeDeleteMessageContext,
   ): Promise<void> | void;
   /**
-   * 删除消息之后
+   * After deleting the message
    */
   onAfterDeleteMessage?(ctx: OnAfterDeleteMessageContext): Promise<void> | void;
   /**
-   * 删除消息失败
+   * Failed to delete message
    */
   onDeleteMessageError?(ctx: OnDeleteMessageErrorContext): Promise<void> | void;
   /**
-   * 获取历史消息之前
+   * Before getting chat history
    */
   onBeforeGetMessageHistoryList?(
     ctx: OnBeforeGetMessageHistoryListContext,
@@ -187,7 +187,7 @@ export abstract class WriteableMessageLifeCycleService<
     | Promise<OnBeforeGetMessageHistoryListContext>
     | OnBeforeGetMessageHistoryListContext;
   /**
-   * 发送者消息进入Store之前（假消息上屏前）
+   * Before the sender message enters the Store (before the fake message is displayed on the screen)
    * @param ctx
    */
   onBeforeAppendSenderMessageIntoStore?(
@@ -196,23 +196,23 @@ export abstract class WriteableMessageLifeCycleService<
     | Promise<OnBeforeAppendSenderMessageIntoStore>
     | OnBeforeAppendSenderMessageIntoStore;
   /**
-   * 发送者消息进入Store之后（假消息上屏后）
+   * After the sender message enters the Store (after the fake message is uploaded to the screen)
    */
   onAfterAppendSenderMessageIntoStore?(
     ctx: OnAfterAppendSenderMessageIntoStore,
   ): Promise<void> | void;
   /**
-   * MemberSet分类
+   * MemberSet classification
    */
   onBeforeDistributeMessageIntoMemberSet?(
     ctx: OnBeforeDistributeMessageIntoMemberSetContent,
   ): OnBeforeDistributeMessageIntoMemberSetContent;
   /**
-   * 消息拉流状态错误
+   * Message pull status error
    */
   onMessagePullingError?(ctx: OnMessagePullingErrorContext): void;
   /**
-   * 消息拉流状态成功
+   * Message pull flow status successful
    */
   onMessagePullingSuccess?(ctx: OnMessagePullingSuccessContext): void;
 }

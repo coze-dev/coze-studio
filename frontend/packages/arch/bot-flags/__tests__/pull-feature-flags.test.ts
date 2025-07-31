@@ -131,7 +131,7 @@ describe('pullFeatureFlags', () => {
   });
 
   it('should access values from global context firstly', async () => {
-    // 从localStorage & global context 都取到值的情况下，优先使用 context 值
+    // When getting the value from both localStorage & global context, the context value is preferred
     readFromCache.mockImplementation(async () => {
       await $wait(100);
       return { foo: true };

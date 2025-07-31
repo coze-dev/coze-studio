@@ -17,7 +17,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable complexity */
 /**
- * 适配 coze graph 2.0 的 node test form
+ * Adapt coze graph 2.0 node test form
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -177,7 +177,7 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
       related = values?.[TestFormFieldName.Related];
       botId = (related?.[FieldName.Bot] as any)?.id || related?.[FieldName.Bot];
       const conversation = related?.[TestFormFieldName.Conversation];
-      /** 虽然会话选择器有值，但并不用。历史设计问题，期望后面可以优化 */
+      /** Although the session selector has a value, it is not used. Historical design issues, expect to be optimized later */
       if (conversation && conversationInfo?.label) {
         input = {
           ...input,
@@ -196,7 +196,7 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
   };
 
   const handleSubmit = async () => {
-    // 先关闭上一次试运行的结果
+    // The result of closing a practice run first
     runService.clearTestRun();
     await testRunNodeV3();
   };

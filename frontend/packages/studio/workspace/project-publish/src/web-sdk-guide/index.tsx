@@ -91,7 +91,7 @@ export function useWebSdkGuideModal() {
       footer={
         <Button onClick={close}>{I18n.t('app_publish_sdk_confirm')}</Button>
       }
-      // z-index 需要大于 publish-status 的 Popover
+      // z-index requires a Popover greater than publish-status.
       zIndex={2000}
     >
       <Typography.Paragraph className="font-medium mb-[8px]">

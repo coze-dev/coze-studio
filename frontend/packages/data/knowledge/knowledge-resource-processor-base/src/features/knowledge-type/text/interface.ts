@@ -51,14 +51,14 @@ export type UploadTextStore<T extends number> = UploadTextState<T> &
   UploadTextAction<T>;
 
 export interface FilterPageConfig {
-  // 注意页码从 1 开始
+  // Note that page numbers start at 1
   pageIndex: number;
   isFilter: boolean;
 }
 
 /**
- * 业务含义是 crop 框距离四个边缘距离占整个 pdf 尺寸的百分比
- * 取值 [0, 1] 粒度 0.01
+ * The business implication is the distance between the crop box and the four edges as a percentage of the entire pdf size
+ * Value [0,1] particle size 0.01
  */
 export interface CropperSizePercent {
   topPercent: number;

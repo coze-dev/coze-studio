@@ -45,7 +45,7 @@ interface FormLayoutDecoratorOptions {
   tooltip?: string;
 }
 
-// TODO: 暂时按照 rehaje React Node 的格式提取一下真正的 children，后面和 rehaje 开发再对下 children 的问题
+// TODO: Temporarily extract the real children in the format of rehaje React Node, and then develop with rehaje to solve the problem of children.
 const extractRealChildFromRehajeReactNode = (propsChildren: ReactElement) => {
   const { children = [] } = propsChildren.props;
   const [, realChildren] = children;
@@ -53,9 +53,9 @@ const extractRealChildFromRehajeReactNode = (propsChildren: ReactElement) => {
 };
 
 /**
- * @description 适合 Meta 的 children 数量大于 1 且对栅格布局有自定义要求的场景，可以参考 variable 节点的写法
- * @param props 栅格配置入参
- * @returns 自定义栅格布局节点
+ * @Description Suitable for scenes where the number of children in Meta is greater than 1 and there are custom requirements for grid layout, you can refer to the writing method of variable nodes
+ * @param props grid configuration imported parameters
+ * @Returns custom grid layout node
  */
 const FormLayoutDecorator: FC<DecoratorComponentProps> = props => {
   const { children, options } = props;

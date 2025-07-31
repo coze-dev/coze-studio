@@ -107,23 +107,23 @@ export const findMessageIndexById = <Msg extends MessageIdStruct>(
 export const getIsAnswer = (message?: Message): boolean =>
   Boolean(message && message.type === 'answer');
 
-// 文本消息
+// text message
 export const getIsTextMessage = (message?: Message): message is TextMessage =>
   message?.content_type === ContentType.Text;
 
-// 文件消息
+// file message
 export const getIsFileMessage = (message?: Message): message is FileMessage =>
   message?.content_type === ContentType.File;
 
-// 图片消息
+// picture message
 export const getIsImageMessage = (message?: Message): message is ImageMessage =>
   message?.content_type === ContentType.Image;
 
-// 卡片消息
+// Card message
 export const getIsCardMessage = (message?: Message): message is CardMessage =>
   message?.content_type === ContentType.Card;
 
-// suggestion消息
+// Suggestion message
 export const getIsSuggestions = (message?: Message): message is TextMessage =>
   message?.content_type === ContentType.Text && message.type === 'follow_up';
 
@@ -131,16 +131,16 @@ export const getIsMultimodalMessage = (
   message?: Message,
 ): message is MultimodalMessage => message?.content_type === ContentType.Mix;
 
-/** 无条件，必隐藏 */
+/** Unconditional, must hide */
 const hiddenMessageType: Message['type'][] = ['tool_response'];
 
 /**
- * 用于 message list 过滤可展示消息。
- * 这一层是**初筛**，message box 里还会进一步进行过滤
+ * Used for message list filtering to display messages.
+ * This layer is the first screening, and the message box will be further filtered.
  *
- * 基于规则过滤掉：
- * 1. 一定不会展示的 type(tool_response)
- * 2. 如果来自历史记录则不展示的 type(function call)
+ * Filter out based on rules:
+ * 1. Must not display type (tool_response)
+ * 2. Undisplayed type (function call) if from history
  */
 export const getIsVisibleMessageMeta = (
   meta: MessageMeta,
@@ -164,7 +164,7 @@ export const getIsVisibleMessageMeta = (
 };
 
 type MessageTestField = keyof Pick<Message, 'role' | 'type' | 'content'>;
-// 抽查属性
+// spot check attributes
 const messageTestFields: MessageTestField[] = ['content', 'type', 'role'];
 
 export const getIsValidMessage = (
@@ -249,9 +249,9 @@ export const getIsNotificationMessage = ({ source }: Pick<Message, 'source'>) =>
 export const getIsAsyncResultMessage = ({ source }: Pick<Message, 'source'>) =>
   source === messageSource.AsyncResult;
 
-// card disabled逻辑:
-// 1. card消息
-// 2. 不在消息列表 type为 answer or role为user 的最后一条
+// Card disabled logic:
+// 1. card message
+// 2. Not the last item in the message list with type answer or role user
 export const getIsCardDisabled = (
   index: number,
   messageList: Message[],
@@ -291,5 +291,5 @@ export const toastBySendMessageResult = (
 };
 
 export const isFallbackErrorMessage = (message: Pick<Message, 'message_id'>) =>
-  /** 如果是错误兜底消息 则固定为 _error 结尾 已和服务端约定 */
+  /** If it is an error cover message, it is fixed to the end of the _error, which has been agreed with the server level */
   message.message_id.endsWith('_error');

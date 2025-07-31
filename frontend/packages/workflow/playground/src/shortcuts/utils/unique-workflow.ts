@@ -22,9 +22,9 @@ import { traverse, type TraverseContext } from '@coze-workflow/base';
 import type { WorkflowClipboardJSON, WorkflowClipboardNodeJSON } from '../type';
 
 namespace UniqueWorkflowUtils {
-  /** 生成唯一ID */
+  /** Generate a unique ID */
   const generateUniqueId = customAlphabet('1234567890', 6);
-  /** 获取所有节点ID */
+  /** Get all node IDs */
   export const getAllNodeIds = (json: WorkflowClipboardJSON): string[] => {
     const nodeIds = new Set<string>();
     const addNodeId = (node: WorkflowClipboardNodeJSON) => {
@@ -36,7 +36,7 @@ namespace UniqueWorkflowUtils {
     json.nodes.forEach(node => addNodeId(node));
     return Array.from(nodeIds);
   };
-  /** 生成节点替换映射 */
+  /** Generate Node Replacement Map */
   export const generateNodeReplaceMap = (
     nodeIds: string[],
     isUniqueId: (id: string) => boolean,
@@ -48,7 +48,7 @@ namespace UniqueWorkflowUtils {
       } else {
         let newId: string;
         do {
-          // 这里添加一个固定前缀，避免 ID 以 0 开头，后端会报错
+          // Add a fixed prefix here to avoid the ID starting with 0 and the backend will report an error.
           newId = `1${generateUniqueId()}`;
         } while (!isUniqueId(newId));
         nodeReplaceMap.set(id, newId);
@@ -56,13 +56,13 @@ namespace UniqueWorkflowUtils {
     });
     return nodeReplaceMap;
   };
-  /** 是否存在 */
+  /** Does it exist? */
   const isExist = (value: unknown): boolean =>
     value !== null && value !== undefined;
-  /** 是否需要处理 */
+  /** Does it need to be dealt with? */
   const shouldHandle = (context: TraverseContext): boolean => {
     const { node } = context;
-    // 线条数据
+    // line data
     if (
       node?.key &&
       ['sourceNodeID', 'targetNodeID'].includes(node.key) &&
@@ -70,7 +70,7 @@ namespace UniqueWorkflowUtils {
     ) {
       return true;
     }
-    // 节点数据
+    // node data
     if (
       node?.key === 'id' &&
       isExist(node.container?.type) &&
@@ -79,7 +79,7 @@ namespace UniqueWorkflowUtils {
     ) {
       return true;
     }
-    // 变量数据
+    // variable data
     if (
       node?.key === 'blockID' &&
       isExist(node.container?.name) &&
@@ -90,8 +90,8 @@ namespace UniqueWorkflowUtils {
     return false;
   };
   /**
-   * 替换节点ID
-   * NOTICE: 该方法有副作用，会修改传入的json，防止深拷贝造成额外性能开销
+   * Replace Node ID
+   * NOTICE: This method has a side effect and will modify the incoming json to prevent additional performance overhead caused by deep copies
    */
   export const replaceNodeId = (
     json: WorkflowClipboardJSON,
@@ -110,7 +110,7 @@ namespace UniqueWorkflowUtils {
   };
 }
 
-/** 生成唯一工作流JSON */
+/** Generate unique workflow JSON */
 export const generateUniqueWorkflow = (params: {
   json: WorkflowClipboardJSON;
   isUniqueId: (id: string) => boolean;

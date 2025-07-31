@@ -38,7 +38,7 @@ export const PlayerCheckboxGroup: FC<PlayerCheckboxGroupProps> = props => {
   const { data: roleList = [] } = useGetSceneFlowRoleList();
 
   useEffect(() => {
-    // 如果有 biz_role_id，说明是角色信息
+    // If there is biz_role_id, the description is role information
     const roleValues = value?.filter(item => item.biz_role_id);
 
     if (!roleValues?.length) {

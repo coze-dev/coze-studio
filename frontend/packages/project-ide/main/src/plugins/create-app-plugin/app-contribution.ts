@@ -15,7 +15,7 @@
  */
  
 /**
- * project ide app 的生命周期
+ * Project ide app life cycle
  */
 import { injectable, inject } from 'inversify';
 import {
@@ -45,15 +45,15 @@ export class AppContribution implements LifecycleContribution {
   onStartedEmitter = new Emitter<void>();
   onStarted = this.onStartedEmitter.event;
 
-  // ide 初始化完成，可执行业务逻辑的时机
+  // When IDE initialization is complete and business logic can be executed
   onStart() {
-    // 更新项目信息
+    // Update project information
     this.projectInfoService.init();
 
-    // // 打开 url 上携带的资源
+    // Open the resources carried on the URL
     this.openURIResourceService.open();
     this.openURIResourceService.listen();
-    // 订阅变化事件
+    // Subscribe to change events
     this.widgetEventService.listen();
     // listen layout store
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -63,7 +63,7 @@ export class AppContribution implements LifecycleContribution {
   }
 
   onDispose() {
-    // 销毁所有的订阅
+    // Destroy all subscriptions
     this.widgetEventService.dispose();
     this.openURIResourceService.dispose();
     this.onStartedEmitter.dispose();

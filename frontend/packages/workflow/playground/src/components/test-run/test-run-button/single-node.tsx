@@ -102,9 +102,9 @@ export const TestRunSingleNodeButton: React.FC = () => {
   );
 
   /**
-   * - condition, start, end 不需要单节点运行
-   * - 全局配置 canTestRun 是否可试运行
-   * - 流程组件属性配置 disabledSingleNodeTest 是否禁用单节点试运行
+   * - condition, start, end no single node operation required
+   * - Globally configure whether canTestRun can practice running
+   * - Process component property configuration disabledSingleNodeTest whether to disable single node practice run
    */
   if (
     [

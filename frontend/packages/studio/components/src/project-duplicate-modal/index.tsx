@@ -94,10 +94,10 @@ export type ProjectTemplateCopySuccessCallback = (param: {
 
 export const useProjectTemplateCopyModal = (props: {
   modalTitle: string;
-  /** 是否需要选择 space */
+  /** Do you need to choose space? */
   isSelectSpace: boolean;
   onSuccess?: ProjectTemplateCopySuccessCallback;
-  /** 埋点参数 - 当前页面/来源 */
+  /** Event tracking parameters - current page/source */
   source: NonNullable<
     ParamsTypeDefine[EVENT_NAMES.template_action_front]['source']
   >;
@@ -167,7 +167,7 @@ export const useProjectTemplateCopyModal = (props: {
         formProps={{
           initValues,
           onValueChange: val => {
-            // 当用户删除 input 中所有字符时，val.name 字段会消失，而不是空字符串，神秘
+            // When the user removes all characters in input, val.name field disappears instead of empty string
             setIsFormValid(!!val.name?.trim());
           },
           getFormApi: api => {
@@ -181,7 +181,7 @@ export const useProjectTemplateCopyModal = (props: {
       sourceProduct: inputSourceProduct,
     }: {
       initValue: ProjectTemplateCopyValue;
-      /** 用于提取埋点参数 */
+      /** Used to extract event tracking parameters */
       sourceProduct: ProductInfo;
     }) => {
       setInitValues({

@@ -22,7 +22,7 @@ import {
 import { type IPoint } from '@flowgram-adapter/common';
 
 /**
- * 获取节点坐标
+ * Get node coordinates
  * @param node
  * @returns
  */

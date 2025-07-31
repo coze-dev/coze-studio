@@ -29,7 +29,7 @@ export const useAddEmptySuggestion = (context: SuggestionListContext) => {
   } = context.props;
   useEffect(() => {
     const addItemIfLastIsNotEmpty = () => {
-      // 如果列表全部有值，且不是只读状态，添加一条空项
+      // If the list has all values and is not read-only, add an empty item
       const canAddItem =
         suggested_questions.length < maxItemLength &&
         suggested_questions.every(sug => sug.content);

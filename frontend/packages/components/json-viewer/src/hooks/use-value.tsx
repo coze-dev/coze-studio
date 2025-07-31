@@ -32,7 +32,7 @@ export const useValue = (value: Field['value']) => {
         type: LogValueStyleType.Default,
       };
     } else if (isObject(value)) {
-      // 大数字返回数字类型，值用字符串
+      // Large number Returns the numeric type, and the value is a string.
       if (isBigNumber(value)) {
         return {
           value: bigNumbertoString(value),
@@ -64,7 +64,7 @@ export const useValue = (value: Field['value']) => {
       }
       return {
         value: generateStrAvoidEscape(value),
-        // value: generateStr2Link(value, avoidEscape), 先取消做 link 解析
+        // Value: generateStr2Link (value, avoidEscape), cancel the link parsing first
         type: LogValueStyleType.Default,
       };
     } else if (isNumber(value)) {

@@ -46,7 +46,7 @@ export const getTailwindContents = (projectRoot: string) => {
       .map(location => path.resolve(location, 'src/**/*.{ts,tsx}')),
   );
 
-  // 兼容 coze-design 内部 tailwind 样式
+  // Compatible with coze-design internal tailwind style
   contents.push('./node_modules/@coze-arch/coze-design/**/*.{js,jsx}');
 
   return contents;

@@ -57,7 +57,7 @@ function useSelection(editor: ExpressionEditorAPI | undefined) {
     const view = editor.$view;
 
     function updateSelection(update?: ViewUpdate) {
-      // 忽略 replaceTextByRange 导致的 selection change（效果：不触发 selection 变更，进而不显示推荐面板）
+      // Ignore the selection change caused by replaceTextByRange (effect: no selection change is triggered, and the recommendation panel is not displayed)
       if (update?.transactions.some(tr => isSkipSelectionChangeUserEvent(tr))) {
         setSelection(undefined);
         return;

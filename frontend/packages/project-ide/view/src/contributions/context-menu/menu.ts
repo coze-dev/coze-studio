@@ -1022,19 +1022,19 @@ export namespace Menu {
 
     /**
      * custom shortcut
-     * 专门为第三方快捷键预留
+     * Specially reserved for third-party shortcuts
      */
     customShortcut?: string;
 
     /**
-     * 回显 tooltip 文案
+     * Echo tooltip copy
      */
     tooltip?: string | ((props: { disabled?: boolean }) => string);
 
     /**
-     * 返回为 true 的才会被保留在 menu 回显。
-     * 默认不传，满足 selector 条件一定会被回显在菜单内。
-     * disabled 通过 command isEnabled 控制
+     * Only those that return true will be retained in the menu echo.
+     * The default is not passed, and the selector condition will definitely be echoed in the menu.
+     * Disabled Control via command isEnabled
      */
     filter?: (args: any) => boolean;
   }
@@ -1071,7 +1071,7 @@ export namespace Menu {
      */
     readonly label: string;
 
-    /** 不建议使用，极端场景兼容。custom shortcut string, without ShortcutService */
+    /** Not recommended, compatible with extreme scenes. custom shortcut string, without ShortcutService */
     readonly customShortcut?: string;
 
     /**
@@ -1124,7 +1124,7 @@ export namespace Menu {
      */
     readonly keyBinding: null;
 
-    /** tooltip 内容 */
+    /** Tooltip content */
     readonly tooltip?: string | ((props: { disabled?: boolean }) => string);
   }
 

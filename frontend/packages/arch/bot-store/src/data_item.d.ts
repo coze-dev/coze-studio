@@ -33,7 +33,7 @@ declare namespace DataItem {
   interface UserInfo {
     app_id: number;
     /**
-     * @deprecated 会因为溢出丢失精度，使用 user_id_str
+     * @Deprecated will lose precision due to overflow, use user_id_str
      */
     user_id: number;
     user_id_str: string;
@@ -109,7 +109,7 @@ declare namespace DataItem {
         name?: string;
         [key?: string]: unknown;
       }; // Record<string, unknown>;
-      // int值。1审核中，2审核通过，3审核不通过 
+      // int value. 1 During the review, 2 passed the review, and 3 failed the review.
       audit_status: number;
       details: Record<string, unknown>;
       is_auditing: boolean;
@@ -119,7 +119,7 @@ declare namespace DataItem {
   }
 
   /**
-   * 发送验证码的返回数据结构
+   * The return data structure for sending the verification code
    */
   interface SendCodeData {
     mobile: string;

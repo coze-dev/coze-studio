@@ -28,7 +28,7 @@ import { type CascaderData } from '@coze-arch/bot-semi/Cascader';
 import { DEFAULT_TIME_ZONE, DEFAULT_TIME_ZONE_OFFSET } from '../const';
 
 // dependent on utc plugin
-dayjs.extend(isoWeek); // 注意：这里插件的注册顺序不能随意改变，此外重复注册插件可能会有 bug。
+dayjs.extend(isoWeek); // Attention: The registration order of plugins here cannot be changed at will, and repeated registration of plugins may have bugs.
 dayjs.extend(quartersOfYear);
 dayjs.extend(dayjsUTC);
 dayjs.extend(dayjsTimezone);
@@ -42,16 +42,16 @@ export interface ITimezoneItem {
   utcOffset?: number;
 }
 
-// 获取时区列表
+// Get a list of time zones
 export const generatedTimezones = () => {
   let timezoneOptions: CascaderData[] = [];
   let timezoneMap: ITimezoneItem[] = [];
   try {
-    // 当前国际化环境
+    // The current international environment
     const locale = I18n.language ?? 'en-US';
     /**
-     * 所有时区列表
-     * (Intl as any) 项目的typescript版本不含有supportedValuesOf方法，编译会报错
+     * List of all time zones
+     * (Intl as any) The typescript version of the project does not contain the supportedValuesOf method, and an error will be reported when compiled
      */
     const options = (Intl as any)
       .supportedValuesOf('timeZone')
@@ -99,7 +99,7 @@ export const generatedTimezones = () => {
     timezoneMap = [
       { value: DEFAULT_TIME_ZONE, offset: DEFAULT_TIME_ZONE_OFFSET },
     ];
-    // 如果出现无法获取时区信息的情况上报异常到 slardar
+    // If the time zone information cannot be obtained, report the exception to slardar.
     logger.persist.error({
       message: 'Custom Error: Unable to obtain accurate time zone list',
       error,

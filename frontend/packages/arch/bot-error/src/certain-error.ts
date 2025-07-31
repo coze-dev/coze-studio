@@ -68,18 +68,18 @@ const handleCertainError: (error: Error) => void = error => {
     return;
   }
 
-  // 上报到自定义错误
+  // Report a custom error
   if (errorName === 'CustomError') {
     const { eventName, msg } = error as CustomError;
-    // 补充统一上报custom error event_name 用于监控
+    // Supplement unified reporting custom error event_name for monitoring
     loggerWithScope.persist.error({
       eventName: ReportEventNames.CustomErrorReport,
       message: msg,
       error,
       meta: {
         name: error.name,
-        originEventName: eventName, // 原始originEventName
-        originErrorMessage: msg, // 原始 error msg
+        originEventName: eventName, // originEventName
+        originErrorMessage: msg, // Original error msg
       },
     });
     loggerWithScope.persist.error({
@@ -93,12 +93,12 @@ const handleCertainError: (error: Error) => void = error => {
     return;
   }
 
-  // 滤除已经上报到自定义事件
+  // Filter out custom events that have been reported
   if (errorName === 'ApiError' || errorName === 'AxiosError') {
     return;
   }
 
-  // ChunkLoad 失败, 不上报，在slardar 静态资源异常统计
+  // ChunkLoad failed, not reported, static resource exception statistics in slardar
   if (errorName === 'ChunkLoadError') {
     reporter.info({
       message: 'chunkLoadError',
@@ -112,7 +112,7 @@ const handleCertainError: (error: Error) => void = error => {
     return;
   }
 
-  // 不继承 Error 的错误，目前 case（semi 表单校验 ）
+  // Error that does not inherit Error, current case (semi form validation)
   if (errorName === 'notInstanceError') {
     let errorInfo;
     try {

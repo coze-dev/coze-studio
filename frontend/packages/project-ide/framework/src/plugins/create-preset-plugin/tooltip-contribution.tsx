@@ -24,7 +24,7 @@ import {
 } from '@coze-project-ide/client';
 import { Tooltip } from '@coze-arch/coze-design';
 
-// 自定义 IDE HoverService 样式
+// Custom IDE HoverService style
 @injectable()
 class TooltipContribution implements LabelHandler {
   @inject(HoverService) hoverService: HoverService;
@@ -41,21 +41,21 @@ class TooltipContribution implements LabelHandler {
   }
 
   renderer(uri: URI, opt?: any): React.ReactNode {
-    // 下边的 opacity、width 设置原因：
-    // semi 源码位置：https://github.com/DouyinFE/semi-design/blob/main/packages/semi-foundation/tooltip/foundation.ts#L342
-    // semi 有 trigger 元素判断，本次自定义 semi 组件没有 focus 内部元素。
+    // The reason for the opacity and width settings below:
+    // Semi source code location: https://github.com/DouyinFE/semi-design/blob/main/packages/semi-foundation/tooltip/foundation.ts#L342
+    // Semi has a trigger element to judge, and this custom semi component does not have a focus internal element.
     return opt?.content ? (
       <Tooltip
         key={opt.content}
         content={opt.content}
         position={opt.position}
-        // 覆盖设置重置 foundation opacity，避免 tooltip 跳动
+        // Override settings to reset foundation opacity to avoid tooltip jumping
         style={{ opacity: 1 }}
         trigger="custom"
         getPopupContainer={() => document.body}
         visible={true}
       >
-        {/* 宽度 0 避免被全局样式影响导致 Tooltip 定位错误 */}
+        {/* Width 0 to avoid Tooltip positioning errors due to global style influence */}
         <div style={{ width: 0 }}></div>
       </Tooltip>
     ) : null;

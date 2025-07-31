@@ -126,7 +126,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
     [_globalLabelStyle],
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 计算需要
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- calculation required
   const topOffset = datazoomHeight + datazoomPaddingBottom + 8;
 
   const globalStyle: GlobalStyle = useMemo(
@@ -142,7 +142,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
     return rowCount * rowHeight;
   }, [flamethreadData]);
 
-  // 此参数含义： 可视窗口Height / 火焰图Height
+  // Meaning of this parameter: Visual Window Height/Flame Map Height
   const yScaleRangeFactor = useMemo(() => {
     const rowCount = uniqWith(
       flamethreadData,
@@ -182,7 +182,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
             const tickData = scale.tickData(visibleColumnCount);
             const dx =
               tickData.length > 1
-                ? // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 计算需要
+                ? // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- calculation required
                   (range[1] - range[0]) / (tickData.length - 1) / 2
                 : 0;
 
@@ -197,7 +197,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
                 style: { dx: -dx },
                 formatMethod: (_value: string) => {
                   const value = Number(_value);
-                  // 特化逻辑: 隐藏0刻度
+                  // Specialized logic: hide 0 ticks
                   if (dx > 0 && value === 0) {
                     return '';
                   }
@@ -213,7 +213,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
       {
         type: GrammarMarkType.component,
         componentType: ComponentEnum.grid,
-        tickCount: visibleColumnCount, // vgrammer库的类型写的不严谨，实际是可用的
+        tickCount: visibleColumnCount, // The types of the vgrammer library are not strictly written, but are actually usable
         scale: 'xScale',
         gridType: 'line',
         gridShape: 'line',
@@ -270,7 +270,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
                     lineWidth,
                     lineDash,
                     visible: true,
-                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 尺寸计算，无须处理
+                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- size calculation, no processing required
                     distance: lineWidth / 2,
                   };
                 },
@@ -290,7 +290,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
                     lineWidth,
                     lineDash,
                     visible: true,
-                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 尺寸计算，无须定义常量
+                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- size calculation, no need to define constants
                     distance: lineWidth / 2,
                   };
                 },
@@ -311,7 +311,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
                     lineWidth,
                     lineDash,
                     visible: true,
-                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 尺寸计算，无须定义常量
+                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- size calculation, no need to define constants
                     distance: lineWidth / 2,
                   };
                 },
@@ -337,7 +337,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
             },
             encode: {
               update: {
-                pickable: false, // vgrammer库的类型写的不严谨
+                pickable: false, // The type of vgrammer library is not strictly written
                 text: labelText ?? defaultLabelText,
                 fill: (datum, element, params) => datum?.labelStyle.fill,
               },
@@ -542,7 +542,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
     [selectedKey],
   );
 
-  // 创建/更新view
+  // Create/update view
   useLayoutEffect(() => {
     const initializeYScale = (view: IView) => {
       const yScale = view?.getScaleById('yScale');
@@ -556,12 +556,12 @@ export const Flamethread: FC<FlamethreadProps> = props => {
 
     const registerEvent = (view: IView) => {
       const rectElm = view?.getMarkById('rect');
-      // rect点击事件
+      // Rect click event
       rectElm?.addEventListener('click', ((event, element) => {
         onClick?.(event, element);
       }) as InteractionEventHandler);
 
-      // rect hover高亮
+      // Rect hover highlight
       view?.interaction('element-highlight', {
         selector: 'rect',
         highlightState: 'hover2',
@@ -581,7 +581,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
         });
       }
 
-      // rect hover显示tooltip
+      // Rect hover tooltip
       if (tooltip) {
         view?.interaction('tooltip', {
           selector: 'rect',

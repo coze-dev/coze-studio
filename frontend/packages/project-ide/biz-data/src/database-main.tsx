@@ -66,9 +66,9 @@ const Main = () => {
         agentID: agent_id,
       }}
       onUpdateDisplayName={displayName => {
-        widget.setTitle(displayName); // 设置 tab 标题
+        widget.setTitle(displayName); // Set tab title
         if (displayName && displayName !== title) {
-          refetch(); // 更新侧边栏 name
+          refetch(); // Update sidebar name
         }
       }}
       onStatusChange={status => {

@@ -35,11 +35,11 @@ import s from './index.module.less';
 
 interface GenerateGifProps {
   scene: 'background' | 'avatar';
-  image: ImageItem; // 默认图片
-  text: string; // 默认文本
-  loading: boolean; // 生成时，socket全局监听服务端响应，因此loading需要受控
-  imageList?: ImageItem[]; // 图片候选列表（只包含静态图）
-  generatingTaskId: string; // 生成中的任务id
+  image: ImageItem; // default image
+  text: string; // default text
+  loading: boolean; // When generated, sockets listen globally for server level responses, so loading needs to be controlled
+  imageList?: ImageItem[]; // Picture Candidate List (contains only static images)
+  generatingTaskId: string; // Generating task id
   exceedMaxImageCount?: boolean;
   className?: string;
   style?: CSSProperties;
@@ -106,7 +106,7 @@ export const GenerateGif: React.FC<GenerateGifProps> = ({
             setLoading?.(true);
             try {
               avatarBackgroundWebSocket.createConnection();
-              // 只负责发送请求，响应在WebSocket中接收
+              // Only responsible for sending requests, responses are received in WebSocket
               const { data } = await PlaygroundApi.GeneratePic({
                 gen_prompt: {
                   ori_prompt: text.trim(),

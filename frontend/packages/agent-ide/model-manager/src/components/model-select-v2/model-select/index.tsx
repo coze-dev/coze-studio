@@ -35,15 +35,15 @@ import { ModelSelectUI, type ModelSelectUIProps } from '../model-select-ui';
 
 export interface ModelSelectProps extends ModelSelectUIProps {
   /**
-   * 是否允许选择高级模型/新模型，否则内置弹窗拦截
-   * 当不传或设置为 auto 时，则由组件内置判断用户是否是付费用户（国内专业版，海外 premium）
+   * Whether to allow selection of advanced models/new models, otherwise built-in pop-up blocking
+   * When not passing or setting to auto, the built-in component determines whether the user is a paying user (domestic professional version, overseas premium)
    * @default auto
    */
   canSelectSuperiorModel?: boolean | 'auto';
 }
 
 /**
- * 该组件相比 ModelSelectUI 单纯多了付费拦截功能
+ * This component has more paid interception functions than ModelSelectUI
  */
 export function ModelSelect({
   onModelChange,
@@ -58,12 +58,12 @@ export function ModelSelect({
       fetchPremiumPlan: s.fetchPremiumPlan,
     })),
   );
-  // 国内：是否允许使用新模型/高级模型
+  // Domestic: Whether to allow the use of new models/advanced models
   const isBenefitAvailable = useBenefitAvailable({
     scene: PremiumPaywallScene.NewModel,
   });
 
-  /** 海外是否为 premium */
+  /** Is it premium overseas? */
   const { isFree } = usePremiumType();
 
   const canSelectSuperiorModel = isBoolean(canSelectSuperiorModelProps)
@@ -105,7 +105,7 @@ export function ModelSelect({
       modalSlot={
         <>
           <Modal
-            // ModelSelect 用到的 Popover 组件弹层默认 z-index 为 1030
+            // The default z-index of the Popover component elastic layer used by ModelSelect is 1030.
             zIndex={1031}
             visible={upgradeModalState.visible}
             title={
@@ -118,7 +118,7 @@ export function ModelSelect({
             onOk={() => {
               if (IS_CN_REGION) {
                 openPremiumModal();
-                // 这么操作是为了在关闭动画过程中防止 modal 内容跳变
+                // This is done to prevent the modal content from jumping during the closed animation
                 setUpgradeModalState(s => ({ ...s, visible: false }));
               } else {
                 window.open('/premium', '_blank');

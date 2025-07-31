@@ -29,11 +29,11 @@ export interface Options {
   genMock: boolean;
   genClient: boolean;
   entryName?: string;
-  // createAPI 所在文件路径
+  // createAPI file path
   commonCodePath?: string;
-  // decode encode 会丢失类型，这里提供一种方式，业务手动补充上对应的类型
+  // Decoding encoding will lose the type, here provides a way to manually add the corresponding type
   patchTypesOutput?: string;
-  // patchTypesOutput 的别名，patch type 需要使用额外的 pkg 组织时需要提供
+  // PatchTypesOutput alias, patch type needs to be provided when using additional pkg organization
   patchTypesAliasOutput?: string;
 }
 

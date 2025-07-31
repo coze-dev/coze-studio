@@ -20,11 +20,11 @@ import { get } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
 import { type Validate } from '@flowgram-adapter/free-layout-editor';
 
-/** 变量命名校验规则 */
+/** Variable Naming Validation Rules */
 const outputTreeValidationRule =
   /^(?!.*\b(true|false|and|AND|or|OR|not|NOT|null|nil|If|Switch)\b)[a-zA-Z_][a-zA-Z_$0-9]*$/;
 
-/** 校验逻辑 */
+/** check logic */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const OutputTreeMetaSchema = z.lazy(() =>
   z
@@ -44,26 +44,26 @@ const OutputTreeMetaSchema = z.lazy(() =>
 );
 
 const omitErrorBody = (value, isBatch) => {
-  // 批量，去除 children 中的 errorBody
+  // Batch, remove errorBody from children
   if (isBatch) {
     return value?.map(v => ({
       ...v,
       children: v?.children?.filter(c => c?.name !== 'errorBody'),
     }));
   }
-  // 单次，去除 value 中的 errorBody
+  // Single, remove errorBody from value
   return value?.filter(v => v?.name !== 'errorBody');
 };
 
 export const outputTreeMetaValidator: Validate = ({ value, formValues }) => {
   /**
-   * 判断错误异常处理是否打开，如果打开需要过滤掉 errorBody 后做校验
+   * Determine whether the error exception handling is turned on. If it is turned on, you need to filter out the errorBody and check it.
    */
   const { settingOnErrorIsOpen = false } = (get(formValues, 'settingOnError') ??
     {}) as { settingOnErrorIsOpen?: boolean };
 
   /**
-   * 根据 batch 数据判断，当前是否处于批处理状态
+   * According to the batch data, whether it is currently in the batch state
    */
   const batchValue = get(formValues, 'batchMode');
   const isBatch = batchValue === 'batch';

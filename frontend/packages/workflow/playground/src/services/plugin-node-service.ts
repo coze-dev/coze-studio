@@ -32,17 +32,17 @@ import { WorkflowGlobalStateEntity } from '@/entities';
 
 interface PluginNodeServiceState {
   /**
-   * 插件节点数据是否正在加载中
+   * Is the plug-in node data loading?
    */
   loading: boolean;
 
   /**
-   * 插件节点数据，key 为插件具体工具的唯一标识，value 为插件节点数据
+   * Plug-in node data, key is the unique identifier of the plug-in specific tool, and value is the plug-in node data.
    */
   data: Record<string, ApiNodeDetailDTO>;
 
   /**
-   * 插件节点数据加载错误信息，key 为插件具体工具的唯一标识，value 为错误信息
+   * Plug-in node data loading error message, key is the unique identifier of the plug-in specific tool, and value is the error message
    */
   error: Record<string, string | undefined>;
 }
@@ -153,8 +153,8 @@ export class PluginNodeService {
         identifier.api_id,
         projectId,
       ],
-      // 1. 设置 5s 缓存，保证一个流程内同请求只发送一次即可，不会产生过多性能劣化
-      // 2. api detail 包含插件的输入输出、版本信息，数据有实时敏感性，不可数据滞后
+      // 1. Set up a 5s cache to ensure that the same request is only sent once in a process, and there will be no excessive performance degradation.
+      // 2. api detail contains the input and output, version information of the plug-in, the data has real-time sensitivity, and there is no data lag.
       staleTime: STALE_TIME,
       queryFn: async () =>
         await workflowApi.GetApiDetail(
@@ -171,9 +171,9 @@ export class PluginNodeService {
   }
 
   /**
-   * 插件状态检查，是否失效，判断 ApiNode 是否可用
-   * @param params 参数
-   * @returns 是否失效
+   * Plugin status check, whether it is invalid, and determine whether ApiNode is available
+   * @param params
+   * Whether @returns is invalid
    */
   isApiNodeDeprecated(params: {
     currentSpaceID: string;
@@ -188,15 +188,15 @@ export class PluginNodeService {
       pluginProductUnlistType,
     } = params;
 
-    // 未下架
+    // Not removed from the shelves
     if (pluginProductStatus !== PluginProductStatus.Unlisted) {
       return false;
     }
-    // 被管理员下架
+    // Removed by administrator
     if (pluginProductUnlistType === ProductUnlistType.ByAdmin) {
       return true;
     }
-    // 被用户下架，但并不是当前插件的创建space
+    // Removed by the user, but not the creation space of the current plugin
     if (
       pluginProductUnlistType === ProductUnlistType.ByUser &&
       currentSpaceID !== pluginSpaceID
@@ -204,7 +204,7 @@ export class PluginNodeService {
       return true;
     }
 
-    // 被用户下架，但处于插件创建space
+    // Removed by the user, but in the plugin creation space
     return false;
   }
 
@@ -237,8 +237,8 @@ export class PluginNodeService {
     } else {
       this.state.setData(identifier, {
         ...apiDetail,
-        // 插件名称如果变更后（例如 getStock 修改成 getStock_v1），apiName 不会变还是 getStock，name 才是更新后的的 getStock_v1
-        // 此时需要优先取 name 字段，否则 testrun 时会用老的 apiName，导致试运行不成功
+        // If the plug-in name is changed (for example, getStock is changed to getStock_v1), apiName will not change or getStock, and name is the updated getStock_v1
+        // At this time, the name field needs to be taken first, otherwise testrun will use the old apiName, resulting in unsuccessful practice run
         apiName: apiDetail.name || apiDetail.apiName,
       });
     }

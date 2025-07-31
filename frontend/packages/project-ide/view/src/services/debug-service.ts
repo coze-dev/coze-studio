@@ -21,7 +21,7 @@ import { createPortal } from '../utils';
 import { ApplicationShell } from '../shell/application-shell';
 import { ViewOptions } from '../constants/view-options';
 
-// 控制 debug
+// Control debugging
 @injectable()
 export class DebugService {
   @inject(ViewOptions) viewOptions: ViewOptions;

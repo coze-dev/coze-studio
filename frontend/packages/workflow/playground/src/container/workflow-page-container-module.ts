@@ -95,10 +95,10 @@ export const WorkflowPageContainerModule = new ContainerModule(
   // eslint-disable-next-line max-params
   (bind, _unbind, _isbound, rebind) => {
     /**
-     * 校验
+     * validation
      */
     bind(ValidationService).to(WorkflowValidationService).inSingletonScope();
-    // 兼用老的标识符
+    // Combine old identifiers
     bind(WorkflowValidationService).toService(ValidationService);
 
     bind(WorkflowEditService).toSelf().inSingletonScope();
@@ -160,7 +160,7 @@ export const WorkflowPageContainerModule = new ContainerModule(
       FormContribution,
     ]);
     bindContributions(bind, WorkflowNodeContribution, [NodeContribution]);
-    // WorkflowPageContainerModule 可以改写成函数生成，接收相关 props，目前可以考虑只接收 WorkflowNodesV2Contribution 参数
+    // WorkflowPageContainerModule can be rewritten as function generation, receive relevant props, and can currently consider receiving only WorkflowNodesV2Contribution parameters
     bindContributions(bind, WorkflowNodesV2Contribution, [
       FlowDocumentContribution,
     ]);

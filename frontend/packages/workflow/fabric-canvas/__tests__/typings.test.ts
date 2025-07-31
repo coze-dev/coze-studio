@@ -37,14 +37,14 @@ describe('typings', () => {
 
   describe('AlignMode', () => {
     it('应该定义正确的对齐模式枚举值', () => {
-      // 注意：这里的具体值需要根据实际的 AlignMode 枚举定义来填写
+      // Note: The specific values here need to be filled in according to the actual AlignMode enumeration definition
       expect(AlignMode).toBeDefined();
       expect(typeof AlignMode).toBe('object');
     });
   });
 
-  // 由于其他导出主要是类型定义，在运行时无法直接测试
-  // 但我们可以通过 TypeScript 的类型检查来验证它们的正确性
+  // Since other exports are mainly type definitions, they cannot be tested directly at runtime
+  // But we can verify their correctness through TypeScript's type checking
   it('应该正确定义 FormMetaItem 接口', () => {
     const formMetaItem = {
       name: 'test',
@@ -59,7 +59,7 @@ describe('typings', () => {
       },
     };
 
-    // 这个测试主要是确保类型定义正确，实际运行时不会失败
+    // The main purpose of this test is to ensure that the type definition is correct and the actual execution does not fail
     expect(formMetaItem).toBeDefined();
   });
 

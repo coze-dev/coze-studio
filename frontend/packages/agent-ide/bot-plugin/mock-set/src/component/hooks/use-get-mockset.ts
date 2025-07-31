@@ -146,7 +146,7 @@ export const useInitialGetEnabledMockSet = ({
     }
   };
 
-  // 取消
+  // cancel
   const cancel = () => {
     pollingTurnRef.current = undefined;
     cancelReq.current?.();

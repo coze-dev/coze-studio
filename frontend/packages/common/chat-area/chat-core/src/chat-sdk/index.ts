@@ -16,7 +16,7 @@
  
 /**
  * @module @coze-common/chat-core
- * 暴露所有对外接口
+ * Expose all external interfaces
  */
 import EventEmitter from 'eventemitter3';
 import { type InternalAxiosRequestConfig } from 'axios';
@@ -74,19 +74,19 @@ import { ReportEventsTracer, SlardarEvents } from './events/slardar-events';
 export default class ChatSDK {
   private static instances: Map<string, ChatSDK> = new Map();
   /**
-   *  预发送消息工厂: 创建预发送消息用于上屏
+   *  Pre-send Message Factory: Create pre-send messages for use on the screen
    */
   private preSendLocalMessageFactory!: PreSendLocalMessageFactory;
 
   /**
-   * 处理接收到的 chunk 消息，处理成统一 Message 格式
+   * Process received chunk messages into a unified message format
    */
   private chunkProcessor!: ChunkProcessor;
 
   private messageManager!: MessageManager;
 
   /**
-   * stream拉流
+   * Streaming
    */
   private httpChunk!: HttpChunk;
 
@@ -97,7 +97,7 @@ export default class ChatSDK {
   private requestManager!: RequestManager;
 
   /**
-   * 维护本地消息的发送事件:
+   * Maintain local message sending events:
    */
 
   private preSendLocalMessageEventsManager!: PreSendLocalMessageEventsManager;
@@ -113,15 +113,15 @@ export default class ChatSDK {
   preset_bot!: PresetBot;
 
   /**
-   * 目前chat-core生命周期内以一个 bot_id、user 为维度
-   * 后续如果支持一个 user对应多个 conversation_id，需要调整
+   * The current chat-core life cycle takes a bot_id and user as dimensions
+   * If one user is supported for multiple conversation_id, it needs to be adjusted
    */
   user!: string;
 
   scene?: Scene;
 
   /**
-   * 使用环境
+   * usage environment
    */
   env!: ENV;
 
@@ -156,7 +156,7 @@ export default class ChatSDK {
   private pluginsService!: PluginsService;
 
   constructor(props: CreateProps) {
-    /** 初始化构造参数 */
+    /** Initialize construction parameters */
     this.initProps(props);
     this.initModules(props);
     this.initServices();
@@ -168,13 +168,13 @@ export default class ChatSDK {
   }
 
   /**
-   * 创建chatBot实例
-   *1. 对于同一个 bot_id/preset_bot, 重复调用，sdk 只会创建一个实例
-   *2. 多个 bot_id/presetBot，对应多个 sdk 实例，维护自己的events
+   * Create a chatBot instance
+   *1. For the same bot_id/preset_bot, repeated calls, sdk will only create one instance
+   *2. Multiple bot_id/presetBot, corresponding to multiple SDK instances, maintaining its own events
    */
   static create(props: CreateProps) {
     const { unique_key } = ChatSDK.getUniqueKey(props);
-    // 对于同一个 bot_id/preset_bot, 重复调用，create只会创建一个实例
+    // For the same bot_id/preset_bot, repeated calls, create will only create one instance
     if (ChatSDK.instances.has(unique_key)) {
       console.error('duplicate chat core instance error');
       return ChatSDK.instances.get(unique_key);
@@ -186,7 +186,7 @@ export default class ChatSDK {
   }
 
   /**
-   *  获取 sdk 唯一键 preset_bot > bot_id
+   *  Get sdk unique key preset_bot > bot_id
    * @param props
    * @returns
    */
@@ -240,7 +240,7 @@ export default class ChatSDK {
     this.draft_mode = draft_mode;
   }
 
-  /** 初始化依赖Module实例 */
+  /** Initializing Dependency Module Instances */
   private initModules(props: CreateProps) {
     this.initReportLog();
     this.reportEventsTracer = new ReportEventsTracer(this.reportLogWithScope);
@@ -250,7 +250,7 @@ export default class ChatSDK {
       new PreSendLocalMessageEventsManager({
         reportLog: this.reportLog,
       });
-    /** 初始化预发送消息工厂 */
+    /** Initialize the pre-sent message factory */
     this.preSendLocalMessageFactory = new PreSendLocalMessageFactory({
       bot_id: this.bot_id,
       preset_bot: this.preset_bot,
@@ -260,7 +260,7 @@ export default class ChatSDK {
       bot_version: this.bot_version,
       draft_mode: this.draft_mode,
     });
-    /** 初始化处理接收到的 chunk 消息，处理成统一 Message 格式 */
+    /** Initialize processing of received chunk messages into a unified message format */
     this.chunkProcessor = new ChunkProcessor({
       bot_id: this.bot_id,
       preset_bot: this.preset_bot,
@@ -272,7 +272,7 @@ export default class ChatSDK {
       reportLogWithScope: this.reportLogWithScope,
     });
     /**
-     * 初始化消息管理器：消息删除/历史等
+     * Initialize the message manager: message deletion/history, etc
      */
     this.messageManager = new MessageManager({
       reportLog: this.reportLog,
@@ -371,23 +371,23 @@ export default class ChatSDK {
   }
 
   /**
-   * 销毁 SDK 实例。
-   * 清空所有监听事件
+   * Destroy the SDK instance.
+   * Clear all listening events
    */
   destroy() {
-    // 清空所有httpChunk监听事件
+    // Clear all htpChunk listening events
     this.httpChunk.drop();
-    // 清空sdk时间
+    // Clear sdk time
     this.eventBus.removeAllListeners();
-    // 清空所有缓存的 chunk 消息
+    // Clear all cached chunks
     this.chunkProcessor.streamBuffer.clearMessageBuffer();
-    // 清除对应的实例
+    // Clear the corresponding instance
     const { unique_key } = ChatSDK.getUniqueKey({
       bot_id: this.bot_id,
       preset_bot: this.preset_bot,
     });
     ChatSDK.instances.delete(unique_key);
-    // 清除预发送消息缓存
+    // Clear pre-sent message cache
     this.preSendLocalMessageEventsManager.destroy();
     this.reportLogWithScope.info({
       message: 'SDK销毁',
@@ -395,10 +395,10 @@ export default class ChatSDK {
   }
 
   /**
-   * 监听sdk事件
+   * Monitor sdk events
    */
   on<T extends SdkEventsEnum>(event: T, fn: SdkEventsCallbackMap[T]) {
-    // 重复监听，错误提示
+    // Repeated listening, error message
     if (this.eventBus.eventNames().includes(event)) {
       this.reportLogWithScope.slardarError({
         message: '重复监听事件',

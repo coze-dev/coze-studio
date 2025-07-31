@@ -175,7 +175,7 @@ const getVerboseContent = (llmContent: string) => {
   }
 
   switch (msg_type) {
-    // 回溯节点文案
+    // backtracking node copy
     case VerboseMsgType.BACK_WORD: {
       const startMode = I18n.t(
         'agentflow_transfer_ conversation_settings_backtrack_start',
@@ -187,24 +187,24 @@ const getVerboseContent = (llmContent: string) => {
         contentData?.restart ? startMode : previousMode
       }`;
     }
-    // 跳转节点文案
+    // jump node copy
     case VerboseMsgType.JUMP_TO: {
       return `${I18n.t('agentflow_jump_running_process_trigger_condition')}${
         contentData?.condition ?? ''
       }`;
     }
-    //  长期记忆节点文案
+    //  long-term memory node copy
     case VerboseMsgType.LONG_TERM_MEMORY: {
       return contentData?.wraped_text ?? '';
     }
-    //默认直接展示json
+    //Default direct display json
     default: {
       return llmContent;
     }
   }
 };
 
-// hook_call类型
+// hook_call type
 const renderHooksMessage = (messageUnit: FunctionCallMessageUnit) => {
   const reportError = (error: Error) => {
     reporter.error({

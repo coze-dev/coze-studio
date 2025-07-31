@@ -20,7 +20,7 @@ import { IconUnitsTable, IconUnitsFile } from '@coze-arch/bot-icons';
 
 import { IconWithSuffix } from './suffix';
 
-// 获取 icon
+// Get icon
 export const RenderDocumentIcon = ({
   formatType,
   sourceType,

@@ -121,7 +121,7 @@ export const useSubmitCroppedImage = ({
     const notPass = Boolean(res?.check_not_pass);
     onAuditCheck(notPass);
     if (notPass) {
-      // 机审未通过，就不执行下面回调
+      // If the machine review fails, the following callback will not be executed
       return;
     }
 
@@ -148,7 +148,7 @@ export const useSubmitCroppedImage = ({
         fileList.current = [currentOriginImage.fileInstance];
         uploadFileList(fileList.current);
       } else {
-        // 回填文件时 不需要存原图
+        // When backfilling the document, there is no need to save the original image.
         handleUploadAllSuccess();
       }
     } catch (error) {

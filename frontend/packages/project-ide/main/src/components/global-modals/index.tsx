@@ -22,9 +22,9 @@ import { CloseConfirmModal } from './close-confirm-modal';
 export const GlobalModals = () => (
   // do something
   <>
-    {/* 移动资源库全局弹窗 */}
+    {/* Mobile resource library global pop-up window */}
     <ResourceModal />
-    {/* 保存中资源关闭弹窗 */}
+    {/* Saving resource closes pop-up window */}
     <CloseConfirmModal />
   </>
 );

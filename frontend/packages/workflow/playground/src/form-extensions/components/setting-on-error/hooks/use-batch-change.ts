@@ -25,7 +25,7 @@ interface Props
 }
 
 /**
- * batch的场景不支持异常分支，在batch变更时如果设置了异常分支，自动转换为返回设定内容
+ * The batch scenario does not support abnormal branches. If abnormal branches are set when the batch is changed, it will be automatically converted to return the set content.
  */
 export const useBatchChange = (props: Props) => {
   const { isBatch, value, onChange, isSettingOnErrorV2 } = props;

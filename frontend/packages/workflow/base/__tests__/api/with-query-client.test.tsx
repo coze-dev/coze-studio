@@ -27,7 +27,7 @@ import {
 
 describe('with-query-client.tsx', () => {
   beforeEach(() => {
-    // 清理 QueryClient 缓存
+    // Clean up the QueryClient cache
     workflowQueryClient.clear();
   });
 
@@ -89,10 +89,10 @@ describe('with-query-client.tsx', () => {
       const WrappedComponent = withQueryClient(TestComponent);
       const { container } = render(<WrappedComponent />);
 
-      // 初始加载状态
+      // initial loading state
       expect(container.innerHTML).toContain('Loading...');
 
-      // 等待数据加载完成
+      // Wait for data loading to complete
       await waitFor(() => {
         expect(container.innerHTML).toContain('test data');
       });
@@ -198,10 +198,10 @@ describe('with-query-client.tsx', () => {
       const WrappedComponent = withQueryClient(ParentComponent);
       const { container } = render(<WrappedComponent />);
 
-      // 初始加载状态
+      // initial loading state
       expect(container.innerHTML).toContain('Loading Parent...');
 
-      // 等待所有查询完成
+      // Wait for all queries to complete
       await waitFor(() => {
         expect(container.innerHTML).toContain('parent data');
         expect(container.innerHTML).toContain('child data');

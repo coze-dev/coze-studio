@@ -81,7 +81,7 @@ export const BaseLibraryPage = forwardRef<
             hasMore: false,
           };
         }
-        // 允许业务定制请求参数
+        // Allow business to customize request parameters
         const resp = await PluginDevelopApi.LibraryResourceList(
           entityConfigs.reduce<LibraryResourceListRequest>(
             (res, config) => config.parseParams?.(res) ?? res,
@@ -255,7 +255,7 @@ export const BaseLibraryPage = forwardRef<
               loading: listResp.loading,
               dataSource: listResp.data?.list,
               columns,
-              // 整行点击
+              // Click on the whole line
               onRow: (record?: ResourceInfo) => {
                 if (
                   !record ||

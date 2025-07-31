@@ -29,8 +29,8 @@ type IUseIgnoreJSON = (opts: {
   onJSONChange: (v: unknown) => void;
 }) => { value?: string; defaultValue?: string };
 
-// 第一层新增 key，并且没填名称时有个临时结构：{fieldRandomKey: 'OsUDuHxLYRem_njkEe8Zo', type: 1, field: '[2]'}
-// 这里并不关心临时态，转成正常结构消费
+// The first layer adds a new key, and there is a temporary structure without a name: {fieldRandomKey: 'OsUDuHxLYRem_njkEe8Zo', type: 1, field: '[2]'}
+// We don't care about the transient, the shift to structural consumption.
 const transformInitOutputs = (
   outputs?: (ViewVariableTreeNode & { fieldRandomKey?: string })[],
 ): ViewVariableTreeNode[] | undefined =>
@@ -59,7 +59,7 @@ export const useJSONWithOutputs: IUseIgnoreJSON = ({
   const _json = useMemo(() => {
     let defaultJSON;
     if (isOpen && outputsVerify(outputs)) {
-      // 生成默认值，时机：第一次打开开关
+      // Generate default value, timing: switch on for the first time
       defaultJSON = jsonFormat(metasToJSON(outputs));
       if (!json && isNil(lastIsOpen.current)) {
         onJSONChange(defaultJSON);
@@ -68,7 +68,7 @@ export const useJSONWithOutputs: IUseIgnoreJSON = ({
         return { value: defaultJSON, defaultValue: defaultJSON };
       }
 
-      // 切换 single/batch
+      // Switch single/batch
       if (lastIsBatch.current !== isBatch) {
         lastOutputs.current = outputs;
         lastIsBatch.current = isBatch;
@@ -79,10 +79,10 @@ export const useJSONWithOutputs: IUseIgnoreJSON = ({
           const jsonObj = JSON.parse(json);
 
           let newJSON;
-          // single -> batch 添加 outputList 包裹
+          // Single - > batch add outputList package
           if (isBatch) {
             newJSON = jsonFormat({ outputList: [jsonObj] });
-            // batch -> single 删除 outputList 包裹
+            // Batch - > single delete outputList package
           } else {
             newJSON = jsonFormat(jsonObj?.outputList?.[0] ?? jsonObj);
           }
@@ -95,9 +95,9 @@ export const useJSONWithOutputs: IUseIgnoreJSON = ({
         }
       }
 
-      // output 结构变化
+      // Output structure change
       if (!isEqual(outputs, lastOutputs.current)) {
-        // 需要分析出属性的增、删、改名、改类型，并同步修改 json
+        // It is necessary to analyze the addition, deletion, renaming, and type of attributes, and modify the json synchronously.
         const newJSON = niceAssign(json, outputs, lastOutputs.current);
         onJSONChange(newJSON);
         lastOutputs.current = outputs;

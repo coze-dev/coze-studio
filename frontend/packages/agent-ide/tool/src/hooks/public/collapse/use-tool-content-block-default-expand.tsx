@@ -30,11 +30,11 @@ import { useAbilityConfig } from '../../builtin/use-ability-config';
 import { toolKeyToApiStatusKeyTransformer } from '../../../utils/tool-content-block';
 
 /**
- * 用于校验当前模块默认展开收起状态
+ * Used to verify the default expanded and stowed state of the current module
  *
- * @param blockKey 主键 - tool 插件化改造后无需传入
- * @param configured 是否有配置内容
- * @param when 是否校验
+ * @Param blockKey primary key - no need to pass in after tool plugin transformation
+ * @param configured whether there is configuration content
+ * Check when @param
  *
  * @see 
  */
@@ -56,18 +56,18 @@ export const useToolContentBlockDefaultExpand = (
     })),
   );
   return useMemo(() => {
-    // 不做校验
+    // No verification
     if (!$when) {
       return undefined;
-      // 状态机未就绪
+      // Finite-state machine not ready
     } else if (!init || size(botSkillBlockCollapsibleState) === 0) {
       return undefined;
       /**
-       * @description 仅在满足以下条件时用户行为记录才能生效
+       * @Description A user behavior record is only valid if the following conditions are met
        *
-       * 1. 拥有编辑权限
-       * 2. 不能是历史预览环境
-       * 3. 必须已配置
+       * 1. Have editing rights
+       * 2. Cannot be a historical preview environment
+       * 3. Must be configured
        */
     } else if (editable && !isReadonly && configured) {
       const key = abilityKey ?? blockKey;

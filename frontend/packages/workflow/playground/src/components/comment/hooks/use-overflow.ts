@@ -39,17 +39,17 @@ export const useOverflow = (params: {
     return editorHeight > containerHeight;
   }, [model, height, playground]);
 
-  // 更新 overflow
+  // Update overflow
   const updateOverflow = useCallback(() => {
     setOverflow(isOverflow());
   }, [isOverflow]);
 
-  // 监听高度变化
+  // Monitor height change
   useEffect(() => {
     updateOverflow();
   }, [height, updateOverflow]);
 
-  // 监听 change 事件
+  // Monitor change events
   useEffect(() => {
     const changeDispose = model.on<CommentEditorEvent.Change>(
       CommentEditorEvent.Change,

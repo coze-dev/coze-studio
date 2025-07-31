@@ -21,7 +21,7 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 获取有子节点的节点列表
+ * Get a list of nodes with sub-nodes
  * @param nodes
  * @returns
  */
@@ -34,7 +34,7 @@ export const getNodesWithSubCanvas = (nodes: FlowNodeEntity[]) =>
 
         return [
           node,
-          // 子画布对应的所有子节点
+          // All sub-nodes corresponding to the sub-canvas
           ...(subCanvas?.(node)?.canvasNode?.allCollapsedChildren || []),
         ];
       })

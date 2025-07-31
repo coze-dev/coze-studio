@@ -32,13 +32,13 @@ export interface ArrayOptions {
   getDefaultAppendValue?: () => any;
   fields?: Field[];
 
-  /** 入参最大数量，若没有提供，默认为整数最大值 */
+  /** The maximum number of imported parameters, if not provided, defaults to the maximum integer value */
   maxItems?: number;
 
-  /** 入参最小数量，若没有提供，默认为 0 */
+  /** The minimum number of imported parameters, if not provided, the default is 0 */
   minItems?: number;
 
-  /** 单条是否可删除 */
+  /** Can a single item be deleted? */
   disableDeleteItem?: ((value: unknown, index: number) => boolean) | boolean;
 }
 
@@ -59,7 +59,7 @@ export const Array: Setter<Array<any>, ArrayOptions> = ({
   const [currentAddIndex, setCurrentAddIndex] = useState<number | undefined>();
   const { node, meta } = context || {};
 
-  // 后端返回的 value 可能为 null，此时不会赋值给 []，这里重新兜底下
+  // The value returned by the backend may be null, and it will not be assigned to [] at this time. Here is the bottom line again.
   const originValue = value || [];
 
   const add = () => {

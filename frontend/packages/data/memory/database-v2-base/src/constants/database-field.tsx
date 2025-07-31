@@ -103,7 +103,7 @@ export const DATABASE_CONTENT_CHECK_ERROR_CODE = 708024072;
 export const DATABASE_CONTENT_CHECK_ERROR_CODE_NEW = 708334072;
 
 /**
- * 内置字段: uuid
+ * Built-in field: uuid
  * bstudio_connector_uid
  */
 export const USER_ID_FIELD: TableMemoryItem = {
@@ -116,7 +116,7 @@ export const USER_ID_FIELD: TableMemoryItem = {
 };
 
 /**
- * 内置字段: id
+ * Built-in field: id
  */
 export const ID_FIELD: TableMemoryItem = {
   name: 'id',
@@ -128,7 +128,7 @@ export const ID_FIELD: TableMemoryItem = {
 };
 
 /**
- * 内置字段: sys_platform
+ * Built-in fields: sys_platform
  * bstudio_connector_id
  */
 export const PLATFORM_FIELD: TableMemoryItem = {
@@ -141,7 +141,7 @@ export const PLATFORM_FIELD: TableMemoryItem = {
 };
 
 /**
- * 内置字段: connector_id
+ * Built-in fields: connector_id
  * bstudio_create_time
  */
 export const CREATE_TIME_FIELD: TableMemoryItem = {
@@ -154,7 +154,7 @@ export const CREATE_TIME_FIELD: TableMemoryItem = {
 };
 
 /**
- * 内置系统字段
+ * Built-in system fields
  */
 export const SYSTEM_FIELDS = [
   ID_FIELD,

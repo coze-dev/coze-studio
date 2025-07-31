@@ -23,16 +23,16 @@ export {
 } from './test-form';
 
 /*******************************************************************************
- * log 相关的类型
+ * Log related types
  */
 
-/** condition 右值的类型 */
+/** Type of condition rvalue */
 export enum ConditionRightType {
   Ref = 'ref',
   Literal = 'literal',
 }
 
-/** log 中的 value 可能值 */
+/** Possible values in the log */
 export type LogValueType =
   | string
   | null
@@ -41,13 +41,13 @@ export type LogValueType =
   | boolean
   | undefined;
 
-/** 格式化之后的 condition log */
+/** Formatted condition log */
 export interface ConditionLog {
   leftData: LogValueType;
   rightData: LogValueType;
   operatorData: string;
 }
-/** 格式化之后的 log */
+/** Formatted log */
 export interface Log {
   input:
     | {

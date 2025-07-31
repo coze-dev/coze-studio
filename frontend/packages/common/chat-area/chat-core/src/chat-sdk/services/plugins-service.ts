@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { exhaustiveCheckSimple } from '@coze-common/chat-area-utils';
 
 import type { UploadPluginConstructor } from '@/plugins/upload-plugin/types/plugin-upload';
@@ -21,12 +21,12 @@ import type { UploadPluginConstructor } from '@/plugins/upload-plugin/types/plug
 import type { PluginKey, PluginValue } from '../types/interface';
 
 export class PluginsService {
-  //eslint-disable-next-line  @typescript-eslint/no-explicit-any -- 暂时没想到合适的类型体操， 先用 any,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any -- I didn't think of a suitable type of gymnastics for the time being, use any first,
   UploadPlugin: UploadPluginConstructor<any> | null = null;
   uploadPluginConstructorOptions: Record<string, unknown> = {};
 
   /**
-   * 注册插件
+   * Register plugin
    */
   registerPlugin<T extends PluginKey, P extends Record<string, unknown>>(
     key: T,
@@ -40,7 +40,7 @@ export class PluginsService {
   }
 
   /**
-   * 检查插件是否已经注册过
+   * Check if the plugin has been registered
    */
   checkPluginIsRegistered(key: PluginKey): boolean {
     if (key === 'upload-plugin') {

@@ -33,7 +33,7 @@ import css from './full-input.module.less';
 export interface InnerFullInputProps {
   value?: string;
   disabled?: boolean;
-  /** 是否可以展开，默认 true */
+  /** Whether it can be expanded, the default is true. */
   expand?: boolean;
   className?: string;
   onChange: (v?: string) => void;
@@ -66,7 +66,7 @@ const InnerFullInputAdapter: React.FC<FullInputProps> = ({
     const content = editorRef.current.getContent();
     const { markdown } = delta2md(content.deltas[0], content.deltas);
     /**
-     * change 可能来自用户输入或者初始化，做一下 diff 来保证性能
+     * Changes may come from user input or initialization, do a diff to ensure performance
      */
     if (markdown !== innerValueRef.current) {
       innerValueRef.current = markdown;

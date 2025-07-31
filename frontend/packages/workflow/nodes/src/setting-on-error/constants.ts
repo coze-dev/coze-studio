@@ -18,7 +18,7 @@
 import { StandardNodeType } from '@coze-workflow/base';
 
 /**
- * 使用 V2 版本异常设置的节点
+ * Nodes using V2 version exception settings
  */
 export const SETTING_ON_ERROR_V2_NODES = [
   StandardNodeType.Code,
@@ -35,17 +35,17 @@ export const SETTING_ON_ERROR_V2_NODES = [
 ];
 
 /**
- * 使用V1的版本异常设置
+ * Version exception settings using V1
  */
 export const SETTING_ON_ERROR_V1_NODES = [StandardNodeType.Http];
 
 /**
- * 有动态port的节点
+ * Nodes with dynamic ports
  */
 export const SETTING_ON_ERROR_DYNAMIC_PORT_NODES = [StandardNodeType.Intent];
 
 /**
- * 开启异常的节点
+ * Open abnormal node
  */
 export const SETTING_ON_ERROR_NODES = [
   ...SETTING_ON_ERROR_V1_NODES,
@@ -53,17 +53,17 @@ export const SETTING_ON_ERROR_NODES = [
 ];
 
 /**
- * 异常端口
+ * abnormal port
  */
 export const SETTING_ON_ERROR_PORT = 'branch_error';
 
 /**
- * 超时最小100ms；
+ * Timeout minimum 100ms;
  */
 export const SETTING_ON_ERROR_MIN_TIMEOUT = 100;
 
 /**
- * 其他节点：默认1分钟，最大1分钟；
+ * Other nodes: default 1 minute, maximum 1 minute;
  */
 export const SETTING_ON_ERROR_DEFAULT_TIMEOUT = {
   default: 60 * 1000,
@@ -71,9 +71,9 @@ export const SETTING_ON_ERROR_DEFAULT_TIMEOUT = {
 };
 
 /**
- * 节点配置
- * LLM：默认3分钟，最大10分钟；
- * 插件：默认3分钟，最大3分钟；
+ * Node configuration
+ * LLM: Default 3 minutes, maximum 10 minutes;
+ * Plugin: Default 3 minutes, maximum 3 minutes;
  */
 export const SETTING_ON_ERROR_NODES_CONFIG = {
   [StandardNodeType.LLM]: {

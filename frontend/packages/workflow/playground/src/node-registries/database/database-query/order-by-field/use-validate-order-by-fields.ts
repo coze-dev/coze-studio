@@ -21,7 +21,7 @@ import { useFieldArray } from '@/form';
 import { useQueryFieldIDs } from './use-query-field-ids';
 import { type OrderByFieldSchema } from './types';
 
-// 监听查询字段 当查询字段发生变化时 检查排序字段是否存在于查询字段中 不存在则移除
+// Listen to the query field. When the query field changes, check whether the sorting field exists in the query field. If it does not exist, remove it.
 export const useValidateOrderFields = () => {
   const { value, onChange } = useFieldArray<OrderByFieldSchema>();
   const queryFieldIDs = useQueryFieldIDs();

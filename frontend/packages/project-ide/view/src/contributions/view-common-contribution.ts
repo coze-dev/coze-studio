@@ -314,7 +314,7 @@ export class ViewCommonContribution
       },
       {
         execute: () => {
-          // 没有 focus 内容的时候默认打开 problem
+          // Open the problem by default when there is no focus content
           if (!this.shell.bottomPanel?.currentTitle) {
             this.commandService.executeCommand(Command.Default.VIEW_PROBLEMS);
           }
@@ -364,51 +364,51 @@ export class ViewCommonContribution
   }
 
   registerShortcuts(registry: ShortcutsRegistry): void {
-    // 关闭当前所有 tab
+    // Close all current tabs
     registry.registerHandlers({
       keybinding: 'alt shift w',
       commandId: Command.Default.VIEW_CLOSE_ALL_WIDGET,
     });
 
-    // 打开下一个 tab
+    // Open next tab
     registry.registerHandlers({
       keybinding: 'alt shift rightarrow',
       commandId: Command.Default.VIEW_OPEN_NEXT_TAB,
       preventDefault: true,
     });
 
-    // 打开上一个 tab
+    // Open previous tab
     registry.registerHandlers({
       keybinding: 'alt shift leftarrow',
       commandId: Command.Default.VIEW_OEPN_LAST_TAB,
       preventDefault: true,
     });
 
-    // 关闭当前 tab
+    // Close the current tab
     registry.registerHandlers({
       keybinding: 'alt w',
       commandId: Command.Default.VIEW_CLOSE_CURRENT_WIDGET,
     });
 
-    // 打开刚刚关闭当前 tab
+    // Open Just closed the current tab
     registry.registerHandlers({
       keybinding: 'alt shift t',
       commandId: Command.Default.VIEW_REOPEN_LAST_WIDGET,
     });
 
-    // 关闭除了当前打开的 tab 以外的所有 tab
+    // Close all tabs except the currently open tab
     registry.registerHandlers({
       keybinding: 'meta alt t',
       commandId: Command.Default.VIEW_CLOSE_OTHER_WIDGET,
     });
 
-    // 关闭除了当前打开的 tab 以外的所有 tab
+    // Close all tabs except the currently open tab
     registry.registerHandlers({
       keybinding: 'meta j',
       commandId: Command.Default.VIEW_CLOSE_BOTTOM_PANEL,
     });
 
-    // 全屏模式
+    // Full screen mode
     registry.registerHandlers({
       keybinding: 'alt f',
       commandId: Command.Default.VIEW_FULL_SCREEN,

@@ -78,8 +78,8 @@ const useAuthForApiTool = () => {
 
   return {
     canEdit,
-    needAuth, // 需要 auth 授权
-    isHasAuth, // 是否完成了授权
+    needAuth, // Requires auth authorization
+    isHasAuth, // Has the authorization been completed?
     doCancelOauth,
     isUpdateLoading,
     doOauth,

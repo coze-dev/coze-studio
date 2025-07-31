@@ -98,7 +98,7 @@ export const GuidingPopover = (
   const [visible, setVisible] = useState(() => needShowGuidingPopover());
   const onButtonClick = () => setVisible(false);
 
-  // gotIt 方法先不暴露到上层了，后续需要使用再暴露出来
+  // The gotIt method is not exposed to the upper layer first, and it needs to be used later before being exposed.
   const handleGotIt = () => {
     hideGuidingPopover();
     setVisible(false);

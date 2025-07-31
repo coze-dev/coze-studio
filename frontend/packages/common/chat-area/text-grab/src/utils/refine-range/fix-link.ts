@@ -21,13 +21,13 @@ export const fixLink = (range: Range, startNode: Node, endNode: Node) => {
   const endAnchor = findNearestAnchor(endNode);
 
   let isFix = false;
-  // 如果起始节点在链接内，将选区的起点设置为链接的开始
+  // If the starting node is within the link, set the starting point of the selection to the start of the link
   if (startAnchor) {
     range.setStartBefore(startAnchor);
     isFix = true;
   }
 
-  // 如果结束节点在链接内，将选区的终点设置为链接的结束
+  // If the end node is within the link, set the end of the selection to the end of the link
   if (endAnchor) {
     range.setEndAfter(endAnchor);
     isFix = true;
@@ -37,8 +37,8 @@ export const fixLink = (range: Range, startNode: Node, endNode: Node) => {
 };
 
 /**
- * 1. 链接[A ...文字... 链]接B
- * 2. 链接A ...文[字... 链]接B
- * 3. ...文[字 链]接B
- * 4. 链[接]B
+ * 1. Link [A... text... link] to B
+ * 2. Link A... text [word... link] to B
+ * 3.... Text [word, chain] to B
+ * 4. Chain [link] B
  */

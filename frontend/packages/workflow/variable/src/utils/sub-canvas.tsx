@@ -22,7 +22,7 @@ import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { type WorkflowNodeMeta } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 获取实际的父节点
+ * Get the actual parent node
  * @param node
  * @returns
  */
@@ -44,7 +44,7 @@ export function getParentNode(
 }
 
 /**
- * 获取实际的子节点
+ * Get the actual sub-node
  * @param node
  * @returns
  */
@@ -53,7 +53,7 @@ export function getChildrenNode(node: FlowNodeEntity): FlowNodeEntity[] {
   const subCanvas = nodeMeta.subCanvas?.(node);
 
   if (subCanvas) {
-    // 子画布本身不存在 children
+    // There is no child on the canvas itself.
     if (subCanvas.isCanvas) {
       return [];
     } else {
@@ -65,7 +65,7 @@ export function getChildrenNode(node: FlowNodeEntity): FlowNodeEntity[] {
 }
 
 /**
- * 节点是否包含子画布
+ * Does the node contain a child canvas?
  * @param node
  * @returns
  */
@@ -77,7 +77,7 @@ export function hasChildCanvas(node: FlowNodeEntity): boolean {
 }
 
 /**
- * 获取子节点所有输出变量的作用域链
+ * Get the scope chain of all output variables of the sub-node
  * @param node
  * @returns
  */
@@ -93,7 +93,7 @@ export function getHasChildCanvasNodePublicDeps(
 }
 
 /**
- * 获取父节点的
+ * Get the parent node's
  * @param node
  * @returns
  */

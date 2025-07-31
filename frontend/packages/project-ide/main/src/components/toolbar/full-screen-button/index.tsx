@@ -78,7 +78,7 @@ export const FullScreenButton = () => {
     [fullScreen, keybinding],
   );
 
-  // 左边分屏不展示全屏按钮
+  // The left split screen does not display the full screen button.
   if (direction === 'left') {
     return null;
   }
@@ -91,7 +91,7 @@ export const FullScreenButton = () => {
     <Tooltip
       content={content}
       position="bottom"
-      // 点击后布局变化，tooltip 需要手动控制消失
+      // After clicking, the layout changes, and the tooltip needs to be manually controlled to disappear.
       trigger="custom"
       visible={tooltipVisible}
     >

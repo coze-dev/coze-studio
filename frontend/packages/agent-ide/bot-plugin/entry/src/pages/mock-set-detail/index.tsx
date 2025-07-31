@@ -66,9 +66,9 @@ enum PageSource {
 }
 
 enum PageMode {
-  /** 整页 UI类似全覆盖浮层 */
+  /** Full page UI similar to full coverage floating layer */
   FULL_PAGE = 'full_page',
-  /** 嵌入（左侧有菜单栏） */
+  /** Embed (with menu bar on the left) */
   EMBED = 'embed',
 }
 
@@ -87,16 +87,16 @@ const MockSetDetail: FC<{
     [],
   );
   const routeResponse = usePageJumpResponse(PageType.PLUGIN_MOCK_DATA);
-  // API 详情
+  // API Details
   const [apiInfo, setApiInfo] = useState<PluginAPIInfo>({
     name: routeResponse?.toolName,
   });
-  // mock set 详情
+  // Mock set details
   const [mockSetInfo, setMockSetInfo] = useState<MockSet>({
     id: mocksetID,
     name: routeResponse?.mockSetName,
   });
-  // API 对应 schema
+  // API correspondence schema
   const [toolSchema, setToolSchema] = useState<string>('');
   const [perm, setPerm] = useState<{
     readOnly: boolean;
@@ -109,9 +109,9 @@ const MockSetDetail: FC<{
   const listRef = useRef<MockDataListActions>(null);
   const contentEleRef = useRef<HTMLDivElement>(null);
 
-  // 页面展示模式
+  // page display mode
   const pageMode = params.hideMenu ? PageMode.FULL_PAGE : PageMode.EMBED;
-  // 页面来源
+  // page source
   const fromSource = routeResponse?.fromSource
     ? (routeResponse.fromSource as PageSource)
     : PageSource.FROM_MOCK_SET;
@@ -142,7 +142,7 @@ const MockSetDetail: FC<{
     [toolID, pluginID],
   );
 
-  // 获取当前 tool 信息
+  // Get current tool information
   const getPluginToolInfo = async () => {
     try {
       const { api_info = [] } = await PluginDevelopApi.GetPluginAPIs(
@@ -164,7 +164,7 @@ const MockSetDetail: FC<{
     }
   };
 
-  // 获取当前 mock set 信息
+  // Get current mock set information
   const getMockSetInfo = async () => {
     if (!mocksetID) {
       return;

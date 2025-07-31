@@ -162,7 +162,7 @@ const MockSetSelectComp = (
   const bizCtx: BizCtx = {
     ...bizSceneCtx,
     connectorUID: uid,
-    connectorID: CONNECTOR_ID, // 业务线为Coze
+    connectorID: CONNECTOR_ID, // Business line for Coze
   };
 
   const { jump } = usePageJumpService();
@@ -449,7 +449,7 @@ const MockSetSelectComp = (
         content={getTooltipInfo()}
         visible={disabled && focused}
         position="left"
-        style={{ display: disabled ? 'block' : 'none' }} // visible disabled不生效
+        style={{ display: disabled ? 'block' : 'none' }} // Visible disabled not effective
       >
         <div
           style={style}

@@ -59,7 +59,7 @@ export const SUB_WORKFLOW_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     nodeMetaPath: DEFAULT_NODE_META_PATH,
     outputsPath: DEFAULT_OUTPUTS_PATH,
     batchPath: DEFAULT_BATCH_PATH,
-    inputParametersPath: INPUT_PATH, // 入参路径，试运行等功能依赖该路径提取参数
+    inputParametersPath: INPUT_PATH, // Imported parameter path, practice running and other functions rely on this path to extract parameters
     test,
     helpLink: '/open/docs/guides/workflow_node',
   },
@@ -142,7 +142,7 @@ export const SUB_WORKFLOW_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
           },
         );
 
-      // 如果能够找到开始节点的 CONVERSATION_NAME 参数
+      // If you can find the CONVERSATION_NAME parameters of the start node
       if (startConversationNameVar && nodeIsChatflow && formModel) {
         const inputParameters = formModel.getValueIn('inputs.inputParameters');
         if (inputParameters) {
@@ -152,7 +152,7 @@ export const SUB_WORKFLOW_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
             originValue[CONVERSATION_NAME] &&
             ValueExpression.isEmpty(originValue[CONVERSATION_NAME])
           ) {
-            // 如果 CONVERSATION_NAME 为空，才回填
+            // Backfill if CONVERSATION_NAME is empty
             originValue[CONVERSATION_NAME] = {
               type: 'ref',
               content: {
@@ -164,7 +164,7 @@ export const SUB_WORKFLOW_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
           }
         }
       }
-      // 这个延时时间需要比较长，暂时先设置为 1s
+      // This delay time needs to be relatively long, so set it to 1s for the time being.
     }, DELAY_TIME);
   },
 };

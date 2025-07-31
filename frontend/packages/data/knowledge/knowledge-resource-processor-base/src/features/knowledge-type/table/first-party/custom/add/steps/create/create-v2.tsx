@@ -49,7 +49,7 @@ function getCreateDocumentParams(
   return {
     document_bases: [
       {
-        name: '', // table custom传控
+        name: '', // Table custom control
         source_info: {
           document_source: DocumentSource.Custom,
         },
@@ -102,7 +102,7 @@ export const TableCustomCreate = <
 
   useEffect(() => {
     if (footerStatus !== FooterBtnStatus.LOADING) {
-      setFooterStatus(getCustomStatus(metaData, 'toBeDelete')); // toBeDelete 待删
+      setFooterStatus(getCustomStatus(metaData, 'toBeDelete')); // toBeDelete to be deleted
     }
   }, [metaData]);
 

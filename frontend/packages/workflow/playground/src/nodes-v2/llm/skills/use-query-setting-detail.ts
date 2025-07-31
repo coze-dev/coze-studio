@@ -25,7 +25,7 @@ import {
 
 import { PromiseLimiter } from '@/utils/promise-limiter';
 
-// 限制并发，因为同一个流程上可能会有很多LLM节点，同时请求
+// Limit concurrency, because there may be many LLM nodes on the same process, simultaneously requesting
 const CONCURRENCY = 3;
 
 const limiter = new PromiseLimiter(CONCURRENCY, true);

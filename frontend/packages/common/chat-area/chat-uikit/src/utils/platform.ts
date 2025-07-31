@@ -18,8 +18,8 @@ import Browser from 'bowser';
 
 let getIsMobileCache: boolean | undefined;
 /**
- * 是否是移动设备
- * 注：ipad 不是移动设备
+ * Is it a mobile device?
+ * Note: iPad is not a mobile device
  */
 const isMobile = () =>
   Browser.getParser(navigator.userAgent)
@@ -35,7 +35,7 @@ export const getIsMobile = () => {
 
 let getIsIPhoneOrIPadCache: boolean | undefined;
 /**
- * gpt-4 提供的代码
+ * Code provided by gpt-4
  */
 export const getIsIPhoneOrIPad = () => {
   if (typeof getIsIPhoneOrIPadCache === 'undefined') {
@@ -53,7 +53,7 @@ export const getIsIPhoneOrIPad = () => {
 
 let getIsIPadCache: boolean | undefined;
 /**
- * gpt-4 提供的代码
+ * Code provided by gpt-4
  */
 export const getIsIPad = () => {
   if (typeof getIsIPadCache === 'undefined') {

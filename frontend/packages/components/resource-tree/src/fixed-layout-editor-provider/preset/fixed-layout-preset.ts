@@ -43,11 +43,11 @@ export function createFixedLayoutPreset(
     opts = { ...DEFAULT, ...opts };
     let plugins: Plugin[] = [createOperationPlugin(opts)];
     /**
-     * 加载默认编辑器配置
+     * Load default editor configuration
      */
     plugins = createDefaultPreset(opts, plugins)(ctx);
     /*
-     * 加载固定布局画布模块
+     * Load fixed layout canvas module
      * */
     plugins.push(
       createPlaygroundPlugin<FixedLayoutPluginContext>({
@@ -66,15 +66,15 @@ export function createFixedLayoutPreset(
         },
         onInit: _ctx => {
           _ctx.playground.registerLayers(
-            FlowNodesContentLayer, // 节点内容渲染
-            FlowNodesTransformLayer, // 节点位置偏移计算
+            FlowNodesContentLayer, // Node content rendering
+            FlowNodesTransformLayer, // Node position offset calculation
           );
           if (!opts.scroll?.disableScrollLimit) {
-            // 控制滚动范围
+            // Control scroll range
             _ctx.playground.registerLayer(FlowScrollLimitLayer);
           }
           if (!opts.scroll?.disableScrollBar) {
-            // 控制条
+            // control bar
             _ctx.playground.registerLayer(FlowScrollBarLayer);
           }
           if (opts.nodeRegistries) {

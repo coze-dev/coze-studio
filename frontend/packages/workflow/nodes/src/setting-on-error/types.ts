@@ -17,10 +17,10 @@
 import { type ViewVariableTreeNode } from '@coze-workflow/base';
 
 /**
- * 异常处理类型
- * 1 直接中断
- * 2 返回设定内容,
- * 3 执行异常流程
+ * exception handling type
+ * 1 Direct interruption
+ * 2 Return to the setting content,
+ * 3 Execute abnormal flow
  */
 export enum SettingOnErrorProcessType {
   BREAK = 1,
@@ -29,11 +29,11 @@ export enum SettingOnErrorProcessType {
 }
 
 /**
- * 异常处理额外数据
+ * Exception handling extra data
  */
 export interface SettingOnErrorExt {
   /**
-   * LLM节点重试的备选模型
+   * Alternative Model for LLM Node Retry
    */
   backupLLmParam?: {
     modelName?: string;
@@ -49,34 +49,34 @@ export interface SettingOnErrorExt {
 
 interface SettingOnErrorBase {
   /**
-   * 处理类型
+   * processing type
    */
   processType?: SettingOnErrorProcessType;
   /**
-   * 超时时间 毫秒
+   * Timeout, milliseconds
    */
   timeoutMs?: number;
   /**
-   * 重试次数 0 表示不重试
+   * Number of retries 0 means no retries
    */
   retryTimes?: number;
 }
 
 /**
- * 异常处理前端结构
+ * Exception handling front-end architecture
  */
 export interface SettingOnErrorVO extends SettingOnErrorBase {
   /**
-   * 是否开启异常处理
+   * Whether to enable exception handling
    */
   settingOnErrorIsOpen?: boolean;
   /**
-   * 发生异常处理的默认值
+   * Default value for exception handling to occur
    */
   settingOnErrorJSON?: string;
 
   /**
-   * 其他设置
+   * Other settings
    */
   ext?: SettingOnErrorExt;
 }
@@ -84,19 +84,19 @@ export interface SettingOnErrorVO extends SettingOnErrorBase {
 export type SettingOnErrorValue = SettingOnErrorVO;
 
 /**
- * 异常处理后端结构
+ * exception handling backend structure
  */
 export interface SettingOnErrorDTO extends SettingOnErrorBase {
   /**
-   * 是否开启异常处理
+   * Whether to enable exception handling
    */
   switch: boolean;
   /**
-   * 发生异常处理的默认值
+   * Default value for exception handling to occur
    */
   dataOnErr: string;
   /**
-   * 其他设置
+   * Other settings
    */
   ext?: {
     backupLLmParam?: string;
@@ -104,7 +104,7 @@ export interface SettingOnErrorDTO extends SettingOnErrorBase {
 }
 
 /**
- * 有异常设置的后端节点数据
+ * Backend node data with abnormal settings
  */
 export interface NodeValueWithSettingOnErrorDTO {
   inputs?: {
@@ -117,7 +117,7 @@ export interface NodeValueWithSettingOnErrorDTO {
 }
 
 /**
- * 有异常设置的前端节点数据
+ * Front-end node data with exception settings
  */
 export interface NodeValueWithSettingOnErrorVO {
   settingOnError?: SettingOnErrorVO;

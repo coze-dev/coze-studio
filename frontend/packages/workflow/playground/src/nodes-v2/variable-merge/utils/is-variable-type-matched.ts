@@ -19,7 +19,7 @@ import { type ViewVariableType } from '@coze-workflow/base';
 import { getMatchedVariableTypes } from './get-matched-variable-types';
 
 /**
- * 变量类型是否匹配
+ * Does the variable type match?
  * @param viewType1
  * @param viewType2
  * @returns

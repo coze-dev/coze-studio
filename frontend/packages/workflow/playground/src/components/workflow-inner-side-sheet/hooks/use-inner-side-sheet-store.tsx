@@ -19,9 +19,9 @@ import { create } from 'zustand';
 
 export interface SingletonSideSheetProps {
   sideSheetId: string;
-  // 关闭时的确认方法， 需要确认后才可关闭
+  // The confirmation method when closing, you need to confirm before closing.
   closeConfirm?: () => boolean | Promise<boolean>;
-  // 是否和左侧面板互斥
+  // Whether mutual exclusion with the left panel
   mutexWithLeftSideSheet?: boolean;
 }
 
@@ -65,7 +65,7 @@ export const useInnerSideSheetStore = create<
   openSideSheet: async (sideSheetId: string) => {
     const { sideSheetMap } = get();
 
-    // 获取除当前 sideSheet 外的所有关闭方法
+    // Get all close methods except the current sideSheet
     const closeFns = Object.keys(sideSheetMap).reduce((fns, id) => {
       const closeFn = sideSheetMap[id].closeConfirm;
 
@@ -76,13 +76,13 @@ export const useInnerSideSheetStore = create<
       return [...fns, closeFn];
     }, [] as Array<() => boolean | Promise<boolean>>);
 
-    // 调用全部关闭方法
+    // Call the Close All method
     const closeResult = await Promise.all(closeFns.map(fn => fn()));
 
     const success = !closeResult.some(result => result === false);
 
     if (success) {
-      // 开启成功，将 active 状态切换到当前弹窗
+      // Open successfully, switch the active state to the current pop-up window
       set({ activeId: sideSheetId });
     }
 
@@ -97,7 +97,7 @@ export const useInnerSideSheetStore = create<
     const { closeConfirm } = sideSheetMap[sideSheetId] || {};
     const closed = await closeConfirm?.();
     if (closeConfirm && !closed) {
-      // 关闭失败了，回退visible状态
+      // Closure failed, fallback to visible state
       return false;
     }
 

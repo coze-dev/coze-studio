@@ -83,7 +83,7 @@ export const KnowledgePreviewPage = () => {
         if (params.biz === 'project') {
           return <BizProjectKnowledgeIDE />;
         }
-        // 默认'library'
+        // Default'library'
         return <BizLibraryKnowledgeIDE />;
       })()}
     </KnowledgeParamsStoreProvider>

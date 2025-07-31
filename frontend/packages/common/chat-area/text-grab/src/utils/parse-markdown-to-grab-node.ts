@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { parseMarkdownHelper } from '@coze-common/chat-area-utils';
 import { parseMarkdown } from '@coze-arch/bot-md-box-adapter/lazy';
 
@@ -22,7 +22,7 @@ import { GrabElementType, type GrabNode } from '../types/node';
 const { isImage, isLink, isParent, isText } = parseMarkdownHelper;
 
 /**
- * 获取GrabNode节点
+ * Get a GrabNode node
  * @param markdown string
  * @returns GrabNode[]
  */
@@ -33,14 +33,14 @@ export const parseMarkdownToGrabNode = (markdown: string) => {
 };
 
 /**
- * 从Markdown的AST解析成GrabNode节点
+ * Parsing from Markdown's AST to a GrabNode node
  * @param ast markdown ast by parseMarkdown (md-box)
  * @returns GrabNode[]
  */
 export const getGrabNodeFromAst = (ast: unknown): GrabNode[] => {
   const normalizedNodeList: GrabNode[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 符合预期
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- as expected
   const traverseAst = (_ast: any) => {
     if (isText(_ast)) {
       normalizedNodeList.push({

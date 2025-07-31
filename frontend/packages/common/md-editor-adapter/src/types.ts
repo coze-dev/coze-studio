@@ -55,25 +55,25 @@ export interface EditorInputProps extends CommonFieldProps {
   placeholder?: string;
   validateStatus?: 'error' | 'default';
   /**
-   * 注册自定义插件
+   * Register custom plugins
    * @param plugins
    */
   registerPlugins?: any;
   /**
-   * 自定义toolbar
+   * Custom toolbar
    */
   registerToolItem?: any;
-  /** 自定义schema */
+  /** Custom schema */
   schema?: any;
-  businessKey?: string; // 用于注册toolbar
+  businessKey?: string; // To register the toolbar
   getMentionData?: (query?: string) => Promise<any[]>;
-  maxCount?: number; // 字符数显示，默认为-1（不限制）
-  disabled?: boolean; // 禁用
-  noToolbar?: boolean; // 隐藏工具栏
-  noExpand?: boolean; // 右下角展开icon
-  onExpand?: () => void; // 点击展开icon
+  maxCount?: number; // Number of characters displayed, default to -1 (unlimited)
+  disabled?: boolean; // disable
+  noToolbar?: boolean; // Hide Toolbar
+  noExpand?: boolean; // Expand icon in lower right corner
+  onExpand?: () => void; // Click expand icon
   /**
-   * 开启 plainText 模式后，输入内容与原生 textarea 不会有区别，会取消 markdown 支持，并隐藏 toolbar（会覆盖 noToolbar 属性）
+   * When plainText mode is enabled, the input content will not be different from the native textarea, markdown support will be removed, and toolbar will be hidden (the noToolbar property will be overridden).
    * @default false
    */
   plainText?: boolean;
@@ -81,11 +81,11 @@ export interface EditorInputProps extends CommonFieldProps {
     placeholder: string;
     maxCount?: number;
     onChange: (value: string) => void;
-  }; // 带标题编辑器（类似飞书，标题和正文在一起）
+  }; // With title editor (similar to Feishu, title and body together)
 
-  getUploadToken?: () => Promise<any>; // 自定义获取上传图片的token
+  getUploadToken?: () => Promise<any>; // Customize to get the token of the uploaded image.
 
-  getImgURL?: (req?: any) => Promise<any>; // 自定义根据图片uri获取图片url
+  getImgURL?: (req?: any) => Promise<any>; // Customize to get the picture url according to the picture uri.
   getEditor?: (editor: Editor) => void;
 }
 

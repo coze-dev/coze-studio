@@ -17,7 +17,7 @@
 import { useAbilityConfigContext } from '../../context/ability-config-context';
 
 /**
- * 用户内部获取ToolKey使用
+ * Users obtain ToolKey usage internally
  */
 export const useAbilityConfig = () => {
   const { abilityKey, scope } = useAbilityConfigContext();

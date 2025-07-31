@@ -34,7 +34,7 @@ export interface VariableSchemaDTO {
 }
 
 /**
- * 前端变量类型
+ * Front-end variable type
  */
 export enum ViewVariableType {
   String = 1,
@@ -42,7 +42,7 @@ export enum ViewVariableType {
   Boolean,
   Number,
   Object = 6,
-  // 上面是 api 中定义的 InputType。下面是整合后的。从 99 开始，避免和后端定义撞车
+  // The above is the InputType defined in the api. The following is the integrated one. Start from 99 to avoid collisions with the backend definition.
   ArrayString = 99,
   ArrayInteger,
   ArrayBoolean,
@@ -73,7 +73,7 @@ export const VARIABLE_TYPE_ALIAS_MAP: Record<ViewVariableType, string> = {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ViewVariableType {
   /**
-   * 获取所有变量类型的补集
+   * Get the complement of all variable types
    * @param inputTypes
    */
   export function getComplement(inputTypes: ViewVariableType[]) {

@@ -29,7 +29,7 @@ import {
 } from '../../src/project/constants';
 import { calcPermission } from '../../src/project/calc-permission';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/foundation-sdk', () => ({
   useSpace: vi.fn(),
 }));
@@ -54,94 +54,94 @@ describe('useProjectAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 模拟 useSpace 返回空间信息
+    // Simulating useSpace returns spatial information
     (useSpace as any).mockReturnValue({
       space_type: SpaceType.Team,
     });
 
-    // 模拟 useSpaceRole 返回空间角色
+    // Simulate useSpaceRole Return Space Role
     (useSpaceRole as any).mockReturnValue([SpaceRoleType.Member]);
 
-    // 模拟 useProjectRole 返回项目角色
+    // Simulate useProjectRole Return project role
     (useProjectRole as any).mockReturnValue([ProjectRoleType.Editor]);
 
-    // 模拟 calcPermission 返回权限结果
+    // Simulate calcPermission return permission result
     (calcPermission as any).mockReturnValue(true);
   });
 
   it('应该调用 calcPermission 并返回正确的权限结果', () => {
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() =>
       useProjectAuth(permissionKey, projectId, spaceId),
     );
 
-    // 验证 useSpace 被调用
+    // Verify that useSpace is called
     expect(useSpace).toHaveBeenCalledWith(spaceId);
 
-    // 验证 useSpaceRole 被调用
+    // Verify useSpaceRole is called
     expect(useSpaceRole).toHaveBeenCalledWith(spaceId);
 
-    // 验证 useProjectRole 被调用
+    // Verify useProjectRole is called
     expect(useProjectRole).toHaveBeenCalledWith(projectId);
 
-    // 验证 calcPermission 被调用，且参数正确
+    // Verify that calcPermission is called and the parameters are correct
     expect(calcPermission).toHaveBeenCalledWith(permissionKey, {
       projectRoles: [ProjectRoleType.Editor],
       spaceRoles: [SpaceRoleType.Member],
       spaceType: SpaceType.Team,
     });
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toBe(true);
   });
 
   it('应该在 calcPermission 返回 false 时返回 false', () => {
-    // 模拟 calcPermission 返回 false
+    // simulated calcPermission returns false
     (calcPermission as any).mockReturnValue(false);
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() =>
       useProjectAuth(permissionKey, projectId, spaceId),
     );
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toBe(false);
   });
 
   it('应该在空间类型不存在时抛出错误', () => {
-    // 模拟 useSpace 返回没有 space_type 的对象
+    // Mock useSpace returns objects without space_type
     (useSpace as any).mockReturnValue({});
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证抛出错误
+    // validation throws error
     expect(() => {
       const { result } = renderHook(() =>
         useProjectAuth(permissionKey, projectId, spaceId),
       );
-      // 强制访问 result.current 触发错误
+      // Force access result.current trigger error
       console.log(result.current);
     }).toThrow('useSpaceAuth must be used after space list has been pulled.');
   });
 
   it('应该在空间为 null 时抛出错误', () => {
-    // 模拟 useSpace 返回 null
+    // Simulate useSpace returns null
     (useSpace as any).mockReturnValue(null);
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证抛出错误
+    // validation throws error
     expect(() => {
       const { result } = renderHook(() =>
         useProjectAuth(permissionKey, projectId, spaceId),
       );
-      // 强制访问 result.current 触发错误
+      // Force access result.current trigger error
       console.log(result.current);
     }).toThrow('useSpaceAuth must be used after space list has been pulled.');
   });

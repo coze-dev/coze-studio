@@ -22,7 +22,7 @@ import { getExpirationTime } from '@/utils/time';
 
 export const columnExpireAtConf: () => ColumnProps<PersonalAccessToken> =
   () => ({
-    title: I18n.t('expire_time_1'), // 状态
+    title: I18n.t('expire_time_1'), // state
     dataIndex: 'expire_at',
     render: (expireTime: number) => getExpirationTime(expireTime),
   });

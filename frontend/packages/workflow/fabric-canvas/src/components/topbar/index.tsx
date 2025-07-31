@@ -193,7 +193,7 @@ export const TopBar: FC<IProps> = props => {
     aligns,
   } = props;
 
-  // 点击已选中的，则取消选中
+  // Click on the selected one to unselect it.
   const onModeChange = useCallback(
     (m: Mode | undefined) => {
       if (m === mode) {
@@ -233,7 +233,7 @@ export const TopBar: FC<IProps> = props => {
         'flex justify-center items-center gap-[12px]',
       ])}
     >
-      {/* 引用变量 */}
+      {/* reference variable */}
       <Tooltip
         key="ref-variable"
         content={I18n.t('workflow_detail_condition_reference')}
@@ -317,7 +317,7 @@ export const TopBar: FC<IProps> = props => {
       </Tooltip>
       <SplitLine />
 
-      {/* 画布基础设置 */}
+      {/* canvas base settings */}
       <Tooltip
         key="canvas-setting"
         position="bottom"
@@ -407,7 +407,7 @@ export const TopBar: FC<IProps> = props => {
         />
       </Tooltip>
 
-      {/* 重置视图 */}
+      {/* Reset view */}
       <Tooltip
         key="reset-view"
         content={I18n.t('imageflow_canvas_restart')}
@@ -489,7 +489,7 @@ export const TopBar: FC<IProps> = props => {
       </Tooltip>
       <SplitLine />
 
-      {/* 置底 置顶 */}
+      {/* Bottom, top */}
       <Tooltip
         key="move-to-bottom"
         content={I18n.t('card_builder_move_to_bottom')}
@@ -512,12 +512,12 @@ export const TopBar: FC<IProps> = props => {
           icon={<IconCozMoveToTopFill className="text-[16px]" />}
         />
       </Tooltip>
-      {/* 对齐 */}
+      {/* align */}
       <div className="flex">
         <MyIconButton
           disabled={readonly}
           onClick={e => {
-            // 禁止冒泡，防止点击对齐时，canvas 的选中状态被清空
+            // Prohibit bubbling to prevent the selected state of canvas from being cleared when clicking align
             e.stopPropagation();
             aligns[alignType]();
           }}
@@ -534,7 +534,7 @@ export const TopBar: FC<IProps> = props => {
         />
       </div>
 
-      {/* 文本 */}
+      {/* Text */}
       <div className="flex">
         <Tooltip
           key="text"
@@ -583,7 +583,7 @@ export const TopBar: FC<IProps> = props => {
           }}
         />
       </div>
-      {/* 图片 */}
+      {/* picture */}
 
       <ImageUpload
         onChange={onAddImg}
@@ -595,7 +595,7 @@ export const TopBar: FC<IProps> = props => {
         />
       </ImageUpload>
 
-      {/* 形状 */}
+      {/* shape */}
       <div className="flex">
         <Tooltip
           key="shape"
@@ -656,7 +656,7 @@ export const TopBar: FC<IProps> = props => {
         />
       </div>
 
-      {/* 自由画笔 */}
+      {/* Free brush */}
       <Tooltip
         key="pencil"
         content={I18n.t('imageflow_canvas_draw')}

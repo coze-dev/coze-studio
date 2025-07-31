@@ -32,7 +32,7 @@ export const ModelFormProvider: React.FC<
 > = ({ hideDiversityCollapseButton = false, children }) => {
   const [isGenerationDiversityOpen, setGenerationDiversityOpen] = useState(
     hideDiversityCollapseButton,
-  ); // 隐藏展开收起按钮时则始终展开
+  ); // Always expand when hiding the expand hide button
   const customizeValueMapRef = useRef<
     ModelFormContextProps['customizeValueMap']
   >({});

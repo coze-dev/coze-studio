@@ -99,7 +99,7 @@ const genTitleRender = ({
     }
     const config = spanCategoryConfig[category];
 
-    // 虚拟的break的根节点
+    // Virtual broken root node
     if (span.id === rootBreakSpanId) {
       return (
         <div
@@ -181,7 +181,7 @@ export const spanData2treeData = (
         span,
       },
     };
-    // breakSpan节点
+    // breakSpan node
     if (span.id === rootBreakSpanId) {
       treeNode = {
         ...treeNode,
@@ -202,7 +202,7 @@ export const getSpanInfoMap = (root: SpanNode) => {
   const spanInfoMap: Record<string, SpanDetail | undefined> = {};
 
   const bfs = (node: SpanNode) => {
-    // coze workflow 设置 isCozeWorkflowNode
+    // Coze workflow settings isCozeWorkflowNode
     if (
       node.type === SpanType.Workflow &&
       getSpanProp(node, 'workflow_schema_type') === 1
@@ -218,7 +218,7 @@ export const getSpanInfoMap = (root: SpanNode) => {
             : undefined,
       };
     } else {
-      // coze workflow 的子节点设置 isCozeWorkflowNode
+      // Coze workflow sub-node settings isCozeWorkflowNode
       const { isCozeWorkflowNode, workflowLevel = 0 } =
         spanInfoMap[node.parent_id] || {};
 
@@ -234,7 +234,7 @@ export const getSpanInfoMap = (root: SpanNode) => {
       }
     }
 
-    // 递归
+    // recursion
     for (const childNode of node.children || []) {
       bfs(childNode);
     }

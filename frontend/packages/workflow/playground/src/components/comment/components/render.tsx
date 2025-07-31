@@ -64,7 +64,7 @@ export const CommentRender: FC<{
       onMouseEnter={updateOverflow}
       onMouseDown={e => {
         setTimeout(() => {
-          // 防止 selectNode 拦截事件，导致 slate 编辑器无法聚焦
+          // Prevent selectNode from intercepting events, causing the slate editor to fail to focus
           selectNode(e);
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- delay
         }, 20);
@@ -77,7 +77,7 @@ export const CommentRender: FC<{
       >
         <Form control={formControl}>
           <>
-            {/* 背景 */}
+            {/* background */}
             <CommentContainer focused={focused} style={{ height }}>
               <ErrorBoundary
                 fallback={
@@ -89,21 +89,21 @@ export const CommentRender: FC<{
                 <Field name={CommentEditorFormField.Note}>
                   {({ field }: FieldRenderProps<string>) => (
                     <>
-                      {/** 编辑器 */}
+                      {/** editor */}
                       <CommentEditor
                         model={model}
                         value={field.value}
                         onChange={field.onChange}
                       />
-                      {/* 空白区域 */}
+                      {/* blank space */}
                       <BlankArea model={model} />
-                      {/* 内容拖拽区域（点击后隐藏） */}
+                      {/* content drag and drop area (hidden after clicking) */}
                       <ContentDragArea
                         model={model}
                         focused={focused}
                         overflow={overflow}
                       />
-                      {/* 工具栏 */}
+                      {/* toolbar */}
                       <CommentToolbarContainer
                         model={model}
                         containerRef={nodeRef}
@@ -113,7 +113,7 @@ export const CommentRender: FC<{
                 </Field>
               </ErrorBoundary>
             </CommentContainer>
-            {/* 边框 */}
+            {/* border */}
             <BorderArea model={model} overflow={overflow} onResize={onResize} />
           </>
         </Form>

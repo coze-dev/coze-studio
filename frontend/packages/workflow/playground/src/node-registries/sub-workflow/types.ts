@@ -47,10 +47,10 @@ export type SubWorkflowDetailDTO =
   | (ReleasedWorkflow & BaseInputsOutputsType)
   | (WorkflowDetailInfoData & BaseInputsOutputsType);
 
-// 输入参数对应的类型，不过需要注意的是，自定义扩展的字段，值不一定是 ValueExpression 类型
+// The type corresponding to the input parameter, but it should be noted that the value of the custom extended field does not necessarily have to be the ValueExpression type
 export type InputParametersMap = Record<string, ValueExpression>;
 
-/** 子流程节点前端表单结构 */
+/** subprocess node front-end form structure */
 export interface SubWorkflowNodeFormData {
   nodeMeta: NodeMeta;
   inputs: {
@@ -67,7 +67,7 @@ export interface SubWorkflowNodeFormData {
 }
 
 /**
- * 子流程节点数据部分结构定义
+ * Subprocess node data part structure definition
  */
 export interface SubWorkflowNodeDTOData<
   InputType = InputValueDTO,
@@ -75,7 +75,7 @@ export interface SubWorkflowNodeDTOData<
 > {
   nodeMeta: NodeMeta;
   inputs: {
-    // 一个例子：
+    // Here's an example.
     // {
     //   "input": {},
     //   "name": "obj",
@@ -103,7 +103,7 @@ export interface SubWorkflowNodeDTOData<
     batchMode?: string;
     settingOnError?: SettingOnErrorDTO;
 
-    // 一些额外附加参数
+    // Some additional parameters
     spaceId?: string;
     type?: number;
     workflowId?: string;
@@ -113,9 +113,9 @@ export interface SubWorkflowNodeDTOData<
 }
 
 /**
- * 子流程节点数据部分结构定义，经过 workflow-json-format 转换后的数据结构
- * - outputs 从 VariableMetaDTO 转换为 ViewVariableMeta
- * - inputs.inputParameters 从 BlockInput 转换为 InputValueVO
+ * Subprocess node data part structure definition, data structure after workflow-json-format transformation
+ * - outputs converted from VariableMetaDTO to ViewVariableMeta
+ * - Inputs.inputParameters converted from BlockInput to InputValueVO
  */
 export type SubWorkflowNodeDTODataWhenOnInit = SubWorkflowNodeDTOData<
   InputValueVO,

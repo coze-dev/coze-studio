@@ -49,7 +49,7 @@ export const syncQuestionAnswerTypeEffect: Effect = props => {
     ]);
   }
 
-  // 表单初始化时获取不到值，需要延时一会
+  // The value cannot be obtained when the form is initialized, so it needs to be delayed for a while.
   setTimeout(() => {
     let syncOutputValue: unknown = [];
     if (value === 'text') {
@@ -62,7 +62,7 @@ export const syncQuestionAnswerTypeEffect: Effect = props => {
       syncOutputValue = optionOutput;
     }
 
-    // 将 questionOutput 的值同步到 output 上
+    // Synchronize the value of questionOutput to the output
     if (outputs && !isEqual(outputs, syncOutputValue)) {
       formModel.setValueIn('outputs', syncOutputValue);
     }

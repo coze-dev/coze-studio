@@ -38,7 +38,7 @@ class PkgRootWebpackPlugin extends pkg_root_webpack_plugin_origin_1.default {
         const mergedOptions = Object.assign({}, options || {}, {
             root: '@',
             packagesDirs: rushJsonPackagesDir,
-            // 排除apps/*，减少处理时间
+            // Exclude apps/* to reduce processing time
             excludeFolders: [],
         });
         super(mergedOptions);

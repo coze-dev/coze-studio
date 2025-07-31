@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @coze-arch/max-line-per-function -- 历史逻辑 陆续在拆 */
-/* eslint-disable max-lines -- 历史逻辑 陆续在拆 */
+
+/* eslint-disable @coze-arch/max-line-per-function -- historical logic, dismantling one after another */
+/* eslint-disable max-lines -- historical logic, dismantling one after another */
 
 import { cloneDeep, flow, get as ObjectGet, set as ObjectSet } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
@@ -75,7 +75,7 @@ export interface ColumnsProps {
   showSecurityCheckFailedMsg: boolean;
   setShowSecurityCheckFailedMsg: (flag: boolean) => void;
   /**
-   * 是否支持扩展的文件类型
+   * Whether extended file types are supported
    */
   enableFileType?: boolean;
 }
@@ -92,7 +92,7 @@ export const getColumns = ({
   setShowSecurityCheckFailedMsg,
   enableFileType = false,
 }: ColumnsProps) => {
-  // 添加子节点
+  // Add sub-node
   const addChildNode: AddChildNodeFn = ({
     record,
     isArray = false,
@@ -118,37 +118,37 @@ export const getColumns = ({
       path?: Array<number>;
     } = {};
 
-    // 1.查找路径
+    // 1. Find the path
     findPathById({
       data,
       callback: (item: APIParameter, path: Array<number>) => {
         if (item[ROWKEY] === record[ROWKEY]) {
           result = { ...item, path };
-          // 修改复杂类型结构，需要重置数组的默认值
+          // Modifying complex type structures requires resetting the default values of the array
           deleteArrayGlobalDefaultByPath(newData, path);
         }
       },
     });
-    // 2.拼接路径
+    // 2. Splicing path
     const path = (result?.path || [])
       .map((v: number) => [v, childrenRecordName])
       .flat();
-    // 如果是添加子节点，则更新父节点中的类型
+    // If adding a sub-node, update the type in the parent node
     if (recordType) {
       const typePath = cloneDeep(path);
       typePath.pop();
       typePath.push('type');
 
-      // type 为4/5，切换节点的时候需要先删除子节点
-      // recordType 原节点的类型
-      // newData 新节点数据
+      // The type is 4/5. When switching nodes, you need to delete the sub-node first.
+      // recordType The type of the original node
+      // newData new node data
       if (ObjectGet(newData, typePath) !== recordType) {
         deleteAllChildNode(newData, record[ROWKEY] as string);
       }
 
       ObjectSet(newData, typePath, type);
     }
-    // 3.添加节点
+    // 3. Add a node
     if (Array.isArray(ObjectGet(newData, path))) {
       ObjectSet(newData, path, [
         ...ObjectGet(newData, path),
@@ -167,7 +167,7 @@ export const getColumns = ({
     }
     setData(newData);
   };
-  // 删除子节点
+  // Delete sub-node
   const deleteChildNode = (record: APIParameter) => {
     const cloneData = cloneDeep(data);
     const delStatsu = deleteNode(cloneData, record[ROWKEY] as string);
@@ -281,7 +281,7 @@ export const getColumns = ({
       ),
       key: 'desc',
       render: (record: APIParameter) =>
-        // ，帮助用户/大模型更好地理解。
+        // To help users/large models better understand.
         disabled ? (
           <Typography.Text
             component="div"
@@ -390,7 +390,7 @@ export const getColumns = ({
           disabled={disabled}
           defaultChecked={record.is_required}
           onChange={e => {
-            // 必填 + 没有默认值 = 可见
+            // Required + no default = visible
             if (e.target.checked && !record.global_default) {
               updateNodeWithData({
                 record,
@@ -510,7 +510,7 @@ export const getColumns = ({
       ],
     );
   }
-  //出参场景，移除 required，增加 enabled 开关
+  //Exported parameter scene, remove required, add enabled switch
 
   if (isResponse) {
     const targetIndex = columns.findIndex(c => c.key === 'default');
@@ -549,14 +549,14 @@ export const getColumns = ({
     });
   }
   return flow(
-    // 将 columns 以函数参数形式传入，而非直接传给组合函数（`flow(...)(columns)`）是为了利于类型推导
+    // The purpose of passing columns as function arguments rather than directly to the combinatorial function (flow (...) (columns)) is to facilitate type derivation
     () => columns,
-    // 只读状态不展示后四项操作列
+    // Read-only status does not show the last four action columns
     newColumns => {
       const len = isResponse ? DISABLED_RES_SLICE : DISABLED_REQ_SLICE;
       return disabled ? newColumns.slice(0, len) : newColumns;
     },
-    // response不需要location字段
+    // Response does not require location field
     newColumns =>
       isResponse
         ? newColumns.filter(item => item.key !== 'location')

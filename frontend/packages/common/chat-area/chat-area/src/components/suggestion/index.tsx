@@ -34,7 +34,7 @@ import s from './index.module.less';
 export const SuggestionInChat = () => {
   const { useMessagesStore, useSuggestionsStore } = useChatAreaStoreSet();
   const { enableMention } = usePreference();
-  // fixme 之前直接取最后一条消息进行处理不可靠，修改后仍存在问题，考虑 suggestion 存储时存入 sender_id
+  // Before fixme, it is unreliable to directly take the last message for processing, and there are still problems after modification. Consider the suggestion stored in the sender_id
   const latestGroup = useMessagesStore(state => state.messageGroupList.at(0));
   const senderId = useMessagesStore(
     state =>
@@ -42,8 +42,8 @@ export const SuggestionInChat = () => {
         latestGroup?.memberSet.llmAnswerMessageIdList.includes(msg.message_id),
       )?.sender_id,
   );
-  // 注意 notice 或 manual trigger 类型的消息，groupId 是由 message_id 拼接获得。
-  // 所以一定无法基于 replyId 反向索引
+  // Note that for notice or manual trigger type messages, groupId is obtained by message_id stitching.
+  // So it must not be possible to reverse index based on replyId
   const replyId = latestGroup?.groupId;
   const { latestSectionHasMessage } = useMessagesOverview();
   const suggestionBatch = useSuggestionsStore(state =>
@@ -63,7 +63,7 @@ export const SuggestionInChat = () => {
       <div
         className={classNames(s['suggestion-fail-wrap'], {
           [s['suggestion-fail-wrap-selectable'] as string]: selectable,
-          // 适配移动端 解决 suggestion error 边距问题
+          // Adapt mobile end to solve suggestion error margin problem
           [s['suggestion-fail-wrap-mobile'] as string]:
             layout === Layout.MOBILE,
           [s['suggestion-fail-wrap-pc'] as string]: layout === Layout.PC,
@@ -125,7 +125,7 @@ export const Suggestions = ({
   suggestions: string[];
   isInNewConversation?: boolean;
   /**
-   * 上层的 SuggestionInChat 在 enableMention false 时不会传值
+   * SuggestionInChat does not pass a value when enableMention false
    */
   senderId: string | undefined;
   suggestionsShowMode?: SuggestedQuestionsShowMode;
@@ -147,7 +147,7 @@ export const Suggestions = ({
     <div
       data-testid="chat-area.suggestion-list"
       className={classNames(s.suggestions, {
-        // 适配移动端 解决 suggestion 边距问题
+        // Adapt mobile end to solve the suggestion margin problem
         [s['suggestion-with-selectable-in-new-conversation'] as string]:
           selectable && isInNewConversation,
         [s['suggestions-mobile'] as string]: layout === Layout.MOBILE,

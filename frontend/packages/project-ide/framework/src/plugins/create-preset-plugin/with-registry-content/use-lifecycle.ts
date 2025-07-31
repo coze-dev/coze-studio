@@ -42,7 +42,7 @@ export const useLifeCycle = (
     contextKeyService.setContext('widgetContext', widgetContext);
   }, [widgetContext]);
   const shell = useIDEService<ApplicationShell>(ApplicationShell);
-  // 生命周期管理
+  // Life Cycle Management
   useEffect(() => {
     const currentUri = (shell.mainPanel.currentTitle?.owner as ProjectIDEWidget)
       ?.uri;

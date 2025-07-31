@@ -23,7 +23,7 @@ import { type Dataset, type DocumentInfo } from '@coze-arch/bot-api/knowledge';
 import { DocumentStatus, FormatType } from '@coze-arch/bot-api/knowledge';
 
 /**
- * 处理表格类型数据集的禁用提示
+ * Disable hints for working with table-type datasets
  */
 export const getTableFormatTooltip = (documentList: DocumentInfo[]): string => {
   const docInfo = documentList?.[0];
@@ -44,7 +44,7 @@ export const getTableFormatTooltip = (documentList: DocumentInfo[]): string => {
 };
 
 /**
- * 处理默认类型数据集的禁用提示
+ * Disable hints for handling default type datasets
  */
 export const getDefaultFormatTooltip = (dataSetDetail: Dataset): string => {
   // @ts-expect-error -- linter-disable-autofix
@@ -60,10 +60,10 @@ export const getDefaultFormatTooltip = (dataSetDetail: Dataset): string => {
 };
 
 /**
- * 创建按钮禁用时的提示文本
- * @param dataSetDetail - 数据集详情
- * @param documentList - 文档列表
- * @returns 提示文本
+ * Create prompt text when button is disabled
+ * @param dataSetDetail - Dataset Details
+ * @param documentList - Document List
+ * @Returns prompt text
  */
 export const createBtnDisableToolTip = (
   dataSetDetail: Dataset,

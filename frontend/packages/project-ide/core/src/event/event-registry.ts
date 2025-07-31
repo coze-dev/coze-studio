@@ -50,7 +50,7 @@ export class EventRegistry implements EventService, LifecycleContribution {
   }
 
   /**
-   * 全局监听事件
+   * global listening event
    */
   listenGlobalEvent(
     name: EventName,
@@ -93,9 +93,9 @@ export class EventRegistry implements EventService, LifecycleContribution {
     const { handlers } = eventRegister;
     const item = { handle, priority };
     /**
-     * handlers 排序：
-     * 1. 后注册先执行 (符合冒泡规则)
-     * 2. 按 priority 排序
+     * Handlers sort:
+     * 1. Execute first after registration (in line with bubbling rules)
+     * 2. Sort by priority
      */
     handlers.unshift(item);
     handlers.sort((a, b) => b.priority - a.priority);

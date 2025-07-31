@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 跟后端约定好的协议，workflow 后端不感知。对应 api/bot/get_type_list 接口中 response.data.modal_list[*].model_params[*].default 的 key
+// The agreement agreed with the backend is not perceived by the workflow backend. Corresponding to the key response.data modal_list [*] .model_params [*] .default in the api/bot/get_type_list interface
 export enum GenerationDiversity {
   Customize = 'default_val',
   Creative = 'creative',

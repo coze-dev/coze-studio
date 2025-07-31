@@ -623,7 +623,7 @@ export class DockPanel extends Widget {
     const widgets = await factory();
     let replaceRef: Widget;
     widgets.forEach((widget: Widget, idx: number) => {
-      // 第一个执行分屏，后续都是 widget-all
+      // The first one executes the split screen, and the follow-up is widget-all.
       if (idx === 0) {
         this.bindWidget(event, widget, zone, target);
         replaceRef = widget;
@@ -1128,7 +1128,7 @@ export namespace DockPanel {
    */
   export interface IOptions {
     /**
-     * 最大分屏数量限制
+     * Maximum number of split screens
      */
     splitOptions?: SplitOptions;
     /**
@@ -1630,15 +1630,15 @@ namespace Private {
   }
 
   /**
-   * 递归遍历布局树，计算 tab-area 的数量
+   * Recursively traverse the layout tree to count the number of tab-areas
    * @param area DockLayout.Area
-   * @returns number 分屏数量
+   * @returns number number of split screens
    */
   function countTabAreas(area: DockLayout.AreaConfig | null): number {
     if (area?.type === 'tab-area') {
-      return 1; // 找到一个 tab 区域
+      return 1; // Find a tab area
     } else if (area?.type === 'split-area') {
-      // 遍历子区域，递归计算每个区域的数量
+      // Traverse the subregions and recursively calculate the number of each region
       return area.children.reduce(
         (count, child) => count + countTabAreas(child),
         0,
@@ -1698,7 +1698,7 @@ namespace Private {
     // Hit test the dock layout at the given client position.
     const target = layout.hitTestTabAreas(clientX, clientY);
 
-    // 最大分屏数量限制
+    // Maximum number of split screens
     if (splitOptions?.maxSplitCount) {
       const layoutConfig = layout.saveLayout();
       const currentScreens = countTabAreas(layoutConfig.main);
@@ -1706,10 +1706,10 @@ namespace Private {
         return { zone: 'invalid', target: null };
       }
       if (currentScreens >= splitOptions.maxSplitCount) {
-        // 如果数量超出最大屏幕数，此时只能充满屏幕，不能分屏
+        // If the number exceeds the maximum number of screens, the screen can only be filled at this time, not split-screen.
         return { zone: 'widget-all', target };
       }
-      // 限制只能左右分屏
+      // Limit can only split screen left and right
       if (splitOptions?.splitOrientation === 'horizontal') {
         if (target && target.x < target.width / 4) {
           return { zone: 'widget-left', target };
@@ -1719,7 +1719,7 @@ namespace Private {
         }
         return { zone: 'widget-all', target };
       }
-      // 限制只能上下分屏
+      // Restriction can only be split screen up and down
       if (splitOptions?.splitOrientation === 'vertical') {
         if (target && target.y < target.height / 4) {
           return { zone: 'widget-top', target };
@@ -1732,7 +1732,7 @@ namespace Private {
     }
 
     // Test the edge zones when in multiple document mode.
-    // 分屏方向限制的时候，禁用 root 层的区域判断
+    // When the split-screen orientation is restricted, disable the area judgment of the root layer
     if (panel.mode === 'multiple-document') {
       // Get the client rect for the dock panel.
       const panelRect = panel.node.getBoundingClientRect();

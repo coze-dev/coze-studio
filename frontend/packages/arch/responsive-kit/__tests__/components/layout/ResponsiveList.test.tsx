@@ -37,16 +37,16 @@ describe('ResponsiveList', () => {
       />,
     );
 
-    // 检查是否渲染了div元素
+    // Check if the div element is rendered
     const listElement = container.firstChild as HTMLElement;
     expect(listElement.tagName).toBe('DIV');
 
-    // 检查是否渲染了所有项目
+    // Check if all items are rendered
     const gridElement = listElement.firstChild as HTMLElement;
     expect(gridElement.children.length).toBe(3);
     expect(gridElement.textContent).toBe('Item 1Item 2Item 3');
 
-    // 检查默认类名
+    // Check default class name
     expect(listElement.className).toContain('flex');
     expect(listElement.className).toContain('flex-col');
   });

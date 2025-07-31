@@ -16,16 +16,16 @@
  
 export type UploadEventName = 'complete' | 'error' | 'progress';
 export interface UploadResult {
-  // 图片 & 文件 uri资源标识，用于换取url·
+  // Image & file URI resource ID, used in exchange for url ·
 
   Uri?: string;
-  // 图片 & 文件 url
+  // Image & file url
 
   Url?: string;
-  // 图片宽度
+  // image width
 
   ImageWidth?: number;
-  // 图片高度
+  // image height
 
   ImageHeight?: number;
 }
@@ -33,8 +33,8 @@ export interface UploadResult {
 export type FileType = 'object' | 'image' | undefined;
 
 export interface BaseEventInfo {
-  type: 'success' | 'error'; // 当前任务状态，成功／失败
-  // 当前状态的描述（随着生命周期不断变化）
+  type: 'success' | 'error'; // Current task status, success/failure
+  // Description of the current state (constantly changing with the lifecycle)
   extra: {
     error?: unknown;
     errorCode?: number;
@@ -42,11 +42,11 @@ export interface BaseEventInfo {
   };
 }
 export interface CompleteEventInfo extends BaseEventInfo {
-  // 上传结果，注意对于不同 type 来说结构不一样，
+  // Upload the results, note that the structure is different for different types,
   uploadResult: UploadResult;
 }
 export interface ProgressEventInfo extends BaseEventInfo {
-  // 当前上传总体进度百分比（％）
+  // Current Upload Overall Progress Percentage (%)
   percent: number;
 }
 export interface EventPayloadMaps {
@@ -65,14 +65,14 @@ export interface UploadPluginProps {
   type: FileType;
 }
 
-// 上传插件构造函数
+// Upload plugin constructor
 export interface UploadPluginConstructor<
   P extends Record<string, unknown> = Record<string, unknown>,
 > {
   new (props: UploadPluginProps & P): UploadPluginInterface;
 }
 
-// 上传插件接口实现
+// Upload plug-in interface implementation
 export interface UploadPluginInterface<
   M extends EventPayloadMaps = EventPayloadMaps,
 > {

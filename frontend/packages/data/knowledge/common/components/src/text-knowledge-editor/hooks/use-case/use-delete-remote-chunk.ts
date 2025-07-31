@@ -32,7 +32,7 @@ export const useDeleteRemoteChunk = ({
   const { deleteSlice } = useDeleteChunk();
 
   /**
-   * 处理远程分片的删除操作
+   * Handling remotely sharding deletion operations
    */
   const deleteRemoteChunk = async (chunk: Chunk) => {
     if (!chunk.slice_id) {

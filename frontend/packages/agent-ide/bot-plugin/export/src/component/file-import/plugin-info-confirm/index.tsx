@@ -77,8 +77,8 @@ const INITIAL_FORM_VALUES = {
 };
 
 /**
-文件导入plugin确认信息弹窗，目前和普通创建导入很像，调用接口不一样，
-目前感觉这个确认形式不太友好，后续不太确定优化形态，所以新建单独文件处理，以防污染bot-form-edit
+File import plugin confirmation information pop-up window, currently very similar to ordinary creation and import, the call interface is different.
+At present, I feel that this confirmation form is not very friendly, and I am not sure about the optimization form in the future, so a new separate file is created to prevent contamination of bot-form-edit.
 */
 
 // eslint-disable-next-line complexity
@@ -93,7 +93,7 @@ export const PluginInfoConfirm: React.FC<PluginInfoConfirmProps> = props => {
   } = props;
 
   const [authOption, setAuthOption] = useState<AuthOption[]>([]);
-  // 合规审核结果
+  // Compliance audit results
   const [isValidCheckResult, setIsValidCheckResult] = useState(true);
 
   const [extItems, setExtItems] = useState<OauthTccOpt[]>([]);
@@ -121,7 +121,7 @@ export const PluginInfoConfirm: React.FC<PluginInfoConfirmProps> = props => {
 
   useEffect(() => {
     if (importInfo) {
-      //更新插件
+      //update plugin
       setExtItems(
         findAuthTypeItem(
           authOption,
@@ -279,7 +279,7 @@ export const PluginInfoConfirm: React.FC<PluginInfoConfirmProps> = props => {
           >
             {({ values }) => (
               <>
-                {/* 插件头像 */}
+                {/* plugin avatar */}
                 <PictureUpload
                   noLabel
                   disabled={disabled}
@@ -288,13 +288,13 @@ export const PluginInfoConfirm: React.FC<PluginInfoConfirmProps> = props => {
                   iconType={IconType.Plugin}
                   fileBizType={FileBizType.BIZ_PLUGIN_ICON}
                 />
-                {/* 插件名称/插件描述/插件URL */}
+                {/* Plugin Name/Plugin Description/Plugin URL */}
                 <PluginNameField disabled={disabled} />
                 <PluginDescField disabled={disabled} />
                 <PluginUrlField disabled={true} />
-                {/* 插件Header */}
+                {/* Plugin Header */}
                 <HeaderListField disabled={disabled} />
-                {/* 授权方式 */}
+                {/* Authorization method */}
                 <AuthTypeField
                   disabled={disabled}
                   authOption={authOption}
@@ -304,12 +304,12 @@ export const PluginInfoConfirm: React.FC<PluginInfoConfirmProps> = props => {
                     );
                   }}
                 />
-                {/* 授权方式-Service */}
+                {/* Authorization method-Service */}
                 {values.auth_type.at(-1) === 1 && (
                   <ServiceField disabled={disabled} />
                 )}
                 <ExtItems disabled={disabled} extItems={extItems} />
-                {/* 协议 */}
+                {/* agreement */}
                 {!disabled && (
                   <Space spacing={8} className={s['footer-draft']}>
                     <IconInfoCircle

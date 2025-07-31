@@ -117,7 +117,7 @@ function findReasoningContent(
 }
 
 /**
- * output 属性排序，保证 reasoning content 在最下面
+ * Output attribute sort to ensure that the reasoning content is at the bottom
  */
 export const sortOutputs = (
   value: ViewVariableTreeNode[] | undefined,
@@ -144,7 +144,7 @@ export const sortOutputs = (
 };
 
 /**
- * 根据模型类型获取输出
+ * Get output based on model type
  * @param modelType
  * @param outputs
  * @param isBatch
@@ -174,7 +174,7 @@ export function getOutputs({
 }
 
 /**
- * 初始化时格式化推理内容为只读
+ * Format inference content as read-only during initialization
  * @param outputs
  * @param isBatch
  * @returns
@@ -196,7 +196,7 @@ export function formatReasoningContentOnInit({
 
   let newOutputs: ViewVariableTreeNode[] | undefined = outputs;
   if (modelType && modelsService.isCoTModel(modelType)) {
-    // 后端返回的没有readonly字段，需要前端处理, 取第一个类型是string的reasoning_content
+    // There is no readonly field returned by the backend, which needs to be processed by the front end. Take the first type that is string reasoning_content
     const reasoningContent = findReasoningContent(
       outputs,
       isBatch,
@@ -206,7 +206,7 @@ export function formatReasoningContentOnInit({
       reasoningContent.readonly = true;
       reasoningContent.readonlyTooltip = readonlyTooltip;
     } else {
-      // 存量数据兼容，如果是推理模型，则添加推理内容字段
+      // The existing data is compatible, if it is an inference model, add the inference content field
       newOutputs = addReasoningContent(outputs, isBatch);
     }
   }
@@ -215,7 +215,7 @@ export function formatReasoningContentOnInit({
 }
 
 /**
- * 提交时格式化推理内容移除readonly
+ * Format inference content on commit Remove readonly
  * @param outputs
  * @param isBatch
  * @returns
@@ -245,19 +245,19 @@ export function formatReasoningContentOnSubmit(
 }
 
 /**
- * 去除 outputs 中的 为readonly的 reasoning_content
+ * Remove the reasoning_content in outputs for readonly
  */
 export const omitSystemReasoningContent = (
   value: ViewVariableTreeNodeWithReadonly[] | undefined,
   isBatch?: boolean,
 ) => {
-  // 批量，去除 children 中的 为readonly的 reasoning_content
+  // Batch, remove from children, for readonly reasoning_content
   if (isBatch) {
     return value?.map(v => ({
       ...v,
       children: v?.children?.filter(c => !isSystemReasoningContent(c)),
     }));
   }
-  // 单次，去除 value 中的 为readonly的 reasoning_content
+  // Single, remove the reasoning_content in value for readonly
   return value?.filter(v => !isSystemReasoningContent(v));
 };

@@ -27,22 +27,22 @@ type TUploaderRegion =
 
 interface Window {
   gfdatav1?: {
-    // 部署区域
+    // deployment area
     region?: string;
-    // SCM 版本
+    // SCM version
     ver?: number | string;
-    // 当前环境, 取值为 boe 或 prod
+    // Current environment, the value is boe or prod
     env?: 'boe' | 'prod';
-    // 环境标识，如 prod 或 ppe_*
+    // Environmental identification, such as prod or ppe_ *
     envName?: string;
-    // 当前的小流量频道 ID，0 表示全流量
+    // The current small traffic channel ID, 0 represents full traffic
     canary?: 0;
     extra?: {
       /**
-       * @description goofy 团队不建议依赖该字段，能不用则不用
-       * 1 表示小流量
-       * 3 表示灰度
-       * null 表示全流量
+       * @Description The goofy team does not recommend relying on this field. If you can't use it, don't use it.
+       * 1 means small traffic.
+       * 3 means grey release
+       * Null means full traffic
        */
       canaryType?: 1 | 3 | null;
     };

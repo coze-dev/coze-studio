@@ -75,7 +75,7 @@ const PartParams = (
 
   const size = useSize(props.contentRef);
 
-  // 变量事例值列表
+  // Variable case value list
   const [variableOption, setVariableOption] = useState<OptionProps[]>([]);
 
   const { variables } = useBotSkillStore(
@@ -93,8 +93,8 @@ const PartParams = (
     const varList = variables?.map(item => {
       const example = res.conf?.find(conf => conf.key === item.key);
       return {
-        label: item.key, // 变量名
-        value: example?.example ?? item.default_value ?? '', // 事例值，无则默认值
+        label: item.key, // variable name
+        value: example?.example ?? item.default_value ?? '', // Case value, no default value
       };
     });
     setVariableOption(varList);

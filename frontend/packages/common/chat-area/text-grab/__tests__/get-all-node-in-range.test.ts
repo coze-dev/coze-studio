@@ -20,7 +20,7 @@ describe('getAllNodesInRange', () => {
   let root: HTMLElement;
 
   beforeEach(() => {
-    // 在每个测试用例之前设置 DOM 结构
+    // Setting up the DOM structure before each test case
     document.body.innerHTML = `
       <div id="root">
         <span>Text 1</span>
@@ -35,11 +35,11 @@ describe('getAllNodesInRange', () => {
 
   it('should return all nodes within a range, including text and element nodes', () => {
     const range = new Range();
-    range.setStart(root, 0); // 设置范围开始于 root 的第一个子节点
-    range.setEnd(root, 3); // 设置范围结束于 root 的最后一个子节点
+    range.setStart(root, 0); // Setup scope starts at the first sub-node of root
+    range.setEnd(root, 3); // The setting range ends at the last sub-node of root.
 
     const nodes = getAllNodesInRange(range);
-    // 预期包含：span, div, Text 3
+    // Expected to include: span, div, Text 3
     expect(nodes.length).toBe(5);
     expect((nodes[0] as Node).nodeType).toBe(Node.ELEMENT_NODE); // span
     expect((nodes[1] as Node).nodeType).toBe(Node.TEXT_NODE); // text
@@ -50,8 +50,8 @@ describe('getAllNodesInRange', () => {
 
   it('should return an empty array if the range is collapsed', () => {
     const range = document.createRange();
-    range.setStart(root, 1); // 设置范围的开始和结束都在同一位置
-    range.setEnd(root, 1); // 这将创建一个折叠的范围，即没有包含任何节点
+    range.setStart(root, 1); // Set the start and end of the range at the same location
+    range.setEnd(root, 1); // This will create a collapsed scope that contains no nodes
 
     const nodes = getAllNodesInRange(range);
     expect(nodes).toEqual([root]);

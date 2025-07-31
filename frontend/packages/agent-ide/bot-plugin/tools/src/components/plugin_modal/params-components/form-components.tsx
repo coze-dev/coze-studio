@@ -60,14 +60,14 @@ export const InputItem = ({
   useEffect(() => {
     setValue(val);
   }, [val]);
-  // 通过check触发校验（提交时）
+  // Trigger validation via check (when committed)
   useEffect(() => {
     if (check === 0 || value === ARRAYTAG || value === ROOTTAG) {
       return;
     }
     handleCheck(value);
   }, [check]);
-  // 校验
+  // validation
   const handleCheck = (checkVal: string) => {
     let status =
       checkVal === ''
@@ -104,7 +104,7 @@ export const InputItem = ({
     }
     setErrorStatus(status);
   };
-  // 过滤空格、限制输入长度
+  // Filter spaces, limit input length
   const handleFilter = (v: string) => {
     if (filterSpace) {
       v = v.replace(/\s+/g, '');
@@ -122,7 +122,7 @@ export const InputItem = ({
             item.type === ParameterType.Object,
         )
       : true;
-  // 每增加一层，因为有展开icon，宽度减少20
+  // Each additional layer decreases the width by 20 because of the expansion icon.
   const vWidth = dynamicWidth
     ? `calc(100% - ${DEEP_INDENT_NUM * deep}px)`
     : width;
@@ -175,7 +175,7 @@ export const InputItem = ({
         }}
       />
       <br />
-      {/* 参数名称设置动态列宽 */}
+      {/* Parameter name Set dynamic column width */}
       {errorStatus !== 0 && dynamicWidth ? (
         <div className={s['check-box']} style={{ width: tipWidth }}>
           <span className={cl(s['form-check-tip'], 'errorClassTag', s.w110)}>
@@ -183,7 +183,7 @@ export const InputItem = ({
           </span>
         </div>
       ) : null}
-      {/* 非参数列表设置固定最大宽 */}
+      {/* Non-parametric list setting fixed maximum width */}
       {errorStatus !== 0 && !dynamicWidth && (
         <div className={s['check-box']} style={{ width: tipWidth }}>
           <span
@@ -212,14 +212,14 @@ export const SelectItem = ({
   const [value, setValue] = useState(!record?.type ? undefined : record?.type);
   const [errorStatus, setErrorStatus] = useState<number>(0);
 
-  // 通过check触发校验（提交时）
+  // Trigger validation via check (when committed)
   useEffect(() => {
     if (check === 0) {
       return;
     }
     handleCheck(value);
   }, [check]);
-  // 校验
+  // validation
   const handleCheck = (val: string | ParameterType | undefined) => {
     const status = val === undefined ? 1 : 0;
     setErrorStatus(status);

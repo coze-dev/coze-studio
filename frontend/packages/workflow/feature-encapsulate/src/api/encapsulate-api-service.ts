@@ -83,7 +83,7 @@ export class EncapsulateApiServiceImpl implements EncapsulateApiService {
 
   async getWorkflow(spaceId: string, workflowId: string, version?: string) {
     let json;
-    // 有历史版本的场景获取历史版本的数据
+    // Scenes with historical versions get historical versions of data
     if (version) {
       const res = await workflowApi.GetHistorySchema({
         space_id: spaceId,

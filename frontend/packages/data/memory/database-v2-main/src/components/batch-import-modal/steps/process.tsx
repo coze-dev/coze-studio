@@ -64,13 +64,13 @@ export function StepProcess({
     [fileItem],
   );
   const [progressProps, setProgressProps] = useState<ProcessProps>({
-    // 第一行文本（文件名）
+    // First line of text (file name)
     mainText: fileItem.name,
-    // 第二行文本（文件大小）
+    // Second line of text (file size)
     subText: fileSize,
-    // hover 时显示的第二行文本，与上面保持一致
+    // The second line of text displayed when hovering, consistent with the above
     tipText: fileSize,
-    // 进度条百分比，初始 10% 与 @coze-data/knowledge-resource-processor-base/unit-progress 保持一致
+    // Progress bar percentage, initial 10% is consistent with @code-data/knowledge-resource-processor-base/unit-progress
     percent: INIT_PERCENT,
     status: ProcessStatus.Processing,
   });
@@ -87,7 +87,7 @@ export function StepProcess({
       onSuccess: res => {
         const { data } = res;
         if (data) {
-          // 有错误信息代表处理失败，展示错误信息，并停止轮询
+          // If there is an error message, it means the processing failed. Display the error message and stop polling.
           if (data.status_descript) {
             const msg = data.status_descript;
             setProgressProps(props => ({
@@ -102,7 +102,7 @@ export function StepProcess({
               ...props,
               percent: data.progress ?? 0,
             }));
-            // 进度 100 代表处理完成，更新状态并停止轮询
+            // Progress 100 represents process completion, update status and stop polling
             if (data.progress === COMPLETE_PERCENT) {
               setProgressProps(props => ({
                 ...props,
@@ -117,7 +117,7 @@ export function StepProcess({
     },
   );
 
-  // 提交任务，并开始轮询进度
+  // Submit the task and start polling progress
   useEffect(() => {
     MemoryApi.SubmitDatabaseInsertTask({
       database_id: databaseId,

@@ -38,7 +38,7 @@ import { useTableUI } from '../context/table-ui-context';
 import { useTableData } from '../context/table-data-context';
 import { useTableActions } from '../context/table-actions-context';
 
-// 表格内容组件
+// Table Content Component
 const TableContent = () => {
   const knowledgeIDEBiz = useKnowledgeParamsStore(state => state.params.biz);
   const documentList = useKnowledgeStore(state => state.documentList);
@@ -55,14 +55,14 @@ const TableContent = () => {
 
   const canEdit = Boolean(useKnowledgeStore(state => state.canEdit));
 
-  // 删除切片弹窗
+  // Delete slice pop-up
   const { deleteSliceModalNode, openDeleteSliceModal } = useDeleteSliceModal();
 
-  // 编辑slice弹窗
+  // Edit slice pop-up
   const { tableSegmentModalNode, openTableSegmentModal } =
     useTableSegmentModal();
 
-  // 获取表格操作方法
+  // Get table manipulation method
   const { deleteSlice, rowUpdateSliceData, modalEditSlice } =
     useTableSliceOperations({
       openDeleteSliceModal,
@@ -71,7 +71,7 @@ const TableContent = () => {
 
   const { tableH } = useTableHeight();
 
-  // 如果没有数据，直接返回空
+  // If there is no data, return to empty directly
   if (!slices?.length) {
     return null;
   }
@@ -132,7 +132,7 @@ const TableContent = () => {
   );
 };
 
-// 添加行按钮组件
+// Add line button component
 const AddRowButton = () => {
   const { isShowAddBtn } = useTableUI();
   const documentList = useKnowledgeStore(state => state.documentList);
@@ -164,12 +164,12 @@ const AddRowButton = () => {
   );
 };
 
-// 主组件
+// main component
 export const TableDataView = () => {
   const { sliceListData } = useTableData();
   const slices = sliceListData?.list;
 
-  // 如果没有数据，只显示添加按钮
+  // If there is no data, only the add button is displayed.
   if (!slices?.length) {
     return <AddRowButton />;
   }

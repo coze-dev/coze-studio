@@ -122,7 +122,7 @@ export const Operators = () => {
                 >
                   {I18n.t('project_ide_duplicate')}
                 </Menu.Item>
-                {/* Tooltip disableFocusListener 失效，等待后续修复完成 */}
+                {/* Tooltip disableFocusListener failed, waiting for subsequent repairs to complete */}
                 {canDelete ? (
                   <Menu.Item
                     className="min-w-[190px] h-[32px] rounded-[4px]"
@@ -160,8 +160,8 @@ export const Operators = () => {
 };
 
 /**
- * 为了给左侧一个容器用于计算整体宽度以便实现宽度不够时自动隐藏付费配置文案
- * 同时还要兼顾左侧没有任何内容时自动隐藏 divider 的 first:hidden 写法
+ * In order to give the left side a container for calculating the overall width, in order to automatically hide the paid configuration copy when the width is not enough
+ * Also take into account the first: hidden writing method that automatically hides the divider when there is no content on the left
  */
 function LeftContent({ children }: PropsWithChildren) {
   return IS_OVERSEA ? (

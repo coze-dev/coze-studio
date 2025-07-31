@@ -18,79 +18,79 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface IAudioPlayerOptions {
-  // 是否自动播放
+  // Whether to play automatically
   autoPlay?: boolean;
-  // 是否循环播放
+  // Whether to loop
   loop?: boolean;
-  // 播放结束回调
+  // end of play callback
   onEnded?: () => void;
-  // 加载完成回调
+  // load completion callback
   onLoad?: () => void;
 }
 
 interface IAudioPlayer {
-  // 是否正在播放
+  // Is it playing?
   isPlaying: boolean;
-  // 是否暂停
+  // Whether to pause
   isPaused: boolean;
-  // 是否停止
+  // Whether to stop
   isStopped: boolean;
-  // 当前播放时间
+  // current playing time
   currentTime: number;
-  // 音频总时长
+  // total audio duration
   duration: number;
-  // 播放
+  // play
   play: () => void;
-  // 暂停
+  // pause
   pause: () => void;
-  // 停止
+  // Stop
   stop: () => void;
-  // 切换播放暂停
+  // toggle playback pause
   togglePlayPause: () => void;
-  // 跳转
+  // jump
   seek: (time: number) => void;
 }
 
 /**
- * 音频播放器 Hook
- * @param src - 音频文件的
- * @param options - 播放器配置选项
- * @returns 音频播放器控制接口
+ * Audio Player Hook
+ * @Param src - audio files
+ * @Param options - player configuration options
+ * @Returns Audio Player Control Interface
  */
 export const useAudioPlayer = (
   src: File | string | undefined | null,
   { autoPlay, loop, onEnded, onLoad }: IAudioPlayerOptions = {},
 ): IAudioPlayer => {
-  // 播放状态管理
+  // playback state management
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isStopped, setIsStopped] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // 音频元素引用
+  // audio element reference
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 初始化音频元素和事件监听
+  // Initialize audio elements and event listeners
   useEffect(() => {
     if (!src) {
       return;
     }
 
     const url = src instanceof Blob ? URL.createObjectURL(src) : src;
-    // 创建音频实例
+    // Create audio instance
     const audio = new Audio(url);
     audioRef.current = audio;
 
-    // 设置循环播放
+    // Set up loop playback
     audio.loop = loop ?? false;
 
-    // 更新当前播放时间的处理函数
+    // Update the handler for the current playback time
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
     };
 
-    // 元数据加载完成的处理函数（获取音频时长等信息）
+    // The processing function for the completion of metadata loading (to obtain information such as audio duration)
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
       setCurrentTime(0);
@@ -101,12 +101,12 @@ export const useAudioPlayer = (
       }
 
       if (src instanceof Blob) {
-        // 释放音频文件的 URL，避免内存泄漏
+        // Release the URL of the audio file to avoid memory leaks
         URL.revokeObjectURL(url);
       }
     };
 
-    // 播放结束的处理函数
+    // Handler function for end of playback
     const handleEnded = () => {
       setIsPlaying(false);
       setIsStopped(true);
@@ -114,12 +114,12 @@ export const useAudioPlayer = (
       onEnded?.();
     };
 
-    // 添加事件监听器
+    // Add event listeners
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
 
-    // 清理函数：组件卸载时移除事件监听并释放资源
+    // Cleanup function: removes event listeners and frees resources when a component is unloaded
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -131,7 +131,7 @@ export const useAudioPlayer = (
     };
   }, [src, autoPlay, loop, onEnded, onLoad]);
 
-  // 播放控制函数
+  // playback control function
   const play = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.play();
@@ -141,7 +141,7 @@ export const useAudioPlayer = (
     }
   }, []);
 
-  // 暂停控制函数
+  // pause control function
   const pause = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -150,7 +150,7 @@ export const useAudioPlayer = (
     }
   }, []);
 
-  // 停止控制函数
+  // Stop control function
   const stop = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -161,7 +161,7 @@ export const useAudioPlayer = (
     }
   }, []);
 
-  // 切换播放/暂停状态
+  // Switch play/pause state
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
       pause();
@@ -170,7 +170,7 @@ export const useAudioPlayer = (
     }
   }, [isPlaying, play, pause]);
 
-  // 跳转到指定时间
+  // Jump to the specified time
   const seek = useCallback((time: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = time;
@@ -178,7 +178,7 @@ export const useAudioPlayer = (
     }
   }, []);
 
-  // 返回音频播放器控制接口
+  // Back to Audio Player Control Interface
   return {
     isPlaying,
     isPaused,

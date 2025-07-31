@@ -27,13 +27,13 @@ enum ParamsIndex {
 }
 
 /**
- * 与use-data-reporter区分使用
- * use-data-reporter用于组件场景
- * data-reporter用于ts/js场景
+ * Distinguished from use-data-reporter
+ * Use-data-reporter for component scenarios
+ * Data-reporter for ts/js scenarios
  */
 class DataReporter {
   /**
-   * 获取公共的meta信息
+   * Access to public meta information
    */
   getMeta() {
     const pathName = window.location.pathname;
@@ -49,7 +49,7 @@ class DataReporter {
   }
 
   /**
-   * 错误事件上报
+   * Error event reporting
    * @param namespace
    * @param event
    */
@@ -62,7 +62,7 @@ class DataReporter {
   }
 
   /**
-   * 自定义事件上报
+   * Customs event report
    * @param namespace
    * @param event
    */

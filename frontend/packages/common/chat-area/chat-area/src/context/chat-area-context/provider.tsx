@@ -21,7 +21,7 @@ import {
   type ChatAreaProviderProps,
 } from './type';
 /**
- * 代码 1 周后删除，暂时保留以防万一
+ * Delete the code after 1 week and keep it temporarily just in case.
  */
 import { ChatAreaProviderNew } from './provider-new';
 

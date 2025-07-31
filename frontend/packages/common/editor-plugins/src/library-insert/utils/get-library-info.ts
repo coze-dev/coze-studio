@@ -57,7 +57,7 @@ const defaultLibraryBlockInfo: Record<
     icon: imageIcon,
   },
 };
-// 根据资源类型获取对应的信息
+// Get the corresponding information according to the resource type
 export const getLibraryBlockInfoFromTemplate = (props: {
   template: string;
   templateParser: TemplateParser;

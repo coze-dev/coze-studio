@@ -21,17 +21,17 @@ import { LifecycleContribution } from './lifecycle-contribution';
 
 export interface PluginContext {
   /**
-   * 获取 IOC 容器
+   * Get IOC container
    */
   container: interfaces.Container;
   /**
-   * 获取 IOC 容器的 单例模块
+   * Get the singleton module for the IOC container
    * @param identifier
    */
   get: <T>(identifier: interfaces.ServiceIdentifier<T>) => T;
 
   /**
-   * 获取 IOC 容器的 多例模块
+   * Get the multi-instance module of the IOC container
    */
   getAll: <T>(identifier: interfaces.ServiceIdentifier<T>) => T[];
 }
@@ -47,27 +47,27 @@ export interface PluginBindConfig {
 
 interface PluginLifeCycle<CTX extends PluginContext, OPTS> {
   /**
-   * IDE 注册阶段
+   * IDE registration phase
    */
   onInit?: (ctx: CTX, opts: OPTS) => void;
   /**
-   * IDE loading 阶段, 一般用于加载全局配置，如 i18n 数据
+   * IDE loading phase, generally used to load global configuration, such as i18n data
    */
   onLoading?: (ctx: CTX, opts: OPTS) => MaybePromise<void>;
   /**
-   * IDE 布局初始化阶段，在 onLoading 之后执行
+   * IDE layout initialization phase, executed after onLoading
    */
   onLayoutInit?: (ctx: CTX, opts: OPTS) => MaybePromise<void>;
   /**
-   * IDE 开始执行, 可以加载业务逻辑
+   * The IDE starts to execute and the business logic can be loaded
    */
   onStart?: (ctx: CTX, opts: OPTS) => MaybePromise<void>;
   /**
-   * 在浏览器 `beforeunload` 之前执行，如果返回true，则会阻止
+   * Execute before the browser'beforeunload ', if it returns true, it will be blocked
    */
   onWillDispose?: (ctx: CTX, opts: OPTS) => boolean | void;
   /**
-   * IDE 销毁
+   * IDE destruction
    */
   onDispose?: (ctx: CTX, opts: OPTS) => void;
 }
@@ -75,12 +75,12 @@ interface PluginLifeCycle<CTX extends PluginContext, OPTS> {
 export interface PluginConfig<OPTS, CTX extends PluginContext = PluginContext>
   extends PluginLifeCycle<CTX, OPTS> {
   /**
-   * 插件 IOC 注册, 等价于 containerModule
+   * Plugin IOC registration, equivalent to containerModule
    * @param ctx
    */
   onBind?: (bindConfig: PluginBindConfig, opts: OPTS) => void;
   /**
-   * IOC 模块，用于更底层的插件扩展
+   * IOC module for lower-level plug-in extensions
    */
   containerModules?: interfaces.ContainerModule[];
 }
@@ -114,7 +114,7 @@ export function loadPlugins(
       }
       if (plugin.containerModules && plugin.containerModules.length > 0) {
         for (const module of plugin.containerModules) {
-          // 去重
+          // deduplicate
           if (!res.includes(module)) {
             res.push(module);
           }
@@ -177,7 +177,7 @@ export function definePluginCreator<
     return {
       pluginId,
       initPlugin: () => {
-        // 防止 plugin 被上层业务多次 init
+        // Prevent the plugin from being inited multiple times by the upper business
         if (isInit) {
           return;
         }
@@ -224,17 +224,17 @@ export function definePluginCreator<
 /**
  * @example
  * createLifecyclePlugin({
- *    // IOC 注册
+ *    //IOC Registrationgistration
  *    onBind(bind) {
  *      bind('xxx').toSelf().inSingletonScope()
  *    },
- *    // IDE 初始化
+ *    //IDE initializationtialization
  *    onInit() {
  *    },
- *    // IDE 销毁
+ *    //IDE destructionstruction
  *    onDispose() {
  *    },
- *    // IOC 模块
+ *    //IOC moduledule
  *    containerModules: [new ContainerModule(() => {})]
  * })
  */

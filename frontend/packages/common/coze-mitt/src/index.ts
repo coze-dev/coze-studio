@@ -17,10 +17,10 @@
 import mitt from 'mitt';
 
 /**
- * @params 刷新收藏列表的参数
- * @params id - 操作的 bot id
- * @params numDelta - 收藏数变化量
- * @params emitPosition - 触发位置，用于埋点、判断来源等
+ * @Params to refresh the favorites list
+ * @Params id - the bot id of the operation
+ * @Params numDelta - Favorites change
+ * @Params emitPosition - trigger location for event tracking, provenance, etc
  */
 export interface RefreshFavListParams {
   id?: string;
@@ -33,27 +33,27 @@ export interface CreateProjectByCopyTemplateFromSidebarParam {
 }
 
 /**
- * 事件表
+ * transaction table
  *
- * key 为事件名称，value 为参数类型
+ * Key is the event name and value is the parameter type
  */
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt 无法使用 interface
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt can't use interface
 type EventMap = {
   /**
-   * 刷新收藏列表
+   * Refresh Favorites List
    *
-   * 首页和工作空间的二级导航有收藏列表，需要在 bot 卡片快捷收藏时联动刷新收藏列表
-   * 删除 bot、迁移 bot 也需要刷新，视作取消收藏
+   * There is a collection list in the secondary navigation of the homepage and workspace, and the collection list needs to be refreshed in conjunction when the bot card is quickly collected.
+   * Deleting the bot and migrating the bot also need to be refreshed, which is regarded as canceling the collection.
    *
-   * @params refreshFavList - 刷新收藏列表的参数
-   * @params id - 操作的 bot id
-   * @params numDelta - 收藏数变化量
-   * @params emitPosition - 触发位置，用于埋点、判断来源等
+   * @Params refreshFavList - Parameters to refresh the favorites list
+   * @Params id - the bot id of the operation
+   * @Params numDelta - Favorites change
+   * @Params emitPosition - trigger location for event tracking, provenance, etc
    */
   refreshFavList: RefreshFavListParams;
   /**
-   * 左侧侧边栏进行项目新建
-   * 选择通过模版创建并且成功创建任务时触发此事件
+   * New project in the left sidebar
+   * This event is triggered when you select Create by Template and successfully create a task
    */
   createProjectByCopyTemplateFromSidebar: CreateProjectByCopyTemplateFromSidebarParam;
 };

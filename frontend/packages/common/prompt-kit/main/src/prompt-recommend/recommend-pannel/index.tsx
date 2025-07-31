@@ -65,15 +65,15 @@ interface RecommendPannelProps {
   cardClassName?: string;
   listContainerClassName?: string;
   tabs: TabType[];
-  /** 用于埋点: 页面来源 */
+  /** For event tracking: page source */
   source: string;
   importPromptWhenEmpty?: string;
   spaceId: string;
-  /** 用于埋点: bot_id */
+  /** For event tracking: bot_id */
   botId?: string;
-  /** 用于埋点: project_id */
+  /** For event tracking: project_id */
   projectId?: string;
-  /** 用于埋点: workflow_id */
+  /** For event tracking: workflow_id */
   workflowId?: string;
   isPersonal?: boolean;
   enableLibrary?: boolean;

@@ -21,7 +21,7 @@ export type OnMove<TId = string | number> = (
   souceId: TId,
   targetId: TId,
   isBefore: boolean,
-) => void; // 因为没有顺序信息，所以需要指明是在前面还是后面
+) => void; // Since there is no order information, it is necessary to specify whether it is before or after
 export interface UseDndSortableParams<TId = string | number> {
   id: TId;
   type: symbol;
@@ -61,7 +61,7 @@ export const useDnDSortableItem = <TId = string | number>({
       if (!itemDomRef.current || item.id === id) {
         return;
       }
-      // 当前被拖拽元素的 X Y 坐标
+      // The X Y coordinates of the currently dragged element
       const draggingClient = monitor.getClientOffset();
       const dropTargetClient = itemDomRef.current?.getBoundingClientRect();
       let isBefore = false;

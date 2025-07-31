@@ -50,13 +50,13 @@ export const useEditorProps = (data?: any, json?: any) =>
           [FlowRendererKey.BRANCH_ADDER]: () => null,
           [FlowRendererKey.DRAG_NODE]: () => null,
         },
-        renderDefaultNode: BaseNode, // 节点渲染
+        renderDefaultNode: BaseNode, // Node rendering
       },
       onReady(ctx) {
         const treeService = ctx.get<TreeService>(TreeService);
         treeService.transformSchema(json);
         treeService.treeToFlowNodeJson();
-        // 强制 resize 生效
+        // Forced resizing takes effect
         setTimeout(() => {
           ctx.playground.resize();
         }, 100);
@@ -67,12 +67,12 @@ export const useEditorProps = (data?: any, json?: any) =>
       },
       plugins: () => [
         /**
-         * 自定义线条插件
+         * Custom Line Plugin
          */
         createCustomLinesPlugin({}),
         /**
          * Minimap plugin
-         * 缩略图插件
+         * Thumbnail plugin
          */
         createMinimapPlugin({
           disableLayer: true,

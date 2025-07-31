@@ -30,11 +30,11 @@ export interface IMeta {
 type Fields = string[];
 
 export interface IHttpRpcMapping {
-  path?: Fields; // path参数
-  query?: Fields; // query参数
-  body?: Fields; // body 参数
-  header?: Fields; // header 参数
-  status_code?: Fields; // http状态码
+  path?: Fields; // path parameter
+  query?: Fields; // query parameters
+  body?: Fields; // Body parameters
+  header?: Fields; // header parameter
+  status_code?: Fields; // HTTP status code
   cookie?: Fields; // cookie
   entire_body?: Fields;
   raw_body?: Fields;

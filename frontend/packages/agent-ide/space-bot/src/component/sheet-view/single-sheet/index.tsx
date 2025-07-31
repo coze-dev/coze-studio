@@ -42,7 +42,7 @@ export function SingleSheet({
 }: SingleSheetProps) {
   const headerNode = (
     <div className={classNames(styles.card, containerClassName)}>
-      {/* 浮层头部 */}
+      {/* Floating head */}
       <div className={classNames(styles['sheet-header'], headerClassName)}>
         <div
           className={classNames(
@@ -53,7 +53,7 @@ export function SingleSheet({
         >
           {title}
         </div>
-        {/* 头部插槽 */}
+        {/* head slot */}
         <div
           className={classNames(
             styles['sheet-header-scope'],

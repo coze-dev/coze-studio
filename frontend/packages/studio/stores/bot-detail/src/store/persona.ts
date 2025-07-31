@@ -47,7 +47,7 @@ export interface RequiredBotPrompt extends BotPrompt {
   record_id?: string;
 }
 
-/** Persona & Prompt 区域 */
+/** Persona & Prompted Areas */
 export interface PersonaStore {
   systemMessage: RequiredBotPrompt;
   optimizePrompt: string;

@@ -26,5 +26,5 @@ type StoreStructRange = Record<keyof StoreStruct, boolean | string | number>;
 
 const storeStructRangeCheck = (range: StoreStructRange) => 0;
 declare const voidStruct: StoreStruct;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 类型测试
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- type testing
 const dryRun = () => storeStructRangeCheck(voidStruct);

@@ -21,7 +21,7 @@ export enum LLMModel {
   YunqueModel = 1706077826,
 }
 
-/** 海外默认选择 GPT_4O，国内默认选择豆包 Function Call 模型，专业版则默认选择第一个 */
+/** GPT_4O is selected by default overseas, the bean bag Function Call model is selected by default in China, and the first one is selected by default in the professional version */
 export const DEFAULT_MODEL_TYPE = IS_OVERSEA
   ? LLMModel.GPT_4O
   : LLMModel.YunqueModel;
@@ -43,16 +43,16 @@ export const DEFAULT_BATCH_CONCURRENT_SIZE = BATCH_CONCURRENT_SIZE_MAX;
 export const DEFAULT_BATCH_SIZE = 100;
 
 export const INTENT_NODE_MODE = {
-  /** 意图识别节点极简模式 */
+  /** intent recognition node minimalist pattern */
   MINIMAL: 'top_speed',
 
-  /** 意图识别完整模式 */
+  /** intent recognition full pattern */
   STANDARD: 'all',
 };
 
-/** 极速版意图识别选项最大数目 */
+/** Lite version maximum number of intent recognition options */
 export const MINIMAL_INTENT_ITEMS = 10;
-/** 标准版意图识别选项最大数目 */
+/** Standard Edition maximum number of intent recognition options */
 export const STANDARD_INTENT_ITEMS = 50;
 
 export const SYSTEM_DELIMITER = {
@@ -97,16 +97,16 @@ export const DEFAULT_DELIMITER_OPTIONS = [
   },
 ];
 
-/** 场景工作流角色信息关键字 */
+/** scenario workflow role information keyword */
 export const roleInformationKeyword = 'role_information';
 
-/** 节点默认宽高（带有输入/输出） */
+/** Node default width and height (with input/output) */
 export const DEFAULT_NODE_SIZE = {
   width: 360,
   height: 104.7,
 };
 
-/** 输入参数 label 样式 */
+/** Input parameter label style */
 export const DEFAULT_INPUT_LABEL_STYLE = {
   width: '40%',
 };

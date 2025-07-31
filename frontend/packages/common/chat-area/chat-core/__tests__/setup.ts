@@ -54,7 +54,7 @@ export const testSetup = () => {
       }),
     })),
   }));
-  // mock上传插件实现
+  // Mock upload plugin implementation
   vi.mock('../src/plugins/upload-plugin', () => ({
     ChatCoreUploadPlugin: class {
       eventBus = new eventEmitter();

@@ -23,7 +23,7 @@ import {
 
 import { getKnowledgeIDEQuery } from '@coze-data/knowledge-common-services/use-case';
 
-/** knowledge 模块专用的 useNavigate，用于持久化公共 query 参数 */
+/** useNavigate dedicated to the knowledge module for persisting common query parameters */
 export const useKnowledgeNavigate: typeof useNavigate = () => {
   const navigate = useNavigate();
   const knowledgePageQuery = getKnowledgeIDEQuery();

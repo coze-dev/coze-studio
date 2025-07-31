@@ -121,7 +121,7 @@ export const TableStructure: FC = () => {
 
     let res: PreviewTableFileResponse;
     try {
-      // TODO:此需求暂停，后端下线，后续待开放
+      // TODO: This demand is suspended, the backend is offline, and it will be opened later.
       // res = await DataModelApi.PreviewTableFile({
       //   file: {
       //     tos_uri: fileList[0].response.upload_uri,
@@ -168,7 +168,7 @@ export const TableStructure: FC = () => {
     }
   });
 
-  // 上一步保存当前状态
+  // Previous Save the current state
   onPrevious(() => {
     const tableBasicValue =
       // @ts-expect-error -- linter-disable-autofix
@@ -265,7 +265,7 @@ export const TableStructure: FC = () => {
           };
 
           if (changedKeys.length === 1 && changedKeys.includes('sheetID')) {
-            // FIXME: 此处 semi 有 bug，始终是 override 更新，所以需要也添加上 sheetID 属性
+            // FIXME: There is a bug in semi here, and it is always override update, so you need to add the sheetID attribute as well.
             // @ts-expect-error -- linter-disable-autofix
             excelInfoFormRef.current.formApi.setValues({
               sheetID: changedValue.sheetID,
@@ -274,7 +274,7 @@ export const TableStructure: FC = () => {
             });
           }
 
-          // 切换 sheet
+          // Switch sheet
           if (
             changedKeys.length === 3 &&
             changedKeys.includes('headerRow') &&
@@ -284,7 +284,7 @@ export const TableStructure: FC = () => {
             await reloadTableValue({ updateTableName: true });
           }
 
-          // 仅更新 headerRow
+          // Update headerRow only
           if (changedKeys.length === 1 && changedKeys.includes('headerRow')) {
             // @ts-expect-error -- linter-disable-autofix
             if (changedValue.headerRow >= values.dataStartRow) {
@@ -299,7 +299,7 @@ export const TableStructure: FC = () => {
             }
           }
 
-          // 仅更新 dataStartRow
+          // Update dataStartRow only
           if (
             changedKeys.length === 1 &&
             changedKeys.includes('dataStartRow')

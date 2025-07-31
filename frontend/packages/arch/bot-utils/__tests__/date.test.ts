@@ -56,13 +56,13 @@ describe('Date', () => {
     expect(getCurrentTZ().utcOffset()).toBe(60 * 8);
   });
   it('#formatDate', () => {
-    // 使用固定的时间戳，但验证格式而不是具体的时区值
+    // Uses a fixed timestamp, but verifies the format rather than a specific timezone value
     const timestamp = 1718782764;
     const date = formatDate(timestamp);
-    // 验证格式是否正确：YYYY/MM/DD HH:mm:ss
+    // Verify that the format is correct: YYYY/MM/DD HH: mm: ss
     expect(date).toMatch(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/);
 
-    // 验证时间戳转换的一致性：格式化后再解析应该得到相同的dayjs对象的日期部分
+    // Verify consistency of timestamp conversions: Formatting and parsing should result in the same date portion of the dayjs object
     const formattedDayjs = dayjs(date, 'YYYY/MM/DD HH:mm:ss');
     const originalDayjs = dayjs.unix(timestamp);
     expect(formattedDayjs.unix()).toBe(originalDayjs.unix());

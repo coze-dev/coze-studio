@@ -6,9 +6,9 @@ module.exports = {
   ],
   plugins: ['./plugins/plugin-disallow-nesting-level-one-global.js'],
   rules: {
-    // 变量命名规则，适应仓库内的代码风格
+    // Variable naming rules to adapt to the code style in the warehouse
     'custom-property-pattern': '^([A-Za-z0-9]*)([-_]+[A-Za-z0-9]+)*$',
-    // 对于less函数判断有问题
+    // There is a problem with judging the less function
     'less/no-duplicate-variables': null,
     'media-feature-range-notation': null,
     'max-nesting-depth': [

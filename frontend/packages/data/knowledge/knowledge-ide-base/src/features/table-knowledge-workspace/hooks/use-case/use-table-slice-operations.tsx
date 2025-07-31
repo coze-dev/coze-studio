@@ -48,11 +48,11 @@ export const useTableSliceOperations = ({
       return;
     }
 
-    /** 新增的行 */
+    /** new row */
     const addIndex = indexs.filter(i => !slices[i].slice_id);
     const addIds = addIndex.map(i => slices[i]?.addId);
     const oldIndex = indexs.filter(v => !addIndex.includes(v));
-    // 确保过滤掉undefined值
+    // Make sure to filter out undefined values
     const sliceIds = oldIndex
       .map(i => slices[i].slice_id)
       .filter(Boolean) as string[];
@@ -129,12 +129,12 @@ export const useTableSliceOperations = ({
       if (sliceId) {
         await updateSlice(sliceId as string, updateContent, updateValue);
       } else {
-        /** 新增分片 */
+        /** Add sharding */
         const createParams = await handleCreateSlice(updateContent);
         if (createParams && createSlice && curDoc?.document_id) {
-          // 调用传入的createSlice方法创建新的分片
+          // Call the createSlice method passed in to create a new sharding.
           try {
-            // 这里需要使用props中传入的createSlice方法来调用API
+            // Here you need to use the createSlice method passed in the props to call the API.
             await createSlice({
               document_id: curDoc.document_id,
               raw_text: updateContent,
@@ -145,7 +145,7 @@ export const useTableSliceOperations = ({
         }
       }
 
-      // 改为接口请求成功后才更新
+      // Change to update after the interface request is successful
       if (slices) {
         return true;
       }
@@ -156,7 +156,7 @@ export const useTableSliceOperations = ({
     }
   };
 
-  /** 弹窗编辑切片 */
+  /** Pop-up editing slice */
   const handleModalEditSlice = (_record: TableViewRecord, index: number) => {
     if (!slices || index < 0 || index >= slices.length) {
       return;

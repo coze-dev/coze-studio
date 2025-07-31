@@ -19,7 +19,7 @@ import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { getTimeoutConfig } from '../utils/get-timeout-config';
 
 /**
- * 获取超时配置
+ * Get timeout configuration
  * @returns
  */
 export const useTimeoutConfig = (): {

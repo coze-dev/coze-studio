@@ -109,7 +109,7 @@ const FixedInputParameters = (props: FixedInputParametersProps) => {
                           ),
                         ])}
                         literalConfig={{
-                          // 下拉选择数据源
+                          // Drop down to select the data source
                           optionsList: fieldConfig[_fieldName]?.optionsList,
                         }}
                         isError={!!childState?.errors?.length}

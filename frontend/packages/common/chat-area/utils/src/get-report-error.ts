@@ -17,8 +17,8 @@
 import { isObject } from 'lodash-es';
 
 /**
- * @param inputError 传啥都行，一般是 catch (e) 那个 e
- * @param reason 多余的解释，我感觉有 eventName 了没啥用
+ * @param inputError can pass anything, usually catch (e) that e.
+ * @param reason redundant explanation, I feel there is eventName, it's useless
  */
 export const getReportError = (
   inputError: unknown,

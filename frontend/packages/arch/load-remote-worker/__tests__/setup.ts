@@ -16,27 +16,27 @@
  
 import { vi } from 'vitest';
 
-// 定义一个模拟的 Worker 类
+// Define a simulated Worker class
 class MockWorker {
   constructor(
     public scriptURL: string,
     public options: any,
   ) {}
 
-  // 添加 Worker 接口所需的方法
+  // Methods required to add a Worker interface
   terminate(): void {
-    // 空实现
+    // empty implementation
   }
 
   postMessage(): void {
-    // 空实现
+    // empty implementation
   }
 
   onmessage = null;
   onmessageerror = null;
 }
 
-// 全局模拟
+// global simulation
 global.Worker = MockWorker as any;
 global.URL = {
   createObjectURL: vi.fn().mockReturnValue('blob:mocked-object-url'),

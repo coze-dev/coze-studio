@@ -122,11 +122,11 @@ const ResourceFolderCozeImpl: FC<ResourceFolderCozeProps> = ({
       if (event.id !== props.id) {
         return;
       }
-      // 多个创建资源菜单，不使用快捷键
+      // Multiple Create Resource menus without shortcuts
       if (createResourceConfig) {
         return;
       }
-      // 快捷键触发的创建资源
+      // Shortcut-triggered creation of resources
       handleCreateResource(groupType);
     });
 

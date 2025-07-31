@@ -33,23 +33,23 @@ const TIMEOUT = 100;
 
 interface GrabParams {
   /**
-   * 选择目标容器的 Ref
+   * Select the Ref of the target container
    */
   contentRef: MutableRefObject<HTMLDivElement | null>;
   /**
-   * 浮动菜单的 Ref
+   * Floating Menu Ref
    */
   floatMenuRef: MutableRefObject<HTMLDivElement | null> | undefined;
   /**
-   * 选择事件的回调
+   * Select the callback for the event
    */
   onSelectChange: (selectionData: SelectionData | null) => void;
   /**
-   * 位置信息的回调
+   * Callback of location information
    */
   onPositionChange: (position: GrabPosition | null) => void;
   /**
-   * Resize/Scroll/Wheel 是节流的时间
+   * Resize/Scroll/Wheel is the time of throttling
    */
   resizeThrottleTime?: number;
 }
@@ -64,32 +64,32 @@ export const useGrab = ({
   const timeoutRef = useRef<number>();
 
   /**
-   * 选区对象存放（用于hooks内部流转状态用）
+   * Selection object storage (for internal flow state of hooks)
    */
   const selection = useRef<Selection | null>(null);
 
   /**
-   * 选区最终计算结果的数据
+   * Data on the final calculation result of the constituency
    */
   const selectionData = useRef<SelectionData | null>(null);
 
   /**
-   * 是否在 Scrolling 中
+   * In Scrolling
    */
   const [isScrolling, setIsScrolling] = useState(false);
 
   /**
-   * Scrolling 计时器
+   * Scrolling timer
    */
   const scrollingTimer = useRef<number | null>(null);
 
   /**
-   * 是否有 SelectionData (优化挂载逻辑用)
+   * Is there SelectionData (for optimizing mount logic)
    */
   const hasSelectionData = useRef(false);
 
   /**
-   * 清除内部数据 + 触发回调
+   * Clear internal data + trigger callback
    */
   const clearSelection = () => {
     onSelectChange(null);
@@ -104,15 +104,15 @@ export const useGrab = ({
   };
 
   /**
-   * 处理屏幕发生变化 Scroll + Resize + Wheel + SelectionChange（移动设备）
+   * Handle screen changes Scroll + Resize + Wheel + SelectionChange (mobile device)
    */
   const handleScreenChange = () => {
-    // 获取选区
+    // Get Constituency
     const innerSelection = window.getSelection();
 
     const { direction = Direction.Unknown } = selectionData.current ?? {};
 
-    // 如果选区为空，则返回
+    // If the selection is empty, return
     if (!innerSelection) {
       onSelectChange(null);
       return;
@@ -125,19 +125,19 @@ export const useGrab = ({
       return;
     }
 
-    // 默认使用获取选区最后一行的位置信息 （既Forward的情况）
+    // Default use to get the location information of the last line of the selection (both Forward cases)
     const rangeRect = Array.from(rectData.rangeRects).at(
       direction === Direction.Backward ? 0 : -1,
     );
 
-    // 如果最后一行选区信息不正确则返回
+    // Returns if the last line of selection information is incorrect
     if (!rangeRect) {
       onPositionChange(null);
       return;
     }
 
     let [x, y] = [0, 0];
-    // 判断如果选区是从前往后选择，则展示在最后一行的末尾，否则展示在开头
+    // If the selection is selected from front to back, it is displayed at the end of the last line, otherwise it is displayed at the beginning
     if (direction === Direction.Backward) {
       x = rangeRect.left;
       y = rangeRect.top + rangeRect.height;
@@ -147,7 +147,7 @@ export const useGrab = ({
     }
 
     /**
-     * 加了一个避让屏幕的逻辑
+     * Added a logic to avoid the screen
      */
     const position = {
       x: x > screen.width - MAX_WIDTH ? x - MAX_WIDTH : x,
@@ -161,7 +161,7 @@ export const useGrab = ({
   };
 
   /**
-   * 智能处理屏幕发生变化 有一个计时器 + 滚动告知的逻辑
+   * Smart processing screen changes, there is a timer + scroll notification logic
    */
   const handleSmartScreenChange = useEventCallback(() => {
     if (scrollingTimer.current) {
@@ -176,7 +176,7 @@ export const useGrab = ({
   });
 
   /**
-   * 处理获取选区的逻辑
+   * Handling the logic of getting the selection
    */
   const handleGetSelection = () => {
     if (!contentRef.current) {
@@ -184,11 +184,11 @@ export const useGrab = ({
       return;
     }
 
-    // 获取选区
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- 内部变量
+    // Get Constituency
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- internal variable
     const _selection = window.getSelection();
 
-    // 如果选区为空，则返回
+    // If the selection is empty, return
     if (!_selection) {
       onSelectChange(null);
       return;
@@ -196,19 +196,19 @@ export const useGrab = ({
 
     selection.current = _selection;
 
-    // 获取选区数据
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- 内部变量
+    // Get constituency data
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- internal variable
     const _selectionData = getSelectionData({
       selection: _selection,
     });
 
-    // 选区如果为空，则隐藏浮层Button
+    // Hide Floating Button if selection is empty
     if (!_selectionData || !_selectionData.nodesAncestorIsMessageBox) {
       onSelectChange(null);
       return;
     }
 
-    // 设置展示和位置信息
+    // Set display and location information
     selectionData.current = _selectionData;
     hasSelectionData.current = Boolean(_selectionData);
 
@@ -217,7 +217,7 @@ export const useGrab = ({
   };
 
   /**
-   * 鼠标抬起的动作
+   * The action of raising the mouse
    */
   const handleMouseUp = useEventCallback(() => {
     clearTimeout(timeoutRef.current);
@@ -225,7 +225,7 @@ export const useGrab = ({
   });
 
   /**
-   * 键盘按下的动作
+   * The action of keyboard pressing
    */
   const handleKeyDown = useEventCallback((e: KeyboardEvent) => {
     const forbiddenKeyboardSelect = () => {
@@ -244,10 +244,10 @@ export const useGrab = ({
   });
 
   /**
-   * 鼠标按下的动作
+   * Mouse press.
    */
   const handleMouseDown = useEventCallback((e: MouseEvent) => {
-    // 检查是否有选区，且点击事件的目标不在选区内
+    // Check if there is a constituency, and the target of the click event is not in the constituency
 
     if (!contentRef.current || !floatMenuRef || !floatMenuRef?.current) {
       return;
@@ -275,7 +275,7 @@ export const useGrab = ({
       return;
     }
 
-    // 监听鼠标down事件
+    // Listen for mouse down events
     window.addEventListener('mousedown', handleMouseDown);
 
     return () => {
@@ -283,7 +283,7 @@ export const useGrab = ({
     };
   }, [hasSelectionData.current]);
 
-  // 当visible时，挂载监听事件，优化监听
+  // When visible, mount the listening event to optimize listening
   useEffect(() => {
     if (!hasSelectionData.current) {
       return;
@@ -307,7 +307,7 @@ export const useGrab = ({
     };
   }, [hasSelectionData.current]);
 
-  // target上挂载监听
+  // mount monitor on target
   useEffect(() => {
     const target = contentRef.current;
 
@@ -315,7 +315,7 @@ export const useGrab = ({
       return;
     }
 
-    // 监听选择相关的鼠标抬起事件
+    // Monitor selection-related mouse lift events
     target.addEventListener('pointerup', handleMouseUp);
 
     if (isTouchDevice()) {
@@ -330,15 +330,15 @@ export const useGrab = ({
 
   return {
     /**
-     * 清除内置状态和选区
+     * Clear built-in state and selection
      */
     clearSelection,
     /**
-     * 是否在滚动中
+     * Is it scrolling?
      */
     isScrolling,
     /**
-     * 重新计算选区位置
+     * Recalculate the selection position
      */
     computePosition: handleSmartScreenChange,
   };

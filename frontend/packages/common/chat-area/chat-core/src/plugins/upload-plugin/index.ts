@@ -53,7 +53,7 @@ export class ChatCoreUploadPlugin implements UploadPluginInterface {
     try {
       const dataAuth = await requestInstance.post(GET_AUTH_URL, {
         data: {
-          // TODO: 确认参数是否要支持传入配置
+          // TODO: Confirm whether the parameter should support the incoming configuration
           scene: 'bot_task',
         },
       });
@@ -65,9 +65,9 @@ export class ChatCoreUploadPlugin implements UploadPluginInterface {
           schema,
           useFileExtension: true,
           // cp-disable-next-line
-          imageHost: `https://${upload_host}`, //imageX上传必填
+          imageHost: `https://${upload_host}`, //imageX upload required
           imageConfig: {
-            serviceId: service_id || '', // 在视频云中申请的服务id
+            serviceId: service_id || '', // The service id applied for in the video cloud.
           },
           objectConfig: {
             serviceId: service_id || '',

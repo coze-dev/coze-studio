@@ -18,7 +18,7 @@ import { isWorkflowImageTypeURL } from '../utils';
 import { type SchemaExtractorOutputsParser } from '../type';
 import { AssistTypeDTO, VariableTypeDTO } from '../../../types/dto';
 export const outputsParser: SchemaExtractorOutputsParser = outputs => {
-  // 判断是否为数组
+  // Determine whether it is an array
   if (!Array.isArray(outputs)) {
     return [];
   }
@@ -31,7 +31,7 @@ export const outputsParser: SchemaExtractorOutputsParser = outputs => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       value?: any;
       isImage?: boolean;
-      // 默认值里包含图片时，图片信息单独放到这里
+      // When the default value includes pictures, the picture information is put here separately.
       images?: string[];
     } = {
       name: output.name || '',
@@ -45,7 +45,7 @@ export const outputsParser: SchemaExtractorOutputsParser = outputs => {
     if (output.type === 'list' && Array.isArray(output.schema?.schema)) {
       parsed.children = outputsParser(output.schema.schema);
     }
-    // Start 节点默认值放到 value 上
+    // Start node default value put on value
     if (output.defaultValue) {
       parsed.value = output.defaultValue;
 

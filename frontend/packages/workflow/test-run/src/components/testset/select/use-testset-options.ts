@@ -37,9 +37,9 @@ export function useTestsetOptions() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [optionsData, setOptionsData] = useState<OptionsData>({ list: [] });
 
-  // options 实时
+  // Options in real time
   const optionsDataRef = useRef(optionsData);
-  // options 缓存
+  // Options cache
   const optionsCacheRef = useRef(new Map<Int64, CaseDataDetail>());
 
   const setOptionsDataWithCache = useCallback(

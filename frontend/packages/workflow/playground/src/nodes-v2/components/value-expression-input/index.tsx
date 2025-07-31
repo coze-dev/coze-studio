@@ -129,7 +129,7 @@ export const ValueExpressionInput = (props: ValueExpressionInputProps) => {
 
   const keyPath = get(value, 'content.keyPath') as string[] | undefined;
 
-  // 监听联动变量变化，从而重新触发 effect
+  // Monitor changes in linkage variables to re-trigger the effect
   useEffect(() => {
     const hasDisabledTypes =
       Array.isArray(disabledTypes) && disabledTypes.length > 0;
@@ -141,7 +141,7 @@ export const ValueExpressionInput = (props: ValueExpressionInputProps) => {
     const listener = variableService.onListenVariableTypeChange(
       keyPath,
       v => {
-        // 如果变量类型变化后，位于 disabledTypes 中，那么需要清空
+        // If the variable type changes and is located in disabledTypes, it needs to be cleared
         if (v && (disabledTypes || []).includes(v.type)) {
           onChange({
             type: ValueExpressionType.REF,

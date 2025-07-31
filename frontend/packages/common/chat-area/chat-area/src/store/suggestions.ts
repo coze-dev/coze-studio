@@ -15,7 +15,7 @@
  */
  
 /**
- * 存放所有 message 的 suggestion (type: follow_up)
+ * A suggestion to store all messages (type: follow_up)
  */
 import { createWithEqualityFn } from 'zustand/traditional';
 import { devtools } from 'zustand/middleware';

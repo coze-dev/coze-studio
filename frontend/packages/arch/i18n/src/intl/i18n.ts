@@ -55,15 +55,15 @@ export function formatLang(lng, plugins) {
 
 const defaultFallbackLanguage = 'zh-CN';
 const defaultConfig = {
-  lng: defaultFallbackLanguage, // 如果使用了 Language Detector，i18next 底层 lng 的权重是大于插件的
+  lng: defaultFallbackLanguage, // If Language Detector is used, the weight of the underlying lng of i18next is greater than that of the plug-in.
   fallbackLng: ['en-US'],
   inContext: true,
 };
-// 默认开启ICU插值解析
+// Default enable ICU interpolation parsing
 
 /**
- * I18n内核
- * 安全校验
+ * I18n kernel
+ * security check
  */
 export default class I18next {
   instance: i18n;
@@ -90,7 +90,7 @@ export default class I18next {
   }
 
   _handleConfigs(config?: InitOptions) {
-    this.userLng = config?.lng || null; // 用户自己设定的 lng
+    this.userLng = config?.lng || null; // Lng set by the user.
 
     this.config = Object.assign({}, defaultConfig, config || {});
   }
@@ -138,10 +138,10 @@ export default class I18next {
           },
         },
         (err, t) => {
-          // 初始化好了
+          // Initialized
 
           try {
-            // 把等待添加的东西都加进去
+            // Add everything waiting to be added
             for (const item of this._waitingToAddResourceBundle) {
               this.instance.addResourceBundle(...item);
             }
@@ -184,7 +184,7 @@ export default class I18next {
         overwrite,
       );
     }
-    // 还没初始化好
+    // It hasn't been initialized yet.
     this._waitingToAddResourceBundle.push([
       lng,
       ns,
@@ -244,7 +244,7 @@ export default class I18next {
           .join('')
       : Array(keys.length).fill(' ');
 
-    // fixed: 去除默认lngs，有lngs i18next就会忽略lng
+    // Fixed: Remove the default lngs, if there is lngs i18next, the lng will be ignored.
     const opt: Record<string, any> = Object.assign(
       { keySeparator: separatorMock, nsSeparator: separatorMock },
       options,

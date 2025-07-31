@@ -47,15 +47,15 @@ export const DuplicateButton = ({ mode }: Props) => {
 
   const operation = useWorkflowOperation();
 
-  /** 运行时禁用复制 */
+  /** Replication disabled at runtime */
   const disabled = viewStatus === WorkflowExecStatus.EXECUTING;
 
-  //  场景工作流readonly时或运行时或浏览历史时隐藏复制
+  //  Scene workflow hidden replication at readonly or runtime or browsing history
   const visible =
     !(isSceneFlow && readonly) &&
     viewStatus !== WorkflowExecStatus.EXECUTING &&
     !isViewHistory &&
-    !isBindDouyin; // 抖音分身模式下不展示复制
+    !isBindDouyin; // Duplication is not displayed in Douyin doppelganger mode
 
   const [loading, setLoading] = useState(false);
   const [showSpaceModal, setShowSpaceModal] = useState(false);
@@ -104,8 +104,8 @@ export const DuplicateButton = ({ mode }: Props) => {
 
   return (
     <>
-      {/* 流程运行态下不展示 copy 文案 */}
-      {/* ux 优化 - 对齐预览 tag 展示逻辑，非流程 owner copy 按钮展示保持不变 */}
+      {/* No copy copy is displayed in the running state of the process */}
+      {/* UX optimization - align preview tag display logic, non-process owner copy button display remains unchanged */}
       {mode === 'button' ? (
         <UIButton
           disabled={disabled}
@@ -118,7 +118,7 @@ export const DuplicateButton = ({ mode }: Props) => {
         </UIButton>
       ) : null}
 
-      {/* ux 优化 - 对齐预览 tag 展示逻辑，流程 owner copy 按钮展示在最右侧，弱化交互 */}
+      {/* UX optimization - align preview tag display logic, process owner copy button is displayed on the far right, weaken interaction */}
       {mode === 'icon' ? (
         <Tooltip
           content={I18n.t('workflow_detail_title_copy')}

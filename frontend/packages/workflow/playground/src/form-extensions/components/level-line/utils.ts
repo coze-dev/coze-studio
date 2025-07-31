@@ -37,7 +37,7 @@ export function getLineShowResult<Data extends LineData>({
   if (isRootWithChildren) {
     res.push(LineShowResult.RootWithChildren);
   } else if (!isRootWithoutChildren) {
-    // 根节点不需要展示线，只有非根节点才需要辅助线
+    // The root node does not need a display line, only non-root nodes need auxiliary lines.
     if (isChildWithChildren) {
       if (data.isLast) {
         res.push(LineShowResult.HalfTopChildWithChildren);

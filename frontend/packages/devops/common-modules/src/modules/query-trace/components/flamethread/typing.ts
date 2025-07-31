@@ -51,7 +51,7 @@ export interface RectNode {
   end: number;
   rectStyle?: RectStyle;
   labelStyle?: Pick<LabelStyle, 'fill'>;
-  // 其他字段，会透传
+  // Other fields will be passed through
   extra?: unknown;
 }
 

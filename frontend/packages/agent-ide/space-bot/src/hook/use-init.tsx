@@ -63,8 +63,8 @@ const checkShouldAlertMaxToken = (inputMaxToken: number | undefined) => {
 };
 
 /**
- * 当用户模型 max_token 字段 <= 5 时进行提示
- * 避免用户误操作无法正常使用模型
+ * Prompt when the user model max_token field < = 5
+ * Avoid user misoperation and cannot use the model normally
  */
 const modelMaxTokenAlert = () => {
   const { useModelStore, useMultiAgentStore } = useBotDetailStoreSet.getStore();
@@ -74,7 +74,7 @@ const modelMaxTokenAlert = () => {
   const toastOptions = {
     content: I18n.t(alertI18nKey),
     showClose: true,
-    // 当 duration 设置为 0 时，toast 不会自动关闭，此时必须通过手动关闭。
+    // When duration is set to 0, toast is not automatically turned off and must be turned off manually.
     duration: 0,
     id: maxTokenAlertId,
   };
@@ -133,9 +133,9 @@ const startAutosaveManagerConditionally = ({
 const saveAllEdit = async ({ disable }: { disable: boolean | undefined }) => {
   const { botId, mode } = useBotInfoStore.getState();
 
-  // readonly如果依赖hook会更新滞后。因为页面卸载时clearStore，保留了overall的值
-  // 所以这里的readonly需要执行时去获取
-  // 增加是否是offline或者没有锁的的状态判断，如果是，也不进行保存。
+  // readonly if dependent hook will update lagged. Because clearStore retains the overall value when the page is unloaded
+  // So the readonly here needs to be obtained when executed.
+  // Increase the status of whether it is offline or without a lock, and if so, do not save it.
   if (!botId || getBotDetailIsReadonly() || disable) {
     return;
   }
@@ -149,10 +149,10 @@ const saveAllEdit = async ({ disable }: { disable: boolean | undefined }) => {
 
 const useInit = (props: AgentInitProps = { initCallback: {} }) => {
   const { initCallback } = props;
-  // TODO: 后续加锁操作会收敛到hooks中，不再侵入到业务
-  // 初始化 store 锁，在未执行结束前，不执行页面销毁的回调
+  // TODO: Subsequent locking operations will converge into hooks and no longer invade the business
+  // Initialize the store lock, do not execute the page destruction callback before the end of the execution
   const lock = useRef(false);
-  // 取消初始化函数标志位，在先执行页面销毁的回调时，退出初始化函数执行
+  // Cancel the initialization function flag bit, and exit the initialization function execution when the page destruction callback is executed first
   const abort = useRef(false);
   const searchParams = parse(location.search.slice(1)) as TaskParams;
   const params = useParams<DynamicParams>();
@@ -197,15 +197,15 @@ const useInit = (props: AgentInitProps = { initCallback: {} }) => {
         initCallback?.onBeforeInitStore?.();
         getBotSkillBlockCollapsibleState();
         await initBotDetailStore({ version: searchParams.version });
-        // 需要判断是否为只读态，依赖store初始化，因此放在initBotDetailStore之后
+        // It needs to determine whether it is read-only and relies on store initialization, so it is placed after initBotDetailStore.
         initGenerateImageStore();
         const isAbort = abort.current;
         const callbackRes = initCallback?.onInitStoreSuccess?.({ isAbort });
-        // 判断是否先执行页面销毁的回调，是退出函数执行
+        // Determine whether to execute the callback of page destruction first, and exit the function execution
         if (isAbort) {
           return;
         }
-        //explore中的bot都不是自己的！！！
+        //None of the bots in Explore are their own!!!
         const isSelf =
           useBotInfoStore.getState().creator_id === userInfo?.user_id_str;
 
@@ -233,21 +233,21 @@ const useInit = (props: AgentInitProps = { initCallback: {} }) => {
 
     return () => {
       Toast.close(maxTokenAlertId);
-      // 设置取消标志位
+      // Set Cancel Flag
       abort.current = true;
       const unmountRes = initCallback?.onUnmount?.({
         isInitializing: lock.current,
       });
-      // 有锁的情况下不执行销毁回调
+      // Do not execute destruction callback with lock
       if (lock.current) {
         return;
       }
-      // 页面离开时，全量保存一下编辑的内容
+      // When the page leaves, save the edited content in full
       const { botId } = useBotInfoStore.getState();
       saveAllEdit({ disable: unmountRes?.disableSaveAll });
 
       setBotState({
-        // 页面卸载时，将上一个botId改为当前的botId
+        // When the page is unloaded, change the previous botId to the current botId
         previousBotID: botId,
       });
 

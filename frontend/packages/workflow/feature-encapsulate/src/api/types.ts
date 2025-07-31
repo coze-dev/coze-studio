@@ -29,20 +29,20 @@ export interface EncapsulateWorkflowParams {
 
 export interface EncapsulateApiService {
   /**
-   * 封装流程
+   * encapsulation process
    * @param name
    */
   encapsulateWorkflow: (
     params: EncapsulateWorkflowParams,
   ) => Promise<{ workflowId: string } | null>;
   /**
-   * 校验流程
+   * Validation Process
    * @param schema
    * @returns
    */
   validateWorkflow: (json: WorkflowJSON) => Promise<ValidateErrorData[]>;
   /**
-   * 获取流程数据
+   * Get process data
    * @param spaceId
    * @param workflowId
    * @returns

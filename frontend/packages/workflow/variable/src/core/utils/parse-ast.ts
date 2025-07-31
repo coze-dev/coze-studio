@@ -41,7 +41,7 @@ export const getViewVariableTypeByAST = (
 
       return {
         type:
-          // 暂时不支持二维数组
+          // Two-dimensional arrays are temporarily not supported
           type && !ViewVariableType.isArrayType(type)
             ? ViewVariableType.wrapToArrayType(type)
             : type,

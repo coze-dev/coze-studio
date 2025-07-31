@@ -18,9 +18,9 @@ import { get } from 'lodash-es';
 
 import { type ValueExpressionDTO } from '../../types';
 
-// 是否我们自己上传生成的url, 这是个临时方案，等修复 schema 中的 type:string -> type:image 后，删掉此逻辑
+// Whether we upload the generated url ourselves, this is a temporary solution, after fixing the type: string - > type: image in the schema, delete this logic
 export function isWorkflowImageTypeURL(str: string): boolean {
-  // base64 加工
+  // base64 processing
   const hostWhiteList = [
     'cC1ib3Qtd29ya2Zsb3ctc2lnbi5ieXRlZGFuY2UubmV0',
     'cC1ib3Qtd29ya2Zsb3cuYnl0ZWQub3Jn',

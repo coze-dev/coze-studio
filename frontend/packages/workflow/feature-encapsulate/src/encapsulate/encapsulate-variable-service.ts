@@ -69,7 +69,7 @@ export class EncapsulateVariableService {
   @inject(EncapsulateContext) encapsulateContext: EncapsulateContext;
 
   /**
-   * 获取封装变量
+   * Get encapsulation variable
    * @param nodes
    * @returns
    */
@@ -84,7 +84,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 主动封装时，更新 WorkflowJSON 内部的变量引用
+   * When actively encapsulating, update variable references inside WorkflowJSON
    * @param workflowJSON
    * @param vars
    * @returns
@@ -109,7 +109,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 更新节点JSON中的变量
+   * Update variables in node JSON
    * @param nodes
    * @param vars
    * @param startId
@@ -126,7 +126,7 @@ export class EncapsulateVariableService {
         _node.data = {};
       }
 
-      // 开始节点设置
+      // Start Node Setup
       if (_node.type === StandardNodeType.Start) {
         _node.data.outputs = Object.entries(startVars).map(_entry => {
           const [name, variable] = _entry;
@@ -137,7 +137,7 @@ export class EncapsulateVariableService {
         });
         return;
       }
-      // 结束节点设置
+      // End Node Settings
       if (_node.type === StandardNodeType.End) {
         _node.data.inputs = {
           terminatePlan: 'returnVariables',
@@ -167,7 +167,7 @@ export class EncapsulateVariableService {
             _var.keyPath[1] === targetKeyPath[1],
         );
 
-        // 如果命中开始节点的变量，则替换为开始节点的变量
+        // If the variable of the start node is hit, it is replaced with the variable of the start node
         if (targetEntry) {
           _ref.content.blockID = startId;
           _ref.content.name = [targetEntry[0], ...targetKeyPath.slice(2)].join(
@@ -176,7 +176,7 @@ export class EncapsulateVariableService {
         }
       });
 
-      // 子画布场景需要递归
+      // Sub-canvas scenes need to be recursive
       if (_node.blocks) {
         this.updateVarsInEncapsulateNodesJSON(_node.blocks, vars, startId);
       }
@@ -184,10 +184,10 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 封装后更新上下游的变量引用
-   * @param subFlowNode 封装节点
-   * @param selectNodes 选中的节点
-   * @param vars 封装变量
+   * Update upstream and downstream variable references after encapsulation
+   * @param subFlowNode encapsulation node
+   * @param selectNodes selected node
+   * @param vars encapsulation variable
    */
   updateVarsAfterEncapsulate(
     subFlowNode: FlowNodeEntity,
@@ -196,10 +196,10 @@ export class EncapsulateVariableService {
   ) {
     const { startVars, endVars } = vars;
 
-    // 封装节点输入变量
+    // Encapsulating node input variables
     this.setSubFlowNodeInputs(subFlowNode, startVars);
 
-    // 下游引用封装节点的变量
+    // Variables that encapsulate nodes by downstream references
     const updateRefInfos: UpdateRefInfo[] = Object.entries(endVars).map(
       _entry => {
         const [name, variable] = _entry;
@@ -219,7 +219,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 解封装后更新上下游的变量引用
+   * Update upstream and downstream variable references after unencapsulation
    */
   updateVarsAfterDecapsulate(
     sourceNode: FlowNodeEntity,
@@ -231,17 +231,17 @@ export class EncapsulateVariableService {
       .map(_node => this.document.getNode(_node.id || ''))
       .filter(Boolean) as FlowNodeEntity[];
 
-    // 1, 更新封装节点内的变量
+    // 1. Update the variables in the encapsulated node
     const sourceInputParameters: Record<string, ValueExpression> = sourceNode
       .getData(FlowNodeFormData)
       .formModel.getFormItemValueByPath('/inputs/inputParameters');
     const updateInsideRefInfos: UpdateRefInfo[] = [
-      // 变量引用节点 Id 更新
+      // Variable reference node Id update
       ...idsMap.entries().map(_entry => ({
         beforeKeyPath: [_entry[0]],
         afterKeyPath: [_entry[1]],
       })),
-      // 输入到封装节点内的变量
+      // Variables entered into the encapsulated node
       ...Object.entries(sourceInputParameters || {}).map(_entry => {
         const [name, value] = _entry;
 
@@ -259,10 +259,10 @@ export class EncapsulateVariableService {
         .batchUpdateRefs(updateInsideRefInfos);
     });
 
-    // 2. 下游引用封装节点内的变量
+    // 2. Downstream references encapsulate variables within the node
     const endOutputs: InputValueDTO[] =
       get(endNode?.data || {}, 'inputs.inputParameters') || [];
-    // 从封装节点内输出的变量
+    // Variables output from within the encapsulated node
     const updateOutsideRefInfos: UpdateRefInfo[] = endOutputs.map(_output => {
       const { name, input } = _output || {};
       const beforeKeyPath = [sourceNode.id, name || ''];
@@ -299,7 +299,7 @@ export class EncapsulateVariableService {
   ) {
     const formData = subFlowNode.getData(FlowNodeFormData);
 
-    // SubFlow 的 inputParameters 是 Object 类型
+    // SubFlow's inputParameters are of type Object
     const inputParameters: Record<string, InputValueVO> = Object.entries(
       startVars,
     )
@@ -318,14 +318,14 @@ export class EncapsulateVariableService {
         };
       }, {});
 
-    // 新表单引擎更新数据
+    // New form engine updates data
     if (isFormV2(subFlowNode)) {
       (formData.formModel as FormModelV2).setValueIn(
         'inputs.inputParameters',
         inputParameters,
       );
     } else {
-      // 老表单引擎更新数据
+      // Old form engine updates data
       const fullData = formData.formModel.getFormItemValueByPath('/');
       set(fullData, 'inputs.inputParameters', inputParameters);
       formData.fireChange();
@@ -333,7 +333,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 获取封装节点的开始变量
+   * Get the start variable of the encapsulated node
    * @param nodes
    */
   protected getEncapsulateStartVars(nodes: FlowNodeEntity[]): VariableMap {
@@ -344,7 +344,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 获取封装节点变量
+   * Get encapsulated node variable
    * @param _nodes
    * @returns
    */
@@ -364,7 +364,7 @@ export class EncapsulateVariableService {
               )
               .map(_keyPath =>
                 this.variableService.getWorkflowVariableByKeyPath(
-                  // 产品要求，只要取第一级即可
+                  // Product requirements, as long as you take the first level.
                   _keyPath.slice(0, 2),
                   { node: _node },
                 ),
@@ -378,13 +378,13 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 获取封装节点的结束变量
+   * Get the end variable of the encapsulated node
    * @param nodes
    */
   protected getEncapsulateEndVars(nodes: FlowNodeEntity[]): VariableMap {
     const selectNodeIds = nodes.map(_node => _node.id);
 
-    // 获取在圈选范围外的节点的所有引用圈选范围内的变量引用
+    // Get all references to nodes outside the circled scope Variable references in the circled scope
     const variables = uniq(
       this.getBeyondNodes(nodes)
         .map(
@@ -393,7 +393,7 @@ export class EncapsulateVariableService {
               .filter(_keyPath => selectNodeIds.includes(_keyPath[0]))
               .map(_keyPath =>
                 this.variableService.getWorkflowVariableByKeyPath(
-                  // 产品要求，只要取第一级即可
+                  // Product requirements, as long as you take the first level.
                   _keyPath.slice(0, 2),
                   { node: _node },
                 ),
@@ -407,7 +407,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 获取圈选范围外的节点
+   * Get nodes outside the circled range
    * @param nodes
    * @returns
    */
@@ -420,7 +420,7 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 生成变量映射
+   * Generate variable mapping
    * @param variables
    */
   protected generateVariableMap(variables: WorkflowVariable[]): VariableMap {
@@ -429,7 +429,7 @@ export class EncapsulateVariableService {
       let name = _keyPath[1];
       let index = 1;
 
-      // 如果 name 已经存在，或者和系统默认字段冲突，则需要添加后缀
+      // If name already exists or conflicts with the system default field, you need to add a suffix
       while (acm[name] || ['BOT_USER_INPUT'].includes(name)) {
         name = `${_keyPath[1]}_${index}`;
         index++;
@@ -449,9 +449,9 @@ export class EncapsulateVariableService {
   }
 
   /**
-   * 1. 情况1：框选范围内所有节点的入参不包含USER_INPUT和CONVERSATION_NAME，此时封装出的子流程为workflow，子流程start不带默认参数
-   * 2. 情况2：框选范围内所有节点的入参同时包含了USER_INPUT和CONVERSATION_NAME，此时封装出的子流程为chatflow，子流程start默认带参数USER_INPUT和CONVERSATION_NAME，命名不变，建立和父流程引用关系
-   * 3. 情况3：框选范围内所有节点的入参包含了USER_INPUT和CONVERSATION_NAME中的一种，此时封装出的子流程为workflow，子流程start不带默认参数，新建参数USER_INPUT_1或CONVERSATION_NAME_1，建立和父流程引用关系
+   * 1. Case 1: The imported parameters of all nodes in the box selection range do not contain USER_INPUT and CONVERSATION_NAME. At this time, the encapsulated sub-process is workflow, and the sub-process start does not have default parameters
+   * 2. Case 2: The imported parameters of all nodes in the box selection range contain both USER_INPUT and CONVERSATION_NAME. At this time, the encapsulated sub-process is chatflow. The sub-process start defaults to parameters USER_INPUT and CONVERSATION_NAME, the name remains unchanged, and the reference relationship with the parent process is established
+   * 3. Case 3: The imported parameters of all nodes in the box selection range contain one of USER_INPUT and CONVERSATION_NAME. At this time, the encapsulated sub-process is workflow, the sub-process start does not have default parameters, and the new parameters USER_INPUT_1 or CONVERSATION_NAME_1 to establish a reference relationship with the parent process
    */
   protected generateChatVariableMap(variablesMap: VariableMap): VariableMap {
     if (variablesMap.USER_INPUT && !variablesMap.CONVERSATION_NAME) {

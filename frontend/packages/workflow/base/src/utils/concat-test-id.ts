@@ -22,10 +22,10 @@ export const concatTestId = (...testIds: string[]) =>
   testIds.filter(id => !!id).join('.');
 
 /**
- * 生成节点的测试id
+ * Generate the test ID of the node.
  * @example concatNodeTestId(node, 'right-panel') => playground.node.100001.right-panel
- * @param node 节点
- * @param testIds 其它id
+ * @param node
+ * @param testIds other id
  * @returns
  */
 export const concatNodeTestId = (node: FlowNodeEntity, ...testIds: string[]) =>

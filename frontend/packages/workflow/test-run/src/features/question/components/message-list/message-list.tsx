@@ -30,7 +30,7 @@ export const MessageList = () => {
 
   const ref = useRef<HTMLDivElement>(null);
 
-  // 自动滚动到最后一条消息
+  // Automatically scroll to the last message
   useEffect(() => {
     const lastChild = ref.current?.lastElementChild;
     lastChild?.scrollIntoView();

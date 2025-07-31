@@ -34,19 +34,19 @@ const LazyBuilderChat = lazy(async () => {
 
 export interface ChatHistoryProps {
   /**
-   * 会话 id
+   * session id
    */
   conversationId?: string;
   /**
-   * 会话名称
+   * session name
    */
   conversationName: string;
   /**
-   * 渠道 id
+   * Channel ID
    */
   connectorId: string;
   /**
-   * 创建会话的环境
+   * Create a conversation environment
    */
   createEnv: CreateEnv;
 }
@@ -106,7 +106,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({
         workflow={{}}
         project={innerProjectInfo}
         areaUi={{
-          // 只看会话记录，不可操作
+          // Only look at the session record, not operate
           isDisabled: true,
           isNeedClearContext: false,
           input: {

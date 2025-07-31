@@ -70,7 +70,7 @@ export type PluginCategoryNodeTemplate = Omit<PluginCategory, 'node_type'> & {
 };
 
 /**
- * 插件节点信息，包括插件下的工具列表
+ * Plug-in node information, including a list of tools under the plug-in
  */
 export interface PluginNodeTemplate {
   plugin_id: string;
@@ -105,17 +105,17 @@ export interface DragObject {
   nodeType: StandardNodeType;
   nodeJson?: Partial<WorkflowNodeJSON>;
   /**
-   * 节点版本信息，只在拖拽添加有版本信息的工作流、插件节点时会有值
-   * pluginId 插件即为插件的 id，工作流为工作流发布后关联的插件 id
-   * workflowId 是工作流id，插件不传
-   * version 版本信息， plugin 是 version_ts 字段；workflow 不传 version，需要在 drop 之后调接口获取
+   * Node version information, it will only have value when dragging and dropping to add workflow and plug-in nodes with version information
+   * The pluginId plugin is the id of the plugin, and the workflow is the plugin id associated with the workflow after it is published.
+   * workflowId is the workflow id, the plugin does not pass it.
+   * version version information, plugin is version_ts field; workflow does not pass version, you need to call the interface to get it after drop
    */
   nodeVersionInfo: {
     workflowId?: string;
     pluginId?: string;
     version?: string;
   };
-  /** 打开弹窗时，传给弹窗 open 方法的 props */
+  /** When the pop-up window is opened, the props passed to the pop-up window opening method */
   modalProps?: unknown;
 }
 export type HandleAddNode = (
@@ -129,7 +129,7 @@ export interface AddNodeRef {
 }
 
 export interface ProjectApi {
-  /** 跳转 */
+  /** jump */
   navigate: (url: string, options?: NavigateOptions) => void;
 
   ideGlobalStore: UseBoundStore<
@@ -141,55 +141,55 @@ export interface ProjectApi {
       };
     }>
   >;
-  /** 设置 tab 状态 */
+  /** Set tab state */
   setWidgetUIState: (status: string) => void;
-  /** 发送消息并跳转 */
+  /** Send a message and jump */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMsgOpenWidget: (target: string, data?: any) => void;
 }
 
 export type WorkflowPlaygroundProps = {
-  /** 父容器 */
+  /** parent container */
   parentContainer?: interfaces.Container;
 
-  /** 当前画布附加类名，用于自定义样式 */
+  /** The current canvas is attached to the class name for custom styles */
   className?: string;
 
-  /** 当前画布自定义样式 */
+  /** Current canvas custom style */
   style?: React.CSSProperties;
 
-  /** 当前画布关联 workflowId */
+  /** Current canvas associated workflowId */
   workflowId: string;
 
-  /** 流程所属空间 ID, 如不填则为公共空间 ID */
+  /** Process space ID, if not, public space ID */
   spaceId?: string;
 
-  /** 流程版本 */
+  /** Process version */
   commitId?: string;
 
-  /** 整个应用的提交历史版本，只在应用中生效 */
+  /** The commit history version of the entire app, which only takes effect in the app */
   projectCommitVersion?: string;
 
-  /** 日志ID */
+  /** log ID */
   logId?: string;
 
-  /** 执行ID */
+  /** Execution ID */
   executeId?: string;
 
-  /** 子流程执行ID */
+  /** subprocess execution ID */
   subExecuteId?: string;
 
-  /** 提交操作类型，接口需要使用 */
+  /** Submit operation type, the interface needs to be used */
   commitOptType?: OperateType;
 
   /**
-   * 打开来源，从流程预览打开，从 bot 打开
+   * Open source, open from process preview, open from bot
    *
-   * - explore 流程探索
-   * - bot 编辑页
-   * - workflowStore 商店
-   * - dupSuccess 复制流程模板/流程商品成功
-   * - createSuccess 创建成功
+   * - explore process exploration
+   * - bot edit page
+   * - workflowStore
+   * - dupSuccess Copy process template/process item success
+   * - createSuccess
    * - communityTrial packages/community/pages/src/flow-trial/page.tsx
    */
   from?:
@@ -202,151 +202,151 @@ export type WorkflowPlaygroundProps = {
     | 'op'
     | 'workflowTemplate';
 
-  /** 只读模式 */
+  /** read-only mode */
   readonly?: boolean;
 
-  /** 自定义左侧侧边栏 */
+  /** Customize the left sidebar */
   sidebar?: React.ForwardRefExoticComponent<React.RefAttributes<AddNodeRef>>;
 
   /**
-   * 运行结果展开模式，不配置则根据默认规则展开 (图像流全部展开，工作流展开结束节点)
-   * - all 全部展开
-   * - end 仅展示结束节点
+   * Run result expansion mode, if not configured, expand according to the default rules (all image streams are expanded, and the workflow expansion end node)
+   * - all unfold
+   * - end shows only end nodes
    */
   defaultResultCollapseMode?: 'all' | 'end';
 
-  /** 自定义顶部栏渲染 */
+  /** Custom top bar rendering */
   renderHeader?: (actions: {
     handleTestRun: () => Promise<void>;
   }) => React.ReactNode;
 
-  /** 初始化成功事件 */
+  /** Initialization success event */
   onInit?: (workflowState: WorkflowGlobalStateEntity) => void;
 
-  /** 返回按钮点击 */
+  /** Back button click */
   onBackClick?: (workflowState: WorkflowGlobalStateEntity) => void;
 
-  /** 发布成功 */
+  /** Published successfully */
   onPublish?: (workflowState: WorkflowGlobalStateEntity) => void;
 
-  /** 运行结果展开状态 */
+  /** run result unfolded state */
   onTestRunResultVisibleChange?: (visible: boolean) => void;
 
-  /* testRun 表单默认值 */
+  /* testRun form default */
   testFormDefaultValues?: TestFormDefaultValue[];
 
-  /** 是否禁止单节点试运行 */
+  /** Whether to disable single node practice running */
   disabledSingleNodeTest?: boolean;
 
-  /** 禁用试运行和调试工具 */
+  /** Disable practice running and debugging tools */
   disableTraceAndTestRun?: boolean;
 
-  /** 当前项目 id，只在项目内的 workflow 有该字段 */
+  /** The current project id, only the workflow within the project has this field */
   projectId?: string;
 
   /**
-   * 获取 project 注入的能力，在非 project 环境无此入参
+   * The ability to obtain project injection, which is not imported in non-project environments
    */
   getProjectApi?: () => ProjectApi;
 
   /**
-   * 刷新项目资源列表，用于创建完项目内资源后调用
+   * Refresh the list of project resources for calling after creating resources within the project
    */
   refetchProjectResourceList?: () => Promise<void>;
 
-  /** 禁止请求 testcase */
+  /** Disallow request testcase */
   disableGetTestCase?: boolean;
 
   /**
-   * 重命名项目资源
+   * Rename project resources
    * @param workflowId
    * @returns
    */
   renameProjectResource?: (workflowId: string) => void;
 
-  /** 当前画布注册的节点类型 */
+  /** The node type currently registered on the canvas */
   nodeRegistries?: WorkflowNodeRegistry[];
 } & TestRunInstanceCallback;
 
 export interface WorkflowPlaygroundRef {
   /**
-   * 执行全流程 TestRun
-   * @param input 预设输入
-   * @return  是否触发成功
+   * Execute the full process TestRun
+   * @param input default input
+   * Whether @return triggered successfully
    */
   triggerTestRun: (input?: Record<string, string>) => Promise<boolean>;
   /**
-   * 取消试运行
+   * Cancel practice run
    */
   cancelTestRun: () => void;
   /**
-   * 实时获取试运行结果
+   * Get practice run results in real time
    */
   getProcess: (obj: { executeId?: string }) => Promise<void>;
   /**
-   * 展示运行结果
-   * @param executeIdOrResp 指定执行 ID 或者直接传入服务返回执行结果，都不传则获取最新执行结果
+   * Show the running results
+   * @Param executeIdOrResp Specify the execution ID or directly pass in the service to return the execution result, and get the latest execution result without passing it.
    */
   showTestRunResult: (
     executeIdOrResp?: string | GetWorkFlowProcessData,
     subExecuteId?: string,
   ) => void;
   /**
-   * 隐藏运行结果
+   * Hide run result
    */
   hideTestRunResult: () => void;
   /**
-   * 重置流程到历史版本
-   * @param target 版本目标
+   * Reset process to historical version
+   * @param target version target
    */
   resetToHistory: (target: {
-    /** 目标版本 ID */
+    /** Target Version ID */
     commitId: string;
-    /** 操作类型 */
+    /** operation type */
     optType: OperateType;
   }) => void;
   /**
-   * 滚动到某个节点
-   * @param {string} nodeId 节点 ID
+   * Scroll to a node
+   * @param {string} nodeId
    */
   scrollToNode: (nodeId: string) => void;
   /**
-   * 触发视图自适应
-   * IDE 场景画布初始化可能 display none
-   * clientWidth 为 0 时自动 fitView 可能失败
+   * Trigger view adaptation
+   * IDE scene canvas initialization may display none
+   * Automatic fitView may fail when clientWidth is 0
    */
   triggerFitView: () => void;
   /**
-   * 刷新流程信息
+   * Refresh process information
    */
   reload: () => Promise<void>;
   /**
-   * 加载全局变量
+   * Loading global variables
    */
   loadGlobalVariables: () => Promise<void>;
   /**
-   * 监听资源变化
+   * Monitor resource changes
    */
   onResourceChange: (props: WsMessageProps, callback?: () => void) => void;
 }
 
 export interface AddNodePanelProps {
-  /** 从添加节点按钮打开 */
+  /** Open from the Add Node button */
   fromAddNodeBtn?: boolean;
-  /** 是否启用workflow、plugin 弹窗批量添加，默认 false */
+  /** Whether to enable workflow and plugin pop-up windows to add in batches, the default is false */
   enableModalMultiAdd?: boolean;
-  /** 添加节点面板启用拖拽功能 */
+  /** Add Node Panel Enable Drag and Drop */
   enableDrag?: boolean;
-  /** 是否启用滚动关闭 */
+  /** Whether to enable scrolling shutdown */
   enableScrollClose?: boolean;
-  /** 是否启用节点占位 */
+  /** Whether to enable node occupancy */
   enableNodePlaceholder?: boolean;
-  /** panel 组件锚点元素 selector,用于 click outside 时排除该锚点元素 */
+  /** Panel component anchor element selector, used to exclude the anchor element when clicking outside */
   anchorElement?: string;
 }
 
 /**
- * 一级分类节点类型
+ * first-level classification node type
  */
 export const enum NodeSearchSectionType {
   Atom = 'atom',
@@ -355,36 +355,36 @@ export const enum NodeSearchSectionType {
 }
 
 /**
- * 二级分类节点数据
+ * sub-category node data
  */
 export interface NodeSearchCategoryData<DataType> {
-  /* 分类 id，用于按分类 load more */
+  /* Category ID to load more by category */
   id?: NodePanelSearchType;
-  /* 分类名称 */
+  /* Category name */
   categoryName?: string;
-  /* 节点列表 */
+  /* Node list */
   nodeList: Array<DataType>;
-  /* 可以 load more */
+  /* Can load more */
   hasMore?: boolean;
-  /** load more 时下一页的游标，hasMore 为 false 时此值为空 */
+  /** The cursor of the next page when loading more, empty when hasMore is false */
   cursor?: string;
 }
 
 /**
- * 原子节点分类数据
+ * atomic node classification data
  */
 export type NodeCategory = NodeSearchCategoryData<UnionNodeTemplate>;
 
 /**
- * 一级分类数据
+ * first level classification data
  */
 export type NodeSearchResultSection =
   | {
-      /* 分类名称  */
+      /* Category name  */
       name: string;
-      /* 分类数据，包含二级分类的信息 */
+      /* Classified data, including sub-category information */
       data: NodeCategory[];
-      /* 分类数据类型，判断不同节点渲染逻辑 */
+      /* Classify data types and judge the rendering logic of different nodes */
       dataType: NodeSearchSectionType.Atom;
     }
   | {

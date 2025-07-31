@@ -22,7 +22,7 @@ import { type NodeDataDTO } from '@coze-workflow/base';
 import { LoopType } from './constants';
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (formData: any, ctx: any) => {
   const inputParameters = formData?.inputs?.inputParameters;
@@ -61,7 +61,7 @@ export const transformOnInit = (formData: any, ctx: any) => {
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */
@@ -78,7 +78,7 @@ export const transformOnSubmit = (formData: any, ctx: any): NodeDataDTO => {
         { node: ctx.node },
       );
 
-      // 定制逻辑：如果选择了循环体内的变量，则输出变量的类型套一层 list
+      // Custom logic: If a variable inside the loop is selected, a list of the type of the output variable is set
       if (
         outputValue?.input?.content?.keyPath?.[0] !== ctx.node.id &&
         dto?.input

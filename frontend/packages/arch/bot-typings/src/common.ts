@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/** bot详情页来源：目前只有bot和explore列表 */
+
+/** Bot details page source: currently only bot and explore list */
 export enum BotPageFromEnum {
-  Bot = 'bot', //bot列表
-  Explore = 'explore', //explore列表
+  Bot = 'bot', //bot list
+  Explore = 'explore', //Explore List
   Store = 'store',
   Template = 'template',
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 不得不 any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- had to any
 export type Obj = Record<string, any>;
 
 /**
- * 展示完整类型
+ * Show the full type
  *
  * @example
  * type Intersection = { a: string } & { b: number };
@@ -38,7 +38,7 @@ export type Expand<T extends Obj> = T extends infer U
   : never;
 
 /**
- * 只对特定字段做 required，常用于修正服务端类型声明错误
+ * Required only for specific fields, often used to correct server level type declaration errors
  *
  * @example
  * interface Agent {

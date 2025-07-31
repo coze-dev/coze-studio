@@ -5,7 +5,7 @@ module.exports = [
   {
     files: ['**/*.?(m|c)?(j|t)s?(x)'],
     settings: {
-      // TODO: 全局保留一份配置
+      // TODO: Keep a configuration globally
       'import/resolver': {
         node: {
           moduleDirectory: ['node_modules', 'src'],
@@ -72,8 +72,8 @@ module.exports = [
       },
     },
     rules: {
-      // TODO: 目前由于 edenx 会动态生成一些插件模块，因此启动会报错
-      // 后续需要修复问题，启动下述规则
+      // TODO: At present, because edenx will dynamically generate some plug-in modules, an error will be reported when starting.
+      // You need to fix the problem later, and start the following rules.
       // "import/no-unresolved": "error"
     },
   },

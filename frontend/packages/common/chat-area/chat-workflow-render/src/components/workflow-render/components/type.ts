@@ -32,7 +32,7 @@ type StringifyInputWorkflowNodeContent = string;
 
 export interface InputWorkflowNode {
   content_type: 'form_schema';
-  /** 嵌套的 stringify 数据, 需要二次 parse */
+  /** Nested stringified data, requires secondary parsing */
   content: StringifyInputWorkflowNodeContent;
 }
 

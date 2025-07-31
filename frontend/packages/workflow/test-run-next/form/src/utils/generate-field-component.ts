@@ -25,13 +25,13 @@ export const generateFieldComponent = (
   options: GenerateFieldComponentOptions,
 ) => {
   const { type, validateJsonSchema } = options;
-  /** 音色类型 */
+  /** timbre type */
   if (ViewVariableType.Voice === type) {
     return {
       ['x-component']: 'SelectVoice',
     };
   }
-  /** 文件类型 */
+  /** file type */
   if (ViewVariableType.isFileType(type)) {
     const fileType = [
       ViewVariableType.Image,
@@ -42,14 +42,14 @@ export const generateFieldComponent = (
     return {
       ['x-component']: 'TypedFileInput',
       ['x-component-props']: {
-        // 如果是数组类型，则表明是多选的文件选择器
+        // If it is an array type, it indicates that it is a multi-selected file selector
         multiple: ViewVariableType.isArrayType(type),
         accept: getFileAccept(type),
         fileType,
       },
     };
   }
-  /** 排除文件类型的对象类型、数组类型 */
+  /** Exclude object types and array types for file types */
   if (ViewVariableType.isArrayType(type) || ViewVariableType.Object === type) {
     return {
       ['x-component']: 'InputJson',
@@ -80,7 +80,7 @@ export const generateFieldComponent = (
       ['x-component']: 'InputTime',
     };
   }
-  /** string 类型和其它未知类型都渲染普通输入框 */
+  /** String type and other unknown types all render normal text boxes */
   return {
     ['x-component']: 'InputString',
   };

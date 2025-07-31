@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 
 let getIsIPadCache: boolean | undefined;
 /**
- * gpt-4 提供的代码
+ * Code provided by gpt-4
  */
 export const getIsIPad = () => {
   if (typeof getIsIPadCache === 'undefined') {
@@ -34,7 +34,7 @@ export const getIsIPad = () => {
   return getIsIPadCache;
 };
 
-/* 时间戳转文本，并省略年份或日期*/
+/* Timestamp converts text and omits the year or date*/
 export const formatOmittedDateTime = time => {
   if (!time) {
     return '';
@@ -46,20 +46,20 @@ export const formatOmittedDateTime = time => {
   let formatStr: string;
 
   if (!today.isSame(day, 'year')) {
-    // 不是当年，展示年份
+    // Not the year, show the year
     formatStr = 'YYYY-MM-DD HH:mm';
   } else if (!today.isSame(day, 'day')) {
-    // 不是当天， 展示日期
+    // Not the day, the display date.
     formatStr = 'MM-DD HH:mm';
   } else {
-    // 当天只展示时间
+    // Show time only on the day
     formatStr = 'HH:mm';
   }
 
   return day.format(formatStr);
 };
 
-/** 等待 */
+/** wait */
 export const wait = (ms: number) =>
   new Promise(r => {
     setTimeout(r, ms);
@@ -68,7 +68,7 @@ export const wait = (ms: number) =>
 import { reporter as infraReporter } from '@coze-arch/logger';
 
 /**
- * 流程使用的 slardar 上报实例
+ * The slardar reporting instance used by the process
  */
 export const reporter = infraReporter.createReporterWithPreset({
   namespace: 'workflow',

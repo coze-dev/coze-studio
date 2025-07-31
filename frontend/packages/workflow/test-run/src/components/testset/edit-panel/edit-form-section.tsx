@@ -48,10 +48,10 @@ import {
 
 import styles from './edit-form-section.module.less';
 
-/** 整数类型表单精度 */
+/** integer type form precision */
 const INTEGER_PRECISION = 0.1;
 
-/** bot field name 固定值 */
+/** Bot field name fixed value */
 const BOT_FIELD_NAME = `${TESTSET_BOT_NAME}_${ComponentType.CozeVariableBot}`;
 
 interface EditFormSectionTitleProps {
@@ -62,7 +62,7 @@ const EditFormSectionTitle: React.FC<EditFormSectionTitleProps> = ({
   schema,
 }) => {
   const title = useMemo(() => {
-    // 目前只有start和variable两种节点
+    // Currently only two nodes are start and variable
     switch (schema.component_type) {
       case ComponentType.CozeStartNode:
         return I18n.t('workflow_testset_start_node');
@@ -255,8 +255,8 @@ export const EditFormSection: React.FC<EditFormSectionProps> = ({
 
   const botFieldValue = useFieldState(BOT_FIELD_NAME);
 
-  // 判断是否选择到了应用，只有选中应用才会回显对话组件。
-  // 应用内直接默认选中应用，可以回显对话组件。
+  // Determine whether the application is selected, and only the selected application will echo the dialog component.
+  // The application is directly selected by default in the application, and the dialog component can be echoed.
   const isBotSelectProject =
     (botFieldValue?.value?.id &&
       botFieldValue?.value?.type === IntelligenceType.Project) ||
@@ -272,7 +272,7 @@ export const EditFormSection: React.FC<EditFormSectionProps> = ({
           if (projectId && i.type === FormItemSchemaType.BOT) {
             return false;
           }
-          // 对话组件只会在应用内存在
+          // The dialog component will only exist within the app
           if (!isBotSelectProject && i.type === FormItemSchemaType.CHAT) {
             return false;
           }

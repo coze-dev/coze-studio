@@ -45,7 +45,7 @@ const TipTag: React.FC<TipTagProps> = ({ showText, tip, tagProps }) => (
   </Tooltip>
 );
 
-/** 需要展示配置状态的渠道类别 */
+/** Channel categories that need to display configuration status */
 const Classes = [
   ConnectorClassification.SocialPlatform,
   ConnectorClassification.MiniProgram,
@@ -64,7 +64,7 @@ export const ConfigStatus = ({ record }: { record: PublishConnectorInfo }) => {
 
   return (
     <div className="flex gap-[6px]">
-      {/* 配置状态 */}
+      {/* configuration status */}
       <Tag color={color} size="mini" className="font-[500]">
         {text}
       </Tag>

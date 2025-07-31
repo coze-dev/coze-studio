@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid';
 import type { TreeNodeCustomData } from '../../../type';
 import { traverse, type TraverseContext } from './traverse';
 
-/** 计算路径 */
+/** Compute Path */
 const getTreePath = (context: TraverseContext): string => {
   const parents = context
     .getParents()
@@ -32,14 +32,14 @@ const getTreePath = (context: TraverseContext): string => {
   return parents.map(node => node.value.name).join('/');
 };
 
-/** 新旧数据保留 key 防止变量系统引用失效 */
+/** Old and new data keep keys to prevent variable system references from invalidating */
 export const mergeData = (params: {
   newData: TreeNodeCustomData;
   oldData: TreeNodeCustomData;
 }): TreeNodeCustomData => {
   const { newData, oldData } = params;
 
-  // 计算旧数据中路径与key的映射
+  // Compute the mapping of paths and keys in old data
   const treeDataPathKeyMap = new Map<
     string,
     {
@@ -60,7 +60,7 @@ export const mergeData = (params: {
     });
   });
 
-  // 新数据复用旧数据的key，失败则重新生成
+  // The new data reuses the key of the old data, and if it fails, it is regenerated.
   const newDataWithKey = traverse(newData, context => {
     if (
       typeof context.node.value !== 'object' ||

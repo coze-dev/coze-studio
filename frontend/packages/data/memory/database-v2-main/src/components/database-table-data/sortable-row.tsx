@@ -20,13 +20,13 @@ import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 
 /**
- * 拆分自 packages/data/database-v2/src/components/database-table-data/index.tsx
- * 原本实现基本是从 Semi 文档复制过来的，排序后的数据也没有提交给服务端，PM 似乎也不知道有这个功能，所以 ...
+ * Split from packages/data/database-v2/src/components/database-table-data/index.tsx
+ * The original implementation was basically copied from the Semi document, and the sorted data was not submitted to the server level. The PM did not seem to know about this function, so...
  * @see 
  */
 export const SortableRow = (
   // https://github.com/DouyinFE/semi-design/blob/v2.69.2/packages/semi-ui/table/Body/BaseRow.tsx#L396
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- semi 没有导出 table row props 的类型
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- semi does not export the type of table row props
   sortProps: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key': string },
 ) => {
   const {

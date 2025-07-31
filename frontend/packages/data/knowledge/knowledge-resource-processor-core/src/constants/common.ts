@@ -14,55 +14,55 @@
  * limitations under the License.
  */
  
-/** upload页面url上的type取值 */
+/** The type value on the upload page url */
 export enum UnitType {
-  /** 文本格式：本地文档，上传 PDF, TXT, DOCX 格式的本地文件 */
+  /** Text format: local documents, upload PDF, TXT, DOCX local files */
   TEXT_DOC = 'text_doc',
-  /** 文本格式：在线数据，自动获取在线网页内容 */
+  /** Text format: online data, automatically captures online web content */
   TEXT_URL = 'text_url',
-  /** 文本格式：在线数据，手动获取在线网页内容 */
+  /** Text format: online data, manual access to online web content */
   TEXT_EXTENSION = 'text_extension',
-  /** 文本格式：自定义内容，支持创建&编辑 */
+  /** Text format: custom content, support for creation & editing */
   TEXT_CUSTOM = 'text_custom',
-  /** 文本格式：将 Notion 页面和数据库导入到知识库中 */
+  /** Text Format: Import Notion pages and databases into the knowledge base */
   TEXT_NOTION = 'text_notion',
-  /** 文本格式 将 Google Docs 导入到知识库中 */
+  /** Text formatting to import Google Docs into the Knowledge Base */
   TEXT_GOOGLE_DRIVE = 'text_google_drive',
-  /** 文本格式：飞书文档 导入到知识库中 */
+  /** Text format: Feishu document, imported into the knowledge base */
   TEXT_FEISHU = 'text_feishu',
-  /** 文本格式：公众号 */
+  /** Text format: official account */
   TEXT_WECHAT = 'text_wechat',
-  /** 文本格式：Lark文档 导入到知识库中 */
+  /** Text format: Lark document, imported into the knowledge base */
   TEXT_LARK = 'text_lark',
-  /** 表格格式：本地文档，上传Excel或者CSV格式的文档 */
+  /** Table format: local document, upload Excel or CSV format document */
   TABLE_DOC = 'table_doc',
-  /** 表格格式：API 获取JSON格式API内容 */
+  /** Table format: API fetches API content in JSON format */
   TABLE_API = 'table_api',
-  /** 表格格式：自定义 自定义内容，支持创建&编辑 */
+  /** Table format: custom, custom content, support for creation & editing */
   TABLE_CUSTOM = 'table_custom',
-  /** 表格格式：将 Google Sheets 导入到知识库中 */
+  /** Table Format: Import Google Sheets into the Knowledge Base */
   TABLE_GOOGLE_DRIVE = 'table_google_drive',
-  /** 表格格式：将 飞书表格 导入到知识库中 */
+  /** Table format: Import the Feishu table into the knowledge base */
   TABLE_FEISHU = 'table_feishu',
-  /** 表格格式：将 Lark表格 导入到知识库中 */
+  /** Table format: Import Lark tables into the knowledge base */
   TABLE_LARK = 'table_lark',
-  /** 图片格式：本地图片，上传PNG，JPG，JPEG等格式图片 */
+  /** Image format: local image, upload PNG, JPG, JPEG and other format images */
   IMAGE_FILE = 'image_file',
-  /** 表格格式 */
+  /** table format */
   TABLE = 'table',
-  /** 文本格式 */
+  /** text format */
   TEXT = 'text',
-  /** 图片格式 */
+  /** image format */
   IMAGE = 'image',
 }
 
 /**
- * unit 操作类型
- * upload页面支持以下几种方式
- * - ADD 首次创建
- * - UPDATE 更新数据
- * - INCREMENTAL 增量数据
- * - RESEGMENT 重新切片
+ * Unit operation type
+ * Upload page supports the following ways
+ * - ADD created for the first time
+ * - UPDATE data
+ * - INCREMENTAL INCREMENTAL DATA
+ * - RESEGMENT
  */
 export enum OptType {
   RESEGMENT = 'resegment',
@@ -71,14 +71,14 @@ export enum OptType {
   INCREMENTAL = 'incremental',
 }
 
-/** footer 按钮状态 */
+/** Footer button status */
 export enum FooterBtnStatus {
   DISABLE = 'disable',
   LOADING = 'loading',
   ENABLE = 'enable',
 }
 
-/** create unit 全局过程状态。注意与UploadStatus的区别*/
+/** Create unit global process state. Note the difference with UploadStatus*/
 export enum CreateUnitStatus {
   UPLOAD_UNIT = 'uploadUnit',
   GET_TASK_PROGRESS = 'getTaskProGress',
@@ -86,9 +86,9 @@ export enum CreateUnitStatus {
 }
 
 /**
- * UploadStatus 是 upload-unit-file、upload-unit-table组件 上传文件过程的状态
- * 原型来自 import { type FileItemStatus } from '@douyinfe/semi-foundation/lib/es/upload/foundation';
- * FileItemStatus的写法有问题
+ * UploadStatus is the upload-unit-file, upload-unit-table components, the status of the upload file process
+ * Prototype from import {type FileItemStatus} from '@douyinfe/semi-foundation/lib/es/upload/foundation';
+ * There is a problem with the writing of FileItemStatus
  */
 export enum UploadStatus {
   SUCCESS = 'success',

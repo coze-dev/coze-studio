@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-//后端无定义 根据 bot_info 中的 workflow_info.profile_memory 推导而来
+//Backend undefined, derived from workflow_info profile_memory in bot_info
 import { type IntelligenceType } from '@coze-arch/idl/intelligence_api';
 
 export interface Variable {

@@ -28,17 +28,17 @@ import {
 } from '../../src/constant';
 
 describe('useCustomMediaQuery', () => {
-  // 保存原始的 window.matchMedia
+  // Save the original window.matchMedia
   const originalMatchMedia = window.matchMedia;
 
   beforeEach(() => {
-    // 模拟 window.matchMedia
+    // Emulate window.matchMedia
     window.matchMedia = vi.fn().mockImplementation(query => ({
       matches: false,
       media: query,
       onchange: null,
-      addListener: vi.fn(), // 兼容旧版API
-      removeListener: vi.fn(), // 兼容旧版API
+      addListener: vi.fn(), // Compatible with outdated API
+      removeListener: vi.fn(), // Compatible with outdated API
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
@@ -46,13 +46,13 @@ describe('useCustomMediaQuery', () => {
   });
 
   afterEach(() => {
-    // 恢复原始的 window.matchMedia
+    // Restore the original window.matchMedia
     window.matchMedia = originalMatchMedia;
     vi.resetAllMocks();
   });
 
   it('should return false when media query does not match', () => {
-    // 设置 matchMedia 返回 false
+    // Set matchMedia to return false
     window.matchMedia = vi.fn().mockImplementation(query => ({
       matches: false,
       media: query,
@@ -71,7 +71,7 @@ describe('useCustomMediaQuery', () => {
   });
 
   it('should return true when media query matches', () => {
-    // 设置 matchMedia 返回 true
+    // Set matchMedia to return true
     window.matchMedia = vi.fn().mockImplementation(query => ({
       matches: true,
       media: query,
@@ -122,7 +122,7 @@ describe('useCustomMediaQuery', () => {
   });
 
   it('should update when media query changes', () => {
-    // 创建一个模拟的 MediaQueryList
+    // Create a simulated MediaQueryList
     const mediaQueryList = {
       matches: false,
       media: '(min-width: 768px)',
@@ -130,42 +130,42 @@ describe('useCustomMediaQuery', () => {
       removeEventListener: vi.fn(),
     };
 
-    // 模拟 window.matchMedia 返回我们的 mediaQueryList
+    // Emulate window.matchMedia returns our mediaQueryList
     window.matchMedia = vi.fn().mockReturnValue(mediaQueryList);
 
     const { result, rerender } = renderHook(() =>
       useCustomMediaQuery({ rangeMinPx: '768px' }),
     );
 
-    // 初始状态是 false
+    // The initial state is false
     expect(result.current).toBe(false);
 
-    // 找到注册的事件处理函数
+    // Find the registered event handler
     const eventListenerCall = mediaQueryList.addEventListener.mock.calls[0];
     const eventType = eventListenerCall[0];
     const handler = eventListenerCall[1];
 
-    // 确认事件类型是 'change'
+    // Confirm that the event type is'change'
     expect(eventType).toBe('change');
 
-    // 模拟媒体查询变化
+    // Simulate media query changes
     mediaQueryList.matches = true;
     handler();
 
-    // 重新渲染钩子以获取更新后的值
+    // Render the hook again to get the updated value
     rerender();
 
-    // 现在应该是 true
+    // It should be true now
     expect(result.current).toBe(true);
   });
 });
 
 describe('useMediaQuery', () => {
-  // 保存原始的 window.matchMedia
+  // Save the original window.matchMedia
   const originalMatchMedia = window.matchMedia;
 
   beforeEach(() => {
-    // 模拟 window.matchMedia
+    // Emulate window.matchMedia
     window.matchMedia = vi.fn().mockImplementation(query => ({
       matches: false,
       media: query,
@@ -175,7 +175,7 @@ describe('useMediaQuery', () => {
   });
 
   afterEach(() => {
-    // 恢复原始的 window.matchMedia
+    // Restore the original window.matchMedia
     window.matchMedia = originalMatchMedia;
     vi.resetAllMocks();
   });

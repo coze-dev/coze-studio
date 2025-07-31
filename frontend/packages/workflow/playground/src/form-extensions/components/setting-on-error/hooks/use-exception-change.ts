@@ -33,7 +33,7 @@ import { type StandardNodeType } from '@coze-workflow/base';
 import { isException } from '../utils/is-exception';
 
 /**
- * 异常连线和端口处理
+ * Exception wiring and port handling
  */
 const handleLinesAndPort = ({
   node,
@@ -49,7 +49,7 @@ const handleLinesAndPort = ({
   const portsData = node.getData<WorkflowNodePortsData>(WorkflowNodePortsData);
 
   /**
-   * 动态端口的节点, 更新端口即可
+   * Node of dynamic port, just update the port.
    */
   if (isSettingOnErrorDynamicPort(node.flowNodeType as StandardNodeType)) {
     portsData.updateDynamicPorts();
@@ -57,9 +57,9 @@ const handleLinesAndPort = ({
   }
 
   /**
-   * 静态端口的节点
-   * 从普通变成有异常的场景, 需要将原来没有portID的output改成default, 并将对应连线补全
-   * 从异常变成有异常的场景, 需要将原来有portID为default的连线设为空, 并将对应连线补全
+   * Node on static port
+   * From normal to abnormal scenes, you need to change the output without portID to default, and complete the corresponding connection
+   * From an exception to an abnormal scene, you need to set the original connection with portID as default to empty, and complete the corresponding connection
    */
   let lines, outputPort;
 
@@ -103,7 +103,7 @@ const handleLinesAndPort = ({
 };
 
 /**
- * 异常处理变更触发
+ * exception handling change triggering
  */
 export const useExceptionChange = ({
   value,

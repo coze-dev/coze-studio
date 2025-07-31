@@ -20,21 +20,21 @@ export {
   logicTextMap,
 } from './condition';
 
-/** 日志类型 */
+/** log type */
 export enum LogType {
-  /** 输入 */
+  /** input */
   Input,
-  /** 输出 */
+  /** output */
   Output,
-  /** 批处理数据 */
+  /** batch data */
   Batch,
   /** Condition */
   Condition,
-  /** 大模型推理过程 */
+  /** Large model reasoning process */
   Reasoning,
-  /** 大模型Function过程 */
+  /** Large Model Function Process */
   FunctionCall,
-  /** 子流程跳转连接 */
+  /** Subprocess jump connection */
   WorkflowLink,
 }
 

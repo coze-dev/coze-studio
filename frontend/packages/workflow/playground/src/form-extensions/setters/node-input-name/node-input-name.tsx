@@ -59,7 +59,7 @@ export const NodeInputName = ({
   const { isNewNodeRender } = useNodeRenderScene();
   const variableService = useService(WorkflowVariableFacadeService);
 
-  // text 状态受控（删除节点时联动 text 的值）
+  // The text state is controlled (the value of the linked text when deleting a node)
   useEffect(() => {
     if (value !== text) {
       setText(value);
@@ -95,7 +95,7 @@ export const NodeInputName = ({
 
   useEffect(() => {
     if (initValidate) {
-      // 初始化写值触发校验
+      // Initialize write value to trigger verification
       onChange(value);
     }
     if (value) {

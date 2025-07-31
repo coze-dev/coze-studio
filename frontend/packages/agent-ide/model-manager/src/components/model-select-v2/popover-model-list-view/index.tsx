@@ -24,7 +24,7 @@ import { type Model } from '@coze-arch/bot-api/developer_api';
 import { ModelOptionGroup } from '../model-option-group';
 import { ModelOption } from '../model-option';
 
-/** Popover 的 模型列表状态，对应详细配置状态。单纯为了避免组件过大而做的拆分 */
+/** Popover's model list state corresponds to the detailed configuration state. Splitting purely to avoid oversized components */
 export function PopoverModelListView({
   hidden,
   disabled,
@@ -38,15 +38,15 @@ export function PopoverModelListView({
   enableConfig,
   enableJumpDetail,
 }: {
-  /** 是否将列表设置为 display: none（为了保留 scrollTop 信息） */
+  /** Whether to set the list to display: none (to preserve scrollTop information) */
   hidden: boolean;
   disabled?: boolean;
   selectedModelId: string;
   selectedModel: Model | undefined;
   modelList: Model[];
-  /** 额外头部插槽 */
+  /** Extra head slot */
   extraHeaderSlot?: ReactNode;
-  /** 返回是否切换成功 */
+  /** Return whether the switch was successful */
   onModelClick: (model: Model) => boolean;
   onDetailClick: (modelId: string) => void;
   onConfigClick: (model: Model) => void;
@@ -54,7 +54,7 @@ export function PopoverModelListView({
   enableJumpDetail?: boolean;
 }) {
   const { modelGroups } = useMemo(() => {
-    /** 开源版本不进行分类 平铺展示 */
+    /** The open-source version is not classified, but tiled */
     if (IS_OPEN_SOURCE) {
       return { modelGroups: [modelList] };
     }
@@ -80,7 +80,7 @@ export function PopoverModelListView({
       onDetailClick={onDetailClick}
       enableConfig={
         enableConfig &&
-        // 在 disabled 状态下，只能查看选中模型的详细配置
+        // In the disabled state, you can only view the detailed configuration of the selected model
         (!disabled || String(model.model_type) === selectedModelId)
       }
       onConfigClick={() => {

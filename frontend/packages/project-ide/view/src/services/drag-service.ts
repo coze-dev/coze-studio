@@ -26,22 +26,22 @@ import { MimeData } from '../lumino/coreutils';
 
 export interface DragPropsType {
   /**
-   * 拖拽打开分屏的 URI
+   * Drag and drop to open the split-screen URI.
    */
   uris: URI[];
   /**
-   * startDrag event 位置数据
+   * StartDrag event location data
    */
   position: {
     clientX: number;
     clientY: number;
   };
   /**
-   * 拖拽元素回显，不传不展示
+   * Drag and drop elements to echo, no transmission or display
    */
   dragImage?: HTMLElement;
   /**
-   * 拖拽完成后回调
+   * Callback after dragging is complete
    * action: 'move' | 'copy' | 'link' | 'none'
    */
   callback: (action: Drag.DropAction) => void;
@@ -49,7 +49,7 @@ export interface DragPropsType {
 }
 
 /**
- * DragService 主要用于分屏操作
+ * DragService is mainly used for split-screen operation
  */
 @injectable()
 export class DragService {
@@ -60,7 +60,7 @@ export class DragService {
   @inject(ViewRenderer) viewRenderer: ViewRenderer;
 
   /**
-   * 业务侧手动拖拽触发分屏（侧边栏文件树拖拽进入开始分屏）
+   * Manually drag and drop on the business side to trigger the split screen (drag the sidebar file tree into the start split screen)
    */
   startDrag({
     uris,
@@ -94,7 +94,7 @@ export class DragService {
       proposedAction: 'move',
       supportedActions: 'move',
       /**
-       * 仅支持在主面板区域分屏
+       * Only supports split screen in the main panel area
        */
       source: this.shell.mainPanel,
       backdropTransform,

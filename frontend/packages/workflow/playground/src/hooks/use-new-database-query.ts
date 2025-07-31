@@ -21,12 +21,12 @@ import { FieldItemType, type DatabaseInfo } from '@coze-arch/bot-api/memory';
 import { useDatabaseServiceStore } from './use-database-node-service';
 
 /**
- * 查询数据库信息的Hook
- * @param id 数据库ID
- * @returns 返回对象包含:
- *  - data: 查询成功时返回数据库信息，无数据时返回undefined
- *  - isLoading: 加载状态
- *  - error: 查询失败时的错误对象
+ * Hooks to query database information
+ * @param id
+ * The returned object contains:
+ *  - data: returns database information when the query is successful, returns undefined when there is no data
+ *  - isLoading: Loading status
+ *  - error: the error object when the query fails
  */
 export function useNewDatabaseQuery(id?: string) {
   const { getDatabaseDetail, isLoading, getError } = useDatabaseServiceStore(

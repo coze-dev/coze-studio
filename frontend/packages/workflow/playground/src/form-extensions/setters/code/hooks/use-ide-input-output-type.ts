@@ -100,10 +100,10 @@ const recursiveParseInput = (options: {
         { node: flowNodeEntity },
       );
 
-      // Code 节点刚被拖入画布是， input 可能只有 key，没有选择变量，这个时候计算不到类型，默认给个 string
+      // The Code node has just been dragged into the canvas. The input may only have the key and no variable is selected. At this time, the type cannot be calculated. By default, a string is given.
       let type = refVariableMeta?.type || ViewVariableType.String;
 
-      // code中不支持文件类型，当成string处理即可
+      // File types are not supported in the code, just treat them as strings.
       if (ViewVariableType.isFileType(type)) {
         type = ViewVariableType.String;
       }

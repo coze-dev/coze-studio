@@ -22,7 +22,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ImageRender } from '../../../src/components/renders/image-render';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/bot-semi', () => ({
   Image: ({ src, fallback, placeholder, onClick, preview, ...props }: any) => {
     if (!src) {
@@ -55,7 +55,7 @@ vi.mock('@coze-arch/bot-icons', () => ({
   ),
 }));
 
-// 模拟useImagePreview钩子
+// Simulation useImagePreview hook
 vi.mock(
   '../../../src/components/renders/image-render/use-image-preview',
   () => ({
@@ -84,7 +84,7 @@ describe('ImageRender', () => {
 
     render(<ImageRender srcList={srcList} />);
 
-    // 验证图片容器被渲染
+    // Verify that the image container is rendered
     const images = screen.getAllByTestId('image');
     expect(images).toHaveLength(2);
     expect(images[0]).toHaveAttribute('src', srcList[0]);
@@ -94,11 +94,11 @@ describe('ImageRender', () => {
   test('应该处理空的图片列表', () => {
     render(<ImageRender srcList={[]} />);
 
-    // 验证没有图片被渲染
+    // Verify that no images are being rendered
     const images = screen.queryAllByTestId('image');
     expect(images).toHaveLength(0);
 
-    // 验证空状态容器存在
+    // Verify that an empty state container exists
     const emptyContainer = screen.getByTestId('image-preview-modal');
     expect(emptyContainer).toBeInTheDocument();
   });
@@ -112,7 +112,7 @@ describe('ImageRender', () => {
 
     render(<ImageRender srcList={[]} customEmpty={customEmpty} />);
 
-    // 验证自定义空状态被渲染
+    // Verify that the custom empty state is rendered
     const customEmptyElement = screen.getByTestId('custom-empty');
     expect(customEmptyElement).toBeInTheDocument();
     expect(customEmptyElement).toHaveTextContent('自定义空状态');
@@ -126,8 +126,8 @@ describe('ImageRender', () => {
       />,
     );
 
-    // 验证自定义className被应用
-    // 由于组件结构复杂，我们直接查找包含custom-class的元素
+    // Verify that the custom className is applied
+    // Due to the complex structure of components, we directly look for elements containing custom-classes
     const container = document.querySelector('.custom-class');
     expect(container).toBeInTheDocument();
   });
@@ -137,11 +137,11 @@ describe('ImageRender', () => {
 
     render(<ImageRender srcList={srcList} />);
 
-    // 点击图片
+    // Click on the picture.
     const image = screen.getByTestId('image');
     fireEvent.click(image);
 
-    // 验证预览模态框存在
+    // Verify that the preview modal box exists
     const previewModal = screen.getByTestId('image-preview-modal');
     expect(previewModal).toBeInTheDocument();
     expect(previewModal).toHaveAttribute('data-src', srcList[0]);
@@ -155,7 +155,7 @@ describe('ImageRender', () => {
       />,
     );
 
-    // 验证editable属性被传递给预览模态框
+    // Verify that the editable property is passed to the preview modal box
     const previewModal = screen.getByTestId('image-preview-modal');
     expect(previewModal).toHaveAttribute('data-editable', 'false');
   });
@@ -169,7 +169,7 @@ describe('ImageRender', () => {
       />,
     );
 
-    // 验证onChange属性被传递给预览模态框
+    // Verify that the onChange property is passed to the preview modal box
     const previewModal = screen.getByTestId('image-preview-modal');
     expect(previewModal).toBeInTheDocument();
   });

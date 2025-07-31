@@ -30,7 +30,7 @@ export const RoleNameInput = ({ value, onChange, onBlur, ...props }) => {
 
   const handleBlur = () => {
     let nextValue = innerValue;
-    // 如果用户把角色名称删空了，在失焦之后需要回填原本的值
+    // If the user deletes the character name, the original value needs to be backfilled after being out of focus
     if (!nextValue && value) {
       nextValue = value;
     }

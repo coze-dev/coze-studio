@@ -79,7 +79,7 @@ interface ToolContentBlockProps {
   defaultExpand?: boolean;
   onRef?: ForwardedRef<ToolContentRef>;
   /**
-   * @deprecated tool 插件化改造后无需传入 (如果保留老式event则需要传入)
+   * @Deprecated tool does not need to be passed in after plugin modification (if you keep old-fashioned events, you need to pass in)
    */
   blockEventName?: OpenBlockEvent;
   tooltipType?: 'tooltip' | 'popOver';
@@ -112,7 +112,7 @@ export const ToolContentBlock: React.FC<
   childNodeWrapClassName,
   headerClassName,
 }) => {
-  /** 后续长期使用的ToolKey */
+  /** ToolKey for long-term use */
   const { abilityKey } = useAbilityConfig();
 
   const { registerCollapse } = useRegisterCollapse();
@@ -138,7 +138,7 @@ export const ToolContentBlock: React.FC<
     })),
   );
 
-  // 容器在页面中的展示位置，不同位置样式有区别
+  // The placement of the container on the page is different in different position styles
   const { placement } = useLayoutContext();
   const [isOpen, setIsOpen] = useState(false);
   const initialized = useRef<boolean>(false);
@@ -152,7 +152,7 @@ export const ToolContentBlock: React.FC<
   );
   const setOpen = ($isOpen: boolean) => {
     setIsOpen($isOpen);
-    // 记录用户使用状态
+    // Record user usage status
     if (editable && !isReadonly && (abilityKey || blockEventName)) {
       if (blockEventName) {
         const blockKey = openBlockEventToToolKey[blockEventName];
@@ -171,7 +171,7 @@ export const ToolContentBlock: React.FC<
         });
       }
     }
-    // 尚未完成初始化时如果用户手动展开/收起，则马上完成初始化
+    // If the user manually expands/retracts the initialization, the initialization is completed immediately
     if (!initialized.current) {
       initialized.current = true;
     }
@@ -217,9 +217,9 @@ export const ToolContentBlock: React.FC<
   }, [onEvent]);
 
   useEffect(() => {
-    // 传入默认值之后才能初始化
+    // Initialization can only be done after passing in the default value
     if (isBoolean(defaultExpand)) {
-      // 初始化完成后忽略 defaultExpand 变化
+      // Ignore defaultExpand changes after initialization is complete
       if (!initialized.current) {
         setIsOpen(defaultExpand);
         initialized.current = true;
@@ -231,7 +231,7 @@ export const ToolContentBlock: React.FC<
   }, [defaultExpand]);
 
   const content = useMemo(() => {
-    // 初始化成功之后才能开始渲染 Collapsible 组件
+    // Only after successful initialization can we start rendering the Collapsible component
     if (!initialized.current) {
       return null;
     }

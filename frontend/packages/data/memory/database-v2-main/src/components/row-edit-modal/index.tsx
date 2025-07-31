@@ -56,7 +56,7 @@ const FormDatePicker = withField(
     <DatePicker
       {...props}
       type="dateTime"
-      // Semi DatePicker 使用 date-fns 格式
+      // Semi DatePicker uses date-fns format
       format="yyyy-MM-dd HH:mm:ss"
       onChange={date =>
         props.onChange?.(dayjs(date as Date).format('YYYY-MM-DD HH:mm:ss'))
@@ -149,7 +149,7 @@ export function RowEditModal({
     >
       <Form<Record<string, unknown>> allowEmpty ref={formRef}>
         {tableType === TableType.OnlineTable ? (
-          // 只有“线上数据”支持修改“渠道”字段
+          // Only "Online Data" supports modifying the "Channel" field
           <FormSelect
             {...getSystemFieldCommonProps(PLATFORM_FIELD)}
             optionList={connectorOptions}
@@ -274,7 +274,7 @@ function getUserFieldCommonProps(field: TableFieldData): FieldCommonProps {
           required={field.required}
         />
       ),
-      // DatabaseFieldTitle 中已经显示 required * 符号
+      // The required * symbol is already displayed in DatabaseFieldTitle
       required: false,
     },
   };

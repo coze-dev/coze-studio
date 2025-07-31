@@ -66,10 +66,10 @@ export default function InputHeader({
 
       {readonly ? null : (
         <div className="relative flex gap-1">
-          {/* 对象操作占位符 */}
+          {/* Object operation placeholder */}
           {config.hasObject ? <div className="w-6"></div> : null}
 
-          {/* 删除按钮占位符 */}
+          {/* Delete button placeholder */}
           <div className="w-6"></div>
         </div>
       )}

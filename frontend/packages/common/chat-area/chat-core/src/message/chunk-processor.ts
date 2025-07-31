@@ -15,9 +15,9 @@
  */
  
 /**
- * 处理接收到的Chunk消息
- * 1、预处理：反序列化
- * 2、增量消息拼接
+ * Process received Chunk messages
+ * 1. Pretreatment: Deserialization
+ * 2. Incremental message splicing
  */
 import { cloneDeep, flow } from 'lodash-es';
 
@@ -34,14 +34,14 @@ import {
 } from './types';
 
 export class StreamBufferHelper {
-  // 一次流式拉取的message消息缓存
+  // One-time streaming pull message message cache
   streamMessageBuffer: Message<ContentType>[] = [];
 
-  // 一次流式拉取的Chunk消息缓存
+  // Chunk message cache for one-time streaming pull
   streamChunkBuffer: ChunkRaw[] = [];
 
   /**
-   * 新增Chunk消息缓存
+   * Added Chunk message cache
    */
   pushChunk(chunk: ChunkRaw) {
     this.streamChunkBuffer.push(chunk);
@@ -51,12 +51,12 @@ export class StreamBufferHelper {
     const previousIndex = this.streamMessageBuffer.findIndex(
       item => item.message_id === message.message_id,
     );
-    // 新增
+    // new
     if (previousIndex === -1) {
       this.streamMessageBuffer.push(message);
       return;
     }
-    // 更新
+    // update
     const previousMessage = this.streamMessageBuffer.at(previousIndex);
     message.content = (previousMessage?.content || '') + message.content;
     message.reasoning_content =
@@ -68,7 +68,7 @@ export class StreamBufferHelper {
   }
 
   /**
-   * 清空消息缓存
+   * Clear message cache
    */
   clearMessageBuffer() {
     this.streamMessageBuffer = [];
@@ -76,9 +76,9 @@ export class StreamBufferHelper {
   }
 
   /**
-   * 按reply_id清除相关消息缓存
-   * 1、reply_id相等的回复
-   * 2、reply_id为 message_id 的问题
+   * Clear related message cache reply_id
+   * 1. reply_id equal reply
+   * 2, reply_id message_id problem
    */
   clearMessageBufferByReplyId(reply_id: string) {
     this.streamMessageBuffer = this.streamMessageBuffer.filter(
@@ -93,7 +93,7 @@ export class StreamBufferHelper {
   }
 
   /**
-   * 根据message_id获取chunk buffer中的chunk
+   * Get the chunk in the chunk buffer according to message_id
    */
   getChunkByMessageId(message_id: string) {
     return this.streamChunkBuffer.filter(
@@ -125,7 +125,7 @@ export class ChunkProcessor {
     this.enableDebug = enableDebug;
   }
   /**
-   *  新增chunk, 统一处理后的Chunk消息
+   *  Added chunk, unified processing of chunk messages
    */
   addChunkAndProcess(chunk: ChunkRaw, options?: AddChunkAndProcessOptions) {
     this.streamBuffer.pushChunk(chunk);
@@ -137,7 +137,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据chunk获取处理后的消息
+   * Get the processed message according to the chunk
    */
   getProcessedMessageByChunk(chunk: ChunkRaw) {
     return this.streamBuffer.streamMessageBuffer.find(
@@ -146,7 +146,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据message_id获取处理后的消息
+   * Get processed messages according to message_id
    */
   getProcessedMessageByMessageId(message_id: string) {
     return this.streamBuffer.streamMessageBuffer.find(
@@ -155,7 +155,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据local_message_id获取接收到的ack消息
+   * Get the received ack message according to the local_message_id
    */
   getAckMessageByLocalMessageId(local_message_id: string) {
     return this.streamBuffer.streamMessageBuffer.find(
@@ -166,7 +166,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据chunk获取到第一条回复
+   * Got the first reply according to chunk
    */
   getFirstReplyMessageByChunk(chunk: ChunkRaw) {
     const hasAck = this.streamBuffer.streamMessageBuffer.find(
@@ -181,7 +181,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据chunk获取到ack
+   * Get ack according to chunk.
    */
   getAckMessageByChunk(chunk: ChunkRaw) {
     return this.streamBuffer.streamMessageBuffer.find(
@@ -190,11 +190,11 @@ export class ChunkProcessor {
   }
 
   /**
-   * 判断是否是第一条回复消息
-   * 除ack外的第一条回复
+   * Determine whether it is the first reply message.
+   * First reply except ack
    */
   isFirstReplyMessage(chunk: ChunkRaw) {
-    // 还没有ack，肯定没有第一条回复
+    // No ack yet, definitely no first reply.
     if (!this.getAckMessageByChunk(chunk)) {
       return false;
     }
@@ -202,7 +202,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 根据reply_id获取所有回复消息
+   * Get all reply messages according to reply_id
    */
   getReplyMessagesByReplyId(reply_id: string) {
     return this.streamBuffer.streamMessageBuffer.filter(
@@ -211,7 +211,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 获取所有回复消息的长度
+   * Get the length of all reply messages
    */
   getReplyMessagesLengthByReplyId(reply_id: string) {
     return `${this.getReplyMessagesByReplyId(reply_id).reduce(
@@ -221,7 +221,7 @@ export class ChunkProcessor {
   }
 
   /**
-   * 给本地日志使用
+   * Use for local logs
    * @param message
    * @returns
    */
@@ -236,13 +236,13 @@ export class ChunkProcessor {
   }
 
   /**
-   * 获取是否是final answer
+   * Is getting the final answer?
    */
   isMessageAnswerEnd(chunk: ChunkRaw): boolean {
     const { message } = chunk;
-    // 找到对应的所有回复
+    // Find all corresponding replies
     const replyMessages = this.getReplyMessagesByReplyId(message.reply_id);
-    // 查找是否有verbose消息, 并且标识answer结束，并且过滤掉中断场景的finish
+    // Find if there is a verbose message, and identify the end of the answer, and filter out the finish of the interrupt scene
     const finalAnswerVerboseMessage = replyMessages.find(replyMessage => {
       const { type, content } = replyMessage;
       if (type !== 'verbose') {
@@ -258,7 +258,7 @@ export class ChunkProcessor {
       const { value: verboseContentData } =
         safeJSONParse<AnswerFinishVerboseData>(verboseContent.data, null);
 
-      // 目前一个group内可能会有finish包，需要通过finish_reason过滤掉中断场景的，拿到的就是回答全部结束的finish
+      // At present, there may be a finish package in a group. If you need to filter out the interrupt scene through finish_reason, you will get the finish that answers all the ends.
       return (
         verboseContent.msg_type === VerboseMsgType.GENERATE_ANSWER_FINISH &&
         verboseContentData?.finish_reason !== FinishReasonType.INTERRUPT
@@ -268,9 +268,9 @@ export class ChunkProcessor {
   }
 
   /**
-   * 预处理消息
-   * 1、反序列化
-   * 2、添加 bot_id、is_finish、index, logId
+   * preprocess message
+   * 1. Deserialization
+   * 2. Add bot_id, is_finish, index, logId
    * @param chunk
    * @param options
    * @returns
@@ -299,8 +299,8 @@ export class ChunkProcessor {
   }
 
   /**
-   * 增量消息拼接
-   * 1、对于增量消息，需要拼接上一次的消息
+   * incremental message stitching
+   * 1. For incremental messages, you need to splice the previous message
    */
   private concatChunkMessage(
     message: Message<ContentType>,
@@ -310,14 +310,14 @@ export class ChunkProcessor {
     return message;
   }
 
-  // debug_message 逻辑
+  // debug_message logic
   private assembleDebugMessage(
     message: Message<ContentType>,
   ): Message<ContentType> {
     if (!this.enableDebug) {
       return message;
     }
-    // 一次 stream拉取的所有message_id一样的 chunk 消息一次返回
+    // All message_id chunk messages pulled by a stream are returned at once
     message.debug_messages = this.streamBuffer.getChunkByMessageId(
       message.message_id,
     );

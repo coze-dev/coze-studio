@@ -30,7 +30,7 @@ import {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * 满足 System 需要额外增加
+ * Additional System Requirements
  */
 export interface WriteableLifeCycleServicesAddition<T = any, K = any> {
   lifeCycleServices?:

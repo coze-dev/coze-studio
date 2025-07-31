@@ -20,7 +20,7 @@ import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 找到以 pathEnds 为结尾的 FormItem，并获取它的值
+ * Find the FormItem ending in pathEnds and get its value
  * @param node
  * @param pathEnds
  * @returns
@@ -76,12 +76,12 @@ const findValueByPathEnds = <T = unknown>(
     return undefined;
   }
 
-  // 检查当前路径是否以 pathEnds 结尾
+  // Check if the current path ends with pathEnds
   if (currentPath.endsWith(pathEnds)) {
     return obj as T;
   }
 
-  // 处理对象
+  // processing object
   if (typeof obj === 'object' && !Array.isArray(obj)) {
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -91,7 +91,7 @@ const findValueByPathEnds = <T = unknown>(
           return obj[key] as T;
         }
 
-        // 递归查找子对象
+        // recursive search for child objects
         const result = findValueByPathEnds(obj[key], pathEnds, newPath);
         if (result !== undefined) {
           return result as T;
@@ -100,7 +100,7 @@ const findValueByPathEnds = <T = unknown>(
     }
   }
 
-  // 处理数组
+  // Processing Array
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
       const newPath = `${currentPath}/${i}`;
@@ -109,7 +109,7 @@ const findValueByPathEnds = <T = unknown>(
         return obj[i] as T;
       }
 
-      // 递归查找数组元素
+      // Recursive lookup of array elements
       const result = findValueByPathEnds(obj[i], pathEnds, newPath);
       if (result !== undefined) {
         return result as T;

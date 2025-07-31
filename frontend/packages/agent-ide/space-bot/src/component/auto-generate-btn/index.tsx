@@ -53,17 +53,17 @@ export const AutoGenerateButton: React.FC<AutoGenerateProps> = ({
   }, [loading]);
 
   const handleClick = () => {
-    // loading时 触发stop生成
+    // When loading, stop generating
     if (loading) {
       cancel();
       return;
     }
-    // 有开场白时 点击触发二次确认弹窗
+    // When there is an opening statement, click to trigger the secondary confirmation pop-up window.
     if (needConfirmAgain) {
       return;
     }
 
-    // 其余触发自动生成开场白逻辑
+    // The remaining triggers automatically generate opening logic
     generate();
   };
 

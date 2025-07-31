@@ -22,23 +22,23 @@ import { OperateType } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
 import { Toast } from '@coze-arch/coze-design';
 
-/** 流程详情页参数 */
+/** Process details page parameters */
 interface SearchParams {
   workflow_id: string;
   space_id: string;
-  /** 流程版本, 当多人协作时有版本概念, 单独设置时可预览对应版本流程 */
+  /** Process version, when multiple people cooperate, there is a version concept, and the corresponding version process can be previewed when set separately */
   version?: string;
-  /** 是否要恢复到目标版本, 如果设置, 则流程草稿会自动设置到对应 version */
+  /** Whether to restore to the target version, if set, the process draft will be automatically set to the corresponding version */
   set_version?: string;
-  /** 对应 version 的操作类型 */
+  /** Corresponding version of the operation type */
   opt_type?: string;
-  /** 流程页面打开来源 */
+  /** Process page open source */
   from?: WorkflowPlaygroundProps['from'];
-  /** 节点id 配置会自动定位到对应节点 */
+  /** The node id configuration will automatically locate to the corresponding node. */
   node_id?: string;
-  /** 执行id 配置会展示对应执行结果 */
+  /** The execution id configuration will display the corresponding execution result. */
   execute_id?: string;
-  /** 子流程执行id */
+  /** subprocess execution id */
   sub_execute_id?: string;
 }
 
@@ -85,7 +85,7 @@ export function usePageParams() {
       needUpdateSearch = true;
     }
 
-    // 强制设置历史版本
+    // Force setting of historical version
     if (setVersion) {
       newSearchParams.delete('set_version');
       newSearchParams.delete('version');

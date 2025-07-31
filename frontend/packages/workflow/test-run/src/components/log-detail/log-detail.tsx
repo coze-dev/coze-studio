@@ -52,9 +52,9 @@ export const LogDetail: React.FC<LogDetailProps> = ({
   onOpenWorkflowLink,
 }) => {
   const { isBatch, nodeId } = result;
-  /** 从 0 开始 */
+  /** Start from 0 */
   const [paging, setPaging] = useState(0);
-  /** 只看错误 */
+  /** Just look at the error. */
   const [onlyShowError, setOnlyShowError] = useState(false);
 
   const { current, batchData } = useGetCurrentResult({
@@ -73,14 +73,14 @@ export const LogDetail: React.FC<LogDetailProps> = ({
 
   const { modal, open } = useMarkdownModal();
 
-  // 当分页数据发生变化，重新选中第一项
+  // When the paging data changes, re-select the first item
   useLayoutEffect(() => {
     setPaging(0);
   }, [batchData]);
 
   return (
     <div className={css['log-detail']}>
-      {/* 分页 */}
+      {/* paging */}
       {isBatch ? (
         <LogDetailPagination
           paging={paging}

@@ -41,7 +41,7 @@ export const GLobalLayoutMenuItem: FC<LayoutMenuItem> = ({
 
   let isActive = false;
   let newPath = '';
-  // 如果 path 是数组，则取第一个匹配的路径
+  // If path is an array, take the first matching path
   if (Array.isArray(path)) {
     isActive = path.some(p => location.pathname.startsWith(p));
     newPath = path.find(p => location.pathname.startsWith(p)) || path[0];

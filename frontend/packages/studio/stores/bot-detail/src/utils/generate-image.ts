@@ -35,7 +35,7 @@ export const getInitBackgroundInfo = (
 ) => {
   const { tasks = [] } = data;
   const { backgroundImageInfoList = [] } = useBotSkillStore.getState();
-  // 当前渲染的背景图
+  // Currently rendering background cover
   const uri =
     backgroundImageInfoList[0]?.mobile_background_image?.origin_image_uri;
 
@@ -51,7 +51,7 @@ export const getInitBackgroundInfo = (
   ) as DotStatus;
   const gifDotStatus = getDotStatus(data, PicType.BackgroundGif) as DotStatus;
 
-  // 动图相关state
+  // Graph related state
   state.gif.loading = backgroundGifList.some(
     item => item.status === GenPicStatus.Generating,
   );
@@ -61,7 +61,7 @@ export const getInitBackgroundInfo = (
 
   state.gif.dotStatus = gifDotStatus;
   const image = backgroundGifList.find(item => item.img_info?.ori_url);
-  // 第一帧信息
+  // first frame information
   if (image) {
     state.gif.image = {
       img_info: {
@@ -71,7 +71,7 @@ export const getInitBackgroundInfo = (
     };
   }
 
-  // 静图相关state
+  // Static graph correlation state
   state.image.loading = backgroundStaticList.some(
     item => item.status === GenPicStatus.Generating,
   );
@@ -84,21 +84,21 @@ export const getInitBackgroundInfo = (
     tasks.find(item => item.type === PicType.BackgroundStatic) ?? {};
   const lastGifTask =
     tasks.find(item => item.type === PicType.BackgroundGif) ?? {};
-  // 当前选中的图片: 生成成功的 展示 成功的那个图， 否则找 背景图一致的
+  // Currently selected image: generate a successful display, the successful image, otherwise find the same background cover
   if (gifDotStatus === DotStatus.Success) {
     state.selectedImage = lastGifTask;
   } else if (imageDotStatus === DotStatus.Success) {
     state.selectedImage = lastImageTask;
   } else {
-    // 手动上传的 找不到
+    // Uploaded manually, can't find it.
     state.selectedImage =
       tasks.find(item => item.img_info?.tar_uri === uri) ?? {};
   }
-  // 当前tab：只有在 仅gif在状态不为done时 在gif tab
+  // Current tab: only if, only gif when the state is not done, in the gif tab
   if (gifDotStatus !== DotStatus.None) {
     state.activeKey = GenerateType.Gif;
   }
-  // 当前正在生成的taskId
+  // The taskId currently being generated
   if (
     gifDotStatus === DotStatus.Generating ||
     imageDotStatus === DotStatus.Generating

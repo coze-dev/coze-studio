@@ -33,7 +33,7 @@ export const useObserveCardContainer = ({
 }) => {
   const eventCenter = useUiKitEventCenter();
 
-  /** 30s 内没变化则自动清除 observer */
+  /** If there is no change within 30s, the observer will be automatically cleared. */
   const debouncedDisconnect = useDebounceFn(
     (getResizeObserver: () => ResizeObserver | null) => {
       const resizeObserver = getResizeObserver();

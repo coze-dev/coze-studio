@@ -24,14 +24,14 @@ import { featureRegistryManager } from './feature-registry-manager';
 import { ExternalStore } from './external-store';
 
 export type FeatureModule<Type, Module> = Module & {
-  type: Type | string; // 默认给Module增加type字段, 方便作为组件的key
+  type: Type | string; // By default, add the type field to the Module, which is convenient as the key of the component
 };
 
 export interface FeatureConfig<Type, Module> {
   type: Type | string;
   module?: Module;
   loader?: () => Promise<{ default: Module }>;
-  tags?: string[]; // 通常用于Feature分组
+  tags?: string[]; // Usually Used for Feature Grouping
 }
 
 export interface DefaultFeatureConfig<Type, Module>
@@ -39,7 +39,7 @@ export interface DefaultFeatureConfig<Type, Module>
   module: Module;
 }
 
-// 通过解析context获取当前应当使用的Feature类型
+// Get the Feature type that should be used by parsing the context
 export interface FeatureTypeParser<Type, Context> {
   (context: Context): Type | string;
 }
@@ -207,7 +207,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     });
   }
 
-  // 调用Feature loader加载组件
+  // Feature loader to load component
   async load(type: Type | string): Promise<void> {
     const feature = this.getFeature(type);
     if (!feature) {
@@ -235,7 +235,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     });
   }
 
-  // 判断Feature是否已经加载完成
+  // Determine whether the Feature has been loaded
   isLoaded(type: Type | string): boolean {
     const feature = this.getFeature(type);
     if (!feature) {
@@ -252,16 +252,16 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     return true;
   }
 
-  // Feature是否注册
+  // Features Registration
   has(type: Type | string): boolean {
     return Boolean(this.getFeature(type));
   }
 
   /**
-   * 获取 Feature Module
+   * Get Feature Modules
    *
-   * @param type Feature 类型
-   * @returns 如果 Feature 不存在或者 Feature.Module 是空则返回 undefined
+   * @param type Feature type
+   * @Returns undefined if Feature does not exist or Feature. Module is empty
    */
   getModule(type: Type | string): Module | undefined {
     const feature = this.getFeature(type);
@@ -285,9 +285,9 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
   }
 
   /**
-   * 获取 Feature Module
+   * Get Feature Modules
    *
-   * @deprecated【注意！】这个方法使用时要注意，因为它会导致 module 的 type 字段被覆盖，使用 `getModule()` 方法
+   * @Deprecated [Note!] Be careful when using this method, because it will cause the type field of the module to be overwritten, use the'getModule () 'method
    */
   get(type: Type | string): FeatureModule<Type, Module> | undefined {
     const feature = this.getFeature(type);
@@ -329,7 +329,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
   }
 
   /**
-   * 获取所有 Feature 模块的 entries，key 是 feature type，value 是 feature module
+   * Get entries for all Feature modules, key is feature type, value is feature module
    */
   entries(): [Type | string, Module][] {
     const { featureMap } = this;
@@ -358,7 +358,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     >[];
   }
 
-  // 通过context获取对应的Feature类型
+  // Get the corresponding Feature type through context
   getTypeByContext(context: Context): Type | string {
     const { featureTypeParser } = this;
     if (!featureTypeParser) {
@@ -381,7 +381,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     }
   }
 
-  // 通过context获取对应的Feature模块
+  // Get the corresponding Feature module through the context
   getByContext(context: Context): FeatureModule<Type, Module> | undefined {
     const type = this.getTypeByContext(context);
     return this.get(type);
@@ -394,7 +394,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     return this.getAsync(type);
   }
 
-  // 获取默认Feature模块
+  // Get Default Feature Module
   getDefault(): FeatureModule<Type, Module> | undefined {
     if (!this.defaultFeature) {
       return undefined;
@@ -405,12 +405,12 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     };
   }
 
-  // 获取默认Feature类型
+  // Get Default Feature Type
   getDefaultType(): Type | string | undefined {
     return this.defaultFeature?.type;
   }
 
-  // 设置默认Feature
+  // Set Default Features
   setDefaultFeature(feature: DefaultFeatureConfig<Type, Module>) {
     const { type } = feature;
     const key = this.getFeatureKey(type);
@@ -420,14 +420,14 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     });
   }
 
-  // 设置Feature类型解析函数
+  // Setting Features Type Resolving Functions
   setFeatureTypeParser(parser: FeatureTypeParser<Type, Context>) {
     this.featureTypeParser = parser.bind({
       /**
        * @internal
-       * 内部暴露的非标准 has 方法
-       * 用于实现在返回类型时，查找当前类型是否有注册。
-       * 注意：根据情况，谨慎使用，勿滥用！
+       * Non-standard methods of internal exposure has
+       * Used to find whether the current type is registered when returning a type.
+       * Attention: According to the situation, use it with caution and do not abuse it!
        */
       internalHas: (type: Type | string): boolean => {
         try {
@@ -458,7 +458,7 @@ export class FeatureRegistry<Type, Module, Context = undefined> extends External
     });
   }
 
-  // 获取包含对应Tag的Feature模块
+  // Get the Feature Module containing the corresponding Tag
   getByTag(tag: string): FeatureModule<Type, Module>[] {
     const { featureMap } = this;
     const features = [...featureMap.values()].filter(feature =>

@@ -101,7 +101,7 @@ const getFavoritesList = async ({
 };
 
 /**
- * ahooks 的 useInfiniteScroll 返回的对象引用会变，本方法返回一个引用不变的对象，仅此而已，不用关注其声明和实现
+ * The object reference returned by the useInfiniteScroll of ahooks will change. This method returns an object with unchanged references, nothing more, regardless of its declaration and implementation
  */
 const useInfiniteScrollRef: typeof useInfiniteScroll = <
   T extends { list: unknown[] },
@@ -123,8 +123,8 @@ export const FavoritesList: FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 用一个引用不变的 req，便于 effect 中的 handler 拿到最新的 loading 状态
-  // （将 loading 放进 effect 的 deps 中并不能解决问题，因为上一次的闭包中 getFavoritesList 前后的 loading 状态已经固定不会变了，导致上一次执行出错）
+  // Use an invariant req to make it easier for the handler in the effect to get the latest loading status
+  // (Putting loading into the deps of effect doesn't solve the problem, because the loading state before and after getFavoritesList in the last closure has been fixed and will not change, resulting in an error in the last execution)
   const req = useInfiniteScrollRef<FEIntelligenceListData>(
     async dataSource =>
       await getFavoritesList({
@@ -143,7 +143,7 @@ export const FavoritesList: FC = () => {
   useEffect(() => {
     const handler = async (refreshFavListParams: RefreshFavListParams) => {
       if (req.loading || req.loadingMore) {
-        // 处理竞态问题，优先保证列表滚动加载，下同
+        // Deal with the race problem, give priority to ensuring the rolling loading of the list, the same as below
         return;
       }
 
@@ -151,14 +151,14 @@ export const FavoritesList: FC = () => {
       const mutateData = await getFavoritesList({
         spaceId,
         spaceType,
-        // Q：为什么要专门设置 pageSize
-        // A：useInfiniteScroll 有个 bug/feature，mutate 后不会立即触发高度检测
-        //  这要从它的 loadmore 触发逻辑讲起，正常是监听 scroll 动作，检测高度，从而判断是否需要 loadmore
-        //  但假如首次请求回来的数据就不足一屏高度，没有 overflow 无法触发 scroll 动作，怎么办？
-        //  因此 useInfiniteScroll 会在 run、reload 之类的行为完成后立即做一次高度检测来判断是否要继续 loadmore。
-        //  但是！它却唯独不会在 mutate 后做高度检测，导致 mutate 出来的数据不足一屏，就再也无法 loadmore 了
-        //  因此这里手动计算一下需要 mutate 的数据量。
-        //  如果后续 pageSize 太大有问题，那还可以继续改造一下 useInfiniteScrollRef，使 mutate 动作实际执行 reload，但拦截其 loading 属性返回 false
+        // Q: Why set the pageSize specifically?
+        // A: useInfiniteScroll has a bug/feature that does not trigger height detection immediately after mutating
+        //  This starts with its loadmore trigger logic. Normally, it monitors the scroll action and detects the height to determine whether loadmore is required.
+        //  But what if the data requested for the first time is less than one screen height, and the scroll action cannot be triggered without overflow?
+        //  Therefore, useInfiniteScroll will perform a height check immediately after running, reloading, etc. to determine whether to continue loadmore.
+        //  However! It will not do height detection after mutating, resulting in less than one screen of mutated data, and it can no longer loadmore
+        //  So here we manually calculate the amount of data that needs to be mutated.
+        //  If there is a problem with the subsequent pageSize being too large, you can continue to modify the useInfiniteScrollRef so that the mutate action actually executes reload, but intercepts its loading property and returns false.
         pageSize: Math.max(
           currLength
             ? currLength + refreshFavListParams.numDelta
@@ -169,7 +169,7 @@ export const FavoritesList: FC = () => {
       if (req.loading || req.loadingMore) {
         return;
       }
-      // 使用 mutate 静默加载，直接更新视图，不展示 loading 效果
+      // Use mutate silent loading to update the view directly without displaying the loading effect
       req.mutate(mutateData);
     };
     cozeMitt.on('refreshFavList', handler);
@@ -177,7 +177,7 @@ export const FavoritesList: FC = () => {
   }, [spaceId, spaceType]);
 
   return (
-    // 这里有一个很坑，滚动蒙层如果直接挂在滚动画布元素上会一起滚动，所以这里需要单独包一层（往上方一层）
+    // There is a very pit here. If the scrolling overlay is directly hung on the scrolling canvas element, it will scroll together, so it needs to be wrapped in a separate layer (one layer above).
     <div className={classNames('w-full h-full flex flex-col')}>
       <>
         <Space

@@ -66,7 +66,7 @@ export {
   draftEventEmitter,
 } from './event-handler';
 export { setMobileBody, setPCBody } from './viewport';
-/** 获取设备信息 */
+/** Get device information */
 export {
   getIsIPhoneOrIPad,
   getIsIPad,

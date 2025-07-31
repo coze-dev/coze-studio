@@ -26,7 +26,7 @@ export interface EmptyProps {
   isError?: boolean;
   isLoading?: boolean;
   isSearching?: boolean;
-  loadRetry?: () => void; //重试加载
+  loadRetry?: () => void; //retry loading
   text?: {
     emptyTitle?: string;
     emptyDesc?: string;
@@ -43,12 +43,12 @@ export interface EmptyProps {
   ) => React.ReactNode | null;
 }
 export interface FooterProps {
-  isError?: boolean; // 是否加载出错
-  isLoading?: boolean; // 是否加载中
-  noMore?: boolean; //没有更多数据
+  isError?: boolean; // Whether loading error
+  isLoading?: boolean; // Is it loading?
+  noMore?: boolean; //No more data.
   isNeedBtnLoadMore?: boolean;
   dataNum?: number;
-  loadRetry?: () => void; //重试加载
+  loadRetry?: () => void; //retry loading
   renderFooter?: (
     footerProps: Omit<FooterProps, 'renderFooter'>,
   ) => React.ReactNode | null;
@@ -62,13 +62,13 @@ export interface InfiniteListDataProps<T> {
 }
 
 export interface ScrollProps<T> {
-  threshold?: number; //距离下方多长距离，开始加载数据
-  targetRef?: RefObject<HTMLDivElement>; // 监听滚动的Dom 引用
-  loadData: (current) => Promise<InfiniteListDataProps<T>>; // 加载更多数据
-  reloadDeps?: unknown[]; // 重新加载数据依赖
+  threshold?: number; //How far is it from below to start loading data?
+  targetRef?: RefObject<HTMLDivElement>; // Listening for scrolling Dom references
+  loadData: (current) => Promise<InfiniteListDataProps<T>>; // Load more data
+  reloadDeps?: unknown[]; // Reloading data dependencies
   isNeedBtnLoadMore?: boolean;
-  isLoading?: boolean; // 是否加载中
-  resetDataIfReload?: boolean; // 当reload时，是否先reset列表已存在数据，默认为true
+  isLoading?: boolean; // Is it loading?
+  resetDataIfReload?: boolean; // When reloading, whether to reset the existing data in the list first, the default is true
 }
 
 export interface InfiniteListProps<T>
@@ -77,8 +77,8 @@ export interface InfiniteListProps<T>
     'className' | 'emptyContent' | 'grid' | 'renderItem'
   > {
   containerClassName?: string;
-  canShowData?: boolean; //是否能够显示数据了
-  isSearching?: boolean; // 是否搜索中，主要是用于错误显示的时候，选择文案使用
+  canShowData?: boolean; //Can the data be displayed?
+  isSearching?: boolean; // Whether it is in the search, it is mainly used for error display, select Copy to use
   itemClassName?: string | ((item: T) => string);
   isNeedBtnLoadMore?: boolean;
   isResponsive?: boolean;
@@ -103,5 +103,5 @@ export interface InfiniteListRef {
   reload: () => void;
   insertData: (item, index) => void;
   removeData: (index) => void;
-  getDataList: () => unknown[]; // 获取当前列表数据
+  getDataList: () => unknown[]; // Get current list data
 }

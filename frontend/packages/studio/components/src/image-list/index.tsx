@@ -28,8 +28,8 @@ import s from './index.module.less';
 export type ImageItem = PicTask;
 
 export interface ImageListProps {
-  selectedKey?: string; // 选中的key
-  data: ImageItem[]; // 列表数据
+  selectedKey?: string; // Selected key
+  data: ImageItem[]; // list data
   className?: string;
   imageItemClassName?: string;
   showDeleteIcon?: boolean;
@@ -39,18 +39,18 @@ export interface ImageListProps {
     index?: number;
     item?: ImageItem;
     data: ImageItem[];
-  }) => void; // 删除图片，data是此次删除之后的数据
+  }) => void; // Delete the picture, data is the data after this deletion.
   onSelect?: (params: {
     index?: number;
     item: ImageItem;
     data: ImageItem[];
     selected: boolean;
-  }) => void; // 选中图片，其中item和data都是此次选中之前的数据，selected表示在本次选中之前此图片是否已是选中状态
+  }) => void; // Select the picture, where item and data are the data before this selection. Selected indicates whether the picture was selected before this selection
   onClick?: (params: {
     index: number;
     item: ImageItem;
     data: ImageItem[];
-  }) => void; // 点击图片
+  }) => void; // Click on the picture.
 }
 
 export const ImageList: React.FC<ImageListProps> = ({

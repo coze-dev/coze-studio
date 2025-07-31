@@ -24,7 +24,7 @@ import {
 } from '../../types/node';
 
 /**
- * 获取格式化的 NodeList
+ * Get formatted NodeList
  * @param childNodeList NodeListOf<Node>
  */
 export const getNormalizeNodeList = (childNodeList: NodeListOf<Node>) => {
@@ -55,7 +55,7 @@ export const getNormalizeNodeList = (childNodeList: NodeListOf<Node>) => {
 };
 
 /**
- * 生成 Grab Node
+ * Generating Grab Nodes
  * @param node Node | null
  */
 export const generateGrabNode = (node: Node | null) => {
@@ -65,19 +65,19 @@ export const generateGrabNode = (node: Node | null) => {
 
   const isTable = ['TH', 'TD'].includes(node.nodeName.toUpperCase());
 
-  // 文本节点
+  // text node
   if (node.nodeType === node.TEXT_NODE || isTable) {
     return generateGrabText(node, isTable);
   }
 
-  // 元素节点
+  // element node
   if (node.nodeType === node.ELEMENT_NODE && node instanceof Element) {
     return generateGrabElement(node);
   }
 };
 
 /**
- * 生成 Text 节点
+ * Generate Text Node
  * @param node Node | null
  */
 export const generateGrabText = (node: Node | null, isTable?: boolean) => {
@@ -97,7 +97,7 @@ export const generateGrabText = (node: Node | null, isTable?: boolean) => {
 };
 
 /**
- * 生成 Element 节点
+ * Generating Element Node
  * @param node Element | null
  */
 export const generateGrabElement = (node: Element | null) => {

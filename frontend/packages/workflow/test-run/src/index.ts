@@ -57,7 +57,7 @@ export { QuestionForm } from './features/question';
 // export { InputForm } from './features/input';
 
 /** trace */
-// 禁止直接导出 trace，避免 visactor 包被打到首屏
+// It is forbidden to export traces directly to avoid the visactor package being hit on the first screen
 // export {
 //   TraceListPanel,
 //   TraceDetailPanel,

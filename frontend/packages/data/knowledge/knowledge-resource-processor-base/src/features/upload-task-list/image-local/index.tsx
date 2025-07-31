@@ -46,7 +46,7 @@ export const ImageLocalTaskList: FC<
     return null;
   }
 
-  // 实现自己的getImageFileInfo方法
+  // Implement your own getImageFileInfo method
   const getImageFileInfo = (data: RenderColumnsProps) => {
     const { record } = data;
     const curStatus = getProcessStatus(record?.status);

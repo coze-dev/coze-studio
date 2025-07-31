@@ -17,27 +17,27 @@
 import { type IPlugin } from '@coze-arch/idl2ts-generator';
 
 export interface ApiConfig {
-  // idl 入口
+  // IDL entrance
   entries: Record<string, string>;
-  // idl 根目录
+  // IDL root directory
   idlRoot: string;
-  // 服务别名
-  // 自定义 api 方法
+  // service alias
+  // Custom API method
   commonCodePath: string;
-  // api 产物目录
+  // API Product Catalog
   output: string;
-  // 仓库信息设置
+  // Warehouse information settings
   repository?: {
-    // 仓库地址
+    // Warehouse address
     url: string;
-    // clone 到本地的位置
+    // Clone to local location
     dest: string;
   };
-  // 插件
+  // plugin
   plugins?: IPlugin[];
-  // 聚合导出的文件名
+  // aggregate exported filename
   aggregationExport?: string;
-  // 格式化文件
+  // Format file
   formatter: (name: string, content: string) => string;
   idlFetchConfig?: {
     source: string;
@@ -48,6 +48,6 @@ export interface ApiConfig {
 }
 
 export interface ApiTypeConfig extends ApiConfig {
-  // 需要过滤的方法
+  // Methods that require filtering
   filters: Record<string, string[]>;
 }

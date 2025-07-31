@@ -51,7 +51,7 @@ export default function Operator(props: OperatorProps) {
   const { value, onChange, sourceType, onBlur, validateStatus, testId } = props;
   const { concatTestId } = useNodeTestId();
 
-  // 根据引用变量更改对应的options
+  // Change the corresponding options according to the reference variable
   const options = useMemo(() => {
     if (sourceType && ViewVariableType.isFileType(sourceType)) {
       return convertMap2options(fileConditionValueMap, {

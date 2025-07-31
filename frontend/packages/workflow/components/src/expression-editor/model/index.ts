@@ -60,27 +60,27 @@ export class ExpressionEditorModel {
     this.innerLines = ExpressionEditorParser.deserialize(initialValue);
   }
 
-  /** 设置变量树 */
+  /** Set variable tree */
   public setVariableTree(variableTree: ExpressionEditorTreeNode[]): void {
     this.innerVariableTree = variableTree;
   }
 
-  /** 获取变量树 */
+  /** Get variable tree */
   public get variableTree(): ExpressionEditorTreeNode[] {
     return this.innerVariableTree;
   }
 
-  /** 获取行数据 */
+  /** Get row data */
   public get lines(): ExpressionEditorLine[] {
     return this.innerLines;
   }
 
-  /** 获取序列化值 */
+  /** Get Serialized Value */
   public get value(): string {
     return this.innerValue;
   }
 
-  /** 外部设置模型值 */
+  /** External setting model values */
   public setValue(value: string): void {
     if (value === this.innerValue) {
       return;
@@ -90,22 +90,22 @@ export class ExpressionEditorModel {
     this.syncEditorValue();
   }
 
-  /** 同步选中状态 */
+  /** Synchronize selected state */
   public setFocus(focus: boolean): void {
     if (this.innerFocus === focus) {
       return;
     }
     this.innerFocus = focus;
     if (focus) {
-      // 首次选中时主动触发选区事件，主动触发变量推荐
+      // Active trigger selection event when first selected, active trigger variable recommendation
       this.select(this.lines);
     } else if (this.innerValue !== '' && this.editor.children.length !== 0) {
-      // 触发失焦且编辑器内容不为空，则重置选区
+      // Trigger out of focus and editor content is not empty, reset the selection
       Transforms.select(this.editor, Editor.start(this.editor, []));
     }
   }
 
-  /** 注册事件 */
+  /** Register an event */
   public on<T extends ExpressionEditorEvent>(
     event: T,
     callback: (params: ExpressionEditorEventParams<T>) => void,
@@ -116,7 +116,7 @@ export class ExpressionEditorModel {
     };
   }
 
-  /** 数据变更事件 */
+  /** data change event */
   public change(lines: ExpressionEditorLine[]): void {
     const isAstChange = this.editor.operations.some(
       op => 'set_selection' !== op.type,
@@ -132,7 +132,7 @@ export class ExpressionEditorModel {
     });
   }
 
-  /** 选中事件 */
+  /** selected event */
   public select(lines: ExpressionEditorLine[]): void {
     const { selection } = this.editor;
     if (!selection || !Range.isCollapsed(selection)) {
@@ -143,7 +143,7 @@ export class ExpressionEditorModel {
       selection.anchor.path[0] !== selection.focus.path[0] ||
       selection.anchor.path[1] !== selection.focus.path[1]
     ) {
-      // 框选
+      // box selection
       this.emitter.emit(ExpressionEditorEvent.Select, {
         content: '',
         offset: -1,
@@ -169,7 +169,7 @@ export class ExpressionEditorModel {
     });
   }
 
-  /** 键盘事件 */
+  /** keyboard event */
   public keydown(
     event: Parameters<KeyboardEventHandler<HTMLDivElement>>[0],
   ): void {
@@ -184,7 +184,7 @@ export class ExpressionEditorModel {
         reverse: true,
       });
       setTimeout(() => {
-        // slate UI 渲染滞后
+        // Slate UI Rendering
         this.select(this.innerLines);
       }, 0);
     }
@@ -203,7 +203,7 @@ export class ExpressionEditorModel {
     }
   }
 
-  /** 开始输入拼音 */
+  /** Start typing pinyin */
   public compositionStart(
     event: CompositionEventHandler<HTMLDivElement>,
   ): void {
@@ -212,7 +212,7 @@ export class ExpressionEditorModel {
     });
   }
 
-  /** 装饰叶子节点 */
+  /** Decorative leaf node */
   public get decorate(): ([node, path]: NodeEntry) => ExpressionEditorRange[] {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -221,7 +221,7 @@ export class ExpressionEditorModel {
       if (!Text.isText(node)) {
         return ranges;
       }
-      // 计算表达式合法/非法
+      // Evaluation expressions are legal/illegal
       const validateList = ExpressionEditorValidator.lineTextValidate({
         lineText: node.text,
         tree: self.innerVariableTree,
@@ -247,7 +247,7 @@ export class ExpressionEditorModel {
       if (!this.innerFocus) {
         return ranges;
       }
-      // 以下是计算当前选中表达式逻辑
+      // The following is the logic for evaluating the currently selected expression
       const selectedItem = self.isValidateSelectPath([node, path]);
       const selectedValidItem = validateList.find(
         validateData =>
@@ -274,17 +274,17 @@ export class ExpressionEditorModel {
   }
 
   /**
-   * 同步编辑器实例内容
-   * > **NOTICE:** *为确保不影响性能，应仅在外部值变更导致编辑器值与模型值不一致时调用*
+   * Synchronize editor instance content
+   * > ** NOTICE: ** * To ensure that performance is not affected, it should only be called when an external value change causes the editor value to be inconsistent with the model value.
    */
   private syncEditorValue(): void {
-    // 删除编辑器内所有行
+    // Delete all lines in the editor
     this.editor.children.forEach((line, index) => {
       Transforms.removeNodes(this.editor, {
         at: [index],
       });
     });
-    // 重新在编辑器插入当前行内容
+    // Reinsert the current line content in the editor
     this.lines.forEach((line, index) => {
       Transforms.insertNodes(this.editor, line, {
         at: [this.editor.children.length],

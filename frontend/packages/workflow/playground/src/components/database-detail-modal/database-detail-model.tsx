@@ -25,7 +25,7 @@ import { useWorkflowDetailModalStore } from './use-workflow-detail-modal-store';
 import styles from './database-detail-model.module.less';
 
 /**
- * 数据库详情弹窗
+ * database details pop-up
  */
 export function DatabaseDetailModal() {
   const {
@@ -44,7 +44,7 @@ export function DatabaseDetailModal() {
   }
 
   const addRemoveButtonText = isAddedInWorkflow
-    ? // 这个key命名错了 应该是remove from workflow 产品已经录入了 这里还是继续用错误的key
+    ? // This key is named incorrectly. It should be removed from the workflow product. The product has been entered. Continue to use the wrong key here.
       I18n.t('workflow_remove_to_workflow')
     : I18n.t('workflow_add_to_workflow');
 

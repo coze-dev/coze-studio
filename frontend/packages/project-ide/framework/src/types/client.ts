@@ -43,45 +43,45 @@ export type WidgetTitleRender = (
 export interface ProjectIDEClientProps {
   view: {
     /**
-     * 主编辑区域渲染内容
+     * Main editing area rendering content
      */
     widgetRegistries: WidgetRegistry[];
     /**
-     * 默认渲染页
+     * default render page
      */
     widgetDefaultRender: () => ReactElement<any, any>;
     /**
-     * widget 兜底报错，如果 widget 挂掉会渲染该组件，发送埋点
+     * The widget reports an error. If the widget hangs up, it will render the component and send event tracking.
      */
     widgetFallbackRender?: (props: {
       widget: ReactWidget;
     }) => ReactElement<any, any>;
     /**
-     * 统一标题渲染
+     * unified title rendering
      */
     widgetTitleRender: WidgetTitleRender;
     /**
-     * 主侧边栏渲染
+     * Primary sidebar rendering
      */
     primarySideBar: () => ReactElement<any, any>;
     /**
-     * 辅助侧边栏渲染
+     * Auxiliary Sidebar Rendering
      */
     secondarySidebar?: () => ReactElement<any, any>;
     /**
-     * 主侧边栏底部分区 configuration 配置渲染
+     * Main sidebar bottom partition configuration rendering
      */
     configuration?: () => ReactElement<any, any>;
     /**
-     * 前置工具栏渲染
+     * Front toolbar rendering
      */
     preToolbar?: () => ReactElement<any, any>;
     /**
-     * 后置工具栏渲染
+     * Rear toolbar rendering
      */
     toolbar?: (widget: ProjectIDEWidget) => ReactElement<any, any>;
     /**
-     * 顶部导航栏
+     * Top navigation bar
      */
     topBar: () => ReactElement<any, any>;
     /**

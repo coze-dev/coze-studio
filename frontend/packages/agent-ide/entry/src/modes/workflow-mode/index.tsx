@@ -118,7 +118,7 @@ export const WorkflowMode: React.FC<WorkflowModeProps> = ({
                 toolGroupKey={ToolGroupKey.MEMORY}
                 title={I18n.t('bot_edit_type_memory')}
               >
-                {/* 变量存储 */}
+                {/* variable storage */}
                 <DataMemory
                   toolKey={ToolKey.VARIABLE}
                   title={I18n.t('user_profile')}
@@ -129,12 +129,12 @@ export const WorkflowMode: React.FC<WorkflowModeProps> = ({
                 toolGroupKey={ToolGroupKey.DIALOG}
                 title={I18n.t('bot_edit_type_dialog')}
               >
-                {/* 开场白 */}
+                {/* opening statement */}
                 <OnboardingMessage
                   toolKey={ToolKey.ONBOARDING}
                   title={I18n.t('bot_preview_opening_remarks')}
                 />
-                {/* 聊天背景图片 */}
+                {/* Chat background image */}
                 <ChatBackground
                   toolKey={ToolKey.BACKGROUND}
                   title={I18n.t('bgi_title')}
@@ -240,7 +240,7 @@ export const WorkflowMode: React.FC<WorkflowModeProps> = ({
           </ResizableLayout>
         </ContentView>
 
-        {/* Debug调试台 */}
+        {/* Debug bench */}
         <BotDebugPanel />
         {rightSheetSlot}
       </AbilityAreaContainer>

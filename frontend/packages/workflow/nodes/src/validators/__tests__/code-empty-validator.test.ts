@@ -19,7 +19,7 @@ import { I18n } from '@coze-arch/i18n';
 
 import { codeEmptyValidator } from '../code-empty-validator';
 
-// 模拟I18n.t方法
+// Simulation I18n.t method
 vi.mock('@coze-arch/i18n', () => ({
   I18n: { t: vi.fn(key => `translated_${key}`) },
 }));

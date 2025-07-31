@@ -36,10 +36,10 @@ export interface EventRegsiter {
 
 export interface EventService {
   /**
-   * 监听全局的事件
-   * @param name      触发的事件名
-   * @param handle    触发事件后执行
-   * @param priority  优先级
+   * Monitor global events
+   * @Param name The name of the event fired
+   * @Param handles execution after triggering event
+   * @param priority priority
    */
   listenGlobalEvent: (
     name: EventName,
@@ -52,7 +52,7 @@ export const EventContribution = Symbol('EventContribution');
 
 export interface EventContribution {
   /**
-   * 注册 event
+   * Register for events
    */
   registerEvent: (service: EventService) => void;
 }

@@ -75,9 +75,9 @@ describe('should compute position correctly', () => {
       width: 20,
     })),
   };
-  // 使用 vi.spyOn 模拟 createRef 的行为
+  // Using vi.spyOn to simulate the behavior of createRef
   const createRefSpy = vi.spyOn(React, 'createRef').mockReturnValue(cropperRef);
-  // 手动设置 cropperRef.current 的值
+  // Manually set the value of cropperRef.current
   cropperRef.current = {
     cropper: cropperMock,
   };
@@ -97,7 +97,7 @@ describe('should compute position correctly', () => {
   const result = computePosition(mode, cropperRef);
   expect(result.left).toBe(0.03);
   expect(result.right).toBe(0.92);
-  // 恢复 createRef 的原始行为
+  // Restore the original behavior of createRef
   createRefSpy.mockRestore();
 });
 

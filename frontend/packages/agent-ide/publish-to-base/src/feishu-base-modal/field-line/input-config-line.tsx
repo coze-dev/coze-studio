@@ -82,7 +82,7 @@ const getInputConfig = (storeState: ConfigStoreState, id: string) => {
 
 export const BaseInputFieldLine: FC<{
   data: InputConfigFe;
-  // eslint-disable-next-line @coze-arch/max-line-per-function -- 鼠鼠我呀，也很无奈
+  // eslint-disable-next-line @coze-arch/max-line-per-function -- rat rat me, I am also very helpless
 }> = ({ data: { _id: id } }) => {
   const { onChange, inputFieldsSelectorList, inputOptions, onToggleError } =
     useContext(InputLineCommonContext);

@@ -23,7 +23,7 @@ import {
   isValidSize,
 } from '../../../src/components/renders/image-render/utils';
 
-// 模拟 CustomError
+// Simulate CustomError
 vi.mock('@coze-arch/bot-error', () => ({
   CustomError: class CustomError extends Error {
     constructor(event: string, message: string) {
@@ -48,7 +48,7 @@ describe('getFileExtension', () => {
 
 describe('isValidSize', () => {
   test('文件大小小于限制时应返回true', () => {
-    // 20MB限制
+    // 20MB limit
     const validSize = 10 * 1024 * 1024; // 10MB
     expect(isValidSize(validSize)).toBe(true);
   });
@@ -66,10 +66,10 @@ describe('isValidSize', () => {
 
 describe('getBase64', () => {
   test('应该正确转换文件为base64字符串', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsDataURL: vi.fn(),
       onload: null as any,
@@ -77,36 +77,36 @@ describe('getBase64', () => {
       onabort: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getBase64
+    // Call getBase64
     const promise = getBase64(mockBlob);
 
-    // 触发onload事件
+    // Trigger onload event
     mockFileReader.onload({
       target: {
         result: 'data:text/plain;base64,dGVzdCBjb250ZW50',
       },
     } as any);
 
-    // 验证结果
+    // validation result
     const result = await promise;
     expect(result).toBe('dGVzdCBjb250ZW50');
     expect(mockFileReader.readAsDataURL).toHaveBeenCalledWith(mockBlob);
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 
   test('当FileReader.onload返回非字符串结果时应拒绝Promise', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsDataURL: vi.fn(),
       onload: null as any,
@@ -114,34 +114,34 @@ describe('getBase64', () => {
       onabort: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getBase64
+    // Call getBase64
     const promise = getBase64(mockBlob);
 
-    // 触发onload事件，但返回非字符串结果
+    // Fires the onload event, but returns a non-string result
     mockFileReader.onload({
       target: {
         result: null,
       },
     } as any);
 
-    // 验证Promise被拒绝
+    // Verification Promise Rejected
     await expect(promise).rejects.toThrow('file read invalid');
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 
   test('当FileReader.onerror触发时应拒绝Promise', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsDataURL: vi.fn(),
       onload: null as any,
@@ -149,30 +149,30 @@ describe('getBase64', () => {
       onabort: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getBase64
+    // Call getBase64
     const promise = getBase64(mockBlob);
 
-    // 触发onerror事件
+    // Trigger the onerror event
     mockFileReader.onerror();
 
-    // 验证Promise被拒绝
+    // Verification Promise Rejected
     await expect(promise).rejects.toThrow('file read fail');
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 
   test('当FileReader.onabort触发时应拒绝Promise', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsDataURL: vi.fn(),
       onload: null as any,
@@ -180,100 +180,100 @@ describe('getBase64', () => {
       onabort: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getBase64
+    // Call getBase64
     const promise = getBase64(mockBlob);
 
-    // 触发onabort事件
+    // Trigger onabort event
     mockFileReader.onabort();
 
-    // 验证Promise被拒绝
+    // Verification Promise Rejected
     await expect(promise).rejects.toThrow('file read abort');
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 });
 
 describe('getUint8Array', () => {
   test('应该正确转换文件为Uint8Array', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 创建一个模拟的ArrayBuffer
-    const mockArrayBuffer = new ArrayBuffer(12); // 'test content' 的长度
+    // Create a simulated ArrayBuffer
+    const mockArrayBuffer = new ArrayBuffer(12); // Length of'test content '
     const uint8Array = new Uint8Array(mockArrayBuffer);
     for (let i = 0; i < 12; i++) {
       uint8Array[i] = 'test content'.charCodeAt(i);
     }
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsArrayBuffer: vi.fn(),
       onload: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getUint8Array
+    // Call getUint8Array
     const promise = getUint8Array(mockBlob);
 
-    // 触发onload事件
+    // Trigger onload event
     mockFileReader.onload({
       target: {
         result: mockArrayBuffer,
       },
     } as any);
 
-    // 验证结果
+    // validation result
     const result = await promise;
     expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(12);
     expect(mockFileReader.readAsArrayBuffer).toHaveBeenCalledWith(mockBlob);
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 
   test('当FileReader.onload返回无效结果时应拒绝Promise', async () => {
-    // 创建一个模拟的Blob对象
+    // Create a simulated blob object
     const mockBlob = new Blob(['test content'], { type: 'text/plain' });
 
-    // 模拟FileReader
+    // Analog FileReader
     const mockFileReader = {
       readAsArrayBuffer: vi.fn(),
       onload: null as any,
     };
 
-    // 保存原始的FileReader
+    // Save the original FileReader
     const originalFileReader = global.FileReader;
 
-    // 模拟FileReader构造函数
+    // Mock FileReader constructor
     global.FileReader = vi.fn(() => mockFileReader) as any;
 
-    // 调用getUint8Array
+    // Call getUint8Array
     const promise = getUint8Array(mockBlob);
 
-    // 触发onload事件，但返回无效结果
+    // The onload event is fired, but an invalid result is returned
     mockFileReader.onload({
       target: {
         result: null,
       },
     } as any);
 
-    // 验证Promise被拒绝
+    // Verification Promise Rejected
     await expect(promise).rejects.toThrow('file read invalid');
 
-    // 恢复原始的FileReader
+    // Restore the original FileReader
     global.FileReader = originalFileReader;
   });
 });

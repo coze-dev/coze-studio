@@ -35,18 +35,18 @@ export type BaseFieldState = FieldState;
 export interface FieldInstance<FieldValue = unknown>
   extends Omit<BaseFieldInstance<FieldValue>, 'onChange'> {
   /**
-   * 字段的错误信息数组。
+   * Array of error information for the field.
    */
   errors?: FieldError[];
 
   /**
-   * 表示该字段是否为只读状态。
+   * Indicates whether the field is read-only.
    */
   readonly?: boolean;
 
   /**
-   * 设置字段的值。
-   * @param value 字段的值。
+   * Sets the value of the field.
+   * The value of the @param value field.
    */
   onChange: (value?: FieldValue) => void;
 }
@@ -54,19 +54,19 @@ export interface FieldInstance<FieldValue = unknown>
 export interface FieldArrayInstance<FieldValue = unknown>
   extends Omit<BaseFieldArrayInstance<FieldValue>, 'append'> {
   /**
-   * 表示该字段是否为只读状态。
+   * Indicates whether the field is read-only.
    */
   readonly?: boolean;
 
   /**
-   * 移除列表项
-   * @param index 要移除的字段的索引。
+   * Remove list item
+   * @Param index The index of the field to remove.
    */
   remove: (index: number) => void;
 
   /**
-   * 添加一个新的字段。
-   * @param newItem 要添加的新字段。
+   * Add a new field.
+   * @Param newItem The new field to add.
    */
   append: (newItem: FieldValue) => void;
 }
@@ -74,18 +74,18 @@ export interface FieldArrayInstance<FieldValue = unknown>
 export interface FormInstance<FormValues = unknown>
   extends BaseForm<FormValues> {
   /**
-   * 表示该字段是否为只读状态。
+   * Indicates whether the field is read-only.
    */
   readonly?: boolean;
 
   /**
-   * @deprecated 请使用 `getValueIn` 代替。
+   * @Deprecated Please use'getValueIn 'instead.
    */
   getFieldValue: <FieldValue = unknown>(
     name: FieldName,
   ) => FieldValue | undefined;
   /**
-   * @deprecated 请使用 `setValueIn` 代替。
+   * @Deprecated Please use'setValueIn 'instead.
    */
   setFieldValue: <FieldValue = unknown>(
     name: FieldName,

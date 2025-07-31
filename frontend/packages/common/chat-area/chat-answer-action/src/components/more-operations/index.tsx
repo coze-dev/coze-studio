@@ -43,7 +43,7 @@ export const MoreOperations: React.FC<MoreOperationsProps> = ({
             disabled={isDeleteMessageLock}
             icon={<IconCozTrashCan className="coz-fg-hglt-red" />}
             onClick={() => {
-              // 通过 groupId 索引即可
+              // Just index through groupId.
               deleteMessageGroup(groupId);
             }}
             type="danger"

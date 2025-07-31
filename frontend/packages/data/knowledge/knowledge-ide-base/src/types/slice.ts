@@ -30,5 +30,5 @@ export interface TranSliceListParams {
   onUpdate?: (record: TableViewRecord, index: number, value?: string) => void;
 }
 
-/** 切片插入的位置 */
+/** Where the slice is inserted */
 export type TPosition = 'top' | 'bottom';

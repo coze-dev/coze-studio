@@ -72,8 +72,8 @@ interface IProps {
   onChange: (schema: FabricSchema) => void;
   className?: string;
   /**
-   * 不强制，用来当做 redo/undo 操作栈保存到内存的 key
-   * 不传的话，不会保存操作栈到内存，表现：关闭侧拉窗，丢失操作栈
+   * Unforced, used as the key to save the redo/undo operation stack to memory
+   * If it is not passed, the operation stack will not be saved to memory. Performance: close the side pull window and lose the operation stack.
    */
   id?: string;
 }
@@ -98,10 +98,10 @@ export const FabricEditor: FC<IProps> = props => {
   }, [_variables]);
 
   /**
-   * props.onChange 是异步，这个异步导致 schema 的状态很难管理。
-   * 因此此处用 state 来管理 schema，后续消费 onChange 的地方可以当同步处理
+   * Props.onChange is asynchronous, which makes the state of the schema difficult to manage.
+   * Therefore, state is used to manage the schema here, and subsequent consumption of onChange can be handled synchronously
    *
-   * 副作用：外界引发的 schema 变化，不会同步到画布（暂时没这个场景）
+   * Side effect: Schema changes caused by the outside world will not be synchronized to the canvas (this scene is not available for now)
    */
   const [schema, setSchema] = useState<FabricSchema>(_schema);
   const onChange = useCallback(
@@ -115,26 +115,26 @@ export const FabricEditor: FC<IProps> = props => {
   const [id] = useState<string>(props.id ?? nanoid());
   const helpLineLayerId = `help-line-${id}`;
 
-  // 快捷点监听区域
+  // Shortcut the listening area
   const shortcutRef = useRef<HTMLDivElement>(null);
 
-  // Popover 渲染至 dom
+  // Popover rendering to dom
   const popRef = useRef(null);
-  // Popover 渲染至 dom，作用于 select ，dropdown 右对齐
+  // Popover render to dom, act on select, dropdown right align
   const popRefAlignRight = useRef<HTMLDivElement>(null);
 
-  // canvas 可渲染区域 dom
+  // Canvas renderable domain
   const sizeRef = useRef<HTMLDivElement>(null);
   const size = useSize(sizeRef);
 
-  // popover 渲染至 dom
+  // Popover render to dom
   const popoverRef = useRef<HTMLDivElement>(null);
   const popoverSize = useSize(popoverRef);
 
-  // fabric canvas 渲染 dom
+  // Fabric canvas rendering dom
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // 模式
+  // pattern
   const [drawMode, setDrawMode] = useState<Mode | undefined>();
   const latestDrawMode = useLatest(drawMode);
 
@@ -146,7 +146,7 @@ export const FabricEditor: FC<IProps> = props => {
     | undefined
   >();
 
-  // 监听鼠标是否处于按下状态，松手时才显示属性设置面板
+  // Monitor whether the mouse is pressed, and display the property settings panel when you let go
   const [isMousePressing, setIsMousePressing] = useState(false);
 
   const cancelContentMenu = useCallback(() => {
@@ -298,7 +298,7 @@ export const FabricEditor: FC<IProps> = props => {
     },
   };
 
-  // 针对画笔模式，达到上限后，主动退出绘画模式
+  // For brush mode, after reaching the upper limit, actively exit the painting mode
   useEffect(() => {
     if (drawMode && !couldAddNewObject) {
       modeSetting[drawMode]?.exitFn();
@@ -307,7 +307,7 @@ export const FabricEditor: FC<IProps> = props => {
   }, [couldAddNewObject, drawMode]);
 
   const zoomStartPointer = useRef<Point>();
-  // 鼠标滚轮缩放
+  // mouse wheel zoom
   const onWheelZoom = (e: WheelEvent, isFirst: boolean) => {
     if (!canvas) {
       return;
@@ -321,7 +321,7 @@ export const FabricEditor: FC<IProps> = props => {
       zoomStartPointer.current = pointer;
     }
 
-    // 根据滚轮方向确定是放大还是缩小
+    // Determine whether to zoom in or out according to the direction of the roller
     if (delta < 0) {
       zoomLevel += zoomStep;
     } else {
@@ -333,7 +333,7 @@ export const FabricEditor: FC<IProps> = props => {
     );
   };
 
-  // 鼠标位移
+  // mouse displacement
   const onWheelTransform = (deltaX: number, deltaY: number) => {
     const vpt: TMat2D = [...viewport];
     vpt[4] -= deltaX;
@@ -341,7 +341,7 @@ export const FabricEditor: FC<IProps> = props => {
     setViewport(vpt);
   };
 
-  // 触摸板手势缩放、位移
+  // Touchpad gesture zoom, shift
   const gestureBind = useGesture(
     {
       onPinch: state => {
@@ -380,7 +380,7 @@ export const FabricEditor: FC<IProps> = props => {
     },
   );
 
-  // 当用户编辑文本时，按删除键不应该执行删除元素操作
+  // When a user edits text, pressing the delete key should not perform a delete element operation
   const [isTextEditing, setIsTextEditing] = useState(false);
   useEffect(() => {
     let disposers: (() => void)[] = [];
@@ -426,7 +426,7 @@ export const FabricEditor: FC<IProps> = props => {
     };
   }, [sizeRef]);
 
-  // 点击画布外侧，取消选中
+  // Click on the outside of the canvas and uncheck it.
   useEffect(() => {
     const clickOutside = (e: MouseEvent) => {
       setContentMenuPosition(undefined);
@@ -438,7 +438,7 @@ export const FabricEditor: FC<IProps> = props => {
     };
   }, [discardActiveObject]);
 
-  // 注册快捷键
+  // Registration shortcut
   useShortcut({
     ref: shortcutRef,
     state: {
@@ -471,7 +471,7 @@ export const FabricEditor: FC<IProps> = props => {
 
   const isContentMenuShow = !readonly && contentMenuPosition;
 
-  // 选中元素是否为同一类型（包含框选）
+  // Whether the selected elements are of the same type (including box selection)
   const isSameActiveObjects =
     Array.from(
       new Set(
@@ -482,14 +482,14 @@ export const FabricEditor: FC<IProps> = props => {
     ).length === 1;
 
   /**
-   * 属性菜单没有展示 &&
-   * 鼠标右键没有按下（拖拽 ing）&&
+   * Properties menu not displayed & &
+   * The right mouse button is not pressed (drag and drop ing) & &
    * isSameActiveObjects &&
    */
   const isFormShow =
     !isContentMenuShow && !isMousePressing && isSameActiveObjects;
 
-  // 最大宽高有两层限制 1. 面积 2. 固定最大值
+  // There are two restrictions on the maximum width and height: 1. Area 2. Fixed maximum
   const { canvasMaxWidth, canvasMaxHeight } = useMemo(
     () => ({
       canvasMaxWidth: Math.min(MAX_AREA / schema.height, MAX_WIDTH),
@@ -708,7 +708,7 @@ export const FabricEditor: FC<IProps> = props => {
                     e.stopPropagation();
                   }}
                 >
-                  {/* 引用 tag */}
+                  {/* Reference tag */}
                   <RefTitle visible={!isMousePressing} />
                   <div className="w-fit h-fit overflow-hidden">
                     <div
@@ -719,7 +719,7 @@ export const FabricEditor: FC<IProps> = props => {
                   </div>
                 </div>
               </div>
-              {/* 右键菜单 */}
+              {/* right-click menu */}
               {isContentMenuShow ? (
                 <ContentMenu
                   limitRect={popoverSize}
@@ -745,10 +745,10 @@ export const FabricEditor: FC<IProps> = props => {
                 <></>
               )}
 
-              {/* 属性面板 */}
+              {/* properties panel */}
               {isFormShow ? (
                 <Form
-                  // 文本切换时，涉及字号变化，需要 rerender form 同步状态
+                  // Text switching, involving font size changes, need to rerender form synchronization state
                   key={
                     (activeObjects as FabricObjectWithCustomProps[])?.[0]
                       ?.customType

@@ -22,24 +22,24 @@ import { chatBackgroundConfig } from '../../../../../src/save-manager/auto-save/
 
 describe('chatBackgroundConfig', () => {
   it('应该具有正确的配置属性', () => {
-    // 验证配置的基本属性
+    // Verify the basic properties of the configuration
     expect(chatBackgroundConfig).toHaveProperty('key');
     expect(chatBackgroundConfig).toHaveProperty('selector');
     expect(chatBackgroundConfig).toHaveProperty('debounce');
     expect(chatBackgroundConfig).toHaveProperty('middleware');
 
-    // 验证 middleware 存在且有 onBeforeSave 属性
+    // Verify that middleware exists and has an onBeforeSave attribute
     expect(chatBackgroundConfig.middleware).toBeDefined();
     if (chatBackgroundConfig.middleware) {
       expect(chatBackgroundConfig.middleware).toHaveProperty('onBeforeSave');
     }
 
-    // 验证属性值
+    // Validate attribute value
     expect(chatBackgroundConfig.key).toBe(ItemTypeExtra.ChatBackGround);
     expect(chatBackgroundConfig.debounce).toBe(DebounceTime.Immediate);
     expect(typeof chatBackgroundConfig.selector).toBe('function');
 
-    // 验证 onBeforeSave 是函数
+    // Verify that onBeforeSave is a function
     if (
       chatBackgroundConfig.middleware &&
       chatBackgroundConfig.middleware.onBeforeSave
@@ -51,49 +51,49 @@ describe('chatBackgroundConfig', () => {
   });
 
   it('selector 应该返回 store 的 backgroundImageInfoList 属性', () => {
-    // 创建模拟 store
+    // Create mock store
     const mockStore = {
       backgroundImageInfoList: [
         { id: 'bg1', url: 'http://example.com/bg1.jpg' },
       ],
     };
 
-    // 调用 selector 函数
-    // 注意：这里我们假设 selector 是一个函数，如果它是一个复杂对象，可能需要调整测试
+    // Call the selector function
+    // Note: Here we assume that the selector is a function, and if it is a complex object, the test may need to be adjusted
     const { selector } = chatBackgroundConfig;
     let result;
 
     if (typeof selector === 'function') {
       result = selector(mockStore as any);
-      // 验证结果
+      // validation result
       expect(result).toBe(mockStore.backgroundImageInfoList);
     } else {
-      // 如果 selector 不是函数，跳过这个测试
+      // If the selector is not a function, skip this test
       expect(true).toBe(true);
     }
   });
 
   it('middleware.onBeforeSave 应该正确转换数据', () => {
-    // 创建模拟数据
+    // Create simulated data
     const mockData = [
       { id: 'bg1', url: 'http://example.com/bg1.jpg' },
       { id: 'bg2', url: 'http://example.com/bg2.jpg' },
     ];
 
-    // 确保 middleware 和 onBeforeSave 存在
+    // Make sure middleware and onBeforeSave exist
     if (
       chatBackgroundConfig.middleware &&
       chatBackgroundConfig.middleware.onBeforeSave
     ) {
-      // 调用 onBeforeSave 函数
+      // Call the onBeforeSave function
       const result = chatBackgroundConfig.middleware.onBeforeSave(mockData);
 
-      // 验证结果
+      // validation result
       expect(result).toEqual({
         background_image_info_list: mockData,
       });
     } else {
-      // 如果 middleware 或 onBeforeSave 不存在，跳过这个测试
+      // If middleware or onBeforeSave does not exist, skip this test
       expect(true).toBe(true);
     }
   });

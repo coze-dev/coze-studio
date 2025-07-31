@@ -34,12 +34,12 @@ export interface IWorkflow {
 export interface IProject {
   id: string;
   type: 'app' | 'bot';
-  mode: 'draft' | 'release' | 'websdk' | 'audit'; // 草稿模式 | 发布模式 | webSdk发布
+  mode: 'draft' | 'release' | 'websdk' | 'audit'; // Draft Mode | Publish Mode | webSdk Publish
   caller?: 'UI_BUILDER' | 'CANVAS';
   connectorId?: string;
-  conversationName?: string; // project的话，必须填写
-  conversationId?: string; // type 为bot的话，必须填写
-  sectionId?: string; // type 为bot的话，必须填写
+  conversationName?: string; // Project must be filled in
+  conversationId?: string; // If the type is bot, it must be filled in
+  sectionId?: string; // If the type is bot, it must be filled in
   name?: string;
   defaultName?: string;
   defaultIconUrl?: string;
@@ -68,28 +68,28 @@ export interface IBuilderChatProps {
   eventCallbacks?: IEventCallbacks;
   userInfo: IChatFlowProps['userInfo'];
   areaUi: {
-    isDisabled?: boolean; // 默认 false
-    uploadable?: boolean; // 默认 true
-    isNeedClearContext?: boolean; // 是否显示 clearContext按钮
-    isNeedClearMessage?: boolean; // 是否显示 clearMessage按钮
+    isDisabled?: boolean; // Default false
+    uploadable?: boolean; // Default true
+    isNeedClearContext?: boolean; // Whether to display the clearContext button
+    isNeedClearMessage?: boolean; // Whether to display the clearMessage button
 
-    //isShowHeader?: boolean; // 默认 false
-    //isShowFooter?: boolean; // 默认 false
+    //isShowHeader?: boolean;//default false
+    //isShowFooter?: boolean;//default false
     input?: {
       placeholder?: string;
       renderChatInputTopSlot?: (isChatError?: boolean) => React.ReactNode;
-      isShow?: boolean; //默认 true
+      isShow?: boolean; //Default true
       defaultText?: string;
-      isNeedAudio?: boolean; // 是否需要语音输入，默认是false
+      isNeedAudio?: boolean; // Whether voice input is required, the default is false
       isNeedTaskMessage?: boolean;
     };
-    header?: HeaderConfig; // 默认是
+    header?: HeaderConfig; // Default is
     footer?: FooterConfig;
-    uiTheme?: 'uiBuilder' | 'chatFlow'; // uiBuilder 的主题
+    uiTheme?: 'uiBuilder' | 'chatFlow'; // Theme for uiBuilder
     renderLoading?: () => React.ReactNode;
   };
   auth?: {
-    type: 'external' | 'internal'; // 内部： cookie换token， 外部： internal
+    type: 'external' | 'internal'; // Internal: cookie for token, external: internal
     token?: string;
     refreshToken?: () => Promise<string> | string;
   };

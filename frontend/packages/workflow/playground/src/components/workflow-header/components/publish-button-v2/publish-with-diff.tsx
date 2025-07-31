@@ -43,7 +43,7 @@ export const PublishWithDiff: React.FC<PublishWithDiffProps> = ({
   const { setStep } = props;
   const { isCollaboratorMode, isInIDE } = useGlobalState();
   const { publishUpdateReferencedConfirm } = usePublishReferenceConfirm();
-  // 缓存一下需要给到发布接口的数据，待用户确认 diff 之后使用。因为 diff 弹窗的设计不具备扩展性，暂时先如此处理
+  // Cache the data that needs to be given to the publishing interface and use it after the user confirms the diff. Because the design of the diff pop-up window is not scalable, it will be handled like this for the time being.
   const publishDataRef = useRef<Partial<PublishWorkflowRequest>>({});
 
   const useNewGlobalVariableCache = !isInIDE;

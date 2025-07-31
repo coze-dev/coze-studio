@@ -92,38 +92,38 @@ export const JSONImport: FC<JSONImportProps> = props => {
   const { setFullscreenPanel } = useNodeFormPanelState();
 
   const onChange = (data: TreeNodeCustomData[]) => {
-    // 添加 batch 数据
+    // Add batch data
     const dataWithBatch = addBatchData({ data, isBatch });
-    // 合并新旧数据
+    // Merge old and new data
     const mergedData = mergeData({
       newData: dataWithBatch,
       oldData: treeData,
       withRequired,
     });
-    // 数据格式化
+    // data formatting
     const formattedTreeData: TreeNodeCustomData[] = formatTreeData(
       mergedData,
       startField,
     ).data;
-    const allowDepth = 3; // 最大深度限制
-    const allowNameLength = 20; // 名称长度限制
-    // 裁切非法数据
+    const allowDepth = 3; // Maximum depth limit
+    const allowNameLength = 20; // Name length limit
+    // Crop illegal data
     const dataCutoff = cutOffInvalidData({
       data: formattedTreeData,
       isBatch,
       disabledTypes,
-      allowDepth: isBatch ? allowDepth + 1 : allowDepth, // batch 下层级更深一层
+      allowDepth: isBatch ? allowDepth + 1 : allowDepth, // The lower level of the batch is deeper
       allowNameLength,
     });
 
-    // 添加 readonly 数据 (目前只有 errorBody)
+    // Add readonly data (currently only errorBody)
     const dataWithReadonly = addReadOnlyData({
       isBatch,
       treeData,
       data: dataCutoff,
     });
 
-    // 更新数据
+    // update data
     return props.onChange(dataWithReadonly);
   };
 
@@ -140,7 +140,7 @@ export const JSONImport: FC<JSONImportProps> = props => {
   );
 
   useEffect(() => {
-    // 子组件 onChange 隐式依赖了 isBatch，必须强制重新渲染
+    // The child component onChange implicitly depends on isBatch and must force a re-render
     setUpdateKey(updateKey + 1);
   }, [isBatch]);
 

@@ -39,7 +39,7 @@ export const BizMessageInnerAddonBottom: FC<IProps> = memo(
       return () => {
         ref.current = p.message.reasoning_content;
       };
-      // content 用来触发 reasoning 的 rerender
+      // Content used to trigger reasoning rerender
     }, [p.message.reasoning_content, p.message.content]);
 
     return p.message.role === 'assistant' && p.message.reasoning_content ? (

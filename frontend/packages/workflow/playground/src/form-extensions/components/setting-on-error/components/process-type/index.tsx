@@ -25,7 +25,7 @@ import { type Option } from './types';
 import { OptionItem } from './option-item';
 
 /**
- * 超时
+ * timeout
  */
 export const ProcessType: FC<
   SettingOnErrorItemProps<SettingOnErrorProcessType> & {

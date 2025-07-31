@@ -22,11 +22,11 @@ import { Tooltip } from '@coze-arch/bot-semi';
 
 import styles from './page-selector.module.less';
 
-/** 不能选择的类型有两种 */
+/** There are two types that cannot be selected */
 export enum DisabledType {
-  /** 意外情况导致未执行到，结果为空 */
+  /** An unexpected condition caused it not to execute, the result is empty */
   Empty,
-  /** 超出了运行时 variable 本身的长度，预期内的停止 */
+  /** Stops beyond the length of the run-time variable itself, expected */
   Stop,
 }
 

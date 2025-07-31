@@ -64,10 +64,10 @@ export const IntelligenceList: React.FC<IntelligenceListProps> = ({
 
   return (
     <div className="relative h-full">
-      {/* 上遮罩 */}
+      {/* upper mask */}
       <div className="sticky top-0 left-0 right-0 h-[20px] bg-gradient-to-b from-[rgba(255,255,255,1)] to-transparent pointer-events-none z-10" />
 
-      {/* 列表内容 */}
+      {/* list content */}
       <div className="styled-scrollbar">
         {data.list.map(intelligence => (
           <IntelligenceItem
@@ -90,7 +90,7 @@ export const IntelligenceList: React.FC<IntelligenceListProps> = ({
         ) : null}
       </div>
 
-      {/* 下遮罩 */}
+      {/* lower mask */}
       <div className="sticky bottom-0 left-0 right-0 h-[20px] bg-gradient-to-t from-[rgba(255,255,255,1)] to-transparent pointer-events-none z-10" />
     </div>
   );

@@ -26,23 +26,23 @@ import { type ResourceInfo } from '@coze-arch/bot-api/plugin_develop';
 export { type ResourceInfo };
 
 export interface WorkflowResourceActionProps {
-  /* 刷新列表函数 */
+  /* refresh list function */
   refreshPage?: () => void;
   spaceId?: string;
-  /* 当前登录用户 id */
+  /* Current login user id */
   userId?: string;
   getCommonActions?: (
     libraryResource: ResourceInfo,
   ) => NonNullable<TableActionProps['actionList']>;
 }
 export interface WorkflowResourceActionReturn {
-  /* 打开 workflow 创建弹窗 */
+  /* Open the workflow creation pop-up window */
   openCreateModal: (flowMode?: WorkflowMode) => void;
-  /* 创建、删除等操作的全局弹窗，直接挂载到列表父容器上 */
+  /* Global pop-ups for create, delete, etc. are directly mounted on the list parent container */
   workflowResourceModals: ReactNode[];
-  /* 在 Table 组件的 columns 的 render 里调用，返回 Table.TableAction 组件 */
+  /* Called in the render of the columns of the Table component, returning the Table. TableAction component */
   renderWorkflowResourceActions: (record: ResourceInfo) => ReactNode;
-  /* 资源 item 点击 */
+  /* Resource item click */
   handleWorkflowResourceClick: (record: ResourceInfo) => void;
 }
 

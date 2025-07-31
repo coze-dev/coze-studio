@@ -28,7 +28,7 @@ export function transformOnInit(value, context) {
 
   const { mode = ModeValue.Set, inputParameters = [] } = inputs;
 
-  // 处理输入参数
+  // Processing input parameters
   const formattedInputParameters: InputValueVO[] = [];
   inputParameters.forEach(input => {
     if (!input) {
@@ -41,7 +41,7 @@ export function transformOnInit(value, context) {
 
   const isSetMode = mode === ModeValue.Set;
 
-  // 处理输出参数
+  // Processing output parameters
   const formattedOutputs =
     outputs.length > 0
       ? outputs
@@ -69,7 +69,7 @@ export function transformOnSubmit(value, context) {
 
   const { nodeMeta, mode, inputParameters, outputs } = value;
 
-  // 处理输入参数
+  // Processing input parameters
   const formattedInputParameters: InputValueDTO[] = [];
   inputParameters.forEach(input => {
     if (!input) {

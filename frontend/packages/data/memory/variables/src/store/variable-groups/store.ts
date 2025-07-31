@@ -85,27 +85,27 @@ export interface VariableGroupsAction {
     parentId: string;
     channel: VariableChannel;
   }) => Variable;
-  // 更新变量, 根据groupId和variableId更新
+  // Update variables, according to groupId and variableId
   updateVariable: (newVariable: Variable) => void;
-  // 更新变量的meta信息
+  // Update the meta information of the variable
   updateMeta: (params: {
     variables: Variable[];
     level?: number;
     parentId?: string;
   }) => void;
-  // 新增根节点变量
+  // Add root node variable
   addRootVariable: (variable: Omit<Variable, 'channel'>) => void;
-  // 新增子节点变量
+  // Add sub-node variable
   addChildVariable: (variable: Variable) => void;
-  // 删除变量
+  // Delete variable
   deleteVariable: (variable: Variable) => void;
-  // 保存后作为历史变量对待
+  // After being preserved, it is treated as a historical variable
   saveHistory: () => void;
-  // 获取DTO variable
+  // Get DTO variable
   getDtoVariable: (variable: Variable) => ProjectMemory.Variable;
-  // 获取groups下所有的变量
+  // Get all the variables under groups
   getAllRootVariables: () => Variable[];
-  // 获取groups下所有的变量
+  // Get all the variables under groups
   getAllVariables: () => Variable[];
   transformDto2Vo: (data: ProjectMemory.GroupVariableInfo[]) => VariableGroup[];
   initStore: (data: {
@@ -113,7 +113,7 @@ export interface VariableGroupsAction {
     canEdit: boolean;
   }) => void;
   clear: () => void;
-  // 在变量树中查找变量，并可选地修改或删除
+  // Locate variables in the variable tree and optionally modify or delete them
   findAndModifyVariable: (
     groupId: string,
     predicate: (variable: Variable) => boolean,
@@ -328,7 +328,7 @@ export const useVariableGroupsStore = create<
       },
       transformDto2Vo: data => {
         const transformedData = getGroupListByDto(data);
-        // 在数据转换完成后，立即更新meta信息
+        // After the data conversion is completed, update the meta information immediately
         transformedData.forEach(group => {
           get().updateMeta({ variables: group.varInfoList });
         });

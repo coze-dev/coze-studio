@@ -27,7 +27,7 @@ export interface StringOptions {
   placeholder?: string;
   width?: number | string;
   maxCount?: number;
-  // 新增这个配置的原因是readonly样式带有输入框 有些场景需要只展示文本
+  // The reason for adding this configuration is that the readonly style has a text box, and some scenes need to display only text.
   textMode?: boolean;
   testId?: string;
 }

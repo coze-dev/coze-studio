@@ -38,50 +38,50 @@ export class FlowRegisters
   implements FlowDocumentContribution, FlowRendererContribution
 {
   /**
-   * 注册数据层
+   * registration data layer
    * @param document
    */
   registerDocument(document: FlowDocument) {
     /**
-     * 注册节点 (ECS - Entity)
+     * Registered Node (ECS - Entity)
      */
     document.registerFlowNodes(
-      // 等待简化
-      FixedLayoutRegistries.RootRegistry, // 根节点
-      FixedLayoutRegistries.StartRegistry, // 开始节点
-      FixedLayoutRegistries.DynamicSplitRegistry, // 动态分支（并行、排他）
-      FixedLayoutRegistries.BlockRegistry, // 单条 block 注册
-      FixedLayoutRegistries.InlineBlocksRegistry, // 多个 block 组成的 block 列表
-      FixedLayoutRegistries.BlockIconRegistry, // icon 节点，如条件分支的菱形图标
-      // FixedLayoutRegistries.EndRegistry, // 结束节点
-      FixedLayoutRegistries.EmptyRegistry, // 占位节点
+      // Wait for Simplification
+      FixedLayoutRegistries.RootRegistry, // root node
+      FixedLayoutRegistries.StartRegistry, // start node
+      FixedLayoutRegistries.DynamicSplitRegistry, // Dynamic branching (parallel, exclusive)
+      FixedLayoutRegistries.BlockRegistry, // Single block registration
+      FixedLayoutRegistries.InlineBlocksRegistry, // A list of multiple blocks
+      FixedLayoutRegistries.BlockIconRegistry, // Icon nodes, such as diamond icons for conditional branches
+      // FixedLayoutRegistries. EndRegistry,//End Node
+      FixedLayoutRegistries.EmptyRegistry, // placeholder node
     );
     /**
-     * 注册节点数据 (ECS - Component)
+     * Registered Node Data (ECS - Components)
      */
     document.registerNodeDatas(
-      FlowNodeRenderData, // 渲染节点相关数据
-      FlowNodeTransitionData, // 线条绘制数据
-      FlowNodeTransformData, // 坐标计算数据
+      FlowNodeRenderData, // Render node related data
+      FlowNodeTransitionData, // line drawing data
+      FlowNodeTransformData, // coordinate calculation data
     );
   }
 
   /**
-   * 注册渲染层
+   * Register the render layer
    * @param renderer
    */
   registerRenderer(renderer: FlowRendererRegistry) {
     /**
-     * 注册 layer (ECS - System)
+     * Registration layer (ECS - System)
      */
     renderer.registerLayers(
-      FlowNodesTransformLayer, // 节点位置渲染
-      FlowNodesContentLayer, // 节点内容渲染
-      FlowLinesLayer, // 线条渲染
-      // FlowLabelsLayer, // Label 渲染
-      PlaygroundLayer, // 画布基础层，提供缩放、手势等能力
-      FlowScrollLimitLayer, // 控制滚动范围
-      FlowScrollBarLayer, // 滚动条
+      FlowNodesTransformLayer, // Node position rendering
+      FlowNodesContentLayer, // Node content rendering
+      FlowLinesLayer, // line rendering
+      // FlowLabelsLayer,//Label rendering
+      PlaygroundLayer, // Canvas base layer, providing zoom, gesture, and more
+      FlowScrollLimitLayer, // Control scroll range
+      FlowScrollBarLayer, // scroll bar
     );
   }
 }

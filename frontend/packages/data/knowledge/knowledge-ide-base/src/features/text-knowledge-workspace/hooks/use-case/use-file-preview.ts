@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react';
 export const useFilePreview = (curDocId: string) => {
   const [showOriginalFile, setShowOriginalFile] = useState(false);
 
-  // 切换文档时，重置预览状态
+  // Reset the preview state when switching documents
   useEffect(() => {
     if (showOriginalFile) {
       setShowOriginalFile(false);

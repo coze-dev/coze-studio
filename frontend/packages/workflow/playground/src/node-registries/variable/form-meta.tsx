@@ -31,13 +31,13 @@ import { transformOnInit, transformOnSubmit } from './data-transformer';
 const INPUT_PARAMETERS_FIELD_NAME = 'inputParameters.*.name';
 
 export const VARIABLE_NODE_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <FormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     [INPUT_PARAMETERS_FIELD_NAME]: ({ value }) => {
       if (/^.+$/.test(value)) {
@@ -50,15 +50,15 @@ export const VARIABLE_NODE_FORM_META: FormMetaV2<FormData> = {
     }),
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

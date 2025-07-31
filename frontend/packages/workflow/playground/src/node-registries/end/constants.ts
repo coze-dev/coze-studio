@@ -17,7 +17,7 @@
 import { I18n } from '@coze-arch/i18n';
 
 import { TerminatePlan } from './types';
-// 入参路径，试运行等功能依赖该路径提取参数
+// Imported parameter path, practice running and other functions rely on this path to extract parameters
 export const INPUT_PATH = 'inputs.inputParameters';
 export const TERMINATE_PLAN_PATH = 'inputs.terminatePlan';
 export const ANSWER_CONTENT_PATH = 'inputs.content';

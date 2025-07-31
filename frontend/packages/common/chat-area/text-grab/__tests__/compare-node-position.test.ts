@@ -22,12 +22,12 @@ describe('compareNodePosition', () => {
   let siblingNode: HTMLElement;
 
   beforeEach(() => {
-    // 在每个测试之前创建新的 DOM 结构
+    // Create a new DOM structure before each test
     parentNode = document.createElement('div');
     childNode = document.createElement('span');
     siblingNode = document.createElement('p');
-    parentNode.appendChild(childNode); // childNode 是 parentNode 的子节点
-    parentNode.appendChild(siblingNode); // siblingNode 是 childNode 的同级节点
+    parentNode.appendChild(childNode); // childNode is a sub-node of parentNode
+    parentNode.appendChild(siblingNode); // siblingNode is a sibling of childNode
   });
 
   it('should return "before" if nodeA is before nodeB', () => {

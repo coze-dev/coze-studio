@@ -59,7 +59,7 @@ export const KnowledgeResourceProcessorLayout = ({
 
   const { datasetID, opt, docID, biz } = useKnowledgeParams();
 
-  // 获取知识库详情
+  // Get Knowledge Base Details
   const { data: dataSetInfo, loading } = useGetKnowledgeListInfo({
     datasetID: datasetID || '',
   });
@@ -90,7 +90,7 @@ export const KnowledgeResourceProcessorLayout = ({
     onStatusChange?.('normal');
   }, [headerTiTle]);
 
-  // TODO:hzf 分化拆分到scenes
+  // TODO: hzf differentiation split into scenes
   const fromProject = biz === 'project';
 
   return (

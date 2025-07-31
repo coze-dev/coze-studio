@@ -30,7 +30,7 @@ export class WorkflowModelsService {
 
   protected models: Model[] = [];
   async load() {
-    // TODO: 临时方案，模版空间为虚拟空间，只读模式不加载模型列表，解决权限问题
+    // TODO: Temporary solution, the template space is virtual space, and the model list is not loaded in read-only mode to solve the permission problem
     if (
       this.globalState.readonly &&
       this.globalState.spaceId === PUBLIC_SPACE_ID
@@ -51,15 +51,15 @@ export class WorkflowModelsService {
   }
 
   /**
-   * 获取所有的COT模型
-   * @returns 返回所有的COT模型
+   * Acquire all COT models
+   * @Returns all COT models
    */
   getCoTModels() {
     return this.models.filter(model => model.model_ability?.cot_display);
   }
 
   /**
-   * 判断是否是COT模型
+   * Determine whether it is a COT model
    * @param modelType
    * @returns
    */
@@ -68,14 +68,14 @@ export class WorkflowModelsService {
   }
 
   /**
-   * 判断是否是FunctionCall模型
+   * Determine whether it is a FunctionCall model
    */
   isFunctionCallModel(modelType: number): boolean {
     return !!this.getModelAbility(modelType)?.function_call;
   }
 
   /**
-   * 根据类型获取模型
+   * Get the model by type
    * @param modelType
    * @returns
    */
@@ -84,7 +84,7 @@ export class WorkflowModelsService {
   }
 
   /**
-   * 获取模型能力
+   * Acquire model capabilities
    * @param modelType
    * @returns
    */

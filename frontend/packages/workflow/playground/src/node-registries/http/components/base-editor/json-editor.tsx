@@ -121,7 +121,7 @@ export const BaseJsonEditor = React.forwardRef(
       apiRef.current?.updateASTDecorations();
     }, [isDarkTheme]);
 
-    // 值受控;
+    // Value controlled;
     useEffect(() => {
       const editor = apiRef.current;
 

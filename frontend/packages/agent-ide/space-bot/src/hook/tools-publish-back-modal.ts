@@ -37,7 +37,7 @@ import { PluginType } from '@coze-arch/bot-api/developer_api';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 
 /**
- * workflow 发布成功后跳转回 bot 编辑页，弹窗提示是否添加到 bot
+ * After the workflow is successfully published, jump back to the bot editing page, and the pop-up window prompts whether to add it to the bot.
  */
 export const useWorkflowPublishedModel = ({
   flowMode,
@@ -48,11 +48,11 @@ export const useWorkflowPublishedModel = ({
   pageType = PageType.BOT,
 }: {
   flowMode?: WorkflowMode;
-  /** 已添加的 workflow（若已添加该 workflow 则不弹窗）。为了兼容 single 和 multi 模式，所以由外部传入 */
+  /** The workflow that has been added (if the workflow has been added, the window will not pop up). For compatibility with single and multi modes, it is passed in externally */
   addedWorkflows: WorkFlowItemType[];
-  /** 点击确认并查询 workflow 对应的 plugin 成功后的回调，也是为了兼容 single 和 multi 两种模式才由外部传入 */
+  /** Click Confirm and query the callback after the plugin corresponding to the workflow is successful. It is also passed in externally for compatibility with single and multi modes */
   onOk: (workflow: WorkFlowItemType) => unknown;
-  /** 允许业务方额外附带禁止弹窗的条件。主要用于 multi 模式 */
+  /** Allows the business side to attach additional conditions to prohibit pop-ups. Mainly used in multi mode */
   skipByExternal?: (
     jumpResponse: SceneResponseType<
       | SceneType.WORKFLOW_PUBLISHED__BACK__BOT
@@ -66,7 +66,7 @@ export const useWorkflowPublishedModel = ({
   const isImageflow = flowMode === WorkflowMode.Imageflow;
   const jumpResponse = usePageJumpResponse(pageType);
 
-  // 使用 useCallback 缓存防抖函数，避免 UIModal 弹窗出现多次
+  // Use useCallback cache stabilization function to avoid multiple UIModal pop-ups
   const debouncedEffect = useCallback(
     debounce(() => {
       const isNotWorkflowPublishedBackBot =
@@ -88,11 +88,11 @@ export const useWorkflowPublishedModel = ({
           isNotWorkflowPublishedBackSocialScene) ||
         isOnlyOnceAdd
       ) {
-        // 不是发布跳转的场景，或者是仅添加一次，直接不弹窗
+        // It is not to publish the jump scene, or to add it only once without popping up.
         return;
       }
 
-      // 配置了 flowMode 才判断，否则不进行 flowMode 限制（适配 ChatFlow）
+      // The flowMode is configured to judge, otherwise the flowMode restriction will not be performed (adapted to ChatFlow)
       if (
         typeof flowMode !== 'undefined' &&
         (jumpResponse?.flowMode || WorkflowMode.Workflow) !== flowMode
@@ -109,7 +109,7 @@ export const useWorkflowPublishedModel = ({
           workflow => workflow.workflow_id === jumpResponse.workflowID,
         )
       ) {
-        // 已经添加过该 workflow 了，不弹窗
+        // The workflow has been added, no pop-up window.
         return;
       }
 
@@ -174,13 +174,13 @@ export const useWorkflowPublishedModel = ({
         },
       });
     }, 1000),
-    [], // 空依赖数组
+    [], // empty dependent array
   );
 
   useEffect(() => {
     debouncedEffect();
 
-    // 清理函数
+    // cleanup function
     return () => {
       debouncedEffect.cancel();
     };

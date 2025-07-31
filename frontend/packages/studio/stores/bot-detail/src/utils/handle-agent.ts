@@ -24,7 +24,7 @@ import { saveDeleteAgents } from '../save-manager/manual-save/multi-agent';
 import { findTargetAgentIndex } from './find-agent';
 
 /**
- * FG全量后，默认用结构化的新接口
+ * After the full amount of FG, a structured new interface is used by default
  */
 export const deleteAgent = async (agentId?: string) => {
   if (!agentId) {
@@ -33,21 +33,21 @@ export const deleteAgent = async (agentId?: string) => {
   await saveDeleteAgents(agentId);
   useMultiAgentStore.getState().setMultiAgentByImmer(multiAgent => {
     const { agents } = multiAgent;
-    // 找到要删除的位置
+    // Find the location to delete
     const targetAgentIndex = findTargetAgentIndex(agents, agentId);
     if (targetAgentIndex < 0) {
       Toast.error(I18n.t('chatflow_error_delete_failed'));
       return;
     }
-    // 删除当前的agent
+    // Delete the current agent
     agents.splice(targetAgentIndex, 1);
   });
 };
 
 /**
- * 用户手动切换 chatting 节点
+ * Users manually switch chatting nodes
  *
- * host 模式下会一并切换 host 节点
+ * In host mode, the host node will be switched together.
  */
 export const manuallySwitchAgent = (agentID: string) => {
   const { setMultiAgentByImmer } = useMultiAgentStore.getState();

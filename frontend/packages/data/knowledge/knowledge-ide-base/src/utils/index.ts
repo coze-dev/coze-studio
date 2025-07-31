@@ -84,7 +84,7 @@ export const DOCUMENT_SOURCE_TYPE_MAP: Record<DocumentSource, string> = {
   [DocumentSource.Document]: I18n.t('dataset_detail_source_local'),
   [DocumentSource.Web]: I18n.t('dataset_detail_source_online'),
   [DocumentSource.Custom]: I18n.t('dataset_detail_source_custom'),
-  [DocumentSource.ThirdParty]: '', // todo 三方，后端 idl 有此类型，但是无 i18n
+  [DocumentSource.ThirdParty]: '', // Todo three-way, the backend idl has this type, but no i18n.
   [DocumentSource.FrontCrawl]: I18n.t('dataset_detail_source_online'),
   [DocumentSource.GoogleDrive]: I18n.t('knowledge-3rd-party-google-drive'),
   [DocumentSource.Notion]: I18n.t('knowledge-3rd-party-notion'),
@@ -95,13 +95,13 @@ export const DOCUMENT_SOURCE_TYPE_MAP: Record<DocumentSource, string> = {
 };
 
 /**
- * 获取 source name
+ * Get source name
  */
 export const getSourceName = (docInfo: DocumentInfo) => {
   const { format_type: formatType, source_type: sourceType } = docInfo || {};
   if (formatType === FormatType.Table && sourceType === DocumentSource.Web) {
     return 'Api';
-    // 如果是三方数据源
+    // If it is a third-party data source
   }
   return DOCUMENT_SOURCE_TYPE_MAP[sourceType || 0] || '-';
 };
@@ -135,7 +135,7 @@ interface JumpToAddDocParams {
   formatType: FormatType;
   docID?: string;
   type?: UnitType;
-  /** 作用是跳转上传页时能在 url 里带上抖音标记，以在上传页做视图区分 */
+  /** The function is to bring the Douyin mark in the url when jumping to the upload page to distinguish the views on the upload page */
   isDouyinBot?: boolean;
 }
 

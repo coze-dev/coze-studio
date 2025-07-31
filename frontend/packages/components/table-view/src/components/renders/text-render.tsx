@@ -70,7 +70,7 @@ export const TextRender = ({
         try {
           await onBlur(inputValue, updateRecord, index);
         } catch (e) {
-          // 更新失败，恢复原值
+          // Update failed, restore original value
           console.log('update table content error', e);
           setInputValue(String(value));
         }
@@ -86,7 +86,7 @@ export const TextRender = ({
     }
     setInputValue(v);
   };
-  // 校验状态
+  // check state
   const isError = useMemo(
     () => !!validate?.(String(inputValue), record, index),
     [inputValue, validate],
@@ -113,7 +113,7 @@ export const TextRender = ({
       className={`${styles['cell-text-render']} text-render-wrapper`}
       data-testid={CommonE2e.CommonTableViewTextRender}
     >
-      {/* 编辑态组件 */}
+      {/* edit state component */}
       {isEditCom ? (
         <span
           className={`${styles['cell-text-edit']} ${
@@ -141,7 +141,7 @@ export const TextRender = ({
         </span>
       ) : null}
 
-      {/* 预览态组件 */}
+      {/* preview component */}
       {!isEditCom && (
         <div
           className={`${styles['cell-text-preview']} text-content`}

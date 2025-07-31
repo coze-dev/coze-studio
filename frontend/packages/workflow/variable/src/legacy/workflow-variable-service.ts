@@ -31,7 +31,7 @@ import { type WorkflowVariable, WorkflowVariableFacadeService } from '../core';
 import { type GlobalVariableKey, isGlobalVariableKey } from '../constants';
 
 /**
- * 变量相关服务
+ * Variable related services
  */
 @injectable()
 export class WorkflowVariableService {
@@ -41,8 +41,8 @@ export class WorkflowVariableService {
   protected readonly variableFacadeService: WorkflowVariableFacadeService;
 
   /**
-   * 表达式引用转后端，如果无数据，默认给一个空的 ref 引用
-   * 输入：
+   * The expression reference is transferred to the backend. If there is no data, an empty ref reference is given by default.
+   * Input:
    * {
    *   type: ValueExpressionType.REF,
    *   content: {
@@ -62,14 +62,14 @@ export class WorkflowVariableService {
 
     const dtoMeta = workflowVariable?.dtoMeta;
 
-    // 如果引用的变量，属于全局变量
+    // If the referenced variable is a global variable
     if (isGlobalVariableKey(keyPath[0])) {
       const path = workflowVariable
         ? [
             ...workflowVariable.parentVariables
               .slice(1)
               .map(_variable => {
-                // Hack: 全局变量特化逻辑，后端要求数组下钻把数组的下标也带上
+                // Hack: Global variable specialization logic, the backend requires the array to drill down and bring the index of the array
                 if (
                   _variable.viewType &&
                   ViewVariableType.isArrayType(_variable.viewType)
@@ -82,7 +82,7 @@ export class WorkflowVariableService {
               .flat(),
             workflowVariable.key,
           ]
-        : // 没有 workflowVariable，则直接使用原来的 keyPath
+        : // If there is no workflowVariable, use the original keyPath directly.
           keyPath.slice(1);
 
       return {
@@ -117,7 +117,7 @@ export class WorkflowVariableService {
   }
 
   /**
-   * 表达式引用转前端
+   * expression reference to frontend
    * @param value
    */
   refExpressionToVO(valueDTO: ValueExpressionDTO): RefExpression {
@@ -142,7 +142,7 @@ export class WorkflowVariableService {
         content: {
           keyPath: [
             source,
-            // Hack: 全局变量特化逻辑，后端要求数组下钻把数组的下标也带上，前端不需要 [0] 下钻，因此转化时过滤掉
+            // Hack: Global variable specialization logic, the backend requires the array to drill down and bring the index of the array. The front end does not need [0] to drill down, so it is filtered out during conversion.
             ...(path || []).filter(_v => !['[0]'].includes(_v)),
           ],
         },
@@ -150,9 +150,9 @@ export class WorkflowVariableService {
     }
 
     const name = value.content?.name || '';
-    const nameList = name.split('.').filter(Boolean); // 过滤空字符串
+    const nameList = name.split('.').filter(Boolean); // Filter empty strings
 
-    // 灰度命中时，直接使用 namePath
+    // When grey releases hits, use namePath directly
     return {
       type: ValueExpressionType.REF,
       content: {
@@ -162,8 +162,8 @@ export class WorkflowVariableService {
   }
 
   /**
-   * 直接返回 Variable 或者 SubVariable 的 ViewVariableMeta
-   * @param keyPath ViewVariableMeta 的 keyPath 路径
+   * Directly returns the ViewVariableMeta of Variable or SubVariable
+   * @param keyPath ViewVariableMeta keyPath
    * @returns
    */
   getViewVariableByKeyPath(
@@ -184,7 +184,7 @@ export class WorkflowVariableService {
   }
 
   /**
-   * 监听指定 keyPath 变量类型变化
+   * Listens for changes in the specified keyPath variable type
    * @param keyPath
    * @param cb
    * @returns
@@ -198,10 +198,10 @@ export class WorkflowVariableService {
   }
 
   /**
-   * @deprecated 变量销毁存在部分 Bad Case
-   * - 全局变量因切换 Project 销毁后，变量引用会被置空，导致变量引用失效
+   * @Deprecated Variable Destruction Partial Bad Case
+   * - After the global variable is destroyed due to the switch Project, the variable reference will be set empty, resulting in the invalidation of the variable reference
    *
-   * 监听指定 keyPath 变量类型变化
+   * Listens for changes in the specified keyPath variable type
    * @param keyPath
    * @param cb
    * @returns
@@ -215,7 +215,7 @@ export class WorkflowVariableService {
   }
 
   /**
-   * 监听指定 keyPath 变量的变化
+   * Listens for changes in the specified keyPath variable
    * @param keyPath
    * @param cb
    * @returns

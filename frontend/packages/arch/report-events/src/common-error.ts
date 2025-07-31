@@ -16,29 +16,29 @@
  
 /* eslint-disable @typescript-eslint/naming-convention */
 export enum CommonError {
-  /** webpack chunk load 失败 */
+  /** Webpack chunk load failed */
   ChunkLoadError = 'chunk_load_error',
-  /** 参数校验类错误 */
+  /** Parameter validation class error */
   parmasValidation = 'parmas_validation',
-  /** 返回结果 校验错误的 */
+  /** Return the result, check the error */
   responseValidation = 'response_validation',
-  /** 错误 path */
+  /** Wrong path */
   errorPath = 'error_path',
-  /** fws 抛出的错误 */
+  /** Error thrown by fws */
   fwsError = 'fws_error',
-  /** get tokens 初始化 */
+  /** Get tokens initialized */
   getTokenInit = 'get_token_init',
   /** get tokens get encode */
   getTokenEncode = 'get_token_encode',
-  /** get tokens 错误 */
+  /** Error getting tokens */
   getTokenError = 'get_token_error',
-  /** 表单校验 error */
+  /** Form validation error */
   formValidation = 'form_validation',
-  /** 第三方登录失败 */
+  /** Third-party login failed */
   thirdPartyAuth = 'third_party_auth',
-  /** 用于常规的 Error */
+  /** Errors for general use */
   normalError = 'normal_error',
-  /** 获取 bot diff error */
+  /** Get bot diff error */
   getBotDiffError = 'get_bot_diff_error',
   /** merge bot diff error */
   mergeBotDiffError = 'merge_bot_diff_error',

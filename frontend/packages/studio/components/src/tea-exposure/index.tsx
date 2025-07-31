@@ -28,12 +28,12 @@ import {
   type ParamsTypeDefine,
 } from '@coze-arch/bot-tea';
 
-/** 后续考虑通用化封装，增加诸如延迟时间、露出比例等参数 */
+/** Subsequent consideration of generalized packaging, adding parameters such as delay time and exposure ratio */
 type TeaExposureProps<TEventName extends EVENT_NAMES> = {
   /**
-   * 是否只上报一次
+   * Is it only reported once?
    * @default false
-   * @todo 有余力再考虑兼容虚拟滚动
+   * @Todo has the spare time to reconsider compatibility with virtual scrolling
    */
   once?: boolean;
   teaEvent: {
@@ -44,13 +44,13 @@ type TeaExposureProps<TEventName extends EVENT_NAMES> = {
   HTMLAttributes<HTMLDivElement>;
 
 /**
- * 曝光埋点上报组件
- * 可以当成普通的 div 来用（比如配置样式）
+ * Exposure event tracking report component
+ * It can be used as a normal div (e.g. configuration style).
  *
- * 封装的意义：避免组件 rerender
+ * The meaning of encapsulation: avoid component rerendering
  *
- * useInViewport 会造成组件频繁 rerender，哪怕你并未使用其返回值，只要调用了这个 hook，就会随着其内部的 setState 触发 rerender。
- * 而我们都知道，对于下面这段代码，A rerender 会触发 B 和 C 的rerender；而 B rerender 不会触发 A 和 C 的 rerender。
+ * useInViewport causes the component to rerender frequently, even if you don't use its return value. As long as this hook is called, rerender will be triggered with its internal setState.
+ * And we all know that for the following code, A rerender will trigger the rerender of B and C, while B rerender will not trigger the rerender of A and C.
  * ```
  * const A = () => <B><C /></B>
  * ```

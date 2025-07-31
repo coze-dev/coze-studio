@@ -19,17 +19,17 @@ export const getImageDisplayAttribute = (
   height: number,
   contentWidth: number,
 ) => {
-  // 图片比例
+  // image scale
   const imageRatio = width / height;
 
-  // 展示宽度
+  // display width
   let displayWidth = contentWidth;
-  // 展示高度
+  // display height
   let displayHeight = contentWidth / imageRatio;
-  // 是否裁切
+  // Whether to cut
   let isCover = false;
 
-  // （小尺寸图）
+  // (Small size drawing)
 
   if (width <= contentWidth && height <= 240) {
     displayWidth = width;
@@ -38,16 +38,16 @@ export const getImageDisplayAttribute = (
     displayWidth = contentWidth;
     displayHeight = 120;
     isCover = true;
-    // （长竖图）图片宽度:图片高度 <= 0.5
+    // (Long vertical) Image width: Image height < = 0.5
   } else if (imageRatio <= 0.5) {
     displayWidth = 120;
     displayHeight = 240;
     isCover = true;
-    // （等比展示图）
+    // (Equivalent display picture)
   } else if (0.5 <= imageRatio && imageRatio <= contentWidth / 240) {
     displayWidth = 240 * imageRatio;
     displayHeight = 240;
-    // （中长横图）
+    // (Medium and long horizontal chart)
   } else if (
     contentWidth / 240 <= imageRatio &&
     imageRatio <= contentWidth / 240

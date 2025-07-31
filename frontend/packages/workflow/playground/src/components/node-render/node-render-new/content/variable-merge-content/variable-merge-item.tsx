@@ -27,7 +27,7 @@ interface VariableMergeItemProps {
 }
 
 /**
- * 变量合并项
+ * variable merge
  */
 export const VariableMergeItem: FC<VariableMergeItemProps> = ({
   mergeGroup,

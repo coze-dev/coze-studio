@@ -119,7 +119,7 @@ export const streamParser: FetchSteamConfig<
       case ChunkEvent.DONE:
         terminate();
         return;
-      // 对话过程中出现异常，例如：token 消耗完了
+      // An exception occurs during the conversation, for example: the token is exhausted
       case ChunkEvent.ERROR:
         return { event, data };
       default:

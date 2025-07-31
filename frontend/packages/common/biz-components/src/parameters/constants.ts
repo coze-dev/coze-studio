@@ -15,12 +15,12 @@
  */
  
 /* eslint-disable @typescript-eslint/naming-convention */
-// 类型选择控件基础宽度
+// Type selection control base width
 export const OperatorTypeBaseWidth = 155;
 
-// 61 = 删除按钮 + 添加按钮 的上层容器宽度
+// 61 = Remove button + Add button, upper container width
 export const OperatorLargeSize = 61;
-// 31 = 删除按钮 的上层容器宽度
+// 31 = Remove button, upper container width
 export const OperatorSmallSize = 31;
-// 8 = 删除按钮与变量类型中间的 margin 距离
+// 8 = Remove the margin distance between the button and the variable type
 export const SpacingSize = 8;

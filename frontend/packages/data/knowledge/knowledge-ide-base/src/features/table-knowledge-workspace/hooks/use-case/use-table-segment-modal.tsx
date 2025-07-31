@@ -33,7 +33,7 @@ export const useTableSegmentModal = () => {
   const { mutateSliceListData } = useTableActions();
   const curDoc = documentList?.[0];
 
-  // 表格分段弹窗
+  // table segmentation pop-up
   const {
     node: tableSegmentModalNode,
     edit: openTableSegmentModal,

@@ -35,10 +35,10 @@ export const useDocumentManagement = (props?: {
     })),
   );
 
-  // 缓存上一个文档ID，用于加载失败后回滚
+  // Cache the previous document ID for rollback after load failure
   const prevDocIdRef = useRef<string | null>(null);
 
-  // 更新文档名称
+  // Update document name
   const { run: updateDocument } = useUpdateDocument({
     onSuccess: () => {
       Toast.success(I18n.t('Update_success'));
@@ -46,13 +46,13 @@ export const useDocumentManagement = (props?: {
     },
   });
 
-  // 选择文档
+  // Select document
   const handleSelectDocument = (docId: string) => {
     prevDocIdRef.current = curDocId || null;
     setCurDocId(docId);
   };
 
-  // 重命名文档
+  // rename document
   const handleRenameDocument = (docId: string, newName: string) => {
     updateDocument({
       document_id: docId,
@@ -60,7 +60,7 @@ export const useDocumentManagement = (props?: {
     });
   };
 
-  // 更新文档频率
+  // Update document frequency
   const handleUpdateDocumentFrequency = (
     docId: string,
     formData: { updateInterval?: number; updateType?: UpdateType },
@@ -85,7 +85,7 @@ export const useDocumentManagement = (props?: {
     return updatedDocList;
   };
 
-  // 回滚文档选择
+  // Rollback document selection
   const rollbackDocumentSelection = () => {
     if (prevDocIdRef.current) {
       setCurDocId(prevDocIdRef.current);

@@ -26,7 +26,7 @@ interface NodeRenderState {
   activatedNode?: FlowNodeEntity;
 }
 /**
- * 渲染相关的全局状态管理
+ * Rendering-related global state management
  */
 export class CustomRenderStateConfigEntity extends ConfigEntity<
   NodeRenderState,

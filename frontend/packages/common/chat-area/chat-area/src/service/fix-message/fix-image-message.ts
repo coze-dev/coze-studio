@@ -22,7 +22,7 @@ import { getIsImageMessage } from '../../utils/message';
 import { type Message } from '../../store/types';
 import { ReportErrorEventNames } from '../../report-events/report-event-names';
 
-// 下游依赖存在问题，本次不好修改，因此配合服务端在前端对结构体进行抹平
+// There are problems with downstream dependencies, and it is not easy to modify this time, so cooperate with the server level to smooth the structure at the front end
 export const fixImageMessage = (message: Message, reporter: Reporter) => {
   if (!getIsImageMessage(message)) {
     return message;
@@ -30,7 +30,7 @@ export const fixImageMessage = (message: Message, reporter: Reporter) => {
 
   const fixedMessage = cloneDeep(message);
 
-  // 虽然我不理解为什么线上会产生这种异常数据，还是进行兜底处理了
+  // Although I don't understand why this abnormal data is generated online, I still handle it with the bottom line.
   if (!fixedMessage.content_obj) {
     fixedMessage.content_obj = {
       image_list: [

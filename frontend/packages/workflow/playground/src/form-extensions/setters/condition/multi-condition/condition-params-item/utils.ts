@@ -51,7 +51,7 @@ export const calcComparisonDisabled = (operator: ConditionType | undefined) => {
   return DISABLED_CONDITION_TYPES.includes(operator);
 };
 
-// 如果左值类型发生了变化，清空右值的值；如果左值类型没有变化，保留右值
+// If the lvalue type has changed, empty the rvalue; if the lvalue type has not changed, keep the rvalue
 export const processLeftSourceTypeChange = (
   oldData: ConditionItem,
   newData: ConditionItem,
@@ -71,12 +71,12 @@ export const processLeftSourceTypeChange = (
 
   const { right, operator, ...others } = newData;
 
-  // 如果原来左边没有选择变量，新的操作下选了变量，清空operator及right 的值
+  // If there is no variable selected on the left side, select the variable under the new operation, and clear the value of operator and right
   if (!oldSourceType && newSourceType) {
     return others;
   }
 
-  // 原始类型存在时，不清空
+  // When a primitive type exists, it is not empty
   if (oldSourceType && oldSourceType !== newSourceType) {
     return others;
   } else {
@@ -84,8 +84,8 @@ export const processLeftSourceTypeChange = (
   }
 };
 
-// 如果操作符不需要右值（isTrue, isEmpty)，那么清空右值
-// 如果操作符切换后右值类型不匹配，清空右值
+// If the operator does not require an rvalue (isTrue, isEmpty), then empty the rvalue
+// If the rvalue type does not match after the operator switch, clear the rvalue
 export const processConditionData = (
   oldData: ConditionItem,
   newData: ConditionItem,
@@ -126,7 +126,7 @@ export const processConditionData = (
   }
 };
 
-// 如果左值为 boolean，当右值选择类型为 literal 时，补充一个 false 的默认值
+// If the lvalue is boolean, add a default value of false when the rvalue selection type is literal
 export const processRightDefaultValue = (
   sourceType: ViewVariableType | undefined,
   data: ConditionItem,
@@ -184,7 +184,7 @@ export const getRightValueInputType = ({
   sourceType?: ViewVariableType;
   operator?: ConditionType;
   /**
-   * 是否使用兼容旧数据的类型，在 operator 切换时调用，设置为 false
+   * Whether to use a type compatible with old data, called when operator switches, set to false
    */
   useCompatibleType?: boolean;
 }): ViewVariableType[] => {
@@ -192,9 +192,9 @@ export const getRightValueInputType = ({
     operator && COMPARE_LENGTH_CONDITION_TYPES.includes(operator);
 
   /**
-   * 数组新增
-   * “长度大于、长度大于等于、长度小于、长度小于等于”，右值仅支持int类型。
-   * “包含、不包含”，右值基于左值的类型进行跟随。
+   * Array addition
+   * "Length greater than, length greater than or equal to, length less than, length less than or equal to", rvalue only supports int type.
+   * "Included, not included", rvalues follow based on the type of lvalues.
    */
   if (sourceType && ViewVariableType.isArrayType(sourceType)) {
     if (compareLength) {
@@ -209,19 +209,19 @@ export const getRightValueInputType = ({
   }
 
   /**
-   * 字符串：“长度大于、长度大于等于、长度小于、长度小于等于”（右值仅支持int、string）
-   * 历史数据，默认显示Str类型。
-   * 新数据，默认为int类型。
+   * String: "Length greater than, length greater than or equal to, length less than, length less than or equal to" (rvalue only supports int, string)
+   * Historical data, the Str type is displayed by default.
+   * New data, default to int type.
    */
   if (sourceType === ViewVariableType.String) {
     if (compareLength) {
-      // 兼容 condition 为：str > rightValue 的场景，存量数据右值为 string 类型，右值默认显示为 string 类型
+      // Compatible conditions are: str > rightValue scenarios, the rvalue of the stock data is string type, and the rvalue is displayed as string type by default
       if (rightValue && useCompatibleType) {
         const rawMetaType = rightValue.rawMeta?.type as
           | ViewVariableType
           | undefined;
 
-        // 存在 raw meta 类型，优先使用 raw meta 类型
+        // There is a raw meta type, the raw meta type is preferred
         if (rawMetaType) {
           return [
             rawMetaType !== ViewVariableType.Integer
@@ -229,7 +229,7 @@ export const getRightValueInputType = ({
               : ViewVariableType.Integer,
           ];
         }
-        // 如果是字面量，根据字面量 content 类型决定
+        // If it is a literal, it is determined according to the literal content type
         if (
           !ValueExpression.isEmpty(rightValue) &&
           ValueExpression.isLiteral(rightValue)

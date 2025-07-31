@@ -39,7 +39,7 @@ export const createConditionValidator = (conditionFieldPath: string) => ({
       ValueExpressionService,
     );
 
-    // 如果是不需要右值就跳过校验
+    // If no rvalue is required, skip the verification
     if (
       databaseNodeService.checkConditionOperatorNoNeedRight(condition?.operator)
     ) {
@@ -50,7 +50,7 @@ export const createConditionValidator = (conditionFieldPath: string) => ({
       return I18n.t('workflow_detail_node_error_empty');
     }
 
-    // 检验引用变量被删除的情况
+    // Check if the reference variable is deleted
     if (
       valueExpressionService.isRefExpression(value) &&
       !valueExpressionService.isRefExpressionVariableExists(value, context.node)

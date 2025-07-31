@@ -24,7 +24,7 @@ interface DatasetStore {
 }
 
 /**
- * 只适用于 bot 单 agent 模式
+ * Only works in bot single agent mode
  */
 export const useDatasetStore = create<DatasetStore>()(
   devtools(

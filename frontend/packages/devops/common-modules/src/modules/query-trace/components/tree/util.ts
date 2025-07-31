@@ -19,14 +19,14 @@ import { omit } from 'lodash-es';
 import { type TreeNodeFlatten, type TreeNode, type Line } from './typing';
 
 /**
- * 基于TreeData生成：
+ * Generated based on TreeData:
  *
- * @param treeData  tree原始数据
- * @param options.indentDisabled  是否取消缩进。仅针对下述场景有效：异常节点+最后一个节点
+ * @param treeData tree original data source
+ * @Param options.indentDisabled Whether to unindent. Valid only for the following scenarios: exception node + last node
  *
  * @returns
- * 1. nodes, 拉平后的node节点信息
- * 2. lines, 用于将node进行连接
+ * 1. nodes, node information after leveling
+ * 2. lines, used to connect nodes
  */
 export const flattenTreeData = (
   treeData: TreeNode,
@@ -45,7 +45,7 @@ export const flattenTreeData = (
       ...omit(node, ['children']),
       colNo: nodeColNo,
       rowNo: nodes.length,
-      unindented: fatherNodeFlatten?.colNo === nodeColNo, // 未缩进
+      unindented: fatherNodeFlatten?.colNo === nodeColNo, // Unindented
     };
     nodes.push(nodeFlatten);
     if (fatherNodeFlatten !== undefined) {
@@ -59,7 +59,7 @@ export const flattenTreeData = (
       const childNodes = node.children;
 
       childNodes.forEach((childNode, index) => {
-        // 取消缩进。 生效场景：异常节点+最后一个节点
+        // Cancel indentation. Effective scene: exception node + last node
         const indentDisabled =
           childNode.indentDisabled ?? options.indentDisabled;
         if (indentDisabled && childNodes.length - 1 === index) {

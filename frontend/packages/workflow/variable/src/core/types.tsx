@@ -34,14 +34,14 @@ export interface RenameInfo {
   prevKeyPath: string[];
   nextKeyPath: string[];
 
-  // rename 的位置，及对应的 key 值
+  // The location of the rename, and the corresponding key value
   modifyIndex: number;
   modifyKey: string;
 }
 
 export interface GetKeyPathCtx {
-  // 当前所在的节点
+  // The current node
   node?: FlowNodeEntity;
-  // 验证变量是否在作用域内
+  // Verify that the variable is in scope
   checkScope?: boolean;
 }

@@ -593,8 +593,8 @@ export namespace Drag {
    */
   export interface IOptions {
     /**
-     * 由于有一个 lm-cursor-backdrop 元素，用于阻止拖拽分屏过程中触发的 hover 事件
-     * 因此引入一个额外的配置，配置这个元素的边界位置
+     * Due to the lm-cursor-backdrop element, it is used to prevent the hover event from being triggered during dragging and dropping the split screen.
+     * Therefore, an additional configuration is introduced to configure the boundary position of this element
      */
     backdropTransform?: BackDropTransform;
 

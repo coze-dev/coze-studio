@@ -64,7 +64,7 @@ export const SingleImageContentWithAutoSize: FC<
         Boolean(sth && 'image_list' in { ...sth }),
     }),
   } = message;
-  // 类型守卫，一般情况也不影响hooks的顺序问题
+  // Type guards generally do not affect the order of hooks
   if (!isImage(content_obj)) {
     return null;
   }
@@ -74,10 +74,10 @@ export const SingleImageContentWithAutoSize: FC<
 };
 
 /**
- * 这里这么做是有原因的
- * 前端计算groupId是通过replyId分组（服务端未ack前是localMessageId）
- * 因此服务端ack后会导致循环的key发生变化，导致组件unmount -> mount（销毁重建）
- * 因此需要用比较trick的方式来实现图片展示优化的问题
+ * There's a reason for this.
+ * The front-end compute groupId is grouped by replyId (localMessageId before server level is not ack)
+ * Therefore, after the server level ack, the key of the loop will change, causing the component to unmount - > mount (destroy and rebuild).
+ * Therefore, it is necessary to use a more trick way to achieve the problem of picture display optimization
  */
 const blobImageMap: IBlobImageMap = {};
 const isBlob = (url: string) => url?.startsWith('blob:');
@@ -89,7 +89,7 @@ const SingleImageContentWithAutoSizeImpl: FC<
   const { imageAutoSizeContainerWidth = 0 } = useUiKitMessageBoxContext();
   const localMessageId = message.extra_info.local_message_id;
 
-  // 目前服务端下发的图片 ori = thumb 因此目前用一个就行
+  // The picture sent by the current server level ori = thumb, so just use one for now.
   const currentImageUrl = content_obj?.image_list?.at(0)?.image_ori?.url ?? '';
 
   const { displayHeight, displayWidth, isCover } = getImageDisplayAttribute(

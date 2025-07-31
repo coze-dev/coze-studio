@@ -58,7 +58,7 @@ describe('useAlign', () => {
       act(() => {
         result.current.alignLeft();
       });
-      // 由于没有 canvas，不应该有任何操作发生
+      // Since there is no canvas, no operation should occur
     });
 
     it('应该在选中对象少于 2 个时不执行任何操作', () => {

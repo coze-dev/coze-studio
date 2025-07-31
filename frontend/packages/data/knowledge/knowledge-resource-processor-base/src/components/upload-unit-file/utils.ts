@@ -38,7 +38,7 @@ const getFileListMap = (fileList: FileItem[]): GetFileListMapRes =>
     return acc;
   }, {});
 
-/** 过滤 fileList，仅保留在 unitList 中的文件，即上传成功的文件 */
+/** Filter the fileList to keep only the files in the unitList, that is, the files that were uploaded successfully. */
 export const filterFileListByUnitList = (
   fileList: FileItem[],
   unitList: UnitItem[],

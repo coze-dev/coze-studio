@@ -120,7 +120,7 @@ export const spanTypeConfigMap: SpanTypeConfigMap = {
     label: I18n.t('analytic_query_subtype_value_knowledge'),
   },
   [SpanType.Chain]: {},
-  // 特定业务
+  // specific business
   [SpanType.Hook]: {
     label: I18n.t('analytics_query_invoke', {
       name: 'Hook',

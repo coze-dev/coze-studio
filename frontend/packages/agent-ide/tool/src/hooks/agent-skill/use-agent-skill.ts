@@ -20,7 +20,7 @@ import { type AgentSkillKey } from '@coze-agent-ide/tool-config';
 import { useAbilityAreaContext } from '../../context/ability-area-context';
 
 /**
- * @deprecated 内部使用，过渡期方案，针对非注册组件使用外部的skill设置
+ * @Deprecated internal use, transition scenario, using external skill settings for non-registered components
  */
 export const useHasAgentSkillWithPK = () => {
   const {
@@ -35,7 +35,7 @@ export const useHasAgentSkillWithPK = () => {
   );
 
   /**
-   * @deprecated 内部使用，过渡期
+   * @deprecated internal use, transition period
    */
   const setHasAgentSkill = (
     agentSkillKey: AgentSkillKey,

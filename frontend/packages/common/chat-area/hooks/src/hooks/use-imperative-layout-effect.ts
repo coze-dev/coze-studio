@@ -31,7 +31,7 @@ export const useImperativeLayoutEffect = <Params extends unknown[]>(
     if (!effectValue) {
       return;
     }
-    // 经过一次运行后一定不为 undefined
+    // After one run, it must not be undefined.
     return paramRef.current && effectRef.current(...paramRef.current);
   }, [effectValue]);
 

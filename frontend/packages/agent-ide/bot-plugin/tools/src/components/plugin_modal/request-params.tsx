@@ -105,8 +105,8 @@ export const useRequestParams = ({
     }
     setFormData(fd);
   };
-  const [flag, setFlag] = useState<boolean>(false); // 为了更新视图
-  const [checkFlag, setCheckFlag] = useState<number>(0); // 全局校验用
+  const [flag, setFlag] = useState<boolean>(false); // To update the view
+  const [checkFlag, setCheckFlag] = useState<number>(0); // global validation
   const columns = getColumns({
     data,
     flag,
@@ -192,13 +192,13 @@ export const useRequestParams = ({
           style={{ minWidth: 1008, overflowY: 'auto' }}
         >
           <Table
-            // 最小宽度，为了兼容多层级场景，最大层级可支持超过50层
-            // 最小宽度 = 模块最小宽度 + (当前层级数 - 宽度变化起始层级) * (当前层级数 < 宽度变化起始层级 ? 小间隔数 : 大间隔数)
+            // Minimum width, in order to be compatible with multi-level scenarios, the maximum level can support more than 50 layers
+            // Minimum width = minimum width of module + (current level number - width change starting level) * (current level number < width change starting level? small interval number: large interval number)
             style={{
               minWidth: `calc(1008px + ${
                 (maxNum - STARTNUM) * (maxNum < CHANGENUM ? SMALLGAP : MAXZGAP)
               }px)`,
-            }} // 从第4层开始，每多一层增加19px
+            }} // From the 4th layer, add 19px to each additional layer.
             pagination={false}
             columns={columns}
             dataSource={data}

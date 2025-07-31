@@ -102,7 +102,7 @@ export const getResourceById = (
 };
 
 /**
- * 用 shift 修饰键的时候， 从 from 的到 to 的中间全部选中，包括下钻文件。  dfs
+ * When modifying keys with shift, select all the middle from from to to, including the drill-down files. dfs
  */
 export const getResourceListFromIdToId = ({
   resourceTree,
@@ -200,7 +200,7 @@ export const sortResourceList = (
   return folderList.concat(sourceList) as ResourceType[];
 };
 
-// 后续要优化算法的话 ，得在树打平的算法中，记录每个文件夹的高度，这样在 change 的时候不需要重复计算。 packages/api-builder/base/src/utils/resource-folder/index.ts  mapResourceTree
+// If you want to optimize the algorithm in the future, you have to record the height of each folder in the tree leveling algorithm, so that you don't need to repeatedly calculate when changing. packages/api-builder/base/src/utils/resource-folder/index.ts mapResourceTree
 export const calcOffsetTopByCollapsedMap = (props: {
   selectedId: string;
   resourceTree: ResourceType;
@@ -209,7 +209,7 @@ export const calcOffsetTopByCollapsedMap = (props: {
 }) => {
   const { selectedId, resourceTree, collapsedMap, itemHeight } = props;
 
-  let num = -1; // 因为从 root 开始， root 不展示，所以从 -1 开始算
+  let num = -1; // Because starting from root, root does not display, it starts from -1
   let finish = false;
 
   const dfs = (resource: ResourceType) => {
@@ -267,12 +267,12 @@ export const getResourceTravelIds = (ctx: {
   travelResource(resource, item => {
     const info = resourceMap[item.id];
 
-    // 被删除的资源、文件夹不展示
+    // Deleted resources and folders are not displayed
     if (!info || info.status === 'deprecated') {
       return false;
     }
 
-    // 折叠的文件夹折叠后，不遍历只节点
+    // Folding folders after folding, do not traverse only nodes
     if (info.type === ResourceTypeEnum.Folder && collapsedMap[info.id]) {
       ids.push(item.id);
       return false;
@@ -381,10 +381,10 @@ export const mapResourceTree = (resourceTree): ResourceMapType => {
       return { maxDeep: path.length - 1 };
     }
 
-    // 文件夹要加一，因为能加文件
+    // You need to add one to the folder, because you can add files.
     let maxDeep = path.length + (resource.type === 'folder' ? 1 : 0);
 
-    // 当前资源是否处于提交状态
+    // Is the current resource in a committed state?
     let editDraft = resource.edit_status === 'draft';
 
     if (resource.children) {
@@ -395,7 +395,7 @@ export const mapResourceTree = (resourceTree): ResourceMapType => {
         ]);
         maxDeep = Math.max(maxDeep, deep);
 
-        // 文件夹 editDraft 跟随草稿走，只要内部有一个为草稿，本文件夹也为草稿
+        // Folder editDraft follows the draft, as long as there is one inside as a draft, this folder is also a draft
         editDraft = !!(editDraft || status);
       });
     }
@@ -405,7 +405,7 @@ export const mapResourceTree = (resourceTree): ResourceMapType => {
       path,
       maxDeep: maxDeep - path.length,
       /**
-       * 随业务放开
+       * release with business
        */
       // draft: editDraft,
       // problem: {
@@ -462,9 +462,9 @@ export const flatTree = (
 };
 
 /**
- * 计算当前文件夹下，新建的资源所处的位置。
- * 文件夹：在当前文件夹下顶部
- * 资源：在当前文件夹下的文件夹末尾，所有资源顶部
+ * Calculates the location of the newly created resource in the current folder.
+ * Folder: under the current folder top
+ * Resources: At the end of the folder under the current folder, at the top of all resources
  */
 export const getCreateResourceIndex = ({
   resourceList,
@@ -510,9 +510,9 @@ export function baseValidateNames(props: { label: string; nameTitle: string }) {
 
   const simple = true;
 
-  // 设定默认值，避免 propExtra 只传入一个配置
+  // Set the default value to avoid propExtra passing only one configuration
 
-  // 检测 name 是否空
+  // Check if name is empty
   if (!label) {
     return simple ? 'Empty Key' : `${nameTitle} name can not be empty`;
   }
@@ -521,14 +521,14 @@ export function baseValidateNames(props: { label: string; nameTitle: string }) {
     return simple ? 'Length exceeds' : `${nameTitle} name length exceeds limit`;
   }
 
-  // 必须由字母开头
+  // Must begin with a letter
   if (!/^[A-Za-z]/.test(label)) {
     return simple
       ? 'Must start with letter'
       : `${nameTitle} name must start with a letter`;
   }
 
-  // 检测 name 的命名规则
+  // Detection of naming rules for names
   if (!/^[A-Za-z][0-9a-zA-Z_]*$/.test(label)) {
     return simple
       ? 'only ASCII letters, digits, and _'

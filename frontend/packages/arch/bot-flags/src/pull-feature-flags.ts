@@ -30,15 +30,15 @@ import { PACKAGE_NAMESPACE } from './constant';
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const DEFAULT_POLLING_INTERVAL = 5 * ONE_SEC;
-// 设置 17 作为时间分片大小
+// Set 17 as the time sharding size
 const TIME_PIECE = 17;
 
 interface PullFeatureFlagsParams {
-  // 取值超时时间
+  // value timeout
   timeout: number;
-  // 严格模式下，不会插入兜底逻辑，且取不到数值时直接报错
+  // In strict mode, no fallback logic will be inserted, and an error will be reported directly when the value cannot be obtained
   strict: boolean;
-  // 轮训间隔，生产环境默认 60 秒；开发 & 测试环境默认 10 秒
+  // Rotation interval, production environment default 60 seconds; development & testing environment default 10 seconds
   pollingInterval: number;
   fetchFeatureGating: FetchFeatureGatingFunction;
 }
@@ -66,12 +66,12 @@ const runPipeline = async (
   }
 
   const { timeout: to, strict } = context;
-  // 超时时间不应该小于 1s
+  // The timeout should not be less than 1s.
   const timeout = Math.max(to, ONE_SEC);
   const works: (() => Promise<WorkResult | undefined>)[] = [];
   const waitTimeout = wait.bind(null, timeout + ONE_SEC);
 
-  // 从线上环境取值
+  // Take value from the online environment
   works.push(async () => {
     try {
       const values = await context.fetchFeatureGating();
@@ -81,7 +81,7 @@ const runPipeline = async (
       }
       await waitTimeout();
     } catch (e) {
-      // TODO: 这里加埋点，上报接口异常
+      // TODO: Add event tracking here to report interface abnormalities
       logger.persist.error({
         namespace: PACKAGE_NAMESPACE,
         message: 'Fetch fg by "fetchFeatureGating" failure',
@@ -91,8 +91,8 @@ const runPipeline = async (
     }
   });
 
-  // 从浏览器全局对象取值
-  // 这里需要判断一下，只有浏览器环境才执行
+  // Get value from browser global object
+  // It needs to be judged here, only the browser environment will execute it.
   works.push(async () => {
     try {
       const values = await readFgPromiseFromContext();
@@ -104,10 +104,10 @@ const runPipeline = async (
         namespace: PACKAGE_NAMESPACE,
         message: "Can't not read fg from global context",
       });
-      // 强制等等超时，以免整个 works resolve 到错误的值
+      // Force and so on to time out, lest the entire works resolve to the wrong value
       await waitTimeout();
     } catch (e) {
-      // TODO: 这里加埋点，上报接口异常
+      // TODO: Add event tracking here to report interface abnormalities
       logger.persist.error({
         namespace: PACKAGE_NAMESPACE,
         message: 'Fetch fg from context failure',
@@ -117,18 +117,18 @@ const runPipeline = async (
     }
   });
 
-  // 从缓存中取值
+  // fetch value from cache
   works.push(async () => {
     try {
       const values = await readFromCache();
       if (values) {
-        // 等待 xx ms 后再读 persist，以确保优先从 context 取值
+        // Wait for xx ms before reading persist to ensure that values are retrieved from context first
         await wait(timeout - TIME_PIECE);
         return { values, source: 'persist' };
       }
       await waitTimeout();
     } catch (e) {
-      // TODO: 这里加埋点，上报接口异常
+      // TODO: Add event tracking here to report interface abnormalities
       logger.persist.error({
         namespace: PACKAGE_NAMESPACE,
         message: 'Fetch fg from persist cache failure',
@@ -138,7 +138,7 @@ const runPipeline = async (
     }
   });
 
-  // 兜底，超时取不到值返回默认值，也就是全部都是 false
+  // Bottom line, the value cannot be obtained after timeout, and the default value is returned, that is, all are false.
   works.push(async () => {
     await wait(timeout + TIME_PIECE);
     if (strict) {
@@ -147,7 +147,7 @@ const runPipeline = async (
     return { values: {} as unknown as FEATURE_FLAGS, source: 'bailout' };
   });
 
-  // 这里不可能返回 undefined，所以做一次强制转换
+  // It is impossible to return undefined here, so do a cast
   const res = (await Promise.race(
     works.map(work => work()),
   )) as unknown as WorkResult;
@@ -169,7 +169,7 @@ const normalize = (
   const normalizeContext = Object.assign(
     DEFAULT_CONTEXT,
     Object.keys(ctx)
-      // 只取不为 undefined 的东西
+      // Only take things that are not undefined
       .filter(k => typeof ctx[k] !== 'undefined')
       .reduce((acc, k) => ({ ...acc, [k]: ctx[k] }), {}),
   );
@@ -186,7 +186,7 @@ const pullFeatureFlags = async (context?: Partial<PullFeatureFlagsParams>) => {
   tracer.trace('start');
   const start = performance.now();
   const retry = async () => {
-    // 出现错误时，自动重试
+    // When an error occurs, automatically retry
     await wait(pollingInterval);
     await pullFeatureFlags(context);
   };
@@ -194,7 +194,7 @@ const pullFeatureFlags = async (context?: Partial<PullFeatureFlagsParams>) => {
     const res = await runPipeline(normalizeContext);
 
     const { values, source } = res;
-    // TODO: 这里应该上报数量，后续 logger 提供相关能力后要改一下
+    // TODO: The quantity should be reported here, and it should be changed after the subsequent logger provides relevant capabilities.
     logger.persist.success({
       namespace: PACKAGE_NAMESPACE,
       message: `Load FG from ${source} start at ${start}ms and spend ${

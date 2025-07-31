@@ -15,10 +15,10 @@
  */
  
 /**
- * html白名单，防止XSS攻击
+ * HTML whitelist to prevent XSS attacks
  */
 
-// 默认允许的HTML标签白名单
+// Whitelist of HTML tags allowed by default
 const DEFAULT_ALLOWED_TAGS = [
   'img',
   'table',
@@ -35,10 +35,10 @@ const DEFAULT_ALLOWED_TAGS = [
 ];
 
 /**
- * 转义HTML，只允许白名单中的标签
- * @param unsafe 不安全的HTML字符串
- * @param allowedTags 允许的HTML标签数组，默认为DEFAULT_ALLOWED_TAGS
- * @returns 转义后的HTML字符串
+ * Escape HTML, allowing only whitelisted tags
+ * @param unsafe HTML string
+ * @Param allowedTags Array of HTML tags allowed, default to DEFAULT_ALLOWED_TAGS
+ * @Returns the escaped HTML string
  */
 export function escapeHtml(
   unsafe: string,
@@ -48,7 +48,7 @@ export function escapeHtml(
     return '';
   }
 
-  // 构建正则表达式模式
+  // Building regular expression patterns
   const allowedTagsPattern = allowedTags.join('|');
   const tagRegex = new RegExp(
     `<(?!(${allowedTagsPattern})\\b[^>]*>|\\/(?:${allowedTagsPattern})>)`,

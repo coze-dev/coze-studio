@@ -40,7 +40,7 @@ interface UseSliceDataParams {
 }
 
 /**
- * 处理文档片段数据获取的 hook
+ * Hooks for processing document fragment data acquisition
  */
 export const useSliceData = ({
   curDocId,
@@ -56,7 +56,7 @@ export const useSliceData = ({
     })),
   );
 
-  // 获取文档内容
+  // Get document content
   const {
     loading,
     data: sliceData,
@@ -67,12 +67,12 @@ export const useSliceData = ({
     params: {
       keyword: searchValue,
       document_id:
-        // 如果是层级分段则不请求
+        // If it is a hierarchical segmentation, it is not requested.
         curChunkType !== ChunkType.LevelChunk ? curDocId : '',
     },
     reloadDeps: [searchValue, curDocId, datasetId, processFinished],
     onError: error => {
-      /** 拉取 slice 失败时,回退 curDocId，避免文档标题和内容不一致，用户迷惑 */
+      /** When pulling a slice fails, roll back curDocId to avoid inconsistencies between the document title and content, and user confusion */
       dataReporter.errorEvent(DataNamespace.KNOWLEDGE, {
         eventName: ReportEventNames.KnowledgeGetSliceList,
         error,
@@ -83,7 +83,7 @@ export const useSliceData = ({
     },
   });
 
-  // 使用 useMemo 缓存 chunks 数组，避免因 progressMap 更新导致不必要的重新创建
+  // Use useMemo to cache the chunks array to avoid unnecessary recreations due to progressMap updates
   const renderData = useMemo(
     () =>
       sliceData?.list.map(item => createBaseDocumentChunkBySliceInfo(item)) ??
@@ -91,7 +91,7 @@ export const useSliceData = ({
     [sliceData?.list],
   );
 
-  // 处理内容变化
+  // Handling content changes
   const handleContentChange = (chunks: DocumentChunk[]) => {
     mutate({
       ...sliceData,

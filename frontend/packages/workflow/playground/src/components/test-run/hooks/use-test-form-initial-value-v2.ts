@@ -50,7 +50,7 @@ export const useTestFormInitialValueV2 = () => {
       return;
     }
 
-    // 最高优：用户上次填写的值
+    // Highest merit: The last value the user filled in
     const cacheData = testFormService.getCacheValues(schema.id);
     if (cacheData) {
       generateCacheValues2InitialValue(schema.fields, cacheData);

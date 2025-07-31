@@ -30,12 +30,12 @@ import { isNodeV2, NODES_V2 } from '@/nodes-v2';
 import { nodeV2RegistryUtils } from '@/node-registries/common/utils/nodes-v2-registry-utils';
 
 /**
- * 注册流程节点
+ * Register process node
  */
 @injectable()
 export class WorkflowNodesV2Contribution implements FlowDocumentContribution {
   /**
-   * 注册节点
+   * Register Node
    * @param document
    */
   registerDocument(document: FlowDocument): void {

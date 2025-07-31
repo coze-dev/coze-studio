@@ -108,13 +108,13 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   }
 
   /**
-   * 获取 document
+   * Acquire documents
    */
   get document(): WorkflowDocument {
     return this.documentProvider();
   }
   /**
-   * 获取 工作流节点模板
+   * Get, workflow node template
    */
   async loadNodeInfos(locale: string): Promise<void> {
     const nodeIds: StandardNodeType[] = Object.values(StandardNodeType);
@@ -136,7 +136,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     response[0].status === 'fulfilled' && (resp = response[0].value);
     response[1].status === 'fulfilled' && (favoritePlugins = response[1].value);
 
-    // 对服务端返回的 template 数据做一次转换，把其中的 type: 1 转换为 type: '1', 与标准的 StandardNodeType
+    // Convert the template data returned by the server level to type: '1', which is the same as the standard StandardNodeType.
     const typeKey = 'node_type';
 
     this.favoritePlugins = favoritePlugins;
@@ -204,14 +204,14 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   };
 
   /**
-   * 这个会禁止圈选和删除等操作
+   * This will prohibit operations such as circling and deleting
    */
   get disabled(): boolean {
     return !!this.globalState?.readonly;
   }
 
   /**
-   * 这种通过 context 透传的方式不太好，后面需要重新改造下
+   * This way of passing through the context is not very good, and it needs to be rebuilt later.
    */
   get spaceId(): string | undefined {
     return this.globalState?.spaceId;
@@ -222,7 +222,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   }
 
   getTemplateList(types: StandardNodeType[] = []): NodeTemplate[] {
-    // HACK: 传入的 type 的类型是 string，然后后端返回的模板实际是 number
+    // HACK: The type of the passed type is string, and then the template returned by the backend is actually number.
     return (
       types
         .sort(

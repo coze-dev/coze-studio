@@ -39,9 +39,9 @@ import s from './testset-list-item.module.less';
 interface TestsetListItemProps {
   data: TestsetData;
   onEdit?: (data: TestsetData) => void;
-  /** 点击了删除 */
+  /** I clicked delete. */
   onClickDelete?: () => void;
-  /** 确认删除 */
+  /** Confirm deletion */
   onDelete?: (data: TestsetData) => Promise<void>;
 }
 

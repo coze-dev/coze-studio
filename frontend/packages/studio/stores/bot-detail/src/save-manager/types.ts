@@ -17,7 +17,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ItemType } from '@coze-arch/bot-api/developer_api';
 
-// 走自动保存update接口的scope服务端会维护ItemType，其他scope前端维护在ItemTypeExtra中
+// The scope server level that automatically saves the update interface will maintain ItemType, and other scope front-ends are maintained in ItemTypeExtra.
 export enum ItemTypeExtra {
   MultiAgent = 1024,
   TTS = 1025,

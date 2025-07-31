@@ -36,13 +36,13 @@ export const InfoPopover: React.FC<InfoPopoverProps> = props => {
       className="!max-w-[320px]"
       content={data?.map((item, index) => (
         <Fragment key={`${item.type}${index}`}>
-          {/* 加粗标题 */}
+          {/* bold title */}
           {item.type === 'title' ? (
             <Typography.Text fontSize="14px" className="dark coz-fg-primary">
               {item.text}
             </Typography.Text>
           ) : null}
-          {/* 文本 */}
+          {/* Text */}
           {item.type === 'text' ? (
             <Typography.Paragraph
               fontSize="12px"
@@ -51,9 +51,9 @@ export const InfoPopover: React.FC<InfoPopoverProps> = props => {
               {item.text}
             </Typography.Paragraph>
           ) : null}
-          {/* 换行 */}
+          {/* line feed */}
           {item.type === 'br' ? <div className="h-[8px]" /> : null}
-          {/* 示例，边框内展示 */}
+          {/* Example, display inside the border */}
           {item.type === 'demo' ? (
             <div className="dark mt-[4px] p-[10px] border border-solid coz-stroke-primary">
               <Typography.Paragraph

@@ -23,7 +23,7 @@ export {
 
 export { WorkflowWidgetRegistry } from './registry';
 /**
- * 会话管理 registry
+ * Session management registry
  */
 export { ConversationRegistry } from './conversation/registry';
 export { useWorkflowResource } from './hooks/use-workflow-resource';

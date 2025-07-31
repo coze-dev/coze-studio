@@ -94,11 +94,11 @@
   line-height: 16px;
 }
 
-/** 创建框 **/
+/** Create box **/
 .mock-creation-modal {
   :global {
     .semi-modal-content .semi-modal-body {
-      /** 保证内部 tooltip 不被遮盖 **/
+      /** Make sure the internal tooltip is not covered **/
       overflow: unset
     }
 
@@ -114,7 +114,7 @@
 }
 
 div.mock-creation-modal-editor {
-  /** 兼容 modal 在小窗口下 body 高度不生效的问题 */
+  /** Compatible modal body height does not take effect in small windows */
   height: calc(100vh - 316px);
   max-height: 500px;
 }

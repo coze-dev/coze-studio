@@ -43,8 +43,8 @@ vi.mock('@coze-arch/bot-tea', () => ({
   },
   ParamsTypeDefine: {},
   PluginMockDataGenerateMode: {
-    MANUAL: 0, // 手动创建
-    RANDOM: 1, // 随机生成
+    MANUAL: 0, // create manually
+    RANDOM: 1, // random generation
     LLM: 2,
   },
 }));
@@ -52,21 +52,21 @@ vi.mock('@coze-arch/bot-tea', () => ({
 vi.mock('@coze-arch/bot-hooks', () => ({
   SceneType: {
     BOT__VIEW__WORKFLOW: 'botViewWorkflow',
-    /** bot 详情页查看 workflow，或新建 workflow 但未发布，点击返回 */
+    /** View the workflow on the bot details page, or create a new workflow but not published, click Return */
     WORKFLOW__BACK__BOT: 'workflowBackBot',
-    /** bot 详情页创建 workflow，在 workflow 发布后返回 */
+    /** The bot details page creates a workflow and returns it after the workflow is published */
     WORKFLOW_PUBLISHED__BACK__BOT: 'workflowPublishedBackBot',
-    /** bot 详情页进入 mock data 页面 */
+    /** Bot details page Enter the mock data page */
     BOT__TO__PLUGIN_MOCK_DATA: 'botToPluginMockData',
-    /** workflow 详情页进入 mock data 页面 */
+    /** Workflow details page Enter the mock data page */
     WORKFLOW__TO__PLUGIN_MOCK_DATA: 'workflowToPluginMockData',
-    /** mock set 页进入 mock data 页面 */
+    /** Mock set page Enter the mock data page */
     PLUGIN_MOCK_SET__TO__PLUGIN_MOCK_DATA: 'pluginMockSetToPluginMockData',
-    /** bot 详情页进入 knowledge 页面 */
+    /** Bot details page Enter the knowledge page */
     BOT__VIEW__KNOWLEDGE: 'botViewKnowledge',
-    /** knowledge 页面点击退出返回 bot 详情页（未点击添加） */
+    /** Knowledge page Click Exit to return to bot details page (not clicked Add) */
     KNOWLEDGE__BACK__BOT: 'knowledgeBackBot',
-    /** knowledge 页面点击返回 bot 详情页，并添加到 bot */
+    /** Knowledge page Click to return to bot details page and add to bot */
     KNOWLEDGE__ADD_TO__BOT: 'knowledgeAddToBot',
   },
   usePageJumpService: vi.fn().mockReturnValue({

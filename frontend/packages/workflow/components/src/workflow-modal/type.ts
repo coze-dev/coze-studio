@@ -41,9 +41,9 @@ export interface BotPluginWorkFlowItem extends WorkflowDetailData {
 
 export type GetProductListRequest = public_api.GetProductListRequest;
 /**
- * 商品类型
+ * Product type
  *
- * 由于类型同名问题, 直接导出 ProductInfo 指向的是后台的类型不是目标类型,需要使用本方法转一下
+ * Due to the problem of the same name of the type, the direct export of ProductInfo points to the type in the background, not the target type. You need to use this method to transfer it.
  */
 export type ProductInfo = public_api.ProductInfo;
 
@@ -52,11 +52,11 @@ export enum MineActiveEnum {
   Mine = '2',
 }
 
-/** 数据来源 */
+/** data source */
 export enum DataSourceType {
-  /** 流程 */
+  /** process */
   Workflow = 'workflow',
-  /** @deprecated 流程商店 */
+  /** @deprecated process store */
   Product = 'product',
 }
 
@@ -66,136 +66,136 @@ export type WorkflowItemType =
 
 export const WORKFLOW_LIST_STATUS_ALL = 'all';
 /**
- * 项目内的工作流添加子流程时的分类中，资源库/项目工作流分类
+ * In the category of workflows within a project when subprocesses are added, the resource library/project workflow category
  */
 export enum WorkflowCategory {
   /**
-   * 项目工作流
+   * project workflow
    */
   Project = 'project',
   /**
-   * 资源库工作流
+   * repository workflow
    */
   Library = 'library',
   /**
-   * 官方示例
+   * official example
    */
   Example = 'example',
 }
-/** 流程弹窗状态 */
+/** Process pop-up status */
 export interface WorkflowModalState {
-  /** 流程状态 */
+  /** process state */
   status: WorkFlowListStatus | typeof WORKFLOW_LIST_STATUS_ALL;
-  /** @deprecated 数据类型, 当前请求的是流程数据还是商店数据 */
+  /** @Deprecated data type, is the process data or store data being requested? */
   dataSourceType: DataSourceType;
-  /** 创建者 */
+  /** creator */
   creator: MineActiveEnum;
-  /** @deprecated 工作流模板标签 */
+  /** @deprecated workflow template tag */
   workflowTag: number;
-  /** @deprecated 商品标签 */
+  /** @deprecated product label */
   productCategory: string;
-  /** 搜索关键字 */
+  /** Search keywords */
   query: string;
-  /** @deprecated 是否请求当前空间流程 */
+  /** @Deprecated whether to request the current space flow */
   isSpaceWorkflow: boolean;
-  /** 选中的 workflow 分类 */
+  /** Selected workflow category */
   workflowCategory?: WorkflowCategory;
-  /** @deprecated 商店产品下的排序方式  */
+  /** Sort by @deprecated store products  */
   sortType?: SortType;
-  /** 弹窗内列表筛选的工作流类型，可以的值是 All、Workflow、Chatflow。用于列表里工作流类型筛选，此时 Imageflow 已经合并到 Workflow 类型中了 */
+  /** The workflow type for list filtering in the pop-up window, the possible values are All, Workflow, Chatflow. Used for workflow type filtering in the list, at this time Imageflow has been merged into the Workflow type */
   listFlowMode: WorkflowMode;
 }
 
-/** 流程弹窗 */
+/** process pop-up */
 export interface WorkFlowModalModeProps {
-  /** 当前弹窗来源，默认不传 */
+  /** The source of the current pop-up window is not uploaded by default. */
   from?: WorkflowModalFrom;
-  /** 流程类型, 工作流还是图像流, 默认工作流 */
+  /** Process type, workflow or image flow, default workflow */
   flowMode?: WorkflowMode;
-  /** 隐藏的流程 */
+  /** hidden flow */
   excludedWorkflowIds?: string[];
   /**
-   * filter 状态筛选组件是否显示全部状态选项，默认为 false
+   * Filter status Whether the filter component displays all status options, the default is false
    */
   filterOptionShowAll?: boolean;
   /**
-   * 是否隐藏侧边栏，默认 false。用于场景详情页选择 workflow。
+   * Whether to hide the sidebar, the default is false. Use the scene details page to select workflow.
    */
   hideSider?: boolean;
-  /* 是否隐藏作者筛选菜单 */
+  /* Whether to hide the author filter menu */
   hideCreatorSelect?: boolean;
   /**
-   * workflow item 是否显示删除按钮，默认 false，用于场景 workflow 以及抖音分身工作流
+   * Whether the workflow item shows the delete button, the default is false, used for scene workflow and Douyin doppelganger workflow
    */
   itemShowDelete?: boolean;
-  /** @deprecated 是否隐藏空间下 Workflow 列表模块 */
+  /** @Deprecated Whether to hide the Workflow list module under the space */
   hiddenSpaceList?: boolean;
   /**
-   * @deprecated 使用 hiddenWorkflowCategories
-   * 是否隐藏资源库模块
+   * @deprecated hiddenWorkflowCategories
+   * Whether to hide the library module
    */
   hiddenLibrary?: boolean;
-  /** 是否隐藏创建工作流入口 */
+  /** Whether to hide the creation workflow entry */
   hiddenCreate?: boolean;
   /**
-   * @deprecated 探索分类已改为官方示例，使用 hiddenWorkflowCategories
-   * 隐藏探索分类
+   * @Deprecated Explore category has been changed to official example, using hiddenWorkflowCategories
+   * Hidden Exploration Classification
    */
   hiddenExplore?: boolean;
   /**
-   * 隐藏的工作流分类，用法同 hiddenLibrary、hiddenExplore，
+   * Hidden workflow classification, the usage is the same as hiddenLibrary, hiddenExplore,
    */
   hiddenWorkflowCategories?: WorkflowCategory[];
   /**
-   * 隐藏工作流列表类型筛选
+   * Hidden workflow list type filter
    */
   hiddenListFlowModeFilter?: boolean;
-  /** 复制按钮文案, 默认「复制并添加」 */
+  /** Copy button copy, default "copy and add" */
   dupText?: string;
-  /** 初始状态, 配置各筛选项 */
+  /** Initial state, configure each filter */
   initState?: Partial<WorkflowModalState>;
-  /** 已选流程列表 */
+  /** list of selected processes */
   workFlowList?: BotPluginWorkFlowItem[];
-  /** 已选流程列表变化 */
+  /** Selected process list changes */
   onWorkFlowListChange?: (newList: BotPluginWorkFlowItem[]) => void;
-  /** 选择流程 */
+  /** selection process */
   onAdd?: (
     item: BotPluginWorkFlowItem,
     config: {
-      /** 是否来源于复制 */
+      /** Does it come from copying? */
       isDup: boolean;
-      /** 目标空间 */
+      /** Target space */
       spaceId: string;
     },
   ) => void;
-  /** 移除流程 */
+  /** removal process */
   onRemove?: (item: BotPluginWorkFlowItem) => void;
   /**
-   * 删除流程后的回调 hooks，同时会执行 removeWorkflow 移除和 bot/场景 的关联
+   * Removes the callback hooks after the process, and removeWorkflow removes the association with the bot/scene
    * @param item
    */
   onDelete?: (item: BotPluginWorkFlowItem) => void;
   /**
-   * 列表项点击
+   * List item click
    *
-   * 配置可覆盖默认行为: 新开页面打开详情页
-   * @returns 返回 { handled: true } 或 undefined 不执行默认操作，否则执行内部默认的点击事件
+   * Configuration overrides default behavior: Open a new page Open the details page
+   * @Returns returns {handled: true} or undefined does not perform the default action, otherwise the internal default click event is executed
    */
   onItemClick?:
     | ((
         item: WorkflowItemType,
-        /** 弹窗状态, 可用于初始化弹窗 */
+        /** Pop-up status, which can be used to initialize the pop-up */
         modalState: WorkflowModalState,
       ) => { handled: boolean })
     | ((
         item: WorkflowItemType,
-        /** 弹窗状态, 可用于初始化弹窗 */
+        /** Pop-up status, which can be used to initialize the pop-up */
         modalState: WorkflowModalState,
       ) => void);
   /**
-   * 创建流程成功
+   * Successful creation process
    *
-   * 配置可覆盖默认行为: 新页面打开复制后的流程详情, 带参数 from=createSuccess
+   * Configuration can override default behavior: new page opens process details after replication, with parameter from = createSuccess
    */
   onCreateSuccess?: (info: {
     spaceId: string;
@@ -203,12 +203,12 @@ export interface WorkFlowModalModeProps {
     flowMode: WorkflowMode;
   }) => void;
   /**
-   * 复制流程成功
+   * The replication process was successful.
    *
-   * 配置可覆盖默认行为: Toast 提示复制成功, 继续编辑
+   * Configuration can override default behavior: Toast prompt Copy successful, continue editing
    */
   onDupSuccess?: (item: BotPluginWorkFlowItem) => void;
-  /** 项目内引入资源库文件触发的回调 */
+  /** Callback triggered by introducing a repository file into the project */
   onImport?: (
     item: Pick<BotPluginWorkFlowItem, 'workflow_id' | 'name'>,
   ) => void;
@@ -217,10 +217,10 @@ export interface WorkFlowModalModeProps {
   projectId?: string;
   onClose?: () => void;
   /**
-   * 创建 workflow 弹窗内命名校验
+   * Create name check in workflow pop-up
    */
   nameValidators?: RuleItem[];
-  /** 自定义 i18n 文案 */
+  /** Custom i18n copy */
   i18nMap?: Partial<Record<ModalI18nKey, I18nKey>>;
 }
 

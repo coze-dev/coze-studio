@@ -75,21 +75,21 @@ export const Comment = () => {
         containerNode = selectService.activatedNode;
       }
       const canvasPosition = calcNodePosition(mouseEvent, containerNode);
-      // 创建节点
+      // Create Node
       const node = await document.createWorkflowNodeByType(
         StandardNodeType.Comment,
         canvasPosition,
         {},
         containerNode?.id,
       );
-      // 等待节点渲染
+      // Wait for node to render
       setTimeout(() => {
         if (containerNode) {
           return;
         }
-        // 选中节点
+        // selected node
         selectService.selectNode(node);
-        // 开始拖拽
+        // Start dragging
         dragService.startDragSelectedNodes(mouseEvent);
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- waiting for node render
       }, 50);

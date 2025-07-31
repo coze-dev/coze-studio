@@ -21,7 +21,7 @@ import { type IFormSchema } from '@coze-workflow/test-run-next';
 interface SetCacheValuesOptions {
   properties: IFormSchema['properties'];
   defaultValues: any;
-  /** 是否强制使用 defaultValues 数据 */
+  /** Whether to force the use of defaultValues data */
   force?: boolean;
 }
 

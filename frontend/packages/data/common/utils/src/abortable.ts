@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, useEffect } from 'react';
 
 export function useUnmountSignal() {
@@ -35,7 +35,7 @@ export function useUnmountSignal() {
   return controllerRef.current.signal;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 得是 any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- must be any
 export function abortable<T extends (...args: any[]) => any | Promise<any>>(
   func: T,
   abortSignal: AbortSignal,

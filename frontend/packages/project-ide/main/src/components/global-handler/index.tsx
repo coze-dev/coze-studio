@@ -48,7 +48,7 @@ const leftPanelResourceType = [
 ];
 
 /**
- * IDE 全局逻辑处理
+ * IDE global logic processing
  */
 export const GlobalHandler = ({
   spaceId,
@@ -99,7 +99,7 @@ export const GlobalHandler = ({
 
   useWsListener((props: WsMessageProps) => {
     if (
-      // 即将支持，敬请期待
+      // Support soon, so stay tuned.
       !FLAGS['bot.automation.project_multi_tab'] ||
       !leftPanelResourceType.includes(props.bizType)
     ) {
@@ -114,9 +114,9 @@ export const GlobalHandler = ({
     }
 
     const isCreateOperate = props.operateType === MessageOperateType.Create;
-    // 只是创建 workflow 则刷新资源列表
+    // Just create workflow and refresh the resource list
     const isCreateWorkflow = props?.extra?.methodName === 'CreateWorkflow';
-    // 封装解封场景需要刷新资源列表
+    // The encapsulation and unsealing scene needs to refresh the resource list.
     const isEncapsulateWorkflow =
       props?.extra?.methodName === 'EncapsulateWorkflow';
 

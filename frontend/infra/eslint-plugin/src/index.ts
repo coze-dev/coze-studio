@@ -48,7 +48,7 @@ export const flowPreset = {
           '@coze-arch/tsx-no-leaked-render': 'warn',
           '@coze-arch/no-pkg-dir-import': 'error',
           '@coze-arch/no-duplicated-deps': 'error',
-          // 不允许超过 4 层的相对应用
+          // Relative applications with more than 4 layers are not allowed
           '@coze-arch/no-deep-relative-import': [
             'error',
             {
@@ -56,7 +56,7 @@ export const flowPreset = {
             },
           ],
           '@coze-arch/package-require-author': 'error',
-          // 函数代码行不要超过 150
+          // Function code lines should not exceed 150.
           '@coze-arch/max-line-per-function': [
             'error',
             {
@@ -73,11 +73,11 @@ export const flowPreset = {
         files: ['package.json'],
         processor: '@coze-arch/json-processor',
         rules: {
-          // TODO: 需要重构为直接解析json，否则全局规则都会对processor处理后的文件`package.js`生效.
+          // TODO: It needs to be refactored to parse json directly, otherwise the global rules will take effect on the file'package.js' processed by the processor.
           //https://github.com/eslint/json
           '@coze-arch/package-require-author': 'error',
           '@coze-arch/package-disallow-deps': 'error',
-          // 关闭prettier规则，因为该规则lint package.js存在bug
+          // Close the prettier rule because there is a bug in the rule lint package.js
           'prettier/prettier': 'off',
         },
       },

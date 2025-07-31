@@ -44,9 +44,9 @@ import { EmptyIcon } from './empty-image';
 import styles from './index.module.less';
 
 /**
- * 不同使用场景以做区分
- * - 不传默认是节点的 result panel
- * - resultSideSheet: 来自 execute-result-side-sheet 的使用
+ * Differentiate between different usage scenarios
+ * - Do not pass the default is the result panel of the node
+ * - resultSideSheet: use from execute-result-side-sheet
  */
 type LogDetailScene = 'resultSideSheet' | undefined;
 
@@ -124,15 +124,15 @@ export const LogDetail: React.FC<{
 }> = ({ result, node, scene }) => {
   const { batch, isBatch, nodeId } = result;
 
-  /** 从 0 开始 */
+  /** Start from 0 */
   const [page, setPage] = useState(0);
 
-  // 批处理列表是否为空（筛选后）
+  // Whether the batch list is empty (after filtering)
   const [isBatchEmpty, setIsBatchEmpty] = useState(false);
 
   const [refreshKey, refresh] = useState(nanoid());
 
-  // 获取 Testrun UI 数据
+  // Get Testrun UI Data
   const entity = useExecStateEntity();
   const wrappedNode = useMemo(
     () => (node ? new WorkflowNode(node) : null),
@@ -141,7 +141,7 @@ export const LogDetail: React.FC<{
 
   const errorSetting = entity.getNodeErrorSetting(nodeId || '');
 
-  // 反序列化获取所有遍历数组
+  // Deserialize to get all iterated arrays
   const batchData: NodeResult[] = useMemo(() => {
     if (!isBatch) {
       return [];
@@ -153,13 +153,13 @@ export const LogDetail: React.FC<{
       }
       return {
         ...i,
-        /** batch 数据里面不包含该标记，手动增加 */
+        /** The tag is not included in the batch data, and it is added manually. */
         isBatch: true,
       };
     });
   }, [isBatch, batch]);
 
-  // 当前执行日志
+  // current execution log
   const current: NodeResult = useMemo(() => {
     if (!isBatch) {
       return result;
@@ -167,15 +167,15 @@ export const LogDetail: React.FC<{
     return batchData[page];
   }, [page, isBatch, batchData, result]);
 
-  // 获取日志分类数据（input, output, batchValue 等）
+  // Get log classification data (input, output, batchValue, etc.)
   const { logs } = useMemo(
     () => generateLog(current, wrappedNode?.data),
     [current, wrappedNode],
   );
 
-  // 日志详情
+  // log details
   const logFields = useMemo(() => {
-    // 当批处理，并且结果列表为空
+    // When batch processing, and the result list is empty
     if (isBatch && isBatchEmpty) {
       return (
         <div className={cls(styles['flow-test-run-empty-wrapper'])}>
@@ -201,7 +201,7 @@ export const LogDetail: React.FC<{
   const handleFilterChange = useCallback(
     (_isEmpty: boolean, showError: boolean, needUpdate = true) => {
       if (needUpdate) {
-        // 如果需要使用后端存储，只需要打开下边的语句（后边语句需要删除）
+        // If you need to use backend storage, just open the following statement (the latter statement needs to be deleted).
         // textRunUIData.showError = showError;
         entity.setNodeErrorSetting(nodeId || '', { showError });
         refresh(nanoid());
@@ -213,7 +213,7 @@ export const LogDetail: React.FC<{
 
   return (
     <>
-      {/* 分页 */}
+      {/* paging */}
       {isBatch ? (
         <LogDetailWrap label={''} copyable={false}>
           <LogNavigationV2

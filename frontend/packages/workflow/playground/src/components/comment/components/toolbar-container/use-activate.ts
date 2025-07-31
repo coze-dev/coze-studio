@@ -37,10 +37,10 @@ export const useActivate = (params: {
     [],
   );
 
-  // 清理 debounce
+  // Clean up the debounce
   useEffect(() => () => setActivated.cancel(), [setActivated]);
 
-  // 监听处理 model 事件
+  // Listening for handling model events
   useEffect(() => {
     const eventHandlers = {
       [CommentEditorEvent.MultiSelect]: () => setActivated(true),
@@ -58,7 +58,7 @@ export const useActivate = (params: {
     };
   }, [model, setActivated]);
 
-  // 鼠标事件处理
+  // mouse event handling
   useEffect(() => {
     const mouseHandler = (e: MouseEvent) => {
       if (

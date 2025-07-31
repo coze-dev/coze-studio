@@ -19,7 +19,7 @@ import { type WorkflowVariable } from '@coze-workflow/variable';
 import { type DTODefine } from '@coze-workflow/base';
 
 /**
- * 遍历 DTO JSON 中的变量引用
+ * Traverse variable references in DTO JSON
  * @param data
  * @param cb
  * @returns
@@ -29,7 +29,7 @@ export function traverseRefsInNodeJSON(
   cb: (_ref: DTODefine.RefExpression) => void,
 ) {
   if (isObject(data)) {
-    // 判断是否符合 ValueExpressionDTO 的结构
+    // Determine if it conforms to the structure of ValueExpressionDTO
     if (
       get(data, 'type') === 'ref' &&
       get(data, 'content.source') === 'block-output' &&
@@ -53,7 +53,7 @@ export function traverseRefsInNodeJSON(
 }
 
 /**
- * 变量排序
+ * variable sort
  * @param variable
  * @returns
  */

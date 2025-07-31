@@ -103,7 +103,7 @@ interface WorkflowListReturn {
 const defaultPageSize = 20;
 
 /**
- * 流程列表
+ * process list
  */
 export function useWorkflowList({
   pageSize = defaultPageSize,
@@ -112,7 +112,7 @@ export function useWorkflowList({
   fetchWorkflowListApi = workflowApi.GetWorkFlowList.bind(workflowApi),
 }: {
   pageSize?: number;
-  /** 是否开启数据获取 */
+  /** Whether to enable data acquisition */
   enabled?: boolean;
   from?: WorkflowModalFrom;
   fetchWorkflowListApi?: (
@@ -208,7 +208,7 @@ export function useWorkflowList({
       if (params.bind_biz_type === BindBizType.Scene && params.bind_biz_id) {
         const resp = await workflowApi.WorkflowListByBindBiz(params);
         result.total = (resp.data.total as number) ?? 0;
-        // 设置流程权限
+        // Set process permissions
         result.workflow_list = (resp.data.workflow_list ?? []).map(
           (item): WorkflowInfo => {
             const authInfo = {
@@ -223,7 +223,7 @@ export function useWorkflowList({
           },
         );
       } else {
-        // 多人协作场景，DEV 模式需要展示 Blockwise workflow（除了流程列表引用）
+        // Multiplayer collaboration scenarios, DEV mode needs to demonstrate Blockwise workflow (except for process list references)
         Object.assign(params, {
           schema_type_list: [SchemaType.FDL],
           checker:
@@ -233,15 +233,15 @@ export function useWorkflowList({
         });
 
         const isDouyinBot = params.bind_biz_type === BindBizType.DouYinBot;
-        // 如果不是抖音分身模式，搜索参数不携带 bind_biz_id 参数
-        // 否则会导致某个工作流关联到 Agent 后0，之后在该工作流添加子工作流时看不到工作流列表
+        // If not Douyin doppelganger mode, search parameters do not carry bind_biz_id parameters
+        // Otherwise, it will cause a workflow to be associated with the agent after 0, and then the workflow list will not be visible when a child workflow is added to the workflow
         const fetchParams = isDouyinBot
           ? params
           : omit(params, ['bind_biz_id']);
 
         const resp = await fetchWorkflowListApi(fetchParams);
         result.total = (resp.data.total as number) ?? 0;
-        // 设置流程权限
+        // Set process permissions
         result.workflow_list = (resp.data.workflow_list ?? []).map(
           (item): WorkflowInfo => {
             let authInfo = {
@@ -339,13 +339,13 @@ export function useWorkflowList({
     return pageData.pages[pageData.pages.length - 1].total ?? 0;
   }, [pageData]);
 
-  // 复制
+  // copy
   const handleCopy = async (item: WorkflowInfo) => {
     if (!item.workflow_id || !spaceId) {
       throw new CustomError('normal_error', 'miss workflowId or spaceID');
     }
 
-    // 检查复制权限
+    // Check copy permissions
     if (!item.authInfo.can_copy) {
       throw new CustomError('normal_error', 'no copy permission');
     }
@@ -388,10 +388,10 @@ export function useWorkflowList({
         },
       });
 
-      // 兜底服务主从延迟
+      // Bottom line leader/follower delay
       await wait(300);
 
-      // 刷新列表
+      // refresh list
       refetch();
     } catch (error) {
       reporter.error({
@@ -402,13 +402,13 @@ export function useWorkflowList({
     }
   };
 
-  // 删除
+  // delete
   const handleDelete = async (item: WorkflowInfo) => {
     if (!item.workflow_id || !spaceId) {
       throw new CustomError('normal_error', 'miss workflowId or spaceID');
     }
 
-    // 先检查删除权限
+    // Check the delete permission first
     if (!item.authInfo.can_delete) {
       throw new CustomError('normal_error', 'no delete permission');
     }
@@ -422,7 +422,7 @@ export function useWorkflowList({
 
     let deleteType = DeleteType.CanDelete;
 
-    // 从服务端查询删除模式
+    // Delete mode from server level query
     const resp = await workflowApi.GetDeleteStrategy({
       space_id: spaceId,
       workflow_id: item.workflow_id,
@@ -461,10 +461,10 @@ export function useWorkflowList({
           message: 'workflow_list_delete_row_success',
         });
 
-        // 兜底服务主从延迟
+        // Bottom line leader/follower delay
         await wait(300);
 
-        // 刷新列表
+        // refresh list
         refetch();
       } catch (error) {
         reporter.error({
@@ -478,17 +478,17 @@ export function useWorkflowList({
       }
     };
     return {
-      /** 是否可删除 */
+      /** Can it be deleted */
       canDelete,
-      /** 删除策略 */
+      /** delete policy */
       deleteType,
-      /** 删除方法 */
+      /** Delete method */
       handleDelete: canDelete ? deleteFuc : undefined,
     };
   };
 
   return {
-    // 列表筛选状态
+    // list filter status
     flowType,
     setFlowType,
     flowMode,
@@ -505,31 +505,31 @@ export function useWorkflowList({
     setOrderBy,
     loginUserCreate,
     setLoginUserCreate,
-    /** 更新筛选参数 */
+    /** Update filter parameters */
     updatePageParam,
-    // 列表获取
-    /** 流程列表数据 */
+    // list acquisition
+    /** process list data */
     workflowList,
-    /** 流程总数 */
+    /** total number of processes */
     total,
-    /** 获取列表请求错误 */
+    /** Get list request error */
     queryError,
-    /** 拉取下一页数据 */
+    /** Pull the next page of data */
     fetchNextPage,
-    /** 是否有下一页 */
+    /** Is there a next page? */
     hasNextPage,
-    /** 获取数据中 */
+    /** Acquiring data */
     isFetching,
-    /** 获取下一页数据中 */
+    /** Get the next page of data */
     isFetchingNextPage,
-    /** 加载状态 */
+    /** loading status */
     loadingStatus,
-    /** 重新加载 */
+    /** Reload */
     refetch,
-    // 列表操作
-    /** 复制流程 */
+    // list operation
+    /** replication process */
     handleCopy,
-    // /** 删除流程 */
+    // /** Delete process */process */
     handleDelete,
   } as const;
 }

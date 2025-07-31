@@ -41,7 +41,7 @@ const useVisible = (params: {
   const playground = usePlayground();
   const { line, selected = false, color } = params;
   if (line.disposed) {
-    // 在 dispose 后，再去获取 line.to | line.from 会导致错误创建端口
+    // After dispose, getting line.to | line.from will cause an error to create a port
     return false;
   }
   if (playground.config.readonly) {

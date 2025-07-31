@@ -84,7 +84,7 @@ export class TestRunReporterService {
 
     this.send(ReporterEventName.RunEnd, data);
   }
-  /** form schema 生成速度上报 */
+  /** Form schema generation speed report */
   formSchemaGen = {
     start: () => this.tracker.start(),
     end: (

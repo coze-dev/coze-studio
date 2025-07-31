@@ -30,7 +30,7 @@ export interface MarkRangeInfo {
   close: MarkRange;
 }
 
-// 解析模板字符串: {#slot name="slot_name" #}xxx{#/slot#}
+// Parse template string: {#slot name = "slot_name" #} xxx {#/slot #}
 export class TemplateParser {
   public mark!: 'LibraryBlock' | 'InputSlot';
   private openReg!: RegExp;
@@ -125,28 +125,28 @@ export class TemplateParser {
     return close;
   }
 
-  // 解析模板字符串: {#slot id="slot_id" value="slot_value"#}，获取所有属性
+  // Parse template string: {#slot id = "slot_id" value = "slot_value" #}, get all properties
   getData(templateString: string): { [key: string]: string } | null {
-    // 根据传入的类型构造正则表达式，例如 slot 或 block
+    // Constructs regular expressions based on the type passed in, such as slots or blocks
     const regex = new RegExp(`\\{#${this.mark}\\s+([^#]+)#\\}`, 'g');
     const match = regex.exec(templateString);
     if (match !== null) {
-      const attributes = match[1].trim(); // 匹配到的属性部分
+      const attributes = match[1].trim(); // Matched attribute part
       const attrRegex = /(\w+)\s*=\s*"([^"]*)"/g;
-      const obj: { [key: string]: string } = {}; // 初始对象
+      const obj: { [key: string]: string } = {}; // initial object
       let attrMatch: RegExpExecArray | null;
       while (true) {
         attrMatch = attrRegex.exec(attributes);
         if (attrMatch === null) {
           break;
         }
-        obj[attrMatch[1]] = attrMatch[2]; // 将匹配的键值对添加到对象中
+        obj[attrMatch[1]] = attrMatch[2]; // Adds a matching key-value pair to the object
       }
 
-      return obj; // 返回解析结果
+      return obj; // Return the parsing result
     }
 
-    return null; // 没有匹配时返回 null
+    return null; // Returns null if there is no match
   }
 
   getCursorTemplateData(state: EditorState) {
@@ -218,8 +218,8 @@ export class TemplateParser {
   }
 
   /**
-   * 修改当前光标所在位置的模板数据: {#slot placeholder="default_placeholder"#} 修改为 {#slot placeholder="new_placeholder"#}
-   * 新增: {#slot placeholder="default_placeholder"#} 新增 {#slot value="new_value" placeholder="new_placeholder"#}
+   * Modify the template data for the current cursor position: {#slot placeholder = "default_placeholder" #} Modify to {#slot placeholder = "new_placeholder" #}
+   * Added: {#slot placeholder = "default_placeholder" #} Added {#slot value = "new_value" placeholder = "new_placeholder" #}
    */
   updateCursorTemplateData(editor: EditorAPI, data: { [key: string]: string }) {
     const { state } = editor.$view;
@@ -347,14 +347,14 @@ export class TemplateParser {
       },
     });
   }
-  // 提取模板中内容{#InputSlot placeholder="placeholder"#}123{#/InputSlot#}xxx，嵌套模板下内部所有的content
+  // Extract the content in the template {#InputSlot placeholder = "placeholder" #} 123 {#/InputSlot #} xxx, all the internal content under the nested template
   extractTemplateContent(template: string) {
-    // 使用正则表达式匹配 {#InputSlot ... #} 的部分
+    // Use regular expressions to match parts of {#InputSlot... #}
     const regex = new RegExp(
       `\\{#${this.mark}\\s+[^#]+#\\}|\\{#\\/${this.mark}#\\}`,
       'g',
     );
-    // 使用 replace 方法替换掉匹配的部分
+    // Use the replace method to replace the matching part
     const result = template.replace(regex, '');
     console.log('extractTemplateContent', result);
     return result;

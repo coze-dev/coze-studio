@@ -56,7 +56,7 @@ export class UIModal extends Modal {
     return (
       <Modal
         {...props}
-        // 对齐 UX 规范，点击半透明背景默认不关闭
+        // Align the UX specification, click on the translucent background and do not close by default
         maskClosable={false}
         centered={centered}
         cancelButtonProps={{

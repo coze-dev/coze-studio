@@ -70,12 +70,12 @@ const useConversationList = (params: ListProjectConversationDefParams) => {
 export const useConversationListWithConnector = (
   params: ConversationListWithConnectorParams,
 ) => {
-  // 静态
+  // static
   const { list: staticList, fetch: fetchStatic } = useConversationList({
     create_method: CreateMethod.ManualCreate,
     ...params,
   });
-  // 动态
+  // dynamic
   const { list: dynamicList, fetch: fetchDynamic } = useConversationList({
     create_method: CreateMethod.NodeCreate,
     ...params,

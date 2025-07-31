@@ -15,11 +15,11 @@
  */
  
 export const hasVisibleSelection = (range: Range): boolean => {
-  // 克隆Range内的所有节点
+  // Clone all nodes within the Range
   const documentFragment = range.cloneContents();
   const textNodes: Text[] = [];
 
-  // 递归函数来收集所有文本节点
+  // Recursive function to collect all text nodes
   function collectTextNodes(node: Node) {
     if (node.nodeType === Node.TEXT_NODE) {
       textNodes.push(node as Text);
@@ -28,9 +28,9 @@ export const hasVisibleSelection = (range: Range): boolean => {
     }
   }
 
-  // 从文档片段的根节点开始收集文本节点
+  // Collect text nodes from the root node of the document fragment
   collectTextNodes(documentFragment);
 
-  // 检查收集到的文本节点中是否有非空白的文本
+  // Check for non-blank text in the collected text nodes
   return textNodes.some(textNode => /\S/.test(textNode.textContent || ''));
 };

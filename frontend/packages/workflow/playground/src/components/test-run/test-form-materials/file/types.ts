@@ -26,15 +26,15 @@ export type FileProps = ComponentAdapterCommonProps<string> & {
   multiple: boolean;
   disabled?: boolean;
   fileType: 'object' | 'image' | 'voice';
-  // 支持文件地址输入
+  // Support file address input
   enableInputURL?: boolean;
-  // 文件输入类型变更事件
+  // File input type change event
   fileInputType?: string;
-  // 文件输入类型变更事件
+  // File input type change event
   onInputTypeChange?: (v: string) => void;
-  // 文件类型选择类名
+  // File type selection class name
   inputTypeSelectClassName?: string;
-  // url输入类名
+  // URL Enter class name
   inputURLClassName?: string;
   containerClassName?: string;
 };

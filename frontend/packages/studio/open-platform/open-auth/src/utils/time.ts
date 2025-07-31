@@ -18,10 +18,10 @@ import dayjs from 'dayjs';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 
 const MAX_EXPIRATION_DAYS = 30;
-// 1-30天有效期
+// 1-30 days valid period
 export const disabledDate = (date?: Date) => {
-  const today = dayjs().startOf('day'); // 当天的开始时间
-  const thirtyDaysLater = today.add(MAX_EXPIRATION_DAYS, 'day'); // 30天后的日期
+  const today = dayjs().startOf('day'); // Start time of the day
+  const thirtyDaysLater = today.add(MAX_EXPIRATION_DAYS, 'day'); // Date in 30 days
 
   return (
     dayjs(date).isBefore(today, 'day') ||

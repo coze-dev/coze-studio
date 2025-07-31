@@ -80,7 +80,7 @@ export const DocSelector = ({
       const regx = new RegExp(searchValue);
       const newOptions = options.filter(
         op =>
-          // 搜索结果不展示「全部内容」选项
+          // Search results do not show the "All Content" option
           (op.value !== 'all' && op.value === value) ||
           (op?.text as string)?.match(regx),
       );
@@ -107,7 +107,7 @@ export const DocSelector = ({
   const handleEditDocName = e => {
     e.stopPropagation();
     setVisible(true);
-    // TODO 打开弹框
+    // TODO opens the box
   };
   const triggerRender = ({ value: values }) => (
     <Popover
@@ -200,7 +200,7 @@ export const DocSelector = ({
     </Popover>
   );
 
-  // TODO: 交互改版，这里做了个假的
+  // TODO: Interactive revision, made a fake here
   return (
     <Select
       clickToHide={true}

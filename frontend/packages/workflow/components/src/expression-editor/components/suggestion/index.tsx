@@ -45,7 +45,7 @@ interface ExpressionEditorSuggestionProps {
 }
 
 /**
- * 自动提示
+ * autoprompt
  */
 export const ExpressionEditorSuggestion: FC<
   ExpressionEditorSuggestionProps

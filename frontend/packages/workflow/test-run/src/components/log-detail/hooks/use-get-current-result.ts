@@ -37,7 +37,7 @@ export default function useGetCurrentResult({
   const isNodeLogNeedAsync = true;
   const { batch, isBatch } = result || {};
 
-  // 反序列化获取所有遍历数组
+  // Deserialize to get all iterated arrays
   const batchData: NodeResult[] = useMemo(() => {
     if (!isBatch) {
       return [];
@@ -49,13 +49,13 @@ export default function useGetCurrentResult({
       }
       return {
         ...i,
-        /** batch 数据里面不包含该标记，手动增加 */
+        /** The tag is not included in the batch data, and it is added manually. */
         isBatch: true,
       };
     });
   }, [isBatch, batch]);
 
-  // 当前执行日志（同步获取完整日志）
+  // Current execution log (get full log synchronously)
   const current: NodeResult | undefined = useMemo(() => {
     if (!isBatch) {
       return result;

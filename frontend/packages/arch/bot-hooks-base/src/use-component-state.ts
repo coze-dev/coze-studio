@@ -24,9 +24,9 @@ export interface ComponentStateUpdateFunc<State extends Obj> {
 }
 
 /**
- * 对 state 一层封装，用途：
- * 1. 默认增量更新
- * 2. 支持重置
+ * One-layer encapsulation of state, use:
+ * 1. Default incremental update
+ * 2. Support reset
  *
  * @example
  * const { state, resetState, setState } = useComponentState({ a: 1, b: 2 });

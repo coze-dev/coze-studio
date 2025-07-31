@@ -27,7 +27,7 @@ const MAX_INPUT_LENGTH = 20;
 interface SlotNodeProps {
   placeholder?: string;
   dropdownVisible?: boolean;
-  /** 允许自定义添加时（enableCustom 为 true），添加选项事件 */
+  /** When allowing custom addition (enableCustom is true), add option events */
   onAdd?: (value: string) => Promise<boolean>;
 }
 
@@ -36,15 +36,15 @@ export function useSlotNode({
   placeholder,
   dropdownVisible,
 }: SlotNodeProps) {
-  /** 允许自定义添加时，当前是否为添加状态 */
+  /** When allowing custom addition, whether the current state is added */
   const [showCustomise, setShowCustomise] = useState(false);
 
-  /** 记录当前输入值 */
+  /** Record the current input value */
   const [inputValue, setInputValue] = useState('');
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /** 处理添加 */
+  /** handle add */
   const handleAdd = async (input: string) => {
     await onAdd?.(input).then(isSuccess => {
       if (isSuccess) {

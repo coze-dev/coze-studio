@@ -38,7 +38,7 @@ class FeatureFlagStorage extends EventEmitter {
         return false;
       }
 
-      // 从 remote 取值
+      // Get value from remote
       if (Reflect.has(cache, name)) {
         return Reflect.get(cache, name);
       }

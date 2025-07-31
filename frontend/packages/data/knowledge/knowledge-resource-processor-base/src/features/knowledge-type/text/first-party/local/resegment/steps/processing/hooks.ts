@@ -51,7 +51,7 @@ export const useResegment = <T extends UploadTextLocalResegmentStore>(
   const pollingTaskProgress = usePollingTaskProgress();
   const docId = params.docID ?? '';
 
-  // TODO: 分层相关
+  // TODO: Hierarchical correlation
   const { run: handleProcessText } = useRequest(
     async () => {
       if (!params.datasetID) {

@@ -26,19 +26,19 @@ import { eventBus } from '@/text-knowledge-editor/event';
 import { type HoverEditBarActionProps } from './module';
 
 /**
- * 删除特定分片的操作组件
+ * Remove the action component for specific shardings
  *
- * 内部实现了删除特定分片的逻辑
- * 如果传入了 onDelete 回调，则会在点击时调用
- * 如果提供了 chunks、onChunksChange，则会在内部处理删除逻辑，
- * 无需依赖外部的 usePreviewContextMenu
+ * The logic to remove specific shardings is implemented internally
+ * If an onDelete callback is passed, it will be called on click
+ * If chunks, onChunksChange are provided, the deletion logic is handled internally.
+ * No need to rely on external usePreviewContextMenu
  */
 export const DeleteAction: React.FC<HoverEditBarActionProps> = ({
   chunk,
   chunks = [],
   disabled,
 }) => {
-  // 删除特定分片
+  // Remove specific shardings
   const { deleteChunk } = useDeleteAction({
     chunks,
     onChunksChange: ({ chunks: newChunks }) => {

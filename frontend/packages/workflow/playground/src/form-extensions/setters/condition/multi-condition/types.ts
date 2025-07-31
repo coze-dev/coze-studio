@@ -24,15 +24,15 @@ import { Logic } from './constants';
 
 export interface ConditionItem {
   /**
-   * 表达式 left 数据
+   * Expression left data
    *  */
   left?: RefExpression;
   /**
-   * 表达式运算符
+   * Expression Operators
    */
   operator?: ConditionType;
   /**
-   * 表达式 right 数据
+   * Expression right data
    */
 
   right?: ValueExpression;
@@ -42,7 +42,7 @@ export { Logic };
 
 export interface ConditionBranchValue {
   condition: {
-    // And 或 Or 操作，对应后端数据的 logic
+    // And or or operations, corresponding to the logic of the backend data
     logic: Logic;
     conditions: ConditionItem[];
   };

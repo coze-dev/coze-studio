@@ -36,7 +36,7 @@ export const UserPrompt = ({ field, fieldState }) => {
   const isUserPromptRequired = curModel?.is_up_required ?? false;
 
   useEffect(() => {
-    // TODO: 临时方案，待节点引擎提供新 api 后替换
+    // TODO: Temporary solution, replaced after the node engine provides a new API
     field._fieldModel.validate();
   }, [isUserPromptRequired]);
 

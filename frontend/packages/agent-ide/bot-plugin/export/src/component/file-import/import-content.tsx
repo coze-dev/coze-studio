@@ -167,7 +167,7 @@ export const FileUpload = ({ onUpload, disabled }: FileUploadProps) => {
       onChange={({ fileList: list }) => {
         setFileList(list);
         if (!list.length) {
-          // 清空content
+          // Clear content
           onUpload();
         }
       }}

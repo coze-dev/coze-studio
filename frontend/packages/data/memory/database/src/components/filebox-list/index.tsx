@@ -52,12 +52,12 @@ export const FileBoxList: FC<FileBoxListProps> = props => {
     },
   );
 
-  // 手动控制 data 加载时机
+  // Manually control data loading timing
   useEffect(() => {
     if (botId) {
       reloadAsync();
 
-      // 重新加载时，回到最顶部
+      // When reloading, return to the top
       ref.current?.scrollTo?.({
         top: 0,
         behavior: 'smooth',
@@ -85,11 +85,11 @@ export const FileBoxList: FC<FileBoxListProps> = props => {
   return (
     <div className={s['filebox-list']}>
       <div className={s.header}>
-        {/* 切换图片/文档 */}
+        {/* Switch images/documents */}
         <FileBoxFilter />
 
         <Space spacing={12}>
-          {/* 搜索框 */}
+          {/* search box */}
           <UISearch
             placeholder={I18n.t(
               'card_builder_dataEditor_get_errormsg_please_enter',
@@ -97,7 +97,7 @@ export const FileBoxList: FC<FileBoxListProps> = props => {
             onChange={debounceSearch}
           />
 
-          {/* 上传按钮 */}
+          {/* Upload button */}
           <UIButton type="primary" theme="solid" onClick={open}>
             {I18n.t('datasets_createFileModel_step2')}
           </UIButton>
@@ -110,7 +110,7 @@ export const FileBoxList: FC<FileBoxListProps> = props => {
           childStyle={{
             height: '100%',
             width: '100%',
-            // 防止切换 fileListType 时 items 数量不一致，导致 loading 闪烁
+            // Prevent inconsistent number of items when switching fileListType, causing loading to flicker
             display: loading ? 'none' : 'block',
           }}
         >

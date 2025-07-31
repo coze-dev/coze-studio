@@ -43,16 +43,16 @@ import { AddOptionButton } from './add-option-button';
 import styles from './index.module.less';
 
 export interface AnswerOptionProps {
-  /** 是否展示标题行 */
+  /** Whether to display the title line */
   showTitleRow?: boolean;
 
-  /** 是否展示选项标签 */
+  /** Whether to display option labels */
   showOptionName?: boolean;
 
-  /** 选项 placeholder */
+  /** Option placeholder */
   optionPlaceholder?: string;
 
-  /** 默认分支名称 */
+  /** Default branch name */
   defaultOptionText?: string;
 }
 
@@ -85,7 +85,7 @@ const AnswerOption = ({
   }
 
   const onItemDelete = (index: number) => {
-    // 将要被删除的端口移动到最后，这样删除时不会对其他连线顺序产生影响
+    // Move the port to be deleted to the end so that the deletion does not affect other connection sequences
     updateSortedPortLines(index, value?.length as number);
 
     const newVal = update(value, { $splice: [[index, 1]] });

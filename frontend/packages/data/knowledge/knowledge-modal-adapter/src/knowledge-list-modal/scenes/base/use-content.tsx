@@ -26,7 +26,7 @@ export const useKnowledgeListModalContent = (
   props: DataSetModalContentProps,
 ) => {
   const { projectID, onClickAddKnowledge, beforeCreate } = props;
-  // 创建知识库的modal
+  // A modal for creating a knowledge base
   const createKnowledgeModal = useCreateKnowledgeModalV2({
     projectID,
     onFinish: (datasetId: string, type: UnitType, shouldUpload: boolean) => {
@@ -43,7 +43,7 @@ export const useKnowledgeListModalContent = (
 
 export const KnowledgeListModalContent = (props: DataSetModalContentProps) => {
   const { projectID, onClickAddKnowledge, beforeCreate } = props;
-  // 创建知识库的modal
+  // A modal for creating a knowledge base
   const createKnowledgeModal = useCreateKnowledgeModalV2({
     projectID,
     onFinish: (datasetId: string, type: UnitType, shouldUpload: boolean) => {

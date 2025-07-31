@@ -33,7 +33,7 @@ interface Props {
 }
 
 /**
- * 名称编辑
+ * name edit
  * @param props
  * @returns
  */

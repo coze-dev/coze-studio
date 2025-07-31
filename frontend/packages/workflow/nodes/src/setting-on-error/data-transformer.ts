@@ -63,8 +63,8 @@ const settingOnErrorInitV2 = (
   const timeoutConfig = getTimeoutConfig(context?.node);
 
   if (!timeoutMs) {
-    // 如果没有设置超时时间，且有初始值配置，则设置初始值
-    // 如LLM后端默认是10min，历史数据需要设置为init的10min，新加的节点显示默认的default的3min
+    // If no timeout is set and there is an initial value configuration, set the initial value
+    // For example, the default of the LLM backend is 10min, the historical data needs to be set to 10min of init, and the newly added node displays the default default 3min.
     if (value && timeoutConfig?.init) {
       timeoutMs = timeoutConfig.init;
     } else {

@@ -22,9 +22,9 @@ export interface PageStateUpdateFunc<State extends object = object> {
 }
 
 /**
- * 对state一层封装，包含更新state、重置state
+ * A layer of encapsulation of state, including updating state and resetting state
  *
- * @deprecated 请使用 bot-hooks 的 useComponentStates
+ * @deprecated Please use the useComponentStates of bot-hooks
  */
 export function usePageState<State extends object = object>(
   initState: State,
@@ -52,7 +52,7 @@ export function usePageState<State extends object = object>(
 
   useEffect(
     () => () => {
-      // 自动重置状态
+      // Automatic reset status
       if (destroyRef.current) {
         resetState();
       }

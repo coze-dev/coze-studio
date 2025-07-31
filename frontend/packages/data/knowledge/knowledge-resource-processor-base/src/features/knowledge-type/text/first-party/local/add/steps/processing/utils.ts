@@ -88,7 +88,7 @@ export function getCreateDocumentParams({
       levelChunkStrategy,
     ),
   };
-  // 火山[云搜索服务]只在国内环境上线
+  // Volcano [Cloud Search Service] is only available in the domestic environment
   if (IS_CN_REGION && enableStorageStrategy) {
     req.storage_strategy = {
       storage_location: storageLocation,

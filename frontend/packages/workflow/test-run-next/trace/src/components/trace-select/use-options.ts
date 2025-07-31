@@ -80,9 +80,9 @@ export const useOptions = (workflowId: string) => {
             next.unshift(first);
           }
         }
-        // eslint-disable-next-line @coze-arch/no-empty-catch -- 无需报错
+        // eslint-disable-next-line @coze-arch/no-empty-catch -- no error required
       } catch {
-        // 无需报错
+        // No error required
       }
     }
     next.forEach(s => {
@@ -91,7 +91,7 @@ export const useOptions = (workflowId: string) => {
       }
     });
     setOptions(next);
-    // 如果没有初始化，就初始化一次
+    // If it is not initialized, it is initialized once
     if (!ready && !span && maybeInitialSpan) {
       patch({ span: maybeInitialSpan });
     }
@@ -103,7 +103,7 @@ export const useOptions = (workflowId: string) => {
   const handleDateChange = useCallback(
     (next: [Date, Date]) => {
       const [start, end] = next;
-      // 时间选择器选择的日期是当天 0 点，需要转化为当天 11 点 59 分 59 秒
+      // The date selected by the time selector is 0:00 on the day, which needs to be converted to 11:59:59 on the day.
       setDate([start, dayjs(end).endOf('day').toDate()] as [Date, Date]);
     },
     [setDate],

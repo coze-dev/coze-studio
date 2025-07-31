@@ -14,6 +14,6 @@
  * limitations under the License.
  */
  
-/** 创建消息节点 */
+/** Create message node */
 
 export { CREATE_MESSAGE_NODE_REGISTRY } from './node-registry';

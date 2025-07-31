@@ -24,36 +24,36 @@ import { type ReleasedWorkflow } from '@coze-arch/bot-api/workflow_api';
 import { type ApiNodeDetailDTO } from '../../typings';
 
 /**
- * api 节点上存储的 api 的相关数据
+ * Data related to the API stored on the API node
  */
 export type ApiNodeData = CommonNodeData &
   Readonly<
     Partial<ApiNodeDetailDTO> & {
       /**
-       * 项目内插件节点需要保存 projectId
+       * The plug-in node in the project needs to save the projectId.
        */
       projectId?: string;
-      /** 该插件的最新版本的时间戳 */
+      /** The latest version of the plugin timestamp */
       latestVersionTs?: string;
-      /** 插件最新版本的展示名称，形如 v1.0.0 */
+      /** The display name of the latest version of the plugin, like v1.0.0 */
       latestVersionName?: string;
-      /** 该插件当前版本的展示名称，形如 v1.0.0 */
+      /** The display name of the current version of the plugin, in the form of v1.0.0 */
       versionName?: string;
     }
   >;
 
 /**
- * 子流程节点上存储的相关数据
+ * Related data stored on the subprocess node
  */
 export type SubWorkflowNodeData = CommonNodeData &
   Readonly<Omit<ReleasedWorkflow, 'inputs' | 'outputs'>> & {
-    /** 子流程节点输入定义 */
+    /** Subprocess Node Input Definition */
     inputsDefinition: DTODefine.InputVariableDTO[];
     /**
-     * 项目内子流程需要保存 projectId
+     * The sub-process in the project needs to save the projectId.
      */
     projectId?: string;
-    /** 该子流程的最新版本 */
+    /** The latest version of the subprocess */
     latestVersion?: string;
   };
 
@@ -64,25 +64,25 @@ export type QuestionNodeData = CommonNodeData & {
 };
 
 /**
- * 通用节点类型的相关数据
- * 基础节点定义见类型 BasicStandardNodeTypes
+ * Related data for common node types
+ * See Type BasicStandardNodeTypes for basic node definitions
  */
 export interface CommonNodeData {
   /**
    *
-   * 节点图标
+   * Node icon
    */
   readonly icon: string;
   /**
-   * 节点描述
+   * node description
    */
   description: string;
   /**
-   * 节点标题
+   * Node title
    */
   title: string;
   /**
-   * 节点主色
+   * Node main color
    */
   mainColor: string;
 }

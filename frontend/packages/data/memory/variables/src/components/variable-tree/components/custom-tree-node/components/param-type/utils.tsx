@@ -33,15 +33,15 @@ export const generateVariableOption = (
 });
 
 export interface VariableTypeOption {
-  // 类型的值， 非叶子节点时可能为空
+  // Value of type, possibly empty when not a leaf node
   value: number | string;
-  // 选项的展示名称
+  // The display name of the option
   label: ReactNode;
-  // 回显的展示名称
+  // Echoed display name
   display?: string;
-  // 类型是否禁用
+  // Is the type disabled?
   disabled?: boolean;
-  // 子类型
+  // subtype
   children?: VariableTypeOption[];
 }
 
@@ -72,7 +72,7 @@ const filterTypes = (
     }
 
     /**
-     * 1. 到达层级限制时禁用 ObjectLike 类型，避免嵌套过深
+     * 1. Disable the ObjectLike type when reaching the level limit to avoid too deep nesting
      */
     const disabled = Boolean(
       level &&
@@ -98,7 +98,7 @@ export const getVariableTypeList = options =>
   filterTypes(allVariableTypeList, options);
 
 /**
- * 获取类型在选项列表中的路径，作为 cascader 的 value
+ * Get the path of the type in the options list as the cascader value
  */
 export const getCascaderVal = (
   originalVal: ViewVariableType,

@@ -21,16 +21,16 @@ import type { Emitter, Handler, EventType } from 'mitt';
 
 import { type Chunk } from '../types/chunk';
 
-// 定义事件名称字面量类型
+// Define event name literal type
 export type EventTypeName =
   | 'previewContextMenuItemAction'
   | 'hoverEditBarAction';
 
 /**
- * 事件类型定义
+ * event type definition
  */
 export interface EventTypes extends Record<EventType, unknown> {
-  // 右键菜单相关事件
+  // right-click menu related events
   previewContextMenuItemAction: {
     type: 'add-after' | 'add-before' | 'delete' | 'edit';
     targetChunk: Chunk;
@@ -38,7 +38,7 @@ export interface EventTypes extends Record<EventType, unknown> {
     chunks?: Chunk[];
   };
 
-  // 悬浮编辑栏相关事件
+  // Floating edit bar related events
   hoverEditBarAction: {
     type: 'add-after' | 'add-before' | 'delete' | 'edit';
     targetChunk: Chunk;
@@ -48,32 +48,32 @@ export interface EventTypes extends Record<EventType, unknown> {
 }
 
 /**
- * 事件处理函数类型
+ * event handler type
  */
 export type EventHandler<T extends EventTypeName> = Handler<EventTypes[T]>;
 
 /**
- * 创建事件总线实例
+ * Create an event bus instance
  */
 export const createEventBus = (): Emitter<EventTypes> => mitt<EventTypes>();
 
 /**
- * 全局事件总线实例
+ * Global Event Bus instance
  */
 export const eventBus = createEventBus();
 
 /**
- * 事件总线钩子
- * 用于在组件中使用事件总线
+ * event bus hook
+ * Used to use the event bus in components
  */
 export const useEventBus = () => eventBus;
 
 /**
- * 监听事件钩子
- * 用于在组件中监听事件
- * @param eventName 事件名称
- * @param handler 事件处理函数
- * @param deps 依赖数组，当依赖变化时重新绑定事件
+ * listen event hook
+ * Used to listen for events in a component
+ * @param eventName
+ * @param handler event handler
+ * @Param deps dependency arrays, rebind events when dependencies change
  */
 export const useEventListener = <T extends EventTypeName>(
   eventName: T,
@@ -81,10 +81,10 @@ export const useEventListener = <T extends EventTypeName>(
   deps: React.DependencyList = [],
 ) => {
   useEffect(() => {
-    // 绑定事件
+    // binding event
     eventBus.on(eventName, handler as Handler<unknown>);
 
-    // 组件卸载时解绑事件
+    // Unbind event when component is unmounted
     return () => {
       eventBus.off(eventName, handler as Handler<unknown>);
     };

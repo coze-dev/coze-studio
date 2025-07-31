@@ -111,7 +111,7 @@ export const KnowledgeModalNavBar: React.FC<KnowledgeModalNavBarProps> = ({
       <div className={styles.toolbar}>
         <Space spacing={12}>
           {isImageFormat ? <PhotoFilter /> : null}
-          {/* 导入按钮 */}
+          {/* import button */}
           {canEdit ? importKnowledgeSourceButton : null}
           {actionButtons}
         </Space>

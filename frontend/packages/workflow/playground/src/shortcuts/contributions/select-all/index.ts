@@ -29,7 +29,7 @@ import { WorkflowGlobalStateEntity } from '@/typing';
 import { safeFn } from '../../utils';
 
 /**
- * 全选快捷键
+ * Select all shortcuts
  */
 @injectable()
 export class WorkflowSelectAllShortcutsContribution
@@ -43,7 +43,7 @@ export class WorkflowSelectAllShortcutsContribution
   private globalState: WorkflowGlobalStateEntity;
   @inject(WorkflowSelectService)
   private selectService: WorkflowSelectService;
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowSelectAllShortcutsContribution.type,

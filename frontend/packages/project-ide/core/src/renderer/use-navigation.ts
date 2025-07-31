@@ -21,7 +21,7 @@ import { type URI } from '../common';
 import { useIDEService } from './use-ide-service';
 
 const useNavigation = (): {
-  /** 可传入 URI 或 string，传入 string 时以 / 开头，和 react-router-dom 对齐 */
+  /** You can pass in a URI or string, starting with/when passing in a string, aligned with react-router-dom */
   navigate: (uri: URI | string, replace?: boolean, options?: any) => void;
   history: NavigationHistory;
   back: () => Promise<void>;

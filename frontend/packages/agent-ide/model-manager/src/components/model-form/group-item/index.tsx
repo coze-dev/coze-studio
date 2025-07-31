@@ -101,9 +101,9 @@ const DiversityGroupItemImpl: React.FC<
   }, [form]);
 
   /**
-   * 这里区分一下初始化和后续操作
-   * 只读状态时 customize 也默认收起否则默认展开
-   * 当然只读状态无法修改 model_style
+   * Here is a distinction between initialization and subsequent operations
+   * In the read-only state, customize is also stowed by default, otherwise it is expanded by default
+   * Of course, read-only state cannot be modified model_style
    */
   useEffect(() => {
     if (disabled) {

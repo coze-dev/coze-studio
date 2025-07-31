@@ -133,7 +133,7 @@ export const MessageBoxWrap: FC<
 
   const isHovering = useHover(() => wrapRef.current);
 
-  // 适配移动端 移动端没有hover效果，使用点击交互
+  // Adapt mobile end mobile end has no hover effect, use click interaction
   const [hoverContentVisible, setHoverContentVisible] =
     useState<boolean>(false);
 
@@ -187,7 +187,7 @@ export const MessageBoxWrap: FC<
             // chat-uikit-message-box-container__message
             className="flex-1 max-w-[calc(100%-44px)]"
           >
-            {/* TODO: 不支持一条消息内渲染多个 content */}
+            {/* TODO: Rendering multiple content within a message is not supported */}
             <div
               // chat-uikit-message-box-container__message__message-box
               className="relative flex flex-col w-fit max-w-full"
@@ -293,7 +293,7 @@ export const MessageBoxWrap: FC<
                   {right}
                 </div>
               </div>
-              {/* 对这个 dom 的样式改动前请先阅读上方的 refreshContainerWidthConditionally 方法 */}
+              {/* Please read the refreshContainerWidthConditionally above before changing the style of this dom */}
               <div
                 ref={messageFooterRef}
                 // chat-uikit-message-box-container__message__message-box__footer

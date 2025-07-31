@@ -84,7 +84,7 @@ const FormItem = memo(
     metaItem: FormMetaItem;
     isLast: boolean;
     isRow: boolean;
-    // 给图片上传组件特化的，需要根据是否为引用元素，设置不同的 label
+    // Specialized for the image upload component, you need to set different labels according to whether it is a reference element.
     isRefElement: boolean;
     formValue: Partial<FabricObjectSchema>;
     onChange: (v: Partial<FabricObjectSchema>, cacheSave?: boolean) => void;
@@ -236,7 +236,7 @@ export const Form: FC<IProps> = props => {
     [activeObjects],
   );
 
-  // 临时保存不需要保存到 schema 中的表单值
+  // Temporary saving of form values that do not need to be saved to the schema
   const [cacheFormValue, setCacheFormValue] = useState<
     Partial<FabricObjectSchema>
   >({});

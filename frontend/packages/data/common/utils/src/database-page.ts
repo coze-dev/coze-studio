@@ -36,7 +36,7 @@ export const getDatabasePageQuery = (): DatabasePageQuery => {
   };
 };
 
-/** 获取 databse 页面模式，如果等于 'modal' 则需要使用全屏形态 */
+/** Get the Databse page mode, if it is equal to'modal ', you need to use the full-screen mode */
 export const getDatabasePageMode = (): DatabasePageQuery['page_mode'] => {
   if (isDatabasePathname()) {
     return getDatabasePageQuery()?.page_mode;
@@ -44,6 +44,6 @@ export const getDatabasePageMode = (): DatabasePageQuery['page_mode'] => {
   return 'normal';
 };
 
-/** 当前 Database 页面模式是弹窗（全屏）形式 */
+/** The current Database page mode is a pop-up (full screen) format */
 export const databasePageModeIsModal = (): boolean =>
   getDatabasePageMode() === 'modal';

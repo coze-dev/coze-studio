@@ -25,29 +25,29 @@ interface UseDeleteActionProps {
 }
 
 /**
- * 删除分片的 hook
+ * Remove sharding hook
  *
- * 提供删除特定分片的功能
+ * Provides the ability to remove specific shardings
  */
 export const useDeleteAction = ({
   chunks,
   onChunksChange,
 }: UseDeleteActionProps) => {
-  // 使用ref保存最新的chunks引用
+  // Use ref to save the latest chunks reference
   const chunksRef = useRef<Chunk[]>(chunks);
   const { deleteSlice } = useDeleteChunk();
 
-  // 每次props.chunks更新时，更新ref
+  // Every time props.chunks is updated, update the ref.
   useEffect(() => {
     chunksRef.current = chunks;
   }, [chunks]);
 
   /**
-   * 删除特定分片
+   * Remove specific shardings
    */
   const handleDeleteChunk = useCallback(
     (chunk: Chunk) => {
-      // 从ref中获取最新的chunks
+      // Get the latest chunks from the ref
       const currentChunks = chunksRef.current;
       const updatedChunks = currentChunks.filter(
         c =>

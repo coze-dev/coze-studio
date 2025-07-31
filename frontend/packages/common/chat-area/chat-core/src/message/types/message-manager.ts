@@ -48,7 +48,7 @@ export interface ParticipantInfo {
   user_name?: string;
   allow_mention: boolean;
   access_path: string | undefined;
-  /** 是否允许被分享 */
+  /** Is it allowed to be shared? */
   allow_share?: boolean;
 }
 
@@ -106,21 +106,21 @@ export interface DeleteMessageResponse {
 export interface BreakMessageProps {
   conversation_id: string;
   /**
-   * 被打断问题的 local_message_id
+   * local_message_id of interrupted questions
    */
   local_message_id: string;
   /**
-   * 被打断的问题id
+   * Interrupted question id
    */
   query_message_id: string;
   /**
-   * 当前问题下哪一条回复被打断了
-   * 仅但被打断的消息 type = 'answer' 时传递
+   * Which reply was interrupted under the current question?
+   * Only delivered if the interrupted message type = 'answer'
    */
   answer_message_id?: string;
   /**
-   * 打断位置
-   * 仅但被打断的消息 type = 'answer' 时传递
+   * interrupt position
+   * Only delivered if the interrupted message type = 'answer'
    */
   broken_pos?: number;
 
@@ -138,7 +138,7 @@ export type ClearMessageContextParams = Pick<
 >;
 
 /*
-消息点赞/点踩接口类型定义
+Message Like/Click Interface Type Definition
  */
 export enum MessageFeedbackType {
   Default = 0,
@@ -148,16 +148,16 @@ export enum MessageFeedbackType {
 
 export enum MessageFeedbackDetailType {
   UnlikeDefault = 0,
-  UnlikeHarmful = 1, //有害信息
-  UnlikeIncorrect = 2, //信息有误
-  UnlikeNotFollowInstructions = 3, //未遵循指令
-  UnlikeOthers = 4, //其他
+  UnlikeHarmful = 1, //Harmful information
+  UnlikeIncorrect = 2, //incorrect information
+  UnlikeNotFollowInstructions = 3, //Did not follow instructions
+  UnlikeOthers = 4, //other
 }
 
 export interface MessageFeedback {
-  feedback_type?: MessageFeedbackType; //反馈类型
-  detail_types?: MessageFeedbackDetailType[]; //细分类型
-  detail_content?: string; //负反馈自定义内容，对应用户选择Others
+  feedback_type?: MessageFeedbackType; //feedback type
+  detail_types?: MessageFeedbackDetailType[]; //segmentation type
+  detail_content?: string; //Negative feedback custom content, corresponding to user selection Others
 }
 
 export enum ReportMessageAction {
@@ -168,12 +168,12 @@ export enum ReportMessageAction {
 
 export interface ReportMessageProps {
   bot_id?: string; //bot_id
-  biz_conversation_id: string; //会话ID
-  message_id: string; //消息ID
-  scene?: Scene; //当前会话所处场景
-  action: ReportMessageAction; //动作
+  biz_conversation_id: string; //Session ID
+  message_id: string; //Message ID
+  scene?: Scene; //The scene of the current session
+  action: ReportMessageAction; //action
   message_feedback?: MessageFeedback;
-  // 卡片状态
+  // Card Status
   attributes?: {
     card_status?: Record<string, string>;
   };
@@ -184,7 +184,7 @@ export interface ReportMessageResponse {
   msg: string;
 }
 
-/* 消息点赞/点踩接口类型定义：end */
+/* Message Like/Click Interface Type Definition: end */
 
 export type ChatASRProps = FormData;
 

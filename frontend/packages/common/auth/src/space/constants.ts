@@ -15,44 +15,44 @@
  */
  
 /**
- * 空间相关的权限点枚举
+ * Spatially dependent permission spot enumeration
  */
 export enum ESpacePermisson {
   /**
-   * 更新空间
+   * update space
    */
   UpdateSpace,
   /**
-   * 删除空间
+   * delete space
    */
   DeleteSpace,
   /**
-   * 添加成员
+   * Add member
    */
   AddBotSpaceMember,
   /**
-   * 移除空间成员
+   * Remove space member
    */
   RemoveSpaceMember,
   /**
-   * 退出空间
+   * exit space
    */
   ExitSpace,
   /**
-   * 转移owner权限
+   * Transfer owner permissions
    */
   TransferSpace,
   /**
-   * 更新成员
+   * update member
    */
   UpdateSpaceMember,
   /**
-   * 管理API-KEY
+   * Manage API-KEY
    */
   API,
 }
 
 /**
- * 空间角色枚举
+ * Spatial Role Enumeration
  */
 export { SpaceRoleType } from '@coze-arch/idl/developer_api';

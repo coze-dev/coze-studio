@@ -109,8 +109,8 @@ export const useResponseParams = ({
   const [data, setFormData] = useState<Array<APIParameter>>(
     responseParams || [],
   );
-  const [flag, setFlag] = useState<boolean>(false); // 为了更新视图
-  const [checkFlag, setCheckFlag] = useState<number>(0); // 全局校验用
+  const [flag, setFlag] = useState<boolean>(false); // To update the view
+  const [checkFlag, setCheckFlag] = useState<number>(0); // global validation
   const [inputModal, setInputModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -282,7 +282,7 @@ export const useResponseParams = ({
         >
           <Table
             // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- ui
-            style={{ minWidth: `calc(1008px + ${(maxNum - 6) * 20}px)` }} // 从第6层开始，每多一层增加20px
+            style={{ minWidth: `calc(1008px + ${(maxNum - 6) * 20}px)` }} // From the 6th layer, add 20px to each additional layer.
             pagination={false}
             columns={columns}
             dataSource={data}

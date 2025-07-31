@@ -156,7 +156,7 @@ export const useSelectDatabaseModal = ({
         enterFrom === 'bot' ? TableType.DraftTable : TableType.OnlineTable,
       table_name: key_word,
       creator_id: filter_creator === 'all' ? '0' : filter_creator,
-      // 暂时不做分页加载
+      // Do not do paging loading for the time being
       limit: 50,
       offset: page_offset,
       order_by: [
@@ -191,7 +191,7 @@ export const useSelectDatabaseModal = ({
     },
   );
 
-  // onScroll 判断 scrollRef 是否触底
+  // onScroll Determines whether scrollRef bottoms out
   const handleScroll = () => {
     if (!scrollRef.current) {
       return;
@@ -364,7 +364,7 @@ export const useSelectDatabaseModal = ({
       ref={scrollRef}
       onScroll={handleScroll}
     >
-      {/* FIXME: 这里需要根据实际做渲染 */}
+      {/* FIXME: This needs to be rendered according to the actual situation. */}
       {data?.list.map((item, index) => (
         <DatabaseListItem
           icon={item.icon_url}

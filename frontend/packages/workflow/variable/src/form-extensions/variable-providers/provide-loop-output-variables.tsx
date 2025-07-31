@@ -26,11 +26,11 @@ export const parseLoopOutputsByViewVariableMeta = (
 ) => {
   const properties = uniqInputs(value || []).map(_input => {
     const keyPath = _input?.input?.content?.keyPath;
-    // 如果选择的是 Loop 的 Variable 内的变量
+    // If you choose a variable in the Variable of the Loop
     if (keyPath?.[0] === nodeId) {
       return ASTFactory.createProperty({
         key: _input?.name,
-        // 直接引用变量
+        // Direct reference to variables
         initializer: ASTFactory.createKeyPathExpression({
           keyPath: _input?.input?.content?.keyPath || [],
         }),
@@ -39,7 +39,7 @@ export const parseLoopOutputsByViewVariableMeta = (
 
     return ASTFactory.createProperty({
       key: _input?.name,
-      // 输出类型包一层 Array
+      // Output Type Packet Layer Array
       initializer: createWrapArrayExpression({
         keyPath: _input?.input?.content?.keyPath || [],
       }),
@@ -57,7 +57,7 @@ export const parseLoopOutputsByViewVariableMeta = (
 };
 
 /**
- * 循环输出变量同步
+ * loop output variable synchronization
  */
 export const provideLoopOutputsVariables: VariableProviderAbilityOptions = {
   key: 'provide-loop-output-variables',

@@ -60,7 +60,7 @@ export function MonetizeConfig() {
     },
   );
 
-  /** loading 时展示为激活态（默认值） */
+  /** Show as active when loading (default) */
   const btnDisplayOn = loading ? true : monetizeConfig.isOn;
 
   return (

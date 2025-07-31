@@ -49,33 +49,33 @@ export const getDefaultCollaborationStore = (): CollaborationStore => ({
   maxCollaboratorsCount: 0,
 });
 export enum EditLockStatus {
-  Lose, // 无编辑锁
-  Holder, // 有编辑锁
-  Offline, // 断网状态，可编辑，但是不可保存。避免联网后覆盖掉断网期间其他页面的编辑
+  Lose, // No edit lock
+  Holder, // There is edit lock.
+  Offline, // The network disconnection status can be edited, but cannot be saved. Avoid overwriting the editing of other pages during the disconnection period after networking.
 }
-/**多人协作*/
+/**multiplayer collaboration*/
 export interface CollaborationStore {
   editLockStatus: EditLockStatus;
   inCollaboration: boolean;
   collaboratorStatus: BotCollaboratorStatus;
   sameWithOnline: boolean;
   baseVersion: string;
-  /** for前端，最近一次的提交人 */
+  /** For the front end, the most recent author */
   committer_name: string;
-  /** 获取的是什么分支的内容 */
+  /** What branch did you get the content of? */
   branch?: Branch;
-  /** for前端，提交时间 */
+  /** For frontend, commit time */
   commit_time: string;
   commit_version: string;
-  /** 能否开启协作开关 false不可开启 */
+  /** Can it be turned on? The cooperation switch is false and cannot be turned on. */
   openCollaboratorsEnable: boolean;
-  /** 是否可升级套餐 顶级付费账号不可升级 */
+  /** Whether the package can be upgraded, the top paid account cannot be upgraded */
   canUpgrade: boolean;
-  // 当前开启的协作bot数量
+  // The current number of active collaboration bots
   currentCollaborationBotCount: number;
-  /** 用户最大开启多人协作bot的数量限制 */
+  /** Limit on the maximum number of user-enabled multiplayer collaborative bots */
   maxCollaborationBotCount: number;
-  /** 协作者数量上限 */
+  /** maximum number of collaborators */
   maxCollaboratorsCount: number;
 }
 
@@ -100,7 +100,7 @@ export const useCollaborationStore = create<
         set(produce<CollaborationStore>(state => update(state))),
       getBaseVersion: () => {
         const { baseVersion, inCollaboration } = get();
-        // FG开启且单人模式下，不提供 base_version
+        // FG is on and in single mode, no base_version is provided
         if (!inCollaboration) {
           return undefined;
         }

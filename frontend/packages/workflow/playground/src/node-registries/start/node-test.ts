@@ -33,7 +33,7 @@ export const test: NodeTestMeta = {
   testset: true,
   async generateRelatedContext(node, context) {
     const { spaceId, workflowId, isChatflow, isInProject } = context;
-    // 在 project 中无需关联
+    // No need to associate in the project
     if (isInProject) {
       return generateEnvToRelatedContextProperties({
         isNeedBot: false,
@@ -42,12 +42,12 @@ export const test: NodeTestMeta = {
     const related = await getRelatedInfo({ spaceId, workflowId });
 
     /**
-     * 全流程测试无需选择会话
-     * 1. workflow 本身无需
-     * 2. chatflow 在会话组件中选择会话，无需表单中选择
+     * Full process testing without selecting a session
+     * 1. The workflow itself does not require
+     * 2. chatflow selects the session in the session component, no need to select in the form
      */
     related.isNeedConversation = false;
-    /** 不在项目中的 chatflow 强制需要关联环境 */
+    /** Chatflow that is not in the project forces the need for an associated environment */
     if (isChatflow && !isInProject) {
       related.isNeedBot = true;
     }

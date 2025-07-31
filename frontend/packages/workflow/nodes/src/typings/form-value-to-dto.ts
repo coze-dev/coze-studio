@@ -38,7 +38,7 @@ export const toListRefSchema = (value: string[]): ListRefSchema => {
       content: {
         source: 'block-output',
         blockID: `${nodeId}`,
-        name: keyPaths.join('.'), // 这是使用当前循环的变量，固定名字叫item
+        name: keyPaths.join('.'), // This is the variable that uses the current loop, with the fixed name item.
       },
     },
   };

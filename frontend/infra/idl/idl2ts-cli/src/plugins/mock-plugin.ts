@@ -55,15 +55,15 @@ export class MockPlugin implements IPlugin {
         if (context) {
           const { fieldDefinition } = context;
           const fieldName = fieldDefinition.name.value;
-          // 各类 ID
+          // various types of ID
           if (fieldName.toLocaleUpperCase().endsWith('ID')) {
             value = String(faker.number.int());
           }
-          // email 处理
+          // Email processing
           if (fieldName.includes('Email')) {
             value = `${faker.person.lastName()}@foo.com`;
           }
-          // 直接映射值
+          // direct mapping value
           value = StrMapper[fieldName] || value;
         }
         ctx.output = t.stringLiteral(value);
@@ -76,20 +76,20 @@ export class MockPlugin implements IPlugin {
           const { fieldDefinition } = context;
           const fieldName = fieldDefinition.name.value;
           const formatName = fieldName.toLocaleUpperCase();
-          // 各类 ID
+          // various types of ID
           if (formatName.endsWith('ID')) {
             value = faker.number.int();
           }
-          // 时间戳
+          // timestamp
           if (formatName.endsWith('TIME') || formatName.includes('TIMESTAMP')) {
             value = dayjs(faker.date.anytime()).valueOf();
           }
-          // 类型状态
+          // type state
           if (formatName.endsWith('STATUS') || formatName.includes('TYPE')) {
             value = faker.number.int({ min: 0, max: 1 });
           }
 
-          // 直接映射值
+          // direct mapping value
           const mapVal = NumMapper[fieldName];
           value = typeof mapVal !== 'undefined' ? mapVal : value;
         }

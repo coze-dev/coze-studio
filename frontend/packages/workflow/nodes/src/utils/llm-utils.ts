@@ -31,7 +31,7 @@ const getDefaultModels = (modelMeta: Model): Record<string, unknown> => {
     const k = camelCase(p.name) as string;
     const { type } = p;
 
-    // 优先取平衡，自定义兜底
+    // Priority to take the balance, custom bottom line
     const defaultValue =
       p.default_val[GenerationDiversity.Balance] ??
       p.default_val[GenerationDiversity.Customize];
@@ -50,7 +50,7 @@ const getDefaultModels = (modelMeta: Model): Record<string, unknown> => {
 };
 
 /**
- * 格式化模型数据，根据 modelMeta 将特定字符串转化成数字
+ * Format model data to convert specific strings to numbers according to modelMeta
  * @param model
  * @param modelMeta
  * @returns

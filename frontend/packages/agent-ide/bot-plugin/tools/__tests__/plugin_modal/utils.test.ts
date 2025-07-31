@@ -75,7 +75,7 @@ describe('findPathById', () => {
 });
 
 describe('addDepthAndValue', () => {
-  // 测试 1：验证函数是否正常工作
+  // Test 1: Verify that the function is working properly
   it('should add depth to each node in the tree', () => {
     const tree = [{ id: 1, sub_parameters: [{ id: 2 }, { id: 3 }] }, { id: 4 }];
     addDepthAndValue(tree);
@@ -85,14 +85,14 @@ describe('addDepthAndValue', () => {
     expect(tree[1].deep).toEqual(1);
   });
 
-  // 测试 2：验证函数在空树情况下是否正常工作
+  // Test 2: Verify that the function works properly in the empty tree case
   it('should not fail on empty trees', () => {
     const tree: any[] = [];
     addDepthAndValue(tree);
     expect(tree).toEqual([]);
   });
 
-  // 测试 3：验证函数在只有一个节点的树情况下是否正常工作
+  // Test 3: Verify that the function works properly in a tree with only one node
   it('should handle single-node trees', () => {
     const tree = [{ id: 1 }];
     addDepthAndValue(tree);
@@ -114,7 +114,7 @@ describe('handleDeepArr', () => {
     const deepArr = [];
     handleDeepArr(tree, deepArr);
 
-    // 断言
+    // assert
     expect(deepArr).toEqual([1, 2, 3, 4, 5]);
   });
 });
@@ -130,7 +130,7 @@ describe('maxDeep', () => {
       },
     ];
 
-    // 测试 tree1 的最大深度
+    // Test the maximum depth of tree1
     expect(maxDeep(tree1)).toEqual(5);
   });
 
@@ -138,10 +138,10 @@ describe('maxDeep', () => {
     const tree2 = [];
     const tree3 = [{ deep: 1 }];
 
-    // 测试空树的最大深度
+    // Test the maximum depth of an empty tree
     expect(maxDeep(tree2)).toEqual(0);
 
-    // 测试只有一个节点的树的最大深度
+    // Test the maximum depth of a tree with only one node
     expect(maxDeep(tree3)).toEqual(1);
   });
 });
@@ -174,9 +174,9 @@ describe('deleteNode', () => {
 
     const result = deleteNode(data, targetKey);
 
-    // 断言删除成功
+    // Asserts successful deletion
     expect(result).toBe(true);
-    // 断言目标节点已删除
+    // Asserts that the target node has been deleted
     expect(data.find(node => node.id === targetKey)).toBeUndefined();
   });
 
@@ -191,7 +191,7 @@ describe('deleteNode', () => {
 
     const result = deleteNode(data, targetKey);
 
-    // 断言删除失败
+    // Assertion deletion failed
     expect(result).toBe(false);
   });
 
@@ -212,11 +212,11 @@ describe('deleteNode', () => {
 
     const result = deleteNode(data, targetKey);
 
-    // 断言删除成功
+    // Asserts successful deletion
     expect(result).toBe(true);
-    // 断言目标节点已删除
+    // Asserts that the target node has been deleted
     expect(data.find(node => node.id === targetKey)).toBeUndefined();
-    // 断言子节点已删除
+    // Asserts that the sub-node has been deleted
     expect(data[1].sub_parameters.length).toBe(0);
   });
 });
@@ -273,7 +273,7 @@ describe('deleteAllChildNode', () => {
 });
 
 describe('updateNodeById', () => {
-  // 创建测试数据
+  // Create test data
   const data = [
     {
       id: '1',
@@ -291,10 +291,10 @@ describe('updateNodeById', () => {
     const field = 'name';
     const value = 'Updated Node';
 
-    // 调用被测试的函数
+    // Call the function under test
     updateNodeById({ data, targetKey, field, value });
 
-    // 验证节点数据是否已更新
+    // Verify that the node data has been updated
     expect(data[1].name).toEqual(value);
   });
 
@@ -303,7 +303,7 @@ describe('updateNodeById', () => {
     const field = 'name';
     const value = 'Updated Node';
 
-    // 调用被测试的函数
+    // Call the function under test
     updateNodeById({ data, targetKey, field, value });
     expect(data[0].sub_parameters[1].name).toEqual(value);
   });
@@ -351,7 +351,7 @@ describe('findTemplateNodeByPath', () => {
 
 describe('transformTreeToObj', () => {
   it('should convert a tree to an object', () => {
-    // 创建一个树结构的参数数组
+    // Create a tree-structured array of parameters
     const tree = [
       {
         name: 'stringParam',
@@ -397,10 +397,10 @@ describe('transformTreeToObj', () => {
       },
     ];
 
-    // 调用函数并将结果存储在变量 obj 中
+    // Call the function and store the result in the variable obj
     const obj = transformTreeToObj(tree);
 
-    // 检查转换后的对象是否具有正确的属性和值
+    // Checking whether the converted object has the correct properties and values
     expect(obj).toEqual({
       stringParam: 'Hello, World!',
       numberParam: 42,

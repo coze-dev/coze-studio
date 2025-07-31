@@ -40,44 +40,44 @@ export interface WorkflowPlaygroundInitConfig {
   spaceId?: string;
   workflowId?: string;
   commitId?: string;
-  /** 流程执行 ID */
+  /** process execution ID */
   executeId?:
     | {
-        /** 获取当前流程执行 ID */
+        /** Get the current process execution ID */
         type: 'workflow';
         value: string;
       }
     | {
         /**
-         * 获取持久化流程执行 ID
-         * 解决商店配置流程案例需要持久化的问题
+         * Get the persistent process execution ID
+         * Solve the problem that the store configuration process case needs to be persisted
          */
         type: 'store';
         value: string;
         sourceWfId: string;
       };
-  /** 当配置 executeId 时, 展示运行结果 */
+  /** When configuring executeId, display the running results */
   showExecuteResult?: boolean;
-  /** 当配置 executeId 时, 将历史输入设置为试运行默认输入 */
+  /** Set history input to practice run default when configuring executeId */
   enableInitTestRunInput?: boolean;
-  /** 是否禁止单节点试运行 */
+  /** Whether to disable single node practice running */
   disabledSingleNodeTest?: boolean;
-  /** 运行成功事件 */
+  /** run success event */
   onTestRunSucceed?: (executeId: string) => void;
-  /** 禁用试运行和调试工具 */
+  /** Disable practice running and debugging tools */
   disableTraceAndTestRun?: boolean;
 
   disableGetTestCase?: boolean;
 }
 
 export interface UseWorkflowPlaygroundProps {
-  /** 来源 */
+  /** source */
   from?: WorkflowPlaygroundProps['from'];
   onTriggerTestRun?: () => void;
 }
 
 /**
- * 用于预览和运行流程
+ * For previewing and running processes
  */
 export function useWorkflowPlayground(props?: UseWorkflowPlaygroundProps) {
   const workflowRef = useRef<WorkflowPlaygroundRef>(null);
@@ -96,7 +96,7 @@ export function useWorkflowPlayground(props?: UseWorkflowPlaygroundProps) {
     propsRef.current = props;
   }, [props]);
 
-  /** 流程组件 */
+  /** Process Component */
   const workflowComp = useMemo(() => {
     if (!initConfig?.workflowId) {
       return null;
@@ -118,7 +118,7 @@ export function useWorkflowPlayground(props?: UseWorkflowPlaygroundProps) {
         disableGetTestCase={initConfig.disableGetTestCase}
         renderHeader={() => null}
         onTestRunStart={(_, isSingleMode) => {
-          // 单节点调试，不记录历史记录，所以不要清除
+          // Single-node debugging, no history is recorded, so do not clear
           if (isBoolean(isSingleMode) && !isSingleMode) {
             lastTestRunResultRef.current = undefined;
           }
@@ -185,7 +185,7 @@ export function useWorkflowPlayground(props?: UseWorkflowPlaygroundProps) {
             return;
           }
 
-          // 预设了执行 ID, 记为一次试运行
+          // Default execution ID, recorded as a practice run
           setTestRunCount(val => val + 1);
 
           if (initConfig.enableInitTestRunInput) {
@@ -260,38 +260,38 @@ export function useWorkflowPlayground(props?: UseWorkflowPlaygroundProps) {
   return {
     init: (config?: WorkflowPlaygroundInitConfig, force?: boolean) => {
       setInitConfig(val => {
-        // 非强制更新时, 对比 workflowId 一致性, 如果一致则不更新
+        // When non-forced update, compare workflowId consistency, if consistent, do not update
         if (!force && val?.workflowId === config?.workflowId) {
           return val;
         }
         return config;
       });
     },
-    /** 流程组件实例 */
+    /** Process component instance */
     workflowRef,
-    /** 是否是运行中状态 */
+    /** Is it running? */
     isRunning,
-    /** 运行结果是否展示 */
+    /** Is the running result displayed? */
     testResultVisible,
-    /** 触发试运行 */
+    /** Trigger practice run */
     triggerTestRun: () => {
       workflowRef.current?.triggerTestRun();
     },
-    /** 取消试运行 */
+    /** Cancel practice run */
     cancelTestRun: () => {
       workflowRef.current?.cancelTestRun();
     },
-    /** 展示运行结果 */
+    /** Show the running results */
     showTestRunResult: () => {
       workflowRef.current?.showTestRunResult(lastTestRunResultRef.current);
     },
-    /** 隐藏试运行结果 */
+    /** Hide practice run results */
     hideTestRunResult: () => {
       workflowRef.current?.hideTestRunResult();
     },
-    /** 流程组件 */
+    /** Process Component */
     workflowComp,
-    /** 试运行组件 */
+    /** Practice running components */
     testRunBtnsComp,
   };
 }

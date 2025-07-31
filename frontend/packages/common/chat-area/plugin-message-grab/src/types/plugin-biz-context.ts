@@ -33,7 +33,7 @@ export const enum EventNames {
   OnLinkElementMouseLeave = 'onCardLinkElementMouseLeave',
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- 符合预期
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- as expected
 export type EventCenter = {
   [EventNames.OnMessageUpdate]: unknown;
   [EventNames.OnViewScroll]: unknown;

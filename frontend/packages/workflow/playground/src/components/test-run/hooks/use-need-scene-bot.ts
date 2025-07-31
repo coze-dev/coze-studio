@@ -22,7 +22,7 @@ import { useGetSceneFlowBot } from '../../../hooks/use-get-scene-flow-params';
 import { useGetWorkflowMode } from '../../../hooks';
 
 /**
- * 场景工作流下，判断testrun是否需要关联的bot_id
+ * Determine if testrun needs an associated bot_id under the scenario workflow
  */
 export const useNeedSceneBot = (nodeType: StandardNodeType) => {
   const { isSceneFlow } = useGetWorkflowMode();
@@ -36,7 +36,7 @@ export const useNeedSceneBot = (nodeType: StandardNodeType) => {
       initialValue: sceneFlowHost?.participantId,
       title: I18n.t('workflow_detail_testrun_bot', {}, '关联 Bot'),
       disabled: true,
-      // 没有 nodeType，说明是整个试运行，隐藏 bot
+      // No nodeType, the description is the whole practice run, hidden bot
       hidden: !nodeType,
       decorator: {
         type: 'FormItem',

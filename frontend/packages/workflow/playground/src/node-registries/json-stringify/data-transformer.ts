@@ -20,7 +20,7 @@ import { type FormData } from './types';
 import { OUTPUTS } from './constants';
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (value: NodeDataDTO) => ({
   ...(value ?? {}),
@@ -28,7 +28,7 @@ export const transformOnInit = (value: NodeDataDTO) => ({
 });
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

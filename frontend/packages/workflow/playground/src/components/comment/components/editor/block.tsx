@@ -21,17 +21,17 @@ export const Block = ({ attributes, children, element }) => {
     textAlign: element.align,
     color: 'var(--coz-fg-primary, rgba(6, 7, 9, 0.80))',
   };
-  // 根据元素类型选择对应的 HTML 标签
+  // Select the corresponding HTML tag based on the element type
   switch (element.type) {
     case CommentEditorBlockFormat.Paragraph:
-      // 渲染段落
+      // Render paragraph
       return (
         <p className="text-[12px] m-0 p-0" style={style} {...attributes}>
           {children}
         </p>
       );
     case CommentEditorBlockFormat.Blockquote:
-      // 渲染引用块
+      // Render reference block
       return (
         <blockquote
           className="border-l-[3px] border-t-0 border-b-0 border-r-0 border-solid border-[#ced0d4] m-0 p-0 pl-[8px] ml-[8px] text-[12px]"
@@ -45,7 +45,7 @@ export const Block = ({ attributes, children, element }) => {
         </blockquote>
       );
     case CommentEditorBlockFormat.HeadingOne:
-      // 渲染一级标题
+      // Render first-level title
       return (
         <h1
           className="text-[18px] mx-0 my-[6px] p-0 font-[600]"
@@ -56,7 +56,7 @@ export const Block = ({ attributes, children, element }) => {
         </h1>
       );
     case CommentEditorBlockFormat.HeadingTwo:
-      // 渲染二级标题
+      // Render secondary title
       return (
         <h2
           className="text-[16px] mx-0 my-[6px] p-0 font-[600]"
@@ -67,7 +67,7 @@ export const Block = ({ attributes, children, element }) => {
         </h2>
       );
     case CommentEditorBlockFormat.HeadingThree:
-      // 渲染三级标题
+      // Render three-level title
       return (
         <h3
           className="text-[14px] mx-0 my-[6px] p-0 font-[600]"
@@ -78,7 +78,7 @@ export const Block = ({ attributes, children, element }) => {
         </h3>
       );
     case CommentEditorBlockFormat.BulletedList:
-      // 渲染无序列表
+      // Render unordered list
       return (
         <ul
           className="text-[12px] m-0 p-0 pl-[16px] font-[400]"
@@ -89,7 +89,7 @@ export const Block = ({ attributes, children, element }) => {
         </ul>
       );
     case CommentEditorBlockFormat.NumberedList:
-      // 渲染有序列表
+      // Render ordered list
       return (
         <ol
           className="text-[12px] m-0 p-0 pl-[16px]"
@@ -100,14 +100,14 @@ export const Block = ({ attributes, children, element }) => {
         </ol>
       );
     case CommentEditorBlockFormat.ListItem:
-      // 渲染列表项
+      // Render list items
       return (
         <li className="text-[12px] m-0 p-0" style={style} {...attributes}>
           {children}
         </li>
       );
     default:
-      // 默认渲染为段落
+      // Default render as paragraph
       return (
         <p className="text-[12px] m-0 p-0" style={style} {...attributes}>
           {children}

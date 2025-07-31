@@ -62,8 +62,8 @@ interface VariableExtensionProps {
 const DROPDOWN_CLASS = 'tree-variable-selector-dropdown';
 
 /**
- * wrokflow 变量扩展插件
- * - 支持流程变量 + 全局变量
+ * Wrokflow variable extension
+ * - Support process variables + global variables
  */
 export function VariableExtension({
   readonly,
@@ -75,7 +75,7 @@ export function VariableExtension({
   languageId,
 }: VariableExtensionProps) {
   const editor = useEditor<EditorAPI>();
-  const [pos, setPos] = useState(-1); // 当前光标位置
+  const [pos, setPos] = useState(-1); // Current cursor position
   const [posKey, setPosKey] = useState('');
 
   const inputDropdownRef = useRef(null);
@@ -94,11 +94,11 @@ export function VariableExtension({
     selection?.anchor,
   );
 
-  // 控制输入提示框的显隐
+  // Control the visibility of input prompt boxes
   const [inputDropdownOpen, setInputOpen] = useState(false);
-  // 控制编辑变量提示框的显隐
+  // Controls the visibility of the edit variable prompt box
   const [updateDropdownOpen, setUpdateOpen] = useState(false);
-  // 当前提示面板的打开方式
+  // How to open the current prompt panel
   const [dropdownType, setDropdownType] = useState(DropdownType.Input);
   const isInputDropdownOpen = dropdownType === DropdownType.Input;
   const updateRange = useRef({
@@ -108,12 +108,12 @@ export function VariableExtension({
 
   const dropDownVisible = updateDropdownOpen || inputDropdownOpen;
 
-  // 变量插入逻辑
+  // variable insertion logic
   useVariableInjector({
     availableVariables,
     openUpdateDropdown: () => {
       if (variableDataSource?.length && !readonly) {
-        // 变量为空时不打开
+        // Do not open when variable is empty
         setUpdateOpen(true);
       }
       setDropdownType(DropdownType.Update);
@@ -134,7 +134,7 @@ export function VariableExtension({
     }
   }, [dropDownVisible]);
 
-  // 替换选中变量
+  // Replace selected variable
   const handleSelect: ApplyNodeType = (
     data,
     { type, customRange },
@@ -155,7 +155,7 @@ export function VariableExtension({
       curExpressionPath.source !== WORKFLOW_VARIABLE_SOURCE;
     let textContent = '';
     if (globalVariableKey) {
-      // keyPath 已经包含了 source
+      // KeyPath already includes the source.
       textContent =
         curExpressionPath.keyPath?.reduce((pre, cur) => {
           if (pre) {
@@ -169,7 +169,7 @@ export function VariableExtension({
         (curExpressionPath.keyPath?.join('.') ?? '');
     }
 
-    // 下次打开菜单，变量面板不应该自动展开
+    // Next time you open the menu, the Variables panel should not automatically expand
     setTreeVisible(false);
     if (type === 'input') {
       const range =
@@ -245,7 +245,7 @@ export function VariableExtension({
       return;
     }
     setUpdateOpen(false);
-    // 意外关闭后，下次变量面板不应该自动展开
+    // After an unexpected shutdown, the next variable panel should not automatically expand
     setTreeVisible(false);
   };
 
@@ -338,7 +338,7 @@ export function VariableExtension({
             {
               type: 'input',
               customRange: {
-                // 补充双花括号位置
+                // Supplementary double braces position
                 from: context.from - 2,
                 to: context.to + 2,
               },
@@ -359,7 +359,7 @@ export function VariableExtension({
         }) => {
           const curPos = state.selection.main.head;
           if (variableDataSource?.length && !readonly) {
-            // 变量为空时不打开
+            // Do not open when variable is empty
             setInputOpen(value);
           }
           setPos(curPos);

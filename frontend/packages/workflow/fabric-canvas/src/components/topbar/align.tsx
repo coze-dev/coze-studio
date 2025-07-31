@@ -61,7 +61,7 @@ export const Align: FC<IProps> = props => {
     </Select.Option>
   );
   return (
-    // 禁止冒泡，防止点击对齐时，canvas 的选中状态被清空
+    // Prohibit bubbling to prevent the selected state of canvas from being cleared when clicking align
     <div
       onClick={e => {
         e.stopPropagation();

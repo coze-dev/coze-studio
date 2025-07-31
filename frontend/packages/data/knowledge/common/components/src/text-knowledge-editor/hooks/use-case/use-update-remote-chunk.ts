@@ -35,7 +35,7 @@ export const useUpdateRemoteChunk = ({
   const { updateSlice } = useUpdateChunk();
 
   /**
-   * 处理远程分片的更新操作
+   * Handling updates for remote sharding
    */
   const updateRemoteChunk = async (chunk: Chunk) => {
     if (!chunk.slice_id) {

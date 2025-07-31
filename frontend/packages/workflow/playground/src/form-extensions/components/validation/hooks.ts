@@ -48,14 +48,14 @@ export const useError = (
   }
 
   let pathArray;
-  // 将路径转为数组，以便统一处理
+  // Convert the path to an array for unified processing
   if (Array.isArray(path)) {
     pathArray = path;
   } else {
     pathArray = parsePath(path);
   }
 
-  // 通过路径在错误列表中查找对应的错误
+  // Find the corresponding error in the error list through the path
   const findErrorInPath = (
     errorPath: (string | number)[],
   ): ValidationError | undefined =>
@@ -72,7 +72,7 @@ export const useError = (
 
   const error = findErrorInPath(pathArray);
 
-  // 返回错误信息
+  // Return error message
   return error ? error.message : undefined;
 };
 

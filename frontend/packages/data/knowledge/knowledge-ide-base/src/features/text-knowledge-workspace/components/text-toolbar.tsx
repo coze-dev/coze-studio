@@ -39,7 +39,7 @@ import {
 import { DocTag } from './doc-tag';
 import { DocSelector } from './doc-selector';
 
-// 文档基本信息
+// Documentation basic information
 export interface DocumentData {
   curDoc?: DocumentInfo;
   curDocId: string;
@@ -47,13 +47,13 @@ export interface DocumentData {
   docOptions: OptionProps[];
 }
 
-// 文件预览相关
+// File preview related
 export interface FilePreviewData {
   showOriginalFile: boolean;
   fileUrl?: string;
 }
 
-// 文档操作回调
+// document action callback
 export interface DocumentActions {
   onChangeDoc: (docId: string) => void;
   onRenameDoc: (docId: string, newName: string) => void;
@@ -64,7 +64,7 @@ export interface DocumentActions {
   reloadDataset?: () => void;
 }
 
-// 自定义UI元素
+// Custom UI elements
 export interface CustomUIElements {
   linkOriginUrlButton?: ReactNode;
   fetchSliceButton?: ReactNode;
@@ -92,7 +92,7 @@ export const TextToolbar: React.FC<TextToolbarProps> = ({
 }) => {
   const canEdit = useKnowledgeStore(state => state.canEdit);
 
-  // 控制按钮显示逻辑
+  // Control button display logic
   const showUpdateFreBtn =
     canEdit &&
     curDoc &&

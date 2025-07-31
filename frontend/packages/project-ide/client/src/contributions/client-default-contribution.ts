@@ -35,12 +35,12 @@ export class ClientDefaultContribution
   protected readonly openerService: OpenerService;
 
   /**
-   * IDE 初始化阶段
+   * IDE initialization phase
    */
   onInit() {}
 
   /**
-   * 注册 commands
+   * Registration commands
    * @param registry
    */
   registerCommands(registry: CommandRegistry) {}

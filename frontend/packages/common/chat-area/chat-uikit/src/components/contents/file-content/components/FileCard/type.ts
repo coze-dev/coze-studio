@@ -24,27 +24,27 @@ import {
 export interface IFileCardProps {
   file: IFileInfo;
   /**
-   * 用于识别成功 / 失败状态的key
+   * Key used to identify success/failure status
    */
   attributeKeys: IFileAttributeKeys;
   /**
-   * 文案配置
+   * copywriting configuration
    */
   tooltipsCopywriting?: IFileCardTooltipsCopyWritingConfig;
   /**
-   * 是否只读
+   * Is it read-only?
    */
   readonly?: boolean;
   /**
-   * 取消上传事件回调
+   * Cancel upload event callback
    */
   onCancel: () => void;
   /**
-   * 重试上传事件回调
+   * Retry upload event callback
    */
   onRetry: () => void;
   /**
-   * 拷贝url事件回调
+   * Copy URL event callback
    */
   onCopy: () => void;
   className?: string;

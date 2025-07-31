@@ -91,7 +91,7 @@ export const ResourceTreeModal = ({
         project_version: version ? version : undefined,
       },
     });
-    // 兼容先请求后返回场景
+    // Compatibility Request first and then return to the scene
     if (selectedWorkflowId === id) {
       setData(res?.data || DEFAULT_DATA);
     }

@@ -43,13 +43,13 @@ export const Leaf = ({ attributes, children, leaf }) => {
           e.stopPropagation();
           const link: string = leaf[CommentEditorLeafFormat.Link];
           if (link === CommentDefaultLink) {
-            // 如果链接为默认链接，直接打开
+            // If the link is the default link, open it directly.
             return window.open(link, '_blank');
           } else if (/^([a-zA-Z][a-zA-Z\d+\-.]*):\/\//.test(link)) {
-            // 如果已经包含合法的协议，直接打开
+            // If a legal agreement is already included, open it directly
             return window.open(link, '_blank');
           } else {
-            // 如果没有合法协议，添加 https 协议头
+            // If there is no legal agreement, add the https protocol header.
             // cp-disable-next-line
             return window.open(`https://${link}`, '_blank');
           }

@@ -38,7 +38,7 @@ interface VisionInputFieldProps {
 }
 
 /**
- * 输入字段
+ * input field
  */
 export const VisionInputField: FC<VisionInputFieldProps> = ({
   readonly,

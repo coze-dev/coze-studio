@@ -122,10 +122,10 @@ export const Bots: React.FC<BotsProps> = ({ value, onChange, ...props }) => {
   const [searchTotal, setTotal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 由于分页限制 选中的botId可能找不到对应的option 需要额外添加
+  // Due to paging restrictions, the selected botId may not find the corresponding option and needs to be added
   const extraBotOption = useExtraBotOption(selectList, value);
 
-  // 接口得到的总数并非真实的总数，前端可能会拼接 options
+  // The total number obtained by the interface is not the real total, and the front end may splice options.
   const listMaxHeight = useMemo(() => {
     const realTotal = extraBotOption ? searchTotal + 1 : searchTotal;
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers

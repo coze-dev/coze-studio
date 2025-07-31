@@ -20,11 +20,11 @@ import { Form } from '@coze-arch/bot-semi';
 
 import style from './index.module.less';
 
-// TODO: hzf, 取名component有点奇怪
+// TODO: hzf, the named component is a bit strange
 export type FormInputWithMaxCountProps = {
   maxCount: number;
 } & React.ComponentProps<typeof Form.Input>;
-// input后带上suffix，表示能够输入的最大字数
+// After input, put a suffix to indicate the maximum number of words that can be entered
 export const FormInputWithMaxCount = (props: FormInputWithMaxCountProps) => {
   const [count, setCount] = React.useState(0);
   const handleChange = (v: string) => {

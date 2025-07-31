@@ -42,7 +42,7 @@ interface Props {
 }
 
 /**
- * 分组header
+ * Packet header
  * @param param0
  * @returns
  */

@@ -18,7 +18,7 @@ import { type BotTable, BotTableRWMode } from '@coze-arch/bot-api/memory';
 
 import { transformBotInfo, useBotInfo } from './use-bot-info';
 
-// 多人模式下产品希望前端展示uuid & id 目前这两个字段会被后端过滤 先由前端补充这两个字段 后端充分评估过再移除过滤逻辑
+// In multiplayer mode, the product hopes that the front-end will display uuid & id. At present, these two fields will be filtered by the back-end. The front-end will supplement these two fields first, and the back-end will fully evaluate and then remove the filtering logic.
 function addUidAndIdToBotFieldsIfIsUnlimitedReadWriteMode(
   tableInfo: BotTable[],
 ): BotTable[] {

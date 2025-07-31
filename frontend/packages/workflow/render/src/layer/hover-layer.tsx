@@ -72,12 +72,12 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
   protected selectorBoxConfigEntity: SelectorBoxConfigEntity;
   @inject(PlaygroundConfigEntity) configEntity: PlaygroundConfigEntity;
   /**
-   * 监听节点 transform
+   * Listen node transform
    */
   @observeEntityDatas(WorkflowNodeEntity, FlowNodeTransformData)
   protected readonly nodeTransforms: FlowNodeTransformData[];
   /**
-   * 按选中排序
+   * Sort by Selected
    * @private
    */
   protected nodeTransformsWithSort: FlowNodeTransformData[] = [];
@@ -85,16 +85,16 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
     const { activatedNode } = this.selectionService;
     this.nodeTransformsWithSort = this.nodeTransforms
       .filter(n => n.entity.id !== 'root')
-      .reverse() // 后创建的排在前面
+      .reverse() // The post-created one comes first
       .sort(n1 => (n1.entity === activatedNode ? -1 : 0));
   }
   /**
-   * 监听线条
+   * monitor line
    */
   @observeEntities(WorkflowLineEntity)
   protected readonly lines: WorkflowLineEntity[];
   /**
-   * 是否正在调整线条
+   * Is the line being adjusted?
    * @protected
    */
   get isDrawing(): boolean {
@@ -106,7 +106,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
       ...this.options,
     };
     this.toDispose.pushAll([
-      // 监听画布鼠标移动事件
+      // Monitor canvas mouse movement events
       this.listenPlaygroundEvent('mousemove', (e: MouseEvent) => {
         this.hoverService.hoveredPos = this.config.getPosFromMouseEvent(e);
         if (!this.isEnabled()) {
@@ -117,11 +117,11 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
           return;
         }
         const mousePos = this.config.getPosFromMouseEvent(e);
-        // 更新 hover 状态
+        // Update hover status
         this.updateHoveredState(mousePos, e?.target as HTMLElement);
       }),
       this.selectionService.onSelectionChanged(() => this.autorun()),
-      // 控制选中逻辑
+      // Control selection logic
       this.listenPlaygroundEvent(
         'mousedown',
         (e: MouseEvent): boolean | undefined => {
@@ -129,7 +129,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
             return undefined;
           }
           const { hoveredNode } = this.hoverService;
-          // 重置线条
+          // Reset line
           if (hoveredNode && hoveredNode instanceof WorkflowLineEntity) {
             this.dragService.resetLine(hoveredNode, e);
             return true;
@@ -150,7 +150,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
           const mousePos = this.config.getPosFromMouseEvent(e);
           const selectionBounds = getSelectionBounds(
             this.selectionService,
-            // 这里只考虑多选模式，单选模式已经下沉到 use-node-render 中
+            // Only multi-select mode is considered here, and radio mode has sunk into use-node-render
             true,
           );
           if (
@@ -158,11 +158,11 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
             selectionBounds.contains(mousePos.x, mousePos.y)
           ) {
             /**
-             * 拖拽选择框
+             * Drag select box
              */
             this.dragService.startDragSelectedNodes(e).then(dragSuccess => {
               if (!dragSuccess) {
-                // 拖拽没有成功触发了点击
+                // The drag failed to trigger the click successfully.
                 if (hoveredNode && hoveredNode instanceof WorkflowNodeEntity) {
                   if (e.metaKey || e.shiftKey || e.ctrlKey) {
                     this.selectionService.toggleSelect(hoveredNode);
@@ -174,7 +174,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
                 }
               }
             });
-            // 这里会组织触发 selector box
+            // The trigger selector box will be organized here.
             return true;
           } else {
             if (!hoveredNode) {
@@ -188,28 +188,28 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
   }
 
   /**
-   * 更新 hoverd
+   * Update hoverd
    * @param mousePos
    */
   updateHoveredState(mousePos: IPoint, target?: HTMLElement): void {
     const nodeTransforms = this.nodeTransformsWithSort;
-    // // 判断连接点是否 hover
+    // //Determine whether the connection point is hover
     const portHovered = this.linesManager.getPortFromMousePos(mousePos);
 
     const lineDomNodes = this.playgroundNode.querySelectorAll(LINE_CLASS_NAME);
     const checkTargetFromLine = [...lineDomNodes].some(lineDom =>
       lineDom.contains(target as HTMLElement),
     );
-    // 默认 只有 output 点位可以 hover
+    // By default, only output points can be hover
     if (portHovered) {
-      // 输出点可以直接选中
+      // The output point can be directly selected.
       if (portHovered.portType === 'output') {
         this.updateHoveredKey(portHovered.id);
       } else if (
         checkTargetFromLine ||
         target?.className?.includes?.(PORT_BG_CLASS_NAME)
       ) {
-        // 输入点采用获取最接近的线条
+        // The input point uses to get the closest line
         const lineHovered =
           this.linesManager.getCloseInLineFromMousePos(mousePos);
         if (lineHovered) {
@@ -219,7 +219,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
       return;
     }
 
-    // Drawing 情况，不能选中节点和线条
+    // Drawing situation, nodes and lines cannot be selected
     if (this.isDrawing) {
       return;
     }
@@ -228,7 +228,7 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
       trans.bounds.contains(mousePos.x, mousePos.y),
     )?.entity as WorkflowNodeEntity;
 
-    // 判断当前鼠标位置所在元素是否在节点内部
+    // Determine whether the element where the current mouse position is located is inside the node
     const nodeDomNodes = this.playgroundNode.querySelectorAll(NODE_CLASS_NAME);
     const checkTargetFromNode = [...nodeDomNodes].some(nodeDom =>
       nodeDom.contains(target as HTMLElement),
@@ -244,61 +244,61 @@ export class HoverLayer extends Layer<HoverLayerOptions> {
       nodeHovered?.parent && nodeHovered.parent.flowNodeType !== 'root'
     );
 
-    // 获取最接近的线条
-    // 线条会相交需要获取最接近点位的线条，不能删除的线条不能被选中
+    // Get the closest line
+    // Lines will intersect. You need to get the line closest to the point. Lines that cannot be deleted cannot be selected.
     const lineHovered = checkTargetFromLine
       ? this.linesManager.getCloseInLineFromMousePos(mousePos)
       : undefined;
     const lineInContainer = !!lineHovered?.inContainer;
 
-    // 判断容器内节点是否 hover
+    // Determine whether the node in the container is hover
     if (nodeHovered && nodeInContainer) {
       this.updateHoveredKey(nodeHovered.id);
       return;
     }
-    // 判断容器内线条是否 hover
+    // Determine whether the lines in the container are hovered
     if (lineHovered && lineInContainer) {
       this.updateHoveredKey(lineHovered.id);
       return;
     }
 
-    // 判断节点是否 hover
+    // Determine whether the node is hovering
     if (nodeHovered) {
       this.updateHoveredKey(nodeHovered.id);
       return;
     }
-    // 判断线条是否 hover
+    // Determine if the line is hovering
     if (lineHovered) {
       this.hoverService.updateHoveredKey(lineHovered.id);
       return;
     }
 
-    // 上述逻辑都未命中 则清空 hoverd
+    // None of the above logic hits, then clear the hoverd.
     this.hoverService.clearHovered();
 
     const currentState = this.editorStateConfig.getCurrentState();
     const isMouseFriendly =
       currentState === EditorState.STATE_MOUSE_FRIENDLY_SELECT;
 
-    // 鼠标优先，并且不是按住 shift 键，更新为小手
+    // The mouse is given priority, and instead of holding down the shift button, it is updated to small hands.
     if (isMouseFriendly && !this.editorStateConfig.isPressingShift) {
       this.configEntity.updateCursor('grab');
     }
   }
 
   updateHoveredKey(key: string): void {
-    // 鼠标优先交互模式，如果是 hover，需要将鼠标的小手去掉，还原鼠标原有样式
+    // Mouse priority interaction mode, if it is hover, you need to remove the small hand of the mouse and restore the original style of the mouse
     this.configEntity.updateCursor('default');
     this.hoverService.updateHoveredKey(key);
   }
 
   /**
-   * 判断是否能够 hover
-   * @returns 是否能 hover
+   * Determine if it can be hover
+   * Can @returns hover?
    */
   isEnabled(): boolean {
     const currentState = this.editorStateConfig.getCurrentState();
-    // 选择框情况禁止 hover
+    // Select box condition disable hover
     return (
       (currentState === EditorState.STATE_SELECT ||
         currentState === EditorState.STATE_MOUSE_FRIENDLY_SELECT) &&

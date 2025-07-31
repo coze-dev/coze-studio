@@ -26,22 +26,22 @@ import { type DeployVersion, type ENV } from '../shared/const';
 import { slardarInstance, createSlardarConfig } from './slardar';
 import { LogOptionsHelper } from './log-options-helper';
 
-// 获取 ReportLog 类的实例类型
+// Get the instance type of the ReportLog class
 type ReportLogInstance = InstanceType<typeof ReportLog>;
 
-// 获取 slardarTracer 方法的返回类型
+// Get the return type of the slardarTracer method
 type SlardarTracerReturnType = ReturnType<ReportLogInstance['slardarTracer']>;
 
-// 获取 trace 方法的类型
+// Gets the type of the trace method
 export type Tracer = SlardarTracerReturnType['trace'];
 
 export type ReportLogType = 'error' | 'info';
 /**
- * 日志上报
+ * log report
  */
 
 export interface ReportLogProps {
-  // 后面等级上报，包含前面等级日志
+  // Back level report, including previous level log
   logLevel?: 'disable' | 'error' | 'info';
   env?: ENV;
   namespace?: string;
@@ -61,7 +61,7 @@ const defaultReportLogProps: {
 };
 
 /**
- * namespace不可覆盖
+ * Namespace cannot be overridden
  */
 const unChangeProps = {
   namespace: 'chat-core',
@@ -85,7 +85,7 @@ export class ReportLog {
   }
 
   /**
-   * 实例初始化，所有 scope 也只初始化一次
+   * Instance initialization, all scopes are initialized only once
    */
   init() {
     console.log('debugger slardar instance init', this.hasSlardarInitd);
@@ -115,7 +115,7 @@ export class ReportLog {
   }
 
   /**
-   * slardar 初始化
+   * slardar initialization
    */
   private initReport(options?: ReportLogProps) {
     this.reportLogWithBaseInfo = reporter.createReporterWithPreset(
@@ -125,7 +125,7 @@ export class ReportLog {
   }
 
   /**
-   *  控制台日志初始化
+   *  Console log initialization
    * @param options
    */
   private initLog(options?: ReportLogProps) {
@@ -134,7 +134,7 @@ export class ReportLog {
     });
   }
 
-  // 判断是否需要上报
+  // Determine whether to report
   private isNeedReport(logType: ReportLogType) {
     const { logLevel } = this.ctx.get();
     if (logLevel === 'disable') {
@@ -161,14 +161,14 @@ export class ReportLog {
   }
 
   /**
-   * slardar日志 info层级
+   * Slardar log info hierarchy
    */
   slardarInfo(...args: Parameters<typeof reporter.info>) {
     this.reportLogWithBaseInfo.info(...args);
   }
 
   /**
-   * slardar日志 success级别
+   * Slardar log success level
    * @param args
    */
   slardarSuccess(...args: Parameters<typeof reporter.success>) {
@@ -176,35 +176,35 @@ export class ReportLog {
   }
 
   /**
-   * slardar日志, error级别
+   * Slardar log, error level
    */
   slardarError(...args: Parameters<typeof reporter.error>) {
     this.reportLogWithBaseInfo.error(...args);
   }
 
   /**
-   * slardar 自定义事件，用于事件统计
+   * Slardar custom events for event statistics
    */
   slardarEvent(...args: Parameters<typeof reporter.event>) {
     this.reportLogWithBaseInfo.event(...args);
   }
 
   /**
-   * slardar 自定义成功事件，用于事件统计
+   * Slardar custom success events for event statistics
    */
   slardarSuccessEvent(...args: Parameters<typeof reporter.event>) {
     this.reportLogWithBaseInfo.successEvent(...args);
   }
 
   /**
-   * slardar 自定义错误事件，用于事件统计, 有错误堆栈信息
+   * Slardar custom error event, for event statistics, with error type information
    */
   slardarErrorEvent(...args: Parameters<typeof reporter.errorEvent>) {
     this.reportLogWithBaseInfo.errorEvent(...args);
   }
 
   /**
-   * 事件追踪, 用于链路性能统计
+   * Event tracking for link performance statistics
    */
   slardarTracer(...args: Parameters<typeof reporter.tracer>) {
     return this.reportLogWithBaseInfo.tracer(...args);

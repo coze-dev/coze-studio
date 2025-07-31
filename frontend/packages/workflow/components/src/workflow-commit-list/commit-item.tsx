@@ -37,7 +37,7 @@ import { type WorkflowCommitListProps } from './type';
 export interface CommitItemProps {
   className?: string;
   data: VersionMetaInfo;
-  /** 是否选中 */
+  /** Is it selected? */
   isActive?: boolean;
   readonly?: WorkflowCommitListProps['readonly'];
   enablePublishPPE?: WorkflowCommitListProps['enablePublishPPE'];
@@ -45,9 +45,9 @@ export interface CommitItemProps {
   onPublishPPE?: WorkflowCommitListProps['onPublishPPE'];
   onResetToCommit?: WorkflowCommitListProps['onResetToCommit'];
   onShowCommit?: WorkflowCommitListProps['onShowCommit'];
-  /** 隐藏操作下拉菜单 */
+  /** Hide action drop-down menu */
   hiddenActionMenu?: boolean;
-  /** 隐藏 commitId */
+  /** Hide commitId */
   hideCommitId?: boolean;
 }
 

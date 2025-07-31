@@ -42,7 +42,7 @@ export const SingleImageContentUI: React.FC<SingleImageContentUIProps> = ({
       src={thumbUrl || EmptyImage}
       className="chat-uikit-single-image-content__image"
       /**
-       * 这里不采用 semi Image 组件自带的 preview 功能。传入的 onImageClick 回调中有副作用会拉起 preview 组件
+       * The preview function that comes with the semi Image component is not used here. There are side effects in the incoming onImageClick callback that will pull the preview component
        */
       preview={false}
     />

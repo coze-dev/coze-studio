@@ -15,7 +15,7 @@
  */
  
 /**
- * @file 开源版暂时不提供企业管理功能，本文件中导出的方法用于未来拓展使用。
+ * The @file open-source version does not provide enterprise management functions for the time being. The methods exported in this file are for future expansion.
  */
 import { type GetEnterpriseResponseData } from '@coze-arch/bot-api/pat_permission_api';
 
@@ -25,44 +25,44 @@ export interface CurrentEnterpriseInfoProps extends GetEnterpriseResponseData {
   organization_id: string | undefined;
 }
 /**
- * 获取当前企业信息。
- * 如果当前企业为个人版，则返回null。
- * 否则，返回当前企业信息，包括企业信息和组织ID。
+ * Acquire current corporate information.
+ * If the current enterprise is a personal edition, null is returned.
+ * Otherwise, return current enterprise information, including enterprise information and organization ID.
  * @example
  * const { organization_id, enterprise_id } = useCurrentEnterpriseInfo();
- * @returns {(GetEnterpriseResponseData & { organization_id: string | undefined }) | null} 当前企业信息或null
+ * @Returns { (GetEnterpriseResponseData & {organization_id: string | undefined}) | null} current enterprise information or null
  */
 export const useCurrentEnterpriseInfo: () => CurrentEnterpriseInfoProps | null =
   () => null;
 
 /**
- * 获取当前企业ID。
- * 如果当前企业类型为个人版，则返回约定的字符串。
- * 否则，返回当前企业的ID。
- * @returns {string} 当前企业ID
+ * Obtain the current enterprise ID.
+ * If the current enterprise type is Personal Edition, the agreed string is returned.
+ * Otherwise, return the ID of the current enterprise.
+ * @Returns {string} current enterprise ID
  */
 export const useCurrentEnterpriseId = () =>
   useEnterpriseStore(store => store.enterpriseId);
 
 /**
- * 检查当前企业是否为个人版。
- * @returns {boolean} 如果当前企业为个人版，则返回true，否则返回false。
+ * Check whether the current enterprise is a personal version.
+ * @Returns {boolean} True if the current enterprise is a personal edition, false otherwise.
  */
 export const useIsCurrentPersonalEnterprise = () => true;
 
 /**
- * 获取当前企业的角色列表。
- * 如果当前企业类型为个人版，则返回空数组。
- * 否则，返回当前企业的角色类型列表，如果列表不存在，则返回空数组。
- * @returns {Array} 当前企业的角色列表
+ * Get a list of roles for the current enterprise.
+ * If the current enterprise type is Personal, an empty array is returned.
+ * Otherwise, a list of the current enterprise's role types is returned, or an empty array if the list does not exist.
+ * @Returns {Array} list of roles for the current enterprise
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useCurrentEnterpriseRoles = (): any[] => [];
 
-/** 是否是企业版 */
+/** Is it the enterprise version? */
 export const useIsEnterpriseLevel = () => false;
 
-/** 是否是团队版 */
+/** Is it the team version? */
 export const useIsTeamLevel = () => false;
 
 export const useIsCurrentEnterpriseInit = () =>

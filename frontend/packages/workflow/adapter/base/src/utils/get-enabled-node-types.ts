@@ -16,7 +16,7 @@
 
 import { StandardNodeType } from '@coze-workflow/base';
 
-// 默认所有节点可用，可以自定义
+// All nodes are available by default and can be customized.
 export const getEnabledNodeTypes = (_params: {
   loopSelected: boolean;
   isProject: boolean;

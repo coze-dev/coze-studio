@@ -139,7 +139,7 @@ export function MultipleSheet({
         >
           {title}
         </div>
-        {/* 头部插槽 */}
+        {/* head slot */}
         <div className={styles['sheet-header-scope']}> {titleNode}</div>
       </div>
     </div>
@@ -181,8 +181,8 @@ export function MultipleSheet({
         placement={placement}
         visible={open}
         getPopupContainer={() =>
-          // @tip 不确定这个PopupContainer的实现逻辑，采用ref.current拿不到最新的值，
-          // @tip Semi需更新至2.54.0以上：当SideSheet的visible为true才挂载可以确保`getPopupContainer`使用querySelector可以获取到父组件dom，但兜底值要去掉（https://github.com/DouyinFE/semi-design/pull/2094）
+          // @Tip is not sure about the implementation logic of this PopupContainer. Using ref.current cannot get the latest value.
+          // @Tip Semi needs to be updated to above 2.54.0: When the visible of the SideSheet is true, it can ensure that'getPopupContainer 'can get the parent component dom using querySelector, but the bottom value should be removed (https://github.com/DouyinFE/semi-design/pull/2094)
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           document.querySelector(`#${containerId}`)!
         }
@@ -194,7 +194,7 @@ export function MultipleSheet({
         <div
           className={classNames(styles['sheet-content'], containerClassName)}
         >
-          {/* 浮层头部 */}
+          {/* Floating head */}
 
           {renderContent ? (
             renderContent(header)

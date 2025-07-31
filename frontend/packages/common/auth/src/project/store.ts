@@ -20,26 +20,26 @@ import { create } from 'zustand';
 import { type ProjectRoleType } from './constants';
 
 interface ProjectAuthStoreState {
-  // 每一个Project的角色数据
+  // Role Data for Each Project
   roles: {
     [projectId: string]: ProjectRoleType[];
   };
-  // 每一个Project的角色数据的初始化状态，是否完成初始化。
+  // The initialization status of each Project's role data, and whether the initialization has been completed.
   isReady: {
     [projectId: string]: boolean;
   };
 }
 
 interface SpaceAuthStoreAction {
-  // 设置projectId对应的Project的角色
+  // Set the role of the Project corresponding to the projectId
   setRoles: (projectId: string, role: ProjectRoleType[]) => void;
-  // 设置projectId对应的Project的数据是否ready
+  // Set whether the data of the Project corresponding to the projectId is ready
   setIsReady: (projectId: string, isReady: boolean) => void;
-  // 回收Project数据
+  // Recovering Project Data
   destory: (projectId) => void;
 }
 /**
- * ProjectAuthStore设计成支持多Project切换，维护多个Project的数据，防止因为Project切换时序导致的bug。
+ * ProjectAuthStore is designed to support multi-project switching, maintain data of multiple projects, and prevent bugs caused by project switching timing.
  */
 export const useProjectAuthStore = create<
   ProjectAuthStoreState & SpaceAuthStoreAction

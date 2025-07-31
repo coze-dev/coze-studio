@@ -36,7 +36,7 @@ export const checkOutPluginContext = async (pluginId: string) => {
   const user = data?.user;
 
   /**
-   * 有人占用 & 不是自己
+   * Someone occupies & not themselves
    */
   if (data?.Occupied && user && !user.self) {
     UIModal.info({

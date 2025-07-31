@@ -29,21 +29,21 @@ const processEnvs = {
   REGION: (process.env.REGION || 'cn') as 'cn' | 'sg' | 'va',
   NODE_ENV: process.env.NODE_ENV as 'production' | 'development' | 'test',
   CDN_PATH_PREFIX: (process.env.CDN_PATH_PREFIX ?? '/') as string,
-  // vmok 生产者使用，用来将生产者的 sourcemap 文件上传至对应的消费者版本下面
+  // Used by vmok producers to upload the producer's sourcemap file to the corresponding consumer version
   CONSUMER_BUILD_VERSION: (process.env.CONSUMER_BUILD_VERSION ?? '') as string,
 };
 
 const IS_OVERSEA = Boolean(process.env.REGION) && process.env.REGION !== 'cn';
 const IS_CN_REGION = process.env.REGION === 'cn';
 const IS_VA_REGION = process.env.REGION === 'va';
-const IS_RELEASE_VERSION = processEnvs.CUSTOM_VERSION === 'release'; // 为 ture 表示对外版本
+const IS_RELEASE_VERSION = processEnvs.CUSTOM_VERSION === 'release'; // Show external version for ture
 const IS_OVERSEA_RELEASE = IS_OVERSEA && IS_RELEASE_VERSION;
 const IS_PROD =
   processEnvs.BUILD_TYPE === 'online' ||
-  process.env.CUSTOM_BUILD_TYPE === 'online'; // 是否是线上
+  process.env.CUSTOM_BUILD_TYPE === 'online'; // Is it online?
 const IS_BOE = processEnvs.BUILD_TYPE === 'offline';
-const IS_DEV_MODE = processEnvs.NODE_ENV === 'development'; // 本地开发
-const IS_BOT_OP = false; // 是否是 bot 运营平台，默认都是 false，从运营平台构建会设置成 true
+const IS_DEV_MODE = processEnvs.NODE_ENV === 'development'; // local development
+const IS_BOT_OP = false; // Whether it is a bot operation platform, the default is false, and the build from the operation platform will be set to true.
 const IS_OPEN_SOURCE = (process.env.IS_OPEN_SOURCE ?? 'false') === 'true';
 
 const judgements = {
@@ -74,14 +74,14 @@ const getCDN = () => {
     }
   }
   if (IS_RELEASE_VERSION && processEnvs.BUILD_TYPE === 'online') {
-    // 海外正式版使用独立业务线
+    // Overseas official version uses independent business lines
     return getOuterCDN();
   } else {
     return getInnerCDN();
   }
 };
 
-/** 对应CDN资源上传平台上的CDN地址 */
+/** Corresponding to the CDN address on the CDN resource upload platform */
 const getUploadCDN = () => {
   const uploadCDNPrefixes = {
     UPLOAD_CDN_CN: '',
@@ -101,7 +101,7 @@ export const base = {
   ...processEnvs,
   ...judgements,
   CDN: getCDN(),
-  // release 环境下外部静态域名
+  // External static domain name in the release environment
   OUTER_CDN: getOuterCDN(),
   ...getUploadCDN(),
 };

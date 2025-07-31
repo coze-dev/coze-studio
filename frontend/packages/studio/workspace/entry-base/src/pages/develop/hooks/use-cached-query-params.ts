@@ -49,7 +49,7 @@ export const useCachedQueryParams = () => {
   );
 
   useUpdateEffect(() => {
-    /** 当筛选条件变化时，取合适的 key 存入本地 */
+    /** When the filter conditions change, take the appropriate key and store it locally */
     const { searchScope, isPublish, recentlyOpen, searchType } = filterParams;
     localStorageService.setValue(
       'workspace-develop-filters',
@@ -63,7 +63,7 @@ export const useCachedQueryParams = () => {
   }, [filterParams]);
 
   useEffect(() => {
-    /** 异步读取本地存储的筛选条件 */
+    /** Asynchronously reads filters from local storage */
     getDefaultFilterParams().then(filters => {
       setFilterParams(prev => merge({}, prev, filters));
     });
@@ -75,7 +75,7 @@ export const useCachedQueryParams = () => {
         ...params,
         searchValue,
       }));
-      // tea 埋点
+      // Tea event tracking
       sendTeaEvent(EVENT_NAMES.search_front, {
         full_url: location.href,
         source: 'develop',

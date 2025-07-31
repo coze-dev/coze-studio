@@ -21,8 +21,8 @@ const enum CozeTokenInsufficientErrorCode {
   BOT = '702082020',
 }
 /**
- * Coze Token不足错误码
- * 当出现该错误码的时候，需要额外进行停止拉流操作
+ * Insufficient Coze Token Error Code
+ * When the error code appears, an additional stop and pull operation is required
  */
 export const COZE_TOKEN_INSUFFICIENT_ERROR_CODE = [
   CozeTokenInsufficientErrorCode.BOT,

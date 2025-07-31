@@ -43,7 +43,7 @@ export interface Variable {
   type: VariableType;
   name: string;
   children?: Variable[];
-  // 用户自定义节点名展示
+  // user-defined node name display
   label?: string;
 }
 

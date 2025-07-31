@@ -61,13 +61,13 @@ export const useModelCapabilityCheckAndConfirm = () => {
 export function useModelCapabilityCheckModal({
   onOk,
 }: {
-  /** 当新模型不满足配置时会自动弹窗确认，该参数是确认弹窗的回调 */
+  /** When the new model does not meet the configuration, the pop-up window will automatically confirm. This parameter is the callback to confirm the pop-up window. */
   onOk: (modelId: string) => void;
 }): {
   modalNode: ReactNode;
   /**
-   * 检查新模型能力是否满足配置，不满足的话会自动弹出确认 modal
-   * @returns true 代表满足
+   * Check whether the new model capability meets the configuration. If not, a confirmation modal will automatically pop up.
+   * @Returns true for satisfied
    */
   checkAndOpenModal: (modelId: string) => boolean;
 } {
@@ -76,8 +76,8 @@ export function useModelCapabilityCheckModal({
     storeSet: { useModelStore },
   } = useBotEditor();
   const [modalVisible, setModalVisible] = useState(false);
-  // Q：单纯通过 modalState 是不是就能判断 modal 是否需要展示，modalVisible 有点多余？
-  // A：这里将 visible 和 state 拆分是为了避免弹窗在关闭动画期间 state 数据变更导致弹窗内容跳变
+  // Q: Is it possible to determine whether modal needs to be displayed simply by modalState, and modalVisible is a bit redundant?
+  // A: The visible and state are split here to avoid the pop-up window content jumping due to the change of state data during the closing animation
   const [modalState, setModalState] = useState<
     | {
         notSupported: AlertItem[];
@@ -92,7 +92,7 @@ export function useModelCapabilityCheckModal({
     modalNode: modalState ? (
       <Modal
         visible={modalVisible}
-        // 需要比模型配置的popover默认 z-index 1030 更高，这里进行内卷
+        // It needs to be higher than the default z-index 1030 of the popover configured by the model.
         zIndex={1031}
         width={480}
         header={null}
@@ -188,13 +188,13 @@ export const useAgentModelCapabilityCheckAndAlert = () => {
 export function useAgentModelCapabilityCheckModal({
   onOk,
 }: {
-  /** 当新模型不满足配置时会自动弹窗确认，该参数是确认弹窗的回调 */
+  /** When the new model does not meet the configuration, the pop-up window will automatically confirm. This parameter is the callback to confirm the pop-up window. */
   onOk: (modelId: string) => void;
 }): {
   modalNode: ReactNode;
   /**
-   * 检查新模型能力是否满足配置，不满足的话会自动弹出确认 modal
-   * @returns true 代表满足
+   * Check whether the new model capability meets the configuration. If not, a confirmation modal will automatically pop up.
+   * @Returns true for satisfied
    */
   checkAndOpenModal: (modelId: string, agent: Agent) => boolean;
 } {
@@ -203,8 +203,8 @@ export function useAgentModelCapabilityCheckModal({
     storeSet: { useModelStore, useDraftBotDataSetStore },
   } = useBotEditor();
   const [modalVisible, setModalVisible] = useState(false);
-  // Q：单纯通过 modalState 是不是就能判断 modal 是否需要展示，modalVisible 有点多余？
-  // A：这里将 visible 和 state 拆分是为了避免弹窗在关闭动画期间 state 数据变更导致弹窗内容跳变
+  // Q: Is it possible to determine whether modal needs to be displayed simply by modalState, and modalVisible is a bit redundant?
+  // A: The visible and state are split here to avoid the pop-up window content jumping due to the change of state data during the closing animation
   const [modalState, setModalState] = useState<
     | {
         notSupported: AlertItem[];
@@ -219,7 +219,7 @@ export function useAgentModelCapabilityCheckModal({
     modalNode: modalState ? (
       <Modal
         visible={modalVisible}
-        // 需要比模型配置的popover默认 z-index 1030 更高，这里进行内卷
+        // It needs to be higher than the default z-index 1030 of the popover configured by the model.
         zIndex={1031}
         width={480}
         header={null}

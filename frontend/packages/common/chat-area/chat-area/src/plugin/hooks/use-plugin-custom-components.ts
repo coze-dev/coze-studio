@@ -20,7 +20,7 @@ import { usePluginList } from './use-plugin-list';
 
 interface ComponentConfig<K extends keyof CustomComponent> {
   pluginName: PluginName;
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- as expected
   Component: CustomComponent[K];
 }
 

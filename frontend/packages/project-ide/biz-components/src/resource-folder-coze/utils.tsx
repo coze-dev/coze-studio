@@ -36,7 +36,7 @@ import {
 import { iconFolder, iconFolderOpended, resourceIconMap } from './constants';
 
 export const validateNameBasic: Validator = ({ label }) => {
-  // 检测 name 是否空
+  // Check if name is empty
   if (!label) {
     return I18n.t('project_resource_sidebar_warning_empty_key');
   }
@@ -45,7 +45,7 @@ export const validateNameBasic: Validator = ({ label }) => {
     return I18n.t('project_resource_sidebar_warning_length_exceeds');
   }
 
-  // 检测 name 的命名规则
+  // Detection of naming rules for names
   if (!WORKFLOW_NAME_REGEX.test(label)) {
     return I18n.t('workflow_list_create_modal_name_rule_reg');
   }
@@ -164,7 +164,7 @@ export const getContextMenuLabel = (
 };
 
 /**
- * 是否动态注册的 action
+ * Whether the action is dynamically registered
  * @param action
  */
 export const isDynamicAction = (action: BizResourceContextMenuBtnType) =>

@@ -112,7 +112,7 @@ const getSendMessageAndAutoUpdateImplement =
 
     try {
       await stopRespondingPromise;
-      // TODO: 暂时需要用到的粗糙实现 后续需要好好实现
+      // TODO: A rough implementation that needs to be used temporarily, and needs to be implemented in the future
       const handledMessageAndOptions = eventCallback?.onBeforeMessageSend?.(
         {
           message: proxyFreeze(toSenDMessage),
@@ -178,13 +178,13 @@ const getSendMessageAndAutoUpdateImplement =
       if (isError(e)) {
         const errorData = parseErrorInfoFromErrorMessage(e.message);
         /**
-         * 没有进入 sse 的错误
-         * 服务端还在梳理报错消息 只能 toast 白名单中已经梳理的 message
+         * No error entering sse.
+         * The server level is still combing the error message, and can only toast the messages that have been combed in the whitelist.
          */
         if (isChatCoreError(e) && isToastErrorMessage(e.ext.code)) {
           Toast.error({ content: e.message, showClose: false });
         }
-        // 进入 sse 流程但是第一个 chunk 就是 error
+        // Enter the sse process but the first chunk is an error
         if (
           errorData?.code &&
           [
@@ -304,7 +304,7 @@ export const getSendNewMessageImplement =
         },
       );
 
-      // ASR 过程异常 删除上屏消息 退出
+      // The ASR process is abnormal, delete the screen message, and exit.
       if (!preReadySendMessage) {
         revertVoiceMessageConditionally({
           message: processedMessage,

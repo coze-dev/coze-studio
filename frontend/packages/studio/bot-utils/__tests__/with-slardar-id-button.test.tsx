@@ -33,7 +33,7 @@ vi.mock('@coze-arch/logger', () => ({
   getSlardarInstance: vi.fn(() => mockSlardarInstance),
 }));
 
-// 模拟依赖
+// simulated dependency
 vi.mock('copy-to-clipboard', () => ({
   default: vi.fn(),
 }));
@@ -105,19 +105,19 @@ describe('withSlardarIdButton', () => {
     const button = screen.getByTestId('button');
     fireEvent.click(button);
 
-    // 验证 slardar.config 被调用
+    // Verify that slardar.config is called
     expect(getSlardarInstance).toHaveBeenCalled();
     expect(mockSlardarInstance.config).toHaveBeenCalled();
 
-    // 验证 copy 被调用，且参数正确
+    // Verify that copy is called and that the parameters are correct
     expect(copy).toHaveBeenCalledWith('test-session-id');
 
-    // 验证 Toast.success 被调用，且参数正确
+    // Verify that Toast.success is called and the parameters are correct
     expect(Toast.success).toHaveBeenCalledWith('复制成功');
   });
 
   it('当 sessionId 为空时应该复制空字符串', () => {
-    // 模拟 sessionId 为 undefined
+    // Emulate sessionId to undefined
     vi.mocked(mockSlardarInstance.config).mockReturnValueOnce({
       sessionId: undefined,
     });

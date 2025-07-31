@@ -33,7 +33,7 @@ import { TriggerForm } from '../trigger-upsert/types';
 import { type FormData, type NodeDataDTO } from './types';
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   value: NodeDataDTO,
@@ -50,7 +50,7 @@ export const transformOnInit = (
     const triggerService =
       context.node.getService<TriggerService>(TriggerService);
 
-    // trigger 参数的 key 要转一下，name -> key + type
+    // The key of the trigger parameter should be turned, name - > key + type
     const { parameters, dynamicInputs, ...rest } =
       triggerService.getStartNodeFormValues();
 
@@ -90,7 +90,7 @@ export const transformOnInit = (
       if (isPresetStartParams(item.name)) {
         item.isPreset = isChatflow;
         item.enabled = true;
-        // 预览态不修改 required 必填数据
+        // Preview state does not modify required data
         if (!readonly) {
           item.required = false;
         }
@@ -100,10 +100,10 @@ export const transformOnInit = (
   };
 
   const flags = getFlags();
-  // auto_save_history 参数只在 chatflow 中生效
+  // auto_save_history parameters only work in chatflow
   if (isChatflow && flags['bot.automation.message_auto_write']) {
     formValue.inputs = {
-      // 如果后端没有定义过 auto_save_history 这个字段，默认设置成 true
+      // If the backend has not defined auto_save_history this field, the default is set to true
       auto_save_history: isUndefined(inputs?.auto_save_history)
         ? true
         : Boolean(inputs?.auto_save_history),
@@ -114,7 +114,7 @@ export const transformOnInit = (
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */
@@ -122,7 +122,7 @@ export const transformOnSubmit = (_value: FormData): NodeDataDTO => {
   const value: NodeDataDTO = _value as any;
 
   const outputsViewMeta = _value.outputs;
-  // start 节点的 trigger 的 parameters 需要保存到 schema中(VariableMetaDTO), ，给人审用。其他地方前后端均不消费
+  // The trigger parameters of the start node need to be saved to the schema (VariableMetaDTO), for human review. The front and back ends are not consumed anywhere else
   value.trigger_parameters = outputsViewMeta
     ?.map<VariableMetaDTO | undefined>(viewMeta => {
       const dtoMeta = variableUtils.viewMetaToDTOMeta(viewMeta);
@@ -142,7 +142,7 @@ export const transformOnSubmit = (_value: FormData): NodeDataDTO => {
           typeof literalContent !== 'string' &&
           typeof literalContent !== undefined
         ) {
-          // 多文件列表序列化成 json 字符串
+          // Multi-file list serialized into json string
           literalContent = JSON.stringify(literalContent);
         }
         return {

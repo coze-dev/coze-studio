@@ -21,8 +21,8 @@ import { type ProjectIDEWidget } from '@/widgets/project-ide-widget';
 import { type WidgetContext } from '../context/widget-context';
 
 /**
- * 获取当前的 WidgetContext
- * 在 registry 的 renderContent 内调用
+ * Get the current WidgetContext
+ * Called within the registry's renderContent
  */
 export function useCurrentWidgetContext<T>(): WidgetContext<T> {
   const currentWidget = useCurrentWidget() as ProjectIDEWidget;

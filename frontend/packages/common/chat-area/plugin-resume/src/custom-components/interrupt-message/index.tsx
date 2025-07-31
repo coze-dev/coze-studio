@@ -25,12 +25,12 @@ import { InterruptMessageContent } from './interrupt-message-content';
 import styles from './index.module.less';
 
 export const InterruptMessageBox: CustomComponent['MessageBox'] = props => {
-  // 用户操作后文案，前端维护暂时状态，刷新消失
+  // Copywriting after user operation, front-end maintenance temporary state, refresh and disappear
   const [actionText, setActionText] = useState('');
 
   const { message, meta } = props;
 
-  // 不展示逻辑： 为历史消息、无action且不在最后一个group
+  // Do not show logic: chat history, no action and not in the last group
   if (message._fromHistory || (!actionText && !meta.isFromLatestGroup)) {
     return null;
   }

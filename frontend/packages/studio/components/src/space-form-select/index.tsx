@@ -58,7 +58,7 @@ export const BaseSpaceFormSelect = withField(
           return;
         }
 
-        // 需要触发表单 onChange 事件 否则上层响应不到数据变化的事件
+        // The form onChange event needs to be triggered, otherwise the upper layer will not respond to the data change event.
         props.onChange?.(fixedInitValue);
       }, [fixedInitValue]);
 

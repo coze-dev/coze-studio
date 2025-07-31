@@ -66,7 +66,7 @@ export const LevelTextKnowledgeEditor: React.FC<
     [chunks],
   );
 
-  // 使用活动chunk hook
+  // Using active chunk hooks
   const {
     activeChunkInfo,
     clearActiveChunk,
@@ -74,12 +74,12 @@ export const LevelTextKnowledgeEditor: React.FC<
     isActiveChunk,
   } = useActiveChunk();
 
-  // 使用编辑器核心功能
+  // Using the core editor functions
   const { editor } = useInitEditor({
     chunk: activeChunkInfo.chunk,
   });
 
-  // 分片功能
+  // Sharding function
   const { saveChunk } = useSaveChunk({
     chunks: initialChunks,
     documentId,
@@ -92,10 +92,10 @@ export const LevelTextKnowledgeEditor: React.FC<
     },
   });
 
-  // 使用滚动到选中元素的hook
+  // Use the hook that scrolls to the selected element
   useScrollToSelection(selectionIDs);
 
-  // 监听右键菜单事件
+  // Monitor right-click menu events
   useEventListener(
     'previewContextMenuItemAction',
     useCallback(({ type, targetChunk, chunks: newChunks }) => {
@@ -109,7 +109,7 @@ export const LevelTextKnowledgeEditor: React.FC<
     }, []),
   );
 
-  // 监听悬浮编辑栏事件
+  // Monitor floating edit bar events
   useEventListener(
     'hoverEditBarAction',
     useCallback(({ type, targetChunk, chunks: newChunks }) => {
@@ -231,7 +231,7 @@ const RenderContent = ({
       ].includes(levelDocumentTree.type) ? (
         <div key={levelDocumentTree.text_knowledge_editor_chunk_uuid}>
           {(() => {
-            // 检查这个chunk是否是当前活动的chunk，使用renderLevel字段
+            // Check whether this chunk is the currently active chunk, using the renderLevel field
             const chunkIsActive = isActiveChunk(levelDocumentTree.renderLevel);
 
             if (chunkIsActive) {
@@ -261,7 +261,7 @@ const RenderContent = ({
                   previewContextMenuItemsContributes
                 }
                 onActivateEditMode={activedChunk => {
-                  // 设置活动chunk，使用chunk自身的renderLevel
+                  // Set the active chunk, using the renderLevel of the chunk itself
                   setActiveChunkWithLevel(
                     activedChunk as LevelDocumentTreeNode,
                   );

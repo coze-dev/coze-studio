@@ -30,7 +30,7 @@ export class VariableDeleteWidget extends WidgetType {
     super();
   }
 
-  // 插入 editor 中的变量块 dom
+  // Insert variable block dom in editor
   toDOM() {
     const wrapper = document.createElement('span');
     wrapper.classList.add(s['deleted-variable']);

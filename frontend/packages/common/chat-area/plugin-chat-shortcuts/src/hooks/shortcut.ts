@@ -126,7 +126,7 @@ export const useSendUseToolMessage = () => {
       shortcut,
       componentsFormValues,
       /**
-       * 无参数调用 store 场景下没有 componentList
+       * Calling store without parameters does not have a pixentList
        */
       withoutComponentsList,
     );
@@ -145,9 +145,9 @@ export const useSendUseToolMessage = () => {
         mixList: [
           {
             type: ContentType.Text,
-            // TODO 需要看下是否能够优化
+            // TODO needs to see if it can be optimized.
             /**
-             * 防止发送空消息(没有对话的气泡框) => 使用空格占位
+             * Prevent sending empty messages (no dialog bubble box) = > Use spaces to occupy space
              */
             text: sendQuery || ' ',
           },
@@ -219,7 +219,7 @@ const getPluginParams = (
     }),
   );
 
-  // key: components_list中的parameter属性 value：values中对应的值 | default_value
+  // The parameter attribute value in key: components_list: the corresponding value in values | default_value
   const runPluginVariables = (tool_params_list ?? []).reduce<
     Record<string, ToolParamValue>
   >((acc, cur) => {
@@ -271,7 +271,7 @@ const getPluginDefaultParams = (shortcut: ShortCutCommand) => {
     tool_info: { tool_params_list } = {},
   } = shortcut;
 
-  // key: components_list中的parameter属性 value：values中对应的值 | default_value
+  // The parameter attribute value in key: components_list: the corresponding value in values | default_value
   const runPluginVariables = (tool_params_list ?? []).reduce<
     Record<string, ToolParamValue>
   >((acc, cur) => {
@@ -309,7 +309,7 @@ export const getTemplateQuery = (
   if (!template_query) {
     throw new Error('template_query is not defined');
   }
-  // 处理图片文件
+  // Processing image files
   const componentListValue = getComponentListValue(
     components_list,
     componentsFormValues,
@@ -330,12 +330,12 @@ const filterComponentFormValues = (
   Object.keys(componentsFormValues).reduce<Record<string, unknown>>(
     (acc, cur) => {
       const value = componentsFormValues[cur];
-      // 文件类型
+      // file type
       if (typeof value === 'object' && value.fileInstance) {
         acc[cur] = setImageAndFileValue(value);
         return acc;
       }
-      // 普通文本类型
+      // plain text type
       acc[cur] = setTextValue(value as string);
       return acc;
     },
@@ -388,7 +388,7 @@ const isComponentImage = (
       getFileInfo(value.fileInstance)?.fileType === 'image',
   );
 
-// 获取component_list的value, 带上默认值
+// Get component_list value with default value
 export const getComponentListValue = (
   componentsList: ShortCutCommand['components_list'],
   componentsFormValues: Record<string, TValue>,
@@ -399,7 +399,7 @@ export const getComponentListValue = (
     value => value,
   );
 
-  // key: components_list中的parameter属性 value：values中对应的值 | default_value
+  // The parameter attribute value in key: components_list: the corresponding value in values | default_value
   return (componentsList ?? []).reduce<Record<string, string>>((acc, cur) => {
     const { default_value, name, hide } = cur;
     if (!name) {

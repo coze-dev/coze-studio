@@ -49,7 +49,7 @@ export function ConnectorGroupHeader({
   type,
   onAnimationEnd,
 }: ConnectorGroupHeaderProps) {
-  // 付费墙
+  // paywall
   const isAPIOrSDK = type === ConnectorClassification.APIOrSDK;
   const isAvailable = useBenefitAvailable({
     scene: PremiumPaywallScene.API,

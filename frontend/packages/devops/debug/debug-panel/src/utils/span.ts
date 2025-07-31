@@ -43,7 +43,7 @@ export const getSpanProp = (span: CSpan, key: string) => {
 };
 
 /**
- * 加强原始Span信息（注入服务端采集的token、status等信息）
+ * Enhance the original Span information (inject token, status, etc. collected at the server level)
  * @param originSpans Span[]
  * @param traceAdvanceInfo TraceAdvanceInfo[]
  * @returns CSpan[]

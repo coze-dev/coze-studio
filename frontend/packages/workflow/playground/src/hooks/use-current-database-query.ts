@@ -25,11 +25,11 @@ import { useDatabaseNodeService } from './use-database-node-service';
 import { useCurrentDatabaseID } from './use-current-database-id';
 
 /**
- * 获取当前数据库的查询
- * @returns 返回数据库查询结果
- *  - data: 查询成功时返回数据库对象，无数据时返回undefined
- *  - isLoading: 加载状态
- *  - error: 查询失败时的错误对象
+ * Get the query for the current database
+ * @Returns database query results
+ *  - data: returns the database object when the query is successful, returns undefined when there is no data
+ *  - isLoading: Loading status
+ *  - error: the error object when the query fails
  */
 export function useCurrentDatabaseQuery() {
   const currentDatabaseID = useCurrentDatabaseID();
@@ -44,7 +44,7 @@ export function useCurrentDatabaseQuery() {
     if (!disposeRef.current) {
       disposeRef.current = dependencyService.onDependencyChange(source => {
         if (source?.bizType === MessageBizType.Database) {
-          // 数据库资源更新时，重新请求接口
+          // When a database resource is updated, rerequest the interface
           databaseNodeService.load(currentDatabaseID);
         }
       });

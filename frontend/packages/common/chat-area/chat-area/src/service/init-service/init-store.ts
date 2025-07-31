@@ -69,7 +69,7 @@ export interface InitStoreContext {
 export class InitStoreService {
   public storeSet: Omit<StoreSet, 'usePluginStore'>;
   private context: InitStoreContext;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- 初始化符合预期
+  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Initialization as expected
   public unsubscribeStore: () => void = () => {};
 
   constructor(context: InitStoreContext) {
@@ -86,7 +86,7 @@ export class InitStoreService {
   }
 
   /**
-   * 执行创建完成的生命周期 需要适当延后时机
+   * Execute the life cycle of creation completion, which needs to be delayed appropriately
    */
   public runCreateLifeCycle() {
     if (!this.storeSet) {
@@ -102,7 +102,7 @@ export class InitStoreService {
   }
 
   /**
-   * 创建普通 Store
+   * Create a Normal Store
    */
   private createStoreSet() {
     const useGlobalInitStore = createGlobalInitStore(this.context.mark);
@@ -141,7 +141,7 @@ export class InitStoreService {
   }
 
   /**
-   * 监听 Store 变化
+   * Monitor Store Changes
    */
   private subscribeStore() {
     if (!this.storeSet) {
@@ -211,7 +211,7 @@ export class InitStoreService {
   }
 
   /**
-   * 清除 Store Set
+   * Clear Store Set
    */
   public clearStoreSet() {
     if (!this.storeSet) {

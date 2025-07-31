@@ -57,7 +57,7 @@ export interface ApiNodeIdentifier {
 export type DebugExample = OriginDebugExample;
 
 /**
- * Plugin扩展协议新增的属性
+ * Plugin extension protocol added properties
  * 
  */
 export interface PluginExtendProps {
@@ -74,8 +74,8 @@ export interface PluginExtendProps {
 }
 
 /**
- * 接口 /api/workflow_api/apiDetail 返回的插件数据结构
- * 由于 inputs 和 outputs 等参数类型后端没有定义清楚，这里补充完善下
+ * Plugin data structures returned by interface /api/workflow_api/apiDetail
+ * Since the backend of parameter types such as inputs and outputs is not clearly defined, it will be supplemented here.
  */
 export type ApiNodeDetailDTO = Required<ApiDetailData> & {
   inputs: (VariableMetaDTO & PluginExtendProps)[]; // name, type, schema, required, description
@@ -85,7 +85,7 @@ export type ApiNodeDetailDTO = Required<ApiDetailData> & {
 };
 
 /**
- * 插件节点数据部分结构定义后端
+ * Plug-in node data part structure definition backend
  */
 export interface ApiNodeDataDTO {
   data: {

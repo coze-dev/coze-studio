@@ -90,10 +90,10 @@ export const createMessageMetaStore = (mark: string) => {
 export type MessageMetaStore = ReturnType<typeof createMessageMetaStore>;
 
 /**
- * 基于 messages 变化自动重新生成 meta list；
- * 这一层不做优化处理，在组件内消费 meta 时进行深度比对；
- * 将来看一下是否需要进一步优化；
- * 这上下两处订阅对于数据的处理方式有微妙的差异 可变vs不可变，希望你注意到
+ * Automatically regenerate meta lists based on messages changes;
+ * This layer is not optimized, and in-depth comparison is carried out when consuming meta in the component;
+ * We will see if further optimization is required in the future.
+ * There are subtle differences in how the upper and lower subscriptions handle data, mutable vs immutable, I hope you notice
  */
 export const subscribeMessageToUpdateMeta = (
   store: {
@@ -106,8 +106,8 @@ export const subscribeMessageToUpdateMeta = (
   const { useMessagesStore, useMessageMetaStore, useSectionIdStore } = store;
   return useMessagesStore.subscribe(
     state => state.messageGroupList,
-    // 这里订阅了 groups，然后非响应式地获取 messages，降低更新频率
-    // 目前 groups 的更新完全与 messages 同步，没有按需更新，如果改为按需更新（好像最好是）则无法保证同步触发
+    // Subscribe to groups here, and then get messages non-responsively to reduce the update frequency
+    // At present, the updates of groups are fully synchronized with messages, and there are no on-demand updates. If you change to on-demand updates (as if it were best), there is no guarantee that the synchronization will trigger.
     groups => {
       const { messages } = useMessagesStore.getState();
       const metaList = messages.map((_, index) => {
@@ -126,8 +126,8 @@ export const subscribeMessageToUpdateMeta = (
 
       /**
        * TODO
-       * 更新 contextDivider 的方法得留槽,包括 通过 global SectionID 更新的方法需要留槽
-       * 新增 config 配置是否展示 context-divider, 关闭 context-divider 展示则不运行此处的计算
+       * Methods to update contextDivider require slots, including methods updated through global SectionID
+       * Add config to configure whether to display the context-divider. If you close the context-divider display, you will not run the calculation here.
        */
       updateMetaListDivider({
         metaList,
@@ -135,14 +135,14 @@ export const subscribeMessageToUpdateMeta = (
         latestSectionId: useSectionIdStore.getState().latestSectionId,
       });
 
-      // 处理头像展示逻辑
+      // Handling avatar display logic
       scanAndUpdateHideAvatar(metaList, configs);
 
       /**
        * TODO:
-       * agentDivider 方法待实现
-       * 需要留槽
-       * 新增 config 配置是否展示 agent-divider, 关闭 agent-divider 展示则不运行此处的计算
+       * agentDivider method to be implemented
+       * Need to leave a slot
+       * Add config to configure whether to display the agent-divider, turn off the agent-divider display and do not run the calculation here
        */
 
       useMessageMetaStore.getState().updateMeta(metaList);
@@ -151,8 +151,8 @@ export const subscribeMessageToUpdateMeta = (
 };
 
 /**
- * 频率低，就嗯更新；
- * 这上下两处订阅对于数据的处理方式有微妙的差异 可变vs不可变，希望你注意到
+ * If the frequency is low, it will be updated.
+ * There are subtle differences in how the upper and lower subscriptions handle data, mutable vs immutable, I hope you notice
  */
 export const subscribeSectionIdToUpdateMeta = (
   store: {
@@ -167,12 +167,12 @@ export const subscribeSectionIdToUpdateMeta = (
     latestSectionId => {
       /**
        * TODO
-       * 同上，需要留槽，根据 config 决定是否计算
-       * agentID 业务上还没有 global 概念，有了再说
+       * Ditto, you need to leave a slot, and decide whether to calculate according to the config.
+       * There is no global concept in agentID business, let's talk about it once we have it
        */
       const { updateMetaByImmer } = useMessageMetaStore.getState();
       updateMetaByImmer(metaList => {
-        // 处理头像展示逻辑
+        // Handling avatar display logic
         scanAndUpdateHideAvatar(metaList, configs);
       });
     },

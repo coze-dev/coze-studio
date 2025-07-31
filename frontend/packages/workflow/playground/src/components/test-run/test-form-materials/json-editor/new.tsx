@@ -86,7 +86,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   const valueRef = useRef<string | undefined>(value);
 
   const handleChange = val => {
-    // 非focus的时候不需要onchange，避免format触发onchange
+    // No onchange is required when non-focus, avoid format triggering onchange
     if (!focus) {
       return;
     }
@@ -131,7 +131,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   }
 
   useEffect(() => {
-    // 外部更新值时，自动format一次
+    // Automatically format once when externally updating values
     if (value !== valueRef.current) {
       triggerFormat();
     }
@@ -267,7 +267,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   );
 };
 
-// 使用Semi Form上下文，在test set表单中使用
+// Use the Semi Form context to use in the test set form
 const JsonEditorSemi = withField(JsonEditorAdapter, {
   valueKey: 'value',
   onKeyChangeFnName: 'onChange',

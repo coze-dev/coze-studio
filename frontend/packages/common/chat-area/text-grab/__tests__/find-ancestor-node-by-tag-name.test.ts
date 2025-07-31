@@ -17,7 +17,7 @@
 import { findAncestorNodeByTagName } from '../src/utils/helper/find-ancestor-node-by-tag-name';
 
 describe('findAncestorNodeByTagName', () => {
-  // 设置 DOM 环境
+  // Setting up the DOM environment
   document.body.innerHTML = `
     <div id="ancestor">
       <div id="parent">
@@ -41,7 +41,7 @@ describe('findAncestorNodeByTagName', () => {
 
   it('should return the node itself if it matches the tag name', () => {
     const result = findAncestorNodeByTagName(child, 'div');
-    expect(result).toBe(parent); // 因为 child 的直接父级 parent 也是 div
+    expect(result).toBe(parent); // Because the child's immediate parent is also a div
   });
 
   it('should return null if the input node is null', () => {

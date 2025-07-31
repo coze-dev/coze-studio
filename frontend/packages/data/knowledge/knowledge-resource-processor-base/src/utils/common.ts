@@ -63,7 +63,7 @@ export const transformUnitList = ({
     }
     return unit;
   });
-  // TODO as 待解
+  // TODO as to be solved
   return filteredList as UnitItem[];
 };
 
@@ -111,8 +111,8 @@ export function useOptFromQuery(): OptType {
   return opt;
 }
 
-/** 为什么返回undefined? 不一定需要空字符串，如果取不到就返回undefined */
-/**现在还有 docID 这个入口吗？？？ */
+/** Why return undefined? You don't necessarily need an empty string. If you can't get it, return undefined. */
+/**Is there still an entrance for docID??? */
 export function useDocIdFromQuery(): string | undefined {
   const query = useKnowledgeParams();
   return get(query, 'docID', undefined);

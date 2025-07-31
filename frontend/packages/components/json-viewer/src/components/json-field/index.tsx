@@ -29,7 +29,7 @@ import { LogObjSpecialKey, LogValueStyleType } from '../../constants';
 
 import styles from './json-field.module.less';
 
-/* JSON 类型数据渲染 */
+/* JSON type data rendering */
 const FieldValue: React.FC<{
   value: Field['value'];
 }> = ({ value }) => {

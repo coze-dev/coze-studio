@@ -22,33 +22,33 @@
 export type Int64 = string | number;
 
 export enum BotTableRWMode {
-  /** 单用户模式 */
+  /** single user mode */
   LimitedReadWrite = 1,
-  /** 只读模式 */
+  /** read-only mode */
   ReadOnly = 2,
-  /** 多用户模式 */
+  /** multi-user mode */
   UnlimitedReadWrite = 3,
-  /** Max 边界值 */
+  /** Max boundary value */
   RWModeMax = 4,
 }
 
 export enum BotTableStatus {
-  /** 初始化（不可用） */
+  /** Initialization (not available) */
   Init = 0,
-  /** 已上线 */
+  /** It's online now. */
   Online = 1,
-  /** 删除 */
+  /** delete */
   Delete = 2,
-  /** 草稿态（未 publish） */
+  /** Draft status (not published) */
   Draft = 3,
 }
 
 export enum FieldItemType {
-  /** 文本 */
+  /** Text */
   Text = 1,
-  /** 数字 */
+  /** number */
   Number = 2,
-  /** 时间 */
+  /** time */
   Date = 3,
   /** float */
   Float = 4,
@@ -56,13 +56,13 @@ export enum FieldItemType {
   Boolean = 5,
 }
 
-/** Table model相关常量，结构体定义 */
+/** Table model related constants, structure definitions */
 export enum FieldType {
-  /** 文本 */
+  /** Text */
   Text = 1,
-  /** 数字 */
+  /** number */
   Number = 2,
-  /** 时间 */
+  /** time */
   Date = 3,
   /** float */
   Float = 4,
@@ -71,49 +71,49 @@ export enum FieldType {
 }
 
 export enum ImportFileTaskStatus {
-  /** 任务初始化 */
+  /** task initialization */
   Init = 1,
-  /** 任务处理中 */
+  /** Task in progress */
   Enqueue = 2,
-  /** 任务成功 */
+  /** Mission successful */
   Succeed = 3,
-  /** 任务失败 */
+  /** Mission failed */
   Failed = 4,
 }
 
 export enum Language {
-  /** 中文 */
+  /** Chinese */
   Chinese = 1,
-  /** 英文 */
+  /** English */
   English = 2,
 }
 
 export enum TableType {
-  /** 草稿 */
+  /** draft */
   DraftTable = 1,
-  /** 线上 */
+  /** online */
   OnlineTable = 2,
 }
 
 export interface FieldItem {
-  /** 字段名称，用户自定义，可能为中文 */
+  /** Field name, user-defined, possibly in Chinese */
   name: string;
   desc?: string;
   type: FieldItemType;
   must_required?: boolean;
-  /** 字段Id，服务端生成，全局唯一（新增为0） */
+  /** Field Id, server level generated, globally unique (added as 0) */
   id?: Int64;
-  /** 字段名称语言类型 */
+  /** Field Name Language Type */
   lang?: Language;
-  /** 物理字段名，服务端生成，单个table下唯一 */
+  /** Physical field name, server level generation, unique under a single table */
   physics_name?: string;
-  /** 是否主键 */
+  /** Whether primary key */
   primary_key?: boolean;
-  /** 字段可见性，1:用户自定义；2:业务定义，对用户可见；3:业务定义，对用户隐藏 */
+  /** Field visibility, 1: user-defined; 2: business definition, visible to users; 3: business definition, hidden from users */
   visibility?: number;
-  /** 在excel文档中使用，映射到excel中对应的列 */
+  /** Used in an excel document, map to the corresponding column in excel */
   sequence?: string;
-  /** 业务自定义扩展field元数据 */
+  /** Business custom extension field metadata */
   map_ext_meta?: Record<string, string>;
 }
 /* eslint-enable */

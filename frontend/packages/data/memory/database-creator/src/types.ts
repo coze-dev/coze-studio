@@ -28,9 +28,9 @@ export enum CreateType {
   custom = 'custom',
   template = 'template',
   excel = 'excel',
-  // 推荐建表
+  // recommended table
   recommend = 'recommend',
-  // 输入自然语言建表
+  // Enter natural language to build a table
   naturalLanguage = 'naturalLanguage',
 }
 

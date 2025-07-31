@@ -21,7 +21,7 @@ export * from '@coze-arch/bot-api/workflow_api';
 
 export { withQueryClient, workflowQueryClient } from './with-query-client';
 
-/** 运营接口平台，会替换权限验证 */
+/** Operating the interface platform will replace permission verification */
 const workflowOperationApiNameMap = {
   GetHistorySchema: 'OPGetHistorySchema',
   GetWorkFlowProcess: 'OPGetWorkFlowProcess',

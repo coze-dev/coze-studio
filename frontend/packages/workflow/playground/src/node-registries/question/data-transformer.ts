@@ -58,7 +58,7 @@ export function transformOnInit(value, context) {
   );
 
   let llmParam = get(value, 'inputs.llmParam');
-  // 初次拖入画布时：从后端返回值里，解析出来默认值。
+  // When first dragged into the canvas: Parse out the default value from the backend return value.
   if (!llmParam) {
     llmParam = getDefaultLLMParams(models);
   }

@@ -81,10 +81,10 @@ const FunctionCallMessageBoxImpl: ComponentTypesMap['functionCallMessageBox'] =
       return !getIsVisibleMessageMeta(meta, configs);
     });
 
-    // footer位置的answer actions，所需要props通过useMessageBoxContext透传
+    // Answer actions for footer location, required props pass through useMessageBoxContext
     const ActionBarFooter = MessageBoxActionBarFooter;
 
-    // hover才展示的answer actions，所需要props通过useMessageBoxContext透传
+    // Hover just show the answer actions, the required props pass through useMessageBoxContext
     const ActionBarHoverContent = MessageBoxActionBarHoverContent;
 
     if (!messageUnitList.length || isInvisible) {
@@ -133,7 +133,7 @@ export const FunctionCallMessageBox: React.FC<{
     Boolean(state.responding?.replyId === messageGroup.groupId),
   );
 
-  // 收到final answer
+  // Received final answer
   const isRelatedChatComplete = useIsGroupAnswerFinish(messageGroup);
 
   const isFakeInterruptAnswer = useIsGroupFakeInterruptAnswer(messageGroup);

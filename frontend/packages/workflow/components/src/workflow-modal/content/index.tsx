@@ -97,7 +97,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
     pageSize: 10,
     enabled: context?.modalState.dataSourceType === DataSourceType.Product,
   });
-  // 转换筛选参数
+  // conversion filter parameters
   useEffect(() => {
     if (!context) {
       return;
@@ -127,7 +127,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
       let status: WorkflowModalState['status'] | undefined = undefined;
       if (modalState.isSpaceWorkflow) {
         status =
-          // isAddProjectWorkflow：项目里添加子工作流，没有发布状态概念，筛选状态传 undefined
+          // isAddProjectWorkflow: Add sub-workflow to the project, no release state concept, filter state pass undefined
           modalState.status === WORKFLOW_LIST_STATUS_ALL || isAddProjectWorkflow
             ? undefined
             : modalState.status;
@@ -188,7 +188,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
     })),
   );
 
-  // 子流程节点 map，例如 { 'workflowId': [node1, node2, ...] }
+  // Subprocess node map, e.g. {'workflowId': [node1, node2,...]}
   const workflowNodesMap = useMemo(() => {
     const subFlowNodes = nodes.filter(
       v => v.type === StandardNodeType.SubWorkflow,
@@ -209,28 +209,28 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
     );
   }, [excludedWorkflowIds, workflowList]);
 
-  /** scroll的container */
+  /** Scroll container */
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  /** 监听触底的observer */
+  /** Monitor the bottom observer */
   const intersectionObserverDom = useRef<HTMLDivElement>(null);
-  // 是否触底
+  // Is it bottoming out?
   const [inViewPort] = useInViewport(intersectionObserverDom, {
     root: () => scrollContainerRef.current,
     threshold: 0.8,
   });
 
-  // 首次effect不执行，这个是切换状态的effect
+  // The first effect is not executed, this is the effect of switching the state
   useUpdateEffect(() => {
-    // 当筛选项改变时，回到顶部
+    // When the filter item changes, return to the top
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
         top: 0,
       });
     }
-    // 只要是query中非page改变，就执行此effect
+    // Perform this effect whenever a non-page change is made in the query
   }, [context?.modalState]);
 
-  // 获取下一页逻辑
+  // Get next page logic
   useEffect(() => {
     if (!inViewPort) {
       return;
@@ -339,7 +339,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
         wrapperClassName={s.spin}
         style={{ height: '100%', width: '100%' }}
       >
-        {/* Workflow as agent 支持添加带自定义入参的对话流 */}
+        {/* Workflow as agent support for adding dialog flows with custom imported parameters */}
         {/* {isAgentWorkflow ? (
           <div className="coz-mg-hglt px-[36px] py-[8px] mx-[24px] my-[0] rounded-[8px]">
             {I18n.t('wf_chatflow_133')}
@@ -349,7 +349,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
           className={`${s['workflow-content']} new-workflow-modal-content`}
           ref={scrollContainerRef}
         >
-          {/* 内容渲染 */}
+          {/* content rendering */}
           {targetLoadingStatus !== 'pending' && targetList.length > 0 && (
             <UICompositionModalMain.Content
               style={{
@@ -357,7 +357,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
                 paddingBottom: isAgentWorkflow ? '60px' : 0,
               }}
             >
-              {/* 数据呈现样式, 列表样式/卡片样式. 展示图像流商品列表时使用卡片样式 */}
+              {/* Data rendering style, list style/card style. Use card style when displaying image stream item lists */}
               <>
                 {targetList.map((item: WorkflowInfo | ProductInfo) => (
                   <WorkflowCard

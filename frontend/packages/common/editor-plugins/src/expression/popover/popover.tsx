@@ -140,10 +140,10 @@ function Popover({
     const { elements } = optionsInfo;
     selectNodeByIndex(elements, 0);
   });
-  // selected 仅用于 Tree 组件对应项展示蓝色选中效果，无其他用途
+  // Selected is only used to display the blue selection effect for the corresponding item of the Tree component, and has no other purpose.
   const selected = useSelectedValue(completionContext?.text, variableTree);
 
-  // 基于用户选中项，替换所在 {{}} 中的内容
+  // Replace content in {{}} based on user selection
   const handleSelect = useCallback(
     // eslint-disable-next-line @typescript-eslint/naming-convention
     (_: string, __: boolean, node: TreeNodeData) => {
@@ -166,7 +166,7 @@ function Popover({
       Boolean(emptyContent));
 
   const [allowVisible, setAllowVisible] = useState(false);
-  // 选区变化时，清除锁定效果
+  // Clear the lock effect when the selection changes
   useEffect(() => {
     setAllowVisible(true);
   }, [selection]);
@@ -180,14 +180,14 @@ function Popover({
     treeRef,
   );
 
-  // 上下键切换推荐项，回车填入
+  // Press the up and down keys to switch the recommended items, and press Enter to fill in.
   useKeyboard(visible, {
     ArrowUp: prev,
     ArrowDown: next,
     Enter: apply,
   });
 
-  // ESC 关闭
+  // ESC Close
   useKeyboard(visible, {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     Escape() {
@@ -195,7 +195,7 @@ function Popover({
     },
   });
 
-  // 推荐面板出现时，禁用 ArrowUp/ArrowDown/Enter 的默认行为（行为改为上下键切换推荐项 & 回车插入）
+  // When the recommendation panel appears, disable the default behavior of ArrowUp/ArrowDown/Enter (the behavior is changed to up and down keys to switch recommendations & enter to insert)
   useEffect(() => {
     if (visible === true) {
       editorRef.current?.disableKeybindings(['ArrowUp', 'ArrowDown', 'Enter']);

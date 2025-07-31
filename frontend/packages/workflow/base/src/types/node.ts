@@ -37,5 +37,5 @@ export interface WorkflowJSON {
   edges: WorkflowEdgeJSON[];
 }
 
-// 节点模版类型
+// Node template type
 export { NodeTemplateType } from '@coze-arch/bot-api/workflow_api';

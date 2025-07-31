@@ -22,11 +22,11 @@ import {
 } from '@coze-common/chat-core';
 
 export interface ChatShortCutBarProps {
-  shortcuts: ShortCutCommand[]; // 目前支持两种快捷键
+  shortcuts: ShortCutCommand[]; // Currently supports two shortcuts
   onClickShortCut: (shortcutInfo: ShortCutCommand) => void;
 }
-// 更新后 home 为 white 调试区、商店为 grey
-export type UIMode = 'grey' | 'white' | 'blur'; // 默认为白色，有背景的时候为模糊
+// After the update, the home is white debugging area and the store is grey.
+export type UIMode = 'grey' | 'white' | 'blur'; // The default is white, and it is blurred when there is a background.
 
 export interface OnBeforeSendTemplateShortcutParams {
   message: TextAndFileMixMessageProps;

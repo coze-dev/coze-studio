@@ -31,18 +31,18 @@ interface CreateStoreOptions {
 
 export interface IDEGlobalState {
   /**
-   * 项目 id
+   * Project ID
    */
   projectId: string;
   /**
-   * 空间 id
+   * Space ID
    */
   spaceId: string;
 
   version: string;
 
   /**
-   * get_draft_intelligence_info 接口返回内容
+   * get_draft_intelligence_info interface returns content
    */
   projectInfo?: {
     ownerInfo?: User;

@@ -44,7 +44,7 @@ import { type NodeError } from '../../../../../entities/workflow-exec-state-enti
 
 const { Text, Title } = Typography;
 
-// 避免节点删除后丢失icon、title信息
+// Avoid losing icon and title information after node deletion
 export const useMetaMemo = (nodeId: string) => {
   const [nodeMeta, setNodeMeta] = useState<CommonNodeData>();
   const playground = usePlayground();

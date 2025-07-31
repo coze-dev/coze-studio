@@ -84,8 +84,8 @@ export function useSettingOnError({
   });
 
   /**
-   * 为啥要加防抖？
-   * 因为 isBatch outputs 的变化不是同步的，会拿到不符合预期的结果
+   * Why add anti-shake?
+   * Because the changes of isBatch outputs are not synchronized, you will get results that do not meet expectations.
    * */
   const [args, setArgs] = useState({
     isOpen: settingOnErrorIsOpen,
@@ -120,9 +120,9 @@ export function useSettingOnError({
   const { value: json, defaultValue: defaultJSON } = useJSONWithOutputs({
     ...args,
     /**
-     * 为什么要传 onJSONChange ？
-     * 1. output 结构变化需要主动修改 json
-     * 2. 初次打开开关，根据 output 结构自动生成 json
+     * Why pass onJSONChange?
+     * 1. output structure changes need to actively modify json
+     * 2. Turn on the switch for the first time and automatically generate json according to the output structure
      * */
     onJSONChange: v => {
       onChange({
@@ -133,7 +133,7 @@ export function useSettingOnError({
   });
 
   const syncOutputs = (isOpen: boolean) => {
-    // 打开了忽略异常，就要在 output 里追加 errorBody；否则要剔除
+    // If the ignore exception is turned on, the errorBody must be appended to the output; otherwise, it must be rejected
     if (formV2) {
       const outputsValue = form.getValueIn('outputs');
       if (outputs) {
@@ -159,7 +159,7 @@ export function useSettingOnError({
       }
     }
 
-    // 打开了忽略异常，就要把 model 的输出类型修改为 json （针对 llm 节点，其他节点获取不到 modelItem）
+    // If the ignore exception is turned on, change the output type of the model to json (for the llm node, other nodes cannot get the modelItem).
     if (formV2) {
       const modelValue = form.getValueIn('model');
       if (

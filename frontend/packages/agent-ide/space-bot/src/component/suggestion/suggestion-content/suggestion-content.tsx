@@ -31,13 +31,13 @@ import s from './suggestion-content.module.less';
 export type SuggestionContentProps = {
   disabled?: boolean;
   onChange: (config: Partial<BotSuggestionConfig>) => void;
-  /** mode 是否来自子 bot */
+  /** Is the mode from the child bot? */
   followBot?: boolean;
 } & (
   | {
       mode: SuggestReplyMode.WithCustomizedPrompt;
       prompt: string;
-      /** 是否为 multi-agent 模式 */
+      /** Is it in multi-agent mode? */
       multiAgent?: boolean;
     }
   | {
@@ -45,7 +45,7 @@ export type SuggestionContentProps = {
     }
 );
 
-/** 自定义 suggestion textarea 最大高度 */
+/** Custom suggestion textarea maximum height */
 const MAX_CUSTOM_SUGGESTION_PROMPT_HEIGHT = 340;
 
 export function SuggestionContent({
@@ -58,14 +58,14 @@ export function SuggestionContent({
 
   return (
     <div className={s['suggestion-content']}>
-      {/* 无 suggestion */}
+      {/* No suggestion */}
       {props.mode === SuggestReplyMode.Disable && (
         <div className={s.description}>
           {I18n.t('bot_edit_auto_suggestion_off_description')}
         </div>
       )}
 
-      {/* 默认 suggestion */}
+      {/* Default suggestion */}
       {props.mode === SuggestReplyMode.WithDefaultPrompt && (
         <>
           <div className={s.description}>
@@ -90,7 +90,7 @@ export function SuggestionContent({
         </>
       )}
 
-      {/* 自定义 suggestion prompt */}
+      {/* Custom suggestion prompt */}
       {props.mode === SuggestReplyMode.WithCustomizedPrompt && (
         <>
           <div className={s.description}>

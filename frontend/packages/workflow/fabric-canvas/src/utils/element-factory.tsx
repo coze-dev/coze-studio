@@ -17,9 +17,9 @@
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable complexity */
 /**
- * 托管所有的图形创建，赋予业务改造
- * 调用时机
- * 1. 初次创建
+ * Hosting all graphics creation, empowering business transformation
+ * call timing
+ * 1. Initial creation
  * 2. loadFromSchema
  */
 import { nanoid } from 'nanoid';
@@ -49,9 +49,9 @@ import { defaultProps } from './default-props';
 import { createControls, setLineControlVisible } from './create-controls';
 
 /**
- * 覆盖默认的 Textbox height 计算逻辑
- * 默认：根据内容，撑起 Textbox
- * 预期：严格按照给定高度渲染，溢出隐藏
+ * Override default Textbox height calculation logic
+ * Default: Hold up Textbox according to content
+ * Expected: Render strictly according to the given height, overflow hidden
  */
 const _calcTextHeight = Textbox.prototype.calcTextHeight;
 Textbox.prototype.calcTextHeight = function () {
@@ -60,8 +60,8 @@ Textbox.prototype.calcTextHeight = function () {
 };
 
 /**
- * 修复 fabric bug：使用某些自定义字体后，Text 宽度计算异常
- * 修复方案 from https://github.com/fabricjs/fabric.js/issues/9852
+ * Fix fabric bug: Text width calculation is abnormal after using some custom fonts
+ * Repair plan from https://github.com/fabricjs/fabric.js/issues/9852
  */
 IText.getDefaults = () => ({});
 // for each class in the chain that has a ownDefaults object:
@@ -80,7 +80,7 @@ export const createCommonObjectOptions = (
 });
 
 /**
- * 元素创建入口，所有的元素创建逻辑都走这里
+ * Element creation portal, where all element creation logic goes
  */
 export const createElement = async ({
   mode,
@@ -170,7 +170,7 @@ export const createElement = async ({
           ...elementProps,
         });
 
-        // 创建直线时的起始点不是通过控制点触发的，需要额外监听
+        // The starting point when creating a line is not triggered by a control point and requires additional listening
         _element.on('start-end:modified' as keyof ObjectEvents, () => {
           setLineControlVisible({
             element: _element as Line,
@@ -242,14 +242,14 @@ export const createElement = async ({
       let _element: FabricObject | undefined = element;
 
       /**
-       * FabricImage 不支持拉伸/自适应
-       * 需要用 Group 包一下，根据 Group 大小，计算 image 的位置
-       * 1. customId customType 要给到 Group。（根其他元素保持一致，从 element 上能直接取到）
-       * 2. 边框的相关设置要给到图片
+       * FabricImage does not support stretching/adaptive
+       * You need to wrap it in Group, and calculate the position of the image according to the size of the Group.
+       * 1. customId customType should be given to the Group. (The root of other elements is consistent and can be directly retrieved from element)
+       * 2. The relevant settings of the border should be given to the picture.
        *
-       * 因此而产生的 Hack：
-       * 1. 属性表单根据 schema 解析成 formValue ，需要取 groupSchema.objects[0]
-       * 2. 属性表单设置元素属性(边框)，需要调用 group.getObjects()[0].set
+       * The resulting hack:
+       * 1. The attribute form is parsed into formValue according to the schema, and you need to take groupSchema.objects [0]
+       * 2. The property form sets the element properties (borders), you need to call group.getObjects () [0] .set
        */
       if (!_element) {
         if (elementProps?.src) {
@@ -264,7 +264,7 @@ export const createElement = async ({
             top ?? ((elementProps?.top ?? defaultProps[_mode].top) as number);
 
           /**
-           * stroke, strokeWidth 设置给 borderRect objects[1]
+           * Stroke, strokeWidth set for borderRect objects [1]
            */
           const { stroke, strokeWidth, ...rest } = {
             ...defaultProps[_mode],
@@ -294,7 +294,7 @@ export const createElement = async ({
           (_element as Group).add(borderRect);
           _element.set(groupProps);
 
-          // 比例填充时，图片会溢出，所以加了裁剪
+          // When filling in proportions, the image will overflow, so cropping is added.
           const clipRect = new Rect();
           _element.set({
             clipPath: clipRect,
@@ -304,7 +304,7 @@ export const createElement = async ({
 
       resetElementClip({ element: _element as FabricObject });
 
-      // 计算 image 的渲染位置
+      // Calculate the render position of the image
       setImageFixed({
         element: _element as Group,
       });
@@ -342,7 +342,7 @@ export const createElement = async ({
   }
 };
 
-// hook element 加载到画布
+// Load hook elements to canvas
 export const setElementAfterLoad = async ({
   element,
   options: { readonly },

@@ -45,7 +45,7 @@ const getDefaultModels = (modelMeta: Model): InputValueDTO[] => {
   modelMeta?.model_params?.forEach(p => {
     const k = camelCase(p.name) as string;
     const { type } = p;
-    // 优先取平衡，自定义兜底
+    // Priority to take the balance, custom bottom line
     const defaultValue =
       p.default_val[GenerationDiversity.Balance] ??
       p.default_val[GenerationDiversity.Customize];
@@ -79,8 +79,8 @@ export const getDefaultLLMParams = (models: Model[]) => {
 export const reviseLLMParamPair = (d: InputValueDTO): [string, unknown] => {
   let k = d?.name || '';
 
-  // TODO 前端不依赖这个字段，确认后端无依赖后，可删除
-  // 兼容一个历史悠久的拼写错误
+  // The TODO front end does not rely on this field. After confirming that the back end does not rely on it, it can be deleted.
+  // Compatible with a long-standing spelling error
   if (k === 'modleName') {
     k = 'modelName';
   }
@@ -112,7 +112,7 @@ export const modelItemToBlockInput = (
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let _k = k;
-    // TODO 前端不依赖这个字段，确认后端无依赖后，可删除
+    // The TODO front end does not rely on this field. After confirming that the back end does not rely on it, it can be deleted.
     if (_k === 'modelName') {
       _k = 'modleName';
     }
@@ -145,7 +145,7 @@ export const addSKillFromLibrary = (
       plugin_id: detail?.plugin_id as string,
       api_id: detail?.api_id as string,
       api_name: detail?.name as string,
-      plugin_version: '', // 和 @张友松 确认 不传版本
+      plugin_version: '', // And @Zhang Yousong, confirm, do not send the version
       is_draft: isDraftByProjectId(detail?.project_id),
     });
 
@@ -162,7 +162,7 @@ export const addSKillFromLibrary = (
       plugin_id: detail?.plugin_id as string,
       workflow_id: detail?.workflow_id as string,
       plugin_version: '',
-      workflow_version: '', // 和 @张友松 确认 不传版本
+      workflow_version: '', // And @Zhang Yousong, confirm, do not send the version
       is_draft: isDraftByProjectId(detail?.project_id),
     });
 

@@ -42,9 +42,9 @@ export interface TemplateForm {
   name: string;
   covers: Partial<FileItem>[];
   description: string;
-  // EditorFullInput 的纯文本 form value ，仅为满足类型要求，不在业务中使用
+  // EditorFullInput plain text form value, only to meet the type requirements, not used in business
   readme_text: string;
-  // 实际需要传给后端的 editor-kit 富文本内容
+  // The editor-kit rich text content that actually needs to be passed to the backend
   readme: string;
   preview_type: DisplayScreen;
   category: string;
@@ -64,13 +64,13 @@ export function entityInfoToTemplateForm(
   const isZh = I18n.language.startsWith('zh');
   const meta = info.meta_info ?? {};
   const form: Partial<TemplateForm> = {
-    // 默认勾选同意模板付费协议：已经上架过 或 已经配置过模板信息（readme 非空）
+    // By default, check Agree to the template payment agreement: already on the shelves, or already configured template information (readme is not empty)
     agreement: meta.status !== ProductStatus.NeverListed || meta.readme !== '',
     name: meta.name,
     covers: meta.covers?.map(c => ({
       url: c.url,
       response: c,
-      // 补充 FileItem 的其他属性，供表单校验使用
+      // Supplements other properties of FileItem for form validation
       status: 'success',
       _sizeInvalid: false,
     })),

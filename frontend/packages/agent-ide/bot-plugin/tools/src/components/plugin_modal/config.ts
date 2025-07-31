@@ -26,16 +26,16 @@ import { FileTypeEnum } from '@coze-studio/file-kit/logic';
 
 import { type APIParameterRecord } from './types/params';
 
-export const childrenRecordName = 'sub_parameters'; // 子节点名称
-export const ROWKEY = 'id'; // 唯一标识符
-export const ARRAYTAG = '[Array Item]'; // 数组元素标识符
-export const ROOTTAG = '[Root Item]'; // root为数组的标识符
+export const childrenRecordName = 'sub_parameters'; // sub-node name
+export const ROWKEY = 'id'; // unique device identifier
+export const ARRAYTAG = '[Array Item]'; // Array element identifier
+export const ROOTTAG = '[Root Item]'; // Root is the identifier of the array
 export const STARTNODE = 0;
 export const REQUESTNODE = 1;
 export const RESPONSENODE = 2;
 export const DEBUGNODE = 3;
 export const ENDSTEP = 4;
-// 传入方法options
+// Incoming method options
 export const parameterLocationOptions = [
   {
     label: 'Body',
@@ -57,8 +57,8 @@ export const parameterLocationOptions = [
 
 export enum ParameterTypeExtend {
   /**
-   * 扩展类型
-   * 与 AssistParameterType 一一对应
+   * extension type
+   * One-to-one correspondence with AssistParameterType
    */
   DEFAULT = 10001,
   IMAGE,
@@ -93,7 +93,7 @@ interface ParameterTypeOption {
 }
 
 /**
- * 未扩展File类型前的 基础类型，多处使用 需要保留 start
+ * The basic type before the unextended File type is used in many places, and start needs to be reserved.
  */
 export const parameterTypeOptions: Array<ParameterTypeOption> = [
   {
@@ -145,7 +145,7 @@ export const parameterTypeOptionsSub: Array<ParameterTypeOption> = [
   },
 ];
 /**
- * 未扩展File类型前的 基础类型，多处使用 需要保留 end
+ * Unexpanded File type, base type, used in many places, need to keep end
  */
 
 export const parameterTypeExtendMap: Record<
@@ -406,12 +406,12 @@ export const methodType: ExtInfoText[] = [
 export enum ParamsFormErrorStatus {
   NO_ERROR = 0,
   NAME_EMPTY = 1,
-  // 中文
+  // Chinese
   CHINESE = 2,
-  // 重复
+  // repeat
   REPEAT = 3,
   ASCII = 4,
-  // 未填写
+  // not filled in
   DESC_EMPTY = 5,
 }
 

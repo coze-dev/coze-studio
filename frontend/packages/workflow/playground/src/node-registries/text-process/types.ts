@@ -32,14 +32,14 @@ export interface NodeMeta {
   mainColor: string;
 }
 
-/** 选项 */
+/** option */
 export interface DelimiterOption {
   label: string;
   value: string;
   isDefault: boolean;
 }
 
-/** 表单基本数据 */
+/** form basic data */
 export interface FormData {
   method: StringMethod;
   inputParameters: InputValueVO[];
@@ -47,7 +47,7 @@ export interface FormData {
   outputs: ViewVariableMeta[];
 }
 
-/** 字符串分割模式表单数据 */
+/** String split mode form data */
 export interface DelimiterModeFormData extends FormData {
   delimiter: {
     value: string[];
@@ -55,7 +55,7 @@ export interface DelimiterModeFormData extends FormData {
   };
 }
 
-/** 字符串拼接模式表单数据 */
+/** String Splice mode form data */
 export interface ConcatModeFormData extends FormData {
   concatChar: {
     value: string;
@@ -64,28 +64,28 @@ export interface ConcatModeFormData extends FormData {
   concatResult: string;
 }
 
-/** 后端数据结构 */
+/** backend data structure */
 export interface BackendData extends NodeDataDTO {
   nodeMeta: NodeMeta;
   inputs: NodeDataDTO['inputs'] & {
-    // 分割参数
+    // segmentation parameter
     method?: StringMethod;
     splitParams?: BlockInput[];
 
-    // 拼接参数
+    // Splicing parameters
     concatParams?: BlockInput[];
   };
   outputs: VariableMetaDTO[];
 }
 
-/** 中间数据结构，这个数据结构会将变量结构转化成后端结构 */
+/** Intermediate data structure, which converts the variable structure into a back-end structure */
 export interface DataBeforeFormat {
   inputs: BackendData['inputs'] & {
-    // 这个会被 workflow-json-format 进一步处理，见 formatNodeOnSubmit 方法
+    // This will be handled further workflow-json-format, see formatNodeOnSubmit method
     inputParameters?: InputValueVO[];
   };
   nodeMeta: NodeMeta;
 
-  // 这个会被 workflow-json-format 进一步处理，见 formatNodeOnSubmit 方法
+  // This will be handled further workflow-json-format, see formatNodeOnSubmit method
   outputs: ViewVariableMeta[];
 }

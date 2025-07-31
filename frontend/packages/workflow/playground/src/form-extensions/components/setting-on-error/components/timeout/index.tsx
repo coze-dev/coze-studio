@@ -23,7 +23,7 @@ import { Input } from '@coze-arch/coze-design';
 
 import { type SettingOnErrorItemProps } from '../../types';
 
-// 毫秒转秒（智能去除末尾零）
+// Millisecond to second (intelligently removes ending zeros)
 const msToSeconds = (ms: number) => {
   const formatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 3,
@@ -33,7 +33,7 @@ const msToSeconds = (ms: number) => {
 };
 
 /**
- * 超时
+ * timeout
  */
 export const Timeout: FC<SettingOnErrorItemProps<number>> = ({
   value,
@@ -43,22 +43,22 @@ export const Timeout: FC<SettingOnErrorItemProps<number>> = ({
   const timeoutConfig = useTimeoutConfig();
   const [inputValue, setInputValue] = useState('');
 
-  // 后端毫秒转前端秒显示
+  // Back-end millisecond to front-end second display
   useEffect(() => {
     const seconds = msToSeconds(value ?? timeoutConfig.default);
     setInputValue(seconds);
   }, [timeoutConfig.default, value]);
 
-  // 处理输入变化
+  // Handling input changes
   const handleChange = (v: string | number) => {
     const rawValue = String(v);
-    // 限制输入格式：允许数字和小数点，最多三位小数
+    // Limit input format: allow numbers and decimal points, up to three decimal places
     if (/^\d*\.?\d{0,3}$/.test(rawValue)) {
       setInputValue(rawValue);
     }
   };
 
-  // 提交时转换为毫秒
+  // Converted to milliseconds when submitting
   const handleBlur = () => {
     try {
       let ms = Math.round(Number(inputValue) * 1000);
@@ -76,7 +76,7 @@ export const Timeout: FC<SettingOnErrorItemProps<number>> = ({
 
       onChange?.(ms);
 
-      // 回显标准化值
+      // echo normalized value
       const seconds = msToSeconds(ms);
       setInputValue(seconds);
     } catch (err) {

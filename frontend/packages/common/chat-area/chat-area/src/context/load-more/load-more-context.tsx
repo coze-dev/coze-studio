@@ -28,7 +28,7 @@ export const LoadMoreContext = createContext<{
 });
 
 /**
- * 反模式起飞
+ * Anti-pattern takeoff
  */
 export const LoadMoreProvider = (
   props: PropsWithChildren<{

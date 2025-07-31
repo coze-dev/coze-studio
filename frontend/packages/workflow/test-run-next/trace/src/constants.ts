@@ -20,5 +20,5 @@ export enum TraceChartsMode {
 }
 
 export const MAX_TRACE_LENGTH = 50;
-/** 日志最多查询 7 天 */
+/** Log query for up to 7 days */
 export const MAX_TRACE_TIME = 7;

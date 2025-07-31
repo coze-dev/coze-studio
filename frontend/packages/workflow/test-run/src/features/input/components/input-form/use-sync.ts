@@ -25,7 +25,7 @@ export const useSync = (inputEvent: NodeEvent | undefined) => {
   const testRunService = useTestRunService();
 
   const eventSync = useMemoizedFn((event: NodeEvent | undefined) => {
-    // 结束
+    // end
     if (!event) {
       testRunService.continueTestRun();
       return;

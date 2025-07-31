@@ -38,14 +38,14 @@ const hasHistory = (): boolean =>
 type NavigateScene = 'publish' | 'exit';
 
 /**
- * 返回上一页逻辑
+ * Return to previous page logic
  */
 export const useNavigateBack = () => {
   const pageJumpResponse = usePageJumpResponse(PageType.WORKFLOW);
   const { jump } = usePageJumpService();
   const navigate = useNavigate();
 
-  /** 流程详情页路由更新会导致 pageJumpResponse 失效, 因此需要缓存一份原始版本 */
+  /** Process details page route update will invalidate pageJumpResponse, so you need to cache a copy of the original version */
   const memoPageJumpResponse = useMemo(() => pageJumpResponse, []);
 
   const navigateBack = async (
@@ -71,12 +71,12 @@ export const useNavigateBack = () => {
       return;
     }
 
-    // 跳转回bot详情页，并带上场景参数
+    // Jump back to the bot details page with scene parameters
     if (memoPageJumpResponse?.scene) {
       if (scene === 'publish') {
         let pluginID = plugin_id;
 
-        // 第一次发布流程时，需要重新从接口获取pluginID
+        // When you publish the process for the first time, you need to retrieve the pluginID from the interface again.
         if (!pluginID || pluginID === '0') {
           const workflowRes = await workflowApi.GetCanvasInfo(
             {
@@ -143,9 +143,9 @@ export const useNavigateBack = () => {
         namespace: 'workflow',
         eventName: 'workflow_navigate_back_to_list',
       });
-      // 如果 history 就一个页面，此时 navigate(-1) 不生效，需要手动指定路径
-      // 目前先写死路径，缺点是需要跟随页面结构更改而更改，后面再优化更好的实现
-      // /library 为 coze 2.0 混排资源列表页
+      // If history is only one page, navigate (-1) does not take effect at this time, you need to manually specify the path
+      // At present, the dead path is written first. The disadvantage is that it needs to be changed with the change of the page structure, and then optimized for a better implementation later.
+      // /library coze 2.0 mixed resource list page
       navigate(`/space/${spaceId}/library`);
     }
   };

@@ -23,7 +23,7 @@ export function useDestoryProject(projectId: string) {
 
   return useEffect(
     () => () => {
-      // 空间组件销毁时，清空对应space数据
+      // When the space component is destroyed, empty the corresponding space data
       destorySpace(projectId);
     },
     [],

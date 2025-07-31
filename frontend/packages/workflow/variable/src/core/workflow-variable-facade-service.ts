@@ -33,7 +33,7 @@ import { getByNamePath } from './utils/name-path';
 import { type GetKeyPathCtx, type WorkflowVariableField } from './types';
 
 /**
- * 引擎内部接口，针对 Coze Workflow 封装变量外观接口
+ * Engine internal interface, wrapping variable appearance interface for Coze Workflow
  */
 @injectable()
 export class WorkflowVariableFacadeService {
@@ -48,13 +48,13 @@ export class WorkflowVariableFacadeService {
 
   @postConstruct()
   init() {
-    // 变量引用 rename, 确保节点 UI 不渲染时也 rename 变量引用
+    // Variable reference rename, ensure that the node UI is not rendered when the variable reference is also renamed
     this.fieldRenameService.onRename(({ before, after }) => {
-      // 覆盖的节点
+      // covered nodes
       const coverNodes: FlowNodeEntity[] = uniq(
         before.scope.coverScopes.map(_scope => _scope.meta?.node),
       );
-      // 所有覆盖节点表单中引用的变量更新
+      // All variables referenced in the override node form are updated
       coverNodes.forEach(_node => {
         const formData = _node.getData(FlowNodeFormData);
         const fullData = formData.formModel.getFormItemValueByPath('/');
@@ -67,7 +67,7 @@ export class WorkflowVariableFacadeService {
             },
             {
               onDataRenamed: () => {
-                // rename 触发当前节点表单 onChange
+                // Rename triggers the current node form onChange
                 formData.fireChange();
               },
               node: _node,
@@ -79,7 +79,7 @@ export class WorkflowVariableFacadeService {
   }
 
   /**
-   * 根据变量的 AST 查找其 Facade
+   * Find the Facade of a Variable by Its AST
    * @param field
    * @returns
    */
@@ -91,10 +91,10 @@ export class WorkflowVariableFacadeService {
       return cache;
     }
 
-    // 新建该变量对应的 Facade
+    // Create a new facade corresponding to this variable.
     const facade = new WorkflowVariableFacade(field, this);
 
-    // 被删除的节点，清空其缓存
+    // Deleted node, clear its cache
     field.toDispose.push(
       Disposable.create(() => {
         this.cache.delete(field);
@@ -120,7 +120,7 @@ export class WorkflowVariableFacadeService {
   }
 
   /**
-   * 根据 keyPath 找到变量的外观
+   * Find the appearance of a variable according to keyPath
    * @param keyPath
    * @returns
    */
@@ -139,10 +139,10 @@ export class WorkflowVariableFacadeService {
   }
 
   /**
-   * @deprecated 变量销毁存在部分 Bad Case
-   * - 全局变量因切换 Project 销毁后，变量引用会被置空，导致变量引用失效
+   * @Deprecated Variable Destruction Partial Bad Case
+   * - After the global variable is destroyed due to the switch Project, the variable reference will be set empty, resulting in the invalidation of the variable reference
    *
-   * 监听变量删除
+   * Listen variable removal
    */
   listenKeyPathDispose(
     keyPath?: string[],
@@ -152,14 +152,14 @@ export class WorkflowVariableFacadeService {
     const facade = this.getVariableFacadeByKeyPath(keyPath, ctx);
 
     if (facade) {
-      // 所有在 keyPath 链路上的 Field
+      // All Fields on the keyPath Link
       return facade.onDispose(cb);
     }
 
     return Disposable.create(() => null);
   }
 
-  // 监听类型变化
+  // Monitor type change
   listenKeyPathTypeChange(
     keyPath?: string[],
     cb?: (v?: ViewVariableMeta | null) => void,
@@ -179,7 +179,7 @@ export class WorkflowVariableFacadeService {
     return Disposable.create(() => null);
   }
 
-  // 监听任意变量变化
+  // Monitor arbitrary variable changes
   listenKeyPathVarChange(
     keyPath?: string[],
     cb?: (v?: ViewVariableMeta | null) => void,
@@ -199,7 +199,7 @@ export class WorkflowVariableFacadeService {
     return Disposable.create(() => null);
   }
 
-  // 根据 Scope 获取 Scope 上所有的 VariableFacade
+  // Get all VariableFacades on Scope by Scope
   getVariableFacadesByScope(scope: Scope): WorkflowVariableFacade[] {
     return scope.output.variables
       .map(_variable => {

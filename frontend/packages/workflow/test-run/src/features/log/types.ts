@@ -18,7 +18,7 @@ import { type WorkflowLinkLogData } from '@/types';
 
 import { type LogType } from './constants';
 
-/** log 中的 value 可能值 */
+/** Possible values in the log */
 export type LogValueType =
   | string
   | null
@@ -27,7 +27,7 @@ export type LogValueType =
   | boolean
   | undefined;
 
-/** 通常的日志结构 */
+/** Normal log structure */
 export interface BaseLog {
   label: string;
   data: LogValueType;
@@ -37,7 +37,7 @@ export interface BaseLog {
 }
 
 /**
- * condition 的值
+ * Value of condition
  */
 export interface ConditionData {
   leftData: LogValueType;
@@ -51,7 +51,7 @@ export interface ConditionGroup {
   logicData: string;
 }
 
-/** condition 的日志结构 */
+/** Log structure for conditions */
 export interface ConditionLog {
   conditions: ConditionGroup[];
   type: LogType.Condition;
@@ -72,14 +72,14 @@ export interface FunctionCallLog {
 }
 
 /**
- * 输出的日志结构
+ * Output log structure
  */
 export interface OutputLog {
   label: string;
   data: LogValueType;
   copyTooltip?: string;
   type: LogType.Output;
-  /** 节点类型 */
+  /** Node type */
   nodeType: string;
   mockInfo?: {
     isHit: boolean;

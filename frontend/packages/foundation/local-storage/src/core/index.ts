@@ -37,8 +37,8 @@ class LocalStorageService extends EventEmitter {
     }, throttleWait);
     document.addEventListener('visibilitychange', () => {
       /**
-       * 页签进入后台后，通过操作其它页签，可能导致 #state 状态不是最新的
-       * 所以页签重新激活后需要同步一次 localStorage 的数据
+       * After the tab enters the background, by operating other tabs, the #state status may not be the latest
+       * So after the tab is reactivated, the data of localStorage needs to be synchronized once.
        */
       if (document.visibilityState === 'visible') {
         this.#initState();

@@ -21,8 +21,8 @@ export const transSliceContentOutput = (
   ignoreImg = false,
 ): string => {
   /**
-   * 1. 处理img标签
-   * 2. 删除多余的div/span/br标签
+   * 1. Handling img tags
+   * 2. Remove redundant div/span/br tags
    */
   const imgPattern = /<img.*?(?:>|\/>)/gi;
   const divSPattern = /<div[^>]*>/g;
@@ -60,10 +60,10 @@ export const transSliceContentInput = (content: string): string => {
 };
 
 export const transSliceContentInputWithSave = (content: string) => {
-  // 将 <br> 替换成 \n
+  // Replace < br > with\ n
   const contentWithNewLine = content.replace(/<br>/g, '\n');
 
-  // 将 <span> 替换为空
+  // Replace < span > with empty
   const finalContent = contentWithNewLine
     .replace(/<span>/g, '')
     .replace(/<\/span>/g, '');

@@ -88,11 +88,11 @@ describe('useBackground', () => {
       },
     );
 
-    // 更新 schema
+    // Update schema
     const newSchema = createMockSchema('#000000');
     rerender({ currentSchema: newSchema });
 
-    // 等待 debounce
+    // Waiting to debounce
     await vi.runAllTimers();
 
     expect(result.current.backgroundColor).toBe('#000000');

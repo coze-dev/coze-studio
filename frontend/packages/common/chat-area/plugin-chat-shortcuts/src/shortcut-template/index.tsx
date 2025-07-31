@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 快捷指令换起的模板组件
+// Template component for shortcut command replacement
 import { type FC, useMemo, useRef } from 'react';
 
 import { type ShortCutCommand } from '@coze-agent-ide/tool-config';

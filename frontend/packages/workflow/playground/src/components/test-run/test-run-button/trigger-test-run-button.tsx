@@ -15,7 +15,7 @@
  */
  
 /**
- * 触发器节点触发试运行的按钮
+ * The trigger node triggers the practice run button
  */
 import { useMemo, useState } from 'react';
 
@@ -63,23 +63,23 @@ export const TriggerTestRunButton: React.FC<
   } = execState;
 
   const [canceling, setCanceling] = useState(false);
-  /** triggerId 是从一个缓存 map 里面直接获取，不是响应式，组件初始化时不一定有 */
+  /** The triggerId is directly obtained from a cache map, not reactive, and may not be available when the component is initialized */
   const [innerTriggerId, setInnerTriggerId] = useState(
     props.triggerId ?? getTriggerId(workflowId),
   );
 
   /**
-   * 禁止试运行
-   * 1. 保存中的流程
-   * 2. 冻结中的流程
+   * No practice running
+   * 1. Saving process
+   * 2. Process in freeze
    */
   const disabled = useMemo(() => saving || !!frozen, [saving, frozen]);
 
   /**
-   * 可取消试运行
-   * 1. 当流程处于冻结状态，且是本 triggerId 触发的运行
-   * 2. 存在 executeId
-   * 当流程处于冻结态，并且冻结 id 等于本 triggerId，则可以通过本组件取消运行
+   * Cancel practice run
+   * 1. When the process is frozen and is triggered by this triggerId
+   * 2. Existence of executeId
+   * When the process is in a frozen state and the frozen id is equal to this triggerId, the execution can be cancelled through this component
    */
   const canCancel = useMemo(
     () => !!frozen && frozen === innerTriggerId && !!executeId,
@@ -94,7 +94,7 @@ export const TriggerTestRunButton: React.FC<
       floatLayoutService.open('problemPanel', 'bottom');
       return;
     }
-    /** 运行前更新一下 triggerId */
+    /** Update the triggerId before running. */
     const next = innerTriggerId ? innerTriggerId : getTriggerId(workflowId);
     if (innerTriggerId !== next && next) {
       setInnerTriggerId(next);

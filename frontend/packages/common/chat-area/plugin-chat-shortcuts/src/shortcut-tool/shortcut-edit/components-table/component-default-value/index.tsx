@@ -86,7 +86,7 @@ export const ComponentDefaultValue: FC<ComponentDefaultValueProps> = props => {
     );
   }
   if (type === 'upload') {
-    // 先置灰,后续放开上传默认值
+    // Grey out first, then release the upload default value.
     return <UploadField />;
     // return (
     //   <UploadDefaultValue

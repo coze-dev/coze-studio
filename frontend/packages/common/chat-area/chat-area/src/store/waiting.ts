@@ -27,11 +27,11 @@ import { type MessageIdStruct, type Message } from './types';
 export type WaitingStoreStateAction = WaitingState & WaitingAction;
 
 export interface Responding {
-  /** 原消息，即 reply_id */
+  /** The original message, the reply_id */
   replyId: string;
-  /** 回复的消息 message_id
-   * function call 执行区间：[function_call(index=n), tool_response(index=n+1)] tmd
-   * responding 区间：function call & type=answer not is_finish
+  /** Reply to the message message_id
+   * Function call execution interval: [function_call (index = n), tool_response (index = n + 1) ] tmd
+   * Responding interval: function call & type = answer not is_finish
    */
   response: {
     id: string;
@@ -44,38 +44,38 @@ export interface Responding {
 }
 
 export const enum WaitingPhase {
-  /** 常规流程,不含 suggestion */
+  /** Regular process, no suggestions */
   Formal = 'formal',
-  /** 生成 suggestion 中 */
+  /** Generating suggestions */
   Suggestion = 'suggestion',
 }
 
 export interface Waiting {
-  /** 问题 message_id */
+  /** Question message_id */
   replyId: string;
-  /** 问题 local_message_id */
+  /** Question local_message_id */
   questionLocalMessageId?: string;
   phase: WaitingPhase;
 }
 
 /**
- * 完整过程: send ->  ack --> function call -> tool response -> answer is_finish -> follow_up -> pullingStatus settled
+ * Complete process: send - > ack -- > function call - > tool response - > answer is_finish - > follow_up - > pullingStatus settled
  *           |_sending_|___________________waiting__phase:formal_______________|_______waiting__phase:suggestion_____|
  *                            |___________________responding___________________|
  */
 export interface WaitingState {
   /**
-   * 从开始发送消息到发送成功（接受到 ack）
+   * From start to send message to send successfully (received to ack)
    */
   sending: MessageIdStruct | null;
   /**
-   * waiting & !responding 则展示 [...] 加载中
-   * waiting 区间：[query sent, type=answer is_finish]
+   * Waiting &! responding shows [...] Loading
+   * Waiting interval: [query sent, type = answer is_finish]
    */
   waiting: Waiting | null;
   /**
-   * 正在生成回复中
-   * life: [接受到回复, 回复 is_finish]
+   * Generating reply now.
+   * Life: [Received reply, reply is_finish]
    */
   responding: Responding | null;
 }
@@ -89,7 +89,7 @@ interface WaitingAction {
   updateRespondingByImmer: (
     updater: (waitingState: WaitingState) => void,
   ) => void;
-  /** 注意如果需要响应式效果，需要在 useStore selector 里直接执行，否则不会触发 render */
+  /** Note that if you need a responsive effect, you need to execute it directly in the useStore selector, otherwise it will not trigger render. */
   getIsOnlyWaitingSuggestions: () => boolean;
   clearAllUnsettledUnconditionally: () => void;
   clearUnsettledByReplyId: (replyId: string) => void;
@@ -154,7 +154,7 @@ export const createWaitingStore = (mark: string) => {
           if (isAnswerFinishVerboseMessage(message)) {
             set(
               produce<WaitingState>(state => {
-                // 上面检查过了，不会走到这里
+                // It has been checked above, and it will not go here.
                 if (!state.waiting) {
                   throw new Error('is not in waiting');
                 }
@@ -242,12 +242,12 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
       return;
     }
 
-    // 只有 tool_response 为异常(中断场景返回第一条为tool_response，直接return即可)
+    // Only tool_response is an exception (interrupt scenario returns the first tool_response, just return directly)
     if (message.type === 'tool_response') {
       return;
     }
 
-    // 录入
+    // Enter
     state.responding = {
       replyId: message.reply_id,
       response: [getResponse(message)],
@@ -263,13 +263,13 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
     return;
   }
 
-  // answer结束、中断finish包都终止回复状态
+  // Answer end, interrupt finish package terminates reply state
   if (isAllFinish) {
     state.responding = null;
     return;
   }
 
-  // 处理 answer 未完成
+  // Processing answer not completed
   if (message.type === 'answer') {
     const record = findRespondRecord(message, responding.response);
     if (!record) {
@@ -308,14 +308,14 @@ const handleToolResponseMessage = ({
   responding: Responding;
   message: Message;
 }) => {
-  // TODO: 暂时都按照普通插件展示loading
+  // TODO: Temporarily display loading according to ordinary plugins.
   handleNormalPluginMessage({ responding, message });
-  // // 插件相关的消息
+  // //plugin related news
   // if (isNormalPlugin(message)) {
   //   handleNormalPluginMessage({ responding, message });
   //   return;
   // }
-  // // 3、流式插件结束
+  // //3. End of streaming plugin
   // if (isStreamPluginFinish(message)) {
   //   handleStreamPluginMessage({ responding, message });
   // }

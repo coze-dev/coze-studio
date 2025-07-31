@@ -19,33 +19,33 @@ import {
   type OperateType,
 } from '@coze-workflow/base/api';
 
-/** 流程提交历史列表组件 */
+/** Process Submission History List Component */
 export interface WorkflowCommitListProps {
   className?: string;
   spaceId: string;
   workflowId: string;
-  /** 操作类型 */
+  /** operation type */
   type: OperateType;
-  /** 只读模式, 只读历史卡片不可点, 不影响 action */
+  /** Read-only mode, read-only history cards cannot be clicked, does not affect action */
   readonly?: boolean;
-  /** 每页拉取数量, 默认 10 */
+  /** Number of pulls per page, default 10 */
   limit?: number;
-  /** 当前选中项 */
+  /** current selection */
   value?: string;
-  /** 是否展示当前节点 */
+  /** Whether to display the current node */
   showCurrent?: boolean;
-  /** 是否支持发布到 PPE 功能 */
+  /** Whether to support publishing to PPE function */
   enablePublishPPE?: boolean;
-  /** 隐藏 commitId (commitId可读性较差，非专业用户不需要感知) */
+  /** Hide the commitId (the commitId is less readable, and non-professional users do not need to perceive it) */
   hideCommitId?: boolean;
-  /** 卡片点击 */
+  /** Card click */
   onItemClick?: (item: VersionMetaInfo) => void;
-  /** 恢复到某版本点击 */
+  /** Restore to a certain version Click */
   onResetToCommit?: (item: VersionMetaInfo) => void;
-  /** 查看某版本点击 */
+  /** To view a version click */
   onShowCommit?: (item: VersionMetaInfo) => void;
-  /** 发布到多环境点击 */
+  /** Publish to Multi-environment Click */
   onPublishPPE?: (item: VersionMetaInfo) => void;
-  /** 点击[现在] */
+  /** Click [Now] */
   onCurrentClick?: (currentKey: string) => void;
 }

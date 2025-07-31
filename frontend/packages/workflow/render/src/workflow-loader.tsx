@@ -29,16 +29,16 @@ export const WorkflowLoader: React.FC = () => {
   const loggerService = useService<LoggerService>(LoggerService);
   useMemo(() => renderRegistry.init(), [renderRegistry]);
   useLayoutEffect(() => {
-    // 加载数据
+    // load data
     doc.load();
-    // 销毁数据
+    // Destroy data
     return () => doc.dispose();
   }, [doc]);
 
   useEffect(() => {
     const disposable = loggerService.onLogger(({ event }) => {
       if (event === LoggerEvent.CANVAS_TTI) {
-        // 上报到 coze
+        // Report to coze
         reportTti();
       }
     });

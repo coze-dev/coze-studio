@@ -71,7 +71,7 @@ export const TableUpload = <
   const fetchTableInfo = useFetchTableSchemaInfo<T>(useStore);
 
   useEffect(() => {
-    // 删除上传文件时，同步删除表格源数据
+    // When deleting an uploaded file, delete the table source data synchronously
     if (!unitList.length) {
       setOriginTableData({});
       setTableData({});

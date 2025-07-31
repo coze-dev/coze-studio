@@ -27,7 +27,7 @@ import { type NodeData, WorkflowNodeData } from '../entity-datas';
  *
  * @param node
  * @param data
- * 给基础类型节点设置节点数据，不要随意修改
+ * Set the node data for the basic type node, do not modify it at will
  */
 export const addBasicNodeData = (
   node: FlowNodeEntity,
@@ -39,7 +39,7 @@ export const addBasicNodeData = (
   );
   const nodeData = nodeDataEntity.getNodeData<keyof NodeData>();
 
-  // 在部分节点的 formMeta 方法，会重复执行，因此这里加个检测
+  // The formMeta method on some nodes will be executed repeatedly, so add a check here
   if (!nodeData && meta) {
     nodeDataEntity.setNodeData<BasicStandardNodeTypes>({
       icon: meta.icon,

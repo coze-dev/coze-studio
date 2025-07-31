@@ -32,23 +32,23 @@ import s from './index.module.less';
 
 interface MenuItem {
   /**
-   * 如果是string，需传入starling key，并且会由div包一层
-   * 如果是function，则自定义label的实现，active表示是否是选中态
+   * If it is a string, you need to pass in the starling key, and it will be wrapped by the div layer.
+   * If it is a function, the implementation of the custom label, active indicates whether it is selected
    */
   label: string | ((active: boolean) => React.ReactNode);
-  /** label 外的 badge，未来再扩展配置项 */
+  /** The badge outside the label, and the configuration item will be expanded in the future */
   badge?: string;
   app: SpaceAppEnum;
   /**
-   * Q：为什么不叫 visible？FG 要取反，filter() 也要取反，很麻烦
-   * A：为了兼容旧配置，缺省时认定为 visible。避免合码时无冲突 导致忽略掉新增配置的问题。
+   * Q: Why is it not called visible? FG should be reversed, and filter () should also be reversed, which is very troublesome.
+   * A: In order to be compatible with the old configuration, it is recognized as visible by default. To avoid no conflicts when combining codes, the problem of new configurations is ignored.
    */
   invisible?: boolean;
-  /** 目前（24.05.21）没发现用处，怀疑是以前的功能迭代掉了，@huangjian 说先留着 */
+  /** At present (24.05.21) no use is found, it is suspected that the previous function iteration is lost, @huangjian said to keep it first */
   icon?: ReactNode;
-  /** 目前（24.05.21）没发现用处，怀疑是以前的功能迭代掉了，@huangjian 说先留着 */
+  /** At present (24.05.21) no use is found, it is suspected that the previous function iteration is lost, @huangjian said to keep it first */
   selectedIcon?: ReactNode;
-  /** 自动化打标 */
+  /** Automatic marking */
   e2e?: string;
 }
 

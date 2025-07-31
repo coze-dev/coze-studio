@@ -28,7 +28,7 @@ import { knowledgeConfig } from '../../../../../src/save-manager/auto-save/bot-s
 import { chatBackgroundConfig } from '../../../../../src/save-manager/auto-save/bot-skill/configs/chat-background';
 import { registers } from '../../../../../src/save-manager/auto-save/bot-skill/configs';
 
-// 模拟依赖
+// simulated dependency
 vi.mock(
   '../../../../../src/save-manager/auto-save/bot-skill/configs/workflows',
   () => ({
@@ -101,7 +101,7 @@ vi.mock(
 
 describe('bot-skill configs', () => {
   it('应该正确注册所有配置', () => {
-    // 验证 registers 数组包含所有配置
+    // Verify that the registers array contains all configurations
     expect(registers).toContain(pluginConfig);
     expect(registers).toContain(chatBackgroundConfig);
     expect(registers).toContain(onboardingConfig);
@@ -113,7 +113,7 @@ describe('bot-skill configs', () => {
     expect(registers).toContain(workflowsConfig);
     expect(registers).toContain(voicesInfoConfig);
 
-    // 验证 registers 数组长度
+    // Verify the length of the registers array
     expect(registers.length).toBe(10);
   });
 

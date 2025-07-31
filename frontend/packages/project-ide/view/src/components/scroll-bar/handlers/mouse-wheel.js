@@ -117,7 +117,7 @@ export default function (i) {
   function mousewheelHandler(e) {
     const [deltaX, deltaY] = getDeltaFromEvent(e);
 
-    // FIXME: mousewheel 滚动的时候有问题
+    // FIXME: There is a problem with the mousewheel rolling
     if (shouldBeConsumedByChild(e.target, deltaX, deltaY)) {
       return;
     }

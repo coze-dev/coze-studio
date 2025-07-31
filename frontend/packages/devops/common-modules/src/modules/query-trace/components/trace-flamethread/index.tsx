@@ -56,7 +56,7 @@ const TraceFlamethread: FC<TraceFlamethreadProps> = props => {
     onClick,
   } = props;
 
-  // 初始化flamethreadData
+  // Initialize flamethreadData
   useEffect(() => {
     if (dataType === DataSourceTypeEnum.SpanData && spanData) {
       if (spanData?.length === 0 && flamethreadData.length === 0) {

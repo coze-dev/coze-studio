@@ -24,9 +24,9 @@ import { EditorView } from '@codemirror/view';
 import { cozeLight } from './themes/coze-light';
 import { cozeDark } from './themes/coze-dark';
 
-// 注册语言
+// Registration language
 languages.register('json', {
-  // mixLanguages 用于解决 「插值也使用了括号，导致无法正确高亮」的问题
+  // MixLanguages is used to solve the problem of "interpolation also uses parentheses, which makes it impossible to highlight correctly"
   language: mixLanguages({
     outerLanguage: json.language,
   }),
@@ -35,7 +35,7 @@ languages.register('json', {
 
 languages.register('shell', shell);
 
-// 注册主题
+// Register a topic
 themes.register('coze-light', cozeLight);
 themes.register('coze-dark', cozeDark);
 

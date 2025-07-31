@@ -29,7 +29,7 @@ import { type Options } from '../types';
 import { type Contexts, HOOK } from '../context';
 
 /**
- * 提供统一 api 入口
+ * Provide unified API entry
  */
 export class PkgEntryPlugin implements IPlugin {
   private options: Options;
@@ -52,7 +52,7 @@ export class PkgEntryPlugin implements IPlugin {
     );
     this.funcs.set(
       relativePath,
-      // 只支持单 service
+      // Only single service supported
       meta[0].service,
     );
     return ctx;

@@ -45,13 +45,13 @@ const questionOptionsFieldName = 'questionParams.options.*.name';
 const questionDynamicFieldName = 'questionParams.dynamic_option';
 
 export const QUESTION_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <FormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onBlur,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
     'inputParameters.*.name': createNodeInputNameValidate({
@@ -98,7 +98,7 @@ export const QUESTION_FORM_META: FormMetaV2<FormData> = {
     'questionOutputs.extractOutput': outputTreeMetaValidator,
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     'questionParams.answer_type': [
       {
@@ -126,9 +126,9 @@ export const QUESTION_FORM_META: FormMetaV2<FormData> = {
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

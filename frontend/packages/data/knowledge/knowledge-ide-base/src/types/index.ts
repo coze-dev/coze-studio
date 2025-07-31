@@ -29,15 +29,15 @@ export enum ActionType {
 
 export enum FilterPhotoType {
   /**
-   * 全部
+   * all
    */
   All = 'All',
   /**
-   * 已标注
+   * marked
    */
   HasCaption = 'HasCaption',
   /**
-   * 未标注
+   * unmarked
    */
   NoCaption = 'NoCaption',
 }

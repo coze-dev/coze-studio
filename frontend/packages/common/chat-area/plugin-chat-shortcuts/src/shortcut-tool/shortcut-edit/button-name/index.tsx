@@ -53,7 +53,7 @@ export const ButtonName: FC<ButtonNameProps> = props => {
           noLabel
           fieldClassName="!pb-0"
           onLoadList={list => {
-            // 如果是编辑状态，不设置默认icon, 新增下默认选中列表第一个icon
+            // If it is an editing state, do not set the default icon, and add the first icon in the default selected list.
             const isEdit = !!editedShortcut.command_id;
             if (isEdit) {
               return;

@@ -37,10 +37,10 @@ export const SingleModeToolPaneList: React.FC<SingleModeToolPaneListProps> = ({
   }
   return (
     <DebugToolList showBackground={showBackground}>
-      {/* 任务-调试入口 */}
+      {/* Task - Debugging Entry */}
       <SkillsPane />
 
-      {/* memory查看数据入口 */}
+      {/* Memory view data entry */}
       <MemoryToolPane />
     </DebugToolList>
   );

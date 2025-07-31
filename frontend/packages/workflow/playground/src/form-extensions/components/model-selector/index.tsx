@@ -43,8 +43,8 @@ export const ModelSelector: React.FC<ModelSelectProps> = ({
   models,
   readonly,
 }) => {
-  // 专业版有项目维度区分class，modal_class 与 modal_class_name存在一对多的情况，因此统一以model_class_name做分组
-  // 以 modal_class_name 首次出现的顺序进行排序
+  // The professional version has project dimensions to distinguish classes, modal_class and modal_class_name have one-to-many situations, so they are grouped by model_class_name
+  // Sort by modal_class_name first appearance
   const modelClassSortList = uniq(models.map(i => i.model_class_name ?? ''));
 
   const modelClassGroup = groupBy(models, model => model.model_class_name);
@@ -53,7 +53,7 @@ export const ModelSelector: React.FC<ModelSelectProps> = ({
 
   const someHasEndPointName = models.some(model => model?.endpoint_name);
 
-  // 搜索规则: 模型名称/接入点名称包含关键词(不区分大小写)
+  // Search rule: Model name/access point name contains keywords (case insensitive)
   const filterOption = (model: Model) => {
     const sugInput = inputValue.toUpperCase();
     return (
@@ -88,9 +88,9 @@ export const ModelSelector: React.FC<ModelSelectProps> = ({
       };
     })
     .map(group => (
-      // 修改key原因：详见https://semi.design/zh-CN/input/select - 分组模块
-      // 1. 分组能力只能使用jsx
-      // 2. 若Select的children需要动态更新，OptGroup上的key也需要进行更新，否则Select无法识别
+      // Reason for modifying key: See https://semi.design/zh-CN/input/select - Grouping Module for details
+      // 1. The grouping ability can only be used with jsx.
+      // 2. If the selected children need to be dynamically updated, the key on the OptGroup also needs to be updated, otherwise Select cannot be recognized
       <Select.OptGroup key={`${inputValue}-${group.label}`} label={group.label}>
         {group.children?.map(option => (
           <Select.Option value={option.value} key={option.value}>

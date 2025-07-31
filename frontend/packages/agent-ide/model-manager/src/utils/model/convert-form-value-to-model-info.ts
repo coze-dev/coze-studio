@@ -23,7 +23,7 @@ export const convertFormValueToModelInfo = (
   values: Record<string, unknown>,
 ): ModelInfo => {
   const { HistoryRound, ContextContentType, ...rest } = values;
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 不适用这个 case
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- not applicable to this case
   const ShortMemPolicy: ShortMemPolicy = {};
 
   if (typeof HistoryRound === 'number') {

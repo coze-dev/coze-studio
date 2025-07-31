@@ -51,10 +51,10 @@ export class SchemaExtractor {
   }
   public extract(config: SchemaExtractorConfig): SchemaExtracted[] {
     this.bindParser(config);
-    // 1. 遍历schema中node数组，对每个node做处理
+    // 1. Traverse the node array in the schema and process each node
     return this.schema.nodes
       .map((node: WorkflowNodeJSON): SchemaExtracted | null => {
-        // 2. 获取节点对应的配置
+        // 2. Get the configuration corresponding to the node
         const nodeConfigs: SchemaExtractorNodeConfig[] = config[node.type];
         if (!nodeConfigs) {
           return null;
@@ -76,13 +76,13 @@ export class SchemaExtractor {
         extractedConfig: Record<string, unknown>,
         nodeConfig: SchemaExtractorNodeConfig,
       ): Record<string, unknown> => {
-        // 3. 根据节点配置路径获取属性值
+        // 3. Get the attribute value according to the node configuration path
         const rawData: unknown = this.extractProperties(
           nodeData,
           nodeConfig.path,
         );
         if (nodeConfig.parser && typeof nodeConfig.parser === 'function') {
-          // 4. 使用解析器对属性值进行转换
+          // 4. Use the parser to convert the property value
           extractedConfig[nodeConfig.name] = nodeConfig.parser(rawData);
         }
         return extractedConfig;
@@ -121,7 +121,7 @@ export class SchemaExtractor {
     const flattenNodeJSONs: WorkflowNodeJSON[] = [...rootNodes];
     const flattenEdgeJSONs: WorkflowEdgeJSON[] = [...rootEdges];
 
-    // 如需支持多层结构，以下部分改为递归
+    // To support multi-layer structures, the following section is changed to recursive
     rootNodes.forEach(nodeJSON => {
       const { blocks, edges } = nodeJSON;
       if (blocks) {

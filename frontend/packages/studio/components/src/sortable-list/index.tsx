@@ -87,7 +87,7 @@ export const SortableList = <TData extends object>({
           enabled={enabled}
           direction={direction}
           /**
-           * 原始数组 [1, 2, target, 4, 5, source, 7, 8]
+           * Raw array [1, 2, target, 4, 5, source, 7, 8]
            * before = true  j==> [1,2, source, target, 4, 5, 7, 8]
            * before = false ==> [1,2, target, source, 4, 5, 7, 8]
            **/
@@ -101,7 +101,7 @@ export const SortableList = <TData extends object>({
               newList.findIndex(target => getId(target) === targetId) +
               (before ? 0 : 1);
             if (sourceIndex === targetIndex) {
-              // 前后 index 相同的情况不触发 onChange 避免频繁 rerender
+              // Do not trigger onChange if the index is the same before and after to avoid frequent rerender
               return;
             }
             sourceItem && newList.splice(targetIndex, 0, sourceItem);

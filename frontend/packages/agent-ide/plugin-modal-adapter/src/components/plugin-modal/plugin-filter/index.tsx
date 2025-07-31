@@ -48,7 +48,7 @@ export const PluginFilter: React.FC<PluginFilterProps> = ({
   const spaceType = useSpaceStore(store => store.space.space_type);
   const defaultId = getDefaultPluginCategory().id;
   const onChangeAfterDiff = (freshType: typeof type) => {
-    // 如果是在搜索，把搜索置空
+    // If you are searching, leave the search blank
     if (isSearching) {
       onChange(freshType);
       return;

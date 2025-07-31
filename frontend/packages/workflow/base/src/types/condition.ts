@@ -26,7 +26,7 @@ export enum ConditionLogicDTO {
 
 export type ConditionOperator =
   | 'EQUAL' // "="
-  | 'NOT_EQUAL' // "<>" 或 "!="
+  | 'NOT_EQUAL' // "< >" or "! ="
   | 'GREATER_THAN' // ">"
   | 'LESS_THAN' // "<"
   | 'GREATER_EQUAL' // ">="
@@ -35,7 +35,7 @@ export type ConditionOperator =
   | 'NOT_IN' // "NOT IN"
   | 'IS_NULL' // "IS NULL"
   | 'IS_NOT_NULL' // "IS NOT NULL"
-  | 'LIKE' // "LIKE" 模糊匹配字符串
-  | 'NOT_LIKE' // "NOT LIKE" 反向模糊匹配
-  | 'BE_TRUE' // "BE TRUE" 布尔值为 true
-  | 'BE_FALSE'; // "BE FALSE" 布尔值为 false
+  | 'LIKE' // "LIKE" fuzzy match string
+  | 'NOT_LIKE' // "NOT LIKE" inverse fuzzy match
+  | 'BE_TRUE' // "BE TRUE" is true
+  | 'BE_FALSE'; // "BE FALSE" Boolean value false

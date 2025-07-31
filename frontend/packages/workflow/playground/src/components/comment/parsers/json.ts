@@ -23,7 +23,7 @@ import {
 } from '../constant';
 
 export namespace CommentEditorJSONParser {
-  // 处理单个节点
+  // Processing a single node
   const processNode = (node: CommentEditorBlock): CommentEditorBlock => {
     if ('text' in node && !node.type) {
       return {
@@ -42,11 +42,11 @@ export namespace CommentEditorJSONParser {
     return node as CommentEditorBlock;
   };
 
-  // 主函数：处理整个 schema
+  // Main function: handle the entire schema
   const addLeafType = (schema: CommentEditorBlock[]): CommentEditorBlock[] =>
     schema.map(processNode);
 
-  /** JSON 转换为 Schema */
+  /** Convert JSON to Schema */
   export const from = (value?: string): CommentEditorBlock[] | undefined => {
     if (!value || value === '') {
       return CommentEditorDefaultBlocks as CommentEditorBlock[];
@@ -60,7 +60,7 @@ export namespace CommentEditorJSONParser {
     }
   };
 
-  /** schema 转换为 JSON */
+  /** Schema to JSON */
   export const to = (schema: CommentEditorBlock[]): string | undefined => {
     try {
       const value = JSON.stringify(addLeafType(schema));

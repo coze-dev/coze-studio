@@ -27,7 +27,7 @@ const computePath = (path?: string[], name?: string) =>
   [...(path || []), name].filter((i): i is string => Boolean(i));
 
 /**
- * 递归 Field
+ * Recursive Field
  */
 const RecursionField: React.FC<RecursionFieldProps> = ({ name, schema }) => {
   const renderProperties = () => {

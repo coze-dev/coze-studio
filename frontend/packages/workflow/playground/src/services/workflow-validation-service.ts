@@ -111,7 +111,7 @@ const formatSchemaError2WorkflowError = (data?: ValidateTreeInfo[]) => {
 };
 
 /**
- * Workflow 执行状态校验服务
+ * Workflow Execution Status Validation Service
  */
 @injectable()
 export class WorkflowValidationService implements ValidationService {
@@ -123,15 +123,15 @@ export class WorkflowValidationService implements ValidationService {
 
   store = createStore();
 
-  /** 已校验节点 */
+  /** Verified node */
   public validatedNodeMap: Record<string, boolean> = {};
 
-  /** 清除已校验节点状态 */
+  /** Clear Verified Node State */
   public clearValidatedNodeMap() {
     this.validatedNodeMap = {};
   }
 
-  /** 校验节点 */
+  /** check node */
   public async validateNode(node: WorkflowNodeEntity): Promise<ValidateResult> {
     const nodeErrorResult = this.validateNodeError(node);
     const formValidateResult = await this.validateForm(node);
@@ -148,7 +148,7 @@ export class WorkflowValidationService implements ValidationService {
     return this.mergeValidateResult(...validateResults);
   }
 
-  /** 校验工作流 */
+  /** validation workflow */
   public async validateWorkflow(): Promise<ValidateResult> {
     const nodes = this.document.getAssociatedNodes();
     const results: ValidateResult[] = await Promise.all(
@@ -157,7 +157,7 @@ export class WorkflowValidationService implements ValidationService {
     return this.mergeValidateResult(...results);
   }
 
-  /** 合并校验结果 */
+  /** merge validation result */
   private mergeValidateResult(...result: ValidateResult[]): ValidateResult {
     const hasError = result.some(item => item.hasError);
 
@@ -183,7 +183,7 @@ export class WorkflowValidationService implements ValidationService {
     };
   }
 
-  /** 校验节点错误 */
+  /** check node error */
   private validateNodeError(
     node: WorkflowNodeEntity,
   ): ValidateResult | undefined {
@@ -206,7 +206,7 @@ export class WorkflowValidationService implements ValidationService {
     };
   }
 
-  /** 校验节点表单 */
+  /** Verify Node Form */
   private async validateForm(
     node: WorkflowNodeEntity,
   ): Promise<ValidateResult | undefined> {
@@ -217,7 +217,7 @@ export class WorkflowValidationService implements ValidationService {
       return;
     }
 
-    // 节点表单校验
+    // Node Form Validation
     const feedbacks = await formData.formModel.validateWithFeedbacks();
     const nodeFormError = feedbacks
       .filter(
@@ -227,7 +227,7 @@ export class WorkflowValidationService implements ValidationService {
       )
       .map(feedback => {
         let feedbackText = feedback.feedbackText || '';
-        // output的feedbacks需要解析, 暂时没有好的办法判断不同的feedbacks
+        // The output feedbacks need to be parsed, and there is no good way to judge different feedbacks for the time being.
         try {
           const parsedError = JSON.parse(feedbackText);
           const { issues, name } = parsedError;
@@ -258,7 +258,7 @@ export class WorkflowValidationService implements ValidationService {
     return formValidateResult;
   }
 
-  /** 校验子画布端口 */
+  /** check subcanvas port */
   private validateSubCanvasPort(
     node: WorkflowNodeEntity,
   ): ValidateResult | undefined {
@@ -304,7 +304,7 @@ export class WorkflowValidationService implements ValidationService {
     } else {
       inputPort.hasError = false;
     }
-    // 所有叶子结点都是结束节点
+    // All leaf nodes are end nodes
     const isAllLeafEnds = canvasNode.collapsedChildren
       .filter(
         childNode =>
@@ -340,7 +340,7 @@ export class WorkflowValidationService implements ValidationService {
   }
 
   /**
-   * 校验异常设置端口
+   * check exception setting port
    */
   private validateSettingOnErrorPort(
     node: WorkflowNodeEntity,
@@ -388,7 +388,7 @@ export class WorkflowValidationService implements ValidationService {
     };
   }
 
-  /** 校验画布 schema */
+  /** Validation canvas schema */
   public async validateSchema() {
     const json = await this.document.toJSON();
     const params =
@@ -412,7 +412,7 @@ export class WorkflowValidationService implements ValidationService {
     };
   }
 
-  /** 新版校验画布 schema */
+  /** New validation canvas schema */
   public async validateSchemaV2() {
     const params: ValidateTreeRequest = {
       workflow_id: this.globalState.workflowId,
@@ -458,7 +458,7 @@ export class WorkflowValidationService implements ValidationService {
   }
   isLineError(fromId: string, toId?: string) {
     const errors = this.store.getState().errorsV2;
-    /** 仅查找本 workflow 的线条错误 */
+    /** Find only line errors for this workflow */
     const myErrors = errors[this.globalState.workflowId]?.errors;
     if (!myErrors) {
       return false;
@@ -470,7 +470,7 @@ export class WorkflowValidationService implements ValidationService {
     return !!lineError;
   }
 
-  /** 非响应式，慎用 */
+  /** Non-responsive, use with caution */
   get validating() {
     return this.store.getState().validating;
   }

@@ -30,7 +30,7 @@ import { MergeGroupsField } from '../merge-groups-field';
 import { type VariableMergeFormData } from '../../types';
 
 /**
- * 变量聚合表单
+ * variable aggregation form
  * @param param0
  * @returns
  */

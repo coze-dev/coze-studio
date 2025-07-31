@@ -17,7 +17,7 @@
 import EventEmitter from 'eventemitter3';
 
 interface BusinessData<T> {
-  code: number; // 0: 成功， 其他： 错误码，业务tidying
+  code: number; // 0: success, others: error codes, business tidying
   data?: T;
   message?: string;
 }

@@ -29,7 +29,7 @@ export interface initialConfigStore {
   }) => Promise<void>;
 }
 
-// 用来存储静态状态，非初始化场景下，仅只读不可修改
+// Used to store static state, in non-initialization scenarios, read-only and not modifiable
 export const useInitialConfigStore = create<initialConfigStore>()(set => ({
   onCancel: noop,
   botId: '',

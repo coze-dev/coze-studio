@@ -57,7 +57,7 @@ const allVerboseTypesMap: Record<VerboseMsgType, true> = {
 };
 
 /**
- * 是否是可以识别的 verbose 消息
+ * Is it a recognized verbose message?
  */
 export const isIdentifiedVerboseMessage = (value: unknown) =>
   (isVerboseContent(value) && allVerboseTypesMap[value.msg_type]) ||
@@ -65,9 +65,9 @@ export const isIdentifiedVerboseMessage = (value: unknown) =>
 
 /**
  * !important
- * 除了显示传入的 ignoreMessageConfigList 外
- * 隐含了对所有不能识别的 verbose 消息的处理
- * 一定要注意
+ * In addition to displaying incoming ignoreMessageConfigList
+ * Implicit handling of all unrecognized verbose messages
+ * Be sure to pay attention
  */
 export const getShouldDropMessage = (
   ignoreMessageConfigList: ChatAreaConfigs['ignoreMessageConfigList'],
@@ -84,7 +84,7 @@ export const getShouldDropMessage = (
   }
 
   for (const ignoreConfig of ignoreMessageConfigList) {
-    // 这里面是判断 content 是否符合对应的 verbose 消息, 需要前置先保证是 verbose 消息
+    // This is to determine whether the content conforms to the corresponding verbose message, which needs to be guaranteed to be a verbose message first
     if (checkIgnoreMessageFuncMap[ignoreConfig](parsedContent, message)) {
       return true;
     }

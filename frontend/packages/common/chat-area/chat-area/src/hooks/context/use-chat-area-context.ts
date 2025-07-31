@@ -21,7 +21,7 @@ import { StoreSetContext } from '../../context/store-set';
 import { NullableChatAreaContext } from '../../context/chat-area-context/context';
 
 /**
- * 内部使用, 这个千万不要对外导出
+ * For internal use, this must not be exported externally.
  */
 export const useChatAreaContext = () => {
   const chatAreaContext = useContext(NullableChatAreaContext);
@@ -34,7 +34,7 @@ export const useChatAreaContext = () => {
 };
 
 /**
- * only for 内部使用
+ * Only for internal use
  */
 export const useChatAreaStoreSet = () => {
   const storeSetContext = useContext(StoreSetContext);

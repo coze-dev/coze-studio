@@ -26,7 +26,7 @@ export const Placeholder: FC<RenderPlaceholderProps> = props => {
       className="workflow-comment-editor-placeholder text-[12px] text-[var(--coz-fg-dim)] overflow-hidden absolute pointer-events-none w-full select-none decoration-clone"
       style={
         {
-          // 覆盖 slate 内置样式
+          // Override slate built-in style
         }
       }
     >

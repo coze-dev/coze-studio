@@ -132,7 +132,7 @@ export const ChatFlowTestsetEditForm: React.FC<TestsetEditFormProps> = ({
           ipt.value = val;
         }
 
-        // 清除 object/array的空值，包括空字符串
+        // Clears null values of objects/arrays, including empty strings
         if (
           !val &&
           (ipt.type === FormItemSchemaType.LIST ||
@@ -141,7 +141,7 @@ export const ChatFlowTestsetEditForm: React.FC<TestsetEditFormProps> = ({
           ipt.value = undefined;
         }
 
-        // bool 类型 需要将枚举转为布尔值
+        // Bool type, you need to convert the enumeration to a boolean
         if (ipt.type === FormItemSchemaType.BOOLEAN) {
           ipt.value = transTestsetBoolSelect2Bool(
             ipt.value as TestsetFormValuesForBoolSelect,
@@ -184,7 +184,7 @@ export const ChatFlowTestsetEditForm: React.FC<TestsetEditFormProps> = ({
   //     });
 
   //     formRef.current?.setValues(formValues);
-  //     // 设置值之后再校验一次
+  //     //Check again after setting the value
   //     formRef.current?.validate(validateFields);
   //   },
   //   [formRef],

@@ -22,7 +22,7 @@ interface Extra {
 }
 
 /**
- * 根据执行结果判断是不是输出的变量
+ * Determine whether it is an output variable according to the execution result
  * @param ref
  * @param result
  * @returns

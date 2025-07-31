@@ -41,7 +41,7 @@ import s from './node-form-section.module.less';
 
 interface NodeFormSectionProps {
   schema: NodeFormSchema;
-  /** AI生成中 */
+  /** AI is being generated */
   autoGenerating?: boolean;
   className?: string;
   style?: CSSProperties;
@@ -49,7 +49,7 @@ interface NodeFormSectionProps {
 
 const { Section, InputNumber } = Form;
 
-/** 整数类型表单精度 */
+/** integer type form precision */
 const INTEGER_PRECISION = 0.1;
 
 export function NodeFormSection({
@@ -62,7 +62,7 @@ export function NodeFormSection({
 
   const renderSectionTitle = () => {
     let sectionName = schema.component_name;
-    // 目前只有start和variable两种节点
+    // Currently only two nodes are start and variable
     switch (schema.component_type) {
       case ComponentType.CozeStartNode:
         sectionName = I18n.t('workflow_testset_start_node');

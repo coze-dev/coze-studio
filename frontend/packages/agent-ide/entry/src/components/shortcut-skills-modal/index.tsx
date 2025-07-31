@@ -106,7 +106,7 @@ export function SkillsModal({
   });
 
   const imageFlowModalParts = useWorkflowModalParts({
-    // 如果是仅添加一次/或者添加多次，清空默认选中
+    // If it is added only once/or multiple times, clear the default selection.
     workFlowList: imageFlowList,
     onWorkFlowListChange: onImageFlowListChange,
     flowMode: WorkflowMode.Imageflow,
@@ -215,7 +215,7 @@ export function SkillsModal({
   );
 }
 
-// TODO: 后续添加返会新增skill需要用到
+// TODO: Follow-up additions will add new skills that need to be used
 // export const useSkillsModal = (props: SkillsModalProps) => {
 //   const pageJumpResp = usePageJumpResponse(PageType.BOT);
 //   // const [visible, setVisible] = useState(

@@ -36,7 +36,7 @@ const getMixContent = (list: MixMessageContent['item_list']) => {
       if (item.type === ContentType.Image) {
         return `[${I18n.t('editor_toolbar_image')}]`;
       } else if (item.type === ContentType.File) {
-        // TODO: jq - 如果后期支持多个的时候 可能会有问题
+        // TODO: jq - If multiple are supported later, there may be problems.
         return item?.file?.file_name ? `[${item?.file?.file_name}]` : '';
       } else if (item.type === ContentType.Text) {
         return item.text;
@@ -46,12 +46,12 @@ const getMixContent = (list: MixMessageContent['item_list']) => {
   return info?.join(' ');
 };
 
-// 仅对 message_type === plugin_async 的 answer 进行使用引用样式
+// Use reference styles only for answers message_type === plugin_async
 export const PluginAsyncQuote: FC<PluginAsyncQuoteProps> = props => {
   const { message } = props;
   const replyMessage = message?.reply_message;
 
-  // 只有回复的消息是文本的才添加引用
+  // Add citations only if the reply message is text.
   if (
     !(
       message?.source === messageSource.AsyncResult &&
@@ -62,7 +62,7 @@ export const PluginAsyncQuote: FC<PluginAsyncQuoteProps> = props => {
     return null;
   }
 
-  // 引用的原始消息是 图片 或者文件 采用固定形式
+  // The original message quoted is a picture, or file, in a fixed form
   const isImage = replyMessage?.content_type === ContentType.Image;
   const isFile = replyMessage?.content_type === ContentType.File;
   const isMix = replyMessage?.content_type === ContentType.Mix;

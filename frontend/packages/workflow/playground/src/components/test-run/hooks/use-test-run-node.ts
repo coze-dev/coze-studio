@@ -42,7 +42,7 @@ export const useTestRunNode = node => {
 
   const { activeId, closeSideSheet } = useInnerSideSheetStoreShallow();
   const testRunNode = async () => {
-    // 尝试关闭打开的侧拉窗，下面那个 closeBizIDE 不能删，因为 closeBizIDE 是异步的
+    // Try closing the open side window. The closeBizIDE below cannot be deleted because closeBizIDE is asynchronous.
     closeSideSheet(activeId as string);
 
     setLoading(true);
@@ -50,11 +50,11 @@ export const useTestRunNode = node => {
       sendTeaEvent(EVENT_NAMES.workflow_test_node, {
         type: node.flowNodeType,
       });
-      /** code ide 关闭之后可以执行 test run */
+      /** After the code ide is closed, the test run can be performed */
       if (!(await closeBizIDE())) {
         return;
       }
-      // 先关闭上一次试运行的结果
+      // The result of closing a practice run first
       runService.clearTestRun();
       const { hasError } = await validationService.validateNode(node);
       if (hasError) {

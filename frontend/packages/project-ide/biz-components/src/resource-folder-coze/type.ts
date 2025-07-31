@@ -28,7 +28,7 @@ import {
 } from '@coze-project-ide/framework';
 
 /**
- * 用于 ResourceType['type'] 里指定资源类型
+ * Used to specify the resource type in ResourceType ['type']
  */
 export enum BizResourceTypeEnum {
   Workflow = 'workflow',
@@ -44,33 +44,33 @@ export interface BizResourceTree {
 }
 
 export enum BizResourceContextMenuBtnType {
-  /* 创建资源 */
+  /* Create a resource */
   CreateResource = 'resource-folder-create-resource',
-  /* 创建文件夹 */
+  /* Create Folder */
   CreateFolder = 'resource-folder-create-folder',
-  /* 重命名 */
+  /* rename */
   Rename = 'resource-folder-rename',
-  /* 删除 */
+  /* delete */
   Delete = 'resource-folder-delete',
 
-  /* ----------------- 下面的事件会通过 onAction 进行回调 ----------------- */
-  /* 创建副本 */
+  /* ----------------- the following events are called back with onAction ----------------- */
+  /* Create a copy */
   DuplicateResource = 'resource-folder-duplicate-resource',
-  /* 引入资源库文件 */
+  /* Import repository file */
   ImportLibraryResource = 'resource-folder-import-library-resource',
-  /* 移动到资源库 */
+  /* Move to Library */
   MoveToLibrary = 'resource-folder-move-to-library',
-  /* 复制到资源库 */
+  /* Copy to repository */
   CopyToLibrary = 'resource-folder-copy-to-library',
-  /* 启用知识库 */
+  /* Enable Knowledge Base */
   EnableKnowledge = 'resource-folder-enable-knowledge',
-  /* 禁用知识库 */
+  /* Disable Knowledge Base */
   DisableKnowledge = 'resource-folder-disable-knowledge',
-  /* 切换为 chatflow */
+  /* Switch to chatflow */
   SwitchToChatflow = 'resource-folder-switch-to-chatflow',
-  /* 切换为 workflow */
+  /* Switch to workflow */
   SwitchToWorkflow = 'resource-folder-switch-to-workflow',
-  /* 修改描述 */
+  /* Modify description */
   UpdateDesc = 'resource-folder-update-desc',
 }
 
@@ -87,46 +87,46 @@ export type BizResourceType = ResourceType & ProjectResourceInfo;
 export type ResourceSubType = string | number;
 
 export type ResourceFolderCozeProps = {
-  /** 资源类型 */
+  /** resource type */
   groupType: ProjectResourceGroupType;
-  /** 后端资源列表数据 */
+  /** backend resource list data */
   resourceTree: BizResourceType[];
-  /** 自定义事件回调，点击右键菜单/上下文菜单会触发，由业务方实现自定义事件的资源更新逻辑逻辑 */
+  /** Custom event callback, click the right-click menu/context menu will trigger, and the business party will implement the resource update logic of the custom event */
   onAction?: (
     action: BizResourceContextMenuBtnType,
     resource?: BizResourceType,
   ) => void;
   /**
-   * 自定义资源创建流程时使用这个 props，需要业务自己展示资源创建表单，然后更新 resource
-   * 如果没有自定义逻辑，使用 onCreate
+   * This props is used when creating a custom resource definition process. The business needs to display the resource creation form by itself, and then update the resource.
+   * If there is no custom logic, use onCreate
    */
   onCustomCreate?: (
     groupType: ProjectResourceGroupType,
     subType?: ResourceSubType,
   ) => void;
   /**
-   * 使用默认创建资源的方式，创建资源后的回调，在这里调用业务的创建资源接口
-   * 配置了 onCustomCreate 会使 onCreate 失效
-   * 默认创建资源方式：点击新建菜单后，资源列表增加新资源 input 输入框，输入资源名称回车完成创建，触发 onCreate 回调
+   * Use the default way of creating resources, the callback after creating resources, and call the create resource interface of the business here
+   * Configuring onCustomCreate will invalidate onCreate
+   * Default resource creation method: After clicking the New menu, add a new resource to the resource list input text box, enter the resource name Enter to complete the creation, and trigger the onCreate callback
    * @param createEvent
-   * @param subType 如果配置了 createResourceConfig 数组，会有多个创建资源的菜单，通过 subType 区分子类型
+   * @Param subType If createResourceConfig array is configured, there will be multiple menus to create resources, distinguish subtypes by subType
    */
   onCreate?: (
     createEvent: CreateResourcePropType,
     subType?: ResourceSubType,
   ) => void;
   /**
-   * 是否可以创建资源
+   * Is it possible to create resources?
    */
   canCreate?: boolean;
   /**
-   * 完成初始加载，用于判断显示空状态
+   * Complete the initial loading, used to determine the display empty state
    */
   initLoaded?: boolean;
   /**
-   * 创建资源的 UI 配置
-   * 如果资源有多个子类型，可以配置为数组
-   * 触发 onCreateResource 会传第二个参数 subType
+   * Create UI configurations for resources
+   * If the resource has multiple subtypes, it can be configured as an array
+   * Triggering onCreateResource will pass the second parameter subType
    */
   createResourceConfig?: Array<{
     icon: ReactNode;
@@ -135,11 +135,11 @@ export type ResourceFolderCozeProps = {
     tooltip: ReactNode;
   }>;
   /**
-   * 主要用于快捷键创建资源的默认类型。
+   * Mainly used to shortcut the default type for creating resources.
    */
   defaultResourceType?: BizResourceTypeEnum;
   /**
-   * 隐藏更多菜单按钮
+   * Hide more menu button
    */
   hideMoreBtn?: boolean;
 } & Pick<

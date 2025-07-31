@@ -26,7 +26,7 @@ import { ValueExpression, WorkflowMode } from '@coze-workflow/base';
 
 import { CONVERSATION_NAME } from './constants';
 
-/** 延迟200ms，此时等边连上后，才能检测变量作用域 */
+/** Delay 200ms. At this time, the variable scope can only be detected after the equilateral connection is connected. */
 const DELAY = 200;
 
 const effect: Effect = ({ value, context }) => {
@@ -59,7 +59,7 @@ const effect: Effect = ({ value, context }) => {
       conversationNameItem?.input as ValueExpression,
     );
 
-    // 如果能够找到开始节点的 CONVERSATION_NAME 参数
+    // If you can find the CONVERSATION_NAME parameters of the start node
     if (
       startConversationNameVar &&
       conversationNameItem &&
@@ -76,7 +76,7 @@ const effect: Effect = ({ value, context }) => {
         formModel.setValueIn('inputParameters', clonedValue);
       }
     } else if (!isInIDE && !isChatflow && conversationNameItem && noValue) {
-      // 非项目中的工作流，如果存在没有值的 CONVERSATION_NAME 字段，填入默认值 default
+      // Non-project workflow, if there is a CONVERSATION_NAME field with no value, fill in the default value default
       if (formModel) {
         set(conversationNameItem, 'input', {
           type: 'literal',

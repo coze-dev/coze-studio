@@ -49,7 +49,7 @@ export interface InputNativeCallbacks {
   onBeforeProcessKeyDown?: OnBeforeProcessKeyDown;
   getController?: (controller: InputController) => void;
   /**
-   * 在 onChange 后触发，但是等待一个 Promise，避开闭包问题
+   * Fired after onChange, but waiting for a promise to avoid closure issues
    */
   onAfterOnChange?: () => void;
 }

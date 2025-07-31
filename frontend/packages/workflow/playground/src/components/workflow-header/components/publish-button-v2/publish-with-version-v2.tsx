@@ -106,7 +106,7 @@ const VersionForm: React.FC<{
 
       // eslint-disable-next-line @coze-arch/no-empty-catch
     } catch {
-      // 校验错误无须其他处理
+      // Validation error requires no additional processing
     }
   };
 

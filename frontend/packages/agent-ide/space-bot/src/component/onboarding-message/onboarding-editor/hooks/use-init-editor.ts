@@ -45,7 +45,7 @@ export const useInitEditor = ({
         editorRef,
       });
     }
-    // 滚动到顶部
+    // Scroll to top
     editorRef.current?.scrollModule?.scrollTo({
       top: 0,
     });

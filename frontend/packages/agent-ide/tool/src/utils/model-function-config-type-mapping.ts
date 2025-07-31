@@ -17,9 +17,9 @@
 import { type AbilityKey } from '@coze-agent-ide/tool-config';
 import { ModelFuncConfigType } from '@coze-arch/bot-api/developer_api';
 
-// AbilityKey 到 ModelFuncConfigType 的映射
+// Mapping of AbilityKey to ModelFuncConfigType
 const abilityKeyFuncConfigTypeMap: {
-  // 确保每个 key 这里都有配置
+  // Make sure each key is configured here
   [key in AbilityKey]: ModelFuncConfigType | null;
 } = {
   plugin: ModelFuncConfigType.Plugin,

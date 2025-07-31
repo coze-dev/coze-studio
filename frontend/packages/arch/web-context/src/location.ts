@@ -20,6 +20,6 @@
 // While no validation logic is currently implemented prior to redirection,
 // there is the potential for such checks to be included in the future as per your requirements.
 export const redirect = (href: string) => {
-  // 这里后续可以补充一些校验逻辑
+  // Here, some verification logic can be added later.
   location.href = href;
 };

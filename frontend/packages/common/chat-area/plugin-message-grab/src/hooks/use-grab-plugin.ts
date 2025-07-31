@@ -28,14 +28,14 @@ interface Params {
     botId: string;
     source: MessageSource | undefined;
   }) => void;
-  // 目前只需要区分出 store 的场景
+  // At present, only the scene of the store needs to be distinguished.
   scene?: Scene;
 }
 export const useCreateGrabPlugin = (params?: Params) => {
   const { onQuote, scene = 'other' } = params ?? {};
   const [grabEnableUpload, setGrabEnableUpload] = useState(true);
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期的命名
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- matches the expected naming
   const { grabPlugin: GrabPlugin, grabPluginId } = useMemo(
     () =>
       createGrabPlugin({

@@ -36,35 +36,35 @@ interface DebugPanelStore {
   isPanelShow: boolean;
   basicInfo: BasicInfo;
   /**
-   * 当前选中的Query LogID
+   * The currently selected Query LogID
    */
   entranceMessageLogId?: string;
   /**
-   * 日期筛选结果
+   * date filter results
    */
   targetDateId?: QueryFilterItemId;
   /**
-   * 状态筛选结果
+   * status filter results
    */
   targetExecuteStatusId?: QueryFilterItemId;
   /**
-   * 当前选中的Trace节点信息
+   * Trace node information currently selected
    */
   targetOverallSpanInfo?: TargetOverallSpanInfo;
   /**
-   * 当前计算后的Trace列表
+   * Current Calculated Trace List
    */
   enhancedOverallSpans: CSpan[];
   /**
-   * 某条Trace下Span节点列表
+   * List of Spans under a Trace
    */
   orgDetailSpans?: Span[];
   /**
-   * 额外Span类型信息（服务端提供）
+   * Additional Span type information (server level provided)
    */
   spanCategory?: SpanCategory;
   /**
-   * 当前选中的Span节点信息
+   * Information about the currently selected Span node
    */
   targetDetailSpan?: CSpan;
   curBatchPage?: number;

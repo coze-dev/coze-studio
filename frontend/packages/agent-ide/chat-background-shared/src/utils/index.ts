@@ -31,7 +31,7 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 
 const MIN_HEIGHT = 640;
-// 图片上传限制宽高的函数，如果符合条件返回true，否者返回false
+// The function that limits the width and height of the image upload, returns true if the conditions are met, false if not
 export const checkImageWidthAndHeight = (file: Blob): Promise<boolean> =>
   new Promise((resolve, reject) => {
     const fileReader = new FileReader();
@@ -97,7 +97,7 @@ export const getInitBackground = ({
   return {};
 };
 
-// 计算阴影位置
+// Calculate shadow position
 export const computePosition = (
   mode: 'pc' | 'mobile',
   cropperRef: RefObject<ReactCropperElement>,
@@ -114,15 +114,15 @@ export const computePosition = (
   const canvasData = cropperObj?.getCanvasData();
   const imgData = cropperObj?.getImageData();
 
-  // 图片左边缘 距离 裁剪区左 边缘的偏移距离
+  // Image left edge, distance, offset distance from the left edge of the crop area
   const imgToScreenLeft = imgData.left + canvasData?.left;
-  // 图片距离右侧屏幕的距离， > 0 时，右侧未充满图片
+  // The distance of the picture from the right screen, > 0, the right side is not full of pictures
   const imgToScreenRight = cropperWidth - imgData.width - imgToScreenLeft;
 
-  // 左侧渲染的渐变需要的left值: 左侧有空隙时渲染left，否则无需
+  // Left value required for gradual change of left rendering: render left when there is a gap on the left, otherwise no need
   const leftPercent = floor(imgToScreenLeft / cropperWidth, 2);
 
-  // 右侧渲染的渐变需要的right值
+  // The right value required for gradual change of right rendering
   const rightPercent = floor(imgToScreenRight / cropperWidth, 2);
 
   return {
@@ -141,13 +141,13 @@ export const canvasPosition = (
     'height',
   ]);
 
-// 计算主题色
+// Calculate theme color
 export const computeThemeColor = (
   cropperRefList: RefObject<ReactCropperElement>[],
 ): Promise<string[]> =>
   new Promise((resolve, reject) => {
     const promises: Promise<string>[] = [];
-    // 处理每个canvas元素
+    // Process each canvas element
     cropperRefList.forEach(cropperEle => {
       promises.push(
         new Promise<string>((resolveColor, rejectColor) => {

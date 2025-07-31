@@ -91,7 +91,7 @@ export function useHttpUrlVariables({
         break;
       }
 
-      const content = match[0]; // 带双花括号
+      const content = match[0]; // With double curly braces
       const {
         globalVariableKey,
         nodeName,
@@ -114,14 +114,14 @@ export function useHttpUrlVariables({
 
       const startIndex = match.index;
       const endIndex = match.index + content.length;
-      // 添加前一段字符串
+      // Add previous string
       urlPieces.push({
         content: urlExpressionString.slice(lastIndex, match.index),
         isVariable: false,
       });
-      // 添加当前字符串
+      // Add current string
       urlPieces.push({ content, isVariable: true });
-      // 更新 lastIndex 为当前匹配的结束位置
+      // Update lastIndex to the end position of the current match
       lastIndex = match.index + content.length;
 
       matches.push({
@@ -132,7 +132,7 @@ export function useHttpUrlVariables({
       });
     }
 
-    // 添加最后一个匹配之后的字符串
+    // Add the string after the last match
     if (lastIndex < urlExpressionString.length) {
       urlPieces.push({
         content: urlExpressionString.slice(lastIndex),

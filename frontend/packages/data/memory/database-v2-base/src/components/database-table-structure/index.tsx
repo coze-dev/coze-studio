@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines */
 import {
   useRef,
@@ -89,19 +89,19 @@ export interface DatabaseTableStructureProps {
   loadingTips?: string;
   projectID?: string;
   /**
-   * excel: 单用户模式｜只读模式
-   * normal: 单用户模式｜只读模式
-   * expert: 单用户模式｜只读模式｜多用户模式
-   * undefined: 不支持读写模式
+   * Excel: single user mode | read-only mode
+   * Normal: Single user mode | Read-only mode
+   * Expert: Single user mode | Read-only mode | Multi-user mode
+   * Undefined: Read and write modes are not supported
    */
   readAndWriteModeOptions?: ReadAndWriteModeOptions;
-  /** databaseInfo中只显示 Mode 的UI */
+  /** Only display Mode UI in DatabaseInfo */
   onlyShowDatabaseInfoRWMode?: boolean;
   enableAdd?: boolean;
   isReadonlyMode?: boolean;
   maxColumnNum?: number;
   /**
-   * 是否展示基本信息（表名、介绍）
+   * Whether to display basic information (table name, introduction)
    */
   showDatabaseBaseInfo?: boolean;
   hiddenTableBorder?: boolean;
@@ -138,7 +138,7 @@ export interface DatabaseTableStructureRef {
 export const DatabaseTableStructure = forwardRef<
   DatabaseTableStructureRef,
   DatabaseTableStructureProps
-  // eslint-disable-next-line max-lines-per-function, @coze-arch/max-line-per-function, complexity -- 历史文件拷贝
+  // eslint-disable-next-line max-lines-per-function, @coze-arch/max-line-per-function, complexity -- historical file copy
 >((props, ref) => {
   const {
     data: initialData,
@@ -156,7 +156,7 @@ export const DatabaseTableStructure = forwardRef<
     enableAdd = true,
     loading = false,
     setContentCheckErrorMsg = noop,
-    // TODO 把 AI generate 的 loading tip 放到 table 里面
+    // TODO put AI generated loading tips into the table
     // loadingTips,
     createType,
     showDatabaseBaseInfo,
@@ -177,7 +177,7 @@ export const DatabaseTableStructure = forwardRef<
 
   const [isReadonly, { setTrue: enableReadonly, setFalse: disableReadonly }] =
     useBoolean(false);
-  // 系统字段不计入字段数量限制
+  // System fields do not count towards the number of fields limit
   const userFields = tableFieldsList.filter(i => !i.isSystemField);
   const isRowMaxLimit = userFields.length >= maxColumnNum;
   const isExceedRowMaxLimit = userFields.length > maxColumnNum;
@@ -233,11 +233,11 @@ export const DatabaseTableStructure = forwardRef<
   };
 
   const verifyAllBeforeSave = async (): Promise<boolean> => {
-    // 触发 tableFields 校验
+    // Trigger tableFields validation
     const validatedTableFieldsList = validateFields(tableFieldsList, 'save');
     setTableFieldsList(validatedTableFieldsList);
 
-    // 触发并校验 tableBasicInfo
+    // Trigger and validate tableBasicInfo
     if (showDatabaseBaseInfo) {
       try {
         // @ts-expect-error -- linter-disable-autofix
@@ -247,7 +247,7 @@ export const DatabaseTableStructure = forwardRef<
       }
     }
 
-    // 校验 tableFields
+    // Validation tableFields
     if (
       validatedTableFieldsList.find(i =>
         Object.keys(i.errorMapper || {}).find(
@@ -258,7 +258,7 @@ export const DatabaseTableStructure = forwardRef<
       return false;
     }
 
-    // 校验 tableFields 是否为空
+    // Verify that tableFields is empty
     if (isEmptyList) {
       return false;
     }
@@ -382,7 +382,7 @@ export const DatabaseTableStructure = forwardRef<
     return '';
   };
 
-  // 初始化 ref 属性
+  // Initialize ref attribute
   useImperativeHandle<DatabaseTableStructureRef, DatabaseTableStructureRef>(
     ref,
     () => ({
@@ -402,7 +402,7 @@ export const DatabaseTableStructure = forwardRef<
     [isReadonly, tableFieldsList, tableBasicInfoFormRef],
   );
 
-  // 校验是否 disable 下一步按钮
+  // Verify that the Next button is disabled
   useComputingEnableGoToNextStep?.(tableFieldsList, isEmptyList);
 
   const dataSource = enableAdd
@@ -759,7 +759,7 @@ export const DatabaseTableStructure = forwardRef<
         }}
         wrapperClassName={s['table-structure-table-wrapper']}
       />
-      {/* 表格为空时，底部的错误提示 */}
+      {/* Error message at the bottom when the table is empty */}
       {isEmptyList && !loading ? (
         <div className={s['table-empty-tips']}>
           {I18n.t('db_table_save_exception_nofield')}

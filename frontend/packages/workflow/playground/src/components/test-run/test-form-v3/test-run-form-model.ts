@@ -21,36 +21,36 @@ import { type FormModel, type IFormSchema } from '@coze-workflow/test-run-next';
 import { formatValues } from './mode-form-kit';
 interface SubmitResult {
   /**
-   * 是否是空表单
+   * Is it an empty form?
    */
   empty?: boolean;
   /**
-   * 是否校验通过
+   * Whether the verification is passed
    */
   validate?: boolean;
   /**
-   * 表单值
+   * form value
    */
   values?: any;
 }
 
 /**
- * 表单能力透出模型
+ * Form capability transparency model
  */
 export class TestRunFormModel {
   innerForm: FormModel | null = null;
 
   /**
-   * 原始的 schema
+   * Original schema
    */
   originSchema: IFormSchema | null = null;
   /**
-   * 经过视图换算的 schema
+   * View-converted schema
    */
   modeSchema: IFormSchema | null = null;
 
   /**
-   * 挂载表单实例
+   * mount form instance
    */
   mounted(next: FormModel) {
     this.innerForm = next;
@@ -61,7 +61,7 @@ export class TestRunFormModel {
   }
 
   /**
-   * 提交表单，包含表单校验
+   * Submit the form, including form validation
    */
   async submit(): Promise<SubmitResult> {
     if (!this.modeSchema || !this.innerForm) {

@@ -125,7 +125,7 @@ export const CommonEdge = (props: EdgeProps<EdgeData>) => {
 
   const topologyEdgeStatus = getTopologyItemStatus(data?.tailDynamicSpanNode);
 
-  // vertical类型线段布局时，采用节点位置进行定位，从而使线段起点和终点定位在节点开始位置
+  // When the vertical type line segment is laid out, the node position is used for positioning, so that the start and end points of the line segment are positioned at the beginning of the node
   const adaptedSourceX = isVerticalEdge(sourcePosition)
     ? data?.layoutInfo?.customSourceX ?? sourceX
     : sourceX;

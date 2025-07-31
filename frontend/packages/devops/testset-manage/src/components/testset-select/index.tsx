@@ -43,12 +43,12 @@ import {
 import s from './index.module.less';
 
 export interface TestsetSelectProps {
-  /** 当前testset */
+  /** Current testset */
   testset: TestsetData | undefined;
   placeholder?: string;
-  /** 是否有workflow编辑权限，也挂放在外层的 TestsetManageProvider上，组件上的editable优先级更高 */
+  /** Whether there is workflow editing permission, it is also hung on the outer TestsetManageProvider, and the editable priority on the component is higher */
   editable?: boolean;
-  /** 编辑面板mask */
+  /** Edit panel mask */
   editSideSheetMask?: boolean;
   onSelect: (v?: TestsetData) => void;
   className?: string;
@@ -57,7 +57,7 @@ export interface TestsetSelectProps {
 
 const DEBOUNCE_DELAY = 200;
 
-/** option key, 更新 name、incompatible、input时都要重新渲染 */
+/** Option key, re-render when updating name, incompatible, input */
 function getOptionKey({ caseBase, schemaIncompatible }: TestsetData) {
   return `${caseBase?.caseID}_${caseBase?.name}_${caseBase?.input}_${
     schemaIncompatible ? 0 : 1
@@ -65,12 +65,12 @@ function getOptionKey({ caseBase, schemaIncompatible }: TestsetData) {
 }
 
 /**
- * Testset下拉选择组件
- * 需配合`TestsetManageProvider`一起使用
+ * TestSet drop-down selection component
+ * Should be used with TestsetManageProvider
  * @example
  * ``` tsx
  * <TestsetManageProvider
- *   // 一些必填参数 bizCtx bizComponentSubject editable formRenders
+ *   //Some required parameters bizCtx bizComponentSubject editable formRendersitable formRenders
  * >
  *   <TestsetSideSheet visible={visible} onClose={() => setVisible(false)} />
  * </TestsetManageProvider>
@@ -107,7 +107,7 @@ export function TestsetSelect({
     {},
   );
 
-  // 首次加载
+  // first load
   useEffect(() => {
     (async () => {
       setPending(true);
@@ -153,7 +153,7 @@ export function TestsetSelect({
     closeTestsetEdit();
   };
 
-  // 选中Testset
+  // Select Testset
   const onSelectTestset = (val: SelectProps['value']) => {
     if (typeof val !== 'string' || editRef.current) {
       return;
@@ -163,7 +163,7 @@ export function TestsetSelect({
       op => op.caseBase?.caseID === val,
     );
 
-    // 不兼容的不可选中
+    // Incompatible unselectable
     if (!selectedTestset || selectedTestset.schemaIncompatible) {
       return;
     }
@@ -220,11 +220,11 @@ export function TestsetSelect({
     }
   };
 
-  // 自定义选中选项
+  // Custom selected options
   const renderSelectedItem: RenderSingleSelectedItemFn = () =>
     testset ? <SelectedTestsetOptionItem data={testset} /> : null;
 
-  // testset为空的时候，不展示下拉选项（对大部分来说可能不需要看到这个下拉）
+  // When the testset is empty, the drop-down option is not displayed (for most people, you may not need to see this drop-down).
   if (pending) {
     return null;
   }
@@ -258,8 +258,8 @@ export function TestsetSelect({
         {optionsData.list.map(data => (
           <Select.Option
             value={data.caseBase?.caseID}
-            // disabled的option编辑/删除唤起其他浮层后，select不会自动失焦
-            // 用样式模拟disabled，并修改onSelect选中不兼容testset的逻辑
+            // Disabled option Edit/Delete to select without auto-out of focus after evoking other floating layers
+            // Simulate disabled with styles and modify the logic of onSelect selecting incompatible testsets
             className={cls(data.schemaIncompatible && s['incompatible-option'])}
             key={getOptionKey(data)}
           >

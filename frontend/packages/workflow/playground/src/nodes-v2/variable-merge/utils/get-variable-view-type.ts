@@ -22,7 +22,7 @@ import {
 } from '@coze-workflow/variable';
 
 /**
- * 获取变量类型
+ * Get variable type
  */
 export function getVariableViewType(
   variable: ValueExpression | undefined,

@@ -83,9 +83,9 @@ export const SocialPlatformChatflow: React.FC<{ className?: string }> = ({
           handleSelectChatflow(option as ChatflowOptionProps)
         }
         rules={[
-          // 有选择 SocialPlatform 时， chatflow 必填
+          // Chatflow is required when SocialPlatform is selected
           { required: hasSelectedSocialPlatforms },
-          // 校验已选择的 chatflow 是否存在 && 未被禁用
+          // Verify that the selected chatflow exists & & is not disabled
           {
             validator: (_rule: unknown, value: unknown) => {
               if (!hasSelectedSocialPlatforms) {

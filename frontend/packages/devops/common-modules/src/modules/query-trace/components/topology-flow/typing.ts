@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Node, type Edge } from 'reactflow';
 import { type CSSProperties } from 'react';
 
@@ -52,7 +52,7 @@ export interface UseGenerateTopologyHookData {
   selectedSpanId?: string;
 }
 
-// @ts-expect-error 使用number类型枚举SpanType作为自定义type，可忽略报错
+// @ts-expect-error Use the number type to enumerate SpanType as a custom type, the error can be ignored
 export type TopologicalNode = Node<NodeData, SpanCategory>;
 
 export type TopologicalEdge = Edge<EdgeData>;

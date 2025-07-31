@@ -29,7 +29,7 @@ import {
 } from '../constant';
 
 export namespace ExpressionEditorParserBuiltin {
-  /** 计算开始和结束标识的序号 */
+  /** Calculate the serial number of the start and end tags */
   export const tokenOffset = (line: {
     lineContent: string;
     lineOffset: number;
@@ -52,7 +52,7 @@ export namespace ExpressionEditorParserBuiltin {
       firstEndTokenOffset + 2,
     );
     if (endChars !== ExpressionEditorToken.FullEnd) {
-      // 结束符号 "}}" 不完整
+      // End symbol "}}" is incomplete
       return;
     }
     const lastStartTokenOffset = content.lastIndexOf(
@@ -64,7 +64,7 @@ export namespace ExpressionEditorParserBuiltin {
       lastStartTokenOffset + 1,
     );
     if (startChars !== ExpressionEditorToken.FullStart) {
-      // 开始符号 "{{" 不完整
+      // The opening symbol "{{" is incomplete
       return;
     }
     return {
@@ -73,7 +73,7 @@ export namespace ExpressionEditorParserBuiltin {
     };
   };
 
-  /** 从行内容提取内容 */
+  /** Extract content from line content */
   export const extractContent = (params: {
     lineContent: string;
     lineOffset: number;
@@ -102,7 +102,7 @@ export namespace ExpressionEditorParserBuiltin {
     };
   };
 
-  /** 根据 offset 将文本内容切分为可用与不可用 */
+  /** Split text content into available and unavailable by offset */
   export const sliceReachable = (params: {
     content: string;
     offset: number;
@@ -119,29 +119,29 @@ export namespace ExpressionEditorParserBuiltin {
     };
   };
 
-  /** 切分文本 */
+  /** Split text */
   export const splitText = (pathString: string): string[] => {
-    // 得到的分割数组，初始为原字符串以"."分割的结果
+    // The obtained split array, initially the result of splitting the original string with "."
     const segments = pathString.split(ExpressionEditorToken.Separator);
 
-    // 定义结果数组，并处理连续的"."导致的空字符串
+    // Define the result array and handle empty strings resulting from consecutive "."
     const result: string[] = [];
 
     segments.forEach(segment => {
       if (!segment.match(/\[\d+\]/)) {
-        // 如果不是数组索引，直接加入结果数组，即使是空字符串也加入以保持正确的分割
+        // If it is not an array index, add the result array directly, even if it is an empty string, to maintain the correct segmentation
         result.push(segment);
         return;
       }
-      // 如果当前段是数组索引，将前面的字符串和当前数组索引分别加入结果数组
+      // If the current segment is an array index, add the previous string and the current array index to the result array, respectively
       const lastSegmentIndex = segment.lastIndexOf(
         ExpressionEditorToken.ArrayStart,
       );
       const key = segment.substring(0, lastSegmentIndex);
       const index = segment.substring(lastSegmentIndex);
-      // {{array[0]}} 中的 array
+      // Array in {{array [0]}}
       result.push(key);
-      // {{array[0]}} 中的 [0]
+      // [0] in {{array [0]}}
       result.push(index);
       return;
     });
@@ -149,14 +149,14 @@ export namespace ExpressionEditorParserBuiltin {
     return result;
   };
 
-  /** 字符串解析为路径 */
+  /** String parsed as path */
   export const toSegments = (
     text: string,
   ): ExpressionEditorSegment[] | undefined => {
     const textSegments = ExpressionEditorParserBuiltin.splitText(text);
     const segments: ExpressionEditorSegment[] = [];
     const validate = textSegments.every((textSegment, index) => {
-      // 数组下标
+      // array subscript
       if (
         textSegment.startsWith(ExpressionEditorToken.ArrayStart) &&
         textSegment.endsWith(ExpressionEditorToken.ArrayEnd)
@@ -164,7 +164,7 @@ export namespace ExpressionEditorParserBuiltin {
         const arrayIndexString = textSegment.slice(1, -1);
         const arrayIndex = Number(arrayIndexString);
         if (arrayIndexString === '' || Number.isNaN(arrayIndex)) {
-          // index 必须是数字
+          // Index must be a number
           return false;
         }
         const lastSegment = segments[segments.length - 1];
@@ -172,7 +172,7 @@ export namespace ExpressionEditorParserBuiltin {
           !lastSegment ||
           lastSegment.type !== ExpressionEditorSegmentType.ObjectKey
         ) {
-          // 数组索引必须在 key 之后
+          // The array index must be after the key
           return false;
         }
         segments.push({
@@ -181,7 +181,7 @@ export namespace ExpressionEditorParserBuiltin {
           arrayIndex,
         });
       }
-      // 最后一行空文本
+      // The last empty line of text
       else if (index === textSegments.length - 1 && textSegment === '') {
         segments.push({
           type: ExpressionEditorSegmentType.EndEmpty,
@@ -207,11 +207,11 @@ export namespace ExpressionEditorParserBuiltin {
 }
 
 export namespace ExpressionEditorParser {
-  /** 序列化 */
+  /** Serialization */
   export const serialize = (value: ExpressionEditorLine[]) =>
     value.map(n => Node.string(n)).join('\n');
 
-  /** 反序列化 */
+  /** deserialization */
   export const deserialize = (text: string): ExpressionEditorLine[] => {
     const lines = text.split('\n');
     return lines.map(line => ({

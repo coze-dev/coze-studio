@@ -26,8 +26,8 @@ export type SpaceRequest<T> = Omit<T, 'space_id'>;
 
 type D = DeveloperApiService<BotAPIRequestConfig>;
 
-// 这些是暴露出来需要被调用的函数列表
-// 新增函数请在该列表后面追加即可
+// This is the exposed list of functions that need to be called
+// To add new functions, please add them after the list.
 type ExportFunctions =
   | 'GetPlaygroundPluginList'
   | 'GetDraftBotList'
@@ -85,7 +85,7 @@ type ExportFunctions =
 
 type ExportService = {
   [K in ExportFunctions]: (
-    // 这里主要是为了 omit 掉 space_id 这个参数，而做的二次封装
+    // Here is mainly to omit the space_id this parameter, and do the secondary encapsulation
     params: SpaceRequest<Parameters<D[K]>[0]>,
     options?: Parameters<D[K]>[1],
   ) => ReturnType<D[K]>;

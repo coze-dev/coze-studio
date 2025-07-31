@@ -21,33 +21,33 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 封装校验结果
+ * Encapsulation check result
  */
 export interface EncapsulateValidateError {
   /**
-   * 错误码
+   * error code
    */
   code: EncapsulateValidateErrorCode;
   /**
-   * 错误信息
+   * error message
    */
   message: string;
   /**
-   * 错误来源, 如果是节点问题, 就是节点ID
+   * The source of the error, if it is a node problem, is the node ID.
    */
   source?: string;
   /**
-   * 错误来源名称
+   * Error source name
    */
   sourceName?: string;
   /**
-   * 来源图标
+   * source icon
    */
   sourceIcon?: string;
 }
 
 /**
- * 校验错误码
+ * check error code
  */
 export enum EncapsulateValidateErrorCode {
   NO_START_END = '1001',
@@ -62,24 +62,24 @@ export enum EncapsulateValidateErrorCode {
 }
 
 /**
- * 校验结果
+ * verification result
  */
 export interface EncapsulateValidateResult {
   /**
-   * 是否有错误
+   * Is there an error?
    */
   hasError: () => boolean;
   /**
-   * 添加错误
+   * add error
    */
   addError: (error: EncapsulateValidateError) => void;
   /**
-   * 获取错误列表
+   * Get error list
    * @returns
    */
   getErrors: () => EncapsulateValidateError[];
   /**
-   * 是否有特定code的错误
+   * Is there a specific code error?
    */
   hasErrorCode: (code: EncapsulateValidateErrorCode) => boolean;
 }
@@ -87,7 +87,7 @@ export interface EncapsulateValidateResult {
 export const EncapsulateValidateResult = Symbol('EncapsulateValidateResult');
 
 /**
- * 校验结果工厂
+ * Validation Result Factory
  */
 export type EncapsulateValidateResultFactory = () => EncapsulateValidateResult;
 
@@ -96,15 +96,15 @@ export const EncapsulateValidateResultFactory = Symbol(
 );
 
 /**
- * 封装节点校验器
+ * Encapsulated Node Verifier
  */
 export interface EncapsulateNodeValidator {
   /**
-   * 节点类型
+   * Node type
    */
   canHandle: (type: StandardNodeType) => boolean;
   /**
-   * 节点校验
+   * node validation
    */
   validate: (
     node: WorkflowNodeEntity,
@@ -115,18 +115,18 @@ export interface EncapsulateNodeValidator {
 export const EncapsulateNodeValidator = Symbol('EncapsulateNodeValidator');
 
 /**
- * 所有节点级别的校验器
+ * Validators for all node levels
  */
 export interface EncapsulateNodesValidator {
   /**
-   * 所有节点校验
+   * validate all nodes
    */
   validate: (
     nodes: WorkflowNodeEntity[],
     result: EncapsulateValidateResult,
   ) => void;
   /**
-   * 是否包含开始和结束节点
+   * Whether to include start and end nodes
    */
   includeStartEnd?: boolean;
 }
@@ -134,7 +134,7 @@ export interface EncapsulateNodesValidator {
 export const EncapsulateNodesValidator = Symbol('EncapsulateNodesValidator');
 
 /**
- * 流程JSON校验器
+ * Process JSON validator
  */
 export interface EncapsulateWorkflowJSONValidator {
   validate: (
@@ -148,15 +148,15 @@ export const EncapsulateWorkflowJSONValidator = Symbol(
 );
 
 /**
- * 封装校验管理
+ * Encapsulation Validation Management
  */
 export interface EncapsulateValidateManager {
   /**
-   * 获取所有节点校验器
+   * Get all node validators
    */
   getNodeValidators: () => EncapsulateNodeValidator[];
   /**
-   * 根据节点类型获取对应的校验器
+   * Get the corresponding validator according to the node type
    * @param type
    * @returns
    */
@@ -164,16 +164,16 @@ export interface EncapsulateValidateManager {
     type: StandardNodeType,
   ) => EncapsulateNodeValidator[];
   /**
-   * 获取所有流程级别校验器
+   * Get all process level validators
    */
   getNodesValidators: () => EncapsulateNodesValidator[];
   /**
-   * 获取所有流程JSON校验器
+   * Get all process JSON validators
    * @returns
    */
   getWorkflowJSONValidators: () => EncapsulateWorkflowJSONValidator[];
   /**
-   * 销毁
+   * destroy
    */
   dispose: () => void;
 }
@@ -181,11 +181,11 @@ export interface EncapsulateValidateManager {
 export const EncapsulateValidateManager = Symbol('EncapsulateValidateManager');
 
 /**
- * 封装校验服务
+ * Encapsulation Validation Service
  */
 export interface EncapsulateValidateService {
   /**
-   * 校验
+   * validation
    * @param nodes
    * @returns
    */

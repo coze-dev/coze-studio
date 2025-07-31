@@ -23,7 +23,7 @@ export interface WsMessageProps {
   resId: string;
   extra: any;
   /**
-   * 其他窗口执行保存传入的版本号
+   * Other window execution saves the incoming version number
    */
   saveVersion?: string;
   operateType: MessageOperateType;

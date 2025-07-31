@@ -68,16 +68,16 @@ export interface MultiAgentStore {
   agents: Agent[];
   edges: WorkflowEdgeJSON[];
   connector_type: LineType;
-  /** 用于保存 bot 类型节点的 bot 信息 */
+  /** Use to save bot information for bot type nodes */
   botAgentInfos: DraftBotVo[];
   /**
-   * 会话接管方式配置
-   * 默认为 flow 模式
+   * Session takeover configuration
+   * Default to flow mode
    */
   chatModeConfig: ChatModeConfig;
-  /** 当前agent id **/
+  /** Current agent id **/
   currentAgentID: string;
-  /**muti 左右展开状态**/
+  /**Muti left and right expanded state **/
   multiSheetViewOpen: MultiSheetViewOpenState;
 }
 
@@ -102,12 +102,12 @@ export interface MultiAgentAction {
   setMultiAgentByImmer: (update: (state: MultiAgentStore) => void) => void;
   setMultiSheetViewOpen: (state: Partial<MultiSheetViewOpenState>) => void;
   updatedCurrentAgentIdWithConnectStart: () => void;
-  /** 重置 host 节点为 start 相连的节点 */
+  /** Reset host node to start connected node */
   resetHostAgent: () => void;
   /**
-   * 设置sourceAgentId的portId的intent的next_agent_id为nextAgentId
+   * Set the intent of sourceAgentId's portId to next_agent_id nextAgentId
    *
-   * @deprecated 这是旧版画布的方法，新版为 addAgentIntent
+   * @Deprecated This is the method of the old canvas, the new version is addAgentIntent
    */
   setAgentIntentNextID: (
     sourceAgentId?: string,
@@ -117,8 +117,8 @@ export interface MultiAgentAction {
   addAgentIntent: (sourceAgentId: string, targetAgentId: string) => void;
   deleteAgentIntent: (sourceAgentId: string, targetAgentId: string) => void;
   /**
-   * 根据agentId找到当前agent的source的agent，也就是上游agent
-   * 将上游agent中找到某个intent，next_agent_id === agentId。将该intent的next_agent_id清空
+   * The agent that finds the source of the current agent according to the agentId, that is, the upstream agent
+   * Find an intent in the upstream agent, next_agent_id === agentId. Clear the next_agent_id of the intent
    */
   clearEdgesByTargetAgentId: (agentId?: string) => void;
   updateAgentSkillKnowledgeDatasetInfo: (
@@ -137,13 +137,13 @@ export interface MultiAgentAction {
     /** @default AgentType.LLM_Agent */
     type?: AgentType;
     position?: IPoint;
-    /** 是否使用struct版本 - 便于写单测即将删除*/
+    /** Whether to use the struct version - easy to write single test will be deleted soon*/
     structFlag?: boolean;
   }) => Promise<Agent | undefined>;
   batchAddBotAgent: (config: {
     bots: AgentReferenceInfo[];
     positions: IPoint[];
-    /** 是否使用struct版本 - 便于写单测即将删除*/
+    /** Whether to use the struct version - easy to write single test will be deleted soon*/
     structFlag?: boolean;
   }) => Promise<Agent[]>;
   updateBotNodeInfo: (
@@ -156,16 +156,16 @@ export interface MultiAgentAction {
     apiId?: string,
   ) => void;
   /**
-   * 清除一条 intent 的 next_id（也就是 edge）
+   * Clears the next_id of an intent (i.e. edge)
    *
-   * - Q1：为什么不直接使用 intent id 来找 intent？
-   * - A1：将一条已有的连线拖拽连接到另一个节点时，SDK 会先触发这个 intent 的 addEdge 事件，随后再触发 deleteEdge 事件。
-   *      导致 deleteEdge 事件会通过 intent id 覆盖 addEdge 刚刚更新过的 intent。
+   * - Q1: Why not use the intent id directly to find the intent?
+   * A1: When dragging and dropping an existing connection to another node, the SDK fires the addEdge event for that intent first, followed by the deleteEdge event.
+   *      Causes the deleteEdge event to overwrite the newly updated intent of addEdge with the intent id.
    *
-   * - Q2：那通过 targetAgentId 来找 intent 不够吗，为什么还需要 intent id？
-   * - A2：当同一个节点的两个 intent 都指向同一个目标，这时删除其中一条连线，无法确定删除的是哪条，必须配合 intent id 来判断
+   * - Q2: Is it not enough to find the intent by the target AgentId, why do you need the intent id?
+   * - A2: When both intents of the same node point to the same target, one of the connections is deleted. It is impossible to determine which one is deleted. It must be judged with the intent id.
    *
-   * @deprecated 旧版画布的方法，新版为 deleteAgentIntent
+   * @Deprecated the method of the old canvas, the new version is deleteAgentIntent
    */
   clearIntentNextId: (
     sourceAgentId: string,
@@ -321,7 +321,7 @@ export const useMultiAgentStore = create<MultiAgentStore & MultiAgentAction>()(
             if (sourceAgent) {
               const { intents } = sourceAgent;
 
-              // 执行第一步指令。将上游agent的next_agent_id清空
+              // Execute the first step instruction. Clear the upstream agent's next_agent_id
               intents?.forEach(item => {
                 if (item.next_agent_id === targetAgentId) {
                   item.next_agent_id = undefined;
@@ -554,9 +554,9 @@ export const useMultiAgentStore = create<MultiAgentStore & MultiAgentAction>()(
         );
         const isMultiAgent = botInfo?.bot_mode === BotMode.MultiMode;
         if (isMultiAgent) {
-          // 设置初始的对话agent id
+          // Set the initial conversation agent id
           updatedCurrentAgentIdWithConnectStart();
-          // 获取agent节点为子bot的子bot信息，并赋值入store
+          // Get the information of the sub-bot whose agent node is a child bot, and assign it to the store.
           updateBotNodeInfo(botInfo?.agents || []);
         }
       },

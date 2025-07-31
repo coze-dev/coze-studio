@@ -36,7 +36,7 @@ export type SpanNode = CSpan & {
 
 export const getSpanDataByTraceId = (traceId: string): CSpan[] => [];
 
-// 获取tree的跟节点
+// Get the heel node of the tree
 export const buildCallTrees = (
   spans: CSpan[],
   splitBatchSpan = true,
@@ -49,7 +49,7 @@ export const buildCallTrees = (
 
   spans.forEach(span => {
     const curSpan = { ...span, children: [] };
-    // Batch节点
+    // Batch Node
     if ('spans' in span && splitBatchSpan) {
       span.spans.forEach(subSpan => {
         map[subSpan.id] = curSpan;
@@ -88,7 +88,7 @@ export const getRootSpan = (spans: SpanNode[], needBuildTrees = true) => {
     }
   });
 
-  // 无start的场景: 虚拟一个startSpan（供多方使用，火焰图，树状图，详情图，以确保一致）；多个startSpans，则取第一个
+  // Scenarios without start: virtual one StartSpan (for multiple parties to use, flame map, tree map, detail map to ensure consistency); multiple StartSpans, take the first one
   return startSpans.length > 0 ? startSpans[0] : genVirtualStart(rootSpans);
 };
 
@@ -150,7 +150,7 @@ export const getStatusLabel = (
   return spanStatusConfigMap[status]?.label ?? '';
 };
 
-// start节点不存在时，生成虚拟start节点
+// When the start node does not exist, generate a virtual start node
 const getRootBreakSpan = (breakSpans: SpanNode[]): SpanNode => ({
   id: rootBreakSpanId,
   parent_id: '',
@@ -163,7 +163,7 @@ const getRootBreakSpan = (breakSpans: SpanNode[]): SpanNode => ({
   children: breakSpans,
 });
 
-// 根据switchAgent/restartAgent建立父子关系
+// Create a parent-child relationship according to switchAgent/reStartAgent
 const handleAgent = (spans: SpanNode[]): SpanNode[] => {
   const getAgent = (startAt: number, agents: SpanNode[]) => {
     const len = agents.length;
@@ -213,7 +213,7 @@ const handleAgent = (spans: SpanNode[]): SpanNode[] => {
   return [...rstSpans, ...agentSpans];
 };
 
-// 只有特殊的节点类型可以作为根节点
+// Only special node types can be used as root nodes
 const isTreeRootSpanType = (type: SpanType) =>
   [
     SpanType.InvokeAgent,
@@ -222,7 +222,7 @@ const isTreeRootSpanType = (type: SpanType) =>
     SpanType.LLMCall,
     SpanType.WorkflowLLMCall,
     SpanType.WorkflowLLMBatchCall,
-    // BlockWise的都放在这里
+    // All BlockWise's are put here
     SpanType.BWStart,
     SpanType.BWEnd,
     SpanType.BWBatch,
@@ -234,11 +234,11 @@ const isTreeRootSpanType = (type: SpanType) =>
     SpanType.BWVariable,
     SpanType.BWCallFlow,
     SpanType.BWConnector,
-    // 新增类型都支持层级
+    // New types all support hierarchies
     SpanType.Hook,
   ].includes(type);
 
-// 依据调用树，构建TraceTree
+// Build TraceTree based on call tree
 const callTree2TraceTree = (rootSpan: SpanNode): SpanNode => {
   const rstSpans: SpanNode[] = [];
   const walk = (span: SpanNode) => {
@@ -248,10 +248,10 @@ const callTree2TraceTree = (rootSpan: SpanNode): SpanNode => {
         rstSpans.push(callTree2TraceTree(subSpan));
       } else {
         if (isVisibleSpan(subSpan)) {
-          // 当前节点加入到 rootSpan.children
+          // The current node is added to rootSpan.children
           rstSpans.push(omit(subSpan, 'children'));
         }
-        // 递归子节点(当前节点)。 注意：隐藏的节点类型，也要递归的。 当前节点隐藏，其子节点有可能是显示的
+        // Recursive sub-node (current node). Note: The type of hidden node should also be recursive. The current node is hidden, and its sub-node may be displayed
         walk(subSpan);
       }
     });
@@ -265,25 +265,25 @@ const callTree2TraceTree = (rootSpan: SpanNode): SpanNode => {
 };
 
 export const buildTraceTree = (spans: SpanNode[], splitBatchSpan?: boolean) => {
-  // 1. 根据spans，组装call trees
+  // 1. According to spans, assemble call trees
   const callTrees = buildCallTrees(spans, splitBatchSpan);
 
-  // 2. 生成startSpan
+  // 2. Generate the gastSpan
   const startSpan: SpanNode = getRootSpan(callTrees, false);
 
-  // 3. 获取 break节点(非start的根节点都是breakSpan)
+  // 3. Get the break node (all non-start root nodes are breakSpan)
   const breakSpans: SpanNode[] = getBreakSpans(callTrees, false);
 
-  // 4. 根据调用tree，生成PRD中的Tree(即，PRD中的Tree)
+  // 4. According to the call tree, generate the Tree in PRD (ie, the Tree in PRD)
   const treeStartSpan = callTree2TraceTree(startSpan);
 
   if (breakSpans.length > 0) {
-    // 5. 将所有breakSpans挂载到rootBreakSpan节点下
+    // 5. Mount all breakSpans under the rootBreakSpan node
     const breakSpan: SpanNode = getRootBreakSpan(breakSpans);
-    // 6. 根据调用tree，生成TraceTree
+    // 6. Generate TraceTree according to the call tree
     const treeBreakSpan = callTree2TraceTree(breakSpan);
 
-    // 7. 将treeBreakSpan挂在到treeStartSpan下
+    // 7. Hang treeBreakSpan under treeStartSpan
     treeStartSpan.children = treeStartSpan.children ?? [];
     treeStartSpan.children.push(treeBreakSpan);
     treeBreakSpan.parent = treeStartSpan;

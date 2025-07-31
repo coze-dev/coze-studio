@@ -25,9 +25,9 @@ export interface ModelFormContextProps {
     customizeValues: this['customizeValueMap'][string],
   ) => void;
   /**
-   * 是否展示多样性设置区域的展开收起按钮
+   * Whether to display the expand and close buttons of the diversity setting area
    *
-   *  需求将详细配置区域放到了独立面板中，因此高度足够展示所有选项，不再需要折叠
+   *  Requires that the detailed configuration area be placed in a separate panel, so it is high enough to display all options, no need to fold
    *
    * @default false
    */

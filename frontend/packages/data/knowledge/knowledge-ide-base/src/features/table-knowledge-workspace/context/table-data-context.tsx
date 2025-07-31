@@ -18,7 +18,7 @@ import { createContext, useContext } from 'react';
 
 import { type DatasetDataScrollList } from '@/service';
 
-// 表格数据相关的 Context
+// Context related to tabular data
 interface TableDataContextType {
   sliceListData: DatasetDataScrollList;
   curIndex: number;

@@ -46,7 +46,7 @@ export const BaseRawTextEditor = forwardRef<HTMLDivElement, RawTextEditorProps>(
       [onChange],
     );
 
-    // 值受控;
+    // Value controlled;
     useEffect(() => {
       const editor = apiRef.current;
 

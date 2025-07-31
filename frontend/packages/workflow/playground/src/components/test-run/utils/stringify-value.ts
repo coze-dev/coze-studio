@@ -16,7 +16,7 @@
  
 import { isBoolean, isNumber } from 'lodash-es';
 
-// 将表单值转换为testrun接口协议格式
+// Convert form values to testrun interface protocol format
 const stringifyValue = (
   values: object,
   stringifyKeys?: string[],
@@ -39,14 +39,14 @@ const stringifyValue = (
   );
 };
 
-// 保证传入的默认值都是string类型；目前表单中的值都是string类型，可以简单这么处理，后续可能需要多默认值类型进行校验
+// Ensure that the default values passed in are of type string; the values in the current form are of type string, which can be handled simply. Multiple default value types may be required for verification in the future.
 const stringifyDefaultValue = (value: object) => {
   if (!value) {
     return undefined;
   }
   return Object.keys(value).reduce((acc, key) => {
     const val = value[key];
-    // bool 需要特殊处理
+    // Bool needs special treatment
     if (typeof val === 'string' || isBoolean(val)) {
       acc[key] = val;
     } else {

@@ -99,7 +99,7 @@ export const useRegenerateMessage = () => {
 };
 
 /**
- * 根据message_id重新发送消息
+ * Resend messages according to message_id
  */
 export const useRegenerateMessageByUserMessageId = () => {
   const regenerateMessage = useRegenerateMessage();

@@ -15,7 +15,7 @@
  */
  
 /**
- * 节点基础类型定义
+ * Node base type definition
  */
 export enum StandardNodeType {
   Start = '1',
@@ -38,32 +38,32 @@ export enum StandardNodeType {
   SetVariable = '20',
   Loop = '21',
   Intent = '22',
-  // 对于新节点，可以使用文本的形式来编写 StandardNodeType，不再依赖 NodeTemplateType
+  // For new nodes, StandardNodeType can be written in text form, without relying on NodeTemplateType.
   ImageCanvas = '23',
   SceneChat = '25',
   SceneVariable = '24',
 
-  /** 长期记忆，long term memory */
+  /** Long term memory */
   LTM = '26',
-  /** 数据库写入节点 */
+  /** database write node */
   DatasetWrite = '27',
   Batch = '28',
 
   Continue = '29',
-  // 输入节点
+  // input node
   Input = '30',
 
   Comment = '31',
-  // 变量聚合
+  // variable aggregation
   VariableMerge = '32',
-  // 查询消息列表
+  // Query message list
   QueryMessageList = '37',
-  // 清空上下文节点
+  // clear the context node
   ClearContext = '38',
-  // 创建会话节点
+  // Create a session node
   CreateConversation = '39',
 
-  // 触发器 CURD 4个节点
+  // Trigger CURD 4 nodes
   // TriggerCreate = '33',
   // TriggerUpdate = '34',
   TriggerUpsert = '34',
@@ -72,34 +72,34 @@ export enum StandardNodeType {
 
   VariableAssign = '40',
 
-  // http 节点
+  // HTTP Node
   Http = '45',
-  // 数据库 crud 节点
+  // Database crud node
 
   DatabaseUpdate = '42',
   DatabaseQuery = '43',
   DatabaseDelete = '44',
   DatabaseCreate = '46',
 
-  // 更新会话
+  // Update session
   UpdateConversation = '51',
 
-  // 删除会话
+  // Delete session
   DeleteConversation = '52',
 
-  // 查询会话列表
+  // Query session list
   QueryConversationList = '53',
 
-  // 查询会话历史
+  // Query session history
   QueryConversationHistory = '54',
 
-  // 创建消息（某个会话）
+  // Create a message (a conversation)
   CreateMessage = '55',
 
-  // 更新消息（某个会话的某个消息）
+  // Update message (a message for a session)
   UpdateMessage = '56',
 
-  // 删除消息（某个会话的某个消息）
+  // Delete a message (a message for a session)
   DeleteMessage = '57',
 
   JsonStringify = '58',
@@ -107,7 +107,7 @@ export enum StandardNodeType {
 }
 
 /**
- * 除了 Api、SubWorkflow、Imageflow 之外的基础节点类型
+ * Basic node types other than APIs, SubWorkflow, and Imageflow
  */
 export type BasicStandardNodeTypes = Exclude<
   StandardNodeType,
@@ -116,7 +116,7 @@ export type BasicStandardNodeTypes = Exclude<
   | StandardNodeType.SubWorkflow
 >;
 
-/** 节点展示排序 */
+/** Node display sorting */
 export const NODE_ORDER = {
   [StandardNodeType.Start]: 1,
   [StandardNodeType.End]: 2,
@@ -148,7 +148,7 @@ export const NODE_ORDER = {
   [StandardNodeType.TriggerDelete]: 28,
 };
 
-/** 会话类节点 */
+/** session class node */
 export const CONVERSATION_NODES = [
   StandardNodeType.CreateConversation,
   StandardNodeType.UpdateConversation,
@@ -156,7 +156,7 @@ export const CONVERSATION_NODES = [
   StandardNodeType.QueryConversationList,
 ];
 
-/** 消息类节点 */
+/** message class node */
 export const MESSAGE_NODES = [
   StandardNodeType.CreateMessage,
   StandardNodeType.UpdateMessage,
@@ -164,7 +164,7 @@ export const MESSAGE_NODES = [
   StandardNodeType.QueryMessageList,
 ];
 
-/** 会话历史类节点 */
+/** session history class node */
 export const CONVERSATION_HISTORY_NODES = [
   StandardNodeType.QueryConversationHistory,
   StandardNodeType.ClearContext,

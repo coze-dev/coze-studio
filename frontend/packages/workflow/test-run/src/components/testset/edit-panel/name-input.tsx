@@ -31,7 +31,7 @@ function count(val: unknown) {
   return val ? `${val}`.length : 0;
 }
 
-/** 需要后缀 & blur trim，扩展下原始的input */
+/** The suffix & blur trim is required to expand the original input */
 function InnerInput(props: InputProps) {
   const onBlur = (evt: FocusEvent<HTMLInputElement>) => {
     props.onChange?.(

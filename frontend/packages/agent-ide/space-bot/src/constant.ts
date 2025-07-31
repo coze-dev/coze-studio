@@ -20,8 +20,8 @@ import { OpenBlockEvent } from '@coze-arch/bot-utils';
 export { SkillKeyEnum };
 
 /**
- * `模块折叠 有关事件` 和 `模块主键` 之间的映射关系
- * @deprecated 废弃，请使用@coze-agent-ide/tool中的openBlockEventToToolKey
+ * Module folding, the mapping between related events and module primary keys
+ * @Deprecated, please use the openBlockEventToToolKey in @code-agent-ide/tool
  */
 export const openBlockEventToBlockKey = {
   [OpenBlockEvent.PLUGIN_API_BLOCK_OPEN]: SkillKeyEnum.PLUGIN_API_BLOCK,

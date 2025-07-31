@@ -15,26 +15,26 @@
  */
  
 /**
- * 按照功能导出所有 hooks
+ * Export all hooks by function
  */
 
-// 文档管理
+// Document Management
 export { useDocumentManagement } from './use-case/use-document-management';
 
-// 文档信息
+// Document information
 export { useDocumentInfo } from './life-cycle/use-document-info';
 
-// 文档片段数据
+// document fragment data
 export { useSliceData } from './life-cycle/use-slice-data';
 
-// 层级分段数据
+// hierarchical segmented data
 export { useLevelSegments } from './use-case/use-level-segments';
 
-// 文档片段计数
+// Document fragment count
 export { useSliceCounter } from './use-case/use-slice-counter';
 
-// 文件预览
+// file preview
 export { useFilePreview } from './use-case/use-file-preview';
 
-// 模态框
+// modal box
 export { useModals } from './use-case/use-modals';

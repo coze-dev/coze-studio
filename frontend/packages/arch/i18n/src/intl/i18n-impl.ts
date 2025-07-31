@@ -27,8 +27,8 @@ export interface IntlConstructorOptions {
 }
 let intlInstance: any = null;
 /**
- * I18n实例
- * 自定义配置
+ * I18n example
+ * custom configuration
  */
 class Intl {
   plugins: any[];
@@ -38,7 +38,7 @@ class Intl {
     this.i18nInstance = opts?.i18nInstance ?? new I18next();
   }
   /**
-   * i18n 没有定义类型，这里声明 any
+   * I18n does not define a type, declare any here
    */
   use(plugin: any) {
     if (!this.plugins.includes(plugin)) {
@@ -119,7 +119,7 @@ class Intl {
     if (!that.i18nInstance || !that.i18nInstance.init) {
       return fallbackText ?? (Array.isArray(keys) ? keys[0] : keys);
     }
-    // 有人给 key 传空字符串?
+    // Someone passed an empty string to the key?
     if (!keys || (typeof keys === 'string' && !keys.trim())) {
       return '';
     }

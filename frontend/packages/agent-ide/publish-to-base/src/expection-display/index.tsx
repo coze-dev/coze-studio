@@ -35,7 +35,7 @@ export const ExceptionDisplay: FC<{ title: string; image: ReactNode }> = ({
 );
 
 /**
- * 加载失败
+ * load failed
  */
 export const LoadFailedDisplay = () => (
   <ExceptionDisplay
@@ -45,7 +45,7 @@ export const LoadFailedDisplay = () => (
 );
 
 /**
- * 无数据
+ * No data
  */
 export const NoDataDisplay = () => (
   <ExceptionDisplay

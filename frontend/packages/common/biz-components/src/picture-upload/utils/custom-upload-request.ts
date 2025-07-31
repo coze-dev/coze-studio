@@ -54,11 +54,11 @@ function customUploadRequest(
   try {
     const { fileInstance } = file;
 
-    // 业务
+    // business
     if (fileInstance) {
       const extension = getFileExtension(file.name);
 
-      //   业务
+      //   business
       (async () => {
         try {
           const base64 = await getBase64(fileInstance);
@@ -72,7 +72,7 @@ function customUploadRequest(
           onSuccess?.(result.data);
           afterUploadCustom?.();
         } catch (error) {
-          // 如参数校验失败情况会走到catch
+          // If parameter validation fails, it will go to catch.
           afterUploadCustom?.();
         }
       })();

@@ -56,7 +56,7 @@ export const useCropperImg = ({
     handleGradientPosition();
   }, [url]);
 
-  // 设置最大缩放比例
+  // Set the maximum zoom ratio
   const onZoom = () => {
     const {
       width = 0,
@@ -78,7 +78,7 @@ export const useCropperImg = ({
         });
       }
     }
-    // TODO:因没有缩放end事件，缩放实时获取主题色大图卡顿严重，故此场景临时先不获取主题色，修改交互or尝试webworker解决此问题
+    // TODO: Because there is no zoom end event, the zoom gets the theme color in real time. The large picture card is serious, so the scene does not get the theme color temporarily, modify the interaction or try webworker to solve this problem.
     // await handleThemeColor();
   };
 
@@ -95,12 +95,12 @@ export const useCropperImg = ({
     }
     const canvasData = cropperObj?.getCanvasData();
     const imgData = cropperObj?.getImageData();
-    // 图片下边缘 距离 裁剪区下边缘的偏移距离
+    // Image lower edge, distance, offset distance of lower edge of crop area
     const scaleTop = imgData.height + canvasData.top - size.height;
-    // 图片左边缘 距离 裁剪区左 边缘的偏移距离
+    // Image left edge, distance, offset distance from the left edge of the crop area
     const scaleLeft = ceil(imgData.left + canvasData?.left, 2);
 
-    // 图片上下拖拽不能有超出图片容器外
+    // Drag the picture up and down, it cannot exceed the picture container.
     if (y < 0) {
       cropperRef.current?.cropper.setCanvasData({
         top: 0,
@@ -112,7 +112,7 @@ export const useCropperImg = ({
       });
     }
 
-    // UX产品需求： 左右拖动不能超过 固定“对话气泡容器” left or right 80%
+    // UX product requirements: drag left and right cannot exceed, fix "dialogue bubble container" left or right 80%
     const maxRightOffset = floor(
       (size.width - centerWidth) / 2 + centerWidth * 0.4,
       2,
@@ -137,9 +137,9 @@ export const useCropperImg = ({
 
   const handleThemeColor = async () => {
     const cropperObj = cropperRef.current?.cropper;
-    // 大图move卡顿优化方案：move停止时获取到主题色前 禁止移动
+    // Large picture move card optimization scheme: move is prohibited before the theme color is obtained when the move stops
     cropperObj?.disable();
-    // 为了加载快一些，设置图片质量中等
+    // To load faster, set the picture quality to medium
     const corp = cropperObj?.getCroppedCanvas()?.toDataURL('image/webp', 0.7);
     if (corp) {
       const color = await getImageThemeColor(corp);

@@ -30,7 +30,7 @@ import { Select, Tooltip } from '@coze-arch/coze-design';
 
 import { type TreeNodeCustomData } from '../custom-tree-node/type';
 
-// @coze-arch/bot-md-box-adapter/lazy 的 lazy 是 md-box 自己的 lazy，主要是懒加载 mathfull 这种大包，这里我们自己的 lazy 是为了 lazy md-box 整个包
+// @Coze-arch/bot-md-box-adapter/lazy lazy is md-box's own lazy, mainly lazy to load large packages like mathfull, here our own lazy is for lazy md-box entire package
 const LazyMdBox = lazy(async () => {
   const { MdBoxLazy } = await import('@coze-arch/bot-md-box-adapter/lazy');
   return {
@@ -69,7 +69,7 @@ export const ResponseFormatSelect: FC<IResponseFormatSelect> = props => {
       data-testid={testId}
       // eslint-disable-next-line complexity
       onChange={v => {
-        // 如果切到文本模式，需要将 output 重置为仅一个 string 类型的值
+        // If you switch to text mode, you need to reset output to only one value of type string
         if (onlyString) {
           let newValue = [
             {
@@ -83,14 +83,14 @@ export const ResponseFormatSelect: FC<IResponseFormatSelect> = props => {
             newValue = WorkflowBatchService.singleOutputMetasToList(
               newValue as ViewVariableTreeNode[],
             ) as TreeNodeCustomData[];
-            // 如果本身有值，就取第一个，预期：复用变量名/描述
+            // If there is a value in itself, take the first one, expect: reuse variable name/description
             if (outputValue?.[0]) {
               newValue = [outputValue[0]];
             }
             if (outputValue?.[0].children?.[0]) {
               newValue[0].children = [outputValue?.[0].children?.[0]];
             }
-            // 仅修改类型到 string
+            // Modify type to string only
             if (
               newValue?.[0].children?.[0].type &&
               newValue?.[0].children?.[0].type !== ViewVariableType.String
@@ -98,11 +98,11 @@ export const ResponseFormatSelect: FC<IResponseFormatSelect> = props => {
               newValue[0].children[0].type = ViewVariableType.String;
             }
           } else {
-            // 如果本身有值，就取第一个，预期：复用变量名/描述
+            // If there is a value in itself, take the first one, expect: reuse variable name/description
             if (outputValue?.[0]) {
               newValue = [outputValue[0]];
             }
-            // 仅修改类型到 string
+            // Modify type to string only
             if (newValue[0].type !== ViewVariableType.String) {
               newValue[0].type = ViewVariableType.String;
             }

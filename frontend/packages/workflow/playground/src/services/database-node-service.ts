@@ -19,9 +19,9 @@ import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { type ConditionOperator } from '@coze-workflow/base';
 export abstract class DatabaseNodeService {
   /**
-   * 将数据库设置字段转换为数据库设置字段DTO。
-   * @param name 数据库设置字段DTO的名称
-   * @param value 整个表单数据
+   * Converts a database settings field to a database settings field DTO.
+   * @Param name Name of database settings field DTO
+   * @Param value entire form data
    */
   abstract convertSettingFieldToDTO(
     name: string,
@@ -29,23 +29,23 @@ export abstract class DatabaseNodeService {
     node: FlowNodeEntity,
   ): any;
   /**
-   * 将数据库设置字段DTO转换为数据库设置字段。
-   * @param name 数据库设置字段DTO的名称
-   * @param value 整个表单数据
+   * Converts the database settings field DTO to a database settings field.
+   * @Param name Name of database settings field DTO
+   * @Param value entire form data
    */
   abstract convertSettingFieldDTOToField(name: string, value: any): any;
   /**
-   * 将表单中的条件DTO转换为条件
-   * @param name 条件DTO的名称
-   * @param value 整个表单数据
+   * Converts a conditional DTO in a form to a condition
+   * @param name name of conditional DTO
+   * @Param value entire form data
    */
   abstract convertConditionDTOToCondition(name: string, value: any): any;
 
   /**
-   * 将条件逻辑DTO转换为条件逻辑。
-   * @param name 条件逻辑DTO的名称
-   * @param value 条件逻辑DTO的值
-   * @returns value 整个表单数据
+   * Converts conditional logic DTO to conditional logic.
+   * @param name name of conditional logic DTO
+   * @Param value The value of the conditional logic DTO
+   * @Returns value of entire form data
    */
   abstract convertConditionLogicDTOToConditionLogic(
     name: string,
@@ -53,10 +53,10 @@ export abstract class DatabaseNodeService {
   ): any;
 
   /**
-   * 将条件逻辑转换为条件逻辑DTO。
-   * @param name 条件逻辑的名称
-   * @param value 条件逻辑的值
-   * @returns value 整个表单数据
+   * Convert conditional logic to conditional logic DTO.
+   * @param name name of conditional logic
+   * @param value value of conditional logic
+   * @Returns value of entire form data
    */
   abstract convertConditionLogicToConditionLogicDTO(
     name: string,
@@ -64,9 +64,9 @@ export abstract class DatabaseNodeService {
   ): any;
 
   /**
-   * 将条件转换为条件DTO
-   * @param name 条件的名称
-   * @param value 整个表单数据
+   * Convert Condition to Conditional DTO
+   * @param name The name of the condition
+   * @Param value entire form data
    */
   abstract convertConditionToDTO(
     name: string,
@@ -75,9 +75,9 @@ export abstract class DatabaseNodeService {
   ): any;
 
   /**
-   * 判断当前条件是否不需要右值
-   * @param condition 当前条件数据
-   * @returns 如果条件不需要左值则返回true，否则返回false
+   * Determine whether the current condition does not require an rvalue
+   * @param condition Current condition data
+   * @Returns true if the condition does not require an lvalue, false otherwise
    */
   abstract checkConditionOperatorNoNeedRight(
     conditionOperator?: ConditionOperator,
@@ -86,12 +86,12 @@ export abstract class DatabaseNodeService {
   abstract store: any;
 
   /**
-   * 查询当前数据库数据
+   * Query the current database data
    */
   abstract load(id: string): void;
 
   /**
-   * 清空数据库缓存的错误信息
+   * Error messages for clearing the database cache
    */
   abstract clearDatabaseError(id: string): void;
 }

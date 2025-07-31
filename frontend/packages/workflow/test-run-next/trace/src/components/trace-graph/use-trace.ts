@@ -35,7 +35,7 @@ export const useTrace = () => {
 
   const fetch = useMemoizedFn(async (logId: string) => {
     setLoading(true);
-    /** 查询日志时，开始结束时间必传，由于用户可查范围为 7 天内，所以直接伪造 7 天时间间隔即可 */
+    /** When querying the log, the start and end time must be passed. Since the user can check the range within 7 days, he can directly fake the 7-day time interval. */
     const now = dayjs().endOf('day').valueOf();
     const end = dayjs()
       .subtract(MAX_TRACE_TIME, 'day')

@@ -37,7 +37,7 @@ export const useSendMessage = () => {
   const testRunService = useTestRunService();
 
   const send = useMemoizedFn(async (text: string) => {
-    // 前端先填入回答
+    // Fill in the answer first
     const temp: ReceivedMessage = {
       content: text,
       type: MessageType.Answer,

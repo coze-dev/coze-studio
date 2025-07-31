@@ -119,8 +119,8 @@ const createCron = (schedule: TaskSchedule) => {
   return cronGenerator.every(day).days().atHour(hour).atMinute(0).toString();
 };
 export const parseCron: (cron: string) => TaskSchedule = cronExpr => {
-  // 目前需求只有 5 位 分、时、day of month、月、day of week
-  // bytescheduler 只支持 6 位 秒、分、时、day of month、月、day of week
+  // The current demand is only 5, minutes, hours, day of month, month, day of week
+  // Bytescheduler only supports 6 bits, seconds, minutes, hours, day of month, month, day of week
   const cronUnits = cronExpr?.split?.(' ').slice?.(1);
   const hour = cronUnits?.at(1);
   const dayOfMonthIndex = 2;
@@ -128,7 +128,7 @@ export const parseCron: (cron: string) => TaskSchedule = cronExpr => {
   const dayOfWeek = cronExpr?.at(-1);
 
   const numberHour = Number(hour);
-  // 通配符
+  // wild-card
   const wildcard = '*';
   if (dayOfWeek !== wildcard) {
     return ['weekly', Number(dayOfWeek), numberHour];
@@ -142,7 +142,7 @@ export const parseCron: (cron: string) => TaskSchedule = cronExpr => {
   return ['daily', numberHour];
 };
 
-// 将key转化为对应文案
+// Convert key to corresponding copy
 // export const getOptionNodeText = (val: TaskSchedule): string[] => {
 //   let resultData = treeData();
 //   const nodeList = val?.map(item => {
@@ -205,7 +205,7 @@ interface FixCronjobSelectProps {
   hasError?: boolean;
 }
 
-/** 选择时间和时区组件 */
+/** Select time and time zone components */
 export const FixCronjobSelect: React.FC<FixCronjobSelectProps> = ({
   value: _value,
   onChange: _onChange,
@@ -237,7 +237,7 @@ export const FixCronjobSelect: React.FC<FixCronjobSelectProps> = ({
         value={value ? parseCron(value) : void 0}
         onChange={v => {
           if (Array.isArray(v) && v.length) {
-            // 生成的 cron 表达式是 5 位 但需要 6 位
+            // The resulting cron expression is 5 bits, but 6 bits are required
             const cronExpr = `0 ${createCron(v as TaskSchedule)}`;
             onChange?.(cronExpr);
             return;

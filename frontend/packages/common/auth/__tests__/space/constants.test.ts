@@ -22,7 +22,7 @@ import { ESpacePermisson } from '../../src/space/constants';
 describe('Space Constants', () => {
   describe('ESpacePermisson', () => {
     it('应该定义所有必要的权限点', () => {
-      // 验证所有权限点都已定义
+      // Verify that all permission spots are defined
       expect(ESpacePermisson.UpdateSpace).toBeDefined();
       expect(ESpacePermisson.DeleteSpace).toBeDefined();
       expect(ESpacePermisson.AddBotSpaceMember).toBeDefined();
@@ -34,17 +34,17 @@ describe('Space Constants', () => {
     });
 
     it('应该为每个权限点分配唯一的值', () => {
-      // 创建一个集合来存储所有权限点的值
+      // Create a collection to store the values of all permission spots
       const permissionValues = new Set();
 
-      // 获取所有权限点的值
+      // Get values for all permission spots
       Object.values(ESpacePermisson)
         .filter(value => typeof value === 'number')
         .forEach(value => {
           permissionValues.add(value);
         });
 
-      // 验证权限点的数量与唯一值的数量相同
+      // The number of validation permission spots is the same as the number of unique values
       const numericKeys = Object.keys(ESpacePermisson).filter(
         key => !isNaN(Number(key)),
       ).length;
@@ -55,10 +55,10 @@ describe('Space Constants', () => {
 
   describe('SpaceRoleType', () => {
     it('应该正确导出 SpaceRoleType', () => {
-      // 验证 SpaceRoleType 已正确导出
+      // Verify that SpaceRoleType has been exported correctly
       expect(SpaceRoleType).toBeDefined();
 
-      // 验证 SpaceRoleType 包含必要的角色
+      // Verify that SpaceRoleType contains the necessary roles
       expect(SpaceRoleType.Owner).toBeDefined();
       expect(SpaceRoleType.Admin).toBeDefined();
       expect(SpaceRoleType.Member).toBeDefined();

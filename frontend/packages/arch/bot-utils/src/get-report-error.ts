@@ -17,8 +17,8 @@
 import { isObject } from 'lodash-es';
 
 /**
- * @param inputError 传啥都行，一般是 catch (e) 那个 e
- * @param reason 解释
+ * @param inputError can pass anything, usually catch (e) that e.
+ * @param reason explanation
  */
 export const getReportError = (
   inputError: unknown,

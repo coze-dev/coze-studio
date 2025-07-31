@@ -53,7 +53,7 @@ export interface AddTypeContentProps {
 export const CozeKnowledgeAddTypeContent = (params: AddTypeContentProps) => {
   const { onImportKnowledgeTypeChange, onSelectFormatTypeChange } = params;
   const formApi = useFormApi<CozeKnowledgeAddTypeContentFormData>();
-  // 使用 useState 保证能重新渲染
+  // Use useState to ensure re-rendering
   const [currentFormatType, setCurrentFormatType] = useState(FormatType.Text);
   const [iconInfoGenerate, setIconInfoGenerate] = useState<{
     name: string;

@@ -30,8 +30,8 @@ type AllNonOptionalKeys<T> = {
 }[keyof T];
 
 /**
- * 要求参数必传,可以保留 undefined 取值
- * 防止透传过程缺失 key
+ * It is required that the parameters must be passed, and the undefined value can be reserved.
+ * Prevent missing keys during passthrough
  * refer: https://stackoverflow.com/a/75389230/7526989
  */
 export type NormalizeParameter<T> = {

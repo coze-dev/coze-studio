@@ -34,23 +34,23 @@ export enum MockDataStatus {
 export interface MockDataWithStatus {
   /** key */
   key: string;
-  /**  字段名称 */
+  /**  field name */
   label: string;
-  /**  字段值 */
+  /**  field value */
   realValue?: string | number | boolean;
-  /**  展示使用 */
+  /**  display use */
   displayValue?: string;
-  /**  描述 */
+  /**  describe */
   description?: string;
-  /**  是否必填 */
+  /**  Is it required? */
   isRequired: boolean;
-  /**  字段数据类型 */
+  /**  field data type */
   type: MockDataValueType;
   /**  for array */
   childrenType?: MockDataValueType;
-  /**  字段状态 */
+  /**  Field Status */
   status: MockDataStatus;
-  /**  字段子节点 */
+  /**  Field sub-node */
   children?: MockDataWithStatus[];
 }
 

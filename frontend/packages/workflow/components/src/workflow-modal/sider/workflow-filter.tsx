@@ -105,7 +105,7 @@ const WorkflowFilter = forwardRef<
         }
 
         const resp = await ProductApi.PublicGetProductCategoryList({
-          // 模版分类对于 工作流 / 图像流 通用
+          // Template classification, for workflow/image circulation
           entity_type: ProductEntityType.TemplateCommon,
           need_empty_category: false,
         });
@@ -172,7 +172,7 @@ const WorkflowFilter = forwardRef<
     useImperativeHandle(ref, () => ({
       getCurrent: () => tags?.data.find(item => item.type === currentValue),
     }));
-    /** 展示空间流程, 我的/团队的 */
+    /** Showcase space flow, my/team's */
     const clickSpaceContent = (category?: WorkflowCategory) => {
       context?.updateModalState({
         isSpaceWorkflow: category !== WorkflowCategory.Example,

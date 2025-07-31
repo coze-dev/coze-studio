@@ -72,7 +72,7 @@ const getActiveConnectorTarget = ({
 
   return activeConnector?.target;
 };
-/** 经验值 */
+/** experience point */
 const LOCK_TIME = 300;
 
 export const useConnectorScroll = () => {
@@ -97,14 +97,14 @@ export const useConnectorScroll = () => {
   });
 
   /**
-   * 需要 3 个条件同时满足
-   * 1. 随着页面滚动到不同锚点，tab 栏激活对应区域的按钮
-   * 2. 点击 tab 栏 对应按钮激活 直接滚动到页面对应区域
-   * 3. 当页面高度不足滚动时，点击 tab 栏也要激活对应按钮
+   * All three conditions need to be met simultaneously
+   * 1. As the page scrolls to different anchors, the tab bar activates the button for the corresponding area
+   * 2. Click the tab bar, activate the corresponding button, and scroll directly to the corresponding area of the page
+   * 3. When the page height is insufficient to scroll, click the tab bar to activate the corresponding button
    *
-   * 由于滚动是 smooth 效果 条件 2 与 3 会发生冲突 当用户点击 tab 栏滚动时需要进行 lock
-   * lock 时 条件 1 不触发
-   * 需要给条件 3 一个兜底的解锁机制
+   * Since the scroll is a smooth effect, conditions 2 and 3 will conflict, and the lock needs to be performed when the user clicks the tab bar to scroll.
+   * Condition 1 does not fire when locked
+   * Need to give condition 3 an unlocking mechanism with a bottom line
    */
   const manualScrollLockRef = useRef(false);
 
@@ -116,12 +116,12 @@ export const useConnectorScroll = () => {
     manualScrollLockRef.current = false;
   };
 
-  /** 停止滚动 LOCK_TIME 后解锁 */
+  /** Unlock after LOCK_TIME */
   const manualScrollUnLockDebounce = useDebounceFn(manualScrollUnLock, {
     wait: LOCK_TIME,
   });
 
-  /** 兜底解锁机制 如果用户点击 tab 栏但没有解锁 LOCK_TIME 后也应该解锁 */
+  /** The bottom unlocking mechanism, if the user clicks the tab bar but does not unlock the LOCK_TIME should also be unlocked */
   const baseUnLockDebounce = useDebounceFn(manualScrollUnLock, {
     wait: LOCK_TIME,
   });
@@ -149,7 +149,7 @@ export const useConnectorScroll = () => {
     changeActiveConnectorTarget();
 
     const onScroll = () => {
-      // 页面发生了滚动则不需要兜底机制
+      // If the page scrolls, no safety net mechanism is required
       baseUnLockDebounce.cancel();
       manualScrollUnLockDebounce.run();
       changeActiveConnectorTarget();

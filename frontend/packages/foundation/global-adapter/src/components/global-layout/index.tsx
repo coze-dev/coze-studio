@@ -38,7 +38,7 @@ export const GlobalLayout: FC = () => {
   const update = useUpdate();
   const currentLocale = userInfo?.locale ?? navigator.language ?? 'en-US';
 
-  // 历史原因，en-US 需要被转换为 en
+  // For historical reasons, en-US needs to be converted to en.
   const transformedCurrentLocale =
     currentLocale === 'en-US' ? 'en' : currentLocale;
 
@@ -46,7 +46,7 @@ export const GlobalLayout: FC = () => {
     if (userInfo && I18n.language !== transformedCurrentLocale) {
       localStorage.setItem('i18next', transformedCurrentLocale);
       I18n.setLang(transformedCurrentLocale);
-      // 强制更新，否则切换语言不生效
+      // Force an update, otherwise the language switch will not take effect
       update();
     }
   }, [userInfo, transformedCurrentLocale, update]);

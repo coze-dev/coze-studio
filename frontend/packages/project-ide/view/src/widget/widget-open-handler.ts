@@ -72,14 +72,14 @@ export class WidgetOpenHandler implements OpenHandler {
           ...options,
           area,
         });
-        /** 创建 widget 时尝试从内存中恢复状态 */
+        /** Attempt to restore state from memory when creating a widget */
         this.layoutRestorer.restoreWidget(widget);
-        /** 监听销毁时尝试保存状态到内存中 */
+        /** Attempt to save state to memory while listening for destruction */
         widget.onDispose(() => this.layoutRestorer.storeWidget(widget));
       }
       widget.parent?.show();
       /**
-       * 如果打开的是 bottom，并且底部比较打开的不够高则自动打开一定高度
+       * If the bottom is opened, and the bottom is not high enough compared to the open one, it will automatically open a certain height.
        */
       if (
         area === LayoutPanelType.BOTTOM_PANEL &&
@@ -118,7 +118,7 @@ export class WidgetOpenHandler implements OpenHandler {
       widget.uri = uri;
       widget.onOpenRequest?.(uri, options);
 
-      // 区域唯一展示
+      // The only display in the region
       widget.show();
     }
   }

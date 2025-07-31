@@ -48,7 +48,7 @@ export default function ParamOperator({
 }: ParamOperatorProps) {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   const isLimited = level >= 3;
-  // 是否展示新增子项的按钮
+  // Whether to display the button for adding a child item
   const needRenderAppendChild =
     ObjectLikeTypes.includes(data.type) && !isLimited;
   const computedOperatorStyle = (): React.CSSProperties => {

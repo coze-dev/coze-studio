@@ -34,7 +34,7 @@ import { WorkflowPasteShortcutsContribution } from '../paste';
 import { safeFn } from '../../utils';
 
 /**
- * 加载文件快捷键
+ * Load file shortcut
  */
 @injectable()
 export class WorkflowLoadShortcutsContribution
@@ -52,7 +52,7 @@ export class WorkflowLoadShortcutsContribution
   private saveService: WorkflowSaveService;
   @inject(WorkflowOperationService) operationService: WorkflowOperationService;
   @inject(EntityManager) private entityManager: EntityManager;
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowLoadShortcutsContribution.type,
@@ -61,21 +61,21 @@ export class WorkflowLoadShortcutsContribution
       execute: safeFn(this.handle.bind(this)),
     });
   }
-  /** 处理 */
+  /** process */
   private async handle(): Promise<void> {
     const data = await this.load();
     if (!data) {
       return;
     }
     if (data.json.nodes.length > 200) {
-      // 大型工作流，刷新页面
+      // Large workflow, page refresh
       await this.refresh(data);
     } else {
-      // 小型工作流，重新渲染
+      // Small workflow, re-rendering
       await this.rerender(data);
     }
   }
-  /** 刷新 */
+  /** refresh */
   private async refresh(data: WorkflowExportData): Promise<void> {
     await this.operationService.save(
       data.json,
@@ -84,7 +84,7 @@ export class WorkflowLoadShortcutsContribution
     await this.globalState.reload();
     window.location.reload();
   }
-  /** 重新渲染 */
+  /** re-render */
   private async rerender(data: WorkflowExportData): Promise<void> {
     this.document.clear();
     this.entityManager.changeEntityLocked = true;
@@ -96,7 +96,7 @@ export class WorkflowLoadShortcutsContribution
     await this.saveService.fitView();
     this.saveService.save();
   }
-  /** 加载 */
+  /** load */
   private load(): Promise<WorkflowExportData | undefined> {
     return new Promise((resolve, reject) => {
       const handleError = (error: Error) => {
@@ -139,7 +139,7 @@ export class WorkflowLoadShortcutsContribution
       fileInput.click();
     });
   }
-  /** 验证数据 */
+  /** validation data */
   private validate(data: WorkflowExportData): boolean {
     if (data.type !== WORKFLOW_EXPORT_TYPE) {
       return false;

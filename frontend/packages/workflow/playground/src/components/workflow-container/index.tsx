@@ -82,7 +82,7 @@ import { useDataCompensation } from './use-data-compensation';
 import styles from './index.module.less';
 
 /**
- * 流程画布
+ * Process Canvas
  */
 const WorkflowContainer = forwardRef<
   WorkflowPlaygroundRef,
@@ -105,7 +105,7 @@ const WorkflowContainer = forwardRef<
   const addNodeRef = useRef<AddNodeRef>(null);
   const hasFitView = useRef<boolean>(false);
   const isNodesMount = useNodesMount();
-  // 同步组件属性到 globalStatus
+  // Synchronize component properties to globalStatus
   useMemo(() => {
     const { spaceList, ...playgroundProps } = props;
 
@@ -115,14 +115,14 @@ const WorkflowContainer = forwardRef<
     });
   }, [props]);
 
-  // 初始化成功
+  // Initialization successful
   useEffect(() => {
     if (!loading && !loadingError && isNodesMount) {
       props.onInit?.(workflowState);
     }
   }, [loading, isNodesMount, loadingError, workflowState]);
 
-  // 监听 TTI 事件，执行数据补偿操作，并保存草稿
+  // Listen for TTI events, perform data compensation operations, and save drafts
   useDataCompensation(workflowState);
 
   const onDragOver: DragEventHandler<HTMLDivElement> = useCallback(event => {
@@ -170,13 +170,13 @@ const WorkflowContainer = forwardRef<
     cancelTestRun: () => cancelTestRun(),
     showTestRunResult: (executeIdOrResp, subExecuteId) => {
       if (!executeIdOrResp) {
-        // 显示最新一次试运行结果
+        // Show results of the latest practice run
         showResult();
       } else if (typeof executeIdOrResp === 'string') {
-        // 显示指定运行 ID 的结果
+        // Display the result of the specified run ID
         showResult({ executeId: executeIdOrResp, subExecuteId });
       } else {
-        // 直接显示结果
+        // Direct display of results
         showResult({ processResp: executeIdOrResp });
       }
     },
@@ -209,7 +209,7 @@ const WorkflowContainer = forwardRef<
       <Spin spinning={true} style={{ height: '100%', width: '100%' }} />
     );
   } else if (loadingError) {
-    // 触发异常 走顶层 error boundary fallback
+    // Trigger exception, go to the top error boundary fallback
     throw new CustomError('normal_error', loadingError);
   } else {
     const Sidebar = props.sidebar;
@@ -226,7 +226,7 @@ const WorkflowContainer = forwardRef<
               <WorkflowHeader />
             )}
             <RetrieveBanner />
-            {/* project 内无需展示 */}
+            {/* No need to display within the project */}
             {!workflowState.projectId && <ModifyBanner />}
             <div className={`${styles.workflowContent} clean-code`}>
               {!readonly && Sidebar ? <Sidebar ref={addNodeRef} /> : null}
@@ -264,7 +264,7 @@ const WorkflowContainer = forwardRef<
                   </div>
                 </div>
               </AddNodeModalProvider>
-              {/* 用来渲染画布内部局部测拉窗的占位，会挤压画布 */}
+              {/* The space occupied by the local pull window used to render the interior of the canvas will squeeze the canvas */}
               <WorkflowInnerSideSheetHolder />
             </div>
           </div>

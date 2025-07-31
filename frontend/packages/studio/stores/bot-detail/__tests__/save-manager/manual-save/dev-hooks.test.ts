@@ -25,7 +25,7 @@ import {
 } from '../../../src/save-manager/utils/save-fetcher';
 import { saveDevHooksConfig } from '../../../src/save-manager/manual-save/dev-hooks';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../../src/store/bot-skill', () => ({
   useBotSkillStore: {
     getState: vi.fn(),
@@ -45,7 +45,7 @@ describe('dev-hooks save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotSkillStore.getState as any).mockReturnValue({
       devHooks: mockDevHooks,
     });
@@ -66,12 +66,12 @@ describe('dev-hooks save manager', () => {
     } as any as HookInfo;
     await saveDevHooksConfig(newConfig);
 
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       hook_info: newConfig,
     });
 
-    // 验证 saveFetcher 被调用，并且参数正确
+    // Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemType.HOOKINFO,

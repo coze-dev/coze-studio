@@ -66,8 +66,8 @@ const getFileListDefaultValue = (input: any): LiteralExpression => {
 };
 
 /**
- * 获取子 workflow 节点入参的默认值，定义在子 workflow start 节点参数的 defaultValue
- * @param input 子 workflow 参数定义
+ * Get the default value of the imported parameter of the child workflow node, and define the defaultValue of the parameter in the child workflow start node
+ * @Param input workflow parameter definition
  * @returns
  */
 export const getInputDefaultValue = (

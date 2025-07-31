@@ -36,13 +36,13 @@ export const FORM_META: FormMetaV2<FormData> = {
   validateTrigger: ValidateTrigger.onChange,
   validate: {
     nodeMeta: nodeMetaValidate,
-    // 校验输入
+    // check input
     'inputParameters.*.input': createValueExpressionInputValidate({
       required: true,
     }),
-    // 校验拼接内容
+    // Verify splicing content
     concatResult: ({ value, formValues }) => {
-      // 只有拼接模式才校验拼接内容
+      // Only the splicing mode verifies the splicing content.
       if (formValues?.method === StringMethod.Split) {
         return undefined;
       }
@@ -54,9 +54,9 @@ export const FORM_META: FormMetaV2<FormData> = {
         : undefined;
     },
 
-    // 校验分隔符
+    // check separator
     delimiter: ({ value: setterValue, formValues }) => {
-      // 只有分割模式才校验分隔符
+      // Only split mode checks delimiters
       if (formValues?.method === StringMethod.Concat) {
         return undefined;
       }
@@ -73,7 +73,7 @@ export const FORM_META: FormMetaV2<FormData> = {
     nodeMeta: fireNodeTitleChange,
     outputs: provideNodeOutputVariablesEffect,
 
-    // 监听字符处理方法变更
+    // Listen for character handling method changes
     method: [
       {
         effect: handleMethodChangeEffect,

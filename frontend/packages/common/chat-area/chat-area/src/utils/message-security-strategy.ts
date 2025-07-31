@@ -47,8 +47,8 @@ interface SecurityStrategy {
 }
 
 /**
- * 命中策略会删除这个 messageGroup
- * 服务端主动删除, 前端更新视图
+ * The hit policy will delete this messageGroup.
+ * Server level active delete, front-end update view
  */
 class DeleteMessageGroupStrategy implements SecurityStrategy {
   execute: SecurityStrategy['execute'] = async (message, { action }) => {
@@ -57,15 +57,15 @@ class DeleteMessageGroupStrategy implements SecurityStrategy {
       return;
     }
     /**
-     * 用户发送的消息 id 会等同于对应的 groupId
+     * The message id sent by the user will be equivalent to the corresponding groupId.
      */
     await action.deleteMessageGroupByUserMessageId(remove_query_id);
   };
 }
 
 /**
- * 命中这个策略会清空上下文
- * 服务端主动清空上下文, 前端更新 section_id 并更新视图
+ * Hitting this policy will clear the context
+ * Server level actively clears context, frontend updates section_id and updates view
  */
 class SetNewSectionIdStrategy implements SecurityStrategy {
   execute: SecurityStrategy['execute'] = (message, { action }) => {
@@ -91,8 +91,8 @@ class UpdateStoreSectionIdStrategy implements SecurityStrategy {
     }
 
     /**
-     * 用户连续发送消息时 上一轮的对话会被直接打断不会走到 success 等状态 直接进入新一轮对话的 pulling
-     * 有必要在更新时检查下 new_section_id 的时效性
+     * When the user continuously sends messages, the previous round of conversation will be directly interrupted, and will not go to a state such as success, directly entering a new round of conversation pulling
+     * It is necessary to check the timeliness of the new_section_id when updating
      */
     if (!action.checkNewSectionIdValid(message.reply_id)) {
       action.setNewSectionIdStruct(null);

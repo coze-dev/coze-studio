@@ -66,7 +66,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
   );
 
   /**
-   * 根据 modelMeta 生成默认值
+   * Generate default values from modelMeta
    */
   const getDefaultValue = useCallback(
     ({ modelType, value }: { modelType?: number; value?: object }) => {
@@ -109,7 +109,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
   const { getNodeSetterId, concatTestId } = useNodeTestId();
   const setterTestId = getNodeSetterId('llm-select');
 
-  // 【运维平台】由于无法拉取到模型列表，下拉框会渲染不出来，因此这里直接将已有的模型值展示
+  // [Operation and maintenance platform] Since the model list cannot be pulled, the drop-down box will not be rendered, so the existing model values will be directly displayed here.
   if (IS_BOT_OP && value) {
     return <JsonViewer data={value} />;
   }
@@ -128,7 +128,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
                 value.generationDiversity ?? defaultGenerationDiversity;
               let _defaultValue;
 
-              // 如果是自定义，优先级：缓存的用户值 > 默认
+              // If custom, priority: cached user value > default
               if (generationDiversity === GenerationDiversity.Customize) {
                 _defaultValue =
                   getDefaultValue({
@@ -147,7 +147,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
                 modelName: record.label as string,
                 modelType: record.value as number,
                 generationDiversity,
-                // 切换模型时不重置输出格式
+                // Do not reset the output format when switching models
                 responseFormat:
                   value?.responseFormat ?? _defaultValue?.responseFormat,
               });

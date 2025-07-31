@@ -30,7 +30,7 @@ export const useMessageBoxContext = () => {
 };
 
 /**
- * 如果上下文可能同时出现于 onboarding 等无 messageBoxContext 的场景中；
- * 如果被调用环境属于正常 message box 内，使用常规 useMessageBoxContext
+ * If the context may also appear in scenarios without messageBoxContext, such as onboarding;
+ * If the invoked environment is inside a normal message box, use regular useMessageBoxContext
  */
 export const useUnsafeMessageBoxContext = () => useContext(MessageBoxContext);

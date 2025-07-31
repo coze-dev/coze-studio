@@ -47,7 +47,7 @@ export interface MessageBoxProps {
   isMessageGroupFirstMessage?: boolean;
   isMessageGroupLastMessage?: boolean;
   renderFooter?: (refreshContainerWidth: () => void) => React.ReactNode;
-  /** 鼠标悬浮时展示的组件 */
+  /** Components displayed while the mouse is hovering */
   hoverContent?: React.ReactNode;
   children?: React.ReactNode;
   readonly?: boolean;
@@ -55,15 +55,15 @@ export interface MessageBoxProps {
   layout: Layout;
   showBackground: boolean;
   /**
-   * 右上角插槽
+   * Upper right slot
    */
   topRightSlot?: React.ReactNode;
   /*
-   * 开启图片自适应大小
+   * Turn on the picture auto-resizing.
    */
   enableImageAutoSize?: boolean;
   /**
-   * 图片自适应大小容器宽度
+   * Image auto-resizing container width
    */
   imageAutoSizeContainerWidth?: number;
   eventCallbacks?: IEventCallbacks;
@@ -84,11 +84,11 @@ export interface ContentBoxProps {
   layout: Layout;
   showBackground: boolean;
   /**
-   * 开启图片自适应大小
+   * Turn on the picture auto-resizing.
    */
   enableImageAutoSize?: boolean;
   /**
-   * 图片自适应大小容器宽度
+   * Image auto-resizing container width
    */
   isCardDisabled?: boolean;
   isContentLoading?: boolean;
@@ -122,22 +122,22 @@ export interface ComponentTypesMap {
   functionCallMessageBox: ComponentType<{
     functionCallMessageList: Message[];
     /**
-     * message 对应的一轮对话是否结束 没被打断 final answer 有返回完毕不管 suggest
+     * Whether the conversation corresponding to the message is over, not interrupted, and the final answer is returned, regardless of whether it is suggested
      */
     isRelatedChatComplete: boolean;
     /**
-     *  message 对应的一轮对话是否为假意打断
+     *  Whether the conversation corresponding to the message is a false interruption
      */
     isFakeInterruptAnswer: boolean;
     /**
-     * 消息是否来自正在进行的对话，根据responding.replyId判断
+     * Whether the message is from an ongoing conversation, as determined by respond.replyId
      */
     isMessageFromOngoingChat: boolean;
     getBotInfo: GetBotInfo;
   }>;
   messageActionBarFooter: ComponentType<{ refreshContainerWidth: () => void }>;
   messageActionBarHoverContent: ComponentType;
-  // TODO: 组件要细化到 message_type 渲染
+  // TODO: Components to be refined to message_type rendering
   receiveMessageBox: ComponentType<ReceiveMessageBoxProps>;
   receiveMessageBoxTopRightSlot: ComponentType;
   sendMessageBox: ComponentType<SendMessageBoxProps>;
@@ -164,15 +164,15 @@ export interface ComponentTypesMap {
   }>;
   clearContextIcon: ComponentType;
   /**
-   * 输入框整体顶部附加物
+   * Text box overall top add-on
    */
   inputAboveOutside: ComponentType;
   /**
-   * 输入框内部上方附加物
+   * Add-on inside text box
    */
   inputAddonTop: ComponentType;
   /**
-   * 输入框内部右侧插槽
+   * Text box inside right slot
    */
   inputRightActions?: ComponentType;
   chatInputTooltip?: ComponentType;

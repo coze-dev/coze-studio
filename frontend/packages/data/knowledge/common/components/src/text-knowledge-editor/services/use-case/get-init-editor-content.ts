@@ -15,7 +15,7 @@
  */
  
 /**
- * 编辑器对/n不会换行，所以需要转换为<br />标签
+ * The editor doesn't wrap/n, so it needs to be converted to a < br/> tag
  */
 export const getInitEditorContent = (content: string) => {
   if (content === '') {

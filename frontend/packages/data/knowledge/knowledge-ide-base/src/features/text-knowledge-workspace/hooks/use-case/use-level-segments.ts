@@ -30,10 +30,10 @@ interface UseLevelSegmentsParams {
 }
 
 /**
- * 处理层级分段数据的 hook
+ * Hooks for processing hierarchical segmented data
  */
 export const useLevelSegments = ({ curDoc }: UseLevelSegmentsParams) => {
-  // 用于层级分段选中滚动
+  // Scroll selected for hierarchical segmentation
   const [selectionIDs, setSelectionIDs] = useState<string[]>([]);
 
   const { levelSegments, setLevelSegments } = useKnowledgeStore(
@@ -43,33 +43,33 @@ export const useLevelSegments = ({ curDoc }: UseLevelSegmentsParams) => {
     })),
   );
 
-  // 获取层级分段 slice 列表
+  // Get a list of hierarchical segments and slices
   const { content: treeContent, loading: tosLoading } = useTosContent(
     curDoc?.chunk_strategy?.chunk_type === ChunkType.LevelChunk
       ? curDoc?.doc_tree_tos_url
       : undefined,
   );
 
-  // 使用 useMemo 缓存转换后的层级分段数据
+  // Use useMemo to cache hierarchical segmented data after conversion
   const renderLevelSegmentsData = useMemo(
     () =>
       levelSegments.map(item => createLevelDocumentChunkByLevelSegment(item)),
     [levelSegments],
   );
 
-  // 处理层级分段变更
+  // Handling hierarchy segmentation changes
   const handleLevelSegmentsChange = (chunks: ILevelSegment[]) => {
     setLevelSegments(chunks);
   };
 
-  // 处理删除层级分段
+  // Handling deletion of hierarchical segmentation
   const handleLevelSegmentDelete = (chunk: ILevelSegment) => {
     setLevelSegments(
       levelSegments.filter(item => item.slice_id !== chunk.slice_id),
     );
   };
 
-  // 初始化时加载层级分段
+  // Load hierarchical segmentation during initialization
   useEffect(() => {
     setLevelSegments(withTitle(treeContent?.chunks ?? [], curDoc?.name ?? ''));
   }, [treeContent]);

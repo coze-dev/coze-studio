@@ -55,13 +55,13 @@ describe('useInitProjectRole', () => {
     console.log('result', result.current);
     console.log('mockIsReady', mockIsReady);
 
-    // 验证是否调用了 setRoles 和 setIsReady
+    // Verify that setRoles and setIsReady are called
     expect(mockSetRoles).toHaveBeenCalledWith(projectId, [
       ProjectRoleType.Owner,
     ]);
     expect(mockSetIsReady).toHaveBeenCalledWith(projectId, true);
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toBe(true);
   });
 
@@ -82,7 +82,7 @@ describe('useInitProjectRole', () => {
     ]);
     expect(mockSetIsReady).toHaveBeenCalledWith(projectId1, true);
 
-    // 重新渲染，使用新的 projectId
+    // Render again, using the new projectId
     rerender({ spaceId: testSpaceId, projectId: projectId2 });
 
     expect(mockSetRoles).toHaveBeenCalledWith(projectId2, [

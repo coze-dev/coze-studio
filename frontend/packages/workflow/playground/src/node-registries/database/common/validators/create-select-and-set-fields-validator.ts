@@ -25,7 +25,7 @@ export function createSelectAndSetFieldsValidator() {
         ValueExpressionService,
       );
 
-      // 检查引用变量是否被删除
+      // Check if the reference variable has been deleted
       if (
         valueExpressionService.isRefExpression(value) &&
         !valueExpressionService.isRefExpressionVariableExists(

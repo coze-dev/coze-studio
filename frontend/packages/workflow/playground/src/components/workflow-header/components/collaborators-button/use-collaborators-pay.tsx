@@ -55,18 +55,18 @@ const fetchCollaboratorsPayPass = async ({ workflowId, spaceId }) => {
 const useCollaboratorsPay = () => {
   const globalState = useGlobalState();
   const { workflowId, spaceId, isCollaboratorMode } = globalState;
-  // release 版本才收费
+  // The release version is only charged.
   const isNeedPay = IS_RELEASE_VERSION;
-  // 是否允许打开多人协作
+  // Whether to allow multi-person collaboration
   const [disabledOpen, setDisabledOpen] = useState(isNeedPay ? true : false);
   const [limit, setLimit] = useState<Limit | null>(null);
 
   const textMap = useMemo(
     () => ({
-      // 协作者可以共同编辑、提交修改和发布 Workflow。
+      // Collaborators can jointly edit, commit changes, and publish workflows.
       titleTooltip: I18n.t('wmv_collaborate_collabration_explain'),
       intro: <CollaborationCloseIntroduction />,
-      // 仅当未启用时，才判断是否需要禁用启用按钮
+      // Determine whether the enable button needs to be disabled only if it is not enabled
       disableTooltip:
         !isCollaboratorMode && disabledOpen
           ? I18n.t('bz_upgrade_detail')
@@ -103,7 +103,7 @@ const useCollaboratorsPay = () => {
     const { pass, canUpdate, workflowCount, collaboratorsCount } =
       await fetchCollaboratorsPayPass({ workflowId, spaceId });
 
-    /** 不能继续升级，高亮块不显示 */
+    /** Can't continue to upgrade, highlight block is not displayed */
     if (!canUpdate) {
       setLimit(null);
     } else {

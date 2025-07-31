@@ -113,10 +113,10 @@ export const ActionSwitchArea = forwardRef<
       tool_params_list = [],
     } = toolInfo || {};
     const newComponents = initComponentsByToolParams(tool_params_list);
-    // TODO: hzf, 有点复杂,看看可以initValue么
+    // TODO: hzf, it's a bit complicated, let's see if it can initValue
     formRef.current?.formApi.setValue('components_list', newComponents);
     setComponents(newComponents);
-    // 只有这种情况需要手动更新数据
+    // Only in this case do you need to manually update the data
     componentsRef.current?.formApi?.setValues(newComponents);
 
     formRef.current?.formApi.setValue('tool_type', tool_type);

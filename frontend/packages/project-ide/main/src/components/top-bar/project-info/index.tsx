@@ -59,7 +59,7 @@ export const ProjectInfo = () => {
   const { modalContextHolder, openModal } = useUpdateProjectModal({
     onSuccess: () => {
       updateProjectInfo();
-      // 更新 info 信息
+      // Update info
       Toast.success(I18n.t('project_ide_toast_edit_success'));
     },
   });
@@ -71,13 +71,13 @@ export const ProjectInfo = () => {
   );
 
   /**
-   * 可编辑判断：
-   * 1. 有编辑权限
-   * 2. 非预览态
+   * Editable judgment:
+   * 1. Have editing permission
+   * 2. Non-preview state
    */
   const canEdit = canAuthEdit && !version;
 
-  // 打开 project 编辑弹窗
+  // Open the project editing pop-up
   const handleEditProject = useCallback(() => {
     openModal({
       initialValue,
@@ -119,7 +119,7 @@ export const ProjectInfo = () => {
       >
         {projectInfo?.name}
       </COZTitle>
-      {/* 权限判断 */}
+      {/* permission judgment */}
       {canEdit ? (
         <IconButton
           color="secondary"

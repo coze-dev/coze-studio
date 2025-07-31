@@ -18,7 +18,7 @@ import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { CustomError } from '@coze-arch/bot-error';
 
 /**
- * 缓存列宽的方法类
+ * Method class with cache column width
  */
 
 class ColWidthCacheService {
@@ -46,18 +46,18 @@ class ColWidthCacheService {
   }
 
   /**
-   * 初始化伸缩列缓存
+   * Initializing the scaled column cache
    */
   initWidthMap() {
     const widthMap = window.localStorage.getItem(this.mapName);
     if (!widthMap) {
-      // 利用Map可记录键值对顺序的特性完成一个简易的LRU
+      // Completing a simple LRU using the characteristic that Map can record the order of key-value pairs
       window.localStorage.setItem(this.mapName, this.mapToString(new Map()));
     }
   }
 
   /**
-   * 设置列宽缓存,若超过缓存个数，删除map中最近未使用的值
+   * Set the column width cache, if it exceeds the number of caches, delete the most recently unused value in the map
    */
   setWidthMap(widthMap: Record<string, number>, tableKey?: string) {
     if (!tableKey) {
@@ -68,11 +68,11 @@ class ColWidthCacheService {
         window.localStorage.getItem(this.mapName) || '',
       );
       if (cacheWidthMap.has(tableKey)) {
-        // 存在即更新（删除后加入）
+        // Exist and update (join after deletion)
         cacheWidthMap.delete(tableKey);
       } else if (cacheWidthMap.size >= this.capacity) {
-        // 不存在即加入
-        // 缓存超过最大值，则移除最近没有使用的
+        // Join if you don't exist
+        // If the cache exceeds the maximum value, remove the recently unused
         cacheWidthMap.delete(cacheWidthMap.keys().next().value);
       }
       cacheWidthMap.set(tableKey, widthMap);
@@ -89,7 +89,7 @@ class ColWidthCacheService {
   }
 
   /**
-   * 以表维度查询列宽缓存信息
+   * Query column width cache information in table dimension
    * @param tableKey
    */
   getTableWidthMap(tableKey: string) {
@@ -97,7 +97,7 @@ class ColWidthCacheService {
       const cacheWidthMap = this.stringToMap(
         window.localStorage.getItem(this.mapName) || '',
       );
-      // 存在即更新
+      // exist and update
       const temp = cacheWidthMap.get(tableKey);
       cacheWidthMap.delete(tableKey);
       cacheWidthMap.set(tableKey, temp);

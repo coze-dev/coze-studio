@@ -24,12 +24,12 @@ interface UploadActionNavbarProps {
   title: string;
 }
 
-// 上传页面导航栏
+// Upload page navigation bar
 export const UploadActionNavbar = ({ title }: UploadActionNavbarProps) => {
   const params = useKnowledgeParams();
   const resourceNavigate = useDataNavigate();
 
-  // TODO: hzf biz的分化在Scene层维护
+  // TODO: Scene layer maintenance of hzf biz differentiation
   const fromProject = params.biz === 'project';
   const handleBack = () => {
     const query = getKnowledgeIDEQuery() as Record<string, string>;

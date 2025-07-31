@@ -25,13 +25,13 @@ import { TestRunDataSource } from '../components/test-run/constants';
 import { WorkflowGlobalStateEntity } from './workflow-global-state-entity';
 
 interface WorkflowTestFormState {
-  /** test run form 是否可见 */
+  /** Test run form is visible */
   formVisible: boolean;
-  /** 同时只能运行一个 test run，用于冻结 */
+  /** Only one test run can be run at a time for freezing */
   frozen: string | null;
   autoGenerating: boolean;
 
-  /** coze graph 2.0 节点面板 */
+  /** Coze graph 2.0 Node panel */
   commonSheetKey: null | string;
   testNodeFormVisible: boolean;
 }
@@ -39,18 +39,18 @@ interface WorkflowTestFormState {
 export class WorkflowTestFormStateEntity extends ConfigEntity<WorkflowTestFormState> {
   static type = 'WorkflowTestFormStateEntity';
 
-  /** schema 无需响应式 */
+  /** Schema without reactive */
   formSchema?: TestFormSchema;
 
   testRunDataSource = TestRunDataSource.User;
 
   /**
-   * 缓存用户填写过的数据
+   * Cache user-filled data
    */
   formDataCacheMap = new Map<string, FormDataType>();
 
   /**
-   * 表单默认值，优先级低于 formDataCache
+   * Form default, lower priority than formDataCache
    */
   formDefaultValue: Array<TestFormDefaultValue> = [];
 
@@ -77,17 +77,17 @@ export class WorkflowTestFormStateEntity extends ConfigEntity<WorkflowTestFormSt
   }
 
   /**
-   * 设置 testForm 缓存数据
+   * Set testForm to cache data
    */
   setFormData(id: string, data: FormDataType) {
     this.formDataCacheMap.set(id, data);
   }
 
   /**
-   * 设置当前打开的 testForm 的缓存数据
+   * Set the cached data for the currently open testForm
    */
   setThisFormData(data: FormDataType) {
-    /** 本方法无需指定 id，为保证 formSchema 有效，仅当 testForm 打开时允许使用 */
+    /** This method does not need to specify an id. To ensure that formSchema is valid, it is only allowed when the testForm is open */
     if (!this.config.formVisible) {
       return;
     }
@@ -98,21 +98,21 @@ export class WorkflowTestFormStateEntity extends ConfigEntity<WorkflowTestFormSt
   }
 
   /**
-   * testForm 是否有缓存数据
+   * Does testForm have cached data?
    */
   hasFormData(id: string) {
     return this.formDataCacheMap.has(id);
   }
 
   /**
-   * 获取 testForm 缓存数据
+   * Get testForm cache data
    */
   getFormData(id: string) {
     return this.formDataCacheMap.get(id);
   }
 
   /**
-   * 清除所有缓存数据，画布销毁时必须要做
+   * Clear all cached data, must be done when the canvas is destroyed
    */
   clearFormData() {
     this.formDataCacheMap.clear();
@@ -129,7 +129,7 @@ export class WorkflowTestFormStateEntity extends ConfigEntity<WorkflowTestFormSt
 
     return (
       this.formDefaultValue.find(item => item.node_id === id) ??
-      // playgroundProps 可传入test run表单默认值
+      // PlaygroundProps can pass in test run form defaults
       globalState?.config.playgroundProps.testFormDefaultValues?.find(
         item => item.node_id === id,
       )
@@ -140,13 +140,13 @@ export class WorkflowTestFormStateEntity extends ConfigEntity<WorkflowTestFormSt
     this.formDefaultValue = [];
   }
 
-  /** 冻结 test run */
+  /** Freeze test run */
   freezeTestRun(id: string) {
     this.updateConfig({
       frozen: id,
     });
   }
-  /** 解冻 test run */
+  /** Thaw test run */
   unfreezeTestRun() {
     this.updateConfig({
       frozen: null,

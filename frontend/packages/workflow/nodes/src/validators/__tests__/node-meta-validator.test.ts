@@ -20,7 +20,7 @@ import { I18n } from '@coze-arch/i18n';
 
 import { nodeMetaValidator } from '../node-meta-validator';
 
-// 模拟 I18n.t 方法
+// Simulation I18n.t method
 vi.mock('@coze-arch/i18n', () => ({
   I18n: { t: vi.fn(key => `translated_${key}`) },
 }));
@@ -98,7 +98,7 @@ describe('nodeMetaValidator', () => {
     mockNodesService.getAllNodes.mockReturnValue([
       { id: 'node1', title: 'ExistingTitle' },
       { id: 'node2', title: 'AnotherNode' },
-      { id: 'node2', title: 'ExistingTitle' }, // 这里模拟一个重复的标题
+      { id: 'node2', title: 'ExistingTitle' }, // Here a repeating title is simulated.
     ]);
     const result = nodeMetaValidator({
       value: { title: 'ExistingTitle' },
