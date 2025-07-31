@@ -30,6 +30,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
+
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -64,10 +65,6 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	if err != nil {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
 			"invalid server url '%s'", serverURL))
-	}
-	if urlSchema.Scheme != "https" {
-		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
-			"server url must start with 'https://'"))
 	}
 	if urlSchema.Host == "" {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
