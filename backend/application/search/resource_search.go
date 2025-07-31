@@ -73,7 +73,7 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 		Limit:               req.GetSize(),
 	}
 
-	// 设置用户过滤
+	// Set up user filtering
 	if req.IsSetUserFilter() && req.GetUserFilter() > 0 {
 		searchReq.OwnerID = ptr.From(userID)
 	}

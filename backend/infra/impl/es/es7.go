@@ -267,12 +267,12 @@ func (c *es7Client) query2ESQuery(q *Query) map[string]any {
 		base = map[string]any{}
 	}
 
-	// 若没有 BoolQuery，直接返回 base query
+	// If there is no BoolQuery, return the base query directly
 	if q.Bool == nil {
 		return base
 	}
 
-	// 如果有 BoolQuery，把 base 作为 BoolQuery 的一部分（或为空）
+	// If there is a BoolQuery, make base part of the BoolQuery (or empty).
 	boolQuery := map[string]any{}
 
 	appendBool := func(key string, queries []Query) {
@@ -296,7 +296,7 @@ func (c *es7Client) query2ESQuery(q *Query) map[string]any {
 	appendBool("must_not", q.Bool.MustNot)
 	appendBool("should", q.Bool.Should)
 
-	// 如果 base 不是空，作为一个 filter 附加进去
+	// If base is not empty, append it as a filter
 	if len(base) > 0 {
 		if _, ok := boolQuery["filter"]; !ok {
 			boolQuery["filter"] = []map[string]any{}

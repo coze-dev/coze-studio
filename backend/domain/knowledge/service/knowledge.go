@@ -103,19 +103,19 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 type KnowledgeSVCConfig struct {
 	DB                        *gorm.DB                       // required
 	IDGen                     idgen.IDGenerator              // required
-	RDB                       rdb.RDB                        // required: 表格存储
-	Producer                  eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
-	SearchStoreManagers       []searchstore.Manager          // required: 向量 / 全文
-	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
+	RDB                       rdb.RDB                        // Required: Form storage
+	Producer                  eventbus.Producer              // Required: Document indexing process goes through mq asynchronous processing
+	SearchStoreManagers       []searchstore.Manager          // Required: Vector/Full Text
+	ParseManager              parser.Manager                 // Optional: document segmentation and processing capability, default builtin parser
 	Storage                   storage.Storage                // required: oss
-	ModelFactory              chatmodel.Factory              // required: 模型 factory
-	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
-	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
-	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
-	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
-	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
-	CacheCli                  cache.Cmdable                  // optional: 缓存实现
-	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
+	ModelFactory              chatmodel.Factory              // Required: Model factory
+	Rewriter                  messages2query.MessagesToQuery // Optional: Do not overwrite when not configured
+	Reranker                  rerank.Reranker                // Optional: default rrf when not configured
+	NL2Sql                    nl2sql.NL2SQL                  // Optional: Not supported by default when not configured
+	EnableCompactTable        *bool                          // Optional: Table data compression, default true
+	OCR                       ocr.OCR                        // Optional: ocr, ocr function is not available when not provided
+	CacheCli                  cache.Cmdable                  // Optional: cache implementation
+	IsAutoAnnotationSupported bool                           // Does it support automatic image labeling?
 }
 
 type knowledgeSVC struct {
@@ -135,8 +135,8 @@ type knowledgeSVC struct {
 	storage                   storage.Storage
 	nl2Sql                    nl2sql.NL2SQL
 	cacheCli                  cache.Cmdable
-	enableCompactTable        bool // 表格数据压缩
-	isAutoAnnotationSupported bool // 是否支持了图片自动标注
+	enableCompactTable        bool // Table data compression
+	isAutoAnnotationSupported bool // Does it support automatic image labeling?
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
@@ -163,7 +163,7 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowl
 		SpaceID:     request.SpaceID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
-		Status:      int32(knowledgeModel.KnowledgeStatusEnable), // 目前向量库的初始化由文档触发，知识库无 init 过程
+		Status:      int32(knowledgeModel.KnowledgeStatusEnable), // At present, the initialization of the vector library is triggered by the document, and the knowledge base has no init process
 		Description: request.Description,
 		IconURI:     request.IconUri,
 		FormatType:  int32(request.FormatType),
@@ -217,7 +217,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *UpdateKnowl
 }
 
 func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error {
-	// 先获取一下knowledge的信息
+	// Get some knowledge first
 	knModel, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
@@ -357,27 +357,27 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocume
 		Storage:        k.storage,
 		Rdb:            k.rdb,
 	})
-	// 1. 前置的动作，上传 tos 等
+	// 1. Front action, upload tos, etc
 	err = docProcessor.BeforeCreate()
 	if err != nil {
 		return nil, err
 	}
-	// 2. 构建 落库
+	// 2. Build, drop library
 	err = docProcessor.BuildDBModel()
 	if err != nil {
 		return nil, err
 	}
-	// 3. 插入数据库
+	// 3. Insert into the database
 	err = docProcessor.InsertDBModel()
 	if err != nil {
 		return nil, err
 	}
-	// 4. 发起索引任务
+	// 4. Initiate the indexing task
 	err = docProcessor.Indexing()
 	if err != nil {
 		return nil, err
 	}
-	// 5. 返回处理后的文档信息
+	// 5. Return the processed document information
 	docs := docProcessor.GetResp()
 	return &CreateDocumentResponse{
 		Documents: docs,
@@ -397,7 +397,7 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 	}
 
 	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
-		// 如果是表格类型，可能是要改table的meta
+		// If it is a table type, it may be necessary to change the meta of the table.
 		if doc.TableInfo != nil {
 			finalColumns, err := k.alterTableSchema(ctx, doc.TableInfo.Columns, request.TableInfo.Columns, doc.TableInfo.PhysicalTableName)
 			if err != nil {
@@ -673,7 +673,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 	}
 	if len(slices) == 1 {
 		if request.Position == 1 || request.Position == 0 {
-			// 插入到最前面
+			// Insert to the front
 			sliceInfo.Sequence = slices[0].Sequence - 1
 		} else {
 			sliceInfo.Sequence = slices[0].Sequence + 1
@@ -759,7 +759,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequ
 	if docInfo == nil || docInfo.ID == 0 {
 		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode)
 	}
-	// 更新数据库中的存储
+	// Update storage in the database
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
 		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceEntity := entity.Slice{RawContent: request.RawContent}
@@ -851,7 +851,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *DeleteSliceRequ
 			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
-	// 删除数据库中的存储
+	// Delete storage in the database
 	err = k.sliceRepo.Delete(ctx, &model.KnowledgeDocumentSlice{ID: request.SliceID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
@@ -905,9 +905,9 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest)
 	}
 	resp.Total = int(total)
 	var sliceMap map[int64]*entity.Slice
-	// 如果是表格类型，那么去table中取一下原始数据
+	// If it is a table type, then go to the table to get the original data source
 	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
-		// 从数据库中查询原始数据
+		// Query original data source from database
 		sliceMap, err = k.selectTableData(ctx, doc.TableInfo, slices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "select table data failed, err: %v", err)
@@ -1010,7 +1010,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 		}
 		reviews = append(reviews, review)
 	}
-	// STEP 1. 生成ID
+	// STEP 1. Generate ID
 	reviewIDs, err := k.genMultiIDs(ctx, len(request.Reviews))
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)

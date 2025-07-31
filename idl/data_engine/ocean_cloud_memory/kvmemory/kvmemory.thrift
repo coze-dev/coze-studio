@@ -40,7 +40,7 @@ struct SetKvMemoryReq {
     2: optional i64          user_id
     3: required list<KVItem> data
     4: optional i64          connector_id
-    5: optional table.RefInfo ref_info // 引用信息
+    5: optional table.RefInfo ref_info // citation information
     6: optional string       project_id
     7: optional i64 ProjectVersion
 
@@ -79,7 +79,7 @@ struct DelProfileMemoryRequest {
     2:          i64           bot_id(agw.js_conv="str", api.js_conv="true", api.body="bot_id")
     3:          list<string>  keywords
     4: optional i64           connector_id
-    5: optional table.RefInfo ref_info // 引用信息
+    5: optional table.RefInfo ref_info // citation information
     6: string   project_id
 
     255: optional base.Base Base
@@ -91,7 +91,7 @@ struct GetProfileMemoryRequest {
     3:          list<string> keywords
     4: optional i64          connector_id
     5: optional string       version
-    6: optional table.RefInfo ref_info // 引用信息
+    6: optional table.RefInfo ref_info // citation information
     7: optional string       ext
     8: optional string       project_id
     9: optional i64 ProjectVersion

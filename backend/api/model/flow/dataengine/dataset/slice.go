@@ -3,21 +3,21 @@
 package dataset
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type SliceStatus int64
 
 const (
-	// 未向量化
+	// unvectorized
 	SliceStatus_PendingVectoring SliceStatus = 0
-	// 已向量化
+	// vectorized
 	SliceStatus_FinishVectoring SliceStatus = 1
-	// 禁用
+	// disable
 	SliceStatus_Deactive SliceStatus = 9
 )
 
@@ -61,7 +61,7 @@ func (p *SliceStatus) Value() (driver.Value, error) {
 }
 
 type DeleteSliceRequest struct {
-	// 要删除的分片ID列表
+	// List of sharding IDs to delete
 	SliceIds []string   `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,omitempty"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -537,11 +537,11 @@ func (p *DeleteSliceResponse) String() string {
 }
 
 type CreateSliceRequest struct {
-	// 新增分片插入的文档ID
+	// Add sharding inserted document ID
 	DocumentID int64 `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
-	// 新增分片的内容
+	// Add sharding content
 	RawText *string `thrift:"raw_text,5,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
-	// 分片插入位置，1表示文档开头，最大值为最后一个分片位置+1
+	// Sharding insertion position, 1 indicates the beginning of the document, and the maximum value is the last sharding position + 1
 	Sequence *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -852,7 +852,7 @@ func (p *CreateSliceRequest) String() string {
 }
 
 type CreateSliceResponse struct {
-	// 新增分片ID
+	// Add sharding ID
 	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -1150,9 +1150,9 @@ func (p *CreateSliceResponse) String() string {
 }
 
 type UpdateSliceRequest struct {
-	// 要更新的分片ID
+	// The sharding ID to update
 	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,string,required" query:"slice_id,required"`
-	// 要更新的内容
+	// Content to be updated
 	RawText *string    `thrift:"raw_text,7,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -1660,15 +1660,15 @@ func (p *UpdateSliceResponse) String() string {
 }
 
 type ListSliceRequest struct {
-	// 要list的分片所属的文档ID
+	// The document ID of the sharding to list
 	DocumentID *int64 `thrift:"document_id,2,optional" form:"document_id" json:"document_id,string,omitempty" query:"document_id"`
-	// 分片序号，表示从该序号的分片开始list
+	// Sharding serial number, indicating that the list starts from the sharding of this serial number
 	Sequence *int64 `thrift:"sequence,3,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
-	// 查询关键字
+	// query keyword
 	Keyword *string `thrift:"keyword,4,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
-	// 如果只传 dataset_id，则返回该知识库下的分片
+	// If only dataset_id, return sharding under that knowledge base
 	DatasetID *int64 `thrift:"dataset_id,5,optional" form:"dataset_id" json:"dataset_id,string,omitempty" query:"dataset_id"`
-	// 每页大小
+	// page size
 	PageSize int64      `thrift:"page_size,21" form:"page_size" json:"page_size,string" query:"page_size"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -2081,11 +2081,11 @@ func (p *ListSliceRequest) String() string {
 }
 
 type ListSliceResponse struct {
-	// 返回的分片列表
+	// Returned list of shardings
 	Slices []*SliceInfo `thrift:"slices,1" form:"slices" json:"slices" query:"slices"`
-	// 总分片数
+	// Total shardings
 	Total int64 `thrift:"total,2" form:"total" json:"total,string" query:"total"`
-	// 是否还有更多分片
+	// Is there more sharding?
 	Hasmore  bool           `thrift:"hasmore,3" form:"hasmore" json:"hasmore" query:"hasmore"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -2491,21 +2491,21 @@ func (p *ListSliceResponse) String() string {
 }
 
 type SliceInfo struct {
-	// 分片ID
+	// Sharding ID
 	SliceID int64 `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
-	// 分片内容
+	// Sharding content
 	Content string `thrift:"content,2" form:"content" json:"content" query:"content"`
-	// 分片状态
+	// Sharding state
 	Status SliceStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
-	// 命中次数
+	// hit count
 	HitCount int64 `thrift:"hit_count,4" form:"hit_count" json:"hit_count,string" query:"hit_count"`
-	// 字符数
+	// character count
 	CharCount int64 `thrift:"char_count,5" form:"char_count" json:"char_count,string" query:"char_count"`
-	// 序号
+	// serial number
 	Sequence int64 `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
-	// 分片所属的文档ID
+	// The document ID to which sharding belongs
 	DocumentID int64 `thrift:"document_id,8" form:"document_id" json:"document_id,string" query:"document_id"`
-	// 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
+	// Meta information related to sharding, extra- > chunk_info field in the transparent slice table (json)
 	ChunkInfo string `thrift:"chunk_info,9" form:"chunk_info" json:"chunk_info" query:"chunk_info"`
 }
 

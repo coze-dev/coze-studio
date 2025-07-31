@@ -3,12 +3,12 @@
 package intelligence
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/project"
-	"github.com/coze-dev/coze-studio/backend/api/model/publish"
-	"github.com/coze-dev/coze-studio/backend/api/model/task"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/project"
+	"github.com/coze-dev/coze-studio/backend/api/model/publish"
+	"github.com/coze-dev/coze-studio/backend/api/model/task"
 )
 
 type IntelligenceService interface {

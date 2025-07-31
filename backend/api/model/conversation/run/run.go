@@ -3,12 +3,12 @@
 package run
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 )
 
 const (
@@ -2133,23 +2133,23 @@ func (p *AdditionalContent) String() string {
 type AgentRunRequest struct {
 	//agent id
 	BotID int64 `thrift:"bot_id,1" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	// 会话id
+	// session id
 	ConversationID int64  `thrift:"conversation_id,2,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
 	Query          string `thrift:"query,5,required" form:"query,required" json:"query,required" query:"query,required"`
-	// ext 透传字段
+	// ext pass-through field
 	Extra           map[string]string `thrift:"extra,7" form:"extra" json:"extra" query:"extra"`
 	CustomVariables map[string]string `thrift:"custom_variables,9" form:"custom_variables" json:"custom_variables" query:"custom_variables"`
-	// 草稿bot or 线上bot
+	// Draft bot or online bot
 	DraftMode *bool `thrift:"draft_mode,10,optional" form:"draft_mode" json:"draft_mode,omitempty" query:"draft_mode"`
-	// explore场景
+	// Explore the scene
 	Scene *common.Scene `thrift:"scene,11,optional" form:"scene" json:"scene,omitempty" query:"scene"`
-	// 文件 file 图片 image 等
+	// Files files pictures images etc
 	ContentType *string `thrift:"content_type,12,optional" form:"content_type" json:"content_type,omitempty" query:"content_type"`
-	// 重试消息id
+	// Retry message id
 	RegenMessageID *int64 `thrift:"regen_message_id,13,optional" form:"regen_message_id" json:"regen_message_id,string,omitempty" query:"regen_message_id"`
-	// 前端本地的message_id 在extra_info 里面透传返回
+	// The local message_id on the front end is passed back in the extra_info
 	LocalMessageID *string `thrift:"local_message_id,14,optional" form:"local_message_id" json:"local_message_id,omitempty" query:"local_message_id"`
-	// 使用的bot模版 代替bot_id bot_version draft_mode参数， coze home使用 preset_bot="coze_home"
+	// The bot template used, instead of bot_id bot_version draft_mode parameters, coze home uses preset_bot = "coze_home"
 	PresetBot                *string                       `thrift:"preset_bot,15,optional" form:"preset_bot" json:"preset_bot,omitempty" query:"preset_bot"`
 	InsertHistoryMessageList []string                      `thrift:"insert_history_message_list,16,optional" form:"insert_history_message_list" json:"insert_history_message_list,omitempty" query:"insert_history_message_list"`
 	DeviceID                 *string                       `thrift:"device_id,17,optional" form:"device_id" json:"device_id,omitempty" query:"device_id"`
@@ -2157,9 +2157,9 @@ type AgentRunRequest struct {
 	MentionList              []*message.MsgParticipantInfo `thrift:"mention_list,19,optional" form:"mention_list" json:"mention_list,omitempty" query:"mention_list"`
 	ToolList                 []*Tool                       `thrift:"toolList,20,optional" form:"toolList" json:"toolList,omitempty" query:"toolList"`
 	CommitVersion            *string                       `thrift:"commit_version,21,optional" form:"commit_version" json:"commit_version,omitempty" query:"commit_version"`
-	// scene粒度下进一步区分场景，目前仅给bot模版使用 = bot_template
+	// Scene granularity further distinguish scenes, currently only used for bot templates = bot_template
 	SubScene *string `thrift:"sub_scene,22,optional" form:"sub_scene" json:"sub_scene,omitempty" query:"sub_scene"`
-	// diff模式下的聊天配置，仅草稿single bot
+	// Chat configuration in diff mode, draft only single bot
 	DiffModeIdentifier *DiffModeIdentifier `thrift:"diff_mode_identifier,23,optional" form:"diff_mode_identifier" json:"diff_mode_identifier,omitempty" query:"diff_mode_identifier"`
 	ShortcutCmdID      *int64              `thrift:"shortcut_cmd_id,24,optional" form:"shortcut_cmd_id" json:"shortcut_cmd_id,string,omitempty" query:"shortcut_cmd_id"`
 }
@@ -4726,7 +4726,7 @@ func (p *BotConfig) String() string {
 
 type ShortcutCommandDetail struct {
 	CommandID int64 `thrift:"command_id,1,required" form:"command_id,required" json:"command_id,string,required" query:"command_id,required"`
-	// key=参数名 value=值  object_string object 数组序列化之后的 JSON String
+	// Key = parameter name value = value object_string JSON String after object array serialization
 	Parameters map[string]string `thrift:"parameters,2" form:"parameters" json:"parameters" query:"parameters"`
 }
 
@@ -4951,21 +4951,21 @@ type ChatV3Request struct {
 	BotID int64 `thrift:"BotID,1,required" form:"bot_id,required" json:"bot_id,string,required"`
 	//conversation_id
 	ConversationID *int64 `thrift:"ConversationID,2,optional" json:"ConversationID,string,omitempty" query:"conversation_id"`
-	//user_id，数据隔离标识，需要保证唯一
+	//user_id, data isolation identification, need to ensure unique
 	User string `thrift:"User,3,required" form:"user_id,required" json:"user_id,required"`
-	//是否流式，当前仅支持流失
+	//Whether to stream, currently only supports churn.
 	Stream *bool `thrift:"Stream,4,optional" form:"stream" json:"stream,omitempty"`
-	//本次对话消息，当前仅支持role=user
+	//In this conversation message, only role = user is currently supported.
 	AdditionalMessages []*EnterMessage `thrift:"AdditionalMessages,5,optional" form:"additional_messages" json:"additional_messages,omitempty"`
-	//用户自定义变量
+	//user-defined variables
 	CustomVariables map[string]string `thrift:"CustomVariables,6,optional" form:"custom_variables" json:"custom_variables,omitempty"`
 	MetaData        map[string]string `thrift:"MetaData,8,optional" form:"meta_data" json:"meta_data,omitempty"`
 	CustomConfig    *CustomConfig     `thrift:"CustomConfig,10,optional" form:"custom_config" json:"custom_config,omitempty"`
-	// 透传参数到 plugin/workflow 等下游
+	// Pass parameters to plugin/workflow etc downstream
 	ExtraParams map[string]string `thrift:"ExtraParams,11,optional" form:"extra_params" json:"extra_params,omitempty"`
-	// 手动指定渠道 id 聊天。目前仅支持 websdk(=999)
+	// Manually specify channel id chat. Currently only supports websdk (= 999)
 	ConnectorID *int64 `thrift:"ConnectorID,12,optional" form:"connector_id" json:"connector_id,string,omitempty"`
-	// 指定快捷指令
+	// Specify shortcut instructions
 	ShortcutCommand *ShortcutCommandDetail `thrift:"ShortcutCommand,13,optional" form:"shortcut_command" json:"shortcut_command,omitempty"`
 }
 
@@ -6582,7 +6582,7 @@ func (p *ChatV3MessageDetail) String() string {
 type EnterMessage struct {
 	// user / assistant
 	Role string `thrift:"Role,1" form:"role" json:"role"`
-	// 如果是非 text，需要解析 JSON
+	// If it is not text, you need to parse JSON.
 	Content  string            `thrift:"Content,2" form:"content" json:"content"`
 	MetaData map[string]string `thrift:"MetaData,3" form:"meta_data" json:"meta_data"`
 	// text, card, object_string

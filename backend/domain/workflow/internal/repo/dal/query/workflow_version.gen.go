@@ -44,21 +44,21 @@ func newWorkflowVersion(db *gorm.DB, opts ...gen.DOOption) workflowVersion {
 	return _workflowVersion
 }
 
-// workflowVersion workflow 画布版本信息表，用于记录不同版本的画布信息
+// workflowVersion Workflow Canvas Version Information Table, used to record canvas information for different versions
 type workflowVersion struct {
 	workflowVersionDo
 
 	ALL                field.Asterisk
 	ID                 field.Int64  // ID
 	WorkflowID         field.Int64  // workflow id
-	Version            field.String // 发布版本
-	VersionDescription field.String // 版本描述
-	Canvas             field.String // 前端 schema
-	InputParams        field.String
-	OutputParams       field.String
-	CreatorID          field.Int64  // 发布用户 ID
-	CreatedAt          field.Int64  // 创建时间毫秒时间戳
-	DeletedAt          field.Field  // 删除毫秒时间戳
+	Version            field.String // Published version
+	VersionDescription field.String // Version Description
+	Canvas             field.String // Front end schema
+	InputParams        field.String // input params
+	OutputParams       field.String // output params
+	CreatorID          field.Int64  // creator id
+	CreatedAt          field.Int64  // Create Time in Milliseconds
+	DeletedAt          field.Field  // Delete Time
 	CommitID           field.String // the commit id corresponding to this version
 
 	fieldMap map[string]field.Expr

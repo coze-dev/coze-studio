@@ -42,19 +42,19 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 	return _workflowDraft
 }
 
-// workflowDraft workflow 画布草稿表，用于记录workflow最新的草稿画布信息
+// workflowDraft Workflow canvas draft table, used to record the latest draft canvas information of workflow
 type workflowDraft struct {
 	workflowDraftDo
 
 	ALL            field.Asterisk
 	ID             field.Int64  // workflow ID
-	Canvas         field.String // 前端 schema
-	InputParams    field.String //  入参 schema
-	OutputParams   field.String //  出参 schema
-	TestRunSuccess field.Bool   // 0 未运行, 1 运行成功
-	Modified       field.Bool   // 0 未被修改, 1 已被修改
-	UpdatedAt      field.Int64
-	DeletedAt      field.Field
+	Canvas         field.String // Front end schema
+	InputParams    field.String // Input schema
+	OutputParams   field.String // Output parameter schema
+	TestRunSuccess field.Bool   // 0 not running, 1 running successfully
+	Modified       field.Bool   // 0 has not been modified, 1 has been modified
+	UpdatedAt      field.Int64  // Update Time in Milliseconds
+	DeletedAt      field.Field  // Delete Time
 	CommitID       field.String // used to uniquely identify a draft snapshot
 
 	fieldMap map[string]field.Expr

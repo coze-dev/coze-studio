@@ -48,7 +48,7 @@ type baseDocProcessor struct {
 	Documents      []*entity.Document
 	documentSource *entity.DocumentSource
 
-	// 落DB 的 model
+	// Drop DB model
 	TableName string
 	docModels []*model.KnowledgeDocument
 
@@ -63,7 +63,7 @@ type baseDocProcessor struct {
 }
 
 func (p *baseDocProcessor) BeforeCreate() error {
-	// 从数据源拉取数据
+	// Pull data from a data source
 	return nil
 }
 
@@ -154,7 +154,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 
 func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
-		// 表格型知识库，创建表
+		// Tabular knowledge base, creating tables
 		rdbColumns := []*rdbEntity.Column{}
 		tableColumns := p.Documents[0].TableInfo.Columns
 		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
@@ -178,13 +178,13 @@ func (p *baseDocProcessor) createTable() error {
 			Indexing:    false,
 			Sequence:    -1,
 		})
-		// 为每个表格增加个主键ID
+		// Add a primary key ID to each table
 		rdbColumns = append(rdbColumns, &rdbEntity.Column{
 			Name:     consts.RDBFieldID,
 			DataType: rdbEntity.TypeBigInt,
 			NotNull:  true,
 		})
-		// 创建一个数据表
+		// Create a data table
 		resp, err := p.rdb.CreateTable(p.ctx, &rdb.CreateTableRequest{
 			Table: &rdbEntity.Table{
 				Columns: rdbColumns,

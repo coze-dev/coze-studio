@@ -19,14 +19,14 @@ package entity
 type DocumentStatus int64
 
 const (
-	DocumentStatusInit      DocumentStatus = -1 // 初始化
-	DocumentStatusUploading DocumentStatus = 0  // 上传中
-	DocumentStatusEnable    DocumentStatus = 1  // 生效
-	DocumentStatusDisable   DocumentStatus = 2  // 失效
-	DocumentStatusDeleted   DocumentStatus = 3  // 已删除
-	DocumentStatusChunking  DocumentStatus = 4  // 切片中
-	// DocumentStatusRefreshing DocumentStatus = 5 // 刷新中
-	DocumentStatusFailed DocumentStatus = 9 // 失败
+	DocumentStatusInit      DocumentStatus = -1 // initialization
+	DocumentStatusUploading DocumentStatus = 0  // Uploading
+	DocumentStatusEnable    DocumentStatus = 1  // take effect
+	DocumentStatusDisable   DocumentStatus = 2  // failure
+	DocumentStatusDeleted   DocumentStatus = 3  // deleted
+	DocumentStatusChunking  DocumentStatus = 4  // Slicing
+	// DocumentStatusRefreshing DocumentStatus = 5//Refreshing
+	DocumentStatusFailed DocumentStatus = 9 // fail
 )
 
 func (s DocumentStatus) String() string {
@@ -44,7 +44,7 @@ func (s DocumentStatus) String() string {
 	case DocumentStatusChunking:
 		return "切片中"
 	// case DocumentStatusRefreshing:
-	//	return "刷新中"
+	//	Returns "Refreshing"
 	case DocumentStatusFailed:
 		return "失败"
 	default:
@@ -55,6 +55,6 @@ func (s DocumentStatus) String() string {
 type DocumentSource int64
 
 const (
-	DocumentSourceLocal  DocumentSource = 0 // 本地文件上传
-	DocumentSourceCustom DocumentSource = 2 // 自定义文本
+	DocumentSourceLocal  DocumentSource = 0 // local file upload
+	DocumentSourceCustom DocumentSource = 2 // custom text
 )

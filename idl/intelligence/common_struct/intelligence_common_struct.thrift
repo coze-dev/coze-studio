@@ -4,10 +4,10 @@ enum IntelligenceStatus {
     Using = 1,
     Deleted = 2,
     Banned = 3,
-    MoveFailed = 4, // 迁移失败
+    MoveFailed = 4, // Migration failed
 
-    Copying    = 5, // 复制中
-    CopyFailed = 6, // 复制失败
+    Copying    = 5, // Copying
+    CopyFailed = 6, // Copy failed
 }
 
 enum IntelligenceType {

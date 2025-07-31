@@ -41,7 +41,7 @@ func newWorkflowReference(db *gorm.DB, opts ...gen.DOOption) workflowReference {
 	return _workflowReference
 }
 
-// workflowReference workflow 关联关系表，用于记录workflow 直接互相引用关系
+// workflowReference The workflow association table,used to record the direct mutual reference relationship between workflows
 type workflowReference struct {
 	workflowReferenceDo
 
@@ -53,7 +53,7 @@ type workflowReference struct {
 	ReferringBizType field.Int32 // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        field.Int64 // create time in millisecond
 	Status           field.Int32 // whether this reference currently takes effect. 0: disabled 1: enabled
-	DeletedAt        field.Field
+	DeletedAt        field.Field // Delete Time
 
 	fieldMap map[string]field.Expr
 }

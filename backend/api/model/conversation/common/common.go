@@ -15,14 +15,14 @@ const (
 	Scene_Explore  Scene = 1
 	Scene_BotStore Scene = 2
 	Scene_CozeHome Scene = 3
-	//调试
+	//debugging
 	Scene_Playground Scene = 4
-	// 评测平台
+	// evaluation platform
 	Scene_Evaluation Scene = 5
 	Scene_AgentAPP   Scene = 6
-	//prompt优化
+	//Prompt optimization
 	Scene_PromptOptimize Scene = 7
-	// createbot的nl2bot功能
+	// Createbot's nl2bot features
 	Scene_GenerateAgentInfo Scene = 8
 	//openapi
 	Scene_SceneOpenApi Scene = 9

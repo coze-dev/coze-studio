@@ -68,7 +68,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 		},
 	}
 
-	if req.ProjectID != 0 { // 精确搜索
+	if req.ProjectID != 0 { // precise search
 		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
 			es.NewEqualQuery(fieldOfID, conv.Int64ToStr(req.ProjectID)))
 	} else {

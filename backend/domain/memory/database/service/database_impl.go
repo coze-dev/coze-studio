@@ -804,7 +804,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	selectResp, err := d.rdb.SelectData(ctx, &rdb.SelectDataRequest{
 		TableName: physicalTableName,
-		Fields:    []string{}, // 空表示查询所有字段
+		Fields:    []string{}, // Null means query all fields
 		Where:     complexCondition,
 		OrderBy:   orderBy,
 		Limit:     &limit,

@@ -156,7 +156,7 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
+		// Create an HTTPRequest instance
 		hg, err := NewHTTPRequester(context.Background(), cfg)
 		assert.NoError(t, err)
 
@@ -302,7 +302,7 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
+		// Create an HTTPRequest instance
 		hg, err := NewHTTPRequester(context.Background(), cfg)
 		assert.NoError(t, err)
 
@@ -375,7 +375,7 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
+		// Create an HTTPRequest instance
 		hg, err := NewHTTPRequester(context.Background(), cfg)
 		assert.NoError(t, err)
 

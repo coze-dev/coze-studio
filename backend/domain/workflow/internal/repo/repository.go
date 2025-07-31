@@ -932,13 +932,13 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 
 	type combinedVersion struct {
 		model.WorkflowMeta
-		Version            string `gorm:"column:version"`             // 发布版本
-		VersionDescription string `gorm:"column:version_description"` // 版本描述
-		Canvas             string `gorm:"column:canvas"`              // 前端 schema
+		Version            string `gorm:"column:version"`             // release version
+		VersionDescription string `gorm:"column:version_description"` // version description
+		Canvas             string `gorm:"column:canvas"`              // Front-end schema
 		InputParams        string `gorm:"column:input_params"`
 		OutputParams       string `gorm:"column:output_params"`
-		VersionCreatorID   int64  `gorm:"column:version_creator_id"` // 发布用户 ID
-		VersionCreatedAt   int64  `gorm:"column:version_created_at"` // 创建时间毫秒时间戳
+		VersionCreatorID   int64  `gorm:"column:version_creator_id"` // Publish user ID
+		VersionCreatedAt   int64  `gorm:"column:version_created_at"` // Creation time millisecond timestamp
 		CommitID           string `gorm:"column:commit_id"`          // the commit id corresponding to this version
 	}
 

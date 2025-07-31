@@ -654,7 +654,7 @@ func (t *toolExecutor) preprocessArgumentsInJson(ctx context.Context, argumentsI
 		return args, nil
 	}
 
-	// body 限制为 object 类型
+	// Body restricted to object type
 	if bodySchema.Value.Type != openapi3.TypeObject {
 		return nil, fmt.Errorf("[preprocessArgumentsInJson] requset body is not object, type=%s",
 			bodySchema.Value.Type)
@@ -753,7 +753,7 @@ func (t *toolExecutor) prepareArguments(_ context.Context, argumentsInJson strin
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(argumentsInJson))
 	decoder.UseNumber()
 
-	// 假设大模型的输出都是 object 类型
+	// Suppose the output of the large model is of type object
 	input := map[string]any{}
 	err := decoder.Decode(&input)
 	if err != nil {
@@ -1108,7 +1108,7 @@ func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnDefault(_ co
 
 			for paramName, _paramVal := range paramValMap {
 				_paramSchema, ok := schemaVal.Properties[paramName]
-				if !ok || t.disabledParam(_paramSchema.Value) { // 只有 object field 才能被禁用，request 和 response 顶层必定都是 object 结构
+				if !ok || t.disabledParam(_paramSchema.Value) { // Only the object field can be disabled, and the top level of request and response must be the object structure
 					continue
 				}
 				newParamVal, err := processor(_paramVal, _paramSchema.Value)

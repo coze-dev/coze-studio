@@ -3,11 +3,11 @@
 package dataset
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type DatasetStatus int64
@@ -15,9 +15,9 @@ type DatasetStatus int64
 const (
 	DatasetStatus_DatasetProcessing DatasetStatus = 0
 	DatasetStatus_DatasetReady      DatasetStatus = 1
-	// 软删
+	// soft delete
 	DatasetStatus_DatasetDeleted DatasetStatus = 2
-	// 不启用
+	// Do not enable
 	DatasetStatus_DatasetForbid DatasetStatus = 3
 	DatasetStatus_DatasetFailed DatasetStatus = 9
 )
@@ -154,18 +154,18 @@ func (p *DatasetSource) Value() (driver.Value, error) {
 }
 
 type CreateDatasetRequest struct {
-	// 知识库名称，长度不超过100个字符
+	// Knowledge base name, no more than 100 characters in length
 	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	// 知识库描述
+	// Knowledge Base Description
 	Description string `thrift:"description,2" form:"description" json:"description" query:"description"`
-	// 空间ID
+	// Space ID
 	SpaceID int64 `thrift:"space_id,3" form:"space_id" json:"space_id,string" query:"space_id"`
-	// 知识库头像URI
+	// Knowledge Base Avatar URI
 	IconURI    string     `thrift:"icon_uri,4" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	FormatType FormatType `thrift:"format_type,5" form:"format_type" json:"format_type" query:"format_type"`
-	// 开放给第三方的业务标识, coze 传 0 或者不传
+	// Open to third-party business identity, coze pass 0 or no pass
 	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id,string" query:"biz_id"`
-	//新增project ID
+	//project ID
 	ProjectID int64      `thrift:"project_id,7" form:"project_id" json:"project_id,string" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -920,7 +920,7 @@ func (p *CreateDatasetResponse) String() string {
 
 type DatasetDetailRequest struct {
 	DatasetIDs []string `thrift:"DatasetIDs,1" form:"dataset_ids" json:"dataset_ids"`
-	//新增project ID
+	// project ID
 	ProjectID int64      `thrift:"project_id,3" form:"project_id" json:"project_id,string" query:"project_id"`
 	SpaceID   int64      `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -1549,44 +1549,44 @@ func (p *DatasetDetailResponse) String() string {
 
 type Dataset struct {
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
-	// 数据集名称
+	// Dataset name
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
-	// 文件列表
+	// file list
 	FileList []string `thrift:"file_list,3" form:"file_list" json:"file_list" query:"file_list"`
-	// 所有文件大小
+	// All file sizes
 	AllFileSize int64 `thrift:"all_file_size,4" form:"all_file_size" json:"all_file_size,string" query:"all_file_size"`
-	// 使用Bot数
+	// Bot count
 	BotUsedCount int32         `thrift:"bot_used_count,5" form:"bot_used_count" json:"bot_used_count" query:"bot_used_count"`
 	Status       DatasetStatus `thrift:"status,6" form:"status" json:"status" query:"status"`
-	// 处理中的文件名称列表，兼容老逻辑
+	// List of file names in process, compatible with old logic
 	ProcessingFileList []string `thrift:"processing_file_list,7" form:"processing_file_list" json:"processing_file_list" query:"processing_file_list"`
-	// 更新时间，秒级时间戳
+	// Update time, second timestamp
 	UpdateTime  int32  `thrift:"update_time,8" form:"update_time" json:"update_time" query:"update_time"`
 	IconURL     string `thrift:"icon_url,9" form:"icon_url" json:"icon_url" query:"icon_url"`
 	Description string `thrift:"description,10" form:"description" json:"description" query:"description"`
 	IconURI     string `thrift:"icon_uri,11" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	// 是否可以编辑
+	// Can it be edited?
 	CanEdit bool `thrift:"can_edit,12" form:"can_edit" json:"can_edit" query:"can_edit"`
-	// 创建时间，秒级时间戳
+	// create_time, second timestamp
 	CreateTime int32 `thrift:"create_time,13" form:"create_time" json:"create_time" query:"create_time"`
-	// 创建者ID
+	// creator ID
 	CreatorID int64 `thrift:"creator_id,14" form:"creator_id" json:"creator_id,string" query:"creator_id"`
-	// 空间ID
+	// Space ID
 	SpaceID int64 `thrift:"space_id,15" form:"space_id" json:"space_id,string" query:"space_id"`
-	// 处理失败的文件
+	// Processing failed files
 	FailedFileList []string   `thrift:"failed_file_list,18" form:"failed_file_list" json:"failed_file_list" query:"failed_file_list"`
 	FormatType     FormatType `thrift:"format_type,19" form:"format_type" json:"format_type" query:"format_type"`
-	// 分段数量
+	// number of segments
 	SliceCount int32 `thrift:"slice_count,20" form:"slice_count" json:"slice_count" query:"slice_count"`
-	// 命中次数
+	// hit count
 	HitCount int32 `thrift:"hit_count,21" form:"hit_count" json:"hit_count" query:"hit_count"`
-	// 文档数量
+	// number of documents
 	DocCount int32 `thrift:"doc_count,22" form:"doc_count" json:"doc_count" query:"doc_count"`
-	// 切片规则
+	// slicing rule
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,23" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
-	// 处理中的文件ID列表
+	// List of file IDs in process
 	ProcessingFileIDList []string `thrift:"processing_file_id_list,24" form:"processing_file_id_list" json:"processing_file_id_list" query:"processing_file_id_list"`
-	//新增project ID
+	//project ID
 	ProjectID string `thrift:"project_id,25" form:"project_id" json:"project_id" query:"project_id"`
 }
 
@@ -2784,17 +2784,17 @@ type ListDatasetRequest struct {
 	Page    *int32         `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
 	Size    *int32         `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
 	SpaceID int64          `thrift:"space_id,5" form:"space_id" json:"space_id,string" query:"space_id"`
-	// 排序字段
+	// sort field
 	OrderField *OrderField `thrift:"order_field,6,optional" form:"order_field" json:"order_field,omitempty" query:"order_field"`
-	// 排序规则
+	// order_type
 	OrderType *OrderType `thrift:"order_type,7,optional" form:"order_type" json:"order_type,omitempty" query:"order_type"`
-	// 如果传了指定值, 就放开校验
+	// If the specified value is passed, the verification is released
 	SpaceAuth *string `thrift:"space_auth,8,optional" form:"space_auth" json:"space_auth,omitempty" query:"space_auth"`
-	// 开放给第三方的业务标识
+	// Business identity open to third parties
 	BizID *int64 `thrift:"biz_id,9,optional" form:"biz_id" json:"biz_id,string,omitempty" query:"biz_id"`
-	// 是否需要拉取引用bots的数量，会增加响应延时
+	// Whether the number of reference bots needs to be pulled will increase the response delay
 	NeedRefBots *bool `thrift:"need_ref_bots,10,optional" form:"need_ref_bots" json:"need_ref_bots,omitempty" query:"need_ref_bots"`
-	//新增project ID
+	//project ID
 	ProjectID *string    `thrift:"project_id,11,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -3848,15 +3848,15 @@ func (p *ListDatasetResponse) String() string {
 }
 
 type DatasetFilter struct {
-	// 如果都设置了，And 关系
+	// The following conditions are related to and
 	Name *string `thrift:"name,1,optional" form:"name" json:"name,omitempty" query:"name"`
-	// 知识库id列表
+	// Knowledge id list
 	DatasetIds []string `thrift:"dataset_ids,2,optional" form:"dataset_ids" json:"dataset_ids,omitempty" query:"dataset_ids"`
-	// 来源
+	// source
 	SourceType *DatasetSource `thrift:"source_type,3,optional" form:"source_type" json:"source_type,omitempty" query:"source_type"`
-	// 搜索类型
+	// search type
 	ScopeType *DatasetScopeType `thrift:"scope_type,4,optional" form:"scope_type" json:"scope_type,omitempty" query:"scope_type"`
-	// 类型
+	// type
 	FormatType *FormatType `thrift:"format_type,5,optional" form:"format_type" json:"format_type,omitempty" query:"format_type"`
 }
 
@@ -4694,13 +4694,13 @@ func (p *DeleteDatasetResponse) String() string {
 }
 
 type UpdateDatasetRequest struct {
-	// 知识库id
+	// Knowledge ID
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
-	// 知识库名称，不能为空
+	// Knowledge base name, cannot be empty
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
-	// 知识库icon
+	// Knowledge base icon
 	IconURI string `thrift:"icon_uri,3" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
-	// 知识库描述
+	// Knowledge Base Description
 	Description string         `thrift:"description,4" form:"description" json:"description" query:"description"`
 	Status      *DatasetStatus `thrift:"status,5,optional" form:"status" json:"status,omitempty" query:"status"`
 	Base        *base.Base     `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`

@@ -13,17 +13,17 @@ type ColumnType int64
 
 const (
 	ColumnType_Unknown ColumnType = 0
-	// 文本
+	// Text
 	ColumnType_Text ColumnType = 1
-	// 数字
+	// number
 	ColumnType_Number ColumnType = 2
-	// 时间
+	// time
 	ColumnType_Date ColumnType = 3
 	// float
 	ColumnType_Float ColumnType = 4
 	// bool
 	ColumnType_Boolean ColumnType = 5
-	// 图片
+	// picture
 	ColumnType_Image ColumnType = 6
 )
 
@@ -83,11 +83,11 @@ func (p *ColumnType) Value() (driver.Value, error) {
 }
 
 type DocTableSheet struct {
-	// sheet 的编号
+	// Number of sheet
 	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
-	// sheet 名
+	// Sheet name
 	SheetName string `thrift:"sheet_name,2" form:"sheet_name" json:"sheet_name" query:"sheet_name"`
-	// 总行数
+	// total number of rows
 	TotalRow int64 `thrift:"total_row,3" form:"total_row" json:"total_row" query:"total_row"`
 }
 
@@ -314,20 +314,20 @@ func (p *DocTableSheet) String() string {
 
 }
 
-// 表格的列信息
+// Table column information
 type DocTableColumn struct {
-	// 列 id
+	// Column ID
 	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
-	// 列名
+	// column_name
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
-	// 是否为语义匹配列
+	// Is it a semantically matched column?
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
-	// 列原本在 excel 的序号
+	// List the serial number originally in excel
 	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
-	// 列类型
+	// column type
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
-	// 描述
+	// describe
 	Desc *string `thrift:"desc,7,optional" form:"desc" json:"desc,omitempty" query:"desc"`
 }
 

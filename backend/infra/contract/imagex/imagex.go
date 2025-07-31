@@ -41,9 +41,9 @@ type SecurityToken struct {
 }
 
 type ResourceURL struct {
-	// REQUIRED; 结果图访问精简地址，与默认地址相比缺少 Bucket 部分。
+	// REQUIRED; The resulting graph accesses the thin address, missing the bucket part compared to the default address.
 	CompactURL string `json:"CompactURL"`
-	// REQUIRED; 结果图访问默认地址。
+	// REQUIRED; Result graph access default address.
 	URL string `json:"URL"`
 }
 
@@ -55,7 +55,7 @@ type UploadResult struct {
 
 type Result struct {
 	Uri       string `json:"Uri"`
-	UriStatus int    `json:"UriStatus"` // 2000表示上传成功
+	UriStatus int    `json:"UriStatus"` // 2000 means the upload was successful.
 }
 
 type FileInfo struct {

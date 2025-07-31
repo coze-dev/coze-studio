@@ -63,7 +63,7 @@ func (v *veImageX) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOp
 }
 
 func (v *veImageX) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	// opt 转 UploadAuthOption
+	// Opt to UploadAuthOption
 	option := &imagex.UploadAuthOption{}
 	for _, o := range opt {
 		o(option)

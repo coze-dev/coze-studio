@@ -341,7 +341,7 @@ type AuthV2 struct {
 }
 
 func (au *AuthV2) UnmarshalJSON(data []byte) error {
-	auth := &Auth{} // 兼容老数据
+	auth := &Auth{} // Compatible with old data
 	err := json.Unmarshal(data, auth)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
@@ -381,7 +381,7 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 }
 
 func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
-	if au.SubType == "" && au.Payload == "" { // 兼容老数据
+	if au.SubType == "" && au.Payload == "" { // Compatible with old data
 		au.SubType = AuthzSubTypeOfServiceAPIToken
 	}
 
@@ -421,7 +421,7 @@ func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
 }
 
 func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
-	if au.SubType == "" { // 兼容老数据
+	if au.SubType == "" { // Compatible with old data
 		au.SubType = AuthzSubTypeOfOAuthAuthorizationCode
 	}
 

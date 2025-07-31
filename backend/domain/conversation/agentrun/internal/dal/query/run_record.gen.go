@@ -49,26 +49,26 @@ func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {
 	return _runRecord
 }
 
-// runRecord 执行记录表
+// runRecord run record
 type runRecord struct {
 	runRecordDo
 
 	ALL            field.Asterisk
-	ID             field.Int64  // 主键ID
-	ConversationID field.Int64  // 会话 ID
+	ID             field.Int64  // id
+	ConversationID field.Int64  // conversation id
 	SectionID      field.Int64  // section ID
 	AgentID        field.Int64  // agent_id
 	UserID         field.String // user id
-	Source         field.Int32  // 执行来源 0 API,
-	Status         field.String // 状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction
-	CreatorID      field.Int64  // 创建者标识
-	CreatedAt      field.Int64  // 创建时间
-	UpdatedAt      field.Int64  // 更新时间
-	FailedAt       field.Int64  // 失败时间
+	Source         field.Int32  // Execute source 0 API
+	Status         field.String // status,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction
+	CreatorID      field.Int64  // creator id
+	CreatedAt      field.Int64  // Create Time in Milliseconds
+	UpdatedAt      field.Int64  // Update Time in Milliseconds
+	FailedAt       field.Int64  // Fail Time in Milliseconds
 	LastError      field.String // error message
-	CompletedAt    field.Int64  // 结束时间
-	ChatRequest    field.String // 保存原始请求的部分字段
-	Ext            field.String // 扩展字段
+	CompletedAt    field.Int64  // Finish Time in Milliseconds
+	ChatRequest    field.String // Original request field
+	Ext            field.String // ext
 	Usage          field.Field  // usage
 
 	fieldMap map[string]field.Expr

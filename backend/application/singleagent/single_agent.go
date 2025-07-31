@@ -156,7 +156,7 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	if len(draft.Database) == 0 {
-		return nil, fmt.Errorf("agent %d has no database", agentID) // TODO（@fanlv）: 错误码
+		return nil, fmt.Errorf("agent %d has no database", agentID) // TODO (@fanlv): error code
 	}
 
 	dbInfos := draft.Database
@@ -170,7 +170,7 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	if !found {
-		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID) // TODO（@fanlv）: 错误码
+		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID) // TODO (@fanlv): error code
 	}
 
 	draft.Database = dbInfos
@@ -606,7 +606,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 				Name:      creator.Name,
 				AvatarURL: creator.IconURL,
 				Self:      uid == v.CreatorID,
-				// UserUniqueName: creator.UserUniqueName, // TODO(@fanlv) : user domain 补完以后再改
+				// UserUniqueName: creator. UserUniqueName,//TODO (@fanlv): Change the user domain after it is completed
 				// UserLabel TODO
 			},
 			PublishID: &v.PublishID,

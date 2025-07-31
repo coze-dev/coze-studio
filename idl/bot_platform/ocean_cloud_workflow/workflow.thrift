@@ -8,27 +8,27 @@ enum PersistenceModel {
     External = 3,
 }
 
-// WorkflowMode 用来区分 Workflow 和 chatflow
+// WorkflowMode is used to distinguish between Workflow and chatflow.
 enum WorkflowMode {
     Workflow  = 0   ,
     Imageflow = 1   ,
     SceneFlow = 2   ,
     ChatFlow  = 3   ,
-    All       = 100 , // 仅在查询时使用
+    All       = 100 , // Use only when querying
 }
 
-// workflow 商品审核草稿状态
+// Workflow Product Review Draft Status
 enum ProductDraftStatus {
-    Default   = 0, // 默认
-    Pending   = 1, // 审核中
-    Approved  = 2, // 审核通过
-    Rejected  = 3, // 审核不通过
-    Abandoned = 4, // 已废弃
+    Default   = 0, // default
+    Pending   = 1, // Under review.
+    Approved  = 2, // approved
+    Rejected  = 3, // The review failed.
+    Abandoned = 4, // Abandoned
 }
 
 enum CollaboratorMode {
-    Close = 0, // 关闭多人协作模式
-    Open  = 1, // 开启多人协作模式
+    Close = 0, // Turn off multiplayer collaboration mode
+    Open  = 1, // Enable multiplayer collaboration mode
 }
 
 struct Workflow{
@@ -38,52 +38,52 @@ struct Workflow{
     4 :          string             url                        ,
     5 :          string             icon_uri                   ,
     6 :          WorkFlowDevStatus  status                     ,
-    7 :          WorkFlowType       type                       , // 类型，1:官方模版
-    8 :          string             plugin_id                  , // workflow对应的插件id
+    7 :          WorkFlowType       type                       , // Type 1: Official Template
+    8 :          string             plugin_id                  , // Plugin ID for workflow
     9 :          i64                create_time                ,
     10:          i64                update_time                ,
     11:          SchemaType         schema_type                ,
     12: optional Node               start_node                 ,
     13: optional Tag                tag                        ,
-    14: optional string             template_author_id         , // 模版创作者id
-    15: optional string             template_author_name       , // 模版创作者昵称
-    16: optional string             template_author_picture_url, // 模版创作者头像
-    17: optional string             space_id                   , // 空间id
-    18: optional string             interface_str              , // 流程出入参
-    19: optional string             schema_json                , // 新版workflow的定义 schema
-    20:          Creator            creator                    , // workflow创作者信息
-    21:          PersistenceModel   persistence_model          , // 存储模型
-    22:          WorkflowMode       flow_mode                  , // workflow or imageflow，默认值为workflow
-    23:          ProductDraftStatus product_draft_status       , // workflow商品审核版本状态
+    14: optional string             template_author_id         , // template creator id
+    15: optional string             template_author_name       , // template creator nickname
+    16: optional string             template_author_picture_url, // template creator avatar
+    17: optional string             space_id                   , // Space ID
+    18: optional string             interface_str              , // process entry and exit
+    19: optional string             schema_json                , // New workflow definition schema
+    20:          Creator            creator                    , // Workflow creator information
+    21:          PersistenceModel   persistence_model          , // Storage Model
+    22:          WorkflowMode       flow_mode                  , // Workflow or imageflow, the default is workflow
+    23:          ProductDraftStatus product_draft_status       , // Workflow product review version status
     24: optional string             external_flow_info         , // {"project_id":"xxx","flow_id":xxxx}
-    25:          CollaboratorMode   collaborator_mode          , // workflow多人协作按钮状态
+    25:          CollaboratorMode   collaborator_mode          , // Workflow Multiplayer Collaboration Button Status
     26: list<CheckResult> check_result,
     27: optional string project_id,
-    28: optional string dev_plugin_id, // project 下的 workflow 才有
+    28: optional string dev_plugin_id, // Only the workflow under the project is available.
 }
 
 struct CheckResult {
-    1: CheckType type, // 校验类型
-    2: bool is_pass, // 是否通过
-    3: string reason, // 不通过原因
+    1: CheckType type, // check type
+    2: bool is_pass, // Whether to pass
+    3: string reason, // Reason for not passing
 }
 
 struct Creator {
     1: string id                                  ,
     2: string name                                ,
     3: string avatar_url                          ,
-    4: bool   self       (pilota.name="rust_self"), // 是否是自己创建的
+    4: bool   self       (pilota.name="rust_self"), // Did you create it yourself?
 }
 
 enum SchemaType{
-    DAG = 0, // 废弃
+    DAG = 0, // abandoned
     FDL = 1,
-    BlockWise = 2, // 废弃
+    BlockWise = 2, // abandoned
 }
 
 enum WorkFlowType{
-    User     = 0, // 用户自定义
-    GuanFang = 1, // 官方模板
+    User     = 0, // user defined
+    GuanFang = 1, // official template
 }
 
 enum Tag{
@@ -109,7 +109,7 @@ enum Tag{
     Hidden        = 100,
 }
 
-//节点结构
+//Node structure
 enum NodeType{
     Start           = 1 ,
     End             = 2 ,
@@ -143,7 +143,7 @@ enum NodeType{
     DatasetDelete       = 60,
 }
 
-//节点模版类型，与NodeType基本保持一致，copy一份是因为新增了一个Imageflow类型，避免影响原来NodeType的业务语意
+//The node template type is basically the same as NodeType. One copy is due to the addition of an Imageflow type to avoid affecting the business semantics of the original NodeType
 enum NodeTemplateType{
     Start           = 1 ,
     End             = 2 ,
@@ -226,7 +226,7 @@ struct Param{
     3:          InputType            type        ,
     4:          bool                 required    ,
     5:          string               value       ,
-    6:          ParamRequirementType requirement , // 要求  1不允许删除 2不允许更改名称 3什么都可修改 4只显示，全部不允许更改
+    6:          ParamRequirementType requirement , // Requirements 1 Do not allow deletion 2 Do not allow name change 3 Anything can be modified 4 Only display, all are not allowed to be changed
     7: optional string               from_node_id,
     8: optional list<string>         from_output ,
 }
@@ -262,9 +262,9 @@ struct IfParam {
 }
 
 struct IfBranch {
-    1: optional list<IfCondition>   if_conditions        , // 该分支的条件
-    2: optional IfConditionRelation if_condition_relation, // 该分支各条件的关系
-    3: optional list<string>        next_node_id         , // 该分支对应的下一个节点
+    1: optional list<IfCondition>   if_conditions        , // Conditions for this branch
+    2: optional IfConditionRelation if_condition_relation, // The relationship between the conditions of this branch
+    3: optional list<string>        next_node_id         , // The next node corresponding to this branch
 }
 
 struct IfCondition {
@@ -283,31 +283,31 @@ enum TerminatePlanType{
     USESETTING = 2,
 }
 
-struct TerminatePlan{//结束方式
+struct TerminatePlan{//End method
     1: TerminatePlanType plan   ,
     2: string            content,
 }
 
 struct NodeParam{
-    1 : optional list<Param>     input_list       , // 输入参数列表，支持多级；支持mapping
-    2 : optional list<Param>     output_list      , // 输出参数列表，支持多级
-    3 : optional APIParam        api_param        , // 如果是API类型的Node，插件名、API名、插件版本、API的描述
-    4 : optional CodeParam       code_param       , // 如果是代码片段，则包含代码内容
-    5 : optional LLMParam        llm_param        , // 如果是模型，则包含模型的基础信息
-    6 : optional DatasetParam    dataset_param    , // 如果是数据集，选择数据集的片段
-    7 : optional TerminatePlan   terminate_plan   , // end节点，如何结束
-    8 : optional list<Parameter> input_parameters , // （新）输入参数列表
-    9 : optional list<Parameter> output_parameters, // （新）输出参数列表
-    10: optional Batch           batch            , // 批量设置情况
-    11: optional IfParam         if_param         , // if节点参数
+    1 : optional list<Param>     input_list       , // Enter parameter list, support multi-level; support mapping
+    2 : optional list<Param>     output_list      , // Output parameter list, support multi-level
+    3 : optional APIParam        api_param        , // If it is an API type Node, plug-in name, API name, plug-in version, API description
+    4 : optional CodeParam       code_param       , // If it is a code snippet, include the code content
+    5 : optional LLMParam        llm_param        , // If it is a model, include the basic information of the model
+    6 : optional DatasetParam    dataset_param    , // If it is a dataset, select a fragment of the dataset
+    7 : optional TerminatePlan   terminate_plan   , // End node, how to end
+    8 : optional list<Parameter> input_parameters , // (New) input parameter list
+    9 : optional list<Parameter> output_parameters, // (New) Output parameter list
+    10: optional Batch           batch            , // batch setup
+    11: optional IfParam         if_param         , // if node parameter
 }
 
 struct NodeDesc{
     1: string desc         ,
-    2: string name         , // 副标题名称
-    3: string icon_url     , // 该类型的icon
-    4: i32    support_batch, // 是否支持批量，1不支持，2支持
-    5: i32    link_limit   , // 连接要求 1左右都可连接 2只支持右侧
+    2: string name         , // Subtitle name
+    3: string icon_url     , // This type of icon
+    4: i32    support_batch, // Whether to support batch, 1 does not support, 2 supports
+    5: i32    link_limit   , // Connection requirements 1 or so can be connected 2 only support the right side
 }
 struct OpenAPI{
     1: list<Parameter> input_list ,
@@ -315,26 +315,26 @@ struct OpenAPI{
 }
 
 struct Batch{
-    1: bool      is_batch   , // batch开关是否打开
-    2: i64       take_count , // 只处理数组[0,take_count)范围的输入
-    3: Parameter input_param, // 需要Batch的输入
+    1: bool      is_batch   , // Is the batch switch on?
+    2: i64       take_count , // Only process input in the range [0, take_count)
+    3: Parameter input_param, // Batch input required
 }
 
 struct Node{
     1: string       workflow_id,
-    2: string       node_id    , // 节点id
-    3: string       node_name  , // 更改node名称
-    4: NodeType     node_type  , // 节点类型
-    5: NodeParam    node_param , // 节点的核心参数
-    6: LayOut       lay_out    , // Node的位置
-    7: NodeDesc     desc       , // Node的描述，说明链接
-    8: list<string> depends_on , // 依赖的上游节点
-    9: OpenAPI      open_api   , // 所有的输入和输出
+    2: string       node_id    , // Node ID
+    3: string       node_name  , // Change node name
+    4: NodeType     node_type  , // Node type
+    5: NodeParam    node_param , // Core parameters of the node
+    6: LayOut       lay_out    , // Node location
+    7: NodeDesc     desc       , // Description of Node, explaining the link
+    8: list<string> depends_on , // dependent upstream node
+    9: OpenAPI      open_api   , // All inputs and outputs
 }
 
 enum SupportBatch{
-    NOT_SUPPORT = 1, // 1:不支持
-    SUPPORT     = 2, // 2:支持
+    NOT_SUPPORT = 1, // 1: Not supported
+    SUPPORT     = 2, // 2: Support
 }
 
 enum PluginParamTypeFormat {
@@ -347,50 +347,50 @@ struct Parameter {
     3 :          bool                  required      ,
     4 :          InputType             type          ,
     5 :          list<Parameter>       sub_parameters,
-    6 :          InputType             sub_type      , // 如果Type是数组，则有subtype
-    7 : optional string                from_node_id  , // 如果入参的值是引用的则有fromNodeId
-    8 : optional list<string>          from_output   , // 具体引用哪个节点的key
-    9 : optional string                value         , // 如果入参是用户手输 就放这里
+    6 :          InputType             sub_type      , // If Type is an array, there is a subtype
+    7 : optional string                from_node_id  , // fromNodeId if the value of the imported parameter is a reference
+    8 : optional list<string>          from_output   , // Which node's key is specifically referenced?
+    9 : optional string                value         , // If the imported parameter is the user's hand input, put it here
     10: optional PluginParamTypeFormat format        ,
-    11: optional i64                   assist_type   , // 辅助类型；type=string生效，0 为unset
-    12: optional i64                   sub_assist_type, // 如果Type是数组，表示子元素的辅助类型；sub_type=string生效，0 为unset
+    11: optional i64                   assist_type   , // Auxiliary type; type = string takes effect, 0 is unset
+    12: optional i64                   sub_assist_type, // If Type is an array, it represents the auxiliary type of the child element; sub_type = string takes effect, 0 is unset
 }
 
-//状态，1不可提交 2可提交  3已提交 4废弃
+//Status, 1 Not Submitted 2 Submitted 3 Submitted 4 Obsolete
 enum WorkFlowDevStatus{
-    CanNotSubmit = 1, // 不可提交
-    CanSubmit    = 2, // 可提交
-    HadSubmit    = 3, // 已提交
-    Deleted      = 4, // 删除
+    CanNotSubmit = 1, // unsubmittable
+    CanSubmit    = 2, // submittable
+    HadSubmit    = 3, // Submitted
+    Deleted      = 4, // delete
 }
-//状态，1不可发布 2可发布  3已发布 4删除 5下架
+//Status, 1 Unpublishable 2 Publishable 3 Published 4 Deleted 5 Removed
 enum WorkFlowStatus{
-    CanNotPublish = 1, // 不可发布
-    CanPublish    = 2, // 可发布
-    HadPublished  = 3, // 已发布
-    Deleted       = 4, // 删除
-    Unlisted      = 5, // 下架
+    CanNotPublish = 1, // unpublishable
+    CanPublish    = 2, // publishable
+    HadPublished  = 3, // Published
+    Deleted       = 4, // delete
+    Unlisted      = 5, // offline
 }
 
 
 
 struct CreateWorkflowRequest{
-    1  : required string       name         , // 流程名
-    2  : required string       desc         , // 流程描述，不可为空
-    3  : required string       icon_uri     , // 流程图标uri，不可为空
-    4  : required string       space_id     , // 空间id，不可为空
-    5  : optional WorkflowMode flow_mode    , // workflow or chatflow，默认值为workflow
+    1  : required string       name         , // process name
+    2  : required string       desc         , // Process description, not null
+    3  : required string       icon_uri     , // Process icon uri, not nullable
+    4  : required string       space_id     , // Space id, cannot be empty
+    5  : optional WorkflowMode flow_mode    , // Workflow or chatflow, the default is workflow
     6  : optional SchemaType   schema_type  ,
     7  : optional string       bind_biz_id  ,
-    8  : optional i32          bind_biz_type, // 绑定业务类型，非必要不填写。参考BindBizType结构体，值为3时代表抖音分身
-    9  : optional string       project_id   , // 应用id，填写时代表流程是project下的流程，需要跟随project发布
-    10 : optional bool         create_conversation, // 是否创建会话，仅当flow_mode=chatflow时生效
+    8  : optional i32          bind_biz_type, // Bind the business type, do not fill in if necessary. Refer to the BindBizType structure, when the value is 3, it represents the Douyin doppelganger.
+    9  : optional string       project_id   , // Application id, when filled in, it means that the process is the process under the project, and it needs to be released with the project.
+    10 : optional bool         create_conversation, // Whether to create a session, only if flow_mode = chatflow
     255: optional base.Base    Base     ,
 }
 
 struct CreateWorkflowData{
-    1:          string         workflow_id       , // 流程的id，用来标识唯一的流程
-    2:          string         name              , // 流程名
+    1:          string         workflow_id       , // The ID of the process, used to identify a unique process
+    2:          string         name              , // process name
     3:          string         url               ,
     4:          WorkFlowStatus status            ,
     5:          SchemaType     type              ,
@@ -407,13 +407,13 @@ struct CreateWorkflowResponse{
 }
 
 struct SaveWorkflowRequest{
-    1  : required string    workflow_id           , // 流程的id，用来标识唯一的流程
-    2  : optional string    schema                , // 流程的schema
-    3  : optional string    space_id              , // required，空间id，不可为空
+    1  : required string    workflow_id           , // The ID of the process, used to identify a unique process
+    2  : optional string    schema                , // Process schema
+    3  : optional string    space_id              , // Required, space id, not nullable
     4  : optional string    name                  ,
     5  : optional string    desc                  ,
     6  : optional string    icon_uri              ,
-    7  : required string    submit_commit_id      , // 提交的 commit_id。其作用是唯一标识一个流程的单个提交版本（每个 commit_id 仅对应且仅能对应一个流程的一次提交版本）。
+    7  : required string    submit_commit_id      , // The commit_id of a commit. This is used to uniquely identify individual commit versions of a process (each commit_id corresponds only and only to one commit version of a process).
     8  : optional bool      ignore_status_transfer,
 
     255: optional base.Base Base                  ,
@@ -504,15 +504,15 @@ struct CanvasData {
     3:          DBCanvasData  db_data           ,
     4:          OperationInfo operation_info    ,
     5: optional string        external_flow_info,
-    6: optional bool          is_bind_agent     , // 是否绑定了Agent
+    6: optional bool          is_bind_agent     , // Is the Agent bound?
     7: optional string        bind_biz_id       ,
     8: optional i32           bind_biz_type     ,
     9: optional string        workflow_version  ,
 }
 
 struct GetCanvasInfoRequest {
-    1  : required string    space_id   , // 空间id，不可为空
-    2  : optional string    workflow_id, // required，流程id，不可为空
+    1  : required string    space_id   , // Space id, cannot be empty
+    2  : optional string    workflow_id, // Required, process id, not null
 
     255: optional base.Base Base       ,
 }
@@ -536,7 +536,7 @@ enum OperateType {
 struct GetHistorySchemaRequest {
     1  : required string      space_id   ,
     2  : required string      workflow_id,
-    3  : optional string      commit_id  , // 多次分页的时候需要传入
+    3  : optional string      commit_id  , // You need to pass in when paging multiple times.
     4  : required OperateType type       ,
     5  : optional string      env        ,
     6  : optional string      workflow_version,
@@ -575,8 +575,8 @@ struct GetHistorySchemaResponse{
 }
 
 enum DeleteAction{
-    BlockwiseUnbind = 1, // Blockwise的解绑
-    BlockwiseDelete = 2, // Blockwise的删除
+    BlockwiseUnbind = 1, // Blockwise Unbinding
+    BlockwiseDelete = 2, // Blockwise removal
 }
 
 struct DeleteWorkflowRequest{
@@ -632,20 +632,20 @@ struct GetDeleteStrategyResponse{
 }
 
 enum DeleteType{
-    CanDelete          = 0, // 可以删除：无workflow商品/商品下架/第一次上架且审核失败
-    RejectProductDraft = 1, // 删除后审核失败：workflow商品第一次上架并处于审核中
-    UnListProduct      = 2, // 需要商品先下架：workflow商品已上架
+    CanDelete          = 0, // Can be deleted: No workflow product/product removed from the shelves/first time on the shelves and the review failed
+    RejectProductDraft = 1, // Review failed after deletion: The workflow product is on the shelves for the first time and is under review.
+    UnListProduct      = 2, // Products that need to be removed from the shelves first: workflow products have been put on the shelves.
 }
 
 struct PublishWorkflowRequest{
     1  : required string    workflow_id     ,
     2  : required string    space_id        ,
     3  : required bool      has_collaborator,
-    4  : optional string    env             ,     // 发布到哪个环境，不填默认线上
-    5  : optional string    commit_id       ,    // 使用哪个版本发布，不填默认最新提交版本
-    6  : optional bool      force           ,    // 强制发布。若流程发布前执行了 TestRun 步骤，“force” 参数值应为 false，或不传递该参数；若流程发布前未执行 TestRun 步骤，“force” 参数值应为 true 。
-    7  : optional string    workflow_version,    // required, 发布workflow的版本号，遵循 SemVer 格式为"vx.y.z"，必须比当前版本大，可通过 GetCanvasInfo 获取当前版本
-    8  : optional string    version_description, // workflow的版本描述
+    4  : optional string    env             ,     // Which environment to publish to, do not fill in the default line
+    5  : optional string    commit_id       ,    // Which version to use to release, do not fill in the default latest commit version
+    6  : optional bool      force           ,    // Force release. If the TestRun step was executed before the process was published, the "force" parameter value should be false, or not passed; if the TestRun step was not executed before the process was published, the "force" parameter value should be true.
+    7  : optional string    workflow_version,    // Required, the version number of the published workflow, in SemVer format "vx.y.z", must be larger than the current version, the current version can be obtained through GetCanvasInfo
+    8  : optional string    version_description, // Workflow version description
 
     255: optional base.Base Base            ,
 }
@@ -687,7 +687,7 @@ struct UserInfo {
     1: i64    user_id    ,
     2: string user_name  ,
     3: string user_avatar,
-    4: string nickname, // 用户昵称
+    4: string nickname, // user nickname
 }
 
 struct ReleasedWorkflowData {
@@ -710,7 +710,7 @@ struct ReleasedWorkflow {
     12: string            version                                      ,
     13: i64               create_time                                  ,
     14: i64               update_time                                  ,
-    15: Creator           creator                                      , // workflow创作者信息
+    15: Creator           creator                                      , // Workflow creator information
     16: WorkflowMode      flow_mode                                    ,
     17: string            flow_version                                 ,
     18: string            flow_version_desc                            ,
@@ -733,7 +733,7 @@ enum OrderBy {
     Id          = 4,
 }
 
-// Workflow 过滤条件
+// Workflow filter
 struct WorkflowFilter {
     1: string workflow_id,
     2: optional string workflow_version,
@@ -749,8 +749,8 @@ struct GetReleasedWorkflowsRequest {
     8  : optional string       space_id         ,
     9  : optional OrderBy      order_by         ,
     10 : optional bool         login_user_create,
-    11 : optional WorkflowMode flow_mode        , // workflow or imageflow, 默认为workflow
-    12 : optional list<WorkflowFilter> workflow_filter_list, // 过滤条件，支持workflow_id和workflow_version
+    11 : optional WorkflowMode flow_mode        , // Workflow or imageflow, default to workflow
+    12 : optional list<WorkflowFilter> workflow_filter_list, // Filter conditions, support workflow_id and workflow_version
 
     255: optional base.Base    Base             ,
 }
@@ -790,11 +790,11 @@ struct GetExampleWorkFlowListResponse {
 }
 
 struct GetExampleWorkFlowListRequest {
-    1  : optional i32                page  , // 分页功能，指定希望获取的结果列表的页码。
-    2  : optional i32                size  , // 分页功能，指定每页返回的条目数量, 必须大于0，小于等于100
-    5  : optional string             name             , // 根据工作流的名称来筛选示例工作流列表。
-    11 : optional WorkflowMode       flow_mode        , // 根据工作流的模式（例如：标准工作流、对话流等）筛选示例工作流列表。
-    14 : optional list<CheckType>    checker          , // Bot的 Workflow as Agent模式会使用，只会使用BotAgent = 3的场景
+    1  : optional i32                page  , // Paging function, specifying the page number of the list of results you want to retrieve.
+    2  : optional i32                size  , // Paging function, specifies the number of entries returned per page, must be greater than 0, less than or equal to 100
+    5  : optional string             name             , // Filter the list of sample workflows by the name of the workflow.
+    11 : optional WorkflowMode       flow_mode        , // Filter the sample workflow list based on the workflow pattern (e.g., standard workflow, conversation flow, etc.).
+    14 : optional list<CheckType>    checker          , // Bot's Workflow as Agent mode will be used, only scenarios with BotAgent = 3 will be used
 
     255: optional base.Base          Base             ,
 }
@@ -815,24 +815,24 @@ enum CheckType {
 enum BindBizType {
     Agent = 1 ,
     Scene = 2 ,
-    DouYinBot = 3, // 抖音分身
+    DouYinBot = 3, // Douyin doppelganger
 }
 
 struct GetWorkFlowListRequest {
     1  : optional i32                page             ,
-    2  : optional i32                size             , // 分页大小，一般为10
-    3  : optional list<string>       workflow_ids     , // 根据流程id列表查询对应的流程
-    4  : optional WorkFlowType       type             , // 根据流程类型筛选流程
-    5  : optional string             name             , // 根据流程名称筛选流程
-    6  : optional Tag                tags             , // 根据标签筛选流程
-    7  : optional string             space_id         , // required，空间id
-    8  : optional WorkFlowListStatus status           , // 根据流程是否已发布筛选流程
+    2  : optional i32                size             , // Page size, usually 10.
+    3  : optional list<string>       workflow_ids     , // Query the corresponding process according to the process id list
+    4  : optional WorkFlowType       type             , // Filter processes by process type
+    5  : optional string             name             , // Filter processes by process name
+    6  : optional Tag                tags             , // Filter process by label
+    7  : optional string             space_id         , // Required, space id
+    8  : optional WorkFlowListStatus status           , // Filter process according to whether the process has been published
     9  : optional OrderBy            order_by         ,
-    10 : optional bool               login_user_create, // 根据接口请求人是否为流程创建人筛选流程
-    11 : optional WorkflowMode       flow_mode        , // workflow or chatflow, 默认为workflow。根据流程类型筛选流程
-    12 : optional list<SchemaType>   schema_type_list , // 新增字段，用于筛选schema_type
-    13 : optional string             project_id       , // 在对应project下查询流程
-    14 : optional list<CheckType>    checker, // 用于project发布过滤，此列表中的每个 CheckType 元素可指定特定规则，决定了返回的流程是否通过检查。
+    10 : optional bool               login_user_create, // Filter processes based on whether the interface requester is the process creator
+    11 : optional WorkflowMode       flow_mode        , // Workflow or chatflow, the default is workflow. Filter processes by process type
+    12 : optional list<SchemaType>   schema_type_list , // New field for filtering schema_type
+    13 : optional string             project_id       , // Query process under the corresponding project
+    14 : optional list<CheckType>    checker, // For project publication filtering, each CheckType element in this list can specify a specific rule that determines whether the returned process passes the check.
     15 : optional string            bind_biz_id  ,
     16 : optional BindBizType       bind_biz_type,
     17 : optional string            project_version,
@@ -847,9 +847,9 @@ struct ResourceActionAuth{
 }
 
 struct ResourceAuthInfo{
-    1: string             workflow_id, // 资源id
-    2: string             user_id    , // 用户id
-    3: ResourceActionAuth auth       , // 用户资源操作权限
+    1: string             workflow_id, // Resource ID
+    2: string             user_id    , // user id
+    3: ResourceActionAuth auth       , // user resource operation permission
 }
 
 struct WorkFlowListData {
@@ -899,9 +899,9 @@ struct WorkFlowTestRunRequest {
     1  : required string             workflow_id     ,
     2  :          map<string,string> input           ,
     3  : optional string             space_id        ,
-    4  : optional string             bot_id          ,  // agent的id，非project下的流程，涉及变量节点、数据库的流程
-    5  : optional string             submit_commit_id,  // 废弃
-    6  : optional string             commit_id       ,  // 指定vcs commit_id，默认为空
+    4  : optional string             bot_id          ,  // The id of the agent, the process under non-project, the process involving variable nodes and databases
+    5  : optional string             submit_commit_id,  // abandoned
+    6  : optional string             commit_id       ,  // Specify vcs commit_id, default is empty
     7  : optional string             project_id,
 
     255: optional base.Base          Base            ,
@@ -956,7 +956,7 @@ struct CancelWorkFlowResponse {
     255: required base.BaseResp BaseResp,
 }
 
-// workflow快照基本信息
+// Workflow snapshot basic information
 struct WkPluginBasicData{
     1 : i64            workflow_id   (api.js_conv="true"),
     2 : i64            space_id      (api.js_conv="true"),
@@ -965,7 +965,7 @@ struct WkPluginBasicData{
     5 : string         url  ,
     6 : string         icon_uri  ,
     7 : WorkFlowStatus status,
-    8 : i64            plugin_id     (api.js_conv="true"), // workflow 对应的插件id
+    8 : i64            plugin_id     (api.js_conv="true"), // Plugin ID for workflow
     9 : i64            create_time  ,
     10: i64            update_time  ,
     11: i64            source_id     (api.js_conv="true"),
@@ -980,13 +980,13 @@ struct WkPluginBasicData{
 
 struct CopyWkTemplateApiRequest{
     1  : required list<string> workflow_ids,
-    2  : required i64  target_space_id (api.js_conv='true'), // 拷贝的目标空间
+    2  : required i64  target_space_id (api.js_conv='true'), // Copy target space
 
     255: optional base.Base Base                               ,
 }
 
 struct CopyWkTemplateApiResponse{
-    1  : required map<i64,WkPluginBasicData> data     (api.js_conv='true'), // 模板ID：拷贝副本的数据
+    1  : required map<i64,WkPluginBasicData> data     (api.js_conv='true'), // Template ID: Copy copy of data
 
     253: required i64                        code                        ,
     254: required string                     msg                         ,
@@ -995,12 +995,12 @@ struct CopyWkTemplateApiResponse{
 
 // === node history ===
 struct GetWorkflowProcessRequest{
-    1  : required string    workflow_id, // 流程id，不为空
-    2  : required string    space_id   , // 空间id，不为空
-    3  : optional string    execute_id , // 流程的执行id
-    4  : optional string    sub_execute_id, // 子流程的执行id
-    5  : optional bool need_async, // 是否返回所有的batch节点内容
-    6  : optional string log_id,  // 未传execute_id时，可通过log_id取到execute_id
+    1  : required string    workflow_id, // Process id, not empty
+    2  : required string    space_id   , // Space id, not empty
+    3  : optional string    execute_id , // Execution ID of the process
+    4  : optional string    sub_execute_id, // Execution ID of the subprocess
+    5  : optional bool need_async, // Whether to return all batch node contents
+    6  : optional string log_id,  // When execute_id is not transmitted, it can be obtained through log_id execute_id
     7  : optional i64 node_id (agw.key="node_id", agw.js_conv="str", api.js_conv='true'),
 
     255: optional base.Base Base       ,
@@ -1020,12 +1020,12 @@ enum WorkflowExeHistoryStatus{
 }
 
 struct TokenAndCost{
-    1: optional string inputTokens , // input消耗Token数
-    2: optional string inputCost   , // input花费
-    3: optional string outputTokens, // Output消耗Token数
-    4: optional string outputCost  , // Output花费
-    5: optional string totalTokens , // 总消耗Token数
-    6: optional string totalCost   , // 总花费
+    1: optional string inputTokens , // Input Consumption Tokens
+    2: optional string inputCost   , // Input cost
+    3: optional string outputTokens, // Output Consumption Tokens
+    4: optional string outputCost  , // Output cost
+    5: optional string totalTokens , // Total Consumed Tokens
+    6: optional string totalCost   , // total cost
 }
 
 enum NodeHistoryScene{
@@ -1037,9 +1037,9 @@ struct GetNodeExecuteHistoryRequest{
     1  : required string    workflow_id,
     2  : required string    space_id   ,
     3  : required string    execute_id ,
-    5  : required string node_id, // 节点id
-    6  : optional bool is_batch, // 是否批次节点
-    7  : optional i32 batch_index, // 执行批次
+    5  : required string node_id, // Node ID
+    6  : optional bool is_batch, // Whether batch node
+    7  : optional i32 batch_index, // execution batch
     8  : required string node_type,
     9 : optional NodeHistoryScene node_history_scene,
 
@@ -1059,14 +1059,14 @@ struct GetWorkFlowProcessData{
     2 :          string                   executeId       ,
     3 :          WorkflowExeStatus        executeStatus   ,
     4 :          list<NodeResult>         nodeResults     ,
-    5 :          string                   rate            , // 执行进度
-    6 :          WorkflowExeHistoryStatus exeHistoryStatus, // 现节点试运行状态 1：没有试运行 2：试运行过
-    7 :          string                   workflowExeCost , // workflow试运行耗时
-    8 : optional TokenAndCost             tokenAndCost    , // 消耗
-    9 : optional string                   reason          , // 失败原因
-    10: optional string                   lastNodeID      , // 最后一个节点的ID
+    5 :          string                   rate            , // execution progress
+    6 :          WorkflowExeHistoryStatus exeHistoryStatus, // Current node practice run state 1: no practice run 2: practice run
+    7 :          string                   workflowExeCost , // Workflow practice running time
+    8 : optional TokenAndCost             tokenAndCost    , // consume
+    9 : optional string                   reason          , // reason for failure
+    10: optional string                   lastNodeID      , // The ID of the last node
     11:          string                   logID           ,
-    12: list<NodeEvent> nodeEvents, // 只返回中断中的 event
+    12: list<NodeEvent> nodeEvents, // Returns only events in the interrupt
     13: string projectId,
 }
 
@@ -1083,11 +1083,11 @@ struct NodeResult{
     3 :          string        NodeName       ,
     5 :          NodeExeStatus nodeStatus     ,
     6 :          string        errorInfo      ,
-    7 :          string        input          , // 入参 jsonstring类型
-    8 :          string        output         , // 出参 jsonstring
-    9 :          string        nodeExeCost    , // 运行耗时 eg：3s
-    10: optional TokenAndCost  tokenAndCost   , // 消耗
-    11: optional string        raw_output     , // 直接输出
+    7 :          string        input          , // Imported parameters jsonString type
+    8 :          string        output         , // Exported parameter jsonString
+    9 :          string        nodeExeCost    , // Running time eg: 3s
+    10: optional TokenAndCost  tokenAndCost   , // consume
+    11: optional string        raw_output     , // direct output
     12:          string        errorLevel     ,
     13: optional i32           index          ,
     14: optional string        items          ,
@@ -1119,8 +1119,8 @@ struct NodeEvent{
     3: string node_title,
     4: string data,
     5: string node_icon,
-    6: string node_id, // 实际为node_execute_id
-    7: string schema_node_id, // 与画布里的node_id对应
+    6: string node_id, // Actually node_execute_id
+    7: string schema_node_id, // Corresponds to node_id on canvas
 }
 
 struct GetUploadAuthTokenRequest {
@@ -1187,7 +1187,7 @@ struct NodeError {
 struct PathError {
     1: string       start,
     2: string       end  ,
-    3: list<string> path , // 路径上的节点ID
+    3: list<string> path , // Node ID on the path
 }
 
 struct NodeTemplate {
@@ -1201,50 +1201,50 @@ struct NodeTemplate {
     8: string           color        ,
 }
 
-// 插件配置
+// plug-in configuration
 struct PluginAPINode {
-    // 实际的插件配置
+    // Actual plug-in configuration
     1: string plugin_id,
     2: string api_id   ,
     3: string api_name ,
 
-    // 用于节点展示
+    // For node display
     4: string name     ,
     5: string desc     ,
     6: string icon_url ,
     7: string node_type,
 }
 
-// 查看更多图像插件
+// View more image plugins
 struct PluginCategory {
     1: string plugin_category_id,
     2: bool   only_official,
 
-    // 用于节点展示
+    // For node display
     3: string name     ,
     4: string icon_url ,
     5: string node_type,
 }
 
 struct NodeTemplateListRequest {
-    1  : optional list<NodeTemplateType> need_types, // 需要的节点类型 不传默认返回全部
-    2  : optional list<string>           node_types, // 需要的节点类型, string 类型
+    1  : optional list<NodeTemplateType> need_types, // Required node type, return all by default without passing
+    2  : optional list<string>           node_types, // Required node type, string type
     255: optional base.Base              Base,
 }
 
 struct NodeTemplateListData {
     1: list<NodeTemplate> template_list,
-    2: list<NodeCategory> cate_list    , // 节点的展示分类配置
+    2: list<NodeCategory> cate_list    , // Display classification configuration of nodes
     3: list<PluginAPINode> plugin_api_list    ,
     4: list<PluginCategory> plugin_category_list,
 }
 
 struct NodeCategory {
-    1: string           name , // 分类名，空字符串表示下面的节点不属于任何分类
+    1: string           name , // Category name, empty string indicates that the following node does not belong to any category
     2: list<string>     node_type_list,
-    3: optional list<string> plugin_api_id_list, // 插件的api_id列表
-    4: optional list<string> plugin_category_id_list, // 跳转官方插件列表的分类配置
-    // 5: optional NodeCategory sub_category, // 子分类，如需支持多层，可以用sub_category来实现
+    3: optional list<string> plugin_api_id_list, // List of api_id plugins
+    4: optional list<string> plugin_category_id_list, // Jump to the classification configuration of the official plug-in list
+    // 5: optional NodeCategory sub_category,//sub-category, if you need to support multi-layer, you can use sub_category to achieve
 }
 
 struct NodeTemplateListResponse {
@@ -1340,7 +1340,7 @@ struct NodeInfo {
 }
 
 struct GetWorkflowDetailInfoRequest {
-    1  : optional list<WorkflowFilter> workflow_filter_list, // 过滤条件，支持workflow_id和workflow_version
+    1  : optional list<WorkflowFilter> workflow_filter_list, // Filter conditions, support workflow_id and workflow_version
     2  : optional string       space_id         ,
 
     255: optional base.Base    Base             ,
@@ -1370,7 +1370,7 @@ struct WorkflowDetailInfoData {
     13: string            icon_uri                                ,
     14: WorkflowMode      flow_mode                  ,
     15: string            plugin_id                  ,
-    16: Creator           creator                                      , // workflow创作者信息
+    16: Creator           creator                                      , // Workflow creator information
     17: string            flow_version                                 ,
     18: string            flow_version_desc                            ,
     19: string            latest_flow_version                          ,
@@ -1428,13 +1428,13 @@ enum ParameterLocation{
     Header = 4,
 }
 
-// 默认入参的设置来源
+// Default imported parameter settings source
 enum DefaultParamSource {
-    Input    = 0, // 默认用户输入
-    Variable = 1, // 引用变量
+    Input    = 0, // default user input
+    Variable = 1, // reference variable
 }
 
-// 针对File类型参数的细分类型
+// Subdivision types for File type parameters
 enum AssistParameterType {
     DEFAULT = 1,
     IMAGE   = 2,
@@ -1452,7 +1452,7 @@ enum AssistParameterType {
 
 
 struct APIParameter {
-    1 :          string             id                    , // for前端，无实际意义
+    1 :          string             id                    , // For the front end, no practical significance
     2 :          string             name                  ,
     3 :          string             desc                  ,
     4 :          ParameterType      type                  ,
@@ -1474,8 +1474,8 @@ struct APIParameter {
     20: optional bool               exclusive_minimum     ,
     21: optional bool               exclusive_maximum     ,
     22: optional string             biz_extend            ,
-    23: optional DefaultParamSource default_param_source  , // 默认入参的设置来源
-    24: optional string             variable_ref          , // 引用variable的key
+    23: optional DefaultParamSource default_param_source  , // Default imported parameter settings source
+    24: optional string             variable_ref          , // Reference variable key
     25: optional AssistParameterType assist_type          ,
 }
 
@@ -1495,7 +1495,7 @@ struct FCPluginSetting {
     4: list<APIParameter> request_params  ,
     5: list<APIParameter> response_params ,
     6: ResponseStyle response_style,
-    7: optional AsyncConf async_conf,  // 本期暂时不支持
+    7: optional AsyncConf async_conf,  // This issue is temporarily not supported.
     8: bool is_draft,
     9: string plugin_version,
 }
@@ -1506,7 +1506,7 @@ struct FCWorkflowSetting {
     3: list<APIParameter> request_params  ,
     4: list<APIParameter> response_params ,
     5: ResponseStyle response_style,
-    6: optional AsyncConf async_conf,  // 本期暂时不支持
+    6: optional AsyncConf async_conf,  // This issue is temporarily not supported.
     7: bool is_draft,
     8: string workflow_version,
 }
@@ -1580,7 +1580,7 @@ struct PluginDetail {
 }
 
 struct APIDetail {
-    1: string id , // api的id
+    1: string id , // API ID
     2: string name,
     3: string description,
     4: list<APIParameter> parameters,
@@ -1651,7 +1651,7 @@ struct UpdateProjectConversationDefResponse {
 struct DeleteProjectConversationDefRequest {
     1: required string project_id   ,
     2: required string unique_id,
-    3: map<string, string> replace, // 替换表，每个 wf 草稿分别替换成哪个, 未替换的情况下 success =false，replace 会返回待替换列表
+    3: map<string, string> replace, // Replace the table, which one to replace each wf draft with. If not replaced, success = false, replace will return the list to be replaced.
     4: bool check_only,
     5: required string space_id,
 
@@ -1660,7 +1660,7 @@ struct DeleteProjectConversationDefRequest {
 
 struct DeleteProjectConversationDefResponse {
     1: bool success,
-    2: list<Workflow> need_replace, // 如果未传递 replacemap, 会失败，返回需要替换的 wf
+    2: list<Workflow> need_replace, // If no replacemap is passed, it will fail, returning the wf that needs to be replaced
     253: required i64                code    ,
     254: required string             msg     ,
     255: required base.BaseResp      BaseResp,
@@ -1678,14 +1678,14 @@ enum CreateEnv {
 
 struct ListProjectConversationRequest {
     1: required string project_id   ,
-    2: CreateMethod create_method, // 0=在project 创建（静态会话），1=通过 wf 节点创建（动态会话）
-    3: CreateEnv create_env, // 0=wf 节点试运行创建的 1=wf 节点发布后运行的
-    4: string cursor, // 分页偏移，不传从第一条开始
-    5: i64 limit, // 一次拉取数量
+    2: CreateMethod create_method, // 0 = created in project (static session), 1 = created through wf node (dynamic session)
+    3: CreateEnv create_env, // 0 = wf node practice run created 1 = wf node run after release
+    4: string cursor, // Paging offset, do not pass from the first item
+    5: i64 limit, // number of pulls at one time
     6: required string space_id,
-    7: string nameLike, // conversationName 模糊搜索
-    8: string connector_id, // create_env=1 时传递，传对应的渠道 id，当前默认 1024（openapi）
-    9: optional string project_version, // project版本
+    7: string nameLike, // conversationName fuzzy search
+    8: string connector_id, // create_env = 1, pass the corresponding channel id, the current default 1024 (openapi)
+    9: optional string project_version, // Project version
 
     255: optional base.Base    Base     ,
 }
@@ -1693,29 +1693,29 @@ struct ListProjectConversationRequest {
 struct ProjectConversation {
     1: string unique_id,
     2: string conversation_name,
-    3: string conversation_id, // 对于自己在 coze 渠道的 conversationid
+    3: string conversation_id, // For your own conversationid in the coze channel
     4: string release_conversation_name,
 }
 
 struct ListProjectConversationResponse {
     1: list<ProjectConversation> data,
-    2: string cursor, // 游标，为空表示没有下一页了, 翻页时带上这个字段
+    2: string cursor, // Cursor, empty means there is no next page, bring this field when turning the page
     253: required i64                code    ,
     254: required string             msg     ,
     255: required base.BaseResp      BaseResp,
 }
 
 enum SuggestReplyInfoMode{
-    Disable = 0, // 关闭
-    System  = 1, // 系统
-    Custom  = 2, // 自定义
+    Disable = 0, // close
+    System  = 1, // system
+    Custom  = 2, // custom
 
 }
 
 // suggest
-struct SuggestReplyInfo {                               // 对应 Coze Auto-Suggestion
-    1: optional SuggestReplyInfoMode SuggestReplyMode        (agw.key="suggest_reply_mode",go.tag = "json:\"suggest_reply_mode\"")       , // 建议问题模型
-    2: optional string           CustomizedSuggestPrompt (agw.key="customized_suggest_prompt",go.tag = "json:\"customized_suggest_prompt\""), // 用户自定义建议问题
+struct SuggestReplyInfo {                               // Coze Auto-Suggestion
+    1: optional SuggestReplyInfoMode SuggestReplyMode        (agw.key="suggest_reply_mode",go.tag = "json:\"suggest_reply_mode\"")       , // suggestion problem model
+    2: optional string           CustomizedSuggestPrompt (agw.key="customized_suggest_prompt",go.tag = "json:\"customized_suggest_prompt\""), // user-defined suggestion questions
 }
 
 enum Caller{
@@ -1724,35 +1724,35 @@ enum Caller{
 }
 
 struct OnboardingInfo{
-    1: string Prologue  (agw.key="prologue",go.tag = "json:\"prologue\"")// markdown 格式
-    2: optional list<string> SuggestedQuestions(agw.key="suggested_questions",go.tag = "json:\"suggested_questions\"") // 问题列表
-    3: optional bool DisplayAllSuggestions(agw.key="display_all_suggestions",go.tag = "json:\"display_all_suggestions\"") // 是否显示所有建议问题
+    1: string Prologue  (agw.key="prologue",go.tag = "json:\"prologue\"")// Markdown format
+    2: optional list<string> SuggestedQuestions(agw.key="suggested_questions",go.tag = "json:\"suggested_questions\"") // List of questions
+    3: optional bool DisplayAllSuggestions(agw.key="display_all_suggestions",go.tag = "json:\"display_all_suggestions\"") // Whether to display all suggested questions
 }
 
 struct VoiceConfig{
     1: string VoiceName (agw.key="voice_name",go.tag = "json:\"voice_name\"")
-    2: string VoiceID (agw.key="voice_id",go.tag = "json:\"voice_id\"")// 音色ID
+    2: string VoiceID (agw.key="voice_id",go.tag = "json:\"voice_id\"")// timbre ID
 }
 
 enum InputMode{
-    Text = 1 (agw.key="text", go.tag = "json:\"text\"")// 打字输入
-    Audio = 2 (agw.key="audio", go.tag = "json:\"audio\"")// 语音输入
+    Text = 1 (agw.key="text", go.tag = "json:\"text\"")// Type input
+    Audio = 2 (agw.key="audio", go.tag = "json:\"audio\"")// Voice input
 }
 
 enum SendVoiceMode{
-    Text = 1 (agw.key="text", go.tag = "json:\"text\"")// 文本消息
-    Audio = 2 (agw.key="audio", go.tag = "json:\"audio\"")// 发送为语音
+    Text = 1 (agw.key="text", go.tag = "json:\"text\"")// text message
+    Audio = 2 (agw.key="audio", go.tag = "json:\"audio\"")// Send as voice
 }
 
 struct AudioConfig{
-    1: optional map<string,VoiceConfig> VoiceConfigMap (agw.key="voice_config_map", go.tag = "json:\"voice_config_map\"") //key为语言 "zh", "en" "ja" "es" "id" "pt"
-    3: bool IsTextToVoiceEnable (agw.key="is_text_to_voice_enable", go.tag = "json:\"is_text_to_voice_enable\"")// 文本转语音开关
-    4: InputMode AgentMessageType (agw.key="agent_message_type", go.tag = "json:\"agent_message_type\"")// 智能体消息形式
+    1: optional map<string,VoiceConfig> VoiceConfigMap (agw.key="voice_config_map", go.tag = "json:\"voice_config_map\"") //Key for language "zh", "en" "ja" "es" "id" "pt"
+    3: bool IsTextToVoiceEnable (agw.key="is_text_to_voice_enable", go.tag = "json:\"is_text_to_voice_enable\"")// Text to speech switch
+    4: InputMode AgentMessageType (agw.key="agent_message_type", go.tag = "json:\"agent_message_type\"")// agent message form
 }
 
 struct UserInputConfig{
-    1: InputMode DefaultInputMode (agw.key="default_input_mode", go.tag = "json:\"default_input_mode\"")// 默认输入方式
-    2: SendVoiceMode SendVoiceMode (agw.key="send_voice_mode", go.tag = "json:\"send_voice_mode\"")// 用户语音消息发送形式
+    1: InputMode DefaultInputMode (agw.key="default_input_mode", go.tag = "json:\"default_input_mode\"")// Default input method
+    2: SendVoiceMode SendVoiceMode (agw.key="send_voice_mode", go.tag = "json:\"send_voice_mode\"")// User voice message sending form
 }
 
 struct GradientPosition {
@@ -1770,18 +1770,18 @@ struct CanvasPosition {
 
 
 struct BackgroundImageDetail {
-    1: optional string OriginImageUri    (agw.key="origin_image_uri", go.tag = "json:\"origin_image_uri\"")            // 原始图片
+    1: optional string OriginImageUri    (agw.key="origin_image_uri", go.tag = "json:\"origin_image_uri\"")            // original image
     2: optional string OriginImageUrl    (agw.key="origin_image_url", go.tag = "json:\"origin_image_url\"")
-    3: optional string ImageUri  (agw.key="image_uri", go.tag = "json:\"image_uri\"")               // 实际使用图片
+    3: optional string ImageUri  (agw.key="image_uri", go.tag = "json:\"image_uri\"")               // Actual use of pictures
     4: optional string ImageUrl  (agw.key="image_url", go.tag = "json:\"image_url\"")
     5: optional string ThemeColor    (agw.key="theme_color", go.tag = "json:\"theme_color\"")
-    6: optional GradientPosition GradientPosition  (agw.key="gradient_position", go.tag = "json:\"gradient_position\"") // 渐变位置
-    7: optional CanvasPosition CanvasPosition    (agw.key="canvas_position", go.tag = "json:\"canvas_position\"") // 裁剪画布位置
+    6: optional GradientPosition GradientPosition  (agw.key="gradient_position", go.tag = "json:\"gradient_position\"") // Gradual change of position
+    7: optional CanvasPosition CanvasPosition    (agw.key="canvas_position", go.tag = "json:\"canvas_position\"") // Crop canvas position
 }
 
 struct BackgroundImageInfo {
-    1: optional BackgroundImageDetail WebBackgroundImage   (agw.key="web_background_image",go.tag = "json:\"web_background_image\"")                             , // web端背景图
-    2: optional BackgroundImageDetail MobileBackgroundImage    (agw.key="mobile_background_image"go.tag = "json:\"mobile_background_image\"")                             , // 移动端背景图
+    1: optional BackgroundImageDetail WebBackgroundImage   (agw.key="web_background_image",go.tag = "json:\"web_background_image\"")                             , // Web background cover
+    2: optional BackgroundImageDetail MobileBackgroundImage    (agw.key="mobile_background_image"go.tag = "json:\"mobile_background_image\"")                             , // Mobile end background cover
 }
 
 struct AvatarConfig{
@@ -1792,16 +1792,16 @@ struct AvatarConfig{
 struct ChatFlowRole{
     1: string ID (agw.key = "id",go.tag = "json:\"id\"")
     2: string WorkflowID (agw.key = "workflow_id",go.tag = "json:\"workflow_id\"")
-    3: string ConnectorID  (agw.key="connector_id",go.tag = "json:\"connector_id\"") // 渠道ID
-    4: optional AvatarConfig Avatar (agw.key="avatar",go.tag = "json:\"avatar\"") // 角色头像
-    5: optional string Description (agw.key="description",go.tag = "json:\"description\"")// 角色描述
-    6: optional OnboardingInfo OnboardingInfo (agw.key="onboarding_info",go.tag = "json:\"onboarding_info\"")// 开场白
-    7: optional string Name (agw.key="name",go.tag = "json:\"name\"") // 角色名称
-    8: optional SuggestReplyInfo SuggestReplyInfo (agw.key="suggest_reply_info",go.tag = "json:\"suggest_reply_info\"")// 用户问题建议
-    9: optional BackgroundImageInfo BackgroundImageInfo (agw.key="background_image_info",go.tag = "json:\"background_image_info\"")// 背景图
-    10: optional AudioConfig AudioConfig (agw.key="audio_config",go.tag = "json:\"audio_config\"")// 语音配置：音色、电话等
-    11: optional UserInputConfig UserInputConfig (agw.key="user_input_config",go.tag = "json:\"user_input_config\"") // 用户输入方式
-    12: optional string ProjectVersion (agw.key="project_version",go.tag = "json:\"project_version\"") // 项目版本
+    3: string ConnectorID  (agw.key="connector_id",go.tag = "json:\"connector_id\"") // Channel ID
+    4: optional AvatarConfig Avatar (agw.key="avatar",go.tag = "json:\"avatar\"") // avatar
+    5: optional string Description (agw.key="description",go.tag = "json:\"description\"")// Role Description
+    6: optional OnboardingInfo OnboardingInfo (agw.key="onboarding_info",go.tag = "json:\"onboarding_info\"")// opening statement
+    7: optional string Name (agw.key="name",go.tag = "json:\"name\"") // role name
+    8: optional SuggestReplyInfo SuggestReplyInfo (agw.key="suggest_reply_info",go.tag = "json:\"suggest_reply_info\"")// User Question Suggestions
+    9: optional BackgroundImageInfo BackgroundImageInfo (agw.key="background_image_info",go.tag = "json:\"background_image_info\"")// background cover
+    10: optional AudioConfig AudioConfig (agw.key="audio_config",go.tag = "json:\"audio_config\"")// Voice configuration: tone, phone, etc
+    11: optional UserInputConfig UserInputConfig (agw.key="user_input_config",go.tag = "json:\"user_input_config\"") // user input method
+    12: optional string ProjectVersion (agw.key="project_version",go.tag = "json:\"project_version\"") // project version
 }
 
 struct CreateChatFlowRoleRequest{
@@ -1810,7 +1810,7 @@ struct CreateChatFlowRoleRequest{
 }
 
 struct CreateChatFlowRoleResponse{
-    1: string ID // 数据库中ID
+    1: string ID // ID in the database
 
     255: required base.BaseResp BaseResp
 }
@@ -1818,7 +1818,7 @@ struct CreateChatFlowRoleResponse{
 struct DeleteChatFlowRoleRequest{
 	1: string WorkflowID
     2: string ConnectorID
-    4: string ID // 数据库中ID
+    4: string ID // ID in the database
 
     255: optional base.Base Base
 }
@@ -1854,20 +1854,20 @@ enum NodePanelSearchType {
 }
 
 struct NodePanelSearchRequest {
-    1 : NodePanelSearchType search_type, // 搜索的数据类型，传空、不传或者传All表示搜索所有类型
+    1 : NodePanelSearchType search_type, // The data type of the search, pass empty, do not pass, or pass All means search for all types
     2 : string          space_id,
     3 : optional string project_id,
     4 : string          search_key,
-    5 : string          page_or_cursor, // 首次请求时值为"", 底层实现时根据数据源的分页模式转换成page or cursor
+    5 : string          page_or_cursor, // The value is "" on the first request, and the underlying implementation is converted to a page or cursor according to the paging mode of the data source
     6 : i32             page_size,
-    7 : string          exclude_workflow_id, // 排除的workflow_id，用于搜索workflow时排除当前workflow的id
+    7 : string          exclude_workflow_id, // Excluded workflow_id, used to exclude the id of the current workflow when searching for workflow
 
     255: optional base.Base Base,
 }
 
 struct NodePanelWorkflowData {
     1 : list<Workflow> workflow_list,
-    2 : string next_page_or_cursor,  // 由于workflow的查询使用都是page+size，这里返回 page+1
+    2 : string next_page_or_cursor,  // Since the query of workflow is all page + size, page + 1 is returned here.
     3 : bool has_more,
 }
 
@@ -1888,7 +1888,7 @@ struct NodePanelPlugin {
 
 struct NodePanelPluginData {
     1 : list<NodePanelPlugin> plugin_list,
-    2 : string   next_page_or_cursor, // 数据源为page+size的，这里返回 page+1；数据源为cursor模式的，这里返回数据源返回的cursor
+    2 : string   next_page_or_cursor, // If the data source is page + size, return page + 1 here; if the data source is cursor mode, return the cursor returned by the data source here
     3 : bool     has_more,
 }
 
@@ -1916,8 +1916,8 @@ enum OrderByType {
 
 struct ListPublishWorkflowRequest{
     2: required i64                         space_id(agw.js_conv="str", api.js_conv="true")
-    3: optional i64                         owner_id(agw.js_conv="str", api.js_conv="true") //筛选项
-    4: optional string                      name   //搜索项：智能体or作者name
+    3: optional i64                         owner_id(agw.js_conv="str", api.js_conv="true") //filter
+    4: optional string                      name   //Search term: agent or author name
     5: optional OrderByType                 order_last_publish_time
     6: optional OrderByType                 order_total_token
     7: required i64                         size
@@ -1928,10 +1928,10 @@ struct ListPublishWorkflowRequest{
 }
 
 struct PublishBasicWorkflowData {
-    1: WorkflowBasicInfo                            basic_info //最近发布项目的信息
+    1: WorkflowBasicInfo                            basic_info //Information on recently released projects
     2: UserInfo                                         user_info
-    3: list<ConnectorInfo>                              connectors //已发布渠道聚合
-    4: string                                           total_token //截止昨天总token消耗
+    3: list<ConnectorInfo>                              connectors //Published channel aggregation
+    4: string                                           total_token //Total token consumption as of yesterday
 }
 
 
@@ -1970,9 +1970,9 @@ struct ListPublishWorkflowResponse{
 }
 
 enum PermissionType {
-    NoDetail = 1 //不能查看详情
-    Detail = 2 //可以查看详情
-    Operate = 3 //可以查看和操作
+    NoDetail = 1 //Can't view details
+    Detail = 2 //You can check the details.
+    Operate = 3 //Can be viewed and operated
 }
 
 struct ValidateTreeRequest {
@@ -2006,34 +2006,34 @@ struct OpenAPIRunFlowRequest{
     3  :          map<string,string> Ext        (go.tag="json:\"ext\"")                                    ,
     4  : optional string             BotID      (go.tag="json:\"bot_id\"")                                 ,
     5  : optional bool               IsAsync    (go.tag="json:\"is_async\"")                               ,
-    6  : optional string             ExecuteMode(go.tag="json:\"execute_mode\"")                             , // 默认为正式运行，试运行需要传入"DEBUG"
-    7  : optional string             Version    (go.tag="json:\"version\"")                                  , // 版本号，可能是workflow版本或者project版本
-    8  : optional string             ConnectorID(go.tag="json:\"connector_id\"")                             , // 渠道ID，比如ui builder、template、商店等
-    9  : optional string             AppID      (go.tag="json:\"app_id\"")                              , // 引用workflow 的应用ID
-    10 : optional string             ProjectID ( go.tag="json:\"project_id\""),                      // 项目ID，为了兼容ui builder
+    6  : optional string             ExecuteMode(go.tag="json:\"execute_mode\"")                             , // Default to official run, practice run needs to pass in "DEBUG"
+    7  : optional string             Version    (go.tag="json:\"version\"")                                  , // Version number, maybe workflow version or project version
+    8  : optional string             ConnectorID(go.tag="json:\"connector_id\"")                             , // Channel ID, such as ui builder, template, store, etc
+    9  : optional string             AppID      (go.tag="json:\"app_id\"")                              , // App ID referencing workflow
+    10 : optional string             ProjectID ( go.tag="json:\"project_id\""),                      // Project ID, for compatibility with UI builder
 
 
     255: optional base.Base          Base                                                            ,
 }
 
 struct OpenAPIRunFlowResponse {
-    // 通用字段
-    1  : required i64           Code     (go.tag="json:\"code\"") , // 调用结果
-    2  : optional string        Msg      (go.tag="json:\"msg\"")  , // 成功为success, 失败为简单的错误信息、
+    // generic field
+    1  : required i64           Code     (go.tag="json:\"code\"") , // call result
+    2  : optional string        Msg      (go.tag="json:\"msg\"")  , // Success for success, failure for simple error messages,
 
-    // 同步返回字段
-    3  : optional string        Data     (go.tag="json:\"data\"") , // 执行结果，通常为json序列化字符串，也有可能是非json结构的字符串
+    // Synchronized return field
+    3  : optional string        Data     (go.tag="json:\"data\"") , // The execution result, usually a json serialized string, may also be a non-json string.
     4  : optional i64           Token    (go.tag="json:\"token\""),
     5  : optional string        Cost     (go.tag="json:\"cost\"") ,
     6  : optional string        DebugUrl (go.tag="json:\"debug_url\"") ,
 
-    // 异步返回字段
+    // asynchronous return field
     50 : optional string        ExecuteID(go.tag="json:\"execute_id\""),
 
     255: required base.BaseResp BaseResp                    ,
 }
 
-// 这个枚举需要与plugin的PluginInterruptType对齐
+// This enumeration needs to be aligned with the plugin's PluginInterruptType
 enum InterruptType {
     LocalPlugin  = 1
     Question     = 2
@@ -2051,25 +2051,25 @@ struct Interrupt {
 }
 
 struct OpenAPIStreamRunFlowResponse {
-    1:  string id, // 绝对序号
-    2:  string Event(go.tag="json:\"event\"") // 事件类型:message,done,error
+    1:  string id, // absolute serial number
+    2:  string Event(go.tag="json:\"event\"") // Event type: message, done, error
 
-    // 节点信息
-    50 : optional string NodeSeqID(go.tag="json:\"node_seq_id\""), //节点中的序号
-    52 : optional string NodeTitle(go.tag="json:\"node_title\""), // 节点名称
-    54 : optional string Content(go.tag="json:\"content\""), // ContentType为Text时的返回
-    55 : optional bool NodeIsFinish(go.tag="json:\"node_is_finish\""), // 节点是否执行完成
-    56:  optional Interrupt InterruptData( go.tag="json:\"interrupt_data\""),  //content type为interrupt时传输，中断协议
-    57:  optional string ContentType( go.tag="json:\"content_type\""),  // 返回的数据类型
-    58: optional string CardBody(go.tag="json:\"card_body\""), // Content Type为Card时返回的卡片内容
-    59: optional string NodeType(go.tag= "json:\"node_type\"" ), // 节点类型
+    // Node information
+    50 : optional string NodeSeqID(go.tag="json:\"node_seq_id\""), //The serial number in the node
+    52 : optional string NodeTitle(go.tag="json:\"node_title\""), // Node name
+    54 : optional string Content(go.tag="json:\"content\""), // Return when ContentType is Text
+    55 : optional bool NodeIsFinish(go.tag="json:\"node_is_finish\""), // Has the node completed execution?
+    56:  optional Interrupt InterruptData( go.tag="json:\"interrupt_data\""),  //Transmission when content type is interrupt, interrupt protocol
+    57:  optional string ContentType( go.tag="json:\"content_type\""),  // Data type returned
+    58: optional string CardBody(go.tag="json:\"card_body\""), // Card Content Returned when Content Type is Card
+    59: optional string NodeType(go.tag= "json:\"node_type\"" ), // Node type
     60 : optional string NodeID (go.tag= "json:\"node_id\"") ,
-    // 成功时最后一条消息
+    // Last message on success
     100 : optional map<string,string> Ext(go.tag= "json:\"ext\""),
     101: optional i64 Token(go.tag= "json:\"token\""),
     102: optional string Cost (go.tag= "json:\"cost\""),
 
-    // 错误信息
+    // error message
     151: optional i64 ErrorCode( go.tag= "json:\"error_code\""),
     152: optional string ErrorMessage(go.tag= "json:\"error_message\""),
     153: optional string DebugUrl (go.tag= "json:\"debug_url\"") ,
@@ -2083,7 +2083,7 @@ struct OpenAPIStreamResumeFlowRequest{
     3: string ResumeData (go.tag= "json:\"resume_data\"" )
     4: map<string,string> Ext (go.tag= "json:\"ext\"")
     5: string WorkflowID (go.tag= "json:\"workflow_id\"")
-    6: optional string ConnectorID (go.tag= "json:\"connector_id\""), // 渠道ID，比如ui builder、template、商店等
+    6: optional string ConnectorID (go.tag= "json:\"connector_id\""), // Channel ID, such as ui builder, template, store, etc
 
     255: base.Base Base
 }
@@ -2113,7 +2113,7 @@ struct WorkflowExecuteHistory{
     9: optional i64 UpdateTime (go.tag= "json:\"update_time\"")
     10: optional string DebugUrl (go.tag= "json:\"debug_url\"") ,
 
-    // 执行成功
+    // successful execution
     51: optional  string Input ( go.tag= "json:\"input\"")
     52: optional  string Output (go.tag= "json:\"output\"")
     53: optional i64 Token (go.tag= "json:\"token\"")
@@ -2121,7 +2121,7 @@ struct WorkflowExecuteHistory{
     55: optional string CostUnit (go.tag= "json:\"cost_unit\"")
     56: optional map<string,string> Ext (go.tag= "json:\"ext\"")
 
-    // 执行失败
+    // execution failed
     101: optional  string ErrorCode (go.tag= "json:\"error_code\"")
     102: optional  string ErrorMsg (go.tag= "json:\"error_msg\"")
 }
@@ -2136,7 +2136,7 @@ struct GetWorkflowRunHistoryResponse{
 
 struct EnterMessage {
     1: required           string Role ( go.tag= "json:\"role\"")
-    2: string             Content (go.tag= "json:\"content\"") // 内容
+    2: string             Content (go.tag= "json:\"content\"") // content
     3: map<string,string> MetaData (go.tag= "json:\"meta_data\"")
     4: string             ContentType (go.tag= "json:\"content_type\"") //text/card/object_string
     5: string             Type (go.tag= "json:\"type\"")
@@ -2147,25 +2147,25 @@ struct ChatFlowRunRequest{
     2: optional string Parameters (go.tag= "json:\"parameters\""),
     3: map<string,string> Ext     (go.tag= "json:\"ext\"")                                    ,
     4: optional string BotID      (go.tag= "json:\"bot_id\"")                                 ,
-    6: optional string ExecuteMode(go.tag= "json:\"execute_mode\"")                             , // 默认为正式运行，试运行需要传入"DEBUG"
-    7: optional string Version    (go.tag= "json:\"version\"")                                  , // 版本号，可能是workflow版本或者project版本
-    8: optional string ConnectorID( go.tag= "json:\"connector_id\"")                             , // 渠道ID，比如ui builder、template、商店等
+    6: optional string ExecuteMode(go.tag= "json:\"execute_mode\"")                             , // Default to official run, practice run needs to pass in "DEBUG"
+    7: optional string Version    (go.tag= "json:\"version\"")                                  , // Version number, maybe workflow version or project version
+    8: optional string ConnectorID( go.tag= "json:\"connector_id\"")                             , // Channel ID, such as ui builder, template, store, etc
     9: optional string AppID(agw.key="app_id" go.tag= "json:\"app_id\""),
-    10:optional string ConversationID  ( go.tag= "json:\"conversation_id\""), // 会话ID
-    11:optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages" go.tag= "json:\"additional_messages\""), // 用户希望先写入的消息
-    12:optional string ProjectID ( go.tag= "json:\"project_id\""), // 项目ID，为了兼容ui builder
-    13:optional SuggestReplyInfo SuggestReplyInfo (api.body = "suggest_reply_info" go.tag= "json:\"suggest_reply_info\""), // 建议回复信息
+    10:optional string ConversationID  ( go.tag= "json:\"conversation_id\""), // Session ID
+    11:optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages" go.tag= "json:\"additional_messages\""), // The message that the user wants to write first
+    12:optional string ProjectID ( go.tag= "json:\"project_id\""), // Project ID, for compatibility with UI builder
+    13:optional SuggestReplyInfo SuggestReplyInfo (api.body = "suggest_reply_info" go.tag= "json:\"suggest_reply_info\""), // Suggested reply message
 
     255: optional base.Base          Base ,
 }
 
 struct ChatFlowRunResponse {
-    1:  string Event(agw.key = "event",agw.target="sse" go.tag= "json:\"event\"") // 事件类型
-    2:  string Data(agw.key = "data",agw.target="sse" go.tag= "json:\"data\"") // msg、error等数据，为了对齐不同的消息类型，使用json序列化
-//    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data") // 消息内容
-//    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data") // 对话内容
-//    4: optional LastError ErrorData (api.body = "error_data") // 错误信息
-//    5:optional string DoneMsg (api.body = "done_msg") // 结束信息
+    1:  string Event(agw.key = "event",agw.target="sse" go.tag= "json:\"event\"") // event type
+    2:  string Data(agw.key = "data",agw.target="sse" go.tag= "json:\"data\"") // Msg, error and other data, in order to align different message types, use json serialization
+//    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data")//Message content
+//    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data")//dialogue content
+//    4: optional LastError ErrorData (api.body = "error_data")//Error message
+//    5: optional string DoneMsg (api.body = "done_msg")//end information
 
     255: required base.BaseResp BaseResp
 }
@@ -2185,7 +2185,7 @@ struct WorkflowInfo{
 }
 
 struct OpenAPIGetWorkflowInfoResponse{
-    1  : optional i32                 Code     (api.body = "code") //  适配api
+    1  : optional i32                 Code     (api.body = "code") //  API adaptation
     2  : optional string              Msg      (api.body = "msg")
 	3  : optional WorkflowInfo WorkflowInfo (api.body = "data")
 

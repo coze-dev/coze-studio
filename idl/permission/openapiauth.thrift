@@ -14,9 +14,9 @@ const UserStatus deactivated = "deactivated"
 const UserStatus offboarded = "offboarded"
 
 struct CreatePersonalAccessTokenAndPermissionRequest {
-    1: required string name // PAT名称
-    2: i64 expire_at // PAT自定义过期时间
-    3: string duration_day // PAT用户枚举过期时间 1、30、60、90、180、365、permanent
+    1: required string name // PAT name
+    2: i64 expire_at // PAT custom expiration time
+    3: string duration_day // PAT user enumeration expiration time 1, 30, 60, 90, 180, 365, permanent
     4: string organization_id // organization id
 }
 
@@ -26,13 +26,13 @@ struct PersonalAccessToken {
     2: required string name
     3: required i64 created_at
     4: required i64 updated_at
-    5: required i64 last_used_at // -1 表示未使用
-    6: required i64 expire_at // -1 表示无限期
+    5: required i64 last_used_at // -1 means unused
+    6: required i64 expire_at // -1 means indefinite
 }
 
 struct CreatePersonalAccessTokenAndPermissionResponseData {
     1: required PersonalAccessToken personal_access_token
-    2: required string token // PAT token 明文
+    2: required string token // PAT token plaintext
 }
 
 struct CreatePersonalAccessTokenAndPermissionResponse {
@@ -55,8 +55,8 @@ struct PersonalAccessTokenWithCreatorInfo {
     2: required string name
     3: required i64 created_at
     4: required i64 updated_at
-    5: required i64 last_used_at // -1 表示未使用
-    6: required i64 expire_at // -1 表示无限期
+    5: required i64 last_used_at // -1 means unused
+    6: required i64 expire_at // -1 means indefinite
     7: string creator_name
     8: string creator_unique_name
     9: string creator_avatar_url
@@ -72,8 +72,8 @@ struct ListPersonalAccessTokensResponse {
 }
 
 struct ListPersonalAccessTokensResponseData {
-    1: required list<PersonalAccessTokenWithCreatorInfo> personal_access_tokens // PAT 列表
-    2: bool has_more // 是否还有更多数据
+    1: required list<PersonalAccessTokenWithCreatorInfo> personal_access_tokens // PAT list
+    2: bool has_more // Is there any more data?
 }
 
 
@@ -102,7 +102,7 @@ struct GetPersonalAccessTokenAndPermissionResponse {
 
 struct UpdatePersonalAccessTokenAndPermissionRequest {
     1: required i64 id (api.js_conv="true") // PAT Id
-    2: string name // PAT 名称
+    2: string name // PAT name
 }
 
 struct UpdatePersonalAccessTokenAndPermissionResponse {

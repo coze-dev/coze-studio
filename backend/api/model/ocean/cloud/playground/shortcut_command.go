@@ -3,19 +3,19 @@
 package playground
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type SendType int64
 
 const (
-	// 直接发query
+	// Send query directly
 	SendType_SendTypeQuery SendType = 0
-	// 使用面板
+	// use panel
 	SendType_SendTypePanel SendType = 1
 )
 
@@ -57,9 +57,9 @@ func (p *SendType) Value() (driver.Value, error) {
 type ToolType int64
 
 const (
-	// 使用WorkFlow
+	// Using WorkFlow
 	ToolType_ToolTypeWorkFlow ToolType = 1
-	// 使用插件
+	// use plug-ins
 	ToolType_ToolTypePlugin ToolType = 2
 )
 
@@ -636,9 +636,9 @@ func (p *CreateShortcutCommandResponse) String() string {
 }
 
 type ShortcutStruct struct {
-	// 快捷指令ID列表 实体上绑定的
+	// Shortcut ID list, bound on the entity
 	ShortcutSort []string `thrift:"shortcut_sort,16,optional" form:"shortcut_sort" json:"shortcut_sort,omitempty" query:"shortcut_sort"`
-	// 快捷指令内容list
+	// Quick command content list
 	ShortcutList []*ShortcutCommand `thrift:"shortcut_list,17,optional" form:"shortcut_list" json:"shortcut_list,omitempty" query:"shortcut_list"`
 }
 
@@ -884,34 +884,34 @@ func (p *ShortcutStruct) String() string {
 }
 
 type ShortcutCommand struct {
-	// 绑定实体ID
+	// Binding Entity ID
 	ObjectID int64 `thrift:"object_id,2" form:"object_id" json:"object_id,string" query:"object_id"`
-	// 命令名称
+	// command name
 	CommandName string `thrift:"command_name,3" form:"command_name" json:"command_name" query:"command_name"`
-	// 快捷指令
+	// Quick Instruction
 	ShortcutCommand string `thrift:"shortcut_command,4" form:"shortcut_command" json:"shortcut_command" query:"shortcut_command"`
-	// 描述
+	// describe
 	Description string `thrift:"description,5" form:"description" json:"description" query:"description"`
-	// 发送类型
+	// Send type
 	SendType SendType `thrift:"send_type,6" form:"send_type" json:"send_type" query:"send_type"`
-	// 使用工具type
+	// Use tool type
 	ToolType      ToolType `thrift:"tool_type,7" form:"tool_type" json:"tool_type" query:"tool_type"`
 	WorkFlowID    string   `thrift:"work_flow_id,8" form:"work_flow_id" json:"work_flow_id" query:"work_flow_id"`
 	PluginID      string   `thrift:"plugin_id,9" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
 	PluginAPIName string   `thrift:"plugin_api_name,10" form:"plugin_api_name" json:"plugin_api_name" query:"plugin_api_name"`
-	// 模板query
+	// Template query
 	TemplateQuery string `thrift:"template_query,11" form:"template_query" json:"template_query" query:"template_query"`
-	// panel参数
+	// Panel parameters
 	ComponentsList []*Components `thrift:"components_list,12" form:"components_list" json:"components_list" query:"components_list"`
-	// 表单的schema
+	// Form schema
 	CardSchema string `thrift:"card_schema,15" form:"card_schema" json:"card_schema" query:"card_schema"`
-	// 指令ID
+	// Instruction ID
 	CommandID int64 `thrift:"command_id,16" form:"command_id" json:"command_id,string" query:"command_id"`
-	//工具信息 包含name+变量列表+...
+	//Tool information, including name + variable list +...
 	ToolInfo *ToolInfo `thrift:"tool_info,17" form:"tool_info" json:"tool_info" query:"tool_info"`
-	// 指令图标
+	// command icon
 	ShortcutIcon *ShortcutFileInfo `thrift:"shortcut_icon,18" form:"shortcut_icon" json:"shortcut_icon" query:"shortcut_icon"`
-	//multi的指令时，该指令由哪个节点执行
+	//Multi instruction, which node executes the instruction
 	AgentID     *string `thrift:"agent_id,21,optional" form:"agent_id" json:"agent_id,omitempty" query:"agent_id"`
 	PluginAPIID int64   `thrift:"plugin_api_id,22" form:"plugin_api_id" json:"plugin_api_id,string" query:"plugin_api_id"`
 }
@@ -1983,17 +1983,17 @@ func (p *ShortcutFileInfo) String() string {
 }
 
 type Components struct {
-	// panel参数
+	// Panel parameters
 	Name        string    `thrift:"name,1" form:"name" json:"name" query:"name"`
 	Description string    `thrift:"description,2" form:"description" json:"description" query:"description"`
 	InputType   InputType `thrift:"input_type,3" form:"input_type" json:"input_type" query:"input_type"`
-	// 请求工具时，参数的key
+	// When requesting the tool, the key of the parameter
 	Parameter    string        `thrift:"parameter,4" form:"parameter" json:"parameter" query:"parameter"`
 	Options      []string      `thrift:"options,5" form:"options" json:"options" query:"options"`
 	DefaultValue *DefaultValue `thrift:"default_value,6" form:"default_value" json:"default_value" query:"default_value"`
-	// 是否隐藏不展示
+	// Whether to hide or not to show
 	Hide bool `thrift:"hide,7" form:"hide" json:"hide" query:"hide"`
-	// input_type为MixUpload时，支持哪些类型
+	// What types are supported input_type MixUpload
 	UploadOptions []InputType `thrift:"upload_options,8" form:"upload_options" json:"upload_options" query:"upload_options"`
 }
 
@@ -2672,7 +2672,7 @@ func (p *DefaultValue) String() string {
 
 type ToolInfo struct {
 	ToolName string `thrift:"tool_name,1" form:"tool_name" json:"tool_name" query:"tool_name"`
-	// 变量列表 插件&workFLow
+	// Variable lists, plugins & workFLow
 	ToolParamsList []*ToolParams `thrift:"tool_params_list,2" form:"tool_params_list" json:"tool_params_list" query:"tool_params_list"`
 }
 
@@ -2876,14 +2876,14 @@ func (p *ToolInfo) String() string {
 }
 
 type ToolParams struct {
-	// 参数列表
+	// parameter list
 	Name     string `thrift:"name,1" form:"name" json:"name" query:"name"`
 	Required bool   `thrift:"required,2" form:"required" json:"required" query:"required"`
 	Desc     string `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
 	Type     string `thrift:"type,4" form:"type" json:"type" query:"type"`
-	// 默认值
+	// default value
 	DefaultValue string `thrift:"default_value,6" form:"default_value" json:"default_value" query:"default_value"`
-	// 是否是panel参数
+	// Is it a panel parameter?
 	ReferComponent bool `thrift:"refer_component,8" form:"refer_component" json:"refer_component" query:"refer_component"`
 }
 

@@ -15,14 +15,14 @@ enum MsgParticipantType {
     Bot = 1
     User = 2
 }
-// follow copilot 定义的枚举
+// Enumeration following copilot definition
 enum ChatMessageMetaType {
     Default_0 = 0;  // Compatible value
-    Replaceable = 1;  // 端侧直接替换
-    Insertable = 2;  // 插入引用
-    DocumentRef = 3;  // 文档引用
-    KnowledgeCard = 4; // 知识库引用卡片
-    EmbeddedMultimedia = 100;   // 嵌入的多媒体信息，只是alice给端上用的，因为全链路复用这一个字段，所以在这儿改了
+    Replaceable = 1;  // End-to-side direct replacement
+    Insertable = 2;  // insert reference
+    DocumentRef = 3;  // document citation
+    KnowledgeCard = 4; // Knowledge Base Reference Card
+    EmbeddedMultimedia = 100;   // The embedded multimedia information is only used by Alice for the end. Because full link multiplexing uses this field, it has been changed here.
 }
 
 struct ExtraInfo {
@@ -45,8 +45,8 @@ struct ExtraInfo {
     17: string new_section_id,
     18: string remove_query_id,
     19: string execute_display_name,
-    20: string task_type, // 对应定时任务task_type，1-预设任务，2-用户任务，3-Plugin后台任务
-    21: string refer_format //agent app使用引用格式
+    20: string task_type, // Corresponding to timed task task_type, 1-preset task, 2-user task, 3-Plugin background task
+    21: string refer_format //Agent app uses reference format
     22: string call_id,
 }
 
@@ -61,9 +61,9 @@ struct MsgParticipantInfo{
     8: string user_name
     9: bool allow_mention
     10: string access_path
-    11: bool is_fav // 是否被收藏
-//    12: shortcut_command.ShortcutStruct shortcuts //快捷指令
-    13: bool allow_share // 是否允许被分享
+    11: bool is_fav // Is collected
+//    12: shortcut_command ShortcutStruct shortcuts//Shortcuts
+    13: bool allow_share // Is it allowed to be shared?
 }
 
 //struct InterruptFunction {
@@ -89,7 +89,7 @@ struct SubmitToolOutputs {
   1: list<InterruptPlugin>  tool_calls
 }
 
-// 和 bot_connector_platform保持同步
+// Keep up with bot_connector_platform
 struct RequiredAction {
 	1 : string type
 	2 :SubmitToolOutputs submit_tool_outputs
@@ -110,50 +110,50 @@ struct ChatMessage {
     6 :          string    reply_id    ,
     7 :          string    section_id  ,
     8 :          ExtraInfo extra_info  ,
-    9 :          string    status      , // 正常、打断状态 拉消息列表时使用，chat运行时没有这个字段
-    10: optional i32       broken_pos  , // 打断位置
+    9 :          string    status      , // Normal, interrupted state, used when pulling the message list, this field is not available when chat is running.
+    10: optional i32       broken_pos  , // interrupt position
     11: optional string    sender_id,
     12: optional list<MsgParticipantInfo>  mention_list,
     13:          i64       content_time,
     14:          i64       message_index (api.js_conv='true' go.tag="json:\"message_index,string\""),
-    15:          i32       source      , // 消息来源，0 普通聊天消息，1 定时任务，2 通知，3 异步结果
-    16: optional ChatMessage reply_message, // 对应回复的query 找不到后端加一个兜底的
-    17: optional RequiredAction    required_action // 打断信息
-    18: optional list<ChatMessageMetaInfo> meta_infos, // 引用、高亮等文本标记
-    19: optional map<string,string> card_status  // 卡片状态
-    20: optional string reasoning_content  //模型思维链
+    15:          i32       source      , // Sources, 0 normal chat messages, 1 scheduled task, 2 notifications, 3 asynchronous results
+    16: optional ChatMessage reply_message, // Corresponding to the replied query, the backend cannot be found, and a backend is added.
+    17: optional RequiredAction    required_action // interrupt message
+    18: optional list<ChatMessageMetaInfo> meta_infos, // Text markup such as quoting, highlighting, etc
+    19: optional map<string,string> card_status  // Card Status
+    20: optional string reasoning_content  //Model Thinking Chain
 }
 
 
 struct GetMessageListRequest  {
 
     1:           string        conversation_id
-    2: required  string        cursor                      // 首次传0/-1，0-最后一页，-1-未读第一页
+    2: required  string        cursor                      // First pass 0/-1, 0 - last page, -1 - unread first page
     3: required  i32           count
     4:           string        bot_id
     5: optional  bool          draft_mode
-    6: optional  string        preset_bot                  // 使用的bot模版
+    6: optional  string        preset_bot                  // The bot template used
     7: optional  common.Scene         scene
-    8: optional  string        biz_kind                    // 同一个bot和uid下面的不同业务情况
-    9: optional  list<string>  insert_history_message_list // 存在创建聊天记录前需要插入聊天的情况
+    8: optional  string        biz_kind                    // Different business situations under the same bot and uid
+    9: optional  list<string>  insert_history_message_list // There are situations where you need to insert a chat before creating a chat history
     10: optional LoadDirection load_direction
-    11: optional bool          must_append                // 在已有conversation情况下，是否强制append message
-    12: optional i64           share_id  (api.js_conv='true' go.tag="json:\"share_id,string\"")              // 分享ID
+    11: optional bool          must_append                // Whether to force an appended message in an existing conversation
+    12: optional i64           share_id  (api.js_conv='true' go.tag="json:\"share_id,string\"")              // Share ID
 }
 
 struct GetMessageListResponse  {
     1: required list<ChatMessage> message_list
-    2: required string            cursor          // 下一刷存在时的位置（向上翻页），与next_cursor翻页方向相反。兼容旧逻辑，不加prev前缀
-    3: required bool              hasmore         // 下一刷是否存在（向上翻页），与next_has_more翻页方向相反。兼容旧逻辑，不加prev前缀
+    2: required string            cursor          // The position when the next brush exists (page up), opposite to the next_cursor page turning direction. Compatible with old logic, no prev prefix
+    3: required bool              hasmore         // Whether the next swipe exists (page up), the opposite direction to the next_has_more page turning. Compatible with old logic, without prev prefix
     4: required string            conversation_id
-    5: optional string            last_section_id // 会话最新的section_id 只有第一刷返回
+    5: optional string            last_section_id // Session Latest section_id Only First Brush Back
     6:          i64               code
     7:          string            msg
     8: optional map<string, MsgParticipantInfo> participant_info_map
-    9:          string           next_cursor           // 下一刷存在时的位置（向下翻页），
-    10:         bool             next_has_more         // 下一刷是否存在（向下翻页）
+    9:          string           next_cursor           // The position when the next swipe exists (page down),
+    10:         bool             next_has_more         // Does the next swipe exist (page down)
     11:         i64              read_message_index (api.js_conv='true' go.tag="json:\"read_message_index,string\"")
-    12:         string           connector_conversation_id //botconnector对应的id
+    12:         string           connector_conversation_id //ID for botconnector
 }
 
 struct DeleteMessageRequest  {
@@ -170,10 +170,10 @@ struct DeleteMessageResponse  {
 }
 
 struct BreakMessageRequest  {
-    1: required i64 conversation_id (api.js_conv='true') //会话id
-    2: required i64 query_message_id (api.js_conv='true')// 当前问题id
-    3: optional i64 answer_message_id  (api.js_conv='true') // 当前问题下哪一条回复被打断了
-    4: optional i32    broken_pos        // 打断位置
+    1: required i64 conversation_id (api.js_conv='true') //session id
+    2: required i64 query_message_id (api.js_conv='true')// Current issue id
+    3: optional i64 answer_message_id  (api.js_conv='true') // Which reply was interrupted under the current question?
+    4: optional i32    broken_pos        // interrupt position
     5: optional common.Scene  scene
 }
 struct BreakMessageResponse  {
@@ -181,37 +181,37 @@ struct BreakMessageResponse  {
     2: string msg
 }
 
-//批量查询
+//batch query
 struct ListMessageApiRequest {
-    1:   required  i64    conversation_id (api.query = "conversation_id",api.js_conv='true') //会话id
-    2:   optional  i64    limit (api.body = "limit")  // 限制条数
-    3:   optional  string order (api.body = "order")  // 排序方式 desc/asc
-    4:   optional  i64    chat_id (api.body = "chat_id",api.js_conv='true') //一次对话的id
-    5:   optional  i64    before_id (api.body = "before_id",api.js_conv='true') // 向前翻页需要传的ID
-    6:   optional  i64    after_id (api.body = "after_id",api.js_conv='true')   // 向后返回需要传的ID
+    1:   required  i64    conversation_id (api.query = "conversation_id",api.js_conv='true') //session id
+    2:   optional  i64    limit (api.body = "limit")  // limit number of entries
+    3:   optional  string order (api.body = "order")  // Sort by desc/asc
+    4:   optional  i64    chat_id (api.body = "chat_id",api.js_conv='true') //ID of a conversation
+    5:   optional  i64    before_id (api.body = "before_id",api.js_conv='true') // The ID you need to pass to turn the page forward.
+    6:   optional  i64    after_id (api.body = "after_id",api.js_conv='true')   // Return the ID to be passed backwards.
     255: base.Base Base
 }
 
 struct OpenMessageApi {
-    1:  i64                id  (api.js_conv='true')// 主键ID
+    1:  i64                id  (api.js_conv='true')// primary key ID
     2:  i64                bot_id (api.js_conv='true') // agent id
     3:  string             role  // user / assistant/tool
-    4:  string             content //消息内容
-    5:  i64                conversation_id //会话id
-    6:  map<string,string> meta_data // 自定义字段
-    7:  i64                created_at //创建时间
-    8:  i64                updated_at   //更新时间
-    9:  i64                chat_id // 一次对话的id
-    10: string             content_type // content 类型 ，text/mix
-    11: string             type //消息类型 answer/question/function_call/tool_response
-    12: string             section_id // 会话的section_id
-    13: optional string    reasoning_content //模型思维链
+    4:  string             content //message content
+    5:  i64                conversation_id //session id
+    6:  map<string,string> meta_data // custom field
+    7:  i64                created_at //creation time
+    8:  i64                updated_at   //update time
+    9:  i64                chat_id // ID of a conversation
+    10: string             content_type // Content type, text/mix
+    11: string             type //Message Type answer/question/function_call/tool_response
+    12: string             section_id // The section_id of conversation
+    13: optional string    reasoning_content //Model Thinking Chain
 }
 
 
 struct ListMessageApiResponse {
     1:   optional list<OpenMessageApi> messages (api.body = "data")
-    2:   optional bool                 has_more (api.body = "has_more") // 是否还有数据，true 有，false 没有
-    3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true') // 第一条数据的id
-    4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')    // 最后一条数据的id
+    2:   optional bool                 has_more (api.body = "has_more") // Is there still data, true yes, false no
+    3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true') // The ID of the first piece of data
+    4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')    // The id of the last piece of data.
 }

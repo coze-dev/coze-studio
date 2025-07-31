@@ -15,9 +15,9 @@ import (
 type VisibilityType int64
 
 const (
-	// 不可见
+	// invisible
 	VisibilityType_Invisible VisibilityType = 0
-	// 可见
+	// visible
 	VisibilityType_Visible VisibilityType = 1
 )
 
@@ -112,11 +112,11 @@ func (p *TabStatus) Value() (driver.Value, error) {
 type PublishResultStatus int64
 
 const (
-	// 成功
+	// success
 	PublishResultStatus_Success PublishResultStatus = 1
-	// 失败
+	// fail
 	PublishResultStatus_Failed PublishResultStatus = 2
-	// 审批中
+	// in approval
 	PublishResultStatus_InReview PublishResultStatus = 3
 )
 
@@ -219,9 +219,9 @@ func (p *AgentType) Value() (driver.Value, error) {
 type ReferenceInfoStatus int64
 
 const (
-	// 1:有可用更新
+	// 1: Updates are available
 	ReferenceInfoStatus_HasUpdates ReferenceInfoStatus = 1
-	// 2:被删除
+	// 2: Deleted
 	ReferenceInfoStatus_IsDelete ReferenceInfoStatus = 2
 )
 
@@ -399,11 +399,11 @@ func (p *RecognitionMode) Value() (driver.Value, error) {
 type IndependentTiming int64
 
 const (
-	// 判断用户输入（前置）
+	// Determine user input (front)
 	IndependentTiming_Pre IndependentTiming = 1
-	// 判断节点输出（后置）
+	// Determine node output (postfix)
 	IndependentTiming_Post IndependentTiming = 2
-	// 前置模式和后置模式支持同时选择
+	// Front mode and rear mode support simultaneous selection
 	IndependentTiming_PreAndPost IndependentTiming = 3
 )
 
@@ -449,9 +449,9 @@ func (p *IndependentTiming) Value() (driver.Value, error) {
 type IndependentRecognitionModelType int64
 
 const (
-	// 小模型
+	// Small model
 	IndependentRecognitionModelType_SLM IndependentRecognitionModelType = 0
-	// 大模型
+	// Large model
 	IndependentRecognitionModelType_LLM IndependentRecognitionModelType = 1
 )
 
@@ -584,13 +584,13 @@ func (p *BotMode) Value() (driver.Value, error) {
 type HistoryType int64
 
 const (
-	// 废弃
+	// abandoned
 	HistoryType_SUBMIT HistoryType = 1
-	// 发布
+	// publish
 	HistoryType_FLAG HistoryType = 2
-	// 提交
+	// submit
 	HistoryType_COMMIT HistoryType = 4
-	// 提交和发布
+	// Submit and publish
 	HistoryType_COMMITANDFLAG HistoryType = 5
 )
 
@@ -912,25 +912,25 @@ const (
 	ModelClass_StableDiffusion ModelClass = 6
 	ModelClass_ByteArtist      ModelClass = 7
 	ModelClass_Maas            ModelClass = 9
-	// 废弃：千帆(百度云)
+	// Abandoned: Qianfan (Baidu Cloud)
 	ModelClass_QianFan ModelClass = 10
 	// name：Google Gemini
 	ModelClass_Gemini ModelClass = 11
 	// name: Moonshot
 	ModelClass_Moonshot ModelClass = 12
-	// name：智谱
+	// Name: Zhipu
 	ModelClass_GLM ModelClass = 13
-	// name: 火山方舟
+	// Name: Volcano Ark
 	ModelClass_MaaSAutoSync ModelClass = 14
-	// name：通义千问
+	// Name: Tongyi Qianwen
 	ModelClass_QWen ModelClass = 15
 	// name: Cohere
 	ModelClass_Cohere ModelClass = 16
-	// name: 百川智能
+	// Name: Baichuan Intelligent
 	ModelClass_Baichuan ModelClass = 17
-	// name：文心一言
+	// Name: ERNIE Bot
 	ModelClass_Ernie ModelClass = 18
-	// name: 幻方
+	// Name: Magic Square
 	ModelClass_DeekSeek ModelClass = 19
 	// name: Llama
 	ModelClass_Llama   ModelClass = 20
@@ -1056,7 +1056,7 @@ const (
 	ModelTagClass_ModelUserRight ModelTagClass = 2
 	ModelTagClass_ModelFeature   ModelTagClass = 3
 	ModelTagClass_ModelFunction  ModelTagClass = 4
-	// 本期不做
+	// Do not do this issue
 	ModelTagClass_Custom ModelTagClass = 20
 	ModelTagClass_Others ModelTagClass = 100
 )
@@ -1255,11 +1255,11 @@ type CommitStatus int64
 
 const (
 	CommitStatus_Undefined CommitStatus = 0
-	// 已是最新，同主草稿相同
+	// It is the latest, the same as the main draft
 	CommitStatus_Uptodate CommitStatus = 1
-	// 落后主草稿
+	// Behind the main draft
 	CommitStatus_Behind CommitStatus = 2
-	// 无个人草稿
+	// No personal draft
 	CommitStatus_NoDraftReplica CommitStatus = 3
 )
 
@@ -1309,15 +1309,15 @@ func (p *CommitStatus) Value() (driver.Value, error) {
 type ConfigStatus int64
 
 const (
-	// 已配置
+	// Configured
 	ConfigStatus_Configured ConfigStatus = 1
-	// 未配置
+	// Not configured
 	ConfigStatus_NotConfigured ConfigStatus = 2
-	// Token发生变化
+	// Token changes
 	ConfigStatus_Disconnected ConfigStatus = 3
-	// 配置中，授权中
+	// Configuring, authorizing
 	ConfigStatus_Configuring ConfigStatus = 4
-	// 需要重新配置
+	// Need to reconfigure
 	ConfigStatus_NeedReconfiguring ConfigStatus = 5
 )
 
@@ -1371,19 +1371,19 @@ func (p *ConfigStatus) Value() (driver.Value, error) {
 type BindType int64
 
 const (
-	// 无需绑定
+	// No binding required
 	BindType_NoBindRequired BindType = 1
-	// Auth绑定
+	// Auth binding
 	BindType_AuthBind BindType = 2
-	// Kv绑定=
+	// Kv binding =
 	BindType_KvBind BindType = 3
-	// Kv并Auth授权
+	// Kv and Auth authorization
 	BindType_KvAuthBind BindType = 4
-	// api渠道绑定
+	// API channel binding
 	BindType_ApiBind    BindType = 5
 	BindType_WebSDKBind BindType = 6
 	BindType_StoreBind  BindType = 7
-	// 授权和配置各一个按钮
+	// One button each for authorization and configuration
 	BindType_AuthAndConfig BindType = 8
 )
 
@@ -1491,11 +1491,11 @@ func (p *AllowPublishStatus) Value() (driver.Value, error) {
 type BotConnectorStatus int64
 
 const (
-	// 正常
+	// Normal
 	BotConnectorStatus_Normal BotConnectorStatus = 0
-	// 审核中
+	// Under review.
 	BotConnectorStatus_InReview BotConnectorStatus = 1
-	// 已下线
+	// offline
 	BotConnectorStatus_Offline BotConnectorStatus = 2
 )
 
@@ -1541,11 +1541,11 @@ func (p *BotConnectorStatus) Value() (driver.Value, error) {
 type UserAuthStatus int64
 
 const (
-	// 已授权
+	// Authorized
 	UserAuthStatus_Authorized UserAuthStatus = 1
-	// 未授权
+	// unauthorized
 	UserAuthStatus_UnAuthorized UserAuthStatus = 2
-	// 授权中
+	// Authorizing
 	UserAuthStatus_Authorizing UserAuthStatus = 3
 )
 
@@ -1595,7 +1595,7 @@ type DraftBotCreateRequest struct {
 	IconURI          string            `thrift:"icon_uri,4" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	Visibility       VisibilityType    `thrift:"visibility,5" form:"visibility" json:"visibility" query:"visibility"`
 	MonetizationConf *MonetizationConf `thrift:"monetization_conf,6,optional" form:"monetization_conf" json:"monetization_conf,omitempty" query:"monetization_conf"`
-	// 创建来源  navi:导航栏 space:空间
+	// Create source navi: navbar space: space
 	CreateFrom   *string                  `thrift:"create_from,7,optional" form:"create_from" json:"create_from,omitempty" query:"create_from"`
 	BusinessType *bot_common.BusinessType `thrift:"business_type,9,optional" form:"business_type" json:"business_type,omitempty" query:"business_type"`
 }
@@ -2234,9 +2234,9 @@ func (p *MonetizationConf) String() string {
 
 type DraftBotCreateData struct {
 	BotID int64 `thrift:"bot_id,1" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	// true：机审校验不通过
+	// True: The machine audit verification failed
 	CheckNotPass bool `thrift:"check_not_pass,2" form:"check_not_pass" json:"check_not_pass" query:"check_not_pass"`
-	// 机审校验不通过文案
+	// The machine audit verification failed the copy.
 	CheckNotPassMsg *string `thrift:"check_not_pass_msg,3,optional" form:"check_not_pass_msg" json:"check_not_pass_msg,omitempty" query:"check_not_pass_msg"`
 }
 
@@ -3761,14 +3761,14 @@ func (p *UserLabel) String() string {
 
 type Creator struct {
 	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	// 昵称
+	// nickname
 	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	AvatarURL string `thrift:"avatar_url,3" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	// 是否是自己创建的
+	// Did you create it yourself?
 	Self bool `thrift:"self,4" form:"self" json:"self" query:"self"`
-	// 用户名
+	// user name
 	UserUniqueName string `thrift:"user_unique_name,5" form:"user_unique_name" json:"user_unique_name" query:"user_unique_name"`
-	// 用户标签
+	// user tag
 	UserLabel *UserLabel `thrift:"user_label,6" form:"user_label" json:"user_label" query:"user_label"`
 }
 
@@ -7058,19 +7058,19 @@ func (p *PublishDraftBotResponse) String() string {
 }
 
 type PublishDraftBotData struct {
-	// key代表connector_name 枚举 飞书="feishu" -- 废弃
+	// Key represents connector_name enumeration Feishu = "feishu" -- obsolete
 	ConnectorBindResult map[string][]*ConnectorBindResult `thrift:"connector_bind_result,1" form:"connector_bind_result" json:"connector_bind_result" query:"connector_bind_result"`
-	// key代表connector_id，value是发布结果
+	// The key represents connector_id, and the value is the published result
 	PublishResult map[string]*ConnectorBindResult `thrift:"publish_result,2" form:"publish_result" json:"publish_result" query:"publish_result"`
-	// true：机审校验不通过
+	// True: The machine audit verification failed
 	CheckNotPass bool `thrift:"check_not_pass,3" form:"check_not_pass" json:"check_not_pass" query:"check_not_pass"`
-	// 上架bot market结果
+	// Added bot marketing results
 	SubmitBotMarketResult *SubmitBotMarketResult `thrift:"submit_bot_market_result,4,optional" form:"submit_bot_market_result" json:"submit_bot_market_result,omitempty" query:"submit_bot_market_result"`
-	// 是否命中人审
+	// In human moderation
 	HitManualCheck *bool `thrift:"hit_manual_check,5,optional" form:"hit_manual_check" json:"hit_manual_check,omitempty" query:"hit_manual_check"`
-	// 机审校验不通过原因的starlingKey列表
+	// starlingKey list of reasons why the machine audit failed
 	NotPassReason []string `thrift:"not_pass_reason,6,optional" form:"not_pass_reason" json:"not_pass_reason,omitempty" query:"not_pass_reason"`
-	// 发布bot计费结果
+	// Publish bot billing results
 	PublishMonetizationResult *bool `thrift:"publish_monetization_result,7,optional" form:"publish_monetization_result" json:"publish_monetization_result,omitempty" query:"publish_monetization_result"`
 }
 
@@ -7614,11 +7614,11 @@ func (p *PublishDraftBotData) String() string {
 
 type ConnectorBindResult struct {
 	Connector *Connector `thrift:"connector,1" form:"connector" json:"connector" query:"connector"`
-	// 发布调用下游返回的状态码，前端不消费
+	// The status code returned downstream of the publish call is not consumed by the front end.
 	Code int64 `thrift:"code,2" form:"code" json:"code" query:"code"`
-	// 发布状态的附加文案，前端按照markdown格式解析
+	// Additional copy of the release status, the front end is parsed in markdown format
 	Msg string `thrift:"msg,3" form:"msg" json:"msg" query:"msg"`
-	// 发布结果状态
+	// post result status
 	PublishResultStatus *PublishResultStatus `thrift:"publish_result_status,4,optional" form:"publish_result_status" json:"publish_result_status,omitempty" query:"publish_result_status"`
 }
 
@@ -7908,7 +7908,7 @@ func (p *ConnectorBindResult) String() string {
 }
 
 type Connector struct {
-	// connector_name 枚举 飞书="feishu"
+	// connector_name enumeration Feishu = "feishu"
 	Name      string            `thrift:"name,1" form:"name" json:"name" query:"name"`
 	AppID     string            `thrift:"app_id,2" form:"app_id" json:"app_id" query:"app_id"`
 	AppSecret string            `thrift:"app_secret,3" form:"app_secret" json:"app_secret" query:"app_secret"`
@@ -8268,9 +8268,9 @@ func (p *Connector) String() string {
 }
 
 type SubmitBotMarketResult struct {
-	// 上架状态，0-成功
+	// Shelf status, 0-success
 	ResultCode *int64 `thrift:"result_code,1,optional" form:"result_code" json:"result_code,omitempty" query:"result_code"`
-	// 上架结果的文案
+	// msg
 	Msg *string `thrift:"msg,2,optional" form:"msg" json:"msg,omitempty" query:"msg"`
 }
 
@@ -8486,7 +8486,7 @@ type AgentInfo struct {
 	ReferenceID    *string        `thrift:"reference_id,8,optional" form:"reference_id" json:"reference_id,omitempty" query:"reference_id"`
 	FirstVersion   *string        `thrift:"first_version,9,optional" form:"first_version" json:"first_version,omitempty" query:"first_version"`
 	CurrentVersion *string        `thrift:"current_version,10,optional" form:"current_version" json:"current_version,omitempty" query:"current_version"`
-	// 1:有可用更新 2:被删除
+	// 1: Available update 2: Removed
 	ReferenceInfoStatus *ReferenceInfoStatus `thrift:"reference_info_status,11,optional" form:"reference_info_status" json:"reference_info_status,omitempty" query:"reference_info_status"`
 	Description         *string              `thrift:"description,12,optional" form:"description" json:"description,omitempty" query:"description"`
 	UpdateType          *ReferenceUpdateType `thrift:"update_type,13,optional" form:"update_type" json:"update_type,omitempty" query:"update_type"`
@@ -9761,25 +9761,25 @@ func (p *Intent) String() string {
 
 }
 
-// agent 工作区间各个模块的信息
+// Information about each module in the agent workspace
 type AgentWorkInfo struct {
-	// agent prompt 前端信息，server不需要感知
+	// The agent prompts the front-end information, the server does not need to perceive
 	Prompt *string `thrift:"prompt,1,optional" form:"prompt" json:"prompt,omitempty" query:"prompt"`
-	// 模型配置
+	// model configuration
 	OtherInfo *string `thrift:"other_info,2,optional" form:"other_info" json:"other_info,omitempty" query:"other_info"`
-	// plugin 信息
+	// Plugin information
 	Tools *string `thrift:"tools,3,optional" form:"tools" json:"tools,omitempty" query:"tools"`
-	// dataset 信息
+	// Dataset information
 	Dataset *string `thrift:"dataset,4,optional" form:"dataset" json:"dataset,omitempty" query:"dataset"`
-	// workflow 信息
+	// Workflow information
 	Workflow *string `thrift:"workflow,5,optional" form:"workflow" json:"workflow,omitempty" query:"workflow"`
-	// 同bot的 system_info_all
+	// system_info_all with bot
 	SystemInfoAll *string `thrift:"system_info_all,6,optional" form:"system_info_all" json:"system_info_all,omitempty" query:"system_info_all"`
-	// 回溯配置
+	// backtrack configuration
 	JumpConfig *JumpConfig `thrift:"jump_config,7,optional" form:"jump_config" json:"jump_config,omitempty" query:"jump_config"`
-	// 推荐回复配置
+	// Referral Configuration
 	SuggestReply *string `thrift:"suggest_reply,8,optional" form:"suggest_reply" json:"suggest_reply,omitempty" query:"suggest_reply"`
-	// hook配置
+	// Hook configuration
 	HookInfo *string `thrift:"hook_info,9,optional" form:"hook_info" json:"hook_info,omitempty" query:"hook_info"`
 }
 
@@ -10604,7 +10604,7 @@ func (p *JumpConfig) String() string {
 }
 
 type IndependentModeConfig struct {
-	// 判断时机
+	// Judge timing
 	JudgeTiming  IndependentTiming               `thrift:"judge_timing,1" form:"judge_timing" json:"judge_timing" query:"judge_timing"`
 	HistoryRound int32                           `thrift:"history_round,2" form:"history_round" json:"history_round" query:"history_round"`
 	ModelType    IndependentRecognitionModelType `thrift:"model_type,3" form:"model_type" json:"model_type" query:"model_type"`
@@ -11225,25 +11225,25 @@ type PublishDraftBotRequest struct {
 	SpaceID  int64     `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
 	BotID    int64     `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,string,required" query:"bot_id,required"`
 	WorkInfo *WorkInfo `thrift:"work_info,3" form:"work_info" json:"work_info" query:"work_info"`
-	// key代表connector_name 枚举 飞书="feishu" -- 废弃
+	// Key represents connector_name enumeration Feishu = "feishu" -- obsolete
 	ConnectorList map[string][]*Connector `thrift:"connector_list,4" form:"connector_list" json:"connector_list" query:"connector_list"`
-	// key代表connector_id，value是发布的参数
+	// The key represents connector_id, and the value is the published parameter
 	Connectors map[string]map[string]string `thrift:"connectors,5" form:"connectors" json:"connectors" query:"connectors"`
-	// 默认0
+	// Default 0
 	BotMode    *BotMode      `thrift:"botMode,6,optional" form:"botMode" json:"botMode,omitempty" query:"botMode"`
 	Agents     []*AgentInfo  `thrift:"agents,7,optional" form:"agents" json:"agents,omitempty" query:"agents"`
 	CanvasData *string       `thrift:"canvas_data,8,optional" form:"canvas_data" json:"canvas_data,omitempty" query:"canvas_data"`
 	BotTagInfo []*BotTagInfo `thrift:"bot_tag_info,9,optional" form:"bot_tag_info" json:"bot_tag_info,omitempty" query:"bot_tag_info"`
-	// 发布到market的配置
+	// Configuration published to the market
 	SubmitBotMarketConfig *SubmitBotMarketConfig `thrift:"submit_bot_market_config,10,optional" form:"submit_bot_market_config" json:"submit_bot_market_config,omitempty" query:"submit_bot_market_config"`
 	PublishID             *string                `thrift:"publish_id,11,optional" form:"publish_id" json:"publish_id,omitempty" query:"publish_id"`
-	// 指定发布某个CommitVersion
+	// Specify the release of a CommitVersion
 	CommitVersion *string `thrift:"commit_version,12,optional" form:"commit_version" json:"commit_version,omitempty" query:"commit_version"`
-	// 发布类型，线上发布/预发布
+	// Release type, online release/pre-release
 	PublishType *PublishType `thrift:"publish_type,13,optional" form:"publish_type" json:"publish_type,omitempty" query:"publish_type"`
-	// 预发布其他信息
+	// Pre-release other information
 	PrePublishExt *string `thrift:"pre_publish_ext,14,optional" form:"pre_publish_ext" json:"pre_publish_ext,omitempty" query:"pre_publish_ext"`
-	// 替换原workinfo中的 history_info
+	// Replace the history_info in the original workinfo
 	HistoryInfo *string `thrift:"history_info,15,optional" form:"history_info" json:"history_info,omitempty" query:"history_info"`
 }
 
@@ -12276,11 +12276,11 @@ func (p *PublishDraftBotRequest) String() string {
 }
 
 type SubmitBotMarketConfig struct {
-	// 是否发布到market
+	// Whether to publish to the market
 	NeedSubmit *bool `thrift:"need_submit,1,optional" form:"need_submit" json:"need_submit,omitempty" query:"need_submit"`
-	// 是否开源
+	// Is it open source?
 	OpenSource *bool `thrift:"open_source,2,optional" form:"open_source" json:"open_source,omitempty" query:"open_source"`
-	// 分类
+	// classification
 	CategoryID *string `thrift:"category_id,3,optional" form:"category_id" json:"category_id,omitempty" query:"category_id"`
 }
 
@@ -12540,7 +12540,7 @@ func (p *SubmitBotMarketConfig) String() string {
 
 }
 
-// 工作区间各个模块的信息
+// Information for each module in the workspace
 type WorkInfo struct {
 	MessageInfo             *string `thrift:"message_info,1,optional" form:"message_info" json:"message_info,omitempty" query:"message_info"`
 	Prompt                  *string `thrift:"prompt,2,optional" form:"prompt" json:"prompt,omitempty" query:"prompt"`
@@ -12558,13 +12558,13 @@ type WorkInfo struct {
 	SuggestReply            *string `thrift:"suggest_reply,14,optional" form:"suggest_reply" json:"suggest_reply,omitempty" query:"suggest_reply"`
 	Tts                     *string `thrift:"tts,15,optional" form:"tts" json:"tts,omitempty" query:"tts"`
 	BackgroundImageInfoList *string `thrift:"background_image_info_list,16,optional" form:"background_image_info_list" json:"background_image_info_list,omitempty" query:"background_image_info_list"`
-	// 快捷指令
+	// Quick Instruction
 	Shortcuts *playground.ShortcutStruct `thrift:"shortcuts,17,optional" form:"shortcuts" json:"shortcuts,omitempty" query:"shortcuts"`
-	// hook配置
+	// Hook configuration
 	HookInfo *string `thrift:"hook_info,18,optional" form:"hook_info" json:"hook_info,omitempty" query:"hook_info"`
-	// 用户query收集配置
+	// User query collection configuration
 	UserQueryCollectConf *UserQueryCollectConf `thrift:"user_query_collect_conf,19,optional" form:"user_query_collect_conf" json:"user_query_collect_conf,omitempty" query:"user_query_collect_conf"`
-	//workflow模式编排数据
+	//Workflow pattern orchestration data
 	LayoutInfo *LayoutInfo `thrift:"layout_info,20,optional" form:"layout_info" json:"layout_info,omitempty" query:"layout_info"`
 }
 
@@ -13751,9 +13751,9 @@ func (p *WorkInfo) String() string {
 }
 
 type UserQueryCollectConf struct {
-	// 是否开启收集开关
+	// Whether to turn on the collection switch
 	IsCollected bool `thrift:"IsCollected,1" form:"is_collected" json:"is_collected"`
-	// 隐私协议链接
+	// Privacy Policy Link
 	PrivatePolicy string `thrift:"PrivatePolicy,2" form:"private_policy" json:"private_policy"`
 }
 
@@ -14980,17 +14980,17 @@ func (p *ListDraftBotHistoryData) String() string {
 
 }
 
-// 如果保存历史信息
+// If historical information is preserved
 type HistoryInfo struct {
 	Version     string      `thrift:"version,1" form:"version" json:"version" query:"version"`
 	HistoryType HistoryType `thrift:"history_type,2" form:"history_type" json:"history_type" query:"history_type"`
-	// 对历史记录补充的其他信息
+	// Additional information added to the historical record
 	Info           string           `thrift:"info,3" form:"info" json:"info" query:"info"`
 	CreateTime     string           `thrift:"create_time,4" form:"create_time" json:"create_time" query:"create_time"`
 	ConnectorInfos []*ConnectorInfo `thrift:"connector_infos,5" form:"connector_infos" json:"connector_infos" query:"connector_infos"`
 	Creator        *Creator         `thrift:"creator,6" form:"creator" json:"creator" query:"creator"`
 	PublishID      *string          `thrift:"publish_id,7,optional" form:"publish_id" json:"publish_id,omitempty" query:"publish_id"`
-	// 提交时填写的说明
+	// Instructions to fill in when submitting
 	CommitRemark *string `thrift:"commit_remark,8,optional" form:"commit_remark" json:"commit_remark,omitempty" query:"commit_remark"`
 }
 
@@ -17596,9 +17596,9 @@ func (p *GetUploadAuthTokenRequest) String() string {
 }
 
 type UploadFileRequest struct {
-	// 文件相关描述
+	// Document related description
 	FileHead *CommonFileInfo `thrift:"file_head,1" form:"file_head" json:"file_head" query:"file_head"`
-	// 文件数据
+	// file data
 	Data string `thrift:"data,2" form:"data" json:"data" query:"data"`
 }
 
@@ -17787,11 +17787,11 @@ func (p *UploadFileRequest) String() string {
 
 }
 
-// 上传文件，文件头
+// Upload file, file header
 type CommonFileInfo struct {
-	// 文件类型，后缀
+	// File type, suffix
 	FileType string `thrift:"file_type,1" form:"file_type" json:"file_type" query:"file_type"`
-	// 业务类型
+	// business type
 	BizType FileBizType `thrift:"biz_type,2" form:"biz_type" json:"biz_type" query:"biz_type"`
 }
 
@@ -17977,7 +17977,7 @@ func (p *CommonFileInfo) String() string {
 type UploadFileResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// 数据
+	// data
 	Data *UploadFileData `thrift:"data,3" form:"data" json:"data" query:"data"`
 }
 
@@ -18215,11 +18215,11 @@ type GetTypeListRequest struct {
 	Voice    *bool   `thrift:"voice,2,optional" form:"voice" json:"voice,omitempty" query:"voice"`
 	RawModel *bool   `thrift:"raw_model,3,optional" form:"raw_model" json:"raw_model,omitempty" query:"raw_model"`
 	SpaceID  *string `thrift:"space_id,4,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
-	// 当前bot使用的模型ID，用于处理cici/doubao同步过来的bot模型不能展示的问题
+	// The model ID used by the current bot to handle issues that cannot be displayed by the bot model synchronized by cici/doubao
 	CurModelID *string `thrift:"cur_model_id,5,optional" form:"cur_model_id" json:"cur_model_id,omitempty" query:"cur_model_id"`
-	// 兼容MultiAgent，有多个cur_model_id
+	// Compatible with MultiAgent, with multiple cur_model_id
 	CurModelIds []string `thrift:"cur_model_ids,6,optional" form:"cur_model_ids" json:"cur_model_ids,omitempty" query:"cur_model_ids"`
-	// 模型场景
+	// model scenario
 	ModelScene *ModelScene `thrift:"model_scene,7,optional" form:"model_scene" json:"model_scene,omitempty" query:"model_scene"`
 }
 
@@ -18721,29 +18721,29 @@ func (p *GetTypeListRequest) String() string {
 }
 
 type ModelQuota struct {
-	// 最大总 token 数量
+	// Maximum total number of tokens
 	TokenLimit int32 `thrift:"token_limit,1" form:"token_limit" json:"token_limit" query:"token_limit"`
-	// 最终回复最大 token 数量
+	// Final reply maximum number of tokens
 	TokenResp int32 `thrift:"token_resp,2" form:"token_resp" json:"token_resp" query:"token_resp"`
-	// Prompt 系统最大 token 数量
+	// Prompt system maximum number of tokens
 	TokenSystem int32 `thrift:"token_system,3" form:"token_system" json:"token_system" query:"token_system"`
-	// Prompt 用户输入最大 token 数量
+	// Prompt user to enter maximum number of tokens
 	TokenUserIn int32 `thrift:"token_user_in,4" form:"token_user_in" json:"token_user_in" query:"token_user_in"`
-	// Prompt 工具输入最大 token 数量
+	// Prompt tool to enter maximum number of tokens
 	TokenToolsIn int32 `thrift:"token_tools_in,5" form:"token_tools_in" json:"token_tools_in" query:"token_tools_in"`
-	// Prompt 工具输出最大 token 数量
+	// Prompt tool output maximum number of tokens
 	TokenToolsOut int32 `thrift:"token_tools_out,6" form:"token_tools_out" json:"token_tools_out" query:"token_tools_out"`
-	// Prompt 数据最大 token 数量
+	// Prompt data maximum number of tokens
 	TokenData int32 `thrift:"token_data,7" form:"token_data" json:"token_data" query:"token_data"`
-	// Prompt 历史最大 token 数量
+	// Prompt history maximum number of tokens
 	TokenHistory int32 `thrift:"token_history,8" form:"token_history" json:"token_history" query:"token_history"`
-	// Prompt 历史最大 token 数量
+	// Prompt history maximum number of tokens
 	TokenCutSwitch bool `thrift:"token_cut_switch,9" form:"token_cut_switch" json:"token_cut_switch" query:"token_cut_switch"`
-	// 输入成本
+	// input cost
 	PriceIn float64 `thrift:"price_in,10" form:"price_in" json:"price_in" query:"price_in"`
-	// 输出成本
+	// output cost
 	PriceOut float64 `thrift:"price_out,11" form:"price_out" json:"price_out" query:"price_out"`
-	// systemprompt输入限制，如果没有传，对输入不做限制
+	// Systemprompt input restrictions, if not passed, no input restrictions
 	SystemPromptLimit *int32 `thrift:"system_prompt_limit,12,optional" form:"system_prompt_limit" json:"system_prompt_limit,omitempty" query:"system_prompt_limit"`
 }
 
@@ -19878,9 +19878,9 @@ func (p *ModelParamClass) String() string {
 }
 
 type Option struct {
-	// option展示的值
+	// The value displayed by the option
 	Label string `thrift:"label,1" form:"label" json:"label" query:"label"`
-	// 填入的值
+	// Filled in value
 	Value string `thrift:"value,2" form:"value" json:"value" query:"value"`
 }
 
@@ -20064,25 +20064,25 @@ func (p *Option) String() string {
 }
 
 type ModelParameter struct {
-	// 配置字段，如max_tokens
+	// Configuration fields, such as max_tokens
 	Name string `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
-	// 配置字段展示名称
+	// Configure field display name
 	Label string `thrift:"label,2" form:"label" json:"label" query:"label"`
-	// 配置字段详情描述
+	// Configuration field detail description
 	Desc string `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
-	// 类型
+	// type
 	Type ModelParamType `thrift:"type,4,required" form:"type,required" json:"type,required" query:"type,required"`
-	// 数值类型参数，允许设置的最小值
+	// Numerical type parameters, the minimum value allowed to be set
 	Min string `thrift:"min,5" form:"min" json:"min" query:"min"`
-	// 数值类型参数，允许设置的最大值
+	// Numerical type parameter, the maximum value allowed to be set
 	Max string `thrift:"max,6" form:"max" json:"max" query:"max"`
-	// float类型参数的精度
+	// Precision of float type parameters
 	Precision int32 `thrift:"precision,7" form:"precision" json:"precision" query:"precision"`
-	// 参数默认值{"default": xx, "creative":xx}
+	// Parameter default {"default": xx, "creative": xx}
 	DefaultVal *ModelParamDefaultValue `thrift:"default_val,8,required" form:"default_val,required" json:"default_val,required" query:"default_val,required"`
-	// 枚举值，如response_format支持text,markdown,json
+	// Enumeration values such as response_format support text, markdown, json
 	Options []*Option `thrift:"options,9" form:"options" json:"options" query:"options"`
-	// 参数分类，"Generation diversity", "Input and output length", "Output format"
+	// Parameter classification, "Generation diversity", "Input and output length", "Output format"
 	ParamClass *ModelParamClass `thrift:"param_class,10" form:"param_class" json:"param_class" query:"param_class"`
 }
 
@@ -21435,21 +21435,21 @@ func (p *ModelSeriesInfo) String() string {
 }
 
 type ModelStatusDetails struct {
-	// 是否为新模型
+	// Is it a new model?
 	IsNewModel bool `thrift:"is_new_model,1" form:"is_new_model" json:"is_new_model" query:"is_new_model"`
-	// 是否是高级模型
+	// Is it a high-level model?
 	IsAdvancedModel bool `thrift:"is_advanced_model,2" form:"is_advanced_model" json:"is_advanced_model" query:"is_advanced_model"`
-	// 是否是免费模型
+	// Is it a free model?
 	IsFreeModel bool `thrift:"is_free_model,3" form:"is_free_model" json:"is_free_model" query:"is_free_model"`
-	// 是否即将下架
+	// Will it be removed from the shelves soon?
 	IsUpcomingDeprecated bool `thrift:"is_upcoming_deprecated,11" form:"is_upcoming_deprecated" json:"is_upcoming_deprecated" query:"is_upcoming_deprecated"`
-	// 下架日期
+	// removal date
 	DeprecatedDate string `thrift:"deprecated_date,12" form:"deprecated_date" json:"deprecated_date" query:"deprecated_date"`
-	// 下架替换的模型
+	// Remove the replacement model from the shelves.
 	ReplaceModelName string `thrift:"replace_model_name,13" form:"replace_model_name" json:"replace_model_name" query:"replace_model_name"`
-	// 最近更新信息
+	// Recently updated information
 	UpdateInfo string `thrift:"update_info,21" form:"update_info" json:"update_info" query:"update_info"`
-	// 模型特色
+	// Model Features
 	ModelFeature ModelTagValue `thrift:"model_feature,22" form:"model_feature" json:"model_feature" query:"model_feature"`
 }
 
@@ -21897,19 +21897,19 @@ func (p *ModelStatusDetails) String() string {
 }
 
 type ModelAbility struct {
-	// 是否展示cot
+	// Do you want to show cot?
 	CotDisplay *bool `thrift:"cot_display,1,optional" form:"cot_display" json:"cot_display,omitempty" query:"cot_display"`
-	// 是否支持function call
+	// Supports function calls
 	FunctionCall *bool `thrift:"function_call,2,optional" form:"function_call" json:"function_call,omitempty" query:"function_call"`
-	// 是否支持图片理解
+	// Does it support picture understanding?
 	ImageUnderstanding *bool `thrift:"image_understanding,3,optional" form:"image_understanding" json:"image_understanding,omitempty" query:"image_understanding"`
-	// 是否支持视频理解
+	// Does it support video understanding?
 	VideoUnderstanding *bool `thrift:"video_understanding,4,optional" form:"video_understanding" json:"video_understanding,omitempty" query:"video_understanding"`
-	// 是否支持音频理解
+	// Does it support audio understanding?
 	AudioUnderstanding *bool `thrift:"audio_understanding,5,optional" form:"audio_understanding" json:"audio_understanding,omitempty" query:"audio_understanding"`
-	// 是否支持多模态
+	// Does it support multimodality?
 	SupportMultiModal *bool `thrift:"support_multi_modal,6,optional" form:"support_multi_modal" json:"support_multi_modal,omitempty" query:"support_multi_modal"`
-	// 是否支持续写
+	// Whether to support continuation
 	PrefillResp *bool `thrift:"prefill_resp,7,optional" form:"prefill_resp" json:"prefill_resp,omitempty" query:"prefill_resp"`
 }
 
@@ -22393,32 +22393,32 @@ type Model struct {
 	Name       string     `thrift:"name,1" form:"name" json:"name" query:"name"`
 	ModelType  int64      `thrift:"model_type,2" form:"model_type" json:"model_type" query:"model_type"`
 	ModelClass ModelClass `thrift:"model_class,3" form:"model_class" json:"model_class" query:"model_class"`
-	// model icon的url
+	// Model icon url
 	ModelIcon        string      `thrift:"model_icon,4" form:"model_icon" json:"model_icon" query:"model_icon"`
 	ModelInputPrice  float64     `thrift:"model_input_price,5" form:"model_input_price" json:"model_input_price" query:"model_input_price"`
 	ModelOutputPrice float64     `thrift:"model_output_price,6" form:"model_output_price" json:"model_output_price" query:"model_output_price"`
 	ModelQuota       *ModelQuota `thrift:"model_quota,7" form:"model_quota" json:"model_quota" query:"model_quota"`
-	// model真实名，前端计算token用
+	// Model real name, front-end calculation token
 	ModelName      string            `thrift:"model_name,8" form:"model_name" json:"model_name" query:"model_name"`
 	ModelClassName string            `thrift:"model_class_name,9" form:"model_class_name" json:"model_class_name" query:"model_class_name"`
 	IsOffline      bool              `thrift:"is_offline,10" form:"is_offline" json:"is_offline" query:"is_offline"`
 	ModelParams    []*ModelParameter `thrift:"model_params,11" form:"model_params" json:"model_params" query:"model_params"`
 	ModelDesc      []*ModelDescGroup `thrift:"model_desc,12,optional" form:"model_desc" json:"model_desc,omitempty" query:"model_desc"`
-	// 模型功能配置
+	// model function configuration
 	FuncConfig map[bot_common.ModelFuncConfigType]bot_common.ModelFuncConfigStatus `thrift:"func_config,13,optional" form:"func_config" json:"func_config,omitempty" query:"func_config"`
-	// 方舟模型节点名称
+	// Ark model node name
 	EndpointName *string `thrift:"endpoint_name,14,optional" form:"endpoint_name" json:"endpoint_name,omitempty" query:"endpoint_name"`
-	// 模型标签
+	// model label
 	ModelTagList []*ModelTag `thrift:"model_tag_list,15,optional" form:"model_tag_list" json:"model_tag_list,omitempty" query:"model_tag_list"`
-	// user prompt是否必须有且不能为空
+	// User prompt must have and cannot be empty
 	IsUpRequired *bool `thrift:"is_up_required,16,optional" form:"is_up_required" json:"is_up_required,omitempty" query:"is_up_required"`
-	// 模型简要描述
+	// Model brief description
 	ModelBriefDesc string `thrift:"model_brief_desc,17" form:"model_brief_desc" json:"model_brief_desc" query:"model_brief_desc"`
-	// 模型系列
+	// Model series
 	ModelSeries *ModelSeriesInfo `thrift:"model_series,18" form:"model_series" json:"model_series" query:"model_series"`
-	// 模型状态
+	// model state
 	ModelStatusDetails *ModelStatusDetails `thrift:"model_status_details,19" form:"model_status_details" json:"model_status_details" query:"model_status_details"`
-	// 模型能力
+	// model capability
 	ModelAbility *ModelAbility `thrift:"model_ability,20" form:"model_ability" json:"model_ability" query:"model_ability"`
 }
 
@@ -24458,9 +24458,9 @@ func (p *GetTypeListResponse) String() string {
 }
 
 type UploadFileData struct {
-	// 文件url
+	// File URL
 	UploadURL string `thrift:"upload_url,1" form:"upload_url" json:"upload_url" query:"upload_url"`
-	// 文件uri，提交使用这个
+	// File URI, submit using this
 	UploadURI string `thrift:"upload_uri,2" form:"upload_uri" json:"upload_uri" query:"upload_uri"`
 }
 
@@ -25239,7 +25239,7 @@ func (p *Committer) String() string {
 
 }
 
-// 检查草稿是否可以提交返回
+// Check if the draft can be submitted and returned.
 type CheckDraftBotCommitResponse struct {
 	Code *int64                   `thrift:"code,1,optional" form:"code" json:"code,omitempty" query:"code"`
 	Msg  *string                  `thrift:"msg,2,optional" form:"msg" json:"msg,omitempty" query:"msg"`
@@ -25501,11 +25501,11 @@ func (p *CheckDraftBotCommitResponse) String() string {
 
 type CheckDraftBotCommitData struct {
 	Status *CommitStatus `thrift:"status,1,optional" form:"status" json:"status,omitempty" query:"status"`
-	// 主草稿版本
+	// master draft version
 	BaseCommitVersion *string `thrift:"base_commit_version,2,optional" form:"base_commit_version" json:"base_commit_version,omitempty" query:"base_commit_version"`
-	// 主草稿提交信息
+	// Master Draft Submission Information
 	BaseCommitter *Committer `thrift:"base_committer,3,optional" form:"base_committer" json:"base_committer,omitempty" query:"base_committer"`
-	// 个人草稿版本
+	// Personal draft version
 	CommitVersion *string `thrift:"commit_version,4,optional" form:"commit_version" json:"commit_version,omitempty" query:"commit_version"`
 }
 
@@ -25818,7 +25818,7 @@ func (p *CheckDraftBotCommitData) String() string {
 
 }
 
-// 检查草稿是否可以提交请求
+// Check if the draft can be submitted to the request
 type CheckDraftBotCommitRequest struct {
 	SpaceID       string  `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	BotID         string  `thrift:"bot_id,2,required" form:"bot_id,required" json:"bot_id,required" query:"bot_id,required"`
@@ -26639,9 +26639,9 @@ func (p *GetOnboardingResponse) String() string {
 }
 
 type OnboardingContent struct {
-	// 开场白
+	// opening statement
 	Prologue *string `thrift:"prologue,1,optional" form:"prologue" json:"prologue,omitempty" query:"prologue"`
-	// 建议问题
+	// suggestion question
 	SuggestedQuestions []string `thrift:"suggested_questions,2,optional" form:"suggested_questions" json:"suggested_questions,omitempty" query:"suggested_questions"`
 }
 
@@ -27576,49 +27576,49 @@ func (p *PublishConnectorListRequest) String() string {
 }
 
 type PublishConnectorInfo struct {
-	// 发布平台 connector_id
+	// Publishing Platform connector_id
 	ID string `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
-	// 发布平台名称
+	// publishing platform name
 	Name string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
-	// 发布平台图标
+	// publishing platform icon
 	Icon string `thrift:"icon,3,required" form:"icon,required" json:"icon,required" query:"icon,required"`
-	// 发布平台描述
+	// Publish Platform Description
 	Desc string `thrift:"desc,4,required" form:"desc,required" json:"desc,required" query:"desc,required"`
-	// 分享链接
+	// share link
 	ShareLink string `thrift:"share_link,5,required" form:"share_link,required" json:"share_link,required" query:"share_link,required"`
-	// 配置状态 1:已绑定 2:未绑定
+	// Configuration Status 1: Bound 2: Unbound
 	ConfigStatus ConfigStatus `thrift:"config_status,6,required" form:"config_status,required" json:"config_status,required" query:"config_status,required"`
-	// 最近发布时间
+	// Last Post
 	LastPublishTime int64 `thrift:"last_publish_time,7,required" form:"last_publish_time,required" json:"last_publish_time,required" query:"last_publish_time,required"`
-	// 绑定类型 1:无需绑定  2:Auth  3: kv值
+	// Binding type 1: No binding required 2: Auth 3: kv value
 	BindType BindType `thrift:"bind_type,8,required" form:"bind_type,required" json:"bind_type,required" query:"bind_type,required"`
-	// 绑定信息 key字段名 value是值
+	// Binding information key field name value is value
 	BindInfo map[string]string `thrift:"bind_info,9,required" form:"bind_info,required" json:"bind_info,required" query:"bind_info,required"`
-	// 绑定id信息，用于解绑使用
+	// Bind id information for unbinding and use
 	BindID *string `thrift:"bind_id,10,optional" form:"bind_id" json:"bind_id,omitempty" query:"bind_id"`
-	// 用户授权登陆信息
+	// user authorization login information
 	AuthLoginInfo *AuthLoginInfo `thrift:"auth_login_info,11,optional" form:"auth_login_info" json:"auth_login_info,omitempty" query:"auth_login_info"`
-	// 是否为上次发布
+	// Is it the last release?
 	IsLastPublished *bool `thrift:"is_last_published,12,optional" form:"is_last_published" json:"is_last_published,omitempty" query:"is_last_published"`
-	// bot渠道状态
+	// bot channel status
 	ConnectorStatus *BotConnectorStatus `thrift:"connector_status,13,optional" form:"connector_status" json:"connector_status,omitempty" query:"connector_status"`
-	// 隐私政策
+	// Privacy Policy
 	PrivacyPolicy *string `thrift:"privacy_policy,14,optional" form:"privacy_policy" json:"privacy_policy,omitempty" query:"privacy_policy"`
-	// 用户协议
+	// User Agreement
 	UserAgreement *string `thrift:"user_agreement,15,optional" form:"user_agreement" json:"user_agreement,omitempty" query:"user_agreement"`
-	// 渠道是否允许发布
+	// Is the channel allowed to publish?
 	AllowPunish *AllowPublishStatus `thrift:"allow_punish,16,optional" form:"allow_punish" json:"allow_punish,omitempty" query:"allow_punish"`
-	// 不允许发布原因
+	// Reason for not allowing posting
 	NotAllowReason *string `thrift:"not_allow_reason,17,optional" form:"not_allow_reason" json:"not_allow_reason,omitempty" query:"not_allow_reason"`
-	// 配置状态toast
+	// Configuration status toast
 	ConfigStatusToast *string `thrift:"config_status_toast,18,optional" form:"config_status_toast" json:"config_status_toast,omitempty" query:"config_status_toast"`
-	// 品牌 ID
+	// Brand ID
 	BrandID *int64 `thrift:"brand_id,19,optional" form:"brand_id" json:"brand_id,omitempty" query:"brand_id"`
-	// 支持商业化
+	// Support commercialization
 	SupportMonetization *bool `thrift:"support_monetization,20,optional" form:"support_monetization" json:"support_monetization,omitempty" query:"support_monetization"`
-	// 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有
+	// 1: Authorized, 2: Unauthorized. Currently this field is only available bind_type == 8
 	AuthStatus *UserAuthStatus `thrift:"auth_status,21,optional" form:"auth_status" json:"auth_status,omitempty" query:"auth_status"`
-	// 补全信息按钮的 url
+	// URL of the complete info button
 	ToCompleteInfoURL *string `thrift:"to_complete_info_url,22,optional" form:"to_complete_info_url" json:"to_complete_info_url,omitempty" query:"to_complete_info_url"`
 }
 
@@ -28918,7 +28918,7 @@ func (p *PublishConnectorInfo) String() string {
 }
 
 type SubmitBotMarketOption struct {
-	// 是否可以公开编排
+	// Is it possible to publicly orchestrate?
 	CanOpenSource *bool `thrift:"can_open_source,1,optional" form:"can_open_source" json:"can_open_source,omitempty" query:"can_open_source"`
 }
 
@@ -29320,7 +29320,7 @@ func (p *ConnectorBrandInfo) String() string {
 }
 
 type PublishTips struct {
-	// 成本承担提醒
+	// cost-bearing reminder
 	CostTips *string `thrift:"cost_tips,1,optional" form:"cost_tips" json:"cost_tips,omitempty" query:"cost_tips"`
 }
 
@@ -29475,11 +29475,11 @@ type PublishConnectorListResponse struct {
 	Msg                   string                  `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	PublishConnectorList  []*PublishConnectorInfo `thrift:"publish_connector_list,3" form:"publish_connector_list" json:"publish_connector_list" query:"publish_connector_list"`
 	SubmitBotMarketOption *SubmitBotMarketOption  `thrift:"submit_bot_market_option,4,optional" form:"submit_bot_market_option" json:"submit_bot_market_option,omitempty" query:"submit_bot_market_option"`
-	// 上次提交market的配置
+	// The configuration of the last submitted market
 	LastSubmitConfig *SubmitBotMarketConfig `thrift:"last_submit_config,5,optional" form:"last_submit_config" json:"last_submit_config,omitempty" query:"last_submit_config"`
-	// 渠道品牌信息
+	// Channel brand information
 	ConnectorBrandInfoMap map[int64]*ConnectorBrandInfo `thrift:"connector_brand_info_map,6" form:"connector_brand_info_map" json:"connector_brand_info_map" query:"connector_brand_info_map"`
-	// 发布提醒
+	// post alert
 	PublishTips *PublishTips `thrift:"publish_tips,7,optional" form:"publish_tips" json:"publish_tips,omitempty" query:"publish_tips"`
 }
 

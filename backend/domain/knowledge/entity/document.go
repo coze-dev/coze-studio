@@ -27,25 +27,25 @@ type Document struct {
 
 	KnowledgeID      int64
 	Type             knowledge.DocumentType
-	RawContent       string               // 用户自定义的原始内容
-	URI              string               // 文档 uri
-	URL              string               // 文档 url
-	Size             int64                // 文档 bytes
-	SliceCount       int64                // slice 数量
-	CharCount        int64                // 文档字符数
-	FileExtension    parser.FileExtension // 文档后缀, csv/pdf...
-	Status           DocumentStatus       // 文档状态
-	StatusMsg        string               // 文档状态详细信息
-	Hits             int64                // 命中次数
-	Source           DocumentSource       // 文档来源
-	ParsingStrategy  *ParsingStrategy     // 解析策略
-	ChunkingStrategy *ChunkingStrategy    // 分段策略
+	RawContent       string               // User-defined original content
+	URI              string               // Document URI
+	URL              string               // Document URL
+	Size             int64                // Document bytes
+	SliceCount       int64                // Number of slices
+	CharCount        int64                // Number of document characters
+	FileExtension    parser.FileExtension // Document suffix, csv/pdf...
+	Status           DocumentStatus       // Document Status
+	StatusMsg        string               // Document Status Details
+	Hits             int64                // hit count
+	Source           DocumentSource       // document source
+	ParsingStrategy  *ParsingStrategy     // parsing strategy
+	ChunkingStrategy *ChunkingStrategy    // segmentation strategy
 
 	TableInfo TableInfo
-	IsAppend  bool // 是否在表格中追加
+	IsAppend  bool // Whether to append to the table
 
-	// LevelURI   string // 层级分段预览 uri
-	// PreviewURI string // 预览 uri
+	// LevelURI string//Hierarchical segmentation preview uri
+	// PreviewURI string//preview uri
 }
 
 type TableInfo struct {
@@ -56,18 +56,18 @@ type TableInfo struct {
 }
 type TableSheet struct {
 	SheetId       int64  // sheet id
-	HeaderLineIdx int64  // 表头行
-	StartLineIdx  int64  // 数据起始行
-	SheetName     string // sheet的名称
-	TotalRows     int64  // 总行数
+	HeaderLineIdx int64  // header row
+	StartLineIdx  int64  // Data start row
+	SheetName     string // Name of sheet
+	TotalRows     int64  // total number of rows
 }
 type TableColumn struct {
 	ID          int64
 	Name        string
 	Type        document.TableColumnType
 	Description string
-	Indexing    bool  // 是否索引
-	Sequence    int64 // 表格中的原始序号
+	Indexing    bool  // whether to index
+	Sequence    int64 // The original serial number in the table
 }
 
 type WhereDocumentOpt struct {

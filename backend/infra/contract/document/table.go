@@ -36,7 +36,7 @@ type Column struct {
 	Description string
 	Nullable    bool
 	IsPrimary   bool
-	Sequence    int // 排序编号
+	Sequence    int // sort number
 }
 
 type TableColumnType int

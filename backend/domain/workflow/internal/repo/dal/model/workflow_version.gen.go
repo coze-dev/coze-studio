@@ -10,19 +10,19 @@ import (
 
 const TableNameWorkflowVersion = "workflow_version"
 
-// WorkflowVersion workflow 画布版本信息表，用于记录不同版本的画布信息
+// WorkflowVersion Workflow Canvas Version Information Table, used to record canvas information for different versions
 type WorkflowVersion struct {
-	ID                 int64          `gorm:"column:id;primaryKey;autoIncrement:true;comment:ID" json:"id"`                // ID
-	WorkflowID         int64          `gorm:"column:workflow_id;not null;comment:workflow id" json:"workflow_id"`          // workflow id
-	Version            string         `gorm:"column:version;not null;comment:发布版本" json:"version"`                         // 发布版本
-	VersionDescription string         `gorm:"column:version_description;not null;comment:版本描述" json:"version_description"` // 版本描述
-	Canvas             string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`                      // 前端 schema
-	InputParams        string         `gorm:"column:input_params" json:"input_params"`
-	OutputParams       string         `gorm:"column:output_params" json:"output_params"`
-	CreatorID          int64          `gorm:"column:creator_id;not null;comment:发布用户 ID" json:"creator_id"`                                   // 发布用户 ID
-	CreatedAt          int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:创建时间毫秒时间戳" json:"created_at"`            // 创建时间毫秒时间戳
-	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at;comment:删除毫秒时间戳" json:"deleted_at"`                                            // 删除毫秒时间戳
-	CommitID           string         `gorm:"column:commit_id;not null;comment:the commit id corresponding to this version" json:"commit_id"` // the commit id corresponding to this version
+	ID                 int64          `gorm:"column:id;primaryKey;autoIncrement:true;comment:ID" json:"id"`                                          // ID
+	WorkflowID         int64          `gorm:"column:workflow_id;not null;comment:workflow id" json:"workflow_id"`                                    // workflow id
+	Version            string         `gorm:"column:version;not null;comment:Published version" json:"version"`                                      // Published version
+	VersionDescription string         `gorm:"column:version_description;not null;comment:Version Description" json:"version_description"`            // Version Description
+	Canvas             string         `gorm:"column:canvas;not null;comment:Front end schema" json:"canvas"`                                         // Front end schema
+	InputParams        string         `gorm:"column:input_params;comment:input params" json:"input_params"`                                          // input params
+	OutputParams       string         `gorm:"column:output_params;comment:output params" json:"output_params"`                                       // output params
+	CreatorID          int64          `gorm:"column:creator_id;not null;comment:creator id" json:"creator_id"`                                       // creator id
+	CreatedAt          int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                               // Delete Time
+	CommitID           string         `gorm:"column:commit_id;not null;comment:the commit id corresponding to this version" json:"commit_id"`        // the commit id corresponding to this version
 }
 
 // TableName WorkflowVersion's table name

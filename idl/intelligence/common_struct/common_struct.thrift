@@ -10,18 +10,18 @@ struct UserLabel {
 
 struct User {
     1: i64 user_id (agw.js_conv="str", api.js_conv="true"),
-    2: string nickname, // 用户昵称
-    3: string avatar_url, // 用户头像
-    4: string user_unique_name, // 用户名
-    5: UserLabel user_label, // 用户标签
+    2: string nickname, // user nickname
+    3: string avatar_url, // user avatar
+    4: string user_unique_name, // user name
+    5: UserLabel user_label, // user tag
 }
 
 
 /****************************** audit **********************************/
 enum AuditStatus {
-    Auditing = 0, // 审核中
-    Success  = 1, // 审核通过
-    Failed   = 2, // 审核失败
+    Auditing = 0, // Under review.
+    Success  = 1, // approved
+    Failed   = 2, // audit failed
 }
 
 struct AuditInfo {
@@ -30,10 +30,10 @@ struct AuditInfo {
     3: optional string commit_version,
 }
 
-// 审核结果
+// Audit results
 struct AuditData  {
-    1:          bool   check_not_pass    // true：机审校验不通过
-    2: optional string check_not_pass_msg // 机审校验不通过文案
+    1:          bool   check_not_pass    // True: The machine audit verification failed
+    2: optional string check_not_pass_msg // The machine audit verification failed the copy.
 }
 
 
@@ -75,9 +75,9 @@ enum OrderByType {
 }
 
 enum PermissionType {
-    NoDetail = 1 //不能查看详情
-    Detail = 2 //可以查看详情
-    Operate = 3 //可以查看和操作
+    NoDetail = 1 //Can't view details
+    Detail = 2 //You can check the details.
+    Operate = 3 //Can be viewed and operated
 }
 
 enum SpaceStatus {

@@ -3,11 +3,11 @@
 package product_common
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/marketplace_common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/marketplace_common"
 )
 
 type ProductEntityType int64
@@ -18,28 +18,28 @@ const (
 	// Workflow = 3 ,
 	ProductEntityType_SocialScene ProductEntityType = 4
 	ProductEntityType_Project     ProductEntityType = 6
-	// 历史工作流，后续不会再有（废弃）
+	// History workflow, no more in the future (abandoned)
 	ProductEntityType_WorkflowTemplate ProductEntityType = 13
-	// 历史图像流模板，后续不会再有（废弃）
+	// Historical image stream template, no more in the future (obsolete)
 	ProductEntityType_ImageflowTemplate ProductEntityType = 15
-	// 模板通用标识，仅用于绑定模板相关的配置，不绑定商品
+	// Template universal identification, only used to bind template-related configurations, not bind products
 	ProductEntityType_TemplateCommon ProductEntityType = 20
-	// Bot 模板
+	// Bot template
 	ProductEntityType_BotTemplate ProductEntityType = 21
-	// 工作流模板
+	// workflow template
 	ProductEntityType_WorkflowTemplateV2 ProductEntityType = 23
-	// 图像流模板（该类型已下线，合并入 workflow，但历史数据会保留，前端视作 workflow 展示）
+	// Image stream template (this type has been offline and merged into workflow, but historical data will be preserved, and the front end will be treated as workflow display)
 	ProductEntityType_ImageflowTemplateV2 ProductEntityType = 25
-	// 项目模板
+	// project template
 	ProductEntityType_ProjectTemplate ProductEntityType = 26
-	// coze token 类商品，理论上只会有一个
+	// Coze token products, theoretically there will only be one
 	ProductEntityType_CozeToken ProductEntityType = 50
-	// 订阅 credit 的流量包，理论上只会有一个
+	// Subscribe to the traffic package of credit, theoretically there will only be one
 	ProductEntityType_MsgCredit ProductEntityType = 55
-	// 消息订阅类商品，理论上只有一个
+	// There is only one subscription product in theory
 	ProductEntityType_SubsMsgCredit ProductEntityType = 60
 	ProductEntityType_Common        ProductEntityType = 99
-	// 专题（兼容之前的设计）
+	// Special Topics (Compatible with previous designs)
 	ProductEntityType_Topic ProductEntityType = 101
 )
 
@@ -139,9 +139,9 @@ type SortType int64
 const (
 	SortType_Heat   SortType = 1
 	SortType_Newest SortType = 2
-	// 收藏时间
+	// collection time
 	SortType_FavoriteTime SortType = 3
-	// 相关性，只用于搜索场景
+	// Correlation, only for search scenarios
 	SortType_Relative SortType = 4
 )
 
@@ -233,9 +233,9 @@ func (p *ProductPublishMode) Value() (driver.Value, error) {
 type ProductListSource int64
 
 const (
-	// 推荐列表页
+	// recommended list page
 	ProductListSource_Recommend ProductListSource = 1
-	// 个性化推荐
+	// personalized recommendation
 	ProductListSource_CustomizedRecommend ProductListSource = 2
 )
 
@@ -362,7 +362,7 @@ func (p *ProductPaidType) Value() (driver.Value, error) {
 type ProductStatus int64
 
 const (
-	// 从未上架
+	// NeverListed
 	ProductStatus_NeverListed ProductStatus = 0
 	ProductStatus_Listed      ProductStatus = 1
 	ProductStatus_Unlisted    ProductStatus = 2
@@ -415,15 +415,15 @@ func (p *ProductStatus) Value() (driver.Value, error) {
 type ProductDraftStatus int64
 
 const (
-	// 默认
+	// default
 	ProductDraftStatus_Default ProductDraftStatus = 0
-	// 审核中
+	// Under review.
 	ProductDraftStatus_Pending ProductDraftStatus = 1
-	// 审核通过
+	// approved
 	ProductDraftStatus_Approved ProductDraftStatus = 2
-	// 审核不通过
+	// The review failed.
 	ProductDraftStatus_Rejected ProductDraftStatus = 3
-	// 已废弃
+	// Abandoned
 	ProductDraftStatus_Abandoned ProductDraftStatus = 4
 )
 
@@ -576,27 +576,27 @@ func (p *PluginParamTypeFormat) Value() (driver.Value, error) {
 type WorkflowNodeType int64
 
 const (
-	// 开始
+	// start
 	WorkflowNodeType_Start WorkflowNodeType = 1
-	// 结束
+	// end
 	WorkflowNodeType_End WorkflowNodeType = 2
-	// 大模型
+	// Large model
 	WorkflowNodeType_LLM WorkflowNodeType = 3
-	// 插件
+	// plugin
 	WorkflowNodeType_Api WorkflowNodeType = 4
-	// 代码
+	// code
 	WorkflowNodeType_Code WorkflowNodeType = 5
-	// 知识库
+	// Knowledge Base
 	WorkflowNodeType_Dataset WorkflowNodeType = 6
-	// 选择器
+	// selector
 	WorkflowNodeType_If WorkflowNodeType = 8
-	// 工作流
+	// Workflow
 	WorkflowNodeType_SubWorkflow WorkflowNodeType = 9
-	// 变量
+	// variable
 	WorkflowNodeType_Variable WorkflowNodeType = 11
-	// 数据库
+	// database
 	WorkflowNodeType_Database WorkflowNodeType = 12
-	// 消息
+	// message
 	WorkflowNodeType_Message WorkflowNodeType = 13
 )
 
@@ -721,9 +721,9 @@ func (p *SocialSceneRoleType) Value() (driver.Value, error) {
 type UIPreviewType int64
 
 const (
-	// UI 预览类型，定义对齐 UI Builder，目前用于 Project
+	// UI preview type, defining alignment UI Builder, currently used in Project
 	UIPreviewType_Web UIPreviewType = 1
-	// 移动端
+	// mobile end
 	UIPreviewType_Client UIPreviewType = 2
 )
 
@@ -765,7 +765,7 @@ func (p *UIPreviewType) Value() (driver.Value, error) {
 type FavoriteListSource int64
 
 const (
-	// 用户自己创建的
+	// Created by users themselves
 	FavoriteListSource_CreatedByMe FavoriteListSource = 1
 )
 
@@ -1837,7 +1837,7 @@ func (p *ImageInfo) String() string {
 }
 
 type OpeningDialog struct {
-	// Bot开场白
+	// Bot OpeningDialog
 	Content string `thrift:"content,1" form:"content" json:"content"`
 }
 
@@ -2166,13 +2166,13 @@ type FavoriteEntity struct {
 	Name        string            `thrift:"Name,4" form:"name" json:"name"`
 	IconURL     string            `thrift:"IconURL,5" form:"icon_url" json:"icon_url"`
 	Description string            `thrift:"Description,6" form:"description" json:"description"`
-	// 废弃，使用UserInfo
+	// Abandoned, using UserInfo
 	Seller *SellerInfo `thrift:"Seller,7" form:"seller" json:"seller"`
-	// 用于跳转到Bot编辑页
+	// Use to jump to the bot edit page
 	SpaceID int64 `thrift:"SpaceID,8" form:"space_id" json:"space_id,string"`
-	// 用户是否有该实体所在Space的权限
+	// Does the user have permissions to the space where the entity is located?
 	HasSpacePermission bool `thrift:"HasSpacePermission,9" form:"has_space_permission" json:"has_space_permission"`
-	// 收藏时间
+	// collection time
 	FavoriteAt   int64                 `thrift:"FavoriteAt,10" form:"favorite_at" json:"favorite_at,string"`
 	ProductExtra *FavoriteProductExtra `thrift:"ProductExtra,11,optional" form:"product_extra" json:"product_extra,omitempty"`
 	UserInfo     *UserInfo             `thrift:"UserInfo,12" form:"user_info" json:"user_info"`

@@ -3,13 +3,13 @@
 package memory
 
 import (
+	"context"
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
 	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
 	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"context"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type MemoryService interface {

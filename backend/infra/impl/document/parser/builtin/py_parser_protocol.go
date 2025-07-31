@@ -163,7 +163,7 @@ func parseByPython(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 					}
 					docs = append(docs, doc)
 				} else {
-					// TODO: 这里有点问题，img label 可能被较短的 chunk size 截断
+					// TODO: There is a problem here, the img label may be truncated by the shorter chunk size
 					result.Content[i+1].Content = label + result.Content[i+1].Content
 				}
 			case contentTypeTable:

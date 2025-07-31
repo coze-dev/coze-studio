@@ -90,7 +90,7 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 				err = consumerHandler.HandleMessage(ctx, msg)
 				if err != nil {
 					logs.CtxErrorf(ctx, "[Subscribe] handle msg failed, topic : %s , group : %s, err: %v \n", msg.Topic, msg.Group, err)
-					return consumer.ConsumeRetryLater, err // TODO: 策略可以可以配置
+					return consumer.ConsumeRetryLater, err // TODO: Policies can be configured
 				}
 
 				fmt.Printf("subscribe callback: %v \n", msgArr[i])

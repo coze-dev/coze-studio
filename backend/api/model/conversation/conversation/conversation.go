@@ -3,10 +3,10 @@
 package conversation
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 )
 
 type ClearConversationHistoryRequest struct {
@@ -509,7 +509,7 @@ func (p *ClearConversationHistoryResponse) String() string {
 type ClearConversationCtxRequest struct {
 	ConversationID int64         `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
 	Scene          *common.Scene `thrift:"scene,2,optional" form:"scene" json:"scene,omitempty" query:"scene"`
-	// 存在需要插入聊天的情况
+	// There is a situation that needs to be inserted into the chat.
 	InsertHistoryMessageList []string `thrift:"insert_history_message_list,3,optional" form:"insert_history_message_list" json:"insert_history_message_list,omitempty" query:"insert_history_message_list"`
 }
 
@@ -1507,7 +1507,7 @@ func (p *ConversationData) String() string {
 }
 
 type CreateConversationRequest struct {
-	//自定义透传字段
+	//custom passthrough field
 	MetaData    map[string]string `thrift:"MetaData,1,optional" form:"meta_data" json:"meta_data,omitempty"`
 	BotId       *int64            `thrift:"BotId,3,optional" form:"bot_id" json:"bot_id,string,omitempty"`
 	ConnectorId *int64            `thrift:"ConnectorId,4,optional" form:"connector_id" json:"connector_id,string,omitempty"`
@@ -2418,11 +2418,11 @@ func (p *Section) String() string {
 }
 
 type ClearConversationApiResponse struct {
-	// 错误code
+	// Error code
 	Code int64 `thrift:"code,1" form:"code" json:"code"`
-	// 错误消息
+	// error message
 	Msg string `thrift:"msg,2" form:"msg" json:"msg"`
-	// section 信息
+	// Section information
 	Data     *Section       `thrift:"data,3" form:"data" json:"data"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`
 }
@@ -2709,9 +2709,9 @@ func (p *ClearConversationApiResponse) String() string {
 type ListConversationsApiRequest struct {
 	PageNum  int64 `thrift:"page_num,1" json:"page_num" query:"page_num"`
 	PageSize int64 `thrift:"page_size,2" json:"page_size" query:"page_size"`
-	// 可选值：ASC、DESC
+	// Optional values: ASC, DESC
 	SortOrder string `thrift:"sort_order,3" json:"sort_order" query:"sort_order"`
-	// 可选值：created_at创建时间
+	// Optional value: such as created_at
 	SortField   string     `thrift:"sort_field,4" json:"sort_field" query:"sort_field"`
 	BotID       int64      `thrift:"bot_id,5,required" json:"bot_id,string,required" query:"bot_id,required"`
 	ConnectorID *int64     `thrift:"connector_id,6,optional" json:"connector_id,string,omitempty" query:"connector_id"`
@@ -3143,9 +3143,9 @@ func (p *ListConversationsApiRequest) String() string {
 }
 
 type ListConversationsApiResponse struct {
-	// 错误code
+	// Error code
 	Code int64 `thrift:"code,1" form:"code" json:"code"`
-	// 错误消息
+	// error message
 	Msg      string                `thrift:"msg,2" form:"msg" json:"msg"`
 	Data     *ListConversationData `thrift:"data,3" form:"data" json:"data"`
 	BaseResp *base.BaseResp        `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`

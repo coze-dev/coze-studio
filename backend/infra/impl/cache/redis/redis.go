@@ -32,16 +32,16 @@ func New() *redis.Client {
 		Addr:     addr, // Redis地址
 		DB:       0,    // 默认数据库
 		Password: password,
-		// 连接池配置
-		PoolSize:        100,             // 最大连接数（建议设置为CPU核心数*10）
-		MinIdleConns:    10,              // 最小空闲连接
-		MaxIdleConns:    30,              // 最大空闲连接
-		ConnMaxIdleTime: 5 * time.Minute, // 空闲连接超时时间
+		// connection pool configuration
+		PoolSize:        100,             // Maximum number of connections (recommended to set to CPU cores * 10)
+		MinIdleConns:    10,              // minimum idle connection
+		MaxIdleConns:    30,              // maximum idle connection
+		ConnMaxIdleTime: 5 * time.Minute, // Idle connection timeout
 
-		// 超时配置
-		DialTimeout:  5 * time.Second, // 连接建立超时
-		ReadTimeout:  3 * time.Second, // 读操作超时
-		WriteTimeout: 3 * time.Second, // 写操作超时
+		// timeout configuration
+		DialTimeout:  5 * time.Second, // Connection establishment timed out
+		ReadTimeout:  3 * time.Second, // read operation timed out
+		WriteTimeout: 3 * time.Second, // write operation timed out
 	})
 
 	return rdb

@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	// 添加这个导入以解决 gen.Expr 未定义的问题
+	// Add this import to fix the undefined issue with gen. Expr
 
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
@@ -29,7 +29,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-// List 方法：分页查询发布记录 pageIndex 从1开始
+// List method: paging query publishing records pageIndex starts at 1
 func (dao *SingleAgentVersionDAO) List(ctx context.Context, agentID int64, pageIndex, pageSize int32) ([]*entity.SingleAgentPublish, error) {
 	sap := dao.dbQuery.SingleAgentPublish
 	offset := (pageIndex - 1) * pageSize

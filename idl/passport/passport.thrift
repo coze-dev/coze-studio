@@ -5,7 +5,7 @@ struct AppUserInfo {
 }
 
 struct User {
-    // 与原接口字段名对齐
+    // Align with the original interface field name
     1: required i64 user_id_str (agw.js_conv="str", api.js_conv="true")
     2: required string name
     3: required string user_unique_name
@@ -105,20 +105,20 @@ struct UserUpdateProfileResponse {
 
 service PassportService {
 
-    // 邮箱密码注册
+    // Email password registration
     PassportWebEmailRegisterV2PostResponse PassportWebEmailRegisterV2Post(1: PassportWebEmailRegisterV2PostRequest req) (api.post="/api/passport/web/email/register/v2/")
 
-    // 退出登录
+    // log out
     PassportWebLogoutGetResponse PassportWebLogoutGet(1: PassportWebLogoutGetRequest req) (api.get="/api/passport/web/logout/")
 
-    // 邮箱帐密登录
+    // Email account password login
     PassportWebEmailLoginPostResponse PassportWebEmailLoginPost(1: PassportWebEmailLoginPostRequest req) (api.post="/api/passport/web/email/login/")
 
 
-    // 通过邮箱重置密码
+    // Reset password via email
     PassportWebEmailPasswordResetGetResponse PassportWebEmailPasswordResetGet(1: PassportWebEmailPasswordResetGetRequest req) (api.get="/api/passport/web/email/password/reset/")
 
-    // 账号信息
+    // account information
     PassportAccountInfoV2Response PassportAccountInfoV2(1: PassportAccountInfoV2Request req) (api.post="/api/passport/account/info/v2/")
 
 

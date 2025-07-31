@@ -3,28 +3,28 @@
 package dataset
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type ColumnType int64
 
 const (
 	ColumnType_Unknown ColumnType = 0
-	// 文本
+	// Text
 	ColumnType_Text ColumnType = 1
-	// 数字
+	// number
 	ColumnType_Number ColumnType = 2
-	// 时间
+	// time
 	ColumnType_Date ColumnType = 3
 	// float
 	ColumnType_Float ColumnType = 4
 	// bool
 	ColumnType_Boolean ColumnType = 5
-	// 图片
+	// picture
 	ColumnType_Image ColumnType = 6
 )
 
@@ -86,11 +86,11 @@ func (p *ColumnType) Value() (driver.Value, error) {
 type TableDataType int64
 
 const (
-	// schema sheets 和 preview data
+	// Schema sheets and preview data
 	TableDataType_AllData TableDataType = 0
-	// 只需要 schema 结构 & Sheets
+	// Only need schema structure & Sheets
 	TableDataType_OnlySchema TableDataType = 1
-	// 只需要 preview data
+	// Just preview the data
 	TableDataType_OnlyPreview TableDataType = 2
 )
 
@@ -138,7 +138,7 @@ type ListDocumentRequest struct {
 	DocumentIds []string `thrift:"document_ids,2,optional" form:"document_ids" json:"document_ids,omitempty" query:"document_ids"`
 	Page        *int32   `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
 	Size        *int32   `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
-	// 根据名称搜索
+	// Search by name
 	Keyword *string    `thrift:"keyword,5,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -948,55 +948,55 @@ func (p *ListDocumentResponse) String() string {
 type DocumentInfo struct {
 	Name       string `thrift:"name,1" form:"name" json:"name" query:"name"`
 	DocumentID int64  `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
-	// 文件链接
+	// file link
 	TosURI *string `thrift:"tos_uri,3,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	// 创建时间
+	// create_time
 	CreateTime int32 `thrift:"create_time,5" form:"create_time" json:"create_time" query:"create_time"`
-	// 更新时间
+	// update time
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
-	// 创建人
+	// creator_id
 	CreatorID *int64 `thrift:"creator_id,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
-	// 包含分段数量
+	// number of segments included
 	SliceCount int32 `thrift:"slice_count,8" form:"slice_count" json:"slice_count" query:"slice_count"`
-	// 文件后缀 csv, pdf 等
+	// File suffix csv, pdf, etc
 	Type string `thrift:"type,9" form:"type" json:"type" query:"type"`
-	// 文件大小 字节数
+	// File size, number of bytes
 	Size int32 `thrift:"size,10" form:"size" json:"size" query:"size"`
-	// 字符数
+	// character count
 	CharCount int32 `thrift:"char_count,11" form:"char_count" json:"char_count" query:"char_count"`
-	// 状态
+	// status
 	Status DocumentStatus `thrift:"status,12" form:"status" json:"status" query:"status"`
-	// 命中次数
+	// hit count
 	HitCount int32 `thrift:"hit_count,13" form:"hit_count" json:"hit_count" query:"hit_count"`
-	// 来源
+	// source
 	SourceType DocumentSource `thrift:"source_type,14" form:"source_type" json:"source_type" query:"source_type"`
-	// 文件类型
+	// file type
 	FormatType FormatType `thrift:"format_type,18" form:"format_type" json:"format_type" query:"format_type"`
-	// 表格类型元数据
+	// Table type metadata
 	TableMeta []*TableColumn `thrift:"table_meta,19,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
-	// url 地址
+	// URL address
 	WebURL *string `thrift:"web_url,20,optional" form:"web_url" json:"web_url,omitempty" query:"web_url"`
-	// 状态的详细信息；如果切片失败，返回失败信息
+	// Details of the status; if the slice fails, return the failure information
 	StatusDescript *string `thrift:"status_descript,21,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
-	// 空间id
+	// Space ID
 	SpaceID *int64 `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
-	// 以下字段仅针对重构后的表格类型有用，用于前端判断
+	// The following fields are only useful for the reconstructed table type and are used for front-end judgment
 	EditableAppendContent *bool `thrift:"editable_append_content,26,optional" form:"editable_append_content" json:"editable_append_content,omitempty" query:"editable_append_content"`
-	// 切片规则
+	// slicing rule
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,27" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
-	// imagex 存储的文件链接
+	// File links stored by ImageX
 	ImagexURI *string `thrift:"imagex_uri,28,optional" form:"imagex_uri" json:"imagex_uri,omitempty" query:"imagex_uri"`
-	// 层级分段文档树Json (未使用)
+	// Hierarchical Segmentation Document Tree Json (unused)
 	DocOutline *string `thrift:"doc_outline,29,optional" form:"doc_outline" json:"doc_outline,omitempty" query:"doc_outline"`
-	// 解析策略
+	// parsing strategy
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,30,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	// 过滤策略
+	// filtering strategy
 	FilterStrategy *FilterStrategy `thrift:"filter_strategy,32,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
-	// 层级分段文档树 tos_url
+	// Hierarchical segmented document tree tos_url
 	DocTreeTosURL *string `thrift:"doc_tree_tos_url,33,optional" form:"doc_tree_tos_url" json:"doc_tree_tos_url,omitempty" query:"doc_tree_tos_url"`
-	// 预览用的原文档 tos_url
+	// Preview the original document tos_url
 	PreviewTosURL *string `thrift:"preview_tos_url,34,optional" form:"preview_tos_url" json:"preview_tos_url,omitempty" query:"preview_tos_url"`
-	// 预览用的原文档 tos_url
+	// Preview the original document tos_url
 	ReviewID *int64 `thrift:"review_id,35,optional" form:"review_id" json:"review_id,omitempty" query:"review_id"`
 }
 
@@ -2454,18 +2454,18 @@ func (p *DocumentInfo) String() string {
 }
 
 type TableColumn struct {
-	// 列 id
+	// Column ID
 	ID int64 `thrift:"id,1" form:"id" json:"id,string"`
-	// 列名
+	// column_name
 	ColumnName string `thrift:"column_name,2" form:"column_name" json:"column_name" query:"column_name"`
-	// 是否为语义匹配列
+	// Is it a semantically matched column?
 	IsSemantic bool `thrift:"is_semantic,3" form:"is_semantic" json:"is_semantic" query:"is_semantic"`
-	// 列原本在 excel 的序号
+	// List the serial number originally in excel
 	Sequence int64 `thrift:"sequence,4" form:"sequence" json:"sequence,string"`
-	// 列类型
+	// column type
 	ColumnType         *ColumnType `thrift:"column_type,5,optional" form:"column_type" json:"column_type,omitempty" query:"column_type"`
 	ContainsEmptyValue *bool       `thrift:"contains_empty_value,6,optional" form:"contains_empty_value" json:"contains_empty_value,omitempty" query:"contains_empty_value"`
-	// 描述
+	// describe
 	Desc *string `thrift:"desc,7,optional" form:"desc" json:"desc,omitempty" query:"desc"`
 }
 
@@ -2903,7 +2903,7 @@ func (p *TableColumn) String() string {
 }
 
 type DeleteDocumentRequest struct {
-	// 要删除的文档ID列表
+	// List of document IDs to delete
 	DocumentIds []string   `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -3374,9 +3374,9 @@ func (p *DeleteDocumentResponse) String() string {
 
 type UpdateDocumentRequest struct {
 	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
-	// 需要更新就传, 更新名称
+	// If you need to update, please upload it and update the name.
 	DocumentName *string `thrift:"document_name,3,optional" form:"document_name" json:"document_name,omitempty" query:"document_name"`
-	// 更新表结构
+	// Update table structure
 	TableMeta []*TableColumn `thrift:"table_meta,5,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
 	Base      *base.Base     `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -3951,9 +3951,9 @@ func (p *UpdateDocumentResponse) String() string {
 }
 
 type UpdatePhotoCaptionRequest struct {
-	// 文档ID
+	// Document ID
 	DocumentID int64 `thrift:"document_id,1,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
-	// 要更新的图片描述信息
+	// Picture description information to be updated
 	Caption string     `thrift:"caption,2,required" form:"caption,required" json:"caption,required" query:"caption,required"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -4462,11 +4462,11 @@ func (p *UpdatePhotoCaptionResponse) String() string {
 }
 
 type ListPhotoRequest struct {
-	// 知识库ID
+	// Knowledge ID
 	DatasetID int64 `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
-	// 页数，从 1 开始
+	// Number of pages, starting from 1
 	Page *int32 `thrift:"page,2,optional" form:"page" json:"page,omitempty" query:"page"`
-	// 每页大小
+	// page size
 	Size   *int32       `thrift:"size,3,optional" form:"size" json:"size,omitempty" query:"size"`
 	Filter *PhotoFilter `thrift:"filter,4,optional" form:"filter" json:"filter,omitempty" query:"filter"`
 	Base   *base.Base   `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -4830,11 +4830,11 @@ func (p *ListPhotoRequest) String() string {
 }
 
 type PhotoFilter struct {
-	// true 筛选 “已标注” 的图片，false 筛选 “未标注” 的图片
+	// True to filter "marked" images, false to filter "unmarked" images
 	HasCaption *bool `thrift:"has_caption,1,optional" form:"has_caption" json:"has_caption,omitempty" query:"has_caption"`
-	// 搜索关键字，对图片名称和图片描述进行搜索
+	// Search keywords, search for image names and picture descriptions
 	Keyword *string `thrift:"keyword,2,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
-	// 状态
+	// status
 	Status *DocumentStatus `thrift:"status,3,optional" form:"status" json:"status,omitempty" query:"status"`
 }
 
@@ -5463,27 +5463,27 @@ func (p *ListPhotoResponse) String() string {
 }
 
 type PhotoInfo struct {
-	// 图片型知识库一个图片对应一个文档
+	// Picture Knowledge Base One picture corresponds to one document
 	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	// 文档ID
+	// Document ID
 	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
-	// 图片链接
+	// image link
 	URL string `thrift:"url,3" form:"url" json:"url" query:"url"`
-	// 图片描述信息
+	// picture description information
 	Caption string `thrift:"caption,4" form:"caption" json:"caption" query:"caption"`
-	// 创建时间
+	// create_time
 	CreateTime int32 `thrift:"create_time,5" form:"create_time" json:"create_time" query:"create_time"`
-	// 更新时间
+	// update time
 	UpdateTime int32 `thrift:"update_time,6" form:"update_time" json:"update_time" query:"update_time"`
-	// 创建人
+	// creator_id
 	CreatorID int64 `thrift:"creator_id,7" form:"creator_id" json:"creator_id,string"`
-	// 图片后缀 jpg, png 等
+	// Image suffix jpg, png, etc
 	Type string `thrift:"type,8" form:"type" json:"type" query:"type"`
-	// 图片大小
+	// image size
 	Size int32 `thrift:"size,9" form:"size" json:"size" query:"size"`
-	// 状态
+	// status
 	Status DocumentStatus `thrift:"status,10" form:"status" json:"status" query:"status"`
-	// 来源
+	// source
 	SourceType DocumentSource `thrift:"source_type,11" form:"source_type" json:"source_type" query:"source_type"`
 }
 
@@ -6063,9 +6063,9 @@ func (p *PhotoInfo) String() string {
 }
 
 type PhotoDetailRequest struct {
-	// 文档ID列表
+	// Document ID List
 	DocumentIds []string `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
-	// 知识库ID
+	// Knowledge ID
 	DatasetID int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -6337,7 +6337,7 @@ func (p *PhotoDetailRequest) String() string {
 }
 
 type PhotoDetailResponse struct {
-	// 文档ID到图片信息的映射
+	// Mapping document ID to image information
 	PhotoInfos map[string]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos" query:"photo_infos"`
 	Code       int64                 `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg        string                `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -6669,15 +6669,15 @@ func (p *PhotoDetailResponse) String() string {
 }
 
 type ResegmentRequest struct {
-	// 知识库ID
+	// Knowledge ID
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
-	// 要重新分段的文档
+	// Document to be re-segmented
 	DocumentIds []string `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
-	// 分段策略
+	// segmentation strategy
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,3" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
-	// 解析策略
+	// parsing strategy
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,5,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	// 过滤策略
+	// filtering strategy
 	FilterStrategy *FilterStrategy `thrift:"filter_strategy,7,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
 	Base           *base.Base      `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -7088,7 +7088,7 @@ func (p *ResegmentRequest) String() string {
 }
 
 type ResegmentResponse struct {
-	// 老版需要. 仅返回id 和名称即可
+	// The old version requires. Just return the id and name.
 	DocumentInfos []*DocumentInfo `thrift:"document_infos,1" form:"document_infos" json:"document_infos" query:"document_infos"`
 	Code          int64           `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg           string          `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -7406,17 +7406,17 @@ func (p *ResegmentResponse) String() string {
 }
 
 type CreateDocumentRequest struct {
-	// 要插入文档的知识库id
+	// The knowledge base id of the document to insert.
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
-	// 知识库的类型，目前支持文本、表格、图片三种知识库
+	// Types of knowledge bases, currently supporting text, tables, and images
 	FormatType FormatType `thrift:"format_type,4" form:"format_type" json:"format_type" query:"format_type"`
-	// 表格类型一次只能创建一个
+	// Only one table type can be created at a time
 	DocumentBases []*DocumentBase `thrift:"document_bases,6" form:"document_bases" json:"document_bases" query:"document_bases"`
-	// 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片
+	// Only when there is no document in the knowledge base, it needs to be passed, and if there is one, it will be obtained from the knowledge base. Slicing rules, if it is empty, it will be automatically sliced by paragraph
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,17,optional" form:"chunk_strategy" json:"chunk_strategy,omitempty" query:"chunk_strategy"`
-	// 为 true 时向已有的 document 追加内容。text 类型不能使用
+	// Appends content to an existing document when true. The text type cannot be used
 	IsAppend *bool `thrift:"is_append,31,optional" form:"is_append" json:"is_append,omitempty" query:"is_append"`
-	// 解析策略
+	// parsing strategy
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,32,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
 	Base            *base.Base       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -8197,18 +8197,18 @@ func (p *CreateDocumentResponse) String() string {
 
 }
 
-// 用于创建文档的基本信息
+// Basic information for creating a document
 type DocumentBase struct {
-	// 文档名称
+	// Document name
 	Name       string      `thrift:"name,1" form:"name" json:"name" query:"name"`
 	SourceInfo *SourceInfo `thrift:"source_info,2" form:"source_info" json:"source_info" query:"source_info"`
-	// 以下参数表格类型需要传递
+	// The following parameter table types need to be passed
 	TableMeta []*TableColumn `thrift:"table_meta,4,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
-	// 表格解析信息
+	// Table parsing information
 	TableSheet *TableSheet `thrift:"table_sheet,5,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
-	// 过滤策略
+	// filtering strategy
 	FilterStrategy *FilterStrategy `thrift:"filter_strategy,6,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
-	// 图片类型知识库，人工标注时的图片描述
+	// Image type knowledge base, picture description when manually annotated
 	Caption *string `thrift:"caption,7,optional" form:"caption" json:"caption,omitempty" query:"caption"`
 }
 
@@ -8631,18 +8631,18 @@ func (p *DocumentBase) String() string {
 
 }
 
-// 支持多种数据源
+// Supports multiple data sources
 type SourceInfo struct {
-	// 本地上传返回的 uri
+	// Upload the returned URI locally.
 	TosURI         *string         `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty"`
 	DocumentSource *DocumentSource `thrift:"document_source,4,optional" form:"document_source" json:"document_source,omitempty"`
-	// document_source 自定义原始内容: 表格型知识库需要符合的格式：json list<map<string, string>>
+	// document_source custom raw content: Format required for a tabular knowledge base: json list < map < string, string > >
 	CustomContent *string `thrift:"custom_content,5,optional" form:"custom_content" json:"custom_content,omitempty"`
-	// document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
+	// document_source local: If you don't send the tos address, you need to send the file base64, type
 	FileBase64 *string `thrift:"file_base64,7,optional" form:"file_base64" json:"file_base64,omitempty" query:"file_base64"`
-	// 文件类型, 比如 pdf
+	// File type, such as PDF
 	FileType *string `thrift:"file_type,8,optional" form:"file_type" json:"file_type,omitempty" query:"file_type"`
-	// imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
+	// imagex_uri, and tos_uri choose one, imagex_uri priority, need to get data and sign url through imagex method
 	ImagexURI *string `thrift:"imagex_uri,10,optional" form:"imagex_uri" json:"imagex_uri,omitempty" query:"imagex_uri"`
 }
 
@@ -9069,11 +9069,11 @@ func (p *SourceInfo) String() string {
 }
 
 type TableSheet struct {
-	// 用户选择的 sheet id
+	// User selected sheet id
 	SheetID int64 `thrift:"sheet_id,1" form:"sheet_id" json:"sheet_id,string"`
-	// 用户选择的表头行数，从 0 开始编号
+	// The number of header rows selected by the user, numbered from 0
 	HeaderLineIdx int64 `thrift:"header_line_idx,2" form:"header_line_idx" json:"header_line_idx,string"`
-	// 用户选择的起始行号，从 0 开始编号
+	// User-selected starting line number, numbered from 0
 	StartLineIdx int64 `thrift:"start_line_idx,3" form:"start_line_idx" json:"start_line_idx,string"`
 }
 
@@ -9831,13 +9831,13 @@ func (p *GetDocumentProgressResponse) String() string {
 
 type DocumentProgress struct {
 	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
-	// 知识库进度百分比
+	// Knowledge Base Progress Percentage
 	Progress int32          `thrift:"progress,2" form:"progress" json:"progress" query:"progress"`
 	Status   DocumentStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
-	// 状态的详细描述；如果切片失败，返回失败信息
+	// A detailed description of the status; if the slice fails, a failure message is returned
 	StatusDescript *string `thrift:"status_descript,4,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
 	DocumentName   string  `thrift:"document_name,5" form:"document_name" json:"document_name" query:"document_name"`
-	// 剩余时间单位秒
+	// Remaining time in seconds
 	RemainingTime *int64  `thrift:"remaining_time,6,optional" form:"remaining_time" json:"remaining_time,omitempty" query:"remaining_time"`
 	Size          *int64  `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
 	Type          *string `thrift:"type,8,optional" form:"type" json:"type,omitempty" query:"type"`
@@ -10386,19 +10386,19 @@ func (p *DocumentProgress) String() string {
 
 }
 
-// 获取 database 上传的表格文件元信息
+// Get the table file meta information uploaded by the database
 type GetTableSchemaRequest struct {
-	// 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
+	// Table parsing information, the default initial value is 0, 0, 1, which represents the first table, the first row of the table header, and the data row starts from the second row
 	TableSheet *TableSheet `thrift:"table_sheet,1,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
-	// 不传默认返回所有数据
+	// All data is returned by default without passing it on.
 	TableDataType *TableDataType `thrift:"table_data_type,2,optional" form:"table_data_type" json:"table_data_type,omitempty" query:"table_data_type"`
-	// 兼容重构前的版本：如果需要拉取的是当前 document 的 schema 时传递该值
+	// Compatible with pre-refactoring versions: pass this value if you need to pull the schema of the current document
 	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,string,omitempty"`
-	// source file 的信息，新增 segment / 之前逻辑迁移到这里
+	// Source file information, add segment/before logic migrate here
 	SourceFile *SourceInfo `thrift:"source_file,4,optional" form:"source_file" json:"source_file,omitempty" query:"source_file"`
-	// 表格预览前端需要传递原始的数据表结构
+	// The table preview front end needs to pass the original data table structure
 	OriginTableMeta []*TableColumn `thrift:"origin_table_meta,5,optional" form:"origin_table_meta" json:"origin_table_meta,omitempty" query:"origin_table_meta"`
-	// 表格预览前端需要传递用户编辑之后的数据表结构
+	// The table preview front end needs to pass the data table structure edited by the user
 	PreviewTableMeta []*TableColumn `thrift:"preview_table_meta,6,optional" form:"preview_table_meta" json:"preview_table_meta,omitempty" query:"preview_table_meta"`
 	Base             *base.Base     `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -10912,11 +10912,11 @@ func (p *GetTableSchemaRequest) String() string {
 }
 
 type DocTableSheet struct {
-	// sheet 的编号
+	// Number of sheet
 	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
-	// sheet 名
+	// Sheet name
 	SheetName string `thrift:"sheet_name,2" form:"sheet_name" json:"sheet_name" query:"sheet_name"`
-	// 总行数
+	// total number of rows
 	TotalRow int64 `thrift:"total_row,3" form:"total_row" json:"total_row" query:"total_row"`
 }
 
@@ -11147,9 +11147,9 @@ type GetTableSchemaResponse struct {
 	Code      int32            `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg       string           `thrift:"msg,2,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	SheetList []*DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
-	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
+	// The schema of the selected sheet, not selected to return the first sheet by default
 	TableMeta []*TableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
-	// knowledge table 场景中会返回
+	// The knowledge table will return
 	PreviewData []map[string]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data"`
 	BaseResp    *base.BaseResp      `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }
@@ -11621,15 +11621,15 @@ func (p *GetTableSchemaResponse) String() string {
 
 }
 
-// 判断用户配置的 schema 是否和对应 document id 的一致
+// Determine whether the schema configured by the user is consistent with the corresponding document id
 type ValidateTableSchemaRequest struct {
-	// 空间ID
+	// Space ID
 	SpaceID int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string"`
-	// 要校验的文档ID
+	// Document ID to verify
 	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id,string"`
-	// source file 的信息
+	// Information from the source file
 	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_file" json:"source_file"`
-	// 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
+	// Table parsing information, the default initial value is 0, 0, 1, which represents the first table, the first row of the table header, and the data row starts from the second row
 	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet"`
 	Base       *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -11967,7 +11967,7 @@ func (p *ValidateTableSchemaRequest) String() string {
 
 type ValidateTableSchemaResponse struct {
 	ColumnValidResult map[string]string `thrift:"ColumnValidResult,1,optional" form:"column_valid_result" json:"column_valid_result,omitempty"`
-	// 如果失败会返回错误码
+	// If it fails, an error code will be returned.
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
@@ -12504,7 +12504,7 @@ func (p *ExtractPhotoCaptionRequest) String() string {
 }
 
 type ExtractPhotoCaptionResponse struct {
-	// 图片描述
+	// picture description
 	Caption  string         `thrift:"caption,1" form:"caption" json:"caption" query:"caption"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`

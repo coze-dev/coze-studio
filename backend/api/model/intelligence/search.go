@@ -3,12 +3,12 @@
 package intelligence
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 )
 
 type OrderBy int64
@@ -190,7 +190,7 @@ func (p *BotMode) Value() (driver.Value, error) {
 }
 
 type GetDraftIntelligenceListOption struct {
-	// 是否需要个人版本Bot数据
+	//need personal version Bot data
 	NeedReplica bool `thrift:"need_replica,1" form:"need_replica" json:"need_replica" query:"need_replica"`
 }
 
@@ -1435,9 +1435,9 @@ func (p *IntelligencePublishInfo) String() string {
 
 type IntelligencePermissionInfo struct {
 	InCollaboration bool `thrift:"in_collaboration,1" form:"in_collaboration" json:"in_collaboration" query:"in_collaboration"`
-	// 当前用户是否可删除
+	// can delete
 	CanDelete bool `thrift:"can_delete,2" form:"can_delete" json:"can_delete" query:"can_delete"`
-	// 当前用户是否可查看，当前判断逻辑为用户是否在bot所在空间
+	// Whether the current user can view it, the current judgment logic is whether the user is in the space where the bot is located
 	CanView bool `thrift:"can_view,3" form:"can_view" json:"can_view" query:"can_view"`
 }
 
@@ -1665,9 +1665,9 @@ func (p *IntelligencePermissionInfo) String() string {
 }
 
 type FavoriteInfo struct {
-	// 是否收藏；收藏列表使用
+	// Whether to collect; use the collection list
 	IsFav bool `thrift:"is_fav,1" form:"is_fav" json:"is_fav" query:"is_fav"`
-	// 收藏时间；收藏列表使用
+	// Collection time; collection list use
 	FavTime string `thrift:"fav_time,2" form:"fav_time" json:"fav_time" query:"fav_time"`
 }
 
@@ -1851,9 +1851,9 @@ func (p *FavoriteInfo) String() string {
 }
 
 type OtherInfo struct {
-	// 最近打开时间；最近打开筛选时使用
+	// Last opened time; used when recently opened filter
 	RecentlyOpenTime string `thrift:"recently_open_time,1" form:"recently_open_time" json:"recently_open_time" query:"recently_open_time"`
-	// 仅bot类型返回
+	// Only bot type returns
 	BotMode BotMode `thrift:"bot_mode,2" form:"bot_mode" json:"bot_mode" query:"bot_mode"`
 }
 
@@ -2037,15 +2037,15 @@ func (p *OtherInfo) String() string {
 }
 
 type Intelligence struct {
-	// 基本信息
+	// Basic information
 	BasicInfo *common.IntelligenceBasicInfo `thrift:"basic_info,1" form:"basic_info" json:"basic_info" query:"basic_info"`
-	// 智能体类型
+	// Agent Type
 	Type common.IntelligenceType `thrift:"type,2" form:"type" json:"type" query:"type"`
-	// 智能体发布信息，可选
+	// Agent publishes information, optional
 	PublishInfo *IntelligencePublishInfo `thrift:"publish_info,3" form:"publish_info" json:"publish_info" query:"publish_info"`
-	// 智能体所有者信息，可选
+	// Agent owner information, optional
 	OwnerInfo *common.User `thrift:"owner_info,4" form:"owner_info" json:"owner_info" query:"owner_info"`
-	// 当前用户对智能体的权限信息，可选
+	// The current user's permission information to the agent, optional
 	PermissionInfo *IntelligencePermissionInfo `thrift:"permission_info,5" form:"permission_info" json:"permission_info" query:"permission_info"`
 }
 
@@ -2384,7 +2384,7 @@ func (p *Intelligence) String() string {
 
 }
 
-// For前端
+// For the front end
 type IntelligenceData struct {
 	BasicInfo       *common.IntelligenceBasicInfo `thrift:"basic_info,1" form:"basic_info" json:"basic_info" query:"basic_info"`
 	Type            common.IntelligenceType       `thrift:"type,2" form:"type" json:"type" query:"type"`
@@ -3466,7 +3466,7 @@ func (p *GetDraftIntelligenceListResponse) String() string {
 type GetDraftIntelligenceInfoRequest struct {
 	IntelligenceID   int64                   `thrift:"intelligence_id,1" form:"intelligence_id" json:"intelligence_id,string" query:"intelligence_id"`
 	IntelligenceType common.IntelligenceType `thrift:"intelligence_type,2" form:"intelligence_type" json:"intelligence_type" query:"intelligence_type"`
-	// 预览版本时传入
+	// Pass in when previewing the version
 	Version *int64     `thrift:"version,3,optional" form:"version" json:"version,string,omitempty" query:"version"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -4344,9 +4344,9 @@ func (p *GetDraftIntelligenceInfoResponse) String() string {
 type GetUserRecentlyEditIntelligenceRequest struct {
 	Size  int32                     `thrift:"size,1" form:"size" json:"size" query:"size"`
 	Types []common.IntelligenceType `thrift:"types,2,optional" form:"types" json:"types,omitempty" query:"types"`
-	// 企业id
+	// Enterprise ID
 	EnterpriseID *string `thrift:"enterprise_id,3,optional" form:"enterprise_id" json:"enterprise_id,omitempty" query:"enterprise_id"`
-	// 组织id
+	// organization id
 	OrganizationID *string    `thrift:"organization_id,4,optional" form:"organization_id" json:"organization_id,omitempty" query:"organization_id"`
 	Base           *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }

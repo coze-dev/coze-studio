@@ -3,31 +3,31 @@
 package resource
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 )
 
 type LibraryResourceListRequest struct {
-	// 是否由当前用户创建，0-不筛选，1-当前用户
+	// Whether created by the current user, 0 - unfiltered, 1 - current user
 	UserFilter *int32 `thrift:"user_filter,1,optional" form:"user_filter" json:"user_filter,omitempty" query:"user_filter"`
-	// [4,1]   0代表不筛选
+	// [4,1] 0 means do not filter
 	ResTypeFilter []common.ResType `thrift:"res_type_filter,2,optional" form:"res_type_filter" json:"res_type_filter,omitempty" query:"res_type_filter"`
-	// 名称
+	// name
 	Name *string `thrift:"name,3,optional" form:"name" json:"name,omitempty" query:"name"`
-	// 发布状态，0-不筛选，1-未发布，2-已发布
+	// Published status, 0 - unfiltered, 1 - unpublished, 2 - published
 	PublishStatusFilter *common.PublishStatus `thrift:"publish_status_filter,4,optional" form:"publish_status_filter" json:"publish_status_filter,omitempty" query:"publish_status_filter"`
-	// 用户所在空间ID
+	// User's space ID
 	SpaceID int64 `thrift:"space_id,5,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
-	// 一次读取的数据条数，默认10，最大100.
+	// The number of data bars read at one time, the default is 10, and the maximum is 100.
 	Size *int32 `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
-	// 游标，用于分页，默认0，第一次请求可以不传，后续请求需要带上上次返回的cursor
+	// Cursor, used for paging, default 0, the first request can not be passed, subsequent requests need to bring the last returned cursor
 	Cursor *string `thrift:"cursor,9,optional" form:"cursor" json:"cursor,omitempty" query:"cursor"`
-	// 用来指定自定义搜索的字段 不填默认只name匹配，eg []string{name,自定} 匹配name和自定义字段full_text
+	// The field used to specify the custom search, do not fill in the default only name matches, eg [] string {name, custom} matches the name and custom fields full_text
 	SearchKeys []string `thrift:"search_keys,10,optional" form:"search_keys" json:"search_keys,omitempty" query:"search_keys"`
-	// 当res_type_filter为[2 workflow]时，是否需要返回图片流
+	// Do you need to return image review when the res_type_filter is [2 workflow]
 	IsGetImageflow *bool      `thrift:"is_get_imageflow,11,optional" form:"is_get_imageflow" json:"is_get_imageflow,omitempty" query:"is_get_imageflow"`
 	Base           *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -710,9 +710,9 @@ type LibraryResourceListResponse struct {
 	Code         int64                  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg          string                 `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	ResourceList []*common.ResourceInfo `thrift:"resource_list,3" form:"resource_list" json:"resource_list" query:"resource_list"`
-	// 游标，用于下次请求的cursor
+	// Cursor, the cursor for the next request
 	Cursor *string `thrift:"cursor,5,optional" form:"cursor" json:"cursor,omitempty" query:"cursor"`
-	// 是否还有数据待拉取
+	// Is there still data to be pulled?
 	HasMore  bool           `thrift:"has_more,6" form:"has_more" json:"has_more" query:"has_more"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -1118,11 +1118,11 @@ func (p *LibraryResourceListResponse) String() string {
 }
 
 type ProjectResourceListRequest struct {
-	// 项目ID
+	// Project ID
 	ProjectID int64 `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,string,required" query:"project_id,required"`
-	// 用户所在space id
+	// User space id
 	SpaceID int64 `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
-	// 指定获取某个版本的project的资源
+	// Specify the resources to obtain a version of the project
 	ProjectVersion *string    `thrift:"project_version,3,optional" form:"project_version" json:"project_version,omitempty" query:"project_version"`
 	Base           *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -1728,15 +1728,15 @@ func (p *ProjectResourceListResponse) String() string {
 }
 
 type ResourceCopyDispatchRequest struct {
-	// 场景，只支持单资源的操作
+	// Scenario, only supports the operation of a single resource
 	Scene common.ResourceCopyScene `thrift:"scene,1" form:"scene" json:"scene" query:"scene"`
-	// 被用户选择复制/移动的资源ID
+	// The resource ID selected by the user to copy/move
 	ResID   int64          `thrift:"res_id,2" form:"res_id" json:"res_id,string"`
 	ResType common.ResType `thrift:"res_type,3" form:"res_type" json:"res_type" query:"res_type"`
-	// 所在项目ID
+	// Project ID
 	ProjectID *int64  `thrift:"project_id,4,optional" form:"project_id" json:"project_id,string,omitempty"`
 	ResName   *string `thrift:"res_name,5,optional" form:"res_name" json:"res_name,omitempty" query:"res_name"`
-	// 跨空间复制的目标space id
+	// Target space id for cross-space copy
 	TargetSpaceID *int64     `thrift:"target_space_id,6,optional" form:"target_space_id" json:"target_space_id,string,omitempty"`
 	Base          *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -2182,9 +2182,9 @@ func (p *ResourceCopyDispatchRequest) String() string {
 type ResourceCopyDispatchResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// 复制任务id, 用于查询任务状态或取消、重试任务
+	// Copy task ID, used to query task status or cancel or retry tasks
 	TaskID *string `thrift:"task_id,3,optional" form:"task_id" json:"task_id,omitempty" query:"task_id"`
-	// 不可以进行操作的原因，返回多语言文本
+	// The reason why the operation cannot be performed is to return multilingual text
 	FailedReasons []*common.ResourceCopyFailedReason `thrift:"failed_reasons,4,optional" form:"failed_reasons" json:"failed_reasons,omitempty" query:"failed_reasons"`
 	BaseResp      *base.BaseResp                     `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -2557,7 +2557,7 @@ func (p *ResourceCopyDispatchResponse) String() string {
 }
 
 type ResourceCopyDetailRequest struct {
-	// 复制任务id, 用于查询任务状态或取消、重试任务
+	// Copy task ID, used to query task status or cancel or retry tasks
 	TaskID string     `thrift:"task_id,1" form:"task_id" json:"task_id" query:"task_id"`
 	Base   *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -3044,7 +3044,7 @@ func (p *ResourceCopyDetailResponse) String() string {
 }
 
 type ResourceCopyRetryRequest struct {
-	// 复制任务id, 用于查询任务状态或取消、重试任务
+	// Copy task ID, used to query task status or cancel or retry tasks
 	TaskID string     `thrift:"task_id,1" form:"task_id" json:"task_id" query:"task_id"`
 	Base   *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -3237,7 +3237,7 @@ func (p *ResourceCopyRetryRequest) String() string {
 type ResourceCopyRetryResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// 不可以进行操作的原因，返回多语言文本
+	// The reason why the operation cannot be performed is to return multilingual text
 	FailedReasons []*common.ResourceCopyFailedReason `thrift:"failed_reasons,4,optional" form:"failed_reasons" json:"failed_reasons,omitempty" query:"failed_reasons"`
 	BaseResp      *base.BaseResp                     `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -3555,7 +3555,7 @@ func (p *ResourceCopyRetryResponse) String() string {
 }
 
 type ResourceCopyCancelRequest struct {
-	// 复制任务id, 用于查询任务状态或取消、重试任务
+	// Copy task ID, used to query task status or cancel or retry tasks
 	TaskID string     `thrift:"task_id,1" form:"task_id" json:"task_id" query:"task_id"`
 	Base   *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -3992,7 +3992,7 @@ type ResourceService interface {
 	LibraryResourceList(ctx context.Context, request *LibraryResourceListRequest) (r *LibraryResourceListResponse, err error)
 
 	ProjectResourceList(ctx context.Context, request *ProjectResourceListRequest) (r *ProjectResourceListResponse, err error)
-	// 复制Library资源到项目、复制项目资源到Library、移动项目资源到Library、项目内单复制资源
+	// Copy Library resources to projects, copy project resources to libraries, move project resources to libraries, and copy resources within projects
 	ResourceCopyDispatch(ctx context.Context, req *ResourceCopyDispatchRequest) (r *ResourceCopyDispatchResponse, err error)
 
 	ResourceCopyDetail(ctx context.Context, req *ResourceCopyDetailRequest) (r *ResourceCopyDetailResponse, err error)

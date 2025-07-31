@@ -3,9 +3,9 @@
 package dataset
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type ReviewInput struct {
@@ -298,7 +298,7 @@ type Review struct {
 	DocumentName string `thrift:"document_name,2" form:"document_name" json:"document_name" query:"document_name"`
 	DocumentType string `thrift:"document_type,3" form:"document_type" json:"document_type" query:"document_type"`
 	TosURL       string `thrift:"tos_url,4" form:"tos_url" json:"tos_url" query:"tos_url"`
-	// 状态
+	// status
 	Status        *ReviewStatus `thrift:"status,5,optional" form:"status" json:"status,omitempty" query:"status"`
 	DocTreeTosURL *string       `thrift:"doc_tree_tos_url,6,optional" form:"doc_tree_tos_url" json:"doc_tree_tos_url,omitempty" query:"doc_tree_tos_url"`
 	PreviewTosURL *string       `thrift:"preview_tos_url,7,optional" form:"preview_tos_url" json:"preview_tos_url,omitempty" query:"preview_tos_url"`

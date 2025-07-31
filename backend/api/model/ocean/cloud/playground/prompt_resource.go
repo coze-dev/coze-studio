@@ -3,25 +3,25 @@
 package playground
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type ActionKey int64
 
 const (
-	//复制
+	//copy
 	ActionKey_Copy ActionKey = 1
-	//删除
+	//delete
 	ActionKey_Delete ActionKey = 2
-	//启用/禁用
+	//enable/disable
 	ActionKey_EnableSwitch ActionKey = 3
-	//编辑
+	//edit
 	ActionKey_Edit ActionKey = 4
-	// 跨空间复制
+	//Cross-space copy
 	ActionKey_CrossSpaceCopy ActionKey = 10
 )
 
@@ -75,9 +75,9 @@ func (p *ActionKey) Value() (driver.Value, error) {
 type ResourcePublishStatus int64
 
 const (
-	//未发布
+	//unpublished
 	ResourcePublishStatus_UnPublished ResourcePublishStatus = 1
-	//已发布
+	//Published
 	ResourcePublishStatus_Published ResourcePublishStatus = 2
 )
 
@@ -2629,7 +2629,7 @@ func (p *DeletePromptResourceResponse) String() string {
 
 }
 
-// 参数优先级从上往下
+// Parameter priority from top to bottom
 type SyncPromptResourceToEsRequest struct {
 	SyncAll              *bool      `thrift:"SyncAll,1,optional" form:"SyncAll" json:"SyncAll,omitempty" query:"SyncAll"`
 	PromptResourceIDList []int64    `thrift:"PromptResourceIDList,2,optional" form:"PromptResourceIDList" json:"PromptResourceIDList,omitempty" query:"PromptResourceIDList"`
@@ -3137,9 +3137,9 @@ func (p *SyncPromptResourceToEsResponse) String() string {
 }
 
 type MGetDisplayResourceInfoRequest struct {
-	// 最大传一页的数量，实现方可以限制最大100个
+	// The maximum number of one page can be transferred, and the implementer can limit the maximum to 100.
 	ResIDs []int64 `thrift:"ResIDs,1" form:"ResIDs" json:"ResIDs" query:"ResIDs"`
-	// 当前的用户，实现方用于判断权限
+	// The current user, the implementation is used to determine the authority
 	CurrentUserID int64      `thrift:"CurrentUserID,2" form:"CurrentUserID" json:"CurrentUserID" query:"CurrentUserID"`
 	Base          *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -3612,9 +3612,9 @@ func (p *MGetDisplayResourceInfoResponse) String() string {
 }
 
 type ResourceAction struct {
-	// 一个操作对应一个唯一的key，key由资源侧约束
+	// An operation corresponds to a unique key, and the key is constrained by the resource side
 	Key ActionKey `thrift:"Key,1,required" json:"key" form:"Key,required" query:"Key,required"`
-	//ture=可以操作该Action，false=置灰
+	//ture = can operate this Action, false = grey out
 	Enable bool `thrift:"Enable,2,required" json:"enable" form:"Enable,required" query:"Enable,required"`
 }
 
@@ -3812,29 +3812,29 @@ func (p *ResourceAction) String() string {
 
 }
 
-// 展示用，实现方提供展示信息
+// For display, the implementer provides display information
 type DisplayResourceInfo struct {
-	// 资源id
+	// Resource ID
 	ResID *int64 `thrift:"ResID,1,optional" form:"ResID" json:"ResID,omitempty" query:"ResID"`
-	// 资源描述
+	// resource description
 	Desc *string `thrift:"Desc,5,optional" form:"Desc" json:"Desc,omitempty" query:"Desc"`
-	// 资源Icon，完整url
+	// Resource Icon, full url
 	Icon *string `thrift:"Icon,6,optional" form:"Icon" json:"Icon,omitempty" query:"Icon"`
-	// 资源状态，各类型资源自身定义
+	// Resource status, each type of resource defines itself
 	BizResStatus *int32 `thrift:"BizResStatus,12,optional" form:"BizResStatus" json:"BizResStatus,omitempty" query:"BizResStatus"`
-	// 是否开启多人编辑
+	// Whether to enable multi-person editing
 	CollaborationEnable *bool `thrift:"CollaborationEnable,13,optional" form:"CollaborationEnable" json:"CollaborationEnable,omitempty" query:"CollaborationEnable"`
-	// 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
+	// Business carry extended information to res_type distinguish, each res_type defined schema and meaning is not the same, need to judge before use res_type
 	BizExtend map[string]string `thrift:"BizExtend,16,optional" form:"BizExtend" json:"BizExtend,omitempty" query:"BizExtend"`
-	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
+	// Different types of different operation buttons are agreed upon by the resource implementer and the front end. Return is displayed, if you want to hide a button, do not return;
 	Actions []*ResourceAction `thrift:"Actions,17,optional" form:"Actions" json:"Actions,omitempty" query:"Actions"`
-	// 是否禁止进详情页
+	// Whether to ban entering the details page
 	DetailDisable *bool `thrift:"DetailDisable,18,optional" form:"DetailDisable" json:"DetailDisable,omitempty" query:"DetailDisable"`
-	// 资源名称
+	// resource name
 	Name *string `thrift:"Name,19,optional" form:"Name" json:"Name,omitempty" query:"Name"`
-	// 资源发布状态，1-未发布，2-已发布
+	// Resource release status, 1 - unpublished, 2 - published
 	PublishStatus *ResourcePublishStatus `thrift:"PublishStatus,20,optional" form:"PublishStatus" json:"PublishStatus,omitempty" query:"PublishStatus"`
-	// 最近编辑时间, unix秒级时间戳
+	// Last edited, unix timestamp
 	EditTime *int64 `thrift:"EditTime,21,optional" form:"EditTime" json:"EditTime,omitempty" query:"EditTime"`
 }
 

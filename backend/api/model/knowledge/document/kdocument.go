@@ -3,19 +3,19 @@
 package document
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/common"
 )
 
-// 获取表格结构、预览数据
+// Get table structure, preview data
 type GetDocumentTableInfoRequest struct {
-	// 如果为第一次本地文件上传的表格，传递该值
+	// If the table is uploaded for the first local file, pass the value
 	TosURI *string `thrift:"tos_uri,2,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	// 如果为已有 document 的表格，传递该值
+	// If it is a document with an existing table, pass the value
 	DocumentID *int64 `thrift:"document_id,3,optional" form:"document_id" json:"document_id,string,omitempty"`
-	// 创建人[http接口不需要传递]
+	// Creator [http interface does not need to be passed]
 	CreatorID int64      `thrift:"creator_id,4" form:"creator_id" json:"creator_id" query:"creator_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -848,9 +848,9 @@ type GetTableSchemaInfoResponse struct {
 	Code      int32                   `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg       string                  `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	SheetList []*common.DocTableSheet `thrift:"sheet_list,3" form:"sheet_list" json:"sheet_list" query:"sheet_list"`
-	// 选中的 sheet 的 schema, 不选择默认返回第一个 sheet
+	// The schema of the selected sheet, not selected to return the first sheet by default
 	TableMeta []*common.DocTableColumn `thrift:"table_meta,4" form:"table_meta" json:"table_meta" query:"table_meta"`
-	// knowledge table 场景中会返回
+	// The knowledge table will return
 	PreviewData []map[int64]string `thrift:"preview_data,5" form:"preview_data" json:"preview_data" query:"preview_data"`
 	BaseResp    *base.BaseResp     `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }

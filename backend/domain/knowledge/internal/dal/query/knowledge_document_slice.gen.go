@@ -46,24 +46,24 @@ func newKnowledgeDocumentSlice(db *gorm.DB, opts ...gen.DOOption) knowledgeDocum
 	return _knowledgeDocumentSlice
 }
 
-// knowledgeDocumentSlice 知识库文件切片表
+// knowledgeDocumentSlice knowledge document slice
 type knowledgeDocumentSlice struct {
 	knowledgeDocumentSliceDo
 
 	ALL         field.Asterisk
-	ID          field.Int64   // 主键ID
+	ID          field.Int64   // id
 	KnowledgeID field.Int64   // knowledge id
-	DocumentID  field.Int64   // document id
-	Content     field.String  // 切片内容
-	Sequence    field.Float64 // 切片顺序号, 从1开始
+	DocumentID  field.Int64   // document_id
+	Content     field.String  // content
+	Sequence    field.Float64 // slice sequence number, starting from 1
 	CreatedAt   field.Int64   // Create Time in Milliseconds
 	UpdatedAt   field.Int64   // Update Time in Milliseconds
-	DeletedAt   field.Field   // Delete Time in Milliseconds
-	CreatorID   field.Int64   // 创建者ID
-	SpaceID     field.Int64   // 空间ID
-	Status      field.Int32   // 状态
-	FailReason  field.String  // 失败原因
-	Hit         field.Int64   // 命中次数
+	DeletedAt   field.Field   // Delete Time
+	CreatorID   field.Int64   // creator id
+	SpaceID     field.Int64   // space id
+	Status      field.Int32   // status
+	FailReason  field.String  // fail reason
+	Hit         field.Int64   // hit counts
 
 	fieldMap map[string]field.Expr
 }

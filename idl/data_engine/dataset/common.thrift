@@ -1,23 +1,23 @@
 namespace go flow.dataengine.dataset
 
-// 类型
+// type
 enum FormatType {
-    Text  = 0  // 文本
-    Table = 1  // 表格
-    Image = 2  // 图片
-    Database = 3 // 数据库
+    Text  = 0  // Text
+    Table = 1  // table
+    Image = 2  // image
+    Database = 3 // database
 }
 
 struct ChunkStrategy {
-    1: string separator   // 分隔符，如句号
-    2: i64    max_tokens  // 分片的最大token数
-    3: bool   remove_extra_spaces  // 替换掉连续的空格、换行符和制表符
-    4: bool   remove_urls_emails   // 是否去除url和email
-    5: ChunkType chunk_type        // 如果为0, 则不使用以上字段的配置
-    7: optional CaptionType caption_type    // 图片类型，图片描述文字的标注方式
-    8: optional i64    overlap;      //分段重叠度
-    9: optional i64    max_level;    //最大层级数（按层级分段时生效）
-    10: optional bool   save_title;   //切片保留层级标题（按层级分段时生效）
+    1: string separator   // A separator, such as a period
+    2: i64    max_tokens  // Maximum number of tokens for sharding
+    3: bool   remove_extra_spaces  // Replace consecutive spaces, newlines, and tabs
+    4: bool   remove_urls_emails   // Remove URL and email
+    5: ChunkType chunk_type        // If 0, the configuration of the above fields is not used
+    7: optional CaptionType caption_type    // Image type, image description text annotation method
+    8: optional i64    overlap;      //segmented overlap
+    9: optional i64    max_level;    //Maximum number of levels (effective when segmented by level)
+    10: optional bool   save_title;   //Slice preserves level headers (effective when segmented by level)
 }
 
 enum ChunkType{
@@ -32,67 +32,67 @@ enum ContentSchema{
 }
 
 enum CaptionType {
-    Auto = 0 // 智能标注
-    Manual = 1 // 人工标注
+    Auto = 0 // intelligent annotation
+    Manual = 1 // manual annotation
 }
 
 enum DocumentStatus {
-    Processing = 0 // 上传中
-    Enable     = 1 // 生效
-    Disable    = 2 // 失效
-    Deleted    = 3 // 删除
-    Resegment  = 4 // 重新分片中，调用方不感知该状态
-    Refreshing = 5 // 刷新中（刷新成功后会删除）
-    Failed     = 9 // 失败
+    Processing = 0 // Uploading
+    Enable     = 1 // take effect
+    Disable    = 2 // failure
+    Deleted    = 3 // delete
+    Resegment  = 4 // In rescaling, the caller is not aware of the state
+    Refreshing = 5 // Refreshing (will be deleted after successful refresh)
+    Failed     = 9 // fail
 }
 
 enum DocumentSource {
-    Document = 0 // 本地文件上传
-    Custom   = 2 // 自定义类型
+    Document = 0 // local file upload
+    Custom   = 2 // custom type
 }
 
 
 struct ParsingStrategy{
-    1: optional ParsingType    parsing_type;     //解析类型
-    2: optional bool           image_extraction; //是否开启图片元素提取（精准解析时生效）
-    3: optional bool           table_extraction; //是否开启表格元素提取（精准解析时生效）
-    4: optional bool           image_ocr; //是否开启图片OCR（精准解析时生效）
+    1: optional ParsingType    parsing_type;     //parse type
+    2: optional bool           image_extraction; //Whether to enable image element extraction (effective when accurately parsing)
+    3: optional bool           table_extraction; //Whether to enable table element extraction (effective when accurately parsing)
+    4: optional bool           image_ocr; //Whether to turn on picture OCR (effective when accurate analysis)
 }
 
 enum ParsingType{
-    FastParsing = 0        //快速解析
-    AccurateParsing = 1    //精准解析
+    FastParsing = 0        //fast parse
+    AccurateParsing = 1    //accurate analysis
 }
 
 struct IndexStrategy{
-    1: optional bool    vector_indexing;        //是否开启向量索引（默认为true）
-    2: optional bool    keyword_indexing;       //是否开启关键词索引（默认为true）
-    3: optional bool    hierarchical_indexing;  //是否开启分层索引
-    4: optional string  model;                  //向量模型
+    1: optional bool    vector_indexing;        //Whether to enable vector indexing (default is true)
+    2: optional bool    keyword_indexing;       //Whether to enable keyword indexing (default is true)
+    3: optional bool    hierarchical_indexing;  //Whether to enable hierarchical indexing
+    4: optional string  model;                  //vector model
 }
 
 struct FilterStrategy{
-    1: optional list<i32>    filter_page;          //过滤页数
+    1: optional list<i32>    filter_page;          //filter pages
 }
 
-// 排序字段
+// sort field
 enum OrderField {
     CreateTime = 1
     UpdateTime = 2
 }
 
-// 排序规则
+// OrderType
 enum OrderType {
     Desc = 1
     Asc  = 2
 }
 
 struct SinkStrategy {
-    1: bool check_index // 是否检查索引成功
+    1: bool check_index // Check whether the index was successful
 }
 enum ReviewStatus {
-    Processing = 0 // 处理中
-    Enable   = 1 // 已完成
-    Failed   = 2 // 失败
-    ForceStop   = 3 // 失败
+    Processing = 0 // Processing
+    Enable   = 1 // Completed.
+    Failed   = 2 // fail
+    ForceStop   = 3 // fail
 }
