@@ -8,13 +8,13 @@ const TableNameWorkflowSnapshot = "workflow_snapshot"
 
 // WorkflowSnapshot snapshot for executed workflow draft
 type WorkflowSnapshot struct {
-	WorkflowID   int64  `gorm:"column:workflow_id;not null;comment:workflow id this snapshot belongs to" json:"workflow_id"` // workflow id this snapshot belongs to
-	CommitID     string `gorm:"column:commit_id;not null;comment:the commit id of the workflow draft" json:"commit_id"`      // the commit id of the workflow draft
-	Canvas       string `gorm:"column:canvas;not null;comment:frontend schema for this snapshot" json:"canvas"`              // frontend schema for this snapshot
-	InputParams  string `gorm:"column:input_params;comment:input parameter info" json:"input_params"`                        // input parameter info
-	OutputParams string `gorm:"column:output_params;comment:output parameter info" json:"output_params"`                     // output parameter info
-	CreatedAt    int64  `gorm:"column:created_at;not null;autoCreateTime:milli" json:"created_at"`
-	ID           int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:ID" json:"id"` // ID
+	WorkflowID   int64  `gorm:"column:workflow_id;not null;comment:workflow id this snapshot belongs to" json:"workflow_id"`           // workflow id this snapshot belongs to
+	CommitID     string `gorm:"column:commit_id;not null;comment:the commit id of the workflow draft" json:"commit_id"`                // the commit id of the workflow draft
+	Canvas       string `gorm:"column:canvas;not null;comment:frontend schema for this snapshot" json:"canvas"`                        // frontend schema for this snapshot
+	InputParams  string `gorm:"column:input_params;comment:input parameter info" json:"input_params"`                                  // input parameter info
+	OutputParams string `gorm:"column:output_params;comment:output parameter info" json:"output_params"`                               // output parameter info
+	CreatedAt    int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	ID           int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:ID" json:"id"`                                          // ID
 }
 
 // TableName WorkflowSnapshot's table name

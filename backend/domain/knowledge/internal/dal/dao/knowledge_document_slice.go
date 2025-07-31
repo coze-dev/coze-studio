@@ -120,7 +120,7 @@ func (dao *KnowledgeDocumentSliceDAO) listBatch(ctx context.Context, knowledgeID
 	pos []*model.KnowledgeDocumentSlice, hasMore bool, err error) {
 
 	if batchSize <= 0 {
-		batchSize = 100 // 默认批量大小
+		batchSize = 100 // Default batch size
 	}
 
 	do, err := dao.listDo(ctx, knowledgeID, documentID)
@@ -161,7 +161,7 @@ func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 	if len(docIDs) == 0 {
 		return nil, errors.New("empty document ids")
 	}
-	// doc可能会有很多slice，所以批量处理
+	// Doc may have many slices, so batch processing
 	sliceIDs = make([]int64, 0)
 	var mu sync.Mutex
 	errGroup, ctx := errgroup.WithContext(ctx)

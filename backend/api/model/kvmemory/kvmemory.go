@@ -3,11 +3,11 @@
 package kvmemory
 
 import (
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
 	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type KVItem struct {
@@ -1448,7 +1448,7 @@ type SetKvMemoryReq struct {
 	UserID      *int64    `thrift:"user_id,2,optional" form:"user_id" json:"user_id,omitempty" query:"user_id"`
 	Data        []*KVItem `thrift:"data,3,required" form:"data,required" json:"data,required" query:"data,required"`
 	ConnectorID *int64    `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 引用信息
+	// citation information
 	RefInfo        *table.RefInfo `thrift:"ref_info,5,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	ProjectID      *string        `thrift:"project_id,6,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	ProjectVersion *int64         `thrift:"ProjectVersion,7,optional" form:"ProjectVersion" json:"ProjectVersion,omitempty" query:"ProjectVersion"`
@@ -3041,7 +3041,7 @@ type DelProfileMemoryRequest struct {
 	BotID       int64    `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string"`
 	Keywords    []string `thrift:"keywords,3" form:"keywords" json:"keywords" query:"keywords"`
 	ConnectorID *int64   `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
-	// 引用信息
+	// citation information
 	RefInfo   *table.RefInfo `thrift:"ref_info,5,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	ProjectID string         `thrift:"project_id,6" form:"project_id" json:"project_id" query:"project_id"`
 	Base      *base.Base     `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -3499,7 +3499,7 @@ type GetProfileMemoryRequest struct {
 	Keywords    []string `thrift:"keywords,3" form:"keywords" json:"keywords" query:"keywords"`
 	ConnectorID *int64   `thrift:"connector_id,4,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
 	Version     *string  `thrift:"version,5,optional" form:"version" json:"version,omitempty" query:"version"`
-	// 引用信息
+	// citation information
 	RefInfo         *table.RefInfo                  `thrift:"ref_info,6,optional" form:"ref_info" json:"ref_info,omitempty" query:"ref_info"`
 	Ext             *string                         `thrift:"ext,7,optional" form:"ext" json:"ext,omitempty" query:"ext"`
 	ProjectID       *string                         `thrift:"project_id,8,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`

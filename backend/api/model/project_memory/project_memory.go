@@ -3,11 +3,11 @@
 package project_memory
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
 
 type VariableType int64
@@ -59,7 +59,7 @@ const (
 	VariableChannel_System   VariableChannel = 2
 	VariableChannel_Location VariableChannel = 3
 	VariableChannel_Feishu   VariableChannel = 4
-	// 项目变量
+	// project variable
 	VariableChannel_APP VariableChannel = 5
 )
 
@@ -159,9 +159,9 @@ type Variable struct {
 	Channel      VariableChannel `thrift:"Channel,4" form:"Channel" json:"Channel" query:"Channel"`
 	Description  string          `thrift:"Description,5" form:"Description" json:"Description" query:"Description"`
 	Enable       bool            `thrift:"Enable,6" form:"Enable" json:"Enable" query:"Enable"`
-	//生效渠道
+	//effective channel
 	EffectiveChannelList []string `thrift:"EffectiveChannelList,7,optional" form:"EffectiveChannelList" json:"EffectiveChannelList,omitempty" query:"EffectiveChannelList"`
-	//新老数据都会有schema，除项目变量外其他默认为string
+	//New and old data will have schemas, except for project variables, the default is string.
 	Schema     string `thrift:"Schema,8" form:"Schema" json:"Schema" query:"Schema"`
 	IsReadOnly bool   `thrift:"IsReadOnly,9" form:"IsReadOnly" json:"IsReadOnly" query:"IsReadOnly"`
 }
@@ -2711,7 +2711,7 @@ func (p *GetMemoryVariableMetaReq) String() string {
 
 }
 
-// 应该是给workflow用的rpc接口，不需要鉴权，VariableChannel
+// It should be the rpc interface for workflow, no authentication is required, VariableChannel
 type GetMemoryVariableMetaResp struct {
 	VariableMap map[VariableChannel][]*Variable `thrift:"VariableMap,1" form:"VariableMap" json:"VariableMap" query:"VariableMap"`
 	Code        int64                           `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`

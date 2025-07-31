@@ -9,7 +9,7 @@ import (
 )
 
 type DatasetService interface {
-	// 知识库相关
+	// Knowledge base related
 	GetIconForDataset(ctx context.Context, req *GetIconRequest) (r *GetIconResponse, err error)
 
 	CreateDataset(ctx context.Context, req *CreateDatasetRequest) (r *CreateDatasetResponse, err error)
@@ -21,7 +21,7 @@ type DatasetService interface {
 	DeleteDataset(ctx context.Context, req *DeleteDatasetRequest) (r *DeleteDatasetResponse, err error)
 
 	UpdateDataset(ctx context.Context, req *UpdateDatasetRequest) (r *UpdateDatasetResponse, err error)
-	// Document相关
+	// Document related
 	CreateDocument(ctx context.Context, req *CreateDocumentRequest) (r *CreateDocumentResponse, err error)
 
 	ListDocument(ctx context.Context, req *ListDocumentRequest) (r *ListDocumentResponse, err error)
@@ -45,7 +45,7 @@ type DatasetService interface {
 	GetTableSchema(ctx context.Context, req *GetTableSchemaRequest) (r *GetTableSchemaResponse, err error)
 
 	ValidateTableSchema(ctx context.Context, req *ValidateTableSchemaRequest) (r *ValidateTableSchemaResponse, err error)
-	// slice相关
+	// Slice related
 	DeleteSlice(ctx context.Context, req *DeleteSliceRequest) (r *DeleteSliceResponse, err error)
 
 	CreateSlice(ctx context.Context, req *CreateSliceRequest) (r *CreateSliceResponse, err error)
@@ -53,7 +53,7 @@ type DatasetService interface {
 	UpdateSlice(ctx context.Context, req *UpdateSliceRequest) (r *UpdateSliceResponse, err error)
 
 	ListSlice(ctx context.Context, req *ListSliceRequest) (r *ListSliceResponse, err error)
-	/** 预分片相关 **/
+	/** Pre-sharding related **/
 	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) (r *CreateDocumentReviewResponse, err error)
 
 	MGetDocumentReview(ctx context.Context, req *MGetDocumentReviewRequest) (r *MGetDocumentReviewResponse, err error)

@@ -271,11 +271,11 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 	dst := doc.TableInfo
 	result := make(map[string]string)
 
-	// validate 通过条件:
-	// 1. 表头名称对齐（不要求顺序一致）
-	// 2. indexing 列必须有值, 其余列可以为空
-	// 3. 值类型可转换
-	// 4. 已有表表头字段全包含
+	// Validate the conditions:
+	// 1. Header name alignment (consistent order is not required)
+	// 2. The indexing column must have a value, and the remaining columns can be empty
+	// 3. Value types are convertible
+	// 4. All existing table header fields are included
 	dstMapping := make(map[string]*entity.TableColumn)
 	for _, col := range dst.Columns {
 		dstCol := col
@@ -395,7 +395,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDoc
 	}, nil
 }
 
-// GetDocumentTableInfoByID 先不作为接口，有需要再改
+// GetDocumentTableInfoByID not as an interface first, and then change it if necessary
 func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*TableSchemaResponse, error) {
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{documentID})
 	if err != nil {

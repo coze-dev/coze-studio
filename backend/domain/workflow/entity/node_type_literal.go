@@ -561,7 +561,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           43,
-		Name:         "查询数据", // Corrected Name from JSON (was "插入数据")
+		Name:         "查询数据", // Corrected Name from JSON (was "insert data")
 		Type:         NodeTypeDatabaseQuery,
 		Category:     "database",                        // Mapped from cate_list
 		Desc:         "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据", // Corrected Desc from JSON
@@ -616,7 +616,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           46,
-		Name:         "新增数据", // Corrected Name from JSON (was "查询数据")
+		Name:         "新增数据", // Corrected Name from JSON (was "Query Data")
 		Type:         NodeTypeDatabaseInsert,
 		Category:     "database",                 // Mapped from cate_list
 		Desc:         "向表添加新数据记录，用户输入数据内容后插入数据库", // Corrected Desc from JSON

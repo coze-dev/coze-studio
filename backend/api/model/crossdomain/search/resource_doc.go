@@ -50,7 +50,7 @@ func (r *ResourceDocument) GetOwnerID() int64 {
 	return 0
 }
 
-// GetUpdateTime 获取更新时间
+// GetUpdateTime Get the update time
 func (r *ResourceDocument) GetUpdateTime() int64 {
 	if r.UpdateTimeMS != nil {
 		return *r.UpdateTimeMS

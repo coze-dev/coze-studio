@@ -17,12 +17,12 @@
 package entity
 
 type Column struct {
-	Name          string // 保证唯一性
+	Name          string // guaranteed uniqueness
 	DataType      DataType
 	Length        *int
 	NotNull       bool
 	DefaultValue  *string
-	AutoIncrement bool // 表示该列是否为自动递增
+	AutoIncrement bool // Indicates whether the column is automatically incremented
 	Comment       *string
 }
 
@@ -34,12 +34,12 @@ type Index struct {
 
 type TableOption struct {
 	Collate       *string
-	AutoIncrement *int64 // 设置表的自动递增初始值
+	AutoIncrement *int64 // Set the auto-increment initial value of the table
 	Comment       *string
 }
 
 type Table struct {
-	Name      string // 保证唯一性
+	Name      string // guaranteed uniqueness
 	Columns   []*Column
 	Indexes   []*Index
 	Options   *TableOption

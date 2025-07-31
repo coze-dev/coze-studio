@@ -3,19 +3,19 @@
 package coze
 
 import (
+	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/devops/debugger/domain/infra"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/devops/debugger/domain/testcase"
-	"fmt"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 // ========== TestCase =========== //
 type SaveCaseDataReq struct {
-	// 业务信息
+	// business information
 	BizCtx              *infra.BizCtx           `thrift:"bizCtx,1,optional" form:"bizCtx" json:"bizCtx,omitempty" query:"bizCtx"`
 	BizComponentSubject *infra.ComponentSubject `thrift:"bizComponentSubject,2,optional" form:"bizComponentSubject" json:"bizComponentSubject,omitempty" query:"bizComponentSubject"`
-	// case基本数据
+	// Case basic data
 	CaseBase *testcase.CaseDataBase `thrift:"caseBase,3,optional" form:"caseBase" json:"caseBase,omitempty" query:"caseBase"`
 	Base     *base.Base             `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -632,9 +632,9 @@ func (p *SaveCaseDataResp) String() string {
 }
 
 type DeleteCaseDataReq struct {
-	// 业务信息
+	// business information
 	BizCtx *infra.BizCtx `thrift:"bizCtx,1,optional" form:"bizCtx" json:"bizCtx,omitempty" query:"bizCtx"`
-	// 单次上限20个
+	// A single maximum of 20
 	CaseIDs []int64    `thrift:"caseIDs,2,optional" form:"caseIDs" json:"caseIDs,omitempty" query:"caseIDs"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -1246,7 +1246,7 @@ func (p *DeleteCaseDataResp) String() string {
 
 type CheckCaseDuplicateReq struct {
 	BizCtx *infra.BizCtx `thrift:"bizCtx,1,optional" form:"bizCtx" json:"bizCtx,omitempty" query:"bizCtx"`
-	// case名称
+	// Case name
 	CaseName            *string                 `thrift:"caseName,2,optional" form:"caseName" json:"caseName,omitempty" query:"caseName"`
 	BizComponentSubject *infra.ComponentSubject `thrift:"bizComponentSubject,3,optional" form:"bizComponentSubject" json:"bizComponentSubject,omitempty" query:"bizComponentSubject"`
 	Base                *base.Base              `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -1556,7 +1556,7 @@ func (p *CheckCaseDuplicateReq) String() string {
 
 type CheckCaseDuplicateResp struct {
 	IsPass *bool `thrift:"isPass,1,optional" form:"isPass" json:"isPass,omitempty" query:"isPass"`
-	// 当pass=false时，给出具体的校验不通过的原因
+	// When pass = false, give the specific reason why the check failed
 	FailReason *string        `thrift:"failReason,2,optional" form:"failReason" json:"failReason,omitempty" query:"failReason"`
 	FailCode   *int32         `thrift:"failCode,3,optional" form:"failCode" json:"failCode,omitempty" query:"failCode"`
 	Code       *int32         `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
@@ -1983,7 +1983,7 @@ func (p *CheckCaseDuplicateResp) String() string {
 }
 
 type GetSchemaByIDReq struct {
-	// 业务信息
+	// business information
 	BizCtx              *infra.BizCtx           `thrift:"bizCtx,1,optional" form:"bizCtx" json:"bizCtx,omitempty" query:"bizCtx"`
 	BizComponentSubject *infra.ComponentSubject `thrift:"bizComponentSubject,2,optional" form:"bizComponentSubject" json:"bizComponentSubject,omitempty" query:"bizComponentSubject"`
 	Base                *base.Base              `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -2237,7 +2237,7 @@ func (p *GetSchemaByIDReq) String() string {
 }
 
 type GetSchemaByIDResp struct {
-	// Json格式的组件input信息，与Input Json Schema保持一致，不包含Value值信息
+	// Component input information in JSON format, consistent with Input JSON Schema, does not contain Value information
 	SchemaJson *string        `thrift:"schemaJson,1,optional" form:"schemaJson" json:"schemaJson,omitempty" query:"schemaJson"`
 	Code       *int32         `thrift:"code,253,optional" form:"code" json:"code,omitempty" query:"code"`
 	Msg        *string        `thrift:"msg,254,optional" form:"msg" json:"msg,omitempty" query:"msg"`

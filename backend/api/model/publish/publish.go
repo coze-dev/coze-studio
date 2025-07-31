@@ -3,26 +3,26 @@
 package publish
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 )
 
 type ConnectorClassification int64
 
 const (
-	// api或sdk
+	// API or SDK
 	ConnectorClassification_APIOrSDK ConnectorClassification = 1
-	// 社交平台
+	// social platform
 	ConnectorClassification_SocialPlatform ConnectorClassification = 2
-	// Coze商店/模板
+	// Coze Shop/Template
 	ConnectorClassification_Coze ConnectorClassification = 3
-	// 小程序
+	// Mini Program
 	ConnectorClassification_MiniProgram ConnectorClassification = 4
-	// MCP扩展库
+	// MCP Extension Library
 	ConnectorClassification_CozeSpaceExtensionLibrary ConnectorClassification = 5
 )
 
@@ -76,15 +76,15 @@ func (p *ConnectorClassification) Value() (driver.Value, error) {
 type ConnectorConfigStatus int64
 
 const (
-	// 已配置
+	// Configured
 	ConnectorConfigStatus_Configured ConnectorConfigStatus = 1
-	// 未配置
+	// Not configured
 	ConnectorConfigStatus_NotConfigured ConnectorConfigStatus = 2
-	// Token发生变化
+	// Token changes
 	ConnectorConfigStatus_Disconnected ConnectorConfigStatus = 3
-	// 配置中，授权中
+	// Configuring, authorizing
 	ConnectorConfigStatus_Configuring ConnectorConfigStatus = 4
-	// 需要重新配置
+	// Need to reconfigure
 	ConnectorConfigStatus_NeedReconfiguring ConnectorConfigStatus = 5
 )
 
@@ -138,11 +138,11 @@ func (p *ConnectorConfigStatus) Value() (driver.Value, error) {
 type ConnectorStatus int64
 
 const (
-	// 正常
+	// Normal
 	ConnectorStatus_Normal ConnectorStatus = 0
-	// 审核中
+	// Under review.
 	ConnectorStatus_InReview ConnectorStatus = 1
-	// 已下线
+	// offline
 	ConnectorStatus_Offline ConnectorStatus = 2
 )
 
@@ -188,21 +188,21 @@ func (p *ConnectorStatus) Value() (driver.Value, error) {
 type ConnectorBindType int64
 
 const (
-	// 无需绑定
+	// No binding required
 	ConnectorBindType_NoBindRequired ConnectorBindType = 1
-	// Auth绑定
+	// Auth binding
 	ConnectorBindType_AuthBind ConnectorBindType = 2
-	// Kv绑定
+	// Kv binding
 	ConnectorBindType_KvBind ConnectorBindType = 3
-	// Kv并Auth授权
+	// Kv and Auth authorization
 	ConnectorBindType_KvAuthBind ConnectorBindType = 4
-	// api渠道绑定
+	// API channel binding
 	ConnectorBindType_ApiBind    ConnectorBindType = 5
 	ConnectorBindType_WebSDKBind ConnectorBindType = 6
 	ConnectorBindType_StoreBind  ConnectorBindType = 7
-	// 授权和配置各一个按钮
+	// One button each for authorization and configuration
 	ConnectorBindType_AuthAndConfig ConnectorBindType = 8
-	// 模板渠道绑定
+	// template channel binding
 	ConnectorBindType_TemplateBind ConnectorBindType = 9
 )
 
@@ -272,11 +272,11 @@ func (p *ConnectorBindType) Value() (driver.Value, error) {
 type UserAuthStatus int64
 
 const (
-	// 已授权
+	// Authorized
 	UserAuthStatus_Authorized UserAuthStatus = 1
-	// 未授权
+	// unauthorized
 	UserAuthStatus_UnAuthorized UserAuthStatus = 2
-	// 授权中
+	// Authorizing
 	UserAuthStatus_Authorizing UserAuthStatus = 3
 )
 
@@ -322,17 +322,17 @@ func (p *UserAuthStatus) Value() (driver.Value, error) {
 type PublishRecordStatus int64
 
 const (
-	// 打包中
+	// Packing
 	PublishRecordStatus_Packing PublishRecordStatus = 0
-	// 打包失败
+	// Packaging failed
 	PublishRecordStatus_PackFailed PublishRecordStatus = 1
-	// 审核中
+	// Under review.
 	PublishRecordStatus_Auditing PublishRecordStatus = 2
-	// 审核未通过
+	// review disapproved
 	PublishRecordStatus_AuditNotPass PublishRecordStatus = 3
-	// 渠道发布中
+	// Channel is being released.
 	PublishRecordStatus_ConnectorPublishing PublishRecordStatus = 4
-	// 发布完成
+	// release complete
 	PublishRecordStatus_PublishDone PublishRecordStatus = 5
 )
 
@@ -391,15 +391,15 @@ func (p *PublishRecordStatus) Value() (driver.Value, error) {
 type ConnectorPublishStatus int64
 
 const (
-	// 发布中
+	// In release
 	ConnectorPublishStatus_Default ConnectorPublishStatus = 0
-	// 审核中
+	// Under review.
 	ConnectorPublishStatus_Auditing ConnectorPublishStatus = 1
-	// 成功
+	// success
 	ConnectorPublishStatus_Success ConnectorPublishStatus = 2
-	// 失败
+	// fail
 	ConnectorPublishStatus_Failed ConnectorPublishStatus = 3
-	//禁用
+	//disable
 	ConnectorPublishStatus_Disable ConnectorPublishStatus = 4
 )
 
@@ -1443,7 +1443,7 @@ func (p *PublishConnectorListResponse) String() string {
 type PublishConnectorListData struct {
 	ConnectorList   []*PublishConnectorInfo `thrift:"connector_list,1" form:"connector_list" json:"connector_list" query:"connector_list"`
 	LastPublishInfo *LastPublishInfo        `thrift:"last_publish_info,2" form:"last_publish_info" json:"last_publish_info" query:"last_publish_info"`
-	// 渠道集合信息，key是connector_union_id
+	// Channel collection information, the key is connector_union_id
 	ConnectorUnionInfoMap map[int64]*ConnectorUnionInfo `thrift:"connector_union_info_map,3" form:"connector_union_info_map" json:"connector_union_info_map" query:"connector_union_info_map"`
 }
 
@@ -1729,47 +1729,47 @@ type PublishConnectorInfo struct {
 	ID      int64  `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
 	Name    string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	IconURL string `thrift:"icon_url,3,required" form:"icon_url,required" json:"icon_url,required" query:"icon_url,required"`
-	// 描述
+	// describe
 	Description string `thrift:"description,4,required" form:"description,required" json:"description,required" query:"description,required"`
-	// 描述扩展
+	// description extension
 	DescriptionExtra string `thrift:"description_extra,5" form:"description_extra" json:"description_extra" query:"description_extra"`
-	// 渠道类型
+	// channel type
 	ConnectorClassification ConnectorClassification `thrift:"connector_classification,6,required" form:"connector_classification,required" json:"connector_classification,required" query:"connector_classification,required"`
-	// 配置状态
+	// configuration status
 	ConfigStatus ConnectorConfigStatus `thrift:"config_status,7,required" form:"config_status,required" json:"config_status,required" query:"config_status,required"`
-	// 渠道状态
+	// channel status
 	ConnectorStatus ConnectorStatus `thrift:"connector_status,8" form:"connector_status" json:"connector_status" query:"connector_status"`
-	// 绑定类型
+	// binding type
 	BindType ConnectorBindType `thrift:"bind_type,9,required" form:"bind_type,required" json:"bind_type,required" query:"bind_type,required"`
-	// 绑定信息 key字段名 value是值
+	// Binding information key field name value is value
 	BindInfo map[string]string `thrift:"bind_info,10,required" form:"bind_info,required" json:"bind_info,required" query:"bind_info,required"`
-	// 绑定id信息，用于解绑使用
+	// Bind id information for unbinding and use
 	BindID *string `thrift:"bind_id,11,optional" form:"bind_id" json:"bind_id,omitempty" query:"bind_id"`
-	// 用户授权登陆信息
+	// user authorization login information
 	AuthLoginInfo *AuthLoginInfo `thrift:"auth_login_info,12,optional" form:"auth_login_info" json:"auth_login_info,omitempty" query:"auth_login_info"`
-	// 隐私政策
+	// Privacy Policy
 	PrivacyPolicy string `thrift:"privacy_policy,13" form:"privacy_policy" json:"privacy_policy" query:"privacy_policy"`
-	// 用户协议
+	// User Agreement
 	UserAgreement string `thrift:"user_agreement,14" form:"user_agreement" json:"user_agreement" query:"user_agreement"`
-	// 是否允许发布
+	// Whether to allow publishing
 	AllowPublish bool `thrift:"allow_publish,15" form:"allow_publish" json:"allow_publish" query:"allow_publish"`
-	// 不允许发布的原因
+	// Reasons for not allowing publishing
 	NotAllowPublishReason *string `thrift:"not_allow_publish_reason,16,optional" form:"not_allow_publish_reason" json:"not_allow_publish_reason,omitempty" query:"not_allow_publish_reason"`
-	// 渠道集合id，表示需要聚合展示的渠道
+	// Channel collection id, indicating the channel that needs to be aggregated and displayed.
 	ConnectorUnionID *int64 `thrift:"connector_union_id,17,optional" form:"connector_union_id" json:"connector_union_id,string,omitempty" query:"connector_union_id"`
-	// UI选项
+	// UI Options
 	UIOptions []*UIOption `thrift:"UIOptions,18,optional" form:"UIOptions" json:"UIOptions,omitempty" query:"UIOptions"`
-	// 支持商业化
+	// Support commercialization
 	SupportMonetization *bool `thrift:"support_monetization,19,optional" form:"support_monetization" json:"support_monetization,omitempty" query:"support_monetization"`
-	// 安装指引
+	// Installation Guidelines
 	InstallationGuide *string `thrift:"installation_guide,20,optional" form:"installation_guide" json:"installation_guide,omitempty" query:"installation_guide"`
-	// 目前仅 bind_type == 8 时这个字段才有
+	// Currently this field is only available bind_type == 8
 	AuthStatus *UserAuthStatus `thrift:"auth_status,21,optional" form:"auth_status" json:"auth_status,omitempty" query:"auth_status"`
-	// 配置状态toast
+	// Configuration status toast
 	ConfigStatusToast *string `thrift:"config_status_toast,22,optional" form:"config_status_toast" json:"config_status_toast,omitempty" query:"config_status_toast"`
-	// connector_status为审核中时补全信息按钮的url
+	// connector_status the URL of the Complete Info button while under review
 	ToCompleteInfoURL *string `thrift:"to_complete_info_url,23,optional" form:"to_complete_info_url" json:"to_complete_info_url,omitempty" query:"to_complete_info_url"`
-	// 渠道发布提示
+	// Channel release tips
 	ConnectorTips *string `thrift:"connector_tips,24,optional" form:"connector_tips" json:"connector_tips,omitempty" query:"connector_tips"`
 }
 
@@ -3148,7 +3148,7 @@ func (p *PublishConnectorInfo) String() string {
 type LastPublishInfo struct {
 	VersionNumber string  `thrift:"version_number,1" form:"version_number" json:"version_number" query:"version_number"`
 	ConnectorIds  []int64 `thrift:"connector_ids,2" form:"connector_ids" json:"connector_ids,string" query:"connector_ids"`
-	// 渠道发布配置
+	// channel release configuration
 	ConnectorPublishConfig map[int64]*ConnectorPublishConfig `thrift:"connector_publish_config,3" form:"connector_publish_config" json:"connector_publish_config" query:"connector_publish_config"`
 }
 
@@ -4254,11 +4254,11 @@ func (p *AuthLoginInfo) String() string {
 }
 
 type UIOption struct {
-	// UIChannel选项
+	// UIChannel Options
 	UIChannel int64 `thrift:"ui_channel,1" form:"ui_channel" json:"ui_channel,string" query:"ui_channel"`
-	// 是否可选
+	// Is it optional
 	Available bool `thrift:"available,2" form:"available" json:"available" query:"available"`
-	// 不可选原因
+	// unselectable reason
 	UnavailableReason string `thrift:"unavailable_reason,3" form:"unavailable_reason" json:"unavailable_reason" query:"unavailable_reason"`
 }
 
@@ -4486,7 +4486,7 @@ func (p *UIOption) String() string {
 }
 
 type ConnectorPublishConfig struct {
-	// 发布渠道选择的Workflow/ChatFlow
+	// Workflow/ChatFlow selected by publishing channel
 	SelectedWorkflows []*SelectedWorkflow `thrift:"selected_workflows,1" form:"selected_workflows" json:"selected_workflows" query:"selected_workflows"`
 }
 
@@ -4646,9 +4646,9 @@ func (p *ConnectorPublishConfig) String() string {
 }
 
 type ConnectorUnionInfoOption struct {
-	// 渠道 ID
+	// Channel ID
 	ConnectorID int64 `thrift:"connector_id,1,required" form:"connector_id,required" json:"connector_id,string,required" query:"connector_id,required"`
-	// 展示名，如：托管发布、下载代码
+	// Display name, such as: hosted release, download code
 	ShowName string `thrift:"show_name,2,required" form:"show_name,required" json:"show_name,required" query:"show_name,required"`
 }
 
@@ -5711,13 +5711,13 @@ func (p *CheckProjectVersionNumberData) String() string {
 
 type PublishProjectRequest struct {
 	ProjectID int64 `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,string,required" query:"project_id,required"`
-	// 版本号
+	// version number
 	VersionNumber string `thrift:"version_number,2,required" form:"version_number,required" json:"version_number,required" query:"version_number,required"`
-	// 描述
+	// describe
 	Description *string `thrift:"description,3,optional" form:"description" json:"description,omitempty" query:"description"`
-	// key代表connector_id，value是渠道发布的参数
+	// The key represents connector_id, and the value is the parameter published by the channel
 	Connectors map[int64]map[string]string `thrift:"connectors,4,optional" form:"connectors" json:"connectors,omitempty" query:"connectors"`
-	// 渠道发布配置，key代表connector_id
+	// Channel release configuration, key represents connector_id
 	ConnectorPublishConfig map[int64]*ConnectorPublishConfig `thrift:"connector_publish_config,5,optional" form:"connector_publish_config" json:"connector_publish_config,omitempty" query:"connector_publish_config"`
 	Base                   *base.Base                        `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
 }
@@ -6509,9 +6509,9 @@ func (p *PublishProjectResponse) String() string {
 }
 
 type PublishProjectData struct {
-	// 发布记录ID用于前端轮询
+	// Publish record ID for front-end polling
 	PublishRecordID int64 `thrift:"publish_record_id,1" form:"publish_record_id" json:"publish_record_id,string" query:"publish_record_id"`
-	// 收费配置发布结果，海外环境才有
+	// The charging configuration is released, and the overseas environment is only available.
 	PublishMonetizationResult *bool `thrift:"publish_monetization_result,2,optional" form:"publish_monetization_result" json:"publish_monetization_result,omitempty" query:"publish_monetization_result"`
 }
 
@@ -7210,13 +7210,13 @@ func (p *GetPublishRecordListResponse) String() string {
 type PublishRecordDetail struct {
 	PublishRecordID int64  `thrift:"publish_record_id,1" form:"publish_record_id" json:"publish_record_id,string" query:"publish_record_id"`
 	VersionNumber   string `thrift:"version_number,2" form:"version_number" json:"version_number" query:"version_number"`
-	// 发布状态
+	// release status
 	PublishStatus PublishRecordStatus `thrift:"publish_status,3" form:"publish_status" json:"publish_status" query:"publish_status"`
-	// 该字段废弃，请使用publish_status_detail
+	// This field is deprecated, please use publish_status_detail
 	PublishStatusMsg string `thrift:"publish_status_msg,4" form:"publish_status_msg" json:"publish_status_msg" query:"publish_status_msg"`
-	// 渠道发布结果
+	// Channel release results
 	ConnectorPublishResult []*ConnectorPublishResult `thrift:"connector_publish_result,5,optional" form:"connector_publish_result" json:"connector_publish_result,omitempty" query:"connector_publish_result"`
-	// 发布状态补充信息
+	// Release status Supplementary information
 	PublishStatusDetail *PublishRecordStatusDetail `thrift:"publish_status_detail,6,optional" form:"publish_status_detail" json:"publish_status_detail,omitempty" query:"publish_status_detail"`
 }
 
@@ -7618,17 +7618,17 @@ type ConnectorPublishResult struct {
 	ConnectorID      int64  `thrift:"connector_id,1" form:"connector_id" json:"connector_id,string" query:"connector_id"`
 	ConnectorName    string `thrift:"connector_name,2" form:"connector_name" json:"connector_name" query:"connector_name"`
 	ConnectorIconURL string `thrift:"connector_icon_url,3" form:"connector_icon_url" json:"connector_icon_url" query:"connector_icon_url"`
-	// 渠道发布状态
+	// channel release status
 	ConnectorPublishStatus ConnectorPublishStatus `thrift:"connector_publish_status,4" form:"connector_publish_status" json:"connector_publish_status" query:"connector_publish_status"`
-	// 渠道发布状态补充信息
+	// Channel Release Status Supplementary Information
 	ConnectorPublishStatusMsg string `thrift:"connector_publish_status_msg,5" form:"connector_publish_status_msg" json:"connector_publish_status_msg" query:"connector_publish_status_msg"`
-	// OpenIn链接
+	// OpenIn Link
 	ShareLink *string `thrift:"share_link,6,optional" form:"share_link" json:"share_link,omitempty" query:"share_link"`
-	// 小程序渠道下载链接
+	// Mini Program Channel Download Link
 	DownloadLink *string `thrift:"download_link,7,optional" form:"download_link" json:"download_link,omitempty" query:"download_link"`
-	// 渠道发布配置
+	// channel release configuration
 	ConnectorPublishConfig *ConnectorPublishConfig `thrift:"connector_publish_config,8,optional" form:"connector_publish_config" json:"connector_publish_config,omitempty" query:"connector_publish_config"`
-	// 渠道绑定信息 key字段名 value是值
+	// Channel binding information key field name value is value
 	ConnectorBindInfo map[string]string `thrift:"connector_bind_info,9,optional" form:"connector_bind_info" json:"connector_bind_info,omitempty" query:"connector_bind_info"`
 }
 
@@ -8190,7 +8190,7 @@ func (p *ConnectorPublishResult) String() string {
 }
 
 type PublishRecordStatusDetail struct {
-	// 打包失败详情
+	// Packaging failure details
 	PackFailedDetail []*PackFailedDetail `thrift:"pack_failed_detail,1,optional" form:"pack_failed_detail" json:"pack_failed_detail,omitempty" query:"pack_failed_detail"`
 }
 
@@ -8591,7 +8591,7 @@ func (p *PackFailedDetail) String() string {
 
 type GetPublishRecordDetailRequest struct {
 	ProjectID int64 `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,string,required" query:"project_id,required"`
-	// 不传则获取最近一次发布记录
+	// If you don't upload it, get the last release record.
 	PublishRecordID *int64     `thrift:"publish_record_id,2,optional" form:"publish_record_id" json:"publish_record_id,string,omitempty" query:"publish_record_id"`
 	Base            *base.Base `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
 }

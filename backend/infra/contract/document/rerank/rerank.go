@@ -33,7 +33,7 @@ type Request struct {
 }
 
 type Response struct {
-	SortedData []*Data // 高分在前
+	SortedData []*Data // High score
 	TokenUsage *int64
 }
 

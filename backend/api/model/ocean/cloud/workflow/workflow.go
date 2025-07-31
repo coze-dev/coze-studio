@@ -57,7 +57,7 @@ func (p *PersistenceModel) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// WorkflowMode 用来区分 Workflow 和 chatflow
+// WorkflowMode is used to distinguish between Workflow and chatflow.
 type WorkflowMode int64
 
 const (
@@ -65,7 +65,7 @@ const (
 	WorkflowMode_Imageflow WorkflowMode = 1
 	WorkflowMode_SceneFlow WorkflowMode = 2
 	WorkflowMode_ChatFlow  WorkflowMode = 3
-	// 仅在查询时使用
+	// Use only when querying
 	WorkflowMode_All WorkflowMode = 100
 )
 
@@ -116,19 +116,19 @@ func (p *WorkflowMode) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// workflow 商品审核草稿状态
+// Workflow Product Review Draft Status
 type ProductDraftStatus int64
 
 const (
-	// 默认
+	// default
 	ProductDraftStatus_Default ProductDraftStatus = 0
-	// 审核中
+	// Under review.
 	ProductDraftStatus_Pending ProductDraftStatus = 1
-	// 审核通过
+	// approved
 	ProductDraftStatus_Approved ProductDraftStatus = 2
-	// 审核不通过
+	// The review failed.
 	ProductDraftStatus_Rejected ProductDraftStatus = 3
-	// 已废弃
+	// Abandoned
 	ProductDraftStatus_Abandoned ProductDraftStatus = 4
 )
 
@@ -182,9 +182,9 @@ func (p *ProductDraftStatus) Value() (driver.Value, error) {
 type CollaboratorMode int64
 
 const (
-	// 关闭多人协作模式
+	// Turn off multiplayer collaboration mode
 	CollaboratorMode_Close CollaboratorMode = 0
-	// 开启多人协作模式
+	// Enable multiplayer collaboration mode
 	CollaboratorMode_Open CollaboratorMode = 1
 )
 
@@ -226,10 +226,10 @@ func (p *CollaboratorMode) Value() (driver.Value, error) {
 type SchemaType int64
 
 const (
-	// 废弃
+	// abandoned
 	SchemaType_DAG SchemaType = 0
 	SchemaType_FDL SchemaType = 1
-	// 废弃
+	// abandoned
 	SchemaType_BlockWise SchemaType = 2
 )
 
@@ -275,9 +275,9 @@ func (p *SchemaType) Value() (driver.Value, error) {
 type WorkFlowType int64
 
 const (
-	// 用户自定义
+	// user defined
 	WorkFlowType_User WorkFlowType = 0
-	// 官方模板
+	// official template
 	WorkFlowType_GuanFang WorkFlowType = 1
 )
 
@@ -443,7 +443,7 @@ func (p *Tag) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 节点结构
+// Node structure
 type NodeType int64
 
 const (
@@ -626,7 +626,7 @@ func (p *NodeType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 节点模版类型，与NodeType基本保持一致，copy一份是因为新增了一个Imageflow类型，避免影响原来NodeType的业务语意
+// The node template type is basically the same as NodeType. One copy is due to the addition of an Imageflow type to avoid affecting the business semantics of the original NodeType
 type NodeTemplateType int64
 
 const (
@@ -1147,9 +1147,9 @@ func (p *TerminatePlanType) Value() (driver.Value, error) {
 type SupportBatch int64
 
 const (
-	// 1:不支持
+	// 1: Not supported
 	SupportBatch_NOT_SUPPORT SupportBatch = 1
-	// 2:支持
+	// 2: Support
 	SupportBatch_SUPPORT SupportBatch = 2
 )
 
@@ -1225,17 +1225,17 @@ func (p *PluginParamTypeFormat) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 状态，1不可提交 2可提交  3已提交 4废弃
+// Status, 1 Not Submitted 2 Submitted 3 Submitted 4 Obsolete
 type WorkFlowDevStatus int64
 
 const (
-	// 不可提交
+	// unsubmittable
 	WorkFlowDevStatus_CanNotSubmit WorkFlowDevStatus = 1
-	// 可提交
+	// submittable
 	WorkFlowDevStatus_CanSubmit WorkFlowDevStatus = 2
-	// 已提交
+	// Submitted
 	WorkFlowDevStatus_HadSubmit WorkFlowDevStatus = 3
-	// 删除
+	// delete
 	WorkFlowDevStatus_Deleted WorkFlowDevStatus = 4
 )
 
@@ -1282,19 +1282,19 @@ func (p *WorkFlowDevStatus) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 状态，1不可发布 2可发布  3已发布 4删除 5下架
+// Status, 1 Unpublishable 2 Publishable 3 Published 4 Deleted 5 Removed
 type WorkFlowStatus int64
 
 const (
-	// 不可发布
+	// unpublishable
 	WorkFlowStatus_CanNotPublish WorkFlowStatus = 1
-	// 可发布
+	// publishable
 	WorkFlowStatus_CanPublish WorkFlowStatus = 2
-	// 已发布
+	// Published
 	WorkFlowStatus_HadPublished WorkFlowStatus = 3
-	// 删除
+	// delete
 	WorkFlowStatus_Deleted WorkFlowStatus = 4
-	// 下架
+	// offline
 	WorkFlowStatus_Unlisted WorkFlowStatus = 5
 )
 
@@ -1452,9 +1452,9 @@ func (p *OperateType) Value() (driver.Value, error) {
 type DeleteAction int64
 
 const (
-	// Blockwise的解绑
+	// Blockwise Unbinding
 	DeleteAction_BlockwiseUnbind DeleteAction = 1
-	// Blockwise的删除
+	// Blockwise removal
 	DeleteAction_BlockwiseDelete DeleteAction = 2
 )
 
@@ -1538,11 +1538,11 @@ func (p *DeleteStatus) Value() (driver.Value, error) {
 type DeleteType int64
 
 const (
-	// 可以删除：无workflow商品/商品下架/第一次上架且审核失败
+	// Can be deleted: No workflow product/product removed from the shelves/first time on the shelves and the review failed
 	DeleteType_CanDelete DeleteType = 0
-	// 删除后审核失败：workflow商品第一次上架并处于审核中
+	// Review failed after deletion: The workflow product is on the shelves for the first time and is under review.
 	DeleteType_RejectProductDraft DeleteType = 1
-	// 需要商品先下架：workflow商品已上架
+	// Products that need to be removed from the shelves first: workflow products have been put on the shelves.
 	DeleteType_UnListProduct DeleteType = 2
 )
 
@@ -1746,7 +1746,7 @@ type BindBizType int64
 const (
 	BindBizType_Agent BindBizType = 1
 	BindBizType_Scene BindBizType = 2
-	// 抖音分身
+	// Douyin doppelganger
 	BindBizType_DouYinBot BindBizType = 3
 )
 
@@ -2267,13 +2267,13 @@ func (p *ParameterLocation) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 默认入参的设置来源
+// Default imported parameter settings source
 type DefaultParamSource int64
 
 const (
-	// 默认用户输入
+	// default user input
 	DefaultParamSource_Input DefaultParamSource = 0
-	// 引用变量
+	// reference variable
 	DefaultParamSource_Variable DefaultParamSource = 1
 )
 
@@ -2312,7 +2312,7 @@ func (p *DefaultParamSource) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 针对File类型参数的细分类型
+// Subdivision types for File type parameters
 type AssistParameterType int64
 
 const (
@@ -2492,11 +2492,11 @@ func (p *CreateEnv) Value() (driver.Value, error) {
 type SuggestReplyInfoMode int64
 
 const (
-	// 关闭
+	// close
 	SuggestReplyInfoMode_Disable SuggestReplyInfoMode = 0
-	// 系统
+	// system
 	SuggestReplyInfoMode_System SuggestReplyInfoMode = 1
-	// 自定义
+	// custom
 	SuggestReplyInfoMode_Custom SuggestReplyInfoMode = 2
 )
 
@@ -2584,9 +2584,9 @@ func (p *Caller) Value() (driver.Value, error) {
 type InputMode int64
 
 const (
-	// 打字输入
+	// Type input
 	InputMode_Text InputMode = 1
-	// 语音输入
+	// Voice input
 	InputMode_Audio InputMode = 2
 )
 
@@ -2628,9 +2628,9 @@ func (p *InputMode) Value() (driver.Value, error) {
 type SendVoiceMode int64
 
 const (
-	// 文本消息
+	// text message
 	SendVoiceMode_Text SendVoiceMode = 1
-	// 发送为语音
+	// Send as voice
 	SendVoiceMode_Audio SendVoiceMode = 2
 )
 
@@ -2781,11 +2781,11 @@ func (p *OrderByType) Value() (driver.Value, error) {
 type PermissionType int64
 
 const (
-	//不能查看详情
+	//Can't view details
 	PermissionType_NoDetail PermissionType = 1
-	//可以查看详情
+	//You can check the details.
 	PermissionType_Detail PermissionType = 2
-	//可以查看和操作
+	//Can be viewed and operated
 	PermissionType_Operate PermissionType = 3
 )
 
@@ -2828,7 +2828,7 @@ func (p *PermissionType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 这个枚举需要与plugin的PluginInterruptType对齐
+// This enumeration needs to be aligned with the plugin's PluginInterruptType
 type InterruptType int64
 
 const (
@@ -2945,42 +2945,42 @@ type Workflow struct {
 	URL        string            `thrift:"url,4" form:"url" json:"url" query:"url"`
 	IconURI    string            `thrift:"icon_uri,5" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	Status     WorkFlowDevStatus `thrift:"status,6" form:"status" json:"status" query:"status"`
-	// 类型，1:官方模版
+	// Type 1: Official Template
 	Type WorkFlowType `thrift:"type,7" form:"type" json:"type" query:"type"`
-	// workflow对应的插件id
+	// Plugin ID for workflow
 	PluginID   string     `thrift:"plugin_id,8" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
 	CreateTime int64      `thrift:"create_time,9" form:"create_time" json:"create_time" query:"create_time"`
 	UpdateTime int64      `thrift:"update_time,10" form:"update_time" json:"update_time" query:"update_time"`
 	SchemaType SchemaType `thrift:"schema_type,11" form:"schema_type" json:"schema_type" query:"schema_type"`
 	StartNode  *Node      `thrift:"start_node,12,optional" form:"start_node" json:"start_node,omitempty" query:"start_node"`
 	Tag        *Tag       `thrift:"tag,13,optional" form:"tag" json:"tag,omitempty" query:"tag"`
-	// 模版创作者id
+	// template creator id
 	TemplateAuthorID *string `thrift:"template_author_id,14,optional" form:"template_author_id" json:"template_author_id,omitempty" query:"template_author_id"`
-	// 模版创作者昵称
+	// template creator nickname
 	TemplateAuthorName *string `thrift:"template_author_name,15,optional" form:"template_author_name" json:"template_author_name,omitempty" query:"template_author_name"`
-	// 模版创作者头像
+	// template creator avatar
 	TemplateAuthorPictureURL *string `thrift:"template_author_picture_url,16,optional" form:"template_author_picture_url" json:"template_author_picture_url,omitempty" query:"template_author_picture_url"`
-	// 空间id
+	// Space ID
 	SpaceID *string `thrift:"space_id,17,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
-	// 流程出入参
+	// process entry and exit
 	InterfaceStr *string `thrift:"interface_str,18,optional" form:"interface_str" json:"interface_str,omitempty" query:"interface_str"`
-	// 新版workflow的定义 schema
+	// New workflow definition schema
 	SchemaJSON *string `thrift:"schema_json,19,optional" form:"schema_json" json:"schema_json,omitempty" query:"schema_json"`
-	// workflow创作者信息
+	// Workflow creator information
 	Creator *Creator `thrift:"creator,20" form:"creator" json:"creator" query:"creator"`
-	// 存储模型
+	// Storage Model
 	PersistenceModel PersistenceModel `thrift:"persistence_model,21" form:"persistence_model" json:"persistence_model" query:"persistence_model"`
-	// workflow or imageflow，默认值为workflow
+	// Workflow or imageflow, the default is workflow
 	FlowMode WorkflowMode `thrift:"flow_mode,22" form:"flow_mode" json:"flow_mode" query:"flow_mode"`
-	// workflow商品审核版本状态
+	// Workflow product review version status
 	ProductDraftStatus ProductDraftStatus `thrift:"product_draft_status,23" form:"product_draft_status" json:"product_draft_status" query:"product_draft_status"`
 	// {"project_id":"xxx","flow_id":xxxx}
 	ExternalFlowInfo *string `thrift:"external_flow_info,24,optional" form:"external_flow_info" json:"external_flow_info,omitempty" query:"external_flow_info"`
-	// workflow多人协作按钮状态
+	// Workflow Multiplayer Collaboration Button Status
 	CollaboratorMode CollaboratorMode `thrift:"collaborator_mode,25" form:"collaborator_mode" json:"collaborator_mode" query:"collaborator_mode"`
 	CheckResult      []*CheckResult   `thrift:"check_result,26" form:"check_result" json:"check_result" query:"check_result"`
 	ProjectID        *string          `thrift:"project_id,27,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
-	// project 下的 workflow 才有
+	// Only the workflow under the project is available.
 	DevPluginID *string `thrift:"dev_plugin_id,28,optional" form:"dev_plugin_id" json:"dev_plugin_id,omitempty" query:"dev_plugin_id"`
 }
 
@@ -4453,11 +4453,11 @@ func (p *Workflow) String() string {
 }
 
 type CheckResult struct {
-	// 校验类型
+	// check type
 	Type CheckType `thrift:"type,1" form:"type" json:"type" query:"type"`
-	// 是否通过
+	// Whether to pass
 	IsPass bool `thrift:"is_pass,2" form:"is_pass" json:"is_pass" query:"is_pass"`
-	// 不通过原因
+	// Reason for not passing
 	Reason string `thrift:"reason,3" form:"reason" json:"reason" query:"reason"`
 }
 
@@ -4688,7 +4688,7 @@ type Creator struct {
 	ID        string `thrift:"id,1" form:"id" json:"id" query:"id"`
 	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	AvatarURL string `thrift:"avatar_url,3" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	// 是否是自己创建的
+	// Did you create it yourself?
 	Self bool `thrift:"self,4" form:"self" json:"self" query:"self"`
 }
 
@@ -4965,7 +4965,7 @@ type Param struct {
 	Type     InputType `thrift:"type,3" form:"type" json:"type" query:"type"`
 	Required bool      `thrift:"required,4" form:"required" json:"required" query:"required"`
 	Value    string    `thrift:"value,5" form:"value" json:"value" query:"value"`
-	// 要求  1不允许删除 2不允许更改名称 3什么都可修改 4只显示，全部不允许更改
+	// Requirements 1 Do not allow deletion 2 Do not allow name change 3 Anything can be modified 4 Only display, all are not allowed to be changed
 	Requirement ParamRequirementType `thrift:"requirement,6" form:"requirement" json:"requirement" query:"requirement"`
 	FromNodeID  *string              `thrift:"from_node_id,7,optional" form:"from_node_id" json:"from_node_id,omitempty" query:"from_node_id"`
 	FromOutput  []string             `thrift:"from_output,8,optional" form:"from_output" json:"from_output,omitempty" query:"from_output"`
@@ -6658,11 +6658,11 @@ func (p *IfParam) String() string {
 }
 
 type IfBranch struct {
-	// 该分支的条件
+	// Conditions for this branch
 	IfConditions []*IfCondition `thrift:"if_conditions,1,optional" form:"if_conditions" json:"if_conditions,omitempty" query:"if_conditions"`
-	// 该分支各条件的关系
+	// The relationship between the conditions of this branch
 	IfConditionRelation *IfConditionRelation `thrift:"if_condition_relation,2,optional" form:"if_condition_relation" json:"if_condition_relation,omitempty" query:"if_condition_relation"`
-	// 该分支对应的下一个节点
+	// The next node corresponding to this branch
 	NextNodeID []string `thrift:"next_node_id,3,optional" form:"next_node_id" json:"next_node_id,omitempty" query:"next_node_id"`
 }
 
@@ -7411,7 +7411,7 @@ func (p *LayOut) String() string {
 }
 
 type TerminatePlan struct {
-	//结束方式
+	//End method
 	Plan    TerminatePlanType `thrift:"plan,1" form:"plan" json:"plan" query:"plan"`
 	Content string            `thrift:"content,2" form:"content" json:"content" query:"content"`
 }
@@ -7596,27 +7596,27 @@ func (p *TerminatePlan) String() string {
 }
 
 type NodeParam struct {
-	// 输入参数列表，支持多级；支持mapping
+	// Enter parameter list, support multi-level; support mapping
 	InputList []*Param `thrift:"input_list,1,optional" form:"input_list" json:"input_list,omitempty" query:"input_list"`
-	// 输出参数列表，支持多级
+	// Output parameter list, support multi-level
 	OutputList []*Param `thrift:"output_list,2,optional" form:"output_list" json:"output_list,omitempty" query:"output_list"`
-	// 如果是API类型的Node，插件名、API名、插件版本、API的描述
+	// If it is an API type Node, plug-in name, API name, plug-in version, API description
 	APIParam *APIParam `thrift:"api_param,3,optional" form:"api_param" json:"api_param,omitempty" query:"api_param"`
-	// 如果是代码片段，则包含代码内容
+	// If it is a code snippet, include the code content
 	CodeParam *CodeParam `thrift:"code_param,4,optional" form:"code_param" json:"code_param,omitempty" query:"code_param"`
-	// 如果是模型，则包含模型的基础信息
+	// If it is a model, include the basic information of the model
 	LlmParam *LLMParam `thrift:"llm_param,5,optional" form:"llm_param" json:"llm_param,omitempty" query:"llm_param"`
-	// 如果是数据集，选择数据集的片段
+	// If it is a dataset, select a fragment of the dataset
 	DatasetParam *DatasetParam `thrift:"dataset_param,6,optional" form:"dataset_param" json:"dataset_param,omitempty" query:"dataset_param"`
-	// end节点，如何结束
+	// End node, how to end
 	TerminatePlan *TerminatePlan `thrift:"terminate_plan,7,optional" form:"terminate_plan" json:"terminate_plan,omitempty" query:"terminate_plan"`
-	// （新）输入参数列表
+	// (New) input parameter list
 	InputParameters []*Parameter `thrift:"input_parameters,8,optional" form:"input_parameters" json:"input_parameters,omitempty" query:"input_parameters"`
-	// （新）输出参数列表
+	// (New) Output parameter list
 	OutputParameters []*Parameter `thrift:"output_parameters,9,optional" form:"output_parameters" json:"output_parameters,omitempty" query:"output_parameters"`
-	// 批量设置情况
+	// batch setup
 	Batch *Batch `thrift:"batch,10,optional" form:"batch" json:"batch,omitempty" query:"batch"`
-	// if节点参数
+	// if node parameter
 	IfParam *IfParam `thrift:"if_param,11,optional" form:"if_param" json:"if_param,omitempty" query:"if_param"`
 }
 
@@ -8377,13 +8377,13 @@ func (p *NodeParam) String() string {
 
 type NodeDesc struct {
 	Desc string `thrift:"desc,1" form:"desc" json:"desc" query:"desc"`
-	// 副标题名称
+	// Subtitle name
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
-	// 该类型的icon
+	// This type of icon
 	IconURL string `thrift:"icon_url,3" form:"icon_url" json:"icon_url" query:"icon_url"`
-	// 是否支持批量，1不支持，2支持
+	// Whether to support batch, 1 does not support, 2 supports
 	SupportBatch int32 `thrift:"support_batch,4" form:"support_batch" json:"support_batch" query:"support_batch"`
-	// 连接要求 1左右都可连接 2只支持右侧
+	// Connection requirements 1 or so can be connected 2 only support the right side
 	LinkLimit int32 `thrift:"link_limit,5" form:"link_limit" json:"link_limit" query:"link_limit"`
 }
 
@@ -8923,11 +8923,11 @@ func (p *OpenAPI) String() string {
 }
 
 type Batch struct {
-	// batch开关是否打开
+	// Is the batch switch on?
 	IsBatch bool `thrift:"is_batch,1" form:"is_batch" json:"is_batch" query:"is_batch"`
-	// 只处理数组[0,take_count)范围的输入
+	// Only process input in the range [0, take_count)
 	TakeCount int64 `thrift:"take_count,2" form:"take_count" json:"take_count" query:"take_count"`
-	// 需要Batch的输入
+	// Batch input required
 	InputParam *Parameter `thrift:"input_param,3" form:"input_param" json:"input_param" query:"input_param"`
 }
 
@@ -9162,21 +9162,21 @@ func (p *Batch) String() string {
 
 type Node struct {
 	WorkflowID string `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
-	// 节点id
+	// Node ID
 	NodeID string `thrift:"node_id,2" form:"node_id" json:"node_id" query:"node_id"`
-	// 更改node名称
+	// Change node name
 	NodeName string `thrift:"node_name,3" form:"node_name" json:"node_name" query:"node_name"`
-	// 节点类型
+	// Node type
 	NodeType NodeType `thrift:"node_type,4" form:"node_type" json:"node_type" query:"node_type"`
-	// 节点的核心参数
+	// Core parameters of the node
 	NodeParam *NodeParam `thrift:"node_param,5" form:"node_param" json:"node_param" query:"node_param"`
-	// Node的位置
+	// Node location
 	LayOut *LayOut `thrift:"lay_out,6" form:"lay_out" json:"lay_out" query:"lay_out"`
-	// Node的描述，说明链接
+	// Description of Node, explaining the link
 	Desc *NodeDesc `thrift:"desc,7" form:"desc" json:"desc" query:"desc"`
-	// 依赖的上游节点
+	// dependent upstream node
 	DependsOn []string `thrift:"depends_on,8" form:"depends_on" json:"depends_on" query:"depends_on"`
-	// 所有的输入和输出
+	// All inputs and outputs
 	OpenAPI *OpenAPI `thrift:"open_api,9" form:"open_api" json:"open_api" query:"open_api"`
 }
 
@@ -9717,18 +9717,18 @@ type Parameter struct {
 	Required      bool         `thrift:"required,3" form:"required" json:"required" query:"required"`
 	Type          InputType    `thrift:"type,4" form:"type" json:"type" query:"type"`
 	SubParameters []*Parameter `thrift:"sub_parameters,5" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
-	// 如果Type是数组，则有subtype
+	// If Type is an array, there is a subtype
 	SubType InputType `thrift:"sub_type,6" form:"sub_type" json:"sub_type" query:"sub_type"`
-	// 如果入参的值是引用的则有fromNodeId
+	// fromNodeId if the value of the imported parameter is a reference
 	FromNodeID *string `thrift:"from_node_id,7,optional" form:"from_node_id" json:"from_node_id,omitempty" query:"from_node_id"`
-	// 具体引用哪个节点的key
+	// Which node's key is specifically referenced?
 	FromOutput []string `thrift:"from_output,8,optional" form:"from_output" json:"from_output,omitempty" query:"from_output"`
-	// 如果入参是用户手输 就放这里
+	// If the imported parameter is the user's hand input, put it here
 	Value  *string                `thrift:"value,9,optional" form:"value" json:"value,omitempty" query:"value"`
 	Format *PluginParamTypeFormat `thrift:"format,10,optional" form:"format" json:"format,omitempty" query:"format"`
-	// 辅助类型；type=string生效，0 为unset
+	// Auxiliary type; type = string takes effect, 0 is unset
 	AssistType *int64 `thrift:"assist_type,11,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
-	// 如果Type是数组，表示子元素的辅助类型；sub_type=string生效，0 为unset
+	// If Type is an array, it represents the auxiliary type of the child element; sub_type = string takes effect, 0 is unset
 	SubAssistType *int64 `thrift:"sub_assist_type,12,optional" form:"sub_assist_type" json:"sub_assist_type,omitempty" query:"sub_assist_type"`
 }
 
@@ -10459,23 +10459,23 @@ func (p *Parameter) String() string {
 }
 
 type CreateWorkflowRequest struct {
-	// 流程名
+	// process name
 	Name string `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
-	// 流程描述，不可为空
+	// Process description, not null
 	Desc string `thrift:"desc,2,required" form:"desc,required" json:"desc,required" query:"desc,required"`
-	// 流程图标uri，不可为空
+	// Process icon uri, not nullable
 	IconURI string `thrift:"icon_uri,3,required" form:"icon_uri,required" json:"icon_uri,required" query:"icon_uri,required"`
-	// 空间id，不可为空
+	// Space id, cannot be empty
 	SpaceID string `thrift:"space_id,4,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
-	// workflow or chatflow，默认值为workflow
+	// Workflow or chatflow, the default is workflow
 	FlowMode   *WorkflowMode `thrift:"flow_mode,5,optional" form:"flow_mode" json:"flow_mode,omitempty" query:"flow_mode"`
 	SchemaType *SchemaType   `thrift:"schema_type,6,optional" form:"schema_type" json:"schema_type,omitempty" query:"schema_type"`
 	BindBizID  *string       `thrift:"bind_biz_id,7,optional" form:"bind_biz_id" json:"bind_biz_id,omitempty" query:"bind_biz_id"`
-	// 绑定业务类型，非必要不填写。参考BindBizType结构体，值为3时代表抖音分身
+	// Bind the business type, do not fill in if necessary. Refer to the BindBizType structure, when the value is 3, it represents the Douyin doppelganger.
 	BindBizType *int32 `thrift:"bind_biz_type,8,optional" form:"bind_biz_type" json:"bind_biz_type,omitempty" query:"bind_biz_type"`
-	// 应用id，填写时代表流程是project下的流程，需要跟随project发布
+	// Application id, when filled in, it means that the process is the process under the project, and it needs to be released with the project.
 	ProjectID *string `thrift:"project_id,9,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
-	// 是否创建会话，仅当flow_mode=chatflow时生效
+	// Whether to create a session, only if flow_mode = chatflow
 	CreateConversation *bool      `thrift:"create_conversation,10,optional" form:"create_conversation" json:"create_conversation,omitempty" query:"create_conversation"`
 	Base               *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -11161,9 +11161,9 @@ func (p *CreateWorkflowRequest) String() string {
 }
 
 type CreateWorkflowData struct {
-	// 流程的id，用来标识唯一的流程
+	// The ID of the process, used to identify a unique process
 	WorkflowID string `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
-	// 流程名
+	// process name
 	Name     string         `thrift:"name,2" form:"name" json:"name" query:"name"`
 	URL      string         `thrift:"url,3" form:"url" json:"url" query:"url"`
 	Status   WorkFlowStatus `thrift:"status,4" form:"status" json:"status" query:"status"`
@@ -11919,16 +11919,16 @@ func (p *CreateWorkflowResponse) String() string {
 }
 
 type SaveWorkflowRequest struct {
-	// 流程的id，用来标识唯一的流程
+	// The ID of the process, used to identify a unique process
 	WorkflowID string `thrift:"workflow_id,1,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
-	// 流程的schema
+	// Process schema
 	Schema *string `thrift:"schema,2,optional" form:"schema" json:"schema,omitempty" query:"schema"`
-	// required，空间id，不可为空
+	// Required, space id, not nullable
 	SpaceID *string `thrift:"space_id,3,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
 	Name    *string `thrift:"name,4,optional" form:"name" json:"name,omitempty" query:"name"`
 	Desc    *string `thrift:"desc,5,optional" form:"desc" json:"desc,omitempty" query:"desc"`
 	IconURI *string `thrift:"icon_uri,6,optional" form:"icon_uri" json:"icon_uri,omitempty" query:"icon_uri"`
-	// 提交的 commit_id。其作用是唯一标识一个流程的单个提交版本（每个 commit_id 仅对应且仅能对应一个流程的一次提交版本）。
+	// The commit_id of a commit. This is used to uniquely identify individual commit versions of a process (each commit_id corresponds only and only to one commit version of a process).
 	SubmitCommitID       string     `thrift:"submit_commit_id,7,required" form:"submit_commit_id,required" json:"submit_commit_id,required" query:"submit_commit_id,required"`
 	IgnoreStatusTransfer *bool      `thrift:"ignore_status_transfer,8,optional" form:"ignore_status_transfer" json:"ignore_status_transfer,omitempty" query:"ignore_status_transfer"`
 	Base                 *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -15574,7 +15574,7 @@ type CanvasData struct {
 	DbData           *DBCanvasData  `thrift:"db_data,3" form:"db_data" json:"db_data" query:"db_data"`
 	OperationInfo    *OperationInfo `thrift:"operation_info,4" form:"operation_info" json:"operation_info" query:"operation_info"`
 	ExternalFlowInfo *string        `thrift:"external_flow_info,5,optional" form:"external_flow_info" json:"external_flow_info,omitempty" query:"external_flow_info"`
-	// 是否绑定了Agent
+	// Is the Agent bound?
 	IsBindAgent     *bool   `thrift:"is_bind_agent,6,optional" form:"is_bind_agent" json:"is_bind_agent,omitempty" query:"is_bind_agent"`
 	BindBizID       *string `thrift:"bind_biz_id,7,optional" form:"bind_biz_id" json:"bind_biz_id,omitempty" query:"bind_biz_id"`
 	BindBizType     *int32  `thrift:"bind_biz_type,8,optional" form:"bind_biz_type" json:"bind_biz_type,omitempty" query:"bind_biz_type"`
@@ -16148,9 +16148,9 @@ func (p *CanvasData) String() string {
 }
 
 type GetCanvasInfoRequest struct {
-	// 空间id，不可为空
+	// Space id, cannot be empty
 	SpaceID string `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
-	// required，流程id，不可为空
+	// Required, process id, not null
 	WorkflowID *string    `thrift:"workflow_id,2,optional" form:"workflow_id" json:"workflow_id,omitempty" query:"workflow_id"`
 	Base       *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -16723,7 +16723,7 @@ func (p *GetCanvasInfoResponse) String() string {
 type GetHistorySchemaRequest struct {
 	SpaceID    string `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	WorkflowID string `thrift:"workflow_id,2,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
-	// 多次分页的时候需要传入
+	// You need to pass in when paging multiple times.
 	CommitID        *string     `thrift:"commit_id,3,optional" form:"commit_id" json:"commit_id,omitempty" query:"commit_id"`
 	Type            OperateType `thrift:"type,4,required" form:"type,required" json:"type,required" query:"type,required"`
 	Env             *string     `thrift:"env,5,optional" form:"env" json:"env,omitempty" query:"env"`
@@ -20450,15 +20450,15 @@ type PublishWorkflowRequest struct {
 	WorkflowID      string `thrift:"workflow_id,1,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
 	SpaceID         string `thrift:"space_id,2,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	HasCollaborator bool   `thrift:"has_collaborator,3,required" form:"has_collaborator,required" json:"has_collaborator,required" query:"has_collaborator,required"`
-	// 发布到哪个环境，不填默认线上
+	// Which environment to publish to, do not fill in the default line
 	Env *string `thrift:"env,4,optional" form:"env" json:"env,omitempty" query:"env"`
-	// 使用哪个版本发布，不填默认最新提交版本
+	// Which version to use to release, do not fill in the default latest commit version
 	CommitID *string `thrift:"commit_id,5,optional" form:"commit_id" json:"commit_id,omitempty" query:"commit_id"`
-	// 强制发布。若流程发布前执行了 TestRun 步骤，“force” 参数值应为 false，或不传递该参数；若流程发布前未执行 TestRun 步骤，“force” 参数值应为 true 。
+	// Force release. If the TestRun step was executed before the process was published, the "force" parameter value should be false, or not passed; if the TestRun step was not executed before the process was published, the "force" parameter value should be true.
 	Force *bool `thrift:"force,6,optional" form:"force" json:"force,omitempty" query:"force"`
-	// required, 发布workflow的版本号，遵循 SemVer 格式为"vx.y.z"，必须比当前版本大，可通过 GetCanvasInfo 获取当前版本
+	// Required, the version number of the published workflow, in SemVer format "vx.y.z", must be larger than the current version, the current version can be obtained through GetCanvasInfo
 	WorkflowVersion *string `thrift:"workflow_version,7,optional" form:"workflow_version" json:"workflow_version,omitempty" query:"workflow_version"`
-	// workflow的版本描述
+	// Workflow version description
 	VersionDescription *string    `thrift:"version_description,8,optional" form:"version_description" json:"version_description,omitempty" query:"version_description"`
 	Base               *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -22349,7 +22349,7 @@ type UserInfo struct {
 	UserID     int64  `thrift:"user_id,1" form:"user_id" json:"user_id" query:"user_id"`
 	UserName   string `thrift:"user_name,2" form:"user_name" json:"user_name" query:"user_name"`
 	UserAvatar string `thrift:"user_avatar,3" form:"user_avatar" json:"user_avatar" query:"user_avatar"`
-	// 用户昵称
+	// user nickname
 	Nickname string `thrift:"nickname,4" form:"nickname" json:"nickname" query:"nickname"`
 }
 
@@ -22839,7 +22839,7 @@ type ReleasedWorkflow struct {
 	Version         string         `thrift:"version,12" form:"version" json:"version" query:"version"`
 	CreateTime      int64          `thrift:"create_time,13" form:"create_time" json:"create_time" query:"create_time"`
 	UpdateTime      int64          `thrift:"update_time,14" form:"update_time" json:"update_time" query:"update_time"`
-	// workflow创作者信息
+	// Workflow creator information
 	Creator               *Creator     `thrift:"creator,15" form:"creator" json:"creator" query:"creator"`
 	FlowMode              WorkflowMode `thrift:"flow_mode,16" form:"flow_mode" json:"flow_mode" query:"flow_mode"`
 	FlowVersion           string       `thrift:"flow_version,17" form:"flow_version" json:"flow_version" query:"flow_version"`
@@ -24139,7 +24139,7 @@ func (p *SubWorkflow) String() string {
 
 }
 
-// Workflow 过滤条件
+// Workflow filter
 type WorkflowFilter struct {
 	WorkflowID      string  `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
 	WorkflowVersion *string `thrift:"workflow_version,2,optional" form:"workflow_version" json:"workflow_version,omitempty" query:"workflow_version"`
@@ -24345,9 +24345,9 @@ type GetReleasedWorkflowsRequest struct {
 	SpaceID         *string       `thrift:"space_id,8,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
 	OrderBy         *OrderBy      `thrift:"order_by,9,optional" form:"order_by" json:"order_by,omitempty" query:"order_by"`
 	LoginUserCreate *bool         `thrift:"login_user_create,10,optional" form:"login_user_create" json:"login_user_create,omitempty" query:"login_user_create"`
-	// workflow or imageflow, 默认为workflow
+	// Workflow or imageflow, default to workflow
 	FlowMode *WorkflowMode `thrift:"flow_mode,11,optional" form:"flow_mode" json:"flow_mode,omitempty" query:"flow_mode"`
-	// 过滤条件，支持workflow_id和workflow_version
+	// Filter conditions, support workflow_id and workflow_version
 	WorkflowFilterList []*WorkflowFilter `thrift:"workflow_filter_list,12,optional" form:"workflow_filter_list" json:"workflow_filter_list,omitempty" query:"workflow_filter_list"`
 	Base               *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -26501,15 +26501,15 @@ func (p *GetExampleWorkFlowListResponse) String() string {
 }
 
 type GetExampleWorkFlowListRequest struct {
-	// 分页功能，指定希望获取的结果列表的页码。
+	// Paging function, specifying the page number of the list of results you want to retrieve.
 	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty" query:"page"`
-	// 分页功能，指定每页返回的条目数量, 必须大于0，小于等于100
+	// Paging function, specifies the number of entries returned per page, must be greater than 0, less than or equal to 100
 	Size *int32 `thrift:"size,2,optional" form:"size" json:"size,omitempty" query:"size"`
-	// 根据工作流的名称来筛选示例工作流列表。
+	// Filter the list of sample workflows by the name of the workflow.
 	Name *string `thrift:"name,5,optional" form:"name" json:"name,omitempty" query:"name"`
-	// 根据工作流的模式（例如：标准工作流、对话流等）筛选示例工作流列表。
+	// Filter the sample workflow list based on the workflow pattern (e.g., standard workflow, conversation flow, etc.).
 	FlowMode *WorkflowMode `thrift:"flow_mode,11,optional" form:"flow_mode" json:"flow_mode,omitempty" query:"flow_mode"`
-	// Bot的 Workflow as Agent模式会使用，只会使用BotAgent = 3的场景
+	// Bot's Workflow as Agent mode will be used, only scenarios with BotAgent = 3 will be used
 	Checker []CheckType `thrift:"checker,14,optional" form:"checker" json:"checker,omitempty" query:"checker"`
 	Base    *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -26955,30 +26955,30 @@ func (p *GetExampleWorkFlowListRequest) String() string {
 
 type GetWorkFlowListRequest struct {
 	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty" query:"page"`
-	// 分页大小，一般为10
+	// Page size, usually 10.
 	Size *int32 `thrift:"size,2,optional" form:"size" json:"size,omitempty" query:"size"`
-	// 根据流程id列表查询对应的流程
+	// Query the corresponding process according to the process id list
 	WorkflowIds []string `thrift:"workflow_ids,3,optional" form:"workflow_ids" json:"workflow_ids,omitempty" query:"workflow_ids"`
-	// 根据流程类型筛选流程
+	// Filter processes by process type
 	Type *WorkFlowType `thrift:"type,4,optional" form:"type" json:"type,omitempty" query:"type"`
-	// 根据流程名称筛选流程
+	// Filter processes by process name
 	Name *string `thrift:"name,5,optional" form:"name" json:"name,omitempty" query:"name"`
-	// 根据标签筛选流程
+	// Filter process by label
 	Tags *Tag `thrift:"tags,6,optional" form:"tags" json:"tags,omitempty" query:"tags"`
-	// required，空间id
+	// Required, space id
 	SpaceID *string `thrift:"space_id,7,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
-	// 根据流程是否已发布筛选流程
+	// Filter process according to whether the process has been published
 	Status  *WorkFlowListStatus `thrift:"status,8,optional" form:"status" json:"status,omitempty" query:"status"`
 	OrderBy *OrderBy            `thrift:"order_by,9,optional" form:"order_by" json:"order_by,omitempty" query:"order_by"`
-	// 根据接口请求人是否为流程创建人筛选流程
+	// Filter processes based on whether the interface requester is the process creator
 	LoginUserCreate *bool `thrift:"login_user_create,10,optional" form:"login_user_create" json:"login_user_create,omitempty" query:"login_user_create"`
-	// workflow or chatflow, 默认为workflow。根据流程类型筛选流程
+	// Workflow or chatflow, the default is workflow. Filter processes by process type
 	FlowMode *WorkflowMode `thrift:"flow_mode,11,optional" form:"flow_mode" json:"flow_mode,omitempty" query:"flow_mode"`
-	// 新增字段，用于筛选schema_type
+	// New field for filtering schema_type
 	SchemaTypeList []SchemaType `thrift:"schema_type_list,12,optional" form:"schema_type_list" json:"schema_type_list,omitempty" query:"schema_type_list"`
-	// 在对应project下查询流程
+	// Query process under the corresponding project
 	ProjectID *string `thrift:"project_id,13,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
-	// 用于project发布过滤，此列表中的每个 CheckType 元素可指定特定规则，决定了返回的流程是否通过检查。
+	// For project publication filtering, each CheckType element in this list can specify a specific rule that determines whether the returned process passes the check.
 	Checker        []CheckType  `thrift:"checker,14,optional" form:"checker" json:"checker,omitempty" query:"checker"`
 	BindBizID      *string      `thrift:"bind_biz_id,15,optional" form:"bind_biz_id" json:"bind_biz_id,omitempty" query:"bind_biz_id"`
 	BindBizType    *BindBizType `thrift:"bind_biz_type,16,optional" form:"bind_biz_type" json:"bind_biz_type,omitempty" query:"bind_biz_type"`
@@ -28360,11 +28360,11 @@ func (p *ResourceActionAuth) String() string {
 }
 
 type ResourceAuthInfo struct {
-	// 资源id
+	// Resource ID
 	WorkflowID string `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id" query:"workflow_id"`
-	// 用户id
+	// user id
 	UserID string `thrift:"user_id,2" form:"user_id" json:"user_id" query:"user_id"`
-	// 用户资源操作权限
+	// user resource operation permission
 	Auth *ResourceActionAuth `thrift:"auth,3" form:"auth" json:"auth" query:"auth"`
 }
 
@@ -30447,11 +30447,11 @@ type WorkFlowTestRunRequest struct {
 	WorkflowID string            `thrift:"workflow_id,1,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
 	Input      map[string]string `thrift:"input,2" form:"input" json:"input" query:"input"`
 	SpaceID    *string           `thrift:"space_id,3,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
-	// agent的id，非project下的流程，涉及变量节点、数据库的流程
+	// The id of the agent, the process under non-project, the process involving variable nodes and databases
 	BotID *string `thrift:"bot_id,4,optional" form:"bot_id" json:"bot_id,omitempty" query:"bot_id"`
-	// 废弃
+	// abandoned
 	SubmitCommitID *string `thrift:"submit_commit_id,5,optional" form:"submit_commit_id" json:"submit_commit_id,omitempty" query:"submit_commit_id"`
-	// 指定vcs commit_id，默认为空
+	// Specify vcs commit_id, default is empty
 	CommitID  *string    `thrift:"commit_id,6,optional" form:"commit_id" json:"commit_id,omitempty" query:"commit_id"`
 	ProjectID *string    `thrift:"project_id,7,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -32778,7 +32778,7 @@ func (p *CancelWorkFlowResponse) String() string {
 
 }
 
-// workflow快照基本信息
+// Workflow snapshot basic information
 type WkPluginBasicData struct {
 	WorkflowID int64          `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id,string" query:"workflow_id"`
 	SpaceID    int64          `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
@@ -32787,7 +32787,7 @@ type WkPluginBasicData struct {
 	URL        string         `thrift:"url,5" form:"url" json:"url" query:"url"`
 	IconURI    string         `thrift:"icon_uri,6" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	Status     WorkFlowStatus `thrift:"status,7" form:"status" json:"status" query:"status"`
-	// workflow 对应的插件id
+	// Plugin ID for workflow
 	PluginID              int64        `thrift:"plugin_id,8" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
 	CreateTime            int64        `thrift:"create_time,9" form:"create_time" json:"create_time" query:"create_time"`
 	UpdateTime            int64        `thrift:"update_time,10" form:"update_time" json:"update_time" query:"update_time"`
@@ -33724,7 +33724,7 @@ func (p *WkPluginBasicData) String() string {
 
 type CopyWkTemplateApiRequest struct {
 	WorkflowIds []string `thrift:"workflow_ids,1,required" form:"workflow_ids,required" json:"workflow_ids,required" query:"workflow_ids,required"`
-	// 拷贝的目标空间
+	// Copy target space
 	TargetSpaceID int64      `thrift:"target_space_id,2,required" form:"target_space_id,required" json:"target_space_id,string,required" query:"target_space_id,required"`
 	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -33996,7 +33996,7 @@ func (p *CopyWkTemplateApiRequest) String() string {
 }
 
 type CopyWkTemplateApiResponse struct {
-	// 模板ID：拷贝副本的数据
+	// Template ID: Copy copy of data
 	Data     map[int64]*WkPluginBasicData `thrift:"data,1,required" form:"data,required" json:"data,string,required" query:"data,required"`
 	Code     int64                        `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string                       `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -34336,17 +34336,17 @@ func (p *CopyWkTemplateApiResponse) String() string {
 
 // === node history ===
 type GetWorkflowProcessRequest struct {
-	// 流程id，不为空
+	// Process id, not empty
 	WorkflowID string `thrift:"workflow_id,1,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
-	// 空间id，不为空
+	// Space id, not empty
 	SpaceID string `thrift:"space_id,2,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
-	// 流程的执行id
+	// Execution ID of the process
 	ExecuteID *string `thrift:"execute_id,3,optional" form:"execute_id" json:"execute_id,omitempty" query:"execute_id"`
-	// 子流程的执行id
+	// Execution ID of the subprocess
 	SubExecuteID *string `thrift:"sub_execute_id,4,optional" form:"sub_execute_id" json:"sub_execute_id,omitempty" query:"sub_execute_id"`
-	// 是否返回所有的batch节点内容
+	// Whether to return all batch node contents
 	NeedAsync *bool `thrift:"need_async,5,optional" form:"need_async" json:"need_async,omitempty" query:"need_async"`
-	// 未传execute_id时，可通过log_id取到execute_id
+	// When execute_id is not transmitted, it can be obtained through log_id execute_id
 	LogID  *string    `thrift:"log_id,6,optional" form:"log_id" json:"log_id,omitempty" query:"log_id"`
 	NodeID *int64     `thrift:"node_id,7,optional" form:"node_id" json:"node_id,string,omitempty" query:"node_id"`
 	Base   *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -35168,17 +35168,17 @@ func (p *GetWorkflowProcessResponse) String() string {
 }
 
 type TokenAndCost struct {
-	// input消耗Token数
+	// Input Consumption Tokens
 	InputTokens *string `thrift:"inputTokens,1,optional" form:"inputTokens" json:"inputTokens,omitempty" query:"inputTokens"`
-	// input花费
+	// Input cost
 	InputCost *string `thrift:"inputCost,2,optional" form:"inputCost" json:"inputCost,omitempty" query:"inputCost"`
-	// Output消耗Token数
+	// Output Consumption Tokens
 	OutputTokens *string `thrift:"outputTokens,3,optional" form:"outputTokens" json:"outputTokens,omitempty" query:"outputTokens"`
-	// Output花费
+	// Output cost
 	OutputCost *string `thrift:"outputCost,4,optional" form:"outputCost" json:"outputCost,omitempty" query:"outputCost"`
-	// 总消耗Token数
+	// Total Consumed Tokens
 	TotalTokens *string `thrift:"totalTokens,5,optional" form:"totalTokens" json:"totalTokens,omitempty" query:"totalTokens"`
-	// 总花费
+	// total cost
 	TotalCost *string `thrift:"totalCost,6,optional" form:"totalCost" json:"totalCost,omitempty" query:"totalCost"`
 }
 
@@ -35607,11 +35607,11 @@ type GetNodeExecuteHistoryRequest struct {
 	WorkflowID string `thrift:"workflow_id,1,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
 	SpaceID    string `thrift:"space_id,2,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	ExecuteID  string `thrift:"execute_id,3,required" form:"execute_id,required" json:"execute_id,required" query:"execute_id,required"`
-	// 节点id
+	// Node ID
 	NodeID string `thrift:"node_id,5,required" form:"node_id,required" json:"node_id,required" query:"node_id,required"`
-	// 是否批次节点
+	// Whether batch node
 	IsBatch *bool `thrift:"is_batch,6,optional" form:"is_batch" json:"is_batch,omitempty" query:"is_batch"`
-	// 执行批次
+	// execution batch
 	BatchIndex       *int32            `thrift:"batch_index,7,optional" form:"batch_index" json:"batch_index,omitempty" query:"batch_index"`
 	NodeType         string            `thrift:"node_type,8,required" form:"node_type,required" json:"node_type,required" query:"node_type,required"`
 	NodeHistoryScene *NodeHistoryScene `thrift:"node_history_scene,9,optional" form:"node_history_scene" json:"node_history_scene,omitempty" query:"node_history_scene"`
@@ -36474,20 +36474,20 @@ type GetWorkFlowProcessData struct {
 	ExecuteId     string            `thrift:"executeId,2" form:"executeId" json:"executeId" query:"executeId"`
 	ExecuteStatus WorkflowExeStatus `thrift:"executeStatus,3" form:"executeStatus" json:"executeStatus" query:"executeStatus"`
 	NodeResults   []*NodeResult     `thrift:"nodeResults,4" form:"nodeResults" json:"nodeResults" query:"nodeResults"`
-	// 执行进度
+	// execution progress
 	Rate string `thrift:"rate,5" form:"rate" json:"rate" query:"rate"`
-	// 现节点试运行状态 1：没有试运行 2：试运行过
+	// Current node practice run state 1: no practice run 2: practice run
 	ExeHistoryStatus WorkflowExeHistoryStatus `thrift:"exeHistoryStatus,6" form:"exeHistoryStatus" json:"exeHistoryStatus" query:"exeHistoryStatus"`
-	// workflow试运行耗时
+	// Workflow practice running time
 	WorkflowExeCost string `thrift:"workflowExeCost,7" form:"workflowExeCost" json:"workflowExeCost" query:"workflowExeCost"`
-	// 消耗
+	// consume
 	TokenAndCost *TokenAndCost `thrift:"tokenAndCost,8,optional" form:"tokenAndCost" json:"tokenAndCost,omitempty" query:"tokenAndCost"`
-	// 失败原因
+	// reason for failure
 	Reason *string `thrift:"reason,9,optional" form:"reason" json:"reason,omitempty" query:"reason"`
-	// 最后一个节点的ID
+	// The ID of the last node
 	LastNodeID *string `thrift:"lastNodeID,10,optional" form:"lastNodeID" json:"lastNodeID,omitempty" query:"lastNodeID"`
 	LogID      string  `thrift:"logID,11" form:"logID" json:"logID" query:"logID"`
-	// 只返回中断中的 event
+	// Returns only events in the interrupt
 	NodeEvents []*NodeEvent `thrift:"nodeEvents,12" form:"nodeEvents" json:"nodeEvents" query:"nodeEvents"`
 	ProjectId  string       `thrift:"projectId,13" form:"projectId" json:"projectId" query:"projectId"`
 }
@@ -37231,15 +37231,15 @@ type NodeResult struct {
 	NodeName   string        `thrift:"NodeName,3" form:"NodeName" json:"NodeName" query:"NodeName"`
 	NodeStatus NodeExeStatus `thrift:"nodeStatus,5" form:"nodeStatus" json:"nodeStatus" query:"nodeStatus"`
 	ErrorInfo  string        `thrift:"errorInfo,6" form:"errorInfo" json:"errorInfo" query:"errorInfo"`
-	// 入参 jsonstring类型
+	// Imported parameters jsonString type
 	Input string `thrift:"input,7" form:"input" json:"input" query:"input"`
-	// 出参 jsonstring
+	// Exported parameter jsonString
 	Output string `thrift:"output,8" form:"output" json:"output" query:"output"`
-	// 运行耗时 eg：3s
+	// Running time eg: 3s
 	NodeExeCost string `thrift:"nodeExeCost,9" form:"nodeExeCost" json:"nodeExeCost" query:"nodeExeCost"`
-	// 消耗
+	// consume
 	TokenAndCost *TokenAndCost `thrift:"tokenAndCost,10,optional" form:"tokenAndCost" json:"tokenAndCost,omitempty" query:"tokenAndCost"`
-	// 直接输出
+	// direct output
 	RawOutput       *string `thrift:"raw_output,11,optional" form:"raw_output" json:"raw_output,omitempty" query:"raw_output"`
 	ErrorLevel      string  `thrift:"errorLevel,12" form:"errorLevel" json:"errorLevel" query:"errorLevel"`
 	Index           *int32  `thrift:"index,13,optional" form:"index" json:"index,omitempty" query:"index"`
@@ -38494,9 +38494,9 @@ type NodeEvent struct {
 	NodeTitle string    `thrift:"node_title,3" form:"node_title" json:"node_title" query:"node_title"`
 	Data      string    `thrift:"data,4" form:"data" json:"data" query:"data"`
 	NodeIcon  string    `thrift:"node_icon,5" form:"node_icon" json:"node_icon" query:"node_icon"`
-	// 实际为node_execute_id
+	// Actually node_execute_id
 	NodeID string `thrift:"node_id,6" form:"node_id" json:"node_id" query:"node_id"`
-	// 与画布里的node_id对应
+	// Corresponds to node_id on canvas
 	SchemaNodeID string `thrift:"schema_node_id,7" form:"schema_node_id" json:"schema_node_id" query:"schema_node_id"`
 }
 
@@ -41022,7 +41022,7 @@ func (p *NodeError) String() string {
 type PathError struct {
 	Start string `thrift:"start,1" form:"start" json:"start" query:"start"`
 	End   string `thrift:"end,2" form:"end" json:"end" query:"end"`
-	// 路径上的节点ID
+	// Node ID on the path
 	Path []string `thrift:"path,3" form:"path" json:"path" query:"path"`
 }
 
@@ -41723,13 +41723,13 @@ func (p *NodeTemplate) String() string {
 
 }
 
-// 插件配置
+// plug-in configuration
 type PluginAPINode struct {
-	// 实际的插件配置
+	// Actual plug-in configuration
 	PluginID string `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
 	APIID    string `thrift:"api_id,2" form:"api_id" json:"api_id" query:"api_id"`
 	APIName  string `thrift:"api_name,3" form:"api_name" json:"api_name" query:"api_name"`
-	// 用于节点展示
+	// For node display
 	Name     string `thrift:"name,4" form:"name" json:"name" query:"name"`
 	Desc     string `thrift:"desc,5" form:"desc" json:"desc" query:"desc"`
 	IconURL  string `thrift:"icon_url,6" form:"icon_url" json:"icon_url" query:"icon_url"`
@@ -42135,11 +42135,11 @@ func (p *PluginAPINode) String() string {
 
 }
 
-// 查看更多图像插件
+// View more image plugins
 type PluginCategory struct {
 	PluginCategoryID string `thrift:"plugin_category_id,1" form:"plugin_category_id" json:"plugin_category_id" query:"plugin_category_id"`
 	OnlyOfficial     bool   `thrift:"only_official,2" form:"only_official" json:"only_official" query:"only_official"`
-	// 用于节点展示
+	// For node display
 	Name     string `thrift:"name,3" form:"name" json:"name" query:"name"`
 	IconURL  string `thrift:"icon_url,4" form:"icon_url" json:"icon_url" query:"icon_url"`
 	NodeType string `thrift:"node_type,5" form:"node_type" json:"node_type" query:"node_type"`
@@ -42457,9 +42457,9 @@ func (p *PluginCategory) String() string {
 }
 
 type NodeTemplateListRequest struct {
-	// 需要的节点类型 不传默认返回全部
+	// Required node type, return all by default without passing
 	NeedTypes []NodeTemplateType `thrift:"need_types,1,optional" form:"need_types" json:"need_types,omitempty" query:"need_types"`
-	// 需要的节点类型, string 类型
+	// Required node type, string type
 	NodeTypes []string   `thrift:"node_types,2,optional" form:"node_types" json:"node_types,omitempty" query:"node_types"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -42759,7 +42759,7 @@ func (p *NodeTemplateListRequest) String() string {
 
 type NodeTemplateListData struct {
 	TemplateList []*NodeTemplate `thrift:"template_list,1" form:"template_list" json:"template_list" query:"template_list"`
-	// 节点的展示分类配置
+	// Display classification configuration of nodes
 	CateList           []*NodeCategory   `thrift:"cate_list,2" form:"cate_list" json:"cate_list" query:"cate_list"`
 	PluginAPIList      []*PluginAPINode  `thrift:"plugin_api_list,3" form:"plugin_api_list" json:"plugin_api_list" query:"plugin_api_list"`
 	PluginCategoryList []*PluginCategory `thrift:"plugin_category_list,4" form:"plugin_category_list" json:"plugin_category_list" query:"plugin_category_list"`
@@ -43113,12 +43113,12 @@ func (p *NodeTemplateListData) String() string {
 }
 
 type NodeCategory struct {
-	// 分类名，空字符串表示下面的节点不属于任何分类
+	// Category name, empty string indicates that the following node does not belong to any category
 	Name         string   `thrift:"name,1" form:"name" json:"name" query:"name"`
 	NodeTypeList []string `thrift:"node_type_list,2" form:"node_type_list" json:"node_type_list" query:"node_type_list"`
-	// 插件的api_id列表
+	// List of api_id plugins
 	PluginAPIIDList []string `thrift:"plugin_api_id_list,3,optional" form:"plugin_api_id_list" json:"plugin_api_id_list,omitempty" query:"plugin_api_id_list"`
-	// 跳转官方插件列表的分类配置
+	// Jump to the classification configuration of the official plug-in list
 	PluginCategoryIDList []string `thrift:"plugin_category_id_list,4,optional" form:"plugin_category_id_list" json:"plugin_category_id_list,omitempty" query:"plugin_category_id_list"`
 }
 
@@ -47089,7 +47089,7 @@ func (p *NodeInfo) String() string {
 }
 
 type GetWorkflowDetailInfoRequest struct {
-	// 过滤条件，支持workflow_id和workflow_version
+	// Filter conditions, support workflow_id and workflow_version
 	WorkflowFilterList []*WorkflowFilter `thrift:"workflow_filter_list,1,optional" form:"workflow_filter_list" json:"workflow_filter_list,omitempty" query:"workflow_filter_list"`
 	SpaceID            *string           `thrift:"space_id,2,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
 	Base               *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -47713,7 +47713,7 @@ type WorkflowDetailInfoData struct {
 	IconURI    string       `thrift:"icon_uri,13" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	FlowMode   WorkflowMode `thrift:"flow_mode,14" form:"flow_mode" json:"flow_mode" query:"flow_mode"`
 	PluginID   string       `thrift:"plugin_id,15" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
-	// workflow创作者信息
+	// Workflow creator information
 	Creator               *Creator `thrift:"creator,16" form:"creator" json:"creator" query:"creator"`
 	FlowVersion           string   `thrift:"flow_version,17" form:"flow_version" json:"flow_version" query:"flow_version"`
 	FlowVersionDesc       string   `thrift:"flow_version_desc,18" form:"flow_version_desc" json:"flow_version_desc" query:"flow_version_desc"`
@@ -50186,7 +50186,7 @@ func (p *WorkflowDetailData) String() string {
 }
 
 type APIParameter struct {
-	// for前端，无实际意义
+	// For the front end, no practical significance
 	ID               string            `thrift:"id,1" form:"id" json:"id" query:"id"`
 	Name             string            `thrift:"name,2" form:"name" json:"name" query:"name"`
 	Desc             string            `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
@@ -50209,9 +50209,9 @@ type APIParameter struct {
 	ExclusiveMinimum *bool             `thrift:"exclusive_minimum,20,optional" form:"exclusive_minimum" json:"exclusive_minimum,omitempty" query:"exclusive_minimum"`
 	ExclusiveMaximum *bool             `thrift:"exclusive_maximum,21,optional" form:"exclusive_maximum" json:"exclusive_maximum,omitempty" query:"exclusive_maximum"`
 	BizExtend        *string           `thrift:"biz_extend,22,optional" form:"biz_extend" json:"biz_extend,omitempty" query:"biz_extend"`
-	// 默认入参的设置来源
+	// Default imported parameter settings source
 	DefaultParamSource *DefaultParamSource `thrift:"default_param_source,23,optional" form:"default_param_source" json:"default_param_source,omitempty" query:"default_param_source"`
-	// 引用variable的key
+	// Reference variable key
 	VariableRef *string              `thrift:"variable_ref,24,optional" form:"variable_ref" json:"variable_ref,omitempty" query:"variable_ref"`
 	AssistType  *AssistParameterType `thrift:"assist_type,25,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
 }
@@ -51954,7 +51954,7 @@ type FCPluginSetting struct {
 	RequestParams  []*APIParameter `thrift:"request_params,4" form:"request_params" json:"request_params" query:"request_params"`
 	ResponseParams []*APIParameter `thrift:"response_params,5" form:"response_params" json:"response_params" query:"response_params"`
 	ResponseStyle  *ResponseStyle  `thrift:"response_style,6" form:"response_style" json:"response_style" query:"response_style"`
-	// 本期暂时不支持
+	// This issue is temporarily not supported.
 	AsyncConf     *AsyncConf `thrift:"async_conf,7,optional" form:"async_conf" json:"async_conf,omitempty" query:"async_conf"`
 	IsDraft       bool       `thrift:"is_draft,8" form:"is_draft" json:"is_draft" query:"is_draft"`
 	PluginVersion string     `thrift:"plugin_version,9" form:"plugin_version" json:"plugin_version" query:"plugin_version"`
@@ -52507,7 +52507,7 @@ type FCWorkflowSetting struct {
 	RequestParams  []*APIParameter `thrift:"request_params,3" form:"request_params" json:"request_params" query:"request_params"`
 	ResponseParams []*APIParameter `thrift:"response_params,4" form:"response_params" json:"response_params" query:"response_params"`
 	ResponseStyle  *ResponseStyle  `thrift:"response_style,5" form:"response_style" json:"response_style" query:"response_style"`
-	// 本期暂时不支持
+	// This issue is temporarily not supported.
 	AsyncConf       *AsyncConf `thrift:"async_conf,6,optional" form:"async_conf" json:"async_conf,omitempty" query:"async_conf"`
 	IsDraft         bool       `thrift:"is_draft,7" form:"is_draft" json:"is_draft" query:"is_draft"`
 	WorkflowVersion string     `thrift:"workflow_version,8" form:"workflow_version" json:"workflow_version" query:"workflow_version"`
@@ -55800,7 +55800,7 @@ func (p *PluginDetail) String() string {
 }
 
 type APIDetail struct {
-	// api的id
+	// API ID
 	ID          string          `thrift:"id,1" form:"id" json:"id" query:"id"`
 	Name        string          `thrift:"name,2" form:"name" json:"name" query:"name"`
 	Description string          `thrift:"description,3" form:"description" json:"description" query:"description"`
@@ -58839,7 +58839,7 @@ func (p *UpdateProjectConversationDefResponse) String() string {
 type DeleteProjectConversationDefRequest struct {
 	ProjectID string `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,required" query:"project_id,required"`
 	UniqueID  string `thrift:"unique_id,2,required" form:"unique_id,required" json:"unique_id,required" query:"unique_id,required"`
-	// 替换表，每个 wf 草稿分别替换成哪个, 未替换的情况下 success =false，replace 会返回待替换列表
+	// Replace the table, which one to replace each wf draft with. If not replaced, success = false, replace will return the list to be replaced.
 	Replace   map[string]string `thrift:"replace,3" form:"replace" json:"replace" query:"replace"`
 	CheckOnly bool              `thrift:"check_only,4" form:"check_only" json:"check_only" query:"check_only"`
 	SpaceID   string            `thrift:"space_id,5,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
@@ -59262,7 +59262,7 @@ func (p *DeleteProjectConversationDefRequest) String() string {
 
 type DeleteProjectConversationDefResponse struct {
 	Success bool `thrift:"success,1" form:"success" json:"success" query:"success"`
-	// 如果未传递 replacemap, 会失败，返回需要替换的 wf
+	// If no replacemap is passed, it will fail, returning the wf that needs to be replaced
 	NeedReplace []*Workflow    `thrift:"need_replace,2" form:"need_replace" json:"need_replace" query:"need_replace"`
 	Code        int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg         string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -59630,20 +59630,20 @@ func (p *DeleteProjectConversationDefResponse) String() string {
 
 type ListProjectConversationRequest struct {
 	ProjectID string `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,required" query:"project_id,required"`
-	// 0=在project 创建（静态会话），1=通过 wf 节点创建（动态会话）
+	// 0 = created in project (static session), 1 = created through wf node (dynamic session)
 	CreateMethod CreateMethod `thrift:"create_method,2" form:"create_method" json:"create_method" query:"create_method"`
-	// 0=wf 节点试运行创建的 1=wf 节点发布后运行的
+	// 0 = wf node practice run created 1 = wf node run after release
 	CreateEnv CreateEnv `thrift:"create_env,3" form:"create_env" json:"create_env" query:"create_env"`
-	// 分页偏移，不传从第一条开始
+	// Paging offset, do not pass from the first item
 	Cursor string `thrift:"cursor,4" form:"cursor" json:"cursor" query:"cursor"`
-	// 一次拉取数量
+	// number of pulls at one time
 	Limit   int64  `thrift:"limit,5" form:"limit" json:"limit" query:"limit"`
 	SpaceID string `thrift:"space_id,6,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
-	// conversationName 模糊搜索
+	// conversationName fuzzy search
 	NameLike string `thrift:"nameLike,7" form:"nameLike" json:"nameLike" query:"nameLike"`
-	// create_env=1 时传递，传对应的渠道 id，当前默认 1024（openapi）
+	// create_env = 1, pass the corresponding channel id, the current default 1024 (openapi)
 	ConnectorID string `thrift:"connector_id,8" form:"connector_id" json:"connector_id" query:"connector_id"`
-	// project版本
+	// Project version
 	ProjectVersion *string    `thrift:"project_version,9,optional" form:"project_version" json:"project_version,omitempty" query:"project_version"`
 	Base           *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -60216,7 +60216,7 @@ func (p *ListProjectConversationRequest) String() string {
 type ProjectConversation struct {
 	UniqueID         string `thrift:"unique_id,1" form:"unique_id" json:"unique_id" query:"unique_id"`
 	ConversationName string `thrift:"conversation_name,2" form:"conversation_name" json:"conversation_name" query:"conversation_name"`
-	// 对于自己在 coze 渠道的 conversationid
+	// For your own conversationid in the coze channel
 	ConversationID          string `thrift:"conversation_id,3" form:"conversation_id" json:"conversation_id" query:"conversation_id"`
 	ReleaseConversationName string `thrift:"release_conversation_name,4" form:"release_conversation_name" json:"release_conversation_name" query:"release_conversation_name"`
 }
@@ -60490,7 +60490,7 @@ func (p *ProjectConversation) String() string {
 
 type ListProjectConversationResponse struct {
 	Data []*ProjectConversation `thrift:"data,1" form:"data" json:"data" query:"data"`
-	// 游标，为空表示没有下一页了, 翻页时带上这个字段
+	// Cursor, empty means there is no next page, bring this field when turning the page
 	Cursor   string         `thrift:"cursor,2" form:"cursor" json:"cursor" query:"cursor"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -60858,9 +60858,9 @@ func (p *ListProjectConversationResponse) String() string {
 
 // suggest
 type SuggestReplyInfo struct {
-	// 对应 Coze Auto-Suggestion
+	// Coze Auto-Suggestion
 	SuggestReplyMode *SuggestReplyInfoMode `thrift:"SuggestReplyMode,1,optional" json:"suggest_reply_mode" form:"SuggestReplyMode" query:"SuggestReplyMode"`
-	// 用户自定义建议问题
+	// user-defined suggestion questions
 	CustomizedSuggestPrompt *string `thrift:"CustomizedSuggestPrompt,2,optional" json:"customized_suggest_prompt" form:"CustomizedSuggestPrompt" query:"CustomizedSuggestPrompt"`
 }
 
@@ -61067,11 +61067,11 @@ func (p *SuggestReplyInfo) String() string {
 }
 
 type OnboardingInfo struct {
-	// markdown 格式
+	// Markdown format
 	Prologue string `thrift:"Prologue,1" json:"prologue" form:"Prologue" query:"Prologue"`
-	// 问题列表
+	// List of questions
 	SuggestedQuestions []string `thrift:"SuggestedQuestions,2,optional" json:"suggested_questions" form:"SuggestedQuestions" query:"SuggestedQuestions"`
-	// 是否显示所有建议问题
+	// Whether to display all suggested questions
 	DisplayAllSuggestions *bool `thrift:"DisplayAllSuggestions,3,optional" json:"display_all_suggestions" form:"DisplayAllSuggestions" query:"DisplayAllSuggestions"`
 }
 
@@ -61342,7 +61342,7 @@ func (p *OnboardingInfo) String() string {
 
 type VoiceConfig struct {
 	VoiceName string `thrift:"VoiceName,1" json:"voice_name" form:"VoiceName" query:"VoiceName"`
-	// 音色ID
+	// timbre ID
 	VoiceID string `thrift:"VoiceID,2" json:"voice_id" form:"VoiceID" query:"VoiceID"`
 }
 
@@ -61526,11 +61526,11 @@ func (p *VoiceConfig) String() string {
 }
 
 type AudioConfig struct {
-	//key为语言 "zh", "en" "ja" "es" "id" "pt"
+	//Key for language "zh", "en" "ja" "es" "id" "pt"
 	VoiceConfigMap map[string]*VoiceConfig `thrift:"VoiceConfigMap,1,optional" json:"voice_config_map" form:"VoiceConfigMap" query:"VoiceConfigMap"`
-	// 文本转语音开关
+	// Text to speech switch
 	IsTextToVoiceEnable bool `thrift:"IsTextToVoiceEnable,3" json:"is_text_to_voice_enable" form:"IsTextToVoiceEnable" query:"IsTextToVoiceEnable"`
-	// 智能体消息形式
+	// agent message form
 	AgentMessageType InputMode `thrift:"AgentMessageType,4" json:"agent_message_type" form:"AgentMessageType" query:"AgentMessageType"`
 }
 
@@ -61798,9 +61798,9 @@ func (p *AudioConfig) String() string {
 }
 
 type UserInputConfig struct {
-	// 默认输入方式
+	// Default input method
 	DefaultInputMode InputMode `thrift:"DefaultInputMode,1" json:"default_input_mode" form:"DefaultInputMode" query:"DefaultInputMode"`
-	// 用户语音消息发送形式
+	// User voice message sending form
 	SendVoiceMode SendVoiceMode `thrift:"SendVoiceMode,2" json:"send_voice_mode" form:"SendVoiceMode" query:"SendVoiceMode"`
 }
 
@@ -62508,16 +62508,16 @@ func (p *CanvasPosition) String() string {
 }
 
 type BackgroundImageDetail struct {
-	// 原始图片
+	// original image
 	OriginImageUri *string `thrift:"OriginImageUri,1,optional" json:"origin_image_uri" form:"OriginImageUri" query:"OriginImageUri"`
 	OriginImageUrl *string `thrift:"OriginImageUrl,2,optional" json:"origin_image_url" form:"OriginImageUrl" query:"OriginImageUrl"`
-	// 实际使用图片
+	// Actual use of pictures
 	ImageUri   *string `thrift:"ImageUri,3,optional" json:"image_uri" form:"ImageUri" query:"ImageUri"`
 	ImageUrl   *string `thrift:"ImageUrl,4,optional" json:"image_url" form:"ImageUrl" query:"ImageUrl"`
 	ThemeColor *string `thrift:"ThemeColor,5,optional" json:"theme_color" form:"ThemeColor" query:"ThemeColor"`
-	// 渐变位置
+	// Gradual change of position
 	GradientPosition *GradientPosition `thrift:"GradientPosition,6,optional" json:"gradient_position" form:"GradientPosition" query:"GradientPosition"`
-	// 裁剪画布位置
+	// Crop canvas position
 	CanvasPosition *CanvasPosition `thrift:"CanvasPosition,7,optional" json:"canvas_position" form:"CanvasPosition" query:"CanvasPosition"`
 }
 
@@ -62992,9 +62992,9 @@ func (p *BackgroundImageDetail) String() string {
 }
 
 type BackgroundImageInfo struct {
-	// web端背景图
+	// Web background cover
 	WebBackgroundImage *BackgroundImageDetail `thrift:"WebBackgroundImage,1,optional" json:"web_background_image" form:"WebBackgroundImage" query:"WebBackgroundImage"`
-	// 移动端背景图
+	// Mobile end background cover
 	MobileBackgroundImage *BackgroundImageDetail `thrift:"MobileBackgroundImage,2,optional" json:"mobile_background_image" form:"MobileBackgroundImage" query:"MobileBackgroundImage"`
 }
 
@@ -63380,25 +63380,25 @@ func (p *AvatarConfig) String() string {
 type ChatFlowRole struct {
 	ID         string `thrift:"ID,1" json:"id" form:"ID" query:"ID"`
 	WorkflowID string `thrift:"WorkflowID,2" json:"workflow_id" form:"WorkflowID" query:"WorkflowID"`
-	// 渠道ID
+	// Channel ID
 	ConnectorID string `thrift:"ConnectorID,3" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
-	// 角色头像
+	// avatar
 	Avatar *AvatarConfig `thrift:"Avatar,4,optional" json:"avatar" form:"Avatar" query:"Avatar"`
-	// 角色描述
+	// Role Description
 	Description *string `thrift:"Description,5,optional" json:"description" form:"Description" query:"Description"`
-	// 开场白
+	// opening statement
 	OnboardingInfo *OnboardingInfo `thrift:"OnboardingInfo,6,optional" json:"onboarding_info" form:"OnboardingInfo" query:"OnboardingInfo"`
-	// 角色名称
+	// role name
 	Name *string `thrift:"Name,7,optional" json:"name" form:"Name" query:"Name"`
-	// 用户问题建议
+	// User Question Suggestions
 	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,8,optional" json:"suggest_reply_info" form:"SuggestReplyInfo" query:"SuggestReplyInfo"`
-	// 背景图
+	// background cover
 	BackgroundImageInfo *BackgroundImageInfo `thrift:"BackgroundImageInfo,9,optional" json:"background_image_info" form:"BackgroundImageInfo" query:"BackgroundImageInfo"`
-	// 语音配置：音色、电话等
+	// Voice configuration: tone, phone, etc
 	AudioConfig *AudioConfig `thrift:"AudioConfig,10,optional" json:"audio_config" form:"AudioConfig" query:"AudioConfig"`
-	// 用户输入方式
+	// user input method
 	UserInputConfig *UserInputConfig `thrift:"UserInputConfig,11,optional" json:"user_input_config" form:"UserInputConfig" query:"UserInputConfig"`
-	// 项目版本
+	// project version
 	ProjectVersion *string `thrift:"ProjectVersion,12,optional" json:"project_version" form:"ProjectVersion" query:"ProjectVersion"`
 }
 
@@ -64301,7 +64301,7 @@ func (p *CreateChatFlowRoleRequest) String() string {
 }
 
 type CreateChatFlowRoleResponse struct {
-	// 数据库中ID
+	// ID in the database
 	ID       string         `thrift:"ID,1" form:"ID" json:"ID" query:"ID"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -64502,7 +64502,7 @@ func (p *CreateChatFlowRoleResponse) String() string {
 type DeleteChatFlowRoleRequest struct {
 	WorkflowID  string `thrift:"WorkflowID,1" form:"WorkflowID" json:"WorkflowID" query:"WorkflowID"`
 	ConnectorID string `thrift:"ConnectorID,2" form:"ConnectorID" json:"ConnectorID" query:"ConnectorID"`
-	// 数据库中ID
+	// ID in the database
 	ID   string     `thrift:"ID,4" form:"ID" json:"ID" query:"ID"`
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -65510,15 +65510,15 @@ func (p *GetChatFlowRoleResponse) String() string {
 }
 
 type NodePanelSearchRequest struct {
-	// 搜索的数据类型，传空、不传或者传All表示搜索所有类型
+	// The data type of the search, pass empty, do not pass, or pass All means search for all types
 	SearchType NodePanelSearchType `thrift:"search_type,1" form:"search_type" json:"search_type" query:"search_type"`
 	SpaceID    string              `thrift:"space_id,2" form:"space_id" json:"space_id" query:"space_id"`
 	ProjectID  *string             `thrift:"project_id,3,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	SearchKey  string              `thrift:"search_key,4" form:"search_key" json:"search_key" query:"search_key"`
-	// 首次请求时值为"", 底层实现时根据数据源的分页模式转换成page or cursor
+	// The value is "" on the first request, and the underlying implementation is converted to a page or cursor according to the paging mode of the data source
 	PageOrCursor string `thrift:"page_or_cursor,5" form:"page_or_cursor" json:"page_or_cursor" query:"page_or_cursor"`
 	PageSize     int32  `thrift:"page_size,6" form:"page_size" json:"page_size" query:"page_size"`
-	// 排除的workflow_id，用于搜索workflow时排除当前workflow的id
+	// Excluded workflow_id, used to exclude the id of the current workflow when searching for workflow
 	ExcludeWorkflowID string     `thrift:"exclude_workflow_id,7" form:"exclude_workflow_id" json:"exclude_workflow_id" query:"exclude_workflow_id"`
 	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -65987,7 +65987,7 @@ func (p *NodePanelSearchRequest) String() string {
 
 type NodePanelWorkflowData struct {
 	WorkflowList []*Workflow `thrift:"workflow_list,1" form:"workflow_list" json:"workflow_list" query:"workflow_list"`
-	// 由于workflow的查询使用都是page+size，这里返回 page+1
+	// Since the query of workflow is all page + size, page + 1 is returned here.
 	NextPageOrCursor string `thrift:"next_page_or_cursor,2" form:"next_page_or_cursor" json:"next_page_or_cursor" query:"next_page_or_cursor"`
 	HasMore          bool   `thrift:"has_more,3" form:"has_more" json:"has_more" query:"has_more"`
 }
@@ -66850,7 +66850,7 @@ func (p *NodePanelPlugin) String() string {
 
 type NodePanelPluginData struct {
 	PluginList []*NodePanelPlugin `thrift:"plugin_list,1" form:"plugin_list" json:"plugin_list" query:"plugin_list"`
-	// 数据源为page+size的，这里返回 page+1；数据源为cursor模式的，这里返回数据源返回的cursor
+	// If the data source is page + size, return page + 1 here; if the data source is cursor mode, return the cursor returned by the data source here
 	NextPageOrCursor string `thrift:"next_page_or_cursor,2" form:"next_page_or_cursor" json:"next_page_or_cursor" query:"next_page_or_cursor"`
 	HasMore          bool   `thrift:"has_more,3" form:"has_more" json:"has_more" query:"has_more"`
 }
@@ -67820,9 +67820,9 @@ func (p *NodePanelSearchResponse) String() string {
 
 type ListPublishWorkflowRequest struct {
 	SpaceID int64 `thrift:"space_id,2,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
-	//筛选项
+	//filter
 	OwnerID *int64 `thrift:"owner_id,3,optional" form:"owner_id" json:"owner_id,string,omitempty" query:"owner_id"`
-	//搜索项：智能体or作者name
+	//Search term: agent or author name
 	Name                 *string      `thrift:"name,4,optional" form:"name" json:"name,omitempty" query:"name"`
 	OrderLastPublishTime *OrderByType `thrift:"order_last_publish_time,5,optional" form:"order_last_publish_time" json:"order_last_publish_time,omitempty" query:"order_last_publish_time"`
 	OrderTotalToken      *OrderByType `thrift:"order_total_token,6,optional" form:"order_total_token" json:"order_total_token,omitempty" query:"order_total_token"`
@@ -68431,12 +68431,12 @@ func (p *ListPublishWorkflowRequest) String() string {
 }
 
 type PublishBasicWorkflowData struct {
-	//最近发布项目的信息
+	//Information on recently released projects
 	BasicInfo *WorkflowBasicInfo `thrift:"basic_info,1" form:"basic_info" json:"basic_info" query:"basic_info"`
 	UserInfo  *UserInfo          `thrift:"user_info,2" form:"user_info" json:"user_info" query:"user_info"`
-	//已发布渠道聚合
+	//Published channel aggregation
 	Connectors []*ConnectorInfo `thrift:"connectors,3" form:"connectors" json:"connectors" query:"connectors"`
-	//截止昨天总token消耗
+	//Total token consumption as of yesterday
 	TotalToken string `thrift:"total_token,4" form:"total_token" json:"total_token" query:"total_token"`
 }
 
@@ -71063,15 +71063,15 @@ type OpenAPIRunFlowRequest struct {
 	Ext        map[string]string `thrift:"Ext,3" json:"ext" form:"Ext" query:"Ext"`
 	BotID      *string           `thrift:"BotID,4,optional" json:"bot_id" form:"BotID" query:"BotID"`
 	IsAsync    *bool             `thrift:"IsAsync,5,optional" json:"is_async" form:"IsAsync" query:"IsAsync"`
-	// 默认为正式运行，试运行需要传入"DEBUG"
+	// Default to official run, practice run needs to pass in "DEBUG"
 	ExecuteMode *string `thrift:"ExecuteMode,6,optional" json:"execute_mode" form:"ExecuteMode" query:"ExecuteMode"`
-	// 版本号，可能是workflow版本或者project版本
+	// Version number, maybe workflow version or project version
 	Version *string `thrift:"Version,7,optional" json:"version" form:"Version" query:"Version"`
-	// 渠道ID，比如ui builder、template、商店等
+	// Channel ID, such as ui builder, template, store, etc
 	ConnectorID *string `thrift:"ConnectorID,8,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
-	// 引用workflow 的应用ID
+	// App ID referencing workflow
 	AppID *string `thrift:"AppID,9,optional" json:"app_id" form:"AppID" query:"AppID"`
-	// 项目ID，为了兼容ui builder
+	// Project ID, for compatibility with UI builder
 	ProjectID *string    `thrift:"ProjectID,10,optional" json:"project_id" form:"ProjectID" query:"ProjectID"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -71777,16 +71777,16 @@ func (p *OpenAPIRunFlowRequest) String() string {
 }
 
 type OpenAPIRunFlowResponse struct {
-	// 通用字段
+	// generic field
 	Code int64 `thrift:"Code,1,required" json:"code" form:"Code,required" query:"Code,required"`
-	// 成功为success, 失败为简单的错误信息、
+	// Success for success, failure for simple error messages,
 	Msg *string `thrift:"Msg,2,optional" json:"msg" form:"Msg" query:"Msg"`
-	// 同步返回字段
+	// Synchronized return field
 	Data     *string `thrift:"Data,3,optional" json:"data" form:"Data" query:"Data"`
 	Token    *int64  `thrift:"Token,4,optional" json:"token" form:"Token" query:"Token"`
 	Cost     *string `thrift:"Cost,5,optional" json:"cost" form:"Cost" query:"Cost"`
 	DebugUrl *string `thrift:"DebugUrl,6,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
-	// 异步返回字段
+	// asynchronous return field
 	ExecuteID *string        `thrift:"ExecuteID,50,optional" json:"execute_id" form:"ExecuteID" query:"ExecuteID"`
 	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
@@ -72551,32 +72551,32 @@ func (p *Interrupt) String() string {
 }
 
 type OpenAPIStreamRunFlowResponse struct {
-	// 绝对序号
+	// absolute serial number
 	ID string `thrift:"id,1" form:"id" json:"id" query:"id"`
-	// 事件类型:message,done,error
+	// Event type: message, done, error
 	Event string `thrift:"Event,2" json:"event" form:"Event" query:"Event"`
-	// 节点信息
+	// Node information
 	NodeSeqID *string `thrift:"NodeSeqID,50,optional" json:"node_seq_id" form:"NodeSeqID" query:"NodeSeqID"`
-	// 节点名称
+	// Node name
 	NodeTitle *string `thrift:"NodeTitle,52,optional" json:"node_title" form:"NodeTitle" query:"NodeTitle"`
-	// ContentType为Text时的返回
+	// Return when ContentType is Text
 	Content *string `thrift:"Content,54,optional" json:"content" form:"Content" query:"Content"`
-	// 节点是否执行完成
+	// Has the node completed execution?
 	NodeIsFinish *bool `thrift:"NodeIsFinish,55,optional" json:"node_is_finish" form:"NodeIsFinish" query:"NodeIsFinish"`
-	//content type为interrupt时传输，中断协议
+	//Transmission when content type is interrupt, interrupt protocol
 	InterruptData *Interrupt `thrift:"InterruptData,56,optional" json:"interrupt_data" form:"InterruptData" query:"InterruptData"`
-	// 返回的数据类型
+	// Data type returned
 	ContentType *string `thrift:"ContentType,57,optional" json:"content_type" form:"ContentType" query:"ContentType"`
-	// Content Type为Card时返回的卡片内容
+	// Card Content Returned when Content Type is Card
 	CardBody *string `thrift:"CardBody,58,optional" json:"card_body" form:"CardBody" query:"CardBody"`
-	// 节点类型
+	// Node type
 	NodeType *string `thrift:"NodeType,59,optional" json:"node_type" form:"NodeType" query:"NodeType"`
 	NodeID   *string `thrift:"NodeID,60,optional" json:"node_id" form:"NodeID" query:"NodeID"`
-	// 成功时最后一条消息
+	// Last message on success
 	Ext   map[string]string `thrift:"Ext,100,optional" json:"ext" form:"Ext" query:"Ext"`
 	Token *int64            `thrift:"Token,101,optional" json:"token" form:"Token" query:"Token"`
 	Cost  *string           `thrift:"Cost,102,optional" json:"cost" form:"Cost" query:"Cost"`
-	// 错误信息
+	// error message
 	ErrorCode    *int64         `thrift:"ErrorCode,151,optional" json:"error_code" form:"ErrorCode" query:"ErrorCode"`
 	ErrorMessage *string        `thrift:"ErrorMessage,152,optional" json:"error_message" form:"ErrorMessage" query:"ErrorMessage"`
 	DebugUrl     *string        `thrift:"DebugUrl,153,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
@@ -73677,7 +73677,7 @@ type OpenAPIStreamResumeFlowRequest struct {
 	ResumeData    string            `thrift:"ResumeData,3" json:"resume_data" form:"ResumeData" query:"ResumeData"`
 	Ext           map[string]string `thrift:"Ext,4" json:"ext" form:"Ext" query:"Ext"`
 	WorkflowID    string            `thrift:"WorkflowID,5" json:"workflow_id" form:"WorkflowID" query:"WorkflowID"`
-	// 渠道ID，比如ui builder、template、商店等
+	// Channel ID, such as ui builder, template, store, etc
 	ConnectorID *string    `thrift:"ConnectorID,6,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
 	Base        *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
@@ -74394,14 +74394,14 @@ type WorkflowExecuteHistory struct {
 	CreateTime    *int64           `thrift:"CreateTime,8,optional" json:"create_time" form:"CreateTime" query:"CreateTime"`
 	UpdateTime    *int64           `thrift:"UpdateTime,9,optional" json:"update_time" form:"UpdateTime" query:"UpdateTime"`
 	DebugUrl      *string          `thrift:"DebugUrl,10,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
-	// 执行成功
+	// successful execution
 	Input    *string           `thrift:"Input,51,optional" json:"input" form:"Input" query:"Input"`
 	Output   *string           `thrift:"Output,52,optional" json:"output" form:"Output" query:"Output"`
 	Token    *int64            `thrift:"Token,53,optional" json:"token" form:"Token" query:"Token"`
 	Cost     *string           `thrift:"Cost,54,optional" json:"cost" form:"Cost" query:"Cost"`
 	CostUnit *string           `thrift:"CostUnit,55,optional" json:"cost_unit" form:"CostUnit" query:"CostUnit"`
 	Ext      map[string]string `thrift:"Ext,56,optional" json:"ext" form:"Ext" query:"Ext"`
-	// 执行失败
+	// execution failed
 	ErrorCode *string `thrift:"ErrorCode,101,optional" json:"error_code" form:"ErrorCode" query:"ErrorCode"`
 	ErrorMsg  *string `thrift:"ErrorMsg,102,optional" json:"error_msg" form:"ErrorMsg" query:"ErrorMsg"`
 }
@@ -75860,7 +75860,7 @@ func (p *GetWorkflowRunHistoryResponse) String() string {
 
 type EnterMessage struct {
 	Role string `thrift:"Role,1,required" json:"role" form:"Role,required" query:"Role,required"`
-	// 内容
+	// content
 	Content  string            `thrift:"Content,2" json:"content" form:"Content" query:"Content"`
 	MetaData map[string]string `thrift:"MetaData,3" json:"meta_data" form:"MetaData" query:"MetaData"`
 	//text/card/object_string
@@ -76221,20 +76221,20 @@ type ChatFlowRunRequest struct {
 	Parameters *string           `thrift:"Parameters,2,optional" json:"parameters" form:"Parameters" query:"Parameters"`
 	Ext        map[string]string `thrift:"Ext,3" json:"ext" form:"Ext" query:"Ext"`
 	BotID      *string           `thrift:"BotID,4,optional" json:"bot_id" form:"BotID" query:"BotID"`
-	// 默认为正式运行，试运行需要传入"DEBUG"
+	// Default to official run, practice run needs to pass in "DEBUG"
 	ExecuteMode *string `thrift:"ExecuteMode,6,optional" json:"execute_mode" form:"ExecuteMode" query:"ExecuteMode"`
-	// 版本号，可能是workflow版本或者project版本
+	// Version number, maybe workflow version or project version
 	Version *string `thrift:"Version,7,optional" json:"version" form:"Version" query:"Version"`
-	// 渠道ID，比如ui builder、template、商店等
+	// Channel ID, such as ui builder, template, store, etc
 	ConnectorID *string `thrift:"ConnectorID,8,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
 	AppID       *string `thrift:"AppID,9,optional" json:"app_id" form:"AppID" query:"AppID"`
-	// 会话ID
+	// Session ID
 	ConversationID *string `thrift:"ConversationID,10,optional" json:"conversation_id" form:"ConversationID" query:"ConversationID"`
-	// 用户希望先写入的消息
+	// The message that the user wants to write first
 	AdditionalMessages []*EnterMessage `thrift:"AdditionalMessages,11,optional" json:"additional_messages" form:"additional_messages" `
-	// 项目ID，为了兼容ui builder
+	// Project ID, for compatibility with UI builder
 	ProjectID *string `thrift:"ProjectID,12,optional" json:"project_id" form:"ProjectID" query:"ProjectID"`
-	// 建议回复信息
+	// Suggested reply message
 	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,13,optional" json:"suggest_reply_info" form:"suggest_reply_info" `
 	Base             *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -77067,14 +77067,14 @@ func (p *ChatFlowRunRequest) String() string {
 }
 
 type ChatFlowRunResponse struct {
-	// 事件类型
+	// event type
 	Event string `thrift:"Event,1" json:"event" form:"Event" query:"Event"`
-	// msg、error等数据，为了对齐不同的消息类型，使用json序列化
+	// Msg, error and other data, in order to align different message types, use json serialization
 	Data string `thrift:"Data,2" json:"data" form:"Data" query:"Data"`
-	//    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data") // 消息内容
-	//    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data") // 对话内容
-	//    4: optional LastError ErrorData (api.body = "error_data") // 错误信息
-	//    5:optional string DoneMsg (api.body = "done_msg") // 结束信息
+	//    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data")//Message content
+	//    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data")//dialogue content
+	//    4: optional LastError ErrorData (api.body = "error_data")//Error message
+	//    5: optional string DoneMsg (api.body = "done_msg")//end information
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
 
@@ -77802,7 +77802,7 @@ func (p *WorkflowInfo) String() string {
 }
 
 type OpenAPIGetWorkflowInfoResponse struct {
-	//  适配api
+	//  API adaptation
 	Code         *int32         `thrift:"Code,1,optional" form:"code" json:"code,omitempty"`
 	Msg          *string        `thrift:"Msg,2,optional" form:"msg" json:"msg,omitempty"`
 	WorkflowInfo *WorkflowInfo  `thrift:"WorkflowInfo,3,optional" form:"data" json:"data,omitempty"`

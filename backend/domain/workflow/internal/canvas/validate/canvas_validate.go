@@ -527,7 +527,7 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 		outDegree[edge.SourceNodeID]++
 	}
 
-	portOutDegree := make(map[string]map[string]int) // 节点ID -> 端口 -> 出度
+	portOutDegree := make(map[string]map[string]int) // Node ID - > Port - > Outgoing
 	for _, edge := range c.Edges {
 
 		if _, ok := selectorPorts[edge.SourceNodeID]; !ok {
@@ -573,7 +573,7 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 					issues = append(issues, selectorIssues)
 				}
 			} else {
-				// break, continue 不检查出度
+				// Break, continue without checking out degrees
 				if node.Type == vo.BlockTypeBotBreak || node.Type == vo.BlockTypeBotContinue {
 					continue
 				}

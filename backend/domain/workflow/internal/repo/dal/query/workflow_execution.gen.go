@@ -60,7 +60,7 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	return _workflowExecution
 }
 
-// workflowExecution workflow 执行记录表，用于记录每次workflow执行时的状态
+// workflowExecution Workflow Execution Record Table, used to record the status of each workflow execution
 type workflowExecution struct {
 	workflowExecutionDo
 

@@ -71,7 +71,7 @@ func newKnowledgeTool(ctx context.Context, conf *knowledgeConfig) (tool.Invokabl
 				Type: openapi3.TypeInteger,
 			},
 		}
-		// 设置字段描述和枚举值
+		// Set field descriptions and enumeration values
 		schema.Description = desc
 		schema.Enum = make([]interface{}, 0, len(conf.knowledgeInfos))
 		for _, k := range conf.knowledgeInfos {

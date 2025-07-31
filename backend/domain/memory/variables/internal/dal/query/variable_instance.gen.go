@@ -49,17 +49,17 @@ type variableInstance struct {
 	variableInstanceDo
 
 	ALL          field.Asterisk
-	ID           field.Int64  // 主键ID
+	ID           field.Int64  // id
 	BizType      field.Int32  // 1 for agent，2 for app
 	BizID        field.String // 1 for agent_id，2 for app_id
-	Version      field.String // agent or project 版本,为空代表草稿态
-	Keyword      field.String // 记忆的KEY
-	Type         field.Int32  // 记忆类型 1 KV 2 list
-	Content      field.String // 记忆内容
-	ConnectorUID field.String // 二方用户ID
-	ConnectorID  field.Int64  // 二方id, e.g. coze = 10000010
-	CreatedAt    field.Int64  // 创建时间
-	UpdatedAt    field.Int64  // 更新时间
+	Version      field.String // agent or project version empty represents draft status
+	Keyword      field.String // Keyword to Memory
+	Type         field.Int32  // Memory type 1 KV 2 list
+	Content      field.String // content
+	ConnectorUID field.String // connector_uid
+	ConnectorID  field.Int64  // connector_id, e.g. coze = 10000010
+	CreatedAt    field.Int64  // Create Time in Milliseconds
+	UpdatedAt    field.Int64  // Update Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }

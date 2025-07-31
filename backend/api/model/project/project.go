@@ -3,10 +3,10 @@
 package project
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
 )
 
 type DraftProjectCreateRequest struct {
@@ -15,7 +15,7 @@ type DraftProjectCreateRequest struct {
 	Description      string            `thrift:"description,3" form:"description" json:"description" query:"description"`
 	IconURI          string            `thrift:"icon_uri,4" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
 	MonetizationConf *MonetizationConf `thrift:"monetization_conf,5,optional" form:"monetization_conf" json:"monetization_conf,omitempty" query:"monetization_conf"`
-	// 创建来源  navi:导航栏 space:空间
+	// Create source navi: navbar space: space
 	CreateFrom *string    `thrift:"create_from,6,optional" form:"create_from" json:"create_from,omitempty" query:"create_from"`
 	Base       *base.Base `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
 }

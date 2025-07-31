@@ -1014,7 +1014,7 @@ func (a *APPApplicationService) ResourceCopyDetail(ctx context.Context, req *res
 	}
 
 	if !exist {
-		return resp, nil // 默认返回处理中
+		return resp, nil // Default return processing
 	}
 
 	detail.Status = resourceCommon.TaskStatus(result.CopyStatus)

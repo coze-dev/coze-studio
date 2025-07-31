@@ -54,7 +54,7 @@ func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
 	return _nodeExecution
 }
 
-// nodeExecution node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息
+// nodeExecution Node run record, used to record the status information of each node during each workflow execution
 type nodeExecution struct {
 	nodeExecutionDo
 

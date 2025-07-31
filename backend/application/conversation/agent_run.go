@@ -348,7 +348,7 @@ func (c *ConversationApplicationService) buildTools(ctx context.Context, tools [
 				}
 
 				arguments[key] = parametersStruct.Value
-				// uri需要转换成url
+				// URI needs to be converted to url.
 				if parametersStruct.ResourceType == consts.ShortcutCommandResourceType {
 
 					resourceInfo, err := c.appContext.ImageX.GetResourceURL(ctx, parametersStruct.Value)

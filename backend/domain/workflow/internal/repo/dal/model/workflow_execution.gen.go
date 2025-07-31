@@ -6,7 +6,7 @@ package model
 
 const TableNameWorkflowExecution = "workflow_execution"
 
-// WorkflowExecution workflow 执行记录表，用于记录每次workflow执行时的状态
+// WorkflowExecution Workflow Execution Record Table, used to record the status of each workflow execution
 type WorkflowExecution struct {
 	ID              int64  `gorm:"column:id;primaryKey;comment:execute id" json:"id"`                                                                      // execute id
 	WorkflowID      int64  `gorm:"column:workflow_id;not null;comment:workflow_id" json:"workflow_id"`                                                     // workflow_id

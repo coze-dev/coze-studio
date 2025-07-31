@@ -80,7 +80,7 @@ func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, do *entity.Var
 	return nil
 }
 
-// GetVariableMeta 获取变量元数据 , 不存在返回 nil
+// GetVariableMeta Gets variable metadata, returns nil if it does not exist
 func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizType project_memory.VariableConnector, version string) (*entity.VariablesMeta, error) {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{
@@ -103,7 +103,7 @@ func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizTyp
 	return do, nil
 }
 
-// GetVariableMetaByID 获取变量元数据, 不存在返回 nil
+// GetVariableMetaByID Gets variable metadata, returns nil if there is no such thing
 func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*entity.VariablesMeta, error) {
 	table := query.VariablesMeta
 	condWhere := []gen.Condition{

@@ -45,23 +45,23 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 
 				props := schemaObj["properties"].(map[string]any)
 
-				// 验证字符串字段
+				// Validate string field
 				stringProp := props["stringField"].(map[string]any)
 				assert.Equal(t, "string", stringProp["type"])
 
-				// 验证整数字段
+				// Validate integer fields
 				intProp := props["intField"].(map[string]any)
 				assert.Equal(t, "integer", intProp["type"])
 
-				// 验证数字字段
+				// Validate numeric field
 				numProp := props["numField"].(map[string]any)
 				assert.Equal(t, "number", numProp["type"])
 
-				// 验证布尔字段
+				// Validate Boolean fields
 				boolProp := props["boolField"].(map[string]any)
 				assert.Equal(t, "boolean", boolProp["type"])
 
-				// 验证时间字段
+				// validation time field
 				timeProp := props["timeField"].(map[string]any)
 				assert.Equal(t, "string", timeProp["type"])
 				assert.Equal(t, "date-time", timeProp["format"])
@@ -87,17 +87,17 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 
 				props := schemaObj["properties"].(map[string]any)
 
-				// 验证对象字段
+				// Validation Object Field
 				objProp := props["objectField"].(map[string]any)
 				assert.Equal(t, "object", objProp["type"])
 
-				// 验证数组字段
+				// Validate array fields
 				arrProp := props["arrayField"].(map[string]any)
 				assert.Equal(t, "array", arrProp["type"])
 				items := arrProp["items"].(map[string]any)
 				assert.Equal(t, "string", items["type"])
 
-				// 验证文件字段
+				// Validate file field
 				fileProp := props["fileField"].(map[string]any)
 				assert.Equal(t, "string", fileProp["type"])
 				assert.Equal(t, "image", fileProp["contentMediaType"])
@@ -118,7 +118,7 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 
 				props := schemaObj["properties"].(map[string]any)
 
-				// 验证嵌套数组字段
+				// Validate nested array fields
 				arrProp := props["nestedArray"].(map[string]any)
 				assert.Equal(t, "array", arrProp["type"])
 				items := arrProp["items"].(map[string]any)
@@ -136,12 +136,12 @@ func TestTypeInfoToJSONSchema(t *testing.T) {
 	}
 }
 
-// 辅助函数，用于创建 DataType 指针
+// Helper functions for creating DataType pointers
 func stringPtr(dt DataType) *DataType {
 	return &dt
 }
 
-// 辅助函数，用于创建 FileSubType 指针
+// Helper function for creating a FileSubType pointer
 func fileSubTypePtr(fst FileSubType) *FileSubType {
 	return &fst
 }

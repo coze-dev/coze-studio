@@ -217,7 +217,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		UpdateTime:     strconv.FormatInt(pl.UpdatedAt/1000, 10),
 		ProjectID:      strconv.FormatInt(pl.GetAPPID(), 10),
 		VersionName:    pl.GetVersion(),
-		VersionTs:      pl.GetVersion(), // 兼容前端逻辑，理论上应该使用 VersionName
+		VersionTs:      pl.GetVersion(), // Compatible with front-end logic, in theory VersionName should be used
 		PluginApis:     pluginAPIs,
 	}
 
@@ -1237,7 +1237,7 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 	resp = &productAPI.GetProductListResponse{
 		Data: &productAPI.GetProductListData{
 			Products: products,
-			HasMore:  false, // 一次性拉完
+			HasMore:  false, // Finish at one time
 			Total:    int32(res.Total),
 		},
 	}

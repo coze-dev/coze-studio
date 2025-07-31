@@ -22,17 +22,17 @@ import (
 
 type RegisterOptionFn = internal.RegisterOption
 
-// WithAffectStability 设置稳定性标识, true:会影响系统稳定性, 并体现在接口错误率中, false:不影响稳定性.
+// WithAffectStability sets the stability flag, true: it will affect the system stability and is reflected in the interface error rate, false: it will not affect the stability.
 func WithAffectStability(affectStability bool) RegisterOptionFn {
 	return internal.WithAffectStability(affectStability)
 }
 
-// Register 注册用户预定义的错误码信息, PSM服务对应的code_gen子module初始化时调用.
+// Register the predefined error code information of the registered user, and call the code_gen sub-module corresponding to the PSM service when initializing.
 func Register(code int32, msg string, opts ...RegisterOptionFn) {
 	internal.Register(code, msg, opts...)
 }
 
-// SetDefaultErrorCode 带有PSM信息染色的code替换默认code.
+// SetDefaultErrorCode Code with PSM information staining Replace the default code.
 func SetDefaultErrorCode(code int32) {
 	internal.SetDefaultErrorCode(code)
 }

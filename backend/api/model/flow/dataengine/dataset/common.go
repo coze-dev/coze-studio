@@ -9,17 +9,17 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
-// 类型
+// type
 type FormatType int64
 
 const (
-	// 文本
+	// Text
 	FormatType_Text FormatType = 0
-	// 表格
+	// table
 	FormatType_Table FormatType = 1
-	// 图片
+	// image
 	FormatType_Image FormatType = 2
-	// 数据库
+	// database
 	FormatType_Database FormatType = 3
 )
 
@@ -158,9 +158,9 @@ func (p *ContentSchema) Value() (driver.Value, error) {
 type CaptionType int64
 
 const (
-	// 智能标注
+	// intelligent annotation
 	CaptionType_Auto CaptionType = 0
-	// 人工标注
+	// manual annotation
 	CaptionType_Manual CaptionType = 1
 )
 
@@ -202,19 +202,19 @@ func (p *CaptionType) Value() (driver.Value, error) {
 type DocumentStatus int64
 
 const (
-	// 上传中
+	// Uploading
 	DocumentStatus_Processing DocumentStatus = 0
-	// 生效
+	// take effect
 	DocumentStatus_Enable DocumentStatus = 1
-	// 失效
+	// failure
 	DocumentStatus_Disable DocumentStatus = 2
-	// 删除
+	// delete
 	DocumentStatus_Deleted DocumentStatus = 3
-	// 重新分片中，调用方不感知该状态
+	// In rescaling, the caller is not aware of the state
 	DocumentStatus_Resegment DocumentStatus = 4
-	// 刷新中（刷新成功后会删除）
+	// Refreshing (will be deleted after successful refresh)
 	DocumentStatus_Refreshing DocumentStatus = 5
-	// 失败
+	// fail
 	DocumentStatus_Failed DocumentStatus = 9
 )
 
@@ -276,9 +276,9 @@ func (p *DocumentStatus) Value() (driver.Value, error) {
 type DocumentSource int64
 
 const (
-	// 本地文件上传
+	// local file upload
 	DocumentSource_Document DocumentSource = 0
-	// 自定义类型
+	// custom type
 	DocumentSource_Custom DocumentSource = 2
 )
 
@@ -320,9 +320,9 @@ func (p *DocumentSource) Value() (driver.Value, error) {
 type ParsingType int64
 
 const (
-	//快速解析
+	//fast parse
 	ParsingType_FastParsing ParsingType = 0
-	//精准解析
+	//accurate analysis
 	ParsingType_AccurateParsing ParsingType = 1
 )
 
@@ -361,7 +361,7 @@ func (p *ParsingType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 排序字段
+// sort field
 type OrderField int64
 
 const (
@@ -404,7 +404,7 @@ func (p *OrderField) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 排序规则
+// OrderType
 type OrderType int64
 
 const (
@@ -450,13 +450,13 @@ func (p *OrderType) Value() (driver.Value, error) {
 type ReviewStatus int64
 
 const (
-	// 处理中
+	// Processing
 	ReviewStatus_Processing ReviewStatus = 0
-	// 已完成
+	// Completed.
 	ReviewStatus_Enable ReviewStatus = 1
-	// 失败
+	// fail
 	ReviewStatus_Failed ReviewStatus = 2
-	// 失败
+	// fail
 	ReviewStatus_ForceStop ReviewStatus = 3
 )
 
@@ -504,23 +504,23 @@ func (p *ReviewStatus) Value() (driver.Value, error) {
 }
 
 type ChunkStrategy struct {
-	// 分隔符，如句号
+	// A separator, such as a period
 	Separator string `thrift:"separator,1" form:"separator" json:"separator" query:"separator"`
-	// 分片的最大token数
+	// Maximum number of tokens for sharding
 	MaxTokens int64 `thrift:"max_tokens,2" form:"max_tokens" json:"max_tokens" query:"max_tokens"`
-	// 替换掉连续的空格、换行符和制表符
+	// Replace consecutive spaces, newlines, and tabs
 	RemoveExtraSpaces bool `thrift:"remove_extra_spaces,3" form:"remove_extra_spaces" json:"remove_extra_spaces" query:"remove_extra_spaces"`
-	// 是否去除url和email
+	// Remove URL and email
 	RemoveUrlsEmails bool `thrift:"remove_urls_emails,4" form:"remove_urls_emails" json:"remove_urls_emails" query:"remove_urls_emails"`
-	// 如果为0, 则不使用以上字段的配置
+	// If 0, the configuration of the above fields is not used
 	ChunkType ChunkType `thrift:"chunk_type,5" form:"chunk_type" json:"chunk_type" query:"chunk_type"`
-	// 图片类型，图片描述文字的标注方式
+	// Image type, image description text annotation method
 	CaptionType *CaptionType `thrift:"caption_type,7,optional" form:"caption_type" json:"caption_type,omitempty" query:"caption_type"`
-	//分段重叠度
+	//segmented overlap
 	Overlap *int64 `thrift:"overlap,8,optional" form:"overlap" json:"overlap,omitempty" query:"overlap"`
-	//最大层级数（按层级分段时生效）
+	//Maximum number of levels (effective when segmented by level)
 	MaxLevel *int64 `thrift:"max_level,9,optional" form:"max_level" json:"max_level,omitempty" query:"max_level"`
-	//切片保留层级标题（按层级分段时生效）
+	//Slice preserves level headers (effective when segmented by level)
 	SaveTitle *bool `thrift:"save_title,10,optional" form:"save_title" json:"save_title,omitempty" query:"save_title"`
 }
 
@@ -1057,13 +1057,13 @@ func (p *ChunkStrategy) String() string {
 }
 
 type ParsingStrategy struct {
-	//解析类型
+	//parse type
 	ParsingType *ParsingType `thrift:"parsing_type,1,optional" form:"parsing_type" json:"parsing_type,omitempty" query:"parsing_type"`
-	//是否开启图片元素提取（精准解析时生效）
+	//Whether to enable image element extraction (effective when accurately parsing)
 	ImageExtraction *bool `thrift:"image_extraction,2,optional" form:"image_extraction" json:"image_extraction,omitempty" query:"image_extraction"`
-	//是否开启表格元素提取（精准解析时生效）
+	//Whether to enable table element extraction (effective when accurately parsing)
 	TableExtraction *bool `thrift:"table_extraction,3,optional" form:"table_extraction" json:"table_extraction,omitempty" query:"table_extraction"`
-	//是否开启图片OCR（精准解析时生效）
+	//Whether to turn on picture OCR (effective when accurate analysis)
 	ImageOcr *bool `thrift:"image_ocr,4,optional" form:"image_ocr" json:"image_ocr,omitempty" query:"image_ocr"`
 }
 
@@ -1380,13 +1380,13 @@ func (p *ParsingStrategy) String() string {
 }
 
 type IndexStrategy struct {
-	//是否开启向量索引（默认为true）
+	//Whether to enable vector indexing (default is true)
 	VectorIndexing *bool `thrift:"vector_indexing,1,optional" form:"vector_indexing" json:"vector_indexing,omitempty" query:"vector_indexing"`
-	//是否开启关键词索引（默认为true）
+	//Whether to enable keyword indexing (default is true)
 	KeywordIndexing *bool `thrift:"keyword_indexing,2,optional" form:"keyword_indexing" json:"keyword_indexing,omitempty" query:"keyword_indexing"`
-	//是否开启分层索引
+	//Whether to enable hierarchical indexing
 	HierarchicalIndexing *bool `thrift:"hierarchical_indexing,3,optional" form:"hierarchical_indexing" json:"hierarchical_indexing,omitempty" query:"hierarchical_indexing"`
-	//向量模型
+	//vector model
 	Model *string `thrift:"model,4,optional" form:"model" json:"model,omitempty" query:"model"`
 }
 
@@ -1702,7 +1702,7 @@ func (p *IndexStrategy) String() string {
 }
 
 type FilterStrategy struct {
-	//过滤页数
+	//filter pages
 	FilterPage []int32 `thrift:"filter_page,1,optional" form:"filter_page" json:"filter_page,omitempty" query:"filter_page"`
 }
 
@@ -1873,7 +1873,7 @@ func (p *FilterStrategy) String() string {
 }
 
 type SinkStrategy struct {
-	// 是否检查索引成功
+	// Check whether the index was successful
 	CheckIndex bool `thrift:"check_index,1" form:"check_index" json:"check_index" query:"check_index"`
 }
 

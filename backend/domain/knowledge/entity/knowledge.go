@@ -26,10 +26,10 @@ type WhereKnowledgeOption struct {
 	KnowledgeIDs []int64
 	AppID        *int64
 	SpaceID      *int64
-	Name         *string // 完全匹配
+	Name         *string // Exact match
 	Status       []int32
 	UserID       *int64
-	Query        *string // 模糊匹配
+	Query        *string // fuzzy match
 	Page         *int
 	PageSize     *int
 	Order        *Order

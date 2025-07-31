@@ -658,7 +658,7 @@ func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context,
 			HeaderLineIdx: req.GetTableSheet().GetHeaderLineIdx(),
 			StartLineIdx:  req.GetTableSheet().GetStartLineIdx(),
 		},
-		// 不传默认返回所有数据
+		// All data is returned by default without passing it on.
 		TableDataType: tableType,
 	})
 	if err != nil {

@@ -3,31 +3,31 @@
 package plugin_develop
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
 )
 
 type GetPlaygroundPluginListRequest struct {
-	// 页码
+	// page number
 	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty"`
-	// 每页大小
+	// page size
 	Size *int32 `thrift:"size,2,optional" form:"size" json:"size,omitempty"`
 	// ignore
 	Name *string `thrift:"name,4,optional" form:"name" json:"name,omitempty"`
-	// 空间id
+	// Space ID
 	SpaceID *int64 `thrift:"space_id,5,optional" form:"space_id" json:"space_id,string,omitempty"`
-	// 如果存在，则根据插件id查询，无分页逻辑
+	// If present, query according to plug-in id, no paging logic
 	PluginIds []string `thrift:"plugin_ids,6" form:"plugin_ids" json:"plugin_ids"`
-	// 长度为1 ，且为workflow时，返回已发布的workflow列表，默认返回已发布的plugin列表
+	// When the length is 1 and it is a workflow, return the list of published workflows, and return the list of published plugins by default
 	PluginTypes []int32 `thrift:"plugin_types,7" form:"plugin_types" json:"plugin_types"`
 	// ignore
 	ChannelID *int32 `thrift:"channel_id,8,optional" form:"channel_id" json:"channel_id,omitempty"`
 	// ignore
 	SelfCreated *bool `thrift:"self_created,9,optional" form:"self_created" json:"self_created,omitempty"`
-	// 排序
+	// sort
 	OrderBy *int32 `thrift:"order_by,10,optional" form:"order_by" json:"order_by,omitempty"`
 	// ignore
 	IsGetOffline *bool `thrift:"is_get_offline,11,optional" form:"is_get_offline" json:"is_get_offline,omitempty"`
@@ -1095,13 +1095,13 @@ func (p *GetPlaygroundPluginListResponse) String() string {
 }
 
 type GetPluginAPIsRequest struct {
-	// 插件id
+	// Plugin ID
 	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	// 如果存在，则根据工具id查询，无分页逻辑
+	// If present, query according to tool id, no paging logic
 	APIIds []string `thrift:"api_ids,2" form:"api_ids" json:"api_ids" query:"api_ids"`
-	// 页码
+	// page number
 	Page int32 `thrift:"page,3" form:"page" json:"page" query:"page"`
-	// 每页大小
+	// page size
 	Size int32 `thrift:"size,4" form:"size" json:"size" query:"size"`
 	// ignore
 	Order *plugin_develop_common.APIListOrder `thrift:"order,5" form:"order" json:"order" query:"order"`
@@ -1955,7 +1955,7 @@ func (p *GetPluginAPIsResponse) String() string {
 }
 
 type GetUpdatedAPIsRequest struct {
-	// 插件id
+	// Plugin ID
 	PluginID int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -2158,11 +2158,11 @@ func (p *GetUpdatedAPIsRequest) String() string {
 type GetUpdatedAPIsResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// 新创建的工具名
+	// Newly created tool name
 	CreatedAPINames []string `thrift:"created_api_names,3" form:"created_api_names" json:"created_api_names" query:"created_api_names"`
-	// 被删除的工具名
+	// Deleted tool name
 	DeletedAPINames []string `thrift:"deleted_api_names,4" form:"deleted_api_names" json:"deleted_api_names" query:"deleted_api_names"`
-	// 被更新的工具名
+	// updated tool name
 	UpdatedAPINames []string       `thrift:"updated_api_names,5" form:"updated_api_names" json:"updated_api_names" query:"updated_api_names"`
 	BaseResp        *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
@@ -2591,7 +2591,7 @@ func (p *GetUpdatedAPIsResponse) String() string {
 }
 
 type GetPluginInfoRequest struct {
-	// 目前只支持插件openapi插件的信息
+	// Currently only plugins are supported OpenAPI plugin information
 	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
 	// ignore
 	PreviewVersionTsx *string    `thrift:"preview_version_tsx,2,optional" form:"preview_version_tsx" json:"preview_version_tsx,omitempty" query:"preview_version_tsx"`
@@ -2853,11 +2853,11 @@ type GetPluginInfoResponse struct {
 	Msg      string                                `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	MetaInfo *plugin_develop_common.PluginMetaInfo `thrift:"meta_info,3" form:"meta_info" json:"meta_info" query:"meta_info"`
 	CodeInfo *plugin_develop_common.CodeInfo       `thrift:"code_info,4" form:"code_info" json:"code_info" query:"code_info"`
-	// 0 无更新 1 有更新未发布
+	// 0 No updates 1 Yes updates Not released
 	Status bool `thrift:"status,5" form:"status" json:"status" query:"status"`
-	// 是否已发布
+	// Has it been published?
 	Published bool `thrift:"published,6" form:"published" json:"published" query:"published"`
-	// 创建人信息
+	// creator information
 	Creator *plugin_develop_common.Creator `thrift:"creator,7" form:"creator" json:"creator" query:"creator"`
 	// ignore
 	StatisticData *plugin_develop_common.PluginStatisticData `thrift:"statistic_data,8" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
@@ -4572,27 +4572,27 @@ func (p *UpdatePluginResponse) String() string {
 }
 
 type RegisterPluginMetaRequest struct {
-	// 插件名
+	// plugin name
 	Name string `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
-	// 插件描述
+	// Plugin description
 	Desc string `thrift:"desc,2,required" form:"desc,required" json:"desc,required" query:"desc,required"`
-	// 插件服务地址前缀
+	// Plugin service address prefix
 	URL *string `thrift:"url,3,optional" form:"url" json:"url,omitempty" query:"url"`
-	// 插件图标
+	// plugin icon
 	Icon *plugin_develop_common.PluginIcon `thrift:"icon,4,required" form:"icon,required" json:"icon,required" query:"icon,required"`
-	// 插件授权类型
+	// plug-in authorization type
 	AuthType *plugin_develop_common.AuthorizationType `thrift:"auth_type,5,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
-	// 子授权类型为api/token时，token参数位置
+	// When the sub-authorization type is api/token, the token parameter position
 	Location *plugin_develop_common.AuthorizationServiceLocation `thrift:"location,6,optional" form:"location" json:"location,omitempty" query:"location"`
-	// 子授权类型为api/token时，token参数key
+	// When the sub-authorization type is api/token, the token parameter key
 	Key *string `thrift:"key,7,optional" form:"key" json:"key,omitempty" query:"key"`
-	// 子授权类型为api/token时，token参数value
+	// When the sub-authorization type is api/token, the token parameter value
 	ServiceToken *string `thrift:"service_token,8,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// 授权类型为oauth是，oauth信息，见GetOAuthSchema返回值
+	// The authorization type is oauth Yes, oauth information, see GetOAuthSchema return value
 	OauthInfo *string `thrift:"oauth_info,9,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
-	// 空间id
+	// Space ID
 	SpaceID int64 `thrift:"space_id,10,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
-	// 插件公共参数，key为参数位置，value为参数列表
+	// Plugin public parameters, key is the parameter position, value is the parameter list
 	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema `thrift:"common_params,11,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
 	// ignore
 	CreationMethod *plugin_develop_common.CreationMethod `thrift:"creation_method,12,optional" form:"creation_method" json:"creation_method,omitempty" query:"creation_method"`
@@ -4600,9 +4600,9 @@ type RegisterPluginMetaRequest struct {
 	IdeCodeRuntime *string `thrift:"ide_code_runtime,13,optional" form:"ide_code_runtime" json:"ide_code_runtime,omitempty" query:"ide_code_runtime"`
 	// ignore
 	PluginType *plugin_develop_common.PluginType `thrift:"plugin_type,14,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
-	// 应用id
+	// App ID
 	ProjectID *int64 `thrift:"project_id,15,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
-	// 二级授权类型，0：api/token of service，10：client credentials of oauth
+	// Level 2 authorization type, 0: api/token of service, 10: client credentials of oauth
 	SubAuthType *int32 `thrift:"sub_auth_type,16,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
 	// ignore
 	AuthPayload *string `thrift:"auth_payload,17,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
@@ -6078,22 +6078,22 @@ type UpdatePluginMetaRequest struct {
 	URL      *string                                  `thrift:"url,4,optional" form:"url" json:"url,omitempty" query:"url"`
 	Icon     *plugin_develop_common.PluginIcon        `thrift:"icon,5,optional" form:"icon" json:"icon,omitempty" query:"icon"`
 	AuthType *plugin_develop_common.AuthorizationType `thrift:"auth_type,6,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
-	// 子授权类型为api/token时，token参数位置
+	// When the sub-authorization type is api/token, the token parameter position
 	Location *plugin_develop_common.AuthorizationServiceLocation `thrift:"location,7,optional" form:"location" json:"location,omitempty" query:"location"`
-	// 子授权类型为api/token时，token参数key
+	// When the sub-authorization type is api/token, the token parameter key
 	Key *string `thrift:"key,8,optional" form:"key" json:"key,omitempty" query:"key"`
-	// 子授权类型为api/token时，token参数value
+	// When the sub-authorization type is api/token, the token parameter value
 	ServiceToken *string `thrift:"service_token,9,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// 子授权类型为oauth时，oauth信息，见GetOAuthSchema返回值
+	// When the sub-authorization type is oauth, for oauth information, see GetOAuthSchema return value
 	OauthInfo *string `thrift:"oauth_info,10,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
-	// json序列化
+	// JSON serialization
 	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema `thrift:"common_params,11,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
 	// ignore
 	CreationMethod *plugin_develop_common.CreationMethod `thrift:"creation_method,12,optional" form:"creation_method" json:"creation_method,omitempty" query:"creation_method"`
 	// ignore
 	EditVersion *int32                            `thrift:"edit_version,13,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
 	PluginType  *plugin_develop_common.PluginType `thrift:"plugin_type,14,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
-	// 二级授权类型
+	// Level 2 authorization type
 	SubAuthType *int32 `thrift:"sub_auth_type,15,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
 	// ignore
 	AuthPayload *string `thrift:"auth_payload,16,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
@@ -7511,9 +7511,9 @@ func (p *UpdatePluginMetaResponse) String() string {
 
 type PublishPluginRequest struct {
 	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	// 隐私声明状态
+	// Privacy Statement Status
 	PrivacyStatus bool `thrift:"privacy_status,2" form:"privacy_status" json:"privacy_status" query:"privacy_status"`
-	// 隐私声明内容
+	// Privacy Statement Content
 	PrivacyInfo string     `thrift:"privacy_info,3" form:"privacy_info" json:"privacy_info" query:"privacy_info"`
 	VersionName string     `thrift:"version_name,4" form:"version_name" json:"version_name" query:"version_name"`
 	VersionDesc string     `thrift:"version_desc,5" form:"version_desc" json:"version_desc" query:"version_desc"`
@@ -8173,7 +8173,7 @@ func (p *PublishPluginResponse) String() string {
 
 }
 
-// bot引用plugin
+// Bot reference plugin
 type GetBotDefaultParamsRequest struct {
 	SpaceID                int64                                     `thrift:"space_id,1" form:"space_id" json:"space_id,string" query:"space_id"`
 	BotID                  int64                                     `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
@@ -10130,8 +10130,8 @@ type DeleteBotDefaultParamsRequest struct {
 	DevID    string `thrift:"dev_id,2" form:"dev_id" json:"dev_id" query:"dev_id"`
 	PluginID int64  `thrift:"plugin_id,3" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
 	APIName  string `thrift:"api_name,4" form:"api_name" json:"api_name" query:"api_name"`
-	// bot删除工具时: DeleteBot = false , APIName要设置
-	// 删除bot时   : DeleteBot = true  , APIName为空
+	// Bot removal tool when: DeleteBot = false, APIName to set
+	// Delete bot: DeleteBot = true, APIName is empty
 	DeleteBot           bool                                      `thrift:"delete_bot,5" form:"delete_bot" json:"delete_bot" query:"delete_bot"`
 	SpaceID             int64                                     `thrift:"space_id,6" form:"space_id" json:"space_id,string" query:"space_id"`
 	PluginReferrerID    string                                    `thrift:"plugin_referrer_id,7" form:"plugin_referrer_id" json:"plugin_referrer_id" query:"plugin_referrer_id"`
@@ -14418,7 +14418,7 @@ type GetOAuthSchemaResponse struct {
 	Msg         string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 	OauthSchema string `thrift:"oauth_schema,3" form:"oauth_schema" json:"oauth_schema" query:"oauth_schema"`
 	IdeConf     string `thrift:"ide_conf,4" form:"ide_conf" json:"ide_conf" query:"ide_conf"`
-	// 约定的json
+	// The agreed json
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
@@ -15341,7 +15341,7 @@ func (p *GetUserAuthorityResponse) String() string {
 
 }
 
-// 获取授权状态--plugin debug区
+// Get authorization status--plugin debug area
 type GetOAuthStatusRequest struct {
 	PluginID int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
 	Base     *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
@@ -15541,11 +15541,11 @@ func (p *GetOAuthStatusRequest) String() string {
 }
 
 type GetOAuthStatusResponse struct {
-	// 是否为授权插件
+	// Is it an authorized plugin?
 	IsOauth bool `thrift:"is_oauth,1" form:"is_oauth" json:"is_oauth" query:"is_oauth"`
-	// 用户授权状态
+	// user authorization status
 	Status plugin_develop_common.OAuthStatus `thrift:"status,2" form:"status" json:"status" query:"status"`
-	// 未授权，返回授权url
+	// Unauthorized, return the authorized url.
 	Content  string         `thrift:"content,3" form:"content" json:"content" query:"content"`
 	Code     int64          `thrift:"code,253" form:"code" json:"code" query:"code"`
 	Msg      string         `thrift:"msg,254" form:"msg" json:"msg" query:"msg"`
@@ -16427,9 +16427,9 @@ func (p *CheckAndLockPluginEditResponse) String() string {
 type GetPluginPublishHistoryRequest struct {
 	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
 	SpaceID  int64 `thrift:"space_id,2,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
-	// 翻页，第几页
+	// Turn the page, what page?
 	Page *int32 `thrift:"page,3,optional" form:"page" json:"page,omitempty" query:"page"`
-	// 翻页，每页几条
+	// Flip pages, a few entries per page
 	Size *int32     `thrift:"size,4,optional" form:"size" json:"size,omitempty" query:"size"`
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -16793,9 +16793,9 @@ func (p *GetPluginPublishHistoryRequest) String() string {
 type GetPluginPublishHistoryResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// 时间倒序
+	// reverse time
 	PluginPublishInfoList []*plugin_develop_common.PluginPublishInfo `thrift:"plugin_publish_info_list,3" form:"plugin_publish_info_list" json:"plugin_publish_info_list" query:"plugin_publish_info_list"`
-	// 总共多少条，大于 page x size 说明还有下一页
+	// How many in total, greater than page x size description and next page
 	Total    int32          `thrift:"total,4" form:"total" json:"total" query:"total"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`
 }
@@ -20032,14 +20032,14 @@ type GetDevPluginListRequest struct {
 	SpaceID   int64                                `thrift:"space_id,5" form:"space_id" json:"space_id,string"`
 	ScopeType *plugin_develop_common.ScopeType     `thrift:"scope_type,6,optional" form:"scope_type" json:"scope_type,omitempty" query:"scope_type"`
 	OrderBy   *plugin_develop_common.OrderBy       `thrift:"order_by,7,optional" form:"order_by" json:"order_by,omitempty" query:"order_by"`
-	// 发布状态筛选：true:已发布, false:未发布
+	// Release status filter: true: published, false: not published
 	PublishStatus *bool `thrift:"publish_status,8,optional" form:"publish_status" json:"publish_status,omitempty" query:"publish_status"`
-	// 插件名或工具名
+	// Plugin name or tool name
 	Name *string `thrift:"name,9,optional" form:"name" json:"name,omitempty" query:"name"`
-	// 插件种类筛选 端/云
+	// Plugin Type Filter, End/Cloud
 	PluginTypeForFilter *plugin_develop_common.PluginTypeForFilter `thrift:"plugin_type_for_filter,10,optional" form:"plugin_type_for_filter" json:"plugin_type_for_filter,omitempty" query:"plugin_type_for_filter"`
 	ProjectID           int64                                      `thrift:"project_id,11" form:"project_id" json:"project_id,string"`
-	// 插件id列表
+	// plugin id list
 	PluginIds []int64    `thrift:"plugin_ids,12" form:"plugin_ids" json:"plugin_ids"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -21683,8 +21683,8 @@ type Convert2OpenAPIResponse struct {
 	// ignore
 	DuplicateAPIInfos []*plugin_develop_common.DuplicateAPIInfo `thrift:"duplicate_api_infos,6" form:"duplicate_api_infos" json:"duplicate_api_infos" query:"duplicate_api_infos"`
 	// BaseResp.StatusCode
-	//     DuplicateAPIPath: 导入的文件中有重复的API Path，且 request.MergeSamePaths = false
-	//     InvalidParam: 其他错误
+	//     DuplicateAPIPath: Duplicate API Path in imported file with request. MergeSamePaths = false
+	//     InvalidParam: Other errors
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 
@@ -22707,14 +22707,14 @@ func (p *BatchCreateAPIRequest) String() string {
 type BatchCreateAPIResponse struct {
 	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	// PathsToReplace表示要覆盖的tools，
-	// 如果BaseResp.StatusCode = DuplicateAPIPath，那么PathsToReplace不为空
+	// PathsToReplace represents the tools to override,
+	// If BaseResp. StatusCode = DuplicateAPIPath, then PathsToReplace is not empty
 	PathsDuplicated []*plugin_develop_common.PluginAPIInfo `thrift:"paths_duplicated,3,optional" form:"paths_duplicated" json:"paths_duplicated,omitempty" query:"paths_duplicated"`
 	PathsCreated    []*plugin_develop_common.PluginAPIInfo `thrift:"paths_created,4,optional" form:"paths_created" json:"paths_created,omitempty" query:"paths_created"`
 	EditVersion     int32                                  `thrift:"edit_version,5" form:"edit_version" json:"edit_version" query:"edit_version"`
 	// BaseResp.StatusCode
-	//     DuplicateAPIPath: 有重复的API Path，且 request.ReplaceDupPath = false
-	//     InvalidParam: 其他错误
+	//     DuplicateAPIPath: There is a duplicate API Path with request. ReplaceDupPath = false
+	//     InvalidParam: Other errors
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
 
@@ -23151,7 +23151,7 @@ func (p *BatchCreateAPIResponse) String() string {
 
 type RevokeAuthTokenRequest struct {
 	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required"`
-	// 如果不传使用uid赋值 bot_id = connector_uid
+	// If not passed using uid assignment bot_id = connector_uid
 	BotID       *int64     `thrift:"bot_id,2,optional" form:"bot_id" json:"bot_id,string,omitempty"`
 	ContextType *int32     `thrift:"context_type,3,optional" form:"context_type" json:"context_type,omitempty"`
 	Base        *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
@@ -23615,11 +23615,11 @@ func (p *RevokeAuthTokenResponse) String() string {
 
 type OAuthPluginInfo struct {
 	PluginID int64 `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
-	// 用户授权状态
+	// user authorization status
 	Status plugin_develop_common.OAuthStatus `thrift:"status,2" form:"status" json:"status" query:"status"`
-	// 插件name
+	// Plugin name
 	Name string `thrift:"name,3" form:"name" json:"name" query:"name"`
-	// 插件头像
+	// plugin avatar
 	PluginIcon string `thrift:"plugin_icon,4" form:"plugin_icon" json:"plugin_icon" query:"plugin_icon"`
 }
 
@@ -24400,17 +24400,17 @@ type PluginDevelopService interface {
 	GetOAuthSchema(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
 
 	GetOAuthSchemaAPI(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
-	// 获取已发布 workflow、plugin 列表，或者多个插件的详情
+	// Get a list of published workflows, plugins, or details of multiple plugins
 	GetPlaygroundPluginList(ctx context.Context, request *GetPlaygroundPluginListRequest) (r *GetPlaygroundPluginListResponse, err error)
-	// 通过 code 创建插件
+	// Creating plugins with code
 	RegisterPlugin(ctx context.Context, request *RegisterPluginRequest) (r *RegisterPluginResponse, err error)
-	// 通过 UI 创建插件
+	// Create plugins through UI
 	RegisterPluginMeta(ctx context.Context, request *RegisterPluginMetaRequest) (r *RegisterPluginMetaResponse, err error)
-	// 获取插件工具列表，或者多个工具详情
+	// Get a list of plug-in tools, or multiple tool details
 	GetPluginAPIs(ctx context.Context, request *GetPluginAPIsRequest) (r *GetPluginAPIsResponse, err error)
-	// 获取插件详情
+	// Get plugin details
 	GetPluginInfo(ctx context.Context, request *GetPluginInfoRequest) (r *GetPluginInfoResponse, err error)
-	// 与最近一次发布版本相比，更新的工具列表
+	// Updated list of tools compared to the most recent release
 	GetUpdatedAPIs(ctx context.Context, request *GetUpdatedAPIsRequest) (r *GetUpdatedAPIsResponse, err error)
 
 	GetOAuthStatus(ctx context.Context, request *GetOAuthStatusRequest) (r *GetOAuthStatusResponse, err error)
@@ -24418,23 +24418,23 @@ type PluginDevelopService interface {
 	CheckAndLockPluginEdit(ctx context.Context, request *CheckAndLockPluginEditRequest) (r *CheckAndLockPluginEditResponse, err error)
 
 	UnlockPluginEdit(ctx context.Context, request *UnlockPluginEditRequest) (r *UnlockPluginEditResponse, err error)
-	// 通过 code 更新插件
+	// Update plugins via code
 	UpdatePlugin(ctx context.Context, request *UpdatePluginRequest) (r *UpdatePluginResponse, err error)
-	// 删除工具
+	// removal tool
 	DeleteAPI(ctx context.Context, request *DeleteAPIRequest) (r *DeleteAPIResponse, err error)
-	// 删除插件
+	// Remove plugin
 	DelPlugin(ctx context.Context, request *DelPluginRequest) (r *DelPluginResponse, err error)
-	// 发布插件
+	// publishing plugin
 	PublishPlugin(ctx context.Context, request *PublishPluginRequest) (r *PublishPluginResponse, err error)
-	// 通过UI更新插件
+	// Update plugins via UI
 	UpdatePluginMeta(ctx context.Context, request *UpdatePluginMetaRequest) (r *UpdatePluginMetaResponse, err error)
 
 	GetBotDefaultParams(ctx context.Context, request *GetBotDefaultParamsRequest) (r *GetBotDefaultParamsResponse, err error)
 
 	UpdateBotDefaultParams(ctx context.Context, request *UpdateBotDefaultParamsRequest) (r *UpdateBotDefaultParamsResponse, err error)
-	// 创建工具
+	// creation tool
 	CreateAPI(ctx context.Context, request *CreateAPIRequest) (r *CreateAPIResponse, err error)
-	// 更新工具
+	// update tool
 	UpdateAPI(ctx context.Context, request *UpdateAPIRequest) (r *UpdateAPIResponse, err error)
 
 	GetUserAuthority(ctx context.Context, request *GetUserAuthorityRequest) (r *GetUserAuthorityResponse, err error)
@@ -24444,9 +24444,9 @@ type PluginDevelopService interface {
 	GetPluginNextVersion(ctx context.Context, request *GetPluginNextVersionRequest) (r *GetPluginNextVersionResponse, err error)
 
 	GetDevPluginList(ctx context.Context, request *GetDevPluginListRequest) (r *GetDevPluginListResponse, err error)
-	// 协议转换，如将 curl 、postman collection 协议转换为 openapi3 协议
+	// Protocol conversion, such as converting curl and mail carrier collection protocols to openapi3 protocols
 	Convert2OpenAPI(ctx context.Context, request *Convert2OpenAPIRequest) (r *Convert2OpenAPIResponse, err error)
-	// 批量创建工具，目前是配合 Convert2OpenAPI 接口使用
+	// Batch creation tool, currently used with the Convert2 OpenAPI interface
 	BatchCreateAPI(ctx context.Context, request *BatchCreateAPIRequest) (r *BatchCreateAPIResponse, err error)
 
 	RevokeAuthToken(ctx context.Context, request *RevokeAuthTokenRequest) (r *RevokeAuthTokenResponse, err error)

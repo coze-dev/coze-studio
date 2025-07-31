@@ -156,7 +156,7 @@ func (p *AppUserInfo) String() string {
 }
 
 type User struct {
-	// 与原接口字段名对齐
+	// Align with the original interface field name
 	UserIDStr      int64        `thrift:"user_id_str,1,required" form:"user_id_str,required" json:"user_id_str,string,required" query:"user_id_str,required"`
 	Name           string       `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	UserUniqueName string       `thrift:"user_unique_name,3,required" form:"user_unique_name,required" json:"user_unique_name,required" query:"user_unique_name,required"`
@@ -3848,15 +3848,15 @@ func (p *UserUpdateProfileResponse) String() string {
 }
 
 type PassportService interface {
-	// 邮箱密码注册
+	// Email password registration
 	PassportWebEmailRegisterV2Post(ctx context.Context, req *PassportWebEmailRegisterV2PostRequest) (r *PassportWebEmailRegisterV2PostResponse, err error)
-	// 退出登录
+	// log out
 	PassportWebLogoutGet(ctx context.Context, req *PassportWebLogoutGetRequest) (r *PassportWebLogoutGetResponse, err error)
-	// 邮箱帐密登录
+	// Email account password login
 	PassportWebEmailLoginPost(ctx context.Context, req *PassportWebEmailLoginPostRequest) (r *PassportWebEmailLoginPostResponse, err error)
-	// 通过邮箱重置密码
+	// Reset password via email
 	PassportWebEmailPasswordResetGet(ctx context.Context, req *PassportWebEmailPasswordResetGetRequest) (r *PassportWebEmailPasswordResetGetResponse, err error)
-	// 账号信息
+	// account information
 	PassportAccountInfoV2(ctx context.Context, req *PassportAccountInfoV2Request) (r *PassportAccountInfoV2Response, err error)
 
 	UserUpdateAvatar(ctx context.Context, req *UserUpdateAvatarRequest) (r *UserUpdateAvatarResponse, err error)

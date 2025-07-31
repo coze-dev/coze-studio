@@ -26,7 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
-// TODO(@fanlv): 参数引用需要修改。
+// TODO (@fanlv): Parameter references need to be modified.
 type Workflow interface {
 	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow.ToolFromWorkflow, error)
 	DeleteWorkflow(ctx context.Context, id int64) error

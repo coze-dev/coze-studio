@@ -59,7 +59,7 @@ func (svc *dataCopySVC) CheckAndGenCopyTask(ctx context.Context, req *datacopy.C
 	}
 	var err error
 	resp := datacopy.CheckAndGenCopyTaskResp{}
-	// 检查是否已经存在任务
+	// Check if a task already exists
 	task, err := svc.dataCopyTaskRepo.GetCopyTask(ctx, req.Task.TaskUniqKey, req.Task.OriginDataID, int32(req.Task.DataType))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err

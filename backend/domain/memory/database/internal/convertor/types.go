@@ -43,7 +43,7 @@ func SwitchToDataType(itemType table.FieldItemType) entity.DataType {
 	case table.FieldItemType_Boolean:
 		return entity.TypeBoolean
 	default:
-		// 默认使用 VARCHAR
+		// VARCHAR is used by default
 		return entity.TypeVarchar
 	}
 }
@@ -167,7 +167,7 @@ func ConvertSystemFieldToString(fieldName string, value interface{}) string {
 		case time.Time:
 			return v.Format(TimeFormat)
 		case []uint8:
-			// 尝试解析字符串表示的时间
+			// Attempt to parse the time represented by a string
 			return string(v)
 		}
 	}
@@ -182,7 +182,7 @@ func ConvertLogicOperator(logic database.Logic) entity.LogicalOperator {
 	case database.Logic_Or:
 		return entity.OR
 	default:
-		return entity.AND // 默认使用AND
+		return entity.AND // Default use AND
 	}
 }
 

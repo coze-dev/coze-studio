@@ -8,25 +8,25 @@ enum ProductEntityType {
     // Workflow = 3 ,
     SocialScene      = 4,
     Project          = 6,
-    WorkflowTemplate = 13, // 历史工作流，后续不会再有（废弃）
-    ImageflowTemplate = 15, // 历史图像流模板，后续不会再有（废弃）
-    TemplateCommon      = 20, // 模板通用标识，仅用于绑定模板相关的配置，不绑定商品
-    BotTemplate         = 21, // Bot 模板
-    WorkflowTemplateV2  = 23, // 工作流模板
-    ImageflowTemplateV2 = 25, // 图像流模板（该类型已下线，合并入 workflow，但历史数据会保留，前端视作 workflow 展示）
-    ProjectTemplate     = 26, // 项目模板
-    CozeToken        = 50, // coze token 类商品，理论上只会有一个
-    MsgCredit        = 55, // 订阅 credit 的流量包，理论上只会有一个
-    SubsMsgCredit    = 60, // 消息订阅类商品，理论上只有一个
+    WorkflowTemplate = 13, // History workflow, no more in the future (abandoned)
+    ImageflowTemplate = 15, // Historical image stream template, no more in the future (obsolete)
+    TemplateCommon      = 20, // Template universal identification, only used to bind template-related configurations, not bind products
+    BotTemplate         = 21, // Bot template
+    WorkflowTemplateV2  = 23, // workflow template
+    ImageflowTemplateV2 = 25, // Image stream template (this type has been offline and merged into workflow, but historical data will be preserved, and the front end will be treated as workflow display)
+    ProjectTemplate     = 26, // project template
+    CozeToken        = 50, // Coze token products, theoretically there will only be one
+    MsgCredit        = 55, // Subscribe to the traffic package of credit, theoretically there will only be one
+    SubsMsgCredit    = 60, // There is only one subscription product in theory
     Common           = 99,
-    Topic = 101 // 专题（兼容之前的设计）
+    Topic = 101 // Special Topics (Compatible with previous designs)
 }
 
 enum SortType {
     Heat         = 1,
     Newest       = 2,
-    FavoriteTime = 3, // 收藏时间
-    Relative = 4, // 相关性，只用于搜索场景
+    FavoriteTime = 3, // collection time
+    Relative = 4, // Correlation, only for search scenarios
 }
 
 enum ProductPublishMode {
@@ -35,8 +35,8 @@ enum ProductPublishMode {
 }
 
 enum ProductListSource {
-    Recommend           = 1, // 推荐列表页
-    CustomizedRecommend = 2, // 个性化推荐
+    Recommend           = 1, // recommended list page
+    CustomizedRecommend = 2, // personalized recommendation
 }
 
 enum PluginType {
@@ -54,7 +54,7 @@ struct CommercialSetting {
 }
 
 enum ProductStatus {
-    NeverListed = 0, // 从未上架
+    NeverListed = 0, // NeverListed
     Listed      = 1,
     Unlisted    = 2,
     Banned      = 3,
@@ -83,16 +83,16 @@ struct ImageInfo {
 }
 
 enum ProductDraftStatus {
-    Default   = 0, // 默认
-    Pending   = 1, // 审核中
-    Approved  = 2, // 审核通过
-    Rejected  = 3, // 审核不通过
-    Abandoned = 4, // 已废弃
+    Default   = 0, // default
+    Pending   = 1, // Under review.
+    Approved  = 2, // approved
+    Rejected  = 3, // The review failed.
+    Abandoned = 4, // Abandoned
 }
 
 typedef ProductDraftStatus AuditStatus
 
-struct OpeningDialog {  // Bot开场白
+struct OpeningDialog {  // Bot OpeningDialog
     1: string content (agw.key = "content", api.body= "content"),
 }
 
@@ -110,17 +110,17 @@ enum PluginParamTypeFormat {
 }
 
 enum WorkflowNodeType {
-    Start       = 1 , // 开始
-    End         = 2 , // 结束
-    LLM         = 3 , // 大模型
-    Api         = 4 , // 插件
-    Code        = 5 , // 代码
-    Dataset     = 6 , // 知识库
-    If          = 8 , // 选择器
-    SubWorkflow = 9 , // 工作流
-    Variable    = 11, // 变量
-    Database    = 12, // 数据库
-    Message     = 13, // 消息
+    Start       = 1 , // start
+    End         = 2 , // end
+    LLM         = 3 , // Large model
+    Api         = 4 , // plugin
+    Code        = 5 , // code
+    Dataset     = 6 , // Knowledge Base
+    If          = 8 , // selector
+    SubWorkflow = 9 , // Workflow
+    Variable    = 11, // variable
+    Database    = 12, // database
+    Message     = 13, // message
 }
 
 enum SocialSceneRoleType {
@@ -129,9 +129,9 @@ enum SocialSceneRoleType {
 	Custom     = 3
 }
 
-enum UIPreviewType { // UI 预览类型，定义对齐 UI Builder，目前用于 Project
-    Web = 1,    // 网页端
-    Client = 2, // 移动端
+enum UIPreviewType { // UI preview type, defining alignment UI Builder, currently used in Project
+    Web = 1,    // web page
+    Client = 2, // mobile end
 }
 
 struct ChargeSKUExtra{
@@ -140,7 +140,7 @@ struct ChargeSKUExtra{
 }
 
 enum FavoriteListSource {
-    CreatedByMe = 1, // 用户自己创建的
+    CreatedByMe = 1, // Created by users themselves
 }
 
 struct FavoriteEntity {
@@ -149,10 +149,10 @@ struct FavoriteEntity {
     4 :          string               Name               (agw.key = "name", api.body="name")                                               ,
     5 :          string               IconURL            (agw.key = "icon_url", api.body="icon_url")                                           ,
     6 :          string               Description        (agw.key = "description", api.body="description")                                        ,
-    7 :          SellerInfo           Seller             (agw.key = "seller", api.body="seller")                                             , // 废弃，使用UserInfo
-    8 :          i64                  SpaceID            (agw.js_conv="str",  agw.cli_conv="str", agw.key = "space_id", api.body="space_id", api.js_conv="true")   , // 用于跳转到Bot编辑页
-    9 :          bool                 HasSpacePermission (agw.key = "has_space_permission", api.body="has_space_permission")                               , // 用户是否有该实体所在Space的权限
-    10:          i64                  FavoriteAt         (agw.js_conv="str",  agw.cli_conv="str", agw.key = "favorite_at", api.body="favorite_at", api.js_conv="true"), // 收藏时间
+    7 :          SellerInfo           Seller             (agw.key = "seller", api.body="seller")                                             , // Abandoned, using UserInfo
+    8 :          i64                  SpaceID            (agw.js_conv="str",  agw.cli_conv="str", agw.key = "space_id", api.body="space_id", api.js_conv="true")   , // Use to jump to the bot edit page
+    9 :          bool                 HasSpacePermission (agw.key = "has_space_permission", api.body="has_space_permission")                               , // Does the user have permissions to the space where the entity is located?
+    10:          i64                  FavoriteAt         (agw.js_conv="str",  agw.cli_conv="str", agw.key = "favorite_at", api.body="favorite_at", api.js_conv="true"), // collection time
 
     11: optional FavoriteProductExtra ProductExtra       (agw.key = "product_extra", api.body="product_extra")                                      ,
     12:          UserInfo             UserInfo           (agw.key = "user_info", api.body="user_info")                                          ,

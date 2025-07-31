@@ -17,7 +17,7 @@ enum ParameterLocation{
     Header = 4
 }
 
-//plugin枚举值
+//plugin enumeration value
 enum PluginParamTypeFormat{
     FileUrl  = 0
     ImageUrl = 1
@@ -53,13 +53,13 @@ enum ParameterType{
     Bool    = 6,
 }
 
-// 默认入参的设置来源
+// Default imported parameter settings source
 enum DefaultParamSource {
-    Input    = 0, // 默认用户输入
-    Variable = 1, // 引用变量
+    Input    = 0, // default user input
+    Variable = 1, // reference variable
 }
 
-// 针对File类型参数的细分类型
+// Subdivision types for File type parameters
 enum AssistParameterType {
     DEFAULT = 1,
     IMAGE   = 2,
@@ -71,19 +71,19 @@ enum AssistParameterType {
     AUDIO   = 8,
     ZIP     = 9,
     VIDEO   = 10,
-    VOICE   = 12,  // 语音
+    VOICE   = 12,  // voice
 }
 
 enum PluginToolAuthType {
-    Required  = 0, // 强授权
-    Supported = 1, // 半匿名授权
-    Disable   = 2, // 不授权
+    Required  = 0, // strong authorization
+    Supported = 1, // semi-anonymous authorization
+    Disable   = 2, // not authorized
 }
 
 enum PluginCardStatus {
     Latest        = 1,
-    NeedUpdate    = 2, // 主卡片版本有升级
-    ParamMisMatch = 3, // 插件工具出参不匹配
+    NeedUpdate    = 2, // The main card version has been upgraded.
+    ParamMisMatch = 3, // Plugin tool exported parameters do not match
 }
 
 enum PluginType {
@@ -101,8 +101,8 @@ enum PluginStatus {
     PREPARED  = 3,
     PUBLISHED = 4,
     OFFLINE   = 5,
-    Draft     = 0, // 默认值
-    BANNED    = 6, // 禁用
+    Draft     = 0, // default value
+    BANNED    = 6, // disable
 }
 
 enum ProductStatus {
@@ -127,10 +127,10 @@ enum APIListOrderBy {
 }
 
 enum SpaceRoleType {
-    Default = 0, // 默认
+    Default = 0, // default
     Owner   = 1, // owner
-    Admin   = 2, // 管理员
-    Member  = 3, // 普通成员
+    Admin   = 2, // administrator
+    Member  = 3, // ordinary member
 }
 
 enum RunMode {
@@ -165,8 +165,8 @@ enum PluginReferrerScene {
 }
 
 enum WorkflowResponseMode {
-    UseLLM  = 0, // 模型总结
-    SkipLLM = 1, // 不使用模型总结
+    UseLLM  = 0, // model summary
+    SkipLLM = 1, // Do not use model summaries
 }
 
 struct ResponseStyle {
@@ -195,19 +195,19 @@ struct UserLabel {
 }
 
 struct PluginMetaInfo{
-    1 :          string                                         name         , // 插件名
-    2 :          string                                         desc         , // 插件描述
-    3 :          string                                         url          , // 插件服务地址前缀
-    4 :          PluginIcon                                     icon         , // 插件图标
-    5 :          list<AuthorizationType>                        auth_type    , // 插件授权类型，0：无授权，1：service，3：oauth
-    6 : optional AuthorizationServiceLocation                   location     , // 子授权类型为api/token时，token参数位置
-    7 : optional string                                         key          , // 子授权类型为api/token时，token参数key
-    8 : optional string                                         service_token, // 子授权类型为api/token时，token参数值
-    9 : optional string                                         oauth_info   , // 子授权类型为oauth时，oauth信息
-    10: optional map<ParameterLocation,list<commonParamSchema>> common_params, // 插件公共参数，key为参数位置，value为参数列表
-    11: optional i32                                            sub_auth_type, // 子授权类型，0: api/token of service, 10: client credentials of oauth
-    12: optional string                                         auth_payload , // 可忽略
-    13:          bool                                           fixed_export_ip, // 可忽略
+    1 :          string                                         name         , // plugin name
+    2 :          string                                         desc         , // Plugin description
+    3 :          string                                         url          , // Plugin service address prefix
+    4 :          PluginIcon                                     icon         , // plugin icon
+    5 :          list<AuthorizationType>                        auth_type    , // Plugin authorization type, 0: no authorization, 1: service, 3: oauth
+    6 : optional AuthorizationServiceLocation                   location     , // When the sub-authorization type is api/token, the token parameter position
+    7 : optional string                                         key          , // When the sub-authorization type is api/token, the token parameter key
+    8 : optional string                                         service_token, // When the sub-authorization type is api/token, the token parameter value
+    9 : optional string                                         oauth_info   , // When the sub-authorization type is oauth, the oauth information
+    10: optional map<ParameterLocation,list<commonParamSchema>> common_params, // Plugin public parameters, key is the parameter position, value is the parameter list
+    11: optional i32                                            sub_auth_type, // Sub-authorization type, 0: api/token of service, 10: client credentials of oauth
+    12: optional string                                         auth_payload , // negligible
+    13:          bool                                           fixed_export_ip, // negligible
 }
 
 struct PluginIcon {
@@ -231,22 +231,22 @@ struct PluginInfoForPlayground {
     10:          string                                          client_id
     11:          string                                          client_secret
     15:          list<PluginApi>                                 plugin_apis                                                                                                            
-    16:          i64                                             tag                                                                                                                     // 插件标签
+    16:          i64                                             tag                                                                                                                     // plugin tag
     17:          string                                          create_time                                                                                                            
     18:          string                                          update_time                                                                                                            
-    22:          Creator                                         creator                                                                                                                 // 创建人信息
-    23:          string                                          space_id                                                                                                                // 空间id
-    24:          PluginStatisticData                             statistic_data                                                                                                          // 插件统计数据
+    22:          Creator                                         creator                                                                                                                 // creator information
+    23:          string                                          space_id                                                                                                                // Space ID
+    24:          PluginStatisticData                             statistic_data                                                                                                          // plugin statistics
     25: optional map<ParameterLocation, list<commonParamSchema>> common_params
-    26:          ProductStatus                                   plugin_product_status                                                                                                   // plugin的商品状态
-    27:          ProductUnlistType                               plugin_product_unlist_type                                                                                              // plugin商品下架类型
-    28:          string                                          material_id                                                                                                             // 素材id
-    29:          i32                                             channel_id                                                                                                              // 渠道id
-    30:          CreationMethod                                  creation_method                                                                                                         // 插件创建方式
-    31:          bool                                            is_official                                                                                                             // 是否为官方插件
-    32:          string                                          project_id                                                                                                              // 项目id
-    33:          string                                          version_ts                // 版本号，毫秒时间戳
-    34:          string                                          version_name                                                                                                            // 版本名称
+    26:          ProductStatus                                   plugin_product_status                                                                                                   // Product status of the plugin
+    27:          ProductUnlistType                               plugin_product_unlist_type                                                                                              // Plugin product removal type
+    28:          string                                          material_id                                                                                                             // Material ID
+    29:          i32                                             channel_id                                                                                                              // Channel ID
+    30:          CreationMethod                                  creation_method                                                                                                         // Plugin creation method
+    31:          bool                                            is_official                                                                                                             // Is it an official plugin?
+    32:          string                                          project_id                                                                                                              // Project ID
+    33:          string                                          version_ts                // Version number, millisecond timestamp
+    34:          string                                          version_name                                                                                                            // version name
 }
 
 struct PluginApi {
@@ -255,22 +255,22 @@ struct PluginApi {
     3 :          list<PluginParameter> parameters       
     4 :          string                plugin_id        
     5 :          string                plugin_name      
-    7 :          string                api_id            // 序号和playground保持一致
+    7 :          string                api_id            // The serial number is the same as the playground
     8 :          string                record_id        
-    9 : optional PresetCardBindingInfo card_binding_info // 卡片绑定信息，未绑定则为nil
-    10: optional DebugExample          debug_example     // 调试api示例
+    9 : optional PresetCardBindingInfo card_binding_info // Card binding information, nil if not bound.
+    10: optional DebugExample          debug_example     // Debug API example
     11: optional string                function_name    
-    12:          RunMode               run_mode          // 运行模式
+    12:          RunMode               run_mode          // operating mode
 }
 
 struct Creator {
     1: string        id              ,
     2: string        name            ,
     3: string        avatar_url      ,
-    4: bool          self            , // 是否是自己创建的
+    4: bool          self            , // Did you create it yourself?
     5: SpaceRoleType space_roly_type ,
-    6: string        user_unique_name, // 用户名
-    7: UserLabel     user_label      , // 用户标签
+    6: string        user_unique_name, // user name
+    7: UserLabel     user_label      , // user tag
 }
 
 struct commonParamSchema{
@@ -284,11 +284,11 @@ struct PluginParameter {
     3 :          bool                  required      
     4 :          string                type          
     5 :          list<PluginParameter> sub_parameters
-    6 :          string                sub_type       // 如果Type是数组，则有subtype
-    7 : optional string                from_node_id   // 如果入参的值是引用的则有fromNodeId
-    8 : optional list<string>          from_output    // 具体引用哪个节点的key
-    9 : optional string                value          // 如果入参是用户手输 就放这里
-    10: optional PluginParamTypeFormat format         // 格式化参数
+    6 :          string                sub_type       // If Type is an array, there is a subtype
+    7 : optional string                from_node_id   // fromNodeId if the value of the imported parameter is a reference
+    8 : optional list<string>          from_output    // Which node's key is specifically referenced?
+    9 : optional string                value          // If the imported parameter is the user's hand input, put it here
+    10: optional PluginParamTypeFormat format         // Format parameter
 }
 
 struct PluginAPIInfo{
@@ -307,43 +307,43 @@ struct PluginAPIInfo{
     13:          OnlineStatus          online_status       , // if tool has been published, online_status is Online
     14:          APIExtend             api_extend          , // ignore
     15: optional PresetCardBindingInfo card_binding_info   , // ignore
-    16: optional DebugExample          debug_example       , // 调试示例
-    17:          DebugExampleStatus    debug_example_status, // 调试示例状态
+    16: optional DebugExample          debug_example       , // Debugging example
+    17:          DebugExampleStatus    debug_example_status, // Debug sample state
     18:          string                function_name       , // ignore
 }
 
 struct APIParameter {
-    1 :          string             id                    , // for前端，无实际意义
+    1 :          string             id                    , // For the front end, no practical significance
     2 :          string             name                  , // parameter name
     3 :          string             desc                  , // parameter desc
     4 :          ParameterType      type                  , // parameter type
-    5 : optional ParameterType      sub_type              , // 可忽略
-    6 :          ParameterLocation  location              , // 参数位置
-    7 :          bool               is_required           , // 是否必填
-    8 :          list<APIParameter> sub_parameters        , // 子参数
-    9 : optional string             global_default        , // 全局默认值
-    10:          bool               global_disable        , // 全局是否启用
-    11: optional string             local_default         , // 智能体内设置的默认值
-    12:          bool               local_disable         , // 智能体内是否启用
-    13: optional DefaultParamSource default_param_source  , // 可忽略
-    14: optional string             variable_ref          , // 引用variable的key
-    15: optional AssistParameterType assist_type          , // 多模态辅助参数类型
+    5 : optional ParameterType      sub_type              , // negligible
+    6 :          ParameterLocation  location              , // parameter location
+    7 :          bool               is_required           , // Is it required?
+    8 :          list<APIParameter> sub_parameters        , // sub-parameter
+    9 : optional string             global_default        , // global default
+    10:          bool               global_disable        , // Is it enabled globally?
+    11: optional string             local_default         , // Default value set in the smart body
+    12:          bool               local_disable         , // Is it enabled in the smart body?
+    13: optional DefaultParamSource default_param_source  , // negligible
+    14: optional string             variable_ref          , // Reference variable key
+    15: optional AssistParameterType assist_type          , // Multimodal auxiliary parameter types
 }
 
 struct PluginStatisticData {
-    1: optional i32 bot_quote, // 为空就不展示
+    1: optional i32 bot_quote, // If it is empty, it will not be displayed.
 }
 
 struct APIExtend {
-    1: PluginToolAuthType auth_mode, // tool维度授权类型
+    1: PluginToolAuthType auth_mode, // Tool dimension authorization type
 }
 
-// 插件预置卡片绑定信息
+// Plugin preset card binding information
 struct PresetCardBindingInfo{
     1: string           card_id         ,
     2: string           card_version_num,
     3: PluginCardStatus status          ,
-    4: string           thumbnail       , // 缩略图
+    4: string           thumbnail       , // thumbnail
 }
 
 struct DebugExample {
@@ -365,28 +365,28 @@ struct GetUserAuthorityData {
     6: bool can_read_changelog
 }
 
-// 授权状态
+// authorization status
 enum OAuthStatus {
     Authorized   = 1,
     Unauthorized = 2,
 }
 
 struct CheckAndLockPluginEditData {
-    1: bool    Occupied, // 是否已被占用
-    2: Creator user    , // 如果已经被占用了，返回用户ID
-    3: bool    Seized  , // 是否强占成功
+    1: bool    Occupied, // Is it occupied?
+    2: Creator user    , // If it is already occupied, return the user ID.
+    3: bool    Seized  , // Was it successful?
 }
 
 struct PluginPublishInfo {
-    1 : i64    publisher_id (api.js_conv = "str"), // 发布人
-    2 : i64    version_ts  , // 版本，毫秒时间戳
-    3 : string version_name, // 版本名称
-    4 : string version_desc, // 版本描述
+    1 : i64    publisher_id (api.js_conv = "str"), // publisher
+    2 : i64    version_ts  , // Version, millisecond timestamp
+    3 : string version_name, // version name
+    4 : string version_desc, // version description
 }
 
 enum DebugOperation{
-    Debug = 1, // 调试，会保存调试状态，会校验返回值
-    Parse = 2, // 仅解析返回值结构
+    Debug = 1, // Debugging, the debugging state will be saved, and the return value will be checked.
+    Parse = 2, // Parse only the return value structure
 }
 
 struct RegisterPluginData {
@@ -395,8 +395,8 @@ struct RegisterPluginData {
 }
 
 enum ScopeType {
-    All  = 0, // 所有
-    Self = 1, // 自己
+    All  = 0, // all
+    Self = 1, // self
 }
 
 enum OrderBy {
@@ -407,9 +407,9 @@ enum OrderBy {
 }
 
 enum PluginTypeForFilter {
-    CloudPlugin    = 1, // 包含PLUGIN和APP
-    LocalPlugin    = 2, // 包含LOCAL
-    WorkflowPlugin = 3, // 包含WORKFLOW和IMAGEFLOW
+    CloudPlugin    = 1, // Includes PLUGIN and APP.
+    LocalPlugin    = 2, // Include LOCAL
+    WorkflowPlugin = 3, // Includes WORKFLOW and IMAGEFLOW
 }
 
 enum PluginDataFormat {

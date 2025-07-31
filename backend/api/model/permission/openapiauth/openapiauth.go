@@ -26,11 +26,11 @@ type PatSearchOption = string
 type UserStatus = string
 
 type CreatePersonalAccessTokenAndPermissionRequest struct {
-	// PAT名称
+	// PAT name
 	Name string `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
-	// PAT自定义过期时间
+	// PAT custom expiration time
 	ExpireAt int64 `thrift:"expire_at,2" form:"expire_at" json:"expire_at" query:"expire_at"`
-	// PAT用户枚举过期时间 1、30、60、90、180、365、permanent
+	// PAT user enumeration expiration time 1, 30, 60, 90, 180, 365, permanent
 	DurationDay string `thrift:"duration_day,3" form:"duration_day" json:"duration_day" query:"duration_day"`
 	// organization id
 	OrganizationID string `thrift:"organization_id,4" form:"organization_id" json:"organization_id" query:"organization_id"`
@@ -316,9 +316,9 @@ type PersonalAccessToken struct {
 	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	CreatedAt int64  `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
 	UpdatedAt int64  `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
-	// -1 表示未使用
+	// -1 means unused
 	LastUsedAt int64 `thrift:"last_used_at,5,required" form:"last_used_at,required" json:"last_used_at,required" query:"last_used_at,required"`
-	// -1 表示无限期
+	// -1 means indefinite
 	ExpireAt int64 `thrift:"expire_at,6,required" form:"expire_at,required" json:"expire_at,required" query:"expire_at,required"`
 }
 
@@ -722,7 +722,7 @@ func (p *PersonalAccessToken) String() string {
 
 type CreatePersonalAccessTokenAndPermissionResponseData struct {
 	PersonalAccessToken *PersonalAccessToken `thrift:"personal_access_token,1,required" form:"personal_access_token,required" json:"personal_access_token,required" query:"personal_access_token,required"`
-	// PAT token 明文
+	// PAT token plaintext
 	Token string `thrift:"token,2,required" form:"token,required" json:"token,required" query:"token,required"`
 }
 
@@ -1510,9 +1510,9 @@ type PersonalAccessTokenWithCreatorInfo struct {
 	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
 	CreatedAt int64  `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
 	UpdatedAt int64  `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
-	// -1 表示未使用
+	// -1 means unused
 	LastUsedAt int64 `thrift:"last_used_at,5,required" form:"last_used_at,required" json:"last_used_at,required" query:"last_used_at,required"`
-	// -1 表示无限期
+	// -1 means indefinite
 	ExpireAt          int64      `thrift:"expire_at,6,required" form:"expire_at,required" json:"expire_at,required" query:"expire_at,required"`
 	CreatorName       string     `thrift:"creator_name,7" form:"creator_name" json:"creator_name" query:"creator_name"`
 	CreatorUniqueName string     `thrift:"creator_unique_name,8" form:"creator_unique_name" json:"creator_unique_name" query:"creator_unique_name"`
@@ -2442,9 +2442,9 @@ func (p *ListPersonalAccessTokensResponse) String() string {
 }
 
 type ListPersonalAccessTokensResponseData struct {
-	// PAT 列表
+	// PAT list
 	PersonalAccessTokens []*PersonalAccessTokenWithCreatorInfo `thrift:"personal_access_tokens,1,required" form:"personal_access_tokens,required" json:"personal_access_tokens,required" query:"personal_access_tokens,required"`
-	// 是否还有更多数据
+	// Is there any more data?
 	HasMore bool `thrift:"has_more,2" form:"has_more" json:"has_more" query:"has_more"`
 }
 
@@ -3563,7 +3563,7 @@ func (p *GetPersonalAccessTokenAndPermissionResponse) String() string {
 type UpdatePersonalAccessTokenAndPermissionRequest struct {
 	// PAT Id
 	ID int64 `thrift:"id,1,required" form:"id,required" json:"id,string,required" query:"id,required"`
-	// PAT 名称
+	// PAT name
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
 }
 

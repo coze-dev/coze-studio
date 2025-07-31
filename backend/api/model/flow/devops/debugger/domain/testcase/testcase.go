@@ -3,17 +3,17 @@
 package testcase
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/devops/debugger/domain/infra"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/flow/devops/debugger/domain/infra"
 )
 
 type CaseDataBase struct {
-	// 新增时不填，更新时填写
+	// Do not fill in when adding, fill in when updating
 	CaseID      *int64  `thrift:"caseID,1,optional" json:"caseID,string" form:"caseID" query:"caseID"`
 	Name        *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
 	Description *string `thrift:"description,3,optional" form:"description" json:"description,omitempty" query:"description"`
-	// json格式的输入信息
+	// Input information in JSON format
 	Input     *string `thrift:"input,4,optional" form:"input" json:"input,omitempty" query:"input"`
 	IsDefault *bool   `thrift:"isDefault,5,optional" form:"isDefault" json:"isDefault,omitempty" query:"isDefault"`
 }
@@ -389,7 +389,7 @@ type CaseDataDetail struct {
 	CreatorID       *string       `thrift:"creatorID,2,optional" form:"creatorID" json:"creatorID,omitempty" query:"creatorID"`
 	CreateTimeInSec *int64        `thrift:"createTimeInSec,3,optional" form:"createTimeInSec" json:"createTimeInSec,omitempty" query:"createTimeInSec"`
 	UpdateTimeInSec *int64        `thrift:"updateTimeInSec,4,optional" form:"updateTimeInSec" json:"updateTimeInSec,omitempty" query:"updateTimeInSec"`
-	// schema不兼容
+	// Schema incompatibility
 	SchemaIncompatible *bool          `thrift:"schemaIncompatible,5,optional" form:"schemaIncompatible" json:"schemaIncompatible,omitempty" query:"schemaIncompatible"`
 	Updater            *infra.Creator `thrift:"updater,6,optional" form:"updater" json:"updater,omitempty" query:"updater"`
 }

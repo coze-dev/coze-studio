@@ -138,7 +138,7 @@ func CreatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	c.JSON(consts.StatusOK, resp)
 }
 
-// checkCPATParams 检查创建个人访问令牌的参数
+// checkCPATParams Check parameters for creating personal access tokens
 func checkCPATParams(ctx context.Context, req *openapiauth.CreatePersonalAccessTokenAndPermissionRequest) error {
 
 	if req.Name == "" {

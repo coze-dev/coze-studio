@@ -47,7 +47,7 @@ const (
 )
 
 // Deprecated
-type Scenario int64 // 模型实体使用场景
+type Scenario int64 // Model entity usage scenarios
 
 type Modal string
 
@@ -62,10 +62,10 @@ const (
 type ModelStatus int64
 
 const (
-	StatusDefault ModelStatus = 0  // 未配置时的默认状态，表现等同 StatusInUse
-	StatusInUse   ModelStatus = 1  // 应用中，可使用可新建
-	StatusPending ModelStatus = 5  // 待下线，可使用不可新建
-	StatusDeleted ModelStatus = 10 // 已下线，不可使用不可新建
+	StatusDefault ModelStatus = 0  // Default state when not configured, equivalent to StatusInUse
+	StatusInUse   ModelStatus = 1  // In the application, it can be used to create new
+	StatusPending ModelStatus = 5  // To be offline, it can be used and cannot be created.
+	StatusDeleted ModelStatus = 10 // It is offline, unusable, and cannot be created.
 )
 
 type Widget string

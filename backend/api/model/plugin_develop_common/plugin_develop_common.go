@@ -150,7 +150,7 @@ func (p *ParameterLocation) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// plugin枚举值
+// plugin enumeration value
 type PluginParamTypeFormat int64
 
 const (
@@ -394,13 +394,13 @@ func (p *ParameterType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 默认入参的设置来源
+// Default imported parameter settings source
 type DefaultParamSource int64
 
 const (
-	// 默认用户输入
+	// default user input
 	DefaultParamSource_Input DefaultParamSource = 0
-	// 引用变量
+	// reference variable
 	DefaultParamSource_Variable DefaultParamSource = 1
 )
 
@@ -439,7 +439,7 @@ func (p *DefaultParamSource) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 针对File类型参数的细分类型
+// Subdivision types for File type parameters
 type AssistParameterType int64
 
 const (
@@ -453,7 +453,7 @@ const (
 	AssistParameterType_AUDIO   AssistParameterType = 8
 	AssistParameterType_ZIP     AssistParameterType = 9
 	AssistParameterType_VIDEO   AssistParameterType = 10
-	// 语音
+	// voice
 	AssistParameterType_VOICE AssistParameterType = 12
 )
 
@@ -531,11 +531,11 @@ func (p *AssistParameterType) Value() (driver.Value, error) {
 type PluginToolAuthType int64
 
 const (
-	// 强授权
+	// strong authorization
 	PluginToolAuthType_Required PluginToolAuthType = 0
-	// 半匿名授权
+	// semi-anonymous authorization
 	PluginToolAuthType_Supported PluginToolAuthType = 1
-	// 不授权
+	// not authorized
 	PluginToolAuthType_Disable PluginToolAuthType = 2
 )
 
@@ -582,9 +582,9 @@ type PluginCardStatus int64
 
 const (
 	PluginCardStatus_Latest PluginCardStatus = 1
-	// 主卡片版本有升级
+	// The main card version has been upgraded.
 	PluginCardStatus_NeedUpdate PluginCardStatus = 2
-	// 插件工具出参不匹配
+	// Plugin tool exported parameters do not match
 	PluginCardStatus_ParamMisMatch PluginCardStatus = 3
 )
 
@@ -697,9 +697,9 @@ const (
 	PluginStatus_PREPARED  PluginStatus = 3
 	PluginStatus_PUBLISHED PluginStatus = 4
 	PluginStatus_OFFLINE   PluginStatus = 5
-	// 默认值
+	// default value
 	PluginStatus_Draft PluginStatus = 0
-	// 禁用
+	// disable
 	PluginStatus_BANNED PluginStatus = 6
 )
 
@@ -934,13 +934,13 @@ func (p *APIListOrderBy) Value() (driver.Value, error) {
 type SpaceRoleType int64
 
 const (
-	// 默认
+	// default
 	SpaceRoleType_Default SpaceRoleType = 0
 	// owner
 	SpaceRoleType_Owner SpaceRoleType = 1
-	// 管理员
+	// administrator
 	SpaceRoleType_Admin SpaceRoleType = 2
-	// 普通成员
+	// ordinary member
 	SpaceRoleType_Member SpaceRoleType = 3
 )
 
@@ -1224,9 +1224,9 @@ func (p *PluginReferrerScene) Value() (driver.Value, error) {
 type WorkflowResponseMode int64
 
 const (
-	// 模型总结
+	// model summary
 	WorkflowResponseMode_UseLLM WorkflowResponseMode = 0
-	// 不使用模型总结
+	// Do not use model summaries
 	WorkflowResponseMode_SkipLLM WorkflowResponseMode = 1
 )
 
@@ -1265,7 +1265,7 @@ func (p *WorkflowResponseMode) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// 授权状态
+// authorization status
 type OAuthStatus int64
 
 const (
@@ -1311,9 +1311,9 @@ func (p *OAuthStatus) Value() (driver.Value, error) {
 type DebugOperation int64
 
 const (
-	// 调试，会保存调试状态，会校验返回值
+	// Debugging, the debugging state will be saved, and the return value will be checked.
 	DebugOperation_Debug DebugOperation = 1
-	// 仅解析返回值结构
+	// Parse only the return value structure
 	DebugOperation_Parse DebugOperation = 2
 )
 
@@ -1355,9 +1355,9 @@ func (p *DebugOperation) Value() (driver.Value, error) {
 type ScopeType int64
 
 const (
-	// 所有
+	// all
 	ScopeType_All ScopeType = 0
-	// 自己
+	// self
 	ScopeType_Self ScopeType = 1
 )
 
@@ -1451,11 +1451,11 @@ func (p *OrderBy) Value() (driver.Value, error) {
 type PluginTypeForFilter int64
 
 const (
-	// 包含PLUGIN和APP
+	// Includes PLUGIN and APP.
 	PluginTypeForFilter_CloudPlugin PluginTypeForFilter = 1
-	// 包含LOCAL
+	// Include LOCAL
 	PluginTypeForFilter_LocalPlugin PluginTypeForFilter = 2
-	// 包含WORKFLOW和IMAGEFLOW
+	// Includes WORKFLOW and IMAGEFLOW
 	PluginTypeForFilter_WorkflowPlugin PluginTypeForFilter = 3
 )
 
@@ -2514,31 +2514,31 @@ func (p *UserLabel) String() string {
 }
 
 type PluginMetaInfo struct {
-	// 插件名
+	// plugin name
 	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	// 插件描述
+	// Plugin description
 	Desc string `thrift:"desc,2" form:"desc" json:"desc" query:"desc"`
-	// 插件服务地址前缀
+	// Plugin service address prefix
 	URL string `thrift:"url,3" form:"url" json:"url" query:"url"`
-	// 插件图标
+	// plugin icon
 	Icon *PluginIcon `thrift:"icon,4" form:"icon" json:"icon" query:"icon"`
-	// 插件授权类型，0：无授权，1：service，3：oauth
+	// Plugin authorization type, 0: no authorization, 1: service, 3: oauth
 	AuthType []AuthorizationType `thrift:"auth_type,5" form:"auth_type" json:"auth_type" query:"auth_type"`
-	// 子授权类型为api/token时，token参数位置
+	// When the sub-authorization type is api/token, the token parameter position
 	Location *AuthorizationServiceLocation `thrift:"location,6,optional" form:"location" json:"location,omitempty" query:"location"`
-	// 子授权类型为api/token时，token参数key
+	// When the sub-authorization type is api/token, the token parameter key
 	Key *string `thrift:"key,7,optional" form:"key" json:"key,omitempty" query:"key"`
-	// 子授权类型为api/token时，token参数值
+	// When the sub-authorization type is api/token, the token parameter value
 	ServiceToken *string `thrift:"service_token,8,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// 子授权类型为oauth时，oauth信息
+	// When the sub-authorization type is oauth, the oauth information
 	OauthInfo *string `thrift:"oauth_info,9,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
-	// 插件公共参数，key为参数位置，value为参数列表
+	// Plugin public parameters, key is the parameter position, value is the parameter list
 	CommonParams map[ParameterLocation][]*CommonParamSchema `thrift:"common_params,10,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
-	// 子授权类型，0: api/token of service, 10: client credentials of oauth
+	// Sub-authorization type, 0: api/token of service, 10: client credentials of oauth
 	SubAuthType *int32 `thrift:"sub_auth_type,11,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
-	// 可忽略
+	// negligible
 	AuthPayload *string `thrift:"auth_payload,12,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
-	// 可忽略
+	// negligible
 	FixedExportIP bool `thrift:"fixed_export_ip,13" form:"fixed_export_ip" json:"fixed_export_ip" query:"fixed_export_ip"`
 }
 
@@ -3759,34 +3759,34 @@ type PluginInfoForPlayground struct {
 	ClientID     string       `thrift:"client_id,10" form:"client_id" json:"client_id" query:"client_id"`
 	ClientSecret string       `thrift:"client_secret,11" form:"client_secret" json:"client_secret" query:"client_secret"`
 	PluginApis   []*PluginApi `thrift:"plugin_apis,15" form:"plugin_apis" json:"plugin_apis" query:"plugin_apis"`
-	// 插件标签
+	// plugin tag
 	Tag        int64  `thrift:"tag,16" form:"tag" json:"tag" query:"tag"`
 	CreateTime string `thrift:"create_time,17" form:"create_time" json:"create_time" query:"create_time"`
 	UpdateTime string `thrift:"update_time,18" form:"update_time" json:"update_time" query:"update_time"`
-	// 创建人信息
+	// creator information
 	Creator *Creator `thrift:"creator,22" form:"creator" json:"creator" query:"creator"`
-	// 空间id
+	// Space ID
 	SpaceID string `thrift:"space_id,23" form:"space_id" json:"space_id" query:"space_id"`
-	// 插件统计数据
+	// plugin statistics
 	StatisticData *PluginStatisticData                       `thrift:"statistic_data,24" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
 	CommonParams  map[ParameterLocation][]*CommonParamSchema `thrift:"common_params,25,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
-	// plugin的商品状态
+	// Product status of the plugin
 	PluginProductStatus ProductStatus `thrift:"plugin_product_status,26" form:"plugin_product_status" json:"plugin_product_status" query:"plugin_product_status"`
-	// plugin商品下架类型
+	// Plugin product removal type
 	PluginProductUnlistType ProductUnlistType `thrift:"plugin_product_unlist_type,27" form:"plugin_product_unlist_type" json:"plugin_product_unlist_type" query:"plugin_product_unlist_type"`
-	// 素材id
+	// Material ID
 	MaterialID string `thrift:"material_id,28" form:"material_id" json:"material_id" query:"material_id"`
-	// 渠道id
+	// Channel ID
 	ChannelID int32 `thrift:"channel_id,29" form:"channel_id" json:"channel_id" query:"channel_id"`
-	// 插件创建方式
+	// Plugin creation method
 	CreationMethod CreationMethod `thrift:"creation_method,30" form:"creation_method" json:"creation_method" query:"creation_method"`
-	// 是否为官方插件
+	// Is it an official plugin?
 	IsOfficial bool `thrift:"is_official,31" form:"is_official" json:"is_official" query:"is_official"`
-	// 项目id
+	// Project ID
 	ProjectID string `thrift:"project_id,32" form:"project_id" json:"project_id" query:"project_id"`
-	// 版本号，毫秒时间戳
+	// Version number, millisecond timestamp
 	VersionTs string `thrift:"version_ts,33" form:"version_ts" json:"version_ts" query:"version_ts"`
-	// 版本名称
+	// version name
 	VersionName string `thrift:"version_name,34" form:"version_name" json:"version_name" query:"version_name"`
 }
 
@@ -5125,15 +5125,15 @@ type PluginApi struct {
 	Parameters []*PluginParameter `thrift:"parameters,3" form:"parameters" json:"parameters" query:"parameters"`
 	PluginID   string             `thrift:"plugin_id,4" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
 	PluginName string             `thrift:"plugin_name,5" form:"plugin_name" json:"plugin_name" query:"plugin_name"`
-	// 序号和playground保持一致
+	// The serial number is the same as the playground
 	APIID    string `thrift:"api_id,7" form:"api_id" json:"api_id" query:"api_id"`
 	RecordID string `thrift:"record_id,8" form:"record_id" json:"record_id" query:"record_id"`
-	// 卡片绑定信息，未绑定则为nil
+	// Card binding information, nil if not bound.
 	CardBindingInfo *PresetCardBindingInfo `thrift:"card_binding_info,9,optional" form:"card_binding_info" json:"card_binding_info,omitempty" query:"card_binding_info"`
-	// 调试api示例
+	// Debug API example
 	DebugExample *DebugExample `thrift:"debug_example,10,optional" form:"debug_example" json:"debug_example,omitempty" query:"debug_example"`
 	FunctionName *string       `thrift:"function_name,11,optional" form:"function_name" json:"function_name,omitempty" query:"function_name"`
-	// 运行模式
+	// operating mode
 	RunMode RunMode `thrift:"run_mode,12" form:"run_mode" json:"run_mode" query:"run_mode"`
 }
 
@@ -5763,12 +5763,12 @@ type Creator struct {
 	ID        string `thrift:"id,1" form:"id" json:"id" query:"id"`
 	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	AvatarURL string `thrift:"avatar_url,3" form:"avatar_url" json:"avatar_url" query:"avatar_url"`
-	// 是否是自己创建的
+	// Did you create it yourself?
 	Self          bool          `thrift:"self,4" form:"self" json:"self" query:"self"`
 	SpaceRolyType SpaceRoleType `thrift:"space_roly_type,5" form:"space_roly_type" json:"space_roly_type" query:"space_roly_type"`
-	// 用户名
+	// user name
 	UserUniqueName string `thrift:"user_unique_name,6" form:"user_unique_name" json:"user_unique_name" query:"user_unique_name"`
-	// 用户标签
+	// user tag
 	UserLabel *UserLabel `thrift:"user_label,7" form:"user_label" json:"user_label" query:"user_label"`
 }
 
@@ -6367,15 +6367,15 @@ type PluginParameter struct {
 	Required      bool               `thrift:"required,3" form:"required" json:"required" query:"required"`
 	Type          string             `thrift:"type,4" form:"type" json:"type" query:"type"`
 	SubParameters []*PluginParameter `thrift:"sub_parameters,5" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
-	// 如果Type是数组，则有subtype
+	// If Type is an array, there is a subtype
 	SubType string `thrift:"sub_type,6" form:"sub_type" json:"sub_type" query:"sub_type"`
-	// 如果入参的值是引用的则有fromNodeId
+	// fromNodeId if the value of the imported parameter is a reference
 	FromNodeID *string `thrift:"from_node_id,7,optional" form:"from_node_id" json:"from_node_id,omitempty" query:"from_node_id"`
-	// 具体引用哪个节点的key
+	// Which node's key is specifically referenced?
 	FromOutput []string `thrift:"from_output,8,optional" form:"from_output" json:"from_output,omitempty" query:"from_output"`
-	// 如果入参是用户手输 就放这里
+	// If the imported parameter is the user's hand input, put it here
 	Value *string `thrift:"value,9,optional" form:"value" json:"value,omitempty" query:"value"`
-	// 格式化参数
+	// Format parameter
 	Format *PluginParamTypeFormat `thrift:"format,10,optional" form:"format" json:"format,omitempty" query:"format"`
 }
 
@@ -7016,9 +7016,9 @@ type PluginAPIInfo struct {
 	APIExtend *APIExtend `thrift:"api_extend,14" form:"api_extend" json:"api_extend" query:"api_extend"`
 	// ignore
 	CardBindingInfo *PresetCardBindingInfo `thrift:"card_binding_info,15,optional" form:"card_binding_info" json:"card_binding_info,omitempty" query:"card_binding_info"`
-	// 调试示例
+	// Debugging example
 	DebugExample *DebugExample `thrift:"debug_example,16,optional" form:"debug_example" json:"debug_example,omitempty" query:"debug_example"`
-	// 调试示例状态
+	// Debug sample state
 	DebugExampleStatus DebugExampleStatus `thrift:"debug_example_status,17" form:"debug_example_status" json:"debug_example_status" query:"debug_example_status"`
 	// ignore
 	FunctionName string `thrift:"function_name,18" form:"function_name" json:"function_name" query:"function_name"`
@@ -7976,7 +7976,7 @@ func (p *PluginAPIInfo) String() string {
 }
 
 type APIParameter struct {
-	// for前端，无实际意义
+	// For the front end, no practical significance
 	ID string `thrift:"id,1" form:"id" json:"id" query:"id"`
 	// parameter name
 	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
@@ -7984,27 +7984,27 @@ type APIParameter struct {
 	Desc string `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
 	// parameter type
 	Type ParameterType `thrift:"type,4" form:"type" json:"type" query:"type"`
-	// 可忽略
+	// negligible
 	SubType *ParameterType `thrift:"sub_type,5,optional" form:"sub_type" json:"sub_type,omitempty" query:"sub_type"`
-	// 参数位置
+	// parameter location
 	Location ParameterLocation `thrift:"location,6" form:"location" json:"location" query:"location"`
-	// 是否必填
+	// Is it required?
 	IsRequired bool `thrift:"is_required,7" form:"is_required" json:"is_required" query:"is_required"`
-	// 子参数
+	// sub-parameter
 	SubParameters []*APIParameter `thrift:"sub_parameters,8" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
-	// 全局默认值
+	// global default
 	GlobalDefault *string `thrift:"global_default,9,optional" form:"global_default" json:"global_default,omitempty" query:"global_default"`
-	// 全局是否启用
+	// Is it enabled globally?
 	GlobalDisable bool `thrift:"global_disable,10" form:"global_disable" json:"global_disable" query:"global_disable"`
-	// 智能体内设置的默认值
+	// Default value set in the smart body
 	LocalDefault *string `thrift:"local_default,11,optional" form:"local_default" json:"local_default,omitempty" query:"local_default"`
-	// 智能体内是否启用
+	// Is it enabled in the smart body?
 	LocalDisable bool `thrift:"local_disable,12" form:"local_disable" json:"local_disable" query:"local_disable"`
-	// 可忽略
+	// negligible
 	DefaultParamSource *DefaultParamSource `thrift:"default_param_source,13,optional" form:"default_param_source" json:"default_param_source,omitempty" query:"default_param_source"`
-	// 引用variable的key
+	// Reference variable key
 	VariableRef *string `thrift:"variable_ref,14,optional" form:"variable_ref" json:"variable_ref,omitempty" query:"variable_ref"`
-	// 多模态辅助参数类型
+	// Multimodal auxiliary parameter types
 	AssistType *AssistParameterType `thrift:"assist_type,15,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
 }
 
@@ -8849,7 +8849,7 @@ func (p *APIParameter) String() string {
 }
 
 type PluginStatisticData struct {
-	// 为空就不展示
+	// If it is empty, it will not be displayed.
 	BotQuote *int32 `thrift:"bot_quote,1,optional" form:"bot_quote" json:"bot_quote,omitempty" query:"bot_quote"`
 }
 
@@ -9000,7 +9000,7 @@ func (p *PluginStatisticData) String() string {
 }
 
 type APIExtend struct {
-	// tool维度授权类型
+	// Tool dimension authorization type
 	AuthMode PluginToolAuthType `thrift:"auth_mode,1" form:"auth_mode" json:"auth_mode" query:"auth_mode"`
 }
 
@@ -9139,12 +9139,12 @@ func (p *APIExtend) String() string {
 
 }
 
-// 插件预置卡片绑定信息
+// Plugin preset card binding information
 type PresetCardBindingInfo struct {
 	CardID         string           `thrift:"card_id,1" form:"card_id" json:"card_id" query:"card_id"`
 	CardVersionNum string           `thrift:"card_version_num,2" form:"card_version_num" json:"card_version_num" query:"card_version_num"`
 	Status         PluginCardStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
-	// 缩略图
+	// thumbnail
 	Thumbnail string `thrift:"thumbnail,4" form:"thumbnail" json:"thumbnail" query:"thumbnail"`
 }
 
@@ -10150,11 +10150,11 @@ func (p *GetUserAuthorityData) String() string {
 }
 
 type CheckAndLockPluginEditData struct {
-	// 是否已被占用
+	// Is it occupied?
 	Occupied bool `thrift:"Occupied,1" form:"Occupied" json:"Occupied" query:"Occupied"`
-	// 如果已经被占用了，返回用户ID
+	// If it is already occupied, return the user ID.
 	User *Creator `thrift:"user,2" form:"user" json:"user" query:"user"`
-	// 是否强占成功
+	// Was it successful?
 	Seized bool `thrift:"Seized,3" form:"Seized" json:"Seized" query:"Seized"`
 }
 
@@ -10388,13 +10388,13 @@ func (p *CheckAndLockPluginEditData) String() string {
 }
 
 type PluginPublishInfo struct {
-	// 发布人
+	// publisher
 	PublisherID int64 `thrift:"publisher_id,1" form:"publisher_id" json:"publisher_id,string" query:"publisher_id"`
-	// 版本，毫秒时间戳
+	// Version, millisecond timestamp
 	VersionTs int64 `thrift:"version_ts,2" form:"version_ts" json:"version_ts" query:"version_ts"`
-	// 版本名称
+	// version name
 	VersionName string `thrift:"version_name,3" form:"version_name" json:"version_name" query:"version_name"`
-	// 版本描述
+	// version description
 	VersionDesc string `thrift:"version_desc,4" form:"version_desc" json:"version_desc" query:"version_desc"`
 }
 
