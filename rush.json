@@ -13,7 +13,7 @@
   "repository": {},
   "eventHooks": {
     "preRushInstall": [],
-    "postRushInstall": [],
+    "postRushInstall": ["scripts/hooks/post-rush-install.sh"],
     "preRushBuild": [],
     "postRushBuild": []
   },
