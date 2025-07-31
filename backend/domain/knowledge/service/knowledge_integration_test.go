@@ -145,7 +145,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	emb, err := hembed.NewEmbedding(embEndpoint, 1024)
+	emb, err := hembed.NewEmbedding(embEndpoint, 1024, 1)
 	if err != nil {
 		panic(err)
 	}

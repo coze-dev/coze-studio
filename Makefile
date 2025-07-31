@@ -21,7 +21,7 @@ debug: env middleware python server
 env:
 	@if [ ! -f "$(ENV_FILE)" ]; then \
 		echo "Env file '$(ENV_FILE)' not found, using example env..."; \
-		cp ./docker/.env.example $(ENV_FILE); \
+		cp ./docker/.env.debug.example $(ENV_FILE); \
 	fi
 
 fe:
@@ -61,7 +61,7 @@ web:
 	@echo "Start web server in docker"
 	@docker compose -f docker/docker-compose.yml  up -d
 
-down:
+down: env
 	@echo "Stop all docker containers"
 	@docker compose -f $(COMPOSE_FILE) --profile '*' down
 
