@@ -106,7 +106,7 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 			PriceOut:          0,
 			SystemPromptLimit: nil,
 		},
-		ModelName:      mm.Name,
+		ModelName:      model.Name,
 		ModelClassName: mm.Protocol.TOModelClass().String(),
 		IsOffline:      mm.Status != modelmgr.StatusInUse,
 		ModelParams:    mps,
