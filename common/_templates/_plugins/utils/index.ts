@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { ILogger } from 'rush-init-project-plugin';
 // eslint-disable-next-line @infra/no-deep-relative-import
 import { spawnSync } from 'child_process';
 
-const exec = (logger: ILogger, cmd: string, args: string[]): string | undefined => {
+const exec = (
+  logger: ILogger,
+  cmd: string,
+  args: string[],
+): string | undefined => {
   try {
     if (!cmd) {
       return undefined;

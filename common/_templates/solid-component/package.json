@@ -4,8 +4,7 @@
   "description": "{{ description }}",
   "license": "Apache-2.0",
   "author": "{{ authorName }}",
-  "maintainers": [
-  ],
+  "maintainers": [],
   "main": "src/index.ts",
   "unpkg": "./dist/umd/index.js",
   "module": "./dist/esm/index.js",
@@ -63,7 +62,6 @@
     "storybook": "^7.6.7",
     "stylelint": "^15.11.0",
     "tailwindcss": "~3.3.3",
-
     "vite-plugin-svgr": "~3.3.0",
     "vitest": "~3.0.5"
   },
@@ -72,3 +70,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

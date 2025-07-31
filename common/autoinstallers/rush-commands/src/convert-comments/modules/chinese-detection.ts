@@ -1,10 +1,26 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   SourceFile,
   ChineseComment,
   ParsedComment,
   FileWithComments,
   CommentType,
-  MultiLineContext
+  MultiLineContext,
 } from '../types/index';
 import { getCommentPatterns } from '../utils/language';
 import { containsChinese, cleanCommentText } from '../utils/chinese';
@@ -69,15 +85,17 @@ const parseSingleLineComments = (
     let matchCount = 0;
     const maxMatches = 100; // Limit each line to a maximum of 100 matches
     let lastIndex = 0;
-    
+
     while ((match = pattern.exec(line)) !== null) {
       // Multiple protections against infinite loops
       matchCount++;
       if (matchCount > maxMatches) {
-        console.warn(`⚠️  单行匹配次数过多，中断处理: ${line.substring(0, 50)}...`);
+        console.warn(
+          `⚠️  单行匹配次数过多，中断处理: ${line.substring(0, 50)}...`,
+        );
         break;
       }
-      
+
       // Check if lastIndex is advancing to prevent an infinite loop
       if (pattern.global) {
         if (pattern.lastIndex <= lastIndex) {
@@ -89,7 +107,7 @@ const parseSingleLineComments = (
         }
         lastIndex = pattern.lastIndex;
       }
-      
+
       if (match[1]) {
         const commentContent = match[1];
         let commentStartIndex = match.index!;
@@ -246,7 +264,6 @@ const parseMultiLineComments = (
         const commentContent = line.substring(0, endMatch.index!);
         commentLines.push(commentContent);
 
-
         comments.push({
           content: commentLines.join('\n'),
           startLine: commentStart!.line,
@@ -298,11 +315,14 @@ export const filterChineseComments = (
   language?: string,
 ): ChineseComment[] => {
   const result: ChineseComment[] = [];
-  
+
   for (const comment of comments) {
     if (comment.type === 'multi-line' && comment.content.includes('\n')) {
       // Multi-line comments: line-by-line processing
-      const multiLineResults = processMultiLineCommentForChinese(comment, language);
+      const multiLineResults = processMultiLineCommentForChinese(
+        comment,
+        language,
+      );
       result.push(...multiLineResults);
     } else if (containsChinese(comment.content)) {
       // Single-line comments or single-line multi-line comments
@@ -316,7 +336,7 @@ export const filterChineseComments = (
       });
     }
   }
-  
+
   return result;
 };
 
@@ -329,14 +349,14 @@ const processMultiLineCommentForChinese = (
 ): ChineseComment[] => {
   const lines = comment.content.split('\n');
   const result: ChineseComment[] = [];
-  
+
   lines.forEach((line, lineIndex) => {
     const cleanedLine = cleanCommentText(line, 'multi-line', language);
-    
+
     if (containsChinese(cleanedLine)) {
       // Calculate the position of this line in the original file
       const actualLineNumber = comment.startLine + lineIndex;
-      
+
       // Create a comment object representing this line
       const lineComment: ChineseComment = {
         content: cleanedLine,
@@ -350,14 +370,14 @@ const processMultiLineCommentForChinese = (
           isPartOfMultiLine: true,
           originalComment: comment,
           lineIndexInComment: lineIndex,
-          totalLinesInComment: lines.length
-        }
+          totalLinesInComment: lines.length,
+        },
       };
-      
+
       result.push(lineComment);
     }
   });
-  
+
   return result;
 };
 
@@ -393,7 +413,9 @@ export const detectChineseInFile = (file: SourceFile): ChineseComment[] => {
 /**
  * Batch detection of Chinese comments in multiple files
  */
-export const detectChineseInFiles = (files: SourceFile[]): FileWithComments[] => {
+export const detectChineseInFiles = (
+  files: SourceFile[],
+): FileWithComments[] => {
   const results: FileWithComments[] = [];
 
   for (let i = 0; i < files.length; i++) {
@@ -428,7 +450,9 @@ export const detectChineseInFiles = (files: SourceFile[]): FileWithComments[] =>
 /**
  * Get annotation statistics
  */
-export const getCommentStats = (files: SourceFile[]): {
+export const getCommentStats = (
+  files: SourceFile[],
+): {
   totalFiles: number;
   filesWithComments: number;
   totalComments: number;
@@ -441,12 +465,15 @@ export const getCommentStats = (files: SourceFile[]): {
   const commentsByType: Record<CommentType, number> = {
     'single-line': 0,
     'multi-line': 0,
-    'documentation': 0
+    documentation: 0,
   };
 
   files.forEach(file => {
     const allComments = parseComments(file);
-    const chineseCommentsInFile = filterChineseComments(allComments, file.language);
+    const chineseCommentsInFile = filterChineseComments(
+      allComments,
+      file.language,
+    );
 
     if (chineseCommentsInFile.length > 0) {
       filesWithComments++;
@@ -465,6 +492,6 @@ export const getCommentStats = (files: SourceFile[]): {
     filesWithComments,
     totalComments,
     chineseComments,
-    commentsByType
+    commentsByType,
   };
 };

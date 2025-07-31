@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { RouterProvider } from 'react-router-dom';
 
 import { createRoot } from 'react-dom/client';
@@ -27,7 +27,7 @@ browserClient('init', {
   bid: '',
 });
 browserClient('start');
-reporter.init(browserClient)
+reporter.init(browserClient);
 
 const root = createRoot(document.getElementById('root'));
 root.render(<RouterProvider router={router} />);

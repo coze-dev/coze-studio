@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const { NODE_ENV } = process.env;
 
 const IS_DEV_MODE = NODE_ENV === 'development'; // local environment
