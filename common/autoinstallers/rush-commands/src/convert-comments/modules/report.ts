@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   ProcessingReport,
   ProcessingStats,
@@ -198,18 +214,22 @@ export const generateMarkdownReport = (report: ProcessingReport): string => {
       detail.status === 'success'
         ? '✅'
         : detail.status === 'error'
-          ? '❌'
-          : detail.status === 'skipped'
-            ? '⏭️'
-            : '🔄';
+        ? '❌'
+        : detail.status === 'skipped'
+        ? '⏭️'
+        : '🔄';
 
-    markdown += `| ${detail.file} | ${status} | ${detail.commentCount} | ${duration} | ${detail.errorMessage || '-'} |\n`;
+    markdown += `| ${detail.file} | ${status} | ${
+      detail.commentCount
+    } | ${duration} | ${detail.errorMessage || '-'} |\n`;
   });
 
   if (stats.errors.length > 0) {
     markdown += '\n## ❌ 错误详情\n\n';
     stats.errors.forEach((error, index) => {
-      markdown += `${index + 1}. **${error.file}**\n   \`\`\`\n   ${error.error}\n   \`\`\`\n\n`;
+      markdown += `${index + 1}. **${error.file}**\n   \`\`\`\n   ${
+        error.error
+      }\n   \`\`\`\n\n`;
     });
   }
 
@@ -276,7 +296,9 @@ export class ProgressDisplay {
     const speed = current / elapsed;
     const eta = speed > 0 ? (this.total - current) / speed : 0;
 
-    let line = `进度: ${current}/${this.total} (${percentage}%) | 耗时: ${elapsed.toFixed(1)}s`;
+    let line = `进度: ${current}/${
+      this.total
+    } (${percentage}%) | 耗时: ${elapsed.toFixed(1)}s`;
 
     if (eta > 0) {
       line += ` | 预计剩余: ${eta.toFixed(1)}s`;

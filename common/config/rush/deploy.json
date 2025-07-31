@@ -17,9 +17,7 @@
    * If the main project should include other unrelated Rush projects, add it to the "projectSettings" section,
    * and then specify those projects in the "additionalProjectsToInclude" list.
    */
-  "deploymentProjectNames": [
-    "@coze-studio/app"
-  ],
+  "deploymentProjectNames": ["@coze-studio/app"],
   // solve deploy error: ERROR: Symlink targets not under folder
   "dependencySettings": [],
 

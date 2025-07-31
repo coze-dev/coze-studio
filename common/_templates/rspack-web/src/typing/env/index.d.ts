@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Automatically generated based on env/index.ts, do not modify manually
 declare const IS_CI: boolean;
 declare const IS_DEV_MODE: boolean;

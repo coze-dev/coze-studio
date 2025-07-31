@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   TranslationResult,
   TranslationContext,
@@ -7,7 +23,10 @@ import {
 import { TranslationConfig } from '../types/config';
 import { retry, chunk } from '../utils/fp';
 import { isValidTranslation } from '../utils/chinese';
-import { translate as volcTranslate, TranslateConfig as VolcTranslateConfig } from '../volc/translate';
+import {
+  translate as volcTranslate,
+  TranslateConfig as VolcTranslateConfig,
+} from '../volc/translate';
 
 /**
  * Translation services
@@ -59,7 +78,7 @@ export class TranslationService {
   private async callVolcTranslate(texts: string[]): Promise<string[]> {
     const volcConfig = this.toVolcConfig();
     const response = await volcTranslate(texts, volcConfig);
-    
+
     return response.TranslationList.map(item => item.Translation);
   }
 
@@ -101,7 +120,9 @@ export class TranslationService {
       return result;
     } catch (error) {
       throw new TranslationError(
-        `Translation failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Translation failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         comment,
       );
     }
@@ -146,7 +167,7 @@ export class TranslationService {
 
     // Batch translation of uncached comments
     const chunks = chunk(uncachedComments, concurrency);
-    
+
     for (const chunkItems of chunks) {
       try {
         const textsToTranslate = chunkItems.map(item => item.comment.content);
@@ -163,13 +184,16 @@ export class TranslationService {
             const result: TranslationResult = {
               original: item.comment.content,
               translated,
-              confidence: this.calculateConfidence(translated, item.comment.content),
+              confidence: this.calculateConfidence(
+                translated,
+                item.comment.content,
+              ),
             };
 
             // cache results
             const cacheKey = this.getCacheKey(item.comment.content);
             this.cache.set(cacheKey, result);
-            
+
             results[item.index] = result;
           } else {
             // If the translation fails, an error result is created
@@ -189,8 +213,12 @@ export class TranslationService {
             confidence: 0,
           };
         });
-        
-        console.warn(`批量翻译失败: ${error instanceof Error ? error.message : String(error)}`);
+
+        console.warn(
+          `批量翻译失败: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
     }
 
