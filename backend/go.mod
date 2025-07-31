@@ -2,6 +2,8 @@ module github.com/coze-dev/coze-studio/backend
 
 go 1.24.0
 
+toolchain go1.24.5
+
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.68.0

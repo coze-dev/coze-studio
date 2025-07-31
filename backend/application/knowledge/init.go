@@ -196,7 +196,9 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		defer cancel()
 
 		milvusAddr := os.Getenv("MILVUS_ADDR")
-		mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{Address: milvusAddr})
+		milvusDB := os.Getenv("MILVUS_DB")
+		milvusToken := os.Getenv("MILVUS_TOKEN")
+		mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{Address: milvusAddr, APIKey: milvusToken, DBName: milvusDB})
 		if err != nil {
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}

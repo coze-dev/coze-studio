@@ -1,0 +1,479 @@
+info:
+  description: 在飞书上日历上创建日程、更新日程、删除日程、查询日程信息
+  title: 飞书日历
+  version: v1
+openapi: 3.0.1
+paths:
+  /calendar/create_event:
+    post:
+      operationId: create_event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                auto_record:
+                  description: 是否开启自动录制，true：开启，会议开始后自动录制；false：不开启
+                  type: boolean
+                description:
+                  description: 日程描述
+                  type: string
+                end_time:
+                  description: 日程结束时间，格式：2006-01-02 15:04:05
+                  type: string
+                need_notification:
+                  description: 更新日程时是否发送bot消息，true：发送，false：不发送
+                  type: boolean
+                start_time:
+                  description: 日程开始时间，格式：2006-01-02 15:04:05
+                  type: string
+                summary:
+                  description: 日程标题，若不填则日程标题显示 (无主题)
+                  type: string
+              required:
+                - start_time
+                - end_time
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示错误
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      appLink:
+                        description: 日程的 app_link，跳转到具体的某个日程
+                        type: string
+                      create_time:
+                        description: 日程创建时间,格式:yyyy-MM-dd HH:mm:ss，如 2024-07-23 14:55:33
+                        type: string
+                      description:
+                        description: 日程描述
+                        type: string
+                      end_time:
+                        description: 日程结束时间,格式:yyyy-MM-dd HH:mm:ss，如 2024-07-22 17:05:00
+                        type: string
+                      event_id:
+                        description: 日程 ID
+                        type: string
+                      event_organizer:
+                        description: 日程组织者信息
+                        properties:
+                          display_name:
+                            description: 日程组织者姓名
+                            type: string
+                          user_id:
+                            description: 日程组织者 ID
+                            type: string
+                        type: object
+                      organizer_calendar_id:
+                        description: 日程组织者日历 ID
+                        type: string
+                      recurrence:
+                        description: 重复日程的重复性规则
+                        type: string
+                      start_time:
+                        description: 日程开始时间,格式:yyyy-MM-dd HH:mm:ss，如 2024-07-22 16:05:00
+                        type: string
+                      status:
+                        description: 日程状态
+                        type: string
+                      summary:
+                        description: 日程标题
+                        type: string
+                    type: object
+                  log_id:
+                    description: 日志id
+                    type: string
+                  msg:
+                    description: 返回信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建日程
+  /calendar/delete_event/{event_id}:
+    delete:
+      operationId: delete_event
+      parameters:
+        - description: 日程 ID，例如：e8b9791c-39ae-4908-8ad8-66b13159b9fb_0
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+        - description: 删除日程是否给日程参与人发送Bot通知
+          in: query
+          name: need_notification
+          schema:
+            default: "true"
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除日程
+  /calendar/get_primary_calendar:
+    get:
+      operationId: get_primary_calendar
+      parameters:
+        - description: 用户 ID 类型
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      calendars:
+                        description: 主日历列表
+                        items:
+                          description: 日历实体信息
+                          properties:
+                            calendar:
+                              description: 日历实体信息
+                              properties:
+                                calendar_id:
+                                  description: 日历 ID
+                                  type: string
+                                color:
+                                  description: 日历颜色，由颜色 RGB 值的 int32 表示
+                                  type: integer
+                                description:
+                                  description: 日历描述
+                                  type: string
+                                is_deleted:
+                                  description: 对于当前身份，日历是否已经被标记为删除
+                                  type: boolean
+                                is_third_party:
+                                  description: 当前日历是否是第三方数据
+                                  type: boolean
+                                permissions:
+                                  description: 日历公开范围，private：私密，show_only_free_busy：仅展示忙闲信息，public：公开，他人可查看日程详情
+                                  type: string
+                                role:
+                                  description: 当前身份对于该日历的访问权限
+                                  type: string
+                                summary:
+                                  description: 日历标题
+                                  type: string
+                                summary_alias:
+                                  description: 日历备注名
+                                  type: string
+                                type:
+                                  description: 日历类型
+                                  type: string
+                              type: object
+                            user_id:
+                              description: 日历创建者的 User ID
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 查询主日历信息
+  /calendar/list_events:
+    get:
+      operationId: list_events
+      parameters:
+        - description: 一次请求要求返回的最大日程数量，范围50-1000
+          in: query
+          name: page_size
+          schema:
+            default: "50"
+            type: string
+        - description: 分页标记
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 开始时间,不传值时默认当天0点时间,格式:yyyy-MM-dd HH:mm:ss,如:2006-01-02 15:04:05
+          in: query
+          name: start_time
+          schema:
+            type: string
+        - description: 结束时间,不传值时默认当天23:59分时间,格式:yyyy-MM-dd HH:mm:ss,如:2006-01-02 15:04:05
+          in: query
+          name: end_time
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 日程列表，结果为空时返回空数组
+                        items:
+                          description: 日程信息
+                          properties:
+                            app_link:
+                              description: 日程的 app_link，跳转到具体的某个日程
+                              type: string
+                            create_time:
+                              description: 日程创建时间,格式:yyyy-MM-dd HH:mm:ss,如:2006-01-02 15:04:05
+                              type: string
+                            description:
+                              description: 日程描述
+                              type: string
+                            end_time:
+                              description: 结束时间,格式:yyyy-MM-dd HH:mm:ss,如:2006-01-02 17:04:05
+                              type: string
+                            event_id:
+                              description: 日程 ID
+                              type: string
+                            event_organizer:
+                              description: 日程组织者信息
+                              properties:
+                                display_name:
+                                  description: 日程组织者姓名
+                                  type: string
+                                user_id:
+                                  description: 日程组织者 user ID
+                                  type: string
+                              type: object
+                            organizer_calendar_id:
+                              description: 日程组织者的日历 ID
+                              type: string
+                            recurrence:
+                              description: 重复日程的重复性规则
+                              type: string
+                            start_time:
+                              description: 开始时间,格式:yyyy-MM-dd HH:mm:ss,如:2006-01-02 15:04:05
+                              type: string
+                            status:
+                              description: 日程状态
+                              type: string
+                            summary:
+                              description: 日程标题
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取日程列表
+  /calendar/search_events:
+    post:
+      operationId: search_events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                end_time:
+                  description: 日程搜索区间的结束时间，不传默认取当天23:59分时间，格式：2024-08-12 23:00:00
+                  type: string
+                page_size:
+                  default: 20
+                  description: 一次调用所返回的最大日程数量，最大值100
+                  type: integer
+                page_token:
+                  description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果
+                  type: string
+                query:
+                  description: 搜索关键字，用于模糊查询日程名称，最大输入200字符数，必填，不允许空串
+                  type: string
+                start_time:
+                  description: 日程搜索区间的开始时间，不传默认取当天0点时间，格式：2024-08-01 10:00:00
+                  type: string
+                user_id_type:
+                  default: open_id
+                  description: 用户 ID 类型，枚举值：open_id、union_id、user_id
+                  type: string
+              required:
+                - query
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，0表示成功，其他值表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      items:
+                        description: 日程列表
+                        items:
+                          description: 日程信息
+                          properties:
+                            app_link:
+                              description: 日程的 app_link，跳转到具体的某个日程
+                              type: string
+                            description:
+                              description: 日程描述
+                              type: string
+                            end_time:
+                              description: 日程结束时间,格式：2024-08-18 01:00:00
+                              type: string
+                            event_id:
+                              description: 日程 ID，如：46b9231b-244e-4d3c-845e-0a4d25469b5b_0
+                              type: string
+                            organizer_calendar_id:
+                              description: 日程组织者的日历 ID
+                              type: string
+                            recurrence:
+                              description: 重复日程的重复性规则
+                              type: string
+                            start_time:
+                              description: 日程开始时间,格式：2024-08-18 00:30:00
+                              type: string
+                            status:
+                              description: 日程状态，可选值有 tentative ：未回应；confirmed：已确认；
+                              type: string
+                            summary:
+                              description: 日程标题
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页token
+                        type: string
+                    type: object
+                  log_id:
+                    description: 日志 ID
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 搜索日程
+  /calendar/update_event/{event_id}:
+    patch:
+      operationId: update_event
+      parameters:
+        - description: 日程 ID，例如：e8b9791c-39ae-4908-8ad8-66b13159b9fb_0
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                auto_record:
+                  description: 开启自动录制，true：录制，false：不录制，不传则不更新此字段
+                  type: boolean
+                description:
+                  description: 日程描述，空表示不更新该字段
+                  type: string
+                end_time:
+                  description: 日程结束时间，格式：2024-07-22 22:30:00，不传该字段则不更新
+                  type: string
+                need_notification:
+                  description: 更新日程时是否发送bot消息，不传则不更新
+                  type: boolean
+                start_time:
+                  description: 日程开始时间，格式：2024-07-22 22:30:00，不传该字段则不更新
+                  type: string
+                summary:
+                  description: 日程标题，空表示不更新该字段
+                  type: string
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: number
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 更新日程
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

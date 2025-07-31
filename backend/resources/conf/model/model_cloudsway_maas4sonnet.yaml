@@ -1,0 +1,148 @@
+id: 3002
+name: MaaS_Sonnet_4
+icon_uri: default_icon/openai_v2.png
+icon_url: ""
+description:
+    zh: MaaS 4o 2024-1120 模型，基于OpenAI协议
+    en: MaaS 4o 2024-1120 model based on OpenAI protocol
+default_parameters:
+    - name: temperature
+      label:
+        zh: 生成随机性
+        en: Temperature
+      desc:
+        zh: '- **temperature**: 调高温度会使得模型的输出更多样性和创新性，反之，降低温度会使输出内容更加遵循指令要求但减少多样性。建议不要与"Top p"同时调整。'
+        en: '**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.'
+      type: float
+      min: "0"
+      max: "1"
+      default_val:
+        balance: "0.8"
+        creative: "1"
+        default_val: "0.7"
+        precise: "0.3"
+      precision: 1
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: 生成多样性
+            en: Generation diversity
+    - name: max_tokens
+      label:
+        zh: 最大回复长度
+        en: Response max length
+      desc:
+        zh: 控制模型输出的Tokens 长度上限。通常 100 Tokens 约等于 150 个中文汉字。
+        en: You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.
+      type: int
+      min: "1"
+      max: "4096"
+      default_val:
+        default_val: "4096"
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: 输入及输出设置
+            en: Input and output settings
+    - name: top_p
+      label:
+        zh: Top P
+        en: Top P
+      desc:
+        zh: '- **top_p**: 采样时概率质量累积的阈值。模型会从概率累积不超过 top_p 的候选词中进行采样。建议不要与"温度"同时调整。'
+        en: '**Top P**:\n\n- The threshold for cumulative probability mass in sampling. The model samples from candidate words whose cumulative probability does not exceed top_p.\n- It is recommended not to adjust this value with \"Temperature\" at the same time.'
+      type: float
+      min: "0"
+      max: "1"
+      default_val:
+        default_val: "1"
+      precision: 2
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: 生成多样性
+            en: Generation diversity
+    - name: presence_penalty
+      label:
+        zh: 话题新鲜度
+        en: Presence penalty
+      desc:
+        zh: '- **presence_penalty**: 用于控制模型生成新话题的倾向。较高的值会鼓励模型谈论新的话题。'
+        en: '**Presence Penalty**:\n\n- Used to control the model''s tendency to introduce new topics. Higher values encourage the model to talk about new topics.'
+      type: float
+      min: "-2"
+      max: "2"
+      default_val:
+        default_val: "0"
+      precision: 2
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: 生成多样性
+            en: Generation diversity
+    - name: frequency_penalty
+      label:
+        zh: 频率惩罚度
+        en: Frequency penalty
+      desc:
+        zh: '- **frequency_penalty**: 用于减少模型重复相同内容的倾向。较高的值会减少重复内容的生成。'
+        en: '**Frequency Penalty**:\n\n- Used to reduce the model''s tendency to repeat the same content. Higher values reduce the generation of repetitive content.'
+      type: float
+      min: "-2"
+      max: "2"
+      default_val:
+        default_val: "0"
+      precision: 2
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: 生成多样性
+            en: Generation diversity
+meta:
+    name: MaaS 4o 2024-1120
+    protocol: openai
+    capability:
+        function_call: true
+        input_modal:
+            - text
+            - image
+        input_tokens: 128000
+        json_mode: true
+        max_tokens: 128000
+        output_modal:
+            - text
+        output_tokens: 16384
+        prefix_caching: false
+        reasoning: false
+        prefill_response: false
+    conn_config:
+        base_url: https://genaiapi.cloudsway.net/v1/
+        api_key: T55e2K4mfg5FW0bwP1Oi
+        timeout: 30s
+        model: MaaS 4o 2024-1120
+        temperature: 0.7
+        frequency_penalty: 0
+        presence_penalty: 0
+        max_tokens: 4096
+        top_p: 1
+        top_k: 0
+        stop: []
+        enable_thinking: false
+        openai:
+            by_azure: false
+            api_version: ""
+            response_format:
+                type: text
+                jsonschema: null
+        claude: null
+        ark: null
+        deepseek: null
+        qwen: null
+        gemini: null
+        custom: {}
+    status: 1 

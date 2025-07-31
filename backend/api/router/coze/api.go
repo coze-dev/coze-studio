@@ -25,6 +25,10 @@ func Register(r *server.Hertz) {
 			_bot.POST("/upload_file", append(_uploadfileMw(), coze.UploadFile)...)
 		}
 		{
+			_admin := _api.Group("/admin", _adminMw()...)
+			_admin.POST("/refresh_models", append(_refreshmodelsMw(), coze.RefreshModels)...)
+		}
+		{
 			_common := _api.Group("/common", _commonMw()...)
 			{
 				_upload := _common.Group("/upload", _uploadMw()...)

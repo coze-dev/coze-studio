@@ -18,8 +18,12 @@ package modelmgr
 
 import (
 	"context"
+	"time"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
+	wfmodel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
+	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
@@ -70,6 +74,82 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 		Msg:  "success",
 		Data: &developer_api.GetTypeListData{
 			ModelList: modelList,
+		},
+	}, nil
+}
+
+// RefreshModels 重新加载模型配置
+func (m *ModelmgrApplicationService) RefreshModels(ctx context.Context, _ *developer_api.RefreshModelsRequest) (
+	resp *developer_api.RefreshModelsResponse, err error,
+) {
+	logs.CtxInfof(ctx, "[RefreshModels] Starting model configuration refresh")
+
+	// 获取当前模型列表用于比较
+	oldModelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
+		Limit: 300,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "[RefreshModels] Failed to get old model list: %v", err)
+		return nil, err
+	}
+
+	// 创建旧模型名称映射
+	oldModelMap := make(map[string]bool)
+	for _, model := range oldModelResp.ModelList {
+		oldModelMap[model.Name] = true
+	}
+
+	// 重新加载模型配置
+	newMgr, err := appinfra.ReloadModelMgr()
+	if err != nil {
+		logs.CtxErrorf(ctx, "[RefreshModels] Failed to reload model manager: %v", err)
+		return &developer_api.RefreshModelsResponse{
+			Code: -1,
+			Msg:  "Failed to reload model configurations: " + err.Error(),
+		}, nil
+	}
+
+	// 更新当前管理器
+	m.Mgr = newMgr
+
+	// 同时更新 workflow 模块的全局模型管理器
+	workflowModelMgr := wfmodel.NewModelManager(newMgr, nil)
+	crossmodel.SetManager(workflowModelMgr)
+	logs.CtxInfof(ctx, "[RefreshModels] Updated workflow ModelManager")
+
+	// 获取新模型列表
+	newModelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
+		Limit: 300,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "[RefreshModels] Failed to get new model list: %v", err)
+		return nil, err
+	}
+
+	// 比较新旧模型列表
+	var newModels, updatedModels []string
+	for _, model := range newModelResp.ModelList {
+		if !oldModelMap[model.Name] {
+			newModels = append(newModels, model.Name)
+		} else {
+			// 这里可以进一步比较模型配置是否有变化
+			updatedModels = append(updatedModels, model.Name)
+		}
+	}
+
+	refreshTime := time.Now().Format("2006-01-02 15:04:05")
+
+	logs.CtxInfof(ctx, "[RefreshModels] Refresh completed. Total: %d, New: %d, Updated: %d",
+		len(newModelResp.ModelList), len(newModels), len(updatedModels))
+
+	return &developer_api.RefreshModelsResponse{
+		Code: 0,
+		Msg:  "Model configurations refreshed successfully",
+		Data: &developer_api.RefreshModelsData{
+			ModelCount:    int32(len(newModelResp.ModelList)),
+			NewModels:     newModels,
+			UpdatedModels: updatedModels,
+			RefreshTime:   refreshTime,
 		},
 	}, nil
 }

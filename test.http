@@ -1,0 +1,2 @@
+### 刷新模型列表
+POST http://localhost:8888/api/admin/refresh_models

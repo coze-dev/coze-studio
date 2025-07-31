@@ -1,0 +1,552 @@
+info:
+  description: |-
+    飞书云文档，支持以下操作：
+    
+    1. 创建文档；
+    2. 在文档中新增内容，支持 纯文本或者 markdown 格式；
+    3. 获取文档的内容，支持以纯文本或者 Markdown 格式返回；
+    4. 获取文档的所有块；
+    5. 获取文档的基本信息；
+    6. 搜索文档类型的文档；
+    7. 搜索 PPT 类型的文档；
+  title: 飞书云文档
+  version: v1
+openapi: 3.0.1
+paths:
+  /document/create_document:
+    post:
+      operationId: create_document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                content:
+                  description: 文档内容，支持 markdown 语法，可以为空。
+                  type: string
+                folder_token:
+                  description: 指定文档所在文件夹 的 Token，不传或传空表示根目录。支持输入文件夹 token 或者 文件夹 URL。
+                  type: string
+                title:
+                  description: 文档标题，只支持纯文本。
+                  type: string
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      title:
+                        description: 文档标题
+                        type: string
+                      token:
+                        description: 文档唯一标识
+                        type: string
+                      type:
+                        description: 文档类型
+                        type: string
+                      url:
+                        description: 文档链接
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建文档，支持创建空文档和带内容的文档，支持 markdown 语法创建。
+  /document/get_document_content:
+    get:
+      operationId: get_document_content
+      parameters:
+        - description: 文档的唯一标识，支持输入文档的 URL。支持新文档和老文档，老文档不支持 markdown 格式获取。
+          in: query
+          name: document_id
+          required: true
+          schema:
+            type: string
+        - description: 指定返回的 MentionUser 即 @用户 的语言，可选值有 [0,1]。0：该用户的默认名称，1：该用户的英文名称，默认值为 0。
+          in: query
+          name: lang
+          schema:
+            default: 0
+            type: integer
+        - description: 文档返回格式，可选值有 text、markdown，可以为空，默认值为 markdown。
+          in: query
+          name: mode
+          schema:
+            default: markdown
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      content:
+                        description: 文档纯文本
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取文档的内容，支持以纯文本或者 markdown 格式返回。
+  /document/get_document_info:
+    get:
+      operationId: get_document_info
+      parameters:
+        - description: 文档的唯一标识，支持输入文档的 URL。
+          in: query
+          name: document_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      document:
+                        description: 文档信息
+                        properties:
+                          document_id:
+                            description: 文档的唯一标识
+                            type: string
+                          title:
+                            description: 文档标题
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取文档的基本信息
+  /document/list_document_blocks:
+    get:
+      operationId: list_document_blocks
+      parameters:
+        - description: 查询的文档版本，-1 表示文档最新版本。文档创建后，版本为 1。若查询的版本为文档最新版本，则需要持有文档的阅读权限；若查询的版本为文档的历史版本，则需要持有文档的编辑权限。你可通过调用获取文档基本信息获取文档的 revision_id。
+          in: query
+          name: document_revision_id
+          schema:
+            default: -1
+            type: integer
+            x-global-disable: true
+        - description: 用户 ID 类型，可选值有 open_id、union_id、user_id，默认值为 open_id。
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 文档的唯一标识，支持输入文档的 URL。
+          in: query
+          name: document_id
+          required: true
+          schema:
+            type: string
+        - description: 分页大小
+          in: query
+          name: page_size
+          schema:
+            default: 500
+            type: integer
+        - description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果。
+          in: query
+          name: page_token
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 文档的 Block 信息
+                        items:
+                          description: 文档的 Block 信息项，格式为 json 字符串。
+                          type: string
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token。
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取文档的所有块，获取文档所有块的富文本内容并分页返回。
+  /document/search_document:
+    post:
+      operationId: search_document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  description: 指定搜索返回的文件数量。取值范围为 [0,50]。
+                  type: integer
+                offset:
+                  description: 指定搜索的偏移量，该参数最小为 0，即不偏移。该参数的值与返回的文件数量之和不得小于或等于 200（即 offset + count < 200）。
+                  type: integer
+                search_key:
+                  description: 指定搜索的关键字
+                  type: string
+              required:
+                - search_key
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      docs_entities:
+                        description: 包含搜索关键词的文件列表
+                        items:
+                          description: 包含搜索关键词的文件
+                          properties:
+                            docs_token:
+                              description: 文件的 token
+                              type: string
+                            docs_type:
+                              description: 文件的类型
+                              type: string
+                            owner_id:
+                              description: 文件的所有者
+                              type: string
+                            title:
+                              description: 文件的标题
+                              type: string
+                            url:
+                              description: 文档的链接
+                              type: string
+                          type: object
+                        type: array
+                      has_more:
+                        description: 结果列表后是否还有数据
+                        type: boolean
+                      total:
+                        description: 包含搜索关键词的文件总数量
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 搜索文档类型的文档
+  /document/search_slides:
+    post:
+      operationId: search_slides
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  description: 指定搜索返回的文件数量。取值范围为 [0,50]。
+                  type: integer
+                offset:
+                  description: 指定搜索的偏移量，该参数最小为 0，即不偏移。该参数的值与返回的文件数量之和不得小于或等于 200（即 offset + count < 200）。
+                  type: integer
+                search_key:
+                  description: 指定搜索的关键字
+                  type: string
+              required:
+                - search_key
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      docs_entities:
+                        description: 包含搜索关键词的文件列表
+                        items:
+                          description: 包含搜索关键词的文件
+                          properties:
+                            docs_token:
+                              description: 文件的 token
+                              type: string
+                            docs_type:
+                              description: 文件的类型
+                              type: string
+                            owner_id:
+                              description: 文件的所有者
+                              type: string
+                            title:
+                              description: 文件的标题
+                              type: string
+                            url:
+                              description: 文档的链接
+                              type: string
+                          type: object
+                        type: array
+                      has_more:
+                        description: 结果列表后是否还有数据
+                        type: boolean
+                      total:
+                        description: 包含搜索关键词的文件总数量
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 搜索 PPT 类型的文档
+  /document/write_document:
+    post:
+      operationId: write_document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                content:
+                  description: 纯文本或者 markdown 内容，注意文档的内嵌套表格不允许有单元格合并。
+                  type: string
+                document_id:
+                  description: 文档的唯一标识，支持输入文档的 URL。
+                  type: string
+                position:
+                  default: end
+                  description: '枚举值 start、end，start: 在文档开头添加内容；end: 在文档结尾添加内容，默认值为 end。'
+                  type: string
+              required:
+                - document_id
+                - content
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: integer
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 在文档中新增内容，支持纯文本或者 markdown 格式。
+  /drive/download_media:
+    get:
+      operationId: download_media
+      parameters:
+        - description: 素材唯一标识
+          in: query
+          name: file_token
+          required: true
+          schema:
+            type: string
+        - description: 拥有高级权限的多维表格在下载素材时，需要添加额外的扩展信息作为 URL 查询参数鉴权。详情参考https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/drive-v1/media/introduction
+          in: query
+          name: extra
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应数据
+                    properties:
+                      file_base64:
+                        description: 素材base64
+                        type: string
+                      file_name:
+                        description: 素材名称
+                        type: string
+                      file_token:
+                        description: 素材唯一标识
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 失败描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 下载素材
+  /drive/upload_media:
+    post:
+      operationId: upload_media
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                extra:
+                  description: 额外参数。参考文档：https://open.larkoffice.com/document/server-docs/docs/drive-v1/media/introduction#3b8635d3
+                  type: string
+                  x-global-disable: true
+                file_name:
+                  description: 待上传的素材的名称 示例值："demo.jpeg" 数据校验规则： - 最大长度：250 字符
+                  type: string
+                file_url:
+                  description: 待上传的素材链接，需要在国内可公开访问
+                  type: string
+                parent_node:
+                  description: 上传点的 token，即要上传的云文档的 token，用于指定素材将要上传到的云文档或位置。支持填写文档URL
+                  type: string
+                parent_type:
+                  description: 上传点的类型。 示例值："docx_image"、"bitable_image"，参考文档：https://open.larkoffice.com/document/server-docs/docs/drive-v1/media/introduction
+                  type: string
+              required:
+                - file_url
+                - file_name
+                - parent_type
+                - parent_node
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      file_token:
+                        description: 上传的素材唯一标识
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 上传素材到飞书云文档、文档空间、多维表格、电子表格。上传成功后获取对应素材的飞书file_token。详见飞书开发文档 https://open.larkoffice.com/document/server-docs/docs/drive-v1/media/introduction
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

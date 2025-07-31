@@ -1,17 +1,17 @@
 -- Modify "api_key" table
 ALTER TABLE `opencoze`.`api_key` MODIFY COLUMN `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT "Primary Key ID";
 -- Modify "app_connector_release_ref" table
-ALTER TABLE `opencoze`.`app_connector_release_ref` RENAME INDEX `idx_record_connector` TO `uniq_record_connector`;
+ALTER TABLE `opencoze`.`app_connector_release_ref` DROP INDEX `idx_record_connector`, ADD UNIQUE INDEX `uniq_record_connector` (`record_id`, `connector_id`);
 -- Modify "app_draft" table
-ALTER TABLE `opencoze`.`app_draft` RENAME COLUMN `Name` TO `name`;
+ALTER TABLE `opencoze`.`app_draft` CHANGE COLUMN `Name` `name` varchar(255) NOT NULL DEFAULT "";
 -- Modify "app_release_record" table
-ALTER TABLE `opencoze`.`app_release_record` RENAME COLUMN `Name` TO `name`;
+ALTER TABLE `opencoze`.`app_release_record` CHANGE COLUMN `Name` `name` varchar(255) NOT NULL DEFAULT "";
 -- Modify "knowledge_document_slice" table
 ALTER TABLE `opencoze`.`knowledge_document_slice` MODIFY COLUMN `sequence` decimal(20,5) NOT NULL COMMENT "切片顺序号, 从1开始";
 -- Modify "model_entity" table
 ALTER TABLE `opencoze`.`model_entity` MODIFY COLUMN `default_params` json NULL COMMENT "默认参数";
 -- Modify "node_execution" table
-ALTER TABLE `opencoze`.`node_execution` COMMENT "node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息", COLLATE utf8mb4_0900_ai_ci;
+ALTER TABLE `opencoze`.`node_execution` COMMENT "node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息", COLLATE utf8mb4_unicode_ci;
 -- Modify "prompt_resource" table
 ALTER TABLE `opencoze`.`prompt_resource` MODIFY COLUMN `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT "主键ID";
 -- Modify "single_agent_draft" table

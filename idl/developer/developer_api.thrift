@@ -703,6 +703,24 @@ struct GetTypeListResponse {
     3: required GetTypeListData data
 }
 
+// 刷新模型配置接口
+struct RefreshModelsRequest {
+    // 空请求体，无需参数
+}
+
+struct RefreshModelsData {
+    1: i32 model_count              // 刷新后的模型数量
+    2: list<string> new_models      // 新增的模型名称列表
+    3: list<string> updated_models  // 更新的模型名称列表
+    4: string refresh_time          // 刷新时间
+}
+
+struct RefreshModelsResponse {
+    1: i64                code
+    2: string             msg
+    3: RefreshModelsData  data
+}
+
 struct UploadFileData {
     1: string upload_url // 文件url
     2: string upload_uri // 文件uri，提交使用这个
@@ -891,6 +909,7 @@ service DeveloperApiService {
 
     UploadFileResponse UploadFile(1:UploadFileRequest request)(api.post='/api/bot/upload_file', api.category="bot" api.gen_path="bot")
     GetTypeListResponse GetTypeList(1: GetTypeListRequest request)(api.post='/api/bot/get_type_list', api.category="bot", api.gen_path="bot")
+    RefreshModelsResponse RefreshModels(1: RefreshModelsRequest request)(api.post='/api/admin/refresh_models', api.category="admin", api.gen_path="admin")
 
     GetIconResponse GetIcon(1:GetIconRequest request)(api.post='/api/developer/get_icon', api.category="developer", api.gen_path="developer")
 

@@ -32,6 +32,11 @@ func _apiMw() []app.HandlerFunc {
 	return nil
 }
 
+func _adminMw() []app.HandlerFunc {
+	// TODO: 管理员认证中间件，预留未来扩展
+	return nil
+}
+
 func _conversationMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1277,6 +1282,12 @@ func _gettypelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _refreshmodelsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _iconMw() []app.HandlerFunc {
 	// your code...
 	return nil

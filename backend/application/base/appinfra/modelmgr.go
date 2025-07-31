@@ -31,6 +31,20 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
+// ReloadModelMgr 重新加载模型配置，用于支持动态刷新
+func ReloadModelMgr() (modelmgr.Manager, error) {
+	logs.Info("[ReloadModelMgr] Starting to reload model configurations...")
+
+	mgr, err := initModelMgr()
+	if err != nil {
+		logs.Errorf("[ReloadModelMgr] Failed to reload models: %v", err)
+		return nil, err
+	}
+
+	logs.Info("[ReloadModelMgr] Model configurations reloaded successfully")
+	return mgr, nil
+}
+
 func initModelMgr() (modelmgr.Manager, error) {
 	wd, err := os.Getwd()
 	if err != nil {

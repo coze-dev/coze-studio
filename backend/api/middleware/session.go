@@ -18,7 +18,6 @@ package middleware
 
 import (
 	"context"
-
 	"github.com/cloudwego/hertz/pkg/app"
 
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
@@ -35,6 +34,7 @@ import (
 var noNeedSessionCheckPath = map[string]bool{
 	"/api/passport/web/email/login/":       true,
 	"/api/passport/web/email/register/v2/": true,
+	"/api/admin/refresh_models":            true, // TODO: 临时跳过认证，未来需要管理员认证
 }
 
 func SessionAuthMW() app.HandlerFunc {

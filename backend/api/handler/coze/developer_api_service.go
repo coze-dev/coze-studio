@@ -413,3 +413,22 @@ func GetTypeList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// @router /api/admin/refresh_models [POST]
+func RefreshModels(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.RefreshModelsRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := modelmgr.ModelmgrApplicationSVC.RefreshModels(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

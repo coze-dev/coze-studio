@@ -1546,7 +1546,7 @@ table "model_meta" {
 table "node_execution" {
   schema  = schema.opencoze
   comment = "node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息"
-  collate = "utf8mb4_0900_ai_ci"
+  collate = "utf8mb4_unicode_ci"
   column "id" {
     null     = false
     type     = bigint
@@ -2160,7 +2160,7 @@ table "plugin_version" {
 table "prompt_resource" {
   schema  = schema.opencoze
   comment = "prompt_resource"
-  collate = "utf8mb4_0900_ai_ci"
+  collate = "utf8mb4_unicode_ci"
   column "id" {
     null           = false
     type           = bigint
@@ -3381,7 +3381,7 @@ table "user" {
 table "variable_instance" {
   schema  = schema.opencoze
   comment = "KV Memory"
-  collate = "utf8mb4_0900_ai_ci"
+  collate = "utf8mb4_unicode_ci"
   column "id" {
     null     = false
     type     = bigint
@@ -3455,7 +3455,7 @@ table "variable_instance" {
 table "variables_meta" {
   schema  = schema.opencoze
   comment = "KV Memory meta"
-  collate = "utf8mb4_0900_ai_ci"
+  collate = "utf8mb4_unicode_ci"
   column "id" {
     null     = false
     type     = bigint
