@@ -106,7 +106,7 @@ This project uses the Apache 2.0 license. For details, please refer to the [LICE
 ## Community contributions
 We welcome community contributions. For contribution guidelines, please refer to [CONTRIBUTING](https://github.com/coze-dev/coze-studio/blob/main/CONTRIBUTING.md) and [Code of conduct](https://github.com/coze-dev/coze-studio/blob/main/CODE_OF_CONDUCT.md). We look forward to your contributions!
 ## Security and privacy
-If you discover potential security issues in the project, or believe you may have found a security issue, please notify the ByteDance security team through our [security center](https://security.bytedance.com/src) or [vulnerability reporting mailbox](https://code.byted.org/flowdevops/cozeloop/blob/feat/release/sec@bytedance.com).
+If you discover potential security issues in the project, or believe you may have found a security issue, please notify the ByteDance security team through our [security center](https://security.bytedance.com/src) or [vulnerability reporting email](sec@bytedance.com).
 Please **do not** create public GitHub Issues.
 ## Join Community
 
