@@ -1,5 +1,5 @@
 /**
- * 源文件语言类型
+ * Source file language type
  */
 export type SourceFileLanguage =
   | 'typescript'
@@ -27,12 +27,12 @@ export type SourceFileLanguage =
   | 'other';
 
 /**
- * 注释类型
+ * comment type
  */
 export type CommentType = 'single-line' | 'multi-line' | 'documentation';
 
 /**
- * 源文件信息
+ * source file information
  */
 export interface SourceFile {
   path: string;
@@ -41,7 +41,7 @@ export interface SourceFile {
 }
 
 /**
- * 多行注释上下文信息
+ * multiline comment context information
  */
 export interface MultiLineContext {
   isPartOfMultiLine: boolean;
@@ -51,7 +51,7 @@ export interface MultiLineContext {
 }
 
 /**
- * 中文注释信息
+ * Chinese annotation information
  */
 export interface ChineseComment {
   content: string;
@@ -64,7 +64,7 @@ export interface ChineseComment {
 }
 
 /**
- * 包含中文注释的文件
+ * Files containing Chinese annotations
  */
 export interface FileWithComments {
   file: SourceFile;
@@ -72,7 +72,7 @@ export interface FileWithComments {
 }
 
 /**
- * 翻译结果
+ * translation result
  */
 export interface TranslationResult {
   original: string;
@@ -81,7 +81,7 @@ export interface TranslationResult {
 }
 
 /**
- * 翻译上下文
+ * translation context
  */
 export interface TranslationContext {
   language: string;
@@ -90,7 +90,7 @@ export interface TranslationContext {
 }
 
 /**
- * 替换操作
+ * replace operation
  */
 export interface Replacement {
   start: number;
@@ -100,7 +100,7 @@ export interface Replacement {
 }
 
 /**
- * 文件替换操作
+ * file replacement operation
  */
 export interface ReplacementOperation {
   file: string;
@@ -108,7 +108,7 @@ export interface ReplacementOperation {
 }
 
 /**
- * 文件处理详情
+ * Document processing details
  */
 export interface FileProcessingDetail {
   file: string;
@@ -120,7 +120,7 @@ export interface FileProcessingDetail {
 }
 
 /**
- * 处理统计信息
+ * Processing statistics
  */
 export interface ProcessingStats {
   totalFiles: number;
@@ -133,7 +133,7 @@ export interface ProcessingStats {
 }
 
 /**
- * 处理报告
+ * processing report
  */
 export interface ProcessingReport {
   stats: ProcessingStats;
@@ -142,7 +142,7 @@ export interface ProcessingReport {
 }
 
 /**
- * 文件扫描配置
+ * File Scan Configuration
  */
 export interface FileScanConfig {
   root: string;
@@ -152,7 +152,7 @@ export interface FileScanConfig {
 }
 
 /**
- * 解析的注释
+ * Parsed annotations
  */
 export interface ParsedComment {
   content: string;
@@ -164,7 +164,7 @@ export interface ParsedComment {
 }
 
 /**
- * 注释模式配置
+ * Comment mode configuration
  */
 export interface CommentPattern {
   single: RegExp;
@@ -173,14 +173,14 @@ export interface CommentPattern {
 }
 
 /**
- * 函数式编程结果类型
+ * Functional programming result type
  */
 export type Result<T, E = Error> =
   | { success: true; data: T }
   | { success: false; error: E };
 
 /**
- * 翻译错误
+ * translation error
  */
 export class TranslationError extends Error {
   constructor(

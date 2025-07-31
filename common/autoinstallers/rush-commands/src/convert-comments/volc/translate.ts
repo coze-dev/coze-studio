@@ -20,7 +20,7 @@ import { URLSearchParams } from 'url';
 const debuglog = util.debuglog('signer');
 
 /**
- * 签名参数接口
+ * signature parameter interface
  */
 export interface SignParams {
   headers?: Record<string, string>;
@@ -36,95 +36,95 @@ export interface SignParams {
 }
 
 /**
- * 查询参数类型
+ * query parameter type
  */
 export type QueryParams = Record<string, string | string[] | undefined | null>;
 
 /**
- * 请求头类型
+ * request header type
  */
 export type Headers = Record<string, string>;
 
 /**
- * 翻译请求参数接口
+ * translation request parameter interface
  */
 export interface TranslateRequest {
-  /** 源语言代码 */
+  /** source language code */
   SourceLanguage: string;
-  /** 目标语言代码 */
+  /** target language code */
   TargetLanguage: string;
-  /** 要翻译的文本列表 */
+  /** List of texts to be translated */
   TextList: string[];
 }
 
 /**
- * 翻译结果中的额外信息
+ * Additional information in the translation results
  */
 export interface TranslationExtra {
-  /** 输入字符数 */
+  /** Number of characters entered */
   input_characters: string;
-  /** 源语言 */
+  /** source language */
   source_language: string;
 }
 
 /**
- * 单个翻译结果
+ * Single translation result
  */
 export interface TranslationItem {
-  /** 翻译结果 */
+  /** translation result */
   Translation: string;
-  /** 检测到的源语言 */
+  /** Detected source language */
   DetectedSourceLanguage: string;
-  /** 额外信息 */
+  /** Additional information */
   Extra: TranslationExtra;
 }
 
 /**
- * 响应元数据
+ * Response metadata
  */
 export interface ResponseMetadata {
-  /** 请求ID */
+  /** Request ID */
   RequestId: string;
-  /** 操作名称 */
+  /** operation name */
   Action: string;
-  /** API版本 */
+  /** API version */
   Version: string;
-  /** 服务名称 */
+  /** service name */
   Service: string;
-  /** 区域 */
+  /** area */
   Region: string;
 }
 
 /**
- * 火山引擎翻译API响应接口
+ * Volcano Engine Translation API Response Interface
  */
 export interface VolcTranslateResponse {
-  /** 翻译结果列表 */
+  /** List of translation results */
   TranslationList: TranslationItem[];
-  /** 响应元数据 */
+  /** Response metadata */
   ResponseMetadata: ResponseMetadata;
-  /** 响应元数据（备用字段） */
+  /** Response metadata (alternate field) */
   ResponseMetaData?: ResponseMetadata;
 }
 
 /**
- * 翻译配置参数
+ * translation configuration parameters
  */
 export interface TranslateConfig {
-  /** 访问密钥ID */
+  /** Access Key ID */
   accessKeyId: string;
-  /** 秘密访问密钥 */
+  /** secret access key */
   secretAccessKey: string;
-  /** 服务区域 */
+  /** service area */
   region?: string;
-  /** 源语言代码 */
+  /** source language code */
   sourceLanguage?: string;
-  /** 目标语言代码 */
+  /** target language code */
   targetLanguage?: string;
 }
 
 /**
- * 不参与加签过程的 header key
+ * Header key that does not participate in the signature process
  */
 const HEADER_KEYS_TO_IGNORE = new Set([
   'authorization',
@@ -136,10 +136,10 @@ const HEADER_KEYS_TO_IGNORE = new Set([
 ]);
 
 /**
- * 火山引擎翻译接口
- * @param textArray 要翻译的文本数组
- * @param config 翻译配置参数，如果不提供则使用默认配置
- * @returns 翻译响应结果
+ * Volcano Engine Translation Interface
+ * @Param textArray Array of text to translate
+ * @Param config Translate configuration parameters, use default configuration if not provided
+ * @Returns translation response result
  */
 export async function translate(
   textArray: string[],
@@ -163,7 +163,7 @@ export async function translate(
   const requestBodyString = JSON.stringify(requestBody);
   const signParams: SignParams = {
     headers: {
-      // x-date header 是必传的
+      // The x-date header is required
       'X-Date': getDateTimeNow(),
       'content-type': 'application/json',
     },
@@ -179,7 +179,7 @@ export async function translate(
     bodySha: getBodySha(requestBodyString),
   };
 
-  // 正规化 query object， 防止串化后出现 query 值为 undefined 情况
+  // Normalize the query object to prevent the query value from being undefined after serialization
   if (signParams.query) {
     for (const [key, val] of Object.entries(signParams.query)) {
       if (val === undefined || val === null) {
@@ -216,7 +216,7 @@ export async function translate(
 }
 
 /**
- * 生成签名
+ * generate signature
  */
 function sign(params: SignParams): string {
   const {
@@ -233,7 +233,7 @@ function sign(params: SignParams): string {
   } = params;
   const datetime = headers['X-Date'];
   const date = datetime.substring(0, 8); // YYYYMMDD
-  // 创建正规化请求
+  // Create a regularization request
   const [signedHeaders, canonicalHeaders] = getSignHeaders(
     headers,
     needSignHeaderKeys,
@@ -247,14 +247,14 @@ function sign(params: SignParams): string {
     bodySha || hash(''),
   ].join('\n');
   const credentialScope = [date, region, serviceName, 'request'].join('/');
-  // 创建签名字符串
+  // Create signature string
   const stringToSign = [
     'HMAC-SHA256',
     datetime,
     credentialScope,
     hash(canonicalRequest),
   ].join('\n');
-  // 计算签名
+  // Compute signature
   const kDate = hmac(secretAccessKey, date);
   const kRegion = hmac(kDate, region);
   const kService = hmac(kRegion, serviceName);
@@ -275,21 +275,21 @@ function sign(params: SignParams): string {
 }
 
 /**
- * HMAC-SHA256 加密
+ * HMAC-SHA256 encryption
  */
 function hmac(secret: string | Buffer, s: string): Buffer {
   return crypto.createHmac('sha256', secret).update(s, 'utf8').digest();
 }
 
 /**
- * SHA256 哈希
+ * SHA256 hash
  */
 function hash(s: string): string {
   return crypto.createHash('sha256').update(s, 'utf8').digest('hex');
 }
 
 /**
- * 查询参数转字符串
+ * Query parameter to string
  */
 function queryParamsToString(params: QueryParams): string {
   return Object.keys(params)
@@ -313,7 +313,7 @@ function queryParamsToString(params: QueryParams): string {
 }
 
 /**
- * 获取签名头
+ * Get signature header
  */
 function getSignHeaders(
   originHeaders: Headers,
@@ -324,14 +324,14 @@ function getSignHeaders(
   }
 
   let h = Object.keys(originHeaders);
-  // 根据 needSignHeaders 过滤
+  // Filter by needSignHeaders
   if (Array.isArray(needSignHeaders)) {
     const needSignSet = new Set(
       [...needSignHeaders, 'x-date', 'host'].map(k => k.toLowerCase()),
     );
     h = h.filter(k => needSignSet.has(k.toLowerCase()));
   }
-  // 根据 ignore headers 过滤
+  // Filter by ignoring headers
   h = h.filter(k => !HEADER_KEYS_TO_IGNORE.has(k.toLowerCase()));
   const signedHeaderKeys = h
     .slice()
@@ -346,7 +346,7 @@ function getSignHeaders(
 }
 
 /**
- * URI 转义
+ * URI escape
  */
 function uriEscape(str: string): string {
   try {
@@ -364,7 +364,7 @@ function uriEscape(str: string): string {
 }
 
 /**
- * 获取当前时间格式化字符串
+ * Get the current time format string
  */
 export function getDateTimeNow(): string {
   const now = new Date();
@@ -372,7 +372,7 @@ export function getDateTimeNow(): string {
 }
 
 /**
- * 获取 body 的 SHA256 值
+ * Get the SHA256 value of the body
  */
 export function getBodySha(body: string | URLSearchParams | Buffer): string {
   const hashInstance = crypto.createHash('sha256');

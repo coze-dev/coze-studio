@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { type UploadValue } from '@coze-common/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { type PluginMetaInfo } from '@coze-arch/bot-api/developer_api';
-import { type UploadValue } from '@coze-common/biz-components';
 
 export const formRuleList = {
   name: [
@@ -50,10 +50,6 @@ export const formRuleList = {
     {
       required: true,
       message: I18n.t('create_plugin_modal_url1_error'),
-    },
-    {
-      pattern: /^(https):\/\/.+$/,
-      message: I18n.t('create_plugin_modal_url_error_https'),
     },
   ],
   key: [

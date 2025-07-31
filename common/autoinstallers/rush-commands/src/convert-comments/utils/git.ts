@@ -4,7 +4,7 @@ import { tryCatch } from './fp';
 import { Result } from '../types/index';
 
 /**
- * 获取Git仓库中的所有已跟踪文件
+ * Get all tracked files in the Git repository
  */
 export const getGitTrackedFiles = async (
   root: string,
@@ -21,7 +21,7 @@ export const getGitTrackedFiles = async (
 };
 
 /**
- * 获取Git仓库中的所有文件（包括未跟踪的）
+ * Get all files in the Git repository (including untracked ones)
  */
 export const getAllGitFiles = async (
   root: string,
@@ -29,20 +29,20 @@ export const getAllGitFiles = async (
   return tryCatch(async () => {
     const git = simpleGit(root);
 
-    // 获取已跟踪的文件
+    // Get tracked files
     const trackedFiles = await git.raw(['ls-files']);
     const trackedFilesArray = trackedFiles
       .split('\n')
       .filter(Boolean)
       .map(file => path.resolve(root, file));
 
-    // 获取未跟踪的文件
+    // Get untracked files
     const status = await git.status();
     const untrackedFiles = status.not_added.map(file =>
       path.resolve(root, file),
     );
 
-    // 合并并去重
+    // Merge and deduplicate
     const allFiles = [...new Set([...trackedFilesArray, ...untrackedFiles])];
 
     return allFiles;
@@ -50,7 +50,7 @@ export const getAllGitFiles = async (
 };
 
 /**
- * 检查目录是否是Git仓库
+ * Check if the directory is a Git repository
  */
 export const isGitRepository = async (
   root: string,
@@ -63,7 +63,7 @@ export const isGitRepository = async (
 };
 
 /**
- * 获取Git仓库的根目录
+ * Get the root directory of the Git repository
  */
 export const getGitRoot = async (cwd: string): Promise<Result<string>> => {
   return tryCatch(async () => {
@@ -74,7 +74,7 @@ export const getGitRoot = async (cwd: string): Promise<Result<string>> => {
 };
 
 /**
- * 检查文件是否被Git忽略
+ * Check if the file is ignored by Git
  */
 export const isIgnoredByGit = async (
   root: string,
@@ -86,9 +86,9 @@ export const isIgnoredByGit = async (
 
     try {
       await git.raw(['check-ignore', relativePath]);
-      return true; // 文件被忽略
+      return true; // File is ignored
     } catch {
-      return false; // 文件未被忽略
+      return false; // File is not ignored
     }
   });
 };

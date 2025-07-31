@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
 import { type PluginInfoProps } from '@coze-studio/plugin-shared';
@@ -65,10 +65,6 @@ export const formRuleList = {
     {
       required: true,
       message: I18n.t('create_plugin_modal_url1_error'),
-    },
-    {
-      pattern: /^(https):\/\/.+$/,
-      message: I18n.t('create_plugin_modal_url_error_https'),
     },
   ],
   key: [

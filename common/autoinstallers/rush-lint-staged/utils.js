@@ -13,7 +13,7 @@ const getRushConfiguration = (function () {
   };
 })();
 
-// 获取变更文件所在的项目路径
+// Get the project path where the change file is located
 function withProjectFolder(changedFiles) {
   const projectFolders = [];
 
@@ -24,7 +24,7 @@ function withProjectFolder(changedFiles) {
 
     for (const file of changedFiles) {
       const project = lookup.findChildPath(path.relative(rushJsonFolder, file));
-      // 忽略不在 rush.json 内定义的项目
+      // Ignore items not defined in rush.json
       if (project) {
         const projectFolder = project?.projectFolder ?? rushJsonFolder;
         const packageName = project?.packageName;
@@ -72,7 +72,7 @@ async function excludeIgnoredFiles(changedFiles) {
   }
 }
 
-// 获取发生变更的项目路径
+// Get the project path that changed
 function getChangedProjects(changedFiles) {
   const changedProjectFolders = new Set();
   const changedProjects = new Set();

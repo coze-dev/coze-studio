@@ -1,5 +1,5 @@
 /**
- * 翻译配置
+ * translation configuration
  */
 export interface TranslationConfig {
   accessKeyId: string;
@@ -13,7 +13,7 @@ export interface TranslationConfig {
 }
 
 /**
- * 文件扫描配置
+ * File Scan Configuration
  */
 export interface FileScanConfig {
   root: string;
@@ -23,7 +23,7 @@ export interface FileScanConfig {
 }
 
 /**
- * 处理配置
+ * handle configuration
  */
 export interface ProcessingConfig {
   defaultExtensions: string[];
@@ -31,7 +31,7 @@ export interface ProcessingConfig {
 }
 
 /**
- * Git配置
+ * Git Configuration
  */
 export interface GitConfig {
   ignorePatterns: string[];
@@ -39,7 +39,7 @@ export interface GitConfig {
 }
 
 /**
- * 应用配置
+ * application configuration
  */
 export interface AppConfig {
   translation: TranslationConfig;
@@ -48,7 +48,7 @@ export interface AppConfig {
 }
 
 /**
- * 命令行选项
+ * command line options
  */
 export interface CliOptions {
   root: string;

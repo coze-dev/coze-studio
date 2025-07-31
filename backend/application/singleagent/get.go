@@ -259,7 +259,7 @@ func toModelDetail(m *modelmgr.Model) *playground.ModelDetail {
 
 	return &playground.ModelDetail{
 		Name:         ptr.Of(m.Name),
-		ModelName:    ptr.Of(m.Meta.Name),
+		ModelName:    ptr.Of(m.Name),
 		ModelID:      ptr.Of(m.ID),
 		ModelFamily:  ptr.Of(int64(mm.Protocol.TOModelClass())),
 		ModelIconURL: ptr.Of(m.IconURL),

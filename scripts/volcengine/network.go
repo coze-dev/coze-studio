@@ -250,7 +250,7 @@ func CheckSafeGroupStatus(sgID string) {
 			SecurityGroupId: volcengine.String(sgID),
 		}
 
-		// 复制代码运行示例，请自行打印API返回值。
+		// Copy the code to run the example, please print the API return value yourself.
 		resp, err := svc.DescribeSecurityGroupAttributes(describeSecurityGroupAttributesInput)
 		if err != nil {
 			fmt.Printf("[SafeGroup] will retry get safe group = %s failed, err= %s\n", sgID, err.Error())

@@ -19,7 +19,10 @@ source frontend/scripts/block-unresolved-conflict.sh
 
 block_unresolved_conflict '--cached'
 
+
 if [ "$PRE_LINT" != "1" ]; then
+  # Add license headers to staged files
+  bash scripts/hooks/add-license-header.sh || exit $?
   node common/scripts/install-run-rush.js fix-ts-refers --use-cached-files --shallow --submit-changes
   # node infra/commanders/fix-peer-deps/bin/main.js fix --use-cached-files -s
   node common/scripts/install-run-rush.js -q lint-staged || exit $?

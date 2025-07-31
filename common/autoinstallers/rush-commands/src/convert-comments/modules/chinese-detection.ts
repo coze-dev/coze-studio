@@ -10,7 +10,7 @@ import { getCommentPatterns } from '../utils/language';
 import { containsChinese, cleanCommentText } from '../utils/chinese';
 
 /**
- * 检查指定位置是否在字符串字面量内部
+ * Checks if the specified location is inside a string literal
  */
 const isInsideStringLiteral = (line: string, position: number): boolean => {
   let insideDoubleQuote = false;
@@ -44,7 +44,7 @@ const isInsideStringLiteral = (line: string, position: number): boolean => {
 };
 
 /**
- * 解析单行注释
+ * Parsing single-line comments
  */
 const parseSingleLineComments = (
   content: string,
@@ -54,34 +54,34 @@ const parseSingleLineComments = (
   const comments: ParsedComment[] = [];
   const lines = content.split('\n');
 
-  // 添加安全检查
-  const maxLines = 5000; // 降低到5000行
+  // Add a security check
+  const maxLines = 5000; // Down to 5000 lines
   if (lines.length > maxLines) {
     console.warn(`⚠️  文件行数过多 (${lines.length}行)，跳过单行注释解析`);
     return comments;
   }
 
   lines.forEach((line, index) => {
-    pattern.lastIndex = 0; // 重置正则表达式索引
+    pattern.lastIndex = 0; // Reset regular expression index
     let match: RegExpExecArray | null;
 
-    // 查找所有匹配，但只保留不在字符串内的
+    // Find all matches, but keep only those not in the string
     let matchCount = 0;
-    const maxMatches = 100; // 限制每行最多匹配100次
+    const maxMatches = 100; // Limit each line to a maximum of 100 matches
     let lastIndex = 0;
     
     while ((match = pattern.exec(line)) !== null) {
-      // 防止无限循环的多重保护
+      // Multiple protections against infinite loops
       matchCount++;
       if (matchCount > maxMatches) {
         console.warn(`⚠️  单行匹配次数过多，中断处理: ${line.substring(0, 50)}...`);
         break;
       }
       
-      // 检查 lastIndex 是否前进，防止无限循环
+      // Check if lastIndex is advancing to prevent an infinite loop
       if (pattern.global) {
         if (pattern.lastIndex <= lastIndex) {
-          // 如果 lastIndex 没有前进，手动前进一位避免无限循环
+          // If lastIndex does not advance, manually advance one bit to avoid infinite loops
           pattern.lastIndex = lastIndex + 1;
           if (pattern.lastIndex >= line.length) {
             break;
@@ -93,9 +93,9 @@ const parseSingleLineComments = (
       if (match[1]) {
         const commentContent = match[1];
         let commentStartIndex = match.index!;
-        let commentLength = 2; // 默认为 //
+        let commentLength = 2; // Default is//
 
-        // 根据语言确定注释符号
+        // Determine annotation symbols based on language
         if (
           language === 'yaml' ||
           language === 'toml' ||
@@ -104,9 +104,9 @@ const parseSingleLineComments = (
           language === 'ruby'
         ) {
           commentStartIndex = line.indexOf('#', match.index!);
-          commentLength = 1; // # 长度为 1
+          commentLength = 1; // #length is 1
         } else if (language === 'ini') {
-          // INI 文件可能使用 # 或 ;
+          // INI files may use #or;
           const hashIndex = line.indexOf('#', match.index!);
           const semicolonIndex = line.indexOf(';', match.index!);
           if (
@@ -120,7 +120,7 @@ const parseSingleLineComments = (
             commentLength = 1;
           }
         } else if (language === 'php') {
-          // PHP 可能使用 // 或 #
+          // PHP may use//or #
           const slashIndex = line.indexOf('//', match.index!);
           const hashIndex = line.indexOf('#', match.index!);
           if (slashIndex >= 0 && (hashIndex < 0 || slashIndex < hashIndex)) {
@@ -139,7 +139,7 @@ const parseSingleLineComments = (
         const startColumn = commentStartIndex;
         const endColumn = startColumn + commentLength + commentContent.length;
 
-        // 检查注释开始位置是否在字符串内部
+        // Check if the comment starts inside the string
         if (
           commentStartIndex >= 0 &&
           !isInsideStringLiteral(line, commentStartIndex)
@@ -155,7 +155,7 @@ const parseSingleLineComments = (
         }
       }
 
-      // 防止无限循环
+      // Prevent infinite loops
       if (!pattern.global) break;
     }
   });
@@ -164,7 +164,7 @@ const parseSingleLineComments = (
 };
 
 /**
- * 解析多行注释
+ * Parse multiline comments
  */
 const parseMultiLineComments = (
   content: string,
@@ -177,21 +177,21 @@ const parseMultiLineComments = (
   let commentStart: { line: number; column: number } | null = null;
   let commentLines: string[] = [];
 
-  // 添加安全检查
-  const maxLines = 5000; // 降低到5000行
+  // Add a security check
+  const maxLines = 5000; // Down to 5000 lines
   if (lines.length > maxLines) {
     console.warn(`⚠️  文件行数过多 (${lines.length}行)，跳过多行注释解析`);
     return comments;
   }
 
-  // 添加处理计数器，防止无限循环
+  // Add processing counters to prevent infinite loops
   let processedLines = 0;
   const maxProcessedLines = 10000;
 
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     const line = lines[lineIndex];
 
-    // 防止无限处理
+    // Prevent unlimited processing
     processedLines++;
     if (processedLines > maxProcessedLines) {
       console.warn(`⚠️  处理行数超限，中断解析`);
@@ -206,12 +206,12 @@ const parseMultiLineComments = (
         inComment = true;
         commentStart = { line: lineIndex + 1, column: startMatch.index! };
 
-        // 检查是否在同一行结束
+        // Check if they end on the same line
         endPattern.lastIndex = startMatch.index! + startMatch[0].length;
         const endMatch = endPattern.exec(line);
 
         if (endMatch) {
-          // 单行多行注释
+          // single-line multi-line comment
           const commentContent = line.substring(
             startMatch.index! + startMatch[0].length,
             endMatch.index!,
@@ -229,7 +229,7 @@ const parseMultiLineComments = (
           inComment = false;
           commentStart = null;
         } else {
-          // 多行注释开始
+          // Start with a multi-line comment
           const commentContent = line.substring(
             startMatch.index! + startMatch[0].length,
           );
@@ -237,12 +237,12 @@ const parseMultiLineComments = (
         }
       }
     } else {
-      // 在多行注释中
+      // In a multi-line comment
       endPattern.lastIndex = 0;
       const endMatch = endPattern.exec(line);
 
       if (endMatch) {
-        // 多行注释结束
+        // End of multiline comment
         const commentContent = line.substring(0, endMatch.index!);
         commentLines.push(commentContent);
 
@@ -260,7 +260,7 @@ const parseMultiLineComments = (
         commentStart = null;
         commentLines = [];
       } else {
-        // 继续多行注释
+        // Continue with multi-line comments
         commentLines.push(line);
       }
     }
@@ -270,7 +270,7 @@ const parseMultiLineComments = (
 };
 
 /**
- * 解析文件中的所有注释
+ * Parse all comments in the file
  */
 export const parseComments = (file: SourceFile): ParsedComment[] => {
   const patterns = getCommentPatterns(file.language);
@@ -291,7 +291,7 @@ export const parseComments = (file: SourceFile): ParsedComment[] => {
 };
 
 /**
- * 过滤包含中文的注释，对多行注释进行逐行处理
+ * Filter comments containing Chinese and process multi-line comments line by line
  */
 export const filterChineseComments = (
   comments: ParsedComment[],
@@ -301,11 +301,11 @@ export const filterChineseComments = (
   
   for (const comment of comments) {
     if (comment.type === 'multi-line' && comment.content.includes('\n')) {
-      // 多行注释：逐行处理
+      // Multi-line comments: line-by-line processing
       const multiLineResults = processMultiLineCommentForChinese(comment, language);
       result.push(...multiLineResults);
     } else if (containsChinese(comment.content)) {
-      // 单行注释或单行多行注释
+      // Single-line comments or single-line multi-line comments
       result.push({
         ...comment,
         content: cleanCommentText(
@@ -321,7 +321,7 @@ export const filterChineseComments = (
 };
 
 /**
- * 处理多行注释，提取含中文的行作为独立的注释单元
+ * Processing multi-line comments, extracting lines containing Chinese as independent comment units
  */
 const processMultiLineCommentForChinese = (
   comment: ParsedComment,
@@ -334,18 +334,18 @@ const processMultiLineCommentForChinese = (
     const cleanedLine = cleanCommentText(line, 'multi-line', language);
     
     if (containsChinese(cleanedLine)) {
-      // 计算这一行在原始文件中的位置
+      // Calculate the position of this line in the original file
       const actualLineNumber = comment.startLine + lineIndex;
       
-      // 创建一个表示这一行的注释对象
+      // Create a comment object representing this line
       const lineComment: ChineseComment = {
         content: cleanedLine,
         startLine: actualLineNumber,
         endLine: actualLineNumber,
-        startColumn: 0, // 这个值需要更精确计算，但对于多行注释内的行处理暂时用0
+        startColumn: 0, // This value needs to be calculated more precisely, but for line processing within a multi-line comment, use 0 for the time being.
         endColumn: line.length,
         type: 'multi-line',
-        // 添加多行注释的元数据，用于后续处理
+        // Add metadata with multi-line comments for subsequent processing
         multiLineContext: {
           isPartOfMultiLine: true,
           originalComment: comment,
@@ -362,11 +362,11 @@ const processMultiLineCommentForChinese = (
 };
 
 /**
- * 检测文件中的中文注释
+ * Detect Chinese comments in files
  */
 export const detectChineseInFile = (file: SourceFile): ChineseComment[] => {
   try {
-    // 简单防护：跳过大文件
+    // Simple protection: skipping large files
     if (file.content.length > 500000) {
       // 500KB
       console.warn(
@@ -375,7 +375,7 @@ export const detectChineseInFile = (file: SourceFile): ChineseComment[] => {
       return [];
     }
 
-    // 简单防护：跳过行数过多的文件
+    // Simple protection: skip files with too many lines
     const lines = file.content.split('\n');
     if (lines.length > 10000) {
       console.warn(`⚠️  跳过多行文件: ${file.path} (${lines.length} 行)`);
@@ -391,7 +391,7 @@ export const detectChineseInFile = (file: SourceFile): ChineseComment[] => {
 };
 
 /**
- * 批量检测多个文件中的中文注释
+ * Batch detection of Chinese comments in multiple files
  */
 export const detectChineseInFiles = (files: SourceFile[]): FileWithComments[] => {
   const results: FileWithComments[] = [];
@@ -417,7 +417,7 @@ export const detectChineseInFiles = (files: SourceFile[]): FileWithComments[] =>
       );
     } catch (error) {
       console.error(`❌ 处理文件失败: ${fileName} - ${error}`);
-      // 继续处理其他文件
+      // Continue working on other documents
       continue;
     }
   }
@@ -426,7 +426,7 @@ export const detectChineseInFiles = (files: SourceFile[]): FileWithComments[] =>
 };
 
 /**
- * 获取注释统计信息
+ * Get annotation statistics
  */
 export const getCommentStats = (files: SourceFile[]): {
   totalFiles: number;
