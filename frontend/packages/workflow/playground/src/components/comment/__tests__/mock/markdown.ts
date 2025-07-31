@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getCozeCom, getCozeCn } from './util';
 
 export const commentEditorMockMarkdown = `# __**Workflow Comment**__

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /// <reference types='@coze-arch/bot-typings' />
 declare module '*.otf' {
   const content: string;
@@ -26,4 +26,4 @@ declare module '*.ttf' {
 }
 
 // TODO: remove this
-import '../node_modules/@tanstack/react-query/build/modern/types.d.ts'
+import '../node_modules/@tanstack/react-query/build/modern/types.d.ts';

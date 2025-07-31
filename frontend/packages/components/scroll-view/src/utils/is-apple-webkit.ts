@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Is it under the Webkit kernel browser of the Apple platform?
  * Note: This judgment condition is not equal to under Apple devices, because some Apple devices (such as Mac) can run non-native Webkit engine browsers, such as Chromium (Blink)

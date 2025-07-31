@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useChatAreaStoreSet } from '../context/use-chat-area-context';
 import { getIsAnswerActionLockMap } from '../../service/chat-action-lock/helper/action-lock-map';
 

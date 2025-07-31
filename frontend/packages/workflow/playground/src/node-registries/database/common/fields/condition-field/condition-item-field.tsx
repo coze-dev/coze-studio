@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect, useMemo } from 'react';
 
 import {
@@ -60,8 +60,8 @@ export const ConditionItemField = withField(
     const rightFieldDataType = useMemo(
       () =>
         ['IN', 'NOT_IN'].includes(operator || '')
-          ? (leftTypeToListTypeMaps?.[dataType as ViewVariableType] ??
-            ViewVariableType.ArrayString)
+          ? leftTypeToListTypeMaps?.[dataType as ViewVariableType] ??
+            ViewVariableType.ArrayString
           : dataType,
       [operator, dataType],
     );

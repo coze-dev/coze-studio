@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type NavigateOptions } from 'react-router-dom';
 
 import { type UseBoundStore, type StoreApi } from 'zustand';

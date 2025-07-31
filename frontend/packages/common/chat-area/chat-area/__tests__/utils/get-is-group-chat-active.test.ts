@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getIsGroupChatActive } from '../../src/utils/message-group/get-is-group-chat-active';
 import { WaitingPhase } from '../../src/store/waiting';
 

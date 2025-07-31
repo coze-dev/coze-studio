@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 declare namespace PerfectScrollbar {
   export interface Options {
     handlers?: string[];
@@ -72,7 +72,7 @@ declare class PerfectScrollbar {
   scrollbarYRight: number;
   scrollbarYTop: number;
   settings: PerfectScrollbar.Options;
-  reach: { x: 'start' | 'end' | null, y: 'start' | 'end' | null };
+  reach: { x: 'start' | 'end' | null; y: 'start' | 'end' | null };
 }
 
 export default PerfectScrollbar;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum ReportEventNames {
   /** Original name: chat_area_tts_voice_ws */
   TtsVoiceWs = 'chat_answer_action_start_TTS',

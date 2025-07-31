@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type MutableRefObject, useEffect } from 'react';
 
 import { setCache, getCache, clearCache } from '@coze-arch/bot-utils';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { generateParametersToProperties } from './generate-parameters-to-properties';
 export { generateFormNodeField } from './generate-form-node-field';
 export { generateFormSchema } from './generate-form-schema';

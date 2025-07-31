@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createRenderer, option } from '@coze-editor/editor/react';
 import universal from '@coze-editor/editor/preset-universal';
 import { mixLanguages } from '@coze-editor/editor';
@@ -36,8 +36,8 @@ const minHeightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -48,8 +48,8 @@ const lineHeightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type XYCoord } from 'react-dnd';
 
 import { inject, injectable } from 'inversify';

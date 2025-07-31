@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { WorkflowHistoryContainerModule } from './workflow-history-container-module';
 export { useClearHistory } from './hooks/use-clear-history';
 export { WorkflowHistoryConfig } from './workflow-history-config';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // import { runtimeEnv } from '@coze-arch/bot-env/runtime';
 const DEBUG_TAG = 'open_debug';
 const OPEN_CONSOLE_MARK = new RegExp(`(?:\\?|\\&)${DEBUG_TAG}=true`);
@@ -27,7 +27,7 @@ export const shouldCloseConsole = () => {
     isOpenDebug && sessionStorage.setItem(DEBUG_TAG, 'true');
   }
   // Except for the official normal environment, the console is allowed to open
-  const isProduction = !!(IS_RELEASE_VERSION );
+  const isProduction = !!IS_RELEASE_VERSION;
   console.log('IS_RELEASE_VERSION', IS_RELEASE_VERSION, isProduction);
   return !isOpenDebug && isProduction;
 };

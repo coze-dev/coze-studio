@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TableConfigButton, type TableConfigButtonProps } from '../base';
 import { knowledgeTableLocalConfigMenuContributes } from './knowledge-ide-table-config-menu-contributes';
 export const TableLocalTableConfigButton = (props: TableConfigButtonProps) => (

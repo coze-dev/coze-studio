@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type interfaces } from 'inversify';
 import { Emitter, ReactWidget } from '@coze-project-ide/client';
 

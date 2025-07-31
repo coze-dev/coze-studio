@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /// <reference types='./data_item' />
 /// <reference types='./navigator' />
 /// <reference types='./window' />

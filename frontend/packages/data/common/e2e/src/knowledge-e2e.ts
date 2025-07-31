@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum KnowledgeE2e {
   KnowledgeTab = 'knowledge.tab',
   // Knowledge Base List

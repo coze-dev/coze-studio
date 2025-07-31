@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getOpenSDKPath } from '@/chat';
 describe('chat-env', () => {
   it('getOpenSDKUrl', () => {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type CommonLogOptions, LogAction, LogLevel } from '../types';
 import { SlardarReportClient, type SlardarInstance } from '../slardar';
 import { Logger } from '../logger';
@@ -25,7 +25,7 @@ export interface LoggerCommonProperties {
 }
 
 export interface SlardarMeta {
-  meta?: Record<string, unknown>; // Combination of `categories` and `metrics`, check more: 
+  meta?: Record<string, unknown>; // Combination of `categories` and `metrics`, check more:
 }
 
 export interface CustomLog extends SlardarMeta, LoggerCommonProperties {
@@ -138,7 +138,7 @@ export class Reporter {
   /// Custom Log
   /**
    * Report an info log
-   * @param event 
+   * @param event
    * @returns
    */
   info(log: CustomLog) {
@@ -147,7 +147,7 @@ export class Reporter {
 
   /**
    * Report a success log
-   * @param event 
+   * @param event
    * @returns
    */
   success(log: CustomLog) {
@@ -157,7 +157,7 @@ export class Reporter {
 
   /**
    * Report a warning log
-   * @param event 
+   * @param event
    * @returns
    */
   warning(log: CustomLog) {
@@ -167,7 +167,7 @@ export class Reporter {
 
   /**
    * Report an error log
-   * @param event 
+   * @param event
    * @returns
    */
   error(log: CustomErrorLog) {
@@ -181,7 +181,7 @@ export class Reporter {
   /// Custom Event
   /**
    * Report a custom event
-   * @param event 
+   * @param event
    * @returns
    */
   event<EventEnum extends string>(event: CustomEvent<EventEnum>) {
@@ -191,7 +191,7 @@ export class Reporter {
 
   /**
    * Report an error event (LogLevel = 'error')
-   * @param event 
+   * @param event
    * @returns
    */
   errorEvent<EventEnum extends string>(event: ErrorEvent<EventEnum>) {
@@ -203,7 +203,7 @@ export class Reporter {
 
   /**
    * Report a success event (LogLevel = 'success')
-   * @param event 
+   * @param event
    * @returns
    */
   successEvent<EventEnum extends string>(event: CustomEvent<EventEnum>) {

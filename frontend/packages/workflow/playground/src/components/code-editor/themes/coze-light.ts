@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createTheme, tags as t } from '@coze-editor/editor/preset-code';
 import { EditorView } from '@codemirror/view';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useIDEService } from '@coze-project-ide/client';
 
 import { ProjectIDEServices } from '../plugins/create-preset-plugin/project-ide-services';

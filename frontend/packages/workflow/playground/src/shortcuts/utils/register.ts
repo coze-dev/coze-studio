@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { interfaces } from 'inversify';
 import { bindContributions } from '@flowgram-adapter/common';
 import type { WorkflowShortcutsContribution } from '@coze-workflow/render';

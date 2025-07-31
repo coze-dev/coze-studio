@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isBoolean, isNumber } from 'lodash-es';
 
 // Convert form values to testrun interface protocol format

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { definePluginCreator } from '../common';
 import { type ShortcutsHandler, ShortcutsService } from './shortcuts-service';
 import { ShortcutsContainerModule } from './shortcuts-container-module';

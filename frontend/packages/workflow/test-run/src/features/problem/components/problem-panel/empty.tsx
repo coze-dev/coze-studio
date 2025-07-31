@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { IconCozIllusDone } from '@coze-arch/coze-design/illustrations';
 
 import styles from './empty.module.less';

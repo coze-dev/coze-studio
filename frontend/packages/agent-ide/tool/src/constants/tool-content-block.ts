@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { SkillKeyEnum } from '@coze-agent-ide/tool-config';
 import { OpenBlockEvent } from '@coze-arch/bot-utils';
 type IOpenBlockEventToToolKey = Record<string, SkillKeyEnum>;

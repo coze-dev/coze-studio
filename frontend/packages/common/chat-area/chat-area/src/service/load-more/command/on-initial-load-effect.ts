@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { compute } from '@coze-common/chat-area-utils';
 
 import {
@@ -32,10 +32,7 @@ export interface LocateUnreadMessageParam {
 }
 
 export class OnInitialLoadEffect extends LoadAsyncEffect {
-  constructor(
-    envTools: LoadCommandEnvTools,
-    private data: MixInitResponse,
-  ) {
+  constructor(envTools: LoadCommandEnvTools, private data: MixInitResponse) {
     super(envTools);
   }
   /**

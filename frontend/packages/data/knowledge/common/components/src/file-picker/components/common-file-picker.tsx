@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { Tree } from '@coze-arch/coze-design';
-import type {
-  TreeProps,
-  RenderFullLabelProps,
-} from '@coze-arch/bot-semi/Tree';
+import type { TreeProps, RenderFullLabelProps } from '@coze-arch/bot-semi/Tree';
 import { CommonE2e } from '@coze-data/e2e';
 
 import { distinctFileNodes, levelMapTreeNodesToMap } from '../utils';

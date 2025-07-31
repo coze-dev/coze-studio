@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { CozAvatar, Tag, Tooltip, Typography } from '@coze-arch/coze-design';
 import { type PluginConnectorInfo } from '@coze-arch/bot-api/product_api';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isEmpty } from 'lodash-es';
 
 import {
@@ -74,8 +74,8 @@ export class ConsoleLogClient implements LoggerReportClient {
     const resolvedMsg = message
       ? message
       : eventName
-        ? `Event: ${eventName}`
-        : undefined;
+      ? `Event: ${eventName}`
+      : undefined;
     if (!action?.includes(LogAction.CONSOLE) || !resolvedMsg) {
       return;
     }

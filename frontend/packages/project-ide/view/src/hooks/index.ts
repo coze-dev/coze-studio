@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useCurrentWidget } from './use-current-widget';
 export { useCurrentWidgetFromArea } from './use-current-widget-from-area';
 export {

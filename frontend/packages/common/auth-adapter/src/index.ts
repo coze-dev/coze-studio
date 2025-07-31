@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useInitSpaceRole } from './space/use-init-space-role';
 
 export { useInitProjectRole } from './project/use-init-project-role';

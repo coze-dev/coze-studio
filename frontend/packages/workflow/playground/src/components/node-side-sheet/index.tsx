@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Node side window
  */
@@ -28,7 +28,10 @@ import {
 import classnames from 'classnames';
 import { type NodeMeta } from '@coze-workflow/base/types';
 import { concatNodeTestId } from '@coze-workflow/base';
-import { FlowNodeFormData, NodeRender } from '@flowgram-adapter/free-layout-editor';
+import {
+  FlowNodeFormData,
+  NodeRender,
+} from '@flowgram-adapter/free-layout-editor';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import {

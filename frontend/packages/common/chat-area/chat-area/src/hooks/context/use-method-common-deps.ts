@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type MethodCommonDeps } from '../../plugin/types';
 import { useLoadMoreClient } from '../../context/load-more';
 import { useChatActionLockService } from '../../context/chat-action-lock';

@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { RoleSuggestion } from './role-suggestion';
 export { RoleSuggestionSwitch } from './role-suggestion-switch';

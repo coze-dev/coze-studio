@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const ADD_NODE_BUTTON_ID = 'workflow-toolbar-add-node';

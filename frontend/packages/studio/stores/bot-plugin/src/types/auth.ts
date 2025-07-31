@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { SpaceRoleType } from '@coze-arch/bot-api/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
 export { type GetUserAuthorityData } from '@coze-arch/bot-api/plugin_develop';

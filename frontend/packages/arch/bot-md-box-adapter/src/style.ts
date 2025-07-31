@@ -13,5 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-export const dynamicImportMdBoxStyle = () => import('@bytedance/calypso/styles.css');
+
+export const dynamicImportMdBoxStyle = () =>
+  import('@bytedance/calypso/styles.css');

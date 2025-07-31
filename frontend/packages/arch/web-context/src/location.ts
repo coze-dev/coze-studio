@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // The redirect function is designed to redirect the user to a new URL.
 // It takes a single argument href which is a string representing the URL.
 // Upon invocation, it sets location.href to the provided URL, thereby navigating to the webpage.

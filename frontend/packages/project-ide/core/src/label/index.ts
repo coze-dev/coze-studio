@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { type LabelChangeEvent, LabelHandler } from './label-handler';
 export { LabelService } from './label-service';
 export {

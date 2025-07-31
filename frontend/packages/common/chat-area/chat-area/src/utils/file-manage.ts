@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import EventEmitter from 'eventemitter3';
 import { type UploadPluginInterface } from '@coze-common/chat-core';
 

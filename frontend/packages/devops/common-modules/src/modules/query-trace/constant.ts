@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const virtualStartSpanId = '-10001';
 export const rootBreakSpanId = '-10002';

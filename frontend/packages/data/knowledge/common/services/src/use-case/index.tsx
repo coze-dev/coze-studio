@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { getKnowledgeIDEQuery } from './get-knowledge-ide-query';
 export { getKnowledgeIsFullModeByBiz } from './get-knowledge-is-full-mode-by-biz';

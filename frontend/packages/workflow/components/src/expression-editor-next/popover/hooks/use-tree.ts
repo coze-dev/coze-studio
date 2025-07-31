@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useEffect, type MutableRefObject } from 'react';
 
 import { type Tree } from '@coze-arch/bot-semi';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * This hooks is used to handle the scaling of the canvas after the side sheet panel is opened, ensuring that the host node is centered and visible
  */

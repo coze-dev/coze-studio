@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRouteConfig } from '@coze-arch/bot-hooks';
 import { type TRouteConfigGlobal } from '@coze-arch/bot-hooks';
 

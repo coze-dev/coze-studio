@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const typedKeys = <T extends Parameters<typeof Object.keys>[number]>(
   o: T,
 ): Array<keyof T> => Object.keys(o) as Array<keyof T>;

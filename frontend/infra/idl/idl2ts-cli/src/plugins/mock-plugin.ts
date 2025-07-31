@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import dayjs from 'dayjs';
 import { faker } from '@faker-js/faker';
 import { type IPlugin, type Program, before } from '@coze-arch/idl2ts-plugin';

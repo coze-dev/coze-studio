@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState, type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -121,7 +121,9 @@ export const SizeSelect: FC<SizeSelectProps> = props => {
           onChange(wh);
         }}
         disabled={readonly}
-        className={`${selectClassName} ${layoutStyle === 'horizontal' ? '' : 'w-full'}`}
+        className={`${selectClassName} ${
+          layoutStyle === 'horizontal' ? '' : 'w-full'
+        }`}
         value={sizeValue}
         optionList={sizeOptionList}
         size="small"

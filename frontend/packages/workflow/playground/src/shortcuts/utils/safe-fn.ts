@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { reporter, logger } from '@coze-arch/logger';
 import { Toast } from '@coze-arch/coze-design';
 
@@ -25,7 +25,9 @@ export const safeFn =
       return fn(...args);
     } catch (e) {
       Toast.error({
-        content: `[Coze Workflow] Failed to run function: ${fn.name || '() => any'}`,
+        content: `[Coze Workflow] Failed to run function: ${
+          fn.name || '() => any'
+        }`,
       });
       console.error('Failed to run function: ', e);
       reporter.errorEvent({

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable security/detect-object-injection */
 import { type InputItem } from 'src/form-extensions/variable-providers/common';
 import {

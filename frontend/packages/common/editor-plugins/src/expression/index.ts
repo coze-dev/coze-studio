@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { Popover as Completion } from './popover';
 export { Validation } from './validation';
 export { HighlightExpressionOnActive } from './highlight';

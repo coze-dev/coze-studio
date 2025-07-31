@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useAuditInfoStore } from '@/store/audit-info';
 
 import { useQueryCollectStore } from './query-collect';

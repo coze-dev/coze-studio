@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GetHistoryMessageResponse } from '@coze-common/chat-core';
 
 import type { StoreSet } from '../../../context/chat-area-context/type';

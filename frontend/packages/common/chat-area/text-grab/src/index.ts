@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useGrab } from './hooks/use-grab';
 export { SelectionData } from './types/selection';
 export { type GrabPosition } from './types/selection';

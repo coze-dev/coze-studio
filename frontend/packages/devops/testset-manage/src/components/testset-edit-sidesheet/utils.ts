@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention -- copy */
 import Ajv from 'ajv';
 import { logger } from '@coze-arch/logger';

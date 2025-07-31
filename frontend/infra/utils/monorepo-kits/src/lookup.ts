@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getRushConfiguration } from './rush-config';
 
 export const lookupTo = (to: string) => {

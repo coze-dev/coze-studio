@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TableConfiguration } from './configuration';
 export { TablePreview } from './preview';
 export { TableProcessing } from './processing';

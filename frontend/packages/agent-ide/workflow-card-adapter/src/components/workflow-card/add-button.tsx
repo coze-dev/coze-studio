@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { AddButton as BaseAddButton } from '@coze-agent-ide/tool';
 import { I18n } from '@coze-arch/i18n';
 

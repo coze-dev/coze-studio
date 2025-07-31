@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FileItem } from '../types';
 import { sizeValidate } from './size-validate';
 import { imageSizeValidate, type ImageSizeRule } from './image-size-validate';

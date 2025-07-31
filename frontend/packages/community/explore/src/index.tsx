@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ExploreSubMenu } from './components/sub-menu';
 export { TemplatePage } from './pages/template';
 export { PluginPage } from './pages/plugin';

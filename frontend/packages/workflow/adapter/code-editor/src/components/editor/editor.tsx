@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type FC, lazy, Suspense, useMemo } from 'react';
 
 import { type EditorOtherProps, type EditorProps } from '../../interface';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
 import { I18n } from '@coze-arch/i18n';
 import { InsertInputSlotAction } from '@coze-common/editor-plugins/actions';

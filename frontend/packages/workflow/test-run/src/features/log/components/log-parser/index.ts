@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { OutputLogParser } from './output-log-parser';
 export { ConditionLogParser } from './condition-log-parser';
 export { NormalLogParser } from './normal-log-parser';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BizAgentIdeKnowledgeIDENavBar } from '@coze-data/knowledge-ide-base/features/nav-bar/biz-agent-ide';
 
 import { BaseKnowledgeIDE, type BaseKnowledgeIDEProps } from '../base';

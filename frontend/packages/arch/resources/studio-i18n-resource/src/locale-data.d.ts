@@ -13,862 +13,1566 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // 文件由 pnpm dl-i18n 自动生成
 import { type ReactNode } from 'react';
 
 // #region I18nOptionsMap
 export interface I18nOptionsMap {
   '10k_point_resource_coze_token': { num: ReactNode /* string */ };
-  'AddSuccessToast': { name: ReactNode /* string */ };
-  'Coze_model_cost_coze_token': { count: ReactNode /* string */ };
-  'Coze_model_cost_input_token': { count: ReactNode /* string */ };
-  'Coze_model_cost_input_token_m': { count: ReactNode /* string */ };
-  'Coze_model_cost_output_token': { count: ReactNode /* string */ };
-  'Coze_model_cost_output_token_m': { count: ReactNode /* string */ };
-  'Coze_model_cost_token': { count: ReactNode /* string */ };
-  'Coze_model_cost_token_m': { count: ReactNode /* string */, dollar_count: ReactNode /* string */ };
-  'Coze_token_body': { num: ReactNode /* number */ };
-  'Coze_token_history_action_04': { bot_name: ReactNode /* string */ };
-  'Coze_token_history_action_05': { workflow_name: ReactNode /* string */ };
-  'Coze_token_history_action_06': { bot_name: ReactNode /* string */, publishing_platform_name: ReactNode /* string */ };
-  'Coze_token_history_action_09': { bot_name: ReactNode /* string */ };
-  'Coze_token_history_action_10': { bot_name: ReactNode /* string */ };
-  'Coze_token_history_action_12': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
-  'Coze_token_history_action_13': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
-  'Coze_token_history_action_14': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
-  'Coze_token_history_action_15': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
-  'Coze_token_history_action_16': { workflow_name: ReactNode /* string */ };
-  'Coze_token_history_action_app_1': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, app_name: ReactNode /* string */ };
-  'Coze_token_history_action_app_3': { app_name: ReactNode /* string */ };
-  'Coze_token_history_action_app_4': { app_name: ReactNode /* string */ };
-  'Coze_token_history_action_app_5': { app_name: ReactNode /* string */ };
-  'Coze_token_history_action_app_6': { app_name: ReactNode /* string */, publishing_platform_name: ReactNode /* string */ };
-  'Coze_token_task_amount': { amount: ReactNode /* string */ };
-  'Force_check_detail_open_tip': { time: ReactNode /* string */ };
-  'Force_guide_open_detail': { time: ReactNode /* string */ };
-  'Force_my_questionnaire_tip': { time: ReactNode /* string */ };
-  'Force_my_tip_1': { name: ReactNode /* string */ };
-  'Force_sign_in_tip_detail': { time: ReactNode /* string */ };
-  'Imageflow_Store_case_popup2': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
-  'Imageflow_Store_testrun_expire': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
-  'Manual_crawling_017': { version: ReactNode /* string */ };
-  'Plugin_update_info_text': { number: ReactNode /* string */, array: ReactNode /* string */ };
-  'account_ban': { uid: ReactNode /* string */ };
-  'account_merge_oauth_success2': { phone_number: ReactNode /* string */ };
-  'agent_prompt_editor_insert_placeholder': { keymap: ReactNode /* string */ };
-  'agentflow_addbot_published_time': { time: ReactNode /* string */ };
-  'analytic_query_detail_tips_for_outputmode': { outputMode: ReactNode /* string */ };
-  'analytic_query_detail_topology_tooltip': { errorCount: ReactNode /* string */, callCount: ReactNode /* string */ };
-  'analytic_query_export_content': { maxExportCount: ReactNode /* string */, selectedExportCount: ReactNode /* string */ };
-  'analytic_query_security_verify_context': { agreementName: ReactNode /* string */ };
-  'analytics_overview_total_count': { count: ReactNode /* string */ };
-  'analytics_query_invoke': { name: ReactNode /* string */ };
-  'analytics_timepicker_last_days': { count: ReactNode /* string */ };
-  'analytics_timepicker_last_months': { count: ReactNode /* string */ };
-  'analytics_timepicker_last_weeks': { count: ReactNode /* string */ };
-  'api_analytics_err_code_dist_detail': { coze_err_code: ReactNode /* string */ };
-  'api_analytics_previcus_x_days': { num: ReactNode /* string */ };
-  'api_analytics_x_days': { num: ReactNode /* string */ };
-  'api_playground_add_params': { param: ReactNode /* string */ };
-  'api_playground_notification': { doc_link: ReactNode /* string */ };
-  'api_sdk_published': { coze_token: ReactNode /* string */ };
-  'app_auth_error_tips': { coze_docs: ReactNode /* string */ };
-  'app_publish_sdk_step_1': { doc_link: ReactNode /* string */ };
-  'apps_auth_app_name': { app_name: ReactNode /* string */ };
-  'apps_config_pp_tips': { coze_docs: ReactNode /* string */ };
-  'audit_unsuccess_general_type': { link: ReactNode /* string */ };
-  'auth_apps_notice': { auth_docs: ReactNode /* string */ };
-  'auth_service_token_1': { date: ReactNode /* string */ };
-  'binding_array_data_label': { key: ReactNode /* string */ };
-  'binding_array_item_placeholder': { key: ReactNode /* string */ };
-  'binding_array_item_verify': { key: ReactNode /* string */ };
+  AddSuccessToast: { name: ReactNode /* string */ };
+  Coze_model_cost_coze_token: { count: ReactNode /* string */ };
+  Coze_model_cost_input_token: { count: ReactNode /* string */ };
+  Coze_model_cost_input_token_m: { count: ReactNode /* string */ };
+  Coze_model_cost_output_token: { count: ReactNode /* string */ };
+  Coze_model_cost_output_token_m: { count: ReactNode /* string */ };
+  Coze_model_cost_token: { count: ReactNode /* string */ };
+  Coze_model_cost_token_m: {
+    count: ReactNode /* string */;
+    dollar_count: ReactNode /* string */;
+  };
+  Coze_token_body: { num: ReactNode /* number */ };
+  Coze_token_history_action_04: { bot_name: ReactNode /* string */ };
+  Coze_token_history_action_05: { workflow_name: ReactNode /* string */ };
+  Coze_token_history_action_06: {
+    bot_name: ReactNode /* string */;
+    publishing_platform_name: ReactNode /* string */;
+  };
+  Coze_token_history_action_09: { bot_name: ReactNode /* string */ };
+  Coze_token_history_action_10: { bot_name: ReactNode /* string */ };
+  Coze_token_history_action_12: {
+    used_count: ReactNode /* string */;
+    total_count: ReactNode /* string */;
+  };
+  Coze_token_history_action_13: {
+    used_count: ReactNode /* string */;
+    total_count: ReactNode /* string */;
+  };
+  Coze_token_history_action_14: {
+    plugin_name: ReactNode /* string */;
+    workflow_name: ReactNode /* string */;
+    bot_name: ReactNode /* string */;
+  };
+  Coze_token_history_action_15: {
+    plugin_name: ReactNode /* string */;
+    workflow_name: ReactNode /* string */;
+    bot_name: ReactNode /* string */;
+  };
+  Coze_token_history_action_16: { workflow_name: ReactNode /* string */ };
+  Coze_token_history_action_app_1: {
+    plugin_name: ReactNode /* string */;
+    workflow_name: ReactNode /* string */;
+    app_name: ReactNode /* string */;
+  };
+  Coze_token_history_action_app_3: { app_name: ReactNode /* string */ };
+  Coze_token_history_action_app_4: { app_name: ReactNode /* string */ };
+  Coze_token_history_action_app_5: { app_name: ReactNode /* string */ };
+  Coze_token_history_action_app_6: {
+    app_name: ReactNode /* string */;
+    publishing_platform_name: ReactNode /* string */;
+  };
+  Coze_token_task_amount: { amount: ReactNode /* string */ };
+  Force_check_detail_open_tip: { time: ReactNode /* string */ };
+  Force_guide_open_detail: { time: ReactNode /* string */ };
+  Force_my_questionnaire_tip: { time: ReactNode /* string */ };
+  Force_my_tip_1: { name: ReactNode /* string */ };
+  Force_sign_in_tip_detail: { time: ReactNode /* string */ };
+  Imageflow_Store_case_popup2: {
+    entity_type: ReactNode /* string */;
+    entity_name: ReactNode /* string */;
+  };
+  Imageflow_Store_testrun_expire: {
+    entity_type: ReactNode /* string */;
+    entity_name: ReactNode /* string */;
+  };
+  Manual_crawling_017: { version: ReactNode /* string */ };
+  Plugin_update_info_text: {
+    number: ReactNode /* string */;
+    array: ReactNode /* string */;
+  };
+  account_ban: { uid: ReactNode /* string */ };
+  account_merge_oauth_success2: { phone_number: ReactNode /* string */ };
+  agent_prompt_editor_insert_placeholder: { keymap: ReactNode /* string */ };
+  agentflow_addbot_published_time: { time: ReactNode /* string */ };
+  analytic_query_detail_tips_for_outputmode: {
+    outputMode: ReactNode /* string */;
+  };
+  analytic_query_detail_topology_tooltip: {
+    errorCount: ReactNode /* string */;
+    callCount: ReactNode /* string */;
+  };
+  analytic_query_export_content: {
+    maxExportCount: ReactNode /* string */;
+    selectedExportCount: ReactNode /* string */;
+  };
+  analytic_query_security_verify_context: {
+    agreementName: ReactNode /* string */;
+  };
+  analytics_overview_total_count: { count: ReactNode /* string */ };
+  analytics_query_invoke: { name: ReactNode /* string */ };
+  analytics_timepicker_last_days: { count: ReactNode /* string */ };
+  analytics_timepicker_last_months: { count: ReactNode /* string */ };
+  analytics_timepicker_last_weeks: { count: ReactNode /* string */ };
+  api_analytics_err_code_dist_detail: { coze_err_code: ReactNode /* string */ };
+  api_analytics_previcus_x_days: { num: ReactNode /* string */ };
+  api_analytics_x_days: { num: ReactNode /* string */ };
+  api_playground_add_params: { param: ReactNode /* string */ };
+  api_playground_notification: { doc_link: ReactNode /* string */ };
+  api_sdk_published: { coze_token: ReactNode /* string */ };
+  app_auth_error_tips: { coze_docs: ReactNode /* string */ };
+  app_publish_sdk_step_1: { doc_link: ReactNode /* string */ };
+  apps_auth_app_name: { app_name: ReactNode /* string */ };
+  apps_config_pp_tips: { coze_docs: ReactNode /* string */ };
+  audit_unsuccess_general_type: { link: ReactNode /* string */ };
+  auth_apps_notice: { auth_docs: ReactNode /* string */ };
+  auth_service_token_1: { date: ReactNode /* string */ };
+  binding_array_data_label: { key: ReactNode /* string */ };
+  binding_array_item_placeholder: { key: ReactNode /* string */ };
+  binding_array_item_verify: { key: ReactNode /* string */ };
   'bmv_a_total_of_{num}_whitelisted_users': { num: ReactNode /* string */ };
-  'bmv_gray_publish_help_tooltip': { link: ReactNode /* string */ };
+  bmv_gray_publish_help_tooltip: { link: ReactNode /* string */ };
   'bmv_lane_{placeholder1}': { placeholder1: ReactNode /* string */ };
-  'bmv_published_cnt_channels': { cnt: ReactNode /* string */ };
-  'bmv_total_count_of_black_list': { num: ReactNode /* string */ };
-  'bmv_{placeholder0}_there_are_more_than_8_lane_versions__please_modify_the_lane_name_': { placeholder0: ReactNode /* string */ };
-  'bot_autosave_saved': { time: ReactNode /* string */ };
-  'bot_database_add_field': { number: ReactNode /* string */ };
-  'bot_detail_tips_private_knowledge': { num: ReactNode /* string */ };
-  'bot_detail_tips_private_plugin': { num: ReactNode /* string */ };
-  'bot_detail_tips_private_workflow': { num: ReactNode /* string */ };
-  'bot_dev_privacy_setting_privacy_template_2': { privacy_template: ReactNode /* string */ };
-  'bot_edit_available_for_cici': { platform: ReactNode /* string */ };
-  'bot_edit_dataset_added_toast': { dataset_name: ReactNode /* string */ };
-  'bot_edit_dataset_process_error': { file_names: ReactNode /* string */ };
-  'bot_edit_dataset_removed_toast': { dataset_name: ReactNode /* string */ };
-  'bot_edit_page_plugin_list_plugin_has_n_tools': { n: ReactNode /* string */ };
-  'bot_edit_page_plugin_list_plugin_n_bots_using': { n: ReactNode /* string */ };
-  'bot_edit_tool_added_toast': { api_name: ReactNode /* string */ };
-  'bot_edit_tool_added_toast_error': { api_name: ReactNode /* string */ };
-  'bot_edit_tool_removed_toast': { api_name: ReactNode /* string */ };
-  'bot_edit_voices_modal_description': { platform: ReactNode /* string */ };
-  'bot_edit_voices_title_description': { platform: ReactNode /* string */ };
-  'bot_preview_attach': { placeholder: ReactNode /* string */ };
-  'bot_preview_attach_0319': { placeholder: ReactNode /* string */ };
-  'bot_publish_bind_error': { key_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
-  'bot_publish_disconnect': { platform: ReactNode /* string */ };
-  'bot_publish_disconnect_desc': { platform: ReactNode /* string */ };
-  'bot_publish_disconnect_title': { platform: ReactNode /* string */ };
-  'bot_publish_feishu_success_flow': { platform: ReactNode /* string */ };
-  'bot_publish_field_placeholder': { field: ReactNode /* string */ };
-  'bot_publish_flow': { platform: ReactNode /* string */ };
-  'bot_publish_flow_explain': { platform: ReactNode /* string */ };
-  'bot_publish_offline_notice': { platform: ReactNode /* string */ };
-  'bot_publish_offline_notice_no_certain_time': { platform: ReactNode /* string */ };
-  'bot_publish_result_fail_text': { num: ReactNode /* number */ };
-  'bot_publish_result_success_text': { num: ReactNode /* number */ };
-  'bot_publish_select_desc_compliance_new': { publish_terms_title: ReactNode /* string */ };
-  'bot_publish_token_expired_notice': { platform: ReactNode /* string */ };
-  'bot_pulish_offline_modal_title1': { platform: ReactNode /* string */ };
-  'bot_pulish_offline_modal_title2': { platform_number: ReactNode /* string */ };
-  'bot_task_preset_day_of_month': { day: ReactNode /* number */ };
-  'bot_task_preset_day_of_week': { day: ReactNode /* number */ };
-  'bot_task_preset_everyday_task': { time: ReactNode /* string */ };
-  'bot_task_preset_everyweek_task': { time: ReactNode /* string */, day: ReactNode /* string */ };
-  'bot_task_preset_interval_task': { time: ReactNode /* string */, day: ReactNode /* string */ };
-  'bot_task_preset_monthly_task': { time: ReactNode /* string */, day: ReactNode /* number */ };
-  'bot_to_doubao_popup_modle_plugin_unableshare_desc2': { apply_link: ReactNode /* string */ };
-  'bot_to_doubao_popup_plugin_unableshare_desc2': { apply_link: ReactNode /* string */ };
+  bmv_published_cnt_channels: { cnt: ReactNode /* string */ };
+  bmv_total_count_of_black_list: { num: ReactNode /* string */ };
+  'bmv_{placeholder0}_there_are_more_than_8_lane_versions__please_modify_the_lane_name_': {
+    placeholder0: ReactNode /* string */;
+  };
+  bot_autosave_saved: { time: ReactNode /* string */ };
+  bot_database_add_field: { number: ReactNode /* string */ };
+  bot_detail_tips_private_knowledge: { num: ReactNode /* string */ };
+  bot_detail_tips_private_plugin: { num: ReactNode /* string */ };
+  bot_detail_tips_private_workflow: { num: ReactNode /* string */ };
+  bot_dev_privacy_setting_privacy_template_2: {
+    privacy_template: ReactNode /* string */;
+  };
+  bot_edit_available_for_cici: { platform: ReactNode /* string */ };
+  bot_edit_dataset_added_toast: { dataset_name: ReactNode /* string */ };
+  bot_edit_dataset_process_error: { file_names: ReactNode /* string */ };
+  bot_edit_dataset_removed_toast: { dataset_name: ReactNode /* string */ };
+  bot_edit_page_plugin_list_plugin_has_n_tools: { n: ReactNode /* string */ };
+  bot_edit_page_plugin_list_plugin_n_bots_using: { n: ReactNode /* string */ };
+  bot_edit_tool_added_toast: { api_name: ReactNode /* string */ };
+  bot_edit_tool_added_toast_error: { api_name: ReactNode /* string */ };
+  bot_edit_tool_removed_toast: { api_name: ReactNode /* string */ };
+  bot_edit_voices_modal_description: { platform: ReactNode /* string */ };
+  bot_edit_voices_title_description: { platform: ReactNode /* string */ };
+  bot_preview_attach: { placeholder: ReactNode /* string */ };
+  bot_preview_attach_0319: { placeholder: ReactNode /* string */ };
+  bot_publish_bind_error: {
+    key_name: ReactNode /* string */;
+    bot_name: ReactNode /* string */;
+  };
+  bot_publish_disconnect: { platform: ReactNode /* string */ };
+  bot_publish_disconnect_desc: { platform: ReactNode /* string */ };
+  bot_publish_disconnect_title: { platform: ReactNode /* string */ };
+  bot_publish_feishu_success_flow: { platform: ReactNode /* string */ };
+  bot_publish_field_placeholder: { field: ReactNode /* string */ };
+  bot_publish_flow: { platform: ReactNode /* string */ };
+  bot_publish_flow_explain: { platform: ReactNode /* string */ };
+  bot_publish_offline_notice: { platform: ReactNode /* string */ };
+  bot_publish_offline_notice_no_certain_time: {
+    platform: ReactNode /* string */;
+  };
+  bot_publish_result_fail_text: { num: ReactNode /* number */ };
+  bot_publish_result_success_text: { num: ReactNode /* number */ };
+  bot_publish_select_desc_compliance_new: {
+    publish_terms_title: ReactNode /* string */;
+  };
+  bot_publish_token_expired_notice: { platform: ReactNode /* string */ };
+  bot_pulish_offline_modal_title1: { platform: ReactNode /* string */ };
+  bot_pulish_offline_modal_title2: { platform_number: ReactNode /* string */ };
+  bot_task_preset_day_of_month: { day: ReactNode /* number */ };
+  bot_task_preset_day_of_week: { day: ReactNode /* number */ };
+  bot_task_preset_everyday_task: { time: ReactNode /* string */ };
+  bot_task_preset_everyweek_task: {
+    time: ReactNode /* string */;
+    day: ReactNode /* string */;
+  };
+  bot_task_preset_interval_task: {
+    time: ReactNode /* string */;
+    day: ReactNode /* string */;
+  };
+  bot_task_preset_monthly_task: {
+    time: ReactNode /* string */;
+    day: ReactNode /* number */;
+  };
+  bot_to_doubao_popup_modle_plugin_unableshare_desc2: {
+    apply_link: ReactNode /* string */;
+  };
+  bot_to_doubao_popup_plugin_unableshare_desc2: {
+    apply_link: ReactNode /* string */;
+  };
   'bound_{page}': { page: ReactNode /* string */ };
-  'builder_preview_channel': { channel: ReactNode /* string */ };
-  'builder_preview_doubao': { channel: ReactNode /* string */ };
-  'builder_preview_no_component': { channel: ReactNode /* string */ };
-  'bz_add_coop_failed': { max_coop: ReactNode /* string */ };
-  'bz_batch_add_limit_20': { limit_cnt: ReactNode /* string */ };
-  'bz_coop_limit_reached_upgrade_for_more': { type_name: ReactNode /* string */ };
-  'bz_coop_upgrade_for_more': { max_coop: ReactNode /* string */ };
-  'bz_max_cnt_bots_or_workflows': { max_cnt: ReactNode /* string */ };
-  'bz_max_coop_collaborators': { max_coop: ReactNode /* string */ };
-  'bz_reache_max': { max_cnt: ReactNode /* string */, type_name: ReactNode /* string */ };
-  'bz_reache_max2': { enable_cnt: ReactNode /* string */, type_name: ReactNode /* string */, max_cnt: ReactNode /* string */ };
-  'card_builder_api_add_apiCategory': { name: ReactNode /* string */ };
-  'card_builder_api_add_config': { type: ReactNode /* string */, name: ReactNode /* string */ };
-  'card_builder_api_add_request': { name: ReactNode /* string */ };
-  'card_builder_api_copy_config': { type: ReactNode /* string */, name: ReactNode /* string */ };
-  'card_builder_api_copy_request': { name: ReactNode /* string */ };
-  'card_builder_api_delete_apiCategory': { name: ReactNode /* string */ };
-  'card_builder_api_delete_config': { name: ReactNode /* string */ };
-  'card_builder_api_delete_request': { name: ReactNode /* string */ };
-  'card_builder_api_httpConfig_save_error': { name: ReactNode /* string */ };
-  'card_builder_api_httpConfig_save_success': { name: ReactNode /* string */ };
-  'card_builder_api_http_var_name': { name: ReactNode /* string */ };
-  'card_builder_api_list_item_delete_content': { name: ReactNode /* string */ };
-  'card_builder_api_rpcConfig_save_error': { name: ReactNode /* string */ };
-  'card_builder_api_rpcConfig_save_success': { name: ReactNode /* string */ };
-  'card_builder_api_rpc_delete_success': { name: ReactNode /* string */ };
-  'card_builder_api_rpc_response_columns_data': { name: ReactNode /* string */ };
-  'card_builder_api_rpc_save_error': { name: ReactNode /* string */ };
-  'card_builder_api_rpc_save_success': { name: ReactNode /* string */ };
-  'card_builder_api_update_apiCategory': { name: ReactNode /* string */, rename: ReactNode /* string */ };
-  'card_builder_api_update_config': { name: ReactNode /* string */ };
-  'card_builder_api_update_request': { name: ReactNode /* string */ };
-  'card_builder_atomAction_add_slotBlock_title': { name: ReactNode /* string */ };
-  'card_builder_atomAction_destroy_block': { name: ReactNode /* string */ };
-  'card_builder_atomAction_redo_action': { text: ReactNode /* string */ };
-  'card_builder_atomAction_undo_action': { text: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockAdvancedValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockLogicValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockPosition': { name: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockPropsValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockTitleValue': { name: ReactNode /* string */, title: ReactNode /* string */ };
-  'card_builder_atomAction_update_blockWorkspacePropsValue': { desc: ReactNode /* string */ };
-  'card_builder_atomAction_update_slotPropsValue': { fieldName: ReactNode /* string */, slotName: ReactNode /* string */, blockName: ReactNode /* string */ };
-  'card_builder_audit_banner_pending_text': { version: ReactNode /* string */ };
-  'card_builder_audit_banner_rejected_text': { version: ReactNode /* string */ };
-  'card_builder_builder_preview_channel': { channel: ReactNode /* string */ };
-  'card_builder_builder_preview_doubao': { channel: ReactNode /* string */ };
-  'card_builder_builder_preview_no_component': { channel: ReactNode /* string */ };
-  'card_builder_builder_publish_version_verify_compare': { lastVersion: ReactNode /* string */ };
-  'card_builder_builtinLogic_editor_tip': { pageTitle: ReactNode /* string */ };
-  'card_builder_codeIn_update_blocksInfo': { elementType: ReactNode /* string */ };
-  'card_builder_codeIn_update_blocksVersion': { pkgName: ReactNode /* string */, version: ReactNode /* string */ };
-  'card_builder_compList_panel_block_number': { count: ReactNode /* string */ };
-  'card_builder_compList_panel_block_number_selected': { count: ReactNode /* string */ };
-  'card_builder_compList_panel_block_selected_block_number': { count: ReactNode /* string */ };
-  'card_builder_compList_panel_block_selected_package_number': { count: ReactNode /* string */ };
-  'card_builder_compList_panel_category_hidden': { count: ReactNode /* string */ };
-  'card_builder_copilot_create_snapshot_desc': { text: ReactNode /* string */ };
-  'card_builder_coworkInfo_user_editing': { user: ReactNode /* string */ };
-  'card_builder_coworkInfo_user_viewing': { user: ReactNode /* string */ };
-  'card_builder_depsManager_atomAction_deleteBlock': { pkgName: ReactNode /* string */ };
-  'card_builder_depsManager_atomAction_updateBlock': { pkgName: ReactNode /* string */, version: ReactNode /* string */, targetVersion: ReactNode /* string */ };
-  'card_builder_depsManager_panel_block_number': { count: ReactNode /* string */ };
-  'card_builder_depsManager_panel_block_update_content': { updateVersion: ReactNode /* string */ };
-  'card_builder_envs_add_env': { name: ReactNode /* string */ };
-  'card_builder_envs_add_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
-  'card_builder_envs_copy_env': { name: ReactNode /* string */ };
-  'card_builder_envs_delete_env': { name: ReactNode /* string */ };
-  'card_builder_envs_delete_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
-  'card_builder_envs_import_var': { name: ReactNode /* string */ };
-  'card_builder_envs_list_delete_content': { name: ReactNode /* string */ };
-  'card_builder_envs_update_env': { name: ReactNode /* string */ };
-  'card_builder_envs_update_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
-  'card_builder_envs_var_list_delete_content': { name: ReactNode /* string */ };
-  'card_builder_envs_var_panel_delete_content': { name: ReactNode /* string */ };
-  'card_builder_history_create_snapshot_desc': { text: ReactNode /* string */ };
-  'card_builder_history_snapshot_create_desc': { text: ReactNode /* string */ };
-  'card_builder_history_snapshot_restore': { text: ReactNode /* string */ };
-  'card_builder_history_userAction_list_page': { label: ReactNode /* string */ };
-  'card_builder_history_userAction_restore': { text: ReactNode /* string */ };
-  'card_builder_logicFlow_list_delete_content': { name: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_addLogic': { name: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_copyLogic': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_deleteGroup': { title: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_deleteLogic': { name: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_updateGroup': { title: ReactNode /* string */ };
-  'card_builder_logicFlow_userAction_updateLogic': { name: ReactNode /* string */ };
-  'card_builder_pageManager_add_dir': { name: ReactNode /* string */ };
-  'card_builder_pageManager_add_page': { name: ReactNode /* string */ };
-  'card_builder_pageManager_copy_page': { name: ReactNode /* string */ };
-  'card_builder_pageManager_create_name_label': { name: ReactNode /* string */ };
-  'card_builder_pageManager_create_path_label': { name: ReactNode /* string */ };
-  'card_builder_pageManager_delete_content': { name: ReactNode /* string */ };
-  'card_builder_pageManager_delete_dir': { name: ReactNode /* string */ };
-  'card_builder_pageManager_delete_page': { name: ReactNode /* string */ };
-  'card_builder_pageManager_move_dir': { srcName: ReactNode /* string */ };
-  'card_builder_pageManager_move_page': { srcName: ReactNode /* string */ };
-  'card_builder_pageManager_update_dir': { name: ReactNode /* string */ };
-  'card_builder_pageManager_update_page': { name: ReactNode /* string */ };
-  'card_builder_plural': { num: ReactNode /* number */ };
-  'card_builder_redoUndo_error': { type: ReactNode /* string */ };
-  'card_builder_releaseBtn_releaseApp_error': { message: ReactNode /* string */ };
-  'card_builder_releaseBtn_releaseApp_pkgMode_rec': { name: ReactNode /* string */ };
-  'card_builder_sandbox_cowork_restore_content': { operator: ReactNode /* string */ };
-  'card_builder_slot_formula_block_title': { slotTitle: ReactNode /* string */, blockTitle: ReactNode /* string */ };
-  'card_builder_template_create_snapshot_desc': { text: ReactNode /* string */ };
-  'card_builder_userFunc_list_item_delete_content': { name: ReactNode /* string */ };
-  'card_builder_userFunc_userAction_addFunc': { name: ReactNode /* string */ };
-  'card_builder_userFunc_userAction_copyFunc': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
-  'card_builder_userFunc_userAction_deleteFunc': { name: ReactNode /* string */ };
-  'card_builder_userFunc_userAction_editFunc': { name: ReactNode /* string */ };
-  'card_builder_userFunc_userAction_updateFunc': { name: ReactNode /* string */ };
-  'card_builder_userVar_delete_content': { name: ReactNode /* string */ };
-  'card_builder_userVar_formula_app': { name: ReactNode /* string */ };
-  'card_builder_userVar_formula_page': { name: ReactNode /* string */ };
-  'card_builder_userVar_userAction_addVar': { name: ReactNode /* string */ };
-  'card_builder_userVar_userAction_copyVar': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
-  'card_builder_userVar_userAction_deleteVar': { name: ReactNode /* string */ };
-  'card_builder_userVar_userAction_editVar': { name: ReactNode /* string */ };
-  'card_builder_userVar_userAction_updateVar': { name: ReactNode /* string */ };
-  'card_custom_bind_data_to_element': { data_element: ReactNode /* string */ };
-  'card_custom_bind_data_to_list': { card_list_name: ReactNode /* string */ };
-  'card_custom_code_caution': { cici_or_doubao: ReactNode /* string */ };
-  'card_custom_tips_content_b': { bot_studio_name: ReactNode /* string */ };
-  'card_list_bind_placeholder': { key: ReactNode /* string */ };
-  'card_not_support_max_list': { num: ReactNode /* string */ };
-  'card_select_path_placeholder': { path: ReactNode /* string */ };
-  'card_update_step_title': { name: ReactNode /* string */ };
-  'chatInitRetry': { retry: ReactNode /* string */ };
-  'chat_geolocation_auth_allow_tip': { plugin: ReactNode /* string */ };
-  'chat_geolocation_auth_decline_tip': { plugin: ReactNode /* string */ };
-  'chat_geolocation_auth_request_message': { plugin_name: ReactNode /* string */ };
-  'chatflow_agent_input_placeholder': { text: ReactNode /* string */ };
-  'chatflow_agent_toast_feedback_fail': { feedback: ReactNode /* string */ };
-  'chatflow_agent_toast_feedback_success': { feedback: ReactNode /* string */ };
-  'chatflow_preview_take_over': { agentName: ReactNode /* string */ };
-  'coding_ability_leaderboard_top_n': { n: ReactNode /* string */ };
-  'coding_ability_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'collaborate_collaborater_added_partial_toast': { users: ReactNode /* string */ };
-  'collaborate_collaborater_count': { number_of_collaborators: ReactNode /* string */ };
-  'collaborate_collaborater_count_1': { number_of_collaborators: ReactNode /* string */ };
-  'collaborate_collaborater_owner_tooltip': { username: ReactNode /* string */ };
-  'community_Button_view_all_comments': { comment_num: ReactNode /* string */ };
-  'community_Image_uploading': { upload_num: ReactNode /* string */, total_num: ReactNode /* string */ };
-  'community_Please_enter_add_a_comment': { user_name: ReactNode /* string */ };
-  'community_Please_enter_please_enter_your_comment': { user_name: ReactNode /* string */ };
-  'community_Subtitle_comments': { num: ReactNode /* number */ };
-  'community_notification_app_msg_plural': { count: ReactNode /* string */, project_name: ReactNode /* string */ };
-  'community_notification_bot_msg': { bot_name: ReactNode /* string */, num: ReactNode /* string */ };
-  'community_notification_bot_msg_plural': { num: ReactNode /* number */ };
-  'community_notification_comment_msg': { num: ReactNode /* string */, post_title: ReactNode /* string */ };
-  'community_notification_comment_msg_plural': { num: ReactNode /* number */ };
-  'community_notification_post_msg': { post_title: ReactNode /* string */, num: ReactNode /* string */ };
-  'community_notification_post_msg_plural': { num: ReactNode /* number */ };
-  'community_notification_template_msg_plural': { count: ReactNode /* string */, entity_name: ReactNode /* string */ };
-  'community_num_comment': { comment_num: ReactNode /* string */ };
-  'community_num_comments': { comment_num: ReactNode /* string */ };
-  'community_share_conver_title': { bot_name: ReactNode /* string */ };
-  'community_time_date': { mm: ReactNode /* string */, dd: ReactNode /* string */, yyyy: ReactNode /* string */ };
-  'community_time_day': { n: ReactNode /* string */ };
-  'community_time_hour': { n: ReactNode /* string */ };
-  'community_time_min': { n: ReactNode /* string */ };
+  builder_preview_channel: { channel: ReactNode /* string */ };
+  builder_preview_doubao: { channel: ReactNode /* string */ };
+  builder_preview_no_component: { channel: ReactNode /* string */ };
+  bz_add_coop_failed: { max_coop: ReactNode /* string */ };
+  bz_batch_add_limit_20: { limit_cnt: ReactNode /* string */ };
+  bz_coop_limit_reached_upgrade_for_more: { type_name: ReactNode /* string */ };
+  bz_coop_upgrade_for_more: { max_coop: ReactNode /* string */ };
+  bz_max_cnt_bots_or_workflows: { max_cnt: ReactNode /* string */ };
+  bz_max_coop_collaborators: { max_coop: ReactNode /* string */ };
+  bz_reache_max: {
+    max_cnt: ReactNode /* string */;
+    type_name: ReactNode /* string */;
+  };
+  bz_reache_max2: {
+    enable_cnt: ReactNode /* string */;
+    type_name: ReactNode /* string */;
+    max_cnt: ReactNode /* string */;
+  };
+  card_builder_api_add_apiCategory: { name: ReactNode /* string */ };
+  card_builder_api_add_config: {
+    type: ReactNode /* string */;
+    name: ReactNode /* string */;
+  };
+  card_builder_api_add_request: { name: ReactNode /* string */ };
+  card_builder_api_copy_config: {
+    type: ReactNode /* string */;
+    name: ReactNode /* string */;
+  };
+  card_builder_api_copy_request: { name: ReactNode /* string */ };
+  card_builder_api_delete_apiCategory: { name: ReactNode /* string */ };
+  card_builder_api_delete_config: { name: ReactNode /* string */ };
+  card_builder_api_delete_request: { name: ReactNode /* string */ };
+  card_builder_api_httpConfig_save_error: { name: ReactNode /* string */ };
+  card_builder_api_httpConfig_save_success: { name: ReactNode /* string */ };
+  card_builder_api_http_var_name: { name: ReactNode /* string */ };
+  card_builder_api_list_item_delete_content: { name: ReactNode /* string */ };
+  card_builder_api_rpcConfig_save_error: { name: ReactNode /* string */ };
+  card_builder_api_rpcConfig_save_success: { name: ReactNode /* string */ };
+  card_builder_api_rpc_delete_success: { name: ReactNode /* string */ };
+  card_builder_api_rpc_response_columns_data: { name: ReactNode /* string */ };
+  card_builder_api_rpc_save_error: { name: ReactNode /* string */ };
+  card_builder_api_rpc_save_success: { name: ReactNode /* string */ };
+  card_builder_api_update_apiCategory: {
+    name: ReactNode /* string */;
+    rename: ReactNode /* string */;
+  };
+  card_builder_api_update_config: { name: ReactNode /* string */ };
+  card_builder_api_update_request: { name: ReactNode /* string */ };
+  card_builder_atomAction_add_slotBlock_title: { name: ReactNode /* string */ };
+  card_builder_atomAction_destroy_block: { name: ReactNode /* string */ };
+  card_builder_atomAction_redo_action: { text: ReactNode /* string */ };
+  card_builder_atomAction_undo_action: { text: ReactNode /* string */ };
+  card_builder_atomAction_update_blockAdvancedValue: {
+    fieldName: ReactNode /* string */;
+    name: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_blockLogicValue: {
+    fieldName: ReactNode /* string */;
+    name: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_blockPosition: {
+    name: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_blockPropsValue: {
+    fieldName: ReactNode /* string */;
+    name: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_blockTitleValue: {
+    name: ReactNode /* string */;
+    title: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_blockWorkspacePropsValue: {
+    desc: ReactNode /* string */;
+  };
+  card_builder_atomAction_update_slotPropsValue: {
+    fieldName: ReactNode /* string */;
+    slotName: ReactNode /* string */;
+    blockName: ReactNode /* string */;
+  };
+  card_builder_audit_banner_pending_text: { version: ReactNode /* string */ };
+  card_builder_audit_banner_rejected_text: { version: ReactNode /* string */ };
+  card_builder_builder_preview_channel: { channel: ReactNode /* string */ };
+  card_builder_builder_preview_doubao: { channel: ReactNode /* string */ };
+  card_builder_builder_preview_no_component: {
+    channel: ReactNode /* string */;
+  };
+  card_builder_builder_publish_version_verify_compare: {
+    lastVersion: ReactNode /* string */;
+  };
+  card_builder_builtinLogic_editor_tip: { pageTitle: ReactNode /* string */ };
+  card_builder_codeIn_update_blocksInfo: {
+    elementType: ReactNode /* string */;
+  };
+  card_builder_codeIn_update_blocksVersion: {
+    pkgName: ReactNode /* string */;
+    version: ReactNode /* string */;
+  };
+  card_builder_compList_panel_block_number: { count: ReactNode /* string */ };
+  card_builder_compList_panel_block_number_selected: {
+    count: ReactNode /* string */;
+  };
+  card_builder_compList_panel_block_selected_block_number: {
+    count: ReactNode /* string */;
+  };
+  card_builder_compList_panel_block_selected_package_number: {
+    count: ReactNode /* string */;
+  };
+  card_builder_compList_panel_category_hidden: {
+    count: ReactNode /* string */;
+  };
+  card_builder_copilot_create_snapshot_desc: { text: ReactNode /* string */ };
+  card_builder_coworkInfo_user_editing: { user: ReactNode /* string */ };
+  card_builder_coworkInfo_user_viewing: { user: ReactNode /* string */ };
+  card_builder_depsManager_atomAction_deleteBlock: {
+    pkgName: ReactNode /* string */;
+  };
+  card_builder_depsManager_atomAction_updateBlock: {
+    pkgName: ReactNode /* string */;
+    version: ReactNode /* string */;
+    targetVersion: ReactNode /* string */;
+  };
+  card_builder_depsManager_panel_block_number: {
+    count: ReactNode /* string */;
+  };
+  card_builder_depsManager_panel_block_update_content: {
+    updateVersion: ReactNode /* string */;
+  };
+  card_builder_envs_add_env: { name: ReactNode /* string */ };
+  card_builder_envs_add_var: {
+    var: ReactNode /* string */;
+    env: ReactNode /* string */;
+  };
+  card_builder_envs_copy_env: { name: ReactNode /* string */ };
+  card_builder_envs_delete_env: { name: ReactNode /* string */ };
+  card_builder_envs_delete_var: {
+    var: ReactNode /* string */;
+    env: ReactNode /* string */;
+  };
+  card_builder_envs_import_var: { name: ReactNode /* string */ };
+  card_builder_envs_list_delete_content: { name: ReactNode /* string */ };
+  card_builder_envs_update_env: { name: ReactNode /* string */ };
+  card_builder_envs_update_var: {
+    var: ReactNode /* string */;
+    env: ReactNode /* string */;
+  };
+  card_builder_envs_var_list_delete_content: { name: ReactNode /* string */ };
+  card_builder_envs_var_panel_delete_content: { name: ReactNode /* string */ };
+  card_builder_history_create_snapshot_desc: { text: ReactNode /* string */ };
+  card_builder_history_snapshot_create_desc: { text: ReactNode /* string */ };
+  card_builder_history_snapshot_restore: { text: ReactNode /* string */ };
+  card_builder_history_userAction_list_page: { label: ReactNode /* string */ };
+  card_builder_history_userAction_restore: { text: ReactNode /* string */ };
+  card_builder_logicFlow_list_delete_content: { name: ReactNode /* string */ };
+  card_builder_logicFlow_userAction_addLogic: { name: ReactNode /* string */ };
+  card_builder_logicFlow_userAction_copyLogic: {
+    oldName: ReactNode /* string */;
+    newName: ReactNode /* string */;
+  };
+  card_builder_logicFlow_userAction_deleteGroup: {
+    title: ReactNode /* string */;
+  };
+  card_builder_logicFlow_userAction_deleteLogic: {
+    name: ReactNode /* string */;
+  };
+  card_builder_logicFlow_userAction_updateGroup: {
+    title: ReactNode /* string */;
+  };
+  card_builder_logicFlow_userAction_updateLogic: {
+    name: ReactNode /* string */;
+  };
+  card_builder_pageManager_add_dir: { name: ReactNode /* string */ };
+  card_builder_pageManager_add_page: { name: ReactNode /* string */ };
+  card_builder_pageManager_copy_page: { name: ReactNode /* string */ };
+  card_builder_pageManager_create_name_label: { name: ReactNode /* string */ };
+  card_builder_pageManager_create_path_label: { name: ReactNode /* string */ };
+  card_builder_pageManager_delete_content: { name: ReactNode /* string */ };
+  card_builder_pageManager_delete_dir: { name: ReactNode /* string */ };
+  card_builder_pageManager_delete_page: { name: ReactNode /* string */ };
+  card_builder_pageManager_move_dir: { srcName: ReactNode /* string */ };
+  card_builder_pageManager_move_page: { srcName: ReactNode /* string */ };
+  card_builder_pageManager_update_dir: { name: ReactNode /* string */ };
+  card_builder_pageManager_update_page: { name: ReactNode /* string */ };
+  card_builder_plural: { num: ReactNode /* number */ };
+  card_builder_redoUndo_error: { type: ReactNode /* string */ };
+  card_builder_releaseBtn_releaseApp_error: { message: ReactNode /* string */ };
+  card_builder_releaseBtn_releaseApp_pkgMode_rec: {
+    name: ReactNode /* string */;
+  };
+  card_builder_sandbox_cowork_restore_content: {
+    operator: ReactNode /* string */;
+  };
+  card_builder_slot_formula_block_title: {
+    slotTitle: ReactNode /* string */;
+    blockTitle: ReactNode /* string */;
+  };
+  card_builder_template_create_snapshot_desc: { text: ReactNode /* string */ };
+  card_builder_userFunc_list_item_delete_content: {
+    name: ReactNode /* string */;
+  };
+  card_builder_userFunc_userAction_addFunc: { name: ReactNode /* string */ };
+  card_builder_userFunc_userAction_copyFunc: {
+    oldName: ReactNode /* string */;
+    newName: ReactNode /* string */;
+  };
+  card_builder_userFunc_userAction_deleteFunc: { name: ReactNode /* string */ };
+  card_builder_userFunc_userAction_editFunc: { name: ReactNode /* string */ };
+  card_builder_userFunc_userAction_updateFunc: { name: ReactNode /* string */ };
+  card_builder_userVar_delete_content: { name: ReactNode /* string */ };
+  card_builder_userVar_formula_app: { name: ReactNode /* string */ };
+  card_builder_userVar_formula_page: { name: ReactNode /* string */ };
+  card_builder_userVar_userAction_addVar: { name: ReactNode /* string */ };
+  card_builder_userVar_userAction_copyVar: {
+    oldName: ReactNode /* string */;
+    newName: ReactNode /* string */;
+  };
+  card_builder_userVar_userAction_deleteVar: { name: ReactNode /* string */ };
+  card_builder_userVar_userAction_editVar: { name: ReactNode /* string */ };
+  card_builder_userVar_userAction_updateVar: { name: ReactNode /* string */ };
+  card_custom_bind_data_to_element: { data_element: ReactNode /* string */ };
+  card_custom_bind_data_to_list: { card_list_name: ReactNode /* string */ };
+  card_custom_code_caution: { cici_or_doubao: ReactNode /* string */ };
+  card_custom_tips_content_b: { bot_studio_name: ReactNode /* string */ };
+  card_list_bind_placeholder: { key: ReactNode /* string */ };
+  card_not_support_max_list: { num: ReactNode /* string */ };
+  card_select_path_placeholder: { path: ReactNode /* string */ };
+  card_update_step_title: { name: ReactNode /* string */ };
+  chatInitRetry: { retry: ReactNode /* string */ };
+  chat_geolocation_auth_allow_tip: { plugin: ReactNode /* string */ };
+  chat_geolocation_auth_decline_tip: { plugin: ReactNode /* string */ };
+  chat_geolocation_auth_request_message: {
+    plugin_name: ReactNode /* string */;
+  };
+  chatflow_agent_input_placeholder: { text: ReactNode /* string */ };
+  chatflow_agent_toast_feedback_fail: { feedback: ReactNode /* string */ };
+  chatflow_agent_toast_feedback_success: { feedback: ReactNode /* string */ };
+  chatflow_preview_take_over: { agentName: ReactNode /* string */ };
+  coding_ability_leaderboard_top_n: { n: ReactNode /* string */ };
+  coding_ability_leaderboard_top_n_explain: { n: ReactNode /* string */ };
+  collaborate_collaborater_added_partial_toast: {
+    users: ReactNode /* string */;
+  };
+  collaborate_collaborater_count: {
+    number_of_collaborators: ReactNode /* string */;
+  };
+  collaborate_collaborater_count_1: {
+    number_of_collaborators: ReactNode /* string */;
+  };
+  collaborate_collaborater_owner_tooltip: { username: ReactNode /* string */ };
+  community_Button_view_all_comments: { comment_num: ReactNode /* string */ };
+  community_Image_uploading: {
+    upload_num: ReactNode /* string */;
+    total_num: ReactNode /* string */;
+  };
+  community_Please_enter_add_a_comment: { user_name: ReactNode /* string */ };
+  community_Please_enter_please_enter_your_comment: {
+    user_name: ReactNode /* string */;
+  };
+  community_Subtitle_comments: { num: ReactNode /* number */ };
+  community_notification_app_msg_plural: {
+    count: ReactNode /* string */;
+    project_name: ReactNode /* string */;
+  };
+  community_notification_bot_msg: {
+    bot_name: ReactNode /* string */;
+    num: ReactNode /* string */;
+  };
+  community_notification_bot_msg_plural: { num: ReactNode /* number */ };
+  community_notification_comment_msg: {
+    num: ReactNode /* string */;
+    post_title: ReactNode /* string */;
+  };
+  community_notification_comment_msg_plural: { num: ReactNode /* number */ };
+  community_notification_post_msg: {
+    post_title: ReactNode /* string */;
+    num: ReactNode /* string */;
+  };
+  community_notification_post_msg_plural: { num: ReactNode /* number */ };
+  community_notification_template_msg_plural: {
+    count: ReactNode /* string */;
+    entity_name: ReactNode /* string */;
+  };
+  community_num_comment: { comment_num: ReactNode /* string */ };
+  community_num_comments: { comment_num: ReactNode /* string */ };
+  community_share_conver_title: { bot_name: ReactNode /* string */ };
+  community_time_date: {
+    mm: ReactNode /* string */;
+    dd: ReactNode /* string */;
+    yyyy: ReactNode /* string */;
+  };
+  community_time_day: { n: ReactNode /* string */ };
+  community_time_hour: { n: ReactNode /* string */ };
+  community_time_min: { n: ReactNode /* string */ };
   'confirm_binding_{label}?': { label: ReactNode /* string */ };
-  'confirm_switch_to_on_demand_call': { call_method: ReactNode /* string */ };
-  'content_creation_leaderboard_top_n': { n: ReactNode /* string */ };
-  'content_creation_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'cookie_EU_1st_pop': { cookie_policy: ReactNode /* string */ };
-  'cookie_EU_manage_page_content': { cookie_policy: ReactNode /* string */ };
-  'cookie_non_EU_pop': { cookie_policy: ReactNode /* string */ };
-  'coze_cn_redirect': { seconds: ReactNode /* string */ };
-  'coze_collaborator_limit_reached': { url: ReactNode /* string */ };
-  'coze_count_yuan_1': { count: ReactNode /* string */ };
-  'coze_discount_rate': { discount: ReactNode /* string */ };
-  'coze_effective_period': { start: ReactNode /* string */, end: ReactNode /* string */ };
-  'coze_exceed_plan_capacity': { storage: ReactNode /* string */ };
-  'coze_expiration_date': { time: ReactNode /* string */ };
-  'coze_fee_description': { type: ReactNode /* string */ };
-  'coze_free_points_tips': { count: ReactNode /* string */ };
-  'coze_model_tpm_rpm_violation_count': { count: ReactNode /* string */ };
-  'coze_model_tpm_violation_count': { count: ReactNode /* string */ };
-  'coze_original_price': { price: ReactNode /* string */ };
-  'coze_plan_effetive_tips': { plan: ReactNode /* string */ };
-  'coze_plan_more_benefits': { name: ReactNode /* string */ };
-  'coze_plan_overdue': { username: ReactNode /* string */ };
-  'coze_points': { points: ReactNode /* string */ };
-  'coze_points_buy_1000': { buy: ReactNode /* string */ };
-  'coze_points_buy_110000': { buy: ReactNode /* string */ };
-  'coze_premium_credits_reset': { counts: ReactNode /* string */ };
-  'coze_pro_4': { price: ReactNode /* string */ };
-  'coze_pro_des': { link: ReactNode /* string */ };
-  'coze_pro_migration_12': { username: ReactNode /* string */ };
-  'coze_pro_resource_balance_count': { count: ReactNode /* string */ };
-  'coze_quota_exemption_notice': { link: ReactNode /* string */ };
-  'coze_recent_activation': { time: ReactNode /* string */ };
-  'coze_remaining_points': { points: ReactNode /* string */ };
-  'coze_resource_balance_count': { count: ReactNode /* string */ };
-  'coze_resource_pack_discount': { discount: ReactNode /* string */ };
-  'coze_save_amount': { price: ReactNode /* string */ };
-  'coze_storage_over_limit': { storage1: ReactNode /* string */, storage2: ReactNode /* string */, storage3: ReactNode /* string */ };
-  'coze_storage_usage': { storage1: ReactNode /* string */, storage2: ReactNode /* string */ };
-  'coze_subscribed': { plan: ReactNode /* string */ };
-  'coze_team_creation_limit_reached': { url: ReactNode /* string */ };
-  'coze_token_plugin_section_table_usage_unit': { number: ReactNode /* string */ };
-  'coze_upgrade_to_any': { name: ReactNode /* string */ };
-  'coze_value_count_yuan_1': { count: ReactNode /* string */ };
-  'coze_voice_clone_expansion': { link: ReactNode /* string */ };
-  'coze_voice_remaining_quota': { count: ReactNode /* string */ };
+  confirm_switch_to_on_demand_call: { call_method: ReactNode /* string */ };
+  content_creation_leaderboard_top_n: { n: ReactNode /* string */ };
+  content_creation_leaderboard_top_n_explain: { n: ReactNode /* string */ };
+  cookie_EU_1st_pop: { cookie_policy: ReactNode /* string */ };
+  cookie_EU_manage_page_content: { cookie_policy: ReactNode /* string */ };
+  cookie_non_EU_pop: { cookie_policy: ReactNode /* string */ };
+  coze_cn_redirect: { seconds: ReactNode /* string */ };
+  coze_collaborator_limit_reached: { url: ReactNode /* string */ };
+  coze_count_yuan_1: { count: ReactNode /* string */ };
+  coze_discount_rate: { discount: ReactNode /* string */ };
+  coze_effective_period: {
+    start: ReactNode /* string */;
+    end: ReactNode /* string */;
+  };
+  coze_exceed_plan_capacity: { storage: ReactNode /* string */ };
+  coze_expiration_date: { time: ReactNode /* string */ };
+  coze_fee_description: { type: ReactNode /* string */ };
+  coze_free_points_tips: { count: ReactNode /* string */ };
+  coze_model_tpm_rpm_violation_count: { count: ReactNode /* string */ };
+  coze_model_tpm_violation_count: { count: ReactNode /* string */ };
+  coze_original_price: { price: ReactNode /* string */ };
+  coze_plan_effetive_tips: { plan: ReactNode /* string */ };
+  coze_plan_more_benefits: { name: ReactNode /* string */ };
+  coze_plan_overdue: { username: ReactNode /* string */ };
+  coze_points: { points: ReactNode /* string */ };
+  coze_points_buy_1000: { buy: ReactNode /* string */ };
+  coze_points_buy_110000: { buy: ReactNode /* string */ };
+  coze_premium_credits_reset: { counts: ReactNode /* string */ };
+  coze_pro_4: { price: ReactNode /* string */ };
+  coze_pro_des: { link: ReactNode /* string */ };
+  coze_pro_migration_12: { username: ReactNode /* string */ };
+  coze_pro_resource_balance_count: { count: ReactNode /* string */ };
+  coze_quota_exemption_notice: { link: ReactNode /* string */ };
+  coze_recent_activation: { time: ReactNode /* string */ };
+  coze_remaining_points: { points: ReactNode /* string */ };
+  coze_resource_balance_count: { count: ReactNode /* string */ };
+  coze_resource_pack_discount: { discount: ReactNode /* string */ };
+  coze_save_amount: { price: ReactNode /* string */ };
+  coze_storage_over_limit: {
+    storage1: ReactNode /* string */;
+    storage2: ReactNode /* string */;
+    storage3: ReactNode /* string */;
+  };
+  coze_storage_usage: {
+    storage1: ReactNode /* string */;
+    storage2: ReactNode /* string */;
+  };
+  coze_subscribed: { plan: ReactNode /* string */ };
+  coze_team_creation_limit_reached: { url: ReactNode /* string */ };
+  coze_token_plugin_section_table_usage_unit: {
+    number: ReactNode /* string */;
+  };
+  coze_upgrade_to_any: { name: ReactNode /* string */ };
+  coze_value_count_yuan_1: { count: ReactNode /* string */ };
+  coze_voice_clone_expansion: { link: ReactNode /* string */ };
+  coze_voice_remaining_quota: { count: ReactNode /* string */ };
   'create_up_to_{maxpagelen}_pages': { maxPageLen: ReactNode /* string */ };
-  'create_{placeholder1}_and_bind_the_{id}_page': { placeholder1: ReactNode /* string */, id: ReactNode /* string */ };
-  'cross_workspace_copy_task_pop_title': { name: ReactNode /* string */ };
-  'cross_workspace_copy_task_status_all': { success: ReactNode /* string */, running: ReactNode /* string */, fail: ReactNode /* string */ };
-  'current_page_{currentpageid}_binding_tag_{placeholder3}': { currentPageId: ReactNode /* string */, placeholder3: ReactNode /* string */ };
-  'data_error_title': { module: ReactNode /* string */ };
-  'database_240304_01': { TableNumber: ReactNode /* string */ };
-  'dataset_bot_count_tag': { num: ReactNode /* string */ };
-  'dataset_bot_create_time_knowledge': { time: ReactNode /* string */ };
-  'dataset_bot_referring_tag': { bot_num: ReactNode /* string */, add_s: ReactNode /* string */ };
-  'dataset_bot_time_knowledge': { time: ReactNode /* string */ };
-  'dataset_bot_update_time_knowledge': { time: ReactNode /* string */ };
-  'dataset_data_processing_tag': { num: ReactNode /* string */ };
-  'dataset_deal_failed': { num: ReactNode /* string */ };
-  'dataset_deal_processing': { num: ReactNode /* string */ };
-  'datasets_botRefer_list_description': { num: ReactNode /* number */ };
-  'datasets_createFileModel_step2_UploadDoc_description': { maxDocNum: ReactNode /* string */, fileFormat: ReactNode /* string */, filesize: ReactNode /* string */, pdfPageNum: ReactNode /* string */ };
-  'datasets_createFileModel_tab_dataStarRow_value': { LineNumber: ReactNode /* string */ };
-  'datasets_createFileModel_tab_header_value': { LineNumber: ReactNode /* string */ };
-  'datasets_detail_tag_botReferencing': { count: ReactNode /* number */ };
-  'datasets_detail_tag_byte': { number: ReactNode /* string */ };
-  'datasets_detail_tag_file': { num: ReactNode /* number */ };
-  'datasets_frequencyModal_frequency_day': { num: ReactNode /* number */ };
-  'datasets_frequencyModal_frequency_day01': { num: ReactNode /* number */ };
-  'datasets_segment_card_bit': { num: ReactNode /* number */ };
-  'datasets_segment_card_hit': { num: ReactNode /* number */ };
-  'datasets_segment_detailModel_title': { num: ReactNode /* number */ };
-  'datasets_segment_tableStructure_field_delConfirm_title': { FieldName: ReactNode /* string */ };
-  'datasets_segment_tag_segments': { num: ReactNode /* string */ };
-  'datasets_segment_tag_updateFrequency': { num: ReactNode /* number */ };
-  'datasets_table_title_size_byte': { num: ReactNode /* number */ };
-  'datasets_unit_tableformat_tips1': { TotalRows: ReactNode /* string */, ShowRows: ReactNode /* string */ };
-  'datasets_upload_url_subpages': { num: ReactNode /* number */ };
-  'datasets_url_retry_error': { reason: ReactNode /* string */ };
-  'db_optimize_031': { n: ReactNode /* string */ };
-  'db_optimize_032': { n: ReactNode /* string */ };
-  'db_table_0126_024': { LineNumber: ReactNode /* string */ };
-  'db_table_0126_026': { LineNumber: ReactNode /* string */ };
-  'db_table_0126_027': { ColumNum: ReactNode /* string */ };
-  'db_table_0126_028': { TotalRows: ReactNode /* string */, ShowRows: ReactNode /* string */ };
-  'delete_account_delete_aweme_logined_label': { platform: ReactNode /* string */ };
-  'delete_account_delete_aweme_not_login_label': { platform: ReactNode /* string */ };
-  'delete_account_phone_tip': { mobile: ReactNode /* string */ };
-  'detected_address': { original_location: ReactNode /* string */, location: ReactNode /* string */ };
-  'device_code_flow_auth_tips_1': { location: ReactNode /* string */ };
-  'devops_publish_multibranch_PubishByUser': { name: ReactNode /* string */, time: ReactNode /* string */ };
-  'devops_publish_multibranch_SubmitByUser': { name: ReactNode /* string */, time: ReactNode /* string */ };
-  'devops_publish_multibranch_auto_saved': { time: ReactNode /* string */ };
-  'devops_publish_multibranch_diffwithin': { connectorName: ReactNode /* string */ };
-  'devops_publish_multibranch_new_version': { name: ReactNode /* string */ };
-  'devops_publish_multibranch_published': { time: ReactNode /* string */ };
-  'devops_publish_multibranch_submitted': { time: ReactNode /* string */ };
-  'display_time_for_rankings': { date: ReactNode /* string */ };
-  'dy_avatar_link_title': { bot_name: ReactNode /* string */ };
-  'dy_avatar_qr_code_operate_tip': { app_name: ReactNode /* string */ };
-  'dy_avatar_qr_code_time_tip': { time: ReactNode /* string */ };
-  'enterprise_add_member_secondary_confirm': { doc: ReactNode /* string */ };
-  'enterprise_feature_logo': { upgrade_plan: ReactNode /* string */ };
-  'enterprise_management_leave_button': { enterprise: ReactNode /* string */ };
-  'enterprise_management_leave_transfer_button': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_control_desc1': { enterprise_version_name: ReactNode /* string */ };
-  'enterprise_management_permission_control_desc2': { enterprise_version_name: ReactNode /* string */ };
-  'enterprise_management_permission_control_share_link': { enterprise_version_name: ReactNode /* string */ };
-  'enterprise_management_permission_control_title': { enterprise_version_name: ReactNode /* string */ };
-  'enterprise_management_permission_settings_disable_be_guest_leave_desc': { number: ReactNode /* string */, enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_other_enter_guest_list_desc1': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_other_enter_guest_list_desc2': { number: ReactNode /* string */, enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_other_enter_guest_list_name_tag': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_pop_disable_desc1_guest': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_pop_disable_desc2_be_guest': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_pop_enable_desc1_allow_guest': { enterprise: ReactNode /* string */ };
-  'enterprise_management_permission_settings_pop_enable_desc2_allow_be_guest': { enterprise: ReactNode /* string */ };
-  'enterprise_member_apply_opt_operate_button2_reject_desc': { amount: ReactNode /* string */ };
-  'enterprise_member_apply_opt_operate_button3_pass_desc': { amount: ReactNode /* string */, doc: ReactNode /* string */ };
-  'enterprise_member_identity_tag_internal_meber': { enterprise: ReactNode /* string */ };
-  'enterprise_member_list_add_new_member_tips': { doc: ReactNode /* string */ };
-  'enterprise_member_management_settings_basic_user_control_desc': { enterprise: ReactNode /* string */ };
-  'enterprise_member_management_settings_basic_user_control_title': { enterprise: ReactNode /* string */ };
-  'enterprise_member_management_settings_guest_control_desc': { enterprise: ReactNode /* string */ };
-  'enterprise_member_management_settings_guest_control_title': { enterprise: ReactNode /* string */ };
-  'enterprise_share_link_page_expire_info': { date: ReactNode /* string */ };
-  'enterprise_share_link_pop_desc1': { enterprise_version_name: ReactNode /* string */, member_permission: ReactNode /* string */ };
-  'enterprise_share_link_pop_desc2_expire_info': { enterprise_version_name: ReactNode /* string */, enterprise_name: ReactNode /* string */, expire_date: ReactNode /* string */ };
-  'enterprise_share_link_pop_desc2_no_expire_info': { enterprise_version_name: ReactNode /* string */, enterprise_name: ReactNode /* string */ };
-  'enterprise_share_link_pop_title': { enterprise_version_name: ReactNode /* string */ };
-  'errorpage_action': { name: ReactNode /* string */ };
-  'eval_error_cell_char_limit': { row_number: ReactNode /* string */, column_name: ReactNode /* string */, max_chars: ReactNode /* string */ };
-  'eval_error_column_limit': { max_columns: ReactNode /* string */, current_columns: ReactNode /* string */ };
-  'eval_error_duplicate_column': { column_name: ReactNode /* string */ };
-  'eval_error_message': { evaluation_name: ReactNode /* string */ };
-  'eval_error_missing_column': { column_name: ReactNode /* string */ };
-  'eval_error_missing_field': { row_number: ReactNode /* string */, field_name: ReactNode /* string */ };
-  'eval_error_query_limit': { session_id: ReactNode /* string */, max_queries: ReactNode /* string */ };
-  'eval_error_session_limit': { max_sessions: ReactNode /* string */, current_sessions: ReactNode /* string */ };
-  'eval_max_agents_limit': { num: ReactNode /* string */ };
-  'evaluation1_balance': { caseCount: ReactNode /* string */, tokenCount: ReactNode /* string */ };
-  'evaluation1_cases_count': { evaluation_case_num: ReactNode /* string */ };
-  'evaluation1_error_count': { errorCount: ReactNode /* string */, total: ReactNode /* string */ };
-  'evaluation1_estimated_token_consumption': { Estimated_token_consumption: ReactNode /* string */ };
-  'evaluation1_free_quota_exhausted_new': { freeCount: ReactNode /* string */ };
-  'evaluation1_progress': { progress: ReactNode /* string */, total: ReactNode /* string */ };
-  'evaluation1_progress_tips': { current: ReactNode /* string */, total: ReactNode /* string */ };
-  'evaluation1_task_quota': { remaining_count: ReactNode /* string */ };
-  'evaluation1_task_quota_new': { freeCount: ReactNode /* string */, remaining_count: ReactNode /* string */ };
-  'evaluation1_test_description': { testrun_consumption_token: ReactNode /* string */ };
-  'evaluation1_warning_message_eval_prompt': { field: ReactNode /* string */ };
-  'evaluation_autosaved': { savedtime: ReactNode /* string */ };
-  'evaluation_dataset_columnLimit': { columnCount: ReactNode /* string */ };
-  'evaluation_dataset_columnNameLength': { columnNameMaxLength: ReactNode /* string */ };
-  'evaluation_dataset_columnNumber': { columnNumberLimit: ReactNode /* string */ };
-  'evaluation_dataset_csv_contentLength_error': { maxLength: ReactNode /* string */ };
-  'evaluation_dataset_csv_groupConversation_error': { gourpName: ReactNode /* string */, rowLimit: ReactNode /* string */ };
-  'evaluation_dataset_dialogueNumber': { dialogueNumberLimit: ReactNode /* string */ };
-  'evaluation_dataset_exceeds_maximum_column': { MAX_COLUMN_LENGTH: ReactNode /* string */ };
-  'evaluation_page_consumption_prediction_tips1': { Estimated_token_consumption: ReactNode /* string */ };
-  'evaluation_page_consumption_prediction_tips2': { testrun_consumption_token: ReactNode /* string */ };
-  'evaluation_page_consumption_upload_file_limitation_tip': { row_limit: ReactNode /* string */ };
-  'evaluation_page_free_amount_tips1_no_remaining': { freeCount: ReactNode /* string */ };
-  'evaluation_page_free_amount_tips1_remaining': { freeCount: ReactNode /* string */, remaining_count: ReactNode /* string */ };
-  'evaluation_rule_defaultAdded': { ruleCount: ReactNode /* string */ };
-  'evaluation_rule_has_number': { rulesNumber: ReactNode /* string */ };
-  'evaluation_rule_reachLimit': { rulesLimit: ReactNode /* string */ };
-  'evaluation_rule_reachLimit_error': { maxRuleNumber: ReactNode /* string */ };
-  'evaluation_sample_conciseness': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_controversiality': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_correctness': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_creativity': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_criminality': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_depth': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_detail': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_harmfulness': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_helpfulness': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_insensitivity': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_maliciousness': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_misogyny': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_sample_relevance': { input: ReactNode /* string */, output: ReactNode /* string */ };
-  'evaluation_success_count_total': { successCount: ReactNode /* string */, total: ReactNode /* string */ };
-  'event_panel_run_workflow_failed_default_value': { name: ReactNode /* string */, error: ReactNode /* string */ };
-  'event_panel_run_workflow_success_default_value': { workflow: ReactNode /* string */ };
-  'expired_time_days_1': { num: ReactNode /* number */ };
-  'exterprise_share_link_page_description': { enterprise_name: ReactNode /* string */ };
-  'failed_to_import_tool': { num: ReactNode /* number */ };
-  'file_size_exceeds_limit__maximum_support_{maxsize}_kb': { maxSize: ReactNode /* string */ };
-  'file_too_large': { max_size: ReactNode /* string */ };
-  'folder_selection_num_of_selected': { n: ReactNode /* string */ };
-  'home_at_bot_status': { bot_name: ReactNode /* string */ };
-  'home_mention_searchbotstore_result_not_found_content': { search_text: ReactNode /* string */ };
-  'home_mention_searchbotstore_result_title': { search_text: ReactNode /* string */ };
-  'imageflow_canvas_reference_image': { variable: ReactNode /* string */ };
-  'imageflow_canvas_reference_text': { variable: ReactNode /* string */ };
-  'imageflow_canvas_var_reference': { n: ReactNode /* string */ };
-  'imageflow_tab_title': { name: ReactNode /* string */ };
-  'imageflow_upload_error2': { value: ReactNode /* string */ };
-  'imageflow_upload_error3': { value: ReactNode /* string */ };
-  'imageflow_upload_error4': { value: ReactNode /* string */ };
-  'imageflow_upload_error5': { value: ReactNode /* string */ };
-  'imageflow_upload_error_type': { type: ReactNode /* string */ };
-  'imageflow_upload_exceed': { size: ReactNode /* string */ };
-  'imageflow_upload_type': { type: ReactNode /* string */ };
-  'imageflowstore_expire_content': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
-  'intent_queyr_jumping_hint': { link: ReactNode /* string */ };
-  'kl2_009': { num: ReactNode /* number */ };
-  'kl_write_041': { index: ReactNode /* string */ };
-  'knowledge-3rd-party-add-units-google-drive-pages-selected': { number: ReactNode /* string */ };
-  'knowledge-3rd-party-add-units-notion-pages-selected': { number: ReactNode /* string */ };
-  'knowledge_1218_001': { MaxDocs: ReactNode /* string */ };
-  'knowledge_1226_002': { FieldName: ReactNode /* string */ };
-  'knowledge_application_leaderboard_top_n': { n: ReactNode /* string */ };
-  'knowledge_application_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'knowledge_feishu_search_placeholder': { name: ReactNode /* string */ };
-  'knowledge_insert_img_003': { url: ReactNode /* string */ };
-  'knowledge_level_006': { filenames: ReactNode /* string */ };
-  'knowledge_only_type': { docType: ReactNode /* string */ };
-  'knowledge_optimize_019': { n: ReactNode /* string */ };
-  'knowledge_photo_015': { num: ReactNode /* string */ };
-  'knowledge_slice_content_length_error': { number: ReactNode /* string */ };
-  'knowledge_table_content_limt': { number: ReactNode /* string */ };
-  'knowledge_upload_remaining_time_text': { minutes: ReactNode /* string */, seconds: ReactNode /* string */ };
-  'knowledge_weixin_011': { num: ReactNode /* string */ };
-  'knowledge_weixin_012': { num: ReactNode /* string */ };
-  'language_understanding_leaderboard_top_n': { n: ReactNode /* string */ };
-  'language_understanding_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'last_modified_time': { time: ReactNode /* string */ };
-  'limits_dataset_files': { number_of_files: ReactNode /* string */ };
-  'location_not_parsed': { location: ReactNode /* string */ };
-  'log_pay_wall_date_filter_tips1': { upgrade: ReactNode /* string */ };
-  'login_verification_code_sent': { phone_number: ReactNode /* string */ };
-  'markdown_bold_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
-  'markdown_bulletedlist_syntax': { space: ReactNode /* string */ };
-  'markdown_code_syntax': { code: ReactNode /* string */, space: ReactNode /* string */ };
-  'markdown_codeblock_syntax': { space: ReactNode /* string */ };
-  'markdown_heading1_syntax': { space: ReactNode /* string */ };
-  'markdown_heading2_syntax': { space: ReactNode /* string */ };
-  'markdown_heading3_syntax': { space: ReactNode /* string */ };
-  'markdown_italic_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
-  'markdown_numberedlist_syntax': { space: ReactNode /* string */ };
-  'markdown_quote_syntax': { space: ReactNode /* string */ };
-  'markdown_strickthrough_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
-  'markdown_underline_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
-  'messageListRetry': { retry: ReactNode /* string */ };
-  'message_credits_18': { count: ReactNode /* string */ };
-  'message_credits_6': { count: ReactNode /* string */ };
-  'message_credits_9': { price: ReactNode /* string */ };
-  'miniapp_url_action_7': { num: ReactNode /* string */ };
-  'missing_parameter': { field_names: ReactNode /* string */ };
-  'mkpl_maximum_chatacter_limit': { maxCount: ReactNode /* string */ };
-  'mkpl_report_bot_desc': { emailAddress: ReactNode /* string */ };
-  'mkpl_report_community_desc': { emailAddress: ReactNode /* string */ };
-  'mkpl_report_desc': { emailAddress: ReactNode /* string */ };
-  'mockdata_field_empty': { fieldName: ReactNode /* string */ };
-  'mockset_during_using': { MockSetName: ReactNode /* string */ };
-  'mockset_field_is_required': { field: ReactNode /* string */ };
-  'mockset_invaild_tip': { MockSetName: ReactNode /* string */ };
-  'mockset_label_tip': { MockSetName: ReactNode /* string */ };
-  'mockset_of_toolname': { toolName: ReactNode /* string */ };
-  'model_arena_by_company': { company: ReactNode /* string */ };
-  'model_list_december_update_notice': { date: ReactNode /* string */ };
-  'model_list_model_company': { company: ReactNode /* string */ };
-  'model_list_model_default_parameters_tips': { doc: ReactNode /* string */ };
-  'model_list_model_deprecation_date': { date: ReactNode /* string */ };
-  'model_list_model_setting': { model: ReactNode /* string */ };
-  'model_list_model_switch_announcement': { model_deprecated: ReactNode /* string */, date: ReactNode /* string */, model_up: ReactNode /* string */ };
-  'model_list_remove_from_list': { model_deprecated: ReactNode /* string */, date: ReactNode /* string */ };
-  'model_management_context': { context: ReactNode /* string */ };
-  'model_management_file_size_limit': { size: ReactNode /* string */ };
-  'model_management_results_count': { count: ReactNode /* string */ };
-  'model_ranking_agent_battle_top_n': { n: ReactNode /* string */ };
-  'model_ranking_pure_model_battle_top_n': { n: ReactNode /* string */ };
-  'model_sp_input_cached_support_tips': { 变量: ReactNode /* string */ };
-  'model_support_poor_warning': { modelName: ReactNode /* string */ };
-  'models_arena_question_bank_hover_current_selection_bankname': { bank_name: ReactNode /* string */ };
-  'models_arena_question_bank_hover_remove_bankname': { bank_name: ReactNode /* string */ };
-  'models_arena_resultpage_has_received_n_votes': { n: ReactNode /* string */ };
-  'move_space_task_loading_timer': { time: ReactNode /* string */ };
-  'move_workspace_failed_pop_desc': { error_msg: ReactNode /* string */ };
-  'move_workspace_pop_up_choose_user_team_paywall_tips': { amount: ReactNode /* string */ };
-  'move_workspace_pop_up_choose_workspace_desc': { doc: ReactNode /* string */ };
-  'move_workspace_pop_up_resource_list_type2_API_desc': { doc: ReactNode /* string */ };
-  'multiagent_bot_update_auto_time': { time: ReactNode /* string */ };
-  'new_landing_title_customer_detail': { case_title: ReactNode /* string */ };
-  'nl2prompt_insert_placeholder': { slash: ReactNode /* string */ };
-  'no_binding_relationship__add_tab_{newtitle}_to_the_bottom_navigation_bar_and_bin': { newTitle: ReactNode /* string */, currentPageId: ReactNode /* string */ };
-  'not_supported_explain': { modelName: ReactNode /* string */ };
-  'not_supported_explain_toolName': { modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
-  'oauth_ask_for_auth_message': { pluginName: ReactNode /* string */, url: ReactNode /* string */ };
-  'obo_auth_link_notification': { user_name: ReactNode /* string */ };
-  'obo_install_failed_notification': { err_msg: ReactNode /* string */ };
-  'obo_install_popup_title': { app_name: ReactNode /* string */ };
-  'open_source_terms': { aggrement: ReactNode /* string */ };
-  'openapi_auth_app_auth_org': { org_type: ReactNode /* string */ };
-  'openapi_auth_app_auth_tos': { org_type: ReactNode /* string */, org_name: ReactNode /* string */ };
-  'openapi_rtc_coze_pro_tips': { coze_pro: ReactNode /* string */ };
-  'openapi_rtc_waitlist_tips': { application_link: ReactNode /* string */ };
-  'opening_markdown_support_tag': { markdown_editor_btn: ReactNode /* string */ };
-  'operation_overview_category_ranking': { category: ReactNode /* string */ };
-  'operation_overview_category_ranking_hint': { category: ReactNode /* string */ };
-  'operations_comparison_period': { ratio: ReactNode /* string */, date1: ReactNode /* string */, date2: ReactNode /* string */ };
+  'create_{placeholder1}_and_bind_the_{id}_page': {
+    placeholder1: ReactNode /* string */;
+    id: ReactNode /* string */;
+  };
+  cross_workspace_copy_task_pop_title: { name: ReactNode /* string */ };
+  cross_workspace_copy_task_status_all: {
+    success: ReactNode /* string */;
+    running: ReactNode /* string */;
+    fail: ReactNode /* string */;
+  };
+  'current_page_{currentpageid}_binding_tag_{placeholder3}': {
+    currentPageId: ReactNode /* string */;
+    placeholder3: ReactNode /* string */;
+  };
+  data_error_title: { module: ReactNode /* string */ };
+  database_240304_01: { TableNumber: ReactNode /* string */ };
+  dataset_bot_count_tag: { num: ReactNode /* string */ };
+  dataset_bot_create_time_knowledge: { time: ReactNode /* string */ };
+  dataset_bot_referring_tag: {
+    bot_num: ReactNode /* string */;
+    add_s: ReactNode /* string */;
+  };
+  dataset_bot_time_knowledge: { time: ReactNode /* string */ };
+  dataset_bot_update_time_knowledge: { time: ReactNode /* string */ };
+  dataset_data_processing_tag: { num: ReactNode /* string */ };
+  dataset_deal_failed: { num: ReactNode /* string */ };
+  dataset_deal_processing: { num: ReactNode /* string */ };
+  datasets_botRefer_list_description: { num: ReactNode /* number */ };
+  datasets_createFileModel_step2_UploadDoc_description: {
+    maxDocNum: ReactNode /* string */;
+    fileFormat: ReactNode /* string */;
+    filesize: ReactNode /* string */;
+    pdfPageNum: ReactNode /* string */;
+  };
+  datasets_createFileModel_tab_dataStarRow_value: {
+    LineNumber: ReactNode /* string */;
+  };
+  datasets_createFileModel_tab_header_value: {
+    LineNumber: ReactNode /* string */;
+  };
+  datasets_detail_tag_botReferencing: { count: ReactNode /* number */ };
+  datasets_detail_tag_byte: { number: ReactNode /* string */ };
+  datasets_detail_tag_file: { num: ReactNode /* number */ };
+  datasets_frequencyModal_frequency_day: { num: ReactNode /* number */ };
+  datasets_frequencyModal_frequency_day01: { num: ReactNode /* number */ };
+  datasets_segment_card_bit: { num: ReactNode /* number */ };
+  datasets_segment_card_hit: { num: ReactNode /* number */ };
+  datasets_segment_detailModel_title: { num: ReactNode /* number */ };
+  datasets_segment_tableStructure_field_delConfirm_title: {
+    FieldName: ReactNode /* string */;
+  };
+  datasets_segment_tag_segments: { num: ReactNode /* string */ };
+  datasets_segment_tag_updateFrequency: { num: ReactNode /* number */ };
+  datasets_table_title_size_byte: { num: ReactNode /* number */ };
+  datasets_unit_tableformat_tips1: {
+    TotalRows: ReactNode /* string */;
+    ShowRows: ReactNode /* string */;
+  };
+  datasets_upload_url_subpages: { num: ReactNode /* number */ };
+  datasets_url_retry_error: { reason: ReactNode /* string */ };
+  db_optimize_031: { n: ReactNode /* string */ };
+  db_optimize_032: { n: ReactNode /* string */ };
+  db_table_0126_024: { LineNumber: ReactNode /* string */ };
+  db_table_0126_026: { LineNumber: ReactNode /* string */ };
+  db_table_0126_027: { ColumNum: ReactNode /* string */ };
+  db_table_0126_028: {
+    TotalRows: ReactNode /* string */;
+    ShowRows: ReactNode /* string */;
+  };
+  delete_account_delete_aweme_logined_label: {
+    platform: ReactNode /* string */;
+  };
+  delete_account_delete_aweme_not_login_label: {
+    platform: ReactNode /* string */;
+  };
+  delete_account_phone_tip: { mobile: ReactNode /* string */ };
+  detected_address: {
+    original_location: ReactNode /* string */;
+    location: ReactNode /* string */;
+  };
+  device_code_flow_auth_tips_1: { location: ReactNode /* string */ };
+  devops_publish_multibranch_PubishByUser: {
+    name: ReactNode /* string */;
+    time: ReactNode /* string */;
+  };
+  devops_publish_multibranch_SubmitByUser: {
+    name: ReactNode /* string */;
+    time: ReactNode /* string */;
+  };
+  devops_publish_multibranch_auto_saved: { time: ReactNode /* string */ };
+  devops_publish_multibranch_diffwithin: {
+    connectorName: ReactNode /* string */;
+  };
+  devops_publish_multibranch_new_version: { name: ReactNode /* string */ };
+  devops_publish_multibranch_published: { time: ReactNode /* string */ };
+  devops_publish_multibranch_submitted: { time: ReactNode /* string */ };
+  display_time_for_rankings: { date: ReactNode /* string */ };
+  dy_avatar_link_title: { bot_name: ReactNode /* string */ };
+  dy_avatar_qr_code_operate_tip: { app_name: ReactNode /* string */ };
+  dy_avatar_qr_code_time_tip: { time: ReactNode /* string */ };
+  enterprise_add_member_secondary_confirm: { doc: ReactNode /* string */ };
+  enterprise_feature_logo: { upgrade_plan: ReactNode /* string */ };
+  enterprise_management_leave_button: { enterprise: ReactNode /* string */ };
+  enterprise_management_leave_transfer_button: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_control_desc1: {
+    enterprise_version_name: ReactNode /* string */;
+  };
+  enterprise_management_permission_control_desc2: {
+    enterprise_version_name: ReactNode /* string */;
+  };
+  enterprise_management_permission_control_share_link: {
+    enterprise_version_name: ReactNode /* string */;
+  };
+  enterprise_management_permission_control_title: {
+    enterprise_version_name: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_disable_be_guest_leave_desc: {
+    number: ReactNode /* string */;
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_other_enter_guest_list_desc1: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_other_enter_guest_list_desc2: {
+    number: ReactNode /* string */;
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_other_enter_guest_list_name_tag: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_pop_disable_desc1_guest: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_pop_disable_desc2_be_guest: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_pop_enable_desc1_allow_guest: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_management_permission_settings_pop_enable_desc2_allow_be_guest: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_member_apply_opt_operate_button2_reject_desc: {
+    amount: ReactNode /* string */;
+  };
+  enterprise_member_apply_opt_operate_button3_pass_desc: {
+    amount: ReactNode /* string */;
+    doc: ReactNode /* string */;
+  };
+  enterprise_member_identity_tag_internal_meber: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_member_list_add_new_member_tips: { doc: ReactNode /* string */ };
+  enterprise_member_management_settings_basic_user_control_desc: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_member_management_settings_basic_user_control_title: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_member_management_settings_guest_control_desc: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_member_management_settings_guest_control_title: {
+    enterprise: ReactNode /* string */;
+  };
+  enterprise_share_link_page_expire_info: { date: ReactNode /* string */ };
+  enterprise_share_link_pop_desc1: {
+    enterprise_version_name: ReactNode /* string */;
+    member_permission: ReactNode /* string */;
+  };
+  enterprise_share_link_pop_desc2_expire_info: {
+    enterprise_version_name: ReactNode /* string */;
+    enterprise_name: ReactNode /* string */;
+    expire_date: ReactNode /* string */;
+  };
+  enterprise_share_link_pop_desc2_no_expire_info: {
+    enterprise_version_name: ReactNode /* string */;
+    enterprise_name: ReactNode /* string */;
+  };
+  enterprise_share_link_pop_title: {
+    enterprise_version_name: ReactNode /* string */;
+  };
+  errorpage_action: { name: ReactNode /* string */ };
+  eval_error_cell_char_limit: {
+    row_number: ReactNode /* string */;
+    column_name: ReactNode /* string */;
+    max_chars: ReactNode /* string */;
+  };
+  eval_error_column_limit: {
+    max_columns: ReactNode /* string */;
+    current_columns: ReactNode /* string */;
+  };
+  eval_error_duplicate_column: { column_name: ReactNode /* string */ };
+  eval_error_message: { evaluation_name: ReactNode /* string */ };
+  eval_error_missing_column: { column_name: ReactNode /* string */ };
+  eval_error_missing_field: {
+    row_number: ReactNode /* string */;
+    field_name: ReactNode /* string */;
+  };
+  eval_error_query_limit: {
+    session_id: ReactNode /* string */;
+    max_queries: ReactNode /* string */;
+  };
+  eval_error_session_limit: {
+    max_sessions: ReactNode /* string */;
+    current_sessions: ReactNode /* string */;
+  };
+  eval_max_agents_limit: { num: ReactNode /* string */ };
+  evaluation1_balance: {
+    caseCount: ReactNode /* string */;
+    tokenCount: ReactNode /* string */;
+  };
+  evaluation1_cases_count: { evaluation_case_num: ReactNode /* string */ };
+  evaluation1_error_count: {
+    errorCount: ReactNode /* string */;
+    total: ReactNode /* string */;
+  };
+  evaluation1_estimated_token_consumption: {
+    Estimated_token_consumption: ReactNode /* string */;
+  };
+  evaluation1_free_quota_exhausted_new: { freeCount: ReactNode /* string */ };
+  evaluation1_progress: {
+    progress: ReactNode /* string */;
+    total: ReactNode /* string */;
+  };
+  evaluation1_progress_tips: {
+    current: ReactNode /* string */;
+    total: ReactNode /* string */;
+  };
+  evaluation1_task_quota: { remaining_count: ReactNode /* string */ };
+  evaluation1_task_quota_new: {
+    freeCount: ReactNode /* string */;
+    remaining_count: ReactNode /* string */;
+  };
+  evaluation1_test_description: {
+    testrun_consumption_token: ReactNode /* string */;
+  };
+  evaluation1_warning_message_eval_prompt: { field: ReactNode /* string */ };
+  evaluation_autosaved: { savedtime: ReactNode /* string */ };
+  evaluation_dataset_columnLimit: { columnCount: ReactNode /* string */ };
+  evaluation_dataset_columnNameLength: {
+    columnNameMaxLength: ReactNode /* string */;
+  };
+  evaluation_dataset_columnNumber: {
+    columnNumberLimit: ReactNode /* string */;
+  };
+  evaluation_dataset_csv_contentLength_error: {
+    maxLength: ReactNode /* string */;
+  };
+  evaluation_dataset_csv_groupConversation_error: {
+    gourpName: ReactNode /* string */;
+    rowLimit: ReactNode /* string */;
+  };
+  evaluation_dataset_dialogueNumber: {
+    dialogueNumberLimit: ReactNode /* string */;
+  };
+  evaluation_dataset_exceeds_maximum_column: {
+    MAX_COLUMN_LENGTH: ReactNode /* string */;
+  };
+  evaluation_page_consumption_prediction_tips1: {
+    Estimated_token_consumption: ReactNode /* string */;
+  };
+  evaluation_page_consumption_prediction_tips2: {
+    testrun_consumption_token: ReactNode /* string */;
+  };
+  evaluation_page_consumption_upload_file_limitation_tip: {
+    row_limit: ReactNode /* string */;
+  };
+  evaluation_page_free_amount_tips1_no_remaining: {
+    freeCount: ReactNode /* string */;
+  };
+  evaluation_page_free_amount_tips1_remaining: {
+    freeCount: ReactNode /* string */;
+    remaining_count: ReactNode /* string */;
+  };
+  evaluation_rule_defaultAdded: { ruleCount: ReactNode /* string */ };
+  evaluation_rule_has_number: { rulesNumber: ReactNode /* string */ };
+  evaluation_rule_reachLimit: { rulesLimit: ReactNode /* string */ };
+  evaluation_rule_reachLimit_error: { maxRuleNumber: ReactNode /* string */ };
+  evaluation_sample_conciseness: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_controversiality: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_correctness: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_creativity: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_criminality: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_depth: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_detail: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_harmfulness: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_helpfulness: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_insensitivity: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_maliciousness: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_misogyny: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_sample_relevance: {
+    input: ReactNode /* string */;
+    output: ReactNode /* string */;
+  };
+  evaluation_success_count_total: {
+    successCount: ReactNode /* string */;
+    total: ReactNode /* string */;
+  };
+  event_panel_run_workflow_failed_default_value: {
+    name: ReactNode /* string */;
+    error: ReactNode /* string */;
+  };
+  event_panel_run_workflow_success_default_value: {
+    workflow: ReactNode /* string */;
+  };
+  expired_time_days_1: { num: ReactNode /* number */ };
+  exterprise_share_link_page_description: {
+    enterprise_name: ReactNode /* string */;
+  };
+  failed_to_import_tool: { num: ReactNode /* number */ };
+  'file_size_exceeds_limit__maximum_support_{maxsize}_kb': {
+    maxSize: ReactNode /* string */;
+  };
+  file_too_large: { max_size: ReactNode /* string */ };
+  folder_selection_num_of_selected: { n: ReactNode /* string */ };
+  home_at_bot_status: { bot_name: ReactNode /* string */ };
+  home_mention_searchbotstore_result_not_found_content: {
+    search_text: ReactNode /* string */;
+  };
+  home_mention_searchbotstore_result_title: {
+    search_text: ReactNode /* string */;
+  };
+  imageflow_canvas_reference_image: { variable: ReactNode /* string */ };
+  imageflow_canvas_reference_text: { variable: ReactNode /* string */ };
+  imageflow_canvas_var_reference: { n: ReactNode /* string */ };
+  imageflow_tab_title: { name: ReactNode /* string */ };
+  imageflow_upload_error2: { value: ReactNode /* string */ };
+  imageflow_upload_error3: { value: ReactNode /* string */ };
+  imageflow_upload_error4: { value: ReactNode /* string */ };
+  imageflow_upload_error5: { value: ReactNode /* string */ };
+  imageflow_upload_error_type: { type: ReactNode /* string */ };
+  imageflow_upload_exceed: { size: ReactNode /* string */ };
+  imageflow_upload_type: { type: ReactNode /* string */ };
+  imageflowstore_expire_content: {
+    entity_type: ReactNode /* string */;
+    entity_name: ReactNode /* string */;
+  };
+  intent_queyr_jumping_hint: { link: ReactNode /* string */ };
+  kl2_009: { num: ReactNode /* number */ };
+  kl_write_041: { index: ReactNode /* string */ };
+  'knowledge-3rd-party-add-units-google-drive-pages-selected': {
+    number: ReactNode /* string */;
+  };
+  'knowledge-3rd-party-add-units-notion-pages-selected': {
+    number: ReactNode /* string */;
+  };
+  knowledge_1218_001: { MaxDocs: ReactNode /* string */ };
+  knowledge_1226_002: { FieldName: ReactNode /* string */ };
+  knowledge_application_leaderboard_top_n: { n: ReactNode /* string */ };
+  knowledge_application_leaderboard_top_n_explain: {
+    n: ReactNode /* string */;
+  };
+  knowledge_feishu_search_placeholder: { name: ReactNode /* string */ };
+  knowledge_insert_img_003: { url: ReactNode /* string */ };
+  knowledge_level_006: { filenames: ReactNode /* string */ };
+  knowledge_only_type: { docType: ReactNode /* string */ };
+  knowledge_optimize_019: { n: ReactNode /* string */ };
+  knowledge_photo_015: { num: ReactNode /* string */ };
+  knowledge_slice_content_length_error: { number: ReactNode /* string */ };
+  knowledge_table_content_limt: { number: ReactNode /* string */ };
+  knowledge_upload_remaining_time_text: {
+    minutes: ReactNode /* string */;
+    seconds: ReactNode /* string */;
+  };
+  knowledge_weixin_011: { num: ReactNode /* string */ };
+  knowledge_weixin_012: { num: ReactNode /* string */ };
+  language_understanding_leaderboard_top_n: { n: ReactNode /* string */ };
+  language_understanding_leaderboard_top_n_explain: {
+    n: ReactNode /* string */;
+  };
+  last_modified_time: { time: ReactNode /* string */ };
+  limits_dataset_files: { number_of_files: ReactNode /* string */ };
+  location_not_parsed: { location: ReactNode /* string */ };
+  log_pay_wall_date_filter_tips1: { upgrade: ReactNode /* string */ };
+  login_verification_code_sent: { phone_number: ReactNode /* string */ };
+  markdown_bold_syntax: {
+    text: ReactNode /* string */;
+    space: ReactNode /* string */;
+  };
+  markdown_bulletedlist_syntax: { space: ReactNode /* string */ };
+  markdown_code_syntax: {
+    code: ReactNode /* string */;
+    space: ReactNode /* string */;
+  };
+  markdown_codeblock_syntax: { space: ReactNode /* string */ };
+  markdown_heading1_syntax: { space: ReactNode /* string */ };
+  markdown_heading2_syntax: { space: ReactNode /* string */ };
+  markdown_heading3_syntax: { space: ReactNode /* string */ };
+  markdown_italic_syntax: {
+    text: ReactNode /* string */;
+    space: ReactNode /* string */;
+  };
+  markdown_numberedlist_syntax: { space: ReactNode /* string */ };
+  markdown_quote_syntax: { space: ReactNode /* string */ };
+  markdown_strickthrough_syntax: {
+    text: ReactNode /* string */;
+    space: ReactNode /* string */;
+  };
+  markdown_underline_syntax: {
+    text: ReactNode /* string */;
+    space: ReactNode /* string */;
+  };
+  messageListRetry: { retry: ReactNode /* string */ };
+  message_credits_18: { count: ReactNode /* string */ };
+  message_credits_6: { count: ReactNode /* string */ };
+  message_credits_9: { price: ReactNode /* string */ };
+  miniapp_url_action_7: { num: ReactNode /* string */ };
+  missing_parameter: { field_names: ReactNode /* string */ };
+  mkpl_maximum_chatacter_limit: { maxCount: ReactNode /* string */ };
+  mkpl_report_bot_desc: { emailAddress: ReactNode /* string */ };
+  mkpl_report_community_desc: { emailAddress: ReactNode /* string */ };
+  mkpl_report_desc: { emailAddress: ReactNode /* string */ };
+  mockdata_field_empty: { fieldName: ReactNode /* string */ };
+  mockset_during_using: { MockSetName: ReactNode /* string */ };
+  mockset_field_is_required: { field: ReactNode /* string */ };
+  mockset_invaild_tip: { MockSetName: ReactNode /* string */ };
+  mockset_label_tip: { MockSetName: ReactNode /* string */ };
+  mockset_of_toolname: { toolName: ReactNode /* string */ };
+  model_arena_by_company: { company: ReactNode /* string */ };
+  model_list_december_update_notice: { date: ReactNode /* string */ };
+  model_list_model_company: { company: ReactNode /* string */ };
+  model_list_model_default_parameters_tips: { doc: ReactNode /* string */ };
+  model_list_model_deprecation_date: { date: ReactNode /* string */ };
+  model_list_model_setting: { model: ReactNode /* string */ };
+  model_list_model_switch_announcement: {
+    model_deprecated: ReactNode /* string */;
+    date: ReactNode /* string */;
+    model_up: ReactNode /* string */;
+  };
+  model_list_remove_from_list: {
+    model_deprecated: ReactNode /* string */;
+    date: ReactNode /* string */;
+  };
+  model_management_context: { context: ReactNode /* string */ };
+  model_management_file_size_limit: { size: ReactNode /* string */ };
+  model_management_results_count: { count: ReactNode /* string */ };
+  model_ranking_agent_battle_top_n: { n: ReactNode /* string */ };
+  model_ranking_pure_model_battle_top_n: { n: ReactNode /* string */ };
+  model_sp_input_cached_support_tips: { 变量: ReactNode /* string */ };
+  model_support_poor_warning: { modelName: ReactNode /* string */ };
+  models_arena_question_bank_hover_current_selection_bankname: {
+    bank_name: ReactNode /* string */;
+  };
+  models_arena_question_bank_hover_remove_bankname: {
+    bank_name: ReactNode /* string */;
+  };
+  models_arena_resultpage_has_received_n_votes: { n: ReactNode /* string */ };
+  move_space_task_loading_timer: { time: ReactNode /* string */ };
+  move_workspace_failed_pop_desc: { error_msg: ReactNode /* string */ };
+  move_workspace_pop_up_choose_user_team_paywall_tips: {
+    amount: ReactNode /* string */;
+  };
+  move_workspace_pop_up_choose_workspace_desc: { doc: ReactNode /* string */ };
+  move_workspace_pop_up_resource_list_type2_API_desc: {
+    doc: ReactNode /* string */;
+  };
+  multiagent_bot_update_auto_time: { time: ReactNode /* string */ };
+  new_landing_title_customer_detail: { case_title: ReactNode /* string */ };
+  nl2prompt_insert_placeholder: { slash: ReactNode /* string */ };
+  'no_binding_relationship__add_tab_{newtitle}_to_the_bottom_navigation_bar_and_bin': {
+    newTitle: ReactNode /* string */;
+    currentPageId: ReactNode /* string */;
+  };
+  not_supported_explain: { modelName: ReactNode /* string */ };
+  not_supported_explain_toolName: {
+    modelName: ReactNode /* string */;
+    toolName: ReactNode /* string */;
+  };
+  oauth_ask_for_auth_message: {
+    pluginName: ReactNode /* string */;
+    url: ReactNode /* string */;
+  };
+  obo_auth_link_notification: { user_name: ReactNode /* string */ };
+  obo_install_failed_notification: { err_msg: ReactNode /* string */ };
+  obo_install_popup_title: { app_name: ReactNode /* string */ };
+  open_source_terms: { aggrement: ReactNode /* string */ };
+  openapi_auth_app_auth_org: { org_type: ReactNode /* string */ };
+  openapi_auth_app_auth_tos: {
+    org_type: ReactNode /* string */;
+    org_name: ReactNode /* string */;
+  };
+  openapi_rtc_coze_pro_tips: { coze_pro: ReactNode /* string */ };
+  openapi_rtc_waitlist_tips: { application_link: ReactNode /* string */ };
+  opening_markdown_support_tag: { markdown_editor_btn: ReactNode /* string */ };
+  operation_overview_category_ranking: { category: ReactNode /* string */ };
+  operation_overview_category_ranking_hint: {
+    category: ReactNode /* string */;
+  };
+  operations_comparison_period: {
+    ratio: ReactNode /* string */;
+    date1: ReactNode /* string */;
+    date2: ReactNode /* string */;
+  };
   'option_{i}': { i: ReactNode /* string */ };
-  'org_api': { org_type: ReactNode /* string */ };
-  'org_api_app_type': { org_type: ReactNode /* string */ };
-  'org_api_oauth_choose_1': { org_type: ReactNode /* string */ };
-  'org_api_oauth_install_management_reminder': { org_type: ReactNode /* string */ };
-  'org_api_oauth_num_limit': { org_type: ReactNode /* string */ };
-  'org_api_oauth_space_all_desc': { org_type: ReactNode /* string */ };
-  'org_api_oauth_space_choose_desc': { org_type: ReactNode /* string */ };
-  'org_api_opat_space_all_desc': { org_type: ReactNode /* string */ };
-  'org_api_opat_space_choose_desc': { org_type: ReactNode /* string */ };
-  'org_app_auth_tips': { doc_link: ReactNode /* string */ };
-  'org_oauth_app_install_apply_1': { app_name: ReactNode /* string */, org_type: ReactNode /* string */, enterprise_name: ReactNode /* string */ };
-  'org_oauth_app_install_apply_13': { org_type: ReactNode /* string */ };
-  'org_oauth_app_install_apply_14': { org_type: ReactNode /* string */ };
-  'org_oauth_app_install_apply_4': { app_name: ReactNode /* string */ };
-  'org_oauth_app_install_apply_5': { enterprise_name: ReactNode /* string */ };
-  'org_oauth_user_not_exsit': { org_type: ReactNode /* string */ };
-  'overview_bi_assistant_quarter': { quarter: ReactNode /* string */ };
-  'overview_bi_assistant_week': { week: ReactNode /* string */ };
-  'overview_bi_assistant_year': { year: ReactNode /* string */ };
-  'page_{currentpageid}_toggles_the_bottom_navigation_to_{target}': { currentPageId: ReactNode /* string */, target: ReactNode /* string */ };
+  org_api: { org_type: ReactNode /* string */ };
+  org_api_app_type: { org_type: ReactNode /* string */ };
+  org_api_oauth_choose_1: { org_type: ReactNode /* string */ };
+  org_api_oauth_install_management_reminder: {
+    org_type: ReactNode /* string */;
+  };
+  org_api_oauth_num_limit: { org_type: ReactNode /* string */ };
+  org_api_oauth_space_all_desc: { org_type: ReactNode /* string */ };
+  org_api_oauth_space_choose_desc: { org_type: ReactNode /* string */ };
+  org_api_opat_space_all_desc: { org_type: ReactNode /* string */ };
+  org_api_opat_space_choose_desc: { org_type: ReactNode /* string */ };
+  org_app_auth_tips: { doc_link: ReactNode /* string */ };
+  org_oauth_app_install_apply_1: {
+    app_name: ReactNode /* string */;
+    org_type: ReactNode /* string */;
+    enterprise_name: ReactNode /* string */;
+  };
+  org_oauth_app_install_apply_13: { org_type: ReactNode /* string */ };
+  org_oauth_app_install_apply_14: { org_type: ReactNode /* string */ };
+  org_oauth_app_install_apply_4: { app_name: ReactNode /* string */ };
+  org_oauth_app_install_apply_5: { enterprise_name: ReactNode /* string */ };
+  org_oauth_user_not_exsit: { org_type: ReactNode /* string */ };
+  overview_bi_assistant_quarter: { quarter: ReactNode /* string */ };
+  overview_bi_assistant_week: { week: ReactNode /* string */ };
+  overview_bi_assistant_year: { year: ReactNode /* string */ };
+  'page_{currentpageid}_toggles_the_bottom_navigation_to_{target}': {
+    currentPageId: ReactNode /* string */;
+    target: ReactNode /* string */;
+  };
   'page_{len}': { len: ReactNode /* string */ };
-  'path_has_duplicates': { path: ReactNode /* string */, num: ReactNode /* number */ };
-  'people_using_mockset_delete': { num: ReactNode /* number */ };
-  'performance_every_hours': { count: ReactNode /* string */ };
-  'performance_every_minutes': { count: ReactNode /* string */ };
-  'personal_resource_authoorization_page_choose_multi_toast': { number: ReactNode /* string */ };
-  'personal_resource_authoorization_page_chosen': { number: ReactNode /* string */ };
-  'personal_resource_authoorization_page_desc': { enterprise_name: ReactNode /* string */, doc: ReactNode /* string */ };
+  path_has_duplicates: {
+    path: ReactNode /* string */;
+    num: ReactNode /* number */;
+  };
+  people_using_mockset_delete: { num: ReactNode /* number */ };
+  performance_every_hours: { count: ReactNode /* string */ };
+  performance_every_minutes: { count: ReactNode /* string */ };
+  personal_resource_authoorization_page_choose_multi_toast: {
+    number: ReactNode /* string */;
+  };
+  personal_resource_authoorization_page_chosen: {
+    number: ReactNode /* string */;
+  };
+  personal_resource_authoorization_page_desc: {
+    enterprise_name: ReactNode /* string */;
+    doc: ReactNode /* string */;
+  };
   'photo-size-limit': { fileName: ReactNode /* string */ };
-  'playground_emotion_range_tips': { range: ReactNode /* string */ };
-  'playground_emotion_tips': { docLink: ReactNode /* string */ };
-  'plugin_config_modal_static_ip_desc_with_url': { url: ReactNode /* string */ };
-  'plugin_tool_exists_tips': { num: ReactNode /* number */ };
-  'plugin_tool_import_result_tips': { succToolCount: ReactNode /* string */, failToolCount: ReactNode /* string */ };
-  'poorly_supported_explain_toolName': { modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
-  'premium_cancel_alert_des': { date: ReactNode /* string */ };
-  'premium_canceled_des': { date: ReactNode /* string */ };
-  'premium_connect_button_des': { count: ReactNode /* string */ };
-  'premium_connect_platform': { platform: ReactNode /* string */ };
-  'premium_connect_platform_des': { platform: ReactNode /* string */ };
-  'premium_credits_per_message': { count: ReactNode /* string */ };
-  'premium_free_trial_new': { count: ReactNode /* string */ };
-  'premium_login_tips': { login: ReactNode /* string */ };
-  'premium_message_credits': { count: ReactNode /* string */ };
-  'premium_message_credits_des': { count: ReactNode /* string */ };
-  'premium_message_exchange': { count: ReactNode /* string */ };
-  'premium_messages_count': { count: ReactNode /* string */ };
-  'premium_messages_per_day': { count: ReactNode /* string */ };
-  'premium_plan_plugin_cost_credits_per_call': { number: ReactNode /* string */ };
-  'premium_price_month': { price: ReactNode /* string */ };
-  'professional_plan_n_paid_plugins_included_in_bot': { count: ReactNode /* string */ };
-  'professional_plan_n_paid_plugins_included_in_workflow': { count: ReactNode /* string */ };
-  'profile_interactive_update_bots': { num: ReactNode /* string */ };
-  'profile_notify_follow_target_update': { nick_name: ReactNode /* string */, num: ReactNode /* string */ };
-  'profile_notify_follow_targets_update': { num: ReactNode /* string */ };
-  'profile_notify_single_user_follow': { nick_name: ReactNode /* string */ };
-  'profile_notify_some_users_follow': { num: ReactNode /* string */ };
-  'project_conversation_list_batch_delete_btn': { len: ReactNode /* string */ };
-  'project_conversation_list_batch_delete_tooltip_context': { len: ReactNode /* string */ };
-  'project_ide_info_created_on': { time: ReactNode /* string */ };
-  'project_ide_tab_title': { project_name: ReactNode /* string */ };
-  'project_library_voice_add_finished_chances': { leftChangce: ReactNode /* string */, allChance: ReactNode /* string */ };
-  'project_library_voice_add_record_time': { time: ReactNode /* string */ };
-  'project_plugin_delete_modal_title': { pluginName: ReactNode /* string */ };
-  'project_publish_select_desc_compliance_new': { publish_terms_title: ReactNode /* string */ };
-  'project_release_example1': { version: ReactNode /* string */ };
-  'project_release_package_failed_reason': { package_failed_reason: ReactNode /* string */ };
-  'project_release_reason_channel': { reason_channel: ReactNode /* string */ };
-  'project_release_template_info_not': { template_info_type: ReactNode /* string */ };
-  'project_resource_modal_library_resources': { resource: ReactNode /* string */ };
-  'project_resource_modal_project_resources': { resource: ReactNode /* string */ };
-  'project_resource_sidebar_confirm_batch_delete': { count: ReactNode /* string */ };
-  'project_resource_sidebar_confirm_delete': { resourceName: ReactNode /* string */ };
-  'project_resource_sidebar_create_new_resource': { resource: ReactNode /* string */ };
-  'project_resource_sidebar_disable_resource': { resource: ReactNode /* string */ };
-  'project_resource_sidebar_enable_resource': { resource: ReactNode /* string */ };
-  'project_resource_sidebar_resource_not_added': { resource: ReactNode /* string */ };
-  'project_resource_sidebar_warning_label_exists': { label: ReactNode /* string */ };
-  'project_store_search_result': { amount: ReactNode /* string */ };
-  'project_toast_copying_resource': { resourceName: ReactNode /* string */ };
-  'publish_audit_pop2': { reason: ReactNode /* string */ };
-  'publish_bot_allow_share': { platform: ReactNode /* string */ };
-  'publish_bot_not_allow_share': { platform: ReactNode /* string */ };
-  'publish_channel_control_page_channel_set_status_bar': { open: ReactNode /* string */, close: ReactNode /* string */ };
-  'publish_channel_control_page_chosen': { count: ReactNode /* string */ };
-  'publish_permission_control_page_white_list_reach_limit': { count: ReactNode /* string */ };
-  'query_latency': { duration: ReactNode /* string */ };
-  'query_latency_hover': { duration: ReactNode /* string */ };
-  'query_tokens_hover': { number: ReactNode /* string */ };
-  'query_tokens_number': { number: ReactNode /* string */ };
-  'realtime_sdk_playground_event_7': { event_name: ReactNode /* string */ };
-  'realtime_sdk_playground_voice_9': { name: ReactNode /* string */ };
-  'realtime_sdk_playground_welcome_1': { user_name: ReactNode /* string */ };
-  'reasoning_leaderboard_top_n': { n: ReactNode /* string */ };
-  'reasoning_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'release_analysis_days_compare': { days: ReactNode /* string */ };
-  'release_analysis_time': { days: ReactNode /* string */ };
-  'release_management_add_failed': { number: ReactNode /* string */ };
-  'release_management_detail1': { button: ReactNode /* string */ };
-  'release_management_link': { url: ReactNode /* string */ };
-  'release_management_removed': { number: ReactNode /* string */ };
-  'release_management_removed2': { count: ReactNode /* string */ };
-  'release_management_unlist_confirm': { platform: ReactNode /* string */ };
-  'resource_move_title': { bot_name: ReactNode /* string */ };
-  'resource_process_modal_text_copying_resource_to_library': { resourceName: ReactNode /* string */ };
-  'resource_process_modal_text_copying_resource_to_project': { resourceName: ReactNode /* string */ };
-  'resource_process_modal_text_moving_resource_to_library': { resourceName: ReactNode /* string */ };
-  'role_play_leaderboard_top_n': { n: ReactNode /* string */ };
-  'role_play_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'scaling_base_plus_extra': { basic: ReactNode /* string */, extra: ReactNode /* string */ };
-  'scaling_cancel_tip': { type: ReactNode /* string */, num: ReactNode /* string */ };
-  'scaling_confirm_activate': { type: ReactNode /* string */ };
-  'scaling_expand_type': { type: ReactNode /* string */ };
-  'scaling_expand_type_desc': { type: ReactNode /* string */ };
-  'scaling_integer_only': { num: ReactNode /* string */ };
-  'scaling_max_tip': { max: ReactNode /* string */, link: ReactNode /* string */ };
-  'scene_chat_error_empty_seat_fix_content': { nickname: ReactNode /* string */ };
-  'scene_edit_preview_init_added': { n: ReactNode /* string */ };
-  'scene_edit_preview_init_added_4': { n: ReactNode /* string */ };
-  'scene_edit_preview_init_need_to_add': { m: ReactNode /* string */ };
-  'scene_edit_preview_input_box_allow_send_title': { list: ReactNode /* string */ };
-  'scene_edit_preview_message_sendto': { list: ReactNode /* string */ };
-  'scene_edit_preview_message_sequentially': { list: ReactNode /* string */ };
-  'scene_edit_preview_message_simultaneously': { list: ReactNode /* string */ };
-  'scene_edit_preview_next_speaker_text': { name: ReactNode /* string */ };
-  'scene_edit_roles_reserve_add_member_subtitle': { n: ReactNode /* string */ };
-  'scene_mkpl_bot_remove_subtitle2': { num: ReactNode /* number */ };
-  'scene_mkpl_play_waiting': { n: ReactNode /* string */ };
-  'scene_mkpl_search_tab_title2': { num: ReactNode /* number */ };
-  'scene_roles_visibility_select_custom_all': { role_name: ReactNode /* string */ };
-  'scene_workflow_chat_node_conversation_visibility_custom_roles_seat': { n: ReactNode /* string */ };
-  'scene_workflow_delete_workflow_button': { source: ReactNode /* string */ };
-  'scene_workflow_delete_workflow_popup_subtitle': { source: ReactNode /* string */ };
-  'scene_workflow_delete_workflow_popup_title': { source: ReactNode /* string */ };
-  'scene_workflow_testrun_nickname': { role: ReactNode /* string */, n: ReactNode /* string */ };
-  'share_card_title': { bot_name: ReactNode /* string */ };
-  'shortcut_modal_components_hover_tip': { var1: ReactNode /* string */, var2: ReactNode /* string */ };
-  'shortcut_modal_max_component_tip': { maxCount: ReactNode /* string */ };
-  'shortcut_modal_query_message_hover_tip_component_mode': { var1: ReactNode /* string */, var2: ReactNode /* string */ };
-  'shortcut_modal_save_shortcut_with_components_unused_modal_desc': { unUsedComponentsNames: ReactNode /* string */ };
-  'shortcut_modal_selector_component_count_of_options': { count: ReactNode /* string */ };
-  'sign_third_button': { platform: ReactNode /* string */ };
-  'store_bot_privacy_container': { Terms: ReactNode /* string */ };
-  'store_search_result1': { num: ReactNode /* number */ };
-  'store_search_result2': { num: ReactNode /* number */ };
-  'store_search_result3': { num: ReactNode /* number */ };
-  'store_search_result5': { amount: ReactNode /* string */ };
-  'store_search_result6': { num: ReactNode /* number */ };
-  'store_search_result_mobile': { query: ReactNode /* string */ };
-  'store_search_suggest_page': { query: ReactNode /* string */ };
-  'store_search_suggest_result': { query: ReactNode /* string */ };
-  'store_search_suggest_result_amout': { query: ReactNode /* string */ };
-  'store_service_plugin_connector_only': { connector_names: ReactNode /* string */ };
-  'subscribe_message_credit': { count: ReactNode /* string */ };
-  'support_poor_explain': { modelName: ReactNode /* string */ };
-  'switch_to_on_demand_call_warning_notsupported': { call_method: ReactNode /* string */, modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
-  'switch_to_on_demand_call_warning_supportpoor': { callMethod: ReactNode /* string */, modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
-  'tab_bot_detail': { bot_name: ReactNode /* string */ };
-  'tab_dataset_detail': { dataset_name: ReactNode /* string */ };
-  'tab_explore_bot_detail': { bot_name: ReactNode /* string */ };
-  'tab_plugin_detail': { plugin_name: ReactNode /* string */ };
-  'tab_workflow_detail': { workflow_name: ReactNode /* string */ };
-  'tab_{placeholder1}_bind_page_{bametpageid}': { placeholder1: ReactNode /* string */, targetPageId: ReactNode /* string */ };
-  'tab_{placeholder1}_binds_the_page_{bametpageid}__and_unbinds_the_page_from_the_o': { placeholder1: ReactNode /* string */, targetPageId: ReactNode /* string */, placeholder5: ReactNode /* string */ };
-  'tab_{tabtitle}__has_been_bound_to__{label}___after_confirmation__the_original_bi': { tabTitle: ReactNode /* string */, label: ReactNode /* string */ };
-  'table_view_002': { n: ReactNode /* string */ };
+  playground_emotion_range_tips: { range: ReactNode /* string */ };
+  playground_emotion_tips: { docLink: ReactNode /* string */ };
+  plugin_config_modal_static_ip_desc_with_url: { url: ReactNode /* string */ };
+  plugin_tool_exists_tips: { num: ReactNode /* number */ };
+  plugin_tool_import_result_tips: {
+    succToolCount: ReactNode /* string */;
+    failToolCount: ReactNode /* string */;
+  };
+  poorly_supported_explain_toolName: {
+    modelName: ReactNode /* string */;
+    toolName: ReactNode /* string */;
+  };
+  premium_cancel_alert_des: { date: ReactNode /* string */ };
+  premium_canceled_des: { date: ReactNode /* string */ };
+  premium_connect_button_des: { count: ReactNode /* string */ };
+  premium_connect_platform: { platform: ReactNode /* string */ };
+  premium_connect_platform_des: { platform: ReactNode /* string */ };
+  premium_credits_per_message: { count: ReactNode /* string */ };
+  premium_free_trial_new: { count: ReactNode /* string */ };
+  premium_login_tips: { login: ReactNode /* string */ };
+  premium_message_credits: { count: ReactNode /* string */ };
+  premium_message_credits_des: { count: ReactNode /* string */ };
+  premium_message_exchange: { count: ReactNode /* string */ };
+  premium_messages_count: { count: ReactNode /* string */ };
+  premium_messages_per_day: { count: ReactNode /* string */ };
+  premium_plan_plugin_cost_credits_per_call: { number: ReactNode /* string */ };
+  premium_price_month: { price: ReactNode /* string */ };
+  professional_plan_n_paid_plugins_included_in_bot: {
+    count: ReactNode /* string */;
+  };
+  professional_plan_n_paid_plugins_included_in_workflow: {
+    count: ReactNode /* string */;
+  };
+  profile_interactive_update_bots: { num: ReactNode /* string */ };
+  profile_notify_follow_target_update: {
+    nick_name: ReactNode /* string */;
+    num: ReactNode /* string */;
+  };
+  profile_notify_follow_targets_update: { num: ReactNode /* string */ };
+  profile_notify_single_user_follow: { nick_name: ReactNode /* string */ };
+  profile_notify_some_users_follow: { num: ReactNode /* string */ };
+  project_conversation_list_batch_delete_btn: { len: ReactNode /* string */ };
+  project_conversation_list_batch_delete_tooltip_context: {
+    len: ReactNode /* string */;
+  };
+  project_ide_info_created_on: { time: ReactNode /* string */ };
+  project_ide_tab_title: { project_name: ReactNode /* string */ };
+  project_library_voice_add_finished_chances: {
+    leftChangce: ReactNode /* string */;
+    allChance: ReactNode /* string */;
+  };
+  project_library_voice_add_record_time: { time: ReactNode /* string */ };
+  project_plugin_delete_modal_title: { pluginName: ReactNode /* string */ };
+  project_publish_select_desc_compliance_new: {
+    publish_terms_title: ReactNode /* string */;
+  };
+  project_release_example1: { version: ReactNode /* string */ };
+  project_release_package_failed_reason: {
+    package_failed_reason: ReactNode /* string */;
+  };
+  project_release_reason_channel: { reason_channel: ReactNode /* string */ };
+  project_release_template_info_not: {
+    template_info_type: ReactNode /* string */;
+  };
+  project_resource_modal_library_resources: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_modal_project_resources: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_sidebar_confirm_batch_delete: {
+    count: ReactNode /* string */;
+  };
+  project_resource_sidebar_confirm_delete: {
+    resourceName: ReactNode /* string */;
+  };
+  project_resource_sidebar_create_new_resource: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_sidebar_disable_resource: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_sidebar_enable_resource: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_sidebar_resource_not_added: {
+    resource: ReactNode /* string */;
+  };
+  project_resource_sidebar_warning_label_exists: {
+    label: ReactNode /* string */;
+  };
+  project_store_search_result: { amount: ReactNode /* string */ };
+  project_toast_copying_resource: { resourceName: ReactNode /* string */ };
+  publish_audit_pop2: { reason: ReactNode /* string */ };
+  publish_bot_allow_share: { platform: ReactNode /* string */ };
+  publish_bot_not_allow_share: { platform: ReactNode /* string */ };
+  publish_channel_control_page_channel_set_status_bar: {
+    open: ReactNode /* string */;
+    close: ReactNode /* string */;
+  };
+  publish_channel_control_page_chosen: { count: ReactNode /* string */ };
+  publish_permission_control_page_white_list_reach_limit: {
+    count: ReactNode /* string */;
+  };
+  query_latency: { duration: ReactNode /* string */ };
+  query_latency_hover: { duration: ReactNode /* string */ };
+  query_tokens_hover: { number: ReactNode /* string */ };
+  query_tokens_number: { number: ReactNode /* string */ };
+  realtime_sdk_playground_event_7: { event_name: ReactNode /* string */ };
+  realtime_sdk_playground_voice_9: { name: ReactNode /* string */ };
+  realtime_sdk_playground_welcome_1: { user_name: ReactNode /* string */ };
+  reasoning_leaderboard_top_n: { n: ReactNode /* string */ };
+  reasoning_leaderboard_top_n_explain: { n: ReactNode /* string */ };
+  release_analysis_days_compare: { days: ReactNode /* string */ };
+  release_analysis_time: { days: ReactNode /* string */ };
+  release_management_add_failed: { number: ReactNode /* string */ };
+  release_management_detail1: { button: ReactNode /* string */ };
+  release_management_link: { url: ReactNode /* string */ };
+  release_management_removed: { number: ReactNode /* string */ };
+  release_management_removed2: { count: ReactNode /* string */ };
+  release_management_unlist_confirm: { platform: ReactNode /* string */ };
+  resource_move_title: { bot_name: ReactNode /* string */ };
+  resource_process_modal_text_copying_resource_to_library: {
+    resourceName: ReactNode /* string */;
+  };
+  resource_process_modal_text_copying_resource_to_project: {
+    resourceName: ReactNode /* string */;
+  };
+  resource_process_modal_text_moving_resource_to_library: {
+    resourceName: ReactNode /* string */;
+  };
+  role_play_leaderboard_top_n: { n: ReactNode /* string */ };
+  role_play_leaderboard_top_n_explain: { n: ReactNode /* string */ };
+  scaling_base_plus_extra: {
+    basic: ReactNode /* string */;
+    extra: ReactNode /* string */;
+  };
+  scaling_cancel_tip: {
+    type: ReactNode /* string */;
+    num: ReactNode /* string */;
+  };
+  scaling_confirm_activate: { type: ReactNode /* string */ };
+  scaling_expand_type: { type: ReactNode /* string */ };
+  scaling_expand_type_desc: { type: ReactNode /* string */ };
+  scaling_integer_only: { num: ReactNode /* string */ };
+  scaling_max_tip: {
+    max: ReactNode /* string */;
+    link: ReactNode /* string */;
+  };
+  scene_chat_error_empty_seat_fix_content: { nickname: ReactNode /* string */ };
+  scene_edit_preview_init_added: { n: ReactNode /* string */ };
+  scene_edit_preview_init_added_4: { n: ReactNode /* string */ };
+  scene_edit_preview_init_need_to_add: { m: ReactNode /* string */ };
+  scene_edit_preview_input_box_allow_send_title: {
+    list: ReactNode /* string */;
+  };
+  scene_edit_preview_message_sendto: { list: ReactNode /* string */ };
+  scene_edit_preview_message_sequentially: { list: ReactNode /* string */ };
+  scene_edit_preview_message_simultaneously: { list: ReactNode /* string */ };
+  scene_edit_preview_next_speaker_text: { name: ReactNode /* string */ };
+  scene_edit_roles_reserve_add_member_subtitle: { n: ReactNode /* string */ };
+  scene_mkpl_bot_remove_subtitle2: { num: ReactNode /* number */ };
+  scene_mkpl_play_waiting: { n: ReactNode /* string */ };
+  scene_mkpl_search_tab_title2: { num: ReactNode /* number */ };
+  scene_roles_visibility_select_custom_all: {
+    role_name: ReactNode /* string */;
+  };
+  scene_workflow_chat_node_conversation_visibility_custom_roles_seat: {
+    n: ReactNode /* string */;
+  };
+  scene_workflow_delete_workflow_button: { source: ReactNode /* string */ };
+  scene_workflow_delete_workflow_popup_subtitle: {
+    source: ReactNode /* string */;
+  };
+  scene_workflow_delete_workflow_popup_title: {
+    source: ReactNode /* string */;
+  };
+  scene_workflow_testrun_nickname: {
+    role: ReactNode /* string */;
+    n: ReactNode /* string */;
+  };
+  share_card_title: { bot_name: ReactNode /* string */ };
+  shortcut_modal_components_hover_tip: {
+    var1: ReactNode /* string */;
+    var2: ReactNode /* string */;
+  };
+  shortcut_modal_max_component_tip: { maxCount: ReactNode /* string */ };
+  shortcut_modal_query_message_hover_tip_component_mode: {
+    var1: ReactNode /* string */;
+    var2: ReactNode /* string */;
+  };
+  shortcut_modal_save_shortcut_with_components_unused_modal_desc: {
+    unUsedComponentsNames: ReactNode /* string */;
+  };
+  shortcut_modal_selector_component_count_of_options: {
+    count: ReactNode /* string */;
+  };
+  sign_third_button: { platform: ReactNode /* string */ };
+  store_bot_privacy_container: { Terms: ReactNode /* string */ };
+  store_search_result1: { num: ReactNode /* number */ };
+  store_search_result2: { num: ReactNode /* number */ };
+  store_search_result3: { num: ReactNode /* number */ };
+  store_search_result5: { amount: ReactNode /* string */ };
+  store_search_result6: { num: ReactNode /* number */ };
+  store_search_result_mobile: { query: ReactNode /* string */ };
+  store_search_suggest_page: { query: ReactNode /* string */ };
+  store_search_suggest_result: { query: ReactNode /* string */ };
+  store_search_suggest_result_amout: { query: ReactNode /* string */ };
+  store_service_plugin_connector_only: {
+    connector_names: ReactNode /* string */;
+  };
+  subscribe_message_credit: { count: ReactNode /* string */ };
+  support_poor_explain: { modelName: ReactNode /* string */ };
+  switch_to_on_demand_call_warning_notsupported: {
+    call_method: ReactNode /* string */;
+    modelName: ReactNode /* string */;
+    toolName: ReactNode /* string */;
+  };
+  switch_to_on_demand_call_warning_supportpoor: {
+    callMethod: ReactNode /* string */;
+    modelName: ReactNode /* string */;
+    toolName: ReactNode /* string */;
+  };
+  tab_bot_detail: { bot_name: ReactNode /* string */ };
+  tab_dataset_detail: { dataset_name: ReactNode /* string */ };
+  tab_explore_bot_detail: { bot_name: ReactNode /* string */ };
+  tab_plugin_detail: { plugin_name: ReactNode /* string */ };
+  tab_workflow_detail: { workflow_name: ReactNode /* string */ };
+  'tab_{placeholder1}_bind_page_{bametpageid}': {
+    placeholder1: ReactNode /* string */;
+    targetPageId: ReactNode /* string */;
+  };
+  'tab_{placeholder1}_binds_the_page_{bametpageid}__and_unbinds_the_page_from_the_o': {
+    placeholder1: ReactNode /* string */;
+    targetPageId: ReactNode /* string */;
+    placeholder5: ReactNode /* string */;
+  };
+  'tab_{tabtitle}__has_been_bound_to__{label}___after_confirmation__the_original_bi': {
+    tabTitle: ReactNode /* string */;
+    label: ReactNode /* string */;
+  };
+  table_view_002: { n: ReactNode /* string */ };
   'tag_{placeholder1}': { placeholder1: ReactNode /* string */ };
-  'team_add_member_number_tip': { selectedMemberlength: ReactNode /* string */ };
-  'team_invitation_link_prefix': { spaceName: ReactNode /* string */ };
-  'team_management_add_member_success_toast': { number: ReactNode /* string */ };
-  'team_max_admin_tip': { maximumAdmins: ReactNode /* string */ };
-  'team_max_number_tip': { max_team_number: ReactNode /* string */ };
-  'team_share_link_page_expire_info': { date: ReactNode /* string */ };
-  'template_duplicate_count': { count: ReactNode /* string */ };
-  'terms_service_privacy_policy': { terms_of_service: ReactNode /* string */, privacy_policy: ReactNode /* string */ };
-  'the_file_size_exceeds_the_limit__the_maximum_support_is_{placeholder1}_mb': { placeholder1: ReactNode /* string */ };
-  'timecapsule_0123_001': { weekDay: ReactNode /* string */, date: ReactNode /* string */ };
-  'token_auto_recharge_specification': { count_1: ReactNode /* string */, count_2: ReactNode /* string */, count_3: ReactNode /* string */, count_4: ReactNode /* string */ };
-  'token_auto_recharge_specification1': { count: ReactNode /* string */ };
-  'token_auto_recharge_specification2': { count: ReactNode /* string */ };
-  'token_auto_recharge_specification3': { count: ReactNode /* string */ };
-  'token_auto_recharge_specification4': { count_limit: ReactNode /* string */ };
-  'tool_usage_leaderboard_top_n': { n: ReactNode /* string */ };
-  'tool_usage_leaderboard_top_n_explain': { n: ReactNode /* string */ };
-  'toolname_used_mockset_mocksetname': { toolName: ReactNode /* string */, mockSetName: ReactNode /* string */ };
-  'tools_imported_successfully': { num: ReactNode /* number */ };
-  'ui_js_expression_setter_trigger_when': { when: ReactNode /* string */ };
-  'uibuilder_eventpanel_runworkflow_success_defaultvalue': { workflowName: ReactNode /* string */ };
-  'unbind_the_original_binding_relationship_{placeholder1}_add_tab_{newtitle}_to_th': { placeholder1: ReactNode /* string */, newTitle: ReactNode /* string */, currentPageId: ReactNode /* string */ };
+  team_add_member_number_tip: { selectedMemberlength: ReactNode /* string */ };
+  team_invitation_link_prefix: { spaceName: ReactNode /* string */ };
+  team_management_add_member_success_toast: { number: ReactNode /* string */ };
+  team_max_admin_tip: { maximumAdmins: ReactNode /* string */ };
+  team_max_number_tip: { max_team_number: ReactNode /* string */ };
+  team_share_link_page_expire_info: { date: ReactNode /* string */ };
+  template_duplicate_count: { count: ReactNode /* string */ };
+  terms_service_privacy_policy: {
+    terms_of_service: ReactNode /* string */;
+    privacy_policy: ReactNode /* string */;
+  };
+  'the_file_size_exceeds_the_limit__the_maximum_support_is_{placeholder1}_mb': {
+    placeholder1: ReactNode /* string */;
+  };
+  timecapsule_0123_001: {
+    weekDay: ReactNode /* string */;
+    date: ReactNode /* string */;
+  };
+  token_auto_recharge_specification: {
+    count_1: ReactNode /* string */;
+    count_2: ReactNode /* string */;
+    count_3: ReactNode /* string */;
+    count_4: ReactNode /* string */;
+  };
+  token_auto_recharge_specification1: { count: ReactNode /* string */ };
+  token_auto_recharge_specification2: { count: ReactNode /* string */ };
+  token_auto_recharge_specification3: { count: ReactNode /* string */ };
+  token_auto_recharge_specification4: { count_limit: ReactNode /* string */ };
+  tool_usage_leaderboard_top_n: { n: ReactNode /* string */ };
+  tool_usage_leaderboard_top_n_explain: { n: ReactNode /* string */ };
+  toolname_used_mockset_mocksetname: {
+    toolName: ReactNode /* string */;
+    mockSetName: ReactNode /* string */;
+  };
+  tools_imported_successfully: { num: ReactNode /* number */ };
+  ui_js_expression_setter_trigger_when: { when: ReactNode /* string */ };
+  uibuilder_eventpanel_runworkflow_success_defaultvalue: {
+    workflowName: ReactNode /* string */;
+  };
+  'unbind_the_original_binding_relationship_{placeholder1}_add_tab_{newtitle}_to_th': {
+    placeholder1: ReactNode /* string */;
+    newTitle: ReactNode /* string */;
+    currentPageId: ReactNode /* string */;
+  };
   'update_the_page_title_to_{title}': { title: ReactNode /* string */ };
-  'upload_image_size_limit': { max_size: ReactNode /* string */ };
-  'upload_success_failed_count': { successNum: ReactNode /* string */, failedNum: ReactNode /* string */ };
-  'uploading_filename': { filename: ReactNode /* string */ };
-  'url_add_007': { count: ReactNode /* string */ };
-  'url_add_013': { limit: ReactNode /* string */ };
-  'url_add_014': { limit: ReactNode /* string */, exceeds: ReactNode /* string */ };
-  'video_agent_response_image': { name: ReactNode /* string */ };
-  'voice_clone_create_name': { name: ReactNode /* string */ };
-  'voice_clone_delete_content_chance': { chance: ReactNode /* string */ };
-  'web_sdk_free_quota': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
-  'web_sdk_official_banner': { docs_link: ReactNode /* string */ };
-  'wf_chatflow_121': { flowMode: ReactNode /* string */ };
-  'wf_chatflow_123': { Chatflow: ReactNode /* string */ };
-  'wf_max_items': { maxCount: ReactNode /* string */ };
-  'wf_node_add_wf_modal_toast_wf_added': { workflowName: ReactNode /* string */ };
-  'wf_published_version_open_loop_experiments': { workflowVersion: ReactNode /* string */ };
-  'wf_voice_emotion_listen_tooltip': { link: ReactNode /* string */ };
-  'wf_voice_emotion_tooltip': { emotions: ReactNode /* string */ };
-  'workflow_0224_02': { source: ReactNode /* string */ };
-  'workflow_250117_05': { maxCount: ReactNode /* string */ };
-  'workflow_250416_02': { min: ReactNode /* string */, max: ReactNode /* string */ };
-  'workflow_250417_01': { min: ReactNode /* string */, max: ReactNode /* string */ };
-  'workflow_add_imageflow_toast_fail': { name: ReactNode /* string */ };
-  'workflow_add_imageflow_toast_success': { name: ReactNode /* string */ };
-  'workflow_debug_testonenode_group': { nodeTitle: ReactNode /* string */ };
-  'workflow_debug_testonenode_title': { node_name: ReactNode /* string */ };
-  'workflow_derail_node_detail_title_max': { max: ReactNode /* string */ };
-  'workflow_detail_batch_item_tooltip': { name: ReactNode /* string */ };
-  'workflow_detail_error_message': { msg: ReactNode /* string */ };
-  'workflow_detail_node_error_name_duplicated': { name: ReactNode /* string */ };
-  'workflow_detail_node_workflows_max': { number: ReactNode /* string */ };
-  'workflow_detail_node_workflows_referencing': { number: ReactNode /* string */ };
-  'workflow_detail_node_workflows_referencing_tip': { number: ReactNode /* string */ };
-  'workflow_detail_testrun_panel_batch_naviagte_stop': { variable: ReactNode /* string */, len: ReactNode /* string */ };
-  'workflow_detail_testrun_warning_variable_get_empty': { key: ReactNode /* string */ };
-  'workflow_detail_testrun_warning_variable_get_failed': { key: ReactNode /* string */ };
-  'workflow_detail_testrun_warning_variable_set_failed': { key: ReactNode /* string */ };
-  'workflow_detail_title_saved_2': { time: ReactNode /* string */ };
-  'workflow_detail_title_testrun_boolean_select': { a: ReactNode /* string */ };
-  'workflow_detail_title_testrun_error_input': { a: ReactNode /* string */ };
-  'workflow_encapsulate_selecet': { length: ReactNode /* string */ };
-  'workflow_knowledeg_unexit_error': { id: ReactNode /* string */ };
-  'workflow_node_lose_efficacy': { name: ReactNode /* string */ };
-  'workflow_node_lose_efficacy_if': { name: ReactNode /* string */ };
-  'workflow_node_lose_efficacy_wf': { name: ReactNode /* string */ };
-  'workflow_publish_multibranch_auto_saved': { time: ReactNode /* string */ };
-  'workflow_publish_multibranch_published': { name: ReactNode /* string */, time: ReactNode /* string */ };
-  'workflow_publish_multibranch_submitted': { name: ReactNode /* string */, time: ReactNode /* string */ };
-  'workflow_refer_var_type_same': { type: ReactNode /* string */ };
-  'workflow_stringprocess_max_length_item': { maxLength: ReactNode /* string */ };
-  'workflow_subcanvas_pull_out': { ctrl: ReactNode /* string */ };
-  'workflow_tab_title': { name: ReactNode /* string */ };
-  'workflow_testset_creation_time': { xxx: ReactNode /* string */ };
-  'workflow_testset_invaild_tip': { testset_name: ReactNode /* string */ };
-  'workflow_testset_invalid_tip': { testsetName: ReactNode /* string */ };
-  'workflow_testset_required_tip': { param_name: ReactNode /* string */ };
-  'workflow_testset_upload_content': { xx: ReactNode /* string */ };
-  'workflow_trigger_param_must_point': { var: ReactNode /* string */ };
-  'workflow_var_type_same': { type: ReactNode /* string */ };
-  'workflow_variable_edit_time': { time: ReactNode /* string */ };
-  'workflow_version_add_model_content': { oldVersion: ReactNode /* string */, newVersion: ReactNode /* string */ };
-  'workflow_version_update_model_content': { myVersion: ReactNode /* string */, latestVersion: ReactNode /* string */ };
-  'workflowstore_edit_time': { time: ReactNode /* string */ };
-  'workflowstore_submit_wait': { time: ReactNode /* string */ };
-  'workspace_apply_confirm_pop': { amount: ReactNode /* string */ };
-  'workspace_invitation_msg_sent': { number: ReactNode /* string */ };
-  'workspace_invites_page_expire': { date: ReactNode /* string */ };
-  'workspace_move_member_list_tips_added_enterprise': { enterprise: ReactNode /* string */ };
-  'workspace_move_member_list_tips_unable_invite_tips': { enterprise: ReactNode /* string */ };
-  'workspace_share_url_page_expire': { date: ReactNode /* string */ };
-  'workspace_share_url_page_title': { spaceName: ReactNode /* string */, expireDate: ReactNode /* string */ };
-  '{desc};_unbind_the_current_page_{currentpageid}_with_the_current_tag_{placeholde': { desc: ReactNode /* string */, currentPageId: ReactNode /* string */, placeholder4: ReactNode /* string */ };
-  '{desc}_unbind_the_original_tab_{placeholder2}_and_{placeholder4}_pages__and_bind': { desc: ReactNode /* string */, placeholder2: ReactNode /* string */, placeholder4: ReactNode /* string */, currentPageId: ReactNode /* string */ };
-  '{newdesc}_and_unbind_tab_{placeholder2}': { newDesc: ReactNode /* string */, placeholder2: ReactNode /* string */ };
-  '{newdesc}_there_is_a_tab_with_the_same_name__and_bound_to_the_tab_{placeholder2}': { newDesc: ReactNode /* string */, placeholder2: ReactNode /* string */ };
+  upload_image_size_limit: { max_size: ReactNode /* string */ };
+  upload_success_failed_count: {
+    successNum: ReactNode /* string */;
+    failedNum: ReactNode /* string */;
+  };
+  uploading_filename: { filename: ReactNode /* string */ };
+  url_add_007: { count: ReactNode /* string */ };
+  url_add_013: { limit: ReactNode /* string */ };
+  url_add_014: {
+    limit: ReactNode /* string */;
+    exceeds: ReactNode /* string */;
+  };
+  video_agent_response_image: { name: ReactNode /* string */ };
+  voice_clone_create_name: { name: ReactNode /* string */ };
+  voice_clone_delete_content_chance: { chance: ReactNode /* string */ };
+  web_sdk_free_quota: {
+    used_count: ReactNode /* string */;
+    total_count: ReactNode /* string */;
+  };
+  web_sdk_official_banner: { docs_link: ReactNode /* string */ };
+  wf_chatflow_121: { flowMode: ReactNode /* string */ };
+  wf_chatflow_123: { Chatflow: ReactNode /* string */ };
+  wf_max_items: { maxCount: ReactNode /* string */ };
+  wf_node_add_wf_modal_toast_wf_added: { workflowName: ReactNode /* string */ };
+  wf_published_version_open_loop_experiments: {
+    workflowVersion: ReactNode /* string */;
+  };
+  wf_voice_emotion_listen_tooltip: { link: ReactNode /* string */ };
+  wf_voice_emotion_tooltip: { emotions: ReactNode /* string */ };
+  workflow_0224_02: { source: ReactNode /* string */ };
+  workflow_250117_05: { maxCount: ReactNode /* string */ };
+  workflow_250416_02: {
+    min: ReactNode /* string */;
+    max: ReactNode /* string */;
+  };
+  workflow_250417_01: {
+    min: ReactNode /* string */;
+    max: ReactNode /* string */;
+  };
+  workflow_add_imageflow_toast_fail: { name: ReactNode /* string */ };
+  workflow_add_imageflow_toast_success: { name: ReactNode /* string */ };
+  workflow_debug_testonenode_group: { nodeTitle: ReactNode /* string */ };
+  workflow_debug_testonenode_title: { node_name: ReactNode /* string */ };
+  workflow_derail_node_detail_title_max: { max: ReactNode /* string */ };
+  workflow_detail_batch_item_tooltip: { name: ReactNode /* string */ };
+  workflow_detail_error_message: { msg: ReactNode /* string */ };
+  workflow_detail_node_error_name_duplicated: { name: ReactNode /* string */ };
+  workflow_detail_node_workflows_max: { number: ReactNode /* string */ };
+  workflow_detail_node_workflows_referencing: {
+    number: ReactNode /* string */;
+  };
+  workflow_detail_node_workflows_referencing_tip: {
+    number: ReactNode /* string */;
+  };
+  workflow_detail_testrun_panel_batch_naviagte_stop: {
+    variable: ReactNode /* string */;
+    len: ReactNode /* string */;
+  };
+  workflow_detail_testrun_warning_variable_get_empty: {
+    key: ReactNode /* string */;
+  };
+  workflow_detail_testrun_warning_variable_get_failed: {
+    key: ReactNode /* string */;
+  };
+  workflow_detail_testrun_warning_variable_set_failed: {
+    key: ReactNode /* string */;
+  };
+  workflow_detail_title_saved_2: { time: ReactNode /* string */ };
+  workflow_detail_title_testrun_boolean_select: { a: ReactNode /* string */ };
+  workflow_detail_title_testrun_error_input: { a: ReactNode /* string */ };
+  workflow_encapsulate_selecet: { length: ReactNode /* string */ };
+  workflow_knowledeg_unexit_error: { id: ReactNode /* string */ };
+  workflow_node_lose_efficacy: { name: ReactNode /* string */ };
+  workflow_node_lose_efficacy_if: { name: ReactNode /* string */ };
+  workflow_node_lose_efficacy_wf: { name: ReactNode /* string */ };
+  workflow_publish_multibranch_auto_saved: { time: ReactNode /* string */ };
+  workflow_publish_multibranch_published: {
+    name: ReactNode /* string */;
+    time: ReactNode /* string */;
+  };
+  workflow_publish_multibranch_submitted: {
+    name: ReactNode /* string */;
+    time: ReactNode /* string */;
+  };
+  workflow_refer_var_type_same: { type: ReactNode /* string */ };
+  workflow_stringprocess_max_length_item: { maxLength: ReactNode /* string */ };
+  workflow_subcanvas_pull_out: { ctrl: ReactNode /* string */ };
+  workflow_tab_title: { name: ReactNode /* string */ };
+  workflow_testset_creation_time: { xxx: ReactNode /* string */ };
+  workflow_testset_invaild_tip: { testset_name: ReactNode /* string */ };
+  workflow_testset_invalid_tip: { testsetName: ReactNode /* string */ };
+  workflow_testset_required_tip: { param_name: ReactNode /* string */ };
+  workflow_testset_upload_content: { xx: ReactNode /* string */ };
+  workflow_trigger_param_must_point: { var: ReactNode /* string */ };
+  workflow_var_type_same: { type: ReactNode /* string */ };
+  workflow_variable_edit_time: { time: ReactNode /* string */ };
+  workflow_version_add_model_content: {
+    oldVersion: ReactNode /* string */;
+    newVersion: ReactNode /* string */;
+  };
+  workflow_version_update_model_content: {
+    myVersion: ReactNode /* string */;
+    latestVersion: ReactNode /* string */;
+  };
+  workflowstore_edit_time: { time: ReactNode /* string */ };
+  workflowstore_submit_wait: { time: ReactNode /* string */ };
+  workspace_apply_confirm_pop: { amount: ReactNode /* string */ };
+  workspace_invitation_msg_sent: { number: ReactNode /* string */ };
+  workspace_invites_page_expire: { date: ReactNode /* string */ };
+  workspace_move_member_list_tips_added_enterprise: {
+    enterprise: ReactNode /* string */;
+  };
+  workspace_move_member_list_tips_unable_invite_tips: {
+    enterprise: ReactNode /* string */;
+  };
+  workspace_share_url_page_expire: { date: ReactNode /* string */ };
+  workspace_share_url_page_title: {
+    spaceName: ReactNode /* string */;
+    expireDate: ReactNode /* string */;
+  };
+  '{desc};_unbind_the_current_page_{currentpageid}_with_the_current_tag_{placeholde': {
+    desc: ReactNode /* string */;
+    currentPageId: ReactNode /* string */;
+    placeholder4: ReactNode /* string */;
+  };
+  '{desc}_unbind_the_original_tab_{placeholder2}_and_{placeholder4}_pages__and_bind': {
+    desc: ReactNode /* string */;
+    placeholder2: ReactNode /* string */;
+    placeholder4: ReactNode /* string */;
+    currentPageId: ReactNode /* string */;
+  };
+  '{newdesc}_and_unbind_tab_{placeholder2}': {
+    newDesc: ReactNode /* string */;
+    placeholder2: ReactNode /* string */;
+  };
+  '{newdesc}_there_is_a_tab_with_the_same_name__and_bound_to_the_tab_{placeholder2}': {
+    newDesc: ReactNode /* string */;
+    placeholder2: ReactNode /* string */;
+  };
   '{placeholder0}_plugin': { placeholder0: ReactNode /* string */ };
   '{placeholder0}_success': { placeholder0: ReactNode /* string */ };
-  '{placeholder1}_unconfigured_imported_parameters': { placeholder1: ReactNode /* string */ };
-  'Coze_token_history_action_app_2': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, app_name: ReactNode /* string */ };
-  'Data_request_download_data_records': { date: ReactNode /* string */ };
-  'datasets_botRefer_list_description_after': { num: ReactNode /* number */ };
+  '{placeholder1}_unconfigured_imported_parameters': {
+    placeholder1: ReactNode /* string */;
+  };
+  Coze_token_history_action_app_2: {
+    plugin_name: ReactNode /* string */;
+    workflow_name: ReactNode /* string */;
+    app_name: ReactNode /* string */;
+  };
+  Data_request_download_data_records: { date: ReactNode /* string */ };
+  datasets_botRefer_list_description_after: { num: ReactNode /* number */ };
 }
 // #endregion
 
@@ -877,7 +1581,7 @@ export type I18nKeysHasOptionsType = keyof I18nOptionsMap;
 // #endregion
 
 // #region I18nKeysNoOptionsType
-export type I18nKeysNoOptionsType = 
+export type I18nKeysNoOptionsType =
   | '2102'
   | '2103'
   | '4029'

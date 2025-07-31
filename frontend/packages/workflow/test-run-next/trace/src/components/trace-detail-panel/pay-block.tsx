@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Divider, Typography } from '@coze-arch/coze-design';
 
 import styles from './pay-block.module.less';

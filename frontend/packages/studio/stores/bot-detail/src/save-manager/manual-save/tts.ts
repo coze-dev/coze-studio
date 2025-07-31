@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { cloneDeep, merge } from 'lodash-es';
 
 import { useBotSkillStore } from '@/store/bot-skill';

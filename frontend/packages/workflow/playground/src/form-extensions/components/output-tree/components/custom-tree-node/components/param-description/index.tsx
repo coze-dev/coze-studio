@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import React, { useState } from 'react';
 
@@ -57,8 +57,8 @@ export default function ParamDescription({
           inputFocus
             ? styles['desc-focus']
             : data.description
-              ? styles['desc-not-focus-with-value']
-              : styles['desc-not-focus'],
+            ? styles['desc-not-focus-with-value']
+            : styles['desc-not-focus'],
           styles.desc,
           hasObjectLike ? styles['desc-object-like'] : null,
         )}

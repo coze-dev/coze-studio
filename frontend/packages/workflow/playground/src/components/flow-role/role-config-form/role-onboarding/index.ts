@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { SuggestionList } from './suggestion-list';
 export { DisplayAllSwitch } from './display-all';
 export { AIGenerateBtn } from './ai-generate-btn';

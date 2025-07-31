@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export type UploadEventName = 'complete' | 'error' | 'progress';
 export interface UploadResult {
   // Image & file URI resource ID, used in exchange for url ·

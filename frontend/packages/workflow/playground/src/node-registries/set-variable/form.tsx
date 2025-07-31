@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { NodeConfigForm } from '@/node-registries/common/components';
 
 import { INPUT_PATH } from './constants';

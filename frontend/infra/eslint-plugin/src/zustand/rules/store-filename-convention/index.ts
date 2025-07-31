@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 import { TSESTree } from '@typescript-eslint/utils';
 import { findVariable } from '@typescript-eslint/utils/ast-utils';

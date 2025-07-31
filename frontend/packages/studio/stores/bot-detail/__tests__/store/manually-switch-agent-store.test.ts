@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useManuallySwitchAgentStore } from '../../src/store/manually-switch-agent-store';
 import { useBotDetailStoreSet } from '../../src/store/index';
 

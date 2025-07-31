@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useRef, useState } from 'react';
 
 import { useInfiniteScroll } from 'ahooks';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import {
-  Empty,
-  UIButton,
-  Spin,
-  SideSheet,
-  UIToast,
-} from '@coze-arch/bot-semi';
+import { Empty, UIButton, Spin, SideSheet, UIToast } from '@coze-arch/bot-semi';
 import { debuggerApi } from '@coze-arch/bot-api';
 import {
   IllustrationNoContent,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ErrorBoundary } from 'react-error-boundary';
 import { type FC, type PropsWithChildren } from 'react';
 

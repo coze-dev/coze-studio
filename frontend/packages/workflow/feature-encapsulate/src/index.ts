@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { createWorkflowEncapsulatePlugin } from './create-workflow-encapsulate-plugin';
 export { EncapsulateService } from './encapsulate';
 export { EncapsulatePanel } from './render';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type ReactNode, useMemo } from 'react';
 
 import {
@@ -24,7 +24,10 @@ import {
 import { validateNameConflict } from '@coze-project-ide/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { ResType } from '@coze-arch/bot-api/plugin_develop';
-import { IconCozDatabase, IconCozKnowledge } from '@coze-arch/coze-design/icons';
+import {
+  IconCozDatabase,
+  IconCozKnowledge,
+} from '@coze-arch/coze-design/icons';
 
 import useKnowledgeResource from './use-knowledge-resource';
 import useImportData from './use-import-data';

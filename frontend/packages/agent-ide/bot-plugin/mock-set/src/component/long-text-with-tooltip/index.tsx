@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { type Ellipsis, type TextProps } from '@coze-arch/bot-semi/Typography';
 import { Typography } from '@coze-arch/bot-semi';

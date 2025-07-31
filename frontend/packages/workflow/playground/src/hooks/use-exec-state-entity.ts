@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { WorkflowExecStateEntity } from '../entities/workflow-exec-state-entity';

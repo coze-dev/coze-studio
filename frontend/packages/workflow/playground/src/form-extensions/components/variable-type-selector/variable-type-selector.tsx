@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   useMemo,
   type CSSProperties,
@@ -137,7 +137,11 @@ export function VariableTypeSelector({
           <div
             data-testid={testId}
             className={classNames(
-              `flex items-center gap-0.5 p-[1px] h-full ${readonly || disabled || disableDropdown ? 'cursor-auto' : 'cursor-pointer'}`,
+              `flex items-center gap-0.5 p-[1px] h-full ${
+                readonly || disabled || disableDropdown
+                  ? 'cursor-auto'
+                  : 'cursor-pointer'
+              }`,
               {
                 'hover:coz-mg-secondary-hovered active:coz-mg-secondary-pressed':
                   !disableDropdown && !disabled && !readonly,

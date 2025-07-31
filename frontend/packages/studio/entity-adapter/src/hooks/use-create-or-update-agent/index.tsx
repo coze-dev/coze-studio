@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type MutableRefObject, useEffect, useState, Fragment } from 'react';
 
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info'; // Keep if botId is needed directly
@@ -138,7 +138,7 @@ export const useCreateOrUpdateAgent = ({
               'spaceId',
               hide_operation
                 ? res?.bot_space_list?.[0].id
-                : (spaceId ?? res?.bot_space_list?.[0].id),
+                : spaceId ?? res?.bot_space_list?.[0].id,
             );
           }
         });

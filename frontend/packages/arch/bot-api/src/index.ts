@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { default as DeveloperApiService } from './idl/developer_api';
 export { default as PlaygroundApiService } from './idl/playground_api';
 export { default as KnowledgeService } from './idl/knowledge';

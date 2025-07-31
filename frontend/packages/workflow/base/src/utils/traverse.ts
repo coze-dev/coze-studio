@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable security/detect-object-injection -- no-need */
 /* eslint-disable @typescript-eslint/no-namespace -- no-need */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- no-need

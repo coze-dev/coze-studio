@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useSpaceRole } from './use-space-role';
 import { type ESpacePermisson } from './constants';
 import { calcPermission } from './calc-permission';

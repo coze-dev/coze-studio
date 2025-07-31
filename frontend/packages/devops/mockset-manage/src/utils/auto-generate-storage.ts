@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { PluginMockDataGenerateMode } from '@coze-arch/bot-tea';
 
 const LOCAL_STORAGE_KEY = 'mockset_auto_generate_latest_choice';

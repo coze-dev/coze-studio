@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Stitching queries based on template_query and components
 export const getQueryFromTemplate = (
   templateQuery: string,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { CustomError } from '@coze-arch/bot-error';
 
 export const getBase64 = (file: Blob): Promise<string> =>

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactCropperElement } from 'react-cropper';
 import React, { createRef, useEffect, useRef, useState } from 'react';
 

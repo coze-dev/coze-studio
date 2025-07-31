@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TableLocalAddConfig } from './add/config';
 export { TableLocalIncrementalConfig } from './incremental/config';

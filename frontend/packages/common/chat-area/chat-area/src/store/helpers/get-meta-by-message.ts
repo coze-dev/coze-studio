@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Message, type MessageMeta } from '../types';
 import { getVerboseContentObj } from '../../utils/verbose';
 import { getIsCardDisabled } from '../../utils/message';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export interface AudioWaveProps {
   size: 'small' | 'medium' | 'large';
   type: 'default' | 'primary' | 'warning';

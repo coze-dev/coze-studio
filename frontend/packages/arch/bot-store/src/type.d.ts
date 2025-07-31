@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 declare const IS_BOT_OP: boolean;
 declare const IS_DEV_MODE: boolean;

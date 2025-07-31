@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { retryImport } from '../src/retry-import';
 
 describe('retry-import tests', () => {

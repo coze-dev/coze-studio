@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention */
 export enum FeatureEvents {
   /**
@@ -59,7 +59,7 @@ export enum FeatureEvents {
   unhandledrejection = 'unhandledrejection',
   oauthLogin = 'oauth_login',
   /**
-   * Message Link Event 
+   * Message Link Event
    */
   botDebugMessageSubmit = 'bot_debug_message_submit', // Bot to perform debugging (send messages)
   receiveMessage = 'receive_message',

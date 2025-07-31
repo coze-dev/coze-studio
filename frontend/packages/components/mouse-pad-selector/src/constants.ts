@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const CACHE_KEY = 'workflow_prefer_interactive_type';
 export const SHOW_KEY = 'show_workflow_interactive_type_guide';
 

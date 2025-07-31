@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** reserved query parameters */
 const PRESERVED_SEARCH_PARAMS = ['commit_version'];
 

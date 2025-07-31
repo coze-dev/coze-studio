@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // 20MB limit
 export const ACCEPT_FILE_MAX_SIZE = 20 * 1024 * 1024;
 export const ACCEPT_FILE_TYPES = ['.xlsx', '.xls', '.csv'].join(',');

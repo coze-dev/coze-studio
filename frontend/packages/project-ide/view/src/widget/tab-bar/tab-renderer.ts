@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Root, createRoot } from 'react-dom/client';
 import { decorate, inject, injectable } from 'inversify';
 import { DisposableCollection } from '@flowgram-adapter/common';
@@ -185,9 +185,9 @@ export class TabBarRenderer extends TabBar.Renderer {
   }
 
   createTabId(title: Title<Widget>, isPartOfHiddenTabBar = false): string {
-    return `shell-tab-${
-      (title.owner as ReactWidget)?.uri?.displayName
-    }${isPartOfHiddenTabBar ? '-hidden' : ''}`;
+    return `shell-tab-${(title.owner as ReactWidget)?.uri?.displayName}${
+      isPartOfHiddenTabBar ? '-hidden' : ''
+    }`;
   }
 
   override createTabStyle(

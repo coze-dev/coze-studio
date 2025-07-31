@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BotPageFromEnum } from '@coze-arch/bot-typings/common';
 import { MemoryToolPane } from '@coze-agent-ide/memory-tool-pane-adapter';
 import { DebugToolList } from '@coze-agent-ide/debug-tool-list';

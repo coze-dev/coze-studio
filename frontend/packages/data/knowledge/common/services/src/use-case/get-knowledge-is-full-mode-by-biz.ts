@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getKnowledgeIDEQuery } from './get-knowledge-ide-query';
 
 const isKnowledgePathname = (): boolean => {

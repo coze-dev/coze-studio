@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type NodeError } from '@/entities/workflow-exec-state-entity';
 
 import { ErrorLineItem, ErrorNodeItem } from './error-item';

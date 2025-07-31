@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useResizableSidePanelStore } from '@/hooks/use-resizable-side-panel-store';
 import { useFloatLayoutSize } from '@/hooks';
 

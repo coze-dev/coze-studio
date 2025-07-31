@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { SpanStatus, SpanCategory } from '@coze-arch/bot-api/ob_query_api';
 
 import { type LabelStyle, type RectStyle } from '../flamethread';

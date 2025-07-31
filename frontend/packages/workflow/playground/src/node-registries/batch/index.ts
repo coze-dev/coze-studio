@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { BATCH_NODE_REGISTRY } from './node-registry';
 export { BatchContent } from './node-content';

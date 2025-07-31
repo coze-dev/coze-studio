@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { SearchScope } from '@coze-arch/idl/intelligence_api';
 
 import { DevelopCustomPublishStatus } from '../type';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { GetFollowNode } from '@flowgram-adapter/free-layout-editor';
 import { FlowNodeBaseType } from '@flowgram-adapter/free-layout-editor';
 import { StandardNodeType } from '@coze-workflow/base';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useEditKnowledgeModal } from './edit-knowledge-modal';
 export { useKnowledgeListModal } from './knowledge-list-modal/scenes/base';
 export { useCreateKnowledgeModalV2 } from './create-knowledge-modal-v2/scenes/base';

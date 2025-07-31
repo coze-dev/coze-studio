@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Align the logic of card-builder generating ID, make a copy temporarily, and plan to use the underlying capabilities of card-buidler directly in the future
 import { nanoid, customAlphabet } from 'nanoid';
 

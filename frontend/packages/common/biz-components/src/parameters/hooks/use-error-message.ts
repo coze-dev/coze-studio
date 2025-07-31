@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import resolvePath from '../utils/resolve-path';
 import useNode from './use-node';
 import useParametersConfig from './use-config';

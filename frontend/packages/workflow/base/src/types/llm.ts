@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // The agreement agreed with the backend is not perceived by the workflow backend. Corresponding to the key response.data modal_list [*] .model_params [*] .default in the api/bot/get_type_list interface
 export enum GenerationDiversity {
   Customize = 'default_val',

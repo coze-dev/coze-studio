@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { SyntaxType, type ContainerType, type MapType, type FieldType } from './type';
+
+import {
+  SyntaxType,
+  type ContainerType,
+  type MapType,
+  type FieldType,
+} from './type';
 
 export function convertIntToString(fType: FieldType): FieldType {
   const fieldType = { ...fType };

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getAllChildNodesInNode } from '../src/utils/helper/get-all-child-nodes-in-node';
 
 describe('getAllChildNodesInNode', () => {

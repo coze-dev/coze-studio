@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Helper function to obtain all nodes in the selection
 export const getAllNodesInRange = (range: Range): Node[] => {
   const nodes: Node[] = [];

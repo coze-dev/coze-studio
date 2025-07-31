@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { RewriteTips } from './rewrite-tips';
 import { RerankTips } from './rerank-tips';
 export { RewriteTips, RerankTips };

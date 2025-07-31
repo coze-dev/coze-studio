@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type UseBoundStoreWithEqualityFn } from 'zustand/traditional';
 import { type StoreApi } from 'zustand';
 import { type FeedbackStatus } from '@flowgram-adapter/free-layout-editor';

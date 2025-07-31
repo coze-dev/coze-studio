@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Message, type MessageGroup } from '../types';
 import { markGroupShowContextDivider } from './mark-group-context-divider';
 

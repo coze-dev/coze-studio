@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { type WidgetRegistry, RegistryHandler } from './registry';
 export type { WidgetUIState } from './widget';
 export { type ProjectIDEServices } from './services';

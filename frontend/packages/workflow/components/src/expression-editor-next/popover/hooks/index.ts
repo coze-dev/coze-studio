@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useInterpolationContent } from './use-interpolation-content';
 export { useEmptyContent } from './use-empty-content';
 export { usePrunedVariableTree } from './use-pruned-variable-tree';

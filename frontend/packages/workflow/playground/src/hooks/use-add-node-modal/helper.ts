@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import semver from 'semver';
 import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** Channel IDs published as Web SDKs */
 export const WEB_SDK_CONNECTOR_ID = '999';
 /** Post to Button - Template Channel ID */

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classnames from 'classnames';
 import { IllustrationNoResult } from '@douyinfe/semi-illustrations';
 import {
@@ -69,8 +69,8 @@ export const LevelContent: React.FC<LevelContentProps> = ({
             isProcessing
               ? I18n.t('content_view_003')
               : searchValue
-                ? I18n.t('knowledge_no_result')
-                : I18n.t('dataset_segment_empty_desc')
+              ? I18n.t('knowledge_no_result')
+              : I18n.t('dataset_segment_empty_desc')
           }
         />
       </div>

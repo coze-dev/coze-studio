@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get, isBoolean, isString, isUndefined } from 'lodash-es';
 import { ViewVariableType } from '@coze-workflow/base';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type TabDisplayItems, TabStatus } from '@coze-arch/idl/developer_api';
 
 export const DEFAULT_BOT_SKILL_BLOCK_COLLAPSIBLE_STATE =

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * From @flow-devops/observation-components copy
  * I don't understand the logic yet.

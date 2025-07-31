@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const CUSTOM_TAB_BAR_CONTAINER = 'custom-tabBar-container';
 
 // Previous actions

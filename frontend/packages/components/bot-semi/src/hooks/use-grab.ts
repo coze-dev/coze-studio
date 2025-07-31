@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { RefObject, useCallback, useRef, useState } from 'react';
 
 const ANCHOR_UPDATE_BUFFER = 10;

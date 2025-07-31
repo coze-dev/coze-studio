@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { RefObject } from 'react';
 
 import type { Editor } from '@coze-common/md-editor-adapter';

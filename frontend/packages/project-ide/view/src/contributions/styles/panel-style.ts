@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { LayoutPanelType } from '../../types';
 import { SPLIT_PANEL_CLASSNAME } from '../../constants/view';
 import { PANEL_CLASS_NAME_MAP } from '../../constants';

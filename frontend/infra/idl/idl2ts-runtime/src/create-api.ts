@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type IOptions, normalizeRequest } from './utils';
 import type { IMeta, CustomAPIMeta } from './types';
 
@@ -40,7 +40,12 @@ export interface CancelAbleApi<T, K, O = unknown, B extends boolean = false>
  * @returns
  */
 // eslint-disable-next-line max-params
-export function createAPI<T extends {}, K, O = unknown, B extends boolean = false>(
+export function createAPI<
+  T extends {},
+  K,
+  O = unknown,
+  B extends boolean = false,
+>(
   meta: IMeta,
   cancelable?: B,
   useCustom = false,

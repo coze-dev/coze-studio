@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { getInputTypeBase, getInputType } from './get-input-type';
 export { getCustomVal, getCustomSetterProps } from './custom-setter-helpers';

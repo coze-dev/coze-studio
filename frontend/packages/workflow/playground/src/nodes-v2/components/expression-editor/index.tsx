@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { type ComponentProps } from '@/nodes-v2/components/types';
 

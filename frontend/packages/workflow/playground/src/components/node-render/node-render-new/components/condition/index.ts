@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ConditionTag } from './condition-tag';
 export { LogicDisplay } from './logic-display';
 export { VariableDisplay } from './variable-display';

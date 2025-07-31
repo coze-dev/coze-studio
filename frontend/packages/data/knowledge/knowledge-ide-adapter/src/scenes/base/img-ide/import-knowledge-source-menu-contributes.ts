@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import {
-  ImageLocalModule,
-} from '@coze-data/knowledge-ide-base/features/import-knowledge-sources/menu/image-local';
+
+import { ImageLocalModule } from '@coze-data/knowledge-ide-base/features/import-knowledge-sources/menu/image-local';
 import {
   createImportKnowledgeMenuSourceFeatureRegistry,
   type ImportKnowledgeMenuSourceRegistry,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { CloseModal } from './close-modal';
 export { SavePrompt } from './save-prompt';
 export { PromptDiff } from './prompt-diff';

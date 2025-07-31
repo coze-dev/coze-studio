@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 vi.stubGlobal('IS_DEV_MODE', false);
 vi.stubGlobal('IS_BOE', false);
 vi.stubGlobal('IS_RELEASE_VERSION', true);

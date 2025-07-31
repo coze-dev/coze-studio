@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { UploadPlugin } from '../../service/upload-plugin';
 import { type ChatAreaConfigs } from './type';
 

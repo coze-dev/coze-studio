@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMethodCommonDeps } from '../context/use-method-common-deps';
 import { type MethodCommonDeps } from '../../plugin/types';
 import { getSelectOnboardingImplement } from './use-select-onboarding';

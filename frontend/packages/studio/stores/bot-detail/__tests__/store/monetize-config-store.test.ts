@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMonetizeConfigStore } from '../../src/store/monetize-config-store';
 import { useBotDetailStoreSet } from '../../src/store/index';
 

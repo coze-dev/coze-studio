@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, type RefObject } from 'react';
 
 import { type WithCustomStyle } from '@coze-workflow/base/types';

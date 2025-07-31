@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect } from 'react';
 
 import {
@@ -21,7 +21,11 @@ import {
   reporter,
   isUserInputStartParams,
 } from '@coze-workflow/base';
-import { LoggerEvent, LoggerService, useService } from '@flowgram-adapter/free-layout-editor';
+import {
+  LoggerEvent,
+  LoggerService,
+  useService,
+} from '@flowgram-adapter/free-layout-editor';
 
 import { WorkflowSaveService } from '../../services/workflow-save-service';
 import { type WorkflowGlobalStateEntity } from '../../entities';

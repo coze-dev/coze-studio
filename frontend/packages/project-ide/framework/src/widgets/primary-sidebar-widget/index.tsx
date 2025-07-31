@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable, type interfaces } from 'inversify';
 import { SplitWidget, type URI } from '@coze-project-ide/client';
 

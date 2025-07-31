@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable max-lines-per-function -- refactor later */
 
@@ -266,8 +266,8 @@ export function CreateWorkflowModal({
         flowMode === WorkflowMode.Imageflow
           ? I18n.t('imageflow_create_toast_success')
           : flowMode === WorkflowMode.ChatFlow
-            ? I18n.t('wf_chatflow_95')
-            : I18n.t('workflow_list_create_success');
+          ? I18n.t('wf_chatflow_95')
+          : I18n.t('workflow_list_create_success');
       Toast.success({
         content,
         showClose: false,

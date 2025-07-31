@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, vi } from 'vitest';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
 import type { FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
@@ -55,7 +55,7 @@ describe('form-helpers', () => {
           return null;
         }),
         getNodeRegistry: () => ({}),
-      }) as unknown as FlowNodeEntity;
+      } as unknown as FlowNodeEntity);
 
     it('应该返回匹配路径结尾的表单项值', () => {
       const formModel = createMockFormModel({

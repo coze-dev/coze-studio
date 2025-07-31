@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type BotSpace } from '@coze-arch/bot-api/developer_api';
 import { useSpace as useInternalSpace } from '@coze-foundation/space-store';
 

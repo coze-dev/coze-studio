@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import 'reflect-metadata';
 import { type ExpressionEditorParseData } from '../type';
 import { ExpressionEditorSegmentType } from '../constant';

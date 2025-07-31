@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable, type interfaces, named } from 'inversify';
 import {
   type AsClass,

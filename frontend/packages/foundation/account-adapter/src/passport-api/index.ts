@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type UserUpdateProfileRequest } from '@coze-studio/api-schema/passport';
 import { passport } from '@coze-studio/api-schema';
 import { resetUserStore, type UserInfo } from '@coze-foundation/account-base';

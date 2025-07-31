@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCreation } from 'ahooks';
 import { type Scene } from '@coze-common/chat-core';
 import { exhaustiveCheckForRecord } from '@coze-common/chat-area-utils';

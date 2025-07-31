@@ -160,7 +160,7 @@ function useScroll<T>(props: ScrollProps<T>) {
 
   const reloadData = useMemoizedFn(() => {
     mutate({
-      list: resetDataIfReload ? [] : (dataInfo?.list ?? []),
+      list: resetDataIfReload ? [] : dataInfo?.list ?? [],
       hasMore: undefined,
       nextPage: 1,
     });

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { type PublishConnectorInfo } from '@coze-arch/idl/intelligence_api';
 import { FormSelect } from '@coze-arch/coze-design';

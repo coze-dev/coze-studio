@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MAX_IMAGE_SIZE = 1024 * 1024 * 5;
 export const MAX_FILE_SIZE = 1024 * 1024 * 20;

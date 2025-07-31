@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** table-local add and resegment unit steps */
 export enum TableLocalStep {
   UPLOAD,

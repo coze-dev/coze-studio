@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { uploadFileV2 } from '../src/upload-file-v2';
 vi.mock('@coze-arch/bot-api', () => ({
   DeveloperApi: {

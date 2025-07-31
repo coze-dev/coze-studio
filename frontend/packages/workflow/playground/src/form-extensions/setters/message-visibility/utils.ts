@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type NicknameVariableSetting, type RoleSetting } from './types';
 
 export function isRoleUserSettings(

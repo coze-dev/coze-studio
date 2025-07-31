@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { snakeCase } from 'lodash-es';
 import { injectable, inject } from 'inversify';
-import { reporter } from '@coze-workflow/base';
 import {
   type AddOrDeleteLineOperationValue,
   type AddOrDeleteWorkflowNodeOperationValue,
@@ -25,6 +24,7 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 import { DisposableCollection } from '@flowgram-adapter/common';
 import { type Operation, OperationService } from '@flowgram-adapter/common';
+import { reporter } from '@coze-workflow/base';
 
 @injectable()
 export class WorkflowOperationReportService {
@@ -77,7 +77,9 @@ export class WorkflowOperationReportService {
         fromPort = '',
         toPort = '',
       } = value as AddOrDeleteLineOperationValue;
-      return `${eventName} from ${from}${this.portToString(fromPort)} to ${to}${this.portToString(toPort)}`;
+      return `${eventName} from ${from}${this.portToString(
+        fromPort,
+      )} to ${to}${this.portToString(toPort)}`;
     }
 
     if (

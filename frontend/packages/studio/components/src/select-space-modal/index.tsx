@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, type PropsWithChildren, useEffect, useRef } from 'react';
 
 import classNames from 'classnames';
@@ -67,8 +67,8 @@ export const SelectSpaceModal: React.FC<
       form.current?.formApi.setValue(
         'spaceId',
         hide_operation
-          ? (list?.[0].id ?? '')
-          : (id ?? useSpaceStore.getState().getPersonalSpaceID() ?? ''),
+          ? list?.[0].id ?? ''
+          : id ?? useSpaceStore.getState().getPersonalSpaceID() ?? '',
       );
     }
   }, [visible, list]);

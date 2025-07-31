@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useLayoutEffect, useState } from 'react';
 
-import { LoggerEvent, LoggerService, useService } from '@flowgram-adapter/free-layout-editor';
+import {
+  LoggerEvent,
+  LoggerService,
+  useService,
+} from '@flowgram-adapter/free-layout-editor';
 
 export function useNodesMount() {
   const [isMounted, setMounted] = useState(false);

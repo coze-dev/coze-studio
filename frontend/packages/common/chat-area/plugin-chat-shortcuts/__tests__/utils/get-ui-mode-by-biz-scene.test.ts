@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getUIModeByBizScene } from '../../src/utils/get-ui-mode-by-biz-scene';
 
 describe('ItemType', () => {

@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { usePromptConfiguratorModal } from './use-modal';
 export { PromptConfiguratorModal } from './prompt-configurator-modal';

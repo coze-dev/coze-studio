@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
-import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeParams,
+} from '@coze-data/knowledge-stores';
 import { type ContentProps } from '@coze-data/knowledge-resource-processor-core';
 import { getKnowledgeIDEQuery } from '@coze-data/knowledge-common-services';
 import { KnowledgeE2e } from '@coze-data/e2e';

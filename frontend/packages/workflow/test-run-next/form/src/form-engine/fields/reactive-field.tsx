@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
-import { useCurrentField, useCurrentFieldState } from '@flowgram-adapter/free-layout-editor';
+import {
+  useCurrentField,
+  useCurrentFieldState,
+} from '@flowgram-adapter/free-layout-editor';
 
 import { type FormSchemaUIState } from '../types';
 import {

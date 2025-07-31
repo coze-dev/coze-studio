@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import {
   type CSSProperties,
@@ -34,13 +34,7 @@ import {
   IconCozImageBroken,
 } from '@coze-arch/coze-design/icons';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
-import {
-  Image,
-  ImagePreview,
-  Popover,
-  Space,
-  Spin,
-} from '@coze-arch/bot-semi';
+import { Image, ImagePreview, Popover, Space, Spin } from '@coze-arch/bot-semi';
 
 import useImageUploader from './use-image-uploader';
 import { type ImageRule, ImgUploadErrNo } from './image-uploader';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention -- inner value */
 /* eslint-disable react-hooks/exhaustive-deps -- init */
 import { type RefObject, useCallback, useEffect, useState } from 'react';

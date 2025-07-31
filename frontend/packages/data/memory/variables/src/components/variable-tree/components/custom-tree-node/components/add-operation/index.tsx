@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { IconAdd } from '@coze-arch/bot-icons';
@@ -50,7 +50,9 @@ export default function AddOperation({
     <IconButton
       data-testid={restProps['data-testid']}
       onClick={onClick}
-      className={`${disabled ? 'disabled:text-[rgb(28,31,35,0.35)]' : 'text-[#4d53e8]'} ${className}`}
+      className={`${
+        disabled ? 'disabled:text-[rgb(28,31,35,0.35)]' : 'text-[#4d53e8]'
+      } ${className}`}
       style={style}
       icon={
         subitem ? (

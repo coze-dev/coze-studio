@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { SetRequired } from 'type-fest';
 import type { Draft } from 'immer';
@@ -57,7 +57,11 @@ export interface FeatureTypeInternalThisType<Type> {
 
 export type Disposer = () => void;
 
-export class FeatureRegistry<Type, Module, Context = undefined> extends ExternalStore<{
+export class FeatureRegistry<
+  Type,
+  Module,
+  Context = undefined,
+> extends ExternalStore<{
   featureMap: Map<string, FeatureConfig<Type, Module>>;
 }> {
   protected name: string;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { isFunction } from 'lodash-es';
@@ -29,13 +29,7 @@ import {
   IconCozCheckMark,
   IconCozCrossCircle,
 } from '@coze-arch/coze-design/icons';
-import {
-  Tooltip,
-  Toast,
-  Image,
-  AIButton,
-  Space,
-} from '@coze-arch/coze-design';
+import { Tooltip, Toast, Image, AIButton, Space } from '@coze-arch/coze-design';
 import { loadImage } from '@coze-arch/bot-utils';
 import { DeveloperApi } from '@coze-arch/bot-api';
 

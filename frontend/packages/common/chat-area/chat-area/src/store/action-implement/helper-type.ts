@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export type SetStateInternal<T> = (
   partial: T | Partial<T> | ((state: T) => T | Partial<T>),
   replace?: boolean | undefined,

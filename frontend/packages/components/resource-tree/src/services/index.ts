@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { CustomLinesManager } from './custom-lines-manager';
 export { CustomHoverService } from './custom-hover-service';
 export { TreeService } from './tree-service';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Template component for shortcut command replacement
 import { type FC, useMemo, useRef } from 'react';
 

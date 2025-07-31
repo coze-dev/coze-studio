@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const audioStaticToastVariants = cva(['px-24px', 'py-10px', 'rounded-[99px]'], {

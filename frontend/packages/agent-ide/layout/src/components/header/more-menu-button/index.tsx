@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNavigate } from 'react-router-dom';
 import React, { type FC } from 'react';
 
@@ -33,7 +33,10 @@ import {
   ConnectorDynamicStatus,
   type ConnectorInfo,
 } from '@coze-arch/bot-api/developer_api';
-import { IconCozArrowRightFill, IconCozMore } from '@coze-arch/coze-design/icons';
+import {
+  IconCozArrowRightFill,
+  IconCozMore,
+} from '@coze-arch/coze-design/icons';
 import { Dropdown, IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { LinkDropItem } from './link-drop-item';

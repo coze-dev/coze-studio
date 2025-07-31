@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { selectAllCommand } from './select-all';
 export { boldCommand } from './bold';
 export { italicCommand } from './italic';

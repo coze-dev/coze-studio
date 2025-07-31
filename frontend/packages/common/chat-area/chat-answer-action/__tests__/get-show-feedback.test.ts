@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getShowFeedback } from '../src/utils/get-show-feedback';
 
 vi.mock('@coze-common/chat-area', () => ({

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MAX_IMG_SIZE = 10 * 1024;
 
 export const FIRST_GUIDE_KEY_PREFIX = '__first_drag_guide__';

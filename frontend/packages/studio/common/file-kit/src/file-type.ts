@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FileTypeEnum, type TFileTypeConfig } from './const';
 
 /**
  * file type
- * {@link 
+ * {@link
  * {@link https://www.iana.org/assignments/media-types/media-types.xhtml#image}
  */
 export const FILE_TYPE_CONFIG: readonly TFileTypeConfig[] = [

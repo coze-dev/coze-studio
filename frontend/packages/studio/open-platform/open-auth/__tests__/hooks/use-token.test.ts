@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { renderHook, act } from '@testing-library/react-hooks';
 
 import {
@@ -152,8 +152,7 @@ vi.mock('@coze-arch/bot-api', () => ({
             {
               description: 'Personal Space',
               hide_operation: false,
-              icon_url:
-                'https://placehold.co/460x460?text=placeholder-1',
+              icon_url: 'https://placehold.co/460x460?text=placeholder-1',
               id: '7304535597841317932',
               name: 'Personal',
               role_type: 1,
@@ -162,8 +161,7 @@ vi.mock('@coze-arch/bot-api', () => ({
             {
               description: 'Public',
               hide_operation: true,
-              icon_url:
-                'https://placehold.co/460x460?text=placeholder-1',
+              icon_url: 'https://placehold.co/460x460?text=placeholder-1',
               id: '7293504662404071468',
               name: 'Public',
               role_type: 3,

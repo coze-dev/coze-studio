@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GrabElement, type GrabNode } from '../../types/node';
 
 export const isGrabElement = (node: GrabNode): node is GrabElement =>

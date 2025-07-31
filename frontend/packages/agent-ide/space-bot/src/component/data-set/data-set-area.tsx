@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useNavigate, useParams } from 'react-router-dom';
 import React, { type FC, useEffect, useRef, useState, useMemo } from 'react';
@@ -191,7 +191,9 @@ export const DataSetAreaItem: FC<IDataSetAreaProps> = ({
     };
 
     navigate(
-      `/space/${params.space_id}/knowledge/${datasetID}?${new URLSearchParams(queryParams).toString()}`,
+      `/space/${params.space_id}/knowledge/${datasetID}?${new URLSearchParams(
+        queryParams,
+      ).toString()}`,
     );
   };
   const jumpToAdd = (datasetID: string, type: UnitType) => {
@@ -203,7 +205,11 @@ export const DataSetAreaItem: FC<IDataSetAreaProps> = ({
       page_mode: 'modal',
     };
     navigate(
-      `/space/${params.space_id}/knowledge/${datasetID}/upload?${new URLSearchParams(queryParams).toString()}`,
+      `/space/${
+        params.space_id
+      }/knowledge/${datasetID}/upload?${new URLSearchParams(
+        queryParams,
+      ).toString()}`,
     );
   };
   const { node: addModal, open: openAddModal } = useKnowledgeListModal({

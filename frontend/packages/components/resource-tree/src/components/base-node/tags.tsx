@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 import { IconCozInfinity } from '@coze-arch/coze-design/icons';
 import { Tag, Tooltip } from '@coze-arch/coze-design';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type EditorProps } from '@coze-workflow/code-editor-adapter';
 import { I18n } from '@coze-arch/i18n';
 
@@ -31,8 +31,12 @@ export const DEFAULT_TYPESCRIPT_CODE_PARAMS = {
 async function main({ params }: Args): Promise<Output> {
     ${I18n.t('workflow_code_js_illustrate_output')}
     const ret = {
-        "key0": params.input + params.input, ${I18n.t('workflow_code_js_illustrate_output_param')}
-        "key1": ["hello", "world"], ${I18n.t('workflow_code_js_illustrate_output_arr')}
+        "key0": params.input + params.input, ${I18n.t(
+          'workflow_code_js_illustrate_output_param',
+        )}
+        "key1": ["hello", "world"], ${I18n.t(
+          'workflow_code_js_illustrate_output_arr',
+        )}
         "key2": { ${I18n.t('workflow_code_js_illustrate_output_obj')}
             "key21": "hi"
         },
@@ -50,8 +54,12 @@ async def main(args: Args) -> Output:
     params = args.params
     ${I18n.t('workflow_code_py_illustrate_output')}
     ret: Output = {
-        "key0": params['input'] + params['input'], ${I18n.t('workflow_code_py_illustrate_output_param')}
-        "key1": ["hello", "world"],  ${I18n.t('workflow_code_py_illustrate_output_arr')}
+        "key0": params['input'] + params['input'], ${I18n.t(
+          'workflow_code_py_illustrate_output_param',
+        )}
+        "key1": ["hello", "world"],  ${I18n.t(
+          'workflow_code_py_illustrate_output_arr',
+        )}
         "key2": { ${I18n.t('workflow_code_py_illustrate_output_obj')}
             "key21": "hi"
         },

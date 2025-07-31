@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FieldArrayList, useFieldArray } from '@/form';
 
 import { type QueryFieldSchema } from './types';
@@ -24,7 +24,9 @@ export function QueryFieldsList() {
 
   return (
     <FieldArrayList>
-      {value?.map((item, index) => <QueryFieldsItem index={index} />)}
+      {value?.map((item, index) => (
+        <QueryFieldsItem index={index} />
+      ))}
     </FieldArrayList>
   );
 }

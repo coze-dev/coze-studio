@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useRouteConfig, TRouteConfigGlobal } from './use-route-config';
 export { useIsResponsiveByRouteConfig } from './use-responsive';
 export { useLoggedIn } from './use-loggedin';

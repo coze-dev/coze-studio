@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { type IIntlInitOptions, IntlModuleType, IntlModule } from './types';
 import Intl, { IntlInstance } from './i18n-impl';
 

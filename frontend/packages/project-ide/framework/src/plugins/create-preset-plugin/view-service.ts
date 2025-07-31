@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import {
   ApplicationShell,
@@ -119,8 +119,9 @@ export class ViewService {
   }
 
   async uiBuilderReopen() {
-    const uiBuilderWidget =
-      await this.widgetManager.getOrCreateWidgetFromURI(UI_BUILDER_CONTENT);
+    const uiBuilderWidget = await this.widgetManager.getOrCreateWidgetFromURI(
+      UI_BUILDER_CONTENT,
+    );
     uiBuilderWidget.dispose();
     this.openPanel('ui-builder');
   }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ObDataService from './idl/ob_data';
 import { axiosInstance, type BotAPIRequestConfig } from './axios';
 

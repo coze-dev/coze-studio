@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BOT_USER_INPUT, CONVERSATION_NAME, USER_INPUT } from '../constants';
 /**
  * Whether to preset the input parameters of the start node

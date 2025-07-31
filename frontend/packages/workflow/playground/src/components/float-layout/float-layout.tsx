@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Layout floating layer covering the entire canvas, carrying some linked suspension components
  */

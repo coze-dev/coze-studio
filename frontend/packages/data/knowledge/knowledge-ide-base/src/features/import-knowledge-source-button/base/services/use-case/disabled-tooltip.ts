@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   KNOWLEDGE_MAX_DOC_SIZE,
   KNOWLEDGE_MAX_SLICE_COUNT,

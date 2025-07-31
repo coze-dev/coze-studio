@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { processSpecialNode } from '../process-node/process-special-node';
 import {
   GrabElementType,

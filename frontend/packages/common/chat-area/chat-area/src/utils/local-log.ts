@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 let renderLogCount = 1;
 const RENDER_TIP_COUNT = 2000;
 

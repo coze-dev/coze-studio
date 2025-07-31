@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useGetKnowledgeListInfo } from './use-get-knowledge-list-info';
 export { useKnowledgeNavigate } from './use-knowledge-navigate';
 export { useTosContent } from './use-tos-content';

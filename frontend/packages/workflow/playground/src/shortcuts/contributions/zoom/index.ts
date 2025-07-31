@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { PlaygroundConfigEntity } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowCommands } from '@flowgram-adapter/free-layout-editor';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/naming-convention */
 // Values that need to be shared globally can be registered here in advance
 interface GlobalVars {

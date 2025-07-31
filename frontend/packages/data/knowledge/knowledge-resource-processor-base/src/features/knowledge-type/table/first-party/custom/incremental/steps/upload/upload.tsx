@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import classNames from 'classnames';
-import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeParams,
+} from '@coze-data/knowledge-stores';
 import { type ContentProps } from '@coze-data/knowledge-resource-processor-core';
 import {
   type TableDataItem,

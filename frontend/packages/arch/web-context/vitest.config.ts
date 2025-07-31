@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // FIXME: Unable to resolve path to module 'vitest/config'
 
 import { defineConfig } from 'vitest/config';

@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useRef, useEffect } from 'react';
 
 import classNames from 'classnames';
 import { PublicScopeProvider } from '@coze-workflow/variable';
 import { EditorProvider } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozBroom, IconCozMoon, IconCozSun } from '@coze-arch/coze-design/icons';
+import {
+  IconCozBroom,
+  IconCozMoon,
+  IconCozSun,
+} from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';

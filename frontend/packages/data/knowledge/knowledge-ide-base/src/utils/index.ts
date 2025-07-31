@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
-import { OptType, UnitType } from '@coze-data/knowledge-resource-processor-core';
+import {
+  OptType,
+  UnitType,
+} from '@coze-data/knowledge-resource-processor-core';
 import { I18n } from '@coze-arch/i18n';
 import { type DropDownMenuItemItem } from '@coze-arch/bot-semi/Dropdown';
 import { FormatType, type DocumentInfo } from '@coze-arch/bot-api/knowledge';
@@ -23,10 +26,7 @@ import { DocumentSource } from '@coze-arch/bot-api/knowledge';
 
 import { type ActionType } from '@/types';
 
-import {
-  getBasicConfig,
-  getResegmentType,
-} from './preview';
+import { getBasicConfig, getResegmentType } from './preview';
 
 export const getUnitType = (doc: DocumentInfo) => {
   if (doc.format_type === FormatType.Text) {

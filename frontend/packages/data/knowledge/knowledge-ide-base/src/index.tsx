@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ActionType } from './types';
 export { useGetKnowledgeType } from './hooks/use-case/use-get-knowledge-type';
 export { useReloadKnowledgeIDE } from './hooks/use-case/use-reload-knowledge-ide';
