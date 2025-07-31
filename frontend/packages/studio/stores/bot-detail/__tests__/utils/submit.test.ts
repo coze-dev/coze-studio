@@ -20,7 +20,7 @@ import { UIToast } from '@coze-arch/bot-semi';
 
 import { hasBraces, verifyBracesAndToast } from '../../src/utils/submit';
 
-// 模拟 UIToast 和 I18n
+// Analog UIToast and I18n
 vi.mock('@coze-arch/bot-semi', () => ({
   UIToast: {
     warning: vi.fn(),

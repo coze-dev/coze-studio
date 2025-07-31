@@ -44,7 +44,7 @@ function syncHiddenFields(value, workflow) {
 }
 
 function syncOutputValueKeys(currentOutputsValue, prevOutputsValue) {
-  // 同步同名output的key 防止引用失效
+  // Synchronize key output with same name to prevent reference invalidation
   currentOutputsValue.map(item => {
     const sameNameItem = prevOutputsValue.find(
       prevItem => prevItem.name === item.name,
@@ -67,8 +67,8 @@ function syncOutputs(value, workflow) {
 
   if (!workflowOutputsExisted || workflowOutputs.length === 0) {
     /**
-     * 若无输出则赋值空数组
-     * ps: 不可赋值为 undefined，新表单引擎不会触发副作用导致变量引擎不更新
+     * If there is no output, assign an empty array
+     * Ps: cannot be assigned to undefined, the new form engine will not trigger side effects that cause the variable engine not to update
      */
     value.outputs = [];
     return;
@@ -92,7 +92,7 @@ function syncOutputs(value, workflow) {
   const { outputs } = workflow;
   const outputsValue = outputs.map(variableUtils.dtoMetaToViewMeta);
 
-  // 如果开启了异常处理，需要把 errorbody 拼回去
+  // If exception handling is enabled, you need to put the errorbody back together
   const errorIgnoreIsOpen = get(value, 'inputs.settingOnError.switch');
   if (errorIgnoreIsOpen) {
     let errorBody = get(value, 'outputs')?.find(

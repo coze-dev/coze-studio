@@ -60,7 +60,7 @@ type ExportSpaceService = {
 
 const getSpaceId = () => useSpaceStore.getState().getSpaceId();
 
-// 需要注入store space id的api
+// API that needs to store space id
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SpaceApiV2 = new Proxy(Object.create(null), {
   get(_, funcName: ApiType) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-const ASCII_CODE_A = 65; // 字母A对应的ASCII序号
+const ASCII_CODE_A = 65; // The ASCII serial number corresponding to the letter A
 
 export function convertNumberToLetters(n) {
   let result = '';

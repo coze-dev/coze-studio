@@ -76,7 +76,7 @@ export default forwardRef<TestsetSelectAPI | null, Props>(
           const flag = !!res?.cases?.length;
           setShow(flag);
 
-          // 需要等 TestsetSelect 组件先渲染
+          // You need to wait for the TestsetSelect component to render first.
           setTimeout(() => {
             if (flag && currentCase?.caseBase?.caseID) {
               baseSelectRef.current?.set?.(currentCase);

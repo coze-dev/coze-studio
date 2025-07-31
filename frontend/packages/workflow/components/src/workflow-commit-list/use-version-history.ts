@@ -36,9 +36,9 @@ interface VersionHistoryParams {
   spaceId: string;
   workflowId: string;
   type: OperateType;
-  /** 每页请求数量, 默认 10 */
+  /** Number of requests per page, default 10 */
   pageSize?: number;
-  /** 是否启动请求, 默认 false */
+  /** Whether to start the request, default false */
   enabled?: boolean;
 }
 

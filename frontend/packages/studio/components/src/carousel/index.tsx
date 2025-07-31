@@ -28,23 +28,23 @@ import { CarouselItem } from './carousel-item';
 import styles from './index.module.less';
 
 export interface CarouselProps {
-  /** 元素布局行数默认为1 */
+  /** The number of rows in the element layout defaults to 1. */
   rows?: number;
-  /** 元素布局列数，默认为均分数组 */
+  /** Number of element layout columns, the default is to divide the array equally */
   column?: number;
-  /** 每次点击箭头滚动的百分比，0~1. 默认值为0.5 */
+  /** Percentage of scrolling per click of arrow, 0~ 1. Default value is 0.5 */
   scrollStep?: number;
-  /** 滚动回调 */
+  /** scrolling callback */
   onScroll?: () => void;
-  /** 箭头是否显示边框 */
+  /** Whether the arrow shows the border */
   enableArrowBorder?: boolean;
-  /** 箭头是否显示阴影渐变 */
+  /** Whether the arrows show gradual changes in shadows */
   enableArrowShalldow?: boolean;
-  /** 子元素样式 */
+  /** child style */
   itemClassName?: string;
-  /** 左箭头样式 */
+  /** Left Arrow Style */
   leftArrowClassName?: string;
-  /** 右箭头样式 */
+  /** Right Arrow Style */
   rightArrowClassName?: string;
   children: React.ReactNode;
 }
@@ -156,7 +156,7 @@ export const Carousel: React.FC<CarouselProps> = ({
       itemsContainerRef?.current?.scrollLeft !== undefined &&
       itemsContainerRef?.current?.clientWidth
     ) {
-      // 部分浏览器不支持 scrollTo 方法
+      // Some browsers do not support the scrollTo method
       itemsContainerRef.current.scrollTo?.({
         left: Math.max(
           itemsContainerRef.current.scrollLeft -
@@ -193,7 +193,7 @@ export const Carousel: React.FC<CarouselProps> = ({
         scrollLeft;
 
       const shouldShowArrowLeft = scrollLeft > 0;
-      // 极端场景下存在 1px 偏差
+      // There is a 1px bias in extreme scenarios
       const shouldShowArrowRight = Math.abs(scrollRight) > 2;
 
       setLeftArrowVisible(shouldShowArrowLeft);
@@ -204,7 +204,7 @@ export const Carousel: React.FC<CarouselProps> = ({
       updateArrowVisible();
     };
 
-    // 初始化时判读一次是否显示箭头
+    // Determine whether to display arrows once during initialization
     updateArrowVisible();
     itemsContainerRef?.current?.addEventListener('scroll', scrollEvent);
     window?.addEventListener('resize', updateArrowVisible);

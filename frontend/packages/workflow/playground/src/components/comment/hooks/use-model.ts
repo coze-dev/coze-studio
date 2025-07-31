@@ -64,7 +64,7 @@ export const useModel = () => {
 
   const model = useMemo(createModel, []);
 
-  // 同步失焦状态
+  // Synchronized out-of-focus state
   useEffect(() => {
     if (focused) {
       return;
@@ -72,14 +72,14 @@ export const useModel = () => {
     model.setFocus(focused);
   }, [focused, model]);
 
-  // 同步表单值初始化
+  // Synchronized form value initialization
   useEffect(() => {
     const value = formModel.getValueIn<string>(CommentEditorFormField.Note);
-    model.setValue(value); // 设置初始值
-    model.selectEnd(); // 设置初始化光标位置
+    model.setValue(value); // Set initial value
+    model.selectEnd(); // Set the initialization cursor position
   }, [formModel, model]);
 
-  // 同步表单外部值变化：undo/redo/协同
+  // Synchronize form external value changes: undo/redo/synergy
   useEffect(() => {
     const disposer = formModel.onFormValuesChange(({ name }) => {
       if (name !== CommentEditorFormField.Note) {

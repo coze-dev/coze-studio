@@ -37,8 +37,8 @@ import styles from './index.module.less';
 
 type TimezoneProps = DynamicComponentProps<string> & {
   className?: string;
-  showClear?: boolean; // 是否可清空
-  defaultValue?: string; // 默认值
+  showClear?: boolean; // Can it be emptied?
+  defaultValue?: string; // default value
 };
 
 export const Timezone: FC<TimezoneProps> = ({
@@ -53,15 +53,15 @@ export const Timezone: FC<TimezoneProps> = ({
     _value ??
     defaultValue) as string;
 
-  // 时区列表
+  // time zone list
   const { timezoneOptions: TIME_ZONE_OPTIONS, timezoneMap: TIME_ZOME_MAP } =
     useMemo(() => generatedTimezones(), []);
 
-  // 时区选择器选项生成逻辑
+  // Time zone selector option generation logic
   const [timezoneOptions, timezoneMap] = useMemo(() => {
     const timezoneOptionsBase = cloneDeep(TIME_ZONE_OPTIONS);
     const timezoneMapBase = cloneDeep(TIME_ZOME_MAP);
-    // 用户已选择时区，但当前环境不支持兼容对应时区时，在选项末尾插入未知时区选项兼容
+    // When the user has selected a time zone, but the current environment does not support compatibility with the corresponding time zone, insert the unknown time zone option Compatible at the end of the option
     if (value && timezoneMapBase.every(e => e.value !== value)) {
       timezoneOptionsBase.push({
         value: UNKNOWN_TIME_ZONE_OFFSET,
@@ -85,7 +85,7 @@ export const Timezone: FC<TimezoneProps> = ({
     }
   }, [value, timezoneMap]);
 
-  // 遍历查询时区偏移量
+  // Traverse query time zone offset
   const findTimezoneValue = (nodes: string[], key: string) => {
     if (Array.isArray(nodes) && nodes.length > 1) {
       const [offsetValue, timezoneLabel] = nodes;
@@ -133,10 +133,10 @@ export const Timezone: FC<TimezoneProps> = ({
     return 0;
   };
 
-  // 自定义高亮逻辑
+  // custom highlighting logic
   const filterRender = (filterRenderProps: FilterRenderProps) => {
     const { className: cls, inputValue, data, onClick } = filterRenderProps;
-    // 把多级选项的文案拼起来
+    // Put together the copy of the multi-level options
     const labelString = data.map(e => e.label).join(' / ');
     return (
       <li

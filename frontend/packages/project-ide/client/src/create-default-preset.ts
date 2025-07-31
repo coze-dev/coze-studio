@@ -47,10 +47,10 @@ export function createDefaultPreset<CTX extends IDEClientContext>(
     const opts = optionsProvider(ctx);
     const plugins: Plugin[] = [];
     /**
-     * 注册内置插件
+     * Register built-in plugins
      */
     plugins.push(
-      createResourcePlugin(opts.resource || {}), // 资源系统
+      createResourcePlugin(opts.resource || {}), // resource system
       createViewPlugin(
         opts.view || {
           widgetFactories: [],
@@ -59,21 +59,21 @@ export function createDefaultPreset<CTX extends IDEClientContext>(
             defaultWidgets: [],
           },
         },
-      ), // 布局系统
-      // Breaking change：bw 额外从业务侧引入
+      ), // layout system
+      // Breaking change: bw additionally introduced from the business side
       createNavigationPlugin(opts.navigation || {}),
-      createCommandPlugin(opts.command || {}), // 指令注册
-      createHistoryPlugin(opts.history || {}), // 历史注册
-      createLifecyclePlugin(opts), // IDE 生命周期注册
-      createLabelPlugin(opts.label || {}), // 标签注册
-      createShortcutsPlugin(opts.shortcut || {}), // 快捷键
-      createPreferencesPlugin(opts.preferences || {}), // 偏好设置
+      createCommandPlugin(opts.command || {}), // Instruction registration
+      createHistoryPlugin(opts.history || {}), // historical registration
+      createLifecyclePlugin(opts), // IDE Lifecycle Registration
+      createLabelPlugin(opts.label || {}), // label registration
+      createShortcutsPlugin(opts.shortcut || {}), // shortcut
+      createPreferencesPlugin(opts.preferences || {}), // preferences
       createStylesPlugin({}),
-      createContextMenuPlugin(), // 右键菜单注册
-      createEventPlugin(), // 全局事件注册
+      createContextMenuPlugin(), // Right-click menu to register
+      createEventPlugin(), // global event registration
     );
     /**
-     * client 扩展
+     * client extension
      */
     plugins.push(
       createLifecyclePlugin({
@@ -96,7 +96,7 @@ export function createDefaultPreset<CTX extends IDEClientContext>(
       }),
     );
     /**
-     * 注册业务扩展的插件
+     * Register plugins for business extensions
      */
     if (opts.plugins) {
       plugins.push(...opts.plugins);

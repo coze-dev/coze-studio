@@ -26,15 +26,15 @@ import {
 
 export enum FilterPhotoType {
   /**
-   * 全部
+   * all
    */
   All = 'All',
   /**
-   * 已标注
+   * marked
    */
   HasCaption = 'HasCaption',
   /**
-   * 未标注
+   * unmarked
    */
   NoCaption = 'NoCaption',
 }
@@ -46,7 +46,7 @@ export interface KnowledgePreviewState {
   searchValue: string;
   curDocId: string;
   /**
-   * 图片类型是否已标注
+   * Is the image type marked?
    */
   photoFilterValue: FilterPhotoType;
 }

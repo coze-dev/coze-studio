@@ -59,7 +59,7 @@ describe('useCanvasChange', () => {
   const createMockCanvas = () => {
     const mockCanvas = {
       on: vi.fn((event: string, callback: (event: any) => void) =>
-        // 返回一个清理函数
+        // Returns a cleaning function
         () => {
           mockCanvas.off(event, callback);
         },
@@ -121,7 +121,7 @@ describe('useCanvasChange', () => {
       }),
     );
 
-    // 验证是否监听了所有默认事件
+    // Verify that all default events are being listened for
     expect(mockCanvas.on).toHaveBeenCalledWith(
       'object:modified',
       expect.any(Function),
@@ -157,12 +157,12 @@ describe('useCanvasChange', () => {
       }),
     );
 
-    // 获取 object:modified 事件的回调函数
+    // Get the callback function for the object: modified event
     const modifiedCallback = (mockCanvas.on as any).mock.calls.find(
       (call: [string, Function]) => call[0] === 'object:modified',
     )?.[1];
 
-    // 模拟事件触发
+    // simulated event firing
     modifiedCallback?.();
 
     expect(mockCanvas.toObject).toHaveBeenCalledWith(saveProps);
@@ -194,15 +194,15 @@ describe('useCanvasChange', () => {
       }),
     );
 
-    // 获取 object:removed 事件的回调函数
+    // Get the callback function for the object: removed event
     const removedCallback = (mockCanvas.on as any).mock.calls.find(
       (call: [string, Function]) => call[0] === 'object:removed',
     )?.[1];
 
-    // 模拟删除事件
+    // mock delete event
     removedCallback?.();
 
-    // 验证只保留了存在对象的引用
+    // Validation only keeps references to existing objects
     expect(mockOnChange).toHaveBeenCalledWith({
       ...mockSchema,
       customVariableRefs: [
@@ -296,7 +296,7 @@ describe('useCanvasChange', () => {
       }),
     );
 
-    // 更新已存在的引用
+    // Update existing references
     act(() => {
       result.current.updateRefByObjectId({
         objectId: 'obj1',
@@ -309,7 +309,7 @@ describe('useCanvasChange', () => {
       });
     });
 
-    // 添加新的引用
+    // Add a new reference
     act(() => {
       result.current.updateRefByObjectId({
         objectId: 'obj2',
@@ -322,14 +322,14 @@ describe('useCanvasChange', () => {
       });
     });
 
-    // 删除引用
+    // delete reference
     act(() => {
       result.current.updateRefByObjectId({
         objectId: 'obj1',
       });
     });
 
-    // 验证最终的引用关系
+    // Verify the final reference relationship
     expect(mockCanvas.toObject().customVariableRefs).toEqual([
       { objectId: 'obj2', variableId: 'var3', variableName: 'var3' },
     ]);

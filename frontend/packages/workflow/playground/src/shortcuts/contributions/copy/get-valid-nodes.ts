@@ -21,7 +21,7 @@ import type {
 } from '@flowgram-adapter/free-layout-editor';
 import { StandardNodeType } from '@coze-workflow/base';
 
-/** 获取可用节点 */
+/** Get available nodes */
 export const getValidNodes = (
   nodes: WorkflowNodeEntity[],
 ): WorkflowNodeEntity[] =>

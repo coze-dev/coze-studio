@@ -52,7 +52,7 @@ export const generateFormSchema = async (
   }
 
   /**
-   * step1: 计算节点输入
+   * Step1: Calculate node input
    */
   const nodeField = await generateFormNodeField(options);
   if (nodeField) {
@@ -61,7 +61,7 @@ export const generateFormSchema = async (
 
   const testset = node.getNodeRegistry().meta?.test?.testset;
   /**
-   * 若支持测试集且输入不为空，则添加测试集的组件
+   * If the test set is supported and the input is not empty, add the test set component
    */
   /* will support soon */
   if (

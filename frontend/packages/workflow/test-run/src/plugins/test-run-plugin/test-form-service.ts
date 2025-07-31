@@ -22,7 +22,7 @@ export type FormDataType = any;
 export const TestFormService = Symbol('TestFormService');
 
 export interface TestFormService {
-  /** 表单缓存值 */
+  /** form cache value */
   cacheValues: Map<string, FormDataType>;
 
   getCacheValues: (id: string) => null | FormDataType;

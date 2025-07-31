@@ -36,13 +36,13 @@ class ColorService {
   @named(ColorContribution)
   colorContributions: ContributionProvider<ColorContribution>;
 
-  /** 颜色表 */
+  /** Color chart */
   private colors: Record<string, ColorDefinition> = {};
 
-  /** 颜色的 schema */
+  /** Color schema */
   private schema: ColorSchemaType = { type: 'object', properties: {} };
 
-  /** 颜色偏好设置的 schema */
+  /** Color preference schema */
   // private referenceSchema = { type: 'string', enum: [], enumDescriptions: [] };
 
   init() {
@@ -52,7 +52,7 @@ class ColorService {
   }
 
   /**
-   * 批量注册 color
+   * Bulk registration color
    */
   register(...colors: ColorDefinition[]): Disposable[] {
     return colors.map(definition => {
@@ -67,7 +67,7 @@ class ColorService {
   }
 
   /**
-   * 注销 color
+   * Logout color
    */
   deregisterColor(id: string): void {
     delete this.colors[id];
@@ -75,7 +75,7 @@ class ColorService {
   }
 
   /**
-   * 获取所有的 color definition
+   * Get all color definitions
    */
   getColors(): ColorDefinition[] {
     return Object.keys(this.colors).map(id => this.colors[id]);
@@ -86,12 +86,12 @@ class ColorService {
   }
 
   /**
-   * 获取指定 theme 的 color value
+   * Gets the color value of the specified theme
    */
   getThemeColor(id: string, themeType: ThemeType) {
     const color = this.getColor(id);
     let value = color.defaults?.[themeType];
-    // 色值可以从其他色值继承
+    // Color values can be inherited from other color values
     if (
       value &&
       typeof value === 'string' &&
@@ -105,14 +105,14 @@ class ColorService {
   }
 
   toCssColor(id: string, themeType: ThemeType) {
-    // 转换为变量名
+    // Convert to variable name
     const variableName = `--${id.replace(/\./g, '-')}`;
     const value = this.getThemeColor(id, themeType);
     return `${variableName}: ${value};`;
   }
 
   /**
-   * 所有色值转化为 css 变量
+   * All color values are converted to CSS variables
    */
   toCss(themeType: ThemeType) {
     return `body {\n${this.getColors()

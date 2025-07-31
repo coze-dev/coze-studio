@@ -86,10 +86,14 @@ spec:
               value: {{ .Values.elasticsearch.username | quote }}
             - name: ES_PASSWORD
               value: {{ .Values.elasticsearch.password | quote }}
-            - name: RMQ_NAME_SERVER
+            - name: MQ_NAME_SERVER
               value: "http://{{ include "opencoze.fullname" . }}-rocketmq-namesrv:9876"
             - name: MILVUS_ADDR
               value: "{{ include "opencoze.fullname" . }}-milvus:19530"
+            - name: MINIO_ENDPOINT
+              value: "{{ include "opencoze.fullname" . }}-minio:9000"
+            - name: MINIO_API_HOST
+              value: "http://{{ include "opencoze.fullname" . }}-minio:9000"
             - name: MYSQL_DSN
               value: "{{ .Values.mysql.user }}:{{ .Values.mysql.password }}@tcp({{ include "opencoze.fullname" . }}-mysql:3306)/{{ .Values.mysql.database }}?charset=utf8mb4&parseTime=True&loc=Local"
             {{- range $key, $val := .Values.cozeServer.env }}

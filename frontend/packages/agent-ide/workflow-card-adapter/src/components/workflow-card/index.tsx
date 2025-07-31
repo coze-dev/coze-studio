@@ -51,13 +51,13 @@ import s from './index.module.less';
 export type IWorkflowCardProps = ToolEntryCommonProps & {
   /**
    * @deprecated
-   * imageflow 已经和 workflow 合并，不在需要使用 flowMode 进行筛选，且会影响 Chatflow
+   * Imageflow has been merged with workflow, no longer needs to filter with flowMode, and will affect Chatflow
    */
   flowMode: WorkflowMode;
   from: WorkflowModalFrom;
 };
 
-/** 工作流 */
+/** Workflow */
 export const WorkflowCard: React.FC<IWorkflowCardProps> = ({
   flowMode,
   title,

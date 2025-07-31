@@ -62,7 +62,7 @@ const getIntelligenceList = async (
   }: FilterParamsType,
   cancelTokenRef: React.MutableRefObject<CancelTokenSource | null>,
 ) => {
-  // 每次新的请求，都重置一下 cancel token
+  // Reset the cancel token every time a new request is made.
   const source = axios.CancelToken.source();
   cancelTokenRef.current = source;
   const resp = await intelligenceApi
@@ -76,7 +76,7 @@ const getIntelligenceList = async (
         recently_open: recentlyOpen,
         cursor_id: dataSource?.nextCursorId,
         search_scope: searchScope,
-        // 固定值，来自历史代码
+        // Fixed value, from historical code
         order_by: orderBy,
         status: [
           IntelligenceStatus.Using,
@@ -193,7 +193,7 @@ export const useIntelligenceList = ({
 
   useEffect(
     () => () => {
-      // 取消正在请求的接口
+      // Cancel the requested interface
       cancelTokenRef.current?.cancel();
     },
     [spaceId],

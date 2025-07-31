@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 该脚本用与在 scm 内执行 包发布逻辑
+# The script is used to execute the package publishing logic within the SCM
 
 source ./scripts/scm_base.sh
 
@@ -110,7 +110,7 @@ if [ "$MODE" == "version" -o "$MODE" == "multiple" ]; then
 
     echo "执行 version"
     if [ "$MODE" == "multiple" ]; then
-      # multiple 模式下只输出 publish 步骤的结果即可
+      # In multiple mode, only the result of the publish step can be output
       node ee/infra/rush-x/bin/run version $PUBLISH_TYPE $PUBLISH_TAG $PATCH_TAG $TO_PACKAGES $FROM_TAG $BY_DIFF $INDEPENDENT -b $DEFAULT_BRANCH
     else
       node ee/infra/rush-x/bin/run version $PUBLISH_TYPE $PUBLISH_TAG $PATCH_TAG $TO_PACKAGES $FROM_TAG $BY_DIFF $INDEPENDENT $WEBHOOK_URL $BUILD_USER -b $DEFAULT_BRANCH
@@ -133,7 +133,7 @@ if [ "$MODE" == "publish" -o "$MODE" == "multiple" ]; then
   echo "publish 完成"
 fi
 
-# 更新 distTag
+# Update distTag
 if [ "$MODE" == "tag" ]; then
   fetch
   mkdir -p $ROOT_DIR/output
@@ -141,7 +141,7 @@ if [ "$MODE" == "tag" ]; then
   echo "Publish sha $PUBLISH_SHA" >>$ROOT_DIR/output/output.txt
 
   echo "执行 dist tag"
-  # 不同模式下点 WEBHOOK_URL 基本不同，需要再传参时注意
+  # The point WEBHOOK_URL are basically different in different modes, and you need to pay attention when passing parameters again
   node ee/infra/rush-x/bin/run publish --sha $PUBLISH_SHA $PUBLISH_TAG --dist-tag $WEBHOOK_URL $BUILD_USER
   echo "dist-tag 完成"
 fi

@@ -66,7 +66,7 @@ const getTableCacheWidthMap = (tableKey: string) => {
 };
 
 /**
- * slice 数据转换为 TableView 组件接收的数据类型
+ * Slice data to the data type received by the TableView component
  */
 
 export const getTableRenderColumnsData = ({
@@ -158,7 +158,7 @@ export const getTableRenderColumnsData = ({
             />
           );
         }
-        // 针对违规内容高亮处理
+        // Highlighting violations
         const isAudiFailed = record?.status === SliceStatus.AuditFailed;
         const textRender = () => (
           <div className={`w-full ${isAudiFailed ? 'text-red-500' : ''}`}>

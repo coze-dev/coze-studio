@@ -19,27 +19,27 @@ import { logger as globalLogger, type Logger } from '@coze-arch/logger';
 
 import { type EventNames } from './events';
 
-/** 描述用于计算 duration 的点位 */
+/** Describes the points used to calculate duration */
 export interface DurationPoint {
-  /** 点位名，一般是某个行为 */
+  /** A point name, usually an action */
   pointName: string;
-  /** 当前时间戳，用于计算 duration */
+  /** Current timestamp, used to calculate duration */
   time: number;
 }
 
 export interface ReportEvent {
   /**
-   * 事件开始。记录 startTime，后续用于计算 duration
-   * 注：创建事件时会自动执行，一般不需要调用
+   * Event start. Logging of gastTime for subsequent use to calculate duration
+   * Note: Events are created automatically and generally do not require a call
    */
   start: () => void;
   /**
-   * 上报成功事件。携带 success=1、duration 参数
+   * Report a success event. Carry success = 1, duration parameter
    */
   success: (payload?: { meta?: Record<string, unknown> }) => void;
   /**
-   * 上报失败事件。携带 success=0、error、reason 参数
-   * - reason: 有限枚举，导致失败的原因
+   * Report a failure event. Carry success = 0, error, reason parameters
+   * - reason: finite enumeration, causes of failure
    */
   error: (payload: {
     reason: string;
@@ -47,9 +47,9 @@ export interface ReportEvent {
     meta?: Record<string, unknown>;
   }) => void;
   /**
-   * 添加一个名为 @param pointName 的点位，用于计算 duration
+   * Add a point named @param pointName to calculate duration
    *
-   * 假设有 [a、b、c] 三个点位，最终上报的 duration 是
+   * Assuming there are three points [a, b, c], the final reported duration is
    * duration: {
    *   a: aTime - startTime,
    *   b: bTime - startTime,
@@ -63,22 +63,22 @@ export interface ReportEvent {
    */
   addDurationPoint: (pointName: string) => void;
   /**
-   * 获取耗时
+   * acquisition time
    */
   getDuration: () => Record<string, number> | undefined;
-  /** 获取 Meta，一般用于获取创建时设置的 meta 字段 */
+  /** Get Meta, typically used to get the meta field set at creation time */
   getMeta: () => Record<string, unknown>;
 }
 
 //
 
 /**
- * 创建一个标准的上报事件
- * - 成功：success=1，duration={...}
- * - 失败：success=0, reason, error
+ * Create a standard reporting event
+ * - Success: success = 1, duration = {...}
+ * - Failure: success = 0, reason, error
  */
 /**
- * @deprecated 该方法已废弃，请统一使用`import { reporter } from '@coze-arch/logger'的`reporter.tracer`替换，具体请查看：
+ * @Deprecated This method is deprecated, please replace it with'reporter .tracer 'of'import {reporter} from' @code-arch/logger '. For details, please check:
  */
 export const createReportEvent = ({
   eventName,
@@ -102,7 +102,7 @@ export const createReportEvent = ({
     ...metaInCtx,
     ...(isFinished
       ? {
-          event_has_finished: true, // 标记事件已 success/error 过，提示可能存在问题
+          event_has_finished: true, // Marks that the event has had success/error, indicating that there may be a problem
         }
       : {}),
   });

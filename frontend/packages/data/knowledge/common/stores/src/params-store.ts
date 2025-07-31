@@ -43,7 +43,7 @@ export interface IParams {
   agentID?: string;
   actionType?: ActionType;
   initialTab?: 'structure' | 'draft' | 'online';
-  /** 作用是跳转上传页时能在 url 里带上抖音标记，以在上传页做视图区分 */
+  /** The function is to bring the Douyin mark in the url when jumping to the upload page to distinguish the views on the upload page */
   isDouyinBot?: boolean;
   pageMode?: 'modal' | 'normal';
 

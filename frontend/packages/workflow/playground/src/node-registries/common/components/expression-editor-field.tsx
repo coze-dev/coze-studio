@@ -32,7 +32,7 @@ export const ExpressionEditorField = withField<
     maxLength,
     disableSuggestion,
     disableCounter,
-    // 旧版逻辑是用name作为testID后缀 新版节点name路径可能会变(如xxx -> inputs.xxx) 需要从外部指定
+    // The old logic used name as the testID suffix, the new version of the node name path may change (such as xxx - > inputs.xxx) need to be specified externally
     testIDSuffix = name,
   } = props;
 

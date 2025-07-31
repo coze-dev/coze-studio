@@ -40,5 +40,5 @@ export const checkLoginImpl = async () => {
 
 export const checkLogin = () => checkLoginBase(checkLoginImpl);
 
-// 开源版本不支持渠道授权，暂无实现
+// The open-source version does not support channel authorization and has not been implemented yet.
 export const connector2Redirect: Connector2Redirect = () => undefined;

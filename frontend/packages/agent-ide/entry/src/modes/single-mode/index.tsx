@@ -114,7 +114,7 @@ export const SingleMode: React.FC<SingleModeProps> = ({
           />
         </ContentView>
 
-        {/* Debug调试台 */}
+        {/* Debug bench */}
         <BotDebugPanel />
         {rightSheetSlot}
         <CoachMark />

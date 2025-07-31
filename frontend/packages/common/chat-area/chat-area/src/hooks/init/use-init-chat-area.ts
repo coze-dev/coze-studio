@@ -137,7 +137,7 @@ export const useInitChatArea = ({
       return requestToInit();
     },
     {
-      // 指定了 manual 时 refreshDeps 无效; 在外部显式基于 requestToInit 变更进行重新初始化
+      // Invalid refreshDeps when manual is specified; explicitly reinitializes externally based on requestToInit changes
       manual: true,
       onBefore: () => {
         setInitStatus('loading');
@@ -165,7 +165,7 @@ export const useInitChatArea = ({
       return;
     }
 
-    // 至少你得加载一会儿吧，除非有本地缓存？
+    // At least you have to load it for a while, unless there is a local cache?
     if (initStatus === 'unInit') {
       return;
     }
@@ -174,12 +174,12 @@ export const useInitChatArea = ({
       return;
     }
 
-    // 理论上这里应该是没有问题的，需要等lifeCycleService Ready后再进行初始化，否则生命周期无法被触发
+    // In theory, there should be no problem here. You need to wait for lifeCycleService Ready before initializing, otherwise the life cycle cannot be triggered.
     if (!lifeCycleService) {
       return;
     }
 
-    // 这是新加的，理论上应该是安全的
+    // This is a new addition and should be safe in theory.
     if (!data) {
       return;
     }
@@ -254,10 +254,10 @@ export const useInitChatArea = ({
   }, [data, requestLoading, lifeCycleService]);
 
   /**
-   * 一个看起来安全的 init chat-area 的副作用清理,含有:
-   * - chat core 的清除
-   * - chat core 的监听清除
-   * - useRequest 的状态清理(ready => false, cancel)
+   * A seemingly safe init chat-area side effect cleanup, containing:
+   * - Clear chat core
+   * - chat core monitoring clear
+   * - useRequest status cleanup (ready = > false, cancel)
    */
   const clearInitSideEffect = () => {
     clearSenderInfoStore();
@@ -355,13 +355,13 @@ const useUpdateSenderInfo = (
   }, [userInfoInStore, userInfo]);
 
   const updateSenderInfo = (data: MixInitResponse) => {
-    // 更新用户信息
+    // Update user information
     const { botInfoMap, userInfoMap } = data;
 
     if (botInfoMap) {
       setBotInfoMap(botInfoMap);
 
-      // todo: remove 临时逻辑
+      // Todo: remove temporary logic
       const botInfo = Object.values(botInfoMap).at(0);
       recordBotInfo({
         name: botInfo?.nickname,

@@ -30,7 +30,7 @@ import {
 export interface FixedLayoutPluginContext extends EditorPluginContext {
   document: FlowDocument;
   /**
-   * 提供对画布节点相关操作方法, 并 支持 redo/undo
+   * Provide operation methods related to canvas nodes, and support redo/undo
    */
   operation: FlowOperationService;
   clipboard: ClipboardService;
@@ -39,14 +39,14 @@ export interface FixedLayoutPluginContext extends EditorPluginContext {
 }
 
 /**
- * 固定布局配置
+ * fixed layout configuration
  */
 export interface FixedLayoutProps
   extends EditorProps<FixedLayoutPluginContext, FlowDocumentJSON> {
   history?: FixedHistoryPluginOptions<FixedLayoutPluginContext> & {
     disableShortcuts?: boolean;
   };
-  defaultLayout?: FlowLayoutDefault | string; // 默认布局
+  defaultLayout?: FlowLayoutDefault | string; // default layout
 }
 
 export const DEFAULT: FixedLayoutProps =

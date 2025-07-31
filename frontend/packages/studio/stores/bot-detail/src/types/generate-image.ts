@@ -65,15 +65,15 @@ export interface GenerateBackGroundModal {
   };
 }
 
-// 异步生成图片的状态
+// The state of generating images asynchronously
 export interface GenerateImageState {
-  // 候选图列表信息
+  // Candidate image list information
   imageList: PicTask[];
-  // 生成图片消息信息
+  // Generate image message information
   noticeList: TaskNotice[];
-  // 头像弹窗内生成图片的状态
+  // The status of generating pictures in the avatar pop-up window
   generateAvatarModal: GenerateAvatarModal;
-  // 背景图弹窗内生成图片的状态
+  // The status of the generated image in the background cover pop-up window
   generateBackGroundModal: GenerateBackGroundModal;
 }
 

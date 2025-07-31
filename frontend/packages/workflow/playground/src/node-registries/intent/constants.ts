@@ -19,7 +19,7 @@ import { ViewVariableType } from '@coze-workflow/variable';
 import { INTENT_NODE_MODE } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
 
-// 入参路径，试运行等功能依赖该路径提取参数
+// Imported parameter path, practice running and other functions rely on this path to extract parameters
 export const INPUT_PATH = 'inputs.inputParameters';
 
 export const INPUT_CHAT_HISTORY_SETTING_ENABLE =

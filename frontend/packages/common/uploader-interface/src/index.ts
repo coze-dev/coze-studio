@@ -78,10 +78,10 @@ export interface Config {
   objectConfig?: ObjectConfig;
   testHost?: string;
   /**
-   * tt-uploader 逻辑，
-   * 需要根据当前用户的部署环境动态获取schema
-   * schema 值只会有 https 和 http 两种。
-   * sdk 内部消费了 schema，但是没有类型定义出来，这边特化兼容。
+   * Tt-uploader logic,
+   * The schema needs to be dynamically obtained according to the deployment environment of the current user
+   * Schema values are only available in HTTPS and HTTP.
+   * The SDK consumes schema internally, but there is no type definition, which is compatible with specialization.
    */
   schema?: string;
 
@@ -91,24 +91,24 @@ export interface Config {
   getSliceFunc?: (fileSize: number) => number;
   uploadSliceCount?: number;
   uploadHttpMethod?: string;
-  // 上传超时时间
+  // upload timeout
   uploadTimeout?: number;
-  // 上传网关超时时间
+  // Upload gateway timeout
   gatewayTimeout?: number;
-  // 跳过下载，仅视频上传支持
+  // Skip download, only video upload is supported.
   skipDownload?: boolean;
-  // 跳过获取 meta 信息，仅图片上传支持
+  // Skip getting meta information, only picture upload support
   skipMeta?: boolean;
   noLog?: boolean;
-  // 多实例标识
+  // multi-instance identification
   instanceId?: string;
-  // 透传appId和userId
+  // Passing appId and userId through
   openExperiment?: boolean;
-  // 客户端加密
+  // Client side encryption
   clientEncrypt?: boolean;
-  // 跳过1005，仅支持ImageX
+  // Skip 1005, only support ImageX
   skipCommit?: boolean;
-  // 是否启用断点续传
+  // Whether to enable breakpoint continuation
   enableDiskBreakpoint?: boolean;
 }
 
@@ -136,7 +136,7 @@ export interface UpdateOptions {
   uploadSliceCount?: number;
   uploadHttpMethod?: string;
   openExperiment?: boolean;
-  // 客户端加密
+  // Client side encryption
   clientEncrypt?: boolean;
 }
 
@@ -182,38 +182,38 @@ export interface StreamSliceOption {
 }
 
 interface BaseEventInfo {
-  // 文件开始上传的时间戳，毫秒
+  // File start upload timestamp, milliseconds
   startTime: number;
-  // 文件完成上传的时间戳
+  // File completion upload timestamp
   endTime: number;
-  // 阶段开始时间戳
+  // Phase start timestamp
   stageStartTime: number;
-  // 阶段完成时间戳
+  // Phase completion timestamp
   stageEndTime: number;
-  // 阶段持续时间，计算公式：stageEndTime - stageStartTime
+  // Phase duration, calculated as stageEndTime - stageStartTime
   duration: number;
-  // 当前视频文件大小
+  // Current video file size
   fileSize: number;
-  // 当前视频文件的key（addFile时自动生成）
+  // The key of the current video file (automatically generated when addFile)
   key: string;
-  // 存储的文件ID （preUpload 获取）
+  // Stored file ID (preUpload)
   oid: string;
-  // 当前上传总体进度百分比（％）
+  // Current Upload Overall Progress Percentage (%)
   percent: number;
-  // 上传所需的签名信息（preUpload 获取）
+  // Upload the required signature information (preUpload)
   signature: string;
-  // 每一个分片的size（crc32获取）
+  // The size of each sharding (obtained by crc32)
   sliceLength: number;
-  // 当前所处生命周期，如果是不支持的浏览器，则该值为'browserError'
+  // The current lifecycle, if it is an unsupported browser, the value is'browserError'
   stage: string;
-  // 文件上传运行状态，1 代表正在运行 2 代表取消运行 3 代表暂停运行
+  // File upload running status, 1 means running, 2 means canceling, and 3 means pausing.
   status: 1 | 2 | 3;
-  // task队列实例
+  // Task queue instance
   task: any;
-  type: 'success' | 'error'; // 当前任务状态，成功／失败
-  // 上传所需的uploadID（initUploadID 获取）
+  type: 'success' | 'error'; // Current task status, success/failure
+  // Upload the required uploadID (get initUploadID)
   uploadID: string;
-  // 当前状态的描述（随着生命周期不断变化）
+  // Description of the current state (constantly changing with the lifecycle)
   extra: {
     error?: any;
     errorCode?: number;
@@ -222,61 +222,61 @@ interface BaseEventInfo {
 }
 
 export interface UploadResultVideoMeta {
-  // 视频时长，单位：秒
+  // Video duration in seconds
   Duration: number;
-  // 视频宽度
+  // video width
   Width: number;
-  // 视频高度
+  // video height
   Height: number;
-  // 视频格式
+  // video format
   Format: string;
-  // 视频码率
+  // Video bit rate
   Bitrate: number;
-  // 文件类型
+  // file type
   FileType: string;
-  // 视频文件大小
+  // Video file size
   Size: number;
-  // 视频文件md5值，注：由于MD5需要下载并计算，消耗的网络资源和计算资源较大，而用户大多用不到，默认只有小于100M并且不为M3U8文件时才返回MD5，对MD5强依赖需要联系进行人工配置
+  // Video file md5 value, Note: Since MD5 needs to be downloaded and calculated, it consumes a large amount of network resources and computing resources, and most users do not use it. By default, MD5 is only returned when it is less than 100M and not an M3U8 file. Strong dependence on MD5 needs to be contacted for manual configuration.
   Md5: string;
-  // 视频源文件在tos中的uri，获取视频播放地址请不要使用这种方式访问
+  // The video source file is URI in tos, get the video broadcast address, please do not use this way to access
   Uri: string;
 }
 
 /**
- * 上传结果，对于不同的文件类型存在差异，这里可以用范型处理，但是有点麻烦。
- * 为了方便，直接把所以属性都定义出来。
+ * Upload results, there are differences for different file types, which can be handled with paradigms here, but it is a bit cumbersome.
+ * For convenience, all the attributes are directly defined.
  */
 export interface UploadResult {
-  // 视频
+  // video
   // =======
-  // 视频 VID
+  // video VID
   Vid?: string;
-  // 视频meta信息，当添加有获取meta信息的配置时返回
+  // Video meta information, returned when a configuration for obtaining meta information is added
   VideoMeta?: UploadResultVideoMeta;
-  // 封面图uri，当添加有截取封面信息的配置时返回
+  // Cover image URI, returned when a configuration for capturing cover information is added
   PosterUri?: string;
 
-  // 图片 & 文件
+  // Pictures & Files
   // ==========
-  // 源文件在tos中的uri，格式为bucket/oid。对于图片来说和 ImageUri 一致
+  // The URI of the source file in tos, in the format bucket/oid. Consistent with ImageUri for images
   Uri?: string;
 
-  // 图片
+  // picture
   // ==========
-  // 图片的uri，格式为bucket/oid
+  // Image URI in bucket/oid format
   ImageUri?: string;
-  // 图片宽度
+  // image width
   ImageWidth?: number;
-  // 图片高度
+  // image height
   ImageHeight?: number;
-  // 图片数据的md5值
+  // The md5 value of the image data
   ImageMd5?: string;
-  // 文件名，与ImageUri中的oid部分一致
+  // File name, consistent with the oid section in ImageUri
   FileName?: string;
 
-  // 文件
+  // file
   // ==========
-  // 文件meta信息，当添加有获取meta信息的配置时返回
+  // File meta information, returned when a configuration for obtaining meta information is added
   ObjectMeta?: {
     Md5: string;
     Uri: string;
@@ -289,7 +289,7 @@ export type StreamProgressEventInfo = BaseEventInfo;
 export type ErrorEventInfo = BaseEventInfo;
 
 export interface CompleteEventInfo extends BaseEventInfo {
-  // 上传结果，注意对于不同 type 来说结构不一样，
+  // Upload the results, note that the structure is different for different types,
   uploadResult: UploadResult;
 }
 

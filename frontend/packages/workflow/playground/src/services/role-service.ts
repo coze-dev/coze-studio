@@ -27,19 +27,19 @@ const DEBOUNCE_TIME = 1000;
 
 export interface RoleServiceState {
   /**
-   * 是否首次加载完成
+   * Is the first load complete?
    */
   isReady: boolean;
   /**
-   * 是否在加载角色配置
+   * Is the role configuration loading?
    */
   loading: boolean;
   /**
-   * 是否在保存角色配置
+   * Are you saving the role configuration?
    */
   saving: boolean;
   /**
-   * 角色配置数据
+   * role configuration data
    */
   data: ChatFlowRole | null;
 }

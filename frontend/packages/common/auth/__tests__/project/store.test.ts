@@ -143,20 +143,20 @@ describe('Project Auth Store', () => {
       const projectId = 'test-project-1';
       const roles = [ProjectRoleType.Owner];
 
-      // 设置初始数据
+      // Set initial data
       await act(() => {
         result.current.setRoles(projectId, roles);
         result.current.setIsReady(projectId, true);
       });
 
-      // 验证数据已设置
+      // Verify that the data is set
       expect(result.current.roles[projectId]).toEqual(roles);
       expect(result.current.isReady[projectId]).toBe(true);
 
-      // 销毁数据
+      // Destroy data
       result.current.destory(projectId);
 
-      // 验证数据已清除
+      // Verify that the data has been cleared
       expect(result.current.roles[projectId]).toEqual([]);
       expect(result.current.isReady[projectId]).toBe(false);
     });
@@ -171,16 +171,16 @@ describe('Project Auth Store', () => {
       const roles1 = [ProjectRoleType.Owner];
       const roles2 = [ProjectRoleType.Editor];
 
-      // 设置初始数据
+      // Set initial data
       result.current.setRoles(projectId1, roles1);
       result.current.setRoles(projectId2, roles2);
       result.current.setIsReady(projectId1, true);
       result.current.setIsReady(projectId2, true);
 
-      // 销毁项目1的数据
+      // Destruction of data for item 1
       result.current.destory(projectId1);
 
-      // 验证项目1的数据已清除，项目2的数据保持不变
+      // Verify that the data for item 1 has been cleared and that the data for item 2 remains unchanged
       expect(result.current.roles[projectId1]).toEqual([]);
       expect(result.current.isReady[projectId1]).toBe(false);
       expect(result.current.roles[projectId2]).toEqual(roles2);

@@ -308,7 +308,7 @@ const DraggableBodyRow: FC<
     onMove: OnMove<string>;
   }>
 > = ({ id, onMove, children, sortable }) => {
-  // 因为 name 可能为空，这里拿 shortid 做一个兜底
+  // Because the name may be empty, take shortid as a bottom line here.
   const dropRef = useRef<HTMLElement>(null);
   const { connect } = useDnDSortableItem<string>({
     type,
@@ -317,7 +317,7 @@ const DraggableBodyRow: FC<
     enabled: sortable,
   });
   useEffect(() => {
-    // 为了避免复杂的跨组件传值，这里稍微直接操作一下 DOM ，非常抱歉
+    // In order to avoid complicated cross-component value transfer, here is a little direct manipulation of the DOM, I'm very sorry.
     const handleRef = {
       current: (dropRef.current?.querySelector(`#${handleId}`) ??
         null) as HTMLElement | null,
@@ -329,7 +329,7 @@ const DraggableBodyRow: FC<
 
 export const tableComponents = {
   body: {
-    // semi-ui 导出的类型定义非常不负责任
+    // The type definition exported by semi-ui is very irresponsible
     row: DraggableBodyRow,
   },
 } as unknown as TableComponents;

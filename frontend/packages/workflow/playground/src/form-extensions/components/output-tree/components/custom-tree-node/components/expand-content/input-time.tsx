@@ -40,7 +40,7 @@ export function InputTime({
       disabled={disabled}
       format="yyyy-MM-dd HH:mm:ss"
       onChange={(date, dateString) => {
-        // onBlur才会触发保存
+        // onBlur will only trigger the save.
         if (typeof dateString === 'string' || dateString === undefined) {
           onBlur?.(dateString);
         }

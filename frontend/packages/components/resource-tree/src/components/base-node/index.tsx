@@ -44,7 +44,7 @@ const { Text } = Typography;
 export const BaseNode = ({ node }: { node: FlowNodeEntity }) => {
   const nodeRender = useCustomNodeRender();
   const treeService = useService<TreeService>(TreeService);
-  // schema 信息存储
+  // Schema Information Store
   const extraInfo = nodeRender.getExtInfo();
   const [hoverNode, setHoverNode] = useState(false);
   const { renderLinkNode } = useContext(TreeContext);
@@ -86,16 +86,16 @@ export const BaseNode = ({ node }: { node: FlowNodeEntity }) => {
   }, []);
 
   const handleClick = (e: React.MouseEvent) => {
-    // 1. 取消其他选中的线条
+    // 1. Uncheck other selected lines
     hoverService.backgroundClick();
-    // 2. 选中节点，重新计算需要选中的线条
+    // 2. Select the node and recalculate the lines that need to be selected.
     hoverService.selectNode(node);
     e.stopPropagation();
   };
 
   const handleMouseEnter = () => {
     setHoverNode(true);
-    // 判断节点类型
+    // Determine the node type
     if (
       node.flowNodeType !== 'custom' ||
       edges.some(edge => edge.from === node.id)
@@ -172,7 +172,7 @@ export const BaseNode = ({ node }: { node: FlowNodeEntity }) => {
             />
           </div>
         ) : null}
-        {/* 不同版本的 tag */}
+        {/* Different versions of tags */}
         {isOtherVersion && !activated ? (
           <div className={s['diff-tag']}>
             {activatedVersion === extraInfo.version

@@ -17,12 +17,12 @@
 import { useLocation } from 'react-router-dom';
 
 /**
- * 从URL上获取工作空间子模块
+ * Get the workspace submodule from the URL
  * @param pathname
- * @returns 工作子模块字符串，如果不匹配则返回 undefined
+ * @Returns the working submodule string, or undefined if it doesn't match
  */
 const getSpaceApp = (pathname: string): string | undefined => {
-  // 以 /space/ 开头，后面跟 spaceId，再跟子模块（只允许字母、数字、-、_）
+  // Start with /space/, followed by spaceId, followed by submodules (only letters, numbers, -, _ allowed)
   const match = pathname.match(/^\/space\/[^/]+\/([A-Za-z0-9_-]+)/);
   return match ? match[1] : undefined;
 };

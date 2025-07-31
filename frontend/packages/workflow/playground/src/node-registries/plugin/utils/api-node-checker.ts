@@ -33,7 +33,7 @@ import {
 import { type ApiNodeDTODataWhenOnInit } from '../types';
 
 /**
- * 检查插件 outputs 是否有变更
+ * Check if plug-in outputs have changed
  * @param prevOutputs
  * @param nextOutputs
  * @returns boolean
@@ -77,10 +77,10 @@ export function isApiOutputsChanged(
 }
 
 /**
- * 校验插件是否变更，如果存在变更，返回 true, 否则返回 false
- * @param params api基本参数列表
- * @param inputParameters 入参参数列表
- * @param apiNodeDetail 插件最新的值
+ * Verify whether the plugin has changed. If there is a change, return true, otherwise return false.
+ * @param params api basic parameter list
+ * @param inputParameters imported parameters
+ * @param apiNodeDetail plugin latest value
  * @returns
  */
 export function checkPluginUpdated({
@@ -92,7 +92,7 @@ export function checkPluginUpdated({
 }: {
   params: BlockInput[];
   inputParameters: InputValueVO[];
-  outputs: ViewVariableTreeNode[]; // outputs 参数已经转换成前端变量格式了
+  outputs: ViewVariableTreeNode[]; // The outputs parameter has been converted to the front-end variable format
   isBatchMode: boolean;
   apiNodeDetail: ApiNodeDetailDTO;
 }): boolean {
@@ -104,22 +104,22 @@ export function checkPluginUpdated({
     : '';
   const isApiNameChanged = oldApiName !== apiNodeDetail.apiName;
 
-  // 实际保存的必填参数名（如果可选参数填写了，也会包括）
+  // The name of the required parameter that is actually saved (if the optional parameter is filled in, it will also be included)
   const oldParamNames = (inputParameters || []).map(v => v.name);
 
-  // API 定义的参数名
+  // API-defined parameter names
   const newParamNames = (apiNodeDetail.inputs || [])?.map(v => v.name);
 
-  // 入参检测目前只检测删除参数场景，增量场景暂时不好检测
+  // Imported parameter detection currently only detects deleted parameter scenes, and incremental scenes are temporarily difficult to detect
   const isInputParamsChanged = !oldParamNames.every(paramName =>
     newParamNames.includes(paramName || ''),
   );
 
   const isOutputsChanged = isApiOutputsChanged(
-    // batch 模式下，变量最外层会包裹一个 outputList 的变量
-    // 因此，如果是 batch 模式，这里比较需要比较 outputList 的 children
+    // In batch mode, the outermost layer of the variable will wrap an outputList variable
+    // Therefore, if it is batch mode, it is necessary to compare the children of the outputList here.
     isBatchMode ? outputs?.[0]?.children : outputs,
-    // api 输出参数需要转化成前端变量格式
+    // API output parameters need to be converted into front-end variable format
     (apiNodeDetail.outputs || []).map(variableUtils.dtoMetaToViewMeta),
   );
 
@@ -127,7 +127,7 @@ export function checkPluginUpdated({
 }
 
 /**
- * 更新 apiParam 相关参数的值
+ * Update the values of apiParam related parameters
  * @param apiParams
  * @param paramName
  * @param updateValue
@@ -147,20 +147,20 @@ function updateApiParamValue(
 }
 
 /**
- * 同步插件输入参数
- * @param draft 当前表单
- * @param inputs 插件最新的输入参数
+ * Synchronize plug-in input parameters
+ * @param draft current form
+ * @Param inputs plugin latest input parameters
  */
 function syncInputParameters(
   draft: ApiNodeDTODataWhenOnInit,
   inputs: ApiNodeDetailDTO['inputs'],
 ) {
-  // 更新入参，主要是删除多余的参数
+  // Update imported parameters, mainly remove redundant parameters
   if (draft?.inputs?.inputParameters) {
-    // 获取最新的参数定义
+    // Get the latest parameter definitions
     const paramMap = keyBy(inputs, 'name');
 
-    // 只有在参数定义中存在的，才保留下来
+    // Only those that exist in the parameter definition are preserved
     draft.inputs.inputParameters = draft?.inputs?.inputParameters.filter(
       param => paramMap[param.name || ''],
     );
@@ -168,9 +168,9 @@ function syncInputParameters(
 }
 
 /**
- * 同步插件输出参数
- * @param draft 当前表单
- * @param outputs 插件最新的输出参数
+ * Synchronization plug-in output parameters
+ * @param draft current form
+ * @Param outputs plugin latest output parameters
  */
 function syncOutputs(
   draft: ApiNodeDTODataWhenOnInit,
@@ -178,8 +178,8 @@ function syncOutputs(
 ) {
   const isBatchMode = Boolean(draft.inputs?.batch?.batchEnable);
 
-  // batch 模式下，变量最外层会包裹一个 outputList 的变量
-  // 因此，如果是 batch 模式，这里比较需要比较 outputList 的 children
+  // In batch mode, the outermost layer of the variable will wrap an outputList variable
+  // Therefore, if it is batch mode, it is necessary to compare the children of the outputList here.
   const originOutputs = isBatchMode
     ? draft.outputs?.[0]?.children
     : draft.outputs;
@@ -192,11 +192,11 @@ function syncOutputs(
   );
 
   if (isOutputChanged) {
-    // 同步出参
+    // Synchronized exported parameters
     if (outputs) {
       const outputVal = outputs.map(variableUtils.dtoMetaToViewMeta);
 
-      // 批量模式， 重新生成一下 (参考： packages/workflow/variable/src/legacy/workflow-batch-service.ts)
+      // Batch mode, regenerate it (reference: packages/workflow/variable/src/legacy/workflow-batch-service)
       if (isBatchMode) {
         draft.outputs = [
           {
@@ -210,17 +210,17 @@ function syncOutputs(
         draft.outputs = outputVal;
       }
     } else {
-      // 没有出参了，需要删除原来的出参
+      // There are no exported parameters, you need to delete the original exported parameters.
       draft.outputs = [];
     }
   }
 }
 
 /**
- * 如果插件存在更新，那么同步插件最新的值
- * @param value 当前表单
- * @param apiNodeDetail 插件最新的值
- * @returns 更新后的表单
+ * If there is an update to the plugin, then synchronize the latest value of the plugin
+ * @param value current form
+ * @param apiNodeDetail plugin latest value
+ * @Returns the updated form
  */
 export function syncToLatestValue(
   value: ApiNodeDTODataWhenOnInit,

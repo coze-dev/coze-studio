@@ -31,7 +31,7 @@ import type {
 } from '../../types';
 import { FormItemSchemaType } from '../../constants';
 
-/** 变量命名校验规则（对齐workflow得参数名校验） */
+/** Variable name verification rules (parameter name verification for aligned workflow) */
 const PARAM_NAME_VALIDATION_RULE =
   /^(?!.*\b(true|false|and|AND|or|OR|not|NOT|null|nil|If|Switch)\b)[a-zA-Z_][a-zA-Z_$0-9]*$/;
 
@@ -106,21 +106,21 @@ function checkArrayOrObjectField(field: FormItemSchema) {
 }
 
 function checkNodeFormSchema(schema: NodeFormSchema) {
-  // 节点参数为空
+  // Node parameter is empty
   if (!schema.inputs.length) {
     return false;
   }
 
   const nameSet = new Set<string>();
   for (const ipt of schema.inputs) {
-    // 名称非法 or 重复
+    // Name illegal or duplicate
     if (!validateParamName(ipt.name) || nameSet.has(ipt.name)) {
       return false;
     }
 
     nameSet.add(ipt.name);
 
-    // 单独检测复杂类型
+    // Detect complex types individually
     if (!checkArrayOrObjectField(ipt)) {
       return false;
     }
@@ -137,7 +137,7 @@ function validate(json?: string): ValidateSchemaResult {
   try {
     const schemas = JSON.parse(json) as NodeFormSchema[];
 
-    // schema为空 or start节点的inputs为空
+    // Schema is empty or start node inputs are empty
     if (
       schemas.length === 0 ||
       (schemas[0].component_type === ComponentType.CozeStartNode &&
@@ -164,7 +164,7 @@ interface ValidateSchemaOptions {
   bizComponentSubject?: ComponentSubject;
 }
 
-/** 检查workflow节点表单是否为空(schema为空 or start节点的inputs为空) */
+/** Checks if the workflow node form is empty (schema is empty or start node inputs are empty) */
 export const validateTestsetSchema = async (
   options: ValidateSchemaOptions,
 ): Promise<ValidateSchemaResult> => {

@@ -43,7 +43,7 @@ export const PageSelector: React.FC<Props> = ({
   onChange,
   value,
 }) => {
-  // 固定展示的条目，最大为 10 条，不到 10 条按实际展示
+  // Fixed display items, the maximum is 10, less than 10 items are displayed according to the actual display
   const fixedItems = useMemo(
     () =>
       new Array(
@@ -52,7 +52,7 @@ export const PageSelector: React.FC<Props> = ({
     [fixedCount, batch],
   );
 
-  // 是否需要通过下拉框展示更多
+  // Do you need to show more through the drop-down box?
   const hasMore = batch.length > fixedCount;
 
   return (
@@ -69,7 +69,7 @@ export const PageSelector: React.FC<Props> = ({
             );
           }
 
-          // Pending 可以当做 warning 处理，否则跟输出中的告警态对应不上
+          // Pending can be treated as a warning, otherwise it does not correspond to the alarm state in the output
           const isWarning = ['warning', 'Pending'].includes(
             currentData?.errorLevel ?? '',
           );

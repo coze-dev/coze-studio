@@ -60,7 +60,7 @@ import {
 } from '@/constants';
 
 /**
- * 校验key是否能作为语义匹配项
+ * Verify whether the key can be used as a semantic match
  * @param data
  * @returns
  */
@@ -83,7 +83,7 @@ export const semanticValidator = (
     return {};
   }
 
-  // TODO 下面forEach写的不好，待优化
+  // The forEach below TODO is not well written and needs to be optimized.
   const res: SemanticValidate = {};
   Object.keys(table_meta).forEach(sheetId => {
     res[sheetId] = {};
@@ -260,7 +260,7 @@ export function getConfigurationNextStatus(
   const hasDuplicateColumnName = meta.some(
     v => meta.filter(i => i.column_name === v.column_name).length >= 2,
   );
-  // 没有表结构数据禁止下一步
+  // No table structure data prohibits next step
   if (
     !Object.keys(meta).length ||
     hasEmptyMeta ||
@@ -282,13 +282,13 @@ export function getDocIdFromProgressList(progressList: ProgressItem[]) {
 }
 
 /**
- * 获取footer状态，不包括loading状态，仅判断启/禁用
- * 满足以下任一情况时，禁用footer按钮
- * 1.存在列名为空
- * 2.unitName为空
- * 3.没有选择语义匹配项
+ * Get footer status, excluding loading status, only judge start/disable
+ * Disable the footer button when any of the following conditions are met
+ * 1. There is an empty column name
+ * 2. unitName is empty
+ * 3. No semantic match selected
  * @param metaData
- * @param unitName // TODO unitName的判断待删
+ * @param unitName//TODO unitName judgment to be deletede deleted
  * @returns
  */
 export const getCustomStatus = (
@@ -297,13 +297,13 @@ export const getCustomStatus = (
 ): FooterBtnStatus => {
   const isDisabled =
     metaData.some(meta => !meta.column_type) ||
-    !validateField(unitName)?.valid || // TODO 这一行待删
+    !validateField(unitName)?.valid || // TODO line to be deleted
     !metaData.some(meta => meta.is_semantic === true) ||
     metaData.some(v => validateField(v.column_name ?? '')?.valid === false);
   return isDisabled ? FooterBtnStatus.DISABLE : FooterBtnStatus.ENABLE;
 };
 
-// table上传第一步footer状态判断
+// Table upload first step footer status judgment
 export function getButtonStatus(unitList: UnitItem[]) {
   const valid = unitList.some(v => validateField(v.name)?.valid === false);
   if (
@@ -331,8 +331,8 @@ export function getAddSegmentParams({
   documentInfo: DocumentBase[];
 }) {
   const payload = {
-    space_id: spaceId, // 兼容旧接口
-    document_id: docId, // 兼容旧接口
+    space_id: spaceId, // Compatible with outdated interfaces
+    document_id: docId, // Compatible with outdated interfaces
     dataset_id: datasetId,
     format_type: FormatType.Table,
     document_bases: documentInfo,
@@ -393,7 +393,7 @@ export function getCreateDocumentParams({
       update_rule: getUpdateRule(),
       table_sheet: tableSettingsToString(tableSettings),
       table_meta: metaData.map(meta => ({
-        id: isAppend ? meta.id : '0', // 不是追加，默认是新建（为'0'）
+        id: isAppend ? meta.id : '0', // Not append, default is new ('0')
         column_name: meta.column_name,
         is_semantic: meta.is_semantic,
         column_type: meta.column_type,
@@ -403,6 +403,6 @@ export function getCreateDocumentParams({
     })),
 
     is_append: isAppend,
-    // document_id: useDocIdFromQuery() ?? undefined, // TODO 待删除，这里是为了兼容原来的MemoryApi.ProcessDocumentsTask更新逻辑
+    // document_id: useDocIdFromQuery ()?? undefined,//TODO to be deleted, here is to be compatible with the original MemoryApi. ProcessDocumentsTask update logic
   };
 }

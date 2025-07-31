@@ -28,14 +28,14 @@ describe('ResponsiveBox', () => {
       <ResponsiveBox contents={[<div key="1">Test Content</div>]} />,
     );
 
-    // 检查是否渲染了div元素
+    // Check if the div element is rendered
     const boxElement = container.firstChild as HTMLElement;
     expect(boxElement.tagName).toBe('DIV');
 
-    // 检查内容是否正确
+    // Check if the content is correct
     expect(boxElement.textContent).toBe('Test Content');
 
-    // 默认情况下应该有基本的类名
+    // There should be a basic class name by default
     expect(boxElement.className).toContain('w-full');
     expect(boxElement.className).toContain('flex');
     expect(boxElement.className).toContain('overflow-hidden');

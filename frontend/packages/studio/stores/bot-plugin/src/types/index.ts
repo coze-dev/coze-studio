@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @coze-arch/no-batch-import-or-export -- 内部均为具名export */
+
+/* eslint-disable @coze-arch/no-batch-import-or-export -- all internally named exports */
 export * from './auth';
 export * from './user';
 export * from './tool';

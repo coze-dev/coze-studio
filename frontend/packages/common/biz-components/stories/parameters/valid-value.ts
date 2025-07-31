@@ -23,7 +23,7 @@ interface SimpleParamTypeAlias {
   children?: SimpleParamTypeAlias[];
 }
 
-// 使用 zod 创建校验规则，只校验 name 和 description
+// Use zod to create validation rules, only name and description are validated
 const createParameterValueSchema = (): ZodSchema<SimpleParamTypeAlias> =>
   z.lazy(() =>
     z.object({
@@ -34,7 +34,7 @@ const createParameterValueSchema = (): ZodSchema<SimpleParamTypeAlias> =>
 
 const parametersValueSchema = z.array(createParameterValueSchema());
 
-// 定义 validValue 函数，使用 zod 进行校验
+// Define the validValue function and use zod for verification
 export default function validValue(
   values: ParameterValue[],
 ): ParametersError[] | undefined {

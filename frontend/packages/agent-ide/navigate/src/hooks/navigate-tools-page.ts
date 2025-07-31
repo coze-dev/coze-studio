@@ -41,7 +41,7 @@ export function useNavigateWorkflowEditPage(
     setWorkflowState: state.setWorkflowState,
   }));
 
-  // 为了兼容老逻辑，优先使用 url 参数
+  // In order to be compatible with the old logic, the URL parameter is preferred
   const spaceID = spaceIDFromURL ?? param?.spaceID;
   const botID = botIDFromURL ?? '';
 
@@ -49,7 +49,7 @@ export function useNavigateWorkflowEditPage(
     if (!workflowID || !spaceID) {
       return;
     }
-    // 只有single模式下，才会设置保留workflow弹窗的keep
+    // Only in single mode will the keep workflow pop-up be set
     if (useBotInfoStore.getState().mode === BotMode.SingleMode) {
       setWorkflowState({ showModalDefault: !!workflowModalState });
     }

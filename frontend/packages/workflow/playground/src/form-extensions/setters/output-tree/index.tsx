@@ -54,15 +54,15 @@ interface OutputTreeOptions {
   defaultCollapse?: boolean;
   needAppendChildWhenNodeIsPreset?: boolean;
   /**
-   * 是否可以配置默认值
+   * Can the default value be configured?
    */
   withDefaultValue?: boolean;
   /**
-   * 默认展开的参数名
+   * Default expanded parameter name
    */
   defaultExpandParams?: string[];
   /**
-   * 是不是新的异常设置
+   * Is it a new exception setting?
    */
   isSettingOnErrorV2?: boolean;
 }
@@ -98,10 +98,10 @@ export const OutputWithValidation = withValidation<OutputTreeSetterProps>(
     const isBatch = batchMode === BatchMode.Batch;
     const historyService = useService<HistoryService>(HistoryService);
 
-    // 记录当前batchMode
+    // Record current batchMode
     const curBatchMode = useRef<BatchMode>();
 
-    // 变更不记录历史
+    // Changes do not record history
     const onChangeWithoutHistory = (outputTreeValue: OutputTreeValue) => {
       historyService.stop();
       onChange(outputTreeValue);
@@ -110,7 +110,7 @@ export const OutputWithValidation = withValidation<OutputTreeSetterProps>(
 
     useEffect(() => {
       /**
-       * 初始化时，赋值curBatchMode，但无需对值做修改
+       * When initializing, assign curBatchMode, but do not modify the value
        */
       if (!curBatchMode.current) {
         curBatchMode.current = batchMode;
@@ -118,7 +118,7 @@ export const OutputWithValidation = withValidation<OutputTreeSetterProps>(
       }
 
       /**
-       * 切换batch mode 需要将 single mode 的output 包成list, 或将 batch mode 的outputList 去掉list这层
+       * To switch batch mode, you need to wrap the output of single mode into a list, or remove the list layer from the outputList of batch mode
        */
       if (batchMode !== curBatchMode.current) {
         curBatchMode.current = batchMode;
@@ -140,7 +140,7 @@ export const OutputWithValidation = withValidation<OutputTreeSetterProps>(
 
     const { getNodeSetterId } = useNodeTestId();
 
-    // 要对 value 排序，保证 errorbody 这个属性在最下面
+    // To sort value, ensure that the errorbody property is at the bottom
     const _value = useMemo(() => {
       if (needErrorBody) {
         return sortErrorBody({

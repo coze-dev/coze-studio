@@ -47,10 +47,10 @@ const isPointInRect = (
   point.y > rect.y &&
   point.y < rect.y + rect.height;
 
-const BORDER_GAP = 8; // 默认边缘阈值
+const BORDER_GAP = 8; // Default edge threshold
 /**
- * 相对于 findTargetElement ，增加了边缘检测功能。
- * 当鼠标在 资源目录边缘， 会算作聚焦在 root 节点
+ * Compared with findTargetElement, the edge detection function is added.
+ * When the mouse is on the edge of the resource directory, it will be regarded as focusing on the root node
  */
 const getElementByXY = ({
   e,
@@ -96,7 +96,7 @@ const findTargetElement = (
   elm: HTMLElement | null,
   uniqueId: string,
   /**
-   * 遇到该 className 会进行记录，并且返回 id 的时候会带上该 className
+   * The className will be recorded when encountered, and the className will be included when the id is returned.
    */
   customClassName?: string,
 ): TargetType | string => {
@@ -176,7 +176,7 @@ const validateDrag = (
   const { name, path, id } = target;
 
   /**
-   * 只要有一个文件是自己层级挪动到自己层级的则 return
+   * As long as there is a file that is moved to its own level, it will be returned.
    */
   const selfList = resourceList.filter(resource => {
     const resourcePath = resource.path || [];
@@ -189,7 +189,7 @@ const validateDrag = (
       .join(', ')} into ${name}`;
   }
 
-  // 校验是不是爹移到儿子
+  // Check if the father moved to the son.
   const notAllowedList = resourceList.filter(resource =>
     (path || []).includes(String(resource.id)),
   );
@@ -200,7 +200,7 @@ const validateDrag = (
       .join(', ')} into ${name}`;
   }
 
-  // 校验移动之后层级是不是过深
+  // Check if the level is too deep after the move
   const maxDeep = resourceList.reduce(
     (max, resource) => Math.max(max, (resource?.maxDeep || 0) + 1),
     0,

@@ -50,8 +50,8 @@ export function Collapse(props: Omit<CollapseProps, 'collapsed'>): JSX.Element {
 
   const { edges: originEdges } = treeService;
   const edges = treeService.getUnCollapsedEdges();
-  // 如果没有子元素，就是折叠了。
-  // 还要判断是否有线条连线
+  // If there are no child elements, it is collapsed.
+  // Also determine whether there are lines connecting
   const collapsed =
     !collapseNode?.children?.length &&
     !collapseNode.next &&
@@ -77,9 +77,9 @@ export function Collapse(props: Omit<CollapseProps, 'collapsed'>): JSX.Element {
         }
       });
     }
-    // 节点重绘
+    // Node redraw
     treeService.treeToFlowNodeJson();
-    // 线条重绘
+    // Line redrawing
     rerenderLines();
   };
 
@@ -95,12 +95,12 @@ export function Collapse(props: Omit<CollapseProps, 'collapsed'>): JSX.Element {
         }
       });
     }
-    // 节点重绘
+    // Node redraw
     treeService.treeToFlowNodeJson();
     rerenderLines();
   };
 
-  // flow-labels-layer 不更新
+  // flow-labels-layer is not updated
   useEffect(() => {
     const disposable = entityManager.onEntityChange(() => {
       refresh();

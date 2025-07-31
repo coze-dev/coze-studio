@@ -57,7 +57,7 @@ export interface PluginContentListItem {
   productInfo?: SimplifyProductInfo;
   pluginInfo: PluginInfoForPlayground;
   belong_page?: number;
-  isFromMarket?: boolean; //数据是从哪里获取的
+  isFromMarket?: boolean; //Where is the data obtained from?
   commercial_setting?: CommercialSetting;
 }
 
@@ -74,7 +74,7 @@ const filterProductListParams = (key: string, value: unknown) => {
   if (!(key in keyMap)) {
     return value;
   }
-  // keyMap 键对应 value 为 stringifyNumber 过滤掉非法值 ''
+  // The keyMap key corresponds to the value stringifyNumber to filter out illegal values "'
   if (value === '') {
     return;
   }
@@ -92,7 +92,7 @@ function formatPluginApiProductInfo(productInfo: ProductInfo) {
     plugin_id: pluginId,
     plugin_name: name,
     record_id: '',
-    // 插件预设卡片信息
+    // Plugin preset card information
     card_binding_info: {
       thumbnail: item?.card_info?.card_url,
     },
@@ -150,7 +150,7 @@ function formatPluginProductInfo(
   };
 }
 
-// 拉取 插件市场的  插件商品列表
+// Pull, Plugin Market, Plugin Product List
 async function getPluginFromMarket(
   // @ts-expect-error -- linter-disable-autofix
   queryParams,
@@ -258,8 +258,8 @@ function getPluginFromMinOrTeam(
       res.data?.plugin_list?.map(item => ({
         pluginInfo: item,
         isFromMarket: false,
-        // 当前数据属于第几页的数据，用于page数据替换
-        // 如果后面用id + count代替page + size，可以把这个逻辑去掉
+        // The current data belongs to the data of the page, which is used for page data replacement
+        // If you replace page + size with id + count later, you can remove this logic.
         belong_page: nextPage,
       })) || [];
     const hasMore =

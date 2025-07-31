@@ -1,4 +1,4 @@
-// 暗色模式的 CSS 变量
+// CSS Variables for Dark Mode
 const darkModeVariables = {
   background: '2, 8, 23',
   foreground: '249, 249, 249',

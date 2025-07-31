@@ -23,8 +23,8 @@ import {
 import { type ChatAreaConfigs } from '../../context/chat-area-context/type';
 
 /**
- * 从前向后扫描 meta，实际效果是从下向上（逆序展示）；
- * 若当前条与上条 role 相同，当前条隐藏 avatar
+ * Scanning the meta from front to back, the actual effect is from bottom to top (shown in reverse order);
+ * If the current bar has the same role as the previous bar, the current bar hides the avatar
  */
 export const scanAndUpdateHideAvatar = (
   metaList: MessageMeta[],
@@ -64,7 +64,7 @@ export const scanAndUpdateHideAvatarForOther = (metaList: MessageMeta[]) => {
       continue;
     }
 
-    // 推送的任务消息单独成组，展示头像
+    // The pushed task messages are grouped separately and the avatar is displayed.
     if (getIsTriggerMessage(later)) {
       continue;
     }

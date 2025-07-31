@@ -140,7 +140,7 @@ export const handleTreeNodeMove = (
       };
     }
 
-    // 如果是同一个 parent，且拖动的位置在当前位置之前，dropIndex 减 1
+    // If it is the same parent and the dragged position is before the current position, the dropIndex is reduced by 1.
     const originalIndex = parentSegment.children.indexOf(dragSegment.id);
     const dropIndex =
       originalIndex < positions.dropIndex &&
@@ -224,7 +224,7 @@ export const handleMergeNodes = (
       };
     }
 
-    // 从原父节点的 children 中移除该节点
+    // Remove the node from the children of the original parent
     const parentSegment = resSegments.find(
       item => item.id === segmentToMerge.parent,
     );
@@ -235,7 +235,7 @@ export const handleMergeNodes = (
     }
 
     if (!['table', 'image', 'title'].includes(segmentToMerge?.type ?? '')) {
-      // 合并文本内容并删除节点
+      // Merge text content and delete nodes
       mergedSegment.text += segmentToMerge.text;
       const index = resSegments.findIndex(
         item => item.id === segmentToMerge.id,
@@ -244,7 +244,7 @@ export const handleMergeNodes = (
         resSegments.splice(index, 1);
       }
     } else {
-      // 非section-text类型的节点，将其移动到合并后节点的children中
+      // Nodes of type non-section-text, move them to the children of the merged node
       segmentToMerge.parent = mergedSegment.id;
       mergedSegment.children.push(segmentToMerge.id);
     }

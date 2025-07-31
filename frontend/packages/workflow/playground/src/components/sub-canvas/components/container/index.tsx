@@ -46,7 +46,7 @@ export const SubCanvasContainer: FC<ISubCanvasContainer> = ({ children }) => {
 
   useEffect(() => {
     const updateSize = () => {
-      // 无子节点时
+      // When there is no sub-node
       if (node.collapsedChildren.length === 0) {
         const parentTransform = parentNode.getData<FlowNodeTransformData>(
           FlowNodeTransformData,
@@ -55,7 +55,7 @@ export const SubCanvasContainer: FC<ISubCanvasContainer> = ({ children }) => {
         setHeight(parentTransform.bounds.height ?? size.height);
         return;
       }
-      // 存在子节点时，只监听宽高变化
+      // When there is a sub-node, it only listens for width and height changes
       if (width !== transform.bounds.width) {
         setWidth(transform.bounds.width);
       }

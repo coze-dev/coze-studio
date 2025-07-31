@@ -20,7 +20,7 @@ import { isGrabLink } from './is-grab-link';
 import { isGrabImage } from './is-grab-image';
 
 /**
- * 获取人性化文本内容
+ * Access to user-friendly text content
  */
 export const getHumanizedContentText = (normalizeNodeList: GrabNode[]) => {
   let content = '';

@@ -42,7 +42,7 @@ export class Program<C extends Ctxs = any> {
   } = {};
 
   /**
-   * 加载插件
+   * Load plugin
    * @param plugins
    */
   loadPlugins(plugins: IPlugin[]) {
@@ -51,10 +51,10 @@ export class Program<C extends Ctxs = any> {
     }
   }
   /**
-   * 注册钩子
-   * @param event 事件名称
-   * @param handler 钩子
-   * @param priority 优先级，数值越小，优先级越高
+   * registration hook
+   * @param event name
+   * @param handler hook
+   * @Param priority, the smaller the value, the higher the priority
    */
   register<
     K extends keyof C,
@@ -87,7 +87,7 @@ export class Program<C extends Ctxs = any> {
     }
   }
   /**
-   * 触发事件
+   * trigger event
    * @param event
    * @param args
    * @returns

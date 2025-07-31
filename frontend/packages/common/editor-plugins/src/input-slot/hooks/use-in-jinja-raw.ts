@@ -57,7 +57,7 @@ export const useSelectionInJinjaRaw = () => {
 
     editor.$on('viewUpdate', checkInJinjaRaw);
 
-    // 初始检查
+    // Initial inspection
     checkInJinjaRaw();
 
     return () => {

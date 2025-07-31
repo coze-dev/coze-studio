@@ -24,7 +24,7 @@ import {
 import { ItemTypeExtra } from '../../../src/save-manager/types';
 import { updateShortcutSort } from '../../../src/save-manager/manual-save/shortcuts';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../../src/store/bot-skill', () => ({
   useBotSkillStore: {
     getState: vi.fn(),
@@ -46,7 +46,7 @@ describe('shortcuts save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotSkillStore.getState as any).mockReturnValue({
       shortcut: mockShortcut,
       transformVo2Dto: mockTransformVo2Dto,
@@ -66,12 +66,12 @@ describe('shortcuts save manager', () => {
     const newSort = ['shortcut-2', 'shortcut-1'];
     await updateShortcutSort(newSort);
 
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       shortcut_sort: newSort,
     });
 
-    // 验证 saveFetcher 被调用，并且参数正确
+    // Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemTypeExtra.Shortcut,

@@ -131,7 +131,7 @@ const getHeaderConfig = (
   } = headerProps;
   if (isTopLevelOfTheNestedPanel) {
     const topLevelConfig = getTopLevelOfTheNestedPanelHeaderConfig(headerProps);
-    // 没有匹配上就用对应对话最后一个 function call unit 来渲染
+    // If there is no match, use the last function call unit of the corresponding dialogue to render
     if (topLevelConfig) {
       return topLevelConfig;
     }
@@ -148,7 +148,7 @@ const getHeaderConfig = (
   }
 
   const { apiResponse, llmOutput, isFinish } = messageUnit;
-  // 流式插件、异步插件比较特殊，只有收到结束消息才算结束
+  // Streaming plugins and asynchronous plugins are special, and the end is only counted when the end message is received.
   const hasResponse = apiResponse && isFinish;
   const functionCallIconAndName = getFunctionCallMessageIconAndNameOptimization(
     {
@@ -159,9 +159,9 @@ const getHeaderConfig = (
     },
   );
 
-  // response为空
+  // Response is empty
   if (!hasResponse) {
-    // 历史消息对话
+    // Chat history
     if (!isMessageFromOngoingChat) {
       return {
         icon: functionCallIconAndName.icon,
@@ -169,7 +169,7 @@ const getHeaderConfig = (
         status: 'interrupt',
       };
     }
-    // 当前进行中的对话
+    // Current conversation in progress
     return {
       icon: <IconCozLoading className="animate-spin" />,
       title: functionCallIconAndName.title,
@@ -177,7 +177,7 @@ const getHeaderConfig = (
     };
   }
 
-  // 正常返回逻辑
+  // normal return logic
   return {
     icon: functionCallIconAndName.icon,
     title: functionCallIconAndName.title,

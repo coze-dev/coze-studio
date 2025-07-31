@@ -53,7 +53,7 @@ const getAutoSaveTime = timestamp => {
   let autoSaveTime = dayjs().format('HH:mm:ss');
 
   /**
-   * 如果后端有回传更新时间且更新时间为 unix 时间戳则使用，否则兜底显示假时间
+   * If the backend has a return update time and the update time is unix timestamp, it will be used, otherwise the bottom cover will display the fake time.
    */
   if (timestamp && typeof timestamp === 'number') {
     const time = dayjs.unix(timestamp);
@@ -88,98 +88,98 @@ export type WorkflowInfo = Omit<Workflow, 'status'> & {
   workflow_version?: string;
 } & {
   /**
-   * workflow 详情中返回的 spaceId, 官方示例场景下和当前空间的值不相等
+   * The spaceId returned in the workflow details is not equal to the value of the current space in the official example scenario
    */
   workflowSourceSpaceId?: string;
 };
 
 export enum WorkflowExecStatus {
   DEFAULT = 'default',
-  /** 执行中 */
+  /** in progress */
   EXECUTING = 'executing',
-  /** 执行结束（此时依然有执行结束 banner，且工作流为 disable 状态） */
+  /** End of execution (there is still an end of execution banner at this time, and the workflow is disabled) */
   DONE = 'done',
 }
 
 /**
- * 当前流程状态
+ * Current process status
  */
 export interface WorkflowGlobalState {
-  /** Workflow 组件传入属性 */
+  /** Workflow component pass-in properties */
   playgroundProps: WorkflowPlaygroundProps;
   workflowId: string;
-  /**  画布加载中 */
+  /**  Canvas loading */
   loading: boolean;
-  /**  save接口请求时间，比saving要短。 */
+  /**  Save interface request time is shorter than save. */
   saveLoading: boolean;
-  /**  保存中，包含debounce时间 */
+  /**  Saving, including debouncing time */
   saving: boolean;
   savingError?: boolean;
   loadingError?: string;
   /**
-   * 发布中
+   * In release
    */
   publishing: boolean;
   /**
-   * 工作流自动保存时间
+   * Workflow auto-save time
    */
   autoSaveTime?: string;
   autoSaveTimestamp?: number;
 
-  /** 工作流详情 */
+  /** Workflow Details */
   info: WorkflowInfo;
 
-  /** 当前空间类型 */
+  /** Current space type */
   spaceType?: SpaceType;
-  /** 用户的空间列表 */
+  /** List of user spaces */
   spaceList: BotSpace[];
-  /** 空间模式 */
+  /** Spatial Mode */
   spaceMode: SpaceMode;
 
-  /** 流程是否是预览态 */
+  /** Is the process in preview state? */
   preview: boolean;
 
   /**
-   * 工作流视图状态（与发布状态区分）
+   * Workflow view state (distinguished from publication state)
    * @default WorkflowExecStatus.DEFAULT
    */
   viewStatus?: WorkflowExecStatus;
 
-  /** 是否发布过, 流程首次发布的时候会向 bot 注册成插件 */
+  /** Has it been released? When the process is first released, it will be registered as a plugin with the bot. */
   pluginId: string;
 
-  // 增加 is_bind_agent 字段，该流程是否绑定了 bot 当做 agent
+  // Add is_bind_agent field, whether the process is bound to the bot as an agent
   isBindAgent: boolean;
 
-  /** 是否绑定了抖音 */
+  /** Is Douyin bound? */
   isBindDouyin: boolean;
 
-  /** Workflow 存量插件是否存在更新，如果存在更新，此时会修改相关表单数据，并且需要试运行 */
+  /** Is there an update to the Workflow stock plug-in, and if so, modifies the relevant form data and requires a practice run */
   inPluginUpdated?: boolean;
-  /* 是否在查看历史 */
+  /* Are you checking history? */
   historyStatus?: OperateType;
-  /** 绑定的业务场景 id */
+  /** Bound business scenario id */
   bindBizID?: string;
-  /** 绑定的业务类型 */
+  /** bound business type */
   bindBizType?: number;
-  /** 节点侧栏床是否打开 */
+  /** Is the node sidebar bed open? */
   nodeSideSheetVisible?: boolean;
   schemaGray?: {
     loop?: string;
     batch?: string;
   };
 
-  /** 流程的节点和线条是否为初始状态，只判断开始结束节点的出入参 */
+  /** Whether the nodes and lines of the process are in the initial state, only the entry and exit parameters of the beginning and end nodes are judged */
   isInitWorkflow?: boolean;
 
   /**
-   * 知识库信息
+   * Knowledge Base Information
    */
   sharedDataSet?: DataSetStore;
 }
 
 /**
- * 流程全局状态管理 (单例)
+ * Process global state management (singleton)
  */
 export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState> {
   static type = 'WorkflowGlobalStateEntity';
@@ -220,13 +220,13 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       );
     }
 
-    // 加载workflow tcc配置
+    // Load workflow tcc configuration
     await Promise.all([this.setSpaceInfo()]);
 
     const workflowInfo = await this.queryWorkflowDetail(workflowId, spaceId);
     const autoSaveTime = getAutoSaveTime(workflowInfo?.update_time);
 
-    /** 判断流程是否是预览态，来自官方的流程、组件配置只读 readonly、非vcs模式不是创建者的流程、 vcs模式无协作者权限 的流程为预览态 */
+    /** Determine whether the process is in preview state, from the official process, component configuration read-only readonly, non-vcs mode is not the creator's process, vcs mode has no collaborator permission, and the process is in preview state */
     const isVcsMode = workflowInfo.collaborator_mode === CollaboratorMode.Open;
     const isReadOnly = this.config.playgroundProps.readonly;
     const isGuanFangType = workflowInfo?.type === WorkFlowType.GuanFang;
@@ -277,11 +277,11 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       isInitWorkflow,
     });
 
-    // 更新画布的 readonly 状态
+    // Update the readonly status of the canvas
     this.entityManager
       .getEntity<PlaygroundConfigEntity>(PlaygroundConfigEntity)
       ?.updateConfig({
-        /** 初始情况下，预览态 => 画布不可编辑 */
+        /** Initially, the preview state = > canvas is not editable */
         readonly: preview,
       });
     return workflowJSON;
@@ -379,18 +379,18 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       )?.versions,
     });
 
-    // 更新画布的 readonly 状态
+    // Update the readonly status of the canvas
     this.entityManager
       .getEntity<PlaygroundConfigEntity>(PlaygroundConfigEntity)
       ?.updateConfig({
-        /** 初始情况下，预览态 => 画布不可编辑 */
+        /** Initially, the preview state = > canvas is not editable */
         readonly: true,
       });
 
     return workflowJSON;
   }
 
-  /** 获取空间相关信息 */
+  /** Acquire space-related information */
   async setSpaceInfo() {
     if (!this.config.spaceList.length) {
       const { bot_space_list } = await DeveloperApi.SpaceList();
@@ -428,14 +428,14 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     return this.config?.spaceType === SpaceType.Team;
   }
 
-  /** 流程是否发布过, 是否有 pluginId 标识本流程是否发布过 */
+  /** Whether the process has been published, and whether there is a pluginId indicating whether the process has been published */
   get hasPublished(): boolean {
     return Boolean(this.config?.pluginId);
   }
 
   /**
-   * 空间是否启用 Dev 模式
-   * @deprecated 目前 Dev 模式已经下线
+   * Is the space enabled in Dev mode?
+   * @Deprecated Dev mode is currently offline
    */
   get isDevSpace(): boolean {
     return this.config.spaceMode === SpaceMode.DevMode;
@@ -448,7 +448,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     return target?.id ?? '';
   }
 
-  /* 新版接口，多人协作模式灰度下走这个接口 */
+  /* New interface, multi-player collaboration mode grey release under this interface */
   protected async queryCollaborationWorkflow(
     workflowId: string,
     spaceId: string,
@@ -501,7 +501,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
         namespace: 'workflow',
         error: e,
       });
-      // 公共空间模版删除时，存在约 5 分钟的缓存，这里需要兜底，防止预览已被删除的流程导致崩溃
+      // When the public space template is deleted, there is a cache for about 5 minutes. Here, you need to back up to prevent the preview of the deleted process from crashing.
       if (spaceId !== PUBLIC_SPACE_ID) {
         throw e;
       }
@@ -509,7 +509,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     }
   }
 
-  /** 外部传入属性 */
+  /** external incoming property */
   get playgroundProps(): WorkflowPlaygroundProps {
     return this.config.playgroundProps;
   }
@@ -535,19 +535,19 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   get projectId(): string | undefined {
-    // 页面当前传入的 projectId 或者 canvas 等接口返回的 projectId
+    // The projectId currently passed into the page or the projectId returned by interfaces such as canvas
     return (
       this.config.playgroundProps.projectId || this.config.info?.project_id
     );
   }
 
-  /** 是否在 IDE 中 */
+  /** Is it in the IDE? */
   get isInIDE(): boolean {
     return !!this.projectId;
   }
 
   /**
-   * 获取 project 注入的能力，非 project 内返回为 null
+   * Get the ability of project injection, return null in non-project
    */
   getProjectApi = () => {
     const outGetProjectApi = this.config.playgroundProps.getProjectApi;
@@ -557,7 +557,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     return null;
   };
   /**
-   * 重新加载
+   * Reload
    */
   reload = async () => {
     const workflowJson = await this.load(
@@ -568,7 +568,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   };
 
   /**
-   * 画布描述信息
+   * canvas description information
    */
   get info(): WorkflowInfo {
     return this.config.info;
@@ -583,7 +583,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   /**
-   * 流程不可编辑, 如: 试运行中的流程、预览态的流程不可编辑、组件配置 readonly 等
+   * The process cannot be edited, such as: the process in practice run, the process in preview state cannot be edited, the component configuration readonly, etc
    */
   get readonly(): boolean {
     return this.config.preview || this.isExecuting;
@@ -594,7 +594,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   /**
-   * 已发布的 Workflow 发生变更需要展示文案
+   * The published workflow has changed and the copy needs to be displayed
    */
   get hasChanged(): boolean {
     const { config } = this;
@@ -609,7 +609,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   /**
-   * 画布是否加载中
+   * Is the canvas loading?
    */
   get loading(): boolean {
     return this.config.loading;
@@ -635,7 +635,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   /**
-   * 是否开启协作模式
+   * Whether to enable collaboration mode
    */
   get isCollaboratorMode() {
     return this.info.collaborator_mode === CollaboratorMode.Open;
@@ -653,7 +653,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     return this.config.bindBizType;
   }
 
-  /** 当前工作流是否绑定抖音分身 */
+  /** Is the current workflow bound to the Douyin doppelganger? */
   get isBindDouyin() {
     return Boolean(
       this.config.bindBizType === BindBizType.DouYinBot &&
@@ -666,7 +666,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       WorkflowMode.Workflow) as WorkflowMode;
   }
 
-  /* 判断存储模式是否为vcs模式，vcs模式下需要走新接口 */
+  /* Determine whether the storage mode is vcs mode, and a new interface is required in vcs mode */
   get isVcsMode() {
     return this.config.info.persistence_model === PersistenceModel.VCS;
   }
@@ -680,18 +680,18 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   /**
-   * @deprecated 待下线
+   * @deprecated to be offline
    */
   get isSceneFlow() {
     return this.flowMode === WorkflowMode.SceneFlow;
   }
 
-  /** 存量插件是否存在更新 */
+  /** Is there an update for the existing plugins? */
   get inPluginUpdated() {
     return Boolean(this.config.inPluginUpdated);
   }
 
-  /** 设置存量插件是否存在更新值 */
+  /** Set whether there is an updated value for the existing plug-ins. */
   set inPluginUpdated(value: boolean) {
     this.updateConfig({
       inPluginUpdated: value,
@@ -727,7 +727,7 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
     );
   }
 
-  /** 是否展示添加协作者功能 */
+  /** Whether to show the Add Collaborator feature */
   get canCollaboration() {
     return (
       this.isTeamSpace &&
@@ -738,18 +738,18 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
   }
 
   get canTestRunHistory() {
-    // 查看历史时，无法获取试运行历史
+    // Unable to get practice run history when viewing history
     if (this.isViewHistory) {
       return false;
     }
 
-    // 作者未开启协作模式时，相当于单人，可以获取历史
+    // When the author does not turn on the collaboration mode, it is equivalent to a single person and can access history
     if (!this.isCollaboratorMode && this.info.creator?.self) {
       return true;
     }
 
     const { vcsData, persistence_model } = this.info;
-    // vcs模式下，只有自己的草稿能获取试运行历史
+    // In VCS mode, only your own draft can get the practice run history
     if (
       persistence_model === PersistenceModel.VCS &&
       !(vcsData?.type === VCSCanvasType.Draft && this.info.vcsData?.can_edit)

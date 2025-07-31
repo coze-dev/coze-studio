@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 公共函数 */
+/** public function */
 
 export {
   Emitter,

@@ -19,7 +19,7 @@ import { type NodeData, WorkflowNodeData } from '@coze-workflow/nodes';
 import type { BasicStandardNodeTypes } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 
-/** 同步节点模版数据 */
+/** Synchronize node template data */
 export const createBatchFunctionTemplateData = (
   batchNode: WorkflowNodeEntity,
   batchFunctionNode: WorkflowNodeEntity,

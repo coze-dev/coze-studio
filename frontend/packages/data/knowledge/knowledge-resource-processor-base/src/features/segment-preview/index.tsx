@@ -84,12 +84,12 @@ export const SegmentPreview = (props: ISegmentPreviewProps) => {
     review => review.review_id === currentReviewID,
   );
   const fileType = currentReview?.document_type;
-  // 前端不好展示 docx，需要用后端转换过的 pdf 格式的 url
+  // The front end is not good to display docx, so you need to use the URL in pdf format converted by the back end.
   const fileUrl = ['docx', 'doc'].includes(fileType ?? '')
     ? (currentReview?.preview_tos_url ?? '')
     : (currentReview?.tos_url ?? '');
   const segmentTosUrl = currentReview?.doc_tree_tos_url ?? '';
-  // 切换文档时进行保存 review
+  // Save review when switching documents
   const { loading: saveLoading, runAsync: saveDocumentReview } = useRequest(
     async () => {
       const res = await KnowledgeApi.SaveDocumentReview({

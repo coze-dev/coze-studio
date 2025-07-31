@@ -25,14 +25,14 @@ import { type WidgetContext } from '@/context/widget-context';
 import { type CommandItem, type MenuItem, type ShortcutItem } from './services';
 
 export interface WidgetRegistry<T = any> {
-  // widget 渲染区域
+  // Widget rendering area
   area?: LayoutPanelType;
-  // 规则匹配
+  // rule matching
   match: RegExp;
   canClose?: () => boolean;
-  // 数据存储
+  // data storage
   createStore?: (uri?: URI) => T;
-  // 注册
+  // Register
   registerCommands?: () => CommandItem<T>[];
   registerShortcuts?: () => ShortcutItem[];
   registerContextMenu?: () => MenuItem[];
@@ -43,15 +43,15 @@ export interface WidgetRegistry<T = any> {
     widget?: ReactWidget,
   ) => React.ReactElement<any, any>;
 
-  // 生命周期
+  // Life Cycle
   load?: (ctx: WidgetContext<T>) => Promise<void>;
   /**
-   * 注意：分屏场景，如果有一个面板之前未展示，会先 focus 那个面板，然后 focus 当前选中的面板。
+   * Note: For split-screen scenes, if there is a panel that has not been displayed before, it will focus that panel first, and then focus the currently selected panel.
    */
   onFocus?: (ctx: WidgetContext<T>) => void;
   /**
-   * 业务侧销毁逻辑
-   * createStore 的销毁逻辑由业务侧自行处理
+   * Business side destruction logic
+   * The destruction logic of createStore is handled by the business side itself
    */
   onDispose?: (ctx: WidgetContext<T>) => void;
 }

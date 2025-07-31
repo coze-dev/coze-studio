@@ -42,7 +42,7 @@ export const useBotInfoWithSenderId = (senderId?: string) => {
 };
 
 /**
- * 返回 action，稳定引用
+ * Return action, stable reference
  */
 export const useSetBotInfoBatch = () => {
   const { useSenderInfoStore } = useChatAreaStoreSet();

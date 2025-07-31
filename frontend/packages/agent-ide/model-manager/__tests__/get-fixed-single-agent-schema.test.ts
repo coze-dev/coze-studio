@@ -271,7 +271,7 @@ describe('get-fixed-single-agent-schema', () => {
                 label: 'mockedI18n',
                 popoverContent: 'mockedI18n',
               },
-              // 放到最前面
+              // Put it up front.
               'x-index': 0,
             },
             max_tokens: {

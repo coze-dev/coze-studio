@@ -19,8 +19,8 @@ import { type ESpacePermisson } from './constants';
 import { calcPermission } from './calc-permission';
 
 export function useSpaceAuth(key: ESpacePermisson, spaceId: string) {
-  // 获取space role信息
+  // Get space role information
   const role = useSpaceRole(spaceId);
-  // 计算权限点
+  // Calculate permission spot
   return calcPermission(key, role);
 }

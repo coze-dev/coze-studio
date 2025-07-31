@@ -32,9 +32,9 @@ import {
 } from './utils';
 
 /**
- * 将 meta 根据类型转换成
- * - 指标 metrics：可以被度量的值，也就是数值
- * - 维度 categories：分类，维度，用来做筛选，分组
+ * Converting meta to type
+ * Metrics: Values that can be measured, that is, numerical values
+ * - Dimension categories: classification, dimension, used for filtering, grouping
  * 
  * @param meta
  * @returns
@@ -77,7 +77,7 @@ export class SlardarReportClient implements LoggerReportClient {
   slardarInstance: SlardarInstance;
 
   constructor(slardarInstance: SlardarInstance) {
-    // 业务项目里可能有多个 slardar 版本，多个版本的类型不兼容，constructor 里约束版本会存在问题 => 放开。
+    // There may be multiple slardar versions in the business project, and the types of multiple versions are incompatible. There will be problems with the constrained version in the constructor = > release.
     this.slardarInstance = slardarInstance;
 
     if (!this.slardarInstance) {
@@ -87,7 +87,7 @@ export class SlardarReportClient implements LoggerReportClient {
 
   send(options: CommonLogOptions) {
     if (!options.action?.includes(LogAction.PERSIST)) {
-      // 非持久化日志，不上报
+      // Non-persistent log, not reported
       return;
     }
 
@@ -116,7 +116,7 @@ export class SlardarReportClient implements LoggerReportClient {
         eventName,
       });
 
-      // 上报 JS 异常
+      // Report a JS exception
       this.slardarInstance?.(
         'captureException',
         error,
@@ -138,7 +138,7 @@ export class SlardarReportClient implements LoggerReportClient {
 
       const { metrics, categories } = metaToMetricsCategories(resolvedMeta);
 
-      // 上报独立的事件
+      // Report an independent incident
       this.slardarInstance?.('sendEvent', {
         name: eventName,
         metrics,
@@ -149,11 +149,11 @@ export class SlardarReportClient implements LoggerReportClient {
         ...meta,
       });
 
-      // 上报日志
+      // report log
       this.slardarInstance?.('sendLog', {
         level: getSlardarLevel(level),
         content: message,
-        // slardar 内部会对 extra 处理分类，number 类型的字段放入 metrics，其他放入 categories
+        // Slardar will handle the classification of extra, put the fields of number type into metrics, and put the others into categories.
         extra: normalizeExtra(resolvedMeta),
       });
     }

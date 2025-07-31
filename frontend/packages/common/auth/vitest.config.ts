@@ -20,9 +20,9 @@ export default defineConfig({
   dirname: __dirname,
   preset: 'web',
   test: {
-    // 全局测试超时时间（毫秒）
-    testTimeout: 10000, // 10秒
-    // Hook 超时时间（毫秒）
-    hookTimeout: 10000, // 10秒
+    // Global test timeout (milliseconds)
+    testTimeout: 10000, // 10 seconds
+    // Hook timeout in milliseconds
+    hookTimeout: 10000, // 10 seconds
   },
 });

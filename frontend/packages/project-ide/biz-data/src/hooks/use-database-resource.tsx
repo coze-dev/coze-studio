@@ -58,7 +58,7 @@ const useDatabaseResource = (): UseDatabaseResourceReturn => {
   const IDENav = useIDENavigate();
   // const openResource = useOpenResource();
 
-  // 创建 Database
+  // Create Database
   const {
     modal: createDatabaseModal,
     open: openCreateDatabaseModal,

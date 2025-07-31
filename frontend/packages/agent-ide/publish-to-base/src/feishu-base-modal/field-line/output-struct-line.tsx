@@ -153,10 +153,10 @@ export const BaseOutputStructLine: FC<{
         <BigCheckbox
           checked={data.is_group_by_key}
           /**
-           * is_group_by_key: 只允许提交 text 类型
-           * 可以切换场景：
-           * 1. 已经勾选：任意类型
-           * 2. 未勾选：仅 text 类型
+           * is_group_by_key: Only text types are allowed
+           * Scenes can be switched:
+           * 1. Checked: Any Type
+           * 2. Unchecked: text type only
            */
           disabled={
             !(data.is_group_by_key || getIsTextOutput(data.output_type))
@@ -189,10 +189,10 @@ export const BaseOutputStructLine: FC<{
           checked={data.is_primary}
           isError={primaryRequire.warn}
           /**
-           * is_primary: 只允许提交 text 或 number 类型
-           * 可以切换场景：
-           * 1. 已经勾选：任意类型
-           * 2. 未勾选：仅 text 与 number 类型
+           * is_primary: Only text or number types are allowed
+           * Scenes can be switched:
+           * 1. Checked: Any Type
+           * 2. Unchecked: only text and number types
            */
           disabled={
             !(
@@ -223,12 +223,12 @@ export const BaseOutputStructLine: FC<{
 };
 
 const FIRST_TWO_COLUMN_TRANSFER_SPACE = 30;
-// 总和为 566，滚动条留 8，左侧拖拽按钮 16，gap 8 * 4， 删除按钮 24
+// The sum is 566, the scroll bar leaves 8, the left drag button 16, the gap 8 * 4, the delete button 24.
 // (566 - 8 - 16 - 4 * 8 - 24 - (44 + 96)) / 2 = 173
 export const outputStructColumnWidth = {
   key: 173 + FIRST_TWO_COLUMN_TRANSFER_SPACE,
   outputType: 173 - FIRST_TWO_COLUMN_TRANSFER_SPACE,
   groupByKey: 44,
-  // 给国际化预留一些宽度
+  // Allow some width for internationalization
   primary: 96,
 };

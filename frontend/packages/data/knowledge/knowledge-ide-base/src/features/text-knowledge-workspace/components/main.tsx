@@ -76,10 +76,10 @@ export const TextKnowledgeWorkspace = ({
   const documentList = useKnowledgeStore(state => state.documentList);
   const resourceNavigate = useDataNavigate();
 
-  // 初始化选择第一个文档
+  // Initialize to select the first document
   useInitSelectFirstDoc();
 
-  // 文档管理
+  // Document Management
   const {
     handleSelectDocument,
     handleRenameDocument,
@@ -89,15 +89,15 @@ export const TextKnowledgeWorkspace = ({
     reloadDataset,
   });
 
-  // 文档基本信息
+  // Documentation basic information
   const { curDoc, curDocId, isProcessing, processFinished, datasetId } =
     useDocumentInfo(progressMap);
 
-  // 文件预览
+  // file preview
   const { showOriginalFile, handleToggleOriginalFile } =
     useFilePreview(curDocId);
 
-  // 文档片段数据
+  // document fragment data
   const { loading, renderData, handleContentChange, reload } = useSliceData({
     curDocId,
     datasetId,
@@ -107,7 +107,7 @@ export const TextKnowledgeWorkspace = ({
     rollbackDocumentSelection,
   });
 
-  // 层级分段数据
+  // hierarchical segmented data
   const {
     levelSegments,
     selectionIDs,
@@ -119,11 +119,11 @@ export const TextKnowledgeWorkspace = ({
     curDoc,
   });
 
-  // 片段计数器
+  // fragment counter
   const { handleIncreaseSliceCount, handleDecreaseSliceCount } =
     useSliceCounter();
 
-  // 模态框
+  // modal box
   const {
     deleteModalNode,
     showDeleteModal,
@@ -153,10 +153,10 @@ export const TextKnowledgeWorkspace = ({
     },
   });
 
-  // 文档选项
+  // Document Options
   const docOptions = getDocumentOptions(documentList, progressMap);
 
-  // 处理重新分段
+  // Handle re-segmentation
   const handleResegment = () => {
     const isLocalText = Boolean(
       curDoc?.source_type === DocumentSource.Document,

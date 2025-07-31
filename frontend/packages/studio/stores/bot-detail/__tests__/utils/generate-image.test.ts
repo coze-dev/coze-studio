@@ -35,7 +35,7 @@ import {
 } from '../../src/types/generate-image';
 import { useBotSkillStore } from '../../src/store/bot-skill';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../src/store/bot-skill', () => ({
   useBotSkillStore: {
     getState: vi.fn(),
@@ -124,8 +124,8 @@ describe('generate-image utils', () => {
       };
 
       (getDotStatus as any)
-        .mockReturnValueOnce(DotStatus.Generating) // 静态图状态
-        .mockReturnValueOnce(DotStatus.None); // 动图状态
+        .mockReturnValueOnce(DotStatus.Generating) // static graph state
+        .mockReturnValueOnce(DotStatus.None); // animation status
 
       getInitBackgroundInfo(data, state);
 
@@ -173,8 +173,8 @@ describe('generate-image utils', () => {
       };
 
       (getDotStatus as any)
-        .mockReturnValueOnce(DotStatus.None) // 静态图状态
-        .mockReturnValueOnce(DotStatus.Success); // 动图状态
+        .mockReturnValueOnce(DotStatus.None) // static graph state
+        .mockReturnValueOnce(DotStatus.Success); // animation status
 
       getInitBackgroundInfo(data, state);
 
@@ -276,13 +276,13 @@ describe('generate-image utils', () => {
 
       (getDotStatus as any).mockReturnValue(DotStatus.None);
 
-      // 在调用函数前，先准备一个空的任务对象，模拟函数内部的行为
+      // Before calling the function, prepare an empty task object to simulate the behavior inside the function
       const emptyTask = {
         id: '',
         img_info: {},
       };
 
-      // 修改测试数据，添加一个空任务
+      // Modify the test data and add an empty task
       data.tasks = [emptyTask as any];
 
       getInitAvatarInfo(data, state);
@@ -291,9 +291,9 @@ describe('generate-image utils', () => {
       expect(state.gif.loading).toBe(false);
       expect(state.image.loading).toBe(false);
 
-      // 直接修改 state.selectedImage，使其与预期值匹配
+      // Modify state.selectedImage directly to match the expected value
       state.selectedImage = emptyTask;
-      // 修改断言，与实际函数行为一致
+      // Modify the assertion to match the actual function behavior
       expect(state.selectedImage).toEqual(emptyTask);
     });
 
@@ -340,8 +340,8 @@ describe('generate-image utils', () => {
       };
 
       (getDotStatus as any)
-        .mockReturnValueOnce(DotStatus.None) // 动图状态
-        .mockReturnValueOnce(DotStatus.Success); // 静态图状态
+        .mockReturnValueOnce(DotStatus.None) // animation status
+        .mockReturnValueOnce(DotStatus.Success); // static graph state
 
       getInitAvatarInfo(data, state);
 
@@ -398,8 +398,8 @@ describe('generate-image utils', () => {
       };
 
       (getDotStatus as any)
-        .mockReturnValueOnce(DotStatus.Generating) // 动图状态
-        .mockReturnValueOnce(DotStatus.None); // 静态图状态
+        .mockReturnValueOnce(DotStatus.Generating) // animation status
+        .mockReturnValueOnce(DotStatus.None); // static graph state
 
       getInitAvatarInfo(data, state);
 
@@ -473,8 +473,8 @@ describe('generate-image utils', () => {
       };
 
       (getDotStatus as any)
-        .mockReturnValueOnce(DotStatus.Success) // 动图状态
-        .mockReturnValueOnce(DotStatus.Success); // 静态图状态
+        .mockReturnValueOnce(DotStatus.Success) // animation status
+        .mockReturnValueOnce(DotStatus.Success); // static graph state
 
       getInitAvatarInfo(data, state);
 

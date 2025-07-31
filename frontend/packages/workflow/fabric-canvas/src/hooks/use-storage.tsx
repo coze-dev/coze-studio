@@ -25,7 +25,7 @@ export interface Options<T> {
 const storage: Record<string, unknown> = {};
 
 /**
- * 持久化保存到内存
+ * Persistent save to memory
  */
 export function useStorageState<T>(key: string, options: Options<T> = {}) {
   function getStoredValue() {

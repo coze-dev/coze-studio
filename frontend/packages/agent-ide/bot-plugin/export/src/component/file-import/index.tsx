@@ -121,7 +121,7 @@ export const ImportPluginModalContent: React.FC<
           __disableErrorToast: true,
         });
 
-      // 解析string
+      // Parse string
       const result = parsePluginInfo({
         aiPlugin: ai_plugin,
         openAPI: openapi,

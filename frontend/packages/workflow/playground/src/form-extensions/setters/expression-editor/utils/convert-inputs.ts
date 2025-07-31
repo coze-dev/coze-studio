@@ -29,7 +29,7 @@ export function convertInputs(
         name: i.name ?? '',
         keyPath: [
           ...((i.input?.content as RefExpressionContent)?.keyPath || []),
-        ], // 深拷贝一份
+        ], // Deep copy
       };
 
       if (i?.children?.length) {

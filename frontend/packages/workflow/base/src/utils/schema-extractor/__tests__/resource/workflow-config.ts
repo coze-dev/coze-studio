@@ -19,211 +19,211 @@ import { SchemaExtractorParserName } from '../../constant';
 import { StandardNodeType } from '../../../../types';
 
 export const workflowExtractorConfig: SchemaExtractorConfig = {
-  // Start 开始节点 1
+  // Start Start Node 1
   [StandardNodeType.Start]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应 input name / description
+      // Corresponding input name/description
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // End 结束节点 2
+  // End End Node 2
   [StandardNodeType.End]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应输出指定内容
+      // Corresponding output specified content
       name: 'content',
       path: 'inputs.content.value.content',
     },
   ],
-  // LLM 大模型节点 3
+  // LLM Large Model Node 3
   [StandardNodeType.LLM]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应batch value / batch description
+      // Corresponding batch value/batch description
       name: 'batch',
       path: 'inputs.batch.inputLists',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应提示词
+      // Cue word
       name: 'llmParam',
       path: 'inputs.llmParam',
       parser: SchemaExtractorParserName.LLM_PARAM,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Plugin 节点 4
+  // Plugin Node 4
   [StandardNodeType.Api]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应batch value / batch description
+      // Corresponding batch value/batch description
       name: 'batch',
       path: 'inputs.batch.inputLists',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应input value / input description
+      // Corresponding input value/input description
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Code 代码节点 5
+  // Code Node 5
   [StandardNodeType.Code]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input value / input description
+      // Corresponding input value/input description
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应code内容
+      // Corresponding code content
       name: 'code',
       path: 'inputs.code',
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Knowledge 知识库节点 6
+  // Knowledge Base Node 6
   [StandardNodeType.Dataset]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应知识库名称
+      // Corresponding knowledge base name
       name: 'datasetParam',
       path: 'inputs.datasetParam',
       parser: SchemaExtractorParserName.DATASET_PARAM,
     },
   ],
-  // If 判断节点 8
+  // If the decision node 8
   [StandardNodeType.If]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'branches',
       path: 'inputs.branches',
       parser: SchemaExtractorParserName.DEFAULT,
     },
   ],
-  // Sub Workflow 工作流节点 9
+  // Sub Workflow Node 9
   [StandardNodeType.SubWorkflow]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应batch value / batch description
+      // Corresponding batch value/batch description
       name: 'batch',
       path: 'inputs.batch.inputLists',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应input value / input description
+      // Corresponding input value/input description
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Variable 变量节点 11
+  // Variable Node 11
   [StandardNodeType.Variable]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Database 数据库节点 12
+  // Database Node 12
   [StandardNodeType.Database]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
@@ -234,21 +234,21 @@ export const workflowExtractorConfig: SchemaExtractorConfig = {
       path: 'inputs.sql',
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Message 消息节点 13
+  // Message Node 13
   [StandardNodeType.Output]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
@@ -259,78 +259,78 @@ export const workflowExtractorConfig: SchemaExtractorConfig = {
       path: 'inputs.content.value.content',
     },
   ],
-  // Sub Imageflow 图像流节点 14
+  // Sub ImageFlow Node 14
   [StandardNodeType.Imageflow]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应batch value / batch description
+      // Corresponding batch value/batch description
       name: 'batch',
       path: 'inputs.batch.inputLists',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应input value / input description
+      // Corresponding input value/input description
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Text 文本处理节点 15
+  // Text processing node 15
   [StandardNodeType.Text]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 拼接结果，以及拼接字符串
+      // Splicing results, and splicing strings
       name: 'concatResult',
       path: 'inputs.concatParams',
       parser: SchemaExtractorParserName.CONCAT_RESULT,
     },
     {
-      // 自定义数组拼接符号
+      // Custom array stitching symbols
       name: 'arrayConcatChar',
       path: 'inputs.concatParams',
       parser: SchemaExtractorParserName.CUSTOM_ARRAY_CONCAT_CHAR,
     },
     {
-      // 自定义分隔符
+      // custom separator
       name: 'splitChar',
       path: 'inputs.splitParams',
       parser: SchemaExtractorParserName.CUSTOM_SPLIT_CHAR,
     },
   ],
-  // Question 问题节点 18
+  // Question Node 18
   [StandardNodeType.Question]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // question 问题
+      // Question question
       name: 'question',
       path: 'inputs.question',
     },
     {
-      // answer_type 回答类型 option|text
+      // answer_type answer type option | text
       name: 'answerType',
       path: 'inputs.answer_type',
     },
@@ -340,69 +340,69 @@ export const workflowExtractorConfig: SchemaExtractorConfig = {
       path: 'inputs.options',
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Break 终止循环节点 19
+  // Break Stop Loop Node 19
   [StandardNodeType.Break]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
   ],
-  // Set Variable 设置变量节点 20
+  // Set Variables Set Variables Node 20
   [StandardNodeType.SetVariable]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.VARIABLE_ASSIGN,
     },
   ],
-  // Loop 循环节点 21
+  // Loop node 21
   [StandardNodeType.Loop]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应variable name
+      // Corresponding variable name
       name: 'variables',
       path: 'inputs.variableParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应output name
+      // Corresponding output name
       name: 'outputs',
       path: 'outputs',
       parser: SchemaExtractorParserName.OUTPUTS,
     },
   ],
-  // Intent 意图识别节点 22
+  // Intent recognition node 22
   [StandardNodeType.Intent]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
@@ -419,21 +419,21 @@ export const workflowExtractorConfig: SchemaExtractorConfig = {
       path: 'inputs.llmParam.systemPrompt.value.content',
     },
   ],
-  // Knowledge Write 知识库写入节点 27
+  // Knowledge Writing Knowledge Base Writing Node 27
   [StandardNodeType.DatasetWrite]: [
     {
-      // 节点自定义名称
+      // Node custom name
       name: 'title',
       path: 'nodeMeta.title',
     },
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,
     },
     {
-      // 对应知识库名称
+      // Corresponding knowledge base name
       name: 'datasetParam',
       path: 'inputs.datasetParam',
       parser: SchemaExtractorParserName.DATASET_PARAM,

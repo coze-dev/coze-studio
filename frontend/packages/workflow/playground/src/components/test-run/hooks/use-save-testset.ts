@@ -195,7 +195,7 @@ export const useSaveTestset = () => {
           caseName: name,
         });
 
-        // FG 控制一下 避免 异常情况下后端错误 或者 checkName 逻辑错误导致 test run 继续无法执行
+        // FG controls to avoid backend errors in abnormal cases, or checkName logic errors that cause the test run to continue and fail to execute
         if (isHitOptFg && !isPass) {
           if (failCode === CASE_NAME_DUPLICATE) {
             Toast.error({

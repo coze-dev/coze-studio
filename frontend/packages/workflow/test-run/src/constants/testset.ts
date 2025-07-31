@@ -15,11 +15,11 @@
  */
  
 /**
- * testset 列表分页大小
+ * TestSet List Page Size
  */
 export const TESTSET_PAGE_SIZE = 10;
 
-/** test set connector ID 是一个固定的字符串 */
+/** Test set connector ID is a fixed string */
 export const TESTSET_CONNECTOR_ID = '10000';
 
 export enum FormItemSchemaType {
@@ -41,7 +41,7 @@ export enum TestsetFormValuesForBoolSelect {
   UNDEFINED = 'undefined',
 }
 
-/** 布尔类型选项 */
+/** Boolean Type Options */
 export const TESTSET_FORM_BOOLEAN_SELECT_OPTIONS = [
   {
     value: TestsetFormValuesForBoolSelect.TRUE,

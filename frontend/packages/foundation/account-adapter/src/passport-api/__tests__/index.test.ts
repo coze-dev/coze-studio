@@ -18,7 +18,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { passport } from '@coze-studio/api-schema';
 import { passportApi } from '../index';
 
-// 模拟 passport API
+// Simulated passport API
 vi.mock('@coze-studio/api-schema/passport', () => ({}));
 vi.mock('@coze-studio/api-schema', () => ({
   passport: {

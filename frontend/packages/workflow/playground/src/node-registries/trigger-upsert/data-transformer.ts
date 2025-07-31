@@ -41,13 +41,13 @@ import {
 
 const fixedInputKeys = ['triggerId', 'userId', 'triggerName'];
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   data: NodeDataDTO,
   context: NodeFormContext,
 ) => {
-  // 初始化为 undefined ，就直接 return 。会命中 defaultValue 逻辑
+  // Initialize to undefined and return directly. The defaultValue logic will be hit.
   if (!data) {
     return undefined;
   }
@@ -78,7 +78,7 @@ export const transformOnInit = (
       return acc;
     }, {});
 
-  // 处理固定输入
+  // Handling Fixed Input
   const fixedInputsVO: Record<string, ValueExpression> = {
     ...arrayDTOToObjVO(
       (config as InputValueDTO[]).filter(
@@ -87,7 +87,7 @@ export const transformOnInit = (
     ),
   };
 
-  // 处理动态表单输入
+  // Handling dynamic form input
   const dynamicInputsKeys = triggerNodeFormMeta
     .filter(
       d =>
@@ -106,7 +106,7 @@ export const transformOnInit = (
     ),
   };
 
-  // hack 动态表单中 cronjob 的结构
+  // Hacking cronjob structure in dynamic form
   dynamicInputsVO[TriggerForm.TriggerFormCronjobName] = {
     type: ((config as InputValueDTO[])?.find(
       c => c?.name === TriggerForm.TriggerFormCronjobTypeName,
@@ -118,7 +118,7 @@ export const transformOnInit = (
     ),
   };
 
-  // 处理绑定流程输入
+  // Handle binding flow input
   const payloadVO: Record<string, ValueExpression> = {
     ...arrayDTOToObjVO(payload as InputValueDTO[]),
   };
@@ -180,11 +180,11 @@ export const transformOnSubmit = (
     Object.entries(obj ?? {})?.map(([name, vo]) => VOToDTO(name, vo));
 
   const config: InputValueDTO[] = [];
-  // 处理固定输入
+  // Handling Fixed Input
   config.push(...objVOToArrayDTO(fixedInputs));
 
-  // 处理动态表单输入
-  // hack cronjob 类型：固定选择/手动输入
+  // Handling dynamic form input
+  // Hack cronjob type: fixed selection/manual input
   config.push(
     BlockInput.createString(
       TriggerForm.TriggerFormCronjobTypeName,
@@ -193,7 +193,7 @@ export const transformOnSubmit = (
     ),
   );
 
-  // hack cronjob 内容
+  // Hack cronjob content
   if (dynamicInputs?.[TriggerForm.TriggerFormCronjobName]?.content) {
     config.push(
       VOToDTO(
@@ -203,14 +203,14 @@ export const transformOnSubmit = (
     );
   }
 
-  // 处理动态表单输入
+  // Handling dynamic form input
   config.push(
     ...objVOToArrayDTO(
       omit(dynamicInputs, [TriggerForm.TriggerFormCronjobName]),
     ),
   );
 
-  //  处理绑定流程输入
+  //  Handle binding flow input
   const _payload: InputValueDTO[] = [];
   if (bindWorkflowId) {
     const bindWorkflowInfo = triggerService.getBindWorkflowInfo(bindWorkflowId);

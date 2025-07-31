@@ -55,9 +55,9 @@ const Operator: FC<{
     4: <IconCozGreaterEqual />,
     5: <IconCozLess />,
     6: <IconCozLessEqual />,
-    // 包含
+    // contain
     7: <IconCozProperSuperset />,
-    // 不包含
+    // Do not include
     8: <IconCozProperSupersetSlash />,
     // isEmpty
     9: <IconCozEqual />,

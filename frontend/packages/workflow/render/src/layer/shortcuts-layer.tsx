@@ -40,7 +40,7 @@ export class ShortcutsLayer extends Layer<object> {
   onReady(): void {
     this.shortcuts.addHandlersIfNotFound(
       /**
-       * 删除
+       * delete
        */
       {
         commandId: WorkflowCommands.DELETE_NODES,
@@ -75,7 +75,7 @@ export class ShortcutsLayer extends Layer<object> {
         },
       },
       /**
-       * 放大
+       * enlarge
        */
       {
         commandId: WorkflowCommands.ZOOM_IN,
@@ -85,7 +85,7 @@ export class ShortcutsLayer extends Layer<object> {
         },
       },
       /**
-       * 缩小
+       * zoom out
        */
       {
         commandId: WorkflowCommands.ZOOM_OUT,
@@ -96,7 +96,7 @@ export class ShortcutsLayer extends Layer<object> {
       },
     );
     this.toDispose.pushAll([
-      // 监听画布鼠标移动事件
+      // Monitor canvas mouse movement events
       this.listenPlaygroundEvent('keydown', (e: KeyboardEvent) => {
         if (!this.isFocused || e.target !== this.playgroundNode) {
           return;

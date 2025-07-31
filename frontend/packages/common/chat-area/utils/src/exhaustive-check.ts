@@ -15,7 +15,7 @@
  */
  
 /**
- * 检查没有遗漏的项
+ * Check for no missing items
  */
 export const exhaustiveCheckForRecord = (_: Record<string, never>) => undefined;
 

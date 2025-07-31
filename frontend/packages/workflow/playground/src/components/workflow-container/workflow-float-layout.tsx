@@ -68,7 +68,7 @@ const useCloseNodeFormWhenBlur = () => {
 };
 
 /**
- * 关闭节点和试运行面板后尝试取消试运行
+ * Try canceling practice run after closing the node and practice run panel
  */
 const useCancelTestRunWhenClosePanel = () => {
   const floatLayoutService = useFloatLayoutService();

@@ -52,17 +52,17 @@ export default function Coachmark({
   const initVisible = async (cid: string) => {
     const coachMarkStorage =
       await localStorageService.getValueSync(COACHMARK_KEY);
-    // readStep 代表已读的step index
+    // readStep represents the read step index
     const readStep = (
       typeSafeJSONParse(coachMarkStorage) as Record<string, number> | undefined
     )?.[cid];
 
-    // 如果没有读过，或者读过的step index 小于当前项的index，则展示。
+    // Displays if it has not been read, or if the read step index is less than the index of the current item.
     const shouldShow = readStep === undefined || itemIndex > readStep;
     setVisible(shouldShow);
   };
 
-  // 设置已读的step index
+  // Set the read step index
   const setCoachmarkReadStep = useCallback(
     (step: number) => {
       const coachmarkStorage =
@@ -73,7 +73,7 @@ export default function Coachmark({
           number | undefined
         >;
 
-      // 如果没有读过，或者要设置的index大于已读的step index 才设置，否则忽略。
+      // If it has not been read, or the index to be set is greater than the read step index, otherwise it is ignored.
       if (
         coachmarkValue[caseId] === undefined ||
         step > Number(coachmarkValue[caseId])
@@ -99,7 +99,7 @@ export default function Coachmark({
       )
     ) {
       const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
-      // 设置已经读过的step index
+      // Set the step index that has been read
       setCoachmarkReadStep(index);
       setStepIndex(nextIndex);
     }
@@ -150,7 +150,7 @@ export default function Coachmark({
           padding: 0,
         },
         buttonBack: {
-          display: 'none', // 隐藏返回按钮
+          display: 'none', // Hide back button
         },
       }}
       floaterProps={{

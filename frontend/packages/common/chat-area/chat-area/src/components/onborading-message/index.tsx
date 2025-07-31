@@ -135,7 +135,7 @@ export const OnboardingMessage: FC<IProps> = props => {
       <CustomeUIKitMessageBox
         messageType="receive"
         messageId={null}
-        // fixme 这里没有 sender id
+        // Fixme no sender id here.
         senderInfo={{ url: avatar, nickname: name, id: '' }}
         showUserInfo={true}
         theme={getOnboardingMessageBoxTheme({

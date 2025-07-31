@@ -45,7 +45,7 @@ export const Gradient: React.FC<{
       'transition-all duration-500': !preview,
     })}
     style={{
-      [direction]: `${(position > 0 ? position : 0) * 100 - 0.1}%`, // 0.1为阴影补偿，防止出现间隙
+      [direction]: `${(position > 0 ? position : 0) * 100 - 0.1}%`, // 0.1 is shadow compensation to prevent gaps.
       width: '10%',
       background,
       opacity: showGradient ? 1 : 0,
@@ -58,7 +58,7 @@ const getGradient = (
   cropperWidth = 1,
 ) => {
   const { left: cropperImgLeft = 0, width: cropperImgWidth = 0 } = canvasData;
-  // 伪裁剪 兼容历史gradient不准的问题
+  // Pseudo-cropping, compatibility with inaccurate historical gradients
   if (!isEmpty(canvasData)) {
     return {
       left: cropperImgLeft / cropperWidth,
@@ -97,7 +97,7 @@ export const WithRuleImgBackground: React.FC<WithRuleImgBackgroundProps> = ({
 
   const [themeColor, setThemeColor] = useState(theme_color ?? 'transparent');
 
-  // 与裁剪框等比例算出图片渲染区域的宽度
+  // Calculate the width of the image rendering area in proportion to the cropping box
   const imgWidth = (targetHeight * cropperSize.width) / cropperSize.height;
 
   const mediumColor = addAlpha(themeColor, 0.95);
@@ -120,7 +120,7 @@ export const WithRuleImgBackground: React.FC<WithRuleImgBackgroundProps> = ({
         zIndex: preview ? 100 : 0,
       }}
     >
-      {/* 背景图上压黑阴影 */}
+      {/* Black shadow on background cover */}
       <div className="bg-[rgba(0,0,0,0.12)] absolute w-full h-full z-[200] rounded-t-[6px]"></div>
 
       <div className="relative w-fit h-fit left-1/2 -translate-x-1/2">

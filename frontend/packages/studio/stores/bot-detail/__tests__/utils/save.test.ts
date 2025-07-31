@@ -20,7 +20,7 @@ import { PromptType } from '@coze-arch/bot-api/developer_api';
 import { getReplacedBotPrompt } from '../../src/utils/save';
 import { usePersonaStore } from '../../src/store/persona';
 
-// 模拟 usePersonaStore
+// emulation usePersonaStore
 vi.mock('../../src/store/persona', () => ({
   usePersonaStore: {
     getState: vi.fn().mockReturnValue({
@@ -38,19 +38,19 @@ describe('save utils', () => {
 
       expect(result).toHaveLength(3);
 
-      // 验证系统消息
+      // Verify system message
       expect(result[0]).toEqual({
         prompt_type: PromptType.SYSTEM,
         data: '模拟的系统消息',
       });
 
-      // 验证用户前缀
+      // validate user prefix
       expect(result[1]).toEqual({
         prompt_type: PromptType.USERPREFIX,
         data: '',
       });
 
-      // 验证用户后缀
+      // validate user suffix
       expect(result[2]).toEqual({
         prompt_type: PromptType.USERSUFFIX,
         data: '',

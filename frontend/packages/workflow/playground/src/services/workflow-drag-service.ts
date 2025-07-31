@@ -73,7 +73,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
     this.initState();
     this._toDispose.pushAll([this.cardDragEmitter]);
   }
-  /** 开始拖拽 */
+  /** Start dragging */
   public startDrag(dragNode: WorkflowCustomDragServiceState['dragNode']): void {
     const { isDragging, dragNode: oldDragNode } = this.state;
     if (isDragging && oldDragNode) {
@@ -105,7 +105,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
       json: dragNode?.json,
     });
   }
-  /** 结束拖拽 */
+  /** end drag */
   public endDrag() {
     const { isDragging, dragNode } = this.state;
     if (!isDragging && !dragNode?.type) {
@@ -121,7 +121,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
       json: dragNode?.json,
     });
   }
-  /** 根据坐标判断是否可放置 */
+  /** Determine whether it can be placed according to the coordinates */
   public canDrop(params: {
     coord: XYCoord;
     dragNode: WorkflowCustomDragServiceState['dragNode'];
@@ -136,8 +136,8 @@ export class WorkflowCustomDragService extends WorkflowDragService {
   }
 
   /**
-   * 是否可放置到节点
-   * NOTICE: 以下逻辑后续如果还有特化，需要考虑放到节点meta配置中
+   * Can it be placed in the node?
+   * NOTICE: If the following logic is still specialized in the future, it needs to be considered in the node meta configuration
    */
   public canDropToNode(params: {
     dragNodeType?: StandardNodeType;
@@ -154,14 +154,14 @@ export class WorkflowCustomDragService extends WorkflowDragService {
         allowDrop: false,
       };
     }
-    // 开始 / 结束节点不允许放入任何容器
+    // Start/end nodes are not allowed to put in any containers
     if ([StandardNodeType.Start, StandardNodeType.End].includes(dragNodeType)) {
       return {
         allowDrop: false,
         dropNode,
       };
     }
-    // Loop / Batch 节点不允许嵌套
+    // Loop/Batch nodes do not allow nesting
     if (
       [StandardNodeType.Loop, StandardNodeType.Batch].includes(dragNodeType) &&
       dropNode?.getNodeMeta<WorkflowNodeMeta>().isContainer
@@ -172,7 +172,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
         dropNode,
       };
     }
-    // Break节点与SetVariable节点仅能拖入Loop节点
+    // Break nodes and SetVariable nodes can only be dragged into the Loop node
     if (
       [
         StandardNodeType.Break,
@@ -199,7 +199,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
         };
       }
     }
-    // 放置节点为容器
+    // Place a node as a container
     if (
       [FlowNodeBaseType.ROOT, FlowNodeBaseType.SUB_CANVAS].includes(
         dropNode.flowNodeType as FlowNodeBaseType,
@@ -216,7 +216,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
     };
   }
 
-  /** 是否可放置 */
+  /** Can it be placed */
   public computeCanDrop(params: {
     coord: XYCoord;
     dragNode: WorkflowCustomDragServiceState['dragNode'];
@@ -249,7 +249,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
       dropNode,
     });
   }
-  /** 初始化状态 */
+  /** initialization state */
   private initState(): void {
     this.state = {
       isDragging: false,
@@ -258,7 +258,7 @@ export class WorkflowCustomDragService extends WorkflowDragService {
       dropNode: undefined,
     };
   }
-  /** 获取重叠位置 */
+  /** Get overlap position */
   private getCollisionTransform(params: {
     position: PositionSchema;
     dragNode: WorkflowCustomDragServiceState['dragNode'];
@@ -278,12 +278,12 @@ export class WorkflowCustomDragService extends WorkflowDragService {
         bounds.width,
         bounds.height,
       );
-      // 检测两个正方形是否相互碰撞
+      // Check if two squares collide with each other
       return Rectangle.intersects(draggingRect, transformRect);
     });
     return collisionTransform;
   }
-  /** 设置当前放置节点 */
+  /** Set the current placement node */
   private setDropNode(newDropNode?: WorkflowNodeEntity) {
     this.state.dropNode = newDropNode;
     if (newDropNode) {

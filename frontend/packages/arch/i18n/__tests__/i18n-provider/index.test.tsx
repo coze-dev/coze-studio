@@ -40,7 +40,7 @@ describe('I18nProvider', () => {
     const provider = new I18nProvider({ children });
     const result = provider.render().props.children;
 
-    // 验证渲染结果
+    // Validate the render result
     expect(result).toBeDefined();
     expect(result.props).toBeDefined();
     expect(result.props.value).toBeDefined();
@@ -48,7 +48,7 @@ describe('I18nProvider', () => {
     expect(typeof result.props.value.i18n.t).toBe('function');
     expect(result.props.children).toBe(children);
 
-    // 验证默认的 t 函数行为
+    // Verify the default t function behavior
     const defaultT = result.props.value.i18n.t;
     expect(defaultT('test-key')).toBe('test-key');
   });
@@ -69,14 +69,14 @@ describe('I18nProvider', () => {
     const provider = new I18nProvider({ children, i18n: mockI18n as any });
     const result = provider.render().props.children;
 
-    // 验证渲染结果
+    // Validate the render result
     expect(result).toBeDefined();
     expect(result.props).toBeDefined();
     expect(result.props.value).toBeDefined();
     expect(result.props.value.i18n).toBe(mockI18n);
     expect(result.props.children).toBe(children);
 
-    // 验证使用了提供的 i18n
+    // Verify that the provided i18n is used.
     const key = 'test-key';
     result.props.value.i18n.t(key);
     expect(mockI18n.t).toHaveBeenCalledWith(key);

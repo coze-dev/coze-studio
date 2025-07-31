@@ -26,7 +26,7 @@ import { createBatchFunctionTemplateData } from './create-batch-function-templat
 import { createBatchFunctionLines } from './create-batch-function-lines';
 import { createBatchFunctionJSON } from './create-batch-function-json';
 
-/** 创建 Batch 循环体节点 */
+/** Create Batch loop body node */
 export const createBatchFunction = async (
   batchNode: WorkflowNodeEntity,
   batchJson: WorkflowNodeJSON,

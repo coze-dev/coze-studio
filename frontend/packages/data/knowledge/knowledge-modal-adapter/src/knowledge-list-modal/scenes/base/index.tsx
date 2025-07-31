@@ -22,13 +22,13 @@ import {
 
 import { useCreateKnowledgeModalV2 } from '../../../create-knowledge-modal-v2/scenes/base';
 
-// 直接使用原始参数类型，不需要创建新的接口
+// Directly use the original parameter types without creating a new interface
 export const useKnowledgeListModal = (
   params: Omit<UseKnowledgeListModalParams, 'createKnowledgeModal'>,
 ) => {
   const { onClickAddKnowledge, beforeCreate, projectID } = params;
 
-  // 创建知识库的modal
+  // A modal for creating a knowledge base
   const createKnowledgeModal = useCreateKnowledgeModalV2({
     projectID,
     onFinish: (datasetId: string, type: UnitType, shouldUpload: boolean) => {
@@ -38,7 +38,7 @@ export const useKnowledgeListModal = (
     beforeCreate,
   });
 
-  // 将createKnowledgeModal传递给base组件
+  // Pass createKnowledgeModal to the base component
   return useKnowledgeListModalBase({
     ...params,
     createKnowledgeModal,

@@ -66,7 +66,7 @@ export const useBatchCheckboxDoc = (props: IBatchCheckboxDocProps) => {
     }
     return (checkboxOptions?.map(v => v.document_id) ?? []) as string[];
   }, [checkboxOptions, disabled]);
-  // 初始化所有选中
+  // Initialize all selections
   const initCheckedList = () => {
     setCheckedList(plainOptions);
     setCheckAll(plainOptions?.length > 0);

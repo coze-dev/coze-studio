@@ -37,7 +37,7 @@ export interface MarkdownEditorProps {
 }
 
 /**
- * 全受控组件
+ * fully controlled component
  */
 export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   value = '',

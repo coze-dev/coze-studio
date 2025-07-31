@@ -249,6 +249,11 @@ func formatTablesInDocument(input []*schema.Document) (output []*schema.Document
 				values = append(values, col.Name)
 			}
 			write(values)
+			if colOnly, err := document.GetDocumentColumnsOnly(doc); err != nil {
+				return nil, err
+			} else if colOnly {
+				break
+			}
 		}
 
 		data, err := document.GetDocumentColumnData(doc)

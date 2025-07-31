@@ -27,7 +27,7 @@ export class GrabAppLifeCycleService extends WriteableAppLifeCycleService<GrabPl
     const { unsubscribe, eventCenter, publicEventCenter, scene } =
       this.pluginInstance.pluginBizContext;
 
-    // Store 历史逻辑有一些问题，导致调用了 多次 destroy 但未初始化的情况，就不走下面的强制清理流程，而是走组件生命周期销毁
+    // There are some problems with the Store history logic, which leads to the situation that destroy is called multiple times but not initialized. Instead of going through the following forced cleaning process, the component life cycle is destroyed.
     if (scene === 'store') {
       return;
     }

@@ -81,7 +81,7 @@ import { MAIN_PANEL_ID } from './constants';
 const DefaultFallbackRender = () => <div>Something went wrong.</div>;
 
 /**
- * 点位背景插件
+ * Point background plugin
  */
 export const createViewPlugin = definePluginCreator<ViewPluginOptions>({
   onBind: ({ bind }, opts) => {
@@ -167,9 +167,9 @@ export const createViewPlugin = definePluginCreator<ViewPluginOptions>({
     const viewManager = ctx.get<ViewManager>(ViewManager);
     await viewManager.init(opts);
   },
-  // 页面渲染完成后 attach dom
+  // After the page is rendered, attach dom
   onLayoutInit: async (ctx, opts) => {
-    // 预设 contextmenu
+    // contextmenu
     if (!opts.presetConfig?.disableContextMenu) {
       const menuService = ctx.container.get<MenuService>(MenuService);
       menuService.addMenuItem({
@@ -197,14 +197,14 @@ export const createViewPlugin = definePluginCreator<ViewPluginOptions>({
     await viewManager.attach(opts);
     const eventService = ctx.container.get<EventService>(EventService);
     const menuService = ctx.container.get<MenuService>(MenuService);
-    // 劫持全局的 contextmenu
+    // Hijack the global contextmenu
     eventService.listenGlobalEvent('contextmenu', (e: React.MouseEvent) => {
       if (domEditable(e.target as HTMLElement)) {
         return;
       }
       const hasMenu = menuService.open(e);
       if (!opts.presetConfig?.disableContextMenu || hasMenu) {
-        // 在 ide 内部永远阻塞右键
+        // Always block right button inside IDE
         e.stopPropagation();
         e.preventDefault();
       }

@@ -29,8 +29,8 @@ export function Model() {
 
   useEffect(() => {
     // fix:
-    // 右侧下拉框展示的模型名称取得是 name 字段，而不是 modelName
-    // 因此这里需要根据 modeType 找到原来模型，展示 name 字段，保持两侧显示一致
+    // The drop-down box on the right shows that the model name is obtained in the name field, not the modelName.
+    // Therefore, you need to find the original model according to the modeType, display the name field, and keep the display on both sides consistent.
     if (data?.model?.modelType) {
       const model = models.find(v => v.model_type === data?.model?.modelType);
       if (model) {

@@ -63,20 +63,20 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     onCollapse,
     validateExistKeyword = false,
   } = props;
-  // 当前值
+  // current value
   const value = cloneDeep(data) as Variable;
   const treeNodeRef = useRef<HTMLDivElement>(null);
 
-  // 删除时
+  // When deleting
   const onDelete = () => {
     onChange(ChangeMode.Delete, value);
   };
 
-  // 新增子项时
+  // When adding a child
   const onAppend = () => {
     onChange(ChangeMode.Append, value);
   };
-  // 类型切换时
+  // When switching types
   const onSelectChange = (
     val?: string | number | Array<unknown> | Record<string, unknown>,
   ) => {
@@ -86,7 +86,7 @@ export default function CustomTreeNode(props: CustomTreeNodeProps) {
     if (!isNumber(val)) {
       return;
     }
-    // 清除默认值
+    // Clear default
     value.defaultValue = '';
     value.children = [];
     onChange(ChangeMode.Update, { ...value, type: val as ViewVariableType });

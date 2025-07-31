@@ -16,7 +16,7 @@
  
 /* eslint-disable @coze-arch/no-deep-relative-import */
 /**
- * 交互上，当选择了运算符后，右值在 disabled/disabled 切换的时候，需要保持类型和上次的一致，所以这里做一下状态存储
+ * Interactively, when the operator is selected, when the rvalue is switched between disabled and disabled, it needs to keep the type the same as last time, so here is a state store
  */
 import React, { type FC, useEffect, useState } from 'react';
 

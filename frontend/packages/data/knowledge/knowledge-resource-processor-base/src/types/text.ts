@@ -46,6 +46,6 @@ export interface CustomSegmentRule {
   separator: Seperator;
   maxTokens: number;
   preProcessRules: PreProcessRule[];
-  /** 分段重叠度 */
+  /** segmented overlap */
   overlap: number;
 }

@@ -56,7 +56,7 @@ export default function ParamDescription({
         )}
         value={data.description}
         ellipsis={true}
-        // 好像不生效
+        // It doesn't seem to work.
         disabled={disabled}
         handleBlur={() => {
           setInputFocus(false);

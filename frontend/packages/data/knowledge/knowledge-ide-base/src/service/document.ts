@@ -82,7 +82,7 @@ export const useListDocumentReq = (
       }
     },
     {
-      // 不自动请求
+      // No automatic request
       manual: true,
       onError: error => {
         Toast.error({
@@ -113,7 +113,7 @@ export const usePollingTaskProgress = () => {
       dataSetId?: string;
     },
   ) => {
-    // 开启新的轮询前需要中止进行中的轮询
+    // An ongoing poll needs to be aborted before starting a new poll
     if (pollingId.current) {
       clearPolling(pollingId);
     }
@@ -125,7 +125,7 @@ export const usePollingTaskProgress = () => {
 
       let photoInfos: PhotoDetailResponse['photo_infos'];
 
-      // 单独查询 photo detail
+      // Check photo details separately
       if (options.isImage) {
         photoInfos = (
           await KnowledgeApi.PhotoDetail({
@@ -136,7 +136,7 @@ export const usePollingTaskProgress = () => {
         )?.photo_infos;
       }
       const updatedProgressMap = data.reduce((res, item) => {
-        // 单独添加 photo detail
+        // Add photo details separately
         // @ts-expect-error -- linter-disable-autofix
         const detail = photoInfos?.[item.document_id] || {};
         // @ts-expect-error -- linter-disable-autofix
@@ -157,7 +157,7 @@ export const usePollingTaskProgress = () => {
       }
     };
 
-    // 立即执行一次
+    // Execute once immediately
     const immediatelyExecuteFunction = () => {
       fetchProgress();
       return fetchProgress;

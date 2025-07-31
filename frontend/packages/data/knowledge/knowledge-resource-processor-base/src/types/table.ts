@@ -15,7 +15,7 @@
  */
  
 /**
- * 本文件放的是 steps/table 下组件相关的 types
+ * This file contains the types related to the components under steps/table
  */
 import type {
   DocTableColumn,

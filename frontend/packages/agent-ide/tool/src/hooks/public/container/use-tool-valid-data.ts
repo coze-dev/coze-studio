@@ -59,8 +59,8 @@ export const useToolValidData = () => {
     });
 
     /**
-     * 异常场景兜底，视图和服务端数据无法匹配，需要触发更新服务端数据
-     * 有数据但是隐藏状态
+     * Abnormal scene cover, view and server level data cannot match, need to trigger update server level data
+     * There is data but hidden state
      */
     if (toolStatus === TabStatus.Hide && hasValidData) {
       setBotSkillBlockCollapsibleState(

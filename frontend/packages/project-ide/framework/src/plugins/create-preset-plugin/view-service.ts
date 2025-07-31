@@ -70,7 +70,7 @@ export class ViewService {
     this.onFullScreenModeChangeEmitter.event;
 
   /**
-   * 主侧边栏功能集合
+   * Main Sidebar Feature Collection
    */
   public primarySidebar = {
     onSidebarVisibleChange: this.onSidebarVisibleChange,
@@ -90,7 +90,7 @@ export class ViewService {
     getVisible: () => this.shell.secondarySidebar.isVisible,
     changeVisible: (vis: boolean) => {
       if (vis) {
-        // 打开前需要判断面板是否已经注册打开
+        // Before opening, you need to determine whether the panel has been registered and opened.
         const secondaryPanel = this.widgetManager.getWidgetFromURI(
           SECONDARY_SIDEBAR_URI,
         );
@@ -109,7 +109,7 @@ export class ViewService {
   private switchPanel(uri?: URI) {
     const uiBuilderPanel = this.widgetManager.getWidgetFromURI(UI_BUILDER_URI);
     if (uri && UI_BUILDER_URI.match(uri)) {
-      // 跳转到 UIBuilder
+      // Jump to UIBuilder
       (this.shell.mainPanel.parent?.parent as BoxPanel).hide();
       uiBuilderPanel?.show();
     } else {
@@ -161,7 +161,7 @@ export class ViewService {
       this.switchPanel();
     }
   }
-  // 打开默认页
+  // Open default page
   async openDefault() {
     await this.openerService.open(MAIN_PANEL_DEFAULT_URI, {
       mode: 'single-document',
@@ -184,8 +184,8 @@ export class ViewService {
     return undefined;
   }
 
-  // 由于最大分屏数量为 2
-  // 因此 children[0] 为左边分屏，children[1] 为右边分屏
+  // Since the maximum number of split screens is 2
+  // Therefore, children [0] is the left split screen, and children [1] is the right split screen
   splitScreen(direction: 'left' | 'right', widget: ReactWidget) {
     const mode = direction === 'left' ? 'split-left' : 'split-right';
     const splitScreenIdx = direction === 'left' ? 0 : 1;
@@ -193,7 +193,7 @@ export class ViewService {
     const layoutConfig = (
       this.shell.mainPanel?.layout as DockLayout
     )?.saveLayout()?.main;
-    // 未分屏场景，直接打开
+    // No split-screen scene, open it directly
     if ((layoutConfig as DockLayout.ITabAreaConfig)?.type === 'tab-area') {
       this.shell.mainPanel.addWidget(widget, {
         mode,
@@ -205,7 +205,7 @@ export class ViewService {
       const { widgets } = (layoutConfig as DockLayout.ISplitAreaConfig)
         ?.children[splitScreenIdx] as DockLayout.ITabAreaConfig;
       const tabActivateWidget = widgets.find(_widget => _widget.isVisible);
-      // 已分屏场景
+      // split screen scene
       this.shell.mainPanel.addWidget(widget, {
         mode: 'tab-after',
         ref: tabActivateWidget,
@@ -215,7 +215,7 @@ export class ViewService {
   }
 
   /**
-   * 全屏模式切换
+   * full screen mode toggle
    */
   switchFullScreenMode() {
     if (!this.isFullScreenMode) {
@@ -226,16 +226,16 @@ export class ViewService {
   }
 
   /**
-   * 开启全屏模式
-   * 在 CozeProjectIDE 中，全屏模式隐藏侧边栏和顶部导航栏
+   * Enable full screen mode
+   * In CozeProject IDE, full-screen mode hides the sidebar and top navigation bar
    */
   enableFullScreenMode() {
     if (this.isFullScreenMode) {
       return;
     }
-    // 隐藏侧边栏
+    // Hide Sidebar
     this.primarySidebar.changeVisible(false);
-    // 隐藏顶部导航栏
+    // Hide top navigation bar
     const topBar = this.shell.getPanelFromArea(LayoutPanelType.TOP_BAR);
     topBar.hide();
 
@@ -247,9 +247,9 @@ export class ViewService {
     if (!this.isFullScreenMode) {
       return;
     }
-    // 显示侧边栏
+    // Show Sidebar
     this.primarySidebar.changeVisible(true);
-    // 显示顶部导航栏
+    // Show top navigation bar
     const topBar = this.shell.getPanelFromArea(LayoutPanelType.TOP_BAR);
     topBar.show();
 

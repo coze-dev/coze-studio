@@ -60,7 +60,7 @@ export const useRedoUndo = ({
     ) {
       return;
     }
-    // 保存多少步
+    // How many steps to save
     const max = 20;
     const end = stepLatest.current + 1;
     const start = Math.max(0, end - max);
@@ -81,25 +81,25 @@ export const useRedoUndo = ({
     const newStep = stepLatest.current - 1;
     const _schema = historyLatest.current[newStep];
 
-    // 开始执行 undo
+    // Start executing undo
     setRedoUndoing(true);
 
-    // 停止监听画布变化
+    // Stop listening for canvas changes
     stopListen();
 
-    // 保存 schema
+    // Save schema
     onChange?.(_schema);
 
-    // 画布重新加载
+    // Canvas reload
     await loadFromJSON?.(_schema);
 
-    // 同步 step
+    // Synchronization steps
     setStep(newStep);
 
-    // 恢复画布监听
+    // Restore canvas monitor
     startListen();
 
-    // undo 执行完成
+    // Undo execution complete
     setRedoUndoing(false);
   }, [loadFromJSON]);
 
@@ -115,25 +115,25 @@ export const useRedoUndo = ({
     const newStep = stepLatest.current + 1;
     const _schema = historyLatest.current[newStep];
 
-    // 开始执行 redo
+    // Start redo
     setRedoUndoing(true);
 
-    // 停止监听画布变化
+    // Stop listening for canvas changes
     stopListen();
 
-    // 保存 schema
+    // Save schema
     onChange?.(_schema);
 
-    // 画布重新加载
+    // Canvas reload
     await loadFromJSON?.(_schema);
 
-    // 同步 step
+    // Synchronization steps
     setStep(newStep);
 
-    // 恢复画布监听
+    // Restore canvas monitor
     startListen();
 
-    // redo 执行完成
+    // Redo execution completed
     setRedoUndoing(false);
   }, [loadFromJSON]);
 

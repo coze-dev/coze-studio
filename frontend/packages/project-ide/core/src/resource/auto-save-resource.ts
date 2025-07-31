@@ -34,7 +34,7 @@ export interface AutoSaveResourceOptions {
   uri: URI;
 }
 /**
- * 资源文件自动保存服务，目前只适用于文本文件
+ * Resource file auto-save service, currently only available for text files
  */
 @injectable()
 export abstract class AutoSaveResource<
@@ -155,7 +155,7 @@ export abstract class AutoSaveResource<
       return;
     }
     await this.readContent(false);
-    // TODO sync 逻辑需要刷新 widget 数据
+    // TODO sync logic needs to refresh widget data
     // if (token.isCancellationRequested || this._dirty) {
     //   return;
     // }
@@ -163,7 +163,7 @@ export abstract class AutoSaveResource<
   }
 
   /**
-   * 自动保存
+   * auto save
    */
   protected doAutoSave(): void {
     if (this.autoSave === 'on') {
@@ -323,7 +323,7 @@ export abstract class AutoSaveResource<
   }
 
   saveContent(content: CHANGE_SET, patch = false): void {
-    // 若支持增量改动 (仅一层)
+    // If incremental changes are supported (only one layer)
     let newContent = content;
     const preSaveContent =
       this.contentChanges[this.contentChanges.length - 1] ?? this.lastContent;
@@ -344,7 +344,7 @@ export abstract class AutoSaveResource<
   }
 
   /**
-   * 获取正在保存中的内容
+   * Get the content being saved
    */
   getPreSaveContent(): CHANGE_SET | undefined {
     return (

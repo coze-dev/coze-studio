@@ -45,7 +45,7 @@ export const useDragUpload = (closeDelay = 100) => {
   useEffect(() => {
     const target = ref.current;
     /**
-     * 拖拽上传功能需要配合多模态消息功能使用
+     * The drag-and-drop upload function needs to be used with the multi-modal message function.
      */
     if (!enableMultimodalUpload || !enableDragUpload) {
       return;
@@ -69,10 +69,10 @@ export const useDragUpload = (closeDelay = 100) => {
     const onDragOver = (e: HTMLElementEventMap['dragover']) => {
       /**
        * {@link https://segmentfault.com/q/1010000011746669}
-       * 原理:
-       * 这里阻止的默认行为是开启可编辑模式，具体就是document.designMode属性，
-       * 该属性默认是off关闭的，当开启之后就可以对网页进行编辑
-       * 开启的方式就是document.designMode = "on"; 开启之后就不用在监听dragover事件中阻止默认了
+       * Principle:
+       * The default behavior blocked here is to enable editable mode, specifically the document.designMode property,
+       * This property is turned off by default, and when turned on, you can edit the webpage.
+       * The way to open it is document.designMode = "on"; after opening it, there is no need to block the default in the monitor dragover event.
        */
       e.preventDefault();
       clearTimer();
@@ -84,8 +84,8 @@ export const useDragUpload = (closeDelay = 100) => {
     };
     const onDragLeave = (e: HTMLElementEventMap['dragleave']) => {
       clearTimer();
-      // 第一次触发 onDragEnter 事件的 target 也将在最后触发一次 onDragLeave, 这两个事件 target 相同
-      // drag 图中, 进入到 child dom 时会触发 onDragLeave 但是这个事件的 target 和第一次触发的 target 不同
+      // The target that fires the onDragEnter event for the first time will also fire onDragLeave for the last time, both events have the same target
+      // In the drag diagram, onDragLeave will be triggered when entering child dom, but the target of this event is different from the target fired for the first time.
       localLog('dragleave', {
         e,
       });
@@ -107,7 +107,7 @@ export const useDragUpload = (closeDelay = 100) => {
 
       const verifiedFileList = validateFileList({ fileLimit, fileList });
 
-      // 文件校验
+      // file validation
       if (!verifiedFileList.length) {
         return;
       }

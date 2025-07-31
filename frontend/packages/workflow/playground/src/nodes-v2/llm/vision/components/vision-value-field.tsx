@@ -33,7 +33,7 @@ interface VisionProps {
 }
 
 /**
- * 输入值字段
+ * input value field
  * @returns */
 export const VisionValueField: FC<VisionProps> = ({ enabledTypes, name }) => {
   const disabledTypes = ViewVariableType.getComplement([
@@ -57,7 +57,7 @@ export const VisionValueField: FC<VisionProps> = ({ enabledTypes, name }) => {
             onChange={v => {
               const expression = v as ValueExpression;
               if (!expression) {
-                // 默认值需要带raw meta不然无法区分是不是视觉理解
+                // The default value needs to be accompanied by raw meta, otherwise it is impossible to distinguish whether it is visual understanding or not.
                 childInputField?.onChange(DEFUALT_VISION_INPUT);
                 return;
               }

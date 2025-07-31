@@ -15,12 +15,12 @@
  */
  
 /**
- * 当前登录账号的用户信息
+ * User information of the currently logged in account
  */
 export interface UserInfo {
   app_id: number;
   /**
-   * @deprecated 会因为溢出丢失精度，使用 user_id_str
+   * @Deprecated will lose precision due to overflow, use user_id_str
    */
   user_id: number;
   user_id_str: string;
@@ -96,7 +96,7 @@ export interface UserInfo {
       name?: string;
       [key: string]: unknown;
     }; // Record<string, unknown>;
-    // int值。1审核中，2审核通过，3审核不通过
+    // int value. 1 During the review, 2 passed the review, and 3 failed the review.
     audit_status: 1 | 2 | 3;
     details: Record<string, unknown>;
     is_auditing: boolean;
@@ -106,9 +106,9 @@ export interface UserInfo {
 }
 
 /**
- * 登录状态
- * - settling: 登录状态检测中，一般用于首屏，会有一定的延迟
- * - not_login: 未登录
- * - logined: 已登录
+ * login status
+ * - settling: In the login status detection, it is generally used for the first screen, and there will be a certain delay.
+ * - not_login: not logged in
+ * - logined: logged in
  */
 export type LoginStatus = 'settling' | 'not_login' | 'logined';

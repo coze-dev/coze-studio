@@ -86,7 +86,7 @@ const getStatusForBatch = (spans: CSpanSingleForBatch[]): SpanStatus => {
   return isSuccess ? SpanStatus.Success : SpanStatus.Error;
 };
 
-// spans直接聚合，生成batchSpan
+// Spans are directly polymerized to generate batchSpan.
 const genBatchSpan = function (
   spans: CSpanSingleForBatch[],
   spanCategoryMap?: SpanCategoryMap,
@@ -94,13 +94,13 @@ const genBatchSpan = function (
   if (spans.length === 0) {
     return undefined;
   }
-  // 合法性检查
+  // legality check
   const taskTotal = spans[0].extra?.task_total;
   const spans0 = spans.filter(curSpan => {
     const curTaskTotal = curSpan.extra?.task_total;
     return curTaskTotal !== taskTotal;
   });
-  // taskTotal不全部相等，数据不合法
+  // taskTotal is not all equal, the data is invalid
   if (spans0.length > 0) {
     return undefined;
   }
@@ -122,7 +122,7 @@ const aggregationBatchSpan = function (
 ) {
   const batchSpans: CSPanBatch[] = [];
 
-  // 根据 workflowNodeId + type对span进行归类
+  // Sorting spans by workflowNodeId + type
   const map: {
     [key: string]: CSpanSingleForBatch[];
   } = {};
@@ -136,14 +136,14 @@ const aggregationBatchSpan = function (
     map[type + workflowNodeId].push(span);
   });
 
-  // 进一步根据时间+序号进行归类，生成CSpanBatch
+  // Further classify according to time + serial number to generate CSpanBatch
   Object.keys(map).forEach(key => {
     const workflowSpans = map[key];
 
-    // 排序：时间
+    // Sort by: Time
     workflowSpans.sort(compareByStartAt);
 
-    // 根据task_index进行聚合
+    // Aggregate according to task_index
     let curTaskIndexs: number[] = [];
     let curSpans: CSpanSingleForBatch[] = [];
     workflowSpans.forEach(span => {
@@ -153,7 +153,7 @@ const aggregationBatchSpan = function (
       }
 
       if (curTaskIndexs.includes(taskIndex)) {
-        // 序号存在了，则新开启一组
+        // If the serial number exists, open a new set.
         const batchSpan = genBatchSpan(curSpans, spanCategoryMap);
         if (batchSpan) {
           batchSpans.push(batchSpan);
@@ -175,11 +175,11 @@ const aggregationBatchSpan = function (
 };
 
 /**
- * 处理原始Span（将额外节点字段统一到extra）
+ * Process raw Span (unify extra node fields to extra)
  * @param span Span
  * @returns CSpanSingle
  */
-// eslint-disable-next-line complexity -- 参数过多
+// eslint-disable-next-line complexity -- too many parameters
 export const span2CSpan = function (
   span: Span,
   spanCategoryMap?: SpanCategoryMap,
@@ -260,7 +260,7 @@ export const spans2CSpans = function (
     ? genSpanCategoryMap(spanCategoryMeta)
     : undefined;
 
-  // 根据span.id进行去重
+  // Deduplicate according to span.id
   const uniqSpans = uniqBy(spans, 'id');
 
   // Span -> CSpanSingle

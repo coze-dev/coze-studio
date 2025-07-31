@@ -22,21 +22,21 @@ import {
 } from '@flowgram.ai/free-layout-core';
 
 /**
- * 全局的数据转换
+ * Global data transformation
  */
 export interface WorkflowJSONFormatContribution {
   /**
-   * 数据初始化时候调用
+   * Called during data initialization
    */
   formatOnInit?: (json: WorkflowJSON, doc: WorkflowDocument) => WorkflowJSON;
   /**
-   * 数据提交时候调用
+   * Called when data is submitted
    */
   formatOnSubmit?: (json: WorkflowJSON, doc: WorkflowDocument) => WorkflowJSON;
   /**
-   * 转换节点初始化数据
+   * Transform node initialization data
    * @param data
-   * @param 初始化的参数
+   * Parameters initialized by @param
    */
   formatNodeOnInit?: (
     data: WorkflowNodeJSON,
@@ -44,7 +44,7 @@ export interface WorkflowJSONFormatContribution {
     isClone?: boolean,
   ) => WorkflowNodeJSON;
   /**
-   * 统一转换表单提交数据
+   * Unified conversion form submission data
    * @param data
    */
   formatNodeOnSubmit?: (

@@ -70,8 +70,8 @@ function Renderer({
     [onChange],
   );
 
-  // Note: changedVariableTree 这里只用来进行性能优化
-  // useVariableTree 的触发时机仍然存在问题，缩放画布也会频繁触发 variableTree 的变更
+  // Note: changedVariableTree is only used for performance optimization
+  // useVariableTree still has issues with the timing of triggering, and scaling the canvas also frequently triggers variableTree changes
   useEffect(() => {
     const editor = apiRef.current;
 
@@ -92,7 +92,7 @@ function Renderer({
     editor.updateWholeDecorations();
   }
 
-  // 值受控
+  // value controlled
   useEffect(() => {
     const editor = apiRef.current;
 

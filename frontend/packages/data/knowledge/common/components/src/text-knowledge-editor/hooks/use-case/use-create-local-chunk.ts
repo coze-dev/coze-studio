@@ -36,7 +36,7 @@ export const useCreateLocalChunk = ({
   });
 
   /**
-   * 处理本地分片的创建操作
+   * Handle the creation of local shardings
    */
   const createLocalChunk = async (chunk: Chunk) => {
     if (!chunk.local_slice_id) {

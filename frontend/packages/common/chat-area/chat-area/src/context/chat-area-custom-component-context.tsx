@@ -20,7 +20,7 @@ import { type ComponentTypesMap } from '../components/types';
 
 export interface ChatAreaCustomComponents {
   /**
-   * @deprecated 废弃，请使用插件化方案
+   * @Deprecated, please use the plugin scheme
    */
   componentTypes?: Partial<ComponentTypesMap>;
 }

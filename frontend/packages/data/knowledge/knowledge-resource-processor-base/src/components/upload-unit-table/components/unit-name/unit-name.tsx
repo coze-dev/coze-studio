@@ -39,7 +39,7 @@ export const UnitName: FC<UnitNameProps> = ({
   inModal = false,
 }) => {
   const { type, name, validateMessage, dynamicErrorMessage } = record;
-  const [value, setValue] = useState(name); // 需要用自身state，否则出现无法输入中文的bug
+  const [value, setValue] = useState(name); // You need to use your own state, otherwise there will be a bug that cannot enter Chinese.
   const [validData, setValidData] = useState({ valid: true, errorMsg: '' });
 
   const getValidateMessage = (val: string) =>

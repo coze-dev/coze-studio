@@ -18,7 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { botSkillSaveManager } from '../../../../src/save-manager/auto-save/bot-skill';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-studio/autosave', () => {
   const mockStartFn = vi.fn();
   const mockCloseFn = vi.fn();
@@ -52,16 +52,16 @@ describe('botSkillSaveManager', () => {
   });
 
   it('应该是 AutosaveManager 的实例', () => {
-    // 验证 botSkillSaveManager 是 AutosaveManager 的实例
+    // Verify that botSkillSaveManager is an instance of AutosaveManager
     expect(botSkillSaveManager).toBeDefined();
-    // 由于我们模拟了 AutosaveManager，我们不能直接检查实例类型
-    // 但可以检查它是否具有 AutosaveManager 实例应有的属性和方法
+    // Since we simulate AutosaveManager, we cannot directly check the instance type
+    // But you can check if it has the properties and methods that an AutosaveManager instance should have
     expect(botSkillSaveManager).toHaveProperty('start');
     expect(botSkillSaveManager).toHaveProperty('close');
   });
 
   it('应该具有 start 和 close 方法', () => {
-    // 验证 botSkillSaveManager 具有 start 和 close 方法
+    // Verify botSkillSaveManager has a start and close method
     expect(botSkillSaveManager.start).toBeDefined();
     expect(botSkillSaveManager.close).toBeDefined();
     expect(typeof botSkillSaveManager.start).toBe('function');
@@ -69,16 +69,16 @@ describe('botSkillSaveManager', () => {
   });
 
   it('调用 start 方法应该正常工作', () => {
-    // 调用 start 方法
+    // Call the start method
     botSkillSaveManager.start();
-    // 由于我们已经模拟了 start 方法，这里只需验证它可以被调用而不会抛出错误
+    // Since we have already simulated the start method, we just need to verify that it can be called without throwing an error
     expect(true).toBe(true);
   });
 
   it('调用 close 方法应该正常工作', () => {
-    // 调用 close 方法
+    // Call the close method
     botSkillSaveManager.close();
-    // 由于我们已经模拟了 close 方法，这里只需验证它可以被调用而不会抛出错误
+    // Since we have simulated the close method, we just need to verify that it can be called without throwing an error
     expect(true).toBe(true);
   });
 });

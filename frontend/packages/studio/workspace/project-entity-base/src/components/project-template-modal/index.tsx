@@ -61,11 +61,11 @@ export interface ProjectTemplateBaseProps {
 }
 
 /**
- * 需要特别处理、放到「基础」类别中的模版
- * 本身业务中没有「基础」这个类别，但是在这个通过复制创建的场景下 pm 希望为用户提供一些具有基本功能有代表性的模版
- * 所以这个特殊处理的模版应运而生
+ * Templates that require special handling and are placed in the "Basic" category
+ * There is no "foundation" category in the business itself, but in this scenario created by replication, pm wants to provide users with some representative templates with basic functions
+ * And so this special treatment template came into being.
  *
- * 迭代时需要注意，业务上需要保证这些模版都是被 recommend 才能复用 PublicGetProductList 这个接口
+ * When iterating, it is necessary to ensure that these templates are recommended in order to reuse PublicGetProductList this interface
  */
 const BASE_TEMPLATE_ID_LIST = ['7439261984903938074'];
 

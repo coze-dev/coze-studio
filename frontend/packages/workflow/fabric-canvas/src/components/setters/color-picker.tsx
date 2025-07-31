@@ -138,13 +138,13 @@ export const ColorPicker: FC<IProps> = props => {
             })}
           </div>
           <Input
-            // 因为是不受控模式，当点击色块时，需要重置 input.value。所以这里以 color 为 key
+            // Because it is in uncontrolled mode, when clicking on the color block, you need to reset the input.value. So here color is the key
             key={`input-${color}`}
             disabled={readonly}
             prefix={<ColorRect color={color as string} size={16} />}
             type="text"
             className="w-[110px]"
-            // 为什么不使用受控模式？使用受控模式，用户输入过程中触发的格式校验处理起来比较麻烦
+            // Why not use controlled mode? With controlled mode, format checking triggered during user input is cumbersome to handle
             defaultValue={color}
             onChange={v => {
               if (isHexColor(v)) {

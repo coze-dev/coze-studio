@@ -19,13 +19,13 @@ import { describe, it, expect } from 'vitest';
 import { stringifyFormValuesFromBacked } from '../../src/utils/stringify-form-values-from-backed';
 
 describe('stringifyFormValuesFromBacked', () => {
-  // 测试输入为空的情况
+  // When the test input is empty
   it('should return undefined when input is null or undefined', () => {
     expect(stringifyFormValuesFromBacked(null as any)).toBeUndefined();
     expect(stringifyFormValuesFromBacked(undefined as any)).toBeUndefined();
   });
 
-  // 测试输入包含字符串和布尔值的情况
+  // Test if the input contains strings and boolean values
   it('should return the same string and boolean values', () => {
     const input = {
       str: 'hello',
@@ -38,7 +38,7 @@ describe('stringifyFormValuesFromBacked', () => {
     });
   });
 
-  // 测试输入包含对象和数组的情况
+  // Test if the input contains objects and arrays
   it('should stringify objects and arrays', () => {
     const input = {
       obj: { key: 'value' },
@@ -51,7 +51,7 @@ describe('stringifyFormValuesFromBacked', () => {
     });
   });
 
-  // 测试输入包含 null 和 undefined 的情况
+  // Test if the input contains null and undefined
   it('should set null and undefined values to undefined in the result', () => {
     const input = {
       nullValue: null,

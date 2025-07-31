@@ -24,7 +24,7 @@ import { DSLPlaceholer } from './placeholder';
 import { DSLColumnLayout } from './layout';
 import { DSLForm } from './form';
 
-// 组件参数是在运行时决定，无法具体做类型约束
+// Component parameters are determined at run time and cannot be subject to specific type constraints
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DSLWidgetsMap: Record<string, DSLComponent<any>> = {
   '@flowpd/cici-components/Input': DSLFormInput,

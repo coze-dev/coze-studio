@@ -42,15 +42,15 @@ interface ParamTypeProps {
   level: number;
   onSelectChange?: SelectProps['onChange'];
   disabled?: boolean;
-  /** 不支持使用的类型 */
+  /** Types not supported */
   disabledTypes?: ViewVariableType[];
-  /** 隐藏类型 */
+  /** hidden type */
   hiddenTypes?: ViewVariableType[];
   style?: React.CSSProperties;
 }
 
 const defaultDisabledTypes = [];
-// 目前仅开始节点支持声明文件类型变量
+// Currently only the start node supports declaring file type variables
 const defaultHiddenTypes = FILE_TYPES;
 
 export default function ParamType({

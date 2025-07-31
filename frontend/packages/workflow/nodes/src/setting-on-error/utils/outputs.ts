@@ -31,7 +31,7 @@ const includeFn = isSettingOnErrorV2 => v =>
   settingOnErrorNames(isSettingOnErrorV2).includes(v.name);
 
 /**
- * 向 output 中添加/剔除 errorBody
+ * Add/remove errorBody to output
  */
 export const getOutputsWithErrorBody = ({
   value,
@@ -47,9 +47,9 @@ export const getOutputsWithErrorBody = ({
   if (!value) {
     return value;
   }
-  // 添加 errorBody
+  // Add errorBody
   if (isOpen) {
-    // batch 模式下，在第一层的 children 里追加 errorBody
+    // In batch mode, append errorBody to children in the first layer
     if (isBatch) {
       return [
         {
@@ -61,7 +61,7 @@ export const getOutputsWithErrorBody = ({
           ],
         },
       ];
-      // single 模式下，在第一层追加 errorBody
+      // In single mode, append an errorBody to the first layer
     } else {
       return [
         ...(value ?? []).filter(excludeFn(isSettingOnErrorV2)),
@@ -69,9 +69,9 @@ export const getOutputsWithErrorBody = ({
         ...(isSettingOnErrorV2 ? [generateIsSuccessMeta()] : []),
       ];
     }
-    // 剔除 errorBody
+    // errorBody
   } else {
-    // batch 模式下，从第一层的 children 中剔除
+    // In batch mode, remove children from the first layer
     if (isBatch) {
       const [one, ...rest] = value;
       return [
@@ -83,7 +83,7 @@ export const getOutputsWithErrorBody = ({
         },
         ...rest,
       ];
-      // single 模式下，从第一层的 children 中剔除
+      // In single mode, remove children from the first layer
     } else {
       return [...(value ?? []).filter(excludeFn(isSettingOnErrorV2))];
     }
@@ -91,7 +91,7 @@ export const getOutputsWithErrorBody = ({
 };
 
 /**
- * output 属性排序，保证 errorBody 在最下面
+ * The output property is sorted to ensure that errorBody is at the bottom
  */
 export const sortErrorBody = ({
   value,
@@ -126,7 +126,7 @@ export const sortErrorBody = ({
 };
 
 /**
- * 把 value 中的 errorBody 删除掉
+ * Remove the errorBody from the value
  */
 export const getExcludeErrorBody = ({
   value,

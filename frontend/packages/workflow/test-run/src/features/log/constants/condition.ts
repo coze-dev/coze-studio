@@ -88,7 +88,7 @@ export const falseValue = {
   [ConditionType.False]: () => I18n.t('workflow_detail_condition_select_false'),
 };
 
-// 等于、不等于、长度大于、长度大于等于、长度小于、长度小于等于、包含、不包含、为空、不为空
+// equal to, not equal to, length greater than, length greater than or equal to, length less than, length less than or equal to, contain, do not contain, empty, not empty
 export const stringConditionValueMap = merge(
   {},
   equalValue,
@@ -103,7 +103,7 @@ export const stringConditionValueMap = merge(
   notEmptyValue,
 );
 
-// 等于、不等于、大于、大于等于、小于、小于等于、为空、不为空
+// equal to, not equal to, greater than, greater than or equal to, less than, less than or equal to, empty, not empty
 export const intConditionValueMap = merge(
   {},
   equalValue,
@@ -116,7 +116,7 @@ export const intConditionValueMap = merge(
   smallerEqualValue,
 );
 
-// 等于、不等于、为True、为False、为空、不为空
+// Equal to, not equal to, True, False, Null, Not Null
 export const booleanConditionValueMap = merge(
   {},
   equalValue,
@@ -127,7 +127,7 @@ export const booleanConditionValueMap = merge(
   falseValue,
 );
 
-// 等于、不等于、大于等于、小于等于、大于、小于、为空、不为空
+// equal to, not equal to, greater than or equal to, less than or equal to, greater than, less than, empty, not empty
 export const numberConditionValueMap = merge(
   {},
   equalValue,
@@ -140,7 +140,7 @@ export const numberConditionValueMap = merge(
   notEmptyValue,
 );
 
-// 包含、不包含、为空、不为空
+// Include, do not contain, empty, not empty
 export const objectConditionValueMap = merge(
   {},
   includeValue,
@@ -149,7 +149,7 @@ export const objectConditionValueMap = merge(
   notEmptyValue,
 );
 
-// 长度大于、长度大于等于、长度小于、长度小于等于、包含、不包含、为空、不为空
+// Length greater than, length greater than or equal to, length less than, length less than or equal to, contain, do not contain, empty, not empty
 export const arrayConditionValueMap = merge(
   {},
   lengthBiggerValue,
@@ -162,7 +162,7 @@ export const arrayConditionValueMap = merge(
   notEmptyValue,
 );
 
-// 所有的值的集合
+// The set of all values
 export const totalConditionValueMap = merge(
   {},
   equalValue,

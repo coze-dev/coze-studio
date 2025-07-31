@@ -23,11 +23,11 @@ import {
 } from '@coze-arch/idl/benefit';
 
 export interface MonetizeConfigState {
-  /** 是否开启付费 */
+  /** Whether to start payment */
   isOn: boolean;
-  /** 开启付费后，用户免费体验的次数 */
+  /** The number of free user experiences after starting payment */
   freeCount: number;
-  /** 刷新周期 */
+  /** refresh cycle */
   refreshCycle: BotMonetizationRefreshPeriod;
 }
 

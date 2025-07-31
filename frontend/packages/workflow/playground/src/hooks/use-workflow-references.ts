@@ -15,8 +15,8 @@
  */
  
 /**
- * 获取当前 workflow 被别的哪些workflow或bots 引用了
- * 目前bots没有数据，只有workflow的
+ * Gets which other workflows or bots are referenced by the current workflow
+ * At present, bots has no data, only workflow.
  */
 import {
   useQuery,

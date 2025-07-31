@@ -55,22 +55,22 @@ export class WorkflowRenderContribution
   protected linesManager: WorkflowLinesManager;
 
   registerRenderer(registry: FlowRendererRegistry): void {
-    // 画布基础层，提供缩放、手势等能力
+    // Canvas base layer, providing zoom, gesture, and more
     registry.registerLayer(PlaygroundLayer, {
       hoverService: this.hoverService,
     });
     registry.registerLayers(
       FlowNodesContentLayer,
-      // FlowScrollLimitLayer, // 控制滚动范围
-      FlowScrollBarLayer, // 滚动条
-      HoverLayer, // 控制hover
-      ShortcutsLayer, // 快捷键配置
+      // FlowScrollLimitLayer,//control scrolling range
+      FlowScrollBarLayer, // scroll bar
+      HoverLayer, // Control hover
+      ShortcutsLayer, // Shortcut configuration
     );
-    // 线条
+    // line
     registry.registerLayer(WorkflowLinesLayer, {
       renderElement: () => this.stackingContext.node,
     });
-    // 节点位置
+    // Node location
     registry.registerLayer(FlowNodesTransformLayer, {
       renderElement: () => this.stackingContext.node,
     });
@@ -81,17 +81,17 @@ export class WorkflowRenderContribution
     });
     registry.registerLayer<FlowSelectorBoxLayer>(FlowSelectorBoxLayer, {
       canSelect: (event, entity) => {
-        // 需满足以下条件：
-        // 1. 非左键不能触发框选
+        // The following conditions must be met:
+        // 1. Non-left button cannot trigger box selection
         if (event.button !== 0) {
           return false;
         }
         const element = event.target as Element;
-        // 2. 没有元素不能触发框选
+        // 2. No element can trigger the box selection
         if (!element) {
           return false;
         }
-        // 3. 如存在自定义配置，以配置为准
+        // 3. If there is a custom configuration, the configuration shall prevail.
         if (element) {
           if (element.closest('[data-flow-editor-selectable="true"]')) {
             return true;
@@ -100,15 +100,15 @@ export class WorkflowRenderContribution
             return false;
           }
         }
-        // 4. hover 到节点或者线条不能触发框选
+        // 4. Hovering to nodes or lines cannot trigger box selection
         if (this.hoverService.isSomeHovered()) {
           return false;
         }
-        // 5. 未处于画布内不能触发框选
+        // 5. Cannot trigger box selection without being in the canvas
         if (
           !element.classList.contains('gedit-playground-layer') &&
           !element.classList.contains('gedit-flow-background-layer') &&
-          // 连线的空白区域
+          // Blank space for connection
           !element.closest('.gedit-flow-activity-edge')
         ) {
           return false;
@@ -116,16 +116,16 @@ export class WorkflowRenderContribution
         return true;
       },
     });
-    // 调试画布
+    // Debug Canvas
     if (location.search.match('playground_debug')) {
       registry.registerLayers(FlowDebugLayer);
     }
-    // 背景最后插入，因为里边会调整位置
+    // The background is inserted at the end, because the position will be adjusted inside.
     registry.registerLayer(BackgroundLayer);
   }
 
   /**
-   * 这个用于阻止 document.body 的手势缩放
+   * This is used to prevent gesture scaling of document.body
    * @private
    */
   private _gestureForStopDefault = new Gesture(document.body, {

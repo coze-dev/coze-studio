@@ -42,7 +42,7 @@ import {
 import { setImageFixed } from '../share';
 import { useCanvasChange } from './use-canvas-change';
 
-// 设置元素属性
+// Set element properties
 const setElementProps = async ({
   element,
   props,
@@ -52,7 +52,7 @@ const setElementProps = async ({
   props: Partial<FabricObjectSchema>;
   canvas?: Canvas;
 }): Promise<void> => {
-  // 特化一：img 的属性设置需要设置到 img 元素上，而不是外层包裹的 group
+  // Specialization 1: The attribute settings of img need to be set to the img element, not the outer wrapped group
   if (
     element?.isType('group') &&
     (element as Group)?.getObjects()?.[0]?.isType('image')
@@ -62,21 +62,21 @@ const setElementProps = async ({
     const img = group.getObjects()[0] as FabricImage;
     const borderRect = group.getObjects()[1] as Rect;
 
-    // 边框颜色设置到 borderRect 上
+    // Set the border color to borderRect
     if (stroke) {
       borderRect.set({
         stroke,
       });
     }
 
-    // 边框粗细设置到 borderRect 上
+    // The border thickness is set to borderRect
     if (typeof strokeWidth === 'number') {
       borderRect.set({
         strokeWidth,
       });
     }
 
-    // 替换图片
+    // Replace image
     if (src) {
       const newImg = document.createElement('img');
       await new Promise((done, reject) => {
@@ -94,7 +94,7 @@ const setElementProps = async ({
 
     setImageFixed({ element: group });
   } else {
-    // 特化二：文本与段落切换，需要特化处理
+    // Specialization 2: Text and paragraph switching requires specialized processing
     const { customType, ...rest } = props;
     if (
       customType &&
@@ -143,11 +143,11 @@ const setElementProps = async ({
         elementProps: {
           ...extendsProps,
           ...(props.customType === Mode.INLINE_TEXT
-            ? // 块状 -> 单行
+            ? // Block - > single row
               {}
-            : // 单行 -> 块状
+            : // Single Row - > Block
               {
-                // 单行切块状，尽量保持字体大小不变化
+                // Cut the block in a single line, and try to keep the font size unchanged.
                 fontSize: newFontSize,
                 padding: newFontSize / 4,
                 width: 200,
@@ -156,30 +156,30 @@ const setElementProps = async ({
         },
       });
 
-      // 如果还有别的属性，设置到新 element 上
+      // If there are other properties, set them to the new element
       if (Object.keys(rest).length > 0) {
         newElement?.set(rest);
       }
 
-      // 添加新的，顺序不能错，否则删除时引用关系会被判定为无用关系而被删除掉
+      // Add new ones in the correct order, otherwise the reference relationship will be determined to be useless and deleted when deleting.
       canvas?.add(newElement as FabricObject);
-      // 删掉老的
+      // Delete the old one
       canvas?.remove(oldElement);
 
       canvas?.discardActiveObject();
       canvas?.setActiveObject(newElement as FabricObject);
       canvas?.requestRenderAll();
 
-      // 普通的属性设置
+      // Normal property settings
     } else {
       const { fontFamily } = props;
-      // 特化三： 字体需要异步加载
+      // Specialization 3: Fonts need to be loaded asynchronously
       if (fontFamily) {
         await loadFont(fontFamily);
       }
       /**
-       * textBox 比较恶心，不知道什么时机会给每个字都生成样式文件（对应 styles）
-       * 这里主动清除下，否则字体相关的设置（fontSize、fontFamily...）不生效
+       * textBox is disgusting. I don't know when to generate a style file for each word (corresponding styles).
+       * Take the initiative to clear it here, otherwise the font-related settings (fontSize, fontFamily...) will not take effect
        */
       if (element?.isType('textbox')) {
         element?.set({
@@ -187,7 +187,7 @@ const setElementProps = async ({
         });
       }
 
-      // 特化四：padding = fontSize/2 , 避免文本上下被截断
+      // Specialization 4: padding = fontSize/2, to avoid text being truncated up and down
       if (element?.isType('textbox') && typeof props.fontSize === 'number') {
         element?.set({
           padding: props.fontSize / 4,
@@ -285,9 +285,9 @@ export const useActiveObjectChange = ({
         if (selected) {
           selected.set(selectedBorderProps);
           /**
-           * 为什么禁用选中多元素的控制点？
-           * 因为直线不期望有旋转，旋转会影响控制点的计算逻辑。
-           * 想要放开这个限制，需要在直线的控制点内考虑旋转 & 缩放因素
+           * Why disable control points with multiple elements selected?
+           * Since a straight line does not expect rotation, rotation affects the computational logic of the control points.
+           * To remove this restriction, you need to consider the rotation & scaling factor within the control points of the line
            */
           if (selected.isType('activeselection')) {
             selected.setControlsVisibility({
@@ -318,7 +318,7 @@ export const useActiveObjectChange = ({
     };
   }, [canvas]);
 
-  // 窗口大小变化时，修正下位置
+  // When the window size changes, correct the position
   useEffect(() => {
     _setActiveObjectsPopPosition();
   }, [scale]);
@@ -361,7 +361,7 @@ export const useActiveObjectChange = ({
     canvas?.fire('object:modified');
   };
 
-  // 实现 shift 水平/垂直移动
+  // To shift horizontally/vertically
   useEffect(() => {
     if (!canvas) {
       return;
@@ -369,39 +369,39 @@ export const useActiveObjectChange = ({
     let originalPos = { left: 0, top: 0 };
 
     const disposers = [
-      // 监听对象移动开始事件
+      // Listening object movement start event
       canvas.on('object:moving', function (e) {
         const obj = e.target;
-        // 手动 canvas.fire('object:moving') 获取不到 obj
+        // Manual canvas.fire ('object: moving') cannot get obj
         if (!obj) {
           return;
         }
 
-        // 如果是第一次移动，记录对象的原始位置
+        // If it is the first move, record the original position of the object
         if (originalPos.left === 0 && originalPos.top === 0) {
           originalPos = { left: obj.left, top: obj.top };
         }
 
-        // 检查是否按下了Shift键
+        // Check if the Shift key is pressed
         if (e?.e?.shiftKey) {
-          // 计算从开始移动以来的水平和垂直距离
+          // Calculate the horizontal and vertical distance since the start of the movement
           const distanceX = obj.left - originalPos.left;
           const distanceY = obj.top - originalPos.top;
 
-          // 根据移动距离的绝对值判断是水平移动还是垂直移动
+          // Determine whether to move horizontally or vertically according to the absolute value of the moving distance
           if (Math.abs(distanceX) > Math.abs(distanceY)) {
-            // 水平移动：保持垂直位置不变
+            // Horizontal movement: maintain the same vertical position
             obj.set('top', originalPos.top);
           } else {
-            // 垂直移动：保持水平位置不变
+            // Vertical movement: maintain the same horizontal position
             obj.set('left', originalPos.left);
           }
         }
       }),
 
-      // 监听对象移动结束事件
+      // Listening Object Move End Event
       canvas.on('object:modified', function (e) {
-        // 移动结束后重置原始位置
+        // Reset original position after move
         originalPos = { left: 0, top: 0 };
       }),
     ];
@@ -418,7 +418,7 @@ export const useActiveObjectChange = ({
     | undefined
   >();
 
-  // 元素移动过程中，隐藏控制点
+  // Hide control points during element movement
   useEffect(() => {
     const disposers: (() => void)[] = [];
     if (activeObjects?.length === 1) {
@@ -427,29 +427,29 @@ export const useActiveObjectChange = ({
         element.on('moving', () => {
           if (!controlsVisibility.current) {
             controlsVisibility.current = Object.assign(
-              // fabric 规则： undefined 认为是 true
+              // Fabric rule: undefined is considered true
               {
-                ml: true, // 中点左
-                mr: true, // 中点右
-                mt: true, // 中点上
-                mb: true, // 中点下
-                bl: true, // 底部左
-                br: true, // 底部右
-                tl: true, // 顶部左
-                tr: true, // 顶部右
+                ml: true, // Midpoint left
+                mr: true, // Midpoint right
+                mt: true, // midpoint
+                mb: true, // midpoint
+                bl: true, // Bottom left
+                br: true, // Bottom right
+                tl: true, // Top Left
+                tr: true, // Top right
               },
               element._controlsVisibility,
             );
           }
           element.setControlsVisibility({
-            ml: false, // 中点左
-            mr: false, // 中点右
-            mt: false, // 中点上
-            mb: false, // 中点下
-            bl: false, // 底部左
-            br: false, // 底部右
-            tl: false, // 顶部左
-            tr: false, // 顶部右
+            ml: false, // Midpoint left
+            mr: false, // Midpoint right
+            mt: false, // midpoint
+            mb: false, // midpoint
+            bl: false, // Bottom left
+            br: false, // Bottom right
+            tl: false, // Top Left
+            tr: false, // Top right
           });
         }),
       );

@@ -70,7 +70,7 @@ const VarQueryTextarea: FC<UsageWithVarTextAreaProps> = props => {
 
   useEffect(() => editorRef.current?.model.setFocus(focus), [focus]);
 
-  // 设置防抖防止 onFocus / onBlur 在点击时出现抖动
+  // Set anti-shake to prevent onFocus/onBlur from shaking when clicked
   const setFocus = useCallback(
     debounce((newFocusValue: boolean) => {
       _setFocus(newFocusValue);

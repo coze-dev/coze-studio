@@ -53,12 +53,12 @@ const PluginMockSet = ({
     return () => toDispose.dispose();
   }, []);
 
-  // 非API节点，不需要渲染。 无test run权限不展示
+  // Non-API node, no rendering required. No test run permission does not show
   if (
     node?.flowNodeType !== StandardNodeType.Api ||
-    // 协作模式无权限
+    // collaboration mode no permission
     (isCollaboratorMode && !vcsData?.can_edit) ||
-    // 非协作模式只有自己能看
+    // Non-collaborative mode only you can see
     (!isCollaboratorMode && !info.creator?.self)
   ) {
     return null;

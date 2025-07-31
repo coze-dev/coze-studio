@@ -72,7 +72,7 @@ export const renderWarningContent = ({
   deployButton?: ReactNode;
 }) => (
   <div className={s['warning-content']}>
-    {/* TODO:  多个异常状态文案后续由接口返回, 目前只有discord存在异常状态，走不到这里 */}
+    {/* TODO: Multiple abnormal status copies are subsequently returned by the interface. At present, only discord has abnormal status, so I can't go here. */}
     {warningList.length > 1 ? (
       <>
         <div className={s['title-box']}>

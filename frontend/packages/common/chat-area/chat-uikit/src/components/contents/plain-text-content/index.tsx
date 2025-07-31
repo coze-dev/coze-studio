@@ -61,7 +61,7 @@ const getMentionBotContent = ({
   mentioned,
   getBotInfo,
 }: IPlainTextMessageContentProps) => {
-  // 接口真不一定返回了 mention_list
+  // The interface does not necessarily return mention_list
   if (!mentioned) {
     return '';
   }

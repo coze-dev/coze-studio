@@ -48,10 +48,10 @@ export const SegmentTree: React.FC<ISegmentTreeProps> = ({
   disabled,
 }) => {
   /**
-   * 选中功能
+   * select function
    */
   const [selected, setSelected] = useState(new Set<string>());
-  // 分片 id
+  // Sharding id
   const [selectedThroughParent, setSelectedThroughParent] = useState(
     new Set<string>(),
   );

@@ -15,9 +15,9 @@
  */
  
 /**
- * 格式化文件大小
- * @param bytes 文件大小
- * @param decimals 小数位数, 默认 2 位
+ * Format file size
+ * @param bytes file size
+ * @Param decimals, default 2 digits
  * @example
  * formatBytes(1024);       // 1KB
  * formatBytes('1024');     // 1KB

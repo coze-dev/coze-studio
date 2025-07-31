@@ -88,7 +88,7 @@ export class RelatedCaseDataService {
         parentComponentID: this.globalState.workflowId,
       },
       caseName: undefined,
-      pageLimit: 1, // 默认测试集数据只会在第一条
+      pageLimit: 1, // Default test set data will only be in the first
     });
 
     const defaultCaseData = caseData?.cases?.find(

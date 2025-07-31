@@ -62,7 +62,7 @@ export const WidgetTitle: React.FC<TitlePropsType> = ({
         />
       );
     }
-    // 没有标题还在骨架屏阶段
+    // No title, still in the skeleton screen stage.
     if (!title) {
       return null;
     } else if (uiState === 'saving') {

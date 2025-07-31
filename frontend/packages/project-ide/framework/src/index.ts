@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 透传 sdk */
+/** pass-through sdk */
 export {
   IDEClient,
   ReactWidget,

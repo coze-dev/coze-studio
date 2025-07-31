@@ -42,7 +42,7 @@ const STALE_TIME = 20000;
 
 interface DatabaseNodeServiceState {
   /**
-   * 数据库数据是否正在加载中
+   * Is the database data loading?
    */
   loading: boolean;
 
@@ -220,7 +220,7 @@ export class DatabaseNodeServiceImpl implements DatabaseNodeService {
           : undefined,
         operator
           ? {
-              // 对操作符的翻译前后端没有统一，所以这里暂时用 operation 代替
+              // The translation of operators is not uniform, so operation is used here for the time being
               name: 'operation',
               input: {
                 type: 'string',

@@ -45,14 +45,14 @@ export const insertToNewline = async ({
     selection,
     scrollIntoView: true,
   });
-  // 等待下一个微任务周期，确保状态已更新
+  // Wait for the next microtask cycle to ensure that the status has been updated
   await Promise.resolve();
 
-  // 使用更新后的state获取最新文档内容
+  // Use the updated state to get the latest document content
   const newDoc = editor.$view.state.doc.toString();
 
-  // 插入到新一行
-  // 注意：该操作提前会触发 chrome bug 导致崩溃问题
+  // Insert to new line
+  // Note: This operation will trigger a chrome bug in advance, resulting in a crash
   editor.focus();
   return newDoc;
 };

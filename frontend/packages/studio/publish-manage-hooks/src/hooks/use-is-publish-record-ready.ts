@@ -52,7 +52,7 @@ export const useIsPublishRecordReady = ({
     {
       manual: true,
       ready: enable,
-      pollingInterval: 60 * 1000, // 60 秒轮询一次，避免过高频率请求导致服务端压力大
+      pollingInterval: 60 * 1000, // Polling once every 60 seconds to avoid server level stress due to high frequency requests
       pollingErrorRetryCount: 3,
       onSuccess: target => {
         if (target) {

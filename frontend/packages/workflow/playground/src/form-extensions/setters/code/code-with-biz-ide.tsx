@@ -127,8 +127,8 @@ export const CodeEditorWithBizIDE: FC<CodeProps> = (props: CodeProps) => {
             />
           </div>
         </FormCard>
-        {/* 为什么不使用FormCard 的 extra ，而是使用绝对定位
-            因为 MonacoEditor 是绝对定位，层级上会覆盖前面按钮的层级，如果给按钮增加zIndex，又会比画布的zIndex高，所以放在这里绝对定位
+        {/* Why not use FormCard's extra instead of absolute positioning?
+            Because MonacoEditor is absolutely positioned, the hierarchy will cover the hierarchy of the previous button. If you add zIndex to the button, it will be higher than the zIndex of the canvas, so put it here for absolute positioning.
           */}
         <div
           style={{

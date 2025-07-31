@@ -46,7 +46,7 @@ const getCreateTextMessageImplement =
   };
 
 /**
- * 发送文本消息，需要初始化成功后使用
+ * Send a text message, which needs to be used after successful initialization.
  */
 export const useSendTextMessage = () => {
   const deps = useMethodCommonDeps();

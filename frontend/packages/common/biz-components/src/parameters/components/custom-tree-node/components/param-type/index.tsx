@@ -34,7 +34,7 @@ interface ParamTypeProps {
   level: number;
   onSelectChange?: SelectProps['onChange'];
   disabled?: boolean;
-  // 不支持使用的类型
+  // Types not supported
   disabledTypes?: ParamTypeAlias[];
 }
 

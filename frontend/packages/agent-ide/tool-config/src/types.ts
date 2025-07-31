@@ -22,7 +22,7 @@ export const enum AbilityScope {
 export type AbilityKey = ToolKey | AgentSkillKey;
 
 /**
- * ToolKey为了项目临时给大家起了一个名称，如果觉得名称不好可以全局替换一下
+ * ToolKey has temporarily given everyone a name for the project. If you think the name is not good, you can replace it globally.
  */
 export const enum ToolKey {
   PLUGIN = 'plugin',
@@ -68,8 +68,8 @@ export const enum ToolGroupKey {
 }
 
 /**
- * 模块主键
- * @deprecated 该使用方式已废弃, 请使用: `import { ToolKey } from '@coze-agent-ide/tool-config'`;
+ * module primary key
+ * @Deprecated This usage is deprecated, please use: 'import {ToolKey} from' @code-agent-ide/tool-config ';
  */
 export enum SkillKeyEnum {
   /** Skills */

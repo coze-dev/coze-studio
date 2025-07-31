@@ -46,7 +46,7 @@ interface HeaderProps {
     action: 'cancel' | 'add',
     event?: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
   ) => boolean | Promise<boolean>;
-  /**兼容UI1.0&2.0 全部替换后去除 */
+  /**Compatible with UI 1.0 & 2.0 Remove after all replacements */
   isNewStyle?: boolean;
   isForbiddenIconClick?: boolean;
 }
@@ -72,7 +72,7 @@ export const FavoriteBtn = forwardRef((props: HeaderProps, ref) => {
   const refFavoriteBtn = useRef<FavoriteIconBtnRef>(null);
   const [favoriteNumberAdd, setFavoriteNumberAdd] = useState(0);
 
-  // 该数字不能小于0， 防止出现异常数字
+  // The number cannot be less than 0 to prevent abnormal numbers
   const favoriteNum = Math.max(
     0,
     (Number(favoriteCount) || 0) + (Number(favoriteNumberAdd) || 0),
@@ -100,7 +100,7 @@ export const FavoriteBtn = forwardRef((props: HeaderProps, ref) => {
       isForbiddenClick={isForbiddenIconClick}
       onChange={value => {
         setFavoriteNumberAdd(prevNumber =>
-          //该值再 1和 -1 之间。
+          //The value is between 1 and -1.
           Math.min(Math.max(prevNumber + (Number(value) || 0), -1), 1),
         );
       }}

@@ -35,7 +35,7 @@ export function Database() {
               className="w-[16px] h-[16px] rounded-mini"
             />
           ),
-          // 运维平台直接展示 ID 即可，因为运维平台无法拉取到实际的数据库信息
+          // The operation and maintenance platform can directly display the ID, because the operation and maintenance platform cannot pull the actual database information.
           label: IS_BOT_OP ? databaseID : database.tableName,
         },
       ]

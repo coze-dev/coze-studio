@@ -58,7 +58,7 @@ const getToolText = (toolKey: ToolKey) =>
     [ToolKey.PLUGIN]: I18n.t('Plugins'),
     [ToolKey.WORKFLOW]: I18n.t('Workflows'),
     [ToolKey.IMAGEFLOW]: I18n.t('imageflow_title'),
-    // 已废弃
+    // Abandoned
     [ToolKey.KNOWLEDGE]: '',
     [ToolKey.VARIABLE]: I18n.t('user_profile'),
     [ToolKey.DATABASE]: I18n.t('bot_database'),
@@ -173,7 +173,7 @@ export const ModelCapabilityAlertModelContent: FC<{
   );
 };
 
-// TODO 统一封装 localStorage 服务，管理本地缓存的生命周期
+// TODO uniformly encapsulates the localStorage service and manages the lifecycle of the local cache
 export const DONT_SHOW_TIPS_LOCAL_CACHE_KEY =
   'model_capability_check_do_not_show_again';
 
@@ -184,7 +184,7 @@ export const checkModelAbility = (
   toolKeyConfigList.reduce<[AlertItem[], AlertItem[]]>(
     ([notSupportedRes, poorSupportedRes], item) => {
       const { hasValidData, toolKey, toolGroupKey } = item;
-      // 只在当前 tool 存在配置时才需要检查
+      // Check only if the current tool configuration exists
       if (hasValidData) {
         const modelFunctionConfigType =
           abilityKey2ModelFunctionConfigType(toolKey);
@@ -238,7 +238,7 @@ export const confirm = ({
     return new Promise(resolve => {
       const modal = Modal.confirm({
         header: null,
-        // 需要比模型配置的popover默认 z-index 1030 更高，这里进行内卷
+        // It needs to be higher than the default z-index 1030 of the popover configured by the model.
         zIndex: 1031,
         mask: false,
         width: 480,

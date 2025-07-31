@@ -74,7 +74,7 @@ export const useImagePreview = ({
       return;
     }
     try {
-      // 业务
+      // business
       const { name, fileInstance, url } = file;
       setUploading(true);
       if (fileInstance) {

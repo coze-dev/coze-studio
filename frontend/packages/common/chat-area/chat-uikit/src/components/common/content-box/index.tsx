@@ -60,39 +60,39 @@ export interface EnhancedContentConfig {
 
 export interface IContentBoxProps {
   /**
-   * Core SDK的消息体内容
+   * Message body content of the Core SDK
    */
   message: IMessage;
   /**
-   * 事件回调对象
+   * event callback object
    */
   eventCallbacks?: IEventCallbacks;
   /**
-   * content卡片配置的内容
+   * Content of the card configuration
    */
   contentConfigs?: IContentConfigs;
   /**
-   * 是否只读
+   * Is it read-only?
    */
   readonly?: boolean;
   getBotInfo: GetBotInfo;
   layout: Layout;
   /**
-   * 在 mix 模式下，给 text 格式卡片加插槽
+   * In mix mode, slot the text card
    */
   multimodalTextContentAddonTop?: ReactNode;
   showBackground: boolean;
   /**
-   * 启用自动适应图片能力
+   * Enable the ability to automatically adapt pictures
    */
   enableAutoSizeImage?: boolean;
 
   /**
-   * mdBox的配置
+   * mdBox configuration
    */
   mdBoxProps?: MdBoxProps;
   /**
-   * 卡片状态是否为disabled
+   * Is the card status disabled?
    */
   isCardDisabled?: boolean;
   isContentLoading?: boolean;
@@ -114,7 +114,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
     enhancedContentConfigList,
   } = props;
   /**
-   * Content内容启用配置 Start
+   * Content Enable Configuration Start
    */
   const isTextEnable = defaultEnable(
     contentConfigs?.[ContentBoxType.TEXT]?.enable,
@@ -127,7 +127,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
   const isSimpleFunctionEnable =
     contentConfigs?.[ContentBoxType.SIMPLE_FUNCTION]?.enable;
   /**
-   * Content内容启用配置 End
+   * Content Enable Configuration End
    */
 
   const enhancedContentConfig = enhancedContentConfigList?.find(config =>
@@ -143,8 +143,8 @@ export const ContentBox: FC<IContentBoxProps> = props => {
     });
   }
   /**
-   * 文本类型的处理
-   * 这里目前有两种情况，第一种message.type = 'follow_up' 代表是suggestion 第二种反之是普通文本消息
+   * Handling of text types
+   * There are currently two cases here, the first is message.type = 'follow_up' means suggestion, the second is plain text message
    */
   if (message.content_type === ContentType.Text) {
     const { eventCallbacks, mdBoxProps } = props;
@@ -174,7 +174,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
   }
 
   /**
-   * FIle类型的内容
+   * FIle type content
    */
   if (message.content_type === ContentType.File && isFileEnable) {
     const { copywriting, fileAttributeKeys } =
@@ -198,7 +198,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
   }
 
   /**
-   * 图片类型的内容
+   * Image type content
    */
   if (message.content_type === ContentType.Image && isImageEnable) {
     const { eventCallbacks } = props;
@@ -224,7 +224,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
   }
 
   /**
-   * function类型
+   * Function type
    */
   if (message.type === 'function_call' && isSimpleFunctionEnable) {
     const { copywriting } =
@@ -236,7 +236,7 @@ export const ContentBox: FC<IContentBoxProps> = props => {
   }
 
   /**
-   * 文件文字同时发送的多模态消息
+   * Multimodal messages with simultaneous text transmission
    */
   if (
     message.content_type === ContentType.Mix &&

@@ -30,10 +30,10 @@ export const findNotContainsPreviousSibling = (
       return null;
     }
 
-    // 获取两个节点之间的关系
+    // Get the relationship between two nodes
     const relationship = compareNodePosition(sibling, node);
 
-    // 如果两个节点之间没有包含关系，则返回当前兄弟节点
+    // If there is no containing relationship between the two nodes, the current sibling is returned
     if (!['containedBy', 'contains'].includes(relationship)) {
       return sibling;
     }

@@ -16,12 +16,12 @@
  
 export enum KnowledgeE2e {
   KnowledgeTab = 'knowledge.tab',
-  // 知识库列表
+  // Knowledge Base List
   // KnowledgeSearch = 'ui.search_input',
   KnowledgeSearchType = 'knowledge.list.search.type.select',
   KnowledgeSearchFounder = 'knowledge.list.search.founder.select',
   KnowledgeCreateBtn = 'knowledge.list.create.btn',
-  /** 以ui前缀开头的是原来就打过的标，列表页需要根据index去定位 */
+  /** The one starting with the ui prefix is the original mark, and the list page needs to be positioned according to the index. */
   // KnowledgeListName = 'knowledge.list.name.text',
   // KnowledgeListIcon = 'ui.table-meta',
   // KnowledgeListIconDel = 'ui.table-action.delete',
@@ -32,7 +32,7 @@ export enum KnowledgeE2e {
   KnowledgeListTableTab = 'knowledge.list.table.tab',
   KnowledgeEditModalDescInput = 'knowledge.edit.modal.desc.input',
   KnowledgeEditModalNameInput = 'knowledge.edit.modal.name.input',
-  // 创建知识库弹框
+  // Create a knowledge base popup
   CreateKnowledgeModal = 'knowledge.create.modal',
   CreateKnowledgeModalTitle = 'knowledge.create.modal.title.text',
   CreateKnowledgeModalTextRadioGroup = 'knowledge.create.modal.text.RadioGroup',
@@ -57,9 +57,9 @@ export enum KnowledgeE2e {
   CreateKnowledgeModalTextLarkRadio = 'knowledge.create.modal.text.lark.radio',
   CreateKnowledgeModalTableLarkRadio = 'knowledge.create.modal.table.lark.radio',
   CreateKnowledgeModalSubmitAndImportButton = 'knowledge.create.modal.submit_and_import.button',
-  // 创建文本类型
+  // Create a text type
   CreateTextUploadNav = 'knowledge.create.text.upload.nav.text',
-  /** 创建知识库步骤条 */
+  /** Create a knowledge base step bar */
   // CreateKnowledgeStepUploadFile = 'knowledge.create.step.upload',
   // CreateKnowledgeStepSegment = 'knowledge.create.step.segment',
   // CreateKnowledgeStepProcess = 'knowledge.create.step.process',
@@ -69,7 +69,7 @@ export enum KnowledgeE2e {
   UploadUnitAddBtn = 'knowledge.create.unit.add.btn',
   UploadUnitCancelBtn = 'knowledge.create.unit.cancel.btn',
   CreateUnitConfirmBtn = 'knowledge.create.unit.confirm.btn',
-  /** 本地上传列表 */
+  /** local upload list */
   LocalUploadListName = 'knowledge.upload.list.name.input',
   LocalUploadListNameView = 'knowledge.upload.list.name.text',
   LocalUploadListStatus = 'knowledge.upload.list.status.text',
@@ -86,14 +86,14 @@ export enum KnowledgeE2e {
   CreateUnitListProgressName = 'knowledge.create.unit.progress.name.text',
   CreateUnitListProgressPercent = 'knowledge.create.unit.progress.percent.text',
 
-  /** 创建text-online类型(url) */
+  /** Create a text-online type (url) */
   OnlineUploadAutoBtn = 'knowledge.create.text.online.auto.btn',
   OnlineUploadManualBtn = 'knowledge.create.text.online.manual.btn',
   OnlineUploadModal = 'knowledge.create.text.online.upload.modal',
   OnlineUploadModalAddTypeSelect = 'knowledge.create.text.online.upload.modal.add_type.select',
   OnlineUploadModalFrequencySelect = 'knowledge.create.text.online.upload.modal.frequency.select',
   OnlineUploadModalExampleUrlSelect = 'knowledge.create.text.online.upload.modal.example_url.input',
-  /** 创建text-custom类型 */
+  /** Create a text-custom type */
   CustomUploadNameInput = 'knowledge.create.custom.upload.name.input',
   SegmentEditor = 'knowledge.segment.editor',
   SegmentEditorInsertImgBtn = 'knowledge.segment.editor.insert_img.btn',
@@ -131,14 +131,14 @@ export enum KnowledgeE2e {
   ImageAnnotationAllTab = 'knowledge.create.image.annotation.all.tab',
   ImageAnnotationUnAnnotationTab = 'knowledge.create.image.annotation.un_annotation.tab',
   ImageAnnotationAnnotationedTab = 'knowledge.create.image.annotation.annotationed.tab',
-  /** 增量 */
+  /** increment */
   IncrementTableUploadStructureTitle = 'knowledge.increment.table.upload.structure_title.text',
   IncrementTableUploadStructureColumnName = 'knowledge.increment.table.upload.structure_column_name.input',
   IncrementTableUploadStructureAddBtn = 'knowledge.increment.table.upload.structure_add.btn',
 
   // CreateKnowledgeModalCancelBtn = 'knowledge.create.modal.cancel.btn',
   // CreateKnowledgeModalNextBtn = 'knowledge.create.modal.next.btn',
-  /** segment详情页 */
+  /** Segment details page */
   SegmentDetailUpdateBtn = 'knowledge.segment.detail.update.btn',
   SegmentDetailTitle = 'knowledge.segment.detail.title.text',
   SegmentDetailTitleEditIcon = 'knowledge.segment.detail.title.edit.icon',
@@ -167,16 +167,16 @@ export enum KnowledgeE2e {
   SegmentDetailBatchFrequencyModalSelect = 'knowledge.segment.detail.batch_frequency.modal.select',
   SegmentDetailBatchFrequencyModalcheckboxAll = 'knowledge.segment.detail.batch_frequency.modal.checkbox_all',
   SegmentDetailBatchFrequencyModalcheckboxItem = 'knowledge.segment.detail.batch_frequency.modal.checkbox_item',
-  /** segment详情页重新分段流程页 */
+  /** Segment details page Re-segment process page */
   ResegmentUploadUnitNextBtn = 'knowledge.resegment.unit.next.btn',
   ResegmentUnitConfirmBtn = 'knowledge.resegment.unit.confirm.btn',
-  /** knowledge通用 */
+  /** Common knowledge */
   UnitDetailTags = 'knowledge.unit.detail.tags',
   UnitDetailTagsProcessing = 'knowledge.unit.detail.tags.processing.tag',
   UnitDetailTagsFailed = 'knowledge.unit.detail.tags.failed.tag',
   KnowledgeAddContentNavBar = 'knowledge.unit.add.content.navbar',
 }
-/** 底层组件 */
+/** underlying components */
 export const UIE2E = [
   'ui.select.option',
   'ui.table-action.delete',

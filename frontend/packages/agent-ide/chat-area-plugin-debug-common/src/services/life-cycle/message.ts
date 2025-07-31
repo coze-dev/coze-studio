@@ -88,7 +88,7 @@ export const messageLifeCycleServiceGenerator: WriteableMessageLifeCycleServiceG
 
     reportReceiveEvent(message);
 
-    // 如果是创建定时任务的消息的话，需要刷新任务列表
+    // If it is a message to create a scheduled task, you need to refresh the task list.
     if (isCreateTaskMessage(message)) {
       refreshTaskList();
     }

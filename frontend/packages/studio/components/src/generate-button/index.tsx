@@ -93,7 +93,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
           (scene === 'gif' && gifCount >= 10) ||
           (scene === 'static_image' && staticImageCount >= 20)
         ) {
-          // 达到上限，禁用按钮
+          // Limit reached, disable button
           setExceedImageGenCountLimit(true);
         }
       }
@@ -103,7 +103,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
     }
   };
   useEffect(() => {
-    // 获取图片限制，每天限制10个gif，20个静态图，根据scene来判断是否达到上限
+    // Get the picture limit, limit 10 gifs and 20 static pictures per day, and judge whether the upper limit is reached according to the scene.
     if (!loading) {
       getGenPicTimes();
     }

@@ -26,7 +26,7 @@ import {
 import styles from './index.module.less';
 
 /**
- * 在 size:small 的基础上，覆盖了 padding ，5px -> 4px
+ * On the basis of size: small, overlay padding, 5px - > 4px
  */
 export const MyIconButton = forwardRef<
   SemiButton,

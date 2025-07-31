@@ -92,7 +92,7 @@ export class HttpChunk extends CustomEventEmitter {
   }: HandleMessageParams) => {
     const { logID, replyID } = fetchDataHelper;
 
-    // 从 fetch 中抛出的数据类型由断言得到 这里运行时保卫一下类型
+    // The data type thrown from fetch is obtained by assertions, here the runtime defends the type
     if (!inValidChunkRaw(data)) {
       this.customEmit(HttpChunkEvents.INVALID_MESSAGE, {
         logID,
@@ -111,19 +111,19 @@ export class HttpChunk extends CustomEventEmitter {
 
   private pullMessage = async ({
     value,
-    // TODO: 本期没有做消息重试
+    // TODO: There is no message retry in this issue
     isRePullMessage: _isRePullMessage,
     fetchDataHelper,
     fetchUrl,
     scene,
   }: {
-    value: Record<string, unknown>; // 短链入参：直接透传body不做特化处理，在外层处理业务逻辑
+    value: Record<string, unknown>; // Short URL imported parameters: direct pass-through body does not do specialized processing, external processing business logic
     isRePullMessage: boolean;
     fetchDataHelper: FetchDataHelper;
-    fetchUrl: string; // 短链链接
+    fetchUrl: string; // Short URL Link
     scene: RequestScene;
   }) => {
-    // TODO: hzf，不使用三元表达式
+    // TODO: hzf, does not use ternary expressions
     const headers: [string, string][] = [
       ['content-type', 'application/json'],
       ...((this.tokenManager?.getApiKeyAuthorizationValue()
@@ -138,7 +138,7 @@ export class HttpChunk extends CustomEventEmitter {
     const { hooks } = this.requestManager.getSceneConfig?.(scene) || {};
     const { onBeforeSendMessage = [], onGetMessageStreamParser } = hooks || {};
 
-    // 如下参数可做修改
+    // The following parameters can be modified
     let channelFetchInfo = {
       url: fetchUrl,
       body: JSON.stringify(value),
@@ -241,10 +241,10 @@ export class HttpChunk extends CustomEventEmitter {
 
     return;
 
-    // TODO: 下面应该是重新拉取 message 的逻辑 本期服务端没有来得及做
+    // TODO: The following should be the logic to re-pull the message. The server level did not have time to do it in this issue.
     // if (dataClump.retryCounter.matchMaxRetryAttempts()) {
     //   this.customOnError?.(errorInfo);
-    //   // 放弃尝试重试
+    //   //give up trying and try again
     //   this.handleFinish();
     //   return;
     // }
@@ -252,12 +252,12 @@ export class HttpChunk extends CustomEventEmitter {
     // dataClump.retryCounter.add();
   };
 
-  // 调用chat、resume接口发送消息，已经在上层抹平差异
+  // Call the chat and resume interfaces to send messages, which has smoothed the difference at the upper level.
   sendMessage = (value: SendMessage, config?: SendMessageConfig) => {
     const localMessageID = value.local_message_id;
 
     if (!localMessageID) {
-      // TODO: 用同一的异常类
+      // TODO: Use the same exception class
       this.customEmit(HttpChunkEvents.FETCH_ERROR, {
         code: FetchStreamErrorCode.FetchException,
         msg: 'SendMessageError: SendMessage is Invalid',
@@ -281,7 +281,7 @@ export class HttpChunk extends CustomEventEmitter {
     this.fetchDataHelperMap.set(localMessageID, fetchDataHelper);
 
     const scene = config?.requestScene || RequestScene.SendMessage;
-    // 获取消息短链请求链接
+    // Get short URL request link
     const { url, baseURL } = this.requestManager.getSceneConfig?.(scene) || {};
 
     const fetchUrl = baseURL ? `${baseURL}${url}` : url;

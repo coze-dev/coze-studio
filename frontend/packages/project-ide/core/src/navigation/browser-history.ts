@@ -25,8 +25,8 @@ export interface HistoryState {
   uri?: string;
 
   /**
-   * 在栈中的索引
-   * react-router 使用「idx」，使用「fIdx」防止串数据
+   * Index on the stack
+   * React-router uses "idx" and "fIdx" to prevent string data
    */
   fIdx?: number;
 }
@@ -71,8 +71,8 @@ export class BrowserHistory implements Disposable {
 
   init() {
     /**
-     * 初始化的时候 index 必然为 null
-     * 如果不是，说明有别的框架或者在直接使用 history.pushState 或者 history.replaceState 污染
+     * When initializing, the index must be null.
+     * If not, it means that there is another framework or pollution directly using history.pushState or history.replaceState
      */
     if (this.idx === null) {
       this.history.replaceState({ ...this.state, fIdx: -1, uri: '' }, '');
@@ -95,8 +95,8 @@ export class BrowserHistory implements Disposable {
       this.history.pushState(state, '', url);
     } catch {
       /**
-       * history 还是有可能因为 state 或者浏览器等原因挂掉的
-       * 降级成直接跳转
+       * History may still die due to state or browser reasons
+       * Downgrade to direct jump
        */
       this.window.location.assign(url);
     }

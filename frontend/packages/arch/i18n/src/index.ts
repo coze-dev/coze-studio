@@ -39,9 +39,9 @@ type I18nOptions<K extends LocaleData> = K extends keyof I18nOptionsMap
   ? I18nOptionsMap[K]
   : never;
 
-// 这里导出的 const I18n = new FlowIntl() 与 '@edenx/plugin-starling-intl/runtime' 中的 I18n 功能等价
-// 其实就是对 '@edenx/plugin-starling-intl/runtime' 中的 I18n 进行了一层封装，目的是为了后续进一步灵活的定义I18n.t() 的参数类型。
-// 这里的 I18n.t() 的参数类型是通过泛型 LocaleData 来定义的，而 '@edenx/plugin-starling-intl/runtime' 中的 I18n.t() 的参数类型是通过泛型 string 来定义的。
+// The exported const I18n = new FlowIntl () is functionally equivalent to I18n in '@edenx/plugin-starling-intl/runtime'
+// In fact, it is a layer of encapsulation for I18n in '@edenx/plugin-starling-intl/runtime', in order to further flexibly define the parameter type of I18n.t () in the future.
+// The parameter types of I18n.t () here are defined by the generic LocaleData, while the parameter types of I18n.t () in '@edenx/plugin-starling-intl/runtime' are defined by the generic string.
 class FlowIntl {
   plugins: any[] = [];
   public i18nInstance: I18nCore;
@@ -89,9 +89,9 @@ class FlowIntl {
 
   t<K extends I18nKeysNoOptionsType>(
     keys: K,
-    // 这里如果用 never 的话，导致存量代码第二个参数是 `{}` 的时候会报错，所以这里用 Record<string, unknown> 代替
-    // 后续的做法是：用 sg 把存量的代码都修复了之后，这里再改成 never 类型，从而保证未来新增的代码，都是有类型检查的。
-    // 记得改动的时候 #87 行也要一起修改
+    // If you use never here, an error will be reported when the second parameter of the stock code is' {} ', so use Record < string, unknown > instead
+    // The follow-up approach is to use sg to fix all the existing code, and then change it to the never type here, so as to ensure that future new code is type-checked.
+    // Remember to modify line #87 together when changing.
     options?: Record<string, unknown>,
     fallbackText?: string,
   ): string;

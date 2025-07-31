@@ -44,9 +44,9 @@ export const operatorMap = {
   [ConditionType.LengthGtEqual]: <IconCozGreaterEqual />,
   [ConditionType.LengthLt]: <IconCozLess />,
   [ConditionType.LengthLtEqual]: <IconCozLessEqual />,
-  // 包含
+  // contain
   [ConditionType.Contains]: <IconCozProperSuperset />,
-  // 不包含
+  // Do not include
   [ConditionType.NotContains]: <IconCozProperSupersetSlash />,
   // isEmpty
   [ConditionType.Null]: <IconCozEqual />,

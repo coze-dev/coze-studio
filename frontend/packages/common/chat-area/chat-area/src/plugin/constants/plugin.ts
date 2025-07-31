@@ -23,10 +23,10 @@ export const enum PluginMode {
 }
 
 /**
- * 按照领域进行分层设计
- * AppLifeCycle：处理SDK整个生命周期，例如初始化、销毁等
- * MessageLifeCycle：处理消息链路的生命周期
- * CommandLifeCycle：指令、事件相关
+ * Layered design by domain
+ * AppLifeCycle: Handles the entire SDK lifecycle, such as initialization, destruction, etc
+ * MessageLifeCycle: Handling the lifecycle of the message link
+ * CommandLifeCycle: Instructions, events related
  */
 export type AppLifeCycle =
   | 'onAfterCreateStores'

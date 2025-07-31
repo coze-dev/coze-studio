@@ -37,10 +37,10 @@ export const AutoLayout = () => {
     reporter.event({
       eventName: 'workflow_control_auto_layout',
       namespace: 'workflow',
-      scope: 'control', // 二级命名空间，细化具体场景
+      scope: 'control', // Secondary namespace to refine specific scenarios
       meta: {
         workflowId,
-      }, // 其他自定义信息，应尽量避免上报无关信息或冗余信息
+      }, // For other custom information, try to avoid reporting irrelevant or redundant information
     });
   }, [runAutoLayout, workflowId]);
 

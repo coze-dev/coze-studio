@@ -85,11 +85,11 @@ export const PluginModalSider: FC<PluginModalSiderProp> = ({
             maxLength={MAX_SEARCH_LENGTH}
             onSearch={search => {
               if (!search) {
-                // 如果search清空了，那么立即更新query
+                // If the search is empty, update the query immediately
                 cancel();
                 updateSearchQuery(search);
               } else {
-                // 如果search有值，那么防抖更新
+                // If search has a value, then anti-shake update
                 debounceChangeSearch(search);
               }
             }}
@@ -102,7 +102,7 @@ export const PluginModalSider: FC<PluginModalSiderProp> = ({
               className={s.addbtn}
               theme="solid"
               onClick={() => {
-                // TODO: 其他场景应该也统一创建方式，如果创建成功回调存在，则打开插件modal，否则打开新tab
+                // TODO: Other scenes should also be created in a unified way. If the creation success callback exists, open the plugin modal, otherwise open a new tab.
                 if (
                   onCreateSuccess &&
                   (from === From.ProjectIde || from === From.ProjectWorkflow)

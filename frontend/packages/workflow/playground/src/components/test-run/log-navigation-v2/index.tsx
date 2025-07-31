@@ -30,17 +30,17 @@ interface Props {
   value: number;
   batch: (NodeResult | null)[];
 
-  /** 是否只展示错误 */
+  /** Whether to show only errors */
   showError: boolean;
 
-  /** 选中 index 变更事件 */
+  /** Select index change event */
   onChange: (val: number) => void;
 
   /**
-   * items 筛选后触发
-   * @param isEmpty 当前是否为空列表
-   * @param showError 当前是否只展示错误
-   * @param needUpdate 是否需要同步 showError 到后端，默认同步
+   * Triggered after items filtering
+   * @param isEmpty is currently an empty list
+   * @param showError Whether only errors are currently displayed
+   * @Param needUpdate Whether to synchronize showError to backend, default synchronization
    * @returns
    */
   onFilterChange?: (
@@ -59,7 +59,7 @@ export const LogNavigationV2: React.FC<Props> = ({
 }) => {
   const { disabled } = useTestRunStatus(START_NODE_ID);
 
-  // 筛选后的集合
+  // Filtered collection
   const items = useMemo(() => {
     if (showError) {
       return batch.filter(v => Boolean(v?.errorInfo));
@@ -67,7 +67,7 @@ export const LogNavigationV2: React.FC<Props> = ({
     return batch;
   }, [batch, showError]);
 
-  // items 变更后，默认选择原来的 index 或者选择第一条（从 0 开始）
+  // After items are changed, the original index is selected by default or the first item is selected (starting from 0).
   useEffect(() => {
     const item = items.find(v => v?.index === value);
     if (!item && items.length > 0) {
@@ -75,7 +75,7 @@ export const LogNavigationV2: React.FC<Props> = ({
     }
   }, [items]);
 
-  // 首次渲染更新选中状态
+  // First render update selected state
   useEffect(() => {
     onFilterChange?.(items.length === 0, showError, false);
   }, [items, showError, onFilterChange]);

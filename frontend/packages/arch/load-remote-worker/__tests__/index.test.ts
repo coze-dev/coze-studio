@@ -18,12 +18,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { RemoteWebWorker, register } from '../src/index';
 
-// 获取模拟函数
+// Get the simulation function
 const mockCreateObjectURL = vi.mocked(URL.createObjectURL);
 
 describe('RemoteWebWorker', () => {
   beforeEach(() => {
-    // 清除模拟调用记录
+    // Clear simulated call record
     vi.clearAllMocks();
   });
 
@@ -63,10 +63,10 @@ describe('RemoteWebWorker', () => {
 
       expect(mockCreateObjectURL).toHaveBeenCalledTimes(1);
 
-      // 验证创建的 Blob 内容
+      // Verify the content of the created blob
       const blobArg = mockCreateObjectURL.mock.calls[0][0];
       expect(blobArg).toBeInstanceOf(Blob);
-      // 由于 Blob 的内容无法直接访问，我们只能验证它被创建了
+      // Since the content of the blob cannot be accessed directly, we can only verify that it was created
     });
 
     it('应该处理非字符串 URL', () => {
@@ -84,14 +84,14 @@ describe('RemoteWebWorker', () => {
 
 describe('register', () => {
   it('应该将全局 Worker 替换为 RemoteWebWorker', () => {
-    // 创建一个模拟的全局对象
+    // Create a simulated global object
     const mockGlobal = {
       worker() {
-        /* 空函数 */
+        /* empty function */
       },
     };
 
-    // 将 worker 属性重命名为 Worker，以便测试 register 函数
+    // Rename the worker property to Worker to test the register function
     Object.defineProperty(mockGlobal, 'Worker', {
       get() {
         return this.worker;

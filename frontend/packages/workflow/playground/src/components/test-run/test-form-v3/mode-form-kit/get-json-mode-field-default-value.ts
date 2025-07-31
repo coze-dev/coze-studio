@@ -38,17 +38,17 @@ export const getJsonModeFieldDefaultValue = (
   value: any,
 ) => {
   let temp = value;
-  // 复杂类型 object、array 都需要反序列化
+  // Complex types such as objects and arrays require deserialization
   if (
     type === ViewVariableType.Object ||
     type >= ViewVariableType.ArrayString
   ) {
     temp = safeJsonParse(temp);
   }
-  // 音色
+  // timbre
   if (ViewVariableType.isVoiceType(type)) {
     temp = generateJsonSchemaVoiceValue(temp);
-    // 音色以外的文件
+    // Files other than timbre
   } else if (ViewVariableType.isFileType(type)) {
     if (ViewVariableType.isArrayType(type)) {
       temp = temp?.map(generateJsonSchemaFileValue);
@@ -57,7 +57,7 @@ export const getJsonModeFieldDefaultValue = (
     }
   }
 
-  // 数字类型需要转化为 bigNumber，保证值安全
+  // The number type needs to be converted to bigNumber to ensure value safety
   if (type === ViewVariableType.Integer || type === ViewVariableType.Number) {
     temp = toNumber(temp) || 0;
   }

@@ -83,7 +83,7 @@ export const QueryShortcut: FC<QueryShortcutProps> = props => {
 
   return (
     <div className={typeSafeShortcutCommandVariants({ color: props.uiMode })}>
-      {/*指令名称不超长，展示描述*/}
+      {/*Instruction name is not too long, display description*/}
       <TooltipWithContent
         shortcut={shortcut}
         toolTipFooterSlot={toolTipFooterSlot}

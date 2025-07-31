@@ -90,7 +90,7 @@ export const DatasetWriteChunk: FC<RadioProps> = props => {
 
   const { getNodeSetterId } = useNodeTestId();
 
-  // 设置默认值
+  // Set default value
   useEffect(() => {
     if (
       isNil(value?.chunkType) &&
@@ -145,14 +145,14 @@ export const DatasetWriteChunk: FC<RadioProps> = props => {
           onChange(nextValue);
         }}
       />
-      {/* 一期不展示 */}
+      {/* Issue 1 does not show */}
       {/* {value?.chunkType === ChunkStratgy.Layer && (
         <div>
           <div className={styles['setting-item']}>
             <TitleArea
-              title={'分段层级'}
+              Title = {'Segment Hierarchy'}
               tip={
-                '分段后的树状结构最大的层级范围,例如3层将识别文档标题、一级标题和二级标题结构信息'
+                'The maximum hierarchical range of the segmented tree structure, e.g. 3 layers will identify the document title, primary title, and secondary title structure information'
               }
               titleClassName="text-[#060709CC] text-[12px]"
             />
@@ -169,8 +169,8 @@ export const DatasetWriteChunk: FC<RadioProps> = props => {
             />
           </div>
           <CheckboxWithLabel
-            label="检索切片保留层级信息"
-            tooltip="是否在切片中保留层级标题信息,保留后当检索标题时更容易返回该层级下的全部切片内容"
+            Label = "Retrieve slice retention level information"
+            Tooltip = "Whether to keep the level header information in the slice, it is easier to return all the slice content under that level when retrieving the title after retention"
             checked={value?.saveTitle}
             onChange={v =>
               onChange({
@@ -329,7 +329,7 @@ export const DatasetWriteChunk: FC<RadioProps> = props => {
                 value={value?.maxToken as number}
                 marks={{
                   markKey: DEFAULT_MAX_TOKEN,
-                  // 设置 margin-left 避免和数字 1 重合
+                  // Set margin-left to avoid overlap with number 1
                   markText: <span className="ml-9">Default</span>,
                 }}
                 disabled={readonly}
@@ -383,7 +383,7 @@ export const DatasetWriteChunk: FC<RadioProps> = props => {
                 value={value?.overlap as number}
                 marks={{
                   markKey: DEFAULT_OVERLAP,
-                  // 设置 margin-left 避免和数字 1 重合
+                  // Set margin-left to avoid overlap with number 1
                   markText: <span className="ml-8">Default</span>,
                 }}
                 disabled={readonly}

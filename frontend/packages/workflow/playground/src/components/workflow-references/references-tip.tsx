@@ -15,7 +15,7 @@
  */
  
 /**
- * 在 header 左上角展示当前 workflow 被别的 workflow 引用的信息
+ * Display the information that the current workflow is referenced by other workflows in the upper left corner of the header
  */
 
 import React, { type FC, useState } from 'react';

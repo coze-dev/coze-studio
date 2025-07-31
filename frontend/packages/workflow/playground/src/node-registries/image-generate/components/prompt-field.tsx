@@ -24,7 +24,7 @@ export const PromptField = withField(
     const { name } = useField();
     const promptName = `${name}.prompt`;
     const negativePromptName = `${name}.negative_prompt`;
-    // 保障和之前节点testID不变
+    // Guarantee that the testID of the previous node remains unchanged
     const promptTestIDSuffix = name.replace('inputs.', '');
     const negativePromptTestIDSuffix = name.replace('inputs.', '');
 

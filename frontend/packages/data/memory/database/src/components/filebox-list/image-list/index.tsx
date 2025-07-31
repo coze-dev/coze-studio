@@ -42,7 +42,7 @@ export const ImageList: FC<ImageListProps> = props => {
     <CardGroup spacing={12} className={s['card-group']}>
       {images?.map(i => {
         const {
-          // MainURL 加载太慢了，列表中使用 ThumbnailURL 进行缩略图展示
+          // MainURL is too slow to load, the list uses ThumbnailURL for thumbnail display
           ThumbnailURL: url,
           MainURL: previewUrl,
           FileID: id,
@@ -68,7 +68,7 @@ export const ImageList: FC<ImageListProps> = props => {
             cover={
               <Image
                 src={url}
-                // 仅设置宽度，高度会按图片原比例自动缩放
+                // Only set the width, and the height will be automatically scaled according to the original scale of the picture.
                 width={209}
                 className={s['card-cover']}
                 preview={{

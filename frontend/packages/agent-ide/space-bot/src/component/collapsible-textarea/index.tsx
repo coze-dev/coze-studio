@@ -35,7 +35,7 @@ import styles from './index.module.less';
 interface CommonTextareaType {
   textAreaClassName?: string;
   textAreaProps?: Partial<TextAreaProps>;
-  // 一种特殊的针对placeholder处理方式，::placeholder达不到预期
+  // A special treatment for placeholders, where:: placeholders do not meet expectations
   emptyClassName?: string;
 }
 interface ChatflowCustomTextareaProps extends TextAreaProps {
@@ -44,11 +44,11 @@ interface ChatflowCustomTextareaProps extends TextAreaProps {
     value: string,
     e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>,
   ) => void;
-  /** 展示模式（即需要省略时）的配置  */
+  /** Configuration of presentation mode (i.e. when omitted)  */
   ellipse?: {
     rows?: number;
   } & CommonTextareaType;
-  /** 编辑模式（即需要自动适应）的配置 */
+  /** Configuration of editing mode (i.e. requires automatic adaptation) */
   autoSize?: {
     maxHeight?: number;
   } & CommonTextareaType;
@@ -87,10 +87,10 @@ export const CollapsibleTextarea = forwardRef(
 
     useEffect(() => {
       if (focused) {
-        // 加timeout可以实现focus的时候滚动到最底并光标在最后
+        // Add timeout to scroll to the bottom and cursor at the end when focusing.
         setTimeout(() => {
           if (textAreaRef.current) {
-            // 默认光标在最后
+            // Default cursor at the end
             textAreaRef.current.setSelectionRange(
               Number.MAX_SAFE_INTEGER,
               Number.MAX_SAFE_INTEGER,
@@ -107,13 +107,13 @@ export const CollapsibleTextarea = forwardRef(
         return (
           <TextArea
             autosize
-            // key是保证readonly变化后重新渲染
+            // The key is to ensure readonly after changes
             key="not-readonly"
             style={
               autoSize?.maxHeight
-                ? // 这里的 style 会应用到 wrapper 上，不限定高度时会意外出现滚动条，只能通过变量修改 textarea 的 overflow
-                  // 此外，max-height 会导致预期外的 blur 事件，也只能通过 css 变量将 max-height 动态传给 textarea
-                  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- 传递 css 变量
+                ? // The style here will be applied to the wrapper, and the scroll bar will appear unexpectedly when the height is not limited. You can only modify the overflow of the textarea through variables.
+                  // In addition, max-height causes an unexpected blur event, and max-height can only be dynamically passed to textarea through the css variable
+                  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- pass css variable
                   ({
                     '--chatflow-custom-textarea-overflow-y': 'auto',
                     '--chatflow-custom-textarea-focused-max-height': `${autoSize.maxHeight}px`,
@@ -143,7 +143,7 @@ export const CollapsibleTextarea = forwardRef(
       }
       return (
         <TextArea
-          // key是保证readonly变化后重新渲染
+          // The key is to ensure readonly after changes
           key="readonly"
           style={{ WebkitLineClamp: ellipse?.rows }}
           value={value}

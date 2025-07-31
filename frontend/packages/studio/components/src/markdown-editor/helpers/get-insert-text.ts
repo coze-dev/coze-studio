@@ -29,7 +29,7 @@ export const getSyncInsertText = (action: SyncAction): string => {
   }
 
   /**
-   * 不应该走到这里
+   * Shouldn't have come here
    */
   primitiveExhaustiveCheck(type);
   return '';

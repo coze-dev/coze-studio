@@ -17,7 +17,7 @@
 import type { TreeNodeCustomData } from '../../custom-tree-node/type';
 
 /**
- * 补充 readonly metas
+ * Supplementary readonly metas
  */
 export const addReadOnlyData = (params: {
   treeData: TreeNodeCustomData[];
@@ -25,7 +25,7 @@ export const addReadOnlyData = (params: {
   isBatch: boolean;
 }): TreeNodeCustomData[] => {
   const { treeData, data, isBatch } = params;
-  // 批处理补充到 data[0].children
+  // Batch added to data [0] .children
   if (isBatch) {
     const readonlyMetas = treeData?.[0].children?.filter(d => d.readonly);
     if (readonlyMetas?.length) {
@@ -41,7 +41,7 @@ export const addReadOnlyData = (params: {
         ...rest,
       ];
     }
-    // 单次处理 data
+    // Single processing data
   } else {
     const readonlyMetas = treeData?.filter(d => d.readonly);
     if (readonlyMetas?.length) {

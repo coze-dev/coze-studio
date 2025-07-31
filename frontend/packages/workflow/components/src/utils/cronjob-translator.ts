@@ -18,37 +18,37 @@ import cronstrue from 'cronstrue/i18n';
 import { I18n } from '@coze-arch/i18n';
 
 const langMap = {
-  // 简体中文
+  // Simplified Chinese
   'zh-CN': 'zh_CN',
   zh: 'zh-CN',
-  // 繁体中文
+  // Traditional Chinese
   zh_TW: 'zh_TW',
-  // 英语
+  // English
   'en-US': 'en',
   en: 'en',
-  // 日语
+  // Japanese
   'ja-JP': 'ja',
   ja: 'ja',
-  // 韩语
+  // Korean
   'ko-KR': 'ko',
   ko: 'ko',
-  // 法语
+  // French
   'fr-FR': 'fr',
   fr: 'fr',
-  // 德语
+  // German
   'de-DE': 'de',
   de: 'de',
-  // 意大利语
+  // Italian
   'it-IT': 'it',
   it: 'it',
-  // 西班牙语
+  // Spanish
   'es-ES': 'es',
   es: 'es',
 };
 
-// 校验使用 cronjob 翻译结果
+// Verify translation results using cronjob
 export const isCronJobVerify = cronJob => {
-  // 仅支持 6 位 cronjob（后端限制）
+  // Only 6-bit cronjobs are supported (backend limit).
   const parts = cronJob?.split(' ');
   if (parts?.length !== 6) {
     return false;
@@ -59,9 +59,9 @@ export const isCronJobVerify = cronJob => {
       throwExceptionOnParseError: true,
     });
 
-    // 额外校验一下字符串是否包含 null undefined
-    // 1 2 3 31 1- 1  在上午 03:02:01, 限每月 31 号, 或者为星期一, 一月至undefined
-    // 1 2 3 31 1 1#6 在上午 03:02:01, 限每月 31 号, 限每月的null 星期一, 仅于一月份
+    // Extra check if the string contains null undefined
+    // 1 2 3 31 1- 1 at 03:02:01 am, limited to the 31st of each month, or for Monday, January to undefined
+    // 1 2 3 31 1 1 #6 at 03:02:01 am, limited to the 31st of each month, limited to null Mondays of each month, only in January
     if (rs.includes('null') || rs.includes('undefined')) {
       return false;
     }

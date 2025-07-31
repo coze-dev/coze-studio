@@ -15,7 +15,7 @@
  */
  
 /**
- * 抽象类
+ * abstract class
  */
 export {
   ValidationService,

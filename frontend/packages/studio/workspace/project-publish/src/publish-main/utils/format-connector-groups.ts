@@ -72,12 +72,12 @@ export function formatConnectorGroups(
     }
     if (c.connector_union_id) {
       const unionId = c.connector_union_id;
-      // 如果当前 union_id 已经被添加到分组中，则跳过
+      // If the current union_id has already been added to the group, skip
       if (group.connectors.some(i => i.connector_union_id === unionId)) {
         continue;
       }
       let connectorInfo = c;
-      // 优先取 union 选中的 connector，否则取第一个
+      // Give priority to the connector selected by the union, otherwise take the first one.
       const unionSelection = connectors.find(i => i.id === unions[unionId]);
       if (unionSelection) {
         connectorInfo = unionSelection;

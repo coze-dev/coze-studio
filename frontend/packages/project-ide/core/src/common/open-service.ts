@@ -37,14 +37,14 @@ export interface OpenHandler {
 export const OpenerService = Symbol('OpenerService');
 export interface OpenerService {
   /**
-   * 跳转定位
+   * Jump Positioning
    * @param uri
    * @param options
    */
   open: (uri: URI, options?: OpenerOptions) => Promise<object | undefined>;
 
   /**
-   * 某个请求触发
+   * A request is triggered
    */
   onURIOpen: Event<{ uri: URI; options?: OpenerOptions }>;
 }

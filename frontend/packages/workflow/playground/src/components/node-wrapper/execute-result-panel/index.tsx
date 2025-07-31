@@ -45,7 +45,7 @@ type ExecuteResultPanelProps = React.PropsWithChildren<{
 }>;
 
 /**
- * raw_output 可能是 JSON 字符串，也可能是原生的字符串
+ * raw_output could be a JSON string or a native string
  */
 const getSafeOutput = (
   type?: StandardNodeType,
@@ -55,7 +55,7 @@ const getSafeOutput = (
   // eslint-disable-next-line max-params
 ) => {
   let safeOutput = safeJSONParse(output, output) || {};
-  // LLM CODE 节点需要单独使用 output 包裹
+  // The LLM CODE node needs to use the output package separately
   if (type === StandardNodeType.LLM || type === StandardNodeType.Code) {
     safeOutput = {
       output: safeOutput,

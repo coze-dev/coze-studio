@@ -15,11 +15,11 @@
  */
  
 /**
- * 消息管理相关
- * 1、获取历史消息
- * 2、清空对话上下文
- * 3、清空历史
- * 4、删除消息
+ * message management related
+ * 1. Get chat history
+ * 2. Clear the conversation context
+ * 3. Clear history
+ * 4. Delete messages
  */
 
 import { safeJSONParse } from '../shared/utils/safe-json-parse';
@@ -70,7 +70,7 @@ export class MessageManager {
   }
 
   /**
-   * 将接口获取到的消息历史记录进行数据转换
+   * Data conversion of the message history obtained by the interface
    */
   static convertMessageList = (
     messageList: GetHistoryMessageResponse['message_list'],
@@ -86,7 +86,7 @@ export class MessageManager {
   };
 
   /**
-   * 获取历史消息
+   * Get chat history
    */
   async getHistoryMessage(props: GetHistoryMessageProps) {
     try {
@@ -102,13 +102,13 @@ export class MessageManager {
         eventName: SlardarEvents.MESSAGE_FETCH_HISTORY_ERROR,
         error: error as Error,
       });
-      // 此处不应省略异常抛出，上游逻辑分支已检查，无风险
+      // Exception should not be omitted here, upstream logical branch checked, no risk
       throw error;
     }
   }
 
   /**
-   * 清空对话上下文
+   * Clear the conversation context
    */
   async clearMessageContextUrl(props: ClearMessageContextProps) {
     try {
@@ -127,7 +127,7 @@ export class MessageManager {
   }
 
   /**
-   * 清空历史
+   * Clear history
    */
   async clearHistory(props: ClearHistoryProps) {
     try {
@@ -145,7 +145,7 @@ export class MessageManager {
   }
 
   /**
-   * 删除消息
+   * delete message
    */
   async deleteMessage(props: DeleteMessageProps) {
     try {
@@ -163,7 +163,7 @@ export class MessageManager {
   }
 
   /**
-   * 打断消息
+   * interrupt message
    */
   async breakMessage(props: BreakMessageProps) {
     try {
@@ -181,7 +181,7 @@ export class MessageManager {
   }
 
   /**
-   * 点赞/点踩消息
+   * Like/click on the message
    */
   async reportMessage(props: ReportMessageProps) {
     try {
@@ -199,7 +199,7 @@ export class MessageManager {
   }
 
   /**
-   * 语音转文字
+   * speech-to-text
    */
   async chatASR(props: ChatASRProps) {
     try {
@@ -210,7 +210,7 @@ export class MessageManager {
           headers: {
             /**
              * https://developer.mozilla.org/zh-CN/docs/Web/API/FormData
-             * 如果送出时的编码类型被设为 "multipart/form-data"，它会使用和表单一样的格式。
+             * If the encoding type for sending is set to "multipart/form-data", it will use the same format as the form.
              */
             'Content-Type': 'multipart/form-data',
           },

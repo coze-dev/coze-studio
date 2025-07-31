@@ -40,13 +40,13 @@ import {
   type CSpanAttrUserInput,
 } from '../typings/cspan';
 
-// 对根节点追加traceAdvanceInfo信息
+// Append traceAdvanceInfo to the root node
 const appendTraceAdvanceInfo = (
   spans: CSpan[],
   traceAdvanceInfo?: Omit<TraceAdvanceInfo, 'trace_id'>,
 ): CSpan[] =>
   spans.map(span => {
-    // 修改根节点的状态。 根节点的tokens和status以服务端获取的为准
+    // Modify the state of the root node. The tokens and status of the root node are subject to the server level
     if (
       span.type === SpanType.UserInput ||
       span.type === SpanType.UserInputV2
@@ -100,7 +100,7 @@ const appendSpans = (spans: CSpan[], callTrees: SpanNode[]) => {
       span.type === SpanType.UserInput ||
       span.type === SpanType.UserInputV2
     ) {
-      // 根节点input_tokens_sum和output_tokens_sum的数值以服务端获取为准，不做计算
+      // The values input_tokens_sum and output_tokens_sum of the root node are subject to server level acquisition and are not calculated
       return span;
     } else {
       return {
@@ -112,7 +112,7 @@ const appendSpans = (spans: CSpan[], callTrees: SpanNode[]) => {
   });
 };
 
-// 获取CSpan节点的tokens信息
+// Get the tokens information of the CSpan node
 const getCSpanTokens = (
   span: CSpan,
 ): {
@@ -138,7 +138,7 @@ const getCSpanTokens = (
       output_tokens: outputTokensRst,
     };
   } else {
-    // SingleSpan节点
+    // SingleSpan Node
     return {
       input_tokens: (getSpanProp(span, 'input_tokens') as number) ?? 0,
       output_tokens: (getSpanProp(span, 'output_tokens') as number) ?? 0,
@@ -146,7 +146,7 @@ const getCSpanTokens = (
   }
 };
 
-// 追加invokeAgentInfo的dialog_round和model字段
+// Append invokeAgentInfo's dialog_round and model fields
 const appendRootSpan = (info: { rootSpan: CSpan; spans: CSpan[] }): CTrace => {
   const { rootSpan, spans } = info;
   const rstSpan: CTrace = rootSpan;
@@ -181,14 +181,14 @@ interface UseSpanTransformReturn {
   spans: CSpan[];
 }
 
-// start节点不存在时，生成虚拟start节点
+// When the start node does not exist, generate a virtual start node
 export const appendVirtualStart = (spans: CSpan[]): CSpan[] => {
   const startSpans = spans.filter(rootSpan => {
     const { category } = rootSpan;
     return category === SpanCategory.Start;
   });
 
-  // 生成虚拟span
+  // Generate virtual spans
   if (startSpans.length > 0) {
     return spans;
   } else {
@@ -204,27 +204,27 @@ export const useSpanTransform = (
 
   const rst = useMemo(() => {
     let spans = spans2CSpans(orgSpans, spanCategoryMeta);
-    // 追加虚拟span
+    // Append virtual span
     spans = appendVirtualStart(spans);
 
-    // 追加traceAdvanceInfo信息
+    // append traceAdvanceInfo
     spans = appendTraceAdvanceInfo(spans, traceAdvanceInfo);
 
-    // 根据spans，组装call trees
+    // According to spans, assembling called trees
     let callTrees = buildCallTrees(spans);
-    // 根节点超过 1 个，需要按 message id 过滤
+    // If there is more than 1 root node, it needs to be filtered by message id.
     if (callTrees.length > 1 && messageId) {
       callTrees = callTrees.filter(
         root =>
           !('extra' in root) ||
           (root.extra && !('message_id' in root.extra)) ||
-          // 存在 message_id 的情况下，过滤 id 匹配的节点
+          // In the presence of message_id, filter the nodes with matching IDs
           root.extra?.message_id === messageId,
       );
     }
     const rootSpan = getRootSpan(callTrees, false);
 
-    // rootSpan的根节点调整: 追加invokeAgent信息
+    // Root node adjustment of rootSpan: add invokeAgent information
     const rootSpanRst = appendRootSpan({
       rootSpan,
       spans,
@@ -237,10 +237,10 @@ export const useSpanTransform = (
       return root.children?.some(subRoot => visit(targetId, subRoot)) ?? false;
     };
 
-    // 过滤掉不在rootSpan中的节点
+    // Filter out nodes not in rootSpan
     spans = spans.filter(span => visit(span.id, rootSpan));
 
-    // 对spans节点进行调整: spans中workflow节点tokens累加计算
+    // Adjust the spans node: the accumulation calculation of tokens in the workflow node in spans
     const spansRst = appendSpans(spans, callTrees);
     return {
       rootSpan: rootSpanRst,

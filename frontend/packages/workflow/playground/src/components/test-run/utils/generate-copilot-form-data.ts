@@ -22,7 +22,7 @@ import { generateArrayInputParameters } from '../utils/generate-test-form-fields
 import { FieldName } from '../constants';
 
 /**
- * 将copilot返回的内容转成表单数据
+ * Convert the content returned by copilot into form data
  * @param node
  * @param content
  * @returns
@@ -48,7 +48,7 @@ export function generateCopilotFormData(
         return pre;
       }
 
-      // json编辑器的值需要转成字符串
+      // The value of the json editor needs to be converted to a string.
       if (field.component.type === 'JsonEditor') {
         val = JSON.stringify(val);
       }

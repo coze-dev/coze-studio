@@ -22,22 +22,22 @@ import { Tooltip } from '@coze-arch/coze-design';
 import { AddButton } from '@/form';
 
 export interface AddOptionButtonProps {
-  /** 是否展示标题行 */
+  /** Whether to display the title line */
   showTitleRow?: boolean;
 
-  /** 是否展示选项标签 */
+  /** Whether to display option labels */
   showOptionName?: boolean;
 
-  /** 选项 placeholder */
+  /** Option placeholder */
   optionPlaceholder?: string;
 
-  /** 默认分支名称 */
+  /** Default branch name */
   defaultOptionText?: string;
 
-  /** 选项最大数量限制，默认值为整数最大值 */
+  /** Option maximum quantity limit, default value is integer maximum */
   maxItems?: number;
 
-  /** 展示禁止添加 Tooltip */
+  /** Display Forbid Add Tooltip */
   showDisableAddTooltip?: boolean;
   customDisabledAddTooltip?: string;
   className?: string;

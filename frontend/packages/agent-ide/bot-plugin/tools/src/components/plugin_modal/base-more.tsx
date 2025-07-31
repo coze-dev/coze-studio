@@ -110,7 +110,7 @@ export const useBaseMore = ({
     baseInfo.api_extend?.auth_mode,
   ]);
 
-  // 提交基础信息
+  // Submit basic information
   const submitBaseInfo = async () => {
     const status = await formRef.current?.formApi
       .validate()

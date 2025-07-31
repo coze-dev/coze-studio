@@ -191,7 +191,7 @@ const usePluginResource = (): UsePluginResourceReturn => {
     }
   };
   const validateNameBasic: Validator = ({ label }) => {
-    // 检测 name 是否空
+    // Check if name is empty
     if (!label) {
       return I18n.t('create_plugin_modal_name1_error');
     }
@@ -200,7 +200,7 @@ const usePluginResource = (): UsePluginResourceReturn => {
       return I18n.t('project_resource_sidebar_warning_length_exceeds');
     }
 
-    // 检测 name 的命名规则，国内增加支持中文
+    // Detect the naming rules for names, and add support for Chinese in China
     if (IS_OVERSEA || IS_BOE) {
       if (!/^[\w\s]+$/.test(label)) {
         return I18n.t('create_plugin_modal_nameerror');

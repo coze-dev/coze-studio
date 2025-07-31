@@ -110,21 +110,21 @@ export class WorkflowNodeRefVariablesData extends EntityData {
   }
 
   /**
-   * 批量更新变量引用
-   * @param updateInfos 变更的 KeyPath 信息
+   * Batch update variable references
+   * @param updateInfos changed KeyPath information
    */
   batchUpdateRefs(updateInfos: UpdateRefInfo[]) {
     let needUpdate = false;
     const fullData = this.formData.formModel.getFormItemValueByPath('/');
 
     const setValueIn = (path: string, nextValue: unknown) => {
-      // 新表单引擎更新数据
+      // New form engine updates data
       if (isFormV2(this.entity)) {
         (this.formData.formModel as FormModelV2).setValueIn(path, nextValue);
         return;
       }
 
-      // 老表单引擎更新数据
+      // Old form engine updates data
       set(fullData, path, nextValue);
       return;
     };
@@ -138,9 +138,9 @@ export class WorkflowNodeRefVariablesData extends EntityData {
       if (updateInfo) {
         needUpdate = true;
 
-        // 没有传入更新后的 KeyPath，则更新 content
+        // No updated KeyPath is passed in, the content is updated
         if (!updateInfo.afterKeyPath) {
-          // rehaje 更新 bug：设置值时需要 setter 内值局部更新，不能更改 setter 整体值
+          // Rehaje update bug: When setting the value, the value in the setter needs to be updated locally, and the overall value of the setter cannot be changed
           setValueIn(
             `${dataPath}.content`,
             updateInfo.afterExpression?.content,
@@ -150,10 +150,10 @@ export class WorkflowNodeRefVariablesData extends EntityData {
         }
 
         /**
-         * 获取更新后的 KeyPath
-         * 假设要替换：[A, B] -> [C, D, E]
-         * 当前 KeyPath 为 [A, B, F, G]
-         * 则 nextPath 为 [C, D, E] + [F, G] = [C, D, E, F, G]
+         * Get the updated KeyPath
+         * Suppose you want to replace: [A, B] - > [C, D, E]
+         * Current KeyPath is [A, B, F, G]
+         * Then nextPath is [C, D, E] + [F, G] = [C, D, E, F, G]
          */
         const nextPath = [
           ...updateInfo.afterKeyPath,
@@ -170,7 +170,7 @@ export class WorkflowNodeRefVariablesData extends EntityData {
     }
   }
 
-  // 拥有全局变量的引用
+  // References to global variables
   get hasGlobalRef(): boolean {
     return Object.values(this.refs).some(_keyPath =>
       (allGlobalVariableKeys as string[]).includes(_keyPath[0]),

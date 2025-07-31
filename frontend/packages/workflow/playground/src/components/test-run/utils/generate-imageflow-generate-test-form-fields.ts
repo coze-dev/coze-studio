@@ -20,7 +20,7 @@ import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 import { generateArrayInputParameters } from './generate-test-form-fields';
 
 /**
- * 生成图像生成单节点试运行表单字段
+ * Generate image generation Single node practice running form fields
  */
 export function generateImageflowGenerateTestFormFields(formData, context) {
   const references =

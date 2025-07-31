@@ -22,7 +22,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useImagePreview } from '../../../src/components/renders/image-render/use-image-preview';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/coze-design', () => ({
   Upload: function Upload({
     children,
@@ -167,7 +167,7 @@ vi.mock('../../../src/components/renders/image-render/utils', () => ({
   isValidSize: vi.fn().mockReturnValue(true),
 }));
 
-// 模拟 CustomError
+// Simulate CustomError
 vi.mock('@coze-arch/bot-error', () => ({
   CustomError: class CustomError extends Error {
     constructor(event: string, message: string) {
@@ -179,7 +179,7 @@ vi.mock('@coze-arch/bot-error', () => ({
 
 describe('useImagePreview 基本功能测试', () => {
   test('测试图片URL输入框更新', () => {
-    // 创建一个简单的测试组件
+    // Create a simple test component
     const TestComponent = () => {
       const [src, setSrc] = React.useState('https://example.com/image.jpg');
       const onChange = vi.fn();
@@ -201,16 +201,16 @@ describe('useImagePreview 基本功能测试', () => {
 
     render(<TestComponent />);
 
-    // 验证初始URL正确显示
+    // Verify that the initial URL is displayed correctly
     const urlInput = screen.getByTestId('image-url-input');
     expect(urlInput).toHaveValue('https://example.com/image.jpg');
 
-    // 修改URL
+    // Modify URL
     fireEvent.change(urlInput, {
       target: { value: 'https://example.com/new-image.jpg' },
     });
 
-    // 验证URL已更新
+    // Verify that the URL has been updated
     expect(
       screen.getByText('当前图片URL: https://example.com/new-image.jpg'),
     ).toBeInTheDocument();
@@ -219,7 +219,7 @@ describe('useImagePreview 基本功能测试', () => {
   test('测试确认按钮调用onChange', () => {
     const onChange = vi.fn();
 
-    // 创建一个简单的测试组件
+    // Create a simple test component
     const TestComponent = () => {
       const [src, setSrc] = React.useState('https://example.com/image.jpg');
 
@@ -235,16 +235,16 @@ describe('useImagePreview 基本功能测试', () => {
 
     render(<TestComponent />);
 
-    // 点击确认按钮
+    // Click the confirm button.
     const okButton = screen.getByTestId('modal-ok');
     fireEvent.click(okButton);
 
-    // 验证onChange被调用
+    // Verify that onChange is invoked
     expect(onChange).toHaveBeenCalledWith('https://example.com/image.jpg', '');
   });
 
   test('测试editable属性', () => {
-    // 创建一个简单的测试组件
+    // Create a simple test component
     const TestComponent = () => {
       const [src, setSrc] = React.useState('https://example.com/image.jpg');
       const onChange = vi.fn();
@@ -261,7 +261,7 @@ describe('useImagePreview 基本功能测试', () => {
 
     render(<TestComponent />);
 
-    // 验证输入框被禁用
+    // Verify text box is disabled
     const urlInput = screen.getByTestId('image-url-input');
     expect(urlInput).toBeDisabled();
   });

@@ -20,7 +20,7 @@ import { Select, Tooltip } from '@coze-arch/coze-design';
 import { InfoIcon } from '../info-icon';
 
 /**
- * 变量聚合策略
+ * Variable aggregation strategy
  * @param param0
  * @returns
  */

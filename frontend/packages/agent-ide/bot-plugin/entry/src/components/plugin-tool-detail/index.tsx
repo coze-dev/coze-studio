@@ -54,17 +54,17 @@ export interface ToolDetailPageProps
   onDebugSuccessCallback?: () => void;
 }
 
-// 页面-编辑插件API
+// Page - Edit Plugin API
 export const ToolDetailPage: FC<ToolDetailPageProps> = ({
   toolID,
   onDebugSuccessCallback,
   renderDescComponent,
   renderParamsComponent,
 }) => {
-  //捕获错误信息，跳转统一落地页
+  //Capture error messages and jump to the unified landing page
   const capture = useErrorHandler();
   const [editVersion, setEditVersion] = useState<number>();
-  //插件-API详情
+  //Plugin-API Details
   const [apiInfo, setApiInfo] = useState<PluginAPIInfo>();
   const [debugApiInfo, setDebugApiInfo] = useState<PluginAPIInfo>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -104,7 +104,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     });
   };
 
-  // 重置 request 参数
+  // Reset request parameters
   const resetRequestParams = (data: PluginAPIInfo) => {
     const requestParams = cloneDeep(data.request_params as APIParameter[]);
     if (
@@ -120,7 +120,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     return requestParams;
   };
 
-  // 设置接口信息（回显和置空）
+  // Set interface information (echo and empty)
   const handleInit = async (useloading = false) => {
     setApiInfo({
       ...apiInfo,
@@ -140,12 +140,12 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
 
       if (api_info.length > 0) {
         const apiInfoTemp = api_info.length > 0 ? api_info[0] : {};
-        // debug 的数据 如果有 example 需要回显 入参数据额外处理
+        // Debug data, if there is an example, the imported parameter data needs to be echoed for additional processing
         setDebugApiInfo({
           ...apiInfoTemp,
           request_params: resetRequestParams(apiInfoTemp),
         });
-        // 给对象增加层级标识
+        // Adding hierarchical identifiers to objects
         addDepthAndValue(apiInfoTemp.request_params);
         addDepthAndValue(apiInfoTemp.response_params);
         setApiInfo(apiInfoTemp);
@@ -170,7 +170,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     useloading && setLoading(false);
   };
 
-  // 1.基本信息
+  // 1. Basic information
   const {
     isBaseInfoDisabled,
     header: baseInfoHeader,
@@ -190,7 +190,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     renderDescComponent,
   });
 
-  // 2 更多设置
+  // 2 more settings
   const {
     isBaseMoreDisabled,
     header: baseMoreHeader,
@@ -211,7 +211,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     onSuccess: handleSuccess,
   });
 
-  // 3.设置 request
+  // 3. Set request
   const {
     isRequestParamsDisabled,
     itemKey: requestItemKey,
@@ -233,7 +233,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     renderParamsComponent,
   });
 
-  // 4.设置 response
+  // 4. Set up the response
   const {
     isResponseParamsDisabled,
     itemKey: responseItemKey,
@@ -298,7 +298,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     };
   }, []);
 
-  // 预览状态解锁，如果有一步为编辑态，则不解锁
+  // The preview state is unlocked. If there is an edit state, it will not be unlocked.
   useUpdateEffect(() => {
     if (
       !isBaseInfoDisabled ||

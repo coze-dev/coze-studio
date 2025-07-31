@@ -17,8 +17,8 @@
 import { useWorkflowNode } from '@coze-workflow/base';
 
 /**
- * 获取数据库节点选中的数据库ID
- * @returns 返回当前数据库ID
+ * Get the database ID selected by the database node
+ * Returns the current database ID
  */
 export function useCurrentDatabaseID() {
   const { data } = useWorkflowNode();

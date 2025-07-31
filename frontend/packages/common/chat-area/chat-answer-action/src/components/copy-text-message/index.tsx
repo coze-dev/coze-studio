@@ -47,16 +47,16 @@ export const CopyTextMessage: React.FC<
   const [isCopySuccessful, setIsCopySuccessful] = useState<boolean>(false);
   const trigger = useTooltipTrigger('hover');
 
-  // 单位s
+  // Unit s
   const COUNT_DOWN_TIME = 3;
 
-  // 单位s转化为ms的倍数
+  // The unit's is converted to a multiple of ms
   const TIMES = 1000;
 
   const handleCopy = () => {
     const resp = copy(content);
     if (resp) {
-      // 复制成功
+      // Copy successful
       setIsCopySuccessful(true);
       setTimeout(() => setIsCopySuccessful(false), COUNT_DOWN_TIME * TIMES);
       Toast.success({
@@ -68,7 +68,7 @@ export const CopyTextMessage: React.FC<
         eventName: ReportEventNames.CopyTextMessage,
       });
     } else {
-      // 复制失败
+      // Copy failed
       Toast.warning({
         content: I18n.t('copy_failed'),
         showClose: false,

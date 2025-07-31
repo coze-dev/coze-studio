@@ -20,7 +20,7 @@ import { shortid } from '../uuid';
 import { getAcceptByUploadItemTypes } from '../file-const';
 import { type DSL, ElementDirectiveType, ElementPropsType } from '../../types';
 
-// @fixme DSL 类型定义需要更新
+// @Fixme DSL type definition needs to be updated
 export const getDSLTemplate = (): DSL => ({
   elements: {
     root: {
@@ -32,7 +32,7 @@ export const getDSLTemplate = (): DSL => ({
     },
     form: {
       id: 'form',
-      name: 'FlowpdCiciComponentsForm', // TODO 组件名 & type 最好也能事先就约定好
+      name: 'FlowpdCiciComponentsForm', // TODO component name & type can preferably be agreed in advance
       type: '@flowpd/cici-components/Form',
       props: {
         value: {
@@ -47,15 +47,15 @@ export const getDSLTemplate = (): DSL => ({
           // some rules value
         },
       },
-      children: ['submitButton'], // 根据 variables + layout 生成
+      children: ['submitButton'], // Generated from variables + layout
     },
-    // 通过 getFormElementsFromcomponent 生成表单元素
+    // Generate form elements from getFormElementsFromcomponent
     // ...inputElements,
-    // 通过 getElementsLayout 生成表单元素 layout
+    // Generate form element layout with getElementsLayout
     // ...inputLayoutElements,
     submitButton: {
       id: 'submitButton',
-      name: 'FlowpdCiciComponentsButton', // TODO 组件名 & type 最好也能事先就约定好
+      name: 'FlowpdCiciComponentsButton', // TODO component name & type can preferably be agreed in advance
       type: '@flowpd/cici-components/Button',
       props: {
         onClick: {
@@ -69,7 +69,7 @@ export const getDSLTemplate = (): DSL => ({
   variables: {
     formValue: {
       id: 'formValue',
-      defaultValue: {}, // 不需要缺省值
+      defaultValue: {}, // No default is required
     },
   },
   actions: {
@@ -96,7 +96,7 @@ export type GetFormItemTemplate = (
 
 export const getInputElementDSL: GetFormItemTemplate = component => ({
   id: component.name ?? shortid(),
-  name: 'FlowpdCiciComponentsInput', // TODO 组件名最好也能事先就约定好
+  name: 'FlowpdCiciComponentsInput', // The TODO component name should preferably be agreed in advance
   type: '@flowpd/cici-components/Input',
   props: {
     name: component.name,
@@ -104,13 +104,13 @@ export const getInputElementDSL: GetFormItemTemplate = component => ({
     defaultValue: component.default_value,
     rules: [],
     noErrorMessage: true,
-    // @FIXME DSL 解析逻辑实际支持传入任意值作为 props，但是类型定义里没有兼容这种语法
+    // The @FIXME DSL parsing logic actually supports passing arbitrary values as props, but there is no compatible syntax in the type definition
   } as unknown as DSLElement['props'],
 });
 
 export const getSelectElementDSL: GetFormItemTemplate = component => ({
   id: component.name ?? shortid(),
-  name: 'FlowpdCiciComponentsSelect', // TODO 组件名最好也能事先就约定好
+  name: 'FlowpdCiciComponentsSelect', // The TODO component name should preferably be agreed in advance
   type: '@flowpd/cici-components/Select',
   props: {
     name: component.name,
@@ -126,11 +126,11 @@ export const getSelectElementDSL: GetFormItemTemplate = component => ({
       },
     ],
     noErrorMessage: true,
-    // @FIXME DSL 解析逻辑实际支持传入任意值作为 props，但是类型定义里没有兼容这种语法
+    // The @FIXME DSL parsing logic actually supports passing arbitrary values as props, but there is no compatible syntax in the type definition
   } as unknown as DSLElement['props'],
 });
 
-// 单位 kb
+// Unit kb
 export const IMAGE_MAX_SIZE = 500 * 1024; // 500 mb
 export const FILE_MAX_SIZE = 500 * 1024; // 500 mb
 
@@ -147,7 +147,7 @@ const getAcceptByComponent = (component: shortcut_command.Components) => {
 
 export const getUploadElementDSL: GetFormItemTemplate = component => ({
   id: component.name ?? shortid(),
-  name: 'FlowpdCiciComponentsUpload', // TODO 组件名最好也能事先就约定好
+  name: 'FlowpdCiciComponentsUpload', // The TODO component name should preferably be agreed in advance
   type: '@flowpd/cici-components/Upload',
   props: {
     name: component.name,
@@ -164,11 +164,11 @@ export const getUploadElementDSL: GetFormItemTemplate = component => ({
       },
     ],
     noErrorMessage: true,
-    // @FIXME DSL 解析逻辑实际支持传入任意值作为 props，但是类型定义里没有兼容这种语法
+    // The @FIXME DSL parsing logic actually supports passing arbitrary values as props, but there is no compatible syntax in the type definition
   } as unknown as DSLElement['props'],
 });
 
-// 配置 & 预览模式占位符
+// Configuration & Preview Mode Placeholders
 export const getFormItemPlaceholderDSL = () => ({
   id: shortid(),
   name: 'FlowpdCiciComponentsFormItemPlaceholder',
@@ -180,7 +180,7 @@ export const getLayoutDSL = (items: DSLElement[]): DSLElement => ({
   name: 'FlowpdCiciComponentsColumnLayout',
   type: '@flowpd/cici-components/ColumnLayout',
   props: {
-    // 如出现奇数个，最后一行占满
+    // If an odd number appears, the last line is full
     Columns: items.map(item => ({
       children: [item.id],
       config: { vertical: 'top', weight: 1, width: 'weighted' },
@@ -189,7 +189,7 @@ export const getLayoutDSL = (items: DSLElement[]): DSLElement => ({
     action: 'enableUrl',
     backgroundColor: 'transparent',
     enableClickEvent: false,
-    // @FIXME card-buidler Layout 现有的数据结构，但是实际上类型非法
+    // @FIXME card-buidler Layout an existing data structure, but the type is actually illegal
   } as unknown as DSLElement['props'],
 });
 export const getFormItemDSLMap: Record<

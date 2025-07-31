@@ -39,7 +39,7 @@ export interface GetRowOpConfig {
 }
 
 /**
- * 表格列伸缩时的回调，用于限制伸缩边界
+ * Callbacks when table columns are scaled to limit the scaling boundaries
  * @param column
  * @returns
  */
@@ -64,7 +64,7 @@ export const getRowKey: RowKey<TableViewRecord> = (record?: TableViewRecord) =>
   record?.tableViewKey || '';
 
 /**
- * 获取行操作配置
+ * Get row operation configuration
  * @param record
  * @param indexs
  * @param onEdit

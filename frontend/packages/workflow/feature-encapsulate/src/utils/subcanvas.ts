@@ -21,7 +21,7 @@ import {
 import { type WorkflowSubCanvas } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 多节点是否在子画布中
+ * Is the multi-node in the subcanvas?
  * @param nodes
  * @returns
  */
@@ -29,7 +29,7 @@ export const isNodesInSubCanvas = (nodes?: FlowNodeEntity[]) =>
   isNodeInSubCanvas(nodes?.[0]);
 
 /**
- * 单节点是否在子画布中
+ * Is the single node in the subcanvas?
  * @param nodes
  * @returns
  */
@@ -37,7 +37,7 @@ export const isNodeInSubCanvas = (node?: FlowNodeEntity) =>
   node?.parent?.id !== 'root';
 
 /**
- * 是不是子画布节点
+ * Is it a child canvas node?
  * @param node
  * @returns
  */
@@ -45,7 +45,7 @@ export const isSubCanvasNode = (node?: FlowNodeEntity) =>
   node?.flowNodeType === FlowNodeBaseType.SUB_CANVAS;
 
 /**
- * 获取子画布的父节点
+ * Get the parent node of the child canvas
  * @param node
  * @returns
  */

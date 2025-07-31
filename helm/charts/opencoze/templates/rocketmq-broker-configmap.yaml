@@ -1,3 +1,4 @@
+{{- if and (eq (lower (default "rmq" .Values.cozeServer.env.COZE_MQ_TYPE)) "rmq") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,3 +15,4 @@ data:
     brokerRole = ASYNC_MASTER
     flushDiskType = ASYNC_FLUSH
     brokerIP1 = __POD_IP__
+{{- end}}

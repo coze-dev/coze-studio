@@ -39,12 +39,12 @@ export interface TestsetManageState {
   projectId?: string;
 
   /**
-   * 校验缓存
+   * check cache
    */
   validateCache: ValidateSchemaResult;
 
   /**
-   * 编辑面板状态
+   * Edit Panel Status
    */
   editPanelVisible: boolean;
   editData: CaseDataDetail | null;
@@ -52,28 +52,28 @@ export interface TestsetManageState {
   editPanelCloseState: boolean;
 
   /**
-   * 自动填充状态
+   * autofill status
    */
   generating: boolean;
   /**
-   * 自定义渲染组件，暂时从外部传入，后续不要了
+   * Custom rendering component, temporarily passed in from the outside, no more in the future
    */
   formRenders: Partial<Record<FormItemSchemaType, NodeFormItem>>;
 }
 
 export interface TestsetManageAction {
-  /** 更新状态 */
+  /** update status */
   patch: (s: Partial<TestsetManageState>) => void;
   /**
-   * 校验 schema
+   * Validation schema
    */
   validateSchema: () => Promise<ValidateSchemaResult>;
   /**
-   * 打开编辑面板
+   * Open the editing panel
    */
   openEditPanel: (data?: CaseDataDetail) => void;
   /**
-   * 关闭编辑面板
+   * Close the edit panel
    */
   closeEditPanel: () => void;
 
@@ -164,7 +164,7 @@ export const TestsetManageProvider: React.FC<
   formRenders,
   children,
 }) => {
-  // 只初始化一次
+  // Initialize only once
   const storeRef = useRef<TestsetManageStore>(
     createTestsetManageState({
       bizCtx: {

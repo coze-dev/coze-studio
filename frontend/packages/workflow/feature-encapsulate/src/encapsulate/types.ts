@@ -26,48 +26,48 @@ import { type WorkflowVariable } from '@coze-workflow/variable';
 import { type EncapsulateValidateResult } from '../validate';
 
 /**
- * 封装结果
+ * Encapsulation result
  */
 export type EncapsulateResult =
   | EncapsulateErrorResult
   | EncapsulateSuccessResult;
 
 /**
- * 错误结果
+ * Wrong result
  */
 export interface EncapsulateErrorResult {
   /**
-   * 状态
+   * state
    */
   success: false;
   /**
-   * 消息提示
+   * message prompt
    */
   message: string;
 }
 
 /**
- * 成功结果
+ * successful outcome
  */
 export interface EncapsulateSuccessResult {
   /**
-   * 状态
+   * state
    */
   success: true;
   /**
-   * 生成的节点
+   * generated node
    */
   subFlowNode: WorkflowNodeEntity;
   /**
-   * 生成的输入线
+   * Generated input line
    */
   inputLines: WorkflowLineEntity[];
   /**
-   * 生成的输出线
+   * Generated output line
    */
   outputLines: WorkflowLineEntity[];
   /**
-   * 生成的workflow id
+   * Generated workflow id
    */
   workflowId: string;
   /**
@@ -77,35 +77,35 @@ export interface EncapsulateSuccessResult {
 }
 
 /**
- * 封装/解封服务
+ * Encapsulation/unsealing service
  */
 export interface EncapsulateService {
   /**
-   * 是否可以封装
+   * Can it be encapsulated?
    */
   canEncapsulate: () => boolean;
   /**
-   * 封装
+   * package
    */
   encapsulate: () => Promise<EncapsulateResult>;
   /**
-   * 是否支持解封
+   * Whether to support unblocking
    */
   canDecapsulate: (node: WorkflowNodeEntity) => boolean;
   /**
-   * 解封
+   * unblock
    */
   decapsulate: (node: WorkflowNodeEntity) => Promise<void>;
   /**
-   * 校验
+   * validation
    */
   validate: () => Promise<EncapsulateValidateResult>;
   /**
-   * 封装成功回调
+   * Package successful callback
    */
   onEncapsulate: Event<EncapsulateResult>;
   /**
-   * 销毁
+   * destroy
    */
   dispose: () => void;
 }
@@ -113,15 +113,15 @@ export interface EncapsulateService {
 export const EncapsulateService = Symbol('EncapsulateService');
 
 /**
- * 封装/解封管理
+ * Encapsulation/unsealing management
  */
 export interface EncapsulateManager {
   /**
-   * 初始化
+   * initialization
    */
   init: () => void;
   /**
-   * 销毁
+   * destroy
    * @returns
    */
   dispose: () => void;
@@ -130,7 +130,7 @@ export interface EncapsulateManager {
 export const EncapsulateManager = Symbol('EncapsulateManager');
 
 /**
- * 连接端口
+ * connection port
  */
 export interface ConnectPortsInfo {
   inputLines: WorkflowLineEntity[];

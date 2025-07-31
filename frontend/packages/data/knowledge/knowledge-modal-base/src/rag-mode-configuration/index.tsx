@@ -72,7 +72,7 @@ export function RagModeConfiguration({
     recall_strategy = {},
   } = dataSetInfo;
 
-  // undefined 默认为 true
+  // Undefined defaults to true
   const {
     use_nl2sql = true,
     use_rerank = true,
@@ -362,7 +362,7 @@ export function RagModeConfiguration({
                 onDataSetInfoChange({
                   ...dataSetInfo,
                   show_source: v,
-                  // 展示方式没有值且打开展示来源，默认选中卡片
+                  // Display method has no value and open the display source, the card is selected by default
                   ...(!show_source_mode && v
                     ? {
                         show_source_mode: KnowledgeShowSourceMode.CardList,

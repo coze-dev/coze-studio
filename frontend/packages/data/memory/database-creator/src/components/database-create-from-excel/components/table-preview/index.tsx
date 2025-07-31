@@ -118,7 +118,7 @@ export const TablePreview: FC = () => {
     });
     let res: AddTableResponse;
     try {
-      // TODO:此需求暂停，后端下线，后续待开放
+      // TODO: This demand is suspended, the backend is offline, and it will be opened later.
       // res = await DataModelApi.AddTable({
       //   file: {
       //     tos_uri: fileList[0].response.upload_uri,

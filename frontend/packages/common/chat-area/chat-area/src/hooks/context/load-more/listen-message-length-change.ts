@@ -50,7 +50,7 @@ class ListenMessageLengthChange {
   };
 }
 
-// todo: review 很屌很危险 ⚡️️☠️
+// Todo: review is dick and dangerous ⚡☠️
 export const useListenMessagesLengthChangeLayoutEffect = (
   useMessagesStore: MessagesStore,
 ) => {
@@ -72,7 +72,7 @@ export const useListenMessagesLengthChangeLayoutEffect = (
   }, []);
 
   /**
-   * 监听后仅生效一次
+   * It only takes effect once after monitoring
    */
   return (fn: Listener) => fnsRef.current.push(fn);
 };

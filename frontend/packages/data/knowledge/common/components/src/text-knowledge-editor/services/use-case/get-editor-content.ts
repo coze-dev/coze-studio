@@ -17,8 +17,8 @@
 import { type Editor } from '@tiptap/react';
 
 /**
- * 获取编辑器内容
- * 返回用户真实编辑的内容，移除TipTap自动添加的外层<p>标签
+ * Get editor content
+ * Return the user's actual edited content and remove the outer < p > tag automatically added by TipTap
  */
 export const getEditorContent = (editor: Editor | null) => {
   if (!editor) {
@@ -29,38 +29,38 @@ export const getEditorContent = (editor: Editor | null) => {
 
   const doc = removeEditorWrapperParagraph(content);
 
-  // 返回处理后的HTML
+  // Returns the processed HTML.
   return doc;
 };
 
 /**
- * 处理编辑器输出的HTML内容
- * 移除不必要的外层<p>标签，保持与原始内容格式一致
+ * Process the HTML content output by the editor
+ * Remove unnecessary outer < p > tags to maintain the original content format
  */
 export const removeEditorWrapperParagraph = (content: string): string => {
   if (!content) {
     return '';
   }
 
-  // 使用DOM解析器来处理HTML
+  // Using a DOM parser to process HTML
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, 'text/html');
 
-  // 找到所有编辑器生成的p标签
+  // Find all editor-generated p tags
   const generatedParagraphs = doc.querySelectorAll(
     'p.text-knowledge-tiptap-editor-paragraph',
   );
 
-  // 替换这些p标签为它们的内容
+  // Replace these p tags with their content
   generatedParagraphs.forEach(p => {
     const parent = p.parentNode;
     if (parent) {
-      // 创建一个文档片段来存储p标签的内容
+      // Create a document fragment to store the contents of the p tag
       const fragment = document.createDocumentFragment();
       while (p.firstChild) {
         fragment.appendChild(p.firstChild);
       }
-      // 用内容替换p标签
+      // Replace p tags with content
       parent.replaceChild(fragment, p);
     }
   });

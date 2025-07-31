@@ -123,7 +123,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
   }, [props.activeId, props.visible]);
 
   useEffect(() => {
-    // 控制高亮的元素滚至视区内
+    // Controls the highlighted elements to roll into the viewport
     if (highLight) {
       document.getElementsByClassName('active-row')?.[0]?.scrollIntoView();
     }
@@ -416,7 +416,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
           'gap-y-2',
         )}
       >
-        {/* 用户变量 */}
+        {/* user variable */}
         <VariableGroupWrapper
           variableGroup={{
             key: I18n.t('variable_user_name'),
@@ -433,7 +433,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
             header={<UserParamHeader isReadonly={isReadonly} />}
           />
         </VariableGroupWrapper>
-        {/* 系统变量 */}
+        {/* system variable */}
         <VariableGroupWrapper
           variableGroup={{
             key: I18n.t('variable_system_name'),
@@ -463,7 +463,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
           showType="variableList"
           addTemplate={(arr: VariableItem[]) => {
             const result = [
-              // 使用模版时覆盖历史变量
+              // Override history variables when using templates
               // ...variables,
               ...arr.map(q => ({
                 id: nanoid(),

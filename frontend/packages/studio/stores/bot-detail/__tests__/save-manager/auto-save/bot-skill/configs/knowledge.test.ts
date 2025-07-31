@@ -26,7 +26,7 @@ describe('knowledgeConfig', () => {
     expect(knowledgeConfig).toHaveProperty('debounce');
     expect(knowledgeConfig).toHaveProperty('middleware');
     expect(knowledgeConfig.key).toBe(ItemType.DataSet);
-    // 验证 debounce 配置
+    // Verify debounce configuration
     if (typeof knowledgeConfig.debounce === 'object') {
       expect(knowledgeConfig.debounce).toHaveProperty('default');
       expect(knowledgeConfig.debounce).toHaveProperty('dataSetInfo.min_score');

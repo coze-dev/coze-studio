@@ -29,22 +29,22 @@ export type TreeNodeCustomData = TreeNodeData &
     | 'quotedValue'
     | 'fieldRandomKey'
   > & {
-    // 行唯一值
+    // row unique value
     key: string;
-    // Form的field
+    // Formed fields
     field?: string;
-    // 是否是第一项
+    // Is it the first item?
     isFirst?: boolean;
-    // 是否是最后一项
+    // Is it the last item?
     isLast?: boolean;
-    // 是否只有该项一条数据
+    // Is there only one item of data?
     isSingle?: boolean;
-    // 该项的嵌套层级，从0开始
+    // The nesting level of the item, starting at 0
     level?: number;
-    // 辅助线展示的字段
+    // Fields displayed by the auxiliary line
     helpLineShow?: Array<boolean>;
     children?: Array<TreeNodeCustomData>;
-    // 变量描述，用于作为隐藏的引导
+    // Variable descriptions, used as hidden bootstraps
     description?: string;
   };
 
@@ -52,24 +52,24 @@ export interface CustomTreeNodeFuncRef {
   data: TreeNodeCustomData;
   level: number;
   readonly: boolean;
-  // 通用change方法
+  // General change method
   onChange: (mode: ChangeMode, param: TreeNodeCustomData) => void;
-  // 定制的类型改变的change方法，主要用于自定义render使用
-  // 添加子项
+  // Customized type change method, mainly used for custom rendering
+  // Add child item
   onAppend: () => void;
-  // 删除该项
+  // Delete this item
   onDelete: () => void;
-  // 删除该项下面的所有子项
+  // Delete all children under this item
   onDeleteChildren: () => void;
-  // 类型改变时内部的调用方法，主要用于从类Object类型转为其他类型时需要删除所有子项
+  // The internal call method when the type changes, mainly used to delete all children when converting from the class Object type to other types
   onSelectChange: (
     val?: string | number | Array<unknown> | Record<string, unknown>,
   ) => void;
 }
 
 export interface ActiveMultiInfo {
-  // 当前行是否处于多行状态，多行状态竖线需要延长
+  // Whether the current line is in a multi-line state, and the vertical line in the multi-line state needs to be extended
   activeMultiKey: string;
-  // 当前行paramName数据是否出现错误信息
+  // Is there an error message for the current row paramName data?
   withNameError?: boolean;
 }

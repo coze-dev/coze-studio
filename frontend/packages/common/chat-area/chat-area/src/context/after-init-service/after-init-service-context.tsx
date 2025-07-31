@@ -19,7 +19,7 @@ import { createContext } from 'react';
 import { type MarkReadService } from '../../service/mark-read';
 
 /**
- * 不需要放到最外层 Provider 里的 service 实例提供 Context
+ * Context provided by a service instance that does not need to be placed in the outermost provider
  */
 
 export interface AfterInitService {

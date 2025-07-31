@@ -24,19 +24,19 @@ export interface ActiveChunkInfo {
 }
 
 /**
- * 管理文档中具有相同ID的chunk的渲染路径
- * 通过为每个chunk实例分配唯一的渲染路径，解决重复ID的问题
+ * Manage the rendering path for chunks with the same ID in a document
+ * Solve the problem of duplicate IDs by assigning a unique render path to each chunk instance
  */
 export const useChunkRenderPath = () => {
-  // 存储活动的chunk和它的渲染路径
+  // Store the active chunk and its render path
   const [activeChunkInfo, setActiveChunkInfo] = useState<ActiveChunkInfo>({
     chunk: null,
     renderPath: null,
   });
 
   /**
-   * 设置活动chunk，但不设置渲染路径
-   * 通常在外部逻辑中使用，如usePreviewContextMenu
+   * Set the active chunk, but not the render path
+   * Usually used in external logic, such as usePreviewContextMenu
    */
   const setActiveChunk = (chunk: LevelDocumentChunk | null) => {
     setActiveChunkInfo(prev => ({
@@ -46,7 +46,7 @@ export const useChunkRenderPath = () => {
   };
 
   /**
-   * 清除活动chunk信息
+   * Clear active chunks
    */
   const clearActiveChunk = () => {
     setActiveChunkInfo({
@@ -56,8 +56,8 @@ export const useChunkRenderPath = () => {
   };
 
   /**
-   * 设置活动chunk和它的渲染路径
-   * 在用户交互（如双击）时使用
+   * Set the active chunk and its rendering path
+   * Use during user interaction (e.g. double-clicking)
    */
   const setActiveChunkWithPath = (
     chunk: LevelDocumentChunk,
@@ -70,14 +70,14 @@ export const useChunkRenderPath = () => {
   };
 
   /**
-   * 检查给定的chunk和渲染路径是否匹配当前活动的chunk
+   * Checks whether the given chunk and rendering path match the currently active chunk
    */
   const isActiveChunk = (chunkId: string, renderPath: string) =>
     chunkId === activeChunkInfo.chunk?.text_knowledge_editor_chunk_uuid &&
     renderPath === activeChunkInfo.renderPath;
 
   /**
-   * 为chunk生成唯一的渲染路径
+   * Generate a unique render path for chunks
    */
   const generateRenderPath = (basePath: string, chunkId: string) =>
     `${basePath}-${chunkId}`;

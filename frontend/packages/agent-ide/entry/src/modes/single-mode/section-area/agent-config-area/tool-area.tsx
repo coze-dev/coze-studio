@@ -76,7 +76,7 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
               title={I18n.t('bot_edit_type_skills')}
               toolGroupKey={ToolGroupKey.SKILL}
             >
-              {/* 工具 */}
+              {/* tool */}
               <PluginApisArea
                 toolKey={ToolKey.PLUGIN}
                 title={I18n.t('Plugins')}
@@ -95,7 +95,7 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
               title={I18n.t('bot_edit_type_knowledge')}
               actionNodes={<DataSetSetting modelId={modelId ?? ''} />}
             >
-              {/* 知识库 */}
+              {/* Knowledge Base */}
               <DataSetArea
                 initRef={DataSetAreaRef}
                 toolKey={ToolKey.DOCUMENT}
@@ -125,7 +125,7 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
               toolGroupKey={ToolGroupKey.MEMORY}
               title={I18n.t('bot_edit_type_memory')}
             >
-              {/* 变量存储 */}
+              {/* variable storage */}
               <DataMemory
                 toolKey={ToolKey.VARIABLE}
                 title={I18n.t('user_profile')}
@@ -136,24 +136,24 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
               toolGroupKey={ToolGroupKey.DIALOG}
               title={I18n.t('bot_edit_type_dialog')}
             >
-              {/* 开场白 */}
+              {/* opening statement */}
               <OnboardingMessage
                 toolKey={ToolKey.ONBOARDING}
                 title={I18n.t('bot_preview_opening_remarks')}
               />
-              {/* suggestion 开关 */}
+              {/* Suggestion switch */}
               <SuggestionBlock
                 toolKey={ToolKey.SUGGEST}
                 title={I18n.t('bot_edit_suggestion')}
               />
-              {/* 快捷键shortcut */}
+              {/* Shortcut shortcut */}
               <ShortcutToolConfig
                 skillModal={SkillsModal}
                 toolKey={ToolKey.SHORTCUT}
                 botMode={BotMode.SingleMode}
                 title={I18n.t('bot_ide_shortcut')}
               />
-              {/* 聊天背景图片 */}
+              {/* Chat background image */}
               <ChatBackground
                 toolKey={ToolKey.BACKGROUND}
                 title={I18n.t('bgi_title')}

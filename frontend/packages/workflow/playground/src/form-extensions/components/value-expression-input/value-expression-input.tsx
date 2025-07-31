@@ -70,17 +70,17 @@ export interface ValueExpressionInputProps {
   onBlur?: () => void;
   disabled?: boolean;
   /**
-   * 指定 inputType 后，参数类型固定不可切换，但仍可选择非该数据类型的变量，运行态会进行类型转换
+   * After specifying inputType, the parameter type is fixed and cannot be switched, but variables that are not of this data type can still be selected, and the running state will perform type conversion
    */
   inputType?: LiteralInputType;
   /**
-   * 可以在指定的几个类型之间切换, length = 1 时,用法同 inputType
-   * 只在 TypedValueExpressionInput 中生效
-   * 同时指定 inputType 时，会取两个 prop 的并集
+   * You can switch between several specified types. When length = 1, the usage is the same as inputType.
+   * Effective only in TypedValueExpressionInput
+   * When inputType is specified at the same time, the union of two props is taken
    */
   inputTypes?: LiteralInputType[];
   /**
-   * 默认选择的数据类型
+   * Default selected data type
    */
   defaultInputType?: LiteralInputType;
   availableFileTypes?: Array<ViewVariableType>;
@@ -93,18 +93,18 @@ export interface ValueExpressionInputProps {
   literalStyle?: CSSProperties;
   variableTagStyle?: CSSProperties;
   readonly?: boolean;
-  /** 禁止选择的数据类型 */
+  /** Prohibited data types */
   disabledTypes?: Array<ViewVariableType>;
   literalDisabled?: boolean;
 
-  /** 是否禁用变量引用模式 */
+  /** Whether to disable variable reference mode */
   refDisabled?: boolean;
   literalConfig?: {
     min?: number;
     max?: number;
     optionsList?: { label: string; value: string }[];
     /**
-     * 对象类型的 schema 配置，用于 json editor 代码提示和校验
+     * Schema configuration of object types for json editor code hints and validation
      */
     jsonSchema?: SchemaObject;
   };
@@ -119,10 +119,10 @@ export interface ValueExpressionInputProps {
   enableSelectNode?: boolean;
   variablesDatasource?: VariableSelectorProps['dataSource'];
   /**
-   * 禁止类型转换。当选择了引用变量(ValueExpression)时，不支持切换变量类型
+   * Forbid type conversion. Switching variable types is not supported when a reference variable (ValueExpression) is selected
    */
   forbidTypeCast?: boolean;
-  /* 类型限制，引用类型不满足限制时，显示警告信息 */
+  /* Type restrictions, when the reference type does not meet the restrictions, a warning message is displayed */
   variableTypeConstraints?: RefValueDisplayProps['variableTypeConstraints'];
 }
 
@@ -374,10 +374,10 @@ export const ValueExpressionInput = ({
     <ValueExpressionInputContext.Provider value={{ testId }}>
       <div className={finalClassName} style={style} ref={containerRef}>
         <div className="ref-wrapper flex-1 flex w-full h-full items-center overflow-hidden">
-          {/* 判断是否变量选择场景 */}
-          {!refDisabled && // 引用模式启用时，检查：
-          literalDisabled && // 场景1: 字面量被禁用
-          !isRefValue ? ( // 场景2: 当前值不是引用类型
+          {/* Determine whether the variable selects the scene */}
+          {!refDisabled && // When reference mode is enabled, check for:
+          literalDisabled && // Scenario 1: Literals are disabled
+          !isRefValue ? ( // Scenario 2: The current value is not a reference type
             renderVariableSelect(
               <div className="cursor-pointer w-full h-full overflow-hidden flex items-center px-1">
                 <p className="text-[12px] text-[var(--coz-fg-secondary)] pointer-events-none whitespace-nowrap">

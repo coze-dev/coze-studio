@@ -27,7 +27,7 @@ import { DataViewerProvider } from './context';
 import css from './data-viewer.module.less';
 
 export interface DataViewerProps {
-  /** 支持对象或者纯文本渲染 */
+  /** Supports object or plain text rendering */
   data: JsonValueType;
   mdPreview?: boolean;
   className?: string;

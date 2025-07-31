@@ -24,7 +24,7 @@ describe('useMousePosition', () => {
   const createMockCanvas = () => {
     const mockCanvas = {
       on: vi.fn((event: string, callback: (event: any) => void) =>
-        // 返回一个清理函数
+        // Returns a cleaning function
         () => {
           mockCanvas.off(event, callback);
         },
@@ -85,10 +85,10 @@ describe('useMousePosition', () => {
       useMousePosition({ canvas: mockCanvas }),
     );
 
-    // 初始位置
+    // initial position
     expect(result.current.mousePosition).toEqual({ left: 0, top: 0 });
 
-    // 模拟鼠标移动
+    // Simulate mouse movement
     act(() => {
       moveCallback({
         e: { clientX: 100, clientY: 200 },
@@ -135,12 +135,12 @@ describe('useMousePosition', () => {
       expect.any(Function),
     );
 
-    // 更新 canvas
+    // Update canvas
     rerender({ canvas: mockCanvas2 });
 
-    // 应该清理旧的事件监听
+    // Old event listeners should be cleaned up
     expect(cleanupSpy).toHaveBeenCalled();
-    // 应该设置新的事件监听
+    // New event listeners should be set up
     expect(mockCanvas2.on).toHaveBeenCalledWith(
       'mouse:move',
       expect.any(Function),

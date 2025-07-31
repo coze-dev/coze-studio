@@ -126,7 +126,7 @@ export const AgentPublishPage = () => {
   const publishBtn = (
     <UIButton
       theme="solid"
-      //解决异步请求botInfo未返回时可以点击publish产生的错误
+      //Resolve the error caused by clicking publish when the asynchronous request botInfo is not returned
       disabled={Boolean(publishDisabled) || !botInfo.name}
       loading={publishLoading}
       onClick={handlePublish}

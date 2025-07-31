@@ -51,7 +51,7 @@ export const ReloadButton = ({ widget }: { widget: ProjectIDEWidget }) => {
     <Tooltip
       content={content}
       position="bottom"
-      // 点击后布局变化，tooltip 需要手动控制消失
+      // After clicking, the layout changes, and the tooltip needs to be manually controlled to disappear.
       trigger="custom"
       visible={tooltipVisible}
     >

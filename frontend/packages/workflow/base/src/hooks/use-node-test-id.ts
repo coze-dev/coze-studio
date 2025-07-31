@@ -21,21 +21,21 @@ import { concatTestId } from '../utils';
 import { NODE_TEST_ID_PREFIX } from '../constants';
 
 /**
- * 仅限在 node 内使用
+ * Only used within the node
  */
 type UseNodeTestId = () => {
   /**
-   * 返回当前节点的 test-id，也就是当前节点的 node id
+   * Returns the test-id of the current node, which is the node id of the current node.
    * 'playground.11001
    */
   getNodeTestId: () => string;
   /**
-   * 返回当前 setter 的 test-id，会自动带上节点的 test-id
+   * Returns the test-id of the current setter, which will automatically bring the test-id of the node.
    * 'playground.11001.llm'
    */
   getNodeSetterId: (setterName: string) => string;
   /**
-   * 连接两个 test-id，生成一个新的 test-id
+   * Connect two test-ids to generate a new test-id.
    * ('a', 'b') => 'a.b'
    */
   concatTestId: typeof concatTestId;
@@ -55,17 +55,17 @@ export const useNodeTestId: UseNodeTestId = () => {
 
   return {
     /**
-     * 返回当前节点的 test-id，也就是当前节点的 node id
+     * Returns the test-id of the current node, which is the node id of the current node.
      * 'playground.11001
      */
     getNodeTestId,
     /**
-     * 返回当前 setter 的 test-id，会自动带上节点的 test-id
+     * Returns the test-id of the current setter, which will automatically bring the test-id of the node.
      * 'playground.11001.llm'
      */
     getNodeSetterId: setterName => concatTestId(getNodeTestId(), setterName),
     /**
-     * 连接两个 test-id，生成一个新的 test-id
+     * Connect two test-ids to generate a new test-id.
      * ('a', 'b') => 'a.b'
      */
     concatTestId,

@@ -23,7 +23,7 @@ import {
 import { type Rect } from '../types';
 
 /**
- * 生成子流程节点选项
+ * Generate subprocess node options
  */
 export interface GenerateSubWorkflowNodeOptions {
   name: string;
@@ -33,11 +33,11 @@ export interface GenerateSubWorkflowNodeOptions {
 }
 
 /**
- * 封装生成服务
+ * Encapsulation Generation Service
  */
 export interface EncapsulateGenerateService {
   /**
-   * 生成流程
+   * generation flow
    * @param nodes
    * @returns
    */
@@ -51,7 +51,7 @@ export interface EncapsulateGenerateService {
     },
   ) => Promise<WorkflowJSON>;
   /**
-   * 生成子流程节点
+   * Generate subprocess nodes
    * @param options
    * @returns
    */

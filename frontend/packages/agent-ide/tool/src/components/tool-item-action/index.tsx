@@ -22,7 +22,7 @@ import { ToolTooltip } from '../tool-tooltip';
 import { type ToolButtonCommonProps } from '../../typings/button';
 
 type ToolItemActionProps = ToolButtonCommonProps & {
-  /** 是否展示hover样式 **/
+  /** Whether to display hover style **/
   hoverStyle?: boolean;
 };
 

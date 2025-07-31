@@ -50,28 +50,28 @@ export const getSelectionData = ({
   const direction = getSelectionDirection(selection);
 
   /**
-   * 通过获取特定标识 判断是否是可以划选的元素
+   * Determine whether it is an element that can be selected by getting a specific identifier
    */
   const ancestorNodeWithAttribute = getAncestorAttributeNode(
     range.commonAncestorContainer.parentNode,
     CONTENT_ATTRIBUTE_NAME,
   );
 
-  // 特定标识
+  // specific logo
   const ancestorAttributeValue =
     ancestorNodeWithAttribute?.attributes.getNamedItem(CONTENT_ATTRIBUTE_NAME)
       ?.value ?? null;
 
-  // 信息来源
+  // source of information
   const messageSource = ancestorNodeWithAttribute?.attributes.getNamedItem(
     MESSAGE_SOURCE_ATTRIBUTE_NAME,
   )?.value;
 
   if (!hasFix) {
-    // 尝试修复选区
+    // Try to fix the selection
     const needFix = shouldRefineRange(range);
 
-    // 如果修复过，则重新获取执行并返回
+    // If repaired, retrieve the execution and return
     if (needFix) {
       const isFix = refineRange({ range });
 
@@ -92,7 +92,7 @@ export const getSelectionData = ({
     return;
   }
 
-  // 格式化的选区NodeList
+  // Formatted Selection NodeList
   const normalizeSelectionNodeList = getNormalizeNodeList(
     documentFragment.childNodes,
   );
@@ -101,15 +101,15 @@ export const getSelectionData = ({
     return;
   }
 
-  // 人性化文本内容
+  // user-friendly text content
   const humanizedContentText = getHumanizedContentText(
     normalizeSelectionNodeList,
   );
 
-  // 原始文本内容
+  // raw text content
   const originContentText = getOriginContentText(normalizeSelectionNodeList);
 
-  // 如果修复选区成功了，那么他们的组件
+  // If the repair selection is successful, then their components
 
   return {
     humanizedContentText,

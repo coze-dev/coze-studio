@@ -35,7 +35,7 @@ export const useAddRow = ({
   const { sliceListData } = useTableData();
   const { mutateSliceListData } = useTableActions();
   const handleAddRow = () => {
-    /** 先增加容器的高度 */
+    /** Increase the height of the container first */
     increaseTableHeight(ADD_BTN_HEIGHT);
     const items = JSON.parse(sliceListData?.list[0]?.content ?? '[]');
 

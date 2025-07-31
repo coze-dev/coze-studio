@@ -15,8 +15,8 @@
  */
  
 /**
- * 1. 负责规范各种类型消息创建的入参出参，减少消息创建成本
- * 2. 对于接收到的消息，针对不同消息类型，吐出指定的消息格式
+ * 1. Responsible for standardizing imported parameters exported parameters of various types of message creation to reduce message creation costs
+ * 2. For the received message, spit out the specified message format for different message types
  */
 
 import { nanoid } from 'nanoid';
@@ -51,7 +51,7 @@ import { type PreSendLocalMessageEventsManager } from './presend-local-message-e
 import { PreSendLocalMessage } from './presend-local-message';
 
 /**
- * 创建预发送消息
+ * Create a pre-sent message
  */
 export interface PreSendLocalMessageFactoryProps {
   bot_id?: string;
@@ -99,7 +99,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 创建文本消息
+   * Create text message
    */
   createTextMessage(
     props: TextMessageProps,
@@ -121,7 +121,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 创建图片消息
+   * Create image message
    */
   createImageMessage<M extends EventPayloadMaps>(props: {
     messageProps: ImageMessageProps<M>;
@@ -151,7 +151,7 @@ export class PreSendLocalMessageFactory {
       }),
     );
 
-    // 预发送消息保存本地
+    // Pre-sent messages are saved locally
     messageEventsManager.add(message);
 
     const uploaderPluginInstance = new UploadPlugin({
@@ -179,7 +179,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 创建文件消息
+   * Create file message
    */
   createFileMessage<M extends EventPayloadMaps>(props: {
     messageProps: ImageMessageProps<M>;
@@ -208,7 +208,7 @@ export class PreSendLocalMessageFactory {
         mention_list,
       }),
     );
-    // 预发送文件消息保存本地
+    // Pre-send file messages saved locally
     messageEventsManager.add(message);
 
     const uploaderPluginInstance = new UploadPlugin({
@@ -241,7 +241,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 创建图文混合消息
+   * Create a mixed message
    */
   createTextAndFileMixMessage(
     props: TextAndFileMixMessageProps,
@@ -267,7 +267,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 创建标准化过的消息
+   * Create standardized messages
    */
   createNormalizedMessage<T extends ContentType>(
     props: NormalizedMessageProps<T>,
@@ -292,7 +292,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 组装图片消息content
+   * Assemble image message content
    */
   private assembleImageMessageContent(
     file: File,
@@ -319,7 +319,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 更新图片消息content
+   * Update image message content
    */
   private updateImageMessageContent(
     message: PreSendLocalMessage<ContentType.Image>,
@@ -352,7 +352,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 更新文件消息content
+   * Update file message content
    */
   private updateFileMessageContent(
     message: PreSendLocalMessage<ContentType.File>,
@@ -365,7 +365,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 更新图片/文件消息上传状态：success | fail
+   * Update image/file message Upload status: success | failed
    */
   private updateMessageUploadResult(
     message: PreSendLocalMessage<ContentType.Image | ContentType.File>,
@@ -376,7 +376,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 组装文件消息content
+   * Assemble file message content
    */
   private assembleFileMessageContent(
     file: File,
@@ -399,7 +399,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 组装图文混合消息content
+   * Assemble mixed message content
    */
   private assembleTextAndFileMixMessageContent(
     mixList: TextAndFileMixMessagePropsPayload['mixList'],
@@ -455,7 +455,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 组装消息通用字段
+   * Assembly message common field
    */
   private assembleMessageCommonProps<T extends ContentType>(
     props: Pick<
@@ -479,16 +479,16 @@ export class PreSendLocalMessageFactory {
       // @ts-expect-error should be fixed
       extra_info: {
         local_message_id: nanoid(),
-        input_tokens: '', // 用户 query 消耗的 token
-        output_tokens: '', // llm 输出消耗的 token
-        token: '', // 总的 token 消耗
+        input_tokens: '', // User query consumed token
+        output_tokens: '', // LLM output consumed token
+        token: '', // Total token consumption
         plugin_status: 'success', // "success" or "fail"
-        time_cost: '', // 中间调用过程的时间
+        time_cost: '', // Intermediate invocation time of procedure
         workflow_tokens: '',
         bot_state: '', // {   bot_id?: string;agent_id?: string;agent_name?: string; }
-        plugin_request: '', // plugin 请求的参数
-        tool_name: '', // 调用的 plugin 下具体的 api 名称
-        plugin: '', // 调用的 plugin 名称
+        plugin_request: '', // Parameters of the plugin request
+        tool_name: '', // Specific API name under the invoked plugin
+        plugin: '', // Name of the plugin invoked
       },
       role: 'user',
       type: 'question',
@@ -504,7 +504,7 @@ export class PreSendLocalMessageFactory {
   }
 
   /**
-   * 处理发送给服务端的消息结构
+   * Process the message structure sent to the server
    */
   getSendMessageStructure(
     message: PreSendLocalMessage<ContentType>,

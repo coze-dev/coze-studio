@@ -282,7 +282,7 @@ interface LevelLineProps {
   collapsed?: boolean;
   onCollapse?: (collapsed: boolean) => void;
   couldCollapse?: boolean;
-  /** 展开内容是否可见，可见时渲染 expand-line */
+  /** Expand whether the content is visible, and render expand-line when visible */
   expandContentVisible?: boolean;
   readonly?: boolean;
   treeIndentWidth?: number;
@@ -302,7 +302,7 @@ export function LevelLine({
   readonly,
   treeIndentWidth = 15,
 }: LevelLineProps) {
-  // getLineShowResult 返回数据，暂时没涉及到 root 画线
+  // getLineShowResult returns data, no root drawing is involved for the time being
   const lineShowResult = getLineShowResult({ level, data });
   const showMap: Record<LineShowResult, React.ReactNode> = {
     [LineShowResult.HalfTopRoot]: (
@@ -353,7 +353,7 @@ export function LevelLine({
         onCollapse={onCollapse}
       />
     ),
-    // 在 output tree 中，暂时没涉及到 root 画线
+    // In the output tree, there is no root drawing involved for the time being
     [LineShowResult.HalfTopChild]: (
       <HalfTopChild
         className={classNames(
@@ -429,7 +429,7 @@ export function LevelLine({
   };
 
   {
-    /* 默认20宽度，每增加一级多20长度 */
+    /* Default 20 width, 20 more length for each additional level */
   }
   return (
     <div
@@ -447,7 +447,7 @@ export function LevelLine({
       {expandContentVisible &&
       lineShowResult?.length &&
       data.children?.length &&
-      // collapsed 状态写反了，这里实际表示的是折叠状态不渲染此 div
+      // The collapsed state is written upside down. What is actually represented here is that the collapsed state does not render this div.
       collapsed ? (
         <div
           className={styles['expand-line']}

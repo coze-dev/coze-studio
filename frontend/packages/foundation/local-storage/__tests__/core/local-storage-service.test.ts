@@ -22,9 +22,9 @@ const LOCAL_STORAGE_KEY = '__coz_biz_cache__';
 
 describe('LocalStorageService', () => {
   beforeEach(() => {
-    // 清除 localStorage
+    // Clear localStorage
     localStorage.clear();
-    // 重置 userId
+    // Reset userId
     localStorageService.setUserId(undefined);
   });
 
@@ -49,7 +49,7 @@ describe('LocalStorageService', () => {
 
       localStorageService.setValue(permanentKey, value);
 
-      // 等待 throttle
+      // Waiting for throttle
       await new Promise(resolve => setTimeout(resolve, 400));
 
       const storedData = JSON.parse(
@@ -87,15 +87,15 @@ describe('LocalStorageService', () => {
       const value2 = 'user2-value';
       const userId2 = 'test-user-id-2';
 
-      // 第一个用户的数据
+      // The first user's data
       localStorageService.setValue(userBindKey, value1);
 
-      // 切换到第二个用户
+      // Switch to the second user
       localStorageService.setUserId(userId2);
       localStorageService.setValue(userBindKey, value2);
       expect(localStorageService.getValue(userBindKey)).toBe(value2);
 
-      // 切回第一个用户
+      // Switch back to the first user
       localStorageService.setUserId(userId);
       expect(localStorageService.getValue(userBindKey)).toBe(value1);
     });
@@ -111,7 +111,7 @@ describe('LocalStorageService', () => {
       localStorageService.on('change', changeHandler);
       localStorageService.setValue(permanentKey, value);
 
-      // 等待事件触发
+      // Wait for the event to fire
       await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(changeHandler).toHaveBeenCalled();
@@ -147,15 +147,15 @@ describe('LocalStorageService', () => {
       const userId = 'test-user-id';
       const value = 'test-value';
 
-      // 先设置值
+      // Set the value first
       localStorageService.setUserId(userId);
       localStorageService.setValue('coachmark', value);
       localStorageService.setUserId(undefined);
 
-      // 异步获取值
+      // Get value asynchronously
       const valuePromise = localStorageService.getValueSync('coachmark');
 
-      // 设置 userId
+      // Set userId
       setTimeout(() => {
         localStorageService.setUserId(userId);
       }, 0);

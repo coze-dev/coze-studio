@@ -62,11 +62,11 @@ type CSpanCommonProp = Pick<
   Span,
   'trace_id' | 'id' | 'parent_id' | 'name' | 'type' | 'status'
 > & {
-  start_time: number; // 默认为Int64，用起来不方便
-  latency: number; // 默认为Int64，用起来不方便
-  category?: SpanCategory; // 加载Meta失败时才为空
-  input_tokens_sum?: number; // 扩展字段，用于存储子节点的input_tokens之和
-  output_tokens_sum?: number; // 扩展字段，用于存储子节点的output_tokens之和
+  start_time: number; // The default is Int64, which is inconvenient to use
+  latency: number; // The default is Int64, which is inconvenient to use
+  category?: SpanCategory; // Empty only when Meta fails to load
+  input_tokens_sum?: number; // Extended field to store the sum of sub-node input_tokens
+  output_tokens_sum?: number; // Extended field to store the sum of sub-node output_tokens
 };
 
 type GenCSpan<T> = CSpanCommonProp & {

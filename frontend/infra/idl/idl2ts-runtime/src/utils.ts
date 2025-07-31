@@ -27,22 +27,22 @@ export interface ServiceConfig {
   } & Omit<IdlConfig, 'clientFactory'>;
 }
 export interface IdlConfig {
-  // client 工厂方法，要求返回一个 fetchClient 函数，使用 meta 总的信息，可实现灵活的 client 配置
+  // The client factory method requires a fetchClient function to be returned, which uses the meta total information to achieve flexible client configuration
   clientFactory?: (
     meta: IMeta,
   ) => (uri: string, init: RequestInit, opt: any) => any;
-  // uri 前缀，如果 client 中设置了，这里可以不设置
+  // URI prefix, if set in client, you can leave it unset here
   uriPrefix?: string;
   getParams?: (key: string) => string;
-  // 服务级别的配置
+  // Service level configuration
   services?: ServiceConfig;
-  // 开发时，如果本地校验失败，这里可回调，通常是弹 toast
+  // During development, if the local verification fails, it can be called back here, usually by playing toast.
   onVerifyReqError?: (message: string, ctx: any) => void;
 }
 
 export interface IOptions {
   config?: IdlConfig;
-  // 透传 request options 的选项
+  // Passthrough request options
   requestOptions?: Record<string, any>;
   [key: string]: any;
 }
@@ -52,7 +52,7 @@ export interface PathPrams<T> {
 }
 
 export function getConfig(service: string, method: string): IdlConfig {
-  // 手动注册的配置优先级比全局变量高
+  // Manually registered configuration takes precedence over global variables
   let config: IdlConfig | undefined = configCenter.getConfig(service);
   if (!config) {
     config = {};
@@ -137,7 +137,7 @@ export function normalizeRequest(
   );
   const { uriPrefix = '', clientFactory } = config;
   if (!clientFactory) {
-    // todo 这里考虑给个默认的 client，防止某些公共 package 在一些异常情况下使用
+    // Todo here considers giving a default client to prevent some public packages from being used in some abnormal cases
     throw new Error('Lack of clientFactory config');
   }
   let uri = uriPrefix + apiUri;
@@ -149,11 +149,11 @@ export function normalizeRequest(
       : 'application/json';
   if (option?.requestOptions?.headers) {
     headers = { ...headers, ...option.requestOptions.headers };
-    // 合并了 header，可删除
+    // Merged headers, can be deleted
     delete option.requestOptions.headers;
   }
   if (meta.reqMapping.query && meta.reqMapping.query.length > 0) {
-    // 这里默认 skipNulls，网关后端需要忽略 null
+    // The default here is skipNulls, and the gateway backend needs to ignore null.
     uri = `${uri}?${qs.stringify(getValue(req, meta.reqMapping.query), {
       skipNulls: true,
       arrayFormat: 'comma',
@@ -168,7 +168,7 @@ export function normalizeRequest(
 
   if (meta.reqMapping.entire_body && meta.reqMapping.entire_body.length > 0) {
     if (meta.reqMapping.entire_body.length === 1) {
-      // 默认处理为 json ，如有其他场景需要支持，后需要再支持
+      // The default processing is json. If there are other scenarios that need to be supported, they need to be supported later.
       requestOption.body = req[meta.reqMapping.entire_body[0]];
     } else {
       throw new Error('idl invalid entire_body should be only one filed');
@@ -203,7 +203,7 @@ export function normalizeRequest(
     };
   }
 
-  // 旧版的 ferry 中，即使 idl 没有声明body，也需要加一个 空的 body
+  // In the old version of ferry, even if idl does not declare body, you need to add an empty body.
   if (
     !requestOption.body &&
     ['POST', 'PUT', 'PATCH'].includes(

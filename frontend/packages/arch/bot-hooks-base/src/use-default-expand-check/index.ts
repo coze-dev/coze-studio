@@ -28,11 +28,11 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 
 /**
- * 用于校验当前模块默认展开收起状态
- * @deprecated 改属性已经废弃不维护，请更换@coze-agent-ide/tool中的useToolContentBlockDefaultExpand
- * @param blockKey 主键
- * @param configured 是否有配置内容
- * @param when 是否校验
+ * Used to verify the default expanded and stowed state of the current module
+ * @Deprecated change attribute is deprecated and not maintained, please replace the useToolContentBlockDefaultExpand in @code-agent-ide/tool
+ * @param blockKey primary key
+ * @param configured whether there is configuration content
+ * Check when @param
  *
  */
 const useDefaultExPandCheck = (
@@ -52,18 +52,18 @@ const useDefaultExPandCheck = (
     })),
   );
   return useMemo(() => {
-    // 不做校验
+    // No verification
     if (!$when) {
       return undefined;
-      // 状态机未就绪
+      // Finite-state machine not ready
     } else if (!init || size(botSkillBlockCollapsibleState) === 0) {
       return undefined;
       /**
-       * @description 仅在满足以下条件时用户行为记录才能生效
+       * @Description A user behavior record is only valid if the following conditions are met
        *
-       * 1. 用户有编辑权限
-       * 2. 不能是历史预览环境
-       * 3. 必须已配置
+       * 1. Users have editing rights
+       * 2. Cannot be a historical preview environment
+       * 3. Must be configured
        */
     } else if (editable && !isReadonly && configured) {
       const transformerBlockKey = skillKeyToApiStatusKeyTransformer(blockKey);

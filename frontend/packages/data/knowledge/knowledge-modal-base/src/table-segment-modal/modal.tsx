@@ -59,10 +59,10 @@ export const getSrcFromImg = (str: string): string[] => {
     return [];
   }
   const imgRegx = /<img[^>]+src\s*=\s*['"]([^'"]+)['"][^>]*>/g;
-  // 使用正则表达式进行匹配
+  // Matching using regular expressions
   const matches = str.match(imgRegx);
 
-  // 提取匹配结果中的src属性值
+  // Extract the value of the src attribute from the matching result
   const srcList: string[] = [];
   if (matches) {
     for (const match of matches) {

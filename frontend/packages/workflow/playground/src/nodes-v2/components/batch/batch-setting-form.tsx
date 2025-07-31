@@ -55,7 +55,7 @@ export const BatchSettingForm = ({
   const formRef = useRef<BotSemiForm>(null);
   const isSemiFormDestroyed = useRef(false);
   const debouncedChange = debounce((v: BatchSettingOnChangeValue) => {
-    // semi form 在销毁时会额外触发onChange从而污染数据，这里避免这样的情况发生
+    // The semi form will trigger an additional onChange when it is destroyed, thereby polluting the data. This situation is avoided here
     if (isSemiFormDestroyed.current) {
       return;
     }
@@ -78,7 +78,7 @@ export const BatchSettingForm = ({
   );
 
   return (
-    // 防止触发节点选中
+    // Prevent trigger node selection
     <div
       className={s['workflow-batch-setting-panel']}
       onClick={e => e.stopPropagation()}

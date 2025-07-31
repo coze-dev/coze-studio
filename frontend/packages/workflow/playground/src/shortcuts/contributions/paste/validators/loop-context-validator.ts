@@ -30,7 +30,7 @@ export class LoopContextValidator extends BaseNodeValidator {
       return null;
     }
 
-    // Break / SetVariable / Continue 只允许在 Loop SubCanvas 内
+    // Break/SetVariable/Continue Only allowed in Loop SubCanvas
     if (
       [
         StandardNodeType.Break,

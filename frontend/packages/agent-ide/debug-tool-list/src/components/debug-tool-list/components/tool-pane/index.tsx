@@ -33,34 +33,34 @@ import {
   type DebugDropdownButtonProps,
 } from '../debug-dropdown-button';
 import { ToolPaneContext } from '../../debug-tool-list-context';
-// 按钮点击交互枚举
+// button click interaction enumeration
 export enum OperateTypeEnum {
-  MODAL = 'modal', // 弹窗
-  DROPDOWN = 'dropdown', // 下拉选择
-  CUSTOM = 'custom', // 自定义交互
+  MODAL = 'modal', // pop-up window
+  DROPDOWN = 'dropdown', // drop down selection
+  CUSTOM = 'custom', // custom interaction
 }
-// 弹窗类型枚举
+// pop-up type enumeration
 export enum ModalTypeEnum {
-  Drag = 'drag', // 悬浮可拖拽弹窗
-  CENTER = 'center', // 居中弹窗
+  Drag = 'drag', // Floating and draggable pop-up window
+  CENTER = 'center', // centred pop-up
 }
 
 interface ToolPaneProps {
   className?: string;
   style?: CSSProperties;
-  visible?: boolean; // 是否展示入口
-  itemKey: string; // 唯一标识
+  visible?: boolean; // Whether to display the entrance
+  itemKey: string; // unique identifier
   icon: ReactNode;
   title: string;
   operateType: OperateTypeEnum;
-  customShowOperateArea?: boolean; // 仅operateType=custom时生效，自定义当前展示操作区域状态
-  beforeVisible?: () => Promise<void>; // 交互窗口打开前回调
+  customShowOperateArea?: boolean; // Effective only when operateType = custom, customize the current display operation area state
+  beforeVisible?: () => Promise<void>; // Callback before the interactive window opens
 
-  // 仅operateType=modal时生效，modalContent通过children传递
+  // Effective only when operateType = modal, modalContent is passed through children
   modalType?: ModalTypeEnum;
   modalProps?: UIModalProps;
 
-  // 仅operateType=dropdown时生效，children无效，通过dropdownProps.menu
+  // Effective only when operateType=dropdown, invalid for children, by dropdownProps.menu
   dropdownProps?: Pick<
     DropdownProps,
     'clickToHide' | 'showTick' | 'render' | 'zIndex'
@@ -105,7 +105,7 @@ export const ToolPane: FC<PropsWithChildren<ToolPaneProps>> = ({
   } = toolPaneContext;
   const focus = focusItemKey === itemKey;
 
-  // 是否显示操作区域
+  // Whether to display the operation area
   const [showOperateArea, setShowOperateArea] = useState(false);
 
   useUpdateEffect(() => {
@@ -159,11 +159,11 @@ export const ToolPane: FC<PropsWithChildren<ToolPaneProps>> = ({
 
   return (
     <>
-      {/* 弹窗交互区域 */}
+      {/* Pop-up interactive area */}
       {operateType === OperateTypeEnum.MODAL && (
         <>
           {setToolButton()}
-          {/* 居中弹窗 */}
+          {/* centred pop-up */}
           {modalType === ModalTypeEnum.CENTER && (
             <UIModal
               {...modalProps}
@@ -176,7 +176,7 @@ export const ToolPane: FC<PropsWithChildren<ToolPaneProps>> = ({
               {children}
             </UIModal>
           )}
-          {/* 悬浮、可拖拽 */}
+          {/* Floating, draggable */}
           {modalType === ModalTypeEnum.Drag && (
             <UIDragModal
               {...modalProps}
@@ -193,10 +193,10 @@ export const ToolPane: FC<PropsWithChildren<ToolPaneProps>> = ({
         </>
       )}
 
-      {/* 下拉交互区域 */}
+      {/* drop-down interaction area */}
       {operateType === OperateTypeEnum.DROPDOWN && setToolButton()}
 
-      {/* 自定义交互区域 */}
+      {/* Custom interaction area */}
       {operateType === OperateTypeEnum.CUSTOM && setToolButton()}
     </>
   );

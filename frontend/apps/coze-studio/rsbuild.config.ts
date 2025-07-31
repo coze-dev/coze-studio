@@ -83,7 +83,7 @@ const mergedConfig = defineConfig({
   source: {
     define: {
       'process.env.IS_REACT18': JSON.stringify(true),
-      // arcosite editor sdk 内部使用
+      // Arcosite editor sdk internal use
       'process.env.ARCOSITE_SDK_REGION': JSON.stringify(
         GLOBAL_ENVS.IS_OVERSEA ? 'VA' : 'CN',
       ),
@@ -99,7 +99,7 @@ const mergedConfig = defineConfig({
     include: [
       path.resolve(__dirname, '../../packages'),
       path.resolve(__dirname, '../../infra/flags-devtool'),
-      // 以下几个包包含未降级的 ES 2022 语法（private methods）需要参与打包
+      // The following packages contain undegraded ES 2022 syntax (private methods) that need to be packaged
       /\/node_modules\/(marked|@dagrejs|@tanstack)\//,
     ],
     alias: {

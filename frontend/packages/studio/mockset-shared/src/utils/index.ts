@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { JSONSchema7, JSONSchema7TypeName } from 'json-schema';
 import {
   TrafficScene,
@@ -56,9 +56,9 @@ export const calcStringSize = (str: string) => {
   const { size } = new Blob([str]);
   return size;
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- plugin resp 的类型由用户定义，包含任何可能
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- The type of the plugin resp is user-defined and contains any possible
 type PluginRespType = any;
-// 转换 DataWithStatus 格式到 Object 格式
+// Convert DataWithStatus format to Object format
 export function transDataWithStatus2Object(
   data: MockDataWithStatus,
   excludeRemovedItem?: boolean,
@@ -128,7 +128,7 @@ export function getMockValue(
   }
 }
 
-// 由 schema 生成 DataWithStatus 时不同类型的生成逻辑
+// Different types of generation logic when generating DataWithStatus from schema
 function getInitialValue(
   type: MockDataValueType,
 ): [string | number | boolean | undefined, string | undefined] {
@@ -144,7 +144,7 @@ function getSchemaType(type?: JSONSchema7TypeName | JSONSchema7TypeName[]) {
   return val === 'null' ? undefined : (val as MockDataValueType);
 }
 
-// 转换 schema 格式到 DataWithStatus 格式（包含初始化逻辑）
+// Convert schema format to DataWithStatus format (including initialization logic)
 // eslint-disable-next-line complexity
 export function transSchema2DataWithStatus(
   label: string,
@@ -223,7 +223,7 @@ export function transSchema2DataWithStatus(
   return item;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 内容结构依赖用户定义的 plugin resp 结构，包含任何可能
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- The content structure depends on the user-defined plugin resp structure, including any possible
 export function stringifyEditorContent(value: any) {
   return JSON.stringify(value, null, FORMAT_SPACE_SETTING);
 }

@@ -42,12 +42,12 @@ export const useBotInfo = (botId?: string) => {
   return { isLoading, botInfo };
 };
 
-// 为wf使用bot信息做数据转换
+// Data conversion using bot information for wf
 export const transformBotInfo = {
-  // 模型数据
+  // model data
   model: (data?: GetDraftBotInfoAgwData): ModelInfo =>
     data?.bot_info?.model_info ?? {},
-  // 基本信息数据
+  // Basic information data
   basicInfo: (
     botInfo?: GetDraftBotInfoAgwData,
   ): IBotSelectOption | undefined => {
@@ -60,10 +60,10 @@ export const transformBotInfo = {
       value: botInfo?.bot_info?.bot_id ?? '',
     };
   },
-  // 数据库信息
+  // database information
   database: (botInfo?: GetDraftBotInfoAgwData): BotTable[] | undefined =>
     botInfo?.bot_info?.database_list,
-  // 变量信息
+  // Variable information
   variable: (botInfo?: GetDraftBotInfoAgwData) =>
     botInfo?.bot_info?.variable_list,
 };

@@ -26,12 +26,12 @@ export interface ActionsRenderProps {
   index: number;
   editProps?: {
     disabled: boolean;
-    // 编辑回调
+    // edit callback
     onEdit?: (record: TableViewRecord, index: number) => void;
   };
   deleteProps?: {
     disabled: boolean;
-    // 删除回调
+    // Delete callback
     onDelete?: (index: number) => void;
   };
   className?: string;

@@ -27,7 +27,7 @@ import { compareObjects } from '@/utils';
 import { initialParam, type QueryParams } from '../consts';
 
 /**
- * 从url query中获取搜索参数 优先级最高，高于LS缓存
+ * Get search parameters from url query, highest priority, higher than LS cache
  * @returns {} | undefined
  */
 const getSearchParamsFromUrl = () => {
@@ -47,7 +47,7 @@ const getSearchParamsFromUrl = () => {
   return searchParams;
 };
 
-// 异步初始化获取筛选参数, 分别从LS缓存获取和url query获取
+// Asynchronous initialization to obtain filter parameters, obtained from LS cache and url query respectively
 const getDefaultFilterParams = async () => {
   const searchParamsFromUrl = getSearchParamsFromUrl();
   const localFilterParams = await localStorageService.getValueSync(
@@ -60,7 +60,7 @@ const getDefaultFilterParams = async () => {
     defaultFilterParams = { ...defaultFilterParams, ...safeParams };
   }
 
-  // 图像流和工作流合并会删除资源中的图像流选项 这里转换成全部
+  // Merging image flow and workflow removes the image flow option in the resource, here converted to all
   if (defaultFilterParams?.res_type_filter?.[0] === 3) {
     defaultFilterParams.res_type_filter[0] = -1;
   }
@@ -80,21 +80,21 @@ export const useCachedQueryParams = ({ spaceId }: { spaceId: string }) => {
     'name',
   ]);
 
-  /** 每次切换空间的时候，重新初始化筛选条件，并清空搜索框，重新请求资源列表 */
+  /** Each time you switch spaces, reinitialize the filter criteria, clear the search box, and rerequest the resource list */
   useEffect(() => {
     setReady(false);
     getDefaultFilterParams().then(filters => {
       setParams(p => ({
         ...p,
         ...filters,
-        cursor: '', // 筛选、刷新时重置为空
+        cursor: '', // Filter, reset to empty when refreshing
       }));
       setReady(true);
     });
   }, [spaceId]);
 
   useUpdateEffect(() => {
-    /** 当筛选条件变化时，取合适的 key 存入本地 */
+    /** When the filter conditions change, take the appropriate key and store it locally */
     const tempParams = {
       res_type_filter: params.res_type_filter,
       user_filter: params.user_filter,

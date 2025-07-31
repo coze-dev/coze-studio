@@ -60,28 +60,28 @@ export const getDefaultPageRuntimeStore = (): PageRuntime => ({
   hasUnpublishChange: false,
 });
 
-// bot的编辑器状态控制
+// Editor state control for bot
 export interface PageRuntime {
-  /** 初始化 **/
+  /** Initialization **/
   init: boolean;
-  /** 当前用户是否是bot的创建者 **/
+  /** Is the current user the creator of the bot?*/
   isSelf: boolean;
-  /** 是否是预览状态isPreview = typeof version !== 'undefined'; **/
+  /** Is it preview status isPreview = typeof version! == 'undefined'; **/
   isPreview: boolean;
-  /** 服务端透传 **/
+  /** Server level passthrough **/
   editable: boolean;
-  /**控制bot 历史版本展示 **/
+  /**Control bot history version display **/
   historyVisible?: boolean;
 
-  /**  记录用户主动展开/收起bot能力模块的状态 **/
+  /**  Record the status of the user actively expanding/retracting the bot capability module **/
   botSkillBlockCollapsibleState: TabDisplayItems;
-  /** 页面来源 **/
+  /** Page Source **/
   pageFrom?: BotPageFromEnum;
-  /** 保存信息 **/
+  /** Save information **/
   savingInfo: SavingInfo;
-  /** 划词插件id, 一个chat-area一个 **/
+  /** Dashword plugin id, one chat-area one **/
   grabPluginId: string;
-  /** 是否有未发布的修改, header头部展示**/
+  /** Are there any unpublished changes, header display **/
   hasUnpublishChange: boolean;
 }
 
@@ -108,8 +108,8 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
         set(produce<PageRuntime>(state => update(state))),
 
       /**
-       * 获取用户主动展开/收起bot能力模块的状态
-       * ⚠️ 仅在首次打开本人 bot 编辑页时调用
+       * Get the status of the user's active expand/collapse bot capability module
+       * ⚠️ Called only when opening my bot edit page for the first time
        * @see 
        */
       getBotSkillBlockCollapsibleState: async () => {
@@ -136,8 +136,8 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
         }
       },
       /**
-       * 存储用户主动展开/收起bot能力模块的状态
-       * ⚠️ 仅限主动操作时记录
+       * Stores the status of the user's active expand/retract bot capability module
+       * ⚠️ Only record when active
        * @see 
        */
       setBotSkillBlockCollapsibleState: (
@@ -145,7 +145,7 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
         disableUpdateService?: boolean,
       ) => {
         if (size($params) > 0) {
-          // 记录到本地状态机
+          // Record to local finite-state machine
           set({
             ...get(),
             botSkillBlockCollapsibleState: {
@@ -158,7 +158,7 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
             return;
           }
 
-          // 同步到服务端
+          // Synchronize to server level
           DeveloperApi.UpdateDraftBotDisplayInfo({
             bot_id: useBotInfoStore.getState().botId,
             display_info: { tab_display_info: $params },

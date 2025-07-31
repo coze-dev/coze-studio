@@ -53,11 +53,11 @@ export const InputValue: FC<Props> = ({
   testName = '',
 }) => {
   const finalDisabledTypes = useMemo(() => {
-    // object ref 限制类型选择
+    // Object refs restrict type selection
     if (data.input && ValueExpression.isObjectRef(data.input)) {
       return ViewVariableType.getComplement([ViewVariableType.Object]);
     }
-    // 超过三级不允许选Object ArrayObject
+    // More than three levels are not allowed to select Object ArrayObject
     const levelLimitTypes =
       level >= MAX_TREE_LEVEL
         ? [ViewVariableType.Object, ViewVariableType.ArrayObject]
@@ -78,7 +78,7 @@ export const InputValue: FC<Props> = ({
           testId={getNodeSetterId(`${testName}/input`)}
           value={data?.input}
           onBlur={() => {
-            // validator 时序有问题，加 setTimeout 避免错误信息闪一下
+            // There is a problem with the timing of the validator, add setTimeout to avoid the error message flashing.
             setTimeout(() => {
               options.onBlur();
             }, 33);

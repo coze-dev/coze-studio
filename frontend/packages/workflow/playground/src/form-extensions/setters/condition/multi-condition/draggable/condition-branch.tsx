@@ -85,35 +85,35 @@ export const DraggableConditionBranch: FC<
         const dragIndex = item.index;
         const hoverIndex = index;
 
-        // 如果拖拽项和悬停项是同一个，不做任何操作
+        // If the drag and hover items are the same, do nothing
         if (dragIndex === hoverIndex) {
           return;
         }
 
-        // 获取悬停项的边界矩形
+        // Get the bounding rectangle of the hover item
         const hoverBoundingRect = ref.current?.getBoundingClientRect();
-        // 计算悬停项的垂直中点
+        // Calculate the vertical midpoint of the hover term
         const hoverMiddleY =
           (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-        // 获取当前鼠标指针的位置
+        // Get the current mouse pointer position
         const clientOffset = monitor.getClientOffset();
         if (!clientOffset) {
           return;
         }
-        // 计算指针距离悬停项顶部的距离
+        // Calculate the distance of the pointer from the top of the hovering item
         const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
-        // 向下拖动的情况
+        // Drag down
         if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
           return;
         }
-        // 向上拖动的情况
+        // Drag up
         if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
           return;
         }
-        // 执行移动操作
+        // Perform a move operation
         onMoveBranch(dragIndex, hoverIndex);
-        // 更新拖拽项的索引
+        // Update the index of the drag item
         item.index = hoverIndex;
       },
     }),

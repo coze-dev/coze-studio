@@ -26,7 +26,7 @@ type ImageModelSelectProps = Omit<
 >;
 
 /**
- * 图像模型选择器
+ * Image model selector
  */
 export const ImageModelSelectField = withField<ImageModelSelectProps>(props => {
   const { value, readonly, onChange, errors } = useField<number>();

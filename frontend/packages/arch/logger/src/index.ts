@@ -16,7 +16,7 @@
  
 export { reporter, Reporter } from './reporter';
 
-// reporter 需要上报到 slardar 的方法导出
+// Reporter needs to report to slardar method export
 export type {
   LoggerCommonProperties,
   CustomEvent,
@@ -24,10 +24,10 @@ export type {
   CustomLog,
   ErrorEvent,
 } from './reporter';
-// console 控制台打印
+// Console printing
 export { logger, LoggerContext, Logger } from './logger';
 
-// ErrorBoundary 相关方法
+// ErrorBoundary related methods
 export {
   ErrorBoundary,
   useErrorBoundary,

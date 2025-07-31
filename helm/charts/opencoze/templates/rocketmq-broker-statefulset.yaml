@@ -1,4 +1,4 @@
-{{- if .Values.rocketmq.enabled }}
+{{- if and (eq (lower (default "rmq" .Values.cozeServer.env.COZE_MQ_TYPE)) "rmq") .Values.rocketmq.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -22,7 +22,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-namesrv
-          image: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
+          image: busybox:latest
           command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-rocketmq-namesrv 9876; do echo waiting for namesrv; sleep 2; done']
       volumes:
         - name: broker-config
@@ -111,7 +111,9 @@ spec:
         name: broker-store
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.rocketmq.broker.persistence.store.storageClassName }}
         storageClassName: {{ .Values.rocketmq.broker.persistence.store.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.rocketmq.broker.persistence.store.size | quote }}
@@ -119,7 +121,9 @@ spec:
         name: broker-logs
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.rocketmq.broker.persistence.logs.storageClassName }}
         storageClassName: {{ .Values.rocketmq.broker.persistence.logs.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.rocketmq.broker.persistence.logs.size | quote }}

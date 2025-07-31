@@ -33,13 +33,13 @@ import { WorkflowGlobalStateEntity } from '@/entities';
 interface NodeWithVersion {
   node: FlowNodeEntity;
   /**
-   * 注意 version 可能是不存在的！！！
-   * 1. 老数据
-   * 2. 项目中的资源被移动到资源库
+   * Note that the version may not exist!!!
+   * 1. Old data
+   * 2. Resources in the project are moved to the repository
    */
   /**
-   * 1. versionName: 形如 v0.0.1，是 wf 的版本索引，也是外显版本号
-   * 2. versionTs: 字符串形式的时间戳，是 plugin 的版本索引，wf 无此概念
+   * 1. versionName: In the form of v0.0.1, it is the version index of wf and the explicit version number
+   * 2. versionTs: timestamp in the form of string, which is the version index of the plugin, wf has no such concept
    */
   version?: string;
 }
@@ -137,7 +137,7 @@ export const getMyApiNodeName = (node: FlowNodeEntity) =>
   getMyApiNodeParam(node, 'apiName');
 
 /**
- * 设置子流程节点的版本号
+ * Set the version number of the subprocess node
  */
 export const setSubWorkflowNodeVersion = (
   node: FlowNodeEntity,
@@ -227,11 +227,11 @@ const setLLMApiFCVersion = (
 };
 
 /**
- * 获取插件节点的版本信息
+ * Get the version information of the plug-in node
  */
 export const getApiNodeVersion = (node: FlowNodeEntity) => {
   const nodeDataEntity = node.getData<WorkflowNodeData>(WorkflowNodeData);
-  // 这里用了子流程的 type，实际上 api 也是相同
+  // The type of subprocess is used here, and the api is actually the same.
   const nodeData = nodeDataEntity.getNodeData<StandardNodeType.Api>();
   return {
     latestVersionTs: nodeData.latestVersionTs,
@@ -241,7 +241,7 @@ export const getApiNodeVersion = (node: FlowNodeEntity) => {
 };
 
 /**
- * 获取子流程节点信息
+ * Get subprocess node information
  */
 export const getSubWorkflowNode = (node: FlowNodeEntity) => {
   const nodeDataEntity = node.getData<WorkflowNodeData>(WorkflowNodeData);
@@ -257,7 +257,7 @@ export const recreateNodeForm = async (
 
   const nodeRegistry = node.getNodeRegistry();
 
-  // 修改版本后，需要重新请求相应数据，因为相关数据的 key 都是带版本的，会取不到
+  // After modifying the version, you need to rerequest the corresponding data, because the keys of the relevant data are all with versions and will not be retrieved.
   await nodeRegistry?.onInit?.({ data: formData.toJSON() }, context);
 
   await formData.recreateForm(
@@ -301,13 +301,13 @@ export class NodeVersionService {
   @inject(WorkflowPlaygroundContext) context: WorkflowPlaygroundContext;
 
   /**
-   * 遍历流程，获取流程中所有指定 workflowId 的子流程和对应的版本
+   * Traverse the process and get all the subprocesses and corresponding versions of the specified workflowId in the process
    */
   getSubWorkflowNodesWithVersion(workflowId: string) {
     const allNodes = this.document.getAllNodes();
     const nodesWithVersion: SubWorkflowNodeWithVersion[] = [];
     allNodes.forEach(node => {
-      // 存在对应的子流程节点
+      // There is a corresponding subprocess node
       if (
         isSubWorkflowNode(node) &&
         getMySubWorkflowNodeId(node) === workflowId
@@ -319,7 +319,7 @@ export class NodeVersionService {
         });
         return;
       }
-      // llm 节点需要下钻到技能中查看是否有引用对应的子流程
+      // The llm node needs to drill down into the skill to see if there is a reference to the corresponding sub-process.
       if (isLLMNode(node)) {
         const wf = getLLMWorkflowFCById(node, workflowId);
         if (wf) {
@@ -335,7 +335,7 @@ export class NodeVersionService {
   }
 
   /**
-   * 遍历流程，获取流程中所有指定 pluginId 的节点和对应的版本
+   * Traverse the process and get all the nodes and corresponding versions of the specified pluginId in the process
    */
   getPluginNodesWithVersion(pluginId: string) {
     const allNodes = this.document.getAllNodes();
@@ -425,15 +425,15 @@ export class NodeVersionService {
 
   nodesCheck<T extends NodeWithVersion>(nodes: T[], targetVersion: string) {
     /**
-     * 需要更新版本的节点有两种：
-     * 1. 无版本号的节点
-     * 2. 有版本号，但版本不一致的
+     * There are two types of nodes that require an updated version:
+     * 1. Node without version number
+     * 2. There is a version number, but the versions are inconsistent
      */
     const needUpdateNodes = nodes.filter(
       ({ version }) => version !== targetVersion,
     );
     /**
-     * 有版本号的节点更新版本属于有损的强制更新，需要统计出来提示用户。无版本号的节点是无损更新
+     * The updated version of a node with a version number is a lossy forced update, and it needs to be counted to prompt the user. Nodes without a version number are lossless updates.
      */
     const needForceNodes = needUpdateNodes.filter(({ version }) => !!version);
     const needUpdate = !!needUpdateNodes.length;
@@ -447,13 +447,13 @@ export class NodeVersionService {
   }
 
   async addSubWorkflowCheck(workflowId?: string, targetVersion?: string) {
-    // 要添加的流程没有版本号，则跳过版本统一步骤
+    // If the process to be added does not have a version number, skip the version unification step
     if (!targetVersion || !workflowId) {
       return true;
     }
     const sameNodesWithVersion =
       this.getSubWorkflowNodesWithVersion(workflowId);
-    // 无同一个流程的节点
+    // Nodes without the same process
     if (!sameNodesWithVersion.length) {
       return true;
     }
@@ -474,8 +474,8 @@ export class NodeVersionService {
 
   async addApiCheck(pluginId?: string, targetVersionTs?: string) {
     /**
-     * 1. 版本号不存在，表示引用最新版本，直接跳过验证
-     * 2. '0' 也视为最新版本，语意上等同于为空，也直接跳过验证
+     * 1. The version number does not exist, which means that the latest version is referenced, and the verification is skipped directly.
+     * 2. '0' is also regarded as the latest version, which is semantically equivalent to null and skips verification directly
      */
     if (!pluginId || !targetVersionTs || targetVersionTs === '0') {
       return true;

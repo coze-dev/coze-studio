@@ -46,8 +46,8 @@ const loggerWithScope = logger.createLoggerWith({
 });
 
 const PlayGroundErrorBoundary = (props: PropsWithChildren) => {
-  // 运维平台下使用自己的 ErrorBoundary 展示错误，可以展示更详细的错误
-  // 同时避免运维平台下的白屏错误统计进去
+  // Use your own ErrorBoundary to display errors under the operation and maintenance platform, which can display more detailed errors.
+  // At the same time, avoid white screen errors under the operation and maintenance platform.
   if (IS_BOT_OP) {
     return <>{props.children}</>;
   }

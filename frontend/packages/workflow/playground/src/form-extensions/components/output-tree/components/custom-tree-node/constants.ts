@@ -34,5 +34,5 @@ export enum DescriptionLine {
   Multi = 'multiline',
 }
 
-// 名称最长20字符
+// Name up to 20 characters
 export const MAX_NAME_LENGTH = 20;

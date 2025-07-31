@@ -57,7 +57,7 @@ interface DuplicateBotProps {
   buttonSize?: Size;
   enableCozeDesign?: boolean;
   /**
-   * cozeDesign 的情况下才生效
+   * CozeDesign only takes effect in the case of
    */
   isBlock?: boolean;
   eventCallbacks?: Partial<{
@@ -143,17 +143,17 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
           });
         }
 
-        //复制完成，关闭空间弹窗
+        //Copy complete, close the space pop-up window
         setShowSpaceModal(false);
       } else if (pageFromFromStore === BotPageFromEnum.Explore) {
-        //explore时可以复制到某个空间下
+        //When exploring, it can be copied to a certain space
         resp = await DeveloperApi.DuplicateBotToSpace({
           draft_bot_id: botIdFromStore,
           target_space_id: targetSpaceId || '',
           name,
         });
 
-        //复制完成，关闭空间弹窗
+        //Copy complete, close the space pop-up window
         setShowSpaceModal(false);
       } else {
         resp = await SpaceApi.DuplicateDraftBot({
@@ -260,14 +260,14 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
         from: 'explore_card',
         source: 'explore_bot_detailpage',
       });
-      //探索页面来源：team>1时选择copy 空间，否则copy到个人空间
+      //Explore the page Source: Select copy space when team > 1, otherwise copy to personal space
       if (list.length === 1) {
         openNewWindow(() => copyAndOpenBot(list?.[0].id));
       } else {
         setShowSpaceModal(true);
       }
     } else if (pageFrom === BotPageFromEnum.Template) {
-      //探索页面来源：team>1时选择copy 空间，否则copy到个人空间
+      //Explore the page Source: Select copy space when team > 1, otherwise copy to personal space
       if (list.length === 1) {
         openNewWindow(() => copyAndOpenBot(list?.[0].id));
       } else {
@@ -281,7 +281,7 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
         source: 'bots_detailpage',
         from: 'bots_card',
       });
-      // bot页面来源：若有操作权限直接copy到当前空间下
+      // Bot page source: If there is operation permission, directly copy it to the current space
       if (hide_operation) {
         Toast.warning('Bot in public space cannot duplicate');
         return;
@@ -316,7 +316,7 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
         </UIButton>
       )}
 
-      {/* 选择空间弹窗 */}
+      {/* Select space pop-up */}
       <SelectSpaceModal
         botName={botName ?? botNameFromStore}
         visible={showSpaceModal}

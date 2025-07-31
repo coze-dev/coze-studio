@@ -51,12 +51,12 @@ export function useVariableWithNodeInfo(
     let nodeTitle = variable.groupInfo.label;
     const iconUrl = variable.groupInfo.icon;
     if (!variable.globalVariableKey) {
-      // 这里获取到的节点名是最新的
+      // The node name obtained here is the latest
       const variableMeta = getNodeInfoInVariableMeta(nodeEntity);
       nodeTitle = variableMeta?.nodeTitle ?? '';
     }
 
-    // 流程变量特化逻辑，因为 block-output 不是一个合法的变量名
+    // Process variable specialization logic because block-output is not a valid variable name
     const source = variable.globalVariableKey
       ? variable.expressionPath.source
       : TRANS_WORKFLOW_VARIABLE_SOURCE +

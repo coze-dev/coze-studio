@@ -37,7 +37,7 @@ export enum ModalType {
 interface EmitterProps {
   type: ModalType;
   options?: any;
-  // 不传默认打开窗口
+  // Open the window by default without sending it.
   visible?: boolean;
   scene?: ResourceCopyScene;
   resourceName?: string;
@@ -46,10 +46,10 @@ interface EmitterProps {
 const POLLING_DELAY = 1000;
 
 /**
- * 弹窗轮询服务
- * startPolling 开始轮询
- * retry 重试
- * onCloseResourceModal 关闭轮询弹窗
+ * pop-up polling service
+ * getPolling Start polling
+ * Retry Retry
+ * onCloseResourceModal close the polling window
  */
 @injectable()
 export class ModalService {
@@ -71,14 +71,14 @@ export class ModalService {
   protected _stopPolling = false;
   private _taskId?: string;
 
-  // 开始轮询
+  // Start polling
   async startPolling(props: ResourceCopyDispatchRequest) {
     this._stopPolling = false;
 
     const resourceName = props.res_name;
 
     try {
-      // 1. 请求接口，获取 taskId
+      // 1. Request interface, get taskId
       this.onModalVisibleChangeEmitter.fire({
         type: ModalType.RESOURCE,
         scene: props.scene,
@@ -90,7 +90,7 @@ export class ModalService {
 
       if (failed_reasons?.length) {
         let errorInfo = '';
-        // workflow 特定文案
+        // Workflow specific copy
         if (
           failed_reasons.some(reason => reason.res_type === ResType.Workflow)
         ) {
@@ -109,7 +109,7 @@ export class ModalService {
         return;
       }
 
-      // 2. 轮询接口，根据 taskId 获取任务状态
+      // 2. Poll the interface to get the task status according to taskId
       if (task_id) {
         this.doPolling(task_id);
       } else {
@@ -123,12 +123,12 @@ export class ModalService {
   async retry() {
     this._stopPolling = false;
     if (this._taskId) {
-      // 1. retry 接口
+      // 1. retry interface
       await PluginDevelopApi.ResourceCopyRetry({
         task_id: this._taskId,
       });
       this.onErrorEmitter.fire(false);
-      // 2. 开始轮询
+      // Step 2 Start polling
       this.doPolling(this._taskId);
     }
   }
@@ -144,7 +144,7 @@ export class ModalService {
       await sleep(POLLING_DELAY);
 
       if (this._taskId && !this._stopPolling) {
-        // 更新弹窗内 info 信息
+        // Update the info information in the pop-up window
         this.onModalVisibleChangeEmitter.fire({
           type: ModalType.RESOURCE,
           scene: taskInfo?.scene,
@@ -170,7 +170,7 @@ export class ModalService {
   }
 
   /**
-   * 轮询请求接口，返回轮询状态
+   * Polling request interface, return polling status
    */
   private async polling(): Promise<ResourceCopyTaskDetail | undefined> {
     try {
@@ -190,14 +190,14 @@ export class ModalService {
 
   async onCloseResourceModal() {
     this._stopPolling = true;
-    // 关闭 modal
+    // Close modal
     this.onModalVisibleChangeEmitter.fire({
       type: ModalType.RESOURCE,
       visible: false,
     });
     this.onCancelEmitter.fire();
     if (this._taskId) {
-      // 停止轮询的请求
+      // Request to stop polling
       await PluginDevelopApi.ResourceCopyCancel({
         task_id: this._taskId,
       });

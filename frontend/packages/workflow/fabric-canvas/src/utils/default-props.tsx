@@ -22,7 +22,7 @@ import {
 } from '../typings';
 
 /**
- * 选中态边框及控制点样式
+ * Selected border and control point styles
  */
 export const selectedBorderProps = {
   borderColor: '#4D53E8',
@@ -60,7 +60,7 @@ export const defaultProps: Record<Mode, Partial<FabricObjectSchema>> = {
     width: 200,
     height: 200,
     padding: defaultFontSize / 2,
-    // 必须拆分（true），否则中文不会换行。splitByGrapheme:true 约等于 wordBreak: break-all
+    // It must be split (true), otherwise Chinese will not wrap lines. splitByGrapheme: true is approximately equal to wordBreak: break-all
     splitByGrapheme: true,
   },
   [Mode.RECT]: shapeProps,

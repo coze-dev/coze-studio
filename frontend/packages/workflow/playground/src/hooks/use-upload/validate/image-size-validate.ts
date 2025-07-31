@@ -28,7 +28,7 @@ export interface ImageSizeRule {
   aspectRatio?: number;
 }
 
-/** 图像宽高校验  */
+/** image width check  */
 // eslint-disable-next-line complexity
 export const imageSizeValidate = async (
   file: FileItem,
@@ -36,7 +36,7 @@ export const imageSizeValidate = async (
 ): Promise<string | undefined> => {
   const { maxWidth, minWidth, maxHeight, minHeight, aspectRatio } = rule || {};
 
-  // 未定义时不校验
+  // No validation when undefined
   if (isNil(maxWidth || minWidth || maxHeight || minHeight || aspectRatio)) {
     return;
   }

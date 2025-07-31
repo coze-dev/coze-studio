@@ -77,7 +77,7 @@ function Index<T extends object>(
   return (
     <div className={cls(s['height-whole-100'], containerClassName)}>
       {!dataList?.length ? (
-        /** 数据为空的时候，操作如何显示空页面 */
+        /** How to display an empty page when the data is empty */
         <Empty
           isError={isLoadingError}
           isLoading={isLoading}
@@ -95,7 +95,7 @@ function Index<T extends object>(
               className={
                 typeof itemClassName === 'string'
                   ? itemClassName
-                  : itemClassName?.(item) // 支持动态行className
+                  : itemClassName?.(item) // Support dynamic row className
               }
             >
               {renderItem?.(item, number)}

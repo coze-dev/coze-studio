@@ -43,7 +43,7 @@ const getOptionInfoFromDOM = (
     return;
   }
 
-  // 获取所有的选项元素
+  // Get all option elements
   const foundNodes = root.querySelectorAll(
     '.semi-tree-option-list .semi-tree-option',
   );
@@ -54,7 +54,7 @@ const getOptionInfoFromDOM = (
 
   const optionElements = [...foundNodes];
 
-  // 找到当前高亮的选项
+  // Find the currently highlighted option
   const selectedIndex = optionElements.findIndex(element =>
     element.classList.contains(SELECTED_OPTION_CLASSNAME),
   );

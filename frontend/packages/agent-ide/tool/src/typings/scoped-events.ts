@@ -17,23 +17,23 @@
 export type IEventCenterEventName = EventCenterEventName | string;
 
 /**
- * 事件中心内置的事件
+ * Event Center built-in events
  */
 export const enum EventCenterEventName {
   /**
-   * 插件初始化后的事件名
+   * The event name after the plugin is initialized
    */
   AbilityInitialed = 'abilityInitialed',
   /**
-   * 折叠展开ContentBlock的事件
+   * Collapse events that expand ContentBlock
    */
   ToggleContentBlock = 'toggleContentBlock',
   /**
-   * Agent Modal中tab切换的事件
+   * Events of tab switching in Agent Modal
    */
   AgentModalTabChange = 'agentModalTabChange',
   /**
-   * Agent Modal中显隐发生变化
+   * Stealth Changes in Agent Modal
    */
   AgentModalVisibleChange = 'agentModalVisibleChange',
 }

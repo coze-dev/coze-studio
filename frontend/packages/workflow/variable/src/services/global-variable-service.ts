@@ -88,7 +88,7 @@ export class GlobalVariableService {
   }
 
   /**
-   * 拉取最新的变量数据
+   * Pull the latest variable data
    */
   protected async fetchGlobalVariableMetas(
     connectorType: 'project' | 'bot',
@@ -121,7 +121,7 @@ export class GlobalVariableService {
   _latestFetchId = 0;
 
   /**
-   * 触发刷新事件
+   * trigger refresh event
    */
   async loadGlobalVariables(
     connectorType: 'project' | 'bot',
@@ -142,12 +142,12 @@ export class GlobalVariableService {
 
     const res = await this.fetchGlobalVariableMetas(connectorType, connectorId);
 
-    // 有新的请求，则直接丢弃结果
+    // If there is a new request, the result will be discarded directly.
     if (fetchId !== this._latestFetchId) {
       return;
     }
 
-    // 同步最新的变量数据到 AST
+    // Sync the latest variable data to AST
     allGlobalVariableKeys.forEach(_key => {
       if (!res[_key]?.length) {
         this.globalScope.ast.remove(_key);
@@ -207,7 +207,7 @@ export class GlobalVariableService {
     type: string,
     schema?: GlobalVariableTreeNode,
   ): ASTNodeJSON | undefined {
-    // 参考协议：
+    // Reference Agreement:
     switch (type) {
       case 'string':
         return ASTFactory.createString();
@@ -216,7 +216,7 @@ export class GlobalVariableService {
       case 'integer':
         return ASTFactory.createInteger();
       case 'float':
-      case 'number': // number 为历史数据，标准为 float
+      case 'number': // Number is historical data, standard is float
         return ASTFactory.createNumber();
 
       case 'object':

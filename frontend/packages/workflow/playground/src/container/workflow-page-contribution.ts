@@ -45,14 +45,14 @@ export class WorkflowPageContribution
   protected document: WorkflowDocument;
 
   /**
-   * 注册表单数据
+   * Regedit single data
    * @param document
    */
   // registerDocument(document: WorkflowDocument): void {
   //   document.registerNodeDatas(...createNodeEntityDatas());
   // }
   /**
-   * 加载数据
+   * load data
    */
   async loadDocument(doc: WorkflowDocument): Promise<void> {
     this.document = doc;
@@ -60,11 +60,11 @@ export class WorkflowPageContribution
   }
 
   /**
-   * 注册节点渲染组件
+   * Register node rendering component
    * @param registry
    */
   registerRenderer(renderer: FlowRendererRegistry): void {
-    // 注册节点渲染组件
+    // Register node rendering component
     renderer.registerReactComponent(FlowRendererKey.NODE_RENDER, NodeRender);
 
     renderer.registerReactComponent(
@@ -76,7 +76,7 @@ export class WorkflowPageContribution
 
     renderer.registerReactComponent(LINE_POPOVER, LinePopover as any);
 
-    // 注册节点上方 test run 相关渲染组件
+    // Register the node above the test run related rendering components
     renderer.registerReactComponent(
       WorkflowRenderKey.EXECUTE_STATUS_BAR,
       () => null,

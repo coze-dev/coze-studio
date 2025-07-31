@@ -29,7 +29,7 @@ export const DataViewerProvider: React.FC<
 > = ({ children, fields }) => {
   const store = useMemo(() => createDataViewerStore(), []);
 
-  // 根只有一项且其可以下钻时，默认展开它
+  // When the root has only one item and it can be drilled down, it is expanded by default
   useEffect(() => {
     if (
       store.getState().expand === null &&

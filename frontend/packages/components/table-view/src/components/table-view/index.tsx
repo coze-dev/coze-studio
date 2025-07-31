@@ -52,40 +52,40 @@ import { EditMenu, EditToolBar } from './edit-menu';
 import styles from './index.module.less';
 
 export interface TableViewProps {
-  // 唯一标识表,且会作为列宽缓存map中的key值
+  // Uniquely identifies the table and is used as the key value in the column width cache map
   tableKey?: string;
-  // 类名，用于样式覆盖
+  // Class name for style overrides
   className?: string;
-  // 编辑配置
+  // Edit Configuration
   editProps?: {
-    // 数据删除的回调，支持批量
+    // Callback for data deletion, batch support
     onDelete?: (indexs: (string | number)[]) => void;
-    // 行操作编辑行的回调
+    // Line operations edit line callbacks
     onEdit?: (record: TableViewRecord, index: string | number) => void;
   };
-  // 滚动到底部的回调
+  // Scroll to the bottom of the callback
   scrollToBottom?: () => void | Promise<void>;
-  // 拖拽钩子
+  // Drag hook
   onResize?: (col: TableViewColumns) => void;
-  // 是否开启虚拟滚动，默认为false
+  // Whether to enable virtual scrolling, the default is false
   isVirtualized?: boolean;
-  // 是否开启伸缩列，默认为false
+  // Whether to enable scaled columns, the default is false
   resizable?: boolean;
-  // 是否开启行选择，默认为false
+  // Whether to enable line selection, the default is false
   rowSelect?: boolean;
-  // 是否支持行操作，默认为false
+  // Whether line operations are supported, the default is false
   rowOperation?: boolean;
-  // 数据
+  // data
   dataSource: TableViewRecord[];
-  // 表头项
+  // header item
   columns: TableViewColumns[];
-  // 数据为空的兜底展示
+  // The data is empty.
   empty?: ReactNode;
   // loading
   loading?: boolean;
-  // 不消费，仅用于触发渲染的state，需优化
+  // No consumption, only used to trigger the rendered state, which needs to be optimized
   resizeTriState?: number;
-  // 额外 tableProps
+  // Additional tableProps
   tableProps?: TableProps;
 }
 export interface TableViewMethods {
@@ -204,7 +204,7 @@ export const TableView = forwardRef<TableViewMethods, TableViewProps>(
               if (e.button === MOUSE_RIGHT_BTN && rowOperation) {
                 e.preventDefault();
                 const { offsetWidth, offsetHeight } = document.body;
-                // 如果右键位置非选中项,取消选中
+                // If the right-click position is not selected, uncheck it
                 if (
                   rowIndex &&
                   selected?.length &&
@@ -212,7 +212,7 @@ export const TableView = forwardRef<TableViewMethods, TableViewProps>(
                 ) {
                   setSelected([]);
                 }
-                // 右键展示菜单
+                // right-click to display the menu
                 setFocusRow(rowIndex);
                 setMenuVisible(true);
                 setMenuStyle({
@@ -283,8 +283,8 @@ export const TableView = forwardRef<TableViewMethods, TableViewProps>(
         scrollDirection === 'forward' &&
         scrollOffset &&
         /**
-         * 这一行一点余量都没留 可能在不同浏览器渲染下会有 bad case 导致无法满足条件
-         * 如果有遇到类似反馈可以优先排查这里
+         * This line has no margin at all, and there may be bad cases in different browsers that cannot meet the conditions.
+         * If you encounter similar feedback, you can give priority to checking here.
          */
         scrollOffset + height - HEADER_SIZE >= tableData.length * ITEM_SIZE &&
         !scrollUpdateWasRequested &&
@@ -330,7 +330,7 @@ export const TableView = forwardRef<TableViewMethods, TableViewProps>(
                           onResize: col =>
                             onResize ? onResize(col) : resizeFn(col),
                           onResizeStop: col => {
-                            // resize完后缓存列宽
+                            // Cache column width after resizing
                             const resizedCols = newColumns.map(oCol => {
                               if (oCol.dataIndex === col.dataIndex) {
                                 return col;

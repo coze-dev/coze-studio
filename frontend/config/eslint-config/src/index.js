@@ -2,9 +2,9 @@ require('sucrase/register/ts');
 
 const { defineConfig } = require('./define-config');
 
-// node@16 没有 structuredClone 方法导致报错：
+// node@16 no structuredClone method causes an error:
 // ReferenceError: Error while loading rule '@typescript-eslint/naming-convention': structuredClone is not defined
-// 此处做个简单 polyfill
+// Make a simple polyfill here
 if (typeof structuredClone === 'undefined') {
   global.structuredClone = obj => JSON.parse(JSON.stringify(obj));
 }

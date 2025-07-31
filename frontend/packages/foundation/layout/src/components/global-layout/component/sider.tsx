@@ -53,7 +53,7 @@ export const GlobalLayoutSider: FC<Omit<LayoutProps, 'hasSider'>> = ({
   return (
     <div className="pl-8px py-8px h-full">
       <div className={siderStyle}>
-        {/* 主导航 */}
+        {/* main navigation */}
         <div
           className={classNames(
             mainMenuStyle,
@@ -83,7 +83,7 @@ export const GlobalLayoutSider: FC<Omit<LayoutProps, 'hasSider'>> = ({
             {footer}
           </Space>
         </div>
-        {/* 二级导航 */}
+        {/* secondary navigation */}
         <SubMenu />
       </div>
     </div>

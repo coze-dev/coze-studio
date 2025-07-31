@@ -48,7 +48,7 @@ export const DatasetSelect = ({
   const addButtonTestID = getNodeSetterId('dataset-select-add');
   const libraryCardTestID = getNodeSetterId('dataset-select-card');
 
-  // 初始化的时候会穿件来默认 value： [null]
+  // When initializing, it will be worn to the default value: [null]
   const value = useMemo(() => _value?.filter?.(d => !!d) || [], [_value]);
 
   const { dataSets, cacheDataSetInfo } = useDataSetInfos({ ids: value });
@@ -86,7 +86,7 @@ export const DatasetSelect = ({
   const button = useMemo(
     () => (
       <Button
-        // 增加详情页面添加knowledge详情页面，时禁用操作按钮去添加未启用的知识库
+        // Add details page Add knowledge details page, disable the action button to add an unenabled knowledge base
         disabled={
           readonly || curDataset?.status === DatasetStatus.DatasetForbid
         }
@@ -147,7 +147,7 @@ export const DatasetSelect = ({
       onChange(list.map(l => l.dataset_id) as string[]);
     },
     defaultType: knowledgeType,
-    // 传 undefined 则展示全量知识库
+    // Pass undefined to display the full knowledge base
     knowledgeTypeConfigList: isDatasetWrite
       ? [FilterKnowledgeType.TEXT]
       : undefined,
@@ -206,7 +206,7 @@ export const DatasetSelect = ({
   });
 
   useEffect(() => {
-    // 知识库写入节点只能选一个知识库然后关闭，限制多选
+    // The knowledge base writing node can only select one knowledge base and then close it, limiting multiple selection
     if (isDatasetWrite && value?.length) {
       close();
     }
@@ -214,7 +214,7 @@ export const DatasetSelect = ({
 
   return (
     <div className="relative">
-      {/* semi 默认是挂载到 body 上，但是 workflow 中重写挂载到了当前 node 上，此处需要手动改写到 body 上，否则 knowledge 弹窗会打不开 */}
+      {/* Semi is mounted on the body by default, but it is overridden and mounted on the current node in workflow. You need to manually overwrite it to the body here, otherwise the knowledge pop-up window will not open. */}
       <ConfigProvider getPopupContainer={() => document.body}>
         {knowledgePreviewModal}
         {isBindDouyin ? douyinModal : node}
@@ -233,7 +233,7 @@ export const DatasetSelect = ({
             name,
             description,
             iconUrl: icon_url,
-            // 无效知识库设为禁用
+            // Invalid Knowledge Base is disabled
             isInvalid: !create_time && !creator_id,
           }),
         )}

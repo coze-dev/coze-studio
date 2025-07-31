@@ -20,7 +20,7 @@ import {
   type ViewVariableTreeNode,
 } from '@coze-workflow/base';
 
-// 不同类型的 meta 生成 json 的默认值
+// Different types of meta generate default values for JSON
 const getDefaultValue = (type: ViewVariableType) => {
   let rs;
   switch (type) {
@@ -81,7 +81,7 @@ const getDefaultValue = (type: ViewVariableType) => {
 //   [ViewVariableType.ArrayImage]: [],
 // };
 
-// 根据 meta 生成默认 json
+// Generate default json according to meta
 export const metaToJSON = (meta: ViewVariableTreeNode, obj?: object) => {
   const { type, name, children } = meta;
   if (!obj) {
@@ -106,7 +106,7 @@ export const metaToJSON = (meta: ViewVariableTreeNode, obj?: object) => {
   return obj;
 };
 
-// 根据 metas 生成 json
+// Generate JSON from metas
 export const metasToJSON = (metas?: ViewVariableTreeNode[]): object =>
   metas ? Object.assign({}, ...metas.map(meta => metaToJSON(meta))) : {};
 
@@ -148,7 +148,7 @@ export const metasFlat = (
 //   };
 // };
 
-// 比较新旧 meta ，找出 removed、retyped、renamed、added
+// Compare old and new metas to find removed, retyped, renamed, added
 export const compareMetas = (
   newMetas: ViewVariableTreeNode[] | undefined = [],
   oldMetas: ViewVariableTreeNode[] | undefined = [],
@@ -183,7 +183,7 @@ export const compareMetas = (
   oldMetasArray.forEach(oldMeta => {
     oldKeys[oldMeta.key] = true;
     const newMeta = newMetasArray.find(o => o.key === oldMeta.key);
-    // 被删掉
+    // deleted
     if (!newMeta) {
       removed.push(oldMeta);
     } else if (oldMeta.name !== newMeta.name) {
@@ -198,7 +198,7 @@ export const compareMetas = (
       });
     }
   });
-  // 不在 oldKeys 中即为新增，没名字的也不用管
+  // If it is not in oldKeys, it is a new addition. Don't worry if it has no name.
   const added = newMetasArray
     .filter(d => d.key && !oldKeys[d.key])
     .filter(d => d.name);
@@ -211,7 +211,7 @@ export const compareMetas = (
   };
 };
 
-// 根据 meta.parent ，补齐路径 parent1 -> parent2 ... -> self
+// According to meta.parent, complete the path parent1 - > parent2... - > self
 const getMetaPath = (_meta: ViewVariableArrayNode): ViewVariableArrayNode[] => {
   if (_meta.parent) {
     return [...getMetaPath(_meta.parent), _meta];
@@ -220,7 +220,7 @@ const getMetaPath = (_meta: ViewVariableArrayNode): ViewVariableArrayNode[] => {
 };
 
 /**
- * 根据路径返回 obj 内的所有引用点位
+ * Returns all reference points within obj according to the path
  * */
 const getObjRefByMetaPath = (
   _metaPath: ViewVariableArrayNode[],
@@ -249,7 +249,7 @@ const getObjRefByMetaPath = (
 };
 
 /**
- *  根据 metas 变化，精准修改 json
+ *  Accurately modify json according to metas changes
  * */
 // eslint-disable-next-line max-lines-per-function
 export const niceAssign = (
@@ -270,14 +270,14 @@ export const niceAssign = (
     );
 
     /**
-     * 重命名需要做什么？
-     * 1. 找出所有 fromRefs
-     * 2. 找出所有 toRefs
-     * 3. 将 fromRefs 一一对应赋值给 toRefs，默认值兜底
-     * 4. 将 fromRefs 添加到 removed
+     * What do I need to do to rename?
+     * 1. Find all fromRefs
+     * 2. Find all toRefs
+     * 3. Assign fromRefs to toRefs one-to-one, and the default value is the bottom.
+     * 4. Add fromRefs to removed
      * */
     renamed
-      // 需要从子 -> 父逐级改名，否则父节点先变动会导致子节点找不到
+      // You need to change the name from the child - > parent step by step, otherwise the parent node will change first and the sub-node will not be found.
       .sort((a, b) => b.from.level - a.from.level)
       .forEach(_renameMeta => {
         const fromMetaPath = getMetaPath(_renameMeta.from);
@@ -301,11 +301,11 @@ export const niceAssign = (
       });
 
     /**
-     * 删除需要做什么？
-     * 1. 根据 refs 将对应的值设置为 undefined 即可，JSON.stringify 时自动过滤
+     * What does it take to delete?
+     * 1. Set the corresponding value to undefined according to refs, and automatically filter when JSON.stringify
      * */
     removed
-      // 需要从子 -> 父逐级删除，否则父节点删除会导致子节点找不到。（好像也先删父节点也没啥问题，保险起见从子节点开删吧）
+      // You need to delete it step by step from the child - > parent, otherwise the deletion of the parent node will cause the sub-node to not be found. (It seems that it is no problem to delete the parent node first, just delete it from the sub-node to be on the safe side)
       .sort((a, b) => b.level - a.level)
       .forEach(_removeMeta => {
         const removeMetaPath = getMetaPath(_removeMeta);
@@ -320,19 +320,19 @@ export const niceAssign = (
       });
 
     /**
-     * 类型改变需要做什么？
-     * 1. 根据 toRefs ，将对应的值重置为默认值
-     * 2. 特化一: ArrayObject 转 Object，不能重置为默认值。预期：取 array[0] [{a:1},{a:2}] -> {a:1} (默认值兜底)
-     * 3. 特化二: Object 转 ArrayObject，不能重置为默认值。预期：包一层数组 [] {a:1} -> [{a:1}]
+     * What do I need to do to change the type?
+     * 1. According to toRefs, reset the corresponding value to the default value
+     * 2. Specialization 1: ArrayObject to Object, cannot be reset to the default value. Expected: take array [0] [{a: 1}, {a: 2 }] -> { a: 1} (default value to cover the bottom)
+     * 3. Specialization 2: Object to ArrayObject, cannot be reset to the default value. Expected: wrap a layer of array [] {a: 1 } -> [{ a: 1}]
      * */
     retyped
-      // 需要从子 -> 父逐级修改，否则父节点先变动会导致子节点找不到
+      // You need to modify it step by step from child - > parent, otherwise changing the parent node first will cause the sub-node to not be found.
       .sort((a, b) => b.from.level - a.from.level)
       .forEach(_retypedMeta => {
         const { from, to } = _retypedMeta;
         /**
-         * 特化逻辑一：arrayObject 转 object
-         * 预期：取 array[0] [{a:1},{a:2}] -> {a:1}
+         * Specialized logic 1: arrayObject to object
+         * Expected: take array [0] [{a: 1}, {a: 2 }] -> { a: 1}
          */
         if (
           from.type === ViewVariableType.ArrayObject &&
@@ -347,8 +347,8 @@ export const niceAssign = (
             ref[to.name] = ref[to.name]?.[0] ?? getDefaultValue(to.type);
           });
           /**
-           * 特化逻辑二：object 转 arrayObject
-           * 预期：套一层 [] {a:1} -> [{a:1}]
+           * Specialization logic 2: object to arrayObject
+           * Expectations: a layer [] {a: 1 } -> [{ a: 1}]
            */
         } else if (
           from.type === ViewVariableType.Object &&
@@ -365,7 +365,7 @@ export const niceAssign = (
           });
 
           /**
-           * 多数情况，直接根据新类型重置为新类型对应的默认值即可
+           * In most cases, you can directly reset to the default value corresponding to the new type according to the new type.
            */
         } else {
           const toMetaPath = getMetaPath(to);
@@ -381,11 +381,11 @@ export const niceAssign = (
       });
 
     /**
-     * 新增需要做什么？
-     * 1. 根据 refs 将对应的值设置为默认值
+     * What do I need to add?
+     * 1. Set the corresponding value to the default value according to refs
      * */
     added
-      // 需要从父 -> 子逐级添加，否则子节点找不到父节点
+      // You need to add it level by level from Parent - > Child, otherwise the sub-node cannot find the parent node.
       .sort((a, b) => a.level - b.level)
       .forEach(newMeta => {
         const newMetaPath = getMetaPath(newMeta);
@@ -413,7 +413,7 @@ export const niceAssign = (
 };
 
 /**
- * 目前使用 JSON.stringify 对 json 做格式化，给未来更好的格式化留个口子
+ * JSON.stringify is currently used to format JSON, leaving room for better formatting in the future
  */
 export const jsonFormat = json => {
   try {
@@ -424,7 +424,7 @@ export const jsonFormat = json => {
   }
 };
 
-// 校验 output 中是否有重名 key
+// Check if there is a duplicate key in the output
 export const outputsVerify = (outputs?: ViewVariableTreeNode[]): boolean => {
   if (!outputs) {
     return false;

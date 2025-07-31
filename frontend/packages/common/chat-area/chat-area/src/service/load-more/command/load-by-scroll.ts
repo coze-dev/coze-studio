@@ -180,7 +180,7 @@ export class LoadByScrollNext extends LoadCommand {
           state.loadLock[action] = null;
         });
       };
-      // 本来想用 requestAnimationFrame 的，但是不太行，凑活一下吧
+      // I wanted to use requestAnimationFrame, but it didn't work. Let's make a living
       setTimeout(unlockLoadScroll, LOAD_NEXT_LOCK_DELAY);
     });
   }

@@ -34,7 +34,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   protected jsonFormats: WorkflowJSONFormatContribution[] = [];
 
   /**
-   * 从数据加载
+   * load from data
    * @param json
    */
   fromJSON(json: Partial<WorkflowJSON>, fireRender = true): void {
@@ -51,7 +51,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   private _formatCache = new Map<string | number | symbol, any>();
 
   /**
-   * 转换 json
+   * Convert json
    * @param json
    * @param formatKey
    * @param args
@@ -76,7 +76,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   }
 
   /**
-   * 创建流程节点
+   * Create process node
    * @param json
    */
   createWorkflowNode(
@@ -95,7 +95,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
 
   toNodeJSON(node: WorkflowNodeEntity): WorkflowNodeJSON {
     const json = super.toNodeJSON(node);
-    // 格式化
+    // format
     const formattedJSON = this.formatWorkflowJSON<WorkflowNodeJSON>(
       json,
       'formatNodeOnSubmit',
@@ -106,7 +106,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   }
 
   /**
-   * 导出数据
+   * export data
    */
   toJSON(): WorkflowJSON {
     const rootJSON = this.toNodeJSON(this.root);
@@ -131,7 +131,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   }
 
   /**
-   * 拍平树形json结构，将结构信息提取到map
+   * Flatten the tree-shaped JSON structure and extract the structure information to the map.
    */
   private flatJSON(json: Partial<WorkflowJSON> = { nodes: [], edges: [] }): {
     flattenJSON: WorkflowJSON;
@@ -151,7 +151,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
     nodeBlocks.set(FlowNodeBaseType.ROOT, rootBlockIDs);
     nodeEdges.set(FlowNodeBaseType.ROOT, rootEdgeIDs);
 
-    // 如需支持多层结构，以下部分改为递归
+    // To support multi-layer structures, the following section is changed to recursive
     rootNodes.forEach(nodeJSON => {
       const { blocks, edges } = nodeJSON;
       if (blocks) {
@@ -188,7 +188,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
   }
 
   /**
-   * 对JSON进行分层
+   * Layering JSON
    */
   private nestJSON(
     flattenJSON: WorkflowJSON,
@@ -208,7 +208,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
       nodeEdges.get(FlowNodeBaseType.ROOT) ?? [],
     );
 
-    // 构造缓存
+    // Construct cache
     flattenJSON.nodes.forEach(nodeJSON => {
       nodeMap.set(nodeJSON.id, nodeJSON);
     });
@@ -218,12 +218,12 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
       edgeMap.set(edgeID, edgeJSON);
     });
 
-    // 恢复层级数据
+    // Restore hierarchical data
     flattenJSON.nodes.forEach(nodeJSON => {
       if (rootBlockSet.has(nodeJSON.id)) {
         nestJSON.nodes.push(nodeJSON);
       }
-      // 恢复blocks
+      // Recovery blocks
       if (nodeBlocks.has(nodeJSON.id)) {
         const blockIDs = nodeBlocks.get(nodeJSON.id)!;
         const blockJSONs: WorkflowNodeJSON[] = blockIDs
@@ -231,7 +231,7 @@ export class WorkflowDocumentWithFormat extends WorkflowDocument {
           .filter(Boolean);
         nodeJSON.blocks = blockJSONs;
       }
-      // 恢复edges
+      // Restore edges
       if (nodeEdges.has(nodeJSON.id)) {
         const edgeIDs = nodeEdges.get(nodeJSON.id)!;
         const edgeJSONs: WorkflowEdgeJSON[] = edgeIDs

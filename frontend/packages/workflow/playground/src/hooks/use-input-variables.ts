@@ -43,7 +43,7 @@ const useInputs = (): {
     }[]
   ).map(i => ({
     ...i,
-    keyPath: [...(i.input?.content?.keyPath || [])], // 深拷贝一份
+    keyPath: [...(i.input?.content?.keyPath || [])], // Deep copy
   }));
   return inputs;
 };

@@ -32,11 +32,11 @@ import styles from './index.module.less';
 interface DiffConfirmModalProps {
   visible: boolean;
   operateType: OperateType;
-  /** 提交函数 */
+  /** commit function */
   submitHandle: (val: { desc: string }) => Promise<boolean>;
-  /** 弹窗成功 */
+  /** Pop-up successful */
   onOk?: () => void;
-  /** 弹窗取消 */
+  /** pop-up cancellation */
   onCancel?: () => void;
 }
 
@@ -76,7 +76,7 @@ const DiffConfirmModal: FC<DiffConfirmModalProps> = ({
     <UIModal
       visible={visible}
       onOk={async () => {
-        // 表单校验
+        // form validation
         if (okParam.current.desc.length > 500) {
           Toast.error(I18n.t('bwc_version_description_exceeds_word_limit'));
           return;

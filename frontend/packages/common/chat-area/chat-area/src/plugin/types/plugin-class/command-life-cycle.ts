@@ -44,7 +44,7 @@ export interface OnStopRespondingErrorContext {
 }
 
 export interface OnInputPasteContext {
-  // 原始事件
+  // original event
   event: ClipboardEvent<HTMLTextAreaElement>;
 }
 

@@ -41,7 +41,7 @@ import s from './index.module.less';
 
 export type TVariable = VariableItem & {
   enable?: boolean;
-  must_not_use_in_prompt?: string; // 服务端类型已上线无法改boolean。""、"false"、"true"
+  must_not_use_in_prompt?: string; // The server level type is online and cannot be changed to boolean. "," false "," true "
   ext_desc?: string;
   prompt_disabled?: boolean;
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -94,7 +94,7 @@ export const useSystemVariables = (
         group_conf: [],
       },
     );
-    // 分组新逻辑
+    // group new logic
     const configInfo = initSysVarStatus(resData);
     setConfig(configInfo);
   });
@@ -108,7 +108,7 @@ export const useSystemVariables = (
     conf: [],
     groupConf: [],
   });
-  // 这里需要根据config来设置sysVariables
+  // Here you need to set sysVariables according to the config.
   const sysVariables = useMemo(() => {
     const group = sysConfig.groupConf?.reduce(
       (prev, cur) => prev.concat(cur?.var_info_list),
@@ -117,7 +117,7 @@ export const useSystemVariables = (
     return [...sysConfig.conf, ...group];
   }, [sysConfig]);
 
-  // 拼接已启用的系统变量和自定义变量
+  // Splice enabled system variables and custom variables
   const enableVariables = useMemo(() => {
     const enableSysVariables =
       sysVariables
@@ -356,7 +356,7 @@ export const useSystemVariables = (
       : undefined,
   }));
 
-  // 系统变量
+  // system variable
   const sysConfigList: ISysConfigItem[] = sysConfig?.conf?.map(item =>
     configItem(item),
   );

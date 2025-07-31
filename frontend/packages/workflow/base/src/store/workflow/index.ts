@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// workflow store，目前保存 flow 的 nodes 和 edges 数据
+// Workflow store, currently holds the nodes and edges data of the flow
 
 import { devtools } from 'zustand/middleware';
 import { create } from 'zustand';
@@ -24,13 +24,13 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 
 interface WorkflowStoreState {
-  /** 节点数据 */
+  /** node data */
   nodes: WorkflowNodeJSON[];
 
-  /** 边数据 */
+  /** edge data */
   edges: WorkflowEdgeJSON[];
 
-  /** 是否在创建 workflow */
+  /** Are you creating a workflow? */
   isCreatingWorkflow: boolean;
 }
 

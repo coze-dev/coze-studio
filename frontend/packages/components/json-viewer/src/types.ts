@@ -15,21 +15,21 @@
  */
  
 /*******************************************************************************
- * log 相关的类型
+ * Log related types
  */
-/** 线可能存在的几种状态 */
+/** The possible states of a line */
 export enum LineStatus {
-  /** 完全隐藏，最后一个父属性嵌套的子属性同列将不会有线 */
+  /** Completely hidden, the last parent attribute nested child attribute will not be wired in the same column */
   Hidden,
-  /** 完全显示，仅出现在属性相邻的线 */
+  /** Full display, appearing only on adjacent lines of properties */
   Visible,
-  /** 半显示，非相邻的线 */
+  /** Semi-display, non-adjacent lines */
   Half,
-  /** 最后属性的相邻线 */
+  /** Adjacent line of last property */
   Last,
 }
 
-/** JsonViewer 中的 value 可能值 */
+/** Possible values in JsonViewer */
 export type JsonValueType =
   | string
   | null
@@ -39,12 +39,12 @@ export type JsonValueType =
   | undefined;
 
 export interface Field {
-  /** 使用数组而不是 'a.b.c' 是因为可能存在 key='a.b' 会产生错误嵌套 */
+  /** The use of arrays instead of'a.b.c 'is due to the possibility that key =' a.b 'will generate false nesting */
   path: string[];
   lines: LineStatus[];
-  /** 这里 value 可能是任意值，这里是不完全枚举 */
+  /** Here value can be any value, here is an incomplete enumeration */
   value: JsonValueType;
   children: Field[];
-  /** 是否是可下钻的对象（包含数组） */
+  /** Whether it is a drillable object (containing an array) */
   isObj: boolean;
 }

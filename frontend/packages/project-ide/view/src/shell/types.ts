@@ -17,10 +17,10 @@
 import { type DockPanel, type Widget } from '../lumino/widgets';
 
 /**
- * 版本号控制向下不兼容问题
+ * Version number control backward incompatibility issue
  */
 export type ApplicationShellLayoutVersion =
-  /** 初始化版本 */
+  /** initialization version */
   0.2;
 
 export const applicationShellLayoutVersion: ApplicationShellLayoutVersion = 0.2;
@@ -51,7 +51,7 @@ export interface LayoutData {
     widgets?: Widget[];
   };
   bottomPanel?: DockPanel.ILayoutConfig & {
-    // 是否折叠
+    // Whether to fold
     expanded?: boolean;
   };
   split?: {

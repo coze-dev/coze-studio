@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 设置红色颜色的 ANSI 转义码
+# Set the red ANSI escape code
 RED='\033[0;31m'
-# 重置颜色的 ANSI 转义码
+# ANSI escape code to reset color
 NC='\033[0m'
 
 CURRENT_USER=$(git config user.email)

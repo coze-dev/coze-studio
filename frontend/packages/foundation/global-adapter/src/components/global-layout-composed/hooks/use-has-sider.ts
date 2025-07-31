@@ -26,14 +26,14 @@ export const useHasSider = () => {
   const queryParams = new URLSearchParams(location.search);
   const pageMode = queryParams.get('page_mode');
 
-  // 优先使用 page_mode 参数判断是否为全屏模式
+  // Priority is given to using page_mode parameters to determine whether it is full screen mode
   if (config.pageModeByQuery && pageMode === 'modal') {
     return false;
   }
 
   const notCheckLoginPage =
     (config.requireAuth && config.requireAuthOptional) || !config.requireAuth;
-  // 未登录时也可访问的页面
+  // Pages that can be accessed without logging in
   if (config.hasSider && notCheckLoginPage && !isLogined) {
     return false;
   }

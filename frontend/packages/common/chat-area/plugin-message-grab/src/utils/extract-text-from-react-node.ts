@@ -32,24 +32,24 @@ const isReactElementWithChildren = (
   'children' in node.props;
 
 /**
- * 从 ReactNode 中提取纯文本（不包括各种特殊转换逻辑）
+ * Extracting plain text from ReactNode (excluding various special conversion logic)
  */
 export const extractTextFromReactNode = (children: ReactNode): string => {
   let text = '';
 
   Children.forEach(children, child => {
     if (typeof child === 'string' || typeof child === 'number') {
-      // 如果 child 是字符串或数字，直接加到 text 上
+      // If child is a string or number, add it directly to the text
       text += child.toString();
     } else if (
       isValidElement(child) &&
       isReactElementWithChildren(child) &&
       child.props.children
     ) {
-      // 如果 child 是 React 元素且有 children 属性，递归提取
+      // If child is a React element with a children attribute, recursive extraction
       text += extractTextFromReactNode(child.props.children);
     }
-    // 如果 child 是 null 或 boolean，不需要做任何操作
+    // If child is null or boolean, no action is required
   });
 
   return text;

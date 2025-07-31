@@ -29,28 +29,28 @@ import { convertNumberToLetters, calcPortId } from './utils';
 import { OptionItem } from './option-item';
 
 export interface AnswerOptionProps {
-  /** 是否展示标题行 */
+  /** Whether to display the title line */
   showTitleRow?: boolean;
 
-  /** 是否展示选项标签 */
+  /** Whether to display option labels */
   showOptionName?: boolean;
 
-  /** 选项 placeholder */
+  /** Option placeholder */
   optionPlaceholder?: string;
 
-  /** 默认分支名称 */
+  /** Default branch name */
   defaultOptionText?: string;
 
-  /** 选项是否允许插值 */
+  /** Option whether to allow interpolation */
   optionEnableInterpolation?: boolean;
 
-  /** 选项最大数量限制，默认值为整数最大值 */
+  /** Option maximum quantity limit, default value is integer maximum */
   maxItems?: number;
 
-  /** 新增按钮样式 */
+  /** New button style */
   addButtonClassName?: string;
 
-  /** 展示禁止添加 Tooltip */
+  /** Display Forbid Add Tooltip */
   showDisableAddTooltip?: boolean;
   customDisabledAddTooltip?: string;
 }
@@ -80,7 +80,7 @@ export const AnswerOption = withValidation<
   const updateSortedPortLines = useUpdateSortedPortLines(calcPortId);
 
   const onItemDelete = (index: number) => {
-    // 将要被删除的端口移动到最后，这样删除时不会对其他连线顺序产生影响
+    // Move the port to be deleted to the end so that the deletion does not affect other connection sequences
     updateSortedPortLines(index, value.length);
 
     const newVal = update(value, { $splice: [[index, 1]] });
@@ -106,7 +106,7 @@ export const AnswerOption = withValidation<
       size="small"
       disabled={readonly || value.length >= maxItems}
       data-testid={getNodeSetterId('answer-option-add-btn')}
-      // 解决 Button 位移导致 onClick 不触发问题
+      // Solve the problem that onClick does not trigger due to Button displacement
       onMouseDown={() => {
         handleChange([...value, { name: '' }]);
       }}

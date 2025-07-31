@@ -25,13 +25,13 @@ import { Avatar, Divider, Tooltip } from '@coze-arch/coze-design';
 
 export type ModelOptionGroupProps =
   | {
-      /** 新模型专区 */
+      /** New Model Zone */
       type: 'new';
       name: string;
       tips?: string;
     }
   | {
-      /** 普通系列模型 */
+      /** Ordinary series model */
       type?: 'normal';
       icon: string;
       name: string;

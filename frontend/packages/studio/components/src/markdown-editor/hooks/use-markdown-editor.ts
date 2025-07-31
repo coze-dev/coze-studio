@@ -78,7 +78,7 @@ export const useMarkdownEditor = ({
     },
   );
 
-  // 判断使用内置上传方法 or 自定义
+  // Determine whether to use the built-in upload method or customize
   const selectUploadMethod = () => {
     if (customUpload) {
       return customUpload({
@@ -143,7 +143,7 @@ export const useMarkdownEditor = ({
     ref.current.focus();
     const { selectionEnd } = ref.current;
     /**
-     * 选中文字时点击 action bar, 将内容插入到文字的末尾
+     * When the text is selected, click the action bar to insert the content at the end of the text
      */
     console.log('handleInsertText', { value, insertText, selectionEnd });
 

@@ -33,7 +33,7 @@ export interface AudioRecordEvents {
 
 export interface AudioRecordOptions {
   getIsShortcutKeyDisabled?: () => boolean;
-  /** 参考 ahooks useKeypress 入参 */
+  /** Reference ahooks useKeypress imported parameters */
   shortcutKey?: string | number;
   enabled?: boolean;
   getActiveZoneTarget?: () => HTMLElement | null;

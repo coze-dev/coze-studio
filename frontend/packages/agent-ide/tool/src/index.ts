@@ -15,7 +15,7 @@
  */
  
 /**
- * START 对外长期暴露的类型、常量、函数、Hooks、组件等
+ * Types, constants, functions, hooks, components, etc. exposed by START for a long time
  */
 export {
   AbilityScope,
@@ -72,16 +72,16 @@ export { TipsDisplay as ModelCapabilityTipsDisplay } from './components/model-ca
 export { abilityKey2ModelFunctionConfigType } from './utils/model-function-config-type-mapping';
 
 /**
- * END 对外长期暴露的类型、常量、函数、Hooks、组件等
+ * END exposes types, constants, functions, hooks, components, etc. for a long time
  */
 
 /**
- * START 过渡期对外暴露的类型、常量、函数、Hooks、组件等
+ * Types, constants, functions, hooks, components, etc. exposed during the START transition period
  */
 export {
   /**
-   * 模块主键
-   * @deprecated 该使用方式已废弃, 请使用: `import { ToolKey } from '@coze-agent-ide/tool-config'`;
+   * module primary key
+   * @Deprecated This usage is deprecated, please use: 'import {ToolKey} from' @code-agent-ide/tool-config ';
    */
   SkillKeyEnum,
 } from '@coze-agent-ide/tool-config';
@@ -93,5 +93,5 @@ export { useEvent } from './hooks/event/use-event';
 export { EventCenterEventName } from './typings/scoped-events';
 export { IToggleContentBlockEventParams } from './typings/event';
 /**
- * END 过渡期对外暴露的类型、常量、函数、Hooks、组件等
+ * Types, constants, functions, hooks, components, etc. exposed during the END transition period
  */

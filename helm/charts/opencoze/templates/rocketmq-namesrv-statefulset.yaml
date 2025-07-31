@@ -1,4 +1,4 @@
-{{- if .Values.rocketmq.enabled }}
+{{- if and (eq (lower (default "rmq" .Values.cozeServer.env.COZE_MQ_TYPE)) "rmq") .Values.rocketmq.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -56,7 +56,9 @@ spec:
         name: namesrv-store
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.rocketmq.namesrv.persistence.store.storageClassName }}
         storageClassName: {{ .Values.rocketmq.namesrv.persistence.store.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.rocketmq.namesrv.persistence.store.size | quote }}
@@ -64,7 +66,9 @@ spec:
         name: namesrv-logs
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.rocketmq.namesrv.persistence.logs.storageClassName }}
         storageClassName: {{ .Values.rocketmq.namesrv.persistence.logs.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.rocketmq.namesrv.persistence.logs.size | quote }}

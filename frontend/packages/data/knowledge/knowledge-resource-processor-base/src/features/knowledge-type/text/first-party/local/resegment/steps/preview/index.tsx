@@ -67,7 +67,7 @@ export const SegmentPreviewStep: FC<
     [docReviewList, documentInfo],
   );
 
-  /** 创建 doc review */
+  /** Create doc review */
   useEffect(() => {
     const createDocReview = async () => {
       const res = await KnowledgeApi.CreateDocumentReview({
@@ -88,7 +88,7 @@ export const SegmentPreviewStep: FC<
     if (!docReviewCreated) {
       createDocReview();
     }
-    // TODO: segmentMode 切换时需要重新创建 doc review
+    // TODO: segmentMode needs to be recreated when switching doc review
   }, [
     docReviewCreated,
     parsingStrategy,
@@ -98,7 +98,7 @@ export const SegmentPreviewStep: FC<
     documentInfo,
   ]);
 
-  /** 轮询 doc review 状态 */
+  /** Poll doc review status */
   const { run: pollDocReviewStatus, cancel: cancelPollDocReviewStatus } =
     useRequest(
       async () => {
@@ -125,12 +125,12 @@ export const SegmentPreviewStep: FC<
     };
   }, [docReviewCreated]);
 
-  /** 结束轮询 */
+  /** end polling */
   const docReviewProcessFinished =
     docReviewList.length > 0 &&
     docReviewList.every(
       item =>
-        // docReview 刚创建时没有 status, 其他情况下校验 status 是否为 Processing
+        // DocReview has no status when it is first created. In other cases, check whether the status is Processing.
         typeof item.status !== 'undefined' &&
         item.status !== ReviewStatus.Processing,
     );
@@ -167,7 +167,7 @@ export const SegmentPreviewStep: FC<
     <>
       <SegmentPreview
         docReviewList={docReviewList}
-        // 重分段的时候只有一个文档，所以不需要刷新 docReviewList
+        // There is only one document when re-segmenting, so there is no need to refresh the docReviewList.
         segmentMode={segmentMode}
         currentReviewID={currentReviewID}
         setCurrentReviewID={setCurrentReviewID}

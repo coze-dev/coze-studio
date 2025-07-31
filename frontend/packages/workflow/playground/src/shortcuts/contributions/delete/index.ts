@@ -34,7 +34,7 @@ import { safeFn } from '../../utils';
 import { isValid } from './is-valid';
 
 /**
- * 删除快捷键
+ * Remove shortcuts
  */
 @injectable()
 export class WorkflowDeleteShortcutsContribution
@@ -44,7 +44,7 @@ export class WorkflowDeleteShortcutsContribution
   @inject(WorkflowSelectService) private selection: WorkflowSelectService;
   @inject(WorkflowGlobalStateEntity)
   private globalState: WorkflowGlobalStateEntity;
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowCommands.DELETE_NODES,
@@ -57,7 +57,7 @@ export class WorkflowDeleteShortcutsContribution
     if (!isValid(this.selectedNodes)) {
       return;
     }
-    // 删除选中实体
+    // Delete the selected entity
     this.selection.selection.forEach(entity => {
       if (entity instanceof WorkflowNodeEntity) {
         this.removeNode(entity);
@@ -67,18 +67,18 @@ export class WorkflowDeleteShortcutsContribution
         entity.dispose();
       }
     });
-    // 过滤掉已删除的实体
+    // Filter out deleted entities
     this.selection.selection = this.selection.selection.filter(
       s => !s.disposed,
     );
   }
-  /** 获取选中的节点 */
+  /** Get the selected node */
   private get selectedNodes(): WorkflowNodeEntity[] {
     return this.selection.selection.filter(
       n => n instanceof WorkflowNodeEntity,
     ) as WorkflowNodeEntity[];
   }
-  /** 删除节点 */
+  /** Delete Node */
   private removeNode(node: WorkflowNodeEntity): void {
     if (!this.document.canRemove(node)) {
       return;
@@ -91,7 +91,7 @@ export class WorkflowDeleteShortcutsContribution
     }
     node.dispose();
   }
-  /** 删除连线 */
+  /** Delete Connection */
   private removeLine(line: WorkflowLineEntity): void {
     if (!this.document.linesManager.canRemove(line)) {
       return;

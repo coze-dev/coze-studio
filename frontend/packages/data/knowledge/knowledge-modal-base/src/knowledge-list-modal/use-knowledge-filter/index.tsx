@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
-/* eslint-disable max-lines -- 待拆分 */
+/* eslint-disable max-lines -- to be split */
 /* eslint-disable @coze-arch/max-line-per-function */
 import {
   type FC,
@@ -311,7 +311,7 @@ const useKnowledgeFilter = ({
   };
 
   const renderContent = () => {
-    /** 有数据则展示列表 */
+    /** Show the list if you have data */
     if (data?.total) {
       return (
         <>
@@ -335,7 +335,7 @@ const useKnowledgeFilter = ({
         </>
       );
     }
-    /** 无数据且未在加载则展示空状态 */
+    /** Show empty state if no data and not loading */
     if (!loading) {
       return (
         <EmptyToCreate
@@ -348,7 +348,7 @@ const useKnowledgeFilter = ({
         />
       );
     }
-    /** 无数据且加载中则不展示 */
+    /** No data and no display while loading */
     return null;
   };
 

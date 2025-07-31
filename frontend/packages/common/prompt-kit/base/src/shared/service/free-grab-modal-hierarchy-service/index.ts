@@ -18,7 +18,7 @@ import { type ModalHierarchyServiceConstructor } from './type';
 import { type FreeGrabModalHierarchyAction } from './store';
 
 export class FreeGrabModalHierarchyService {
-  /** Tip: semi modal zIndex 为 1000 */
+  /** Tip: semi modal zIndex is 1000 */
   private baseZIndex = 1000;
   public registerModal: FreeGrabModalHierarchyAction['registerModal'];
   public removeModal: FreeGrabModalHierarchyAction['removeModal'];

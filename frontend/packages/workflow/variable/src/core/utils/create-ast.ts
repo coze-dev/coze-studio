@@ -33,14 +33,14 @@ import { createExtendBaseType } from '../extend-ast/extend-base-type';
 import { createRefExpression } from '../extend-ast/custom-key-path-expression';
 
 /**
- * ViewVariableType 转 AST
- * @param type 类型
- * @param properties 下钻字段
+ * ViewVariableType to AST
+ * @param type
+ * @param properties drill down fields
  * @returns
  */
 export const createASTFromType = (
   type: ViewVariableType,
-  // 下钻字段
+  // drill down field
   properties?: PropertyJSON[],
 ): ASTNodeJSON | undefined => {
   if (ViewVariableType.isArrayType(type)) {
@@ -66,13 +66,13 @@ export const createASTFromType = (
         properties,
       });
     default:
-      // 其余扩展的基础类型
+      // The basic types of the remaining extensions
       return createExtendBaseType({ type });
   }
 };
 
 /**
- * ViewVariableTreeNode 转属性
+ * ViewVariableTreeNode properties
  * @param treeNode
  * @returns
  */
@@ -99,7 +99,7 @@ export const createASTPropertyFromViewVariable = (
 };
 
 /**
- * 节点输出变量生成
+ * Node output variable generation
  * @param rootKey
  * @param variables
  * @returns
@@ -111,7 +111,7 @@ export const parseNodeOutputByViewVariableMeta = (
   const list = uniqBy(
     isArray(value) ? value : [value],
     _child => _child?.name,
-    //  Preset 变量没有开启 enable 时不生成变量
+    //  No variable is generated when the Preset variable is not enabled
   ).filter(v => v && v.name && !(v.isPreset && !v.enabled));
 
   if (list.length > 0) {
@@ -131,7 +131,7 @@ export const parseNodeOutputByViewVariableMeta = (
 };
 
 /**
- * Batch 输出变量生成
+ * Batch output variable generation
  * @param rootKey
  * @param inputList
  * @returns

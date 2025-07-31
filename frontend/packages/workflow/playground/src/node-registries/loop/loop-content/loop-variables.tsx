@@ -27,7 +27,7 @@ export const LoopVariables = () => {
     data?.inputs?.variableParameters,
   );
 
-  // 非 Loop 节点没有变量定义
+  // Non-Loop nodes have no variable definitions
   if (type !== StandardNodeType.Loop) {
     return null;
   }

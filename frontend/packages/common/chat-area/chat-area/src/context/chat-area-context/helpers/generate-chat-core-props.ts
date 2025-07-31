@@ -27,7 +27,7 @@ export const generateChatCoreBiz = (
       return 'coze_home';
     case Scene.Playground:
       return 'bot_editor';
-    // 现在没有 bot store 场景
+    // There is no bot store now
     default:
       return 'third_part';
   }

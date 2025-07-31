@@ -36,7 +36,7 @@ import { useStopResponding } from './use-stop-responding';
 
 const DELAY_TIME = 150;
 /**
- * 清除会话上下文
+ * Clear session context
  */
 
 export const useClearContext = () => {
@@ -128,10 +128,10 @@ export const useClearContext = () => {
       );
 
       /**
-       * TODO: 临时解决方案
-       * 造成问题的原因是：Card的加载是异步的，用layoutEffect兜不住；
-       * 临时解决方案：是先用setTimeout解决现象
-       * 长期方案：需要card提供渲染完成的eventCallback，通过收集渲染完成的事件在进行滚动
+       * TODO: Temporary Solutions
+       * The reason for the problem is that the loading of Card is asynchronous and cannot be covered by layoutEffect;
+       * Temporary solution: use setTimeout to solve the phenomenon first
+       * Long-term plan: The card is required to provide the rendered eventCallback, and the rendered events are scrolled by collecting the rendered events
        */
       if (hasCardMessage) {
         const taskId = setTimeout(() => {

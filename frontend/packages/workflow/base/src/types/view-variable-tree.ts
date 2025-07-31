@@ -23,11 +23,11 @@ export interface ViewVariableTreeNode {
   children?: ViewVariableTreeNode[];
   required?: boolean;
   description?: string;
-  // 标识该条参数是内置参数，默认为 false
+  // Identifies that the parameter is a built-in parameter, and the default is false.
   isPreset?: boolean;
-  // 标识该条参数是否启用，默认为 false
+  // Identifies whether the parameter is enabled, the default is false
   enabled?: boolean;
-  // 用户自定义节点名展示
+  // user-defined node name display
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue?: any;
@@ -37,13 +37,13 @@ export interface ViewVariableMeta extends ViewVariableTreeNode {
   required?: boolean;
   description?: string;
   readonly?: boolean;
-  mutable?: boolean; // 是否可以被 Set 节点的左值选中
+  mutable?: boolean; // Can be selected by the lvalue of the Set node
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ViewVariableTreeNode {
   /**
-   * 通过path 查询 子节点
+   * Query sub-node via path
    * @param node
    */
   export function getVariableTreeNodeByPath(

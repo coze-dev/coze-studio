@@ -96,7 +96,7 @@ export const useFavoritePluginNodeList = (): {
       const newList = uniqBy(prev.concat(moreList), 'plugin_id');
       return newList;
     });
-    // 更新 context 上保存的插件列表，下次打开节点面板时保持已经 load more 过的
+    // Update the list of plugins saved on the context and keep loading more the next time you open the node panel
     context.favoritePlugins = {
       favorite_products: context.favoritePlugins?.favorite_products?.concat(
         resp?.favorite_products ?? [],

@@ -45,7 +45,7 @@ export const useReloadKnowledgeIDE = () => {
     })),
   );
 
-  // 监听数据变化并更新 store
+  // Monitor data changes and update store
   useEffect(() => {
     if (!isDataSetLoading && dataSetDetail) {
       setDataSetDetail(dataSetDetail);

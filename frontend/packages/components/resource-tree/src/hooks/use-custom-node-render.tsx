@@ -30,56 +30,56 @@ import { getStoreNode } from '../utils';
 
 export interface NodeRenderReturnType {
   /**
-   * 当前节点 (如果是 icon 则会返回它的父节点)
+   * The current node (if it is an icon, it will return its parent node)
    */
   node: FlowNodeEntity;
   /**
-   * 节点是否激活
+   * Is the node active?
    */
   activated: boolean;
   /**
-   * 节点是否展开
+   * Is the node expanded?
    */
   expanded: boolean;
   /**
-   * 鼠标进入, 主要用于控制 activated 状态
+   * Mouse entry, mainly used to control the activated state
    */
   onMouseEnter: (e: React.MouseEvent) => void;
   /**
-   * 鼠标离开, 主要用于控制 activated 状态
+   * The mouse leaves, mainly used to control the activated state
    */
   onMouseLeave: (e: React.MouseEvent) => void;
 
   /**
-   * 渲染表单，只有节点引擎开启才能使用
+   * Render the form, which can only be used if the node engine is turned on
    */
   form: NodeFormProps<any> | undefined;
 
   /**
-   * 获取节点的扩展数据
+   * Get the extended data of the node
    */
   getExtInfo<T = any>(): T;
 
   /**
-   * 更新节点的扩展数据
+   * Update the extended data of the node
    * @param extInfo
    */
   updateExtInfo<T = any>(extInfo: T): void;
 
   /**
-   * 展开/收起节点
+   * Expand/Collapse Nodes
    * @param expanded
    */
   toggleExpand(): void;
   /**
-   * 全局 readonly 状态
+   * Global readonly state
    */
   readonly: boolean;
 }
 
 /**
- * 自定义 useNodeRender
- * 不区分 blockIcon 和 inlineBlocks
+ * Custom useNodeRender
+ * Do not distinguish between blockIcon and inlineBlocks
  */
 export function useCustomNodeRender(
   nodeFromProps?: FlowNodeEntity,

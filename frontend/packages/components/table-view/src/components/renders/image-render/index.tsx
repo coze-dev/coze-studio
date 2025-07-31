@@ -23,7 +23,7 @@ import styles from '../index.module.less';
 import { useImagePreview } from './use-image-preview';
 export interface ImageRenderProps {
   srcList: string[];
-  // 图片是否可编辑，默认为false
+  // Whether the picture can be edited, the default is false
   editable?: boolean;
   onChange?: (tosKey: string, src: string) => void;
   dataIndex?: string;
@@ -60,7 +60,7 @@ const ImageContainer = ({
         }}
         preview={false}
         src={src}
-        // 失败时兜底图
+        // bottom line on failure
         fallback={
           <IconImageFailOutlined
             className={styles['image-failed']}
@@ -70,7 +70,7 @@ const ImageContainer = ({
             }}
           />
         }
-        // 图片加载时的占位图，主要用于大图加载
+        // The placeholder map when the picture is loaded, mainly used for large image loading
         placeholder={<div className="image-skeleton" onClick={onClick} />}
       />
     ))}

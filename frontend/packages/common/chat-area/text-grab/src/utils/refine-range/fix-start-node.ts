@@ -28,7 +28,7 @@ export const fixStartNode = ({
   let startNode: Node | null = range.startContainer;
   let { startOffset } = range;
 
-  // 确保起始节点符合条件
+  // Make sure the starting node meets the requirements
   while (
     startNode &&
     !(
@@ -38,12 +38,12 @@ export const fixStartNode = ({
   ) {
     if (startNode.previousSibling) {
       startNode = startNode.previousSibling;
-      startOffset = 0; // 从前一个兄弟节点的开始位置开始
+      startOffset = 0; // From the starting position of the previous sibling node
     } else if (startNode.parentNode && startNode.parentNode !== document) {
       startNode = startNode.parentNode;
-      startOffset = 0; // 从父节点的开始位置开始
+      startOffset = 0; // Start at the beginning of the parent node
     } else {
-      // 没有符合条件的起始节点
+      // No eligible starting nodes
       startNode = null;
       break;
     }

@@ -37,7 +37,7 @@ export const BaseUploadImage = ({
   showTooltip,
   renderUI,
 }: BaseUploadImageProps) => {
-  // 处理图片上传
+  // Handle image upload
   const handleImageUpload = (object: customRequestArgs) => {
     if (!editor) {
       return;
@@ -53,7 +53,7 @@ export const BaseUploadImage = ({
       options: {
         onFinish: (result: { url?: string; tosKey?: string }) => {
           if (result.url && editor) {
-            // 插入图片到编辑器
+            // Insert pictures into the editor
             editor.chain().focus().setImage({ src: result.url }).run();
           }
         },

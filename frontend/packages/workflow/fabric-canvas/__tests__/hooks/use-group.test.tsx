@@ -57,7 +57,7 @@ describe('useGroup', () => {
       add: vi.fn(),
       remove: vi.fn(),
       getObjects: vi.fn(),
-      // 添加必要的 fabric.Object 属性
+      // Add the necessary fabric. Object properties
       noScaleCache: false,
       lockMovementX: false,
       lockMovementY: false,

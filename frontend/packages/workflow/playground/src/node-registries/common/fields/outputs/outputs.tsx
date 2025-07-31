@@ -43,15 +43,15 @@ export interface OutputsProps {
   batchMode?: string;
   needAppendChildWhenNodeIsPreset?: boolean;
   /**
-   * 是否可以配置默认值
+   * Can the default value be configured?
    */
   withDefaultValue?: boolean;
   /**
-   * 默认展开的参数名
+   * Default expanded parameter name
    */
   defaultExpandParams?: string[];
   /**
-   * 列宽比 如 6:4 代表名称占6份，类型占4份
+   * Column widths such as 6:4 represent 6 copies of the name and 4 copies of the type
    */
   columnsRatio?: string;
   maxLimit?: number;
@@ -85,7 +85,7 @@ export const OutputsField = withField<OutputsProps>(
         value={value}
         onChange={v => {
           onChange?.(v);
-          // 保证 blur 时触发校验, 直接传 onBlur 不生效
+          // Guarantee that the verification is triggered when blur, and directly passing onBlur does not take effect
           onBlur?.();
         }}
         title={title}

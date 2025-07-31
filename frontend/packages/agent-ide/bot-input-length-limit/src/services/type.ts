@@ -17,19 +17,19 @@
 import { type SuggestedQuestionsShowMode } from '@coze-arch/bot-api/playground_api';
 
 export interface BotInputLengthConfig {
-  /** Agent 名称的长度 */
+  /** Length of Agent Name */
   botName: number;
-  /** Agent 描述的长度 */
+  /** Length of Agent Description */
   botDescription: number;
-  /** Agent 开场白的长度 */
+  /** Length of Agent's opening statement */
   onboarding: number;
-  /** Agent 单条开场白建议的长度 */
+  /** Agent, the length of a single opening line suggestion */
   onboardingSuggestion: number;
-  /** 用户问题建议自定义 prompt 长度 */
+  /** User question Suggested custom prompt length */
   suggestionPrompt: number;
-  /** Project 名称的长度 */
+  /** Length of Project Name */
   projectName: number;
-  /** Project 描述的长度 */
+  /** Project Description Length */
   projectDescription: number;
 }
 

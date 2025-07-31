@@ -23,7 +23,7 @@ export enum UIKitEvents {
   AFTER_CARD_RENDER,
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt 的类型不认 interface
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- mitt's type does not recognize interface
 export type UIKitEventMap = {
   [UIKitEvents.WINDOW_RESIZE]: undefined;
   [UIKitEvents.AFTER_CARD_RENDER]: { messageId: string };

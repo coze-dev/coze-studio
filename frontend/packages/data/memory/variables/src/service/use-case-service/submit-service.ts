@@ -20,7 +20,7 @@ import { Toast } from '@coze-arch/coze-design';
 
 import { useVariableGroupsStore } from '../../store';
 /**
- * 提交变量
+ * commit variable
  * @param projectID
  * @returns
  */
@@ -38,9 +38,9 @@ export async function submit(projectID: string) {
 }
 
 /**
- * 检查并确保 projectID 是非空字符串
- * @param projectID 可能为空的项目ID
- * @returns projectID 是否为非空字符串
+ * Check and make sure projectID is a non-empty string
+ * @param projectID possibly empty project ID
+ * @Returns whether projectID is a non-empty string
  */
 export const checkProjectID = (projectID: unknown): projectID is string =>
   typeof projectID === 'string' && projectID.length > 0;

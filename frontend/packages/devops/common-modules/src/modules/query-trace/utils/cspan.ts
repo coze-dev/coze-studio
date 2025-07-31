@@ -69,7 +69,7 @@ export const getTokens = (
     span.type === SpanType.UserInputV2 ||
     span.type === SpanType.Workflow
   ) {
-    // SingleSpan节点 - Workflow
+    // SingleSpan Node - Workflow
     const inputTokens = getSpanProp(span, 'input_tokens_sum') as number;
     const outputTokens = getSpanProp(span, 'output_tokens_sum') as number;
 
@@ -78,7 +78,7 @@ export const getTokens = (
       output_tokens: outputTokens,
     };
   } else {
-    // SingleSpan节点 - 非workflow节点
+    // SingleSpan Node - Non-workflow Node
     const inputTokens = getSpanProp(span, 'input_tokens') as number;
     const outputTokens = getSpanProp(span, 'output_tokens') as number;
 

@@ -191,7 +191,7 @@ export const Bots: React.FC<BotsProps & DisableExtraOptions> = ({
     onChange?.(_value);
   };
 
-  // 由于分页限制 选中的 botId 可能找不到对应的 option 需要额外添加
+  // Due to paging restrictions, the selected botId may not find the corresponding option and needs to be added
   const extraBotOption = useExtraBotOption(
     selectList,
     idValue,
@@ -199,7 +199,7 @@ export const Bots: React.FC<BotsProps & DisableExtraOptions> = ({
     handleChange,
   );
 
-  // 接口得到的总数并非真实的总数，前端可能会拼接 options
+  // The total number obtained by the interface is not the real total, and the front end may splice options.
   const listMaxHeight = useMemo(() => {
     const realTotal = extraBotOption ? searchTotal + 1 : searchTotal;
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -216,7 +216,7 @@ export const Bots: React.FC<BotsProps & DisableExtraOptions> = ({
       { disableBot, disableProject },
       findItem?.type,
     );
-    // 禁用状态下清空选中值
+    // Clear the selected value when disabled
     if (value && findItem?.type && disabled) {
       onChange?.(undefined);
     }
@@ -236,11 +236,11 @@ export const Bots: React.FC<BotsProps & DisableExtraOptions> = ({
       setIsLoading(true);
     }
     if (isReset) {
-      // 如果是重新搜索，需要清空上一次的游标
+      // If it is a re-search, you need to clear the previous cursor
       nextCursorRef.current = undefined;
     }
 
-    // project 内部使用新接口查询列表
+    // Query the list using the new interface within the project
     const res = await intelligenceApi.GetDraftIntelligenceList({
       space_id:
         globalState.spaceId === PUBLIC_SPACE_ID
@@ -313,7 +313,7 @@ export const Bots: React.FC<BotsProps & DisableExtraOptions> = ({
           itemSize: 32,
         }}
         onChange={newValue => {
-          // 设置选中项类型（bot / project）
+          // Set the selected item type (bot/project)
           const findItem = selectList.find(item => item.value === newValue);
 
           if (useNewGlobalVariableCache && findItem?.type) {

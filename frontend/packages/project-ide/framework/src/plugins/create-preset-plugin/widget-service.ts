@@ -60,7 +60,7 @@ export class WidgetService {
     this.setTitle(this._title);
   }
 
-  /** 触发重渲染 */
+  /** Trigger rerendering */
   update() {
     (this.widget.title as CustomTitleType).iconLabel = this._widgetTitleRender({
       commandRegistry: this.commandRegistry,

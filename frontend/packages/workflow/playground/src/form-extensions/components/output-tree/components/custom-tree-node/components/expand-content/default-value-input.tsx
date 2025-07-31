@@ -92,7 +92,7 @@ const InputInteger: DefaultValueInputComponent = ({
     size="small"
     placeholder={I18n.t('wf_chatflow_99')}
     onBlur={e => {
-      // 拿到取整后的值
+      // Get the rounded value
       setTimeout(() => {
         onBlur?.(e.target.value);
       }, 15);
@@ -261,7 +261,7 @@ const getInputComponent = (
   if (ViewVariableType.isFileType(data.type)) {
     return File;
   } else {
-    // Object / Array<String> Array<Object> 等类型
+    // Object/Array < String > Array < Object > and other types
     return JSONEditor;
   }
 };

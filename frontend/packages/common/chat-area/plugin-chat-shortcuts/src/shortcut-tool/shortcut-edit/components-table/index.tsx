@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 
 import { DndProvider } from '@coze-studio/components/dnd-provider';
@@ -45,7 +45,7 @@ import { tableEmpty } from './empty';
 import styles from './index.module.less';
 
 export interface ComponentsTableProps {
-  components: shortcut_command.Components[]; // 变量列表
+  components: shortcut_command.Components[]; // Variable list
   onChange?: (components: shortcut_command.Components[]) => void;
   toolType?: shortcut_command.ToolType;
   toolInfo: ToolInfo;
@@ -59,7 +59,7 @@ export interface ComponentsTableActions {
 
 const MAX_COMPONENTS = 10;
 
-// 半受控组件，使用初始值 + 暴露 API 的方式，方便内部维护本地 id 用于拖拽排序标识数据
+// Semi-controlled component, using initial value + exposed API to facilitate internal maintenance of local ID for dragging and dropping sorting identification data
 export const ComponentsTable = forwardRef<
   { formApi?: ComponentsTableActions },
   ComponentsTableProps
@@ -80,7 +80,7 @@ export const ComponentsTable = forwardRef<
     formApi: formRef.current
       ? {
           validate: async (...props) => {
-            // 在这里统一处理，避免多个相同字段触发多次 toast
+            // It is handled uniformly here to avoid multiple identical fields triggering multiple toasts.
             if (
               values.some(
                 component =>
@@ -128,10 +128,10 @@ export const ComponentsTable = forwardRef<
       (isBefore ? 0 : 1);
     sourceItem && newValues.splice(targetIndex, 0, sourceItem);
     errors.splice(targetIndex, 0, sourceError);
-    // 前后 index 相同的情况不触发 onChange 避免频繁 rerender
+    // Do not trigger onChange if the index is the same before and after to avoid frequent rerender
     if (sourceIndex !== targetIndex) {
       onChangeInner(newValues);
-      // 只在拖拽排序后，需要手动更新 form value
+      // Only after dragging sort, you need to manually update the form value
       formRef.current?.setValues(
         {
           values: newValues,
@@ -190,7 +190,7 @@ export const ComponentsTable = forwardRef<
       <DndProvider>
         <Form<{ values: ComponentsWithId[] }>
           initValues={{ values }}
-          // 手动触发校验，避免受增删和拖拽排序影响
+          // Manually trigger validation to avoid being affected by addition, deletion and drag-and-drop sorting
           trigger="custom"
           autoComplete="off"
           disabled={disabled}
@@ -199,16 +199,16 @@ export const ComponentsTable = forwardRef<
             const changedKeys = Object.keys(changedValues);
             if (
               changedKeys.length === 1 &&
-              // 只在表单修改场景下触发 onChange 避免无限循环
+              // Trigger onChange only in form modification scenarios to avoid infinite loops
               changedKeys[0]?.startsWith('values.[')
             ) {
               onChangeInner([...newValues.values]);
-              // 只在编辑表单场景下对具体字段触发校验，其它场景（整行的增删排序）不触发校验
+              // Validation is only triggered for specific fields in the edit form scenario, and verification is not triggered in other scenarios (addition and deletion sorting of entire lines)
               setTimeout(() => {
                 if (formRef.current) {
                   checkDuplicateName(newValues.values, formRef.current);
                 }
-                // @ts-expect-error semi 的类型定义无法支持多段 path
+                // @ts-expect-error -- The type definition of  semi cannot support multi-segment paths
                 formRef.current?.validate([changedKeys[0]]);
               });
             }

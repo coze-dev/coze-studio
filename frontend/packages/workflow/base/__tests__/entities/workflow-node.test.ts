@@ -28,7 +28,7 @@ vi.mock('../../src/entities', async () => {
   const actual = await vi.importActual('../../src/entities');
   return {
     ...actual,
-    // 如果需要mock其他实体，可以在这里添加
+    // If you need to mock other entities, you can add them here.
   };
 });
 
@@ -198,7 +198,7 @@ describe('WorkflowNode', () => {
       const newData = { test: 'new data' };
       workflowNode.setData(newData);
 
-      // 验证原始数据没有被修改
+      // Verify that the original data source has not been modified
       expect(newData).toEqual({ test: 'new data' });
       expect(mockFormItem.value).toEqual({ test: 'new data' });
     });

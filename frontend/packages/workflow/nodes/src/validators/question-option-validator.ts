@@ -18,7 +18,7 @@ import { z, ZodIssueCode } from 'zod';
 import { I18n } from '@coze-arch/i18n';
 import { type ValidatorProps } from '@flowgram-adapter/free-layout-editor';
 
-// 自定义验证器，检查数组是否为空，并且没有重复的值
+// Custom validator to check if the array is empty and there are no duplicate values
 const nonEmptyUniqueArray = z
   .array(
     z.object({
@@ -29,7 +29,7 @@ const nonEmptyUniqueArray = z
     const seenValues = new Set();
 
     val.forEach((item, idx) => {
-      // 检查非空
+      // check non-empty
       if (item.name.trim() === '') {
         ctx.addIssue({
           code: ZodIssueCode.custom,
@@ -42,7 +42,7 @@ const nonEmptyUniqueArray = z
         });
       }
 
-      // 检查重复
+      // Check for duplicates
       if (seenValues.has(item.name)) {
         ctx.addIssue({
           code: ZodIssueCode.custom,

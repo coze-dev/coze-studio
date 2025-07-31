@@ -26,7 +26,7 @@ export const useNormalizeValueWithRoleList = (
   }
 
   return remoteValue.map(item => {
-    // 如果没有 biz_role_id， 说明是nickname变量，这里不做处理
+    // If there is no biz_role_id, it means it is a nickname variable and will not be processed here
     if (!item?.biz_role_id) {
       return item;
     }
@@ -35,12 +35,12 @@ export const useNormalizeValueWithRoleList = (
       _role => _role.biz_role_id === item?.biz_role_id,
     );
 
-    // 如果没找到对应的角色，说明已经被删除，这里不做处理，外面报错提示已失效
+    // If the corresponding role is not found, it means that it has been deleted, and it will not be processed here. The error prompt outside has expired.
     if (!role) {
       return item;
     }
 
-    // 如果 value 保存的 nickname 和 角色列表里的都有，就以角色列表里的为准
+    // If both the nickname saved by value and the character list are available, the character list shall prevail
     if (role?.nickname && item.nickname) {
       return {
         ...item,

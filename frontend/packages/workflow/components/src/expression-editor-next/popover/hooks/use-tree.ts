@@ -23,7 +23,7 @@ import { type ExpressionEditorTreeNode } from '@/expression-editor';
 import { generateUniqueId, getSearchValue, useLatest } from '../../shared';
 import { type InterpolationContent } from './types';
 
-// 在数据更新后，强制 Tree 组件重新渲染
+// Force the Tree component to re-render after the data update
 function useTreeRefresh(filteredVariableTree: ExpressionEditorTreeNode[]) {
   const [treeRefreshKey, setTreeRefreshKey] = useState('');
 
@@ -34,7 +34,7 @@ function useTreeRefresh(filteredVariableTree: ExpressionEditorTreeNode[]) {
   return treeRefreshKey;
 }
 
-// Tree 组件重新渲染后进行搜索
+// Search after the Tree component is re-rendered
 // eslint-disable-next-line max-params
 function useTreeSearch(
   treeRefreshKey: string,

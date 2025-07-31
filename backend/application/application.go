@@ -190,8 +190,11 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 		return nil, err
 	}
 
-	workflowDomainSVC := workflow.InitService(
+	workflowDomainSVC, err := workflow.InitService(ctx,
 		basicServices.toWorkflowServiceComponents(pluginSVC, memorySVC, knowledgeSVC))
+	if err != nil {
+		return nil, err
+	}
 
 	shortcutSVC := shortcutcmd.InitService(basicServices.infra.DB, basicServices.infra.IDGenSVC)
 

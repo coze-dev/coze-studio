@@ -24,7 +24,7 @@ import { type VariableSchemaDTO, VariableTypeDTO } from '../types';
 import { type Variable } from '../store';
 
 /**
- * 前端变量类型
+ * Front-end variable type
  */
 export enum ViewVariableType {
   String = 1,
@@ -32,7 +32,7 @@ export enum ViewVariableType {
   Boolean,
   Number,
   Object = 6,
-  // 上面是 api 中定义的 InputType。下面是整合后的。从 99 开始，避免和后端定义撞车
+  // The above is the InputType defined in the api. The following is the integrated one. Start from 99 to avoid collisions with the backend definition.
   ArrayString = 99,
   ArrayInteger,
   ArrayBoolean,
@@ -101,7 +101,7 @@ export const getDtoVariable = (
     schema: '',
   };
 
-  // 处理数组类型
+  // Working with array types
   if (type === VariableTypeDTO.List && arrayItemType) {
     if (arrayItemType === VariableTypeDTO.Object) {
       schema.schema = {
@@ -118,7 +118,7 @@ export const getDtoVariable = (
     }
   }
 
-  // 处理对象类型
+  // Handling object types
   if (type === VariableTypeDTO.Object) {
     schema.schema = viewVariable.children?.map(child => {
       const childDTO = getDtoVariable(child);

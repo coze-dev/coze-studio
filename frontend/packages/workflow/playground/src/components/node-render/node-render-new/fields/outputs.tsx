@@ -26,7 +26,7 @@ interface OutputsProps {
 }
 
 /**
- * 节点输出
+ * Node output
  */
 export function Outputs({
   label = I18n.t('workflow_detail_node_output'),

@@ -20,29 +20,29 @@ import { LineStatus, type JsonValueType, type Field } from '../types';
 import { isBigNumber } from './big-number';
 
 /**
- * 通过父元素的线条状态推到子元素的线条状态
+ * Push through the line state of the parent element to the line state of the child element
  */
 const getLineByParent2Child = (pLine: LineStatus): LineStatus => {
   switch (pLine) {
-    /** 表示父节点也是从父父节点下钻而来，此处的子节点只需要把线延续下去即可 */
+    /** It means that the parent node is also drilled from the parent node, and the sub-node here only needs to continue the line. */
     case LineStatus.Visible:
       return LineStatus.Half;
-    /** 表示父节点是父父节点的最后一个节点，子节点无需再延续，渲染空白即可 */
+    /** Indicates that the parent node is the last node of the parent node, and the sub-node does not need to continue, just render blank. */
     case LineStatus.Last:
       return LineStatus.Hidden;
-    /** 其他的情况完全继承父节点的线 */
+    /** Other cases fully inherit the line of the parent node */
     default:
       return pLine;
   }
 };
 
 /**
- * 将 object 解析成可以循环渲染的 fields
- * 1. 若 object 非复杂类型，则返回长度为 1 的 fields 只渲染一项
- * 2. 若 object = {}，则返回长度为 0 的 fields，渲染层需要做好兜底
+ * Parse objects into fields that can be cycled
+ * 1. If object is not a complex type, fields of length 1 are returned to render only one item
+ * 2. If object = {}, fields of length 0 are returned, and the rendering layer needs to be well covered
  */
 const generateFields = (object: JsonValueType): Field[] => {
-  /** 若 object 非复杂类型 */
+  /** If the object is not a complex type */
   if (!isObject(object) || isBigNumber(object)) {
     return [
       {
@@ -55,17 +55,17 @@ const generateFields = (object: JsonValueType): Field[] => {
     ];
   }
 
-  /** 递归计算时缓存一下计算好的线，没别的意义，降低一些时间复杂度 */
+  /** Cache the calculated line during recursive calculation, which is meaningless and reduces some time complexity */
   const lineMap = new Map<string[], LineStatus[]>();
 
-  /** 递归解析 object 为 fields */
+  /** Recursive parsing of object as fields */
   const dfs = ($object: object, $parentPath: string[] = []): Field[] => {
-    // 如果不是对象，直接返回空数组，兜底异常情况
+    // If it is not an object, return an empty array directly to cover the exception
     if (!isObject($object)) {
       return [];
     }
 
-    // 如果是大数字，直接返回空数组
+    // If it is a large number, return an empty array directly
     if (isBigNumber($object)) {
       return [];
     }
@@ -79,12 +79,12 @@ const generateFields = (object: JsonValueType): Field[] => {
       const path = $parentPath.concat(key);
       const last = idx === keys.length - 1;
       /**
-       * 根据父节点的线推导子节点的线
+       * Derive the sub-node's line from the parent's line
        */
       const lines = parentLines
         .map<LineStatus>(getLineByParent2Child)
         /**
-         * 最后拼接上子节点自己的线，最后一个节点和普通的节点有样式区分
+         * Finally, splice the sub-node's own line, and the last node is distinguished from the ordinary node by style.
          */
         .concat(last ? LineStatus.Last : LineStatus.Visible);
       lineMap.set(path, lines);

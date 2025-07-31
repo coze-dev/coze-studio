@@ -75,7 +75,7 @@ const ResetBtn: React.FC<DatabaseTable> = props => {
       close();
     },
     className: s['reset-confirm-modal'],
-    // ToolPane的 z-index 是1000，所以此处需要加 1001 的z-index，避免被 database 数据面板遮住
+    // ToolPane's z-index is 1000, so you need to add 1001 z-index here to avoid being obscured by the database data panel
     zIndex: 1001,
   });
 

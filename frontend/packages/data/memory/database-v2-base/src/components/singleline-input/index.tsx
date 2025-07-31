@@ -54,7 +54,7 @@ export type SLInputProps = ComponentProps<typeof Input> & {
   ellipsisPopoverProps?: PopoverProps;
   onFocusPopoverProps?: PopoverProps;
   tooltipProps?: TooltipProps;
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 历史逻辑
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- historical logic
   inputProps?: InputProps & { 'data-dtestid'?: string; 'data-testid'?: string };
   errorMsg?: string;
   errorMsgFloat?: boolean;
@@ -205,7 +205,7 @@ export const SLInput: React.FC<SLInputProps> = props => {
   );
 };
 
-// Semi 不导出被 withField 包装的组件的 props 类型（甚至是 any ´_>`）
+// Semi does not export the props type (or even any ´_>`) of the component wrapped with the withField.
 // https://github.com/DouyinFE/semi-design/blob/v2.69.2/packages/semi-ui/form/hoc/withField.tsx#L528
 export const FormSLInput: React.FunctionComponent<
   CommonFieldProps & Omit<SLInputProps, keyof CommonexcludeType>

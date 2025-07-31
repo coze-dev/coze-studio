@@ -22,7 +22,7 @@ import { withField } from '@douyinfe/semi-ui';
 
 import { UISelect } from '../../ui-select';
 
-// UISelect 的 label 属性是提供给 borderless 主题使用的 表单场景下没有此主题，去掉这个属性避免和 form label 混合
+// The label attribute of UISelect is provided for the borderless theme. There is no such theme in the form scene. Remove this attribute to avoid mixing with the form label.
 const SelectInner: React.FC<
   Omit<ComponentProps<typeof UISelect>, 'label'>
 > = props => <UISelect {...props} />;

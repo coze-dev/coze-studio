@@ -88,7 +88,7 @@ export const useCreateAndUpdateInitService = ({
   }
 
   /**
-   * 动态更新 initService 中的 context 信息，便于业务方调用 refreshMessageList 的动态更新
+   * Dynamically update the context information in initService, which is convenient for the business party to call the dynamic update of refreshMessageList
    */
   initControllerRef.current.updateContext({
     requestToInit,

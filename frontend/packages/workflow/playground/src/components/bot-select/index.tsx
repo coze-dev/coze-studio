@@ -39,7 +39,7 @@ interface BotSelectProps {
   hideVariblesForce?: boolean;
   hasVariableNode?: boolean;
   hasVariableAssignNode?: boolean;
-  /** @deprecated 这个字段目前没有用了，后续可以清理掉 */
+  /** @Deprecated This field is currently useless, it can be cleaned up later. */
   hasDatabaseNode?: boolean;
   hasLTMNode?: boolean;
   hasChatHistoryEnabledLLM?: boolean;
@@ -74,7 +74,7 @@ export const BotSelect: React.FC<BotSelectProps> = ({
     !isVariablesLoading &&
     (hasVariableNode || hasVariableAssignNode) &&
     !hideVariblesForce;
-  // 试运行都是临时搞了一个会话，这里把 bot 聊天历史展示可能会误导，先隐藏
+  // Practice running is a temporary session, here the bot chat history display may be misleading, first hide
   const showChatHistory = false;
   // const showChatHistory =
   //   botSelected && !isChatHistoryLoading && hasChatHistoryEnabledLLM;

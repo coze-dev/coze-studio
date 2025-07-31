@@ -91,7 +91,7 @@ export const PublishButton = ({
     intelligenceId: projectId,
     spaceId,
     enable: !!(
-      // 即将支持，敬请期待
+      // Support soon, so stay tuned.
       (
         FLAGS['bot.studio.publish_management'] &&
         hasPublished &&
@@ -186,7 +186,7 @@ export const PublishButton = ({
               <Divider />
             </div>
 
-            {/* 即将支持，敬请期待 */}
+            {/* Support soon, so stay tuned. */}
             {FLAGS['bot.studio.publish_management'] && !IS_OPEN_SOURCE ? (
               <div>
                 <div className="coz-fg-secondary font-[500] px-[8px] pt-[4px] pb-0 mb-[2px]">

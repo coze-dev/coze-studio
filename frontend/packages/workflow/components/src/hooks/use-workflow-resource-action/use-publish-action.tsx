@@ -40,8 +40,8 @@ export const usePublishAction = ({
   });
 
   /**
-   * NOTICE: 此函数由商店侧维护, 可联系 @gaoding
-   * 发布/更新流程商品
+   * NOTICE: This function is maintained by the store side, you can contact @gaoding.
+   * Release/Update Process Product
    */
   const onPublishStore = (item: ResourceInfo) => {
     setFlowMode(
@@ -49,7 +49,7 @@ export const usePublishAction = ({
         ? WorkflowMode.Imageflow
         : WorkflowMode.Workflow,
     );
-    // 商店渲染流程需要 spaceId 信息, 在这个场景需要手动设置对应信息
+    // The store rendering process requires spaceId information, and in this scene, the corresponding information needs to be set manually
     publishWorkflowModalHook.setSpace(spaceId);
     publishWorkflowModalHook.showModal({
       type: PublishWorkflowModal.WORKFLOW_INFO,

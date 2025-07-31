@@ -24,9 +24,9 @@ interface SubWorkflowInfo {
 }
 
 /**
- * 获取子流程信息
- * @param node 子流程节点
- * @returns spaceId 和 workflowId
+ * Get subprocess information
+ * @param node child process node
+ * @returns spaceId and workflowId
  */
 export function getSubWorkflowInfo(
   node: WorkflowNodeEntity,

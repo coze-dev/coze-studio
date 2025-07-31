@@ -10,12 +10,6 @@ RUN apk add --no-cache git gcc libc-dev
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
-
-COPY docker/proxy ./proxy
-
-# Build the proxy application
-RUN go build -ldflags="-s -w" -o /app/proxy_app ./proxy/proxy.go
-
 # Copy the entire backend source code
 COPY backend/ ./
 
@@ -50,7 +44,6 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
 
 # Copy the built Go binary from the builder stage
 COPY --from=builder /app/opencoze /app/opencoze
-COPY --from=builder /app/proxy_app /app/proxy
 
 # Copy Python application scripts
 COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
@@ -74,8 +67,6 @@ ENV PATH="/app/.venv/bin:${PATH}"
 RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
     find /app/.venv/bin -type f -exec chmod +x {} \;
 
-# Ensure Go binaries are executable
-RUN chmod +x /app/opencoze /app/proxy
 
 EXPOSE 8888
 

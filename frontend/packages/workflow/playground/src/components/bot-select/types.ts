@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-//后端无定义 根据bot_info中的workflow_info.profile_memory推导而来
+//Backend undefined, derived from workflow_info profile_memory in bot_info
 export interface Variable {
   key: string;
   description?: string;

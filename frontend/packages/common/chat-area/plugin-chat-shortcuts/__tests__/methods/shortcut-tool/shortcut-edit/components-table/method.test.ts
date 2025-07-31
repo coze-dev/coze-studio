@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   InputType,
   // eslint-disable-next-line camelcase
@@ -136,7 +136,7 @@ describe('getSubmitFieldFromComponentTypeForm', () => {
   });
 
   it('returns TextInput type for unrecognized type', () => {
-    // @ts-expect-error -- 无视
+    // @ts-expect-error -- ignore
     const values: ComponentTypeItem = { type: 'unknown' };
     const result = getSubmitFieldFromComponentTypeForm(values);
     expect(result).toEqual({ input_type: InputType.TextInput });

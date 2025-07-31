@@ -44,7 +44,7 @@ export const useRetrieve = () => {
 
   const cancelReq = useRef<Canceler>();
 
-  // TODO: 本期先使用10秒间隔的轮训，在二期需求中改为使用长链接
+  // TODO: Use 10-second intervals for rotations in this issue, and use long links instead in the second phase of requirements
   const { data: author } = useQuery({
     queryKey: ['workflow_retrieve', spaceId, workflowId],
     queryFn: async () => {
@@ -71,7 +71,7 @@ export const useRetrieve = () => {
   useUpdateEffect(() => {
     setNeedMerge(false);
     cancelReq.current?.();
-    // 基底版本变更，例如merge完后，需要关闭banner重新轮训
+    // Base version changes, for example, after merging, you need to close the banner and re-rotate
   }, [submit_commit_id]);
 
   const { mergeConfirm } = useMergeConfirm();

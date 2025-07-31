@@ -22,7 +22,7 @@ import { WorkflowModelsService } from '@/services';
 import { useModelType } from '../../hooks/use-model-type';
 
 /**
- * 模型支持的数据类型
+ * Data types supported by the model
  */
 export function useModelEnabledTypes() {
   const modelType = useModelType();

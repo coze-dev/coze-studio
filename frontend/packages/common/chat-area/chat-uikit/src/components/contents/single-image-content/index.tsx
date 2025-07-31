@@ -26,26 +26,26 @@ import './index.less';
 type IBlobImageMap = Record<string, string>;
 
 /**
- * 这里这么做是有原因的
- * 前端计算groupId是通过replyId分组（服务端未ack前是localMessageId）
- * 因此服务端ack后会导致循环的key发生变化，导致组件unmount -> mount（销毁重建）
- * 因此需要用比较trick的方式来实现图片展示优化的问题
+ * There's a reason for this.
+ * The front-end compute groupId is grouped by replyId (localMessageId before server level is not ack)
+ * Therefore, after the server level ack, the key of the loop will change, causing the component to unmount - > mount (destroy and rebuild).
+ * Therefore, it is necessary to use a more trick way to achieve the problem of picture display optimization
  */
 const blobImageMap: IBlobImageMap = {};
 const isBlob = (url: string) => url?.startsWith('blob:');
 
 /**
- * @deprecated 废弃不再维护，请尽快迁移至 SingleImageContentWithAutoSize 组件
+ * @Deprecated is no longer maintained, please migrate to SingleImageContentWithAutoSize component as soon as possible
  */
 export const SingleImageContent: FC<IImageMessageContentProps> = props => {
   const { message, onImageClick } = props;
 
-  // @liushuoyan 这里类型大溃败，引入了 any
+  // @Liushuoyan here type rout, introduced any
   const { content_obj = safeJSONParse(message.content) } = message;
 
   const localMessageId = message.extra_info.local_message_id;
 
-  // 目前服务端下发的图片 ori = thumb 因此目前用一个就行
+  // The picture sent by the current server level ori = thumb, so just use one for now.
   const currentImageUrl = content_obj?.image_list?.at(0)?.image_ori?.url ?? '';
 
   if (isBlob(currentImageUrl)) {

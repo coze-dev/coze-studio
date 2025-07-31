@@ -27,7 +27,7 @@ import { eventBus } from '@/text-knowledge-editor/event';
 import { type PreviewContextMenuItemProps } from './module';
 
 /**
- * 在特定分片后添加新分片的菜单项组件
+ * Add a new sharding's menu item component after a specific sharding
  */
 export const AddAfterAction: React.FC<PreviewContextMenuItemProps> = ({
   chunk,
@@ -44,11 +44,11 @@ export const AddAfterAction: React.FC<PreviewContextMenuItemProps> = ({
       'cursor-not-allowed': isDisabled,
     });
 
-  // 在特定分片后添加新分片
+  // Add new shardings after specific shardings
   const { addEmptyChunkAfter } = useAddEmptyChunkAction({
     chunks,
     onChunksChange: ({ newChunk, chunks: newChunks }) => {
-      // 发出在特定分片后添加新分片的事件
+      // Issue an event to add a new sharding after a specific sharding
       eventBus.emit('previewContextMenuItemAction', {
         type: 'add-after',
         newChunk,

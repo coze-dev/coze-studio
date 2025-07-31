@@ -26,7 +26,7 @@ describe('onboardingConfig', () => {
     expect(onboardingConfig).toHaveProperty('debounce');
     expect(onboardingConfig).toHaveProperty('middleware');
     expect(onboardingConfig.key).toBe(ItemType.ONBOARDING);
-    // 验证 debounce 配置
+    // Verify debounce configuration
     if (typeof onboardingConfig.debounce === 'object') {
       expect(onboardingConfig.debounce).toHaveProperty('default');
       expect(onboardingConfig.debounce).toHaveProperty('prologue');

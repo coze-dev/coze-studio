@@ -14,13 +14,13 @@
  * limitations under the License.
  */
  
-// 根据template_query和components拼接query
+// Stitching queries based on template_query and components
 export const getQueryFromTemplate = (
   templateQuery: string,
   values: Record<string, unknown>,
 ) => {
   let query = templateQuery;
-  // 替换模板中的{{key}}为values中key对应的值
+  // Replace the {{key}} in the template with the value corresponding to the key in values
   Object.keys(values).forEach(key => {
     query = query.replace(
       new RegExp(`\\{\\{${key}\\}\\}`, 'g'),

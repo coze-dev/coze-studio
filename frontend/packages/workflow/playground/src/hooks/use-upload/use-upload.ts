@@ -99,10 +99,10 @@ export const useUpload = (props?: UploadConfig) => {
         throw new CustomError('normal_error', 'no uri');
       }
 
-      // 上传完成，清空超时计时器
+      // Upload complete, clear timeout timer
       clearTimeout(progressTimer);
 
-      // 加签uri，获得url
+      // Add uri and get the url.
       const { url } = await workflowApi.SignImageURL(
         {
           uri,

@@ -25,7 +25,7 @@ const isEmptyArrayOrNil = (value: unknown) =>
   // eslint-disable-next-line eqeqeq
   (Array.isArray(value) && value.length === 0) || value == null;
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const createTransformOnInit =
   (
@@ -36,8 +36,8 @@ export const createTransformOnInit =
     const { inputs, outputs } = value || {};
     const inputParameters = inputs?.inputParameters || [];
 
-    // 由于在提交时，会将没有填值的变量给过滤掉，所以需要在初始化时，将默认值补充进来
-    // 参见：packages/workflow/nodes/src/workflow-json-format.ts:241
+    // Since variables that are not filled in will be filtered out during commit, the default value needs to be added during initialization
+    // See also: packages/workflow/nodes/src/workflow-json-format: 241
     const refillInputParamters = defaultInputValue.map(cur => {
       const { name } = cur;
       const target = inputParameters.find(item => item.name === name);

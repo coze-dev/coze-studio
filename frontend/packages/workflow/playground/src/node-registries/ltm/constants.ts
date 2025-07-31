@@ -18,10 +18,10 @@ import { nanoid } from 'nanoid';
 import { ViewVariableType } from '@coze-workflow/variable';
 import { I18n } from '@coze-arch/i18n';
 
-// 入参路径，试运行等功能依赖该路径提取参数
+// Imported parameter path, practice running and other functions rely on this path to extract parameters
 export const INPUT_PATH = 'inputs.inputParameters';
 
-// 定义固定出参
+// Define fixed exported parameters
 export const OUTPUTS = [
   {
     key: nanoid(),

@@ -44,7 +44,7 @@ import { PANEL_WIDTH } from '@/components/node-panel/constant';
 
 import { ADD_NODE_BUTTON_ID } from '../constants';
 
-// 获取面板位置的 hook
+// Get hook for panel position
 const useGetPanelPosition = () => {
   const playground = usePlayground();
   return useCallback(
@@ -59,7 +59,7 @@ const useGetPanelPosition = () => {
   );
 };
 
-// 获取节点中心
+// Get Node Center
 const getNodesCenter = (nodes: WorkflowNodeEntity[]): IPoint => {
   const allBounds = nodes.map(
     node => node.getData(FlowNodeTransformData).bounds,
@@ -68,7 +68,7 @@ const getNodesCenter = (nodes: WorkflowNodeEntity[]): IPoint => {
   return center;
 };
 
-// 选中节点并打开节点面板
+// Select the node and open the node panel
 const useFocusNode = () => {
   const editService = useService(WorkflowEditService);
   return useCallback(
@@ -79,7 +79,7 @@ const useFocusNode = () => {
   );
 };
 
-// 处理子画布节点的 hook
+// Hook to handle child canvas nodes
 const useAddSubCanvasNode = () => {
   const workflowDocument = useService(WorkflowDocument);
   const dragService = useService(WorkflowCustomDragService);
@@ -153,7 +153,7 @@ const useAddSubCanvasNode = () => {
   );
 };
 
-// 处理普通节点的 hook
+// Handling hooks for normal nodes
 const useAddNormalNode = () => {
   const workflowDocument = useService(WorkflowDocument);
   const nodePanelService = useService<WorkflowNodePanelService>(
@@ -213,7 +213,7 @@ const getNodeLinage = (node: WorkflowNodeEntity): WorkflowNodeEntity[] => {
   return linage;
 };
 
-// 获取容器节点
+// Get container node
 const getContainerNode = (selectService: WorkflowSelectService) => {
   const selectedNode = selectService.activatedNode;
   if (!selectedNode) {
@@ -244,7 +244,7 @@ const getContainerNode = (selectService: WorkflowSelectService) => {
     })
     .filter(Boolean)
     .find(subCanvas => subCanvas?.isCanvas);
-  // 父级中存在即认为是在子画布内
+  // Existing in the parent is considered to be in the child canvas
   if (!linageSubCanvas) {
     return;
   }

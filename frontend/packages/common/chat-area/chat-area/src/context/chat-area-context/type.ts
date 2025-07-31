@@ -75,18 +75,18 @@ export interface MixInitResponse {
   botVersion?: string;
   botInfoMap?: SenderInfoMap;
   userInfoMap?: UserInfoMap;
-  /** hasMore指导前继数据，nextHasMore指导后继数据 */
+  /** hasMore guides predecessor data, nextHasMore guides successor data */
   next_has_more?: boolean;
-  /** cursor指导向前翻页，nextCursor指导向后翻页 */
+  /** Cursor guides page forward, nextCursor guides page backward */
   next_cursor: string | undefined;
-  /** 当前读取到的message_index */
+  /** Currently read message_index */
   read_message_index?: string;
   backgroundInfo?: BackgroundImageInfo;
 }
 
 /**
- * 目前都是来自 verbose 的子类型；
- * 影响深远，慎重调整
+ * Currently all are subtypes from verbose;
+ * Far-reaching impact, carefully adjusted
  */
 export enum IgnoreMessageType {
   Knowledge,
@@ -102,11 +102,11 @@ export const allIgnorableMessageTypes = [
   IgnoreMessageType.Backwards,
 ];
 
-// TODO: 感觉preference需要赶紧与configs合并，否则初始化的地方拿不到数据（provider外）
+// TODO: I feel that preference needs to be merged with configs quickly, otherwise the data cannot be obtained at the initialization place (outside the provider)
 export interface ChatAreaConfigs {
   ignoreMessageConfigList: IgnoreMessageType[];
   showFunctionCallDetail: boolean;
-  // 是否group用户消息（合并头像）
+  // Whether to group user messages (merge avatars)
   groupUserMessage: boolean;
   uploadPlugin: typeof UploadPlugin;
 }
@@ -119,7 +119,7 @@ export type ExtendDataLifecycle = 'disable' | 'full-site';
 
 export interface ChatAreaProviderProps
   extends Partial<ProviderPassThroughPreference> {
-  // botId presetBot 必须提供其一, 加了运行时检查
+  // botId presetBot must provide one, plus runtime check
   botId?: string;
   spaceId?: string;
   presetBot?: PresetBot;
@@ -129,7 +129,7 @@ export interface ChatAreaProviderProps
   botVersion?: string;
   requestToInit: () => Promise<MixInitResponse>;
   /**
-   * @deprecated 废弃了，请使用插件化方案
+   * @Deprecated deprecated, please use plugin scheme
    */
   eventCallback?: ChatAreaEventCallback;
   /**
@@ -140,20 +140,20 @@ export interface ChatAreaProviderProps
    */
   createChatCoreOverrideConfig?: CreateChatCoreOverrideConfig;
   /**
-   * @deprecated 不好。后续新增配置参考 ProviderPassThroughPreference
+   * @Deprecated is not good. Subsequent new configuration reference ProviderPassThroughPreference
    */
   configs?: Partial<ChatAreaConfigs>;
-  /** 是否延长数据生命周期，以超出 provider 自身限制 */
+  /** Whether to extend the data lifecycle beyond the provider's own limitations */
   extendDataLifecycle?: ExtendDataLifecycle;
   enableChatCoreDebug?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pluginRegistryList?: RegisterPlugin<any>[];
   /**
-   * @deprecated 后续下线该参数，不应该随意使用
+   * @Deprecated This parameter should not be used at will
    */
   enableInitServiceRefactor?: boolean;
   /**
-   * 自定义停止回复按钮的等待状态
+   * Customize the wait state of the stop reply button
    */
   stopRespondOverrideWaiting?: boolean;
 }
@@ -211,15 +211,15 @@ export interface ChatAreaContext
 
 export interface ChatAreaProviderMethod {
   resetStateFullSite: () => void;
-  /** !!!给 coze home 开的后门，不要用!!! */
+  /** !!! The back door to the coze home, don't use it!!! */
   updateSenderInfo: UpdateBotInfoByImmer;
   /**
-   * !!!又加了一个后门我快不行了
+   * !!! Added another back door and I'm dying
    */
   updateWaitingSenderId: (id: WaitingSenderId) => void;
-  // 给bot store加的后门
+  // Backdoor to the bot store
   /**
-   * @deprecated 废弃，后续禁止使用
+   * @deprecated, subsequent use is prohibited
    */
   refreshMessageList: () => void;
 }

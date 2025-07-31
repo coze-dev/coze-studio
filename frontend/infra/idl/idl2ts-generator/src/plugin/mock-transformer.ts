@@ -110,7 +110,7 @@ export class MockTransformerPlugin implements IPlugin {
           nextOrder[name] = index;
         }
       });
-      // 按照 mock 文件中的顺序优先排序
+      // Prioritize in order in the mock file
       const getOrder = (name: string) =>
         typeof mockVarOrder[name] !== 'undefined'
           ? mockVarOrder[name]
@@ -210,7 +210,7 @@ export class MockTransformerPlugin implements IPlugin {
       if (isStructDefinition(statement)) {
         const wholeBody = statement.fields.find(isFullBody);
         if (wholeBody) {
-          // 处理 api.body="."
+          // Processing api.body = "."
           const { annotations } = wholeBody;
           if (hasDynamicJsonAnnotation(annotations)) {
             return '{}';
@@ -273,7 +273,7 @@ export class MockTransformerPlugin implements IPlugin {
       if (!fieldNames.has(fieldName)) {
         return;
       }
-      // 没有的，需要重新生成
+      // No, it needs to be regenerated.
       newPros.push(
         t.objectProperty(
           fieldName.includes('-')
@@ -351,11 +351,11 @@ export class MockTransformerPlugin implements IPlugin {
       const { valueType } = fieldType;
       output = t.arrayExpression([this.processValue(valueType)]);
     } else if (isSetType(fieldType)) {
-      // set 处理成array校验
+      // Set to array validation
       const { valueType } = fieldType;
       output = t.arrayExpression([this.processValue(valueType)]);
     } else if (isIdentifier(fieldType)) {
-      // 引用类型
+      // reference type
       const { refName, namespace } = parseIdFiledType(fieldType);
       if (!namespace) {
         output = t.callExpression(t.identifier(refName), []);
@@ -375,7 +375,7 @@ export class MockTransformerPlugin implements IPlugin {
     throw new Error(`can not process fieldType : ${fieldType.type}`);
   }
   private processConst(constVal: ConstValue) {
-    // 暂时统一处理成0
+    // Temporarily unified processing to 0
     if (isStringLiteral(constVal)) {
       return t.stringLiteral(constVal.value);
     }
@@ -410,11 +410,11 @@ export class MockTransformerPlugin implements IPlugin {
     const comment = { type: 'CommentLine', value: commentValues } as any;
     const target = this.findTarget(name.value, ctx);
     if (target) {
-      // 需要更新注释
+      // Comments need to be updated
       // target.trailingComments = [comment];
       return;
     }
-    // 枚举类型统一处理成常量
+    // Enumeration types are uniformly processed into constants
     const builder = template(`var ${name.value}= () => %%value%% `);
     const node = builder({
       value: t.numericLiteral(values[0] || 0),
@@ -437,7 +437,7 @@ export class MockTransformerPlugin implements IPlugin {
     // const variableDeclaration = t.addComment(
     //   ,
     //   'leading',
-    //   '暂时对const默认处理为0，如有需要请自行重新赋值'
+    //   'Temporarily, the default processing for const is 0, please reassign it yourself if necessary '
     // );
     return node;
   }

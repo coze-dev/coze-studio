@@ -29,7 +29,7 @@ import {
   saveConnectorType,
 } from '../../../src/save-manager/manual-save/multi-agent';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/bot-api', () => ({
   PlaygroundApi: {
     UpdateAgentV2: vi.fn(),
@@ -68,7 +68,7 @@ vi.mock('../../../src/save-manager/utils/save-fetcher', () => ({
 describe('multi-agent save manager', () => {
   const mockBotId = 'mock-bot-id';
   const mockSpaceId = 'mock-space-id';
-  // 创建一个符合 Agent 类型的模拟对象
+  // Create a mock object that conforms to the Agent type
   const mockAgent = {
     id: 'agent-1',
     name: 'Agent 1',
@@ -99,7 +99,7 @@ describe('multi-agent save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotInfoStore.getState as any).mockReturnValue({
       botId: mockBotId,
     });
@@ -133,22 +133,22 @@ describe('multi-agent save manager', () => {
     it('应该正确更新代理', async () => {
       await saveUpdateAgents(mockAgent as any);
 
-      // 验证 transformVo2Dto.agent 被调用
+      // Verify that transformVo2Dato.agent is called
       expect(
         useMultiAgentStore.getState().transformVo2Dto.agent,
       ).toHaveBeenCalledWith(mockAgent);
 
-      // 验证 saveFetcher 被调用，并且参数正确
+      // Verify that saveFetcher is called and the parameters are correct
       expect(saveFetcher).toHaveBeenCalledWith(
         expect.any(Function),
         ItemTypeExtra.MultiAgent,
       );
 
-      // 获取并执行 saveFetcher 的第一个参数（函数）
+      // Get and execute the first argument (function) of saveFetcher.
       const saveRequestFn = (saveFetcher as any).mock.calls[0][0];
       await saveRequestFn();
 
-      // 验证 UpdateAgentV2 被调用，并且参数正确
+      // Verify that UpdateAgentV2 is called and the parameters are correct
       expect(PlaygroundApi.UpdateAgentV2).toHaveBeenCalledWith({
         ...mockAgentDto,
         bot_id: mockBotId,
@@ -163,17 +163,17 @@ describe('multi-agent save manager', () => {
       const agentId = 'agent-to-delete';
       await saveDeleteAgents(agentId);
 
-      // 验证 saveFetcher 被调用，并且参数正确
+      // Verify that saveFetcher is called and the parameters are correct
       expect(saveFetcher).toHaveBeenCalledWith(
         expect.any(Function),
         ItemTypeExtra.MultiAgent,
       );
 
-      // 获取并执行 saveFetcher 的第一个参数（函数）
+      // Get and execute the first argument (function) of saveFetcher.
       const saveRequestFn = (saveFetcher as any).mock.calls[0][0];
       await saveRequestFn();
 
-      // 验证 UpdateAgentV2 被调用，并且参数正确
+      // Verify that UpdateAgentV2 is called and the parameters are correct
       expect(PlaygroundApi.UpdateAgentV2).toHaveBeenCalledWith({
         bot_id: mockBotId,
         space_id: mockSpaceId,
@@ -188,17 +188,17 @@ describe('multi-agent save manager', () => {
     it('应该正确保存多代理数据', async () => {
       await saveMultiAgentData();
 
-      // 验证 saveFetcher 被调用，并且参数正确
+      // Verify that saveFetcher is called and the parameters are correct
       expect(saveFetcher).toHaveBeenCalledWith(
         expect.any(Function),
         ItemTypeExtra.MultiAgent,
       );
 
-      // 获取并执行 saveFetcher 的第一个参数（函数）
+      // Get and execute the first argument (function) of saveFetcher.
       const saveRequestFn = (saveFetcher as any).mock.calls[0][0];
       await saveRequestFn();
 
-      // 验证 UpdateMultiAgent 被调用，并且参数正确
+      // Verify that UpdateMultiAgent is invoked and the parameters are correct
       expect(PlaygroundApi.UpdateMultiAgent).toHaveBeenCalledWith({
         space_id: mockSpaceId,
         bot_id: mockBotId,
@@ -210,21 +210,21 @@ describe('multi-agent save manager', () => {
 
   describe('saveConnectorType', () => {
     it('应该正确保存连接器类型', async () => {
-      // 使用数字代替枚举值
-      const connectorType = 0; // 假设 0 代表 Straight
+      // Using numbers instead of enumerated values
+      const connectorType = 0; // Assume 0 is Straight
       await saveConnectorType(connectorType as any);
 
-      // 验证 saveFetcher 被调用，并且参数正确
+      // Verify that saveFetcher is called and the parameters are correct
       expect(saveFetcher).toHaveBeenCalledWith(
         expect.any(Function),
         ItemTypeExtra.ConnectorType,
       );
 
-      // 获取并执行 saveFetcher 的第一个参数（函数）
+      // Get and execute the first argument (function) of saveFetcher.
       const saveRequestFn = (saveFetcher as any).mock.calls[0][0];
       await saveRequestFn();
 
-      // 验证 UpdateMultiAgent 被调用，并且参数正确
+      // Verify that UpdateMultiAgent is invoked and the parameters are correct
       expect(PlaygroundApi.UpdateMultiAgent).toHaveBeenCalledWith({
         space_id: mockSpaceId,
         bot_id: mockBotId,

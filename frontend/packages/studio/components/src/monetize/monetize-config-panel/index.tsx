@@ -23,11 +23,11 @@ import { MonetizeDescription } from '../monetize-description';
 import { MonetizeCreditRefreshCycle } from '../monetize-credit-refresh-cycle';
 
 export interface MonetizeConfigValue {
-  /** 是否开启付费 */
+  /** Whether to start payment */
   isOn: boolean;
-  /** 开启付费后，用户免费体验的次数 */
+  /** The number of free user experiences after starting payment */
   freeCount: number;
-  /** 刷新周期 */
+  /** refresh cycle */
   refreshCycle: BotMonetizationRefreshPeriod;
 }
 
@@ -36,8 +36,8 @@ interface MonetizeConfigPanelProps {
   value: MonetizeConfigValue;
   onChange: (value: MonetizeConfigValue) => void;
   /**
-   * 内置防抖后的 onChange 事件，业务侧可选择性使用，正常只传 onChange 即可
-   * （由于该组件是完全受控组件，因此不能只传 onDebouncedChange，必须传 onChange 实时更新视图）
+   * The onChange event after built-in anti-shake can be selectively used by the business side. Normally, only onChange can be transmitted.
+   * (Since this component is a fully controlled component, you cannot just pass onDebouncedChange, you must pass onChange to update the view in real time)
    */
   onDebouncedChange?: (value: MonetizeConfigValue) => void;
 }

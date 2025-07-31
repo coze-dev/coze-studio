@@ -20,10 +20,10 @@ import { SchemaExtractorParserName } from '../../constant';
 import { StandardNodeType } from '../../../../types';
 
 export const imageflowExtractorConfig: SchemaExtractorConfig = {
-  // api 节点 4
+  // API Node 4
   [StandardNodeType.Api]: [
     {
-      // 对应input name
+      // Corresponding input name
       name: 'inputs',
       path: 'inputs.inputParameters',
       parser: SchemaExtractorParserName.INPUT_PARAMETERS,

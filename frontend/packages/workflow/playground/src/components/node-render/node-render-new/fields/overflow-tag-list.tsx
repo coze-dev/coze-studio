@@ -36,7 +36,7 @@ export interface TagProps {
 }
 
 export interface OverflowTagListProps<T extends TagProps = TagProps> {
-  /* tag 列表 */
+  /* tag list */
   value?: T[];
   enableTooltip?: boolean;
   tagItemRenderer?: (tagData: T) => ReactNode;

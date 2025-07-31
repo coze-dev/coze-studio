@@ -72,7 +72,7 @@ export const Upload = <
     step => step.showThisStep?.(checkStatus) ?? true,
   );
   const steps = config.steps.filter((_v, index) => showStepFlags[index]);
-  // 数组过滤后，steps通过索引取值有问题，改为取对应step值关联item数据
+  // After the array is filtered, there is a problem with steps getting the value through the index, so it is changed to get the corresponding step value to associate the item data.
   const ContentComp = steps.find(item => item.step === currentStep)?.content;
   if (placeHolder) {
     return placeHolder;

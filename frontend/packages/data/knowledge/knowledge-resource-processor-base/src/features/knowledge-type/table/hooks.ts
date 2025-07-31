@@ -17,7 +17,7 @@
 /**
  * pure network request & common services
  */
-// TODO 待解
+// TODO to be solved
 
 import { type StoreApi, type UseBoundStore } from 'zustand';
 import { debounce, get } from 'lodash-es';
@@ -163,8 +163,8 @@ export const useFetchTableSchemaInfoReq = (
 };
 
 /**
- * 这个方法 所有的table链路都会用到
- * impure，会改store，因为所有table链路类似，所以放到这里
+ * This method is used by all table links
+ * Impure, will change the store, because all table links are similar, so put it here
  */
 export const useFetchTableSchemaInfo = <
   T extends UploadTableState<number> & UploadTableAction<number>,
@@ -187,7 +187,7 @@ export const useFetchTableSchemaInfo = <
           }
         : res;
       if (!isOnlyPreview) {
-        // 为什么有这个if，因为第一次请求全量，第二次请求isOnlyPreview
+        // Why is there this if, because the first request is full, and the second request is OnlyPreview.
         setOriginTableData(newData);
       }
       const validateRes = semanticValidator(newData);
@@ -202,8 +202,8 @@ export const useFetchTableSchemaInfo = <
   );
 };
 
-// TODO 待优化，这个函数包含了太多逻辑，非常乱
-// events action nl2ql链路
+// TODO needs to be optimized. This function contains too much logic and is very messy.
+// Events action nl2ql link
 export const useChangeTableSettingsNl2ql = <
   T extends UploadTableState<number> &
     UploadTableAction<number> &
@@ -224,7 +224,7 @@ export const useChangeTableSettingsNl2ql = <
   const AWAIT = 500;
   const params = useUploadFetchTableParams(useStore);
 
-  const isThirdResegment = isThirdResegmentFunc(opt ?? OptType.ADD, type); // 判断是否为三方的resegment
+  const isThirdResegment = isThirdResegmentFunc(opt ?? OptType.ADD, type); // Determine whether it is a tripartite resegment
   const isIncremental = isIncrementalFunc(opt ?? OptType.ADD);
 
   const onChangeTableSettings = debounce((v: TableSettings) => {
@@ -233,7 +233,7 @@ export const useChangeTableSettingsNl2ql = <
       type &&
       [UnitType.TABLE_GOOGLE_DRIVE, UnitType.TABLE_FEISHU].includes(type)
         ? {
-            // 飞书需要传 tos_uri
+            // Feishu needs to pass tos_uri
             tos_uri: type === UnitType.TABLE_FEISHU ? tosUrlRef : undefined,
             source_file_id: sourceFileId ?? undefined,
             document_source:
@@ -243,7 +243,7 @@ export const useChangeTableSettingsNl2ql = <
           }
         : params;
     fetchTableInfo({
-      // 如果为三方的resegment就不传 source_file
+      // If it is a resegment of three parties, it will not be transmitted source_file
       source_file: isThirdResegment ? undefined : sourceFile,
       table_sheet:
         !isIncremental &&
@@ -254,7 +254,7 @@ export const useChangeTableSettingsNl2ql = <
               header_line_idx: String(v.header_line_idx),
               start_line_idx: String(v.start_line_idx),
             },
-      // 如果为三方的resegment和增量导入，就传 document_id 其他情况不传
+      // If it is a three-party resegment and incremental import, it will pass document_id other cases will not pass
       document_id: isThirdResegment || isIncremental ? docID : undefined,
       table_data_type: TableDataType.AllData,
     });
@@ -315,7 +315,7 @@ export const useUpdateDocument = <
 
 /**
  * table custom createDocument
- * TODO 即将废弃，切到新的knowledge信息架构后要删掉
+ * TODO will be abandoned soon, and will be deleted after cutting to the new knowledge information architecture
  * @deprecated
  * @param setStatus
  * @param formApi
@@ -368,8 +368,8 @@ export const useCreateDocument = (
 
 /**
  * @deprecated
- * table unit name校验
- * TODO 待删，新链路已经不用，只直接用新的，因为产品功能是新的
+ * Table unit name verification
+ * TODO to be deleted, the new link is no longer used, only the new one is used directly, because the product function is new.
  */
 export const useValidateUnitName = () => {
   const { docID: docIdFromQuery, spaceID, datasetID } = useKnowledgeParams();

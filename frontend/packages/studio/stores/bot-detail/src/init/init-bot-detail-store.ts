@@ -58,11 +58,11 @@ export async function initBotDetailStore(params?: {
         customVersion: version,
         botInfoVersion,
       });
-      // 处理bot草稿页特有字段
+      // Handling bot draft page-specific fields
       if (scene === 'bot') {
         initBotSceneStore(botData, version);
       }
-      // 初始化store set
+      // Initialize store set
       initBotDetailStoreSet(botData, monetizeConfig);
       getBotInfoEvent.success();
     } catch (e) {
@@ -113,7 +113,7 @@ const initBotDetailStoreSet = (
   initModelStore(botData);
   initBotSkillStore(botData);
   initMultiAgentStore(botData);
-  // 设置信息付费信息
+  // Settings Information Payment Information
   initMonetizeConfigStore(monetizeConfig);
   initQueryCollectStore(botData);
   initAuditInfoStore(botData);

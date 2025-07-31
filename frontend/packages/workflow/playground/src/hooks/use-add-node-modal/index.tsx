@@ -47,19 +47,19 @@ import { createApiNodeInfo, createSubWorkflowNodeInfo } from './helper';
 const { Text } = Typography;
 
 /**
- * 子流程、插件节点关闭时的结果
+ * Result when subprocess, plug-in node is closed
  */
 export enum AddNodeModalCloseResult {
   /**
-   * 成功添加节点
+   * Added node successfully
    */
   NodeAdded = 'node-added',
   /**
-   * 取消
+   * cancel
    */
   Cancel = 'cancel',
   /**
-   * 打开 project 的新 tab
+   * Open a new tab for the project
    */
   OpenNewTab = 'new-tab',
 }
@@ -128,7 +128,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
           nodeJSON,
         });
       } else {
-        // 这里可能会失败，底层调用 released_workflows 接口
+        // This may fail, the underlying call released_workflows interface
         editService.addNode(
           StandardNodeType.SubWorkflow,
           nodeJSON,
@@ -169,7 +169,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
     onCloseRef.current?.(addNodeModalCloseResultRef.current);
     addNodeModalCloseResultRef.current = undefined;
   };
-  //  workflow 添加弹窗
+  //  Workflow Add pop-up window
   const workflowModalFrom = globalState.projectId
     ? WorkflowModalFrom.ProjectWorkflowAddNode
     : WorkflowModalFrom.WorkflowAddNode;
@@ -211,7 +211,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
     },
   });
 
-  // 图像流弹窗
+  // image stream pop-up
   const {
     node: imageFlowModal,
     open: openImageflow,
@@ -225,7 +225,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
     onClose: onCloseModal,
   });
 
-  // plugin 添加弹窗
+  // Plugin Add pop-up window
   const pluginModalFrom = globalState.projectId
     ? From.ProjectWorkflow
     : From.WorkflowAddNode;
@@ -263,14 +263,14 @@ export const useAddNodeModal = (prevAddNodeRef: {
       };
       const { isDrag } = prevAddNodeRef.current;
 
-      // 插件面板弹窗-点击添加插件，预先请求 api-detail 接口，获取 plugin 详情，调用 panel.tsx 的 handleSelectNode 方法
+      // Plugin panel pop-up - click Add Plugin, request the api-detail interface in advance, get the plugin details, and call the handleSelectNode method of panel.tsx.
       if (addNodeCallbackRef.current) {
         addNodeCallbackRef.current({
           nodeType: StandardNodeType.Api,
           nodeJSON,
         });
       } else {
-        // 拖拽「插件」，或者「子流程」节点自身，会走这里的逻辑，此时 isDrag 为 true
+        // Dragging the "plug-in", or the "subprocess" node itself, will follow the logic here, at which point isDrag is true
         editService.addNode(StandardNodeType.Api, nodeJSON, position, isDrag);
       }
       Toast.success(

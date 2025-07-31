@@ -22,7 +22,7 @@ import { shallow } from 'zustand/shallow';
 import { type StoreApi } from 'zustand';
 
 export interface DataViewerState {
-  // 折叠展开的状态
+  // Folded and unfolded state
   expand: Record<string, boolean> | null;
   setExpand: (key: string, v: boolean) => void;
 }

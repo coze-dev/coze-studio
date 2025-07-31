@@ -15,7 +15,7 @@
  */
  
 /**
- * 这个文件定义的是前端消费的数据, 用 VO (view object) 来表示
+ * This file defines the data consumed by the front end and is represented by VO (view object)
  */
 import { isNil, isUndefined } from 'lodash-es';
 
@@ -23,13 +23,13 @@ import type { ViewVariableType } from './view-variable-type';
 
 export interface RefExpressionContent {
   /**
-   * 引用值是一个变量的 key 路径
+   * The reference value is the key path of a variable
    */
   keyPath: string[];
 }
 
 /**
- * 值表达式类型
+ * value expression type
  */
 export enum ValueExpressionType {
   LITERAL = 'literal',
@@ -37,7 +37,7 @@ export enum ValueExpressionType {
   OBJECT_REF = 'object_ref',
 }
 /**
- * 用来存储 ValueExpression 的原始数据供前端消费
+ * Used to store ValueExpression's original data source for front-end consumption
  */
 export interface ValueExpressionRawMeta {
   type?: ViewVariableType;
@@ -46,7 +46,7 @@ export interface ValueExpressionRawMeta {
 }
 
 /**
- * 文本表达式
+ * Text expression
  */
 export interface LiteralExpression {
   type: ValueExpressionType.LITERAL;
@@ -55,7 +55,7 @@ export interface LiteralExpression {
 }
 
 /**
- * 对象表达式
+ * object expression
  */
 export interface ObjectRefExpression {
   type: ValueExpressionType.OBJECT_REF;
@@ -64,20 +64,20 @@ export interface ObjectRefExpression {
 }
 
 /**
- * 引用变量
+ * reference variable
  */
 export interface RefExpression {
   type: ValueExpressionType.REF;
   content?: RefExpressionContent;
   /**
-   * rawMeta 记录了该 ref expression 的类型
-   * 可能和所引用变量类型不同，此时会触发类型自动转换: [Workflow 类型自动转换]()
+   * rawMeta records the type of the ref expression
+   * May be different from the referenced variable type, which triggers automatic type conversion: [Workflow type automatic conversion] ()
    */
   rawMeta?: ValueExpressionRawMeta;
 }
 
 /**
- * 前端输入值表达式
+ * Front-end input value expression
  */
 export type ValueExpression =
   | RefExpression
@@ -116,12 +116,12 @@ export namespace ValueExpression {
       return true;
     }
 
-    // 如果 value 不是对象或者函数，也就是原生类型，在插件自定义组件中会存在
+    // If value is not an object or function, that is, a native type, it will exist in the plug-in custom component
     if (typeof value !== 'object' && typeof value !== 'function') {
       return isNil(value);
     }
 
-    // value.content 有多种类型，可能是 false
+    // Value.content has multiple types and may be false
     if (value?.content === '' || isNil(value?.content)) {
       return true;
     }
@@ -138,7 +138,7 @@ export namespace ValueExpression {
 }
 
 /**
- * 前端的value 输入值
+ * Front end value input value
  * {
  *     name: '',
  *     input: {

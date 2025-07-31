@@ -35,7 +35,7 @@ interface Issue {
 }
 
 /**
- * 输入树校验器
+ * input tree validator
  */
 export class InputTreeValidator {
   private node: FlowNodeEntity;
@@ -47,7 +47,7 @@ export class InputTreeValidator {
   }
 
   /**
-   * 校验函数
+   * check function
    * @param inputalues
    * @reurns
    */
@@ -58,7 +58,7 @@ export class InputTreeValidator {
   }
 
   /**
-   * 校验多个输入
+   * Validate multiple inputs
    * @param inputValues
    * @param path
    * @returns
@@ -90,13 +90,13 @@ export class InputTreeValidator {
       });
 
       const children = inputValues[i]?.children || [];
-      // 递归检查子节点
+      // Recursively check sub-node
       this.validateInputValues(children, path.concat(i, 'children'));
     }
   }
 
   /**
-   * 输入名称校验
+   * input name validation
    */
   private validateName({ value, values }) {
     if (!value) {
@@ -104,12 +104,12 @@ export class InputTreeValidator {
     }
 
     const names = values.map(v => v.name).filter(Boolean);
-    // 名称格式校验
+    // name format verification
     if (!VARIABLE_NAME_REGEX.test(value)) {
       return I18n.t('workflow_detail_node_error_format');
     }
 
-    // 重名校验
+    // duplicate name verification
     const foundSames = names.filter((name: string) => name === value);
 
     return foundSames.length > 1
@@ -118,12 +118,12 @@ export class InputTreeValidator {
   }
 
   /**
-   * 输入值校验
+   * input value validation
    */
   private validateInput({ value }) {
     const { variableValidationService } = this.playgroundContext;
 
-    // 校验空值
+    // check null value
     if (ValueExpression.isEmpty(value)) {
       return I18n.t('workflow_detail_node_error_empty');
     }
@@ -160,7 +160,7 @@ export function inputTreeValidator(params: ValidatorProps<InputValueVO>) {
         ctx.addIssue({
           path: issue.path,
           message: issue.message,
-          // FIXME: 表单校验底层依赖了 validation / code，去掉就跑不通了
+          // FIXME: The underlying layer of form validation relies on validation/code, so it won't work if you remove it.
           validation: 'regex',
           code: 'invalid_string',
         });

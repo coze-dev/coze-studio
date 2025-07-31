@@ -184,7 +184,7 @@ describe('ref-input-parameters-parser', () => {
         param4: undefined,
         param5: {
           type: 'string',
-          value: {}, // 空的 value 对象
+          value: {}, // Empty value object
         },
       },
     ];

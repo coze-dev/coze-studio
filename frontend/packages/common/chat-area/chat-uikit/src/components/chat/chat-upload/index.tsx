@@ -29,18 +29,18 @@ import {
 
 interface IChatUploadProps {
   /**
-   * 上传事件回调
-   * @param uploadType 上传类型 [IMAGE=0 FILE=1]
-   * @param file 文件
+   * Upload event callback
+   * @param uploadType [IMAGE = 0 FILE = 1]
+   * @param file
    * @returns void
    */
   onUpload: (uploadType: UploadType, file: File) => void;
   /**
-   * 文案信息配置
+   * Copywriting information configuration
    */
   copywritingConfig?: IChatUploadCopywritingConfig;
   /**
-   * 文件最大尺寸（单位byte）
+   * Maximum file size (in bytes)
    */
   maxFileSize?: number;
   isDisabled?: boolean;
@@ -66,8 +66,8 @@ export const ChatUpload: FC<IChatUploadProps> = props => {
   } = props;
 
   /**
-   * 处理上传
-   * @param fileList 文件List
+   * handle uploads
+   * @param fileList
    * @returns void
    */
   const handleUpload = (fileList: File[]) => {
@@ -86,13 +86,13 @@ export const ChatUpload: FC<IChatUploadProps> = props => {
       return;
     }
 
-    // 是否存在超出大小的文件
+    // Is there a file that is out of size?
     const hasOverflowLimitFileSize = fileList.some(
       file => file.size > maxFileSize,
     );
     const hasEmptyFile = fileList.some(file => file.size <= 0);
 
-    // 文件大小超过预期大小的错误处理
+    // Error handling if the file size exceeds the expected size
     if (hasOverflowLimitFileSize) {
       Toast.warning({
         showClose: false,

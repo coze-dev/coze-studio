@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 符合预期
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- as expected
 export const isEmptyValue = (value: any) => value === '' || value === undefined;

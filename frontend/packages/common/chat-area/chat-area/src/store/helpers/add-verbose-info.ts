@@ -23,7 +23,7 @@ import { type MessageMeta } from '../types';
  * @param metaList
  */
 export const addJumpVerboseInfo = (metaList: MessageMeta[]) => {
-  // 从后向前扫描, 遇到jumpVerbose消息，设置相同的reply_id的answer消息的hasJumpVerbose为true
+  // Scan from back to front, encounter jumpVerbose message, set the same reply_id answer message for hasJumpVerbose to true
   let lastJumpVerboseMeta = null;
   for (let i = metaList.length - 1; i >= 0; i--) {
     const current = metaList[i];

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // eslint-disable-next-line @coze-arch/no-batch-import-or-export, @typescript-eslint/consistent-type-imports
 import * as zustand from 'zustand';
 import { act } from '@testing-library/react';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-  // @ts-expect-error -- UT 忽略
+  // @ts-expect-error -- UT ignored
   await vi.importActual<typeof zustand>('zustand');
 
 // a variable to hold reset functions for all stores declared in the app

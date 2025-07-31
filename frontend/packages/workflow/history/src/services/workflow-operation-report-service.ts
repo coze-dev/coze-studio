@@ -112,7 +112,7 @@ export class WorkflowOperationReportService {
   private shouldReport(operation: Operation) {
     const { value, type } = operation;
 
-    // 修改同一个节点，同一个属性只上报一次， 防止频繁编辑上报过多
+    // Modify the same node and report the same attribute only once to prevent frequent editing and reporting too much
     if (
       this.isChangeDataType(type) &&
       this.lastOperation &&

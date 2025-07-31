@@ -54,7 +54,7 @@ export const UserLabel: FC<{
   );
 };
 
-// TODO: 增加 show background 变体
+// TODO: Added show background variant
 export const UserName: FC<{
   userUniqueName?: string;
   className?: string;

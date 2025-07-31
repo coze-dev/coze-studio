@@ -49,7 +49,7 @@ export const COMMENT_NODE_REGISTRY: WorkflowNodeRegistry = {
       const { inputs, ...rest } = value;
       return {
         ...rest,
-        schemaType: inputs?.schemaType ?? CommentDefaultSchemaType, // 默认使用 slate 格式，后续考虑支持其他格式
+        schemaType: inputs?.schemaType ?? CommentDefaultSchemaType, // The default is to use the slate format, and other formats will be considered later.
         note: inputs?.note ?? CommentDefaultNote,
         size: value.size ?? CommentDefaultSize,
       };
@@ -59,13 +59,13 @@ export const COMMENT_NODE_REGISTRY: WorkflowNodeRegistry = {
       return {
         ...rest,
         inputs: {
-          schemaType: schemaType ?? CommentDefaultSchemaType, // 默认使用 slate 格式，后续考虑支持其他格式
+          schemaType: schemaType ?? CommentDefaultSchemaType, // The default is to use the slate format, and other formats will be considered later.
           note: note ?? CommentDefaultNote,
         },
         size: value.size ?? CommentDefaultSize,
       };
     },
   },
-  getInputPoints: () => [], // Comment 节点没有输入
-  getOutputPoints: () => [], // Comment 节点没有输出
+  getInputPoints: () => [], // Comment node no input
+  getOutputPoints: () => [], // Comment node has no output
 };

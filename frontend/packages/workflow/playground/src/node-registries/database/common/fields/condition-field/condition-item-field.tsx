@@ -56,7 +56,7 @@ export const ConditionItemField = withField(
 
     useCleanupRightValueOnOperatorChange();
 
-    // 属于、不属于操作符情况下，右值的类型是左值的数组类型
+    // In the case of belonging to or not belonging to the operator, the type of the rvalue is the array type of the lvalue
     const rightFieldDataType = useMemo(
       () =>
         ['IN', 'NOT_IN'].includes(operator || '')

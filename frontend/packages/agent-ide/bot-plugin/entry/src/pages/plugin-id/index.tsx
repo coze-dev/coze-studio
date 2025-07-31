@@ -155,7 +155,7 @@ const PluginDetailPage = ({
   );
 
   const [params, setParams] = useState<GetPluginAPIsRequest>({
-    //请求参数
+    //request parameters
     page: 1,
     size: 10,
     plugin_id: pluginID,
@@ -236,7 +236,7 @@ const PluginDetailPage = ({
 
   const dataSource = data?.api_info;
 
-  /** 不再提示 */
+  /** no longer prompt */
   const noTips = async () => {
     const res = await PluginDevelopApi.NoUpdatedPrompt({
       plugin_id: pluginID,
@@ -248,7 +248,7 @@ const PluginDetailPage = ({
 
   const checkPublish = async () => {
     if (!pluginInfo?.published) {
-      //未发布过点击直接发布
+      //It has not been published. Click to publish directly.
       setPublishPopShow(true);
       return;
     }
@@ -264,7 +264,7 @@ const PluginDetailPage = ({
       setPublishPopData(res);
       setShowPublishCheckPop(true);
     } else {
-      //没有修改api直接发布
+      //Publish directly without modifying the api
       setPublishPopShow(true);
     }
   };
@@ -308,14 +308,14 @@ const PluginDetailPage = ({
       onStatusChange?.('error');
     }
   }, [initSuccessed]);
-  // 区分ide的跳转
+  // Differentiate IDE jumps
   const handleIdeJump = (
     initialAction = InitialAction.DEFAULT,
     toolId = '',
   ) => {
-    // ide 逻辑
+    // IDE logic
     if (isCloudIDEPlugin) {
-      // 改变路由地址 返回的时候会清掉
+      // Change the routing address and it will be cleared when returning.
       preloadIDE?.handleShowIde({ initialAction, toolId });
     } else if (toolId) {
       resourceNavigate.tool?.(toolId);
@@ -337,7 +337,7 @@ const PluginDetailPage = ({
           canEdit ? { mode: 'preview' } : {},
         );
       }
-    }, // 点击行
+    }, // Click line
   });
 
   const { exampleNode, openExample } = useEditExample({
@@ -445,7 +445,7 @@ const PluginDetailPage = ({
         ) : null}
 
         <Layout.Content className={s['layout-content']}>
-          {/* 已发布且有更新展示 */}
+          {/* Published and updated */}
           {pluginInfo?.status &&
           pluginInfo?.published &&
           canEdit &&
@@ -470,7 +470,7 @@ const PluginDetailPage = ({
               }
             />
           ) : null}
-          {/* plugin简介 */}
+          {/* Plugin Introduction */}
           {pluginInfo ? (
             <PluginHeader
               pluginInfo={pluginInfo}
@@ -502,7 +502,7 @@ const PluginDetailPage = ({
                       onBeforeClick={() => {
                         setShowDropDownItem(undefined);
                         if (isCloudIDEPlugin) {
-                          // 改变路由地址 返回的时候会清掉
+                          // Change the routing address and it will be cleared when returning.
                           preloadIDE?.handleShowIde({
                             initialAction: InitialAction.CREATE_TOOL,
                             toolId: '',
@@ -529,7 +529,7 @@ const PluginDetailPage = ({
                       {I18n.t('import')}
                     </Button>
                   ) : null}
-                  {/* ! 发布按钮 */}
+                  {/* ! Post button */}
                   {isRenderIDEPublishButton ? (
                     <Tooltip
                       position="left"
@@ -598,7 +598,7 @@ const PluginDetailPage = ({
               }
             />
           ) : null}
-          {/* 工具列表表格 */}
+          {/* Tool List Form */}
           {!!dataSource?.length && (
             <div className="mb-[24px] mt-[36px] text-[18px] weight-[600]">
               {I18n.t('plugin_api_list_table_name')}
@@ -615,7 +615,7 @@ const PluginDetailPage = ({
               onRow,
               onChange: e => {
                 if (e.sorter?.sortOrder) {
-                  //时间排序
+                  //chronological sorting
                   setParams(p => ({
                     ...p,
                     page: 1,
@@ -634,7 +634,7 @@ const PluginDetailPage = ({
                   btnText: canEdit ? createToolText : undefined,
                   btnOnClick: () => {
                     if (isCloudIDEPlugin) {
-                      // 改变路由地址 返回的时候会清掉
+                      // Change the routing address and it will be cleared when returning.
                       preloadIDE?.handleShowIde({
                         initialAction: InitialAction.CREATE_TOOL,
                         toolId: '',

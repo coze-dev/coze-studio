@@ -156,7 +156,7 @@ export class FlowDockPanel extends DockPanel {
   }
 
   handleEvent(event: Event): void {
-    // 避免不同 dock-panel 之间的 tab 相互拖拽
+    // Avoid dragging tabs between different dock-panels
     const dragSourceId = (event as Event & { source?: HTMLElement }).source?.id;
     const targetArea = (event.target as HTMLElement)?.closest?.(
       `#${dragSourceId}`,
@@ -165,7 +165,7 @@ export class FlowDockPanel extends DockPanel {
       return;
     }
 
-    // 禁止分屏
+    // Disable split screen
     if (this._options?.disabledSplitScreen) {
       return;
     }

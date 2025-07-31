@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// TODO 为了联调先封装一个业务组件，后面再抽象成通用的request select
+// TODO first encapsulates a business component for joint debugging, and then abstracts it into a general request select.
 import React, { useEffect, useMemo, useState, type FC } from 'react';
 
 import { GenerationDiversity, RESPONSE_FORMAT_NAME } from '@coze-workflow/base';
@@ -55,24 +55,24 @@ export const ModelSetting: FC<ModelSettingProps> = ({
       ? true
       : cacheData.expand,
   );
-  // Customize 要记住用户最后的操作，模式切换回来时用作默认值
+  // Customize to remember the last action of the user, and use as the default when the mode switches back
   const _defaultValue = {
     ...defaultValue,
     [GenerationDiversity.Customize]:
       cacheData[id] ?? defaultValue?.[GenerationDiversity.Customize],
   };
 
-  // 要记住展开状态，workflow 级共享
+  // To remember the expanded state, workflow level sharing
   useEffect(() => {
     cacheData.expand = settingExpand;
   }, [settingExpand]);
 
   const { doms, generationDiversityGroupTitle } = useMemo(() => {
-    // 特化一：把 response format 过滤掉，在 output 节点中展示
+    // Specialization 1: Filter out the response format and display it in the output node
     const modelParams =
       model?.model_params?.filter(m => m.name !== RESPONSE_FORMAT_NAME) ?? [];
 
-    // 先拿到分组
+    // Get the group first
     let groups: ModelParamClass[] = [];
     modelParams.forEach(m => {
       if (
@@ -83,19 +83,19 @@ export const ModelSetting: FC<ModelSettingProps> = ({
       }
     });
 
-    // 特化二：Generation Diversity title 样式是写死的 。跟后端的约定：Generation Diversity 的 class_id === 1
+    // Specialization 2: Generation Diversity title The style is written dead. Convention with the backend: Generation Diversity class_id === 1
     const generationDiversityGroup = groups.find(d => d.class_id === 1);
     const _generationDiversityGroupTitle =
       generationDiversityGroup?.label || '';
     if (generationDiversityGroup) {
-      // 如果有 Generation Diversity ，必须在最上面
+      // If there is Generation Diversity, it must be at the top
       groups = [
         generationDiversityGroup,
         ...groups.filter(d => d.class_id !== generationDiversityGroup.class_id),
       ];
     }
 
-    // 按分组顺序，逐个渲染 setter
+    // Render setters one by one in grouping order
     const _doms: React.ReactNode[] = [];
     const _setCacheData = (v: { [k: string]: unknown }) => {
       if (v.generationDiversity === GenerationDiversity.Customize) {
@@ -103,16 +103,16 @@ export const ModelSetting: FC<ModelSettingProps> = ({
       }
     };
     groups.forEach((g, i) => {
-      // 组与组直接插入分割线，第一组不需要
+      // Groups are inserted directly into the dividing line, the first group is not required
       if (i !== 0) {
         _doms.push(<Divider />);
       }
-      // 如果收起 && 属于生成多样性这组，就不渲染
+      // If the hide & & belongs to the group Generative Diversity, it will not be rendered
       if (!settingExpand && generationDiversityGroup?.class_id === g.class_id) {
         return;
       }
 
-      // 生成多样性 title 内置了，不需要额外添加
+      // Generate diversity title built-in, no need to add additional
       if (generationDiversityGroup?.class_id !== g.class_id) {
         _doms.push(<SettingLayout title={g.label ?? ''} bolder />);
       }
@@ -131,14 +131,14 @@ export const ModelSetting: FC<ModelSettingProps> = ({
           type,
         } = item;
 
-        // api/bot/get_type_list 接口给的是 test_key，save 接口需要的是 testKey。前端不感知（response_format 除外）
+        // The API/bot/get_type_list interface gives test_key, and the save interface requires testKey. The front end is not aware (except response_format)
         const key = getCamelNameName(name ?? '');
         const _value = getValueByType<string | number | undefined>(
           value?.[key],
           type,
         );
 
-        // 如果有 options 属性，则用 Select
+        // If there is an options attribute, use Select
         if (options?.length) {
           const _optionsList = options.map(option => ({
             ...option,
@@ -168,7 +168,7 @@ export const ModelSetting: FC<ModelSettingProps> = ({
               }
             />,
           );
-          // 否则，就当数字处理，用 Slider + NumberInput
+          // Otherwise, treat it as number processing, using Slider + NumberInput
         } else {
           _doms.push(
             <SettingSlider
@@ -212,7 +212,7 @@ export const ModelSetting: FC<ModelSettingProps> = ({
       //   e.stopPropagation();
       //   e.preventDefault();
       // }}
-      // 阻止画布框选
+      // Block canvas framing
       onMouseDown={e => {
         e.stopPropagation();
       }}
@@ -292,7 +292,7 @@ export const ModelSetting: FC<ModelSettingProps> = ({
         }
       />
 
-      {/* 根据后端返回数据动态渲染的 setter */}
+      {/* A setter dynamically rendered according to the backend */}
       {doms}
     </div>
   );

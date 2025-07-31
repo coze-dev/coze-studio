@@ -18,15 +18,15 @@
 /* eslint-disable @typescript-eslint/no-useless-constructor */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ConnectionOptions {
-  // 调用的业务参数，对应消息结构中的headers['X-Coze-Biz']
+  // The business parameters of the call, corresponding to headers in the message structure ['X-Coze-Biz']
   biz: string;
-  // 发送给的服务的id
+  // The ID of the service sent to
   service?: number;
-  // 是否接受所有消息。默认false, onMessage只会emit biz相关消息
+  // Whether to accept all messages. Default false, onMessage will only emit biz related messages
   acceptAllBizMessages?: boolean;
-  // 接受的biz消息, 默认是传入的biz
+  // The accepted biz message, the default is the incoming biz.
   acceptBiz?: string[];
-  // fws 初始化参数
+  // FWS initialization parameter
   fwsOptions?: any;
 }
 
@@ -44,19 +44,19 @@ export class Connection {
   constructor(props: ConnectionOptions, channel: any) {}
 
   /**
-   * 获取建连参数
+   * Get connection parameters
    */
   getInitConfig() {}
 
   getLaunchConfig() {}
 
   /**
-   * 监听fws
+   * Monitor fws
    */
   addEventListener(event: string, listener: (data: any) => void) {}
 
   /**
-   * 移除fws监听
+   * Remove fws listening
    */
   removeEventListener<T extends keyof Record<string, any>>(
     event: T,
@@ -69,7 +69,7 @@ export class Connection {
 
   pingOnce() {}
 
-  // 关闭connection, 需要通知manager, 由它决定是否真正关闭通道
+  // To close the connection, you need to notify the manager, and it will decide whether to really close the channel
   close() {}
 
   destroy() {}
@@ -81,14 +81,14 @@ export class WebSocketManager {
   channel: any = null;
 
   /**
-   * 创建一个connection实例
+   * Create a connection instance
    */
   createConnection(options: ConnectionOptions): Connection {
     return new Connection(options, this.channel);
   }
 
   /**
-   * 创建一个新的ws通道，不复用现有通道
+   * Create a new WS channel without reusing the existing channel
    */
   createChannel(options: ConnectionOptions) {}
 }

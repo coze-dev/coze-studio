@@ -26,7 +26,7 @@ interface IPops {
   filter: Filter;
 }
 
-// 忽略 struct 中的字段
+// Ignore fields in struct
 export class IgnoreStructFiledPlugin {
   private filter: Filter;
   constructor({ filter }: IPops) {

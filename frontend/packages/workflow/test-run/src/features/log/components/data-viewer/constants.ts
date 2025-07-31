@@ -14,13 +14,13 @@
  * limitations under the License.
  */
  
-/** 预置的特殊的 key */
+/** Preset special key */
 export enum LogObjSpecialKey {
   Error = '$error',
   Warning = '$warning',
 }
 
-/** log 中 value 的显示样式类型 */
+/** Display style type of value in log */
 export enum LogValueStyleType {
   Default,
   Number,

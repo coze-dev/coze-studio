@@ -15,7 +15,7 @@
  */
  
 /**
- * 暴露预发送消息实例，预发送消息用于创建消息后上屏，消息格式和Message<T>一致
+ * Expose the pre-sent message instance, the pre-sent message is used to be uploaded to the screen after the message is created, and the message format is consistent with Message < T >
  */
 
 import {
@@ -37,25 +37,25 @@ export class PreSendLocalMessage<T extends ContentType> implements Message<T> {
   // @ts-expect-error should be fixed
   extra_info: Message<T>['extra_info'] = {
     local_message_id: '',
-    input_tokens: '', // 用户 query 消耗的 token
-    output_tokens: '', // llm 输出消耗的 token
-    token: '', // 总的 token 消耗
+    input_tokens: '', // User query consumed token
+    output_tokens: '', // LLM output consumed token
+    token: '', // Total token consumption
     plugin_status: 'success', // "success" or "fail"
-    time_cost: '', // 中间调用过程的时间
+    time_cost: '', // Intermediate invocation time of procedure
     workflow_tokens: '',
     bot_state: '', // {   bot_id?: string;agent_id?: string;agent_name?: string; }
-    plugin_request: '', // plugin 请求的参数
-    tool_name: '', // 调用的 plugin 下具体的 api 名称
-    plugin: '', // 调用的 plugin 名称
+    plugin_request: '', // Parameters of the plugin request
+    tool_name: '', // Specific API name under the invoked plugin
+    plugin: '', // Name of the plugin invoked
   };
-  index?: number; // message在一次 response 的排序
-  is_finish?: boolean; // 消息状态
-  section_id: string; // 消息属于的上下文id
+  index?: number; // Order of messages in a response
+  is_finish?: boolean; // message status
+  section_id: string; // The context id to which the message belongs
   content_type: ContentType;
   debug_messages?: ChunkRaw[];
   content: string;
   content_obj: MessageContent<T>;
-  file_upload_result?: 'success' | 'fail'; // 文件上传状态
+  file_upload_result?: 'success' | 'fail'; // file upload status
   role: MessageInfoRole;
   type: MessageType;
   message_status?: MessageStatus;

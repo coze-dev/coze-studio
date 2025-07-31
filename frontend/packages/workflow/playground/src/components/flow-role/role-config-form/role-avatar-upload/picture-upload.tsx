@@ -44,7 +44,7 @@ interface PackageUploadProps {
     contentNotLegalText?: string;
   };
   /**
-   * 自动生成的最大候选数量
+   * Maximum number of candidates automatically generated
    * @default 5
    */
   maxCandidateCount?: number;
@@ -56,7 +56,7 @@ interface PackageUploadProps {
 }
 
 export const RoleAvatarUpload = (props: PackageUploadProps) => {
-  //   业务
+  //   business
   const {
     onChange,
     value,
@@ -108,7 +108,7 @@ export const RoleAvatarUpload = (props: PackageUploadProps) => {
         maxSize={2 * 1024}
         onSizeError={() => {
           Toast.error({
-            // starling 切换
+            // Starling toggle
             content: I18n.t(
               'dataset_upload_image_warning',
               {},

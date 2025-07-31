@@ -18,7 +18,7 @@ import { usePageRuntimeStore } from '../store/page-runtime';
 import { useCollaborationStore, EditLockStatus } from '../store/collaboration';
 
 /**
- * 非响应式；参考 useBotDetailIsReadonly 方法
+ * Non-responsive; reference useBotDetailIsReadonly method
  */
 export function getBotDetailIsReadonly() {
   const pageRuntime = usePageRuntimeStore.getState();

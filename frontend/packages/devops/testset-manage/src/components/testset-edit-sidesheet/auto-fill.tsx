@@ -37,7 +37,7 @@ interface AutoFillButtonProps {
   onAutoFill?: (schemas: NodeFormSchema[]) => void;
 }
 
-/** AI生成节点数据的按钮 */
+/** AI button to generate node data */
 export function AutoFillButton({
   className,
   style,
@@ -79,7 +79,7 @@ export function AutoFillButton({
     abortRef.current?.abort();
   };
 
-  // 社区版暂不支持该功能
+  // The community edition does not support this function for the time being
   if (!FLAGS['bot.devops.testset_auto_gen'] || !(IS_OVERSEA || IS_BOE)) {
     return null;
   }

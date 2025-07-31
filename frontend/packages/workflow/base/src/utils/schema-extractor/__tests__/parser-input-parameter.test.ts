@@ -73,10 +73,10 @@ it('extract schema with inputParameters parser', () => {
     ],
   });
   const extractedSchema = schemaExtractor.extract({
-    // llm 大模型节点 3
+    // LLM Large Model Node 3
     [StandardNodeType.LLM]: [
       {
-        // 对应input name
+        // Corresponding input name
         name: 'inputs',
         path: 'inputs.inputParameters',
         parser: SchemaExtractorParserName.INPUT_PARAMETERS,

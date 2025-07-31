@@ -68,7 +68,7 @@ export const ScrollView = forwardRef<ScrollViewController, ScrollViewProps>(
     },
     outerRef,
   ) {
-    /** 在最开始的时候，默认的滚动状态 */
+    /** At the very beginning, the default scrolling state */
     const defaultScrollStatus = reverse
       ? ScrollStatus.Bottom
       : ScrollStatus.Top;
@@ -113,7 +113,7 @@ export const ScrollView = forwardRef<ScrollViewController, ScrollViewProps>(
 
         const anchorThreshold = 0;
 
-        /** 滚动至事件上边界 */
+        /** Scroll to the upper boundary of the event */
         if (getScrollTop() < topThreshold) {
           if (!isReachTopRef.current) {
             isReachTopRef.current = true;
@@ -126,7 +126,7 @@ export const ScrollView = forwardRef<ScrollViewController, ScrollViewProps>(
           }
         }
 
-        /** 滚动至事件下边界 */
+        /** Scroll to the lower boundary of the event */
         if (getScrollBottom() < bottomThreshold) {
           if (!isReachBottomRef.current) {
             isReachBottomRef.current = true;
@@ -139,7 +139,7 @@ export const ScrollView = forwardRef<ScrollViewController, ScrollViewProps>(
           }
         }
 
-        /** 滚动至自动贴边（anchor）边界，先释放再延迟更新贴边态，防止还未滚出贴边阈值时自动贴边和滚动冲突 */
+        /** Scroll to the automatic welt (anchor) boundary, release first and then delay updating the welt state to prevent automatic welt and scroll conflicts when the welt threshold has not been rolled out */
         scrollStatusRef.current = ScrollStatus.Inner;
         if (
           getScrollTop() <= anchorThreshold &&

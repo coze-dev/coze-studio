@@ -99,7 +99,7 @@ const AgentIdePrompt = (props: AgentIdePromptProps) => {
         librarys={libraryList}
         onAddLibrary={addLibrary}
         spaceId={space_id}
-        // Agent IDE 在抖音分身场景下，需要传入分身id进行判断当前资源是否存在
+        // Agent IDE In the Douyin doppelganger scenario, you need to pass in the doppelganger id to determine whether the current resource exists
         avatarBotId={
           businessType === BusinessType.DouyinAvatar ? botId : undefined
         }

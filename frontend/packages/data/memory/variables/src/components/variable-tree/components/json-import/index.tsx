@@ -47,19 +47,19 @@ export const JSONImport: FC<JSONImportProps> = props => {
   const [jsonString, setJsonString] = useState('');
 
   const handleImport = (data: SchemaNode[]) => {
-    const allowDepth = MAX_LEVEL; // 最大深度限制
-    const allowNameLength = MAX_NAME_LENGTH; // 名称长度限制
-    const maxVariableCount = MAX_JSON_VARIABLE_COUNT; // 最大变量数量限制
+    const allowDepth = MAX_LEVEL; // Maximum depth limit
+    const allowNameLength = MAX_NAME_LENGTH; // Name length limit
+    const maxVariableCount = MAX_JSON_VARIABLE_COUNT; // Maximum number of variables limit
     const variables = exportVariableService(
       data,
       {
         groupId: treeData.groupId,
         channel: treeData.channel,
       },
-      treeData, // 传入原始变量以保持variableId
+      treeData, // Pass in the original variable to maintain the variableId.
     );
 
-    // 裁切非法数据
+    // Crop illegal data
     const dataCutoff = cutOffInvalidData({
       data: variables,
       allowDepth,
@@ -67,12 +67,12 @@ export const JSONImport: FC<JSONImportProps> = props => {
       maxVariableCount,
     });
 
-    // 先深拷贝原始数据
+    // First deep copy the original data source
     const clonedTreeData = cloneDeep(treeData);
-    // 合并新旧数据
+    // Merge old and new data
     const mergedData = merge(clonedTreeData, dataCutoff[0]);
 
-    // 更新数据
+    // update data
     return onOk(mergedData);
   };
 

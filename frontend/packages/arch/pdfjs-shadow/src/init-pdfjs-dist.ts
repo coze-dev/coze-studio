@@ -19,7 +19,7 @@ import { GlobalWorkerOptions } from 'pdfjs-dist';
 import { generatePdfAssetsUrl } from './generate-assets';
 
 /**
- * 该方法用于初始化 pdfjs-dist 的 workerSrc 参数，可重复调用
+ * This method is used to initialize the workerSrc parameter of pdfjs-dist, which can be called repeatedly
  */
 export const initPdfJsWorker = () => {
   if (!GlobalWorkerOptions.workerSrc) {

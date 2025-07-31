@@ -100,7 +100,7 @@ export const useRefInputNode = ({
   ) => ReactNode;
   enableSelectNode?: boolean;
   popoverStyle?: CSSProperties;
-  /* 类型限制，引用类型不满足限制时，显示警告信息 */
+  /* Type restrictions, when the reference type does not meet the restrictions, a warning message is displayed */
   variableTypeConstraints?: RefValueDisplayProps['variableTypeConstraints'];
 }) => {
   const onRefChange = useCallback(

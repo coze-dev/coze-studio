@@ -39,7 +39,7 @@ export const Preview: FC<{ layout?: Layout }> = ({ layout }) => {
   };
   return (
     <ImagePreview
-      // image preview 的默认 z index 比 toast 要高，调小一些
+      // The default z index for image preview is higher than toast and smaller
       zIndex={1009}
       previewCls={layout === Layout.MOBILE ? s['image-preview-mobile'] : ''}
       src={previewURL}

@@ -18,7 +18,7 @@ import { SkillKeyEnum } from '@coze-agent-ide/tool-config';
 import { OpenBlockEvent } from '@coze-arch/bot-utils';
 type IOpenBlockEventToToolKey = Record<string, SkillKeyEnum>;
 
-// `模块折叠 有关事件` 和 `模块主键` 之间的映射关系
+// Module folding, the mapping between related events and module primary keys
 export const openBlockEventToToolKey: IOpenBlockEventToToolKey = {
   [OpenBlockEvent.PLUGIN_API_BLOCK_OPEN]: SkillKeyEnum.PLUGIN_API_BLOCK,
   [OpenBlockEvent.WORKFLOW_BLOCK_OPEN]: SkillKeyEnum.WORKFLOW_BLOCK,

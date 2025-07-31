@@ -29,7 +29,7 @@ export const nodeOutputName: SetterExtension = {
   validator: ({ value, context }) => {
     const { node } = context;
 
-    /** 命名校验 */
+    /** name check */
     if (!nameValidationRule.test(value)) {
       return I18n.t('workflow_detail_node_error_format');
     }

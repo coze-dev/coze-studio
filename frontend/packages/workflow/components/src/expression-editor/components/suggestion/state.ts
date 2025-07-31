@@ -85,7 +85,7 @@ export const suggestionReducer = (
       action.payload as SuggestionActionPayload<SuggestionActionType.SetVisible>;
     if (state.entities.selectorBoxConfig) {
       if (visible) {
-        state.entities.selectorBoxConfig.disabled = true; // 防止鼠标拖选不触发点击
+        state.entities.selectorBoxConfig.disabled = true; // Prevent mouse dragging from triggering clicks
       }
       if (!visible) {
         state.entities.selectorBoxConfig.disabled = false;
@@ -166,7 +166,7 @@ export const suggestionReducer = (
   return state;
 };
 
-/** 获取状态 */
+/** Get status */
 export const useSuggestionReducer = (
   initialState: Omit<
     SuggestionState,
@@ -182,15 +182,15 @@ export const useSuggestionReducer = (
 ): SuggestionReducer => {
   const [state, dispatch]: SuggestionReducer = useReducer(suggestionReducer, {
     ...initialState,
-    initialized: false, // 初始化
-    version: 0, // 更新状态计数
-    key: 0, // 用于触发 react 重新渲染组件
-    variableTree: [], // 用于展示的组件树
-    visible: true, // 默认显示，让ref能访问到DOM
-    hiddenDOM: true, // 默认隐藏，让用户看不到UI
-    allowVisibleChange: true, // 允许visible变更
+    initialized: false, // initialization
+    version: 0, // update status count
+    key: 0, // Used to trigger react to re-render components
+    variableTree: [], // Component tree for presentation
+    visible: true, // Default display, allowing ref to access the DOM
+    hiddenDOM: true, // Hidden by default, so that users cannot see the UI.
+    allowVisibleChange: true, // Allow visible changes
     renderEffect: {
-      // 渲染副作用
+      // rendering side effects
       search: false,
       filtered: false,
     },

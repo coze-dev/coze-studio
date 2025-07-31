@@ -60,11 +60,11 @@ export const ModeSelect: React.FC<ModeSelectProps> = ({
   const handleModeChange = async (value: BotMode) => {
     try {
       setBotState({ modeSwitching: true });
-      // bot信息全量保存
+      // The bot information is fully saved.
       const { botSkillInfo } = getBotDetailDtoInfo();
       await updateBotRequest(botSkillInfo);
 
-      // 服务端约定 切换模式需要单独调一次只传 bot_mode 的 update
+      // Server level convention, switching mode needs to be adjusted once, only bot_mode update is transmitted.
       const switchModeParams = {
         bot_mode: value,
         ...(value === BotMode.MultiMode

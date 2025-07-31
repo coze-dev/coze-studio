@@ -146,17 +146,17 @@ const HeaderList = ({
   value?: commonParamSchema[];
   onChange?: (val?: commonParamSchema[]) => void;
 }) => {
-  /** 添加header */
+  /** Add header */
   // @ts-expect-error -- linter-disable-autofix
   const addHeader = data => {
     const h = [...headerList];
     h.push(data.name ? data : { name: '', value: '' });
     setHeaderList?.(h);
   };
-  /** 删除header */
+  /** Delete header */
   // @ts-expect-error -- linter-disable-autofix
   const deleteHeader = index => {
-    // 若为最后一个header，则只清空内容，不删除
+    // If it is the last header, only empty the content, not delete it
     const filterList = cloneDeep(headerList);
     filterList.splice(index, 1);
     setHeaderList?.(filterList);
@@ -401,7 +401,7 @@ export const ServiceField = ({ disabled }: PluginInfoFormFieldProps) => {
   );
 };
 
-// extItems 动态下发
+// extItems dynamic delivery
 export const ExtItems = ({
   disabled,
   extItems,
@@ -410,7 +410,7 @@ export const ExtItems = ({
   const formValues = formApi.getValues();
   return (
     <>
-      {/* 服务端动态返回授权项 */}
+      {/* Server level dynamic return authorization */}
       {extItems?.map(item => (
         <>
           {disabled ? (

@@ -76,7 +76,7 @@ export class SubWorkflowNodeService {
     return workflowInfo
       ? {
           ...workflowInfo,
-          // 未发布的工作流可能存在没有输入 name 的参数，需要过滤掉
+          // Unpublished workflows may have parameters that do not have a name entered and need to be filtered out
           inputs: workflowInfo.inputs?.filter(i => i.name),
         }
       : undefined;

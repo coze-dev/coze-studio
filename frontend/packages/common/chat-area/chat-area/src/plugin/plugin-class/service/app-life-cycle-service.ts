@@ -39,49 +39,49 @@ type OnBeforeListenChatCore = (
 ) => { abortListen: boolean } | undefined;
 
 /**
- * ! 希望你注意到生命周期的上下文信息都放在ctx中
- * ! 如果判断只是上下文，请你注意收敛到ctx中，请勿增加新的参数
- * ! CodeReview的时候辛苦也注重一下这里
+ * ! Hope you noticed that the context information for the lifecycle is placed in ctx
+ * ! If the judgment is just context, please pay attention to the convergence into ctx and do not add new parameters
+ * ! Please pay attention here when CodeReview.
  */
 export abstract class ReadonlyAppLifeCycleService<
   T = unknown,
   K = unknown,
 > extends ReadonlyLifeCycleService<T, K> {
   /**
-   * PluginStore初始化后
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * After PluginStore initialization
+   * If you need support in the future, write it as void | Promise < void >
    */
   onAfterCreateStores?(stores: OnAfterCallback): void;
   /**
-   * ChatArea初始化之前（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * Before ChatArea is initialized (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onBeforeInitial?(): void;
   /**
-   * ChatArea初始化之后（成功）（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * After the ChatArea is initialized (successfully) (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onAfterInitial?(ctx: OnAfterInitialContext): void;
   /**
-   * ChatArea初始化失败（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * ChatArea initialization failed (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onInitialError?(): void;
   /**
-   * ChatArea销毁之前（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * Before ChatArea is destroyed (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onBeforeDestroy?(): void;
   /**
-   * 刷新消息列表前
+   * Before refreshing the message list
    */
   onBeforeRefreshMessageList?(): void;
   /**
-   * 刷新消息列表后
+   * After refreshing the message list
    */
   onAfterRefreshMessageList?(): void;
   /**
-   * 刷新消息列表失败
+   * Failed to refresh message list
    */
   onRefreshMessageListError?(ctx: OnRefreshMessageListError): void;
   onBeforeListenChatCore?: OnBeforeListenChatCore;
@@ -92,40 +92,40 @@ export abstract class WriteableAppLifeCycleService<
   K = unknown,
 > extends WriteableLifeCycleService<T, K> {
   /**
-   * PluginStore初始化后
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * After PluginStore initialization
+   * If you need support in the future, write it as void | Promise < void >
    */
   onAfterCreateStores?(stores: OnAfterCallback): void;
   /**
-   * ChatArea初始化之前（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * Before ChatArea is initialized (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onBeforeInitial?(): void;
   /**
-   * ChatArea初始化之后（成功）（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * After the ChatArea is initialized (successfully) (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onAfterInitial?(ctx: OnAfterInitialContext): void;
   /**
-   * ChatArea初始化失败（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * ChatArea initialization failed (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onInitialError?(): void;
   /**
-   * ChatArea销毁之前（暂时不支持异步调用，在Hooks中）
-   * 后续需要支持的话，写法为 void | Promise<void>
+   * Before ChatArea is destroyed (asynchronous calls are temporarily not supported, in Hooks)
+   * If you need support in the future, write it as void | Promise < void >
    */
   onBeforeDestroy?(): void;
   /**
-   * 刷新消息列表前
+   * Before refreshing the message list
    */
   onBeforeRefreshMessageList?(): void;
   /**
-   * 刷新消息列表后
+   * After refreshing the message list
    */
   onAfterRefreshMessageList?(): void;
   /**
-   * 刷新消息列表失败
+   * Failed to refresh message list
    */
   onRefreshMessageListError?(ctx: OnRefreshMessageListError): void;
   onBeforeListenChatCore?: OnBeforeListenChatCore;

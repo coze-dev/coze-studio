@@ -65,7 +65,7 @@ export const ThumbsUp: React.FC<ThumbsUpProps> = ({
           : MessageFeedbackType.Like,
       },
     }).then(() => {
-      // 接口调用后再切换展示状态
+      // Switch the display state after the interface is called.
       onClick?.();
     });
   };

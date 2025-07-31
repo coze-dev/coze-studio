@@ -30,8 +30,8 @@ export const InputNumber = forwardRef<InputNumberProps, InputNumberProps>(
         min={min}
         max={max}
         value={value}
-        // InputNumber 长按 + - 时，会一直触发变化。这里有 bug，有时定时器清不掉，会鬼畜（一直增加/减小）。
-        // 把 pressInterval 设置成 24h ，变相禁用长按增减
+        // InputNumber When long pressing + -, it will keep triggering changes. There are bugs here, and sometimes the timer can't be cleared, and it will be ghost (keep increasing/decreasing).
+        // Set pressInterval to 24h, and disable long press increase or decrease in disguise
         pressInterval={1000 * 60 * 60 * 24}
         onNumberChange={v => {
           if (Number.isFinite(v)) {

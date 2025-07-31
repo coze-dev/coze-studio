@@ -53,7 +53,7 @@ const InputItem = ({
 }: InputItemProps): JSX.Element => {
   const [value, setValue] = useState(val);
   const [errorStatus, setErrorStatus] = useState(false);
-  // 通过check触发校验（提交时）
+  // Trigger validation via check (when committed)
   useEffect(() => {
     if (check === 0 || value === ARRAYTAG || value === ROOTTAG) {
       return;

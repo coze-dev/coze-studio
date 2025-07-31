@@ -33,7 +33,7 @@ interface MockInfo {
   mockSetName?: string;
 }
 
-/** 通常的日志结构 */
+/** Normal log structure */
 interface BaseLog {
   label: string;
   source: LogValueType;
@@ -41,7 +41,7 @@ interface BaseLog {
   copyTooltip?: string;
   mockInfo?: MockInfo;
 }
-/** condition 的日志结构 */
+/** Log structure for conditions */
 interface ConditionLog {
   conditions: Array<{
     conditions: {
@@ -55,7 +55,7 @@ interface ConditionLog {
   }>;
 }
 
-/** 嵌套的日志结构 */
+/** Nested log structure */
 interface TreeLog {
   label: string;
   children: (BaseLog | ConditionLog)[];
@@ -117,24 +117,24 @@ const generateLog = (
 
   const logs: Log[] = [];
 
-  /** step 0: 处理 batch data */
+  /** Step 0: Processing batch data */
   if (isBatch) {
     logs.push(generateBatchData(result));
   }
 
-  /** step 1: 处理 input */
+  /** Step 1: Process the input */
 
-  /** input 不可能是 string，所以使用 {} 兜底，异常情况直接展示空即可 */
+  /** The input cannot be a string, so use {} to cover the bottom, and the exception can be directly displayed empty. */
   const inputData = safeJSONParse(result.input, {});
-  /** step 1.1: condition 节点单独处理 */
+  /** Step 1.1: condition node handled separately */
   if (type === 'If') {
     const normalizeConditions = normalizeConditionInputData(inputData);
     const conditions = normalizeConditions.map(branch => ({
       conditions: branch.conditions.map(condition => {
-        /** 右值不一定存在 */
+        /** An rvalue doesn't necessarily exist */
         const { left, right = {}, operator } = condition;
         const operatorFn = totalConditionValueMap[operator];
-        /** 后端的 operator 枚举值通过 i18n 转化为文本 */
+        /** Back-end operator enumeration values are converted to text via i18n */
         const operatorData = isFunction(operatorFn) ? operatorFn() : operator;
         const leftData = left?.key ? { [left?.key]: left?.value } : left?.value;
         const rightData =
@@ -154,7 +154,7 @@ const generateLog = (
     }));
     logs.push({ conditions });
   } else {
-    /** end、Message 节点的 label 不同，输入即输出 */
+    /** Different labels of end and message nodes, input is output */
     const isEnd = type === 'End';
     const isMsg = type === 'Message';
     const label =
@@ -172,40 +172,40 @@ const generateLog = (
     });
   }
 
-  /** step 2: 处理 output */
+  /** Step 2: Process the output */
 
   /**
-   * case1: output 解析成功，可能是对象或者字符串
-   * case2: output 解析失败，可能是字符串
-   * case3: output 为空值，兜底展示空对象
+   * Case1: output parsed successfully, may be an object or string
+   * Case2: output parsing failed, possibly string
+   * Case3: output is null, the empty object is displayed at the bottom
    */
   let outputData = safeJSONParse(result.output, result.output || {});
-  /** step 2.1: 处理 rawOutput */
+  /** Step 2.1: Handling rawOutput */
   /**
-   * case1: output 解析成功，可能是对象或者字符串
-   * case2: output 解析失败，可能是字符串，由于是原始输出空值也视为有意义
+   * Case1: output parsed successfully, may be an object or string
+   * Case2: output parsing failed, it may be a string, because it is the original output null value, it is also considered meaningful
    */
   let rawData = safeJSONParse(result.raw_output, result.raw_output);
 
-  /** Code、Llm 节点需要展示 raw */
+  /** Code, Llm nodes need to display raw */
   const textHasRawout = type === 'Text' && hasStringOutput(rawData);
   const hasRawOutput =
     (type && ['Code', 'LLM', 'Question'].includes(type)) || textHasRawout;
 
-  /** step 2.2: 处理 errorInfo */
+  /** Step 2.2: Handling errorInfo */
   if (errorInfo) {
     const errorData = {
       [errorLevel === 'Error'
         ? LogObjSpecialKey.Error
         : LogObjSpecialKey.Warning]: errorInfo,
     };
-    /** 如果需要展示 raw & 有错误 & raw 是通常意义上的空（""、null等）则错误信息展示在 raw 上 */
+    /** If raw needs to be displayed & there is an error & raw is empty in the usual sense (", null, etc.), the error message is displayed on raw */
     if (hasRawOutput && !rawData) {
       rawData = errorData;
     } else {
       /**
-       * 若 output 为对象则直接 assign error
-       * 否则 output 需要被赋值到 output 字段并和 error 组成一个对象
+       * If the output is an object, directly assign error
+       * Otherwise, output needs to be assigned to the output field and formed into an object with error
        */
       outputData = isObject(outputData)
         ? {
@@ -268,9 +268,9 @@ const generateLog = (
   const { current_sub_execute_id: executeId, subExecuteID } =
     safeJSONParse(extra) || {};
 
-  // 只有运维平台才需要额外展示执行ID相关信息
+  // Only the operation and maintenance platform needs to display additional information about the execution ID.
   if (IS_BOT_OP && type === 'SubWorkflow' && (executeId || subExecuteID)) {
-    // 通过正则提取 current_sub_execute_id，上边的参数会精度丢失
+    // By regular extraction current_sub_execute_id, the above parameters will lose accuracy
     const currentSubExecuteIdRegex = /"current_sub_execute_id":\s*(\d+)/;
     const currentSubExecuteIdMatch = (extra || '').match(
       currentSubExecuteIdRegex,
@@ -279,7 +279,7 @@ const generateLog = (
       ? currentSubExecuteIdMatch[1]
       : null;
 
-    // 通过正则提取 subExecuteID，，上边的参数会精度丢失
+    // By regular extraction of subExecuteID, the accuracy of the parameters above will be lost
     const subExecuteIdRegex = /"subExecuteID":\s*(\d+)/;
     const subExecuteIdMatch = (extra || '').match(subExecuteIdRegex);
     const subExecuteId = subExecuteIdMatch ? subExecuteIdMatch[1] : null;

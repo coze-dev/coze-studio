@@ -32,7 +32,7 @@ export const undefinedChecker = value => {
   }
 
   /**
-   * 校验 cronjob 的值是否为空
+   * Verify that the value of cronjob is empty
    * {
    *   type: 'selecting',
    *   content: ValueExpression

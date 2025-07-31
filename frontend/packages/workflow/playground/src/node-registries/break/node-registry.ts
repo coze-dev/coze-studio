@@ -33,5 +33,5 @@ export const BREAK_NODE_REGISTRY: WorkflowNodeRegistry = {
     nodeMetaPath: DEFAULT_NODE_META_PATH,
   },
   formMeta: BREAK_FORM_META,
-  getOutputPoints: () => [], // Break 节点没有输出
+  getOutputPoints: () => [], // Broken node has no output
 };

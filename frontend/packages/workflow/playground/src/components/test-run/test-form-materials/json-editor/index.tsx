@@ -69,7 +69,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   const valueRef = useRef<string | undefined>(value);
 
   const handleChange = val => {
-    // 非focus的时候不需要onchange，避免format触发onchange
+    // No onchange is required when non-focus, avoid format triggering onchange
     if (!focus) {
       return;
     }
@@ -87,7 +87,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   };
 
   useEffect(() => {
-    // 外部更新值时，自动format一次
+    // Automatically format once when externally updating values
     if (value !== valueRef.current) {
       triggerFormat();
     }
@@ -130,7 +130,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
         editor.onDidDispose(() => clearJsonSchema(monaco, uri));
       }
 
-      // 初始化时format一次
+      // Initialization formatting once
       triggerFormat();
     },
     [handleBlur, handleFocus],
@@ -206,10 +206,10 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
         <MonacoEditor
           value={value || ''}
           onChange={handleChange}
-          /** 这里必须使用和 ide 一样的主题，否则可能会污染 */
+          /** The same theme as ide must be used here, otherwise it may be contaminated */
           theme="icube-dark"
           defaultLanguage="json"
-          /** 通过 css 样式覆盖 icube-dark 主题 */
+          /** Override icube-dark theme with css style */
           className={lightStyles.light}
           options={{
             fontSize: 13,
@@ -242,7 +242,7 @@ export const JsonEditorAdapter: React.FC<JsonEditorProps> = ({
   );
 };
 
-// 使用Semi Form上下文，在test set表单中使用
+// Use the Semi Form context to use in the test set form
 const JsonEditorSemi = withField(JsonEditorAdapter, {
   valueKey: 'value',
   onKeyChangeFnName: 'onChange',

@@ -68,18 +68,18 @@ const BotEditorInitLayoutImpl: FC<
   header,
   customProvider,
 }) => {
-  // 初次加载
+  // initial load
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const init = usePageRuntimeStore(state => state.init);
   const userInfo = userStoreService.useUserInfo();
 
   const modeSwitching = useBotPageStore(state => state.bot.modeSwitching);
   const CustomProvider = customProvider || DefaultFragment;
-  // 因为clearStore会保留init值，在切换bot时，init是true，不会是初始值false
+  // Because clearStore will keep the init value, when switching the bot, init is true, not the initial value false.
   useUpdateEffect(() => {
-    // init每次initStore都会被更新状态，但这里只需要记录初次的loading，所以需要对isFirstLoad判断
+    // init The initStore will be updated every time, but only the initial loading needs to be recorded here, so it is necessary to judge the isFirstLoad.
     if (isFirstLoad && init) {
-      // 如果init完成并且是首次load，表示初次请求完成，将isFirstLoad置为false
+      // If init completes and is loading for the first time, indicating that the initial request is complete, set isFirstLoad to false
       setIsFirstLoad(false);
     }
   }, [init]);

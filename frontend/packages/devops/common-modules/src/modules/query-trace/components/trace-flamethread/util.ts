@@ -68,18 +68,18 @@ const genRectNode = (info: {
 };
 
 export const spanData2flamethreadData = (spanData: CSpan[]): RectNode[] => {
-  // 1. 根据spans，组装call trees
+  // 1. According to spans, assemble call trees
   const callTrees = buildCallTrees(spanData);
 
-  // 2. 生成tartSpan
+  // 2. Generate tartSpan
   const startSpan: SpanNode = getRootSpan(callTrees, false);
 
-  // 3. 获取 break节点(非start的根节点都是breakSpan)
+  // 3. Get the break node (all non-start root nodes are breakSpan)
   const breakSpans: SpanNode[] = getBreakSpans(callTrees, false);
 
   let rstSpans: SpanNode[] = [];
 
-  // 前序搜索，确保父节点在前
+  // Preorder search to ensure that the parent node is in front
   const walk = (spans: SpanNode[]) => {
     rstSpans = rstSpans.concat(spans);
     spans.forEach(span => {
@@ -93,13 +93,13 @@ export const spanData2flamethreadData = (spanData: CSpan[]): RectNode[] => {
   }
   walk(breakSpans);
 
-  // 过滤掉不显示的span节点
+  // Filter out undisplayed span nodes
   rstSpans = rstSpans.filter(span => isVisibleSpan(span));
 
-  // 按start_time稳定排序
+  // Sort by start_time
   const sortedSpans = sortBy(rstSpans, o => o.start_time);
 
-  // 添加跟节点
+  // Add follow node
   sortedSpans.unshift(startSpan);
 
   const rectNodes: RectNode[] = [];

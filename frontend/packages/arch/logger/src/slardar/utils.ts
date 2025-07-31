@@ -111,7 +111,7 @@ export const getErrorType = (error?: ApiError | Error): string => {
   }
 
   if (error instanceof ApiError) {
-    // 优先用业务给的 api error type
+    // Preferentially use the API error type given by the business
     if (error.errorOption?.errorType) {
       return error.errorOption.errorType;
     }
@@ -162,7 +162,7 @@ export function getLogLevel(level = LogLevel.INFO) {
   return levelMap[level];
 }
 
-/** Slardar 自定义事件级别，默认是 info, 可枚举项 debug | info | warn | error */
+/** Slardar custom event level, default is info, enumerable debug | info | warning | error */
 const slardarLevelMap = {
   [LogLevel.INFO]: 'info',
   [LogLevel.SUCCESS]: 'info',

@@ -70,7 +70,7 @@ interface TestsetEditSideSheetProps extends TestsetEditState {
   onClose?: () => void;
   onSuccess?: (testset?: TestsetData) => void;
   onCancel?: () => void;
-  /** 是否为多人协作模式 */
+  /** Is it a multiplayer collaboration mode? */
   isExpertMode?: boolean;
 }
 
@@ -78,10 +78,10 @@ const TESTSET_NAME_FIELD = '__TESTSET_NAME__';
 const TESTSET_DESC_FIELD = '__TESTSET_DESC__';
 
 /**
- * 特化逻辑：表单项赋默认值
- * - Boolean类型：`false` 因为undefined的表现上和false一样，容易引发用户误解
- * - Object类型：`{}`
- * - Array类型： `[]`
+ * Specialized logic: list entries are assigned default values
+ * - Boolean type: 'false' because undefined behaves the same as false, which is easy to cause user misunderstandings
+ * - Object type: '{}'
+ * - Array type: '[]'
  */
 function assignDefaultValue(ipt: FormItemSchema) {
   if (!isNil(ipt.value)) {
@@ -140,7 +140,7 @@ export function TestsetEditSideSheet({
       const remoteSchemas = toNodeFormSchemas(res.schemaJson);
 
       if (localSchemas.length) {
-        // 编辑模式：比对本地和远程schema并尝试赋值
+        // Edit schema: compare local and remote schemas and try to assign values
         const localSchemaMap: Record<string, FormItemSchema | undefined> = {};
         traverseNodeFormSchemas(
           localSchemas,
@@ -156,7 +156,7 @@ export function TestsetEditSideSheet({
           }
         });
       } else {
-        // 创建模式：赋默认值
+        // Creation mode: assigns default values
         traverseNodeFormSchemas(remoteSchemas, (schema, ipt) => {
           assignDefaultValue(ipt);
         });
@@ -178,7 +178,7 @@ export function TestsetEditSideSheet({
     });
   }, [visible, testset]);
 
-  // 给节点表单设置值
+  // Set a value for the node form
   useEffect(() => {
     if (typeof nodeSchemas === 'undefined') {
       return;
@@ -260,7 +260,7 @@ export function TestsetEditSideSheet({
     }
   };
 
-  // 提交表单
+  // Submit Form
   const onSubmit = async () => {
     setSubmitting(true);
     try {
@@ -278,7 +278,7 @@ export function TestsetEditSideSheet({
           ipt.value = val;
         }
 
-        // 清除 object/array的空值，包括空字符串
+        // Clears null values of objects/arrays, including empty strings
         if (
           !val &&
           (ipt.type === FormItemSchemaType.LIST ||
@@ -287,7 +287,7 @@ export function TestsetEditSideSheet({
           ipt.value = undefined;
         }
 
-        // bool 类型 需要将枚举转为布尔值
+        // Bool type, you need to convert the enumeration to a boolean
         if (ipt.type === FormItemSchemaType.BOOLEAN) {
           ipt.value = transBoolSelect2Bool(ipt.value as ValuesForBoolSelect);
         }
@@ -330,7 +330,7 @@ export function TestsetEditSideSheet({
     });
 
     testsetFormApi.current?.setValues(formValues);
-    // 设置值之后再校验一次
+    // Check again after setting the value
     testsetFormApi.current?.validate(validateFields);
   };
 

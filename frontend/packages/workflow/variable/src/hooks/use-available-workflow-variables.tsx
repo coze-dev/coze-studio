@@ -42,7 +42,7 @@ export function useAvailableWorkflowVariables(): WorkflowVariable[] {
 
   return scope.available.variables
     .map(_variable => {
-      // 第一层为变量，因此需要分层处理
+      // The first layer is a variable, so it requires hierarchical processing
       if (_variable.type.kind === ASTKind.Object) {
         return ((_variable.type as ObjectType)?.properties || []).map(
           _property => facadeService.getVariableFacadeByField(_property),

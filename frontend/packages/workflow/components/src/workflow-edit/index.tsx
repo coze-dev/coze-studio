@@ -52,7 +52,7 @@ import { CustomError } from '@coze-arch/bot-error';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 
 import s from './index.module.less';
-/** 输入合规校验异常的错误码 */
+/** Enter error code for compliance exception */
 const sensitiveWordsErrorCode = ['702095075', '702095081'];
 
 const { Checkbox } = Form;
@@ -62,13 +62,13 @@ export interface RuleItem {
 }
 
 interface EditWorkFlowPropsInner {
-  /** 流程类型 */
+  /** process type */
   flowMode?: WorkflowMode;
   mode: 'update' | 'add';
   visible: boolean;
-  // 默认confirm的disabled
+  // Default confirmed disabled
 
-  /** 自定义弹窗标题 */
+  /** Custom pop-up title */
   customTitleRender?: (title: React.ReactNode) => React.ReactNode;
 
   initConfirmDisabled?: boolean;
@@ -78,17 +78,17 @@ interface EditWorkFlowPropsInner {
     flowMode?: EditWorkFlowPropsInner['flowMode'];
   }) => void;
   onCancel?: () => void;
-  /** @deprecated 未使用 */
+  /** @deprecated unused */
   spaceID?: string;
   getLatestWorkflowJson?: () => Promise<WorkflowJSON>;
   bindBizId?: string;
   bindBizType?: BindBizType;
-  /** 当前项目 id，只在项目内的 workflow 有该字段 */
+  /** The current project id, only the workflow within the project has this field */
   projectId?: string;
   nameValidators?: RuleItem[];
 }
 
-/** 表单值 */
+/** form value */
 interface FormValue {
   icon_uri: UploadValue;
   name: string;
@@ -97,7 +97,7 @@ interface FormValue {
   create_conversation?: boolean;
 }
 
-/** 获取弹窗标题 */
+/** Get pop-up title */
 function getModalTitle(
   mode: EditWorkFlowPropsInner['mode'],
   flowMode: EditWorkFlowPropsInner['flowMode'],
@@ -204,7 +204,7 @@ export function CreateWorkflowModal({
       name: values?.name,
       desc: values?.target ? values.target : '',
       space_id: workFlow.space_id || '',
-      // 更新头像等信息不需要重新test run
+      // There is no need to re-test run to update the avatar and other information.
       ignore_status_transfer: true,
       schema_type: values?.schema_type || workFlow?.schema_type,
     };
@@ -437,7 +437,7 @@ export function CreateWorkflowModal({
           data-testid="workflow.list.create.name.input"
         />
 
-        {/* 只有项目内创建 Chatflow 时才可以绑定会话 */}
+        {/* Sessions can only be bound when Chatflow is created within the project */}
         {mode === 'add' && projectId && flowMode === WorkflowMode.ChatFlow ? (
           <Checkbox
             fieldClassName={s['conversation-field']}

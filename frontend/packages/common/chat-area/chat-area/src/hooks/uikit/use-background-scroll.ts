@@ -27,9 +27,9 @@ interface UseBackgroundScrollReturnType {
   showGradient: boolean;
 }
 
-// 背景图模式下scrollView增加以下处理：
-// 1. 当存在顶部Node时，滚动后增加 一层高度固定的黑色渐变div，页面向下滚动不僵硬
-// 2. 对话区域增加一层蒙版，底部会话区域渐变消失，会话元素底部不僵硬
+// In background cover mode scrollView adds the following processing:
+// 1. When there is a top Node, add it after scrolling, a layer of fixed height black gradual change div, the page scrolls down without stiffness
+// 2. Add a layer of mask to the dialogue area, the bottom conversation area gradually changes and disappears, and the bottom of the conversation element is not stiff
 export const useBackgroundScroll = ({
   hasHeaderNode,
   maskNode,
@@ -48,7 +48,7 @@ export const useBackgroundScroll = ({
     beforeClassName: showBackground ? 'absolute left-0' : '',
     beforeNode:
       showGradient && hasHeaderNode && showBackground ? maskNode : null,
-    // 增加蒙版，处理聊天会话底部无渐变生硬问题
+    // Add mask, deal with the bottom of the chat session without gradual change blunt problem
     maskClassName: showBackground ? styles['scroll-mask'] ?? '' : '',
     showGradient,
   };

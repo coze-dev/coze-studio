@@ -48,12 +48,12 @@ export const useContentBaseInfo = ({
   editVersion,
   renderDescComponent,
 }: UseContentBaseInfoProps) => {
-  // 是否显示安全检查失败信息
+  // Is the security check failure message displayed?
   const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
     useState(false);
   const [isBaseInfoDisabled, setIsBaseInfoDisabled] = useState(true);
 
-  // 基本信息
+  // Basic information
   const { baseInfoNode, submitBaseInfo } = useBaseInfo({
     pluginId: plugin_id || '',
     apiId: tool_id,
@@ -93,7 +93,7 @@ export const useContentBaseInfo = ({
             onClick={async e => {
               e.stopPropagation();
               const status = await submitBaseInfo();
-              // 更新成功后进入下一步
+              // After the update is successful, proceed to the next step
               if (status) {
                 handleInit();
               }

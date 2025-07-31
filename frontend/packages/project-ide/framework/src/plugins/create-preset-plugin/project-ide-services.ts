@@ -31,11 +31,11 @@ import {
 import { ViewService } from './view-service';
 
 /**
- * 获取 service 操作
- * 全局任意位置均可调用
- * command：命令系统注册
- * contextmenu：右键菜单注册
- * view：视图操作
+ * Acquire service operation
+ * It can be called anywhere in the world
+ * Command: Command system registration
+ * Contextmenu: right-click menu registration
+ * View: view operation
  */
 @injectable()
 export class ProjectIDEServices {

@@ -28,14 +28,14 @@ export const useMessageEventService = () =>
   useIDEService<MessageEventService>(MessageEventService);
 
 /**
- * 获取向 widget 发送信息函数的 hooks
+ * Get hooks for the function that sends information to the widget
  */
 export const useSendMessageEvent = () => {
   const messageEventService = useMessageEventService();
   const navigate = useIDENavigate();
 
   /**
-   * 向以 uri 为索引的 widget 发送信息
+   * Send a message to a widget indexed by URI
    */
   const send = useCallback(
     <T>(target: string | URI, data: MessageEvent<T>) => {
@@ -49,8 +49,8 @@ export const useSendMessageEvent = () => {
   );
 
   /**
-   * 向以 uri 为索引的 widget 发送信息，并且打开/激活此 widget
-   * 此函数比较常用
+   * Send a message to a widget indexed with URIs, and open/activate the widget
+   * This function is more commonly used
    */
   const sendOpen = useCallback(
     <T>(target: string | URI, data: MessageEvent<T>) => {
@@ -68,26 +68,26 @@ export const useSendMessageEvent = () => {
 };
 
 /**
- * 监听向指定 uri 对应的唯一 widget 发送消息的 hook
- * 监听消息的 widget 一定是知道 this.uri，所以入参无须支持 string
- * 注：虽然 widget.uri 的值是会变得，但其 withoutQuery().toString() 一定是不变的，所以 uri 可以认定为不变
+ * Listens for hooks that send messages to the unique widget corresponding to the specified URI
+ * The widget listening to the message must know this.uri, so imported parameters do not need to support string.
+ * Note: Although the value of widget.uri will change, its withoutQuery ().toString () must be unchanged, so uri can be considered unchanged
  */
 export const useListenMessageEvent = (
   uri: URI,
   cb: (e: MessageEvent) => void,
 ) => {
   const messageEventService = useMessageEventService();
-  // 尽管 uri 对应的唯一 key 不会变化，但 uri 内存地址仍然会变化，这里显式的固化 uri 的不变性
+  // Although the unique key corresponding to the URI does not change, the URI memory address will still change, and the invariance of the cured URI is explicit here
   const uriRef = useRef(uri);
 
-  // 保证 callback 函数的可变性
+  // Guarantee the variability of the callback function
   const listener = useMemoizedFn(() => {
     const queue = messageEventService.on(uri);
     queue.forEach(cb);
   });
 
   useEffect(() => {
-    // 组件挂在时去队列中取一次，有可能在组件未挂载前已经被发送了消息
+    // When the component is hung, go to the queue to pick it up once. It is possible that the message has been sent before the component is not mounted.
     listener();
 
     const disposable = messageEventService.onSend(e => {

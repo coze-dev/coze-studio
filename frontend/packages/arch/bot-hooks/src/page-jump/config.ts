@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type WorkflowMode,
   type WorkFlowListStatus,
@@ -22,40 +22,40 @@ import {
 import type { PageJumpExecFunc } from '.';
 
 /**
- * workflow 弹窗打开模式，默认不传，或仅添加一次
+ * Workflow pop-up window opening mode, not passed by default, or only added once
  */
 export enum OpenModeType {
   OnlyOnceAdd = 'only_once_add',
 }
 /**
- * 记录 workflow 弹窗的选中状态
+ * Record the selected status of the workflow pop-up window
  */
 export interface WorkflowModalState {
   /**
-   * @deprecated 是否已发布的状态
+   * @deprecated whether the published status
    */
   status?: WorkFlowListStatus;
   /**
-   * @deprecated 左边菜单栏选中的类型，注意这个 type 是前端翻译过的，与接口请求参数里的 type 不是同一个
+   * @Deprecated The type selected in the menu bar on the left. Note that this type is translated by the front end and is not the same as the type in the interface request parameter.
    */
   type?: number | string;
   /**
-   * 弹窗状态 JSON 字符串
+   * Popup status JSON string
    */
   statusStr?: string;
 }
 
-// #region ---------------------- step 1. 声明场景枚举，若涉及新页面则也声明一下页面枚举 ----------------------
-// （添加了页面或场景枚举后，整个文件会有多处 ts 报错，这是预期内的。根据 step 指引一步一步完善配置即可）
+// #Region ---------------------- Step 1. Declare the scene enumeration, if it involves a new page, also declare the page enumeration ----------------------
+// (After adding the page or scene enumeration, there will be multiple ts errors in the entire file, which is expected. Just follow the step guidelines to improve the configuration step by step)
 
 /**
- * 目标页面枚举，用于聚合【场景(scene)】，便于根据页面对当前场景做 narrowing
+ * The target page enumeration is used to aggregate [scene (scene) ], which is convenient for narrowing the current scene according to the page
  *
- * e.g. 从 A 页跳转到 B 页，只需要定义 B 的页面枚举
+ * To jump from page A to page B, just define the page enumeration of B.
  *
  *
- * - Q: 为什么不使用默认的自增 enum 数值，每个页面手写两遍名字好麻烦
- * - A: 便于调试时能直接看出含义，不用查代码对照，下同
+ * - Q: Why not use the default self-increasing enum value, it's troublesome to handwrite the name twice for each page
+ * - A: It is easy to see the meaning directly when debugging, and there is no need to check the code for comparison. The following is the same
  */
 export const enum PageType {
   BOT = 'bot',
@@ -66,70 +66,70 @@ export const enum PageType {
   DOUYIN_BOT = 'douyin_bot',
 }
 
-/* eslint-disable @typescript-eslint/naming-convention -- 有必要 disable，该场景需要不同的 enum 命名规范 */
+/* eslint-disable @typescript-eslint/naming-convention -- it is necessary to disable, this scenario requires a different enum naming convention */
 /**
- * 每种跳转场景的唯一枚举
+ * Unique enumeration for each jump scenario
  *
- * e.g. 比如 bot 编辑页创建 workflow 是一种场景，查看 workflow 是一种场景
+ * E.g. For example, bot editing page creation workflow is a scene, viewing workflow is a scene
  *
- * 枚举定义规范：
- * 1. 最常见的场景：两个页面简单跳转可以按 `{源页面}__TO__{目标页面}` 的格式命名。
- *  （注意 TO 前后各有两个下划线，以便区分页面名为多个单词的场景，比如 BOT_LIST__TO__BOT_DETAIL，后文不再赘述）
- * 2. 从源页面可能存在多种跳转到目标页面的场景，则可以按 `{源页面}__{行为}__{目标页面}` 格式命名。
- * 3. 如果目标页面逻辑很简单，又有多处跳转来源，则可以按 `TO__{目标页面}` 格式命名。
- * 4. 对于「跳转到目标页再返回」的特化逻辑，可以给已有的场景命名添加 `__{后缀}`，比如 BOT__CREATE__WORKFLOW__BACK
+ * Enumeration definition specification:
+ * 1. The most common scenario: two pages simple jump can be named according to the format of "{source page} __TO__ {target page}".
+ *  (Note that there are two underscores before and after TO to distinguish scenes with multiple words on the page, such as BOT_LIST__TO__BOT_DETAIL, which will not be repeated later)
+ * 2. There may be multiple scenarios for jumping to the target page from the source page, so you can name it in the format of '{source page} __ {behavior} __ {target page}'.
+ * 3. If the target page logic is very simple and there are multiple jump sources, you can name it in the format of TO__ {target page}.
+ * 4. For the specialization logic of "jump to the target page and then return", you can add "__ {suffix}" to the existing scene name, such as BOT__CREATE__WORKFLOW__BACK
  *
- * - Q: 我觉得一个目标页面无脑使用 `TO__{目标页面}` 的格式就没问题啊，业务逻辑、来源判断什么我都可以在 参数(param) 和 响应值(response) 中完成
- * - A: 的确，一个目标页面只声明一种场景就可以打遍天下，这里只是提供了逐级细化拆分场景的范式。
- *      从 `TO__{目标页面}` 到 `{源页面}__TO__{目标页面}` 再到 `{源页面}__{行为}__{目标页面}` 场景是越来越细分的，业务方可以自行决定如何使用
+ * - Q: I think it's no problem for a target page to use the format of 'TO__ {target page} 'without thinking. I can complete everything in the parameters (param) and response value (response) of the business logic and source judgment
+ * - A: Indeed, a target page can go all over the world by declaring only one scene, and here is just a paradigm for refining and splitting scenes step by step.
+ *      From "TO__ {target page}" to "{source page} __TO__ {target page}" and then to "{source page} __ {behavior} __ {target page}" scenarios are increasingly segmented, business parties can decide how to use
  */
 export const enum SceneType {
-  /** bot 详情页查看 workflow */
+  /** Bot details page View workflow */
   BOT__VIEW__WORKFLOW = 'botViewWorkflow',
-  /** bot 详情页查看 workflow，或新建 workflow 但未发布，点击返回 */
+  /** View the workflow on the bot details page, or create a new workflow but not published, click Return */
   WORKFLOW__BACK__BOT = 'workflowBackBot',
-  /** bot 详情页创建 workflow，在 workflow 发布后返回 */
+  /** The bot details page creates a workflow and returns it after the workflow is published */
   WORKFLOW_PUBLISHED__BACK__BOT = 'workflowPublishedBackBot',
 
-  /** 抖音 bot 详情查看 workflow */
+  /** Douyin bot details view workflow */
   DOUYIN_BOT__VIEW__WORKFLOW = 'douyinBotViewWorkflow',
 
-  /** 抖音 bot 详情页返回 */
+  /** Douyin bot details page Back */
   WORKFLOW__BACK__DOUYIN_BOT = 'workflowBackDouyinBot',
 
-  /** 抖音 bot 详情页发布后返回 */
+  /** Douyin bot details page back after release */
   WORKFLOW_PUBLISHED__BACK__DOUYIN_BOT = 'workflowPulishedBackDouyinBot',
 
-  /** bot 详情页进入 mock data 页面 */
+  /** Bot details page Enter the mock data page */
   BOT__TO__PLUGIN_MOCK_DATA = 'botToPluginMockData',
-  /** workflow 详情页进入 mock data 页面 */
+  /** Workflow details page Enter the mock data page */
   WORKFLOW__TO__PLUGIN_MOCK_DATA = 'workflowToPluginMockData',
-  /** mock set 页进入 mock data 页面 */
+  /** Mock set page Enter the mock data page */
   PLUGIN_MOCK_SET__TO__PLUGIN_MOCK_DATA = 'pluginMockSetToPluginMockData',
-  /** bot 详情页进入 knowledge 页面 */
+  /** Bot details page Enter the knowledge page */
   BOT__VIEW__KNOWLEDGE = 'botViewKnowledge',
-  /** knowledge 页面点击退出返回 bot 详情页（未点击添加） */
+  /** Knowledge page Click Exit to return to bot details page (not clicked Add) */
   KNOWLEDGE__BACK__BOT = 'knowledgeBackBot',
-  /** knowledge 页面点击返回 bot 详情页，并添加到 bot */
+  /** Knowledge page Click to return to bot details page and add to bot */
   KNOWLEDGE__ADD_TO__BOT = 'knowledgeAddToBot',
-  /** bot 列表页进入bot 详情页，并查看发布结果  */
+  /** Bot List Page Go to the bot details page and view the release results  */
   BOT_LIST__VIEW_PUBLISH_RESULT_IN__BOT_DETAIL = 'botListViewPublishResultInBotDetail',
-  /** bot 列表页进入bot 详情页，并查看发布结果  */
+  /** Bot List Page Go to the bot details page and view the release results  */
   BOT_LIST__VIEW_PUBLISH_RESULT_IN__DOUYIN_DETAIL = 'botListViewPublishResultInDouyinDetail',
-  /** social scene 页面查看 workflow */
+  /** Social scene page View workflow */
   SOCIAL_SCENE__VIEW__WORKFLOW = 'socialSceneViewWorkflow',
-  /** social scene  详情页查看 workflow，或新建 workflow 但未发布，点击返回 */
+  /** View the workflow on the social scene details page, or create a new workflow but not published, click Return */
   WORKFLOW__BACK__SOCIAL_SCENE = 'workflowBackSocialScene',
-  /** social scene 详情页创建或查看 workflow，在 workflow 发布后返回 */
+  /** Create or view a workflow on the social scene details page, and return after the workflow is published */
   WORKFLOW_PUBLISHED__BACK__SOCIAL_SCENE = 'workflowPublishedBackSocialScene',
 }
-/* eslint-enable @typescript-eslint/naming-convention -- 恢复 enum 命名规范 */
+/* eslint-enable @typescript-eslint/naming-convention -- restore enum naming convention */
 
 // #endregion
 
-// #region ---------------------- step 2. 将声明的场景枚举绑定至页面 ----------------------
+// #Region ---------------------- Step 2. Bind the declared scene enumeration to the page ----------------------
 
-/** 绑定某一页面可能包含的场景 */
+/** Bind the scenes that a page may contain */
 export const PAGE_SCENE_MAP = {
   [PageType.WORKFLOW]: [
     SceneType.BOT__VIEW__WORKFLOW,
@@ -162,29 +162,29 @@ export const PAGE_SCENE_MAP = {
 
 // #endregion
 
-// #region ---------------------- step 3. 声明新场景的参数类型 ----------------------
-// 【参数(param)】表示从 A 页面跳转 B 页面时，需要 A 页面填写的数据。这份数据会作为 route state 传递
-// （B 页面会取得处理后的数据，称为响应值）
+// #Region ---------------------- Step 3. Declare the parameter types for the new scene ----------------------
+// [Parameter (param) ] represents the data that needs to be filled in on page A when jumping from page A to page B. This data will be passed as route state
+// (Page B will retrieve the processed data, which is called the response value.)
 
 interface BotViewWorkflow {
   spaceID: string;
   workflowID: string;
   botID?: string;
   workflowModalState?: WorkflowModalState;
-  /** multi 模式下会有此项 */
+  /** This will be available in multi mode */
   agentID?: string;
-  /** @deprecated workflow弹窗打开模式，默认和仅可添加一次 */
+  /** @Deprecated workflow pop-up open mode, default and can only be added once */
   workflowOpenMode?: OpenModeType;
   flowMode?: WorkflowMode;
-  /** 是否在新窗口打开 */
+  /** Whether to open in a new window */
   newWindow?: boolean;
-  /** 可选的工作流节点 ID */
+  /** Optional workflow node ID */
   workflowNodeID?: string;
-  /** 可选的工作流版本 */
+  /** Optional workflow version */
   workflowVersion?: string;
-  /** 可选的执行 ID */
+  /** Optional Execution ID */
   executeID?: string;
-  /** 可选的子流程执行 ID */
+  /** Optional subprocess execution ID */
   subExecuteID?: string;
 }
 
@@ -192,9 +192,9 @@ interface WorkflowBackBot {
   spaceID: string;
   botID: string;
   workflowModalState?: WorkflowModalState;
-  /** multi 模式下会有此项 */
+  /** This will be available in multi mode */
   agentID?: string;
-  /** workflow弹窗打开模式，默认和仅可添加一次 */
+  /** Workflow pop-up open mode, default and can only be added once */
   workflowOpenMode?: OpenModeType;
   flowMode?: WorkflowMode;
 }
@@ -204,14 +204,14 @@ interface WorkflowPulishedBackBot {
   botID: string;
   workflowID: string;
   pluginID: string;
-  /** multi 模式下会有此项 */
+  /** This will be available in multi mode */
   agentID?: string;
-  /** workflow弹窗打开模式，默认和仅可添加一次 */
+  /** Workflow pop-up open mode, default and can only be added once */
   workflowOpenMode?: OpenModeType;
   flowMode?: WorkflowMode;
 }
 
-/** 绑定场景的参数类型 */
+/** Parameter types for the binding scenario */
 export type SceneParamTypeMap<T extends SceneType> = {
   [SceneType.BOT__VIEW__WORKFLOW]: BotViewWorkflow;
   [SceneType.DOUYIN_BOT__VIEW__WORKFLOW]: BotViewWorkflow;
@@ -288,7 +288,7 @@ export type SceneParamTypeMap<T extends SceneType> = {
     sceneID: string;
     workflowModalState?: WorkflowModalState;
     flowMode?: WorkflowMode;
-    /** 是否在新窗口打开 */
+    /** Whether to open in a new window */
     newWindow?: boolean;
   };
   [SceneType.WORKFLOW__BACK__SOCIAL_SCENE]: {
@@ -308,17 +308,17 @@ export type SceneParamTypeMap<T extends SceneType> = {
 
 // #endregion
 
-// #region ---------------------- step 4. 配置新场景的响应值 ----------------------
-// 【响应值(response)】表示从 A 页面跳转 B 页面时，B 页面获取的数据
-// Q: 为什么 B 页面不能直接拿到 参数(param)，还得转换一下？
-// A: 1. route state 无法传递 不能 stringify 的参数，比如函数；
-//    2. 静态配置（response）和动态配置（param）分离，简化业务调用。
+// #Region ---------------------- Step 4. Configure the response value of the new scene ----------------------
+// [Response value (response) ] represents the data obtained by page B when jumping from page A to page B
+// Q: Why can't the B page directly get the parameters (param), and it has to be converted?
+// A: 1. route state cannot be passed, cannot be stringified parameters, such as functions;
+//    2. Static configuration (response) and dynamic configuration (param) are separated to simplify business calls.
 
-// 若未来这部分配置不断膨胀导致文件过长，则可以考虑进一步拆分文件
+// If this part of the configuration continues to expand in the future and the file is too long, you can consider further splitting the file
 
-/** 绑定场景的响应值 */
+/** Bind the response value of the scene */
 export const SCENE_RESPONSE_MAP = {
-  // 临时修正类型推导问题，待有场景需要第二个参数 jump 时删掉此处 _
+  // Temporarily fixed type derivation problem, delete here when the second parameter jump is required in a scene _
   [SceneType.BOT__VIEW__WORKFLOW]: (params, _) => {
     let url = `/work_flow?space_id=${params.spaceID}&workflow_id=${params.workflowID}`;
 
@@ -468,16 +468,16 @@ export const SCENE_RESPONSE_MAP = {
 
 // #endregion
 
-// #region ---------------------- 业务方无需关注的部分 ----------------------
+// #Region ---------------------- part that business parties don't need to pay attention to ----------------------
 
 /**
- * 辅助类型
+ * auxiliary type
  *
- * 该类型实现以下几件事：
- * 1. 检查 SceneType 是否被遍历，有遗漏则会报错
- * 2. 为回调方法注入参数类型
- * 3. 约束响应值必须包含某些字段（比如 url），否则报错
- * 4. 正确推导响应值的具体类型，便于后续使用
+ * This type implements the following things:
+ * 1. Check whether SceneType is traversed. If there is any omission, an error will be reported.
+ * 2. Inject parameter types for callback methods
+ * 3. Constraint The response value must contain certain fields (such as url), otherwise an error will be reported
+ * 4. Correctly derive the specific type of the response value for subsequent use
  */
 type SceneResponseConstraint = {
   [K in SceneType]: (

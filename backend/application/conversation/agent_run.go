@@ -455,7 +455,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			mc[index].File.FileURL = resourceUrl
 
 			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
-				Type: crossDomainMessage.InputType(item.Type),
+				Type: c.getType(item.File.FileType),
 				FileData: []*crossDomainMessage.FileData{
 					{
 						Url: resourceUrl,
@@ -468,10 +468,20 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 
 	return multiContents, mc
 }
+func (c *ConversationApplicationService) getType(fileType string) crossDomainMessage.InputType {
+	switch fileType {
+	case string(crossDomainMessage.InputTypeAudio):
+		return crossDomainMessage.InputTypeAudio
+	case string(crossDomainMessage.InputTypeVideo):
+		return crossDomainMessage.InputTypeVideo
+	default:
+		return crossDomainMessage.InputTypeFile
+	}
+}
 
-func (s *ConversationApplicationService) getUrlByUri(ctx context.Context, uri string) (string, error) {
+func (c *ConversationApplicationService) getUrlByUri(ctx context.Context, uri string) (string, error) {
 
-	url, err := s.appContext.ImageX.GetResourceURL(ctx, uri)
+	url, err := c.appContext.ImageX.GetResourceURL(ctx, uri)
 	if err != nil {
 		return "", err
 	}

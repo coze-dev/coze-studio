@@ -76,7 +76,7 @@ export const useValidateWorkflow = () => {
 };
 
 /**
- * 校验的触发频率
+ * trigger frequency of validation
  */
 const DEBOUNCE_TIME = 2000;
 

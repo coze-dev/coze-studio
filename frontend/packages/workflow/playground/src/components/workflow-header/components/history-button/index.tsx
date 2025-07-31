@@ -29,7 +29,7 @@ const WorkflowHistory = () => {
   const globalState = useGlobalState();
   const { info } = globalState;
   const vcsPermission = info.vcsData?.can_edit;
-  // 1. 协作模式 2. 协作模式权限
+  // 1. Collaboration mode 2. Collaboration mode permissions
   const showHistory = vcsPermission;
 
   const { node: historyDrawer, show: showHistoryDrawer } = useHistoryDrawer({

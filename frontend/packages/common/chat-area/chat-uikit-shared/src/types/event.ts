@@ -66,24 +66,24 @@ export interface MouseEventProps {
 }
 
 export type IEventCallbacks = Partial<{
-  // 点击 md 中链接的回调函数
+  // Click the callback function linked in md
   onLinkClick: (
     params: IOnLinkClickParams,
     event: MouseEvent<Element, globalThis.MouseEvent>,
   ) => void;
-  // 图片点击事件响应
+  // image click incident response
   onImageClick: (params: IOnImageClickParams) => void;
-  // 取消上传事件响应
+  // Cancel upload event response
   onCancelUpload: (params: IOnCancelUploadParams) => void;
-  // 恢复上传事件响应
+  // Resume upload incident response
   onRetryUpload: (params: IOnRetryUploadParams) => void;
-  // 拷贝文件链接
+  // Copy file link
   onCopyUpload: (params: IOnCopyUploadParams) => void;
-  // 重新发送
+  // resend
   onMessageRetry: (params: IOnMessageRetryParams) => void;
-  // 点击卡片按钮的事件响应
+  // Click the card button for incident response
   onCardSendMsg: (params: IOnCardSendMsg) => void;
-  // 更新卡片状态
+  // Update card status
   onCardUpdateStatus: (params: IOnCardUpdateStatus) => void;
   onCardLinkElementEnter?: (params: MouseEventProps) => void;
   onCardLinkElementLeave?: (params: MouseEventProps) => void;

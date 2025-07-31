@@ -43,12 +43,12 @@ export const useForcePush = () => {
   const { type } = vcsData || {};
 
   const needTestRun = useMemo(() => {
-    // 插件更新时，需要重新 testrun
+    // When the plugin is updated, it needs to be re-testrun.
     if (inPluginUpdated) {
       return true;
     }
     if (isCollaboratorMode) {
-      // 草稿态,且状态不为可提交时，需要重新testrun
+      // Draft status, and the status is not submittable, you need to re-testrun
       if (info.vcsData?.type === VCSCanvasType.Draft) {
         return (
           info.status !== WorkFlowDevStatus.CanSubmit &&
@@ -65,12 +65,12 @@ export const useForcePush = () => {
   }, [isCollaboratorMode, status, type, inPluginUpdated]);
 
   const tryPushCheck = async () => {
-    /** 校验流程 */
+    /** Validation Process */
     if (await validate()) {
       floatLayoutService.open('problemPanel', 'bottom');
       return false;
     }
-    /** 需要 test run */
+    /** Need test run */
     if (needTestRun) {
       setVisible(true);
       return false;

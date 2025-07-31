@@ -36,7 +36,7 @@ export const workflowsConfig: RegisterWorkflows = {
       const workflowsToBackend = cloneDeep(dataSource);
 
       const filterList = uniqBy(workflowsToBackend, 'workflow_id').map(v => {
-        // 解决加载图标的时候由于图标链接失效而报错，不在这里保存会失效的workflow的plugin_icon，而是每次都拉取最新的有效的图标链接
+        // Solve the problem of loading the icon due to the failure of the icon link and report an error. Do not save the plugin_icon of the invalid workflow here, but pull the latest valid icon link every time.
         v.plugin_icon = '';
         return v;
       });

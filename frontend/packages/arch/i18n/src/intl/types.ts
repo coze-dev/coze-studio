@@ -22,18 +22,18 @@
 import { type InitOptions } from 'i18next';
 
 /**
- * 初始化 Intl 实例配置参数
+ * Initialize Intl instance configuration parameters
  */
 export interface IIntlInitOptions
   extends Omit<InitOptions, 'missingInterpolationHandler'> {
   /**
-   * t 方法是否开启第三个参数兜底
+   * Whether the t method turns on the third parameter to cover the bottom
    * @default true
    */
   thirdParamFallback?: boolean;
 
   /**
-   * 忽略所有控制台输出，不建议设置为 true
+   * Ignore all console output, do not recommend setting to true
    * @default false
    */
   ignoreWarning?: boolean;

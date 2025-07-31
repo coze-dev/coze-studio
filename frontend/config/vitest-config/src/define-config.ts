@@ -46,7 +46,7 @@ const calBasePreset = (preset: string) => {
 
 export interface OtherConfig {
   /**
-   * 用于修复semi的package.json导出的配置问题
+   * Used to fix the configuration issue of semi's package.json export
    */
   fixSemi: boolean;
 }

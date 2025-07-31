@@ -47,13 +47,13 @@ export const useCreateWorkflowModal = ({
   nameValidators,
 }: WorkflowResourceActionProps & {
   from?: WorkflowModalFrom;
-  /** 当前项目 id，只在项目内的 workflow 有该字段 */
+  /** The current project id, only the workflow within the project has this field */
   projectId?: string;
   bindBizType?: BindBizType;
   bindBizId?: string;
   onCreateSuccess?: ({ workflowId }: { workflowId: string }) => void;
   goWorkflowDetail?: (workflowId?: string, spaceId?: string) => void;
-  /** 隐藏通过模板创建入口 */
+  /** Hide entry created through template */
   hiddenTemplateEntry?: boolean;
   nameValidators?: RuleItem[];
 }) => {
@@ -89,7 +89,7 @@ export const useCreateWorkflowModal = ({
   };
 
   const workflowModalInitState = useMemo(() => {
-    // 即将支持，敬请期待
+    // Support soon, so stay tuned.
     if (isWorkflowMode || FLAGS['bot.community.store_imageflow']) {
       return {
         productCategory: 'all',
@@ -154,14 +154,14 @@ export const useCreateWorkflowModal = ({
             onCreateSuccess({ workflowId });
             return;
           }
-          // 编辑模式，不跳转，刷新当前列表
+          // Edit mode, do not jump, refresh the current list
           if (formMode === 'update') {
             refreshPage?.();
             return;
           }
 
           const navigateDelay = 500;
-          //  由于后端数据同步慢，这里delay 500 ms
+          //  Due to slow back-end data synchronization, there is a delay of 500 ms
           setTimeout(() => {
             goWorkflowDetail?.(workflowId, spaceId);
           }, navigateDelay);

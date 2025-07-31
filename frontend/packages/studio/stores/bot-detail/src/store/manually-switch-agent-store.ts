@@ -15,15 +15,15 @@
  */
  
 /**
- * 用来满足一个神奇的功能
- * multi agent 模式下 正在回复中
- * 用户手动切换了 agent
- * 基于新的 agent 重新生成对话
- * 需要记录 agent 的切换是「手动」|「自动」
+ * To fulfill a miraculous function
+ * In multi agent mode, replying.
+ * The user switched agents manually
+ * Regenerate the conversation based on the new agent
+ * It is necessary to record that the switch of the agent is "manual" | "automatic"
  */
 
 /**
- * !! 不和 Bot Detail 搅合在一起了。
+ * !! Not mixed with Bot Details.
  */
 
 import { devtools } from 'zustand/middleware';

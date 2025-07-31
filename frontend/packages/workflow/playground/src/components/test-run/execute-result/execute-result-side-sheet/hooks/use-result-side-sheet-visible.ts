@@ -78,7 +78,7 @@ export const useResultSideSheetVisible = () => {
       return;
     }
 
-    // 1. 如果已经存在报错，则展示报错。2.已经有结果不拉取。 3.运行中不可获取结果。
+    // 1. If there is already an error, display the error. 2. There are already results and do not pull. 3. The result cannot be obtained during operation.
     if (
       !hasError &&
       !hasNodeResult &&
@@ -115,12 +115,12 @@ export const useResultSideSheetVisible = () => {
   }) => {
     const { executeId, processResp, subExecuteId } = config ?? {};
 
-    // 已经有报错，不用查询结果， 直接打开弹窗
+    // There is already an error reported, no need to query the result, just open the pop-up window.
     if (hasError && !executeId && !processResp) {
       openSideSheet();
       return;
     }
-    // 查询结果，若有报错则打开弹窗
+    // Query results, if there is an error, open the pop-up window
     const { executeStatus } = await runService.getProcessResult({
       executeId,
       processResp,
@@ -135,7 +135,7 @@ export const useResultSideSheetVisible = () => {
   const hasLastResult =
     exeHistoryStatus === WorkflowExeHistoryStatus.HasHistory;
 
-  // 保持 resultSideSheetVisible 和单例弹窗的 visible 同步
+  // Keep resultSideSheetVisible and singleton popups visible
   useUpdateEffect(() => {
     if (resultSideSheetVisible) {
       handleOpen().then(opened => {

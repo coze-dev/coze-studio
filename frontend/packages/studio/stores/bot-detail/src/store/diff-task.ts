@@ -36,15 +36,15 @@ export const getDefaultDiffTaskStore = (): DiffTaskStore => ({
   },
 });
 
-/** diff任务相关信息 */
+/** Diff task related information */
 export interface DiffTaskStore {
-  /** 当前diff任务类型 */
+  /** Current diff task type */
   diffTask: DiffTaskType;
-  /** 是否有继续任务 */
+  /** Is there a continuation mission? */
   hasContinueTask: boolean;
-  /** 继续任务信息 */
+  /** Continue task information */
   continueTask: DiffTaskType;
-  /** 当前diff任务信息 */
+  /** Current diff task information */
   promptDiffInfo: {
     diffPromptResourceId: string;
     diffPrompt: string;

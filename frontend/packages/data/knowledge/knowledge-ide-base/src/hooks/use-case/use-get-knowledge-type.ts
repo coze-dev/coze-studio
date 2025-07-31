@@ -22,7 +22,7 @@ import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stor
 import { useDataSetDetailReq } from '@/service/dataset';
 export const useGetKnowledgeType = () => {
   const { datasetID = '' } = useKnowledgeParams();
-  // 知识库详情
+  // Knowledge Base Details
   const { data: dataSetDetail, run: fetchDataSetDetail } =
     useDataSetDetailReq();
   const { setDataSetDetail, dataSetDetail: storeDataSetDetail } =

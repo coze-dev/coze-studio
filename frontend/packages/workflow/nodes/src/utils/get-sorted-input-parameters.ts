@@ -20,7 +20,7 @@ import { type DTODefine } from '@coze-workflow/base';
 export type InputVariableDTO = DTODefine.InputVariableDTO;
 
 /**
- * 对输入参数进行排序，然后按照 required 字段进行分组，必填的放最前边
+ * Sort the input parameters, then group them by required fields, and put the required fields at the front
  * @param inputs
  * @param groupKey
  * @param sortKey
@@ -35,17 +35,17 @@ export const getSortedInputParameters = <
 ): T[] => {
   const processedItems = (inputs || []).map(item => ({
     ...item,
-    required: item.required !== undefined ? item.required : false, // 默认设置为 false
+    required: item.required !== undefined ? item.required : false, // Default setting is false
   }));
 
-  // 先按照 required 属性分组
+  // Group by required attributes first
   const grouped = groupBy(processedItems, groupKey);
 
-  // 在每个组内按照 name 属性进行排序
+  // Sort by name attribute within each group
   const sortedTrueGroup = sortBy(grouped.true, sortKey) || [];
   const sortedFalseGroup = sortBy(grouped.false, sortKey) || [];
 
-  // 合并 true 分组和 false 分组
+  // Merge true and false groupings
   const mergedArray = [...sortedTrueGroup, ...sortedFalseGroup];
 
   return mergedArray;

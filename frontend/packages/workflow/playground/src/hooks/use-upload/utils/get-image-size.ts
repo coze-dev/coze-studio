@@ -17,7 +17,7 @@
 import { type FileItem } from '../types';
 
 /**
- * 获取图片的宽高
+ * Get the width and height of the image
  */
 export async function getImageSize(
   file: FileItem,

@@ -18,7 +18,7 @@ import { type LoadMoreEnvTools } from '../load-more-env-tools';
 import { uniquePush } from '../../../utils/array';
 import { type LoadAction } from '../../../store/message-index';
 
-// todo 单测互斥、覆盖逻辑
+// Todo single test mutual exclusion, overlay logic
 export class LoadLockErrorHelper {
   constructor(private envTools: LoadMoreEnvTools) {}
 
@@ -75,8 +75,8 @@ export class LoadLockErrorHelper {
   }
 
   /**
-   * 唯有完全一致方可采用响应，
-   * loadEagerly 会强行终结 loadByScrollNext
+   * A response can only be adopted if it is completely consistent.
+   * loadEagerly will forcibly end loadByScrollNext
    */
   public verifyLock(action: LoadAction, lock: number): boolean {
     const currentLock = this.envTools.readEnvValues().loadLock[action];

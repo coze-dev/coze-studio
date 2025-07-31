@@ -36,7 +36,7 @@ interface UnbindButtonProps {
 
 const PROJECT_AGENT_TYPE = 1;
 
-// 用于Api or WebSdk 的撤销发布
+// Unpublish for APIs or WebSDKs
 export const UndoButton = (props: UnbindButtonProps) => {
   const {
     bindId,

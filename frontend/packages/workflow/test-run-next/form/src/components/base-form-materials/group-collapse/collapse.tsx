@@ -40,12 +40,12 @@ export const GroupCollapse: React.FC<
   const [isOpen, setIsOpen] = useState(true);
   const ref = useRef(null);
   /**
-   * 探测标题是否处于 sticky 状态
+   * Detect if the title is sticky
    */
   const [inViewport] = useInViewport(ref);
   return (
     <div>
-      {/* 探测元素 */}
+      {/* probe element */}
       <div ref={ref} />
       {/* header */}
       <div

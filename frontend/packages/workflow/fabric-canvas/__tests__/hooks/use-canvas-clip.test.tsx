@@ -110,12 +110,12 @@ describe('useCanvasClip', () => {
         useCanvasClip({ canvas: mockCanvas, schema }),
       );
 
-      // 先添加裁剪区域
+      // Add the clipping area first
       act(() => {
         result.current.addClip();
       });
 
-      // 移除裁剪区域
+      // Remove clipping area
       act(() => {
         result.current.removeClip();
       });

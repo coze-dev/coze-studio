@@ -15,7 +15,7 @@
  */
  
 /**
- * 批处理的分页器
+ * Batch pager
  */
 import React, { useMemo } from 'react';
 

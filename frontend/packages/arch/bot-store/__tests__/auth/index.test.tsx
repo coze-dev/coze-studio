@@ -26,10 +26,10 @@ import {
 
 import { useAuthStore } from '../../src/auth';
 
-// 模拟全局变量
+// simulated global variable
 vi.stubGlobal('IS_DEV_MODE', false);
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/bot-api', () => ({
   PlaygroundApi: {
     DraftBotCollaboration: vi.fn().mockResolvedValue({
@@ -75,7 +75,7 @@ vi.mock('@coze-arch/bot-api', () => ({
   },
 }));
 
-// 模拟 logger
+// Analog logger
 vi.mock('@coze-arch/logger', () => ({
   reporter: {
     error: vi.fn(),
@@ -85,7 +85,7 @@ vi.mock('@coze-arch/logger', () => ({
   },
 }));
 
-// 模拟 CustomError
+// Simulate CustomError
 vi.mock('@coze-arch/bot-error', () => ({
   CustomError: vi.fn(),
 }));
@@ -107,7 +107,7 @@ describe('auth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 重置 store 状态
+    // Reset store state
     act(() => {
       useAuthStore.setState({
         collaboratorsMap: {
@@ -115,12 +115,12 @@ describe('auth', () => {
           [ResourceType.Workflow]: {},
           [ResourceType.Intelligence]: {},
         } as any,
-        // 确保 getCachedCollaborators 方法返回一个空数组
+        // Ensure getCachedCollaborators method returns an empty array
         getCachedCollaborators: vi.fn().mockReturnValue([]),
       });
     });
 
-    // 模拟 API 响应
+    // Simulate API response
     (PlaygroundApi.DraftBotCollaboration as any).mockResolvedValue({
       data: mockCreators,
     });
@@ -149,7 +149,7 @@ describe('auth', () => {
       it('当缓存中有协作者时应该返回缓存的协作者', () => {
         const { result } = renderHook(() => useAuthStore());
 
-        // 先设置缓存
+        // Set up the cache first
         act(() => {
           useAuthStore.setState({
             collaboratorsMap: {
@@ -267,7 +267,7 @@ describe('auth', () => {
       it('当资源类型为 Bot 时应该调用 patPermissionApi.AddCollaborator', async () => {
         const { result } = renderHook(() => useAuthStore());
 
-        // 确保 getCachedCollaborators 返回一个空数组
+        // Make sure getCachedCollaborators return an empty array
         vi.spyOn(result.current, 'getCachedCollaborators').mockReturnValue([]);
 
         (patPermissionApi.AddCollaborator as any).mockResolvedValue({});
@@ -380,7 +380,7 @@ describe('auth', () => {
       it('当资源类型为 Bot 时应该调用 patPermissionApi.AddCollaborator', async () => {
         const { result } = renderHook(() => useAuthStore());
 
-        // 确保 getCachedCollaborators 返回一个空数组
+        // Make sure getCachedCollaborators return an empty array
         vi.spyOn(result.current, 'getCachedCollaborators').mockReturnValue([]);
 
         const mockUsers = [

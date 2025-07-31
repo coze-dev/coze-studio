@@ -36,7 +36,7 @@ import { type CheckParamsProps, STATUS } from '../types';
 import s from '../index.module.less';
 import ParamsForm from './params-form';
 
-/** stringify 缩进 */
+/** Stringify indent */
 const INDENTATION_SPACES = 2;
 const SLEEP_NUM = 100;
 
@@ -68,7 +68,7 @@ export const DebugParams: React.FC<{
   const paramsFormRef = useRef<{ data: Array<APIParameter> }>(null);
 
   const handleAction = async () => {
-    // 校验是否必填
+    // Verification is required
     setCheck(check + 1);
     await sleep(SLEEP_NUM);
     const errorEle = document.getElementsByClassName('errorDebugClassTag');

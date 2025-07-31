@@ -33,9 +33,9 @@ export const initialParam: QueryParams = {
   name: '',
 };
 
-/** 是否由当前用户创建：
- * 0-不筛选
- * 1-当前用户 */
+/** Is it created by the current user?
+ * 0 - Do not filter
+ * 1 - Current user */
 export const getScopeOptions = () => [
   {
     label: I18n.t('library_filter_tags_all_creators'),
@@ -47,10 +47,10 @@ export const getScopeOptions = () => [
   },
 ];
 
-/** 发布状态：
- * 0-不筛选
- * 1-未发布
- * 2-已发布 */
+/** Release status:
+ * 0 - Do not filter
+ * 1 - Unpublished
+ * 2- Published */
 export const getStatusOptions = () => [
   {
     label: I18n.t('library_filter_tags_all_status'),

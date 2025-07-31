@@ -45,7 +45,7 @@ export const UITabBar: React.FC<PropsWithChildren<UITabBarProps>> = ({
         <div className={cs(s.header, containerClass)}>
           <Node {...innerProps} />
 
-          {/* 右侧工具栏，没有可不传children */}
+          {/* Right toolbar, no children can be passed on. */}
           <div className={s['tool-bar']}>{children}</div>
         </div>
       )}

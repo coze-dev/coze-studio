@@ -19,10 +19,10 @@ export enum ParamTypeAlias {
   Integer,
   Boolean,
   Number,
-  /** 理论上没有 List 了，此项仅作兼容 */
+  /** Theoretically there is no List, this item is only for compatibility */
   List = 5,
   Object = 6,
-  // 上面是 api 中定义的 InputType。下面是整合后的。从 99 开始，避免和后端定义撞车
+  // The above is the InputType defined in the api. The following is the integrated one. Start from 99 to avoid collisions with the backend definition.
   ArrayString = 99,
   ArrayInteger,
   ArrayBoolean,
@@ -51,20 +51,20 @@ export enum ParamValueType {
 
 export interface RecursedParamDefinition {
   name?: string;
-  /** Tree 组件要求每一个节点都有 key，而 key 不适合用名称（前后缀）等任何方式赋值，最终确定由接口转换层一次性提供随机 key */
+  /** The Tree component requires each node to have a key, and the key is not suitable for assignment in any way such as name (before and after). Finally, the interface conversion layer provides a random key at one time. */
   fieldRandomKey?: string;
   desc?: string;
   required?: boolean;
   type: ParamTypeAlias;
   children?: RecursedParamDefinition[];
-  // region 参数值定义
-  // 输入参数的值可以来自上游变量引用，也可以是用户输入的定值（复杂类型则只允许引用）
-  // 如果是定值，传 fixedValue
-  // 如果是引用，传 quotedValue
+  // Region parameter value definition
+  // The value of the input parameter can come from an upstream variable reference, or it can be a fixed value entered by the user (for complex types, only references are allowed).
+  // If it is a fixed value, pass the fixedValue.
+  // If it is a reference, pass the quotedValue.
   isQuote?: ParamValueType;
-  /** 参数定值 */
+  /** parameter setting */
   fixedValue?: string;
-  /** 参数引用 */
+  /** parameter reference */
   quotedValue?: [nodeId: string, ...path: string[]]; // string[]
   // endregion
 }
@@ -89,9 +89,9 @@ export interface ParametersProps {
   className?: string;
   style?: React.CSSProperties;
   withDescription?: boolean;
-  // 不支持使用的类型
+  // Types not supported
   disabledTypes?: ParamTypeAlias[];
   errors?: ParametersError[];
-  // 支持空值 & 空数组
+  // Support null value & empty array
   allowValueEmpty?: boolean;
 }

@@ -20,7 +20,7 @@ import type { CommentEditorCommand } from '../type';
 import type { CommentEditorModel } from '../model';
 import { CommentEditorBlockFormat } from '../constant';
 
-// 定义块前缀模式和对应的格式
+// Define the block prefix pattern and corresponding format
 const blockPrefixConfig: Array<[RegExp, CommentEditorBlockFormat]> = [
   [/^#$/, CommentEditorBlockFormat.HeadingOne],
   [/^##$/, CommentEditorBlockFormat.HeadingTwo],
@@ -31,14 +31,14 @@ const blockPrefixConfig: Array<[RegExp, CommentEditorBlockFormat]> = [
   [/^1\.$/, CommentEditorBlockFormat.NumberedList],
 ];
 
-// 删除文本的函数
+// Function to delete text
 const deleteText = (model: CommentEditorModel, text: string): void => {
   Array.from(text).forEach(() => {
     Editor.deleteBackward(model.editor, { unit: 'character' });
   });
 };
 
-// 处理块前缀的函数
+// Functions that handle block prefixes
 const handleBlockPrefix = (
   model: CommentEditorModel,
   text: string,
@@ -60,7 +60,7 @@ const handleBlockPrefix = (
 export const blockPrefixCommand: CommentEditorCommand = {
   key: ' ',
   exec: ({ model, event }) => {
-    // 检查是否正在输入拼音
+    // Check if pinyin is being entered.
     if (event.nativeEvent.isComposing) {
       return;
     }

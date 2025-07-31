@@ -61,15 +61,15 @@ export const useUploadModal = (params: UseUploadModalParams) => {
     unitList.some(
       i =>
         /**
-         * 1. 未上传成功的
-         * 2. 校验失败的
-         * 3. 名字为空的（名字为空暂不影响 validateMessage，所以需要单独判断）
+         * 1. Unsuccessful upload
+         * 2. Validation failed
+         * 3. The name is empty (the name is empty will not affect the validateMessage for the time being, so it needs to be judged separately)
          */
         i.status !== UploadStatus.SUCCESS || i.validateMessage || !i.name,
     );
 
   const handleUnitListUpdate = (data: UnitItem[]) => {
-    // 防止重命名后再上传被覆盖
+    // Prevent renaming and then uploading from being overwritten.
     const newData = data.map(i => {
       let resultName = i.name;
       unitList.forEach(u => {

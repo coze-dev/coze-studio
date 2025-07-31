@@ -2,19 +2,19 @@
 
 git fetch
 
-# 要删除的远程分支完整名称列表，包含origin前缀
+# List of complete names of the remote branch to delete, including the origin prefix
 declare -a branches_to_delete_full=(
   origin/feat/analysis-tyy
   origin/feat/query_classify
 )
 
-# 远程仓库的名称，默认为origin
+# The name of the remote repository, default is origin
 remote_name="origin"
 
-# 函数，用于删除远程分支
+# Function to delete a remote branch
 delete_branch() {
   local branch_name_with_origin=$1
-  # 去除origin前缀
+  # Remove the origin prefix
   local branch_name=$(echo "$branch_name_with_origin" | sed 's/^'"$remote_name"'\///')
 
   if git show-ref --verify --quiet "refs/remotes/$branch_name_with_origin"; then
@@ -30,7 +30,7 @@ delete_branch() {
   fi
 }
 
-# 遍历分支列表并调用删除函数
+# Traverse the branch list and call the delete function
 for full_branch_name in "${branches_to_delete_full[@]}"; do
   delete_branch "$full_branch_name"
 done

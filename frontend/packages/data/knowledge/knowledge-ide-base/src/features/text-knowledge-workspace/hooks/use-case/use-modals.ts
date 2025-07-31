@@ -51,7 +51,7 @@ export const useModals = (props: UseModalsProps): UseModalsReturn => {
   const { docId, documentType, documentSource, onDelete, onUpdateFrequency } =
     props;
 
-  // 删除模态框
+  // Delete modal box
   const { node: deleteModalNode, delete: showDeleteModal } = useDeleteUnitModal(
     {
       docId,
@@ -61,7 +61,7 @@ export const useModals = (props: UseModalsProps): UseModalsReturn => {
     },
   );
 
-  // 更新频率模态框
+  // Update frequency mode box
   const { node: updateFrequencyModalNode, edit: showUpdateFrequencyModal } =
     useUpdateFrequencyModal({
       docId,

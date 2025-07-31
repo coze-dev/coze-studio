@@ -30,12 +30,12 @@ import {
 import { ViewService } from '../create-preset-plugin/view-service';
 
 const CUSTOM_COMMAND = {
-  // 在左侧分屏打开
+  // Open split screen on left
   SPLIT_LEFT: {
     id: 'view.custom.split-left',
     label: I18n.t('project_ide_tabs_open_on_left'),
   },
-  // 在右侧分屏打开
+  // Open in split screen on the right
   SPLIT_RIGHT: {
     id: 'view.custom.split-right',
     label: I18n.t('project_ide_tabs_open_on_right'),
@@ -49,10 +49,10 @@ const CUSTOM_COMMAND = {
 function getAllTabsCount(dockPanel: FlowDockPanel): number {
   let count = 0;
 
-  // 遍历 DockPanel 中的所有小部件
+  // Traverse all widgets in DockPanel
   Array.from(dockPanel.children()).forEach(widget => {
     if (widget instanceof TabBar) {
-      // 累计 TabBar 中的所有标签页数
+      // Accumulate all tab pages in TabBar
       count += widget.titles.length;
     }
   });
@@ -70,9 +70,9 @@ export const createContextMenuPlugin: PluginCreator<void> = definePluginCreator(
       const shortcutsService =
         ctx.container.get<ShortcutsService>(ShortcutsService);
       /**
-       * 更改标题
+       * Change the title
        */
-      // 更新 command 标题 label
+      // Update command title label
       command.updateCommand(Command.Default.VIEW_CLOSE_CURRENT_WIDGET, {
         label: I18n.t('project_ide_tabs_close'),
       });
@@ -95,7 +95,7 @@ export const createContextMenuPlugin: PluginCreator<void> = definePluginCreator(
         execute: widget => {
           viewService.splitScreen('left', widget);
         },
-        // 分屏功能在所有 tab 大于 1 时才可以使用
+        // Split screen function can only be used when all tabs are greater than 1
         isEnabled: () => {
           const tabCounts = getAllTabsCount(shell.mainPanel);
           return tabCounts > 1;
@@ -105,46 +105,46 @@ export const createContextMenuPlugin: PluginCreator<void> = definePluginCreator(
         execute: widget => {
           viewService.splitScreen('right', widget);
         },
-        // 分屏功能在所有 tab 大于 1 时才可以使用
+        // Split screen function can only be used when all tabs are greater than 1
         isEnabled: () => {
           const tabCounts = getAllTabsCount(shell.mainPanel);
           return tabCounts > 1;
         },
       });
       /**
-       * 注册 menu
+       * Registration menu
        */
-      // 关闭
+      // close
       menuService.addMenuItem({
         command: Command.Default.VIEW_CLOSE_CURRENT_WIDGET,
         selector: '.lm-TabBar-tab',
       });
-      // 关闭其他
+      // Close other
       menuService.addMenuItem({
         command: Command.Default.VIEW_CLOSE_OTHER_WIDGET,
         selector: '.lm-TabBar-tab',
       });
-      // 关闭所有
+      // Close all
       menuService.addMenuItem({
         command: Command.Default.VIEW_CLOSE_ALL_WIDGET,
         selector: '.lm-TabBar-tab',
       });
-      // 刷新标签
+      // refresh label
       menuService.addMenuItem({
         command: CUSTOM_COMMAND.REFRESH.id,
         selector: '.lm-TabBar-tab',
       });
-      // 分割线
+      // dividing line
       menuService.addMenuItem({
         type: 'separator',
         selector: '.lm-TabBar-tab',
       });
-      // 向左分屏
+      // Split screen to the left
       menuService.addMenuItem({
         command: CUSTOM_COMMAND.SPLIT_LEFT.id,
         selector: '.lm-TabBar-tab',
       });
-      // 向右分屏
+      // Split screen to the right
       menuService.addMenuItem({
         command: CUSTOM_COMMAND.SPLIT_RIGHT.id,
         selector: '.lm-TabBar-tab',

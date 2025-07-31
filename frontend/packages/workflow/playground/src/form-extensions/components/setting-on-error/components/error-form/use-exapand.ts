@@ -20,7 +20,7 @@ import {
 } from '@coze-workflow/nodes';
 
 /**
- * 是否展开
+ * Whether to expand
  * @param settingOnError
  * @returns
  */

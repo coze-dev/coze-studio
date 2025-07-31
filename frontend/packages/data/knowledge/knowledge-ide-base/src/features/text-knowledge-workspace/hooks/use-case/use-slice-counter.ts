@@ -18,7 +18,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useKnowledgeStore } from '@coze-data/knowledge-stores';
 
 /**
- * 处理文档片段计数的 hook
+ * Hooks that handle document fragment counting
  */
 export const useSliceCounter = () => {
   const { dataSetDetail, setDataSetDetail } = useKnowledgeStore(
@@ -28,7 +28,7 @@ export const useSliceCounter = () => {
     })),
   );
 
-  // 处理添加块时更新计数
+  // Update count when processing added blocks
   const handleIncreaseSliceCount = () => {
     if (!dataSetDetail) {
       return;
@@ -45,7 +45,7 @@ export const useSliceCounter = () => {
     });
   };
 
-  // 处理删除块时更新计数
+  // Update count when processing deleted blocks
   const handleDecreaseSliceCount = () => {
     if (!dataSetDetail) {
       return;

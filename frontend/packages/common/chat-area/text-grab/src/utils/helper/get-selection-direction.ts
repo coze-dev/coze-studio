@@ -18,27 +18,27 @@ import { Direction } from '../../types/selection';
 import { compareNodePosition } from './compare-node-position';
 
 export const getSelectionDirection = (selection: Selection): Direction => {
-  // 确保有选区存在
+  // Make sure there are constituencies
   if (!selection || selection.isCollapsed) {
-    return Direction.Unknown; // 没有选区或选区未展开
+    return Direction.Unknown; // No constituencies or constituencies not expanded
   }
 
   const { anchorNode } = selection;
   const { focusNode } = selection;
 
-  // 确保 anchorNode 和 focusNode 都不为 null
+  // Make sure that neither anchorNode nor focusNode is null
   if (!anchorNode || !focusNode) {
-    return Direction.Unknown; // 无法确定方向
+    return Direction.Unknown; // Unable to determine direction
   }
 
   const { anchorOffset } = selection;
   const { focusOffset } = selection;
-  // 比较 anchor 和 focus 的位置
+  // Compare anchor and focus positions
   if (anchorNode === focusNode) {
-    // 如果 anchor 和 focus 在同一个节点，通过偏移量判断方向
+    // If the anchor and focus are on the same node, determine the direction by the offset
     return anchorOffset <= focusOffset ? Direction.Forward : Direction.Backward;
   } else {
-    // 如果不在同一个节点，使用 Document Position 来判断
+    // If not in the same node, use Document Position to determine
     const position = compareNodePosition(anchorNode, focusNode);
 
     if (position === 'before') {
@@ -48,6 +48,6 @@ export const getSelectionDirection = (selection: Selection): Direction => {
     }
   }
 
-  // 如果无法确定方向，返回 'unknown'
+  // If the direction cannot be determined, return'unknown'
   return Direction.Unknown;
 };

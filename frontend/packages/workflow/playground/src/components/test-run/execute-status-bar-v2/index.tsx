@@ -15,7 +15,7 @@
  */
  
 /**
- * 适配 coze graph 2.0 的节点状态栏
+ * Node status bar for coze graph 2.0
  */
 import React from 'react';
 
@@ -36,16 +36,16 @@ const ExecuteStatusBarV2: React.FC<ExecuteStatusBarV2Props> = props => {
   const execEntity = useExecStateEntity();
   const globalState = useGlobalState();
 
-  // workflow 相关
+  // Workflow related
   const { viewStatus } = globalState;
   const executeNodeResult = execEntity.getNodeExecResult(node.id);
 
-  // 节点相关
+  // node correlation
   const { nodeStatus } = executeNodeResult || {};
-  // 节点 4 个状态
+  // Node 4 states
   const isNodeWaiting = nodeStatus === NodeExeStatus.Waiting;
-  // 是否展示这个组件的判断。
-  // 当 workflow 在运行或者运行结束 并且 存在运行结果 并且 节点不是在等待中
+  // Determine whether to display this component.
+  // When a workflow is running or running, and there is a running result, and the node is not waiting
   const showStatusBar =
     (viewStatus === WorkflowExecStatus.EXECUTING ||
       viewStatus === WorkflowExecStatus.DONE) &&
@@ -54,8 +54,8 @@ const ExecuteStatusBarV2: React.FC<ExecuteStatusBarV2Props> = props => {
 
   const isInvalidNode = getNodeError(node);
   /**
-   * 1. 无效节点不显示 status bar
-   * 2. 不符合显示条件时不显示 status bar
+   * 1. Invalid node does not display status bar
+   * 2. Do not display status bar when display conditions are not met
    */
   if (isInvalidNode || !showStatusBar) {
     return null;

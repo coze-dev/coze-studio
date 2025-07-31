@@ -45,9 +45,9 @@ import {
 
 import styles from './index.module.less';
 
-/** 内置函数 */
+/** built-in function */
 namespace SuggestionViewUtils {
-  /** 编辑器选中事件处理 */
+  /** Editor selected event handling */
   export const editorSelectHandler = (params: {
     reducer: SuggestionReducer;
     payload: ExpressionEditorEventParams<ExpressionEditorEvent.Select>;
@@ -55,7 +55,7 @@ namespace SuggestionViewUtils {
     const { reducer, payload } = params;
     const [state, dispatch] = reducer;
 
-    // 设置解析数据
+    // Set up parse data
     const parseData = ExpressionEditorParser.parse({
       lineContent: payload.content,
       lineOffset: payload.offset,
@@ -83,7 +83,7 @@ namespace SuggestionViewUtils {
       },
     });
 
-    // 重置UI组件内部状态
+    // Reset UI component internal state
     const shouldRefresh = parseData.content.reachable === '';
     if (shouldRefresh) {
       dispatch({
@@ -91,7 +91,7 @@ namespace SuggestionViewUtils {
       });
     }
 
-    // 设置选中值
+    // Set the selected value
     const selected = SuggestionViewUtils.computeSelected({
       model: state.model,
       parseData,
@@ -101,7 +101,7 @@ namespace SuggestionViewUtils {
       payload: selected,
     });
 
-    // 设置可见变量树
+    // Set the visible variable tree
     const variableTree = SuggestionViewUtils.computeVariableTree({
       model: state.model,
       parseData,
@@ -111,7 +111,7 @@ namespace SuggestionViewUtils {
       payload: variableTree,
     });
 
-    // 设置匹配树枝
+    // Set matching branches
     const matchTreeBranch: ExpressionEditorTreeNode[] | undefined =
       ExpressionEditorTreeHelper.matchTreeBranch({
         tree: state.model.variableTree,
@@ -122,7 +122,7 @@ namespace SuggestionViewUtils {
       payload: matchTreeBranch,
     });
 
-    // 设置空内容
+    // Set empty content
     const emptyContent = SuggestionViewUtils.computeEmptyContent({
       parseData,
       fullVariableTree: state.model.variableTree,
@@ -134,7 +134,7 @@ namespace SuggestionViewUtils {
       payload: emptyContent,
     });
 
-    // 设置UI相对坐标
+    // Set UI relative coordinates
     const rect = SuggestionViewUtils.computeRect(state);
     dispatch({
       type: SuggestionActionType.SetRect,
@@ -147,9 +147,9 @@ namespace SuggestionViewUtils {
       return;
     }
 
-    // FIXME: 设置搜索值，很hack的逻辑，后面建议重构不用semi组件，自己写一个
+    // FIXME: Set the search value, very hacked logic. Later, it is recommended to refactor without semi components, and write one yourself.
     if (!state.ref.tree.current) {
-      // 不设为可见获取不到ref
+      // Not set to visible can't get ref
       dispatch({
         type: SuggestionActionType.SetVisible,
         payload: true,
@@ -168,7 +168,7 @@ namespace SuggestionViewUtils {
     return 1;
   };
 
-  /** 计算可见时相对父容器坐标 */
+  /** Calculate relative parent container coordinates when visible */
   export const computeRect = (
     state: SuggestionState,
   ):
@@ -194,12 +194,12 @@ namespace SuggestionViewUtils {
         left: (rect.left - containerRect.left) / getFinalScale(state),
       };
     } catch (e) {
-      // slate DOM 计算报错可忽略
+      // Slate DOM calculation error can be ignored
       return;
     }
   };
 
-  /** 计算当前选中变量 */
+  /** Calculate the currently selected variable */
   export const computeSelected = (params: {
     model: ExpressionEditorModel;
     parseData: ExpressionEditorParseData;
@@ -218,7 +218,7 @@ namespace SuggestionViewUtils {
     return treeBrach[treeBrach.length - 1];
   };
 
-  /** 计算当前搜索值 */
+  /** Calculate the current search value */
   export const computeSearch = (
     parseData: ExpressionEditorParseData,
   ): string => {
@@ -229,7 +229,7 @@ namespace SuggestionViewUtils {
     const lastSegment =
       segments[segments.length - 1].type ===
       ExpressionEditorSegmentType.ArrayIndex
-        ? segments[segments.length - 2] // 数组索引属于上一层级，需要去除防止影响到搜索值
+        ? segments[segments.length - 2] // The array index belongs to the previous level and needs to be removed to prevent it from affecting the search value
         : segments[segments.length - 1];
     if (
       !lastSegment ||
@@ -240,7 +240,7 @@ namespace SuggestionViewUtils {
     return lastSegment.objectKey;
   };
 
-  /** 计算裁剪层级的变量树 */
+  /** Calculate the variable tree of the clipping level */
   export const computeVariableTree = (params: {
     model: ExpressionEditorModel;
     parseData: ExpressionEditorParseData;
@@ -293,7 +293,7 @@ namespace SuggestionViewUtils {
   export const keyboardSelectedClassName = () =>
     styles['expression-editor-suggestion-keyboard-selected'];
 
-  /** 将选中项设为高亮 */
+  /** Highlight the selected item */
   export const setUIOptionSelected = (uiOption: Element): void => {
     if (
       !uiOption?.classList?.add ||
@@ -305,7 +305,7 @@ namespace SuggestionViewUtils {
     uiOption.classList.add(SuggestionViewUtils.keyboardSelectedClassName());
   };
 
-  /** 获取所有选项UI元素 */
+  /** Get all options UI elements */
   export const computeUIOptions = (
     state: SuggestionState,
   ):
@@ -315,14 +315,14 @@ namespace SuggestionViewUtils {
         selectedOption?: Element;
       }
     | undefined => {
-    // 获取所有的选项元素
+    // Get all option elements
     const optionListDom =
       state.ref.suggestion.current?.children?.[0]?.children?.[1]?.children;
     if (!optionListDom) {
       return;
     }
     const optionList = Array.from(optionListDom);
-    // 找到当前高亮的选项
+    // Find the currently highlighted option
     const selectedIndex = optionList.findIndex(element =>
       element.classList.contains(keyboardSelectedClassName()),
     );
@@ -333,7 +333,7 @@ namespace SuggestionViewUtils {
     };
   };
 
-  /** 禁止变更 visible 防止 ui 抖动 */
+  /** Disable visible changes Prevent UI jitter */
   export const preventVisibleJitter = (
     reducer: SuggestionReducer,
     time = 150,
@@ -354,18 +354,18 @@ namespace SuggestionViewUtils {
     }, time);
   };
 
-  /** 清空键盘UI选项 */
+  /** Clear keyboard UI options */
   export const clearSelectedUIOption = (state: SuggestionState) => {
     const uiOptions = SuggestionViewUtils.computeUIOptions(state);
     if (uiOptions?.selectedOption) {
-      // 清空键盘选中状态
+      // Clear keyboard selection
       uiOptions.selectedOption.classList.remove(
         SuggestionViewUtils.keyboardSelectedClassName(),
       );
     }
   };
 
-  /** 默认键盘UI选项为第一项 */
+  /** The default keyboard UI option is the first item */
   export const selectFirstUIOption = (state: SuggestionState) => {
     const uiOptions = SuggestionViewUtils.computeUIOptions(state);
     if (!uiOptions?.optionList) {
@@ -375,12 +375,12 @@ namespace SuggestionViewUtils {
     if (!uiOptions?.optionList?.[0]?.classList?.add) {
       return;
     }
-    // 默认首项高亮
+    // Default first item highlighting
     SuggestionViewUtils.setUIOptionSelected(uiOptions.optionList[0]);
   };
 }
 
-/** 选中节点 */
+/** selected node */
 export const useSelectNode = (reducer: SuggestionReducer) => {
   const [state] = reducer;
   return useCallback(
@@ -403,7 +403,7 @@ export const useSelectNode = (reducer: SuggestionReducer) => {
         },
       };
       const insertText = `${ExpressionEditorToken.FullStart}${fullPath}${ExpressionEditorToken.FullEnd}`;
-      // 替换文本
+      // replacement text
       Transforms.insertText(state.model.editor, insertText, {
         at: selection,
       });
@@ -412,12 +412,12 @@ export const useSelectNode = (reducer: SuggestionReducer) => {
   );
 };
 
-/** 挂载监听器 */
+/** mount the listener */
 export const useListeners = (reducer: SuggestionReducer) => {
   const [state, dispatch] = reducer;
 
   useEffect(() => {
-    // 挂载监听: 鼠标点击事件
+    // Mount Listening: Mouse Click Events
     const mouseHandler = (e: MouseEvent) => {
       if (!state.visible || !state.ref.suggestion.current) {
         return;
@@ -439,13 +439,13 @@ export const useListeners = (reducer: SuggestionReducer) => {
       window.removeEventListener('mousedown', mouseHandler);
     };
     return () => {
-      // 销毁时卸载监听器防止内存泄露
+      // Prevent memory leaks by uninstalling listeners when destroyed
       mouseDisposer();
     };
   }, [state]);
 
   useEffect(() => {
-    // 挂载监听: 编辑器选择事件
+    // Mount Listening: Editor Selection Event
     const editorSelectDisposer = state.model.on<ExpressionEditorEvent.Select>(
       ExpressionEditorEvent.Select,
       payload =>
@@ -455,13 +455,13 @@ export const useListeners = (reducer: SuggestionReducer) => {
         }),
     );
     return () => {
-      // 销毁时卸载监听器防止内存泄露
+      // Prevent memory leaks by uninstalling listeners when destroyed
       editorSelectDisposer();
     };
   }, []);
 
   useEffect(() => {
-    // 挂载监听: 编辑器拼音输入事件
+    // Mount Monitor: Editor Pinyin Input Event
     const compositionStartDisposer =
       state.model.on<ExpressionEditorEvent.CompositionStart>(
         ExpressionEditorEvent.CompositionStart,
@@ -472,13 +472,13 @@ export const useListeners = (reducer: SuggestionReducer) => {
           }),
       );
     return () => {
-      // 销毁时卸载监听器防止内存泄露
+      // Prevent memory leaks by uninstalling listeners when destroyed
       compositionStartDisposer();
     };
   }, []);
 
   useEffect(() => {
-    // 初始化前首次渲染激活DOM
+    // First render activation DOM before initialization
     if (state.initialized) {
       return;
     }
@@ -489,7 +489,7 @@ export const useListeners = (reducer: SuggestionReducer) => {
   }, []);
 
   useEffect(() => {
-    // 初始化前监听到DOM激活后隐藏
+    // Listen to DOM activation before initialization and hide after activation
     if (state.initialized || state.visible) {
       return;
     }
@@ -503,14 +503,14 @@ export const useListeners = (reducer: SuggestionReducer) => {
   }, [state]);
 };
 
-/** 键盘上下回车键选中节点 */
+/** Keyboard Enter up and down to select the node */
 export const useKeyboardSelect = (
   reducer: SuggestionReducer,
   selectNode: (node: ExpressionEditorTreeNode) => void,
 ) => {
   const [state, dispatch] = reducer;
 
-  // 键盘上下
+  // Keyboard up and down
   useEffect(() => {
     const keyboardArrowHandler = event => {
       if (
@@ -526,34 +526,34 @@ export const useKeyboardSelect = (
       }
       const { optionList, selectedIndex } = uiOptions;
       if (optionList.length === 1) {
-        // 仅有一项可选项的时候不做处理
+        // Do not deal with when there is only one option
         return;
       }
       event.preventDefault();
       let newIndex = selectedIndex;
       if (event.key === 'ArrowDown') {
-        // 如果当前没有高亮的选项或者是最后一个选项，则高亮第一个选项
+        // If there is currently no highlighted option or the last option, highlight the first option
         newIndex =
           selectedIndex === -1 || selectedIndex === optionList.length - 1
             ? 0
             : selectedIndex + 1;
       } else if (event.key === 'ArrowUp') {
-        // 如果当前没有高亮的选项或者是第一个选项，则高亮最后一个选项
+        // If there is currently no highlighted option or the first option, highlight the last option
         newIndex =
           selectedIndex <= 0 ? optionList.length - 1 : selectedIndex - 1;
       }
       const selectedOption = optionList[newIndex];
-      // 更新高亮选项
+      // Update highlighting options
       if (selectedIndex !== -1) {
         optionList[selectedIndex].classList.remove(
           SuggestionViewUtils.keyboardSelectedClassName(),
         );
       }
       SuggestionViewUtils.setUIOptionSelected(selectedOption);
-      // 将新选中的选项滚动到视图中
+      // Scroll the newly selected option into view
       selectedOption.scrollIntoView({
-        behavior: 'smooth', // 平滑滚动
-        block: 'nearest', // 最接近的视图边界，可能是顶部或底部
+        behavior: 'smooth', // Smooth scrolling
+        block: 'nearest', // The closest view boundary, possibly the top or bottom
       });
     };
     document.addEventListener('keydown', keyboardArrowHandler);
@@ -562,7 +562,7 @@ export const useKeyboardSelect = (
     };
   }, [state]);
 
-  // 键盘回车
+  // Keyboard Enter
   useEffect(() => {
     const keyboardEnterHandler = event => {
       if (
@@ -596,13 +596,13 @@ export const useKeyboardSelect = (
         !variableTreeNode.variable?.children ||
         variableTreeNode.variable?.children.length === 0
       ) {
-        // 叶子节点
+        // leaf node
         return;
       }
-      // 非叶子节点，光标向前移动两格
+      // Non-leaf node, move the cursor forward two spaces
       const { selection } = state.model.editor;
       if (selection && Range.isCollapsed(selection)) {
-        // 向前移动两个字符的光标
+        // Move the cursor two characters forward
         Transforms.move(state.model.editor, { distance: 2, reverse: true });
       }
       SuggestionViewUtils.preventVisibleJitter(reducer);
@@ -613,7 +613,7 @@ export const useKeyboardSelect = (
     };
   }, [state]);
 
-  // 键盘 ESC 取消弹窗
+  // Keyboard ESC cancel pop-up window
   useEffect(() => {
     const keyboardESCHandler = event => {
       if (
@@ -635,17 +635,17 @@ export const useKeyboardSelect = (
     };
   }, [state]);
 
-  // 默认选中首项
+  // First item selected by default
   useEffect(() => {
     SuggestionViewUtils.selectFirstUIOption(state);
   }, [state]);
 };
 
-/** 等待semi组件数据更新后的副作用 */
+/** Side effects of waiting for semi component data to be updated */
 export const useRenderEffect = (reducer: SuggestionReducer) => {
   const [state, dispatch] = reducer;
 
-  // 组件树状数据更新后设置搜索值
+  // Set the search value after the component tree data is updated
   useEffect(() => {
     if (!state.renderEffect.search || !state.parseData) {
       return;
@@ -667,7 +667,7 @@ export const useRenderEffect = (reducer: SuggestionReducer) => {
     });
   }, [state]);
 
-  // 搜索过滤后是否为空
+  // Is it empty after searching for filters?
   useEffect(() => {
     if (!state.renderEffect.filtered) {
       return;

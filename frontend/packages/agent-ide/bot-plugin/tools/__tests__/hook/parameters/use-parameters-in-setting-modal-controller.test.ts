@@ -93,6 +93,6 @@ describe('useParametersInSettingModalController', () => {
       result.current.doUpdateParams();
     });
 
-    expect(result.current.isUpdateLoading).toBe(false); // 假设更新完成后isUpdateLoading为false
+    expect(result.current.isUpdateLoading).toBe(false); // Assuming isUpdateLoading is false after the update is complete
   });
 });

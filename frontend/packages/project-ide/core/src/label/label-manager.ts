@@ -32,7 +32,7 @@ interface LabelChangeEvent {
 }
 
 /**
- * 提供 全局的 label 数据获取
+ * Provide, global label data acquisition
  */
 @injectable()
 export class LabelManager implements LabelService, LifecycleContribution {
@@ -56,7 +56,7 @@ export class LabelManager implements LabelService, LifecycleContribution {
   }
 
   /**
-   * 获取 label 的 icon
+   * Get label icon
    * @param element
    */
   getIcon(element: URI): string | React.ReactNode {
@@ -72,7 +72,7 @@ export class LabelManager implements LabelService, LifecycleContribution {
   }
 
   /**
-   * label 的自定义渲染
+   * Custom rendering of labels
    */
   renderer(element: URI, opts?: any): ReactNode {
     const handler = this.findContribution(element).find(i => i.renderer);
@@ -83,7 +83,7 @@ export class LabelManager implements LabelService, LifecycleContribution {
   }
 
   /**
-   *  获取 label 名字
+   *  Get label name
    * @param element
    */
   getName(element: URI): string {
@@ -99,7 +99,7 @@ export class LabelManager implements LabelService, LifecycleContribution {
   }
 
   /**
-   * 获取 label 的详细描述
+   * Get a detailed description of the label
    * @param element
    */
   getDescription(element: URI): string {
@@ -136,7 +136,7 @@ export class LabelManager implements LabelService, LifecycleContribution {
   }
 
   /**
-   * label 变化后触发
+   * Triggered after label change
    */
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
   // @ts-ignore

@@ -25,7 +25,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	pluginModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -50,7 +50,7 @@ type PluginDraftDAO struct {
 type pluginDraftPO model.PluginDraft
 
 func (p pluginDraftPO) ToDO() *entity.PluginInfo {
-	return entity.NewPluginInfo(&plugin.PluginInfo{
+	return entity.NewPluginInfo(&pluginModel.PluginInfo{
 		ID:          p.ID,
 		SpaceID:     p.SpaceID,
 		DeveloperID: p.DeveloperID,
@@ -257,9 +257,12 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInf
 }
 
 func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
-	mf, err := plugin.Manifest.EncryptAuthPayload()
-	if err != nil {
-		return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	var mf *pluginModel.PluginManifest
+	if plugin.Manifest != nil {
+		mf, err = plugin.Manifest.EncryptAuthPayload()
+		if err != nil {
+			return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+		}
 	}
 
 	m := &model.PluginDraft{

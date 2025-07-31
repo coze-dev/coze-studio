@@ -150,7 +150,7 @@ export const deleteMessageGroupById = async (
     }
 
     /**
-     * 正常对话场景与 llm answer 单独成组场景
+     * Normal conversation scene and llm answer separate group scene
      */
     const expectToDeleteMessageId =
       userMessageId || llmAnswerMessageIdList.at(0);
@@ -202,7 +202,7 @@ export const deleteMessageGroupById = async (
   }
 };
 
-// 收到的消息是不是第一条answer
+// Is the message received the first answer?
 export const isGroupFirstAnswer = (
   messageGroupList: MessageGroup[],
   messages: Message[],
@@ -211,7 +211,7 @@ export const isGroupFirstAnswer = (
   if (message.type !== 'answer') {
     return false;
   }
-  // 根据message找到对应的group
+  // Find the corresponding group according to the message
   const targetGroup = messageGroupList.find(
     ({ memberSet }) => memberSet.userMessageId === message.reply_id,
   );
@@ -221,7 +221,7 @@ export const isGroupFirstAnswer = (
   const answers = targetGroup.memberSet.llmAnswerMessageIdList
     .map(id => findMessageById(messages, id))
     .map(m => m?.type === 'answer' && m);
-  // 没有第一条answer, 标明当前answer是第一条
+  // There is no first answer, indicating that the current answer is the first
   const hasNoAnswer = answers.length === 0;
   const firstAnswer = answers.at(-1) || null;
   const isFirstAnswer = firstAnswer?.message_id === message.message_id;

@@ -36,9 +36,9 @@ interface SettingFieldsProps {
 }
 
 /**
- * 数据库字段设置组件
- * @param props.label 标题
- * @param props.name 字段路径，用于从节点数据中获取字段设置值
+ * Database field setting component
+ * @Param props.label title
+ * @Param props.name field path to get field settings from node data
  */
 export function DatabaseSettingFields({ label, name }: SettingFieldsProps) {
   const { data: database, isLoading, error } = useCurrentDatabaseQuery();

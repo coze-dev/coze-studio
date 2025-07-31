@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode } from 'react';
 
 import cls from 'classnames';
@@ -83,7 +83,7 @@ function InnerImg({
       <Avatar
         className="shrink-0 rounded-[6px] border border-solid coz-stroke-primary"
         shape="square"
-        // @ts-expect-error -- semi 类型定义有问题
+        // @ts-expect-error -- there is a problem with the semi type definition
         bottomSlot={
           bottomBanner
             ? {
@@ -118,57 +118,57 @@ const FEATURE_ICON_MAP: Record<
   { color: string; bg: string; icon: ReactNode }
 > = {
   [ModelTagValue.Flagship]: {
-    icon: <IconCozStarFill />, //旗舰
+    icon: <IconCozStarFill />, //flagship
     color: 'coz-fg-color-brand',
     bg: 'coz-mg-hglt',
   },
   [ModelTagValue.HighSpeed]: {
-    icon: <IconCozLightningFill />, //高速
+    icon: <IconCozLightningFill />, //high speed
     color: 'coz-fg-color-blue',
     bg: 'coz-mg-color-blue',
   },
   [ModelTagValue.CostPerformance]: {
-    icon: <IconCozChatFill />, //性价比
+    icon: <IconCozChatFill />, //price/performance ratio
     color: 'coz-fg-color-blue',
     bg: 'coz-mg-color-blue',
   },
   [ModelTagValue.LongText]: {
-    icon: <IconCozDocumentFill />, //长文本
+    icon: <IconCozDocumentFill />, //long text
     color: 'coz-fg-color-blue',
     bg: 'coz-mg-color-blue',
   },
   [ModelTagValue.RolePlaying]: {
-    icon: <IconCozRoleFill />, //角色扮演
+    icon: <IconCozRoleFill />, //Role Playing
     color: 'coz-fg-color-blue',
     bg: 'coz-mg-color-blue',
   },
   [ModelTagValue.ImageUnderstanding]: {
-    icon: <IconCozImageFill />, //图像
+    icon: <IconCozImageFill />, //image
     color: 'coz-fg-color-purple',
     bg: 'coz-mg-color-purple',
   },
   [ModelTagValue.VideoUnderstanding]: {
-    icon: <IconCozVideoFill />, //视频
+    icon: <IconCozVideoFill />, //video
     color: 'coz-fg-color-purple',
     bg: 'coz-mg-color-purple',
   },
   [ModelTagValue.AudioUnderstanding]: {
-    icon: <IconCozMusic />, //音频
+    icon: <IconCozMusic />, //Audio
     color: 'coz-fg-color-purple',
     bg: 'coz-mg-color-purple',
   },
   [ModelTagValue.CodeSpecialization]: {
-    icon: <IconCozCodeFill />, //代码专精
+    icon: <IconCozCodeFill />, //Code Specialization
     color: 'coz-fg-color-cyan',
     bg: 'coz-mg-color-cyan',
   },
   [ModelTagValue.ToolInvocation]: {
-    icon: <IconCozWrenchFill />, //工具调用
+    icon: <IconCozWrenchFill />, //tool call
     color: 'coz-fg-color-cyan',
     bg: 'coz-mg-color-cyan',
   },
   [ModelTagValue.Reasoning]: {
-    icon: <IconCozLightbulbFill />, //推理
+    icon: <IconCozLightbulbFill />, //inference
     color: 'coz-fg-color-cyan',
     bg: 'coz-mg-color-cyan',
   },

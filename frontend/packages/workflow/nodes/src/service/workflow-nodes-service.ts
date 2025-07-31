@@ -30,12 +30,12 @@ export class WorkflowNodesService {
   @inject(EntityManager) protected readonly entityManager: EntityManager;
   private nanoid = customAlphabet('1234567890', 5);
   /**
-   * 节点标题变化
+   * Node header change
    */
   readonly onNodesTitleChange = this.onNodesTitleChangeEmitter.event;
 
   /**
-   * 节点标题更新
+   * Node header update
    * @param node
    */
   getNodeTitle(node: WorkflowNodeEntity): string {
@@ -48,7 +48,7 @@ export class WorkflowNodesService {
   }
 
   /**
-   * 获取所有节点
+   * Get all nodes
    */
   getAllNodes(ignoreNode?: WorkflowNodeEntity): WorkflowNodeEntity[] {
     return this.entityManager
@@ -56,13 +56,13 @@ export class WorkflowNodesService {
       .filter(n => n.id !== 'root' && n !== ignoreNode);
   }
   /**
-   * 获取所有节点的标题
+   * Get the titles of all nodes
    */
   getAllTitles(ignoreNode?: WorkflowNodeEntity): string[] {
     return this.getAllNodes(ignoreNode).map(node => this.getNodeTitle(node));
   }
   /**
-   * 获取开始节点
+   * Get start node
    */
   getStartNode(): WorkflowNodeEntity {
     return this.entityManager
@@ -70,14 +70,14 @@ export class WorkflowNodesService {
       .find(node => node.isStart) as WorkflowNodeEntity;
   }
   /**
-   * 触发节点标题更新事件
+   * Trigger node header update event
    */
   fireNodesTitleChange(): void {
     this.onNodesTitleChangeEmitter.fire();
   }
 
   /**
-   * 创建不会重复的title
+   * Create non-duplicate titles
    *
    * abc_1 -> abc_2
    */
@@ -110,11 +110,11 @@ export class WorkflowNodesService {
     return newTitle;
   }
 
-  /** 创建唯一ID */
+  /** Create a unique ID */
   createUniqID() {
     let id: string;
     do {
-      // 防止 id 以 0 开头，后端会转成 int64 导致 0 丢失，从而一些 id 匹配不上
+      // To prevent the id from starting with 0, the backend will be converted to int64, resulting in 0 loss, so some IDs cannot match
       id = `1${this.nanoid()}`;
     } while (this.entityManager.getEntityById(id));
     return id;

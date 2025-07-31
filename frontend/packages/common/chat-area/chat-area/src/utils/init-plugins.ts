@@ -42,7 +42,7 @@ export const initPlugins = (
   } = params;
 
   /**
-   * 插件注册开始
+   * Plugin registration starts
    */
   const pluginInstanceList: (
     | ReadonlyChatAreaPlugin<object>
@@ -59,10 +59,10 @@ export const initPlugins = (
       continue;
     }
 
-    // 创建业务context
+    // Create business context
     const pluginBizContext = registerPlugin.createPluginBizContext();
 
-    // 创建chat-area内置的context
+    // Create a built-in context for chat-area
     const chatAreaPluginContext = createChatAreaPluginContext({
       storeSet,
       refreshMessageList,
@@ -72,7 +72,7 @@ export const initPlugins = (
       getCommonDeps,
     });
 
-    // 初始化业务插件实例
+    // Initialize the business plug-in instance
     const pluginInstance = new registerPlugin.Plugin(
       pluginBizContext,
       chatAreaPluginContext,
@@ -83,7 +83,7 @@ export const initPlugins = (
   const { usePluginStore } = storeSet;
   usePluginStore.getState().setPluginInstanceList(pluginInstanceList);
   /**
-   * 插件注册结束
+   * Plugin registration ends
    */
 
   return () => {

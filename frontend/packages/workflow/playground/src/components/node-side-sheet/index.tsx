@@ -15,7 +15,7 @@
  */
  
 /**
- * 节点侧拉窗
+ * Node side window
  */
 import {
   type PropsWithChildren,
@@ -124,7 +124,7 @@ export const NodeSideSheet: React.FC<NodeFormPanelProps> = ({
     }
   }, [showTestNodeForm, node]);
 
-  // 节点删除时需要关闭本面板
+  // This panel needs to be closed when a node is deleted
   useEffect(() => {
     const disposable = node.onDispose(() => {
       floatLayoutService.close();

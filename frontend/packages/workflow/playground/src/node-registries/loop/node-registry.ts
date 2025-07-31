@@ -45,7 +45,7 @@ export const LOOP_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     size: LoopSize,
     nodeMetaPath: DEFAULT_NODE_META_PATH,
     outputsPath: DEFAULT_OUTPUTS_PATH,
-    inputParametersPath: LoopPath.LoopArray, // 入参路径，试运行等功能依赖该路径提取参数
+    inputParametersPath: LoopPath.LoopArray, // Imported parameter path, practice running and other functions rely on this path to extract parameters
     useDynamicPort: true,
     defaultPorts: [
       { type: 'input' },
@@ -74,7 +74,7 @@ export const LOOP_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     inputsPathList: [
       LoopPath.LoopArray,
       LoopPath.LoopVariables,
-      // 'outputs', // WARNING: 加上 outputs 会导致这一数据清空
+      // 'Outputs',//WARNING: Adding outputs will cause this data to be cleared
     ],
   },
   formMeta: LOOP_FORM_META,

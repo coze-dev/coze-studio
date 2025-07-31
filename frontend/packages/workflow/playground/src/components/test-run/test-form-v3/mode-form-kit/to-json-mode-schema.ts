@@ -67,7 +67,7 @@ const generateValidateJsonSchemaField = (field: IFormSchema) => {
       items: { type: 'string' },
     };
   }
-  // 复杂类型使用它自身的 jsonSchema
+  // A complex type uses its own jsonSchema.
   if (
     ViewVariableType.isArrayType(originType) ||
     originType === ViewVariableType.Object
@@ -108,7 +108,7 @@ export const toJsonModeSchema = (origin: IFormSchema) => {
   const nodeField = origin.properties?.[TestFormFieldName.Node];
   const nodeProperties = nodeField?.properties;
   /**
-   * 如果节点没有任何入参，则不用处理
+   * If the node does not have any imported parameters, it is not processed
    */
   if (!nodeProperties) {
     return;

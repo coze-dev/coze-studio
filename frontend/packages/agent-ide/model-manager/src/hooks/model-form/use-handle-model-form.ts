@@ -41,9 +41,9 @@ import { useModelForm } from '../../context/model-form-context';
 import { type ModelFormProps } from '../../components/model-form';
 
 const specialFieldKeyList = [
-  // 这个字段是个嵌套结构 需要专门转换
+  // This field is a nested structure and requires special conversion
   'HistoryRound',
-  // 这个字段需要带到表单中进行变化 表单中有组件会监听这个数据 但是他不属于 model_parameter
+  // This field needs to be brought to the form for change. There are components in the form that will listen to this data, but it is not part of the model_parameter
   'model_style',
 ];
 
@@ -53,8 +53,8 @@ export interface UseHandleModelFormProps {
   getModelRecord: () => ModelInfo;
   editable: boolean;
   /**
-   * 原本在 hook 内部调用 useBotEditor 获取 modelStore，这期暂且粗暴地挪出去
-   * @todo 理想形态是彻底与 store 解耦，传入 get_type_list 接口返回值即可，或提供一个将接口返回值转换成所需结构的方法
+   * Originally, useBotEditor was called inside the hook to get the modelStore, but this issue was violently moved out for the time being
+   * The ideal form of @todo is to completely decouple from the store, pass in get_type_list interface return value, or provide a way to convert the interface return value into the desired structure
    */
   modelStore: Pick<
     ModelState & ModelAction,
@@ -63,15 +63,15 @@ export interface UseHandleModelFormProps {
 }
 
 /**
- * 此处数据的流转没有做成由顶层模型设置数据完全控制表单数据，有以下几个原因:
- * 1. 需求临时变动，需要按照模型唯独记录用户设置
- * 2. 顶层数据源的设计是单例的，只能存最近模型的一份数据
+ * The flow of data here does not allow the top-level model to set the data to fully control the form data for several reasons:
+ * 1. Temporary changes in requirements, and user settings need to be recorded only according to the model
+ * 2. The design of the top-level data source is singleton, and only one copy of the most recent model can be stored
  *
- * 最终设计是，由中间的表单层记录数据，通过表单的 onChange 来更新顶层数据源
- * 所以表单数据和顶层数据源不一定是一致的
+ * The final design is that the data is recorded by the single layer in the middle, and the top-level data source is updated by the onChange of the form
+ * So the form data and the top-level data source are not necessarily the same
  *
- * 每次切换模型，都会初始化表单。我在初始化的过程中抹平顶层数据源和表单数据的不一致
- * 并统一通过表单的 onChange 来更新顶层数据
+ * Every time I switch the model, the form is initialized. During the initialization process, I smooth out the inconsistencies between the top-level data source and the form data
+ * And update the top-level data uniformly through the onChange of the form
  */
 // eslint-disable-next-line max-lines-per-function, @coze-arch/max-line-per-function -- q
 export const useHandleModelForm = ({
@@ -127,7 +127,7 @@ export const useHandleModelForm = ({
     const modelRecord = getModelRecord();
     const { defaultValues } = presetValues;
 
-    // 服务端给新创建 bot 刷数据, 老数据无对应字段 fallback 到 custom
+    // The server level flushes the data for the newly created bot, and the old data has no corresponding field fallback to custom.
     const configModelStyle: ModelStyle =
       modelRecord.model_style ?? ModelStyle.Custom;
     const flattedModelValues = convertModelInfoToFlatObject(modelRecord);
@@ -140,8 +140,8 @@ export const useHandleModelForm = ({
     const customizeValue = customizeValueMap[currentModelId];
 
     /**
-     * 前端内存级别按照 Record<ModelId, Values> 保存用户的 custom 设置
-     * 如果没有查找到用户的设置, 则沿用当前 bot/agent 的模型设置数据
+     * Front-end memory level Save user's custom settings according to Record < ModelId, Values >
+     * If the user's settings are not found, the model setting data of the current bot/agent is used
      */
     const expectValue = merge(
       {},

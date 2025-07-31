@@ -27,8 +27,8 @@ export function DemoComponent(props: { name: string }): JSX.Element {
   const [foo] = useState('hello world');
   const { name } = props;
   return (
-    // font-bold 来自 taiwindcss
-    // 建议优先使用 taiwindcss
+    // Font-bold from taiwindcss
+    // It is recommended to use taiwindcss first.
     <div className={classNames(s.foo, 'font-bold')}>
       {foo} {name}!
       <div>

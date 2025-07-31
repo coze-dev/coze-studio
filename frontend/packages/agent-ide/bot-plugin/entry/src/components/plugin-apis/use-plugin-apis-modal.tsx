@@ -36,7 +36,7 @@ export const usePluginApisModal = (props?: PluginModalModeProps) => {
     const _initQuery = isNumber(params) ? undefined : params?.initQuery;
     setVisible(true);
     setInitQuery(_initQuery);
-    // 0 也有效
+    // 0 is also valid
     if (isNumber(openType)) {
       setType(openType);
     }

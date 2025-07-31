@@ -20,15 +20,15 @@ import {
 } from '@coze-common/chat-core';
 import { useGetRegisteredPlugin } from '@coze-common/chat-area';
 
-// 延迟1.5s后开始模拟上传进度
+// Start simulating upload progress after 1.5s delay
 const FAKE_PROGRESS_START_DELAY = 1500;
-// fake progress 初始进度
+// Fake progress initial progress
 const FAKE_PROGRESS_START = 50;
-// 最大进度
+// maximum progress
 const FAKE_PROGRESS_MAX = 85;
-// 每次步进值
+// value per step
 const FAKE_PROGRESS_STEP = 5;
-// 循环间隔
+// Cycle interval
 const FAKE_PROGRESS_INTERVAL = 100;
 
 export const useGetUploadPluginInstance = () => {
@@ -55,7 +55,7 @@ export const useGetUploadPluginInstance = () => {
       file,
       type: getFileInfo(file)?.fileType === 'image' ? 'image' : 'object',
     });
-    // 如果1s内上传进度没有变化，主动触发fake progress, 500ms内从50%上升到80%，忽略后续的真实进度
+    // If the upload progress does not change within 1s, actively trigger fake progress, increase from 50% to 80% within 500ms, ignoring the subsequent real progress
     let isStartFakeProgress = false;
     let fakeProgressTimer: number | undefined;
     let fakeProgress = FAKE_PROGRESS_START;
@@ -82,7 +82,7 @@ export const useGetUploadPluginInstance = () => {
       isStartFakeProgress = false;
     }
     uploader.on('progress', ({ percent }) => {
-      // 有假进度，忽略后续的真实进度
+      // There is a fake progress, ignore the subsequent real progress.
       if (isStartFakeProgress) {
         return;
       }

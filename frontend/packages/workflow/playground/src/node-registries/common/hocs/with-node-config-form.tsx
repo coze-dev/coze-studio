@@ -18,11 +18,11 @@
 import { NodeConfigForm } from '../components';
 
 /**
- * 高阶组件，用于为组件添加节点配置表单的包装
- * 这个 HOC 为工作流节点提供配置表单的包装器
+ * Higher order component to add wrapper for node configuration form to component
+ * This HOC provides a wrapper for the configuration form for the workflow node
  *
- * @param Component - 需要被配置表单包装的组件
- * @returns 返回一个被 NodeConfigForm 包装后的新组件
+ * @Param Component - Component that needs to be wrapped by the configuration form
+ * Returns a new component wrapped in NodeConfigForm
  */
 export function withNodeConfigForm<
   ComponentProps extends React.JSX.IntrinsicAttributes = {},

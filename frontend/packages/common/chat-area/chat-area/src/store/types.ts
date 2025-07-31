@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type Message as OriginMessage,
   type ContentType,
@@ -26,18 +26,18 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 import { type MentionList } from '@coze-common/chat-uikit-shared';
 
-/*  eslint-disable @typescript-eslint/naming-convention -- 内部属性不用 _ 开头用啥开头啊 */
+/*  eslint-disable @typescript-eslint/naming-convention -- internal properties don't need to start with _ what to start with? */
 interface ExtraMessageFields {
-  // 内部属性，仅用于发送失败场景
+  // Internal properties, only used to send failed scenarios
   _sendFailed?: boolean;
-  // 内部属性，用于标记历史记录
+  // Internal properties for marking history
   _fromHistory?: boolean;
-  // 内部属性，用于标记该条消息来自 onboarding
+  // Internal property to flag the message as coming from onboarding
   _fromOnboarding?: boolean;
 }
-/* eslint-enable @typescript-eslint/naming-convention -- 解释啥啊。。 */
+/* eslint-enable @typescript-eslint/naming-convention -- explain what... */
 
-// eslint-disable-next-line @typescript-eslint/naming-convention -- 不遵守
+// eslint-disable-next-line @typescript-eslint/naming-convention -- non-compliance
 type _Message<T extends ContentType, V = unknown> = OriginMessage<T, V> &
   ExtraMessageFields;
 
@@ -61,12 +61,12 @@ export interface MessagePagination {
 export interface MessageGroupMember {
   /**
    * role: user
-   * 一次对话用户只发一条消息
+   * A conversation user only sends one message
    */
   userMessageId: string | null;
   /**
    * role: assistant
-   * type: 非 answer
+   * Type: non answer
    */
   functionCallMessageIdList: string[];
   /**
@@ -74,9 +74,9 @@ export interface MessageGroupMember {
    * type: answer
    */
   llmAnswerMessageIdList: string[];
-  // todo SuggestionInChat 的设计与这个字段分叉了
+  // The design of todo SuggestionInChat forks with this field
   /**
-   * @deprecated 当下无用
+   * @deprecated now useless
    * type: follow_up
    */
   followUpMessageIdList: string[];
@@ -84,26 +84,26 @@ export interface MessageGroupMember {
 
 export interface MessageGroupInfo {
   /**
-   * 用户发送了消息, 只有本地消息时为 message_id
-   * 返回 ack 后为 reply_id
+   * The user sent a message, only local messages are message_id
+   * reply_id after returning ack
    */
   groupId: string;
   sectionId: string;
   selectable?: boolean;
   unSelectableTips?: string;
   /**
-   * 是否是最新的分组
+   * Is it the latest grouping?
    */
   isLatest: boolean;
   /**
-   * null - 不展示分割线
-   * with-onboarding - 展示分割线和开场白
-   * without-onboarding - 只展示分割线
+   * Null - do not show split lines
+   * With-onboarding - Show splits and openers
+   * Without-onboarding - Show only split lines
    */
   showContextDivider: null | 'with-onboarding' | 'without-onboarding';
   // todo remove
   /**
-   * @deprecated 疑似无用
+   * @deprecated suspected useless
    */
   showSuggestions?: boolean;
 }
@@ -171,42 +171,42 @@ export interface VerboseContentData {
   agent_name?: string;
   agent_id?: string;
   arguments?: string;
-  restart?: boolean; //是否回溯到start节点
-  wraped_text?: string; //长期记忆展示的文案
+  restart?: boolean; //Whether to go back to the start node
+  wraped_text?: string; //Copywriting for long-term memory display
   chunks?: KnowledgeRecallSlice[];
-  /** 知识库调用状态码，0-成功 708882003-云搜索鉴权失败 */
+  /** Knowledge base call status code, 0-success 708882003-cloud search authentication failed */
   status_code?: number;
 }
 
 export interface MessageMeta
   extends MessageIdStruct,
     Pick<ExtraMessageFields, '_fromHistory'> {
-  /** 消息展示复制、重新生成等按钮 */
+  /** Message display Copy, regenerate and other buttons */
   showActions: boolean;
-  /** 消息后面展示 agent 分割线 */
+  /** The agent split line is displayed after the message. */
   showMultiAgentDivider: boolean;
-  /** 用户问题发送中 */
+  /** User question is being sent. */
   isSending: boolean;
-  /** 消息发送或接收失败 */
+  /** Message sending or receiving failed */
   isFail: boolean;
-  /** 消息接收中 */
+  /** Message receiving */
   isReceiving: boolean;
-  /** 仅在 true 时展示函数调用；由对应的 tool_response 终结掉;
-   * 注意非调试区（home,store,web sdk）使用该值判断 function call 展示；调试区有其他判断逻辑 */
+  /** Exhibits function calls only when true; terminated by the corresponding tool_response;
+   * Note that the non-debug area (home, store, web sdk) uses this value to determine the display of the function call; the debug area has other judgment logic */
   isFunctionCalling: boolean;
-  /** 是否展示 suggestion：仅最后一条回复，且无分割线的时候才展示 */
-  // TODO: lsy确认是否要删除
+  /** Whether to show suggestion: Only show the last reply when there is no dividing line */
+  // TODO: lsy confirm whether to delete
   // showSuggestions: boolean;
-  /** 是否是来自最后一个消息组的消息 */
+  /** Is it a message from the last message group? */
   isFromLatestGroup: boolean;
-  /** 仅含有 message.type === 'answer'  */
+  /** Contains only message.type === 'answer'  */
   isGroupFirstAnswer: boolean;
-  /** 包含 answer, [function_call, verbose], query; 顺序递减，function_call 与 verbose 顺序不定 */
+  /** Contains answer, [function_call, verbose], query; in decreasing order, function_call and verbose in variable order */
   isGroupLastMessage: boolean;
-  /** 当前组的最后一条 message.type === 'answer' */
+  /** The last message of the current group. Type === 'answer' */
   isGroupLastAnswerMessage: boolean;
   /**
-   * 是否隐藏头像
+   * Whether to hide the avatar
    */
   hideAvatar: boolean;
   role: Message['role'];
@@ -215,12 +215,12 @@ export interface MessageMeta
   replyId: string;
   botState: MessageExtraInfoBotState;
   /**
-   * 当前group是否存在agent跳转verbose消息，用于判断是否展示agent分割线
+   * Whether there is an agent jump verbose message in the current group, which is used to determine whether to display the agent split line
    */
   beforeHasJumpVerbose: boolean;
   verboseMsgType: VerboseMsgType | '';
   source: MessageSource | undefined;
-  // 卡片是否disabled
+  // Is the card disabled?
   cardDisabled: boolean;
 }
 
@@ -231,7 +231,7 @@ export interface OnboardingSuggestionItem {
 
 type Expect<T extends true> = T extends true ? true : never;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars -- 类型结构检查
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars -- type structure checking
 type _ = Expect<Message extends MessageIdStruct ? true : false>;
 
 export interface SenderInfo {
@@ -273,7 +273,7 @@ export interface BaseFileData {
 }
 
 /**
- * 除了 image 都是 normal file
+ * Except the images are normal files
  */
 export interface CommonFileData extends BaseFileData {
   fileType: FileType.File;

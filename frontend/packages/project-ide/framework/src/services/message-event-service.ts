@@ -23,14 +23,14 @@ export interface MessageEvent<T = any> {
 }
 
 /**
- * widget 的通信服务
+ * Widget communication service
  */
 @injectable()
 export class MessageEventService {
   @inject(WidgetManager) widgetManager: WidgetManager;
 
   /**
-   * 消息队列
+   * message queue
    */
   events = new Map<string, MessageEvent[]>();
 
@@ -38,11 +38,11 @@ export class MessageEventService {
   onSend = this.onSendEmitter.event;
 
   private toKey(uri: URI) {
-    // 通过 uri 获取 widget 的唯一索引
+    // Get the widget's unique index through URI
     return this.widgetManager.uriToWidgetID(uri);
   }
 
-  /** 通过 uri 获取消息队列 */
+  /** Get message queue by URI */
   private get(uri: URI): MessageEvent[] {
     const key = this.toKey(uri);
     if (this.events.has(key)) {

@@ -67,13 +67,13 @@ export const getInputTypeFromFile = (file: File): UploadItemType | '' => {
   return getInputTypeFromFileType(fileType);
 };
 
-// 判断文件是否超过最大限制
+// Determine whether the file exceeds the maximum limit
 export const isOverMaxSizeByUploadItemConfig = (
   file: File | undefined,
   config: UploadItemConfig | undefined,
 ): {
   isOverSize: boolean;
-  // 单位 MB
+  // Unit MB
   maxSize?: number;
 } => {
   if (!file) {
@@ -104,7 +104,7 @@ export const isOverMaxSizeByUploadItemConfig = (
   };
 };
 
-// 根据acceptUploadItemTypes获取accept
+// Accept based on acceptUploadItemTypes
 export const getAcceptByUploadItemTypes = (
   acceptUploadItemTypes: UploadItemType[],
 ) => {

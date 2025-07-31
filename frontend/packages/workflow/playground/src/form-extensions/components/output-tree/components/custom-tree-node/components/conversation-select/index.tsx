@@ -73,7 +73,7 @@ interface ConversationItem {
 }
 
 /**
- * 衍生自 @/components/conversation-select/conversations.tsx 把 value 值改成了 conversation_name 而非 unique_id
+ * Derived from @/components/conversation-select/conversations.tsx changed the value to conversation_name instead of unique_id
  */
 export const ConversationSelect: React.FC<ConversationSelectProps> = ({
   enableTypes = ['static', 'dynamic'],
@@ -90,7 +90,7 @@ export const ConversationSelect: React.FC<ConversationSelectProps> = ({
   const [dynamicList, setDynamicList] = useState<ConversationItem[]>([]);
   const { projectId = '', spaceId, projectCommitVersion } = globalState;
 
-  // 接口得到的总数并非真实的总数，前端可能会拼接 options
+  // The total number obtained by the interface is not the real total, and the front end may splice options.
   const listMaxHeight = useMemo(() => {
     const realTotal = staticList?.length + dynamicList?.length;
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers

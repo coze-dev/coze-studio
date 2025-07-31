@@ -32,7 +32,7 @@ export const expressionStringValidator = (
   const { required = true, emptyMessage, invalidMessage } = options;
   const doubleBracedPattern = /{{([^}]+)}}/g;
   const matches = expressionStr?.match(doubleBracedPattern);
-  // 去除字符串里的 {{}}
+  // Remove {{}} from string
   const matchesContent = matches?.map((varStr: string) =>
     varStr.replace(/^{{|}}$/g, ''),
   );

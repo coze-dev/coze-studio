@@ -39,9 +39,9 @@ interface SpaceStoreState {
   recentlyUsedSpaceList: BotSpace[];
   loading: false | Promise<SpaceInfo | undefined>;
   inited?: boolean;
-  createdTeamSpaceNum: number; // 个人创建的团队空间计数
+  createdTeamSpaceNum: number; // Count of team spaces created by individuals
   maxTeamSpaceNum: number;
-  /** @deprecated 使用 spaceList & maxTeamSpaceNum */
+  /** @deprecated spaceList & maxTeamSpaceNum */
   spaces: {
     bot_space_list: BotSpace[];
     has_personal_space: boolean;
@@ -56,7 +56,7 @@ interface SpaceStoreAction {
   getSpaceId: () => string;
   getPersonalSpaceID: () => string | undefined;
   checkSpaceID: (spaceID: string) => boolean;
-  /** @deprecated 通过 id 索引 */
+  /** @deprecated by id index */
   setSpace: (spaceId?: string, isBotDetailIframe?: boolean) => void | never;
   createSpace: (
     request: SaveSpaceV2Request,

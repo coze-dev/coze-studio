@@ -31,9 +31,9 @@ import { CustomPlatform } from './custom';
 import s from './index.module.less';
 
 enum ETab {
-  // 自定义渠道
+  // custom channel
   Custom = 'custom',
-  // 通用渠道
+  // common channel
   Normal = 'normal',
 }
 const PublishPlatformSetting = () => {
@@ -56,7 +56,7 @@ const PublishPlatformSetting = () => {
 
   return (
     <div className="pt-[10px] w-full h-full" ref={contentRef}>
-      {/* 为企业管理员时才需要显示 tab */}
+      {/* You only need to display tabs when you are an enterprise administrator. */}
       {showCustomTab ? (
         <Space spacing={16} className="mb-[16px]">
           <span
@@ -86,7 +86,7 @@ const PublishPlatformSetting = () => {
         </Space>
       ) : null}
       <div className={s['publish-platform-frame']}>
-        {/* 为企业管理员时才需要显示 tab */}
+        {/* You only need to display tabs when you are an enterprise administrator. */}
         {showCustomTab ? (
           <>
             {current === ETab.Normal && <NormalPlatform />}

@@ -27,7 +27,7 @@ export const LabelWithTooltip = ({ customClassName, maxWidth, content }) => {
       const textWidth = textRef.current?.offsetWidth;
       setIsOverflowing(textWidth >= maxWidth);
     }
-  }, [content, maxWidth]); // 依赖于文本内容，当文本内容变化时重新检查
+  }, [content, maxWidth]); // Depends on the text content, rechecking when the text content changes
 
   return (
     <Tooltip

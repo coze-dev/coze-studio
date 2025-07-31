@@ -52,12 +52,12 @@ export const nodeInputName: SetterExtension = {
       validatorConfig?.errorMessage ??
       I18n.t('workflow_detail_node_error_format');
 
-    /** 命名校验 */
+    /** name check */
     if (!validatorRule.test(value)) {
       return validatorErrorMessage;
     }
 
-    /** 非法值校验 */
+    /** Illegal value verification */
     if (invalidValues[value]) {
       return invalidValues[value];
     }

@@ -36,7 +36,7 @@ interface FunctionCallParamDTO extends BoundSkills {
 type FunctionCallParamVO = BoundSkills;
 
 /**
- * fc参数后端转前端
+ * FC parameter backend to frontend
  * @param fcParamDTO
  * @returns
  */
@@ -64,7 +64,7 @@ export function formatFcParamOnInit(fcParamDTO?: FunctionCallParamDTO) {
 }
 
 /**
- * fc参数前端转后端
+ * FC parameter front-end to back-end
  * @param fcParamVO
  * @returns
  */

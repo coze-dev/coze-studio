@@ -59,7 +59,7 @@ const ParamTypeColRender: FC<ParamTypeProps> = ({
   addChildNode,
   enableFileType = false,
 }) => {
-  // 删除全部子节点;
+  // Delete all sub-nodes;
   const handleDeleteAllChildNode = (r: APIParameter) => {
     const cloneData = cloneDeep(data);
     const delStatus = deleteAllChildNode(cloneData, r[ROWKEY] as string);
@@ -86,7 +86,7 @@ const ParamTypeColRender: FC<ParamTypeProps> = ({
         }
 
         if (!isResponse) {
-          // 切换类型，重置default value
+          // Switch type, reset default value
           if (record.global_default) {
             updateNodeWithData({
               record,
@@ -103,7 +103,7 @@ const ParamTypeColRender: FC<ParamTypeProps> = ({
           value: [type, assistType ?? null],
         };
 
-        // updateNodeWithData 会变更type类型，保留原始的type
+        // updateNodeWithData will change the type type and keep the original type.
         const recordType = record?.type;
 
         if (type === ParameterType.Array) {

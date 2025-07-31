@@ -5,7 +5,7 @@ module.exports = [
   ...require('./eslint.config.base.js'),
   {
     plugins: {
-      // TODO: 需要根据不同类型配置plugin？需要阅读源码确认是否影响性能
+      // TODO: Need to configure plugins according to different types? You need to read the source code to confirm whether it affects performance
       'react-hooks': require('eslint-plugin-react-hooks'),
       react: require('eslint-plugin-react'),
       risxss: require('eslint-plugin-risxss'),

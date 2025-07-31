@@ -27,17 +27,17 @@ vi.mock('@coze-arch/bot-utils', () => ({
   typeSafeJSONParse: (str: string) => {
     try {
       const result = JSON.parse(str);
-      // 如果是批处理数据，确保返回数组类型
+      // If it is batch data, make sure to return an array type
       if (str === 'invalid json') {
         return str;
       }
-      // 如果是批处理数据，确保返回数组类型
+      // If it is batch data, make sure to return an array type
       if (str.includes('batch')) {
         return Array.isArray(result) ? result : [];
       }
       return result;
     } catch {
-      // 如果是批处理数据，返回空数组
+      // If it is batch data, return an empty array
       if (str.includes('batch')) {
         return [];
       }
@@ -110,7 +110,7 @@ describe('default-parser', () => {
       expect(result.nodeType).toBe(StandardNodeType.LLM);
       expect(result.isBatch).toBe(false);
       expect(result.caseResult).toHaveLength(1);
-      expect(result.caseResult?.[0].dataList).toHaveLength(3); // 输入、原始输出、最终输出
+      expect(result.caseResult?.[0].dataList).toHaveLength(3); // Input, original output, final output
     });
 
     it('应该正确解析 Code 节点结果', () => {
@@ -122,7 +122,7 @@ describe('default-parser', () => {
       const result = defaultParser(nodeResult, workflowSchema);
 
       expect(result.nodeType).toBe(StandardNodeType.Code);
-      expect(result.caseResult?.[0].dataList).toHaveLength(3); // 输入、原始输出、最终输出
+      expect(result.caseResult?.[0].dataList).toHaveLength(3); // Input, original output, final output
     });
 
     it('应该正确解析 Start 节点结果', () => {
@@ -134,7 +134,7 @@ describe('default-parser', () => {
       const result = defaultParser(nodeResult, workflowSchema);
 
       expect(result.nodeType).toBe(StandardNodeType.Start);
-      expect(result.caseResult?.[0].dataList).toHaveLength(1); // 只有输入
+      expect(result.caseResult?.[0].dataList).toHaveLength(1); // input only
     });
 
     it('应该正确解析 End 节点结果', () => {
@@ -154,7 +154,7 @@ describe('default-parser', () => {
       const result = defaultParser(nodeResult, workflowSchema);
 
       expect(result.nodeType).toBe(StandardNodeType.End);
-      expect(result.caseResult?.[0].dataList).toHaveLength(2); // 输出变量、回答内容
+      expect(result.caseResult?.[0].dataList).toHaveLength(2); // Output variables, answer content
     });
 
     it('应该正确解析 Message 节点结果', () => {
@@ -166,7 +166,7 @@ describe('default-parser', () => {
       const result = defaultParser(nodeResult, workflowSchema);
 
       expect(result.nodeType).toBe(StandardNodeType.Output);
-      expect(result.caseResult?.[0].dataList).toHaveLength(2); // 输出变量、回答内容
+      expect(result.caseResult?.[0].dataList).toHaveLength(2); // Output variables, answer content
     });
 
     it('应该正确解析包含图片的输出', () => {
@@ -256,7 +256,7 @@ describe('default-parser', () => {
 
     it('应该正确处理 Text 节点的原始输出', () => {
       const nodeResult = createMockNodeResult('1', {
-        raw_output: '{"key": "value"}', // 即使是有效的 JSON 字符串也应该保持原样
+        raw_output: '{"key": "value"}', // Even valid JSON strings should remain intact
       });
       const workflowSchema = createMockWorkflowSchema(
         '1',
@@ -272,7 +272,7 @@ describe('default-parser', () => {
 
     it('应该正确处理不存在的节点类型', () => {
       const nodeResult = createMockNodeResult('1');
-      const workflowSchema = createMockWorkflowSchema('2'); // 不同的节点 ID
+      const workflowSchema = createMockWorkflowSchema('2'); // Different node IDs
       const result = defaultParser(nodeResult, workflowSchema);
 
       expect(result.nodeType).toBeUndefined();

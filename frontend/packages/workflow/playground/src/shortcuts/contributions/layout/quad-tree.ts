@@ -15,7 +15,7 @@
  */
  
 /* eslint-disable prefer-destructuring -- no need */
-/* eslint-disable @typescript-eslint/no-namespace -- 使用 namespace 方便管理 */
+/* eslint-disable @typescript-eslint/no-namespace -- use namespace for easy management */
 import type { LayoutNode } from '@flowgram-adapter/free-layout-editor';
 
 interface QuadTreeBounds {
@@ -34,10 +34,10 @@ export interface QuadTree {
   southEast: QuadTree | null;
 }
 
-/** 默认容量 */
+/** default capacity */
 const DEFAULT_CAPACITY = 4;
 
-/** 创建四叉树节点 */
+/** Create a quadtree node */
 const createNode = (bounds: QuadTreeBounds): QuadTree => ({
   bounds,
   nodes: [],
@@ -47,14 +47,14 @@ const createNode = (bounds: QuadTreeBounds): QuadTree => ({
   southEast: null,
 });
 
-/** 检查节点是否在边界内（需要考虑节点的大小） */
+/** Check whether the node is within the boundary (the size of the node needs to be taken into account). */
 const containsNode = (bounds: QuadTreeBounds, node: LayoutNode): boolean =>
   node.position.x >= bounds.x &&
   node.position.x + node.size.width <= bounds.x + bounds.width &&
   node.position.y >= bounds.y &&
   node.position.y + node.size.height <= bounds.y + bounds.height;
 
-/** 细分节点 */
+/** subdivision node */
 const subdivide = (quadTree: QuadTree): QuadTree => {
   const { x, y, width, height } = quadTree.bounds;
   const w = width / 2;
@@ -69,7 +69,7 @@ const subdivide = (quadTree: QuadTree): QuadTree => {
   };
 };
 
-/** 插入节点 */
+/** Insert Node */
 const insert = (
   quadTree: QuadTree,
   node: LayoutNode,
@@ -88,11 +88,11 @@ const insert = (
 
   const updatedQuadTree = quadTree.northWest ? quadTree : subdivide(quadTree);
 
-  // 检查节点是否可以插入到任何子象限
+  // Check if a node can be inserted into any subquadrant
   const canInsertIntoQuadrant = (quadrant: QuadTree | null): boolean =>
     quadrant ? containsNode(quadrant.bounds, node) : false;
 
-  // 如果节点不能插入到任何子象限，将其保留在当前节点中
+  // If a node cannot be inserted into any subquadrant, leave it in the current node
   if (
     !canInsertIntoQuadrant(updatedQuadTree.northWest) &&
     !canInsertIntoQuadrant(updatedQuadTree.northEast) &&
@@ -114,7 +114,7 @@ const insert = (
   };
 };
 
-/** 计算两个节点之间的距离（考虑节点中心点） */
+/** Calculate the distance between two nodes (taking into account the node center). */
 const distance = (n1: LayoutNode, n2: LayoutNode): number => {
   const dx =
     n1.position.x + n1.size.width / 2 - (n2.position.x + n2.size.width / 2);
@@ -123,10 +123,10 @@ const distance = (n1: LayoutNode, n2: LayoutNode): number => {
   return Math.sqrt(dx * dx + dy * dy);
 };
 
-/** 计算节点到边界的最小距离（考虑节点的大小） */
+/** Calculate the minimum distance from a node to the boundary (taking into account the size of the node). */
 const distanceToBounds = (node: LayoutNode, bounds: QuadTreeBounds): number => {
   if (containsNode(bounds, node)) {
-    // 如果节点完全在边界内，返回0
+    // If the node is completely within the boundary, return 0.
     return 0;
   }
   const dx = Math.max(
@@ -142,10 +142,10 @@ const distanceToBounds = (node: LayoutNode, bounds: QuadTreeBounds): number => {
   return Math.sqrt(dx * dx + dy * dy);
 };
 
-/** 计算节点集合的边界（考虑节点的大小） */
+/** Calculate the boundaries of a set of nodes (taking into account the size of the nodes). */
 const calculateBounds = (nodes: LayoutNode[]): QuadTreeBounds => {
   if (nodes.length === 0) {
-    // 返回一个默认的边界
+    // Returns a default boundary
     return {
       x: 0,
       y: 0,
@@ -164,7 +164,7 @@ const calculateBounds = (nodes: LayoutNode[]): QuadTreeBounds => {
   const minY = Math.min(...yValues);
   const maxY = Math.max(...yValues.map((y, i) => y + heights[i]));
 
-  // 添加一些边距以确保所有点都在边界内
+  // Add some margins to ensure that all points are within the boundary
   const margin = Math.max(maxX - minX, maxY - minY) * 0.1;
 
   return {
@@ -175,7 +175,7 @@ const calculateBounds = (nodes: LayoutNode[]): QuadTreeBounds => {
   };
 };
 
-/** 创建四叉树 */
+/** Create a quadtree */
 export const createQuadTree = (nodes: LayoutNode[]): QuadTree => {
   const bounds = calculateBounds(nodes);
   let quadTree = createNode(bounds);
@@ -187,7 +187,7 @@ export const createQuadTree = (nodes: LayoutNode[]): QuadTree => {
   return quadTree;
 };
 
-/** 查找最近邻 */
+/** Find Nearest Neighbors */
 export const findNearestNeighbor = (
   quadTree: QuadTree,
   targetNode: LayoutNode,
@@ -197,10 +197,10 @@ export const findNearestNeighbor = (
     nearest: LayoutNode | null,
     minDistance: number,
   ): { nearest: LayoutNode | null; minDistance: number } => {
-    // 检查当前节点中的所有点
+    // Check all points in the current node
     for (const currentNode of node.nodes) {
       if (currentNode === targetNode) {
-        // 排除自身
+        // exclude itself
         continue;
       }
       const currentDistance = distance(targetNode, currentNode);
@@ -210,12 +210,12 @@ export const findNearestNeighbor = (
       }
     }
 
-    // 如果这是叶子节点，返回结果
+    // If this is a leaf node, return the result
     if (!node.northWest) {
       return { nearest, minDistance };
     }
 
-    // 检查子四叉树
+    // check subquadtree
     const quadrants = [
       node.northWest,
       node.northEast,
@@ -244,7 +244,7 @@ export const findNearestNeighbor = (
   return result.nearest;
 };
 
-/** 四叉树工具类 */
+/** Quadtree tool class */
 export namespace QuadTree {
   export const create = createQuadTree;
   export const find = findNearestNeighbor;

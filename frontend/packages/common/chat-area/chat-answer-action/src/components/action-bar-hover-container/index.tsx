@@ -20,7 +20,7 @@ import classNames from 'classnames';
 
 import s from './index.module.less';
 
-// TODO 后续迭代扩展时props可细化
+// Props can be refined when subsequent iterations of TODO are expanded
 interface ActionBarHoverContainerProps {
   style?: React.CSSProperties;
 }

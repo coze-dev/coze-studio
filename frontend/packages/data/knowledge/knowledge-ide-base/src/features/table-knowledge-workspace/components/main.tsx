@@ -92,7 +92,7 @@ export const TableKnowledgeWorkspace = ({
     slices,
   ]);
 
-  // 创建 UI Context 值
+  // Creating UI Context Values
   const uiContextValue = {
     tableViewRef,
     isLoadingMoreSliceList,
@@ -100,7 +100,7 @@ export const TableKnowledgeWorkspace = ({
     isShowAddBtn,
   };
 
-  // 创建数据 Context 值
+  // Creating Data Context Values
   const dataContextValue = {
     sliceListData: sliceListData || { list: [], total: 0 },
     curIndex,
@@ -108,7 +108,7 @@ export const TableKnowledgeWorkspace = ({
     delSliceIds,
   };
 
-  // 创建操作 Context 值
+  // Create Action Context Value
   const actionsContextValue = {
     setCurIndex,
     setCurSliceId,

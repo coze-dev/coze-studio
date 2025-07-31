@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 更新频率 */
+/** update frequency */
 export enum FrequencyDay {
   ZERO = 0,
   ONE = 1,
@@ -28,7 +28,7 @@ export enum TableSettingFormFields {
   DATA_START_ROW = 'start_line_idx',
 }
 
-/** 知识库上传文件最大 size 100MB */
+/** Knowledge base upload file maximum size 100MB */
 export const UNIT_MAX_MB = 100;
 
 export const PDF_MAX_PAGES = 500;

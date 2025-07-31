@@ -63,7 +63,7 @@ export default function ParamDescription({
           hasObjectLike ? styles['desc-object-like'] : null,
         )}
         value={text}
-        // 好像不生效
+        // It doesn't seem to work.
         disabled={disabled}
         handleBlur={() => {
           setInputFocus(false);

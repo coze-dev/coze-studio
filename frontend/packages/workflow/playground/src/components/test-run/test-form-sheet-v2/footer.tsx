@@ -46,7 +46,7 @@ const TestRunFlowButton: React.FC<{
   const {
     config: { executeId },
   } = useExecStateEntity();
-  /** 保存中有不同的文案 */
+  /** There are different copies in the save. */
   const text = useMemo(
     () =>
       saveLoading
@@ -54,7 +54,7 @@ const TestRunFlowButton: React.FC<{
         : I18n.t('workflow_detail_title_testrun'),
     [saveLoading],
   );
-  // 处于运行状态，且有执行 id 可以取消
+  // It is running and has an execution id to cancel.
   return running ? (
     <Button
       icon={<IconCozStopCircle />}

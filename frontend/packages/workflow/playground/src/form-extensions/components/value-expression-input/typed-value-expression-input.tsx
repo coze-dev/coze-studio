@@ -60,7 +60,7 @@ export const TypedValueExpressionInput = ({
     testId,
   } = props;
   const outerInputType: ViewVariableType[] = inputTypes.concat(inputType ?? []);
-  // value 为空时，切换类型后类型信息会缓存到这个字段里。避免没有值的时候，调用 onChange 触发表单空值校验，显示「参数不可为空」报错
+  // When the value is null, the type information will be cached in this field after switching the type. To avoid when there is no value, call onChange to trigger the form null value verification, showing an error of "Parameter cannot be null"
   const [emptyValueInputType, setEmptyValueInputType] = useState<InputType>();
   const getDefaultInputType = (): InputType => {
     if (emptyValueInputType) {
@@ -68,11 +68,11 @@ export const TypedValueExpressionInput = ({
     }
 
     let targetType: InputType | undefined = undefined;
-    // rawMeta 里存了类型，返回 rawMeta 里指定的类型
+    // The type is stored in rawMeta, and the type specified in rawMeta is returned.
     if (value?.rawMeta?.type) {
       targetType = value.rawMeta.type;
     }
-    // 优先用上面确定的类型,否则:如果是引用，返回引用类型变量的类型
+    // Preferentially use the type determined above, otherwise: if it is a reference, return the type of the reference type variable
     if (!targetType && value && ValueExpression.isRef(value)) {
       const _refVariableType = variableService.getViewVariableByKeyPath(
         value.content?.keyPath,
@@ -83,12 +83,12 @@ export const TypedValueExpressionInput = ({
       }
     }
 
-    // 外部指定了默认类型
+    // The default type is externally specified
     if (!targetType && defaultInputType) {
       targetType = defaultInputType;
     }
 
-    // 从禁用类型的补集里取第一个作为默认类型
+    // Take the first one from the complement of the disabled type as the default type
     if (!targetType) {
       const availableTypes = ViewVariableType.getComplement(
         outerDisabledTypes ?? [],
@@ -96,7 +96,7 @@ export const TypedValueExpressionInput = ({
       targetType =
         availableTypes?.[0] || outerInputType?.[0] || ViewVariableType.String;
     }
-    // 判断上面确定的类型 targetType 是否在 outerInputType 指定的范围内
+    // Determines whether the type of the type identified above is within the range specified by outerInputType
     if (outerInputType?.length) {
       return outerInputType.includes(targetType)
         ? targetType
@@ -111,7 +111,7 @@ export const TypedValueExpressionInput = ({
   );
 
   const hiddenTypes = useMemo<ViewVariableType[] | undefined>(() => {
-    // outerInputType 有值时，隐藏其他类型
+    // outerInputType hides other types when it has a value
     if (outerInputType?.length) {
       return ViewVariableType.getComplement(outerInputType);
     }
@@ -130,7 +130,7 @@ export const TypedValueExpressionInput = ({
         ? '[]'
         : '{}'
       : undefined;
-    // value 不存在或者只有 type 字段时，是新添加的参数
+    // Value is a newly added parameter when it does not exist or only has a type field
     if (!value || ('type' in value && Object.keys(value)?.length === 1)) {
       if (initialContent) {
         setEmptyValueInputType(undefined);
@@ -153,7 +153,7 @@ export const TypedValueExpressionInput = ({
           },
         });
       }
-      // 字面量切换类型时，清空 content，不同 content 类型不兼容
+      // When switching types, clear content, different content types are not compatible
       if (ValueExpression.isLiteral(value)) {
         onChange({
           type: ValueExpressionType.LITERAL,
@@ -183,10 +183,10 @@ export const TypedValueExpressionInput = ({
   }, [value]);
   const handleChange: ValueExpressionInputProps['onChange'] = val => {
     setEmptyValueInputType(undefined);
-    // 清空时，会重置 innerInputType
+    // When emptied, the innerInputType is reset.
     if (!val || ValueExpression.isEmpty(val)) {
-      // val 为 undefined 时(删除 ref 引用)，全部清空，innerInputType 也会重置
-      // 只清空 content，不重置 innerInputType
+      // When val is undefined (remove the ref reference), empty it all and reset the innerInputType
+      // Only empty content, do not reset innerInputType
       onChange(
         val
           ? {
@@ -200,7 +200,7 @@ export const TypedValueExpressionInput = ({
       );
       return;
     }
-    // 切换引用类型时，更新 innerInputType
+    // Update innerInputType when switching reference types
     let _inputType = innerInputType;
     if (ValueExpression.isRef(val)) {
       const _refVariableType = variableService.getViewVariableByKeyPath(
@@ -208,7 +208,7 @@ export const TypedValueExpressionInput = ({
         { node, checkScope: true },
       )?.type;
       if (_refVariableType) {
-        // 外部没有指定类型时或者引用类型在指定类型的范围内，引用变量才能更新变量类型，
+        // When no external type is specified or the reference type is within the scope of the specified type, the reference variable can only update the variable type.
         if (
           !outerInputType?.length ||
           outerInputType.includes(_refVariableType)
@@ -224,7 +224,7 @@ export const TypedValueExpressionInput = ({
         type: _inputType,
       },
     });
-    // 触发 onBlur 校验
+    // Trigger onBlur validation
     props?.onBlur?.();
   };
 
@@ -232,7 +232,7 @@ export const TypedValueExpressionInput = ({
     value && ValueExpression.isRef(value)
       ? (value?.content?.keyPath ?? [])
       : [];
-  // 外部修改了变量类型
+  // Externally modified variable type
   useVariableTypeChange({
     keyPath,
     onTypeChange: ({ variableMeta }) => {
@@ -243,7 +243,7 @@ export const TypedValueExpressionInput = ({
     },
   });
 
-  // 当可用类型（hiddenTypes+disabledTypes 的补集）只有一种时，自动禁用下拉框
+  // Automatically disable the drop-down box when there is only one type available (hiddenTypes+disabledTypes complement)
   const disableDropdown = useMemo(() => {
     const availableTypes = ViewVariableType.getComplement(
       uniq([...(outerDisabledTypes ?? []), ...(hiddenTypes ?? [])]),
@@ -263,11 +263,11 @@ export const TypedValueExpressionInput = ({
     props.literalDisabled,
   ]);
 
-  // 显示变量标签上的警告信息
+  // Show warning messages on variable labels
   const showRefWarning =
-    // 禁用类型选择时
+    // When disabling type selection
     disableDropdown ||
-    // 引用变量类型存在但不在指定类型范围内
+    // The reference variable type exists but is not within the scope of the specified type
     (refVariableType &&
       outerInputType.length &&
       !outerInputType.includes(refVariableType));

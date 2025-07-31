@@ -22,7 +22,7 @@ import { I18n } from '@coze-arch/i18n';
 import { UIModal } from '@coze-arch/bot-semi';
 import { useResetLocationState } from '@coze-arch/bot-hooks';
 
-// 三方授权失败，callback至发布页需要显式阻塞弹窗
+// Tripartite authorization failed, callback to the release page needs to explicitly block the pop-up window
 export const useAuthFail = () => {
   const { state } = useLocation();
   const { authFailMessage = '', authStatus } = (state ??

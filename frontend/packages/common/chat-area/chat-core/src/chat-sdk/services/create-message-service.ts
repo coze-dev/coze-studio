@@ -56,7 +56,7 @@ export class CreateMessageService {
   }
 
   /**
-   * 创建文本消息
+   * Create text message
    */
   createTextMessage(
     props: TextMessageProps,
@@ -70,7 +70,7 @@ export class CreateMessageService {
   }
 
   /**
-   * 创建图片消息
+   * Create image message
    */
   createImageMessage<M extends EventPayloadMaps = EventPayloadMaps>(
     props: ImageMessageProps<M>,
@@ -94,7 +94,7 @@ export class CreateMessageService {
   }
 
   /**
-   * 创建文件消息
+   * Create file message
    */
   createFileMessage<M extends EventPayloadMaps = EventPayloadMaps>(
     props: FileMessageProps<M>,
@@ -118,7 +118,7 @@ export class CreateMessageService {
   }
 
   /**
-   * 创建图文混合消息
+   * Create a mixed message
    */
   createTextAndFileMixMessage(
     props: TextAndFileMixMessageProps,
@@ -132,7 +132,7 @@ export class CreateMessageService {
   }
 
   /**
-   * 创建标准化消息，已经处理好payload content结构的消息
+   * Create standardized messages, messages with payload content structure already processed
    */
   createNormalizedPayloadMessage<T extends ContentType>(
     props: NormalizedMessageProps<T>,

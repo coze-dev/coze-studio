@@ -35,7 +35,7 @@ import {
 import { saveProps } from './use-canvas-change';
 
 /**
- * 粘贴后的默认偏移
+ * Default offset after pasting
  */
 const staff = 16;
 export const useCopyPaste = ({
@@ -59,11 +59,11 @@ export const useCopyPaste = ({
     element?: FabricObject,
   ) => void;
 }) => {
-  // ctrlCV 复制的元素
+  // CtrlCV copied elements
   const copiedObject1 = useRef<FabricObject>();
-  // ctrlD 复制的元素
+  // CtrlD copied elements
   const copiedObject2 = useRef<FabricObject>();
-  // dragCopy 拖拽复制的元素
+  // dragCopy Drag and copy elements
   const copiedObject3 = useRef<FabricObject>();
 
   const latestCustomVariableRefs = useLatest(customVariableRefs);
@@ -88,9 +88,9 @@ export const useCopyPaste = ({
   });
   const latestIgnoreMousePosition = useLatest(ignoreMousePosition);
 
-  // 如果鼠标动了，就以鼠标位置为准。仅影响 CopyMode.CtrlD 的粘贴
+  // If the mouse is moved, the mouse position shall prevail. Only the paste of CopyMode. CtrlD is affected.
   useEffect(() => {
-    // 默认 left top 对应元素的左上角。需要实现元素中点对齐鼠标位置，因此做偏移
+    // Default left top corresponds to the upper left corner of the element. You need to align the mouse position in the middle of the element, so offset
     setPosition({
       left: mousePosition.left - (copiedObject1.current?.width ?? 0) / 2,
       top: mousePosition.top - (copiedObject1.current?.height ?? 0) / 2,
@@ -100,12 +100,12 @@ export const useCopyPaste = ({
   const handleElement = async (element: FabricObject): Promise<void> => {
     const oldObjectId = (element as FabricObjectWithCustomProps).customId;
     const newObjectId = nanoid();
-    // 设置新的 id
+    // Set a new ID.
     element.set({
       customId: newObjectId,
     });
 
-    // 走统一的创建元素逻辑
+    // Take a unified approach to creating element logic
     const rs = await createElement({
       element: element as FabricObjectWithCustomProps,
       canvas,
@@ -125,8 +125,8 @@ export const useCopyPaste = ({
   };
 
   /**
-   * mode 分为三种：'ctrlCV' | 'ctrlD' | 'dragCopy'
-   * 行为一致，区别就是三种行为的复制源隔离，互不影响
+   * There are three modes: 'ctrlCV' | 'ctrlD' | 'dragCopy'
+   * The behavior is consistent, the difference is that the replication sources of the three behaviors are isolated and do not affect each other
    */
   const copy = useCallback(
     async (mode: CopyMode = CopyMode.CtrlCV) => {
@@ -195,14 +195,14 @@ export const useCopyPaste = ({
       }
       const cloneObj = await copiedObject.clone(saveProps);
 
-      // ctrlCV 需要考虑鼠标位置，其他的不用
+      // CtrlCV needs to consider the mouse position, others do not need to be
       const isIgnoreMousePosition = mode !== CopyMode.CtrlCV;
 
       const { left, top } = isIgnoreMousePosition
         ? latestIgnoreMousePosition.current
         : latestPosition.current;
 
-      // 计算下次粘贴位置，向 left top 各偏移 staff
+      // Calculate the next paste position and offset the staff to the left top
       if (isIgnoreMousePosition) {
         setIgnoreMousePosition({
           left: left + staff,
@@ -228,7 +228,7 @@ export const useCopyPaste = ({
         }),
       });
 
-      // 把需要复制的元素都拿出来，多选
+      // Take out all the elements that need to be copied and select more
       const allPasteObjects: FabricObject[] = [];
       const originXY = {
         left: cloneObj.left + cloneObj.width / 2,
@@ -242,19 +242,19 @@ export const useCopyPaste = ({
           });
           allPasteObjects.push(o);
         });
-        // 把需要复制的元素都拿出来，单选
+        // Take out all the elements that need to be copied, radio select
       } else {
         allPasteObjects.push(cloneObj);
       }
 
-      // 挨着调用 handleElement 处理元素
+      // Calling handleElement next to handle elements
       await Promise.all(allPasteObjects.map(async o => handleElement(o)));
 
-      // 如果是多选，需要创新新的多选框，并激活
+      // If it is multiple selection, you need to innovate a new multi-checkbox and activate it.
       let allPasteObjectsActiveSelection: ActiveSelection | undefined;
       if (cloneObj.isType('activeselection')) {
         allPasteObjectsActiveSelection = new ActiveSelection(
-          // 很恶心，这里激活选框，并不会自动转换坐标，需要手动转一下
+          // It's disgusting. Activating the check box here will not automatically convert the coordinates. You need to turn it manually.
           allPasteObjects.map(o => {
             o.set({
               left: o.left - originXY.left,
@@ -279,23 +279,23 @@ export const useCopyPaste = ({
     const keyCodes = ['Alt'];
     const onKeyDown = (e: KeyboardEvent) => {
       if (keyCodes.includes(e.key)) {
-        e.preventDefault(); // 阻止默认行为
-        isAltPressing = true; // 标记 alt 已按下
+        e.preventDefault(); // Block default behavior
+        isAltPressing = true; // Mark alt pressed
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (keyCodes.includes(e.key)) {
-        e.preventDefault(); // 阻止默认行为
-        isAltPressing = false; // 标记 alt 已松开
+        e.preventDefault(); // Block default behavior
+        isAltPressing = false; // The alt tag has been released
       }
     };
 
     const onWindowBlur = () => {
-      isAltPressing = false; // 标记 alt 已松开
+      isAltPressing = false; // The alt tag has been released
     };
 
     const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault(); // 阻止默认行为
+      e.preventDefault(); // Block default behavior
     };
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
@@ -307,7 +307,7 @@ export const useCopyPaste = ({
     let originalPos = { left: 0, top: 0 };
 
     const disposers = [
-      // 复制时机：按下 alt 键 & 鼠标按下激活元素
+      // Copy timing: Alt key & mouse down to activate element
       canvas?.on('mouse:down', async e => {
         if (isAltPressing) {
           if (!latestCouldAddNewObject.current) {
@@ -320,7 +320,7 @@ export const useCopyPaste = ({
 
           isDragCopying = true;
           const activeObject = canvas.getActiveObject();
-          // 创建元素副本期间，锁定 xy 方向的移动
+          // Lock movement in the xy direction during element copy creation
           activeObject?.set({
             lockMovementX: true,
             lockMovementY: true,
@@ -331,7 +331,7 @@ export const useCopyPaste = ({
               mode: CopyMode.DragCV,
             });
 
-            // 记录对象的原始位置，实现 shift 垂直、水平移动
+            // Record the original position of the object and realize vertical and horizontal shift
             originalPos = {
               left: pasteObj?.left ?? 0,
               top: pasteObj?.top ?? 0,
@@ -345,26 +345,26 @@ export const useCopyPaste = ({
         }
       }),
 
-      // 因为 copy 是异步的，所以这里会有一些延迟（大图片比较明显），没啥好办法
+      // Because the copy is asynchronous, there will be some delay here (the big picture is more obvious), there is no good way
       canvas?.on('mouse:move', event => {
         if (isAltPressing && isDragCopying && pasteObj) {
           const pointer = canvas.getScenePoint(event.e);
 
-          // 检查是否按下了Shift键
+          // Check if the Shift key is pressed
           if (event.e.shiftKey) {
-            // 计算从开始移动以来的水平和垂直距离
+            // Calculate the horizontal and vertical distance since the start of the movement
             const distanceX = pointer.x - originalPos.left;
             const distanceY = pointer.y - originalPos.top;
 
-            // 根据移动距离的绝对值判断是水平移动还是垂直移动
+            // Determine whether to move horizontally or vertically according to the absolute value of the moving distance
             if (Math.abs(distanceX) > Math.abs(distanceY)) {
-              // 水平移动：保持垂直位置不变
+              // Horizontal movement: maintain the same vertical position
               pasteObj?.set({
                 left: pointer.x - (pasteObj?.width ?? 0) / 2,
                 top: originalPos.top,
               });
             } else {
-              // 垂直移动：保持水平位置不变
+              // Vertical movement: maintain the same horizontal position
               pasteObj?.set({
                 left: originalPos.left,
                 top: pointer.y - (pasteObj?.height ?? 0) / 2,
@@ -386,7 +386,7 @@ export const useCopyPaste = ({
       canvas?.on('mouse:up', () => {
         isDragCopying = false;
         pasteObj = undefined;
-        // 释放拖拽复制对象，避免对下次拖拽（按着 alt 不松手）造成干扰
+        // Release the drag and drop to copy the object to avoid disturbing the next drag (press alt without letting go)
         copiedObject3.current = undefined;
       }),
     ];
@@ -399,7 +399,7 @@ export const useCopyPaste = ({
     };
   }, [canvas, copy, paste]);
 
-  // 拖拽复制
+  // Drag and drop to copy
   return {
     copy,
     paste,

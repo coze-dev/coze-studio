@@ -84,7 +84,7 @@ export class TabBarToolbar extends ReactWidget {
       ) as ReactWidget;
       return (factory?.toolbarItems || [])
         .filter(item => {
-          // 默认是 ToolbarAlign.TRAILING
+          // Default is ToolbarAlign. TRAILING
           if (!this.align) {
             return !item.align || item.align === ToolbarAlign.TRAILING;
           }

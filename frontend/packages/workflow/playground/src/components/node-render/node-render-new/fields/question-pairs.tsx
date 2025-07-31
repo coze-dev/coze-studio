@@ -114,7 +114,7 @@ export function QuestionPairs() {
                   label={convertNumberToLetters(index)}
                   content={option?.name}
                 />
-                {/* 对应 questionNodeRegistry 中 options 表单项 */}
+                {/* Corresponding questionNodeRegistry options table entry */}
                 <Port id={`branch_${index}`} type="output" />
               </Field>
             ))

@@ -67,7 +67,7 @@ export default function ParamName({
             disabled={disabled}
             handleBlur={name => {
               onChange(name);
-              // validator 时序有问题，加 setTimeout 避免错误信息闪一下
+              // There is a problem with the timing of the validator, add setTimeout to avoid the error message flashing.
               setTimeout(() => {
                 options.onBlur();
               }, 33);

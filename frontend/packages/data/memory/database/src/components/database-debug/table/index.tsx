@@ -116,7 +116,7 @@ export const DataTable = forwardRef<DataTableRef, DatabaseTable>(
       const resizeList = columns.list.filter(
         item => item.dataIndex !== col.dataIndex,
       );
-      // 计算拖拽列能拖拽的最小宽度，小于最小宽度则返回最小宽度
+      // Calculate the minimum width that the drag column can drag, and return the minimum width if it is less than the minimum width
       const widthCount = resizeList.reduce(
         (prev, cur) => Number(prev) + Number(cur.width),
         0,

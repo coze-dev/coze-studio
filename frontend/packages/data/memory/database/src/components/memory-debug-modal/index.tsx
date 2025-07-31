@@ -93,7 +93,7 @@ export const useMemoryDebugModal = ({
               </span>
             }
           >
-            {/* 给 children 传递 onCancel 参数，用于从内部关闭弹窗 */}
+            {/* Pass the onCancel parameter to children to close the pop-up window from within */}
             {React.isValidElement(item.component)
               ? React.cloneElement(item.component, {
                   onCancel: close,

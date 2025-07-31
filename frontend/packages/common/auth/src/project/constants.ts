@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// TODO: 替换成Project接口导出的idl
+// TODO: replace with idl exported by Project interface
 export enum ProjectRoleType {
   Owner = 'owner',
   Editor = 'editor',
@@ -22,51 +22,51 @@ export enum ProjectRoleType {
 
 export enum EProjectPermission {
   /**
-   * 访问/查看project
+   * Visit/view projects
    */
   View,
   /**
-   * 编辑project基础信息
+   * Edit project basic information
    */
   EDIT_INFO,
   /**
-   * 删除project
+   * Delete project
    */
   DELETE,
   /**
-   * 发布project
+   * Publish project
    */
   PUBLISH,
   /**
-   * 创建project内资源
+   * Create project resources
    */
   CREATE_RESOURCE,
   /**
-   * 在project内复制资源
+   * Copy resources within the project
    */
   COPY_RESOURCE,
   /**
-   * 复制project/创建副本
+   * Copy project/create copy
    */
   COPY,
   /**
-   * 试运行plugin
+   * Practice running plugins
    */
   TEST_RUN_PLUGIN,
   /**
-   * 试运行workflow
+   * Practice running workflow
    */
   TEST_RUN_WORKFLOW,
   /**
-   * 添加project协作者
+   * Add project collaborators
    */
   ADD_COLLABORATOR,
   /**
-   * 删除project协作者
+   * Delete project collaborator
    */
   DELETE_COLLABORATOR,
   /**
-   * 回滚 APP 版本
+   * Roll back the APP version
    */
   ROLLBACK,
 }

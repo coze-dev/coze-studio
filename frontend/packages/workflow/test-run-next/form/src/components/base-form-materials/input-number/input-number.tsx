@@ -35,11 +35,11 @@ export interface InputNumberProps {
   onChange: (v?: string) => void;
   onBlur: () => void;
   onFocus: () => void;
-  /** 整型 */
+  /** integer */
   int?: boolean;
 }
 
-/** 是否是合法的数字字符串 */
+/** Is it a legal numeric string? */
 function isValidNumber(str: string) {
   try {
     const value = new BigNumber(str);
@@ -71,17 +71,17 @@ export const InputNumber: React.FC<InputNumberProps> = ({
 
   const handleBlur = () => {
     if (props.value === '' || props.value === undefined) {
-      /** 失焦时若值为空，则同时清空验证值 */
+      /** If the value is empty when out of focus, the verification value is also cleared */
       verifiedRef.current = undefined;
       if (props.value === '') {
         onChange(undefined);
       }
     } else {
-      /** 失焦时若值不为空，则需要验证值的合法性 */
+      /** If the value is not empty when out of focus, you need to verify the legitimacy of the value */
       /**
-       * 1. 若值本身合法，则对值做格式化
-       * 2. 若值不合法，则采纳最近一次的合法值
-       * 3. 若都没有，则返回 undefined
+       * 1. If the value itself is legal, format the value
+       * 2. If the value is not legal, the most recent legal value is adopted
+       * 3. If none, return undefined
        */
       let next: undefined | string;
       const nextBig = normalizeNumber(props.value) || verifiedRef.current;
@@ -113,7 +113,7 @@ export const InputNumber: React.FC<InputNumberProps> = ({
     onChange(next);
   };
 
-  /** 当值发生变化，需要把值同步到合法数字 */
+  /** When the value changes, you need to synchronize the value to a legal number */
   useEffect(() => {
     if (props.value === '' || props.value === undefined) {
       verifiedRef.current = undefined;

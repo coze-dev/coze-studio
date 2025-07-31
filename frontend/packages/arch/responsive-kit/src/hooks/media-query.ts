@@ -30,7 +30,7 @@ export const useCustomMediaQuery = ({
   rangeMinPx?: string;
   rangeMaxPx?: string;
 }) => {
-  // 1. 根据查询范围拼凑query语句
+  // 1. Patchwork query statements according to query range
   const getQuery = () => {
     const minQuery = rangeMinPx ? `(min-width: ${rangeMinPx})` : '';
     const maxQuery = rangeMaxPx ? `(max-width: ${rangeMaxPx})` : '';
@@ -40,7 +40,7 @@ export const useCustomMediaQuery = ({
   };
   const query = getQuery();
 
-  // 2. 配合监听事件动态判断是否在区域中
+  // 2. Cooperate with the monitoring event to dynamically determine whether it is in the area
   const [matches, setMatches] = useState(window.matchMedia(query).matches);
   useEffect(() => {
     const mediaQueryList = window.matchMedia(query);
@@ -58,7 +58,7 @@ export const useCustomMediaQuery = ({
   return matches;
 };
 
-// 判断当前屏幕像素是否match媒体查询条件
+// Determine whether the current screen pixels match the media query conditions
 export const useMediaQuery = ({
   rangeMin,
   rangeMax,

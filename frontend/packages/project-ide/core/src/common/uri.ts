@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { URI as Uri } from 'vscode-uri';
 
 import { prioritizeAllSync, prioritizeAll } from './prioritizeable';
@@ -241,23 +241,23 @@ export class URI {
   match(uri: URI) {
     const path = `/${uri.authority}${uri.path.toString()}`;
     const params: any[] = [];
-    const pattern = `/${this.authority}${this.path.toString()}`; // 以 / 开头
+    const pattern = `/${this.authority}${this.path.toString()}`; // Start with/
     let regexpSource = pattern
-      .replace(/\/*\*?$/, '') // 去掉末尾的 / 和 /*
-      .replace(/[\\.*+^${}|()[\]]/g, '\\$&') // 转译一些特殊字符
+      .replace(/\/*\*?$/, '') // remove the/and/* at the endnd/* at the end
+      .replace(/[\\. *+ ^ ${} | () [\]]/g, '\\ $&') //Translate some special characterse some special characters
       .replace(/\/:([\w-]+)(\?)?/g, (_, paramName, optional) => {
-        // 收集 url 上的参数 /:param/, /:param?/
+        //Collect the parameters on the url/: param/,/: param?/RL/: param/,/: param?/
         params.push({
           paramName,
           // eslint-disable-next-line eqeqeq
           optional: optional != null,
         });
-        // 是否是可选参数
+        // Is it an optional parameter?n optional parameter?
         return optional ? '/?([^\\/]+)?' : '/([^\\/]+)';
       });
     if (pattern.endsWith('*')) {
       params.push({ paramName: '*' });
-      // 也许路径只有 *
+      //Maybe the path is only *e path is only *
       regexpSource += pattern === '/*' ? '(.*)$' : '(?:\\/(.+)|\\/*)$';
     } else {
       regexpSource += '\\/*$';
@@ -273,16 +273,16 @@ export interface URIHandler {
 
 export namespace URIHandler {
   /**
-   * 上层注册的优先级最高
+   * Upper level registration has the highest priority
    */
   export const MAX_PRIORITY = 500;
   /**
-   * 默认兜底
+   * Default bottom line
    */
   export const DEFAULT_PRIORITY = 0;
 
   /**
-   * 优先级排序
+   * prioritization
    * @param uri
    * @param handlers
    */
@@ -292,7 +292,7 @@ export namespace URIHandler {
   ): Promise<T> {
     const prioritized = await prioritizeAll<T>(handlers, async handler => {
       const priority = handler.canHandle(uri);
-      // boolean 情况默认采用 500
+      // In the boolean case, 500 is used by default.
       if (typeof priority === 'boolean') {
         return priority ? MAX_PRIORITY : DEFAULT_PRIORITY;
       }
@@ -303,7 +303,7 @@ export namespace URIHandler {
   export function findSync<T extends URIHandler>(uri: URI, handlers: T[]): T {
     const prioritized = prioritizeAllSync<T>(handlers, handler => {
       const priority = handler.canHandle(uri);
-      // boolean 情况默认采用 500
+      // In the boolean case, 500 is used by default.
       if (typeof priority === 'boolean') {
         return priority ? MAX_PRIORITY : DEFAULT_PRIORITY;
       }

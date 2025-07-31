@@ -18,7 +18,7 @@ import { useState, useRef, type Dispatch, type SetStateAction, useCallback } fro
 
 const isFunction = (val: any): val is Function => typeof val === 'function';
 
-// 获取新的状态值，兼容传值和传函数情况
+// Get a new state value, compatible with passing values and functions
 function getStateVal<T>(preState: T, initVal?: SetStateAction<T>): T | undefined {
   if (isFunction(initVal)) {
     return initVal(preState);

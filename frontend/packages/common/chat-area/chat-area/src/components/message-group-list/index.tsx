@@ -63,7 +63,7 @@ export const MessageGroupList = forwardRef<
 
   const messageGroupIdList = useMessagesStore(
     useShallow(state =>
-      // TODO: 这里需要考虑怎么业务接入进来，暂时先按照调试区做吧
+      // TODO: You need to consider how to access the business here. For the time being, let's follow the debugging area.
       state.messageGroupList.map(group => group.groupId),
     ),
   );

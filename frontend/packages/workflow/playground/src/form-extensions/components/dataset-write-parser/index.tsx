@@ -65,7 +65,7 @@ export const DatasetWriteParser: FC<RadioProps> = props => {
   const { data } = useWorkflowNode();
   const { getNodeSetterId } = useNodeTestId();
 
-  // 设置默认值
+  // Set default value
   useEffect(() => {
     if (
       isNil(value?.parsingType) &&
@@ -73,7 +73,7 @@ export const DatasetWriteParser: FC<RadioProps> = props => {
       isNil(value?.tableExtraction) &&
       isNil(value?.imageOcr)
     ) {
-      // 新增节点的搜索策略默认为 Hybird
+      // The search policy for new nodes defaults to Hybird
       onChange?.({
         parsingType: ParseStratgy.Fast,
       });
@@ -84,7 +84,7 @@ export const DatasetWriteParser: FC<RadioProps> = props => {
   const isCustomChunk =
     data.inputs?.datasetWriteParameters?.chunkStrategy?.chunkType === 'custom';
 
-  // 一期不支持「精准解析」+ 「自定义分段」+「图片中文本」
+  // The first phase does not support "accurate analysis" + "custom segmentation" + "picture Chinese text"
   const isImageOcrDisable = useMemo(
     () => isPresice && isCustomChunk,
     [isPresice, isCustomChunk],
@@ -116,7 +116,7 @@ export const DatasetWriteParser: FC<RadioProps> = props => {
             parsingType: nextParsingType,
           };
 
-          // 切换到「精准解析」设置默认值
+          // Switch to "Precision Resolution" setting default
           if (nextParsingType === ParseStratgy.Accurate) {
             set(nextValue, 'imageExtraction', true);
             set(nextValue, 'tableExtraction', true);

@@ -49,12 +49,12 @@ export const SendStatus: FC<SendStatusProps> = props => {
   return (
     <div
       className={classNames(styles['message-right'], {
-        // 适配移动端 解决移动端loading遮盖问题
+        // Adapt mobile end to solve the problem of mobile end loading and covering
         [styles['message-right-mobile'] as string]: layout === Layout.MOBILE,
         [styles['message-right-pc'] as string]: layout === Layout.PC,
       })}
     >
-      {/* 消息发送状态 */}
+      {/* message sending status */}
       {meta.isSending ? (
         <IconSpin className={classNames(styles['icon-sending'])} spin />
       ) : null}

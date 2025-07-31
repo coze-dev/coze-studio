@@ -26,7 +26,7 @@ import {
 import { WorkflowNodeData } from '../../entity-datas';
 
 /**
- * 是不是端插件
+ * Is it a side plug-in?
  * @param node
  * @returns
  */
@@ -45,7 +45,7 @@ const isLocalPlugin = (node?: WorkflowNodeEntity) => {
 };
 
 /**
- * 获取节点超时配置
+ * Get node timeout configuration
  */
 export const getTimeoutConfig = (
   node?: WorkflowNodeEntity,

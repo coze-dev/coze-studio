@@ -48,14 +48,14 @@ export const useTestRunFlowV2 = () => {
     if (!node) {
       return;
     }
-    // 如果流程处于保存中，先等待保存完成
+    // If the process is being saved, wait for the save to complete
     await saveService.waitSaving();
-    // 保存一次流程
+    // Save the process once
     await saveService.save();
-    // 清空运行结果
+    // Result of dry run
     runService.clearTestRun();
     if (runService.globalState.flowMode === WorkflowMode.ChatFlow) {
-      // 如果是 chatflow 校验需要阻塞
+      // If it is chatflow verification, it needs to be blocked.
       if (await validateFlow()) {
         return;
       }
@@ -64,14 +64,14 @@ export const useTestRunFlowV2 = () => {
       });
       return;
     }
-    // 表单可以先打开
+    // The form can be opened first.
     floatLayoutService.open(LayoutPanelKey.TestFlowForm, 'right', { node });
-    // 如果校验有误就停止
+    // Stop if the verification is wrong
     if (await validateFlow()) {
       return;
     }
     const schema = await generate();
-    // 如果有表单项则停止
+    // Stop if there is a form entry
     if (schema?.fields.length) {
       return;
     }

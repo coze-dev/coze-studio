@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContentType, useSendTextMessage } from '@coze-common/chat-area';
 import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
@@ -188,7 +188,7 @@ describe('useSendUseToolMessage', () => {
       work_flow_id: '',
     };
     const componentsFormValues = { news: '查询北京news' };
-    // @ts-expect-error --单测忽略
+    // @ts-expect-error -- single test ignored
     sendUseToolMessage({ shortcut, componentsFormValues });
     expect(sendMultimodalMessage).toHaveBeenCalled();
     expect(sendTeaEvent).toHaveBeenCalledWith(EVENT_NAMES.shortcut_use, {
@@ -237,7 +237,7 @@ describe('getTemplateQuery', () => {
       work_flow_id: '',
     };
     const componentsFormValues = { news: '北京新闻' };
-    // @ts-expect-error --单测忽略
+    // @ts-expect-error -- single test ignored
     const result = getTemplateQuery(shortcut, componentsFormValues);
     expect(result).toBe('查询北京新闻');
   });
@@ -278,7 +278,7 @@ describe('getTemplateQuery', () => {
       work_flow_id: '',
     };
     const componentsFormValues = { news: '北京新闻' };
-    // @ts-expect-error --单测忽略
+    // @ts-expect-error -- single test ignored
     expect(() => getTemplateQuery(shortcut, componentsFormValues)).toThrowError(
       'template_query is not defined',
     );

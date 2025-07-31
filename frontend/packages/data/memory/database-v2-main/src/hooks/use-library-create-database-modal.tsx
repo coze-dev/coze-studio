@@ -85,7 +85,7 @@ export const useLibraryCreateDatabaseModal = ({
     const { id, draft_id } = createRes.database_info ?? {};
     if (id && draft_id) {
       if (onFinish) {
-        // bot 绑定数据库需要 draft_id ，其他场景一般只需要用 id
+        // Bot binding database needs draft_id, other scenarios generally only need to use id
         onFinish(id, draft_id);
         return;
       } else {

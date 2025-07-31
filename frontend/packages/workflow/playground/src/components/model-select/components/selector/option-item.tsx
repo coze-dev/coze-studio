@@ -30,7 +30,7 @@ export interface OptionItemProps {
   name: string | undefined;
 }
 
-/** @deprecated 没有使用，使用的是 import { ModelOptionItem } from '@coze-studio/components'; */
+/** @Deprecated is not used, import {ModelOptionItem} from '@code-studio/components' is used; */
 export const OptionItem: React.FC<OptionItemProps> = ({
   avatar,
   descriptionGroupList,
@@ -66,7 +66,7 @@ export const OptionItem: React.FC<OptionItemProps> = ({
     {descriptionGroupList?.length ? (
       <Popover
         trigger="hover"
-        // 加个 delay ，防止误触
+        // Add a delay to prevent accidental touch
         mouseEnterDelay={1000 * 0.3}
         className={'max-w-[224px] px-[12px] py-[8px]'}
         content={

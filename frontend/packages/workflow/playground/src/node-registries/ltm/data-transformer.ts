@@ -30,11 +30,11 @@ const DEFAULT_VALUE = [
 ];
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (value: DTODataWhenInit): FormData => {
-  // 拖入节点，value 为 null
-  // 创建副本，value.inputs.inputParameters 数组为空
+  // Drag into node with null value
+  // Create a copy, value.input.inputParameters array is empty
   const inputParameters = value?.inputs?.inputParameters ?? [];
   const inputParametersWithNoHistoryFields = inputParameters.filter(
     v => !HISTORY_FIELDS.includes(v.name || ''),
@@ -55,12 +55,12 @@ export const transformOnInit = (value: DTODataWhenInit): FormData => {
           ? DEFAULT_VALUE
           : inputParametersWithNoHistoryFields,
 
-      // 历史会话设置
+      // historical session settings
       historySetting: {
-        // 是否开启历史会话
+        // Whether to open a historical session
         enableChatHistory: Boolean(historySwitchItem?.content),
 
-        // 历史会话轮数，默认为 3
+        // Number of session rounds in history, default is 3
         chatHistoryRound: (historyRoundItem?.content as number) ?? 3,
       },
     },
@@ -70,7 +70,7 @@ export const transformOnInit = (value: DTODataWhenInit): FormData => {
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

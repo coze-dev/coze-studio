@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
 import cls from 'classnames';
@@ -107,7 +107,7 @@ export const IconListField = () => (
   <div className="flex justify-center items-center flex-col w-[420px] h-[148px]">
     <IconCozWarningCircle className="mb-4 w-8 h-8 coz-fg-hglt-red" />
     <div className="coz-fg-secondary text-xs">
-      {/*@ts-expect-error --替换*/}
+      {/* @ts-expect-error -- replace*/}
       {I18n.t('Connection failed')}
     </div>
   </div>

@@ -20,24 +20,24 @@ import { ProductApi } from '@coze-arch/bot-api';
 
 interface Params {
   pluginId: string;
-  /** 是否需要请求商店ID，如果是本地开发的插件，没有上架的，不需要请求，直接返回 pluginId 即可 */
+  /** Do you need to request the store ID? If it is a locally developed plug-in, it is not on the shelves. You don't need to request it, just return the pluginId directly. */
   needQuery: boolean;
 }
 
-/** 内部缓存，key 为 pluginID, value 为 pluginId 在 store 中的 productId */
+/** Internal cache, key is pluginID, value is pluginId productId in store */
 const cache = new Map<string, string>();
 
 export function usePluginDetail({ pluginId, needQuery }: Params) {
   const { isLoading, data } = useQuery({
     queryKey: ['plugin-detail', pluginId],
-    // 失败重试一次，避免抖动
+    // Failed Try again to avoid jitter
     retry: 1,
     queryFn: async () => {
       if (!needQuery) {
         return pluginId;
       }
 
-      // 如果命中缓存
+      // If the cache is hit
       if (cache.get(pluginId)) {
         return cache.get(pluginId);
       }

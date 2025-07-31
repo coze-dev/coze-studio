@@ -19,7 +19,7 @@ import { variableUtils } from '@coze-workflow/variable';
 import { type FormData, type NodeDataDTO } from './types';
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

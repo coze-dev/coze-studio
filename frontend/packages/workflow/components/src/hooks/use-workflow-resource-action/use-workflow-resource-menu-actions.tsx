@@ -125,8 +125,8 @@ export const useWorkflowResourceMenuActions = (
       ...(getCommonActions?.(record) ?? []),
       {
         hide:
-          !enablePublishEntry || // 上架入口加白
-          (!FLAGS['bot.community.store_imageflow'] && isImageFlow) || // Imageflow 不支持商店
+          !enablePublishEntry || // The entrance on the shelf is white.
+          (!FLAGS['bot.community.store_imageflow'] && isImageFlow) || // Imageflow does not support stores
           !isSelfCreator ||
           bizExtend?.plugin_id === '0',
         actionKey: 'publishWorkflowProduct',

@@ -15,8 +15,8 @@
  */
  
 /**
- * 是否是在苹果平台的Webkit内核浏览器下，
- * 注：这个判断条件不等于是在苹果设备下，因为部分苹果设备（例如Mac）可以运行非原生Webkit引擎的浏览器，例如Chromium(Blink)
+ * Is it under the Webkit kernel browser of the Apple platform?
+ * Note: This judgment condition is not equal to under Apple devices, because some Apple devices (such as Mac) can run non-native Webkit engine browsers, such as Chromium (Blink)
  */
 export const isAppleWebkit = () =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

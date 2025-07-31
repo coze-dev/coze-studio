@@ -49,7 +49,7 @@ export const Icon = ({ type, icon }: { type: NodeType; icon?: string }) => {
   if (type === NodeType.DATABASE) {
     return <IconDatabase />;
   }
-  // 插件来自商店和资源库场景默认图标不同
+  // Plugin from store and repository scenes have different default icons
   if (type === NodeType.PLUGIN) {
     return <IconPlugin />;
   }

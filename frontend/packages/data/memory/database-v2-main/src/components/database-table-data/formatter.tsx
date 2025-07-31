@@ -56,7 +56,7 @@ export function formatTableDataRow(
     dataRowFieldList.forEach(_key => {
       const structItem = structList.find(i => i.fieldName === _key);
       if (!structItem) {
-        // 系统字段
+        // System field
         formattedDataRow[_key] = {
           fieldName: _key,
           type: FieldItemType.Text,
@@ -157,7 +157,7 @@ function DatabaseTableCell({ value }: DatabaseTableCellProps) {
 }
 
 /**
- * 获取 Table Field 表头数据
+ * Get Table Field Header Data
  */
 export const getTableColumns = ({
   fieldList,
@@ -168,7 +168,7 @@ export const getTableColumns = ({
 }: GetTableColumnsParams) => {
   const columns: ColumnProps<TableRow>[] = [];
 
-  // 系统字段列
+  // System field column
   columns.push(
     ...SYSTEM_FIELDS.map(item => ({
       title: () => (
@@ -193,7 +193,7 @@ export const getTableColumns = ({
     })),
   );
 
-  // 用户字段列
+  // user field column
   columns.push(
     ...fieldList.map(item => ({
       title: () => (
@@ -210,7 +210,7 @@ export const getTableColumns = ({
     })),
   );
 
-  // 操作列
+  // action column
   columns.push({
     title: I18n.t('db_table_0126_021'),
     width: 100,

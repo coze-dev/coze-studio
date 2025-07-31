@@ -50,7 +50,7 @@ interface Props {
 }
 
 /**
- * 分组变量Item
+ * Group Variable Item
  * @param param0
  * @returns
  */

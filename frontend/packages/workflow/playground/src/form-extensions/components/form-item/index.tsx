@@ -56,7 +56,7 @@ export interface FormItemProps {
 }
 
 /**
- * 由于 semi-ui 的 Form 没有提供 FormItem 组件做布局，所以单独封装一个 FormItem，随需求持续迭代功能
+ * Since the semi-ui Form does not provide a FormItem component for layout, it encapsulates a FormItem separately and continues to iterate with requirements
  */
 export const FormItem: FC<
   PropsWithChildren<WithCustomStyle<FormItemProps>>

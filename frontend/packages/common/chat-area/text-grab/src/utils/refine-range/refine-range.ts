@@ -15,8 +15,8 @@
  */
  
 /**
- * 修复选区的实际函数
- * @param range Range 选区
+ * Fix the actual function of the selection
+ * @param range Range
  */
 import { findLastSiblingNode } from '../helper/find-last-sibling-node';
 import { findLastChildNode } from '../helper/find-last-child-node';
@@ -31,7 +31,7 @@ import { fixEndEmpty } from './fix-end-empty';
 
 // eslint-disable-next-line complexity
 export const refineRange = ({ range }: { range: Range }): boolean => {
-  // 初期算法只用StartNode当作选区的开始节点
+  // The initial algorithm only uses StartNode as the starting node of the selection
   const targetAttributeValue = getAncestorAttributeValue(
     range.startContainer,
     CONTENT_ATTRIBUTE_NAME,
@@ -53,43 +53,43 @@ export const refineRange = ({ range }: { range: Range }): boolean => {
     targetAttributeValue,
   });
 
-  // 如果找到了起始节点，但是没找到结束节点，那么继续尝试使用开始节点的最后一个兄弟元素修复选区
+  // If the start node is found, but the end node is not found, then continue to try to fix the selection using the last sibling of the start node
   if (startNode && !endNode) {
     const { parentNode } = startNode;
     let lastSibling: Node | null = null;
 
-    // 尝试找到最近的<li>或<a>标签
+    // Try to find the nearest < li > or < a > tag
     const liParentNode = findAncestorNodeByTagName(parentNode, 'LI');
     const aParentNode = liParentNode
       ? findAncestorNodeByTagName(liParentNode, 'A')
       : findAncestorNodeByTagName(parentNode, 'A');
-    // 找到最近的<div>标签
+    // Find the nearest < div > tag
     const divParentNode = findAncestorNodeByTagName(parentNode, 'DIV');
 
-    // 根据找到的节点类型决定如何查找最后一个兄弟节点
+    // Determine how to find the last sibling based on the type of node found
     if (aParentNode) {
-      // 如果找到了<a>，使用它的父节点
+      // If < a > is found, use its parent node
       lastSibling = findLastSiblingNode({
         node: aParentNode,
         scopeAncestorAttributeName: CONTENT_ATTRIBUTE_NAME,
         targetAttributeValue,
       });
     } else if (liParentNode) {
-      // 如果找到了<li>，使用它的父节点
+      // If a < li > is found, use its parent node
       lastSibling = findLastSiblingNode({
         node: liParentNode,
         scopeAncestorAttributeName: CONTENT_ATTRIBUTE_NAME,
         targetAttributeValue,
       });
     } else if (divParentNode) {
-      // 如果找到了<div>，使用他的父节点（例如代码块的情况）
+      // If a < div > is found, use its parent node (e.g. in the case of a code block).
       lastSibling = findLastSiblingNode({
         node: divParentNode,
         scopeAncestorAttributeName: CONTENT_ATTRIBUTE_NAME,
         targetAttributeValue,
       });
     } else {
-      // 否则，使用起始节点
+      // Otherwise, use the starting node
       lastSibling = findLastSiblingNode({
         node: startNode,
         scopeAncestorAttributeName: CONTENT_ATTRIBUTE_NAME,
@@ -97,7 +97,7 @@ export const refineRange = ({ range }: { range: Range }): boolean => {
       });
     }
 
-    // 如果起始节点和找到的兄弟节点一样，那么就用其实节点的父元素去找他最后的一个节点
+    // If the starting node is the same as the found sibling, then use the parent element of the actual node to find its last node
     if (startNode === lastSibling) {
       lastSibling = findLastSiblingNode({
         node: parentNode,
@@ -115,7 +115,7 @@ export const refineRange = ({ range }: { range: Range }): boolean => {
     }
   }
 
-  // 如果起始节点和结束节点都找到了，修正选区
+  // If both the start and end nodes are found, correct the selection
   if (startNode && endNode) {
     const relation = compareNodePosition(startNode, endNode);
 

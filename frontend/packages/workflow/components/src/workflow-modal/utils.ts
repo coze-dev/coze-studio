@@ -17,7 +17,7 @@
 import { type WorkflowModalState, WorkflowCategory } from './type';
 
 /**
- * workflow modal 当前是否选中了 project 工具流分类
+ * Workflow modal Whether the project toolflow category is currently selected
  * @param modalState
  */
 export const isSelectProjectCategory = (modalState?: WorkflowModalState) =>

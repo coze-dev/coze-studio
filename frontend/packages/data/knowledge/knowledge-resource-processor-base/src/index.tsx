@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// !Notice 禁止直接导出 getUploadConfig，各种第三方依赖如 pdf.js 等会被加载到大部分页面的首屏
+// ! Notice prohibits the direct export of getUploadConfig, various third-party dependencies such as pdf.js will be loaded on the first screen of most pages
 // export { getUploadConfig } from './config';
 export {
   BOT_DATA_REFACTOR_CLASS_NAME,

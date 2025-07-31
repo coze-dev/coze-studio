@@ -19,18 +19,18 @@ import { sleep } from './async';
 type Fn<ARGS extends unknown[], Ret = unknown> = (...args: ARGS) => Ret;
 
 /**
- * 限流器，对于被限流的异步方法进行以下形式的限流：
- * 1. 在 timeWindow 内的前 limit 个请求不做限制，立即发送
- * 2. timeWindow 内超过 limit 个请求后，对每个请求依次添加 onLimitDelay 毫秒的延迟
+ * Limit viewership of asynchronous methods with limited viewership of the form:
+ * 1. The first limited requests in timeWindow are not limited and sent immediately
+ * 2. After more than the limit of requests in timeWindow, add onLimitDelay millisecond delay to each request in turn
  *
- * 注意是排队添加，形如 invoke: [1(0ms), 2(0ms), 3(0ms), 4(0ms)]; limit: [1(0ms), 2(0ms), 3(100ms), 4(200ms)]
+ * Note that the queue is added, as invoked: [1 (0ms), 2 (0ms), 3 (0ms), 4 (0ms) ]; limit: [1 (0ms), 2 (0ms), 3 (100ms), 4 (200ms) ]
  *
- * 另注：这个设计遭到了猛烈抨击，认为 debounce 可以代替掉，实现过于复杂，但是考虑：
- * 1. 支持列表双向加载的拉取，简单使用 debounce 可能导致请求某侧丢失；添加延时可以保证不丢失请求
- * 2. 列表拉取一旦出现死循环，可能导致恶性问题，如密集地对服务端接口的高频访问
+ * Another note: This design has been slammed, arguing that debounce can be replaced and the implementation is too complex, but consider:
+ * 1. Support the pull of the list loaded in both directions. Simple use of debounce may cause the request to be lost on one side; adding a delay can ensure that the request is not lost
+ * 2. Once the list is pulled, it may lead to malignant problems, such as dense high-frequency access to the server level interface
  *
- * 以上场景通常不应出现，所以 limit 设计也只是对极端场景的兜底，上层 UI 错误理应得到妥善解决
- * TODO: wlt - 补充 testcase
+ * The above scenarios should not usually appear, so the limited design is only a cover for extreme scenarios, and the upper UI errors should be properly resolved
+ * TODO: wlt - supplementary testcase
  */
 export class RateLimit<ARGS extends unknown[], Ret> {
   constructor(

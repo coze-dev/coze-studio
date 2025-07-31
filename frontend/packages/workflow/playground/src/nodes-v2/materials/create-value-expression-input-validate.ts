@@ -19,7 +19,7 @@ import { isFunction, isBoolean } from 'lodash-es';
 import { valueExpressionValidator } from '@/form-extensions/validators';
 
 interface Options {
-  /** required 还支持函数形式验证 */
+  /** Required also supports functional formal verification */
   required?: boolean | ((validateProps) => boolean);
   emptyErrorMessage?: string;
   skipValidate?: ({ value, formValues }) => boolean;

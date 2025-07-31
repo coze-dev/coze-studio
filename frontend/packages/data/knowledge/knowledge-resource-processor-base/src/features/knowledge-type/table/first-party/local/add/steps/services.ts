@@ -15,7 +15,7 @@
  */
  
 /**
- * service定义：包含业务处理 & 事件
+ * Service definition: contains business processes & events
  */
 import { useMemo } from 'react';
 
@@ -32,7 +32,7 @@ import {
   type UploadTableState,
 } from '@/features/knowledge-type/table/interface';
 
-/** table-local upload 时要用tos_uri 去取table_info */
+/** Use tos_uri to get table_info when uploading table-local */
 export const useUploadFetchTableParams = <
   T extends UploadTableState<number> & UploadTableAction<number>,
 >(
@@ -84,7 +84,7 @@ export const useRetry = <
         );
       }
     } catch (e) {
-      // TODO 加上报
+      // TODO plus report
       console.log(e);
     }
   };

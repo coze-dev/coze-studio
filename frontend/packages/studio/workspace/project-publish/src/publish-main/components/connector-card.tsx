@@ -45,13 +45,13 @@ import { ConfigStatus } from './config-status';
 import { UndoButton } from './bind-actions/undo-button';
 
 enum DisabledReason {
-  /** 社交渠道未选择 chatflow */
+  /** Chatflow is not selected for social channels. */
   SocialPlatform,
-  /** 未绑定 未授权 */
+  /** Unbound, Unauthorized */
   NotConfigured,
-  /** 后端下发的原因 */
+  /** The reason for the back-end delivery */
   NotAllowed,
-  /** 未配置模板 */
+  /** No template configured */
   Template,
 }
 
@@ -78,7 +78,7 @@ function getConnectorDisabledConfig({
       ConnectorClassification.SocialPlatform &&
     !socialPlatformConfig?.selected_workflows?.[0]?.workflow_id
   ) {
-    // 发布到社交渠道，且未选择 chatflow
+    // Post to social channels without Chatflow selected.
     return {
       reason: DisabledReason.SocialPlatform,
       text: I18n.t('project_release_chatflow4'),
@@ -88,18 +88,18 @@ function getConnectorDisabledConfig({
     reason: DisabledReason.NotConfigured,
     text: I18n.t('project_release_set_desc'),
   };
-  // 未绑定 未授权
+  // Unbound, Unauthorized
   if (getConnectorNotConfigured(connector)) {
     return notConfigured;
   }
-  // 后端下发的不能发布的原因
+  // The reason why it cannot be released after being issued by the backend.
   if (!connector.allow_publish && connector.not_allow_publish_reason) {
     return {
       reason: DisabledReason.NotAllowed,
       text: connector.not_allow_publish_reason,
     };
   }
-  // 未配置模板
+  // No template configured
   if (connector.id === TEMPLATE_CONNECTOR_ID && !templateConfigured) {
     return {
       reason: DisabledReason.Template,
@@ -127,9 +127,9 @@ function getConnectorDisabledConfig({
   }
 }
 
-// 与后端约定的额外描述信息
+// Additional descriptive information agreed upon with the backend
 interface DescriptionExtra {
-  // 渠道名称 hover 的 tooltip
+  // Channel name hover tooltip
   text?: string;
 }
 
@@ -172,15 +172,15 @@ export function ConnectorCard({
     connectorPublishConfig,
     connectorConfigMap: connectors,
   });
-  // 开源版暂不支持社交平台渠道，用于未来拓展。
-  // 社交渠道未选择“处理消息的对话流”时，需要将整个卡片展示为禁用态
+  // The open-source version does not support social platform channels for future expansion.
+  // When the social channel does not select "Process message conversation flow", the entire card needs to be displayed as disabled.
   const cardDisabled = disabledConfig?.reason === DisabledReason.SocialPlatform;
 
   const descriptionExtra = (typeSafeJSONParse(
     connectorInfo.description_extra,
   ) ?? {}) as DescriptionExtra;
 
-  // 如果禁用状态发生了变动，取消勾选当前渠道
+  // If the disabled status changes, uncheck the current channel
   useEffect(() => {
     if (checked && disabledConfig) {
       onCheckedChange(false);
@@ -321,7 +321,7 @@ export function ConnectorCard({
           <ConnectorAction
             record={connectorInfo}
             checked={checked}
-            // 这个组件内部有 modal 不能使用条件渲染
+            // This component has modal inside and cannot use conditional rendering.
             authActionWrapperClassName={classNames(!isShowAction && 'hidden')}
           />
           {connectorInfo.connector_classification ===
@@ -334,7 +334,7 @@ export function ConnectorCard({
               onClick={stopEventPropagation}
             />
           ) : null}
-          {/* 开源版暂不支持MCP服务渠道，用于未来拓展 */}
+          {/* The open-source version does not support MCP service channels for future expansion */}
           {connectorInfo.connector_classification ===
             ConnectorClassification.CozeSpaceExtensionLibrary &&
             connectorInfo.bind_type === ConnectorBindType.TemplateBind && (

@@ -15,19 +15,19 @@
  */
  
 /**
- * sdk版本号
+ * SDK version number
  */
 export const CHAT_CORE_VERSION = '1.1.0';
 
 /**
- * 使用环境
+ * usage environment
  */
 export type ENV = 'local' | 'boe' | 'production' | 'thirdPart';
 
 /**
- * 部署版本
- * release: 正式版
- * inhouse: 内部测试版本
+ * Deployment version
+ * Release: Official Version
+ * Inhouse: dogfooding version
  */
 
 export type DeployVersion = 'release' | 'inhouse';
@@ -41,11 +41,11 @@ export const SECONDS_PER_SECOND = 1000;
 // 1min -> 60*1000ms
 export const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * SECONDS_PER_SECOND;
 
-// 拉流超时
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 5min更语义化
+// Pull stream timeout
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 5min more semantic
 export const BETWEEN_CHUNK_TIMEOUT = 5 * MILLISECONDS_PER_MINUTE;
 
-// 发送消息超时
+// Send message timed out
 export const SEND_MESSAGE_TIMEOUT = MILLISECONDS_PER_MINUTE;
 
 const MAX_RANDOM_NUMBER = 0x10000000;
@@ -56,7 +56,7 @@ function getRandomDeviceID() {
 
 export const randomDeviceID = getRandomDeviceID();
 
-// ws 最大重试次数
+// WS maximum number of retries
 export const WS_MAX_RETRY_COUNT = 10;
 
 export {

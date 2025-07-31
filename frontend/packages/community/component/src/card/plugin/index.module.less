@@ -36,9 +36,9 @@
     border-radius: 6px;
 
     /*
-   * 如此写边框和设置背景色的原因
-   * 1、边框是内边框，处于图片的边缘上，因此需要用after来写
-   * 2、背景色用before实体来写，是由于 border和背景色都是透明色，重叠会导致颜色加重，出现边框
+   * The reason for writing borders and setting background colors like this
+   * 1. The border is the inner border, which is on the edge of the picture, so you need to use after to write
+   * 2. The background color is written with the before entity, because the border and background colors are both transparent colors. Overlapping will cause the color to increase and the border will appear.
    */
     &::after {
       content: '';

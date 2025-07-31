@@ -49,14 +49,14 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
   /**
-   * 当右键点击编辑器时，显示上下文菜单
+   * When right-clicking on the editor, the context menu is displayed
    */
   const { contextMenuPosition, openContextMenu } = useControlContextMenu({
     contextMenuRef,
   });
 
   /**
-   * 当点击编辑器外部时
+   * When clicking outside the editor
    */
   useOutEditorMode({
     editorRef,
@@ -76,26 +76,26 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
       <div
         ref={editorRef}
         className={classNames(
-          // 布局
+          // layout
           'relative',
-          // 间距
+          // spacing
           'mb-2 p-2',
-          // 文字样式
+          // Text Style
           'text-sm leading-5',
-          // 颜色
+          // color
           'coz-fg-primary coz-bg-max',
-          // 边框
+          // border
           'border border-solid coz-stroke-hglt rounded-lg',
         )}
         onContextMenu={openContextMenu}
       >
         <div
           className={classNames(
-            // 表格样式
+            // table style
             getEditorTableClassname(),
-            // 图片样式
+            // image style
             getEditorImgClassname(),
-            // 换行
+            // line feed
             getEditorWordsCls(),
           )}
         >
@@ -104,7 +104,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
         </div>
       </div>
 
-      {/* 右键菜单 */}
+      {/* right-click menu */}
       {contextMenuPosition && editorContextMenuItemsRegistry ? (
         <EditorContextMenu
           x={contextMenuPosition.x}

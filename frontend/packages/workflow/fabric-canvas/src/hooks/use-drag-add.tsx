@@ -118,7 +118,7 @@ const modeElementMap: Partial<
         y2: dy + (element as Line).y1,
       });
 
-      // 创建直线时的终点位置修改，需要主动 fire 影响控制点的显示
+      // The end position modification when creating a straight line requires active fire to affect the display of the control point
       element.fire('start-end:modified' as keyof ObjectEvents);
     },
   },
@@ -193,7 +193,7 @@ export const useDragAdd = ({
           moved: false,
         };
 
-        // 隐藏控制点，否则 onmouseup 可能被控制点截胡
+        // Hide the control point, otherwise onmouseup may be truncated by the control point
         element.set('hasControls', false);
       }
     });
@@ -212,7 +212,7 @@ export const useDragAdd = ({
           dy,
         });
 
-        // 修正元素坐标信息
+        // Correct element coordinate information
         element.setCoords();
 
         newElement.current.moved = true;
@@ -233,7 +233,7 @@ export const useDragAdd = ({
 
         onShapeAdded?.({ element: element as FabricObjectWithCustomProps });
 
-        // 恢复控制点
+        // Restore Control Point
         element.set('hasControls', true);
         newElement.current = undefined;
         canvas.requestRenderAll();

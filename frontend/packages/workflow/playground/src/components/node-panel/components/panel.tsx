@@ -95,7 +95,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
 
   const panelProps = props.panelProps as AddNodePanelProps;
   const playground = usePlayground();
-  // 正在添加节点，为 true 时，不允许关闭节点面板
+  // Node is being added, when true, closing the node panel is not allowed
   const isAddingNodeRef = useRef(false);
   const { openPlugin, openWorkflow, openImageflow, updateAddNodePosition } =
     useAddNodeModalContext();
@@ -119,7 +119,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
         Math.max(topHeight, bottomHeight),
       );
     }
-    // 满足最大高度时不指定高度，由元素自动撑开
+    // When the maximum height is met, the height is not specified, and it is automatically stretched by the element
     if (targetHeight === MAXMIUM_HEIGHT) {
       return MAXMIUM_HEIGHT;
     }
@@ -231,7 +231,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
 
   useEffect(() => {
     if (!panelProps.enableScrollClose) {
-      // 不启用滚动关闭时，不监听滚动事件
+      // Do not listen for scroll events when scrolling off is not enabled
       return;
     }
     const disposer = playground.onScroll(() => {
@@ -254,7 +254,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
   }, [templateState]);
 
   useEffect(() => {
-    //刷新弹窗展示时关闭新增按钮 popover
+    //Close the new button popover when refreshing the pop-up window display
     if (dependencyEntity?.refreshModalVisible) {
       handleClose();
     }

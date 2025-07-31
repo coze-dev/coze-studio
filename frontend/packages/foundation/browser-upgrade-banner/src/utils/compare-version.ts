@@ -15,20 +15,20 @@
  */
  
 export function compareVersion(version1: string, version2: string): number {
-  // 将版本号字符串分割成数字数组，这里使用map(Number)确保转换为数字类型
+  // Split the version number string into an array of numbers, here use map (Number) to ensure conversion to numeric type
   const parts1 = version1.split('.').map(Number);
   const parts2 = version2.split('.').map(Number);
 
-  // 计算出最长的版本号长度
+  // Calculate the longest version length
   const maxLength = Math.max(parts1.length, parts2.length);
 
-  // 逐个比较版本号中的每个部分
+  // Compare each part of the version number one by one
   for (let i = 0; i < maxLength; i++) {
-    // 如果某个版本号在这个位置没有对应的数字，则视为0
+    // If a version number does not have a corresponding number at this position, it is treated as 0.
     const part1 = i < parts1.length ? parts1[i] : 0;
     const part2 = i < parts2.length ? parts2[i] : 0;
 
-    // 比较两个版本号的当前部分
+    // Compare the current parts of two version numbers
     if (part1 > part2) {
       return 1;
     }
@@ -37,6 +37,6 @@ export function compareVersion(version1: string, version2: string): number {
     }
   }
 
-  // 如果所有部分都相等，则版本号相等
+  // If all parts are equal, then the version numbers are equal
   return 0;
 }

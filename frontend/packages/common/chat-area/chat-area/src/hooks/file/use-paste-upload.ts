@@ -35,17 +35,17 @@ export const usePasteUpload = () => {
 
     const fileList = getFileListByPaste(e);
 
-    // 如果粘贴的文件数量为空，则返回
+    // If the number of pasted files is empty, return
     if (!fileList.length) {
       return;
     }
 
-    // 阻止默认的粘贴行为
+    // Block default paste behavior
     e.preventDefault();
 
     const verifiedFileList = validateFileList({ fileLimit, fileList });
 
-    // 文件校验
+    // file validation
     if (!verifiedFileList.length) {
       return;
     }

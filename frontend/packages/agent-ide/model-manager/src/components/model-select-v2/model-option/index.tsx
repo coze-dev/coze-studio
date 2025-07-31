@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity -- ignore */
 import { type PropsWithChildren, useRef } from 'react';
 
@@ -47,7 +47,7 @@ export type ModelOptionProps = {
   model: Model;
   selected?: boolean;
   disabled?: boolean;
-  /** 返回是否切换成功 */
+  /** Return whether the switch was successful */
   onClick: () => boolean;
 } & (
   | {
@@ -65,9 +65,9 @@ export type ModelOptionProps = {
     | {
         enableJumpDetail: true;
         /**
-         * 点击跳转模型管理页面
+         * Click to jump to the model management page
          *
-         * 因为该组件定位是纯 UI 组件，且不同模块 space id 获取的方式不尽相同，因此跳转行为和 url 的拼接就不内置了
+         * Because the component positioning is a pure UI component, and the way to obtain the space id of different modules is different, the splicing of jump behavior and url is not built-in
          */
         onDetailClick: (modelId: string) => void;
       }
@@ -81,7 +81,7 @@ export function ModelOption({
   onClick,
   ...props
 }: ModelOptionProps) {
-  /** 这个 ref 纯粹为了判断是否 hover */
+  /** This ref is purely for judging whether to hover or not. */
   const ref = useRef<HTMLElement>(null);
   const isHovering = useHover(ref);
   const { scene } = useBotCreatorContext();
@@ -93,7 +93,7 @@ export function ModelOption({
     ?.filter(t => t.tag_class === ModelTagClass.ModelFunction && t.tag_name)
     .map(t => t.tag_name);
 
-  // 付费墙，开源版不支持该功能
+  // Paywall, open source version does not support this feature
   const isProModel =
     model.model_status_details?.is_new_model ||
     model.model_status_details?.is_advanced_model;
@@ -114,9 +114,9 @@ export function ModelOption({
             ? 'coz-mg-hglt hover:coz-mg-hglt-hovered'
             : 'hover:coz-mg-secondary-hovered active:coz-mg-secondary-pressed',
           disabled ? 'cursor-not-allowed' : 'cursor-pointer',
-          // 以下 cls 只为实现 hover、active、last 时隐藏上下分割线（注意分割线在 model-info-border，设计师的小心思）
+          // The following cls only hide the upper and lower dividing lines when implementing hover, active, and last (note that the dividing lines are in model-info-border, the designer's careful thought)
           styles['model-option'],
-          // @ts-expect-error -- 不知道为什么会报错
+          // @ts-expect-error -- I don't know why the error is reported.
           { [styles['model-option_selected']]: selected },
         )}
         onClick={() => {
@@ -232,7 +232,7 @@ export function ModelOption({
                 onClick={e => {
                   e.stopPropagation();
 
-                  // 付费墙拦截
+                  // paywall blocking
                   if (isProModel && !isNewModelAvailable) {
                     openPremiumPaywallModal();
                     return;
@@ -295,8 +295,8 @@ function ModelTag({
 }
 
 /**
- * hover 展示若干图标（比如跳转模型详情页、详细配置）时，要对图标下的内容有个渐变遮罩效果
- * 该方法用于计算遮罩样式
+ * When hovering to display several icons (such as jumping to the model details page and detailed configuration), there should be a gradual change mask effect on the content under the icon
+ * This method is used to calculate the mask style
  */
 function calcMaskStyle(buttonVisible: Array<boolean | undefined>) {
   const btnNum = buttonVisible.reduce(
@@ -309,9 +309,9 @@ function calcMaskStyle(buttonVisible: Array<boolean | undefined>) {
 
   const BTN_WIDTH = 32;
   const BTN_GAP = 3;
-  /** 不随按钮数量变化的遮罩固定宽度 */
+  /** Fixed width of mask that does not vary with the number of buttons */
   const PRESET_PADDING = 16;
-  /** 遮罩的渐变宽度 */
+  /** A gradual change in the width of the mask */
   const MASK_WIDTH = 24;
 
   const gradientStart =

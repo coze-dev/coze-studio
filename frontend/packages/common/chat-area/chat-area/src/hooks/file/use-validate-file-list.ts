@@ -37,7 +37,7 @@ export const useValidateFileList = () => {
     const hasExceedSizeFile = !fileList.every(isFileSizeNotExceed);
     const hasEmptyFile = !fileList.every(isNotEmptyFile);
 
-    // TODO: 遇到了 file.size 错误的 case 需要再检查
+    // TODO: The case of file.size error needs to be checked again.
     if (hasExceedSizeFile) {
       Toast.warning({
         content: getFileSizeReachLimitI18n({

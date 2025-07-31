@@ -31,7 +31,7 @@ export const WorkflowNodesContainerModule = new ContainerModule(
     bindContributions(bind, WorkflowJSONFormat, [
       WorkflowJSONFormatContribution,
     ]);
-    // 这里兼容老的 画布 document
+    // Compatible with old canvas documents
     bind(WorkflowDocumentWithFormat).toSelf().inSingletonScope();
     rebind(WorkflowDocument).toService(WorkflowDocumentWithFormat);
   },

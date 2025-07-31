@@ -56,7 +56,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   }
 
   /**
-   * 注册数据源和定义对应的 Observer 配置
+   * Register the data source and define the corresponding Observer configuration
    * @param _config
    */
   public register = (
@@ -80,7 +80,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 启动 Manager 模块
+   * Launch Manager Module
    */
   public start = () => {
     if (this.observerList.length > 0) {
@@ -96,7 +96,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 关闭 Manager 模块下的所有属性监听
+   * Turn off all property listeners under the Manager module
    */
   public close = () => {
     this.observerList.forEach(observer => observer.close());
@@ -104,7 +104,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 手动保存
+   * save manually
    * @param params
    */
   public manualSave = async (key: ScopeKey, params: ScopeStateType) => {
@@ -127,7 +127,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 回调过程中关闭自动保存
+   * Turn off autosave during a callback
    * @param params
    */
   public handleWithoutAutosave = async (params: {
@@ -145,7 +145,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 立即触发保存
+   * Trigger save immediately
    * @param key
    */
   public saveFlush = (key: ScopeKey) => {
@@ -154,7 +154,7 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 立即触发所有保存
+   * Trigger all saves immediately
    * @param key
    */
   public saveFlushAll = () => {
@@ -164,14 +164,14 @@ export class AutosaveManager<StoreType, ScopeKey, ScopeStateType> {
   };
 
   /**
-   * 获取目标 observer 配置
+   * Get target observer configuration
    * @param key
    */
   private getObserver = (key: ScopeKey) =>
     this.observerList.find(i => i.config.key === key);
 
   /**
-   * 获取目标配置项
+   * Get target configuration item
    * @param key
    */
   private getConfig = (key: ScopeKey) =>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-//  目前拿不到文件的 size 信息 文件过大会导致浏览器卡顿 PDF 暂时不需要注册进去 之后放开
+//  At present, the size information of the file cannot be obtained. If the file is too large, the browser card PDF does not need to be registered for the time being, and then it will be released.
 import { JsonPreviewBasePlugin } from '../base';
 import OverlayAPI from '../../common/overlay';
 import PdfPreviewContent from './preview';

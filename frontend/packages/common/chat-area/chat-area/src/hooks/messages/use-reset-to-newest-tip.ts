@@ -19,7 +19,7 @@ import { useEffect } from 'react';
 import { type StoreSet } from '../../context/chat-area-context/type';
 
 /**
- * 销毁时额外清除一下 setScrollViewFarFromBottom，主要针对 coze home 场景
+ * When destroying, remove an additional setScrollViewFarFromBottom, mainly for the coze home scene
  */
 export const useResetToNewestTip = (storeSet: StoreSet) => {
   useEffect(

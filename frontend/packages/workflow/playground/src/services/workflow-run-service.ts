@@ -49,17 +49,17 @@ import { TestRunReporterService } from './test-run-reporter-service';
 const LOOP_GAP_TIME = 300;
 
 export enum TestRunState {
-  /** 空置状态 */
+  /** vacant state */
   Idle = 'idle',
-  /** 执行中 */
+  /** in progress */
   Executing = 'executing',
-  /** 取消 */
+  /** cancel */
   Canceled = 'canceled',
-  /** 暂停 */
+  /** pause */
   Paused = 'paused',
-  /** 成功 */
+  /** success */
   Succeed = 'succeed',
-  // 失败
+  // fail
   Failed = 'failed',
 }
 
@@ -70,7 +70,7 @@ const ExecuteStatusToTestRunStateMap = {
 };
 
 export interface TestRunResultInfo {
-  // 执行id
+  // execution id
   executeId?: string;
 }
 
@@ -80,12 +80,12 @@ interface TestRunOneNodeOptions {
   batch?: Record<string, string>;
   setting?: Record<string, string>;
   botId?: string;
-  /** 是否选择应用 */
+  /** Whether to choose the application */
   useProject?: boolean;
 }
 
 /**
- * Workflow 执行
+ * Workflow execution
  */
 @injectable()
 export class WorkflowRunService {
@@ -131,23 +131,23 @@ export class WorkflowRunService {
   @postConstruct()
   protected init(): void {
     /**
-     * 画布销毁的时候触发
+     * Triggered when the canvas is destroyed
      */
     this.playground.toDispose.onDispose(() => this.dispose());
 
     this.onTestRunStateChange(({ prevState, curState }) => {
-      // 监听state变化, 对testrun结果进行上报
+      // Monitor state changes and report testrun results
       this.reportTestRunResult(prevState, curState);
     });
   }
 
   dispose() {
-    /** 画布销毁，清除所有 testForm 缓存数据 */
+    /** Canvas destroyed, clearing all testForm cached data */
     this.testFormState.clearFormData();
     this.testFormState.clearTestFormDefaultValue();
-    /** 销毁时解冻 test run */
+    /** Thaw test run on destruction */
     this.testFormState.unfreezeTestRun();
-    // 清空运行状态
+    // Clear dry running state
     this.clearTestRun();
   }
 
@@ -159,7 +159,7 @@ export class WorkflowRunService {
   clearTestRunResult = () => {
     this.testFormState.unfreezeTestRun();
     this.globalState.viewStatus = WorkflowExecStatus.DEFAULT;
-    // 清空节点结果，避免 test run 的时候回显
+    // Clear the node results to avoid echo when the test runs
     if (this.execState.hasNodeResult) {
       this.execState.clearNodeResult();
     }
@@ -174,7 +174,7 @@ export class WorkflowRunService {
   };
 
   /**
-   * 清空运行状态
+   * Clear dry running state
    */
   clearTestRunState = () => {
     this.setTestRunState(TestRunState.Idle);
@@ -198,7 +198,7 @@ export class WorkflowRunService {
     } catch (e) {
       throw e;
     } finally {
-      // 无论是否取消成功，中止状态下取消，需要恢复轮训
+      // Whether the cancellation is successful or not, if it is cancelled in the suspended state, the rotation needs to be resumed.
       this.continueTestRun();
     }
   };
@@ -211,13 +211,13 @@ export class WorkflowRunService {
     projectId,
     nodeEvents,
   }: GetWorkFlowProcessData): void => {
-    // 更新各个节点状态
+    // Update the status of each node
     if (nodeResults && nodeResults.length) {
       nodeResults.forEach((nodeResult: NodeResult) => {
         const { nodeId } = nodeResult;
         if (nodeId) {
           this.execState.setNodeExecResult(nodeId, nodeResult);
-          // 更新节点的线条状态
+          // Update the line state of a node
           const currentLines = this.linesManager
             .getAllLines()
             .filter(line => line?.to?.id === nodeResult.nodeId);
@@ -234,7 +234,7 @@ export class WorkflowRunService {
             );
           });
 
-          // 更新节点错误
+          // update node error
           const errorLevel = nodeResult.errorLevel?.toLocaleLowerCase() || '';
           if (['error', 'warning', 'pending'].includes(errorLevel || '')) {
             this.execState.setNodeError(nodeId, [
@@ -255,7 +255,7 @@ export class WorkflowRunService {
     this.execState.updateConfig({
       projectId,
       executeLogId: executeId,
-      // 仅当运行结果为 cancel 或者 fail 时 reason 字段才有效
+      // The reason field is only valid if the run result is cancel or fail
       systemError:
         executeStatus &&
         [WorkflowExeStatus.Cancel, WorkflowExeStatus.Fail].includes(
@@ -267,8 +267,8 @@ export class WorkflowRunService {
   };
 
   /**
-   * 获取执行结果, 以及对服务返回数据进行预处理.
-   * 可支持用执行 ID 获取, 或者直接传入服务返回数据
+   * Obtain execution results and preprocess the data returned by the service.
+   * Can support fetching with execution ID, or directly passing data back to the service
    */
   runProcess = async ({
     executeId,
@@ -283,7 +283,7 @@ export class WorkflowRunService {
       ? processResp
       : (await this.operationService.getProcess(executeId, subExecuteId)).data;
 
-    // 一个远古的 bug ，后端返回 Warn ，前端消费 warning 。改代码影响面太大，因此在这里做一下转换
+    // An ancient bug, the backend returns Warn, and the front-end consumes Warning. Changing the code has too much impact, so do the conversion here.
     data?.nodeResults?.forEach(node => {
       if (node.errorLevel === 'Warn') {
         node.errorLevel = 'warning';
@@ -306,12 +306,12 @@ export class WorkflowRunService {
     return data || {};
   };
 
-  // 暂停test run
+  // Pause test run
   pauseTestRun = () => {
     this.setTestRunState(TestRunState.Paused);
   };
 
-  // 继续test run
+  // Continue the test run
   continueTestRun = () => {
     if (this.testRunState === TestRunState.Paused) {
       this.setTestRunState(TestRunState.Executing);
@@ -331,7 +331,7 @@ export class WorkflowRunService {
     });
   };
 
-  // copy 原本的逻辑，每过 300ms 进行一次轮询
+  // Copy the original logic and poll every 300ms
   loop = async (executeId?: string) => {
     const result = await this.runProcess({ executeId });
     this.execState.updateConfig(result || {});
@@ -350,16 +350,16 @@ export class WorkflowRunService {
     this.testFormState.unfreezeTestRun();
     this.globalState.viewStatus = WorkflowExecStatus.DONE;
     if (!this.globalState.isViewHistory) {
-      // 根据试运行结果，刷新可发布状态
+      // Refresh the publishable state based on practice run results
       this.globalState.reload();
     }
   };
 
-  /* 上报test run运行结果, 用于在商店中统计运行成功率 */
+  /* Report the test run results to count the success rate in the store */
   reportTestRunResult = (prevState: TestRunState, curState: TestRunState) => {
     const { executeId, isSingleMode } = this.execState.config;
 
-    // 单节点模式不需要统计
+    // Single node mode does not require statistics
     if (isSingleMode) {
       return;
     }
@@ -367,7 +367,7 @@ export class WorkflowRunService {
     if (![TestRunState.Succeed, TestRunState.Failed].includes(curState)) {
       return;
     }
-    /* 成功 */
+    /* success */
     if (curState === TestRunState.Succeed) {
       sendTeaEvent(EVENT_NAMES.workflow_testrun_result_front, {
         space_id: this.globalState.spaceId,
@@ -379,7 +379,7 @@ export class WorkflowRunService {
     }
 
     if (curState === TestRunState.Failed) {
-      /* 触发失败 */
+      /* Trigger failed */
       if (prevState === TestRunState.Idle) {
         sendTeaEvent(EVENT_NAMES.workflow_testrun_result_front, {
           space_id: this.globalState.spaceId,
@@ -390,7 +390,7 @@ export class WorkflowRunService {
           errtype: 'trigger_error',
         });
       }
-      /* 运行失败 */
+      /* Failed to run */
       sendTeaEvent(EVENT_NAMES.workflow_testrun_result_front, {
         space_id: this.globalState.spaceId,
         workflow_id: this.globalState.workflowId,
@@ -404,12 +404,12 @@ export class WorkflowRunService {
   };
 
   /**
-   * 运行 test run
+   * Run test run
    */
   testRun = async (
     input?: Record<string, string>,
     botId?: string,
-    /** 当前选择的是否为应用 */
+    /** Is the current selection an application? */
     useProject?: boolean,
   ) => {
     if (this.globalState.config.saving) {
@@ -422,7 +422,7 @@ export class WorkflowRunService {
 
     try {
       this.execState.closeSideSheet();
-      // 更新视图为运行中
+      // Update view to running
       this.globalState.viewStatus = WorkflowExecStatus.EXECUTING;
       const baseParam: {
         workflow_id: string;
@@ -433,12 +433,12 @@ export class WorkflowRunService {
         workflow_id: this.globalState.workflowId,
         space_id: this.globalState.spaceId,
       };
-      /** 存在 variable 节点或者存在 variable 节点子流程的画布才需要传 bot_id，与 input 同级*/
+      /** There is a variable node or a canvas with a variable node subprocess that needs to be passed bot_id, the same level as input*/
       if (botId) {
         const botIdKey = useProject ? 'project_id' : 'bot_id';
         baseParam[botIdKey] = botId;
       }
-      // 如果是在 project 内，则 projectId 必传
+      // If it is within the project, the projectId must be passed
       if (this.globalState.projectId && !baseParam.project_id) {
         baseParam.project_id = this.globalState.projectId;
       }
@@ -458,7 +458,7 @@ export class WorkflowRunService {
         });
 
       executeId = result?.execute_id || '';
-      // 有执行 id，test run 运行成功
+      // There is an execution id, the test ran successfully
       if (executeId) {
         this.execState.updateConfig({
           executeId,
@@ -485,28 +485,28 @@ export class WorkflowRunService {
         testrun_result: 'error',
       });
     } finally {
-      // 运行失败打开弹窗
+      // Failed to open pop-up window
       if (executeStatus === WorkflowExeStatus.Fail) {
         this.execState.openSideSheet();
       }
 
-      // 运行后，不管成功，还原 inPluginUpdated 值，避免一直 testrun
+      // After running, regardless of success, restore the inPluginUpdated value to avoid testrun all the time.
       this.globalState.inPluginUpdated = false;
       this.setTestRunState(ExecuteStatusToTestRunStateMap[executeStatus]);
     }
   };
 
   /**
-   * 获取执行历史数据
+   * Get execution history data
    */
   getProcessResult = async (config: {
-    /** 是否展示节点结果 */
+    /** Whether to display node results */
     showNodeResults?: boolean;
-    /** 指定执行 ID, 若不填, 则展示最近一次运行结果 */
+    /** Specify the execution ID, if not, the last run result will be displayed */
     executeId?: string;
-    /** 直接结果服务端返回 */
+    /** Direct result server level return */
     processResp?: GetWorkFlowProcessData;
-    /** 子流程执行id */
+    /** subprocess execution id */
     subExecuteId?: string;
   }) => {
     const { showNodeResults, executeId, processResp, subExecuteId } = config;
@@ -522,9 +522,9 @@ export class WorkflowRunService {
 
       if (showNodeResults) {
         /**
-         * 只把结果数据同步到节点上，但是不改变 global.config.info.status
-         * 否则上一次 test run 的结果会影响到现在流程是否能够发布的状态
-         * 该状态只能由真正的 test run、后端数据等真实动作修改
+         * Only synchronizes the resulting data to the node, but does not change global.config.info. Status
+         * Otherwise, the result of the last test run will affect whether the current process can be released
+         * This state can only be modified by real actions such as real test runs, back-end data, etc
          */
         this.globalState.viewStatus = WorkflowExecStatus.DONE;
         this.updateExecuteState(omit(result, 'nodeEvents'));
@@ -545,7 +545,7 @@ export class WorkflowRunService {
   }
 
   /**
-   * 获取当前 test form schema 对应的 node
+   * Get the node corresponding to the current test form schema
    */
   getTestFormNode() {
     const schema = this.testFormState.formSchema;
@@ -556,7 +556,7 @@ export class WorkflowRunService {
   }
 
   /**
-   * 单节点运行
+   * single node operation
    */
   async testRunOneNode(options: TestRunOneNodeOptions) {
     const { nodeId, input, batch, setting, botId, useProject } = options;
@@ -583,7 +583,7 @@ export class WorkflowRunService {
         }
       }
 
-      // 在项目内的话，默认使用 project_id
+      // Within the project, project_id is used by default
       if (this.globalState.projectId) {
         Object.assign(botIdParams, { project_id: this.globalState.projectId });
       }
@@ -628,7 +628,7 @@ export class WorkflowRunService {
     this.testFormState.setTestFormDefaultValue(defaultValue);
   };
 
-  /** 轮询获取实时的数据 */
+  /** Polling for real-time data */
   async getRTProcessResult(obj: { executeId?: string }) {
     const { executeId } = obj;
     if (!executeId) {
@@ -637,29 +637,29 @@ export class WorkflowRunService {
     let executeStatus;
 
     try {
-      /** 直接请求一次数据 */
+      /** Request data directly */
       const result = await this.runProcess({ executeId });
-      /** 更新数据到视图 */
+      /** Update data to view */
       this.execState.updateConfig(result || {});
       this.updateExecuteState(result);
       executeStatus = result?.executeStatus;
       /**
-       * 当仍然处于运行中，则开启轮询
-       * chatflow 场景，后端可能返回 0，这时候也需要执行轮询
+       * When still running, turn on polling
+       * Chatflow scenario, the backend may return 0, and polling is also required at this time
        */
       if (
         result?.executeStatus === WorkflowExeStatus.Running ||
         (result?.executeStatus as number) === 0
       ) {
-        /** 开启轮询，需要先讲视图变为只读态 */
+        /** To turn on polling, you need to first make the view read-only */
         this.globalState.viewStatus = WorkflowExecStatus.EXECUTING;
         this.setTestRunState(TestRunState.Executing);
         /**
-         * 1. 为保证请求的节奏同步，这里也会 sleep
-         * 2. 暂停同样对其有效，不过暂时没有这种业务场景
+         * 1. To ensure the rhythm of the request is synchronized, sleep will also be done here
+         * 2. The suspension is also valid for it, but there is no such business scenario for the time being
          */
         await Promise.all([sleep(LOOP_GAP_TIME), this.waitContinue()]);
-        /** 轮询 */
+        /** poll */
         executeStatus = await this.loop(executeId);
       }
       this.finishProcess();

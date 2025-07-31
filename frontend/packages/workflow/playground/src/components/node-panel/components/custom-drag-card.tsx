@@ -95,7 +95,7 @@ export function CustomDragCard({
       nodeVersionInfo: isPluginApiNodeTemplate(nodeTemplate)
         ? { pluginId: nodeTemplate.plugin_id, version: nodeTemplate.version }
         : isSubWorkflowNodeTemplate(nodeTemplate)
-          ? // workflow 的 version 信息在 drop 时通过接口获取
+          ? // The version information of the workflow is obtained through the interface when dropping
             {
               workflowId: nodeTemplate.workflow_id,
               pluginId: nodeTemplate.plugin_id,
@@ -133,7 +133,7 @@ export function CustomDragCard({
       data-testid={testId}
       data-node-type={nodeType}
     >
-      {/* 拖拽过程中的节点副本，被下面的节点覆盖，因此不会触发 hover 之类的 */}
+      {/* The copy of the node during the drag process is overwritten by the node below, so no hover or the like is triggered */}
       <div
         ref={preview}
         className={classNames(computedClassNames, styles['preview-card'])}
@@ -142,7 +142,7 @@ export function CustomDragCard({
       >
         {children}
       </div>
-      {/* 可拖拽的节点，盖在节点副本上 */}
+      {/* Draggable nodes, overlaid on node replicas */}
       {
         <div
           ref={!disabled ? drag : null}

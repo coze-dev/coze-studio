@@ -71,7 +71,7 @@ function toPublishStatus(record: PublishRecordDetail) {
     record.connector_publish_result?.some(
       item => item.connector_publish_status === ConnectorPublishStatus.Failed,
     ) ?? false;
-  // project 本身失败 或 部分渠道发布失败 -> 整体失败
+  // The project itself failed, or some channels failed to publish - > overall failed
   if (projectFailed || connectorsFailed) {
     return PublishStatus.Failed;
   }
@@ -85,7 +85,7 @@ function toPublishStatus(record: PublishRecordDetail) {
         item.connector_publish_status === ConnectorPublishStatus.Default ||
         item.connector_publish_status === ConnectorPublishStatus.Auditing,
     ) ?? false;
-  // project 本身发布中 或 部分渠道发布中 -> 整体发布中
+  // The project itself is being released, or some channels are being released - > the overall release is in progress
   if (projectPublishing || connectorsPublishing) {
     return PublishStatus.Publishing;
   }
@@ -112,7 +112,7 @@ export function usePublishStatus({
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 轮询最新发布记录，直到不属于“发布中”状态后停止
+  // Polling the latest release history until it stops when it is not in the "In Release" state
   const latestRecordRequest = useRequest(
     () => intelligenceApi.GetPublishRecordDetail({ project_id: projectId }),
     {
@@ -122,14 +122,14 @@ export function usePublishStatus({
       pollingErrorRetryCount: 3,
       onSuccess: res => {
         const record = res.data;
-        // 没有发布记录时停止轮询
+        // Stop polling when no record is published
         if (!record || typeof record.publish_status !== 'number') {
           latestRecordRequest.cancel();
           return;
         }
         setStatus(toPublishStatus(record));
         setLatestRecord(record);
-        // 首次请求最新发布记录后，默认选中其版本号
+        // After first requesting the latest release record, its version number is selected by default
         if (!selectedVersion) {
           setRecordList([
             { value: record.publish_record_id, label: record.version_number },
@@ -145,7 +145,7 @@ export function usePublishStatus({
     },
   );
 
-  // 获取发布记录列表
+  // Get a list of publication records
   const recordListRequest = useRequest(
     () => intelligenceApi.GetPublishRecordList({ project_id: projectId }),
     {
@@ -167,7 +167,7 @@ export function usePublishStatus({
     spaceId,
   );
 
-  // 用户有“发布”权限时，启动轮询
+  // When the user has "publish" permission, start polling
   useEffect(() => {
     if (!hasPermission || defaultRecordID) {
       return;
@@ -175,7 +175,7 @@ export function usePublishStatus({
     latestRecordRequest.run();
   }, [hasPermission, defaultRecordID]);
 
-  // 手动请求选择的发布记录
+  // Manually request selected release records
   const recordDetailRequest = useRequest(
     (recordId: string) =>
       intelligenceApi.GetPublishRecordDetail({
@@ -251,7 +251,7 @@ export function usePublishStatus({
         size="mini"
         prefixIcon={tagConfig.prefixIcon}
         color={tagConfig.color}
-        // Tag 组件默认 display: inline-flex, 而外层 span line-height > 1, 会导致其高度大于 Tag 本身
+        // The Tag component defaults to display: inline-flex, and the outer span line-height > 1 will cause its height to be larger than the Tag itself
         className="flex !px-[3px] font-medium"
       >
         {I18n.t(tagConfig.text)}

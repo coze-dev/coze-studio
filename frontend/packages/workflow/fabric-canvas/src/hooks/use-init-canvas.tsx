@@ -46,7 +46,7 @@ export const useInitCanvas = ({
       return;
     }
 
-    // 按比例给个初始化高度，随后会通过 resize 修正为真正的宽高
+    // Give an initial height proportionally, and then correct it to the true width and height by resizing.
     const _canvas = new Canvas(ref, {
       width: schema.width * scale,
       height: schema.height * scale,
@@ -86,7 +86,7 @@ export const useInitCanvas = ({
       await fabricCanvas?.loadFromJSON(
         JSON.stringify(_schema),
         async (elementSchema, element) => {
-          // 每个元素被加载后的回调
+          // Callback after each element is loaded
           await setElementAfterLoad({
             element: element as FabricObject,
             options: { readonly },

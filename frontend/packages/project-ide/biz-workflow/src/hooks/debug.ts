@@ -36,7 +36,7 @@ export const workflowActions = [
     hint: '复制到资源库',
   },
   {
-    // 切换为 chatflow
+    // Switch to chatflow
     key: ProjectResourceActionKey.SwitchToChatflow,
     enable: true,
   },

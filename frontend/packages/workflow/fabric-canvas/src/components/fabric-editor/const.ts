@@ -15,31 +15,31 @@
  */
  
 /**
- * 画布最大缩放
+ * Canvas Max Zoom
  */
 export const MAX_ZOOM = 3;
 /**
- * 画布最小缩放
+ * Canvas minimum zoom
  */
 export const MIN_ZOOM = 1;
 /**
- * 画布最大宽度
+ * Canvas maximum width
  */
 export const MAX_WIDTH = 10000;
 /**
- * 画布最小宽度
+ * Canvas minimum width
  */
 export const MIN_WIDTH = 1;
 /**
- * 画布最大高度
+ * Canvas maximum height
  */
 export const MAX_HEIGHT = 10000;
 /**
- * 画布最小高度
+ * minimum height of canvas
  */
 export const MIN_HEIGHT = 1;
 
 /**
- * 画布最大面积
+ * Canvas maximum area
  */
 export const MAX_AREA = 3840 * 2160;

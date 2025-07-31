@@ -22,7 +22,7 @@ import { isInputAsOutput, isOutputsContainsImage } from '../utils';
 import { useInputContainsImage } from './use-input-contains-image';
 
 /**
- * 根据节点的input和output，判断是否显示图片预览模块
+ * According to the input and output of the node, determine whether to display the picture preview module
  */
 export const useImagePreviewVisible = () => {
   const node: FlowNodeEntity = useCurrentEntity();
@@ -31,16 +31,16 @@ export const useImagePreviewVisible = () => {
 
   const inputContainsImage = useInputContainsImage(node);
 
-  // 开始节点不需要
+  // The starting node is not required
   if (flowNodeType === StandardNodeType.Start) {
     return false;
   }
 
-  // end节点和message节点的输入就是输出，当输入引用了图片类型时，需要展示
+  // The input of the end node and the message node is the output. When the input refers to the image type, it needs to be displayed
   if (isInputAsOutput(flowNodeType as StandardNodeType)) {
     return inputContainsImage;
   } else {
-    // output中包含图片类型时，需要展示
+    // When the output contains a picture type, it needs to be displayed
     return isOutputsContainsImage(node);
   }
 };

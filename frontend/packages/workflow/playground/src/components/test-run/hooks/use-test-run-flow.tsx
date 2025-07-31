@@ -127,7 +127,7 @@ export const useTestRunFlow = () => {
 
   const { activeId, closeSideSheet } = useInnerSideSheetStoreShallow();
   const testRunFlow = async () => {
-    // 尝试关闭打开的侧拉窗，下面那个 closeBizIDE 不能删，因为 closeBizIDE 是异步的
+    // Try closing the open side window. The closeBizIDE below cannot be deleted because closeBizIDE is asynchronous.
     closeSideSheet(activeId as string);
 
     sendTeaEvent(EVENT_NAMES.workflow_testrun_result_front, {
@@ -137,7 +137,7 @@ export const useTestRunFlow = () => {
     });
     setLoading(true);
     try {
-      /** code ide 关闭之后可以执行 test run */
+      /** After the code ide is closed, the test run can be performed */
       if (!(await closeBizIDE())) {
         sendTeaEvent(EVENT_NAMES.workflow_testrun_result_front, {
           space_id: globalState.spaceId,
@@ -147,10 +147,10 @@ export const useTestRunFlow = () => {
         return;
       }
 
-      // 先关闭上一次试运行的结果
+      // The result of closing a practice run first
       runService.clearTestRun();
 
-      /** 前端表单校验 */
+      /** front-end form validation */
       const { hasError, nodeErrorMap: feErrorMap } =
         await validationService.validateWorkflow();
       if (hasError) {
@@ -168,7 +168,7 @@ export const useTestRunFlow = () => {
         return;
       }
 
-      /** 后端校验 */
+      /** backend validation */
       const { isError: backendError, nodeErrorMap: beErrorMap } =
         await backendValidate();
       if (backendError) {
@@ -194,7 +194,7 @@ export const useTestRunFlow = () => {
       }
       execEntity.closeSideSheet();
       if (!testFormSchema.fields?.length) {
-        // 直接运行
+        // direct run
         runService.testRun();
         return;
       }

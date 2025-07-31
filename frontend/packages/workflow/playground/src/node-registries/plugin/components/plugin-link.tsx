@@ -51,7 +51,7 @@ export const PluginLink = ({
     pluginProductStatus,
   } = apiNodeDetail || {};
 
-  // 同空间，且状态为待提交的插件，直接跳转 /space/xxx/plugin/yyy
+  // In the same space, and the status is to be submitted plug-ins, jump directly /space/xxx/plugin/yyy
   const noNeedQuery =
     spaceIdFromUrl === spaceId &&
     pluginProductStatus === PluginProductStatus.Default;
@@ -61,7 +61,7 @@ export const PluginLink = ({
     needQuery: !noNeedQuery,
   });
 
-  // 运维平台不需要展示插件跳转链接
+  // The operation and maintenance platform does not need to display plug-ins, jump links
   if (IS_BOT_OP) {
     return null;
   }
@@ -77,8 +77,8 @@ export const PluginLink = ({
     } else {
       const url =
         storePluginId && !noNeedQuery
-          ? `/store/plugin/${storePluginId}` // 其他状态（已上架，已下架，审核中）
-          : `/space/${spaceId}/plugin/${pluginId}`; // 未上架
+          ? `/store/plugin/${storePluginId}` // Other status (on the shelves, off the shelves, under review)
+          : `/space/${spaceId}/plugin/${pluginId}`; // Not on the shelves
       window.open(url, '_blank');
     }
     e.stopPropagation();

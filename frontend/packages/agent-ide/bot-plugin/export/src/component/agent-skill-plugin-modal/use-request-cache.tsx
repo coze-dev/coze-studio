@@ -169,7 +169,7 @@ export function useInfiniteScrollCacheLoad<
       ] = true;
     });
 
-    //数据去重
+    //Data deduplicated
     const uniqList = (list || []).filter(item => {
       const pluginId = (item as unknown as { pluginInfo: { id: string } })
         ?.pluginInfo?.id;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines */
 /* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
@@ -69,11 +69,11 @@ export interface SimpleTreeNodeCustomData {
 export interface OutputTreeProps {
   id: string;
   testId?: string;
-  // 是否允许新增根节点，默认为 true
+  // Whether to allow new root nodes, the default is true
   allowAppendRootData?: boolean;
-  // 是否允许删除最后一条数据
+  // Is it allowed to delete the last piece of data?
   allowDeleteLast?: boolean;
-  // 是否是批处理
+  // Is it batch processing?
   isBatch?: boolean;
   treeProps?: TreeProps;
   readonly?: boolean;
@@ -89,9 +89,9 @@ export interface OutputTreeProps {
   onChange: (value: Array<TreeNodeCustomData>) => void;
   withDescription: boolean;
   withRequired: boolean;
-  /** 不支持使用的类型 */
+  /** Types not supported */
   disabledTypes?: ViewVariableType[];
-  /** 隐藏类型 */
+  /** hidden type */
   hiddenTypes?: ViewVariableType[];
   topLevelReadonly?: boolean;
   emptyPlaceholder?: string;
@@ -101,29 +101,29 @@ export interface OutputTreeProps {
     readonly?: boolean;
     onChange?: (value?: number) => void;
   };
-  /** 默认变量类型 */
+  /** Default variable type */
   defaultVariableType?: ViewVariableType;
   jsonImport?: boolean;
   noCard?: boolean;
   addItemTitle?: string;
   defaultCollapse?: boolean;
 
-  // 最外层输出是否默认折叠
+  // Is the outermost output folded by default?
   formCardDefaultCollapse?: boolean;
   children?: React.ReactNode;
-  /**  在某一个node preset 时依旧可以添加child */
+  /**  You can still add children to a node preset */
   needAppendChildWhenNodeIsPreset?: boolean;
   maxLimit?: number;
   /**
-   * 是否可以配置默认值，默认为 false
+   * Can the default value be configured, the default is false
    */
   withDefaultValue?: boolean;
   /**
-   * 默认展开的参数名
+   * Default expanded parameter name
    */
   defaultExpandParams?: string[];
   /**
-   * 列宽比 如 6:4 代表名称占6份，类型占4份
+   * Column widths such as 6:4 represent 6 copies of the name and 4 copies of the type
    */
   columnsRatio?: string;
 }
@@ -206,7 +206,7 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
     columnsRatio,
   } = props;
 
-  // 监听该值的变化
+  // Monitor for changes in this value
   const cardRef = useRef<HTMLDivElement>(null);
   const isValueEmpty = !value || value.length === 0;
   const {
@@ -228,9 +228,9 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
   }, [value, maxLimit]);
 
   /**
-   * 表示当前哪一行的父亲节点的 description 处于多行状态(LLM节点)
-   * 用于渲染树形竖线，处于多行文本的下一行竖线应该延长
-   * 若 param name 有错误信息，竖线从错误信息下方延展，长度有所变化
+   * The description of the parent node of which row is currently in a multi-row state (LLM node)
+   * For rendering tree vertical lines, the next vertical line in multiple lines of text should be extended
+   * If the param name has an error message, the vertical bar extends below the error message and the length changes
    */
   const [activeMultiInfo, setActiveMultiInfo] = useState<ActiveMultiInfo>({
     activeMultiKey: '',
@@ -243,19 +243,19 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
       onChange(
         (formattedTreeData || []).concat({
           ...getDefaultAppendValue(withRequired, defaultVariableType),
-          // 增加 field
+          // Add field
           field: `[${formattedTreeData.length}]`,
-          // 此时不需要指定 type，所以用了 as as 取消类型报错
+          // At this time, there is no need to specify the type, so as as is used to cancel the type and report an error.
         } as unknown as TreeNodeCustomData),
       );
     }
   };
 
-  // 该组件的 change 方法
+  // How to change this component
   const onValueChange = (freshValue?: Array<TreeNodeCustomData>) => {
     if (onChange) {
       freshValue = (freshValue || []).concat([]);
-      // 清理掉无用字段
+      // Clean up useless fields
       traverse<TreeNodeCustomData>(freshValue, node => {
         const {
           key,
@@ -287,7 +287,7 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
         }
 
         if (withRequired) {
-          node.required = required || false; // undefined 转为 false
+          node.required = required || false; // Undefined to false
         }
 
         if (children) {
@@ -302,9 +302,9 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
     }
   };
 
-  // 树节点的 change 方法
+  // Tree node change method
   const onTreeNodeChange = (mode: ChangeMode, param: TreeNodeCustomData) => {
-    // 先clone一份，因为Tree内部会对treeData执行isEqual，克隆一份一定是false
+    // Clone one first, because the Tree will execute isEqual on treeData, cloning one must be false.
     const cloneDeepTreeData = cloneDeep(
       formattedTreeData,
     ) as Array<TreeNodeCustomData>;
@@ -317,18 +317,18 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
     if (findResult) {
       switch (mode) {
         case ChangeMode.Append: {
-          // 新增不可以用 parentData 做标准，要在当前 data 下新增
+          // You can't use parentData as a standard for adding, you need to add it under the current data.
           const { data } = findResult;
           const currentChildren = data.children || [];
-          // @ts-expect-error 有些值不需要此时指定，因为在 rerender 的时候会执行 format
+          // @ts-expect-error Some values do not need to be specified at this time because format is executed during rerender
           data.children = currentChildren.concat({
             ...getDefaultAppendValue(false, defaultVariableType),
-            // 增加 field
+            // Add field
             field: `${data.field}.children[${currentChildren.length}]`,
           });
           onValueChange(cloneDeepTreeData);
 
-          // 当前节点下新增节点 展开当前节点
+          // Add a new node under the current node and expand the current node
           if (findResult?.data?.key) {
             expandTreeNode(findResult.data.key);
           }
@@ -422,7 +422,7 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
       responseFormatValue.current = responseFormat.value;
     }
 
-    // 如果切到文本模式
+    // If you switch to text mode
     if (onlyString && isUserChangeType) {
       let newValue = [
         {
@@ -437,7 +437,7 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
         newValue = WorkflowBatchService.singleOutputMetasToList(
           newValue as ViewVariableTreeNode[],
         ) as TreeNodeCustomData[];
-        // 如果本身有值，就取第一个，预期：复用变量名/描述
+        // If there is a value in itself, take the first one, expect: reuse variable name/description
         if (_value?.[0]) {
           newValue = [_value[0]];
         }
@@ -445,29 +445,29 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
           const [first, ...rest] = _value[0].children;
           newValue[0].children = [first, ...rest.filter(c => c?.readonly)];
         }
-        // 仅修改类型到 string
+        // Modify type to string only
         if (
           newValue?.[0].children?.[0].type &&
           newValue?.[0].children?.[0].type !== ViewVariableType.String
         ) {
           newValue[0].children[0].type = ViewVariableType.String;
 
-          // 移除 children
+          // Remove children
           if (newValue[0].children[0].children) {
             delete newValue[0].children[0].children;
           }
         }
       } else {
-        // 如果本身有值，就取第一个，预期：复用变量名/描述
+        // If there is a value in itself, take the first one, expect: reuse variable name/description
         if (_value?.[0]) {
           const [first, ...rest] = _value;
           newValue = [first, ...rest.filter(c => c?.readonly)];
         }
-        // 仅修改类型到 string
+        // Modify type to string only
         if (newValue[0].type !== ViewVariableType.String) {
           newValue[0].type = ViewVariableType.String;
 
-          // 移除 children
+          // Remove children
           if (newValue[0].children) {
             delete newValue[0].children;
           }
@@ -563,7 +563,7 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
               const { level, data } = renderFullLabelProps;
               const isTopLevel = level === 0;
               const isSecondLevel = level === 1;
-              // 把 errorbody 刨除
+              // Planting the errorbody
               const isOnlyOneData = value.filter(v => !v.readonly).length <= 1;
 
               const currentLevelDisabled =
@@ -571,19 +571,19 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
                 disabled;
 
               const disableDelete = (() => {
-                // 禁用时，不允许删除
+                // When disabled, deletion is not allowed
                 if (currentLevelDisabled) {
                   return true;
                 }
-                // 如果只有一条非只读数据
+                // If there is only one non-read-only data
                 if (isOnlyOneData) {
                   if (isTopLevel && !allowDeleteLast) {
-                    // 并且是顶层数据，同时不允许删除最后一条数据，不可删除
+                    // And it is the top-level data, and the last piece of data is not allowed to be deleted. It cannot be deleted.
                     return true;
                   }
-                  // @tips hack逻辑，批处理改成单次处理时，会删除最外层的结构，必须保证children不是空数据才可以
-                  // 此时只有一条数据，并且是批处理模式，并且当前是第二层数据，并且第二层非只读数据也只有一项
-                  // 此时也不可以删除
+                  // @Tips hack logic. When batch processing is changed to single processing, the outermost structure will be deleted. You must ensure that children are not empty data.
+                  // At this time, there is only one piece of data, and it is in batch mode, and it is currently the second layer of data, and there is only one piece of second-layer non-read-only data.
+                  // It cannot be deleted at this time.
                   if (
                     isBatch &&
                     isSecondLevel &&
@@ -645,14 +645,14 @@ export function OutputTree(props: PropsWithChildren<OutputTreeProps>) {
                 <p className={styles.emptyPlaceholder}>{emptyPlaceholder}</p>
               )
             }
-            expandedKeys={[...expandedKeys, nanoid()]} // 加nanoid是为了防止组件内部memo状态导致不同步，强制重新计算显隐
+            expandedKeys={[...expandedKeys, nanoid()]} // The nanoid is added to prevent the internal memo state of the component from causing out of sync, and force a recalculation of the hidden state
             treeData={formattedTreeData}
             {...treeProps}
           />
           {showAddButton ? (
             <AddItemButton
               className="absolute right-0 top-0"
-              // 解决 Button 位移导致 onClick 不触发问题
+              // Solve the problem that onClick does not trigger due to Button displacement
               onMouseDown={onAdd}
               disabled={isBatch || disabled}
               disabledTooltip={disabledTooltip}

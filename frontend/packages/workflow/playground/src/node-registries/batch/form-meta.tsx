@@ -37,13 +37,13 @@ import { transformOnInit, transformOnSubmit } from './data-transformer';
 import { BatchPath } from './constants';
 
 export const BATCH_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <BatchFormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
     [`${BatchPath.Inputs}.*.name`]: BatchInputNameValidator,
@@ -52,16 +52,16 @@ export const BATCH_FORM_META: FormMetaV2<FormData> = {
     [`${BatchPath.Outputs}.*.input`]: BatchInputValueValidator,
   },
 
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     inputs: provideLoopInputsVariablesEffect,
     outputs: provideLoopOutputsVariablesEffect,
   },
 
-  // 节点后端数据 -> 前端表单数据
+  // Node Backend Data - > Frontend Form Data
   formatOnInit: transformOnInit,
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

@@ -34,7 +34,7 @@ const MoreButton: FC<IProps> = props => {
 
   return (
     <UIKitTooltip
-      // 为了点调起选择文件的事件时收起 tooltip
+      // Collapse tooltip when the selected file event is invoked
       disableFocusListener
       content={tooltipContent}
       hideToolTip={layout === Layout.MOBILE}

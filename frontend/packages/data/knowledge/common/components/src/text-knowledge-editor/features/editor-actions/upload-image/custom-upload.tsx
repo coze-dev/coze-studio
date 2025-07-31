@@ -79,7 +79,7 @@ export const handleCustomUploadRequest = async ({
   }
 
   try {
-    // 业务逻辑
+    // business logic
     onBeforeUpload?.();
     const { name, fileInstance } = file;
 

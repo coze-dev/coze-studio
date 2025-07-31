@@ -75,7 +75,7 @@ export const AbilityAreaContextProvider: FC<
     clearStore: clearToolAreaStore,
   } = useToolAreaStore.getState();
   /**
-   * 清除
+   * clear
    */
   useEffect(() => {
     updateIsModeSwitching(modeSwitching);
