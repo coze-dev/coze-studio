@@ -31,6 +31,7 @@ const (
 	FileUploadComponentType        = "FILE_UPLOAD_COMPONENT_TYPE"
 	FileUploadComponentTypeImagex  = "imagex"
 	FileUploadComponentTypeStorage = "storage"
+	StorageUploadHTTPScheme        = "STORAGE_UPLOAD_HTTP_SCHEME"
 
 	StorageType        = "STORAGE_TYPE"
 	MinIOAK            = "MINIO_AK"
