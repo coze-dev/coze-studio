@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { variableUtils, WorkflowVariableService } from 'src';
 import { loopJSON } from '__tests__/workflow.mock';
 import { allConstantInputs, allEndRefInputs } from '__tests__/variable.mock';

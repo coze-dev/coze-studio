@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect, useState, useCallback, type FC } from 'react';
 
 import { isEqual } from 'lodash-es';
@@ -31,7 +31,6 @@ import {
   useUpdateSortedPortLines,
 } from '@/hooks';
 
-import { HiddenCondition } from '../hidden-condition';
 import { useConditionValidate } from './validate/use-condition-validate';
 import {
   type ConditionValue,
@@ -43,6 +42,7 @@ import { CustomDragLayer } from './draggable/custom-drag-layer';
 import { ConditionDraggableContainer } from './draggable/container';
 import { DraggableConditionBranchPreview } from './draggable/condition-branch-preview';
 import { DraggableConditionBranch } from './draggable/condition-branch';
+import { HiddenCondition } from '../hidden-condition';
 import { ConditionContextProvider } from './context';
 import { ConditionHeader } from './condition-header';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type KnowledgeModalNavBarProps } from '@coze-data/knowledge-ide-base/components/knowledge-modal-nav-bar';
 
 import { type BaseKnowledgeIDEProps } from '../base/types';

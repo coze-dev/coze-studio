@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { setImageFixed } from './fabric-image';
 export { fonts, fontSvg, fontFamilyFilter } from './font';
 // eslint-disable-next-line @coze-arch/no-batch-import-or-export

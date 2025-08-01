@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export * from '@coze-arch/idl/product_api';
 export { default as default } from '@coze-arch/idl/product_api';
 import { type public_api } from '@coze-arch/idl/product_api';

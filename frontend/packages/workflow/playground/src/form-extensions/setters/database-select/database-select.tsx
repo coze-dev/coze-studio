@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { SelectDatabaseModal } from '@coze-data/database-v2';
+import { JsonViewer } from '@coze-common/json-viewer';
 import { I18n } from '@coze-arch/i18n';
 import { Modal } from '@coze-arch/coze-design';
-import { JsonViewer } from '@coze-common/json-viewer';
-import { SelectDatabaseModal } from '@coze-data/database-v2';
 
 import { useGlobalState } from '@/hooks';
 import { LibrarySelect } from '@/form-extensions/components/library-select';

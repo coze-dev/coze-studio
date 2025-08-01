@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type IPlugin, type Program, after } from '@coze-arch/idl2ts-plugin';
 import { type IParseEntryCtx } from '@coze-arch/idl2ts-helper';
 import { HOOK } from '@coze-arch/idl2ts-generator';

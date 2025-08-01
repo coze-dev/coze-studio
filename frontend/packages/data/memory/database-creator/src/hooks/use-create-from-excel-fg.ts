@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const useCreateFromExcelFG = (): boolean =>
   // Feature flag bot.data.excel_to_database is OFF, returning false.
   false;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { customAlphabet } from 'nanoid';
 import { inject, injectable } from 'inversify';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';

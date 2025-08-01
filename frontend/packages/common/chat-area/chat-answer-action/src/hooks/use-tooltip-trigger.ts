@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useChatAreaLayout } from '@coze-common/chat-area/hooks/public/common';
 import { Layout } from '@coze-common/chat-uikit-shared';
 

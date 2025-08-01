@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
@@ -23,16 +23,16 @@ import { NodeStatusBar } from '@coze-workflow/test-run/log';
 import { NodeExeStatus } from '@coze-workflow/base/api';
 import { CONVERSATION_NODES, StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Spin, Typography } from '@coze-arch/bot-semi';
-import {
-  IconWorkflowRunning,
-  IconWorkflowRunSuccess,
-} from '@coze-arch/bot-icons';
 import {
   IconCozWarningCircleFill,
   IconCozInfoCircle,
 } from '@coze-arch/coze-design/icons';
 import { Tag } from '@coze-arch/coze-design';
+import { Spin, Typography } from '@coze-arch/bot-semi';
+import {
+  IconWorkflowRunning,
+  IconWorkflowRunSuccess,
+} from '@coze-arch/bot-icons';
 
 import { TestRunCostPopover } from '../../test-run/execute-result/test-run-cost-popover';
 import { ExecuteResultPanel } from '../../test-run/execute-result/execute-result-panel';

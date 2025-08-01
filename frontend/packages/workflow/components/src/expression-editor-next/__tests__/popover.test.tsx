@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { render } from '@testing-library/react'
-import { Popover } from '../popover'
+
+import { render } from '@testing-library/react';
+import { Popover } from '../popover';
 
 vi.mock('../popover/hooks/use-tree', () => {
   return {
     useTreeRefresh() {},
     useTreeSearch() {},
-  }
+  };
 });
 
 vi.mock('@coze-arch/bot-semi', async () => {
-  const { forwardRef } = await vi.importActual('react') as any;
+  const { forwardRef } = (await vi.importActual('react')) as any;
   return {
     Popover({ content }) {
-      return <div>{content}</div>
+      return <div>{content}</div>;
     },
     Tree: forwardRef((_, ref) => {
-      return <div ref={ref}></div>
-    })
-  }
-})
+      return <div ref={ref}></div>;
+    }),
+  };
+});
 
 vi.mock('@coze-editor/editor', () => {
   return {
     mixLanguages() {},
     astDecorator: {
       whole: {
-        of() {}
+        of() {},
       },
       fromCursor: {
-        of() {}
+        of() {},
       },
     },
   };
@@ -73,11 +73,11 @@ vi.mock('@coze-editor/editor/react', () => {
                 from: 0,
                 to: 0,
                 anchor: 0,
-                head: 0
-              }
-            }
-          }
-        }
+                head: 0,
+              },
+            },
+          },
+        },
       };
     },
   };
@@ -85,7 +85,7 @@ vi.mock('@coze-editor/editor/react', () => {
 
 vi.mock('@coze-editor/editor/preset-expression', () => {
   return {
-    default: []
+    default: [],
   };
 });
 
@@ -97,9 +97,9 @@ describe('popover', () => {
   });
 
   it('Should render props.className correctly', () => {
-    const { container } = render(<Popover variableTree={[]} className='foo' />)
+    const { container } = render(<Popover variableTree={[]} className="foo" />);
 
-    const elements = container.querySelectorAll('.foo')
-    expect(elements.length).toBe(1)
-  })
-})
+    const elements = container.querySelectorAll('.foo');
+    expect(elements.length).toBe(1);
+  });
+});

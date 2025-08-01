@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -21,9 +21,9 @@ import { Switch } from '@coze-arch/coze-design';
 
 import { JsonEditorAdapter as JsonEditorAdapterNew } from '@/components/test-run/test-form-materials/json-editor/new';
 
+import { generateJSONSchema } from './utils/generate-json-schema';
 import { FormItemFeedback } from '../form-item-feedback';
 import { FormCard } from '../form-card';
-import { generateJSONSchema } from './utils/generate-json-schema';
 import { type ErrorFormProps } from './types';
 
 import styles from './index.module.less';

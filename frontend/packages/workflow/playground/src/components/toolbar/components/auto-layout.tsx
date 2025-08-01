@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback } from 'react';
 
+import { useEntity, usePlayground } from '@flowgram-adapter/free-layout-editor';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozAutoLayout } from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
-import { useEntity, usePlayground } from '@flowgram-adapter/free-layout-editor';
 
 import { useAutoLayout } from '../hooks';
 import { WorkflowGlobalStateEntity } from '../../../entities';

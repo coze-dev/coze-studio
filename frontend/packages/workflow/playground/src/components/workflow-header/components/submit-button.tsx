@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useMemo } from 'react';
 
 import { useClearHistory } from '@coze-workflow/history';
@@ -26,9 +26,9 @@ import {
 } from '@coze-workflow/base/api';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
+import { Toast, Tooltip } from '@coze-arch/coze-design';
 import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 import { UIButton } from '@coze-arch/bot-semi';
-import { Toast, Tooltip } from '@coze-arch/coze-design';
 
 import { getWorkflowHeaderTestId } from '../utils';
 import { useDiffConfirm, useMergeConfirm } from '../hooks';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 //Backend undefined, derived from workflow_info profile_memory in bot_info
 import { type IntelligenceType } from '@coze-arch/idl/intelligence_api';
 

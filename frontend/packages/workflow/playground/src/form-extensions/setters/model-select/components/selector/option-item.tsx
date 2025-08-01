@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Button, Tag, Popover, Avatar } from '@coze-arch/coze-design';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { type ModelDescGroup } from '@coze-arch/bot-api/developer_api';

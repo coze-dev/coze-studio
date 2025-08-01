@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Text, type Link, type Parent, type Image } from 'mdast';
 import { isObject, isUndefined } from 'lodash-es';
 /**

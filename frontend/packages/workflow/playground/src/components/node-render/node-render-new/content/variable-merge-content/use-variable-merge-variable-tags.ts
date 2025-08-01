@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   type RefExpressionContent,
   useWorkflowNode,
   VARIABLE_TYPE_ALIAS_MAP,
   ValueExpression,
 } from '@coze-workflow/base';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { isOutputVariable } from '@/nodes-v2/variable-merge/utils/is-output-variable';
 import { type VariableMergeFormData } from '@/nodes-v2/variable-merge/types';

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 import { isUndefined } from 'lodash-es';
 import cls from 'classnames';
+import { IconChevronDownStroked, IconAlertCircle } from '@douyinfe/semi-icons';
 import { type NodeResult } from '@coze-workflow/base/api';
 import { Popover, Typography } from '@coze-arch/bot-semi';
-import { IconChevronDownStroked, IconAlertCircle } from '@douyinfe/semi-icons';
 
 import { NavigateItemDisabled, DisabledType } from './navigate-item-disabled';
 
@@ -120,17 +120,17 @@ export const CustomSelector: React.FC<Props> = ({
               <div className={s['ui-box-content']}>
                 <Text>{currentIndex + 1}</Text>
               </div>
-              {hasError && (
+              {hasError ? (
                 <div className={s['ui-error-icon']}>
                   <IconAlertCircle />
                 </div>
-              )}
+              ) : null}
 
-              {hasWarning && (
+              {hasWarning ? (
                 <div className={s['ui-warning-icon']}>
                   <IconAlertCircle />
                 </div>
-              )}
+              ) : null}
             </div>
           );
         })}
@@ -161,9 +161,9 @@ export const CustomSelector: React.FC<Props> = ({
         })}
         onClick={() => setIsOpen(p => !p)}
       >
-        {placeholder && isUndefined(value) && (
+        {placeholder && isUndefined(value) ? (
           <div className={s['ui-selector-placeholder']}>{placeholder}</div>
-        )}
+        ) : null}
         {!isUndefined(value) && (
           <div className={s['ui-selector-content']}>
             <Typography.Text>{value + 1}</Typography.Text>
@@ -178,17 +178,17 @@ export const CustomSelector: React.FC<Props> = ({
           <IconChevronDownStroked />
         </div>
 
-        {hasError && (
+        {hasError ? (
           <div className={s['ui-selector-error-icon']}>
             <IconAlertCircle />
           </div>
-        )}
+        ) : null}
 
-        {hasWarning && (
+        {hasWarning ? (
           <div className={s['ui-selector-warning-icon']}>
             <IconAlertCircle />
           </div>
-        )}
+        ) : null}
       </div>
     </Popover>
   );

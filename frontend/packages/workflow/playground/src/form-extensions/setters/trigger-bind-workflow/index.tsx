@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { ModalI18nKey } from '@coze-workflow/components/workflow-modal';
 import {
   WorkflowModalFrom,
@@ -25,7 +26,6 @@ import { WorkflowMode } from '@coze-arch/idl/developer_api';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { useGlobalState } from '@/hooks';
 import { IconNameDescCard } from '@/form-extensions/components/icon-name-desc-card';

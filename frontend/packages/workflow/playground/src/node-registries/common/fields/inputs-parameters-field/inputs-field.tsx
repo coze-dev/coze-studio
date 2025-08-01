@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   FieldArray,
   type FieldArrayRenderProps,
@@ -31,11 +31,11 @@ import {
   type FieldProps,
 } from '@/form';
 
+import { type NodeInputNameProps } from './node-input-name/type';
 import {
   ValueExpressionInputField,
   type ValueExpressionInputProps,
 } from '../value-expression-input';
-import { type NodeInputNameProps } from './node-input-name/type';
 import { NodeInputNameField } from './node-input-name';
 
 interface InputsFieldProps extends FieldProps<InputValueVO[]> {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type StateStorage } from 'zustand/middleware';
 import { throttle } from 'lodash-es';
 import localForage from 'localforage';

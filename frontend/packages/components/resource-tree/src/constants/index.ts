@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { NODE_WIDTH, NODE_HEIGHT, COLLAPSE_WIDTH } from './node';
 export {
   STROKE_WIDTH,

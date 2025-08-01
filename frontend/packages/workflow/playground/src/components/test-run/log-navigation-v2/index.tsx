@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo, useEffect } from 'react';
 
 import { type NodeResult } from '@coze-workflow/base/api';
-import { Typography, Checkbox } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
+import { Typography, Checkbox } from '@coze-arch/bot-semi';
 
 import { useTestRunStatus } from '../hooks/use-test-run-status';
 import { START_NODE_ID } from '../constants';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const domEditable = (dom: HTMLElement) => {
   const editableContent = dom.closest('div[contentEditable=true]');
   if (editableContent) {

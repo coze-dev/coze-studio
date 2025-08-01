@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import { isString } from 'lodash-es';

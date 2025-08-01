@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const unlockByFetch = (pluginId: string) =>
   fetch('/api/plugin_api/unlock_plugin_edit', {
     keepalive: true,

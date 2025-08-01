@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const getRangeDirection = (range: Range) => {
   const position = range.compareBoundaryPoints(Range.START_TO_END, range);
 

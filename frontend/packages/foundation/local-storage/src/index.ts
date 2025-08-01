@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { localStorageService } from './core';
 
 export { useValue as useLocalStorageValue } from './hooks/use-value';

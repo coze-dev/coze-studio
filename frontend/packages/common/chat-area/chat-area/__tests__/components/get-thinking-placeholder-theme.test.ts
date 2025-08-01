@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getThinkingPlaceholderTheme } from '../../src/utils/components/get-thinking-placeholder-theme';
 
 describe('test get thinking placeholder theme', () => {

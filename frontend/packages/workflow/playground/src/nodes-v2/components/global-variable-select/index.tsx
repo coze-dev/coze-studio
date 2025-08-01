@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type CSSProperties,
   useEffect,
@@ -36,13 +36,13 @@ import {
   VARIABLE_TYPE_ALIAS_MAP,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type Select as SemiSelect } from '@coze-arch/bot-semi';
 import {
   IconCozCross,
   IconCozEmpty,
   IconCozWarningCircle,
 } from '@coze-arch/coze-design/icons';
 import { Select, Tag, Typography } from '@coze-arch/coze-design';
+import { type Select as SemiSelect } from '@coze-arch/bot-semi';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { useGlobalState } from '@/hooks';

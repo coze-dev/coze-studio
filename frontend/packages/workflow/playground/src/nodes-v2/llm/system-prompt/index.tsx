@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useCallback } from 'react';
 
 import { useForm, useRefresh } from '@flowgram-adapter/free-layout-editor';
-import type { ILibraryItem } from '@coze-common/editor-plugins/library-insert';
 import type { InputValueVO } from '@coze-workflow/base';
+import type { ILibraryItem } from '@coze-common/editor-plugins/library-insert';
 
 import { addSKillFromLibrary } from '@/nodes-v2/llm/utils';
 

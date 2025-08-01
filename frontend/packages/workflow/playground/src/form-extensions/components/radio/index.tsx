@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
+import type {
+  SetterComponentProps,
+  SetterOrDecoratorContext,
+} from '@flowgram-adapter/free-layout-editor';
 import { useNodeTestId } from '@coze-workflow/base';
 import { Tooltip, RadioGroup, Radio as RadioUI } from '@coze-arch/coze-design';
 import type {
@@ -25,10 +29,6 @@ import type {
   RadioType,
 } from '@coze-arch/bot-semi/Radio';
 import { IconInfo } from '@coze-arch/bot-icons';
-import type {
-  SetterComponentProps,
-  SetterOrDecoratorContext,
-} from '@flowgram-adapter/free-layout-editor';
 
 import styles from './index.module.less';
 

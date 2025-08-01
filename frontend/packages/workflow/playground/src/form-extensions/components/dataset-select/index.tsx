@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 
 import { BindBizType } from '@coze-workflow/base/api';
@@ -26,9 +26,9 @@ import { FilterKnowledgeType } from '@coze-data/knowledge-modal-base';
 import { useKnowledgeListModal } from '@coze-data/knowledge-modal-adapter';
 import { useBizWorkflowKnowledgeIDEFullScreenModal } from '@coze-data/knowledge-ide-adapter';
 import { I18n } from '@coze-arch/i18n';
+import { Button } from '@coze-arch/coze-design';
 import { ConfigProvider } from '@coze-arch/bot-semi';
 import { DatasetStatus } from '@coze-arch/bot-api/knowledge';
-import { Button } from '@coze-arch/coze-design';
 
 import { useGlobalState, useDataSetInfos, useSpaceId } from '@/hooks';
 

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
+import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozPlayFill,
   IconCozStopCircle,
 } from '@coze-arch/coze-design/icons';
 import { Button } from '@coze-arch/coze-design';
-import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useExecStateEntity } from '@/hooks';
 

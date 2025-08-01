@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as vitest from 'vitest';
 import { RuleTester } from '@typescript-eslint/rule-tester';
 import parser from '@typescript-eslint/parser';

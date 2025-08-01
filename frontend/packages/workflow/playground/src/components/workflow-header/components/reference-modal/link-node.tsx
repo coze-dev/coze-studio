@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
+import { NodeType, DependencyOrigin } from '@coze-common/resource-tree';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozLongArrowTopRight } from '@coze-arch/coze-design/icons';
 import { Tooltip, IconButton } from '@coze-arch/coze-design';
-import { NodeType, DependencyOrigin } from '@coze-common/resource-tree';
 
 import { usePluginDetail } from '@coze-workflow/playground';
 import { navigateResource } from './utils';

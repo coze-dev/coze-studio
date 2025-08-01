@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useDeleteModal } from './use-delete-modal';
 export { useResourceFolderConfig } from './use-resource-folder-config';
 export { useResourceOpen } from './use-resource-open';

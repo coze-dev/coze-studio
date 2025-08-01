@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozSetting } from '@coze-arch/coze-design/icons';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useQueryLatestFCSettings } from './use-query-latest-fc-settings';
 import { type BoundWorkflowItem, type PluginFCSetting } from './types';

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { ValueExpressionType } from '@coze-workflow/base';
+
 import {
   type WorkflowDocument,
   type WorkflowNodeEntity,
 } from '@flowgram-adapter/free-layout-editor';
+import { ValueExpressionType } from '@coze-workflow/base';
 
 interface CopilotGenerateItem {
   type: string;

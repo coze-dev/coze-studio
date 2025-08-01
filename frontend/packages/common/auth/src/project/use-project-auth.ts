@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useSpace } from '@coze-arch/foundation-sdk';
 
 import { useSpaceRole } from '../space/use-space-role';

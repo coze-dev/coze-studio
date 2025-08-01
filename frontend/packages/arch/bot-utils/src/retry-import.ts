@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // TODO: https://github.com/web-infra-dev/rsbuild/issues/91
 export const retryImport = <T>(
   importFunction: () => Promise<T>,

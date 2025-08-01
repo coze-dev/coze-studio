@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   ZipIcon,
   VideoIcon,
@@ -27,10 +27,7 @@ import {
 } from '@coze-common/chat-uikit';
 import { FILE_TYPE_CONFIG, FileTypeEnum } from '@coze-common/chat-core';
 import { I18n } from '@coze-arch/i18n';
-import {
-  InputType,
-  shortcut_command,
-} from '@coze-arch/bot-api/playground_api';
+import { InputType, shortcut_command } from '@coze-arch/bot-api/playground_api';
 
 export type UploadItemType =
   | InputType.UploadImage

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
-import { InputNumber } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
+import { InputNumber } from '@coze-arch/coze-design';
 
 type TemperatureProps = SetterComponentProps;
 

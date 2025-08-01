@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
+import { useNavigate } from 'react-router-dom';
 import { type FC, useState, useEffect, useMemo } from 'react';
 
 import { WorkflowCommitList } from '@coze-workflow/components';
@@ -29,7 +30,6 @@ import {
 } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconCloseNoCycle } from '@coze-arch/bot-icons';
-import { useNavigate } from 'react-router-dom';
 
 import { useFloatLayoutService } from '@/hooks';
 

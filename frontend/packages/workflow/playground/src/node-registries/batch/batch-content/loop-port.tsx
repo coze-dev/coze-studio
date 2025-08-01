@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Port } from '@/components/node-render/node-render-new/fields/port';
 
 export const BatchPort = () => (

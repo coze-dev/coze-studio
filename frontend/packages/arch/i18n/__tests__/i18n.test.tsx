@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 import { I18n, getUnReactiveLanguage } from '../src/index';

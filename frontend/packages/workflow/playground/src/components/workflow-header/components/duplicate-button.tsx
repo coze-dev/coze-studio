@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
+import { IconCopyStroked } from '@douyinfe/semi-icons';
 import { WorkflowExecStatus } from '@coze-workflow/base';
 import { SelectSpaceModal } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
@@ -24,7 +25,6 @@ import { Toast, Tooltip } from '@coze-arch/coze-design';
 import { openNewWindow } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIButton } from '@coze-arch/bot-semi';
-import { IconCopyStroked } from '@douyinfe/semi-icons';
 
 import styles from '../index.module.less';
 import { getWorkflowUrl } from '../../../utils/get-workflow-url';

@@ -22,7 +22,6 @@ export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true
 export CYPRESS_INSTALL_BINARY=0
 export TAIKO_SKIP_CHROMIUM_DOWNLOAD=0
 export RE2_DOWNLOAD_SKIP_PATH=1
-export RE2_DOWNLOAD_MIRROR="​https://bnpm.bytedance.net/mirrors"
 
 # 2. Effective in the CI environment:
 echo ::set-env name=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD::$PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD

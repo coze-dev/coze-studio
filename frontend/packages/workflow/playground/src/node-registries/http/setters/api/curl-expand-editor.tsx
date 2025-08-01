@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useCallback, useState } from 'react';
 
 import classNames from 'classnames';
 import { EditorProvider } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
-import { IconWarningInfo } from '@coze-arch/bot-icons';
 import {
   IconCozImport,
   IconCozMoon,
   IconCozSun,
 } from '@coze-arch/coze-design/icons';
 import { IconButton, Modal, Toast } from '@coze-arch/coze-design';
+import { IconWarningInfo } from '@coze-arch/bot-icons';
 
 import { CURLParser, type ParsedResult } from '@/utils';
 import {

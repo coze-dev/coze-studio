@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from 'react';
 
@@ -23,9 +23,9 @@ import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';
 import { workflowApi } from '@coze-workflow/base';
 import { type EditorAPI } from '@coze-editor/editor/preset-code';
 import { I18n } from '@coze-arch/i18n';
-import { upLoadFile } from '@coze-arch/bot-utils';
 import { IconCozUpload, IconCozPlus } from '@coze-arch/coze-design/icons';
 import { Toast, Upload } from '@coze-arch/coze-design';
+import { upLoadFile } from '@coze-arch/bot-utils';
 import { EditorSelection } from '@codemirror/state';
 
 import { validate } from '@/hooks/use-upload/validate';
@@ -118,7 +118,10 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
 
     try {
       const url = await upload(fileInstance, fileType);
-      const fileFlag = `<#file:${generateUrlWithFilename(url, fileInstance.name)}#>`;
+      const fileFlag = `<#file:${generateUrlWithFilename(
+        url,
+        fileInstance.name,
+      )}#>`;
       const from = getFrom(loadingFlag);
       if (from > -1) {
         changeEditor(fileFlag, from, from + loadingFlag.length);

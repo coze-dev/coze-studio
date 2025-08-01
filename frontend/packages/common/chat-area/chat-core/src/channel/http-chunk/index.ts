@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FetchStreamErrorCode, fetchStream } from '@coze-arch/fetch-stream';
 
 import { ABORT_HTTP_CHUNK_MESSAGE } from '../constant';

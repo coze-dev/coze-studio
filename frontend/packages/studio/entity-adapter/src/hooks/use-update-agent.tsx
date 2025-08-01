@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type MutableRefObject } from 'react';
 
 import { type DraftBot } from '@coze-arch/bot-api/developer_api';

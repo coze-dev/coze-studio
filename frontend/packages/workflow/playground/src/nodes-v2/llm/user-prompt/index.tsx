@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
 import { useForm } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { FormItemFeedback } from '@/nodes-v2/components/form-item-feedback';

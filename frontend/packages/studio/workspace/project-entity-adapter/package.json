@@ -14,8 +14,8 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-studio/project-entity-base": "workspace:*",
-    "@coze-arch/idl": "workspace:*"
+    "@coze-arch/idl": "workspace:*",
+    "@coze-studio/project-entity-base": "workspace:*"
   },
   "devDependencies": {
     "@coze-arch/bot-typings": "workspace:*",
@@ -42,3 +42,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

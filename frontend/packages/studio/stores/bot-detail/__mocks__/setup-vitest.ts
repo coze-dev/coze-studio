@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TabStatus } from '@coze-arch/bot-api/playground_api';
 
 vi.stubGlobal('IS_DEV_MODE', false);

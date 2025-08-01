@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import { type DiffContentMeta } from '@coze-workflow/base/api';
+import { I18n } from '@coze-arch/i18n';
 import {
   Typography,
   UITag,
@@ -26,7 +27,6 @@ import {
   Space,
   Spin,
 } from '@coze-arch/bot-semi';
-import { I18n } from '@coze-arch/i18n';
 
 import { useMerge } from '../use-merge';
 import {

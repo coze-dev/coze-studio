@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type TableMemoryItem } from '@coze-studio/bot-detail-store';
 import { FieldItemType } from '@coze-arch/bot-api/memory';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get, cloneDeep } from 'lodash-es';
 import type { WorkflowEdgeJSON } from '@flowgram-adapter/free-layout-editor';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Avatar } from '@coze-arch/coze-design';
 
 interface Props {

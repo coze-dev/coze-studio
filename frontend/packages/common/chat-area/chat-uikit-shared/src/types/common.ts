@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ForwardRefExoticComponent, type RefAttributes } from 'react';
 
 import type { ContentType, Message } from '@coze-common/chat-core';

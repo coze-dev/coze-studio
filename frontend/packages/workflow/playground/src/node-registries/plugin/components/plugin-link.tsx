@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useSearchParams } from 'react-router-dom';
 import React from 'react';
 
 import { type ApiNodeIdentifier } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { PluginProductStatus } from '@coze-arch/bot-api/developer_api';
 import { IconCozLoading, IconCozExit } from '@coze-arch/coze-design/icons';
+import { PluginProductStatus } from '@coze-arch/bot-api/developer_api';
 
 import { useGlobalState } from '@/hooks';
 

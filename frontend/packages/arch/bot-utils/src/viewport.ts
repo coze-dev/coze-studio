@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const setMobileBody = () => {
   const bodyStyle = document?.body?.style;
   const htmlStyle = document?.getElementsByTagName('html')?.[0]?.style;

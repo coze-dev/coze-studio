@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const isMobileFromUA = () => {
   const { userAgent } = navigator;
   // Check if it is a mobile device

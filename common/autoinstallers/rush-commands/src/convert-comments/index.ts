@@ -118,7 +118,9 @@ async function processRepository(
           console.log(`\n📝 ${file.path}:`);
           translations.forEach((translation, index) => {
             console.log(
-              `  ${index + 1}. "${translation.original}" → "${translation.translated}"`,
+              `  ${index + 1}. "${translation.original}" → "${
+                translation.translated
+              }"`,
             );
           });
         }
@@ -132,10 +134,7 @@ async function processRepository(
           );
           const operation = { file: file.path, replacements };
 
-          const result = await replaceCommentsInFile(
-            file,
-            operation,
-          );
+          const result = await replaceCommentsInFile(file, operation);
 
           if (!result.success) {
             throw new Error(result.error || '文件替换失败');

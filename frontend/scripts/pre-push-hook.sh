@@ -29,8 +29,8 @@ CURRENT_ORIGIN_BRANCH=$(git rev-parse --abbrev-ref @{u})
 #   block_unresolved_conflict "$CURRENT_BRANCH..$CURRENT_ORIGIN_BRANCH"
 # fi
 
-if [ "$CURRENT_BRANCH" = "master" ] && [ "$CURRENT_USER" != "ci_flow@bytedance.com" ]; then
-  echo "${RED}Do not push to master branch manually!!!${NC}"
+if [ "$CURRENT_BRANCH" = "main" ] && [ "$CURRENT_USER" != "ci_flow@bytedance.com" ]; then
+  echo "${RED}Do not push to main branch manually!!!${NC}"
   exit 1
 fi
 

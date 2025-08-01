@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import 'reflect-metadata';
 
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -22,12 +22,12 @@ import { forwardRef, useEffect, type PropsWithChildren } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { GlobalError } from '@coze-foundation/layout';
 import { WorkflowRenderProvider } from '@coze-workflow/render';
 import { WorkflowNodesContainerModule } from '@coze-workflow/nodes';
 import { WorkflowHistoryContainerModule } from '@coze-workflow/history';
 import { PUBLIC_SPACE_ID } from '@coze-workflow/base/constants';
 import { workflowQueryClient } from '@coze-workflow/base/api';
+import { GlobalError } from '@coze-foundation/layout';
 import { ErrorBoundary, logger } from '@coze-arch/logger';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 

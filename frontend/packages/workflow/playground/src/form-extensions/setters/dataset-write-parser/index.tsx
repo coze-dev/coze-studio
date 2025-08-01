@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type FC } from 'react';
 
-import type { OptionItem, RadioType } from '@coze-arch/bot-semi/Radio';
 import type {
   SetterComponentProps,
   SetterOrDecoratorContext,
 } from '@flowgram-adapter/free-layout-editor';
+import type { OptionItem, RadioType } from '@coze-arch/bot-semi/Radio';
 
 import { DatasetWriteParser as BaseDatasetWriteParser } from '@/form-extensions/components/dataset-write-parser';
 

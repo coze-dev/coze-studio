@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import { type FC, useEffect, useState, useMemo } from 'react';
 
@@ -22,8 +22,8 @@ import { useNodeTestId } from '@coze-workflow/base';
 import { RewriteTips, RerankTips } from '@coze-common/biz-tooltip-ui';
 import { type Dataset, FormatType } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { IconWarningInfo } from '@coze-arch/bot-icons';
 import { Popover } from '@coze-arch/coze-design';
+import { IconWarningInfo } from '@coze-arch/bot-icons';
 
 import { CheckboxWithLabel } from '../checkbox-with-label';
 import { Strategy, type DataSetInfo } from './type';

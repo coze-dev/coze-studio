@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Spin, ImagePreview } from '@coze-arch/coze-design';
 
 import { LoadError } from '../../common/load-error';

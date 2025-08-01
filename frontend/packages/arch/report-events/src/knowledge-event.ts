@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum KnowledgeEvents {
   // knowledge
   KnowledgeListDataset = 'knowledge_list_dataset',

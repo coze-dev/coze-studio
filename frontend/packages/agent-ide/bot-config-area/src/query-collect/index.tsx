@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useEffect, useRef, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -69,7 +69,7 @@ export const QueryCollect: FC = () => {
     const {
       data: { check_not_pass_msg, check_not_pass },
     } = await updateQueryCollect(queryCollectConf);
-    privacyErrMsg.current = check_not_pass ? (check_not_pass_msg ?? '') : '';
+    privacyErrMsg.current = check_not_pass ? check_not_pass_msg ?? '' : '';
     await formApi.current?.validate();
     setQueryCollect(queryCollectConf);
     setVisible(false);

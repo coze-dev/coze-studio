@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useMemo } from 'react';
 
+import {
+  NLPromptButton,
+  NLPromptModal,
+  NlPromptAction,
+  NlPromptShortcut,
+} from '@coze-workflow/resources-adapter';
 import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
+import { useNodeTestId } from '@coze-workflow/base';
+import { type EditorAPI, useEditor } from '@coze-common/prompt-kit-base/editor';
+import { RecommendPannel } from '@coze-common/prompt-kit/prompt-recommend';
 import { LibraryBlockWidget } from '@coze-common/editor-plugins/library-insert';
 import { InputSlotWidget } from '@coze-common/editor-plugins/input-slot';
 import {
@@ -26,18 +35,9 @@ import {
 } from '@coze-common/editor-plugins/expression';
 import { InsertInputSlotAction } from '@coze-common/editor-plugins/actions';
 import { ActionBar } from '@coze-common/editor-plugins/action-bar';
-import {
-  NLPromptButton,
-  NLPromptModal,
-  NlPromptAction,
-  NlPromptShortcut,
-} from '@coze-workflow/resources-adapter';
-import { useNodeTestId } from '@coze-workflow/base';
-import { type EditorAPI, useEditor } from '@coze-common/prompt-kit-base/editor';
-import { RecommendPannel } from '@coze-common/prompt-kit/prompt-recommend';
 import { I18n } from '@coze-arch/i18n';
-import { UIIconButton } from '@coze-arch/bot-semi';
 import { IconCozCrossFill } from '@coze-arch/coze-design/icons';
+import { UIIconButton } from '@coze-arch/bot-semi';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { useGlobalState } from '@/hooks';

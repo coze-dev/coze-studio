@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect, useMemo, type FC } from 'react';
 
 import classNames from 'classnames';
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import {
   FabricEditor,
   FabricPreview,
@@ -25,7 +26,6 @@ import {
 import { type InputVariable } from '@coze-workflow/base/types';
 import { IconCozScaling } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { useNodeRenderScene, useRedoUndo } from '@/hooks';

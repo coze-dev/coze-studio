@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { Disposable, DisposableCollection, Emitter } from '@flowgram-adapter/common';
+
+import {
+  Disposable,
+  DisposableCollection,
+  Emitter,
+} from '@flowgram-adapter/common';
 
 import { type URI } from '../common';
 

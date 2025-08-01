@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   useCallback,
   type ReactNode,
@@ -28,9 +28,9 @@ import {
   type RefExpression,
   type ViewVariableType,
 } from '@coze-workflow/base';
-import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { IconCozApply } from '@coze-arch/coze-design/icons';
 import { IconButton, type TreeSelectProps } from '@coze-arch/coze-design';
+import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 import {
   RefValueDisplay,

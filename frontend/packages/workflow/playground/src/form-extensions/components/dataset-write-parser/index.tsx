@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, type FC, useMemo } from 'react';
 
 import { isNil, set } from 'lodash-es';
+import type { SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
 import { useWorkflowNode, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import type {
@@ -24,7 +25,6 @@ import type {
   RadioChangeEvent,
   RadioType,
 } from '@coze-arch/bot-semi/Radio';
-import type { SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
 
 import { Radio } from '../radio';
 import { CheckboxWithLabel } from '../checkbox-with-label';

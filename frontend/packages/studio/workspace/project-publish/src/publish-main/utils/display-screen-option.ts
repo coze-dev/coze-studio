@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { UIPreviewType } from '@coze-arch/idl/product_api';
 import { type UIOption } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';

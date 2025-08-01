@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { intersectionBy, xorBy } from 'lodash-es';
 import { produce } from 'immer';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import classnames from 'classnames';
@@ -22,8 +22,8 @@ import { IconTick } from '@douyinfe/semi-icons';
 import { type ViewVariableType } from '@coze-workflow/variable';
 import { VARIABLE_TYPE_ALIAS_MAP } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
-import { type SelectProps } from '@coze-arch/bot-semi/Select';
 import { Select, Space, Dropdown } from '@coze-arch/coze-design';
+import { type SelectProps } from '@coze-arch/bot-semi/Select';
 
 import { useGetCurrentInputsParameters } from '../../hooks/use-get-current-input-parameters';
 import { VariableTypeTag } from '../../components/variable-type-tag';

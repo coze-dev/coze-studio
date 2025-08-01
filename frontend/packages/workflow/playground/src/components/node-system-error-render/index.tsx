@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import {
   type FlowNodeEntity,
@@ -24,9 +24,9 @@ import {
 import { type NodeData, WorkflowNodeData } from '@coze-workflow/nodes';
 import { StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import { Typography, UIButton } from '@coze-arch/bot-semi';
 import { IconAlertFilled } from '@coze-arch/bot-icons';
-import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
 
 import { NodeIcon } from '../node-icon';
 import { WorkflowEditService } from '../../services';

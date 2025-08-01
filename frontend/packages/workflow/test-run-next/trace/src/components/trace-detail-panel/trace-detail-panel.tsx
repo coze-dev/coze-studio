@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import { isUndefined } from 'lodash-es';
 import copy from 'copy-to-clipboard';
 import { BottomPanel } from '@coze-workflow/test-run-shared';
 import { I18n } from '@coze-arch/i18n';
-import { type TraceFrontendSpan } from '@coze-arch/bot-api/workflow_api';
 import { IconCozCopy } from '@coze-arch/coze-design/icons';
 import { Divider, IconButton, Toast, Typography } from '@coze-arch/coze-design';
+import { type TraceFrontendSpan } from '@coze-arch/bot-api/workflow_api';
 
 import { StatusTag } from '../status-tag';
 import { FocusButton } from '../focus-button';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Global hook to manage the state of the Biz IDE and interact with React components
  */

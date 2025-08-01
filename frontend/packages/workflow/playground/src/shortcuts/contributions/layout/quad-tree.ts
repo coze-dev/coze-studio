@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable prefer-destructuring -- no need */
 /* eslint-disable @typescript-eslint/no-namespace -- use namespace for easy management */
 import type { LayoutNode } from '@flowgram-adapter/free-layout-editor';

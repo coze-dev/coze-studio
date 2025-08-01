@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * The editor doesn't wrap/n, so it needs to be converted to a < br/> tag
  */

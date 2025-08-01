@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import { inject, injectable } from 'inversify';
 import { SelectorBoxConfigEntity } from '@flowgram-adapter/free-layout-editor';

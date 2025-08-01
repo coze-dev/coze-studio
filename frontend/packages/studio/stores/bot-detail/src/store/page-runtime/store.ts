@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { create } from 'zustand';
 import { size } from 'lodash-es';
@@ -110,7 +110,7 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
       /**
        * Get the status of the user's active expand/collapse bot capability module
        * ⚠️ Called only when opening my bot edit page for the first time
-       * @see 
+       * @see
        */
       getBotSkillBlockCollapsibleState: async () => {
         try {
@@ -138,7 +138,7 @@ export const usePageRuntimeStore = create<PageRuntime & PageRuntimeAction>()(
       /**
        * Stores the status of the user's active expand/retract bot capability module
        * ⚠️ Only record when active
-       * @see 
+       * @see
        */
       setBotSkillBlockCollapsibleState: (
         $params: TabDisplayItems,

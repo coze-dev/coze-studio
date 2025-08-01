@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNavigate, useParams } from 'react-router-dom';
 
 import qs from 'qs';
@@ -63,12 +63,16 @@ export const KnowledgePreviewPage = () => {
         // eslint-disable-next-line max-params
         toResource: (resource, resourceID, query, opts) =>
           navigate(
-            `/space/${params.spaceID}/${resource}/${resourceID}?${qs.stringify(query)}`,
+            `/space/${params.spaceID}/${resource}/${resourceID}?${qs.stringify(
+              query,
+            )}`,
             opts,
           ),
         upload: (query, opts) =>
           navigate(
-            `/space/${params.spaceID}/knowledge/${params.datasetID}/upload?${qs.stringify(query)}`,
+            `/space/${params.spaceID}/knowledge/${
+              params.datasetID
+            }/upload?${qs.stringify(query)}`,
             opts,
           ),
       }}

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { forwardRef, type Ref } from 'react';
 
 import classnames from 'classnames';
-import { type WithCustomStyle } from '@coze-workflow/base/types';
 import { IconHandle } from '@douyinfe/semi-icons';
+import { type WithCustomStyle } from '@coze-workflow/base/types';
 
 export const DragHandle = forwardRef<
   HTMLElement,

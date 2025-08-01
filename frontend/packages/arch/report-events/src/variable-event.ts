@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum VariableEvents {
   VariableGetValue = 'variable_get_value',
   VariableSetValue = 'variable_set_value',

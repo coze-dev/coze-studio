@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import cls from 'classnames';
+import { IconAlertCircle } from '@douyinfe/semi-icons';
 import { type NodeResult } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
-import { IconAlertCircle } from '@douyinfe/semi-icons';
 
 import { NavigateItemDisabled, DisabledType } from './navigate-item-disabled';
 import { CustomSelector } from './custom-selector';
@@ -83,23 +83,23 @@ export const PageSelector: React.FC<Props> = ({
               onClick={() => onChange(currIndex)}
             >
               {currIndex + 1}
-              {isError && (
+              {isError ? (
                 <IconAlertCircle className={styles['pagination-item-error']} />
-              )}
-              {isWarning && (
+              ) : null}
+              {isWarning ? (
                 <IconAlertCircle
                   className={cls(
                     styles['pagination-item-error'],
                     '!text-[#FF9600]',
                   )}
                 />
-              )}
+              ) : null}
             </div>
           );
         })}
       </div>
 
-      {hasMore && (
+      {hasMore ? (
         <CustomSelector
           value={value < MAX_FIXED_COUNT ? undefined : value}
           items={(batch || []).slice(MAX_FIXED_COUNT)}
@@ -108,7 +108,7 @@ export const PageSelector: React.FC<Props> = ({
             onChange(page);
           }}
         />
-      )}
+      ) : null}
     </div>
   );
 };

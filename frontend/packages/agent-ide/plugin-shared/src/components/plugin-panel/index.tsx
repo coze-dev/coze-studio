@@ -249,14 +249,14 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
   const timePrefixText = showPublishTime
     ? I18n.t('mkl_plugin_publish')
     : showCreateTime
-      ? I18n.t('mkl_plugin_created')
-      : I18n.t('mkl_plugin_updated');
+    ? I18n.t('mkl_plugin_created')
+    : I18n.t('mkl_plugin_updated');
   const timeToShow =
     (showPublishTime
       ? Number(listed_at)
       : showCreateTime
-        ? Number(create_time)
-        : Number(update_time)) || 0;
+      ? Number(create_time)
+      : Number(update_time)) || 0;
 
   const renderAuthStatus = () => {
     if (isUndefined(auth_mode) || auth_mode === PluginAuthMode.NoAuth) {

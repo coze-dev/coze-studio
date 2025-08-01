@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export type ValueOf<T, K = keyof T> = K extends keyof T ? T[K] : never;
 
 import { type CSSProperties } from 'react';

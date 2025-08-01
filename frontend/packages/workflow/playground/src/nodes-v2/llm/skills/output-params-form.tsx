@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import { cloneDeep, set } from 'lodash-es';
 import { type WithCustomStyle } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
+import { Form, Select, Switch } from '@coze-arch/coze-design';
 import { Tree, Tooltip } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
-import { Form, Select, Switch } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '@/form-extensions/components/variable-type-tag';
 

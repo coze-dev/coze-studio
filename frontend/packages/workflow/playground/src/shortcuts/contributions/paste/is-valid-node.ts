@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
-import type { WorkflowCustomDragService } from '@/services';
 import type { WorkflowGlobalStateEntity } from '@/typing';
+import type { WorkflowCustomDragService } from '@/services';
 
 import type {
   WorkflowClipboardNodeJSON,
   WorkflowClipboardSource,
 } from '../../type';
+import { ValidationChain } from './validators/validation-chain';
 import {
   ApiNodeValidator,
   CrossSpaceNodeValidator,
@@ -34,7 +35,6 @@ import {
   SceneNodeValidator,
   SubWorkflowSelfRefValidator,
 } from './validators';
-import { ValidationChain } from './validators/validation-chain';
 
 /** Is it a legal node? */
 export const isValidNode = (params: {

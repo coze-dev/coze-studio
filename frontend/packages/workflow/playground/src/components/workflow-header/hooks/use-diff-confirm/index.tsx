@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import { type FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useUnmount } from 'ahooks';
 import { OperateType } from '@coze-workflow/base/api';
+import { I18n } from '@coze-arch/i18n';
 import { Toast } from '@coze-arch/coze-design';
 import { UIModal } from '@coze-arch/bot-semi';
-import { I18n } from '@coze-arch/i18n';
 
 import { useWorkflowReferences } from '../../../../hooks/use-workflow-references';
 import { useGlobalState } from '../../../../hooks';

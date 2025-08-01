@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * @deprecated use query-string or URLSearchParams instead
  * @param queryString query or hash string

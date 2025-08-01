@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { ConfigEntity } from '@flowgram-adapter/free-layout-editor';
 import { type ValidateError } from '@coze-workflow/base/services';
 import {
   type GetWorkFlowProcessData,
@@ -23,7 +24,6 @@ import {
   type EventType,
 } from '@coze-workflow/base/api';
 import { type WorkflowExecStatus } from '@coze-workflow/base';
-import { ConfigEntity } from '@flowgram-adapter/free-layout-editor';
 
 export type NodeError = ValidateError;
 

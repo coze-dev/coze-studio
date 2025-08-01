@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useRef, useState } from 'react';
 
 import classNames from 'classnames';
+import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   workflowApi,
   CopilotType,
@@ -33,7 +34,6 @@ import {
   Input,
   Popconfirm,
 } from '@coze-arch/coze-design';
-import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useRefInput } from '@/hooks/use-ref-input';
 import { useGlobalState } from '@/hooks';

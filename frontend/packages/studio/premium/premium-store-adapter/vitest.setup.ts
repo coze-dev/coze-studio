@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 vi.stubGlobal('IS_DEV_MODE', false);
 
 vi.mock('@coze-arch/i18n', () => ({

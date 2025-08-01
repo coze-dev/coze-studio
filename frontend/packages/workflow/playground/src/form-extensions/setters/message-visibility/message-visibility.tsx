@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import classnames from 'classnames';
-import { type Setter } from '@coze-workflow/setters';
 import { IconTick } from '@douyinfe/semi-icons';
 import { ViewVariableType } from '@coze-workflow/variable';
+import { type Setter } from '@coze-workflow/setters';
 import { concatTestId } from '@coze-workflow/base';
 import { RoleType } from '@coze-arch/idl/social_api';
 import { I18n } from '@coze-arch/i18n';
-import { type SelectProps } from '@coze-arch/bot-semi/Select';
 import { Select, Space, Dropdown, Tag } from '@coze-arch/coze-design';
+import { type SelectProps } from '@coze-arch/bot-semi/Select';
 
 import PopupContainer from '@/components/popup-container';
 

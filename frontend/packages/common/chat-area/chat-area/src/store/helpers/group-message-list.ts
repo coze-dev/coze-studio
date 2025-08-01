@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { flatMapByKeyList } from '@coze-common/chat-area-utils';
 
 import { type MessageGroup, type Message } from '../types';

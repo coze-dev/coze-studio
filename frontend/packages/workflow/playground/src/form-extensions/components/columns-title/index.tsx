@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type CSSProperties } from 'react';
 
 import classnames from 'classnames';
@@ -32,7 +32,11 @@ export interface ColumnsTitleProps {
   style?: CSSProperties;
 }
 
-export const ColumnsTitle = ({ columns, className, style }: ColumnsTitleProps) => (
+export const ColumnsTitle = ({
+  columns,
+  className,
+  style,
+}: ColumnsTitleProps) => (
   <div className={classnames(styles.columnsTitle, className)} style={style}>
     {columns.map(({ title, style: colStyle }: Column) => (
       <div style={colStyle}>{title}</div>

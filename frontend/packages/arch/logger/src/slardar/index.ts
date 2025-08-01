@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isNumber, isString, mapValues, omitBy, isNil } from 'lodash-es';
 import type { SlardarInstance } from '@coze-studio/slardar-interface';
 
@@ -35,7 +35,7 @@ import {
  * Converting meta to type
  * Metrics: Values that can be measured, that is, numerical values
  * - Dimension categories: classification, dimension, used for filtering, grouping
- * 
+ *
  * @param meta
  * @returns
  */

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { workflowApi, CopilotType } from '@coze-workflow/base';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
+import { workflowApi, CopilotType } from '@coze-workflow/base';
 
 import { useGlobalState } from '@/hooks/use-global-state';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // @File open source version does not support store channel binding for future expansion
 import { type MouseEventHandler } from 'react';
 

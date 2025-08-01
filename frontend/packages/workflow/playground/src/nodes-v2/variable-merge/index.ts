@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { VARIABLE_MERGE_NODE_REGISTRY } from './variable-merge-node-registry';

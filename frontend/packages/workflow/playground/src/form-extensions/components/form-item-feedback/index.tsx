@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import classnames from 'classnames';
-import { type WithCustomStyle } from '@coze-workflow/base/types';
 import { type FeedbackStatus } from '@flowgram-adapter/free-layout-editor';
+import { type WithCustomStyle } from '@coze-workflow/base/types';
 
 import s from './index.module.less';
 

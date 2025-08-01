@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useCallback } from 'react';
 
 import copy from 'copy-to-clipboard';
@@ -24,11 +24,11 @@ import { DEFAULT_NODE_META_PATH } from '@coze-workflow/nodes';
 import { StandardNodeType } from '@coze-workflow/base';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
+import { Toast, Tooltip } from '@coze-arch/coze-design';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { UIIconButton } from '@coze-arch/bot-semi';
 import { IconCopy, IconWorkflowRunResultClose } from '@coze-arch/bot-icons';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast, Tooltip } from '@coze-arch/coze-design';
 
 import { useExecStateEntity } from '../../../hooks';
 

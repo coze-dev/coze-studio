@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNodeTestId } from '@coze-workflow/base';
-import { IconInfo } from '@coze-arch/bot-icons';
 import { Switch } from '@coze-arch/coze-design';
+import { IconInfo } from '@coze-arch/bot-icons';
 
 import AutoSizeTooltip from '@/ui-components/auto-size-tooltip';
 import { withField, useField } from '@/form';

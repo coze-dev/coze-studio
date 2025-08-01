@@ -90,4 +90,3 @@ export const sendTeaEvent = <TEventName extends EVENT_NAMES>(
   });
   TeaNew.sendEvent(event, params);
 };
-

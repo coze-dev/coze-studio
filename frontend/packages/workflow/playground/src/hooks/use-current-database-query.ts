@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useRef } from 'react';
 
-import { MessageBizType } from '@coze-arch/idl/workflow_api';
 import type { Disposable } from '@flowgram-adapter/common';
+import { MessageBizType } from '@coze-arch/idl/workflow_api';
 
 import { useNewDatabaseQuery } from './use-new-database-query';
 import { useDependencyService } from './use-dependency-service';

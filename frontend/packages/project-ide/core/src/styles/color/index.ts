@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ColorService } from './color-service';
 export { ColorContribution } from './color-contribution';
 export { colors } from './colors';

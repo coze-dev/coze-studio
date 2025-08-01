@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable  @typescript-eslint/naming-convention*/
-import { type Validate } from '@flowgram-adapter/free-layout-editor';
 import { get } from 'lodash-es';
-import { LoopPath, LoopType } from '../../constants';
+import { type Validate } from '@flowgram-adapter/free-layout-editor';
+
 import { LoopInputNameValidator } from '../loop-input-name';
+import { LoopPath, LoopType } from '../../constants';
 
 export const LoopArrayNameValidator: Validate<string> = params => {
   const { formValues } = params;

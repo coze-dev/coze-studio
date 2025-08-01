@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { I18n } from '@coze-arch/i18n';
+
 import {
   ValidateTrigger,
   type FormMetaV2,
 } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { provideNodeOutputVariablesEffect } from '@/nodes-v2/materials/provide-node-output-variables';
 import { fireNodeTitleChange } from '@/nodes-v2/materials/fire-node-title-change';

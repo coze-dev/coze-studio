@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState, useEffect, useMemo } from 'react';
 
 import { pick } from 'lodash-es';
@@ -99,7 +99,7 @@ export const DatabaseDetail = ({
   const [databaseInfo, setDatabaseInfo] = useState<DatabaseInfo>({});
   // tab key
   const [activeKey, setActiveKey] = useState(
-    version ? DatabaseTabs.Structure : (initialTab ?? DatabaseTabs.Structure),
+    version ? DatabaseTabs.Structure : initialTab ?? DatabaseTabs.Structure,
   );
   // btn loading
   const [btnLoading, setBtnLoading] = useState(false);

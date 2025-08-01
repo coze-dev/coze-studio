@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import queryString from 'query-string';
 import { type EVENT_NAMES, type ParamsTypeDefine } from '@coze-arch/tea';
 import {

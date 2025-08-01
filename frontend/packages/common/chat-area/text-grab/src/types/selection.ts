@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type getOriginContentText } from '../utils/normalizer/get-origin-content-text';
 import { type getNormalizeNodeList } from '../utils/normalizer/get-normalize-node-list';
 import { type getHumanizedContentText } from '../utils/normalizer/get-humanize-content-text';

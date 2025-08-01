@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SyncAction } from '../type';
 import { primitiveExhaustiveCheck } from '../../../utils/exhaustive-check';
 import { getMarkdownLink } from './get-markdown-link';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type StandardNodeType } from '@coze-workflow/base/types';
 import { type WorkflowMode } from '@coze-workflow/base/api';
 import { type PluginContext } from '@flowgram-adapter/free-layout-editor';

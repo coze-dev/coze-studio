@@ -30,7 +30,11 @@ export const createProgram = (): Command => {
 
   program
     .requiredOption('-r, --root <directory>', '需要处理的根目录')
-    .option('-e, --exts <extensions>', '文件扩展名，用逗号分隔 (例: ts,js,go)', '')
+    .option(
+      '-e, --exts <extensions>',
+      '文件扩展名，用逗号分隔 (例: ts,js,go)',
+      '',
+    )
     .option('--access-key-id <key>', '火山引擎 Access Key ID')
     .option('--secret-access-key <key>', '火山引擎 Secret Access Key')
     .option('--region <region>', '火山引擎服务区域', 'cn-beijing')
@@ -64,7 +68,7 @@ export const parseOptions = (program: Command): CliOptions => {
     dryRun: options.dryRun,
     verbose: options.verbose,
     output: options.output,
-    config: options.config
+    config: options.config,
   };
 };
 

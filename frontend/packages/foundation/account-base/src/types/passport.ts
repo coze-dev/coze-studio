@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export type OAuth2StateType = 'login' | 'delete_account' | 'oauth';
 
 export interface OAuth2RedirectConfig {

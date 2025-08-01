@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MAIN_PANEL_ID = 'flowide-main-panel';
 
 export const BOTTOM_PANEL_ID = 'flowide-bottom-panel';

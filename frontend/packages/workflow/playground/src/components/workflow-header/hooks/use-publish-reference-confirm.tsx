@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Check the reference relationship before the process is published
  */
 import { isEmpty } from 'lodash-es';
-import { Modal } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
+import { Modal } from '@coze-arch/bot-semi';
 
 import { PublishConfirmContent } from '../../workflow-references/publish-confirm-content';
 import { useWorkflowReferences } from '../../../hooks/use-workflow-references';

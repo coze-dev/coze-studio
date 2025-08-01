@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { create } from 'zustand';
 
@@ -66,15 +66,18 @@ export const useInnerSideSheetStore = create<
     const { sideSheetMap } = get();
 
     // Get all close methods except the current sideSheet
-    const closeFns = Object.keys(sideSheetMap).reduce((fns, id) => {
-      const closeFn = sideSheetMap[id].closeConfirm;
+    const closeFns = Object.keys(sideSheetMap).reduce(
+      (fns, id) => {
+        const closeFn = sideSheetMap[id].closeConfirm;
 
-      if (id === sideSheetId || !closeFn) {
-        return fns;
-      }
+        if (id === sideSheetId || !closeFn) {
+          return fns;
+        }
 
-      return [...fns, closeFn];
-    }, [] as Array<() => boolean | Promise<boolean>>);
+        return [...fns, closeFn];
+      },
+      [] as Array<() => boolean | Promise<boolean>>,
+    );
 
     // Call the Close All method
     const closeResult = await Promise.all(closeFns.map(fn => fn()));

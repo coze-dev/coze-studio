@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TextLocalResegmentConfig } from './resegment/config';
 export { TextLocalAddUpdateConfig } from './add/config';
 export { type UploadTextLocalAddUpdateStore } from './add/store';

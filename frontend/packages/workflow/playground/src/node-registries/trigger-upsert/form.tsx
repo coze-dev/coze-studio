@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useState } from 'react';
 
 import { useAsyncEffect } from 'ahooks';
 import { useService } from '@flowgram-adapter/free-layout-editor';
-import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import {
   ValueExpressionType,
   variableUtils,
   ViewVariableType,
 } from '@coze-workflow/variable';
+import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import type { OutputValueVO, VariableMetaDTO } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 

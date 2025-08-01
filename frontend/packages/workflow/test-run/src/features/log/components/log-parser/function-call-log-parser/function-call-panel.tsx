@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import {
-  IconCozArrowDown,
-  IconCozArrowUp,
-} from '@coze-arch/coze-design/icons';
+import { IconCozArrowDown, IconCozArrowUp } from '@coze-arch/coze-design/icons';
 
 import { DataViewer } from '../../data-viewer';
 import { type FunctionCallLogItem } from '../../../types';

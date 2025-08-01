@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { processSpecialNode } from './process-special-node';
 
 export const processChildNode = (childNodes: NodeListOf<Node>) => {

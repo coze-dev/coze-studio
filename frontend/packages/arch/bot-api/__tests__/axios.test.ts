@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { Toast } from '@coze-arch/bot-semi';
 import { axiosInstance, isApiError, ApiError } from '@coze-arch/bot-http';
@@ -42,16 +42,14 @@ vi.mock('@coze-arch/bot-http', () => {
       },
     },
     isApiError: vi.fn(),
-    ApiError: vi.fn().mockImplementation(function (
-      this: any,
-      code: string,
-      msg: string,
-    ) {
-      this.code = code;
-      this.msg = msg;
-      this.config = {};
-      this.name = 'ApiError';
-    }),
+    ApiError: vi
+      .fn()
+      .mockImplementation(function (this: any, code: string, msg: string) {
+        this.code = code;
+        this.msg = msg;
+        this.config = {};
+        this.name = 'ApiError';
+      }),
   };
 });
 

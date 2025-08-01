@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FavoriteBotTriggerConfigStore } from '../../store/favorite-bot-trigger-config';
 
 export interface StoreSet {

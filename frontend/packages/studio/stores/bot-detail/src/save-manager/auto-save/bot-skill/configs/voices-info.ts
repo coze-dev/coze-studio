@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { merge } from 'lodash-es';
 import { type BotInfoForUpdate } from '@coze-arch/idl/playground_api';
 import { DebounceTime, type HostedObserverConfig } from '@coze-studio/autosave';

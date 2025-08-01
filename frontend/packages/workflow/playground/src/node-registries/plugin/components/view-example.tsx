@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { type ApiNodeDetailDTO } from '@coze-workflow/nodes';
 import { type DebugExample } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { useViewExample } from '@coze-agent-ide/bot-plugin-tools/useViewExample';
 import { Typography, ConfigProvider } from '@coze-arch/coze-design';
+import { useViewExample } from '@coze-agent-ide/bot-plugin-tools/useViewExample';
 
 interface Props {
   debugExample: DebugExample;

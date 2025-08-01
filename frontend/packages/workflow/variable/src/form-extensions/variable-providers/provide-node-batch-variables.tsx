@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type VariableProviderAbilityOptions } from '@flowgram-adapter/free-layout-editor';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
 import { Disposable } from '@flowgram-adapter/common';

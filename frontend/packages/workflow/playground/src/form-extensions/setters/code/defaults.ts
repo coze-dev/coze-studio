@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   DEFAULT_AVATAR_LANGUAGES,
   DEFAULT_IDE_PYTHON_CODE_PARAMS,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { uniq } from 'lodash-es';
 /**
  * Sort in the order in which the class id first appears

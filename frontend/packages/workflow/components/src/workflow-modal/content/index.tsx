@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 /* eslint-disable @coze-arch/max-line-per-function */
 import { type FC, useContext, useEffect, useMemo, useRef } from 'react';
@@ -372,7 +372,7 @@ const WorkflowModalContent: FC<WorkFlowModalModeProps> = props => {
                     }
                     workflowNodes={
                       isTypeWorkflow(item)
-                        ? (workflowNodesMap[item.workflow_id || ''] ?? [])
+                        ? workflowNodesMap[item.workflow_id || ''] ?? []
                         : []
                     }
                     handleDeleteWorkflow={handleDelete}

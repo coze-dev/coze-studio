@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type WorkFlowModalModeProps } from '@coze-workflow/components';
 import { useBotPageStore } from '@coze-agent-ide/space-bot/store';
 import { useCurrentNodeId } from '@coze-agent-ide/space-bot/hook';

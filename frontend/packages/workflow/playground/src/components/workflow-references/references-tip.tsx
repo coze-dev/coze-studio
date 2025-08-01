@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Display the information that the current workflow is referenced by other workflows in the upper left corner of the header
  */
@@ -21,11 +21,11 @@
 import React, { type FC, useState } from 'react';
 
 import { isEmpty } from 'lodash-es';
+import { IconSmallTriangleDown, IconClose } from '@douyinfe/semi-icons';
 import { type Workflow } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
 import { Tag } from '@coze-arch/coze-design';
 import { UIButton, List, Popover } from '@coze-arch/bot-semi';
-import { IconSmallTriangleDown, IconClose } from '@douyinfe/semi-icons';
 
 import { getWorkflowHeaderTestId } from '../workflow-header/utils';
 import { getWorkflowUrl } from '../../utils/get-workflow-url';

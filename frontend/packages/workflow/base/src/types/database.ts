@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ValueExpression, type ValueExpressionType } from './vo';
 import { type ViewVariableType } from './view-variable-type';
 import { type ValueExpressionDTO } from './dto';

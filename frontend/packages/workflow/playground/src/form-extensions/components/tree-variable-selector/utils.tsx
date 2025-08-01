@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode } from 'react';
 
 import { groupBy } from 'lodash-es';
@@ -30,8 +30,8 @@ import {
   VARIABLE_TYPE_ALIAS_MAP,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { Tooltip, Space } from '@coze-arch/coze-design';
+import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 import { VariableTypeTag } from '../variable-type-tag';
 import { type VariableMetaWithNode } from '../../typings';

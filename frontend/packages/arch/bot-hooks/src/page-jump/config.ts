@@ -431,7 +431,9 @@ export const SCENE_RESPONSE_MAP = {
     botID: params.botID,
   }),
   [SceneType.KNOWLEDGE__BACK__BOT]: params => ({
-    url: `/space/${params.spaceID}/${params.mode === 'bot' ? 'bot' : 'douyin-bot'}/${params.botID}`,
+    url: `/space/${params.spaceID}/${
+      params.mode === 'bot' ? 'bot' : 'douyin-bot'
+    }/${params.botID}`,
   }),
   [SceneType.KNOWLEDGE__ADD_TO__BOT]: params => ({
     url: `/space/${params.spaceID}/bot/${params.botID}`,

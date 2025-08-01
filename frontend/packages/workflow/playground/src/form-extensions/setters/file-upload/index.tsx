@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect } from 'react';
 
 import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { ViewVariableType } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
 import {
@@ -27,7 +28,6 @@ import {
   type FileItem as SemiFileItem,
 } from '@coze-arch/coze-design';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import {
   useUpload,

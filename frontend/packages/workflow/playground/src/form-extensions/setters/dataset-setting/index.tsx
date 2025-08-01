@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
-import { useWorkflowNode } from '@coze-workflow/base';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
+import { useWorkflowNode } from '@coze-workflow/base';
 
 import { useDataSetInfos } from '@/hooks';
 

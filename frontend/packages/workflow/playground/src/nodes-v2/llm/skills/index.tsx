@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import { type FC } from 'react';
 
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { Tag, Tooltip } from '@coze-arch/coze-design';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { useGlobalState } from '@/hooks';

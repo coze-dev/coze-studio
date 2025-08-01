@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get } from 'lodash-es';
 
 import { valueExpressionValidator } from '@/form-extensions/validators';
@@ -24,7 +24,9 @@ export function createAuthValidator() {
   const validators = {};
   Object.keys(AuthType).forEach(key => {
     const subPath = key === 'Custom' ? '.data.*.input' : '.*.input';
-    const pathName = `inputs.auth.authData.${authTypeToField[AuthType[key]] + subPath}`;
+    const pathName = `inputs.auth.authData.${
+      authTypeToField[AuthType[key]] + subPath
+    }`;
     validators[pathName] = ({ value, formValues, context }) => {
       const authOpen = get(formValues, 'inputs.auth.authOpen');
       const authType: AuthType = get(formValues, 'inputs.auth.authType');

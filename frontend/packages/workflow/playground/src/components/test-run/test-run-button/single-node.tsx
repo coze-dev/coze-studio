@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useCallback } from 'react';
 
 import {
@@ -24,7 +24,10 @@ import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { useValidationService } from '@coze-workflow/base/services';
 import { StandardNodeType, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlayFill, IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import {
+  IconCozPlayFill,
+  IconCozStopCircle,
+} from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip, Toast } from '@coze-arch/coze-design';
 
 import { WorkflowRunService } from '@/services';

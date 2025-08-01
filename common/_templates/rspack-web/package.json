@@ -16,6 +16,9 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
     "@douyinfe/semi-icons": "^2.36.0",
     "@douyinfe/semi-ui": "2.61.0",
     "immer": "^10.0.3",
@@ -23,18 +26,15 @@
     "react-dom": "~18.2.0",
     "react-error-boundary": "^4.0.9",
     "react-router-dom": "^6.11.1",
-    "zustand": "^4.4.7",
-    "@coze-arch/logger": "workspace:*",
-    "@coze-arch/i18n": "workspace:*",
-    "@coze-arch/bot-api": "workspace:*"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@douyinfe/semi-rspack-plugin": "~2.48.0",
-    "@edenx/plugin-tailwind": "1.51.0",
     "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",
-    "@coze-arch/stylelint-config": "workspace:*",
+    "@douyinfe/semi-rspack-plugin": "~2.48.0",
+    "@edenx/plugin-tailwind": "1.51.0",
     "@rspack/cli": "0.4.0",
     "@rspack/core": "0.4.0",
     "@rspack/plugin-react-refresh": "0.4.0",
@@ -52,7 +52,7 @@
     "tailwindcss": "~3.3.3",
     "ts-morph": "^20.0.0",
     "ts-node": "^10.9.1",
-
     "vitest": "~3.0.5"
   }
 }
+

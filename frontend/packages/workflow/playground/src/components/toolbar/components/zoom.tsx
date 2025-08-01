@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { useMemo, useState, type CSSProperties } from 'react';
 
+import { usePlaygroundTools } from '@flowgram-adapter/free-layout-editor';
+import { usePlayground } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
 import { Dropdown, Divider } from '@coze-arch/coze-design';
-import { usePlaygroundTools } from '@flowgram-adapter/free-layout-editor';
-import { usePlayground } from '@flowgram-adapter/free-layout-editor';
 
 export const Zoom = () => {
   const tools = usePlaygroundTools();

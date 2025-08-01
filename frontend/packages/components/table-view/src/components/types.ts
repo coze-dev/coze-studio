@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ColumnProps } from '@coze-arch/bot-semi/Table';
 
 export type TableViewValue = string | number | undefined;

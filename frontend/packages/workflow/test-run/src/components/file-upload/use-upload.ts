@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
 import { useState } from 'react';
 
 import { nanoid } from 'nanoid';
 import { workflowApi, type ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
+import { Toast } from '@coze-arch/coze-design';
 import { upLoadFile } from '@coze-arch/bot-utils';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast } from '@coze-arch/coze-design';
 
 import { FileItemStatus } from '../file-icon';
 import { validate } from './utils';

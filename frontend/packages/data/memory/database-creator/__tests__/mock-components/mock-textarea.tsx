@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useImperativeHandle, useState } from 'react';
 
 export const MockTextArea = React.forwardRef(

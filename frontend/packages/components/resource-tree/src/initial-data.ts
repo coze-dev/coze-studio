@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FlowDocumentJSON } from '@flowgram-adapter/fixed-layout-editor';
 // only for test
 export const initialData: FlowDocumentJSON = {

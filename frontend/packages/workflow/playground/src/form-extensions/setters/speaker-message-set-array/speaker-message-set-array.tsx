@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Ref, useRef } from 'react';
 
 import classnames from 'classnames';
@@ -21,8 +21,8 @@ import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor'
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { concatTestId, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconNo, IconAdd } from '@coze-arch/bot-icons';
 import { Button, IconButton } from '@coze-arch/coze-design';
+import { IconNo, IconAdd } from '@coze-arch/bot-icons';
 
 import { withValidation } from '@/form-extensions/components/validation';
 

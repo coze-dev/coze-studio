@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { camelCase } from 'lodash-es';
-import type {
-  ILibraryItem,
-  LibraryType,
-} from '@coze-common/editor-plugins/library-insert';
 import { DEFAULT_MODEL_TYPE } from '@coze-workflow/nodes';
 import {
   BlockInput,
@@ -26,6 +22,10 @@ import {
   VariableTypeDTO,
   type InputValueDTO,
 } from '@coze-workflow/base';
+import type {
+  ILibraryItem,
+  LibraryType,
+} from '@coze-common/editor-plugins/library-insert';
 import { ModelParamType, type Model } from '@coze-arch/bot-api/developer_api';
 
 import { isDraftByProjectId } from '@/nodes-v2/llm/skills/utils';

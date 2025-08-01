@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const SCROLL_VIEW_ANCHOR_CONTAINER = 'scroll-view-anchor-container';

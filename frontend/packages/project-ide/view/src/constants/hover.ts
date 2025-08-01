@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { URI } from '@coze-project-ide/core';
 
 export const HOVER_TOOLTIP_LABEL = new URI('flowide:///hover/tooltip-label');

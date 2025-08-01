@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import IntelligenceApiService from './idl/intelligence_api';
 import { axiosInstance, type BotAPIRequestConfig } from './axios';
 

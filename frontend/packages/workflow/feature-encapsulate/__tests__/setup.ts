@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import 'reflect-metadata';
 vi.mock('@coze-arch/i18n', () => ({
   I18n: {

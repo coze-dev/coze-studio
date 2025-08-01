@@ -34,8 +34,6 @@ const (
 	variableMetaSchemaTypeNumber  = "float"
 )
 
-// TODO: remove me later
-// {"name":"app_var_arr","enable":true,"description":"121222","type":"list","readonly":false,"schema":{"type":"integer"}}
 type VariableMetaSchema struct {
 	Type        string          `json:"type,omitempty"`
 	Name        string          `json:"name,omitempty"`
@@ -93,7 +91,7 @@ func (v *VariableMetaSchema) IsObjectType() bool {
 	return v.Type == variableMetaSchemaTypeObject
 }
 
-// GetObjetProperties  e.g. schema = [{"name":"app_var_12_sdd","enable":true,"description":"s22","type":"string","readonly":false,"schema":""}]
+// GetObjectProperties  e.g. schema = [{"name":"app_var_12_sdd","enable":true,"description":"s22","type":"string","readonly":false,"schema":""}]
 func (v *VariableMetaSchema) GetObjectProperties(schema []byte) (map[string]*VariableMetaSchema, error) {
 	schemas := make([]*VariableMetaSchema, 0)
 	err := json.Unmarshal(schema, &schemas)

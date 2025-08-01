@@ -18,7 +18,8 @@
  * Unicode Range Regular Expressions for Chinese Characters
  */
 const CHINESE_REGEX = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
-const CHINESE_EXTRACT_REGEX = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+/g;
+const CHINESE_EXTRACT_REGEX =
+  /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+/g;
 
 /**
  * Detect whether the text contains Chinese characters
@@ -47,7 +48,10 @@ export const countChineseCharacters = (text: string): number => {
 /**
  * Detect whether the text is mainly composed of Chinese
  */
-export const isPrimarilyChinese = (text: string, threshold: number = 0.5): boolean => {
+export const isPrimarilyChinese = (
+  text: string,
+  threshold: number = 0.5,
+): boolean => {
   const totalLength = text.length;
   if (totalLength === 0) return false;
 
@@ -59,9 +63,9 @@ export const isPrimarilyChinese = (text: string, threshold: number = 0.5): boole
  * Clean up comment text, remove comment symbols and extra spaces
  */
 export const cleanCommentText = (
-  text: string, 
-  commentType: 'single-line' | 'multi-line', 
-  language?: string
+  text: string,
+  commentType: 'single-line' | 'multi-line',
+  language?: string,
 ): string => {
   let cleaned = text;
 
@@ -116,7 +120,10 @@ export const cleanCommentText = (
 /**
  * Verify whether the translation result is valid.
  */
-export const isValidTranslation = (original: string, translated: string): boolean => {
+export const isValidTranslation = (
+  original: string,
+  translated: string,
+): boolean => {
   // basic verification
   if (!translated || translated.trim().length === 0) {
     return false;

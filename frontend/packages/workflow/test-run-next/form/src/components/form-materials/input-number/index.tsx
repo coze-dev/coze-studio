@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InputNumber as BaseInputNumber } from '../../base-form-materials';
 
 export const InputNumber = props => <BaseInputNumber {...props} />;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { expect, vi, describe, test } from 'vitest';
@@ -151,8 +151,8 @@ vi.mock('@douyinfe/semi-icons', async () => {
   const actual = await vi.importActual('@douyinfe/semi-icons');
   return {
     ...(actual as any),
-  IconAlertTriangle: () => <>IconAlertTriangle</>,
-  IconClose: () => <>IconClose</>,
+    IconAlertTriangle: () => <>IconAlertTriangle</>,
+    IconClose: () => <>IconClose</>,
     IconChevronDown: () => <>IconChevronDown</>,
   };
 });
@@ -198,7 +198,7 @@ describe('database modal test', () => {
     const aiCreateButton = await screen.queryByText('bot_database_ai_create');
     expect(aiCreateButton).not.toBeNull();
     if (aiCreateButton) {
-    await fireEvent.click(aiCreateButton);
+      await fireEvent.click(aiCreateButton);
     }
     const aiGenerateButton = await screen.queryByText(
       'bot_database_ai_generate',
@@ -216,16 +216,16 @@ describe('database modal test', () => {
     const aiCreateButton = await screen.queryByText('bot_database_ai_create');
     expect(aiCreateButton).not.toBeNull();
     if (aiCreateButton) {
-    await fireEvent.click(aiCreateButton);
+      await fireEvent.click(aiCreateButton);
     }
     const nlInput = await screen.queryByRole('mock-textarea');
     expect(nlInput).not.toBeNull();
     if (nlInput) {
-    await fireEvent.input(nlInput, {
-      target: {
-        value: 'a pokemon table, name and score',
-      },
-    });
+      await fireEvent.input(nlInput, {
+        target: {
+          value: 'a pokemon table, name and score',
+        },
+      });
     }
     const aiGenerateButton = await screen.queryByText(
       'bot_database_ai_generate',
@@ -233,7 +233,7 @@ describe('database modal test', () => {
 
     expect(aiGenerateButton).not.toBeNull();
     if (aiGenerateButton) {
-    await fireEvent.click(aiGenerateButton);
+      await fireEvent.click(aiGenerateButton);
     }
     const content = await screen.queryByText('test');
     expect(content).not.toBeNull();

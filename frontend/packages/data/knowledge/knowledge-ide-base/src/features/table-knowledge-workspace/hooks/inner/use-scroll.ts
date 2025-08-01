@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useTableData } from '../../context/table-data-context';
 
 const ADD_BTN_HEIGHT = 56;

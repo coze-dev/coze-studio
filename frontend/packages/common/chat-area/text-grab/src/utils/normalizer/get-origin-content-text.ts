@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Get formatted SelectionNodeList data
  * Get the text content fed to the large model

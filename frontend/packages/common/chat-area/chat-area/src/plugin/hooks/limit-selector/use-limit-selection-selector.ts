@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isEqual } from 'lodash-es';
 
 import { type LimitSelectionSelector } from '../../types/plugin-class/selector';

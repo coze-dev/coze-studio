@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { type FieldProps, useField, withField } from '@/form';
+
 import {
   Select,
   type SelectProps as BaseSelectProps,
 } from '@coze-arch/coze-design';
-import { BodyType } from '../../setters/constants';
+
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
+import { type FieldProps, useField, withField } from '@/form';
+
+import { BodyType } from '../../setters/constants';
 
 type SelectProps = Omit<
   BaseSelectProps,

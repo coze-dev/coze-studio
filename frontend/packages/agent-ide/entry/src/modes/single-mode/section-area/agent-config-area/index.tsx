@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
 import { SingleSheet } from '@coze-agent-ide/space-bot/component';

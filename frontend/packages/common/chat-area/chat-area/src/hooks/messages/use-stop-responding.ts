@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useIsSendMessageLock } from '../public/use-is-send-message-lock';
 import { useMethodCommonDeps } from '../context/use-method-common-deps';
 import { useChatAreaStoreSet } from '../context/use-chat-area-context';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const defaultEnable = (value?: boolean) => {
   if (typeof value === 'undefined') {
     return true;

@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-magic-numbers -- no need to fix */
 import { useCallback } from 'react';
 
-import { StandardNodeType } from '@coze-workflow/base';
-import { Toast } from '@coze-arch/coze-design';
 import { WorkflowNodePanelService } from '@flowgram-adapter/free-layout-editor';
 import {
   type FlowNodeEntity,
@@ -38,6 +36,8 @@ import {
   type WorkflowSubCanvas,
 } from '@flowgram-adapter/free-layout-editor';
 import { Rectangle, type IPoint } from '@flowgram-adapter/common';
+import { StandardNodeType } from '@coze-workflow/base';
+import { Toast } from '@coze-arch/coze-design';
 
 import { WorkflowCustomDragService, WorkflowEditService } from '@/services';
 import { PANEL_WIDTH } from '@/components/node-panel/constant';

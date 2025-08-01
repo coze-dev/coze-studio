@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import { Tooltip } from '@coze-arch/coze-design';
 import { usePlaygroundTools } from '@flowgram-adapter/free-layout-editor';
 import { type InteractiveType as IdeInteractiveType } from '@flowgram-adapter/free-layout-editor';
 import {
@@ -27,6 +25,8 @@ import {
   getPreferInteractiveType,
   setPreferInteractiveType,
 } from '@coze-common/mouse-pad-selector';
+import { I18n } from '@coze-arch/i18n';
+import { Tooltip } from '@coze-arch/coze-design';
 
 export const Interactive = () => {
   const tools = usePlaygroundTools();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { type WorkflowJSON } from '@flowgram-adapter/free-layout-editor';
 
@@ -35,8 +35,9 @@ export class EncapsulateSchemaValidator
   private encapsulateApiService: EncapsulateApiService;
 
   async validate(workflow: WorkflowJSON, result: EncapsulateValidateResult) {
-    const validateResult =
-      await this.encapsulateApiService.validateWorkflow(workflow);
+    const validateResult = await this.encapsulateApiService.validateWorkflow(
+      workflow,
+    );
 
     if (!validateResult?.length) {
       return;

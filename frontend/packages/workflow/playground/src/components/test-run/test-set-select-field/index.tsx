@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   forwardRef,
   useState,
@@ -33,9 +33,9 @@ import {
 import { PUBLIC_SPACE_ID } from '@coze-workflow/base';
 import { type CaseDataDetail } from '@coze-arch/idl/debugger_api';
 import { I18n } from '@coze-arch/i18n';
-import { debuggerApi } from '@coze-arch/bot-api';
 import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import { Divider, Tooltip } from '@coze-arch/coze-design';
+import { debuggerApi } from '@coze-arch/bot-api';
 
 import {
   TestRunState,

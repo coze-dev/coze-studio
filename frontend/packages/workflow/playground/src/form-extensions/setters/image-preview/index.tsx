@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ImgLog } from '../../../components/test-run/img-log';
 import { useImagePreviewVisible } from './hooks/use-image-preview-visible';
 

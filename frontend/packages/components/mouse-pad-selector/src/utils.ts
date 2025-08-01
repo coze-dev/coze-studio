@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InteractiveType } from './mouse-pad-selector';
 import { CACHE_KEY, SHOW_KEY, IS_MAC_OS } from './constants';
 

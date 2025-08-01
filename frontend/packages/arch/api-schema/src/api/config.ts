@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createAPI as apiFactory } from '@coze-arch/idl2ts-runtime';
 import { type IMeta } from '@coze-arch/idl2ts-runtime';
 import { axiosInstance } from '@coze-arch/bot-http';

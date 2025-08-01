@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { FileTypeEnum } from '../const';
 export { FILE_TYPE_CONFIG } from '../file-type';
 export { getFileInfo } from '../util';

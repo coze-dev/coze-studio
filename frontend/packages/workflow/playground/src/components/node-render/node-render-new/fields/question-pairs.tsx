@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useMemo } from 'react';
 
-import { useWorkflowNode } from '@coze-workflow/base';
-import { I18n } from '@coze-arch/i18n';
 import {
   WorkflowNodePortsData,
   useCurrentEntity,
 } from '@flowgram-adapter/free-layout-editor';
+import { useWorkflowNode } from '@coze-workflow/base';
+import { I18n } from '@coze-arch/i18n';
 
 import { AnswerType, OptionType } from '@/constants/question-settings';
 

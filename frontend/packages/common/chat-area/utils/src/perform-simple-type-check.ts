@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isNumber, isObject, isString } from 'lodash-es';
 
 type CheckMethodName = 'is-string' | 'is-number';

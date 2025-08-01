@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -36,7 +36,9 @@ import {
   type VariableRef,
 } from '../typings';
 
-const ImagePlaceholder = `${getUploadCDNAsset('')}/workflow/fabric-canvas/img-placeholder.png`;
+const ImagePlaceholder = `${getUploadCDNAsset(
+  '',
+)}/workflow/fabric-canvas/img-placeholder.png`;
 
 // Properties that require additional saving
 export const saveProps = [

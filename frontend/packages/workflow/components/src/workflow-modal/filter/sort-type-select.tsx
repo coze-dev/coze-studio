@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useContext } from 'react';
 
 import { SortType } from '@coze-arch/idl/product_api';

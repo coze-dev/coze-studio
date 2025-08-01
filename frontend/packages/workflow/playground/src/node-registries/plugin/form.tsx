@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
-import { I18n } from '@coze-arch/i18n';
 import { type FormRenderProps } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { Batch } from '@/nodes-v2/components/batch/batch';
 import { NodeConfigForm } from '@/node-registries/common/components';

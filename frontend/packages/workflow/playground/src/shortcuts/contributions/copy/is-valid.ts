@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import type { WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { Toast } from '@coze-arch/coze-design';
-import type { WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { isAllSystemNodes } from './is-system-nodes';
 import { getValidNodes } from './get-valid-nodes';

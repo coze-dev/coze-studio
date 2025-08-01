@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type FC,
   useState,
@@ -23,11 +23,11 @@ import React, {
 } from 'react';
 
 import classnames from 'classnames';
+import { IconClear } from '@douyinfe/semi-icons';
 import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
 import { Popover, Input } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { type ValidateStatus } from '@coze-arch/bot-semi/Input';
-import { IconClear } from '@douyinfe/semi-icons';
 
 import { ValueDisplay } from './value-display';
 import { type ITreeNodeData } from './types';

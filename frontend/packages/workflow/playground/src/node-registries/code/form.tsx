@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { I18n } from '@coze-arch/i18n';
+
 import { useForm } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { NodeConfigForm } from '@/node-registries/common/components';
 

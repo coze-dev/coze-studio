@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback } from 'react';
 
-import { StandardNodeType } from '@coze-workflow/base';
-import { type ViewVariableMeta } from '@coze-workflow/base';
 import { type FormModelV2 } from '@flowgram-adapter/free-layout-editor';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
+import { type ViewVariableMeta } from '@coze-workflow/base';
+import { StandardNodeType } from '@coze-workflow/base';
 
 const useGetStartNode = () => {
   const workflowDocument = useService<WorkflowDocument>(WorkflowDocument);

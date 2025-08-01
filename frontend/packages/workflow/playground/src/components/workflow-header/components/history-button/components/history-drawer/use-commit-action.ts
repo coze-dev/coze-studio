@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @coze-arch/no-deep-relative-import */
+import { useNavigate } from 'react-router-dom';
+
+import { useService } from '@flowgram-adapter/free-layout-editor';
 import {
   workflowApi,
   type VersionMetaInfo,
@@ -25,8 +28,6 @@ import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { Toast, Modal } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { useService } from '@flowgram-adapter/free-layout-editor';
-import { useNavigate } from 'react-router-dom';
 
 import {
   WorkflowSaveService,

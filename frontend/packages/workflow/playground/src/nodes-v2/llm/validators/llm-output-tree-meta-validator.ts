@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { z } from 'zod';
 import { type ZodError } from 'zod';
 import { get } from 'lodash-es';
-import { I18n } from '@coze-arch/i18n';
 import { type Validate } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { omitSystemReasoningContent, REASONING_CONTENT_NAME } from '../cot';
 

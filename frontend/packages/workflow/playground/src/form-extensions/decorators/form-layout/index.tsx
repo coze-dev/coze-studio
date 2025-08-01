@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type FC,
   type ReactElement,
@@ -22,12 +22,12 @@ import {
 } from 'react';
 
 import classNames from 'classnames';
+import { type DecoratorComponentProps } from '@flowgram-adapter/free-layout-editor';
 import {
   IconCozArrowDownFill,
   IconCozInfoCircle,
 } from '@coze-arch/coze-design/icons';
 import { Col, Row, Collapsible } from '@coze-arch/coze-design';
-import { type DecoratorComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { FormCard } from '../../components/form-card';
 import AutoSizeTooltip from '../../../ui-components/auto-size-tooltip';

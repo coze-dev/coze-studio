@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type UploadValue } from '@coze-common/biz-components';
 
 export type ModifyUploadValueType<T extends { icon_uri?: string }> = Omit<

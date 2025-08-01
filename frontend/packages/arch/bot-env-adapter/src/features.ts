@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { base } from './base';
 const { IS_RELEASE_VERSION, IS_OVERSEA, IS_BOE } = base;
 export const features = {
@@ -68,7 +68,7 @@ export const features = {
 
   /**
    * Add UG clue return parameters to the data reported by Tea, which is only required for cn release.
-   * 
+   *
    */
   FEATURE_ENABLE_TEA_UG: IS_RELEASE_VERSION && !IS_OVERSEA,
 };

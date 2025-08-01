@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { bindActivityBarView } from './activity-bar-contribution';
 export { ViewCommonContribution } from './view-common-contribution';
 export { ViewContribution } from './view-contribution';

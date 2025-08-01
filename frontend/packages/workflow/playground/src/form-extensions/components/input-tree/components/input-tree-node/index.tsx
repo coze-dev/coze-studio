@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useRef } from 'react';
 
 import classNames from 'classnames';
@@ -72,7 +72,9 @@ export default function InputTreeNode(props: InputTreeNodeProps) {
   const value = data as TreeNodeCustomData;
   const treeNodeRef = useRef<HTMLDivElement>(null);
   const columnsStyle = useColumnsStyle(columnsRatio, level);
-  const testName = `/inputs/inputParameters${(data.field || '').replaceAll('.', '/').replace(/\[(\d+)\]/g, '/$1')}`;
+  const testName = `/inputs/inputParameters${(data.field || '')
+    .replaceAll('.', '/')
+    .replace(/\[(\d+)\]/g, '/$1')}`;
   const nameRef = useRef(value?.name);
   const inputRef = useRef(value?.input);
 

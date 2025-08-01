@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import cls from 'classnames';
 import { type SchemaObject } from 'ajv';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozBroom, IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { UIButton, withField } from '@coze-arch/bot-semi';
 import {
   type editor as monacoEditorNameSpace,
   type OnMount,
 } from '@coze-arch/bot-monaco-editor/types';
 import { Editor as MonacoEditor } from '@coze-arch/bot-monaco-editor';
-import { IconCozBroom, IconCozRefresh } from '@coze-arch/coze-design/icons';
-import { Tooltip } from '@coze-arch/coze-design';
 
 import type { ComponentAdapterCommonProps } from '../../types';
 import { clearJsonSchema, setJsonSchema } from './utils';

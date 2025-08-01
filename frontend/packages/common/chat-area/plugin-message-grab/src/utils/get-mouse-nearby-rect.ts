@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GrabPosition } from '@coze-common/text-grab';
 
 const BUFFER_SIZE = 5;

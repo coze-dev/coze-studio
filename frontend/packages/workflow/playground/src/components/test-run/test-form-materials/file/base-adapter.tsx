@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ClickAwayListener from 'react-click-away-listener';
 import React, { useEffect, useRef } from 'react';
 
@@ -21,6 +21,7 @@ import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import { useUpdateEffect, useSize } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
+import { usePersistCallback } from '@coze-arch/hooks';
 import { Toast } from '@coze-arch/coze-design';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import {
@@ -28,7 +29,6 @@ import {
   type RenderFileItemProps,
 } from '@coze-arch/bot-semi/Upload';
 import { Upload } from '@coze-arch/bot-semi';
-import { usePersistCallback } from '@coze-arch/hooks';
 
 import {
   useUpload,

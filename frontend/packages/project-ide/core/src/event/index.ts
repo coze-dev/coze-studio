@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { createEventPlugin } from './create-event-plugin';
 export { EventContribution, EventService } from './event-contribution';

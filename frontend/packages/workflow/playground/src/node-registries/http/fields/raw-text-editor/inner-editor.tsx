@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, type FC } from 'react';
 
 import classNames from 'classnames';
-import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
 import {
   useAvailableWorkflowVariables,
   useGetWorkflowVariableByKeyPath,
   isGlobalVariableKey,
 } from '@coze-workflow/variable';
+import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
 
 import { VariableExtension } from '@/node-registries/http/components/variable-support';
 import { useNodeServiceAndRefreshForTitleChange } from '@/form-extensions/hooks/use-node-available-variables';

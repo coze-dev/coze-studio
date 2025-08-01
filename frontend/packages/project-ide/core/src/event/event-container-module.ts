@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContainerModule } from 'inversify';
-import { bindContributionProvider, bindContributions } from '@flowgram-adapter/common';
+import {
+  bindContributionProvider,
+  bindContributions,
+} from '@flowgram-adapter/common';
 
 import { LifecycleContribution } from '../common';
 import { EventRegistry } from './event-registry';

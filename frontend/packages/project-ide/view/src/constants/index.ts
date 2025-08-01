@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { VIEW_CONTAINER_CLASS_NAME, PANEL_CLASS_NAME_MAP } from './view';
 export * from './class-names';
 export * from './hover';

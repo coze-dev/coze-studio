@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
 import { isEqual } from 'lodash-es';
-import { parseImagesFromOutputData } from '@coze-workflow/base';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
+import { parseImagesFromOutputData } from '@coze-workflow/base';
 
 import { useCurrentNode } from './use-current-node';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

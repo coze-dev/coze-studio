@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
-import { ConfigProvider } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
+import { ConfigProvider } from '@coze-arch/coze-design';
 
 import { CodeSetterContext } from './context';
 // import { CodeEditorWithMonaco } from './code-with-monaco';

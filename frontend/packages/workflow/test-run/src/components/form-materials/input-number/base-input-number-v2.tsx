@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, useMemo, useEffect } from 'react';
 
 import cls from 'classnames';
 import BigNumber, { type BigNumber as IBigNumber } from 'bignumber.js';
-import {
-  IconCozArrowDown,
-  IconCozArrowUp,
-} from '@coze-arch/coze-design/icons';
+import { IconCozArrowDown, IconCozArrowUp } from '@coze-arch/coze-design/icons';
 import { Input, type InputProps } from '@coze-arch/coze-design';
 
 import css from './base-input-number-v2.module.less';

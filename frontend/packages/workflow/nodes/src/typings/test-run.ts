@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum WorkflowRenderKey {
   EXECUTE_STATUS_BAR = 'execute_status_bar', // Test run top bar
 }

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
-import { I18n } from '@coze-arch/i18n';
 import { type DecoratorComponentProps } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { ColumnsTitle } from '../../components/columns-title';
 

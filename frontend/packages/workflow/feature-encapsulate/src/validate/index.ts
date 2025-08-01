@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export * from './encapsulate-validate-manager';
 export * from './types';
 export * from './encapsulate-validate-service';

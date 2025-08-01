@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TopBar } from './top-bar';
 export { PrimarySidebar } from './primary-sidebar';
 export { widgetTitleRender } from './widget-title';

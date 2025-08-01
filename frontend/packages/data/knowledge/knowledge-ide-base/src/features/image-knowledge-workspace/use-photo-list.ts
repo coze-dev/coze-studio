@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type InfiniteScrollOptions } from 'ahooks/lib/useInfiniteScroll/types';
 import { useInfiniteScroll } from 'ahooks';
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
@@ -59,9 +59,9 @@ export const usePhotoList = (
             filterPhotoType === FilterPhotoType.HasCaption
               ? true
               : filterPhotoType === FilterPhotoType.NoCaption
-                ? false
-                : // Pass undefined to return all
-                  undefined,
+              ? false
+              : // Pass undefined to return all
+                undefined,
         },
       });
       return {

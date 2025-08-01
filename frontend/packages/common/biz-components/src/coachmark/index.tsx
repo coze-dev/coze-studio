@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import Joyride, {
   type Props,
   ACTIONS,
@@ -50,8 +50,9 @@ export default function Coachmark({
   const [stepIndex, setStepIndex] = useState(itemIndex);
 
   const initVisible = async (cid: string) => {
-    const coachMarkStorage =
-      await localStorageService.getValueSync(COACHMARK_KEY);
+    const coachMarkStorage = await localStorageService.getValueSync(
+      COACHMARK_KEY,
+    );
     // readStep represents the read step index
     const readStep = (
       typeSafeJSONParse(coachMarkStorage) as Record<string, number> | undefined

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import { gotoDebugFlow } from '@coze-workflow/test-run-shared';
 import { I18n } from '@coze-arch/i18n';
-import { type Span } from '@coze-arch/bot-api/workflow_api';
 import { IconCozExit } from '@coze-arch/coze-design/icons';
 import {
   Typography,
@@ -26,6 +25,7 @@ import {
   IconButton,
   type ButtonProps,
 } from '@coze-arch/coze-design';
+import { type Span } from '@coze-arch/bot-api/workflow_api';
 
 import { StatusIcon } from '../status-tag';
 import {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type DiffDisplayNode } from '@coze-arch/bot-api/dp_manage_api';
 
 export interface FlatDiffDisplayNode extends DiffDisplayNode {

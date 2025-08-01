@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum InviteEvents {
   InviteGetSpaceInfo = 'invite_get_space_info',
 }

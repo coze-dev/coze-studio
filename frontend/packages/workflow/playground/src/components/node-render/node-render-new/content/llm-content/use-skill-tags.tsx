@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect } from 'react';
 
 import { uniqBy } from 'lodash-es';
-import { useWorkflowNode } from '@coze-workflow/base';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
+import { useWorkflowNode } from '@coze-workflow/base';
 
 import {
   isSkillsEmpty,

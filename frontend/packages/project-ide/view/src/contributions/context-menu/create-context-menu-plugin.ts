@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { definePluginCreator } from '@coze-project-ide/core';
 
 import { ContextMenuContainerModule } from './context-menu-container-module';

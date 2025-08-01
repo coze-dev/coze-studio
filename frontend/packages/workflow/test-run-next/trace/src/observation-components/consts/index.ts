@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const STATUS_CODE_KEY = '_status_code';
 
 export enum ObservationModules {

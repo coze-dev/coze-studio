@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { displayType } from '@coze-common/md-editor-adapter';
 
 export const getSchema = () => ({

@@ -1,5 +1,6 @@
 {
-	"dependencies": {
-		"@eslint/compat": "^1.2.2"
-	}
+  "dependencies": {
+    "@eslint/compat": "^1.2.2"
+  }
 }
+

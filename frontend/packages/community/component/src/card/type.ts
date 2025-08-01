@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type explore } from '@coze-studio/api-schema';
 import { type UserInfo as ProductUserInfo } from '@coze-arch/bot-api/product_api';
 type UserInfo = explore.product_common.UserInfo;

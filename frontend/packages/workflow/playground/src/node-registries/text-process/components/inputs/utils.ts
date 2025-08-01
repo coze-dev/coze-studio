@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const getMaxIndex = (values: string[], prefixStr: string): number => {
   if (!Array.isArray(values)) {
     return 1;

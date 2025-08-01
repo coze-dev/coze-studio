@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ViewVariableType } from '../types/view-variable-type';
 
 export const ACCEPT_MAP = {

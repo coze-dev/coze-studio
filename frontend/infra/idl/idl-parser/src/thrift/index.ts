@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 import * as path from 'path';
@@ -155,7 +155,9 @@ function reviseFieldComments(struct: InterfaceWithFields) {
   const { fields } = struct;
 
   /* istanbul ignore next */
-  if (fields.length < 2) {return;}
+  if (fields.length < 2) {
+    return;
+  }
 
   for (let i = fields.length - 1; i > 0; i--) {
     const currentField = fields[i];
@@ -183,7 +185,9 @@ function reviseEnumMemberComments(enm: EnumDefinition) {
   const { members } = enm;
 
   /* istanbul ignore next */
-  if (members.length < 2) {return;}
+  if (members.length < 2) {
+    return;
+  }
 
   for (let i = 0; i < members.length - 1; i++) {
     const currentMember = members[i];
@@ -203,7 +207,9 @@ function reviseEnumMemberComments(enm: EnumDefinition) {
 
 function reviseFunctionComments(service: ServiceDefinition) {
   const { functions } = service;
-  if (functions.length < 2) {return;}
+  if (functions.length < 2) {
+    return;
+  }
 
   for (let i = 0; i < functions.length - 1; i++) {
     const currentFunction = functions[i];

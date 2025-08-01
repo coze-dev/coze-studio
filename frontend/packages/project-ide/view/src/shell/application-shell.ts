@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable, optional } from 'inversify';
 import { Emitter, type RecursivePartial } from '@flowgram-adapter/common';
 import { NavigationHistory, type URI } from '@coze-project-ide/core';
@@ -167,11 +167,13 @@ export class ApplicationShell extends Widget {
     this.secondarySidebar.hide();
     this.layout = createLayout?.(this) || this.createLayout();
 
-    this.activityBarWidget =
-      await this.widgetManager.getOrCreateWidgetFromURI(ACTIVITY_BAR_CONTENT);
+    this.activityBarWidget = await this.widgetManager.getOrCreateWidgetFromURI(
+      ACTIVITY_BAR_CONTENT,
+    );
     try {
-      this.statusBarWidget =
-        await this.widgetManager.getOrCreateWidgetFromURI(STATUS_BAR_CONTENT);
+      this.statusBarWidget = await this.widgetManager.getOrCreateWidgetFromURI(
+        STATUS_BAR_CONTENT,
+      );
     } catch (e) {}
   }
 

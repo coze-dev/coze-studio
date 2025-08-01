@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as path from 'path';
 import * as fs from 'fs';
-import { logAndThrowError , mergeObject, getPosixPath } from '../utils';
+import { logAndThrowError, mergeObject, getPosixPath } from '../utils';
 import { parseThriftContent } from './thrift';
 import { parseProtoContent } from './proto';
 import { type UnifyDocument } from './type';

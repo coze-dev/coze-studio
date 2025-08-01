@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { type Workflow } from '@coze-arch/idl/workflow_api';
+
 import { ConfigEntity } from '@flowgram-adapter/free-layout-editor';
 import { Emitter } from '@flowgram-adapter/common';
+import { type Workflow } from '@coze-arch/idl/workflow_api';
 
 interface WorkflowTemplateState {
   visible: boolean;

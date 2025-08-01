@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import PerfectScrollbar from './components/scroll-bar';
 
 export { ReactWidget, ReactWidgetContext } from './widget/react-widget';

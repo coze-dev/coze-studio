@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getModelClassSortList } from '../src/utils/model/get-model-class-sort-list';
 
 vi.mock('@coze-studio/bot-detail-store', () => ({}));

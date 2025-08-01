@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState } from 'react';
 
 import classNames from 'classnames';
-import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
 import {
   useAvailableWorkflowVariables,
   useGetWorkflowVariableByKeyPath,
   isGlobalVariableKey,
 } from '@coze-workflow/variable';
+import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
 import { I18n } from '@coze-arch/i18n';
 import { Tooltip } from '@coze-arch/coze-design';
 

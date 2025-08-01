@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- Array operations require flexible typing */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 
 import { IconCozPlus, IconCozMinus } from '@coze-arch/coze-design/icons';
@@ -42,7 +42,7 @@ export interface ArrayOptions {
   disableDeleteItem?: ((value: unknown, index: number) => boolean) | boolean;
 }
 
-// eslint-disable-next-line complexity -- Array component requires complex logic for field operations
+// eslint-disable-next-line complexity
 export const Array: Setter<Array<any>, ArrayOptions> = ({
   value = [],
   readonly = false,
@@ -59,7 +59,7 @@ export const Array: Setter<Array<any>, ArrayOptions> = ({
   const [currentAddIndex, setCurrentAddIndex] = useState<number | undefined>();
   const { node, meta } = context || {};
 
-  // Backend may return null, fallback to empty array to ensure proper initialization
+  // The value returned by the backend may be null, and it will not be assigned to [] at this time. Here is the bottom line again.
   const originValue = value || [];
 
   const add = () => {

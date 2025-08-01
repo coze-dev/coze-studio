@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useMemo, useRef } from 'react';
 
 import { type Form } from '@formily/core';
 import { workflowApi } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type NodeEvent } from '@coze-arch/bot-api/workflow_api';
 import { Button } from '@coze-arch/coze-design';
+import { type NodeEvent } from '@coze-arch/bot-api/workflow_api';
 
 import { translateSchema } from '../../utils';
 import { typeSafeJSONParse, stringifyValue } from '../../../../utils';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   return array.reduce((previous, current, index) => {
     if (index % chunkSize === 0) {

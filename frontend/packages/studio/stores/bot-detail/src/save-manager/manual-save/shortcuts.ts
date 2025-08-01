@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { saveFetcher, updateBotRequest } from '../utils/save-fetcher';
 import { ItemTypeExtra } from '../types';
 

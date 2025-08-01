@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
+
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
+import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 
 import { generateParametersToProperties } from '@/test-run-kit';
 import { type NodeTestMeta } from '@/test-run-kit';

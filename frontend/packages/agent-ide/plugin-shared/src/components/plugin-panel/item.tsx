@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 
 import { useState } from 'react';
@@ -32,10 +32,7 @@ import {
   UIButton,
   UITag,
 } from '@coze-arch/bot-semi';
-import {
-  ProductStatus,
-  type public_api,
-} from '@coze-arch/bot-api/product_api';
+import { ProductStatus, type public_api } from '@coze-arch/bot-api/product_api';
 import { type PluginApi } from '@coze-arch/bot-api/plugin_develop';
 import { useViewExample } from '@coze-agent-ide/bot-plugin-tools/useViewExample';
 import { Popconfirm } from '@coze-arch/coze-design';

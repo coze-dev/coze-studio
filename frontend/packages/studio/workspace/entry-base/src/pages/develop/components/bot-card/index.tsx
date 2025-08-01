@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint @coze-arch/max-line-per-function: ["error", {"max": 500}] */
 /* eslint-disable complexity */
 import { useNavigate } from 'react-router-dom';

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
-import { TextArea as UITextArea } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
+import { TextArea as UITextArea } from '@coze-arch/coze-design';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TextAreaProps = SetterComponentProps<any, { max?: number }>;

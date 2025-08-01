@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { logger } from '@coze-arch/rush-logger';
 
 export const logAndThrowError = (logMessage: string, errorMessage?: string) => {
@@ -27,7 +27,9 @@ export function mergeObject(
   ...sources: { [key: string]: any }[]
 ): { [key: string]: any } {
   const newObj = { ...target };
-  if (!sources) {return newObj;}
+  if (!sources) {
+    return newObj;
+  }
 
   for (const source of sources) {
     for (const key of Object.keys(source)) {

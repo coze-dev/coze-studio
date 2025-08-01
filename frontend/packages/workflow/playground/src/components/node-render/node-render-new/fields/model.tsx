@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useEffect } from 'react';
 
 import { useWorkflowNode } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { CozAvatar } from '@coze-arch/coze-design';
+
 import { useWorkflowModels } from '@/hooks';
+
 import { Field } from './field';
 
 export function Model() {

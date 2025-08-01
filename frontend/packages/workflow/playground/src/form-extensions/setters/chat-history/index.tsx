@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import { nanoid } from 'nanoid';
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { ViewVariableType, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { Tooltip, Switch } from '@coze-arch/coze-design';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { ChatHistoryRound } from '@/components/chat-history-round';
 

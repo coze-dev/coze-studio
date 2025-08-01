@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ConditionContainer } from '../../components/condition';
-import { Field } from '..';
 import { useConditions } from './use-conditions';
 import { DatabaseConditionRightComponent } from './database-condition-right';
 import { DatabaseConditionOperatorComponent } from './database-condition-operator';
 import { DatabaseConditionLeftComponent } from './database-condition-left';
+import { Field } from '..';
 
 interface DatabaseConditionProps {
   label: string;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, Suspense, lazy } from 'react';
 
 import { nanoid } from 'nanoid';
@@ -25,8 +25,8 @@ import {
   type ViewVariableTreeNode,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconInfo } from '@coze-arch/bot-icons';
 import { Select, Tooltip } from '@coze-arch/coze-design';
+import { IconInfo } from '@coze-arch/bot-icons';
 
 import { type TreeNodeCustomData } from '../custom-tree-node/type';
 

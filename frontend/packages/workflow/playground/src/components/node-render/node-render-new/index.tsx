@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import cx from 'classnames';
-import { useWorkflowNode } from '@coze-workflow/base';
-import { ErrorBoundary, logger } from '@coze-arch/logger';
 import {
   useNodeRender,
   type WorkflowNodeRenderProps,
 } from '@flowgram-adapter/free-layout-editor';
+import { useWorkflowNode } from '@coze-workflow/base';
+import { ErrorBoundary, logger } from '@coze-arch/logger';
 
 import { useNodeSideSheetStore } from '@/hooks/use-node-side-sheet-store';
 import { useFloatLayoutService } from '@/hooks/use-float-layout-service';

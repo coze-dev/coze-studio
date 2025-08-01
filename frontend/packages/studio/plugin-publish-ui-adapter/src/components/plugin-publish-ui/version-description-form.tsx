@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type PublishPluginRequest } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
 import { type BaseFormProps, Form } from '@coze-arch/coze-design';

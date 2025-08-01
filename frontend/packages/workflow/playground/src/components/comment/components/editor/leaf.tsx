@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { CommentEditorLeafFormat, CommentDefaultLink } from '../../constant';
 
 export const Leaf = ({ attributes, children, leaf }) => {

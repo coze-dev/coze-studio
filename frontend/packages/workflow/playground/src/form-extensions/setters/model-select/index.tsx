@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useMemo, type FC } from 'react';
 
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { useEntityFromContext } from '@flowgram-adapter/free-layout-editor';
 import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
-import { JsonViewer } from '@coze-common/json-viewer';
 import {
   GenerationDiversity,
   type ResponseFormat,
   useNodeTestId,
 } from '@coze-workflow/base';
-import { type OptionItem } from '@coze-arch/bot-semi/Radio';
-import { type Model } from '@coze-arch/bot-api/developer_api';
+import { JsonViewer } from '@coze-common/json-viewer';
 import { IconCozSetting } from '@coze-arch/coze-design/icons';
 import { IconButton, Popover } from '@coze-arch/coze-design';
+import { type OptionItem } from '@coze-arch/bot-semi/Radio';
+import { type Model } from '@coze-arch/bot-api/developer_api';
 
 import { useWorkflowModels } from '@/hooks';
 import PopupContainer from '@/components/popup-container';

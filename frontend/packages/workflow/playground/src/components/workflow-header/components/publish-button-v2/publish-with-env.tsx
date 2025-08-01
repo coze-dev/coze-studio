@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Publish to multiple environments
  * Is a single module, abstracted into a component
  */
+import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
@@ -27,7 +28,6 @@ import {
   OperateType,
   type PublishWorkflowRequest,
 } from '@coze-arch/bot-api/workflow_api';
-import { useNavigate } from 'react-router-dom';
 
 import { useGlobalState } from '@/hooks';
 

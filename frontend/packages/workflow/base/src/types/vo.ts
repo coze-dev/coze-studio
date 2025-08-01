@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * This file defines the data consumed by the front end and is represented by VO (view object)
  */

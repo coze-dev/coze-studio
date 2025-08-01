@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const getCozeCom = () => ['https://', 'coze.com'].join('');
 
 export const getCozeCn = () => ['https://', 'coze.cn'].join('');

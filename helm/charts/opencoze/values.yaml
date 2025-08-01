@@ -17,8 +17,7 @@ mysql:
     storageClassName: ""
     size: "50Gi"
   initScripts:
-    - files/mysql/init.sql
-    - files/mysql/sql_init.sql
+    - files/mysql/schema.sql
 
 redis:
   enabled: true

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { CollapsibleIconButton } from '@coze-studio/components/collapsible-icon-button';
 import { useMonetizeConfigStore } from '@coze-studio/bot-detail-store';
 import { I18n } from '@coze-arch/i18n';

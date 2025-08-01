@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { cloneDeep } from 'lodash-es';
 import { FILE_TYPE_CONFIG, FileTypeEnum } from '@coze-common/chat-core';
 import { type ContentType, type Message } from '@coze-common/chat-core';

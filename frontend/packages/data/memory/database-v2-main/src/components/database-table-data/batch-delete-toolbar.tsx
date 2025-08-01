@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozCross, IconCozTrashCan } from '@coze-arch/coze-design/icons';
-import { Button, Divider, IconButton, Typography } from '@coze-arch/coze-design';
+import {
+  Button,
+  Divider,
+  IconButton,
+  Typography,
+} from '@coze-arch/coze-design';
 
 export interface BatchDeleteToolbarProps {
   selectedCount?: number;

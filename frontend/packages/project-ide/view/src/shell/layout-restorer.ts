@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isFunction } from 'lodash';
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { Emitter, isObject, type Disposable } from '@flowgram-adapter/common';

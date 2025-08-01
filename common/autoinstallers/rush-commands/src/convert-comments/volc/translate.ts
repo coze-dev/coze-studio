@@ -320,7 +320,10 @@ function queryParamsToString(params: QueryParams): string {
         return undefined;
       }
       if (Array.isArray(val)) {
-        return `${escapedKey}=${val.map(uriEscape).sort().join(`&${escapedKey}=`)}`;
+        return `${escapedKey}=${val
+          .map(uriEscape)
+          .sort()
+          .join(`&${escapedKey}=`)}`;
       }
       return `${escapedKey}=${uriEscape(val)}`;
     })

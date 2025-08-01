@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useQuery } from '@tanstack/react-query';
 import {
   workflowApi,
   type OperateType,
   type DiffContent,
 } from '@coze-workflow/base/api';
+import { I18n } from '@coze-arch/i18n';
 import { UITag, UITable, UIEmpty, Typography } from '@coze-arch/bot-semi';
 import { IconYesFilled } from '@coze-arch/bot-icons';
-import { I18n } from '@coze-arch/i18n';
 
 const { Text } = Typography;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint @coze-arch/max-line-per-function: "warn" */
 import { useLayoutEffect, useState } from 'react';
 
@@ -148,9 +148,9 @@ function useCharacterTriggerContext(disableUpdateTrigger?: boolean) {
                             {
                               from: tr.changes.from,
                               to: tr.changes.to,
-                              insert: `${
-                                hasExtraLeftBrace ? '' : '{'
-                              }${tr.changes.insert}}}`,
+                              insert: `${hasExtraLeftBrace ? '' : '{'}${
+                                tr.changes.insert
+                              }}}`,
                             },
                           ],
                           selection: EditorSelection.cursor(

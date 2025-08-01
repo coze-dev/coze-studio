@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
 import { get } from 'lodash-es';
@@ -39,10 +39,10 @@ import {
   ViewVariableType,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Popover } from '@coze-arch/bot-semi';
-import { IconSetting } from '@coze-arch/bot-icons';
 import { IconCozMinus, IconCozPlus } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
+import { Popover } from '@coze-arch/bot-semi';
+import { IconSetting } from '@coze-arch/bot-icons';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { ValueExpressionInput } from '@/nodes-v2/components/value-expression-input';

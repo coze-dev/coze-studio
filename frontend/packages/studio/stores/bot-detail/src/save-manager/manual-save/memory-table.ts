@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ItemType } from '@coze-arch/bot-api/developer_api';
 
 import { useBotSkillStore } from '@/store/bot-skill';

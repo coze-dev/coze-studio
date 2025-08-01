@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { useService } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { Toast } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { useService } from '@flowgram-adapter/free-layout-editor';
 
 import { useInnerSideSheetStoreShallow } from '@/components/workflow-inner-side-sheet';
 

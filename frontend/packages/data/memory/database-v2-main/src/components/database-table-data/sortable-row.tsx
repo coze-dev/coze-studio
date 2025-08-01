@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type CSSProperties, type HTMLAttributes } from 'react';
 
 import { CSS } from '@dnd-kit/utilities';
@@ -22,7 +22,7 @@ import { useSortable } from '@dnd-kit/sortable';
 /**
  * Split from packages/data/database-v2/src/components/database-table-data/index.tsx
  * The original implementation was basically copied from the Semi document, and the sorted data was not submitted to the server level. The PM did not seem to know about this function, so...
- * @see 
+ * @see
  */
 export const SortableRow = (
   // https://github.com/DouyinFE/semi-design/blob/v2.69.2/packages/semi-ui/table/Body/BaseRow.tsx#L396

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import { type Root } from 'react-dom/client';
 import { useRequest } from 'ahooks';
-import { type VoiceDetail } from '@coze-arch/bot-api/multimedia_api';
-import { MultimediaApi } from '@coze-arch/bot-api';
 import { useAudioPlayer } from '@coze-workflow/resources-adapter';
 import { IconCozVolume, IconCozPauseFill } from '@coze-arch/coze-design/icons';
 import { Avatar, Spin } from '@coze-arch/coze-design';
+import { type VoiceDetail } from '@coze-arch/bot-api/multimedia_api';
+import { MultimediaApi } from '@coze-arch/bot-api';
 import { type EditorView, WidgetType } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 

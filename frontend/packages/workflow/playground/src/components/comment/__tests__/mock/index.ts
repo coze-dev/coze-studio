@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { commentEditorMockMarkdown } from './markdown';
 export { commentEditorMockText } from './text';
 export { commentEditorMockBlocks } from './blocks';

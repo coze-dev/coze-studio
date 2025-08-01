@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import { GlobalLayoutAccountDropdown } from '@coze-foundation/layout';

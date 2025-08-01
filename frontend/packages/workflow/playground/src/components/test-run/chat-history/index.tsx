@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { Suspense, lazy } from 'react';
 
 import { isEmpty } from 'lodash-es';
 import { userStoreService } from '@coze-studio/user-store';
+import { type IWorkflow, type IProject } from '@coze-studio/open-chat';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
@@ -26,7 +27,6 @@ import {
   type ProjectConversation,
   CreateEnv,
 } from '@coze-arch/bot-api/workflow_api';
-import { type IWorkflow, type IProject } from '@coze-studio/open-chat';
 
 import { useSkeleton } from './use-skeleton';
 

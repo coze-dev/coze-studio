@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { exhaustiveCheckForRecord } from '@coze-common/chat-area-utils';
 
 export const checkNoneMessageGroupMemberLeft = exhaustiveCheckForRecord;

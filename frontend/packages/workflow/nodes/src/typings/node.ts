@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type {
   DTODefine,
   VariableMetaDTO,
@@ -58,7 +58,7 @@ export type DebugExample = OriginDebugExample;
 
 /**
  * Plugin extension protocol added properties
- * 
+ *
  */
 export interface PluginExtendProps {
   title?: string;

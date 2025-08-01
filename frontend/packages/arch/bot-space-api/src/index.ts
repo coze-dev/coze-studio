@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import axios, { type AxiosRequestConfig } from 'axios';
 import { globalVars } from '@coze-arch/web-context';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';

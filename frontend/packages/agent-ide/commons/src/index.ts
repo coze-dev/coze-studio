@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { DiffNodeRender } from './components/diff-node-render';
 
 export { PublishTermService } from './components/term-service';

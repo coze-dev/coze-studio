@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import {
   type SetterComponentProps,
   type SetterExtension,
 } from '@flowgram-adapter/free-layout-editor';
-import { cronJobTranslator } from '@coze-workflow/components';
 import { CronJobType, type CronJobValue } from '@coze-workflow/nodes';
+import { cronJobTranslator } from '@coze-workflow/components';
 import { ValueExpressionType, ValueExpression } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { Select } from '@coze-arch/coze-design';

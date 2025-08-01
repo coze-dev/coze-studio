@@ -82,7 +82,10 @@ const updateDTS = ({
  */
 /* eslint-disable */
 /* prettier-ignore */
-// Automatically generated based on ${path.relative(baseDir, inputFileName)}, do not modify manually `,
+// Automatically generated based on ${path.relative(
+      baseDir,
+      inputFileName,
+    )}, do not modify manually `,
     {
       overwrite: true,
     },

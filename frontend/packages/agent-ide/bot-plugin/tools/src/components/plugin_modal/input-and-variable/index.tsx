@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { I18n } from '@coze-arch/i18n';
 import { type OptionProps } from '@coze-arch/bot-semi/Select';
-import {
-  UIInput,
-  UISelect,
-  InputGroup,
-  Typography,
-} from '@coze-arch/bot-semi';
+import { UIInput, UISelect, InputGroup, Typography } from '@coze-arch/bot-semi';
 import {
   DefaultParamSource,
   type APIParameter,

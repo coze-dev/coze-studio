@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, type FC } from 'react';
 
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { Select } from '@coze-arch/coze-design';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { useVectorModelList } from '@/form-extensions/hooks';
 import { CheckboxWithLabel } from '@/form-extensions/components/checkbox-with-label';

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import { Tooltip } from '@coze-arch/bot-semi';
-import { ThemeExtension } from '@coze-common/editor-plugins/theme';
 import {
   PromptEditorRender,
   type PromptEditorRenderProps,
 } from '@coze-common/prompt-kit-base/editor';
+import { ThemeExtension } from '@coze-common/editor-plugins/theme';
+import { I18n } from '@coze-arch/i18n';
+import { Tooltip } from '@coze-arch/bot-semi';
 import { EditorView } from '@codemirror/view';
 
 import { WORKFLOW_PLAYGROUND_CONTENT_ID } from '@/constants';

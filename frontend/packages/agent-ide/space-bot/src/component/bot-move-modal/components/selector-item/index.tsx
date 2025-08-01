@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classnames from 'classnames';
 import { IconCozCheckMarkFill } from '@coze-arch/coze-design/icons';
 import { type BotSpace } from '@coze-arch/bot-api/developer_api';

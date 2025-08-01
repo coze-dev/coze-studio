@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { I18n } from '@coze-arch/i18n';
+
 import {
   type ValidatorProps,
   type FormItemMaterialContext,
   type SetterExtension,
 } from '@flowgram-adapter/free-layout-editor';
+import { I18n } from '@coze-arch/i18n';
 
 import { nameValidationRule } from '../helper';
 import { defaultGetNames } from './utils';

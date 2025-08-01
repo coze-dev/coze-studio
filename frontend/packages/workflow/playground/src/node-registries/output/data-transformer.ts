@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FormData, type NodeDataDTO } from './types';
 import { get, set } from 'lodash-es';
 import { VariableTypeDTO } from '@coze-workflow/base';
@@ -51,8 +51,8 @@ export const transformOnSubmit = (value: FormData) => {
         value: {
           type: 'literal',
           content: value.inputs.content,
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  };
 };

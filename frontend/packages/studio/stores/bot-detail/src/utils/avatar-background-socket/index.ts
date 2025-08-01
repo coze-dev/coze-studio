@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { arrayBufferToObject } from '@coze-arch/bot-utils';
-import {
-  type GenPicMessage,
-  PicType,
-} from '@coze-arch/bot-api/playground_api';
+import { type GenPicMessage, PicType } from '@coze-arch/bot-api/playground_api';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 import webSocketManager, {
   type Connection,

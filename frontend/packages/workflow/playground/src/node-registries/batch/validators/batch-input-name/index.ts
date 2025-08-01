@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable  @typescript-eslint/naming-convention*/
-import { createNodeInputNameValidate } from '@/nodes-v2/components/node-input-name/validate';
 import { I18n } from '@coze-arch/i18n';
+
+import { createNodeInputNameValidate } from '@/nodes-v2/components/node-input-name/validate';
+
 import { getBatchInputNames } from './get-batch-input-names';
 
 export const BatchInputNameValidator = createNodeInputNameValidate({

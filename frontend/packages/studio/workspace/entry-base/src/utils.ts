@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import qs from 'qs';
 import { pick } from 'lodash-es';
 import { type PluginNavType } from '@coze-studio/bot-plugin-store/src/context';
@@ -53,13 +53,17 @@ export function resourceNavigate(
       ),
     mocksetList: (toolID, query, opts) =>
       navigate(
-        `${navBase}/plugin/${pluginID}/tool/${toolID}/plugin-mock-set?${qs.stringify(query)}`,
+        `${navBase}/plugin/${pluginID}/tool/${toolID}/plugin-mock-set?${qs.stringify(
+          query,
+        )}`,
         opts,
       ),
     // eslint-disable-next-line max-params
     mocksetDetail: (toolID, mocksetID, query, opts) =>
       navigate(
-        `${navBase}/plugin/${pluginID}/tool/${toolID}/plugin-mock-set/${mocksetID}?${qs.stringify(query)}`,
+        `${navBase}/plugin/${pluginID}/tool/${toolID}/plugin-mock-set/${mocksetID}?${qs.stringify(
+          query,
+        )}`,
         opts,
       ),
     cloudIDE: (query, opts) =>

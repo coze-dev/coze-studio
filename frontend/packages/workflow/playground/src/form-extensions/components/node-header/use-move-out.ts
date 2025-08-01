@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useState, type MouseEvent } from 'react';
 
 import { NodeIntoContainerService } from '@flowgram-adapter/free-layout-editor';
-import { useEntityFromContext, useService } from '@flowgram-adapter/free-layout-editor';
+import {
+  useEntityFromContext,
+  useService,
+} from '@flowgram-adapter/free-layout-editor';
 import {
   delay,
   WorkflowDragService,

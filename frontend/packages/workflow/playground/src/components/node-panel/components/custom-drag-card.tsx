@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useDrag } from 'react-dnd';
 import React, { type PropsWithChildren } from 'react';
 
@@ -95,12 +95,12 @@ export function CustomDragCard({
       nodeVersionInfo: isPluginApiNodeTemplate(nodeTemplate)
         ? { pluginId: nodeTemplate.plugin_id, version: nodeTemplate.version }
         : isSubWorkflowNodeTemplate(nodeTemplate)
-          ? // The version information of the workflow is obtained through the interface when dropping
-            {
-              workflowId: nodeTemplate.workflow_id,
-              pluginId: nodeTemplate.plugin_id,
-            }
-          : {},
+        ? // The version information of the workflow is obtained through the interface when dropping
+          {
+            workflowId: nodeTemplate.workflow_id,
+            pluginId: nodeTemplate.plugin_id,
+          }
+        : {},
     },
     collect: monitor => {
       const dragType = monitor.getItemType();

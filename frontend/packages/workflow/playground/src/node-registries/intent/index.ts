@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { INTENT_NODE_REGISTRY } from './node-registry';
 export { IntentContent } from './node-content';

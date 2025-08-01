@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useRef, type ReactNode, useCallback } from 'react';
 
 import { isUndefined } from 'lodash-es';
@@ -24,8 +24,8 @@ import {
 } from '@coze-workflow/base/types';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { CustomError } from '@coze-arch/bot-error';
 import { Cascader, type CascaderData } from '@coze-arch/coze-design';
+import { CustomError } from '@coze-arch/bot-error';
 
 const hoursSize = 24;
 const padStart = 2;

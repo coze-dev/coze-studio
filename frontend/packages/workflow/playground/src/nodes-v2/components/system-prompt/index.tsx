@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, type FC } from 'react';
 
+import { NLPromptProvider } from '@coze-workflow/resources-adapter';
+import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
 import type {
   ILibraryItem,
   ILibraryList,
 } from '@coze-common/editor-plugins/library-insert';
-import { NLPromptProvider } from '@coze-workflow/resources-adapter';
-import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';

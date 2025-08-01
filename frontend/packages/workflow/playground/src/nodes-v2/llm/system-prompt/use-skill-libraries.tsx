@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
-import {
-  type GetLLMNodeFCSettingDetailResponse,
-  WorkflowMode,
-} from '@coze-arch/idl/workflow_api';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   type ILibraryList,
   type ILibraryItem,
 } from '@coze-common/editor-plugins/library-insert';
+import {
+  type GetLLMNodeFCSettingDetailResponse,
+  WorkflowMode,
+} from '@coze-arch/idl/workflow_api';
 
 import { useGlobalState } from '@/hooks';
 

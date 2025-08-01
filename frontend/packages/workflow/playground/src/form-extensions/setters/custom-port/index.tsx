@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type CSSProperties } from 'react';
 
-import { useNodeTestId } from '@coze-workflow/base';
 import type {
   SetterComponentProps,
   SetterExtension,
 } from '@flowgram-adapter/free-layout-editor';
+import { useNodeTestId } from '@coze-workflow/base';
 
 import { CustomPort } from '../../../components/custom-port';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const IS_DEV_MODE =
   (process.env.NODE_ENV as 'production' | 'development' | 'test') ===
   'development';

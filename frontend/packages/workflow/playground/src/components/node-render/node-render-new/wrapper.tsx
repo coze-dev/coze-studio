@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type PropsWithChildren, useCallback, useState } from 'react';
 
-import { ConfigProvider } from '@coze-arch/bot-semi';
 import { useNodeRender } from '@flowgram-adapter/free-layout-editor';
+import { ConfigProvider } from '@coze-arch/bot-semi';
 
 interface WrapperProps {
   className?: string;

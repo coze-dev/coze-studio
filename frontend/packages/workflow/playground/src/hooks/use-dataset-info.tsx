@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+import { type Disposable } from '@flowgram-adapter/common';
 import { MessageBizType } from '@coze-arch/idl/workflow_api';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
-import { type Disposable } from '@flowgram-adapter/common';
 
 import { useGlobalState } from './use-global-state';
 import { useDependencyService } from './use-dependency-service';

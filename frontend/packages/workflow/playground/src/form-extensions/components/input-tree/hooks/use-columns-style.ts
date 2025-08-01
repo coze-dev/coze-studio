@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TreeIndentWidth } from '../constants';
 
 interface ColumnsStyle {
@@ -29,7 +29,9 @@ export function useColumnsStyle(columnsRatio = '3:2', level = 0): ColumnsStyle {
       flex: `${nameWidth} ${nameWidth} 0`,
     },
     value: {
-      flex: `${valueWidth} ${valueWidth} ${(level * TreeIndentWidth * valueWidth) / nameWidth}px`,
+      flex: `${valueWidth} ${valueWidth} ${
+        (level * TreeIndentWidth * valueWidth) / nameWidth
+      }px`,
     },
   };
 }

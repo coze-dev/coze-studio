@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type Ref,
   forwardRef,
@@ -26,13 +26,7 @@ import React, {
 import { set as ObjectSet, get as ObjectGet, cloneDeep } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
 import { Tag } from '@coze-arch/coze-design';
-import {
-  UIButton,
-  Table,
-  Typography,
-  UITag,
-  Space,
-} from '@coze-arch/bot-semi';
+import { UIButton, Table, Typography, UITag, Space } from '@coze-arch/bot-semi';
 import { IconAddChildOutlined } from '@coze-arch/bot-icons';
 import {
   type APIParameter,

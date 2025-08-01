@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getUnselectAllImplement } from '../public/use-unselect-all';
 import { useMethodCommonDeps } from '../context/use-method-common-deps';
 import { FileManagerEventNames, fileManager } from '../../utils/file-manage';

@@ -214,18 +214,22 @@ export const generateMarkdownReport = (report: ProcessingReport): string => {
       detail.status === 'success'
         ? '✅'
         : detail.status === 'error'
-          ? '❌'
-          : detail.status === 'skipped'
-            ? '⏭️'
-            : '🔄';
+        ? '❌'
+        : detail.status === 'skipped'
+        ? '⏭️'
+        : '🔄';
 
-    markdown += `| ${detail.file} | ${status} | ${detail.commentCount} | ${duration} | ${detail.errorMessage || '-'} |\n`;
+    markdown += `| ${detail.file} | ${status} | ${
+      detail.commentCount
+    } | ${duration} | ${detail.errorMessage || '-'} |\n`;
   });
 
   if (stats.errors.length > 0) {
     markdown += '\n## ❌ 错误详情\n\n';
     stats.errors.forEach((error, index) => {
-      markdown += `${index + 1}. **${error.file}**\n   \`\`\`\n   ${error.error}\n   \`\`\`\n\n`;
+      markdown += `${index + 1}. **${error.file}**\n   \`\`\`\n   ${
+        error.error
+      }\n   \`\`\`\n\n`;
     });
   }
 
@@ -292,7 +296,9 @@ export class ProgressDisplay {
     const speed = current / elapsed;
     const eta = speed > 0 ? (this.total - current) / speed : 0;
 
-    let line = `进度: ${current}/${this.total} (${percentage}%) | 耗时: ${elapsed.toFixed(1)}s`;
+    let line = `进度: ${current}/${
+      this.total
+    } (${percentage}%) | 耗时: ${elapsed.toFixed(1)}s`;
 
     if (eta > 0) {
       line += ` | 预计剩余: ${eta.toFixed(1)}s`;

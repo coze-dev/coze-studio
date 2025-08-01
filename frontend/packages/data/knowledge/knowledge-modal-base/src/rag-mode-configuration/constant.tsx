@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import copy from 'copy-to-clipboard';
 import { BotE2e } from '@coze-data/e2e';
 import { I18n, getUnReactiveLanguage } from '@coze-arch/i18n';

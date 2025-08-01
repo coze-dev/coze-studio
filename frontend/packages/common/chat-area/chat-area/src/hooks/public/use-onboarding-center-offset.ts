@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useScrollViewSize } from '../../context/scroll-view-size';
 import { usePreference } from '../../context/preference';
 

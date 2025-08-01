@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type CustomComponent } from '../../types/plugin-component';
 import { type ChatAreaPluginContext } from '../../types/plugin-class/chat-area-plugin-context';
 import { PluginMode, type PluginName } from '../../constants/plugin';

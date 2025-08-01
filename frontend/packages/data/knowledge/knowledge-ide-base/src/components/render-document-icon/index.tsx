@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { DocumentSource, FormatType } from '@coze-arch/bot-api/knowledge';
 import { isFeishuOrLarkDocumentSource } from '@coze-data/utils';
 import { IconUnitsTable, IconUnitsFile } from '@coze-arch/bot-icons';

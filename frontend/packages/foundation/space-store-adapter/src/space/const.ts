@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum ReportEventNames {
   EmptySpaceList = 'empty_space_List', // Space list is empty
   PollingSpaceList = 'polling_space_list', // Rotation space list
 }
-

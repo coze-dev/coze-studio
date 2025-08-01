@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ValueExpression, ValueExpressionType } from '@coze-workflow/base';
 
 export const DEFUALT_VISION_INPUT: ValueExpression = {

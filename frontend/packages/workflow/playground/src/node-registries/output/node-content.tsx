@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InputParameters } from '../common/components';
 import { useFlags } from '@coze-arch/bot-flags';
 import { MessageContent as OutputContentOld } from '@/components/node-render/node-render-new/content/message-content';

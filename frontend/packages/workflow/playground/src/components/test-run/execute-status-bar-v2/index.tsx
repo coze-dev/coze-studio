@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Node status bar for coze graph 2.0
  */
 import React from 'react';
 
-import { WorkflowExecStatus, NodeExeStatus } from '@coze-workflow/base';
 import { getNodeError } from '@flowgram-adapter/free-layout-editor';
 import type { FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
+import { WorkflowExecStatus, NodeExeStatus } from '@coze-workflow/base';
 
 import { useExecStateEntity, useGlobalState } from '../../../hooks';
 import { ExecuteStatusBarContent } from './content';

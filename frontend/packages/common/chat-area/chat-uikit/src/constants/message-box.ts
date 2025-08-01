@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MESSAGE_BOX_CONTAINER_MARGIN_X_PC = 24;
 export const MESSAGE_BOX_CONTAINER_MARGIN_X_MOBILE = 10;
 export const MESSAGE_BOX_AVATAR_SIZE = 32;

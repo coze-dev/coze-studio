@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import React, { useMemo, useState, useCallback } from 'react';
 
 import { nanoid } from 'nanoid';
 import { pick, isNil, isObject, isEmpty } from 'lodash-es';
 import cls from 'classnames';
+import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { type NodeResult } from '@coze-workflow/base/api';
 import { WorkflowNode } from '@coze-workflow/base';
+import { JsonViewer } from '@coze-common/json-viewer';
 import { I18n } from '@coze-arch/i18n';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { Icon } from '@coze-arch/bot-semi';
-import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
-import { JsonViewer } from '@coze-common/json-viewer';
 
 import {
   generateLog,

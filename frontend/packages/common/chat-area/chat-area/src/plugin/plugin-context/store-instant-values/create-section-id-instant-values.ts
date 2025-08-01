@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type SectionIdStore } from '../../../store/section-id';
 
 export const createSectionIdInstantValues =

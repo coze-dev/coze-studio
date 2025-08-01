@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { SelectFieldsButton } from '@/node-registries/database/common/components';
 import { useFieldArray } from '@/form';
 

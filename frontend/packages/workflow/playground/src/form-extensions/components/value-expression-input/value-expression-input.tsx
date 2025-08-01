@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity -- no need to check */
 import React, {
   useCallback,
@@ -33,9 +33,9 @@ import {
   type LiteralExpression,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type SelectProps } from '@coze-arch/bot-semi/Select';
 import { IconCozApply } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
+import { type SelectProps } from '@coze-arch/bot-semi/Select';
 
 import { useRefInputNode } from '@/hooks/use-ref-input';
 import {

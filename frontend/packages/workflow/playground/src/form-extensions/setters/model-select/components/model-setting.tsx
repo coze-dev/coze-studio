@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // TODO first encapsulates a business component for joint debugging, and then abstracts it into a general request select.
 import React, { useEffect, useMemo, useState, type FC } from 'react';
 
 import { GenerationDiversity, RESPONSE_FORMAT_NAME } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
+import { Select, Radio, RadioGroup } from '@coze-arch/coze-design';
 import { type OptionProps } from '@coze-arch/bot-semi/Select';
 import { IconDownArrow } from '@coze-arch/bot-icons';
 import {
   type ModelParamClass,
   type Model,
 } from '@coze-arch/bot-api/developer_api';
-import { Select, Radio, RadioGroup } from '@coze-arch/coze-design';
 
 import { cacheData, getCamelNameName, getValueByType } from '../utils';
 import styles from '../index.module.less';

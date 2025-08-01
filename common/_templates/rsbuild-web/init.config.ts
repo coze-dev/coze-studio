@@ -21,8 +21,8 @@ import SetDefaultAuthorPlugin from '../_plugins/SetDefaultAuthorPlugin';
 const config: IConfig = {
   plugins: [new SetDefaultAuthorPlugin(), new SelectTeamPlugin()],
   defaultProjectConfiguration: {
-    tags:['level-4']
-  }
+    tags: ['level-4'],
+  },
 };
 
 export default config;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { CONTENT_ATTRIBUTE_NAME } from '../constants/range';
 import { getAllNodesInRange } from './helper/get-all-nodes-in-range';
 import { findAncestorNodeByTagName } from './helper/find-ancestor-node-by-tag-name';

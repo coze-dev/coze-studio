@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type DatabaseInfo } from '@coze-studio/bot-detail-store';
 import { type FileItem } from '@coze-arch/bot-semi/Upload';
 

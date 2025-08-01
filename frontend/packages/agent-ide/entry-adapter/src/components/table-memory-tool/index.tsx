@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ToolKey } from '@coze-agent-ide/tool';
 import { TableMemory as BaseComponent } from '@coze-agent-ide/space-bot/component';
 import { I18n } from '@coze-arch/i18n';

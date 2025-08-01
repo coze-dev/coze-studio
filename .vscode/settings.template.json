@@ -67,7 +67,8 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/.rush": true,
-    "**/.swc": true
+    "**/.swc": true,
+    "**/rush-logs": true
   },
   "files.watcherExclude": {
     "**/.git/objects/**": true,

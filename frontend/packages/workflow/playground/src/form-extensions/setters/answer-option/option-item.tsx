@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { forwardRef } from 'react';
 
 import classNames from 'classnames';
+import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
+import { IconHandle } from '@douyinfe/semi-icons';
 import { useNodeTestId } from '@coze-workflow/base';
 import { IconCozMinus } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
-import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
-import { IconHandle } from '@douyinfe/semi-icons';
 
 import { ExpressionEditorContainer } from '../expression-editor/container';
 import { ValidationErrorWrapper } from '../../components/validation';

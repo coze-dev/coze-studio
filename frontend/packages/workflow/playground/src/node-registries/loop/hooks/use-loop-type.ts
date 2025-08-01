@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { useEffect, useLayoutEffect, useState } from 'react';
+
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   FlowNodeFormData,
   type FormModelV2,
 } from '@flowgram-adapter/free-layout-editor';
-import { useEffect, useLayoutEffect, useState } from 'react';
+
 import { LoopPath, LoopType } from '../constants';
 
 export const useLoopType = () => {

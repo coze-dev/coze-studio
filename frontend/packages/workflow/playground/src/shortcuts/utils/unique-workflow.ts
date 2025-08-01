@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity -- no need to fix */
 /* eslint-disable @typescript-eslint/no-namespace -- no need to fix */
 import { customAlphabet } from 'nanoid';

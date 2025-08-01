@@ -22,7 +22,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-namesrv
-          image: busybox:latest
+          image: "{{ .Values.images.busybox }}"
           command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-rocketmq-namesrv 9876; do echo waiting for namesrv; sleep 2; done']
       volumes:
         - name: broker-config

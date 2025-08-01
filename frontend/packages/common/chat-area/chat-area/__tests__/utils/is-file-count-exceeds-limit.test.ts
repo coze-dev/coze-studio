@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isFileCountExceedsLimit } from '../../src/utils/is-file-count-exceeds-limit';
 
 describe('is-file-count-exceeds-limit', () => {

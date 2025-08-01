@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback } from 'react';
 
-import { WorkflowNode } from '@coze-workflow/base';
 import {
   useCurrentEntity,
   type FormModelV2,
@@ -25,6 +24,7 @@ import {
   type FieldRenderProps,
   FlowNodeFormData,
 } from '@flowgram-adapter/free-layout-editor';
+import { WorkflowNode } from '@coze-workflow/base';
 
 import {
   NodeHeader,

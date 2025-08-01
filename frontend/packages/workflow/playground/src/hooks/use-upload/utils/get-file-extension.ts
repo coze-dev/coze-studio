@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** Get filename suffix */
 export function getFileExtension(name?: string) {
   if (!name) {

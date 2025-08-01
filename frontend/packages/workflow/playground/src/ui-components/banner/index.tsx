@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Make a simple style encapsulation for the banner of semi-ui, which conforms to the UX design draft specification
  */
@@ -21,8 +21,8 @@
 import { type FC } from 'react';
 
 import classnames from 'classnames';
-import { Banner, type BannerProps } from '@coze-arch/coze-design';
 import { IconClose } from '@douyinfe/semi-icons';
+import { Banner, type BannerProps } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

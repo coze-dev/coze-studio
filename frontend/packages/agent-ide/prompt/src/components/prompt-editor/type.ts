@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export interface PromptEditorProps {
   className?: string;
   onChange: (value: string) => void;

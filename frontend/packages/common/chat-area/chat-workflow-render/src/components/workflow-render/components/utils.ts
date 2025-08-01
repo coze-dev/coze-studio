@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isObject } from 'lodash-es';
 
 import { type InputWorkflowNodeContent, type WorkflowNode } from './type';

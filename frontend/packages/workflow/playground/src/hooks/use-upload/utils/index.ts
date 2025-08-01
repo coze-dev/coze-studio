@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { formatBytes } from './format-bytes';
 export { getImageSize } from './get-image-size';
 export { getBase64 } from './get-base-64';

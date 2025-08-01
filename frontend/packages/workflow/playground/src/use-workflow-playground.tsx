@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRef, useState, useMemo, useEffect } from 'react';
 
 import { isBoolean } from 'lodash-es';
@@ -26,8 +26,8 @@ import {
 } from '@coze-workflow/base/api';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import { Button, Space } from '@coze-arch/coze-design';
+import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 
 import { WorkflowPlayground } from './workflow-playground';
 import {

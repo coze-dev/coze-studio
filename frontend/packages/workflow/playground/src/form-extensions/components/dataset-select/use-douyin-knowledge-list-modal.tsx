@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState } from 'react';
 
-import { type Dataset } from '@coze-arch/bot-api/knowledge';
 import { DouyinKnowledgeListModal } from '@coze-workflow/resources-adapter';
+import { type Dataset } from '@coze-arch/bot-api/knowledge';
 
 export interface UseDouyinKnowledgeListModalParams {
   botId: string;

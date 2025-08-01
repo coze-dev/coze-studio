@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { keyBy } from 'lodash-es';
-import { WorkflowNode } from '@coze-workflow/base';
 import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
+import { WorkflowNode } from '@coze-workflow/base';
 
 import { generateArrayInputParameters } from '../utils/generate-test-form-fields';
 import { FieldName } from '../constants';

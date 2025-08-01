@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { Typography, UIIconButton } from '@coze-arch/bot-semi';
-import { IconArrowLeft } from '@coze-arch/bot-icons';
+
 import { LoadingButton } from '@coze-common/loading-button';
 import { I18n } from '@coze-arch/i18n';
+import { Typography, UIIconButton } from '@coze-arch/bot-semi';
+import { IconArrowLeft } from '@coze-arch/bot-icons';
 
 import { useMerge } from '../use-merge';
 

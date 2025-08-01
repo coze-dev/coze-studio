@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type AgentModalTabKey } from '@coze-agent-ide/tool-config';
 
 import { useEvent } from '../event/use-event';

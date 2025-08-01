@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * This component provides a sidesheet rendering space in the workflow canvas, so that the sidesheet space in the canvas can squeeze the canvas to achieve some side-pull interaction
  * In this space, the semi-ui SideSheet is still used by default to render the pull window, keeping development simple

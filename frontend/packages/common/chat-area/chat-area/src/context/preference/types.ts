@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type UiKitChatInputButtonConfig } from '@coze-common/chat-uikit';
 import { type SuggestedQuestionsShowMode } from '@coze-arch/bot-api/developer_api';
 import {

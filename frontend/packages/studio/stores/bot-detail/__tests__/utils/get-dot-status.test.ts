@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect } from 'vitest';
 
 import { DotStatus } from '../../src/types/generate-image';
@@ -54,7 +54,7 @@ function simplifiedGetDotStatus(
 
   return task?.status === DotStatus.Generating ||
     notices.some(item => item.type === picType && item.un_read)
-    ? (task?.status ?? DotStatus.None)
+    ? task?.status ?? DotStatus.None
     : DotStatus.None;
 }
 

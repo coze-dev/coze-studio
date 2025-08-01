@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // ! Notice prohibits direct export of shortcut-tool, causing downstream dependencies on unwanted knowledge-uploads
 // export { ShortcutToolConfig } from './shortcut-tool';
 export { ShortcutBar } from './shortcut-bar';

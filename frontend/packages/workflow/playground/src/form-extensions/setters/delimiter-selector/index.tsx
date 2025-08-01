@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useCallback, useState } from 'react';
 
+import { type SetterAbilityOptions } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { type SelectProps, Toast, withField } from '@coze-arch/coze-design';
-import { type SetterAbilityOptions } from '@flowgram-adapter/free-layout-editor';
 
 import TagSelector from '../../components/tag-selector';
 

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo } from 'react';
 
+import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { Input } from '@coze-arch/coze-design';
-import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { feedbackStatus2ValidateStatus } from '../../components/utils';
 

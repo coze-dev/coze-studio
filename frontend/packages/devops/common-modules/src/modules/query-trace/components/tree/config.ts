@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GlobalStyle, type LineStyle } from './typing';
 
 export const defaultGlobalStyle: GlobalStyle = {

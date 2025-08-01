@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMultiAgentStore } from '@coze-studio/bot-detail-store/multi-agent';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
 import {

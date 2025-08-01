@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useState, type ForwardedRef } from 'react';
 
 import classNames from 'classnames';
-import { type Workflow } from '@coze-arch/idl/workflow_api';
 import {
   InteractiveType,
   getPreferInteractiveType,
 } from '@coze-common/mouse-pad-selector';
+import { type Workflow } from '@coze-arch/idl/workflow_api';
 
 import { useTemplateService } from '@/hooks/use-template-service';
 

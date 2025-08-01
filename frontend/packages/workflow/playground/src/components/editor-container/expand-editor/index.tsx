@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { FC } from 'react';
 
 import classNames from 'classnames';
@@ -83,7 +83,9 @@ export const ExpandEditorContainer: FC<ExpandEditorContainerProps> = props => {
           ) : null}
         </span>
         <span className={styles.rightSide}>
-          {actions?.map((action, index) => <span key={index}>{action}</span>)}
+          {actions?.map((action, index) => (
+            <span key={index}>{action}</span>
+          ))}
           {closeButton ?? (
             <Tooltip content={I18n.t('node_http_json_collapse')}>
               <span>

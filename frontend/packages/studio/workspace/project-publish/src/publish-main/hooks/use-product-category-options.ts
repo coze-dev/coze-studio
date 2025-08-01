@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useRequest } from 'ahooks';
 import { type ProductEntityType } from '@coze-arch/bot-api/product_api';
 import { ProductApi } from '@coze-arch/bot-api';

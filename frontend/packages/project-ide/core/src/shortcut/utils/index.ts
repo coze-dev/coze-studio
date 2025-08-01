@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { isKeyStringMatch } from './key-match';
 export { getKeyLabel } from './key-label';
 export { domEditable } from './dom';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 //  At present, the size information of the file cannot be obtained. If the file is too large, the browser card PDF does not need to be registered for the time being, and then it will be released.
 import { JsonPreviewBasePlugin } from '../base';
 import OverlayAPI from '../../common/overlay';

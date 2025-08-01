@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TerminatePlan as TerminatePlanContent } from '@/components/node-render/node-render-new/fields/terminate-plan';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { URI, useIDEService, WidgetManager } from '@coze-project-ide/client';
 
 import { type ProjectIDEWidget } from '../widgets/project-ide-widget';

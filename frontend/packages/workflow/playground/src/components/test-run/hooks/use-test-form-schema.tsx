@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useMemo, type ReactNode } from 'react';
 
 import { get } from 'lodash-es';
@@ -25,9 +25,9 @@ import { type NodeData, WorkflowNodeData } from '@coze-workflow/nodes';
 import { StandardNodeType, WorkflowMode } from '@coze-workflow/base';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
+import { Typography } from '@coze-arch/coze-design';
 import { ComponentType, type infra } from '@coze-arch/bot-api/debugger_api';
 import { debuggerApi } from '@coze-arch/bot-api';
-import { Typography } from '@coze-arch/coze-design';
 
 import { type TestFormField } from '../types';
 import {

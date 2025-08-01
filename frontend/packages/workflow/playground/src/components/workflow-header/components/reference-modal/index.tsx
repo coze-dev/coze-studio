@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ErrorBoundary } from 'react-error-boundary';
 import { useCallback } from 'react';
 
+import { ResourceTree } from '@coze-common/resource-tree';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozIllusError } from '@coze-arch/coze-design/illustrations';
 import {
@@ -26,7 +27,6 @@ import {
 } from '@coze-arch/coze-design/icons';
 import { Modal, Tooltip, Button, EmptyState } from '@coze-arch/coze-design';
 import { type DependencyTree } from '@coze-arch/bot-api/workflow_api';
-import { ResourceTree } from '@coze-common/resource-tree';
 
 import { TooltipContent } from './tooltip-content';
 import { LinkNode } from './link-node';

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { type ErrorFormPropsV2 } from '../../types';
 import { FormCard } from '../../../form-card';

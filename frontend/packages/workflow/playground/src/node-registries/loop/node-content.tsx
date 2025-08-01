@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { PrivateScopeProvider } from '@coze-workflow/variable';
 
 import { Outputs } from '@/components/node-render/node-render-new/fields';

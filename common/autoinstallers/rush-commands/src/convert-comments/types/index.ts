@@ -199,10 +199,7 @@ export type Result<T, E = Error> =
  * translation error
  */
 export class TranslationError extends Error {
-  constructor(
-    message: string,
-    public originalComment: string,
-  ) {
+  constructor(message: string, public originalComment: string) {
     super(message);
     this.name = 'TranslationError';
   }

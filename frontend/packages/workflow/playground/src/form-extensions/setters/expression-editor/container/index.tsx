@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   useCallback,
   useEffect,
@@ -25,6 +25,9 @@ import {
 
 import { debounce } from 'lodash-es';
 import classNames from 'classnames';
+import { SelectorBoxConfigEntity } from '@flowgram-adapter/free-layout-editor';
+import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
+import { useEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   ExpressionEditorCounter,
   ExpressionEditorEvent,
@@ -33,9 +36,6 @@ import {
   Expression,
 } from '@coze-workflow/components';
 import { useNodeTestId } from '@coze-workflow/base';
-import { SelectorBoxConfigEntity } from '@flowgram-adapter/free-layout-editor';
-import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
-import { useEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useParseText, useVariableTree } from '../hooks';
 

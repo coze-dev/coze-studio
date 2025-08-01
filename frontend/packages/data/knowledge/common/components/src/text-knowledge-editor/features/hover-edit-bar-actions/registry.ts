@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FeatureRegistry } from '@coze-data/feature-register';
 
 import { type HoverEditBarActionModule } from './module';

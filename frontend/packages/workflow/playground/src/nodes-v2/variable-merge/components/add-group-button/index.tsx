@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type FC } from 'react';
 
 import classnames from 'classnames';
+import { type FieldArrayRenderProps } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
-import { type FieldArrayRenderProps } from '@flowgram-adapter/free-layout-editor';
 
 import { TooltipWithDisabled } from '../tooltip-with-disabled';
 import { generateGroupName } from '../../utils/generate-group-name';

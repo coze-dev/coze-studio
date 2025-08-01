@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import { useEffect, useState, type FC } from 'react';
 
 import classNames from 'classnames';
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import type { ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozImport } from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 

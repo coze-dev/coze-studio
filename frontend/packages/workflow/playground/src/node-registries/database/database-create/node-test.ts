@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { MemoryApi } from '@coze-arch/bot-api';
+
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
+import { MemoryApi } from '@coze-arch/bot-api';
 
 import { generateParametersToProperties } from '@/test-run-kit';
 import { type NodeTestMeta } from '@/test-run-kit';

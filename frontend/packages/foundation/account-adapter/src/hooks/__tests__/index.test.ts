@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { renderHook } from '@testing-library/react';
@@ -72,7 +72,9 @@ describe('useCheckLogin', () => {
     renderHook(() => useCheckLogin({ needLogin: true }));
 
     expect(mockNavigate).toBeCalledWith(
-      `${signPath}?${signRedirectKey}=${encodeURIComponent(`${mockLocation.pathname}${mockLocation.search}`)}`,
+      `${signPath}?${signRedirectKey}=${encodeURIComponent(
+        `${mockLocation.pathname}${mockLocation.search}`,
+      )}`,
     );
   });
 

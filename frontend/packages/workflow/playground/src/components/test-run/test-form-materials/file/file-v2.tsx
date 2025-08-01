@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TypedFileInput as OriginTypedFileInput } from './typed-file-input';
 
 export const TypedFileInput = props => (

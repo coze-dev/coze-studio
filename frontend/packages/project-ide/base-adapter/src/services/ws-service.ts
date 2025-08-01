@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { inject, injectable } from 'inversify';
 import { Emitter } from '@coze-project-ide/client';
 import { type WsMessageProps } from '@coze-project-ide/base-interface';

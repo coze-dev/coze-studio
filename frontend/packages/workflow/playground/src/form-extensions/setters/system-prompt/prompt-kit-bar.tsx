@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { PublicScopeProvider } from '@coze-workflow/variable';
 import { NLPromptButton } from '@coze-workflow/resources-adapter';
 import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
 import { I18n } from '@coze-arch/i18n';
-import { UIIconButton, Tooltip } from '@coze-arch/bot-semi';
 import {
   IconCozExpand,
   IconCozKnowledge,
   IconCozMinimize,
 } from '@coze-arch/coze-design/icons';
+import { UIIconButton, Tooltip } from '@coze-arch/bot-semi';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 

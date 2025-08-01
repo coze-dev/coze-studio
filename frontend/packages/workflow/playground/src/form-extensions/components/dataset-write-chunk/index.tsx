@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect, type FC } from 'react';
 
 import { isNil, set } from 'lodash-es';
@@ -26,12 +26,12 @@ import { useNodeTestId } from '@coze-workflow/base';
 import { SeperatorType } from '@coze-data/knowledge-resource-processor-base/types';
 import { getSeperatorOptionList } from '@coze-data/knowledge-resource-processor-base/constants';
 import { I18n } from '@coze-arch/i18n';
+import { Select, Input } from '@coze-arch/coze-design';
 import type {
   OptionItem,
   RadioChangeEvent,
   RadioType,
 } from '@coze-arch/bot-semi/Radio';
-import { Select, Input } from '@coze-arch/coze-design';
 
 import { Radio } from '../radio';
 import { SliderArea, TitleArea } from '../dataset-setting/components';

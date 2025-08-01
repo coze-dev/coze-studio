@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BizWorkflowKnowledgeIDENavBar } from '@coze-data/knowledge-ide-base/features/nav-bar/biz-workflow';
 
 import { BaseKnowledgeIDE, type BaseKnowledgeIDEProps } from '../base';

@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
 import { debounce } from 'lodash-es';
-import { transPricingRules } from '@coze-studio/components';
-import { logger } from '@coze-arch/logger';
-import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import {
   WorkflowContentChangeType,
   WorkflowDocument,
 } from '@flowgram-adapter/free-layout-editor';
+import { transPricingRules } from '@coze-studio/components';
+import { logger } from '@coze-arch/logger';
+import { PluginDevelopApi } from '@coze-arch/bot-api';
 
 import { useGlobalState, useLatestWorkflowJson } from '@/hooks';
 

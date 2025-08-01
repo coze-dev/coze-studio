@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { extractEnvValue } from '../utils/config-helper';
 
 const VOLCANO_PLATFORM_ID = extractEnvValue<number | null>({

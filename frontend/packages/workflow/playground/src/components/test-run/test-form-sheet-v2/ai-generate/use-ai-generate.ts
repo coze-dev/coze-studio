@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef } from 'react';
 
@@ -21,11 +21,11 @@ import { variableUtils } from '@coze-workflow/variable';
 import { typeSafeJSONParse } from '@coze-workflow/test-run';
 import { workflowApi, ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
+import { Toast } from '@coze-arch/coze-design';
 import {
   CopilotType,
   TestCaseGeneratedBy,
 } from '@coze-arch/bot-api/workflow_api';
-import { Toast } from '@coze-arch/coze-design';
 
 import { useGlobalState, useTestRunReporterService } from '@/hooks';
 

@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState, useEffect } from 'react';
 
+import { useService } from '@flowgram-adapter/free-layout-editor';
 import { workflowApi } from '@coze-workflow/base';
+import { isDepEmpty } from '@coze-common/resource-tree';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozBinding } from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
@@ -24,8 +26,6 @@ import {
   WorkflowStorageType,
   type DependencyTree,
 } from '@coze-arch/bot-api/workflow_api';
-import { useService } from '@flowgram-adapter/free-layout-editor';
-import { isDepEmpty } from '@coze-common/resource-tree';
 
 import { WorkflowSaveService } from '@/services';
 import { useSpaceId } from '@/hooks/use-space-id';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Add the display hidden state of the node panel on the left, which needs to be consumed elsewhere, so it is abstracted into a global state.
  */

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getDataTypeText } from '@coze-data/utils';
 import { FooterBtnStatus } from '@coze-data/knowledge-resource-processor-core';
 import {

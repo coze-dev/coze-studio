@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useState } from 'react';
 
 import { clsx } from 'clsx';
 import { gotoDebugFlow } from '@coze-workflow/test-run-shared';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozExit } from '@coze-arch/coze-design/icons';
+import { Typography, Select, IconButton } from '@coze-arch/coze-design';
 import {
   type Span,
   type TraceFrontendSpan,
 } from '@coze-arch/bot-api/workflow_api';
-import { IconCozExit } from '@coze-arch/coze-design/icons';
-import { Typography, Select, IconButton } from '@coze-arch/coze-design';
 
 import { FocusButton } from '../focus-button';
 import { getGotoNodeParams } from '../../utils';

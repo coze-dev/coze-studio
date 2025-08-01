@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
+import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';
 import {
   type LiteralExpression,
   type ValueExpression,
@@ -27,7 +28,6 @@ import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import { IconButton, Select } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import type { SelectProps } from '@coze-arch/bot-semi/Select';
-import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';
 
 import { useGlobalState } from '@/hooks';
 import { type InputType } from '@/form-extensions/components/literal-value-input';

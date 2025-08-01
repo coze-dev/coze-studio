@@ -28,10 +28,7 @@
   },
   "globalPeerDependencyRules": {},
   "globalPackageExtensions": {},
-  "globalNeverBuiltDependencies": [
-    "canvas",
-    "better-sqlite3"
-  ],
+  "globalNeverBuiltDependencies": ["canvas", "better-sqlite3"],
   "globalAllowedDeprecatedVersions": {},
   "globalPatchedDependencies": {},
   "unsupportedPackageJsonSettings": {}

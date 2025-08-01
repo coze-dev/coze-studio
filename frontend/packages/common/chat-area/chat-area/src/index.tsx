@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ChatArea } from './chat-area-main';
 export { ChatAreaProviderMethod } from './context/chat-area-context/type';
 export { ChatAreaProvider } from './context/chat-area-context/provider';

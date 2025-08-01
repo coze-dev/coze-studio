@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useToolbarHandlers } from '../hooks';
 import { Tools } from './tools';
 import { Minimap } from './minimap';

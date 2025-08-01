@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const safeJSONParse = <T = unknown>(
   value: string,
   fallback: T | null,

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import {
-  type ExpressionEditorTreeNode,
-  ExpressionEditorTreeHelper,
-} from '@coze-workflow/components';
+
 import { type WorkflowVariableFacade } from '@coze-workflow/variable/src/core/workflow-variable-facade';
 import {
   getGlobalVariableAlias,
   TRANS_WORKFLOW_VARIABLE_SOURCE,
 } from '@coze-workflow/variable';
+import {
+  type ExpressionEditorTreeNode,
+  ExpressionEditorTreeHelper,
+} from '@coze-workflow/components';
 
 export const useVariableTree = ({
   variables,

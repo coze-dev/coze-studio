@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * This file only implements one function setImageFixed
  * Nodejs image rendering also needs to calculate the position. To implement a fully functional js version in packages/workflow/nodejs/fabricate-render

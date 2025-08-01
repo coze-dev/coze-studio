@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable } from 'inversify';
-import { isObject, type SchemaDecoration, Emitter } from '@flowgram-adapter/common';
+import {
+  isObject,
+  type SchemaDecoration,
+  Emitter,
+} from '@flowgram-adapter/common';
 
 import { type PreferenceSchema } from './preference-contribution';
 

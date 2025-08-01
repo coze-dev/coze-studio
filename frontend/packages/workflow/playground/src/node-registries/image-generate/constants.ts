@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const DEFAULT_REFERENCE = {
   weight: 0.7,
 };

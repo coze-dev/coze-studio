@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContentType, type Message } from '@coze-common/chat-core';
 
 import { getResponse } from '../../src/store/waiting';

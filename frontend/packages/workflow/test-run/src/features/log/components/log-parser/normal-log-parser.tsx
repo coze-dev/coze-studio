@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { DataViewer } from '../data-viewer';
 import { type BaseLog } from '../../types';
 import { LogWrap } from './log-wrap';

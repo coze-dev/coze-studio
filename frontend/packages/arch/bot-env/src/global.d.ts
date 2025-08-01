@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // copy from @byted/uploader
 type TUploaderRegion =
   | 'cn-north-1'

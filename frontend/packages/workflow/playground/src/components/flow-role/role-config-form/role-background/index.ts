@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { RoleBackground } from './role-background';
 export { AddBackground } from './add-background';

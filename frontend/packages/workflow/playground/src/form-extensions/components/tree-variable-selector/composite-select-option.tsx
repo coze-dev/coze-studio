@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import classnames from 'classnames';
 import { isGlobalVariableKey } from '@coze-workflow/variable';
 import { useNodeTestId, type ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { IconCozArrowRight } from '@coze-arch/coze-design/icons';
 import { Popover } from '@coze-arch/coze-design';
+import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 import { useGlobalState } from '@/hooks';
 import {

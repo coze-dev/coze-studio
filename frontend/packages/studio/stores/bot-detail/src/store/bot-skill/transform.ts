@@ -331,7 +331,7 @@ export const transformVo2Dto = {
           flow_mode: w.flow_mode,
           workflow_name: w.name,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }) as any,
+        } as any),
     ),
 
   knowledge: (knowledge: KnowledgeConfig): BotInfoForUpdate['knowledge'] => ({
