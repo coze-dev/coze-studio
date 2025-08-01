@@ -246,8 +246,8 @@ services:
     security_opt:
       - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: coze-etcd:2379
-      MINIO_ADDRESS: coze-minio:9000
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
       MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
       MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
@@ -291,7 +291,7 @@ services:
   nsqd:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqd
-    command: /nsqd --lookupd-tcp-address=coze-nsqlookupd:4160 --broadcast-address=coze-nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
     restart: always
     ports:
       - '4150'
@@ -311,7 +311,7 @@ services:
   nsqadmin:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqadmin
-    command: /nsqadmin --lookupd-http-address=coze-nsqlookupd:4161
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     restart: always
     ports:
       - '4171'
