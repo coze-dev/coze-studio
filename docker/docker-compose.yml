@@ -321,6 +321,30 @@ services:
     networks:
       - coze-network
 
+  es-init:
+    image: curlimages/curl:8.12.1
+    container_name: coze-es-init
+    restart: 'no'
+    env_file: *env_file
+    volumes:
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh:ro
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schemas:ro
+    environment:
+      ES_ADDR: http://elasticsearch:9200
+      ES_USERNAME: ${ES_USERNAME:-}
+      ES_PASSWORD: ${ES_PASSWORD:-}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - coze-network
+    command:
+      [
+        '/bin/sh',
+        '-c',
+        'sed "s/\r$//" /setup_es.sh > /setup_es_fixed.sh && chmod +x /setup_es_fixed.sh && /setup_es_fixed.sh --index-dir /es_index_schemas',
+      ]
+
   coze-server:
     # build:
     #   context: ../
@@ -351,7 +375,8 @@ services:
         condition: service_healthy
       milvus:
         condition: service_healthy
-    command: ['/app/bootstrap.sh']
+      es-init:
+        condition: service_completed_successfully
 
 networks:
   coze-network:
