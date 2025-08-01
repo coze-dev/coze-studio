@@ -187,7 +187,7 @@ func (s *Slice) GetSliceContent() string {
 			continue
 		}
 		if item.Type == SliceContentTypeTable {
-			var contentMap map[string]string
+			contentMap := make(map[string]string)
 			for _, column := range s.RawContent[0].Table.Columns {
 				contentMap[column.ColumnName] = column.GetStringValue()
 			}
