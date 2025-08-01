@@ -335,8 +335,11 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		var (
 			arkEmbeddingBaseURL = os.Getenv("ARK_EMBEDDING_BASE_URL")
 			arkEmbeddingModel   = os.Getenv("ARK_EMBEDDING_MODEL")
-			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingApiKey  = os.Getenv("ARK_EMBEDDING_API_KEY")
+			// deprecated: use ARK_EMBEDDING_API_KEY instead
+			// ARK_EMBEDDING_AK will be removed in the future
+			arkEmbeddingAK   = os.Getenv("ARK_EMBEDDING_AK")
+			arkEmbeddingDims = os.Getenv("ARK_EMBEDDING_DIMS")
 		)
 
 		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
@@ -345,7 +348,12 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		}
 
 		emb, err = arkemb.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey:  arkEmbeddingAK,
+			APIKey: func() string {
+				if arkEmbeddingApiKey != "" {
+					return arkEmbeddingApiKey
+				}
+				return arkEmbeddingAK
+			}(),
 			Model:   arkEmbeddingModel,
 			BaseURL: arkEmbeddingBaseURL,
 		}, dims, batchSize)
