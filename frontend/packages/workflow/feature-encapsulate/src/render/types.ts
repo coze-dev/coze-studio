@@ -15,15 +15,15 @@
  */
  
 /**
- * 封装/解封命令
+ * Encapsulate/unencapsulate commands
  */
 export enum EncapsulateCommands {
   /**
-   * 封装
+   * package
    */
   ENCAPSULATE = 'ENCAPSULATE',
   /**
-   * 解封
+   * unblock
    */
   DECAPSULATE = 'DECAPSULATE',
 }

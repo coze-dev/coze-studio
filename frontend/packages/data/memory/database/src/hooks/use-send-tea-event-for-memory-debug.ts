@@ -21,7 +21,7 @@ import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 
 export const useSendTeaEventForMemoryDebug = (p: { isStore: boolean }) => {
   const { isStore = false } = p;
-  // TODO@XML 看起来在商店也用到了，先不改
+  // TODO@XML seems to be used in the store too, don't change it
   const params = useParams<DynamicParams>();
   const { bot_id = '', product_id = '' } = params;
 

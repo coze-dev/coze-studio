@@ -41,7 +41,7 @@ export const IntelligenceTag: React.FC<IntelligenceTagProps> = ({
   if (intelligenceType === IntelligenceType.DouyinAvatarBot) {
     return (
       <Tag color="red" size="small" className="w-fit">
-        {/* TODO: i18n 文案 */}
+        {/* TODO: i18n copywriting */}
         抖音分身
       </Tag>
     );

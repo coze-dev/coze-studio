@@ -19,10 +19,10 @@ import remarkParse from 'remark-parse';
 import { isString } from 'lodash-es';
 
 /**
- * 是否符合渲染为 markdown
- * 1. ast > 1 或
- * 2. ast = 1 且类型不为普通段落
- * 2. ast = 1 且类型为普通段落，但段落中超过两个或者仅有一项但不为 text
+ * Is it consistent with rendering as markdown?
+ * 1. ast > 1 or
+ * 2. ast = 1 and the type is not a normal paragraph
+ * 2. ast = 1 and the type is normal paragraph, but there are more than two paragraphs or only one item in the paragraph but not text
  */
 export const isPreviewMarkdown = (str: unknown) => {
   if (!isString(str)) {

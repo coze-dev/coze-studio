@@ -18,7 +18,7 @@ import { type MergeGroup } from '../types';
 import { GROUP_NAME_PREFIX } from '../constants';
 
 /**
- * 生成变量分组名称
+ * Generate variable group name
  */
 export function generateGroupName(mergeGroups: MergeGroup[] | undefined) {
   const groups: MergeGroup[] = mergeGroups || [];

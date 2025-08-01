@@ -24,7 +24,7 @@ export const useTableHeight = () => {
   const { sliceListData } = useTableData();
   const [tableH, setTableHeight] = useState<number | string>(0);
 
-  // 更新表格高度
+  // Update table height
   useEffect(() => {
     const h = tableViewRef?.current?.getTableHeight();
     if (h) {

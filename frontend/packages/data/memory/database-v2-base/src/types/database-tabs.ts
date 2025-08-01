@@ -15,13 +15,13 @@
  */
  
 /**
- * 数据库详情页 tab
+ * Database details page tab
  */
 export enum DatabaseTabs {
-  /** 表结构 */
+  /** table structure */
   Structure = 'structure',
-  /** 测试数据 */
+  /** test data */
   Draft = 'draft',
-  /** 线上数据 */
+  /** online data */
   Online = 'online',
 }

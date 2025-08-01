@@ -26,7 +26,7 @@ export const Notify: FC<{
   text: string;
   align?: 'left' | 'center' | 'right';
   className?: string;
-  // 是否换行
+  // Whether to wrap
   isBreakLine?: boolean;
 }> = ({ text, align = 'center', className = '', isBreakLine = false }) => (
   <div

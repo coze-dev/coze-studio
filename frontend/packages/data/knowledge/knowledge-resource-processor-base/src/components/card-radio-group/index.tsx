@@ -28,7 +28,7 @@ export type CardRadioGroupProps<T = unknown> = PropsWithChildren<
 };
 
 /**
- * 始终使用卡片风格，并符合 UI 设计样式的 {@link RadioGroup}
+ * Always use the card style and conform to the UI design style {@link RadioGroup}
  */
 export function CardRadioGroup<T = unknown>({
   value,

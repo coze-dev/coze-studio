@@ -40,7 +40,7 @@ import {
 } from '../../../hooks';
 
 /**
- * 检查是否包含会话节点
+ * Check if a session node is included
  * @param typeList
  * @returns
  */
@@ -60,8 +60,8 @@ function checkHasConversationHistoryNode(typeList: StandardNodeType[]) {
 type NodeData = any;
 
 /**
- * 获取 LLM 类型节点是否开启了会话历史
- * @param workflowJson 当前节点的 json 数据
+ * Gets whether the LLM type node has session history enabled
+ * @param workflowJson json data of the current node
  * @returns
  */
 function getEnableChatHistory(workflowJson: NodeData) {
@@ -78,10 +78,10 @@ function getEnableChatHistory(workflowJson: NodeData) {
 }
 
 /**
- * 检测当前节点是否为 LLM、Intent 节点，并且开启了会话历史
- * @param node 当前节点
- * @param workflowJson 当前节点的 json 数据
- * @returns 当前节点是否为 LLM、Intent 节点，并且开启了会话历史，返回 true，否则 false
+ * Check whether the current node is an LLM, an Intent node, and open the session history
+ * @param node Current node
+ * @param workflowJson json data of the current node
+ * @Returns whether the current node is an LLM, Intent node, and the session history is enabled, returns true, otherwise false
  */
 function checkLLMEnableHistory(node: FlowNodeEntity, workflowJson: NodeData) {
   const isLLMNode = [StandardNodeType.LLM, StandardNodeType.Intent].includes(
@@ -90,7 +90,7 @@ function checkLLMEnableHistory(node: FlowNodeEntity, workflowJson: NodeData) {
 
   const enableChatHistory = isLLMNode && getEnableChatHistory(workflowJson);
 
-  // 目前只有 LLM 类型节点，开启会话历史时，单节点调试需要展示「选择会话」
+  // At present, there are only LLM type nodes. When opening the session history, single-node debugging needs to display "Select Session".
   return enableChatHistory;
 }
 
@@ -151,7 +151,7 @@ const useNeedBot = () => {
       StandardNodeType.VariableAssign,
     );
 
-    /** @deprecated 这个字段目前没有用到，后续可以删除 */
+    /** @Deprecated This field is not currently used and can be deleted later */
     const hasDatabaseNode = sumTypeList.includes(StandardNodeType.Database);
     const hasIntentNode = sumTypeList.includes(StandardNodeType.Intent);
     const hasLLMNode = sumTypeList.includes(StandardNodeType.LLM);
@@ -174,7 +174,7 @@ const useNeedBot = () => {
       [StandardNodeType.SubWorkflow].includes(it as StandardNodeType),
     );
 
-    // 流程中（包含 subflow 下钻节点）有 Variable、Database、开启 chat history 的LLM || subflow 节点有 subflow
+    // The process (including the subflow drill-down node) has Variable, Database, and LLM for opening chat history | | subflow nodes have subflow
     const needBot =
       hasNodeUseGlobalVariable ||
       hasVariableAssignNode ||
@@ -188,7 +188,7 @@ const useNeedBot = () => {
 
     const needConversation = hasChatHistoryEnabledLLM;
 
-    /** 如果是场景工作流，会自动关联场景的预设Bot，不需要这里手动选择 */
+    /** If it is a scene workflow, the default Bot of the scene will be automatically associated, and there is no need to manually select it here. */
     if (isSceneFlow) {
       return {
         needBot: false,
@@ -218,17 +218,17 @@ const useNeedBot = () => {
     };
   };
 
-  /** part 计算表单是否需要 bot 环境 */
+  /** Part of the calculation form requires a bot environment */
   // eslint-disable-next-line complexity -- refactor later
   const queryNeedBot = async (
     testFormType: TestFormType,
     node: FlowNodeEntity,
   ) => {
     let isNeedBotEnv = {
-      /** 是否需要展示选择智能体/应用 */
+      /** Do you need to display the selected agent/application? */
       needBot: false,
 
-      /** 是否需要展示选择会话 */
+      /** Do you need to show the selection session? */
       needConversation: false,
       hasVariableNode: false,
       hasVariableAssignNode: false,
@@ -248,7 +248,7 @@ const useNeedBot = () => {
     const nodeIsChatflow = checkNodeIsChatflow(node);
     const isConversationNameRef = checkHasConversationNameRef(workflowJson);
 
-    // 如果是项目中，不需要展示选择智能体/应用，只需要进一步判断是否需要展示会话节点
+    // If it is a project, it is not necessary to display the selection agent/application, but to further determine whether the session node needs to be displayed.
     if (globalState.projectId) {
       const isSubworkflow = nodeType === StandardNodeType.SubWorkflow;
 
@@ -259,7 +259,7 @@ const useNeedBot = () => {
       return isNeedBotEnv;
     }
 
-    /** 单节点只需要判断本节点是否是相关节点 */
+    /** A single node only needs to determine whether this node is a relevant node */
     if (testFormType === TestFormType.Single) {
       if (nodeType === StandardNodeType.Variable) {
         isNeedBotEnv.needBot = true;
@@ -285,8 +285,8 @@ const useNeedBot = () => {
       } else if (nodeType === StandardNodeType.SubWorkflow) {
         isNeedBotEnv = await isNeedBot();
 
-        // 如果是单节点调试 chatflow，如果不在项目内，都需要展示应用选择器，以及具备级联会话选择
-        // 不需要判断这个 chatflow 中有什么类型的节点，这个逻辑会比较简洁
+        // If it is a single-node debugging chatflow, if it is not in the project, it is necessary to display the application selector and have cascading session selection
+        // You don't need to determine what type of nodes are in this chatflow, this logic will be more concise
         if (nodeIsChatflow) {
           isNeedBotEnv.needBot = !globalState.projectId;
           isNeedBotEnv.needConversation = isConversationNameRef;
@@ -296,30 +296,30 @@ const useNeedBot = () => {
       ) {
         isNeedBotEnv = await isNeedBot();
       } else if (CONVERSATION_NODES.includes(nodeType)) {
-        // 如果是会话节点
+        // If it is a session node
         isNeedBotEnv.needBot = true;
         isNeedBotEnv.hasConversationNode = true;
       } else if (
         [...MESSAGE_NODES, ...CONVERSATION_HISTORY_NODES].includes(nodeType)
       ) {
-        // 如果是消息节点
+        // If it is a message node
         isNeedBotEnv.needBot = true;
       } else if (node.getData(WorkflowNodeRefVariablesData).hasGlobalRef) {
-        // 节点选择配置了全局变量则需要提醒选择 bot \ project
+        // Node selection If global variables are configured, you need to remind to select bot\ project.
         isNeedBotEnv.needBot = true;
       }
     } else {
       if (globalState.isChatflow) {
         isNeedBotEnv = await isNeedBot();
 
-        // 资源库中的 chatflow，全流程运行，需要有选择项目
+        // Chatflow in the resource library, the whole process runs, and a selected item is required.
         isNeedBotEnv.needBot = true;
-        // chatflow 也无须在表单中选择会话
+        // Chatflow also doesn't have to select a session in the form
         isNeedBotEnv.needConversation = false;
       } else {
-        /** 资源库中的 workflow，全流程运行，需要遍历全流程，包括子流程 */
+        /** Workflow in the resource library, the whole process runs, and the whole process needs to be traversed, including sub-processes */
         isNeedBotEnv = await isNeedBot();
-        // workflow 下，全流程试运行禁用 conversation
+        // Under workflow, the whole process practice runs disable conversation
         isNeedBotEnv.needConversation = false;
       }
     }

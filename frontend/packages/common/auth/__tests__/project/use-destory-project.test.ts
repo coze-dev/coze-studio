@@ -17,15 +17,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react-hooks';
 
-// 模拟 React 的 useEffect
+// The useEffect of React
 const cleanupFns = new Map();
 vi.mock('react', () => ({
   useEffect: vi.fn((fn, deps) => {
-    // 执行 effect 函数并获取清理函数
+    // Execute the effect function and get the cleanup function
     const cleanup = fn();
-    // 存储清理函数，以便在 unmount 时调用
+    // Store the cleanup function to call when unmounted
     cleanupFns.set(fn, cleanup);
-    // 返回清理函数
+    // Return cleanup function
     return cleanup;
   }),
 }));
@@ -33,7 +33,7 @@ vi.mock('react', () => ({
 import { useDestoryProject } from '../../src/project/use-destory-project';
 import { useProjectAuthStore } from '../../src/project/store';
 
-// 模拟 useProjectAuthStore
+// emulation useProjectAuthStore
 vi.mock('../../src/project/store', () => {
   const destorySpy = vi.fn();
   return {
@@ -41,19 +41,19 @@ vi.mock('../../src/project/store', () => {
   };
 });
 
-// 创建一个包装函数，确保在 unmount 时调用清理函数
+// Create a wrapper function to ensure that the cleanup function is called when unmounted
 function renderHookWithCleanup(callback, options = {}) {
   const result = renderHook(callback, options);
   const originalUnmount = result.unmount;
 
   result.unmount = () => {
-    // 调用所有清理函数
+    // Call all cleanup functions
     cleanupFns.forEach(cleanup => {
       if (typeof cleanup === 'function') {
         cleanup();
       }
     });
-    // 调用原始的 unmount
+    // Call the original unmount
     originalUnmount();
   };
 
@@ -70,21 +70,21 @@ describe('useDestoryProject', () => {
     const projectId = 'test-project-id';
     const destorySpy = vi.fn();
 
-    // 模拟 useProjectAuthStore 返回 destorySpy
+    // Emulate useProjectAuthStore returns destorySpy
     (useProjectAuthStore as any).mockReturnValue(destorySpy);
 
-    // 渲染 hook
+    // Render hook
     const { unmount } = renderHookWithCleanup(() =>
       useDestoryProject(projectId),
     );
 
-    // 验证初始状态下 destory 未被调用
+    // Verify that destory is not called in the initial state
     expect(destorySpy).not.toHaveBeenCalled();
 
-    // 卸载组件
+    // uninstall components
     unmount();
 
-    // 验证 destory 被调用，且参数正确
+    // Verify that destory is called and the parameters are correct
     expect(destorySpy).toHaveBeenCalledTimes(1);
     expect(destorySpy).toHaveBeenCalledWith(projectId);
   });
@@ -93,18 +93,18 @@ describe('useDestoryProject', () => {
     const projectId1 = 'test-project-id-1';
     const destorySpy = vi.fn();
 
-    // 模拟 useProjectAuthStore 返回 destorySpy
+    // Emulate useProjectAuthStore returns destorySpy
     (useProjectAuthStore as any).mockReturnValue(destorySpy);
 
-    // 渲染 hook
+    // Render hook
     const { unmount } = renderHookWithCleanup(() =>
       useDestoryProject(projectId1),
     );
 
-    // 卸载组件
+    // uninstall components
     unmount();
 
-    // 验证 destory 被调用，且参数为 projectId1
+    // Verify that destory is called with the parameter projectId1.
     expect(destorySpy).toHaveBeenCalledTimes(1);
     expect(destorySpy).toHaveBeenCalledWith(projectId1);
   });
@@ -113,22 +113,22 @@ describe('useDestoryProject', () => {
     const projectId2 = 'test-project-id-2';
     const destorySpy = vi.fn();
 
-    // 清除之前的所有模拟和清理函数
+    // Clear all previous simulation and cleanup functions
     vi.clearAllMocks();
     cleanupFns.clear();
 
-    // 模拟 useProjectAuthStore 返回 destorySpy
+    // Emulate useProjectAuthStore returns destorySpy
     (useProjectAuthStore as any).mockReturnValue(destorySpy);
 
-    // 渲染 hook
+    // Render hook
     const { unmount } = renderHookWithCleanup(() =>
       useDestoryProject(projectId2),
     );
 
-    // 卸载组件
+    // uninstall components
     unmount();
 
-    // 验证 destory 被调用，且参数为 projectId2
+    // Verify that destory is called with the parameter projectId2.
     expect(destorySpy).toHaveBeenCalledTimes(1);
     expect(destorySpy).toHaveBeenCalledWith(projectId2);
   });

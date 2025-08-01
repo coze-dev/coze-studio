@@ -23,10 +23,10 @@ import { FieldName } from '../constants';
 const generateTestsetData = (testsetData?: TestsetData) => {
   const dataArray = safeJSONParse(testsetData?.caseBase?.input, []);
   let botData: string | undefined;
-  /** TODO: 目前 node 只可能有一个，未来有多个需要视情况扩展 */
+  /** TODO: Currently only one node is possible, and multiple nodes need to be expanded in the future */
   let nodeData: Record<string, unknown> | undefined;
   dataArray.forEach(data => {
-    /** 特殊虚拟节点 */
+    /** Special Virtual Node */
     if (data?.component_type === ComponentType.CozeVariableBot) {
       botData = data.inputs?.[0]?.value;
     } else {

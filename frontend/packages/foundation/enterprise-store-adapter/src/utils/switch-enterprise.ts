@@ -15,11 +15,11 @@
  */
  
 /**
- * @file 开源版暂时不提供企业管理功能，本文件中导出的方法用于未来拓展使用。
+ * The @file open-source version does not provide enterprise management functions for the time being. The methods exported in this file are for future expansion.
  */
 
 /**
- * 切换企业
- * @param {string} enterpriseId - 企业ID
+ * Switch Enterprise
+ * @param {string} enterpriseId - Enterprise ID
  */
 export const switchEnterprise = (_: string) => Promise.resolve();

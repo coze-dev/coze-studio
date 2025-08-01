@@ -90,7 +90,7 @@ export const TableSettingBar: React.FC<TableSettingBarProps> = ({
         e2e: KnowledgeE2e.TableLocalTableConfigurationStarRow,
         field: TableSettingFormFields.DATA_START_ROW,
         label: I18n.t('datasets_createFileModel_tab_dataStarRow'),
-        // 数据起始行需大于表头行
+        // The starting row of the data must be larger than the header row
         options: options.slice(
           Number(tableSettings[TableSettingFormFields.KEY_START_ROW]) + 1,
         ),
@@ -112,7 +112,7 @@ export const TableSettingBar: React.FC<TableSettingBarProps> = ({
       TableSettingFormFields.KEY_START_ROW,
     );
     if (isNumber(curSheet) && formApi.current) {
-      // 修改sheet,初始化表头行和数据行
+      // Modify the sheet, initialize the header and data rows
       formApi.current.setValue(TableSettingFormFields.KEY_START_ROW, 0);
       formApi.current.setValue(TableSettingFormFields.DATA_START_ROW, 1);
     }

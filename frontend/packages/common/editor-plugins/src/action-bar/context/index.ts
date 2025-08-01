@@ -26,7 +26,7 @@ export const ActionBarContext = createContext<{
   controller: {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     hideActionBar: () => {},
-    // 重新定位
+    // reposition
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     rePosition: () => {},
   },

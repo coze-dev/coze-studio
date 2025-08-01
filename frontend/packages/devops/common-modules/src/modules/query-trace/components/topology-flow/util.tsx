@@ -92,10 +92,10 @@ export const filterObjectByKeys = <T extends object>(
     }, {} as T);
 
 /**
- * 静态topo数据中resource_id根据span类型的不同和不同的字段映射
- * @param spanNode 当前span
+ * Static topo data resource_id different and different data field mapping according to span type
+ * @param spanNode current span
  * @param entityId
- * @returns 与静态topo所映射的id
+ * @Returns the id mapped to the static topo
  */
 export const getNodeResourceId = (
   spanNode: SpanNode,
@@ -103,7 +103,7 @@ export const getNodeResourceId = (
 ): string => {
   const { category, id } = spanNode;
   const workflowNodeId =
-    // 兼容合并后的Batch节点
+    // Compatible with merged Batch Nodes
     (spanNode as CSPanBatch).workflow_node_id ??
     (spanNode as CSpanAttrCondition).extra?.workflow_node_id;
   if (workflowNodeId) {
@@ -133,7 +133,7 @@ export const generateStaticTopologyDataMapKey = (
   return `${space_id}-${resource_id}-${version}-${env}-${resource_type}`;
 };
 
-// 单 agent 下 trace 里将去除 SpanType.InvokeAgent 节点，topology root 可能为 SpanType.UserInput
+// The SpanType. InvokeAgent node will be removed from the trace under a single agent, and the topology root may be SpanType. UserInput.
 export const getTopologyAgentRootType = () => {
   const FLAGS = getFlags();
   return FLAGS['bot.devops.use_user_input_as_agent']
@@ -142,7 +142,7 @@ export const getTopologyAgentRootType = () => {
 };
 
 export const isTopologyRootSpan = (span: CSpan) => {
-  // 只有基础工作流展示拓扑
+  // Only the base workflow shows the topology
   if (span.type === SpanType.Workflow) {
     return (span as CSpanAttrWorkflow).extra?.workflow_schema_type === 1;
   }
@@ -160,7 +160,7 @@ export const extractOriginDynamicNodeMap = (
 
   while (queue.length > 0) {
     const currentNode = queue.shift() as SpanNode;
-    // 过滤掉broken节点
+    // Filter out broken nodes
     if (currentNode.id === rootBreakSpanId) {
       continue;
     }
@@ -204,9 +204,9 @@ function findUserInputRootNode(dynamicNodeMap: DynamicNodeMap) {
 }
 
 /**
- * 将动态节点填充给对应的静态节点和连线，补全其动态运行信息
+ * Fill the dynamic nodes to the corresponding static nodes and connections to complete their dynamic operation information
  * @param staticTopoInfo
- * @param dynamicNodeMap 当前所需要展示的动态节点map
+ * @Param dynamicNodeMap The dynamic node map that needs to be displayed at present
  * @param layoutDirection
  * @returns
  */
@@ -247,7 +247,7 @@ export const completeDynamicTopologyInfo = (
 
     let dynamicSpanNode = dynamicNodeMap[resource_id] as SpanNode | undefined;
 
-    // 特化逻辑：单agent场景下节点信息将不包含agent节点，需要使用userInput替换
+    // Specialized logic: In a single agent scenario, the node information will not include the agent node, and it needs to be replaced with userInput.
     if (
       typedResourceKind === SpanCategory.Agent &&
       !dynamicSpanNode &&
@@ -287,7 +287,7 @@ export const completeDynamicTopologyInfo = (
     const { edge_id = '', source_node_id = '', target_node_id = '' } = item;
 
     const sourceNodeInfo = nodeInfoMap[source_node_id];
-    // 特化逻辑：动态tracing中没有workflow_start节点，默认将其下游的动态节点填入
+    // Specialized logic: there is no workflow_start node in dynamic tracing, the dynamic node downstream is filled in by default
     const isWorkflowStartNode =
       Number(sourceNodeInfo?.node?.resource_kind) ===
       SpanCategory.WorkflowStart;
@@ -297,7 +297,7 @@ export const completeDynamicTopologyInfo = (
     const targetNode: SpanNode | undefined =
       dynamicNodeMap[nodeInfoMap[target_node_id]?.resourceId];
 
-    // 特化逻辑：单agent场景下节点信息将不包含agent节点，需要使用userInput替换
+    // Specialized logic: In a single agent scenario, the node information will not include the agent node, and it needs to be replaced with userInput.
     if (
       sourceNodeInfo.node.resource_kind === SpanCategory.Agent &&
       !sourceNode &&
@@ -364,7 +364,7 @@ const getStaticSpanTitle = (category: SpanCategory, name: string) => {
 };
 
 /**
- * 进行对原始topo数据的布局和样式处理
+ * Layout and style processing of raw topo data
  * @param originTopologicalData
  * @param layoutDirection
  * @returns
@@ -399,7 +399,7 @@ export const getLayoutedMeta = (
 
   Dagre.layout(graphInstance);
 
-  // 采集节点的定位信息，用于vertical类型的连线绘制时进行定位
+  // Acquire the positioning information of the node for positioning when drawing vertical types of connections
   const nodeXAxisMap: Record<string, number> = {};
 
   const layoutNodes: TopologicalNode[] = nodes.map(node => {
@@ -444,9 +444,9 @@ export const getTopologyItemStatus = (spanNode?: SpanNode) => {
 };
 
 /**
- * 使用静态topo数据生成记录每个节点的上游节点的graph以及id map
+ * Generate graphs and id maps of upstream nodes for each node using static topo data
  * @param topoInfo
- * @returns graph和map的meta信息
+ * @Returns meta information for graphs and maps
  */
 export const generateTopologyMetaInfo = (topoInfo: TopoInfo): TopoMetaInfo => {
   const { nodes = [], edges = [] } = topoInfo;
@@ -471,11 +471,11 @@ export const generateTopologyMetaInfo = (topoInfo: TopoInfo): TopoMetaInfo => {
 };
 
 /**
- * 查询静态topo图中某个节点的所有上游节点，使用DP降低复杂度
- * @param selectedNodeId 当前span id
- * @param topoGraph 存有记录每个节点的上游节点的graph
- * @param upstreamNodeMap 存有记录某个节点所有上游节点的map
- * @returns 上游所有节点的id list
+ * Query all upstream nodes of a node in a static topo graph, using DP to reduce complexity
+ * @param selectedNodeId Current span id
+ * @Param topoGraph holds a graph that records the upstream nodes of each node
+ * @Param upstreamNodeMap holds a map that records all upstream nodes of a node
+ * @Returns the id list of all nodes upstream
  */
 export const getAllUpstreamTopologyNodeIds = (
   selectedNodeId: string,

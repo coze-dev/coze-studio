@@ -144,7 +144,7 @@ func CreateMySQLWhiteList(mysqlInstanceID, ts string) (string, error) {
 		ProjectName:   volcengine.String(projectName),
 	}
 
-	// 复制代码运行示例，请自行打印API返回值。
+	// Copy the code to run the example, please print the API return value yourself.
 	resp, err := svc.CreateAllowList(createAllowListInput)
 	if err != nil {
 		return "", err
@@ -164,7 +164,7 @@ func AssociateMySQLWhiteList(mysqlInstanceID, whitelistID string) error {
 		InstanceIds:  volcengine.StringSlice([]string{mysqlInstanceID}),
 	}
 
-	// 复制代码运行示例，请自行打印API返回值。
+	// Copy the code to run the example, please print the API return value yourself.
 	_, err := svc.AssociateAllowList(associateAllowListInput)
 	if err != nil {
 		return err

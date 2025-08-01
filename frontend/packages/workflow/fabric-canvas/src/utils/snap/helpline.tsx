@@ -53,7 +53,7 @@ const getLineHtml = (startXY: Snap.Point, endXY: Snap.Point) => {
     "
     ></div>`;
   } else {
-    // 横线
+    // horizontal line
     innerHTML += `<div
     class="absolute bg-[#00B2B2]"
     style="

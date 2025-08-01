@@ -25,11 +25,11 @@ import { merge } from 'lodash-es';
 
 export interface IPreferenceContext {
   /**
-   * 是否开启Tool隐藏模式
+   * Whether to enable Tool Hide Mode
    */
   enableToolHiddenMode: boolean;
   /**
-   * 是否只读状态
+   * Read-only status
    */
   isReadonly: boolean;
 }

@@ -67,7 +67,7 @@ import { isValidNode } from './is-valid-node';
 import { isValidData } from './is-valid-data';
 
 /**
- * 粘贴快捷键
+ * Paste shortcut
  */
 @injectable()
 export class WorkflowPasteShortcutsContribution
@@ -85,7 +85,7 @@ export class WorkflowPasteShortcutsContribution
   private globalState: WorkflowGlobalStateEntity;
   @inject(WorkflowSaveService) private saveService: WorkflowSaveService;
 
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowCommands.PASTE_NODES,
@@ -94,7 +94,7 @@ export class WorkflowPasteShortcutsContribution
       execute: safeFn(this.handle.bind(this)),
     });
   }
-  /** 渲染 */
+  /** render */
   public async render(params: {
     json: WorkflowClipboardJSON;
     source: WorkflowClipboardSource;
@@ -119,14 +119,14 @@ export class WorkflowPasteShortcutsContribution
       parent,
       toContainer,
     });
-    await this.nextTick(); // 等待节点渲染与动态端口渲染
+    await this.nextTick(); // Waiting for node rendering and dynamic port rendering
     this.createLines({
       json: json.edges,
       parent,
     });
     return nodes;
   }
-  /** 处理复制事件 */
+  /** Handling replication events */
   private async handle(
     _event: KeyboardEvent,
   ): Promise<WorkflowNodeEntity[] | undefined> {
@@ -143,25 +143,25 @@ export class WorkflowPasteShortcutsContribution
         content: I18n.t('copy_success'),
         showClose: false,
       });
-      // 滚动到可视区域
+      // Scroll to viewable area
       this.scrollToNodes(nodes);
     }
     return nodes;
   }
-  /** 尝试读取剪贴板 */
+  /** Try reading the clipboard */
   private async tryReadClipboard(): Promise<WorkflowClipboardData | undefined> {
     try {
-      // 需要用户授予网页剪贴板读取权限, 如果用户没有授予权限, 代码可能会抛出异常 NotAllowedError
+      // The user is required to grant the webpage clipboard read permission. If the user does not grant permission, the code may throw an exception NotAllowedError.
       const text: string = (await navigator.clipboard.readText()) || '';
       const clipboardData: WorkflowClipboardData = JSON.parse(text);
       return clipboardData;
       // eslint-disable-next-line @coze-arch/use-error-in-catch -- no need report error
     } catch (e) {
-      // 这里本身剪贴板里的数据就不固定，所以没必要报错
+      // The data in the clipboard itself is not fixed, so there is no need to report an error.
       return;
     }
   }
-  /** 应用剪切板数据 */
+  /** Apply clipboard data */
   private async apply(
     data: WorkflowClipboardData,
   ): Promise<WorkflowNodeEntity[]> {
@@ -171,7 +171,7 @@ export class WorkflowPasteShortcutsContribution
       isUniqueId: (id: string) => !this.entityManager.getEntityById(id),
     });
 
-    // 重建节点前需要初始化节点数据
+    // You need to initialize the node data before rebuilding the node
     await this.saveService.initNodeData(json.nodes as WorkflowNodeJSON[]);
 
     const titleCache: string[] = [];
@@ -188,7 +188,7 @@ export class WorkflowPasteShortcutsContribution
     this.selectNodes(nodes);
     return nodes;
   }
-  /** 计算粘贴偏移 */
+  /** Calculate Paste Offset */
   private calcPasteOffset(boundsData: WorkflowClipboardRect): IPoint {
     const { x, y, width, height } = boundsData;
     const rect = new Rectangle(x, y, width, height);
@@ -199,7 +199,7 @@ export class WorkflowPasteShortcutsContribution
       y: mousePos.y - center.y,
     };
   }
-  /** 创建节点 */
+  /** Create Node */
   private async createNodes(params: {
     json: WorkflowClipboardNodeJSON[];
     source: WorkflowClipboardSource;
@@ -248,7 +248,7 @@ export class WorkflowPasteShortcutsContribution
     );
     return nodes;
   }
-  /** 获取节点子画布信息 */
+  /** Get node child canvas information */
   private getNodeSubCanvas(
     node: WorkflowNodeEntity,
   ): WorkflowSubCanvas | undefined {
@@ -259,7 +259,7 @@ export class WorkflowPasteShortcutsContribution
     const subCanvas = nodeMeta.subCanvas?.(node);
     return subCanvas;
   }
-  /** 创建节点 */
+  /** Create Node */
   private async createNode(params: {
     nodeJSON: WorkflowClipboardNodeJSON;
     source: WorkflowClipboardSource;
@@ -281,7 +281,7 @@ export class WorkflowPasteShortcutsContribution
     ) {
       return;
     }
-    // 生成唯一节点标题
+    // Generate unique node titles
     const processedNodeJSON = this.editService.recreateNodeJSON(
       nodeJSON,
       titleCache,
@@ -308,7 +308,7 @@ export class WorkflowPasteShortcutsContribution
     );
     return node;
   }
-  /** 创建连线 */
+  /** Create a connection */
   private createLines(params: {
     json: WorkflowEdgeJSON[];
     parent?: WorkflowNodeEntity;
@@ -318,7 +318,7 @@ export class WorkflowPasteShortcutsContribution
       .map(edgeJSON => this.createLine({ edgeJSON, parent }))
       .filter(Boolean) as WorkflowLineEntity[];
   }
-  /** 创建连线 */
+  /** Create a connection */
   private createLine(params: {
     edgeJSON: WorkflowEdgeJSON;
     parent?: WorkflowNodeEntity;
@@ -342,7 +342,7 @@ export class WorkflowPasteShortcutsContribution
     if (!parent) {
       return this.linesManager.createLine(lineInfo);
     }
-    // 父子节点之间连线，需替换父节点为子画布
+    // To connect between parent and child nodes, you need to replace the parent node with the child canvas
     const parentSubCanvas = this.getNodeSubCanvas(parent);
     if (!parentSubCanvas) {
       return this.linesManager.createLine(lineInfo);
@@ -361,7 +361,7 @@ export class WorkflowPasteShortcutsContribution
     }
     return this.linesManager.createLine(lineInfo);
   }
-  /** 计算节点位置 */
+  /** Calculate node location */
   private calcNodePosition(params: {
     nodeJSON: WorkflowClipboardNodeJSON;
     parent?: WorkflowNodeEntity;
@@ -399,20 +399,20 @@ export class WorkflowPasteShortcutsContribution
 
     return basePosition;
   }
-  /** 获取鼠标选中的容器 */
+  /** Get the container selected by the mouse */
   private getSelectedContainer(): WorkflowNodeEntity | undefined {
     const { activatedNode } = this.selection;
     if (activatedNode?.flowNodeType === FlowNodeBaseType.SUB_CANVAS) {
       return activatedNode;
     }
   }
-  /** 获取选中的节点 */
+  /** Get the selected node */
   private get selectedNodes(): WorkflowNodeEntity[] {
     return this.selection.selection.filter(
       n => n instanceof WorkflowNodeEntity,
     ) as WorkflowNodeEntity[];
   }
-  /** 选中节点 */
+  /** selected node */
   private selectNodes(nodes: WorkflowNodeEntity[]): void {
     if (nodes.length === 1) {
       this.editService.focusNode(nodes[0]);
@@ -420,7 +420,7 @@ export class WorkflowPasteShortcutsContribution
       this.selection.selection = nodes;
     }
   }
-  /** 滚动到节点 */
+  /** Scroll to Node */
   private async scrollToNodes(nodes: WorkflowNodeEntity[]): Promise<void> {
     const nodeBounds = nodes.map(
       node => node.getData(FlowNodeTransformData).bounds,
@@ -429,9 +429,9 @@ export class WorkflowPasteShortcutsContribution
       bounds: Rectangle.enlarge(nodeBounds),
     });
   }
-  /** 等待下一帧 */
+  /** Wait for the next frame. */
   private async nextTick(): Promise<void> {
-    const frameTime = 16; // 16ms 为一个渲染帧
+    const frameTime = 16; // 16ms for a render frame
     await delay(frameTime);
     await new Promise(resolve => requestAnimationFrame(resolve));
   }

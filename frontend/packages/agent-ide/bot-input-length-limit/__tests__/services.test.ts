@@ -22,13 +22,13 @@ import {
 } from '../src/services/type';
 import { BotInputLengthService, botInputLengthService } from '../src/services';
 
-// 模拟 SuggestedQuestionsShowMode 枚举
+// Analog SuggestedQuestionsShowMode Enumeration
 enum SuggestedQuestionsShowMode {
   Random = 0,
   All = 1,
 }
 
-// 模拟配置
+// simulation configuration
 const mockConfig: BotInputLengthConfig = {
   botName: 10,
   botDescription: 100,
@@ -39,16 +39,16 @@ const mockConfig: BotInputLengthConfig = {
   projectDescription: 100,
 };
 
-// 模拟获取配置的函数
+// Function to simulate acquisition configuration
 const mockGetConfig = vi.fn().mockReturnValue(mockConfig);
 
 describe('BotInputLengthService', () => {
   let service: BotInputLengthService;
 
   beforeEach(() => {
-    // 重置模拟
+    // Reset simulation
     vi.clearAllMocks();
-    // 创建服务实例
+    // Create a service instance
     service = new BotInputLengthService(mockGetConfig);
   });
 
@@ -62,23 +62,23 @@ describe('BotInputLengthService', () => {
       expect(service.getInputLengthLimit('projectName')).toBe(10);
       expect(service.getInputLengthLimit('projectDescription')).toBe(100);
 
-      // 验证配置获取函数被调用
+      // Verify that the configuration get function is called
       expect(mockGetConfig).toHaveBeenCalledTimes(7);
     });
   });
 
   describe('getValueLength', () => {
     it('应该返回字符串的字形簇数量', () => {
-      // 普通字符串
+      // Normal string
       expect(service.getValueLength('hello')).toBe(5);
 
-      // 包含表情符号的字符串（表情符号算作一个字形簇）
+      // A string containing the emoji (the emoji counts as a glyph cluster)
       expect(service.getValueLength('hi😊')).toBe(3);
 
-      // 包含组合字符的字符串
+      // A string containing combined characters
       expect(service.getValueLength('café')).toBe(4);
 
-      // 空字符串
+      // empty string
       expect(service.getValueLength('')).toBe(0);
 
       // undefined
@@ -88,12 +88,12 @@ describe('BotInputLengthService', () => {
 
   describe('sliceStringByMaxLength', () => {
     it('应该根据字段限制截取字符串', () => {
-      // 字符串长度小于限制
+      // String length less than limit
       expect(
         service.sliceStringByMaxLength({ value: 'hello', field: 'botName' }),
       ).toBe('hello');
 
-      // 字符串长度等于限制
+      // String length equals limit
       expect(
         service.sliceStringByMaxLength({
           value: '1234567890',
@@ -101,7 +101,7 @@ describe('BotInputLengthService', () => {
         }),
       ).toBe('1234567890');
 
-      // 字符串长度大于限制
+      // String length is greater than limit
       expect(
         service.sliceStringByMaxLength({
           value: '12345678901234567890',
@@ -109,7 +109,7 @@ describe('BotInputLengthService', () => {
         }),
       ).toBe('1234567890');
 
-      // 包含表情符号的字符串
+      // A string containing emoji
       expect(
         service.sliceStringByMaxLength({
           value: 'hello😊world',
@@ -117,7 +117,7 @@ describe('BotInputLengthService', () => {
         }),
       ).toBe('hello😊worl');
 
-      // 验证配置获取函数被调用
+      // Verify that the configuration get function is called
       expect(mockGetConfig).toHaveBeenCalledTimes(4);
     });
   });
@@ -147,13 +147,13 @@ describe('BotInputLengthService', () => {
 
       const result = service.sliceWorkInfoOnboardingByMaxLength(workInfo);
 
-      // 验证开场白被截取
+      // Verify that the opening statement was intercepted
       expect(result.prologue).toBe(
         'This is a very long prologue that exceeds the limi',
       );
       expect(result.prologue.length).toBeLessThanOrEqual(50);
 
-      // 验证建议问题被截取
+      // Validation suggestion problem intercepted
       expect(result.suggested_questions[0]?.content).toBe(
         'This is a very long ',
       );
@@ -175,7 +175,7 @@ describe('BotInputLengthService', () => {
       expect(result.suggested_questions[2]?.id).toBe('3');
       expect(result.suggested_questions[2]?.highlight).toBe(false);
 
-      // 验证显示模式保持不变
+      // Verify that the display mode remains unchanged
       expect(result.suggested_questions_show_mode).toBe(
         SuggestedQuestionsShowMode.All,
       );
@@ -199,10 +199,10 @@ describe('BotInputLengthService', () => {
   });
 });
 
-// 测试导出的单例
+// Test Exported Singletons
 describe('botInputLengthService', () => {
   it('应该导出一个 BotInputLengthService 的实例', () => {
-    // 验证导出的单例是 BotInputLengthService 的实例
+    // Verify that the exported singleton is an instance of BotInputLengthService
     expect(botInputLengthService).toBeInstanceOf(BotInputLengthService);
   });
 });

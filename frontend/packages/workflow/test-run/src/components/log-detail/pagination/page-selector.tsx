@@ -39,14 +39,14 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
   data,
   onChange,
 }) => {
-  // 固定展示的条目，最大为 10 条，不到 10 条按实际展示
+  // Fixed display items, the maximum is 10, less than 10 items are displayed according to the actual display
   const fixedItems = useMemo(
     () => data.slice(0, fixedCount),
     [fixedCount, data],
   );
   const moreItems = useMemo(() => data.slice(fixedCount), [data]);
 
-  // 是否需要通过下拉框展示更多
+  // Do you need to show more through the drop-down box?
   const hasMore = useMemo(() => data.length > fixedCount, [data, fixedCount]);
 
   return (

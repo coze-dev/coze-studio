@@ -13,5 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-export function useInitOpenPremiumManage(_props: { open: () => void }) {}
+
+export function useInitOpenPremiumManage(_props: { open: () => void }) {
+  // allow empty function
+}

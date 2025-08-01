@@ -26,7 +26,7 @@ export interface InsertLinkPopoverProps
 }
 
 /**
- * 全受控
+ * fully controlled
  */
 export const InsertLinkPopover: React.FC<
   PropsWithChildren<InsertLinkPopoverProps>

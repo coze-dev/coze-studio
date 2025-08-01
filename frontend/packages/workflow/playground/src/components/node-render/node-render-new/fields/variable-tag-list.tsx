@@ -29,7 +29,7 @@ import { VARIABLE_TYPE_ICON_MAP } from './constants';
 
 import s from './variable-tag-list.module.less';
 
-// 状态
+// state
 export enum VariableTagStatus {
   Success = 'success',
   Warning = 'warning',
@@ -38,19 +38,19 @@ export enum VariableTagStatus {
 
 export interface VariableTagProps {
   key?: string;
-  /* 变量类型 */
+  /* Variable type */
   type?: ViewVariableType;
-  /* 变量名，为空时会展示为 Undefined/未定义 */
+  /* Variable name, when empty, is displayed as Undefined/Undefined */
   label?: ReactNode;
   invalid?: boolean;
   status?: VariableTagStatus;
 }
 
 export interface VariableTagListProps {
-  /* tag 列表 */
+  /* tag list */
   value?: VariableTagProps[];
   /**
-   * 每个 tag 最大宽度，默认为父容器的宽度
+   * The maximum width of each tag, the default is the width of the parent container
    */
   maxTagWidth?: number;
 }

@@ -65,7 +65,7 @@ const PrimarySidebarCore = ({
       >
         <div className={styles.title}>
           {I18n.t('project_resource_sidebar_title')}
-          {/* 即将支持，敬请期待 */}
+          {/* Support soon, so stay tuned. */}
           {FLAGS['bot.automation.dependency_tree'] ? (
             <>
               <Button

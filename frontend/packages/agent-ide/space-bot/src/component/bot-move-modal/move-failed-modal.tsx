@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @coze-arch/max-line-per-function -- 不好拆 */
+
+/* eslint-disable @coze-arch/max-line-per-function -- not easy to dismantle */
 import React, { useCallback, useState } from 'react';
 
 import { size } from 'lodash-es';
@@ -41,27 +41,27 @@ interface BotMoveFailedModalOptions {
    */
   botInfo: Pick<DraftBot, 'id' | 'name'> | null;
   /**
-   * 更新 bot 状态
+   * Update bot status
    */
   onUpdateBotStatus?: (status: DraftBotStatus) => void;
   /**
-   * 迁移成功等效于删除 bot
+   * Successful migration is equivalent to deleting the bot
    */
   onMoveSuccess?: () => void;
 }
 
 interface UseBotMoveFailedModalValue {
   /**
-   * 打开弹窗的方法
-   * @param {BotMoveModalOptions} [options] - 此次打开Modal的配置项
+   * How to open the pop-up window
+   * @Param {BotMoveModalOptions} [options] - Open Modal's configuration item this time
    */
   open: (options?: BotMoveFailedModalOptions) => void;
   /**
-   * 关闭弹窗的方法
+   * How to close the pop-up window
    */
   close: () => void;
   /**
-   * 弹窗组件实例，需要手动挂载一下
+   * The pop-up component instance needs to be mounted manually.
    */
   modalNode: React.ReactNode;
 }

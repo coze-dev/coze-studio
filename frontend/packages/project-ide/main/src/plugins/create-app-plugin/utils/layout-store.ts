@@ -17,31 +17,31 @@
 import { Dexie, type EntityTable } from 'dexie';
 
 /**
- * 布局数据
+ * layout data
  */
 interface DBLayoutRow {
   /**
-   * 自增 id
+   * autoincrement id
    */
   id: number;
   /**
-   * 空间 id
+   * Space ID
    */
   spaceId: string;
   /**
-   * 项目 id
+   * Project ID
    */
   projectId: string;
   /**
-   * 时间戳
+   * timestamp
    */
   timestamp: number;
   /**
-   * 数据版本
+   * data version
    */
   version: number;
   /**
-   * 数据
+   * data
    */
   data: string;
 }
@@ -51,20 +51,20 @@ type DBLayout = Dexie & {
 };
 
 /**
- * 持久化储存形式的版本号
+ * Version number of persistent storage form
  */
 const VERSION = 3;
 
 /**
- * 数据库名称
+ * database name
  */
 const DB_NAME = 'CozProjectIDELayoutData';
 /**
- * 数据库版本
+ * database version
  */
 const DB_VERSION = 1;
 /**
- * 数据有效期
+ * Data valid period
  */
 const DB_EXPIRE = 1000 * 60 * 60 * 24 * 30;
 
@@ -74,7 +74,7 @@ const isExpired = (row: DBLayoutRow) =>
   row.timestamp < Date.now() - DB_EXPIRE || row.version !== VERSION;
 
 /**
- * 获取数据库实例
+ * Get the database instance
  */
 const getDB = () => {
   if (!cache) {
@@ -155,12 +155,12 @@ const deleteDataLS = (spaceId: string, projectId: string) => {
 };
 
 /**
- * 保存布局数据
- * 注：调用时机为组件销毁或浏览器关闭时，故不可用异步函数
+ * Save layout data
+ * Note: The calling time is when the component is destroyed or the browser is closed, so asynchronous functions cannot be used
  */
 const saveLayoutData = (spaceId: string, projectId: string, data: any) => {
   try {
-    // 无论是什么值都需要序列化成字符串
+    // No matter what the value is, it needs to be serialized into a string.
     const str = JSON.stringify(data);
     const row = {
       data: str,
@@ -175,13 +175,13 @@ const saveLayoutData = (spaceId: string, projectId: string, data: any) => {
 };
 
 /**
- * 读取布局数据
- * 会同时从 indexedDB 和 localStorage 中读取数据，会有以下几种情况：
- * 1. localStorage 无数据，返回 indexedDB 数据
- * 2. localStorage 有数据
- *  2.1. indexedDB 无数据，更新 indexedDB 数据，删除 localStorage 数据，返回 indexedDB 数据
- *  2.2. indexedDB 有数据，比较时间戳。返回最近的数据，删除 localStorage 数据
- *    2.2.1. 若 localStorage 数据较新，则更新到 indexedDB 中
+ * Read layout data
+ * Data will be read from indexedDB and localStorage simultaneously, in the following cases:
+ * 1. localStorage no data, return indexedDB data
+ * 2. localStorage has data
+ *  2.1. indexedDB no data, update indexedDB data, delete localStorage data, return indexedDB data
+ *  2.2. IndexedDB has data, compare timestamps. Return recent data, delete localStorage data
+ *    2.2.1. If localStorage data is new, update to indexedDB
  */
 const readLayoutData = async (spaceId: string, projectId: string) => {
   let str;

@@ -31,7 +31,7 @@ function useOptionsOperations(props: UseOptionsOperationsProps) {
   return useMemo(() => {
     function prev() {
       if (variableMenuRef.current) {
-        // 操作变量菜单
+        // operation variable menu
         const optionsInfo = getOptionInfoFromDOM(
           variableMenuRef.current?.treeContainerRef,
           '.semi-tree-option-list .semi-tree-option',
@@ -70,7 +70,7 @@ function useOptionsOperations(props: UseOptionsOperationsProps) {
 
     function next() {
       if (variableMenuRef.current) {
-        // 操作变量菜单
+        // operation variable menu
         const optionsInfo = getOptionInfoFromDOM(
           variableMenuRef.current?.treeContainerRef,
           '.semi-tree-option-list .semi-tree-option',
@@ -101,7 +101,7 @@ function useOptionsOperations(props: UseOptionsOperationsProps) {
     }
 
     function left() {
-      // 只要按左键 变量面板就应该关闭
+      // As soon as you press the left button, the variables panel should close
       setTreeVisible(false);
       const optionsInfo = getOptionInfoFromDOM(dropdownRef.current);
       if (!optionsInfo) {
@@ -111,7 +111,7 @@ function useOptionsOperations(props: UseOptionsOperationsProps) {
     }
 
     /**
-     * 变量面板关闭时直接打开
+     * Open directly when the variable panel is closed
      */
     function right() {
       if (!variableMenuRef.current) {

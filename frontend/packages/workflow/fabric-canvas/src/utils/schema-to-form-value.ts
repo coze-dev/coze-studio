@@ -22,7 +22,7 @@ import {
 } from '../typings';
 
 /**
- * fabric schema 转 formValue
+ * Fabric schema to formValue
  */
 export const schemaToFormValue = ({
   schema,
@@ -35,12 +35,12 @@ export const schemaToFormValue = ({
 }): Partial<FabricObjectSchema> => {
   let s = schema.objects.find(o => o.customId === activeObjectId);
 
-  // 图片是 Group 复合元素，要把需要的元素取出来
+  // The picture is a Group composite element, and the required elements should be taken out.
   if (s?.customType === Mode.IMAGE) {
     s = {
       ...s,
       ...s.objects?.[0],
-      // 描边颜色和粗细从 borderRect 上取
+      // Stroke color and thickness are taken from borderRect
       stroke: s.objects?.[1].stroke,
       strokeWidth: s.objects?.[1].strokeWidth,
     } as unknown as FabricObjectSchema;

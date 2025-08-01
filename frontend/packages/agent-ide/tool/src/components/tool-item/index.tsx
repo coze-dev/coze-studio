@@ -31,11 +31,11 @@ import s from './index.module.less';
 
 interface ToolItemProps {
   /**
-   * 标题
+   * title
    */
   title: string;
   /**
-   * 描述
+   * describe
    */
   description: string;
   /**
@@ -47,15 +47,15 @@ interface ToolItemProps {
    */
   avatar: string;
   /**
-   * Actions区域
+   * Actions area
    */
   actions?: ReactNode;
   /**
-   * Icon展示区域
+   * Icon display area
    */
   icons?: ReactNode;
   /**
-   * 禁用状态
+   * disabled state
    */
   disabled?: boolean;
   /**
@@ -63,11 +63,11 @@ interface ToolItemProps {
    */
   tooltips?: ReactNode;
   /**
-   * 点击卡片的回调
+   * Click on the card's callback
    */
   onClick?: () => void;
 
-  //  尺寸 - 适配 workflow-as-agent 模式下的大号卡片
+  //  Size - Fits large cards in workflow-as-agent mode
   size?: 'default' | 'large';
 
   avatarStyle?: React.CSSProperties;

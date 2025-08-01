@@ -38,7 +38,7 @@ import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text';
 import type { UploadTextLocalAddUpdateStore } from '../../store';
 import { TextLocalAddUpdateStep } from '../../constants';
 
-// ! 本地文档上传
+// ! Local file upload
 export const TextSegment: FC<
   ContentProps<UploadTextLocalAddUpdateStore>
 > = props => {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // tailwindcss-plugin.js
 const plugin = require('tailwindcss/plugin');
 
@@ -5,7 +21,7 @@ const plugin = require('tailwindcss/plugin');
 const lightModeVariables = require('./light');
 const darkModeVariables = require('./dark');
 
-// 用于生成 CSS 变量的帮助函数
+// Helper functions for generating CSS variables
 function generateCssVariables(variables, theme) {
   return Object.entries(variables).reduce((acc, [key, value]) => {
     acc[`--${key}`] = theme ? theme(value) : value;
@@ -13,7 +29,7 @@ function generateCssVariables(variables, theme) {
   }, {});
 }
 
-// 样式语义化
+// style semantics
 function generateSemanticVariables(semantics, theme, property) {
   return Object.entries(semantics).map(([key, value]) => ({
     [`.${key}`]: {

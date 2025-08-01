@@ -53,12 +53,12 @@ export const CreateWorkflowBtn: FC<
   }
   const { createModalVisible, setCreateModalVisible, bindBizType } = context;
 
-  // 如果是抖音分身场景，此时只展示一个【创建工作流】按钮
+  // If it is a Douyin doppelganger scene, only one [Create Workflow] button will be displayed at this time.
   const showSingleButton =
     bindBizType === BindBizType.DouYinBot ||
     from === WorkflowModalFrom.WorkflowAgent;
 
-  /** 打开流程详情页 */
+  /** Open the process details page */
   const menuConfig = [
     {
       label: I18n.t('workflow_add_navigation_create'),
@@ -148,7 +148,7 @@ export const CreateWorkflowBtn: FC<
               'create workflow failed, no workflow id',
             );
           }
-          // 由于服务端创建 workflow 的主备数据同步有延迟，所以在创建完后如果直接跳转，有可能查不到 workflowId，所以前端延迟下，降低问题触发的概率
+          // Due to the delay in the synchronization of the main and standby data of the workflow created by the server level, if you jump directly after the creation, the workflowId may not be found, so the front-end delay reduces the probability of the problem triggering
           await wait(500);
 
           if (onCreateSuccess) {

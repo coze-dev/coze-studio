@@ -84,20 +84,20 @@ export enum PublishDisabledType {
 }
 
 export interface PublisherBotInfo {
-  // bot名称
+  // bot name
   name: string;
-  // bot描述
+  // Bot description
   description: string;
   // bot prompt
   prompt: string;
-  // bot 分支（用于多人协作diff）
+  // Bot branch (for multi-person collaborative diff)
   branch?: Branch;
-  // bot模式： single or multi
+  // Bot mode: single or multi
   botMode?: BotMode;
-  // 是否发布过
+  // Has it been published?
   hasPublished?: boolean;
-  // 收费插件列表
+  // List of paid plugins
   pluginPricingRules?: Array<PluginPricingRule>;
-  // 业务类型 DouyinAvatar=1 抖音分身
+  // Business Type DouyinAvatar = 1 Douyin Clone
   businessType?: BusinessType;
 }

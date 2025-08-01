@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
+import { type UploadValue } from '@coze-common/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { type PluginMetaInfo } from '@coze-arch/bot-api/developer_api';
-import { type UploadValue } from '@coze-common/biz-components';
 
 export const formRuleList = {
   name: [
@@ -31,7 +31,7 @@ export const formRuleList = {
           message: I18n.t('create_plugin_modal_nameerror'),
         }
       : {
-          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // 国内增加支持中文
+          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // Increased domestic support for Chinese
           message: I18n.t('create_plugin_modal_nameerror_cn'),
         },
   ],
@@ -50,10 +50,6 @@ export const formRuleList = {
     {
       required: true,
       message: I18n.t('create_plugin_modal_url1_error'),
-    },
-    {
-      pattern: /^(https):\/\/.+$/,
-      message: I18n.t('create_plugin_modal_url_error_https'),
     },
   ],
   key: [
@@ -95,7 +91,7 @@ export interface AuthOption {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- any
   [key: string]: any;
 }
-/** 递归寻找auth选项下的输入项 */
+/** Recursively find the input under the auth option */
 // @ts-expect-error -- linter-disable-autofix
 export const findAuthTypeItem = (data: AuthOption[], targetKey = 0) => {
   for (const item of data) {

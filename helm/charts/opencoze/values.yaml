@@ -7,14 +7,14 @@ mysql:
   port: 3306
   targetPort: 3306
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/mysql
+    repository: mysql
     tag: 8.4.5
   rootPassword: "root"
   database: opencoze
   user: coze
   password: coze123
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
   initScripts:
     - files/mysql/init.sql
@@ -23,7 +23,7 @@ mysql:
 redis:
   enabled: true
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/redis
+    repository: bitnami/redis
     tag: "7.2"
   aofEnabled: "no"
   port: 6379
@@ -31,7 +31,7 @@ redis:
   allowEmptyPassword: "yes"
   password: ""
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
 
 # -- coze-server configuration
@@ -41,23 +41,36 @@ cozeServer:
   replicaCount: 1
 
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/opencoze
-    pullPolicy: IfNotPresent
+    repository: opencoze/opencoze
+    # -- Keep the mirror up to date
+    pullPolicy: Always
     tag: 'latest'
 
   service:
     type: LoadBalancer
-    port: 8888
+    ports:
+      - name: http
+        port: 8888
+        targetPort: 8888
+      - name: minio-proxy
+        port: 8889
+        targetPort: 8889
 
   env:
+    LISTEN_ADDR: ":8888"
+    SERVER_HOST: "localhost${LISTEN_ADDR}"
     LOG_LEVEL: "debug"
     MAX_REQUEST_BODY_SIZE: "1073741824"
     STORAGE_TYPE: "minio"
-    MINIO_POD_PROXY_URL: "opencoze-minio:9000"
-    MINIO_ENDPOINT: "127.0.0.1:9000"
+    MINIO_PROXY_ENDPOINT: ":8889"
+    COZE_MQ_TYPE: rmq
     ES_VERSION: "v8"
     VECTOR_STORE_TYPE: "milvus"
-    EMBEDDING_TYPE: "openai"
+    EMBEDDING_TYPE: "ark"
+    ARK_EMBEDDING_MODEL: ""
+    ARK_EMBEDDING_DIMS: "1024"
+    ARK_EMBEDDING_BASE_URL: "https://ark.cn-beijing.volces.com/api/v3"
+    FILE_UPLOAD_COMPONENT_TYPE: "storage"
     OPENAI_EMBEDDING_BASE_URL: "https://api.openai.com/v1/embeddings"
     OPENAI_EMBEDDING_MODEL: "text-embedding-3-large"
     OPENAI_EMBEDDING_API_KEY: "your_api_key"
@@ -66,7 +79,10 @@ cozeServer:
     OCR_TYPE: "ve"
     VE_OCR_AK: ""
     VE_OCR_SK: ""
-    BUILTIN_CM_TYPE: "openai"
+    BUILTIN_CM_TYPE: "ark"
+    BUILTIN_CM_ARK_API_KEY: ""
+    BUILTIN_CM_ARK_MODEL: ""
+    BUILTIN_CM_ARK_BASE_URL: ""
     BUILTIN_CM_OPENAI_BASE_URL: "https://api.openai.com/v1/chat/completions"
     BUILTIN_CM_OPENAI_API_KEY: "your_api_key"
     BUILTIN_CM_OPENAI_BY_AZURE: "false"
@@ -83,14 +99,14 @@ rocketmq:
   namesrv:
     replicaCount: 1
     image:
-      repository: opencoze-cn-beijing.cr.volces.com/iac/rocketmq
+      repository: apache/rocketmq
       tag: 5.3.2
     persistence:
       store:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
       logs:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
     resources:
       limits:
@@ -115,7 +131,7 @@ rocketmq:
   broker:
     replicaCount: 1
     image:
-      repository: opencoze-cn-beijing.cr.volces.com/iac/rocketmq
+      repository: apache/rocketmq
       tag: 5.3.2
     config: |
       brokerClusterName = DefaultCluster
@@ -127,10 +143,10 @@ rocketmq:
       flushDiskType = ASYNC_FLUSH
     persistence:
       store:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
       logs:
-        storageClassName: "opencoze-data"
+        storageClassName: ""
         size: "20Gi"
     resources:
       limits:
@@ -138,20 +154,20 @@ rocketmq:
         memory: 8Gi
     initContainers:
       - name: wait-for-namesrv
-        image: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
+        image: busybox:latest
         command: ['sh', '-c', 'until nc -z rocketmq-namesrv 9876; do echo waiting for namesrv; sleep 2; done']
 
 elasticsearch:
   enabled: true
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/elasticsearch
+    repository: bitnami/elasticsearch
     tag: 8.18.0
   javaOpts: "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m"
   username: ""
   password: ""
   persistence:
     enabled: true
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     accessModes:
       - ReadWriteOnce
     size: 50Gi
@@ -163,8 +179,8 @@ elasticsearch:
 minio:
   enabled: true
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/minio
-    tag: latest
+    repository: minio/minio
+    tag: RELEASE.2025-06-13T11-33-47Z-cpuv1
   accessKey: minioadmin
   secretKey: minioadmin123
   bucket: opencoze
@@ -173,7 +189,7 @@ minio:
     port: 9000
     consolePort: 9001
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "50Gi"
   resources:
     limits:
@@ -186,35 +202,26 @@ minio:
 etcd:
   enabled: true
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/etcd
+    repository: bitnami/etcd
     tag: 3.5
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "20Gi"
 
 milvus:
   enabled: true
   image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/milvus
+    repository: milvusdb/milvus
     tag: v2.5.10
   bucketName: milvus
   persistence:
-    storageClassName: "opencoze-data"
+    storageClassName: ""
     size: "20Gi"
-
-kibana:
-  enabled: true
-  image:
-    repository: opencoze-cn-beijing.cr.volces.com/iac/kibana
-    tag: 8.18.0
-  service:
-    type: ClusterIP
-    port: 5601
 
 
 images:
-  busybox: opencoze-cn-beijing.cr.volces.com/iac/busybox:latest
-  curl: opencoze-cn-beijing.cr.volces.com/iac/curl:8.12.1
+  busybox: busybox:latest
+  curl: alpine/curl:8.12.1
 
 
 # -- We will add other services like mysql, redis etc. here later

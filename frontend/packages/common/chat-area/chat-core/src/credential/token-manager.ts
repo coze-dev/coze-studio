@@ -15,8 +15,8 @@
  */
  
 /**
- * 负责 token 验权，自动刷新 token
- * 暴露给业务方，由业务方决定是否单例还是多例鉴权
+ * Responsible for token verification, automatically refresh the token
+ * Exposed to the service party, the service party decides whether to single-case or multiple-case authentication
  */
 export interface TokenManagerProps {
   token?: string;
@@ -39,10 +39,10 @@ export default class TokenManager {
   }
 
   /**
-   * 获取 token
+   * Get token
    */
   getToken() {
-    // TODO: 没有 token，获取最新 token
+    // TODO: No token, get the latest token
     return this.token;
   }
   updateToken(token: string) {
@@ -53,24 +53,24 @@ export default class TokenManager {
   }
 
   /**
-   * 获取 apiKey
+   * Get apiKey
    */
   getApiKey() {
     return this.apiKey;
   }
 
   /**
-   * 获取 apiKey 组装成的 Authorization 值
+   * Get the Authorization value assembled by apiKey
    */
   getApiKeyAuthorizationValue() {
     return `Bearer ${this?.getApiKey()}`;
   }
 
   /**
-   * 刷新 apiKey
+   * Refresh apiKey
    */
   refreshApiKey(apiKey: string) {
     this.apiKey = apiKey;
   }
-  // TODO: 补充刷新机制
+  // TODO: Supplementary refresh mechanism
 }

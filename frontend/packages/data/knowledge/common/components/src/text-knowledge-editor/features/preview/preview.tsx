@@ -58,7 +58,7 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
     <div className="relative">
       <div
         className={classNames(
-          // 布局
+          // layout
           'relative overflow-hidden',
         )}
         onContextMenu={readonly ? undefined : e => openContextMenu(e)}
@@ -70,7 +70,7 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
         onMouseLeave={readonly ? undefined : handleMouseLeave}
         onDoubleClick={readonly ? undefined : () => onActivateEditMode?.(chunk)}
       >
-        {/* 悬停时显示的操作栏 */}
+        {/* The action bar displayed when hovering */}
         {hoveredChunk === chunk.text_knowledge_editor_chunk_uuid &&
         !readonly ? (
           <HoverEditBar
@@ -83,7 +83,7 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
         <DocumentChunkPreview chunk={chunk} locateId={locateId || ''} />
       </div>
 
-      {/* 右键菜单 */}
+      {/* right-click menu */}
       {contextMenuPosition ? (
         <PreviewContextMenu
           previewContextMenuItemsRegistry={previewContextMenuItemsRegistry}
@@ -99,16 +99,16 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
   );
 };
 
-// 使用React.memo包装组件，避免不必要的重新渲染
+// Wrap components with React.memo to avoid unnecessary re-rendering
 export const DocumentPreview = React.memo(
   DocumentPreviewComponent,
   (prevProps, nextProps) => {
-    // 如果分片内容变化，需要重新渲染
+    // If the sharding content changes, it needs to be re-rendered
     if (prevProps.chunk.content !== nextProps.chunk.content) {
       return false;
     }
 
-    // 其他情况下不需要重新渲染
+    // In other cases, no re-rendering is required
     return true;
   },
 );

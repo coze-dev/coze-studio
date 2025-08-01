@@ -54,7 +54,7 @@ describe('useSnapMove', () => {
   const createMockCanvas = () => {
     const mockCanvas = {
       on: vi.fn((event: string, callback: (event: any) => void) =>
-        // 返回一个清理函数
+        // Returns a cleaning function
         () => {
           mockCanvas.off(event, callback);
         },
@@ -114,12 +114,12 @@ describe('useSnapMove', () => {
       }),
     );
 
-    // 获取 mouse:down 事件的回调函数
+    // Get the callback function for the mouse: down event
     const mouseDownCallback = (mockCanvas.on as any).mock.calls.find(
       (call: [string, Function]) => call[0] === 'mouse:down',
     )?.[1];
 
-    // 模拟事件触发
+    // simulated event firing
     mouseDownCallback?.({ target: { id: 'test-object' } });
 
     expect(snap.resetAllObjectsPosition).toHaveBeenCalledWith({
@@ -157,12 +157,12 @@ describe('useSnapMove', () => {
       }),
     );
 
-    // 获取 mouse:up 事件的回调函数
+    // Get the callback function for the mouse: up event
     const mouseUpCallback = (mockCanvas.on as any).mock.calls.find(
       (call: [string, Function]) => call[0] === 'mouse:up',
     )?.[1];
 
-    // 模拟事件触发
+    // simulated event firing
     mouseUpCallback?.({ target: { id: 'test-object' } });
 
     expect(mockSnap.reset).toHaveBeenCalled();
@@ -198,12 +198,12 @@ describe('useSnapMove', () => {
       }),
     );
 
-    // 获取 object:moving 事件的回调函数
+    // Get the callback function for the object: moving event
     const movingCallback = (mockCanvas.on as any).mock.calls.find(
       (call: [string, Function]) => call[0] === 'object:moving',
     )?.[1];
 
-    // 模拟事件触发
+    // simulated event firing
     movingCallback?.({ target: { id: 'test-object' } });
 
     expect(mockSnap.move).toHaveBeenCalledWith({ id: 'test-object' });
@@ -259,7 +259,7 @@ describe('useSnapMove', () => {
       },
     );
 
-    // 更新 scale
+    // Update scale
     rerender({ scale: 2 });
 
     expect(snap.helpline.resetScale).toHaveBeenCalledWith(2);

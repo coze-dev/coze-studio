@@ -139,14 +139,14 @@ export class AdapterPlugin implements IPlugin {
           getAnnotation(f.annotations, 'api.converter') === 'atoi_comp_empty'
         ) {
           if (isInt(f.fieldType)) {
-            // 类型转换为 string
+            // Type conversion to string
             f.fieldType.type = SyntaxType.StringKeyword;
           }
         }
-        // api.converter 对 int 以及 map 类型生效
+        // Api.converter works for int and map types
         if (getAnnotation(f.annotations, 'api.converter') === 'itoa') {
           if (isInt(f.fieldType)) {
-            // 类型转换为 string
+            // Type conversion to string
             f.fieldType.type = SyntaxType.StringKeyword;
           }
           if (isMapType(f.fieldType)) {
@@ -156,7 +156,7 @@ export class AdapterPlugin implements IPlugin {
             }
           }
         }
-        // item_converter 对 list 类型生效
+        // item_converter for list types
         if (
           ['atoi_comp_empty', 'itoa'].includes(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -168,24 +168,24 @@ export class AdapterPlugin implements IPlugin {
           }
         }
 
-        // 收集 decode encode 注解处理
+        // Collection decoding encoding annotation processing
         if (getTypeFromDynamicJsonAnnotation(f.annotations)) {
           decodeEncodeFields.push(f.name.value);
         }
-        // api.json 注解处理
+        // api.json annotation processing
         const jsonAnnotation = getAnnotation(f.annotations, 'api.json');
         if (jsonAnnotation) {
           f.extensionConfig = f.extensionConfig || {};
           f.extensionConfig.key = jsonAnnotation;
         }
-        // api.json_string 注解处理
+        // API. json_string annotation handling
         const jsonStrAnnotation = getAnnotation(
           f.annotations,
           'api.json_string',
         );
         if (jsonStrAnnotation) {
           if (isInt(f.fieldType)) {
-            // 类型转换为 string
+            // Type conversion to string
             f.fieldType.type = SyntaxType.StringKeyword;
             f.extensionConfig = f.extensionConfig || {};
             f.extensionConfig.key = jsonStrAnnotation;

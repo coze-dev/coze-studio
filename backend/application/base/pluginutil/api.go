@@ -20,9 +20,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/getkin/kin-openapi/openapi3"
-
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
@@ -32,14 +31,6 @@ import (
 
 func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (*openapi3.Operation, error) {
 	op := &openapi3.Operation{}
-
-	if reqParams != nil && len(reqParams) == 0 {
-		op.Parameters = []*openapi3.ParameterRef{}
-		op.RequestBody = entity.DefaultOpenapi3RequestBody()
-	}
-	if respParams != nil && len(respParams) == 0 {
-		op.Responses = entity.DefaultOpenapi3Responses()
-	}
 
 	hasSetReqBody := false
 	hasSetParams := false
@@ -97,6 +88,15 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 	}
 
+	if reqParams != nil {
+		if !hasSetParams {
+			op.Parameters = []*openapi3.ParameterRef{}
+		}
+		if !hasSetReqBody {
+			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+		}
+	}
+
 	hasSetRespBody := false
 
 	for _, apiParam := range respParams {
@@ -134,6 +134,10 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		if apiParam.IsRequired {
 			mType.Schema.Value.Required = append(mType.Schema.Value.Required, apiParam.Name)
 		}
+	}
+
+	if respParams != nil && !hasSetRespBody {
+		op.Responses = entity.DefaultOpenapi3Responses()
 	}
 
 	return op, nil

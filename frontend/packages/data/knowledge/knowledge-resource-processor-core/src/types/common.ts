@@ -28,23 +28,23 @@ interface CommonUnitItem {
   key?: string;
   percent: number | undefined;
   status: UploadStatus | WebStatus | EntityStatus;
-  type: string; // unit类型，url、doc、pdf等
-  uri: string; // 文件在tos上的的相对路径url｜web_url
-  url: string; // 文件的绝对url
+  type: string; // Unit type, url, doc, pdf, etc
+  uri: string; // The relative path of the file on tos url | web_url
+  url: string; // Absolute URL of the file
   name: string; // unit name｜webpage title
   validateMessage?: string;
-  // 外部传入的动态 errorMessage
+  // External incoming dynamic errorMessage
   dynamicErrorMessage?: string;
 }
 
 interface DocUnitItem {
-  size?: string; // 文件大小
-  docId?: string; // 文档ID，update content时用到
+  size?: string; // file size
+  docId?: string; // Document ID, used when updating content
   fileInstance?: File | undefined;
   uid?: string;
 }
 interface URLUnitItem {
-  updateInterval?: number; // URL使用，更新频率
+  updateInterval?: number; // URL usage, update frequency
   subpagesCount?: number;
   updateType?: UpdateType;
   webID?: string;
@@ -62,7 +62,7 @@ interface URLUnitItem {
         type: 'text' | 'image' | 'link';
 
         /**
-         * FIXME: 为了兼容性无法修改 data 结构，所以深度采集时会带上以下三个参数
+         * FIXME: The data structure cannot be modified for compatibility, so the following three parameters will be included in the depth acquisition
          */
         parentKey?: string;
         titles?: string[];
@@ -70,7 +70,7 @@ interface URLUnitItem {
       }[];
     };
     /**
-     * 如果是深度采集得到的文档，则存在值，对应父文档 column 的key
+     * If it is a deep capture document, there is a value corresponding to the key of the parent document column.
      */
     fromParentUnitColumnKey?: string;
   };
@@ -78,7 +78,7 @@ interface URLUnitItem {
 }
 
 /**
- * 三方数据连接器任务
+ * Three-way data connector task
  */
 interface EntityUnitItem {
   file_name?: string;
@@ -94,8 +94,8 @@ interface EntityUnitItem {
   tos_key?: string;
 }
 
-// TODO 这个 UnitItem 实现有问题，待优化
-/** 除了 UnitItem，其他外部都没有用到，暂不导出*/
+// There is a problem with the implementation of TODO UnitItem, which needs to be optimized.
+/** Except for UnitItem, nothing else is used externally, so it will not be exported for the time being.*/
 export type UnitItem = CommonUnitItem &
   DocUnitItem &
   URLUnitItem &

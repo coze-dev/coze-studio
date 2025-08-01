@@ -74,7 +74,7 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
 	}
 
-	// 验证密码，使用 Argon2id 算法
+	// Verify the password using the Argon2id algorithm
 	valid, err := verifyPassword(password, userModel.Password)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, err
 	}
 
-	// 更新用户会话密钥
+	// Update user session key
 	err = u.UserRepo.UpdateSessionKey(ctx, userModel.ID, sessionKey)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {
 }
 
 func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (err error) {
-	// 使用 Argon2id 算法对密码进行哈希处理
+	// Hashing passwords using the Argon2id algorithm
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return err
@@ -269,7 +269,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		}
 	}
 
-	// 使用 Argon2id 算法对密码进行哈希处理
+	// Hashing passwords using the Argon2id algorithm
 	hashedPassword, err := hashPassword(req.Password)
 	if err != nil {
 		return nil, err
@@ -376,13 +376,13 @@ func (u *userImpl) getUniqueNameFormEmail(ctx context.Context, email string) str
 func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 	session *userEntity.Session, exist bool, err error,
 ) {
-	// 验证会话密钥
+	// authentication session key
 	sessionModel, err := verifySessionKey(sessionKey)
 	if err != nil {
 		return nil, false, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "access denied"))
 	}
 
-	// 从数据库获取用户信息
+	// Retrieve user information from the database
 	userModel, exist, err := u.UserRepo.GetUserBySessionKey(ctx, sessionKey)
 	if err != nil {
 		return nil, false, err
@@ -408,10 +408,10 @@ func (u *userImpl) MGetUserProfiles(ctx context.Context, userIDs []int64) (users
 
 	users = make([]*userEntity.User, 0, len(userModels))
 	for _, um := range userModels {
-		// 获取图片URL
+		// Get image URL
 		resURL, err := u.IconOSS.GetObjectUrl(ctx, um.IconURI)
 		if err != nil {
-			continue // 如果获取图片URL失败，跳过该用户
+			continue // If getting the image URL fails, skip the user
 		}
 
 		users = append(users, userPo2Do(um, resURL))
@@ -478,7 +478,7 @@ func spacePo2Do(space *model.Space, iconUrl string) *userEntity.Space {
 	}
 }
 
-// Argon2id 参数
+// Argon2id parameter
 type argon2Params struct {
 	memory      uint32
 	iterations  uint32
@@ -487,7 +487,7 @@ type argon2Params struct {
 	keyLength   uint32
 }
 
-// 默认的 Argon2id 参数
+// Default Argon2id parameters
 var defaultArgon2Params = &argon2Params{
 	memory:      64 * 1024, // 64MB
 	iterations:  3,
@@ -496,18 +496,18 @@ var defaultArgon2Params = &argon2Params{
 	keyLength:   32,
 }
 
-// 使用 Argon2id 算法对密码进行哈希处理
+// Hashing passwords using the Argon2id algorithm
 func hashPassword(password string) (string, error) {
 	p := defaultArgon2Params
 
-	// 生成随机盐值
+	// Generate random salt values
 	salt := make([]byte, p.saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
 		return "", err
 	}
 
-	// 使用 Argon2id 算法计算哈希值
+	// Calculate the hash value using the Argon2id algorithm
 	hash := argon2.IDKey(
 		[]byte(password),
 		salt,
@@ -517,20 +517,20 @@ func hashPassword(password string) (string, error) {
 		p.keyLength,
 	)
 
-	// 编码为 base64 格式
+	// Encoding to base64 format
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 	b64Hash := base64.RawStdEncoding.EncodeToString(hash)
 
-	// 格式：$argon2id$v=19$m=65536,t=3,p=4$<salt>$<hash>
+	// Format: $argon2id $v = 19 $m = 65536, t = 3, p = 4 $< salt > $< hash >
 	encoded := fmt.Sprintf("$argon2id$v=19$m=%d,t=%d,p=%d$%s$%s",
 		p.memory, p.iterations, p.parallelism, b64Salt, b64Hash)
 
 	return encoded, nil
 }
 
-// 验证密码是否匹配
+// Verify that the passwords match
 func verifyPassword(password, encodedHash string) (bool, error) {
-	// 解析编码后的哈希字符串
+	// Parse the encoded hash string
 	parts := strings.Split(encodedHash, "$")
 	if len(parts) != 6 {
 		return false, fmt.Errorf("invalid hash format")
@@ -554,7 +554,7 @@ func verifyPassword(password, encodedHash string) (bool, error) {
 	}
 	p.keyLength = uint32(len(decodedHash))
 
-	// 使用相同的参数和盐值计算哈希值
+	// Calculate the hash value using the same parameters and salt values
 	computedHash := argon2.IDKey(
 		[]byte(password),
 		salt,
@@ -564,65 +564,65 @@ func verifyPassword(password, encodedHash string) (bool, error) {
 		p.keyLength,
 	)
 
-	// 比较计算得到的哈希值与存储的哈希值
+	// Compare the calculated hash value with the stored hash value
 	return subtle.ConstantTimeCompare(decodedHash, computedHash) == 1, nil
 }
 
-// Session 结构体，包含会话信息
+// Session structure, which contains session information
 type Session struct {
-	ID        int64     `json:"id"`         // 会话唯一标识符
-	CreatedAt time.Time `json:"created_at"` // 创建时间
-	ExpiresAt time.Time `json:"expires_at"` // 过期时间
+	ID        int64     `json:"id"`         // Session unique device identifier
+	CreatedAt time.Time `json:"created_at"` // creation time
+	ExpiresAt time.Time `json:"expires_at"` // expiration time
 }
 
-// 用于签名的密钥（在实际应用中应从配置中读取或使用环境变量）
+// The key used for signing (in practice you should read from the configuration or use environment variables)
 var hmacSecret = []byte("opencoze-session-hmac-key")
 
-// 生成安全的会话密钥
+// Generate a secure session key
 func generateSessionKey(sessionID int64) (string, error) {
-	// 创建默认会话结构（不包含用户ID，将在Login方法中设置）
+	// Create the default session structure (without the user ID, which will be set in the Login method)
 	session := Session{
 		ID:        sessionID,
 		CreatedAt: time.Now(),
 		ExpiresAt: time.Now().Add(consts.DefaultSessionDuration),
 	}
 
-	// 序列化会话数据
+	// Serialize session data
 	sessionData, err := json.Marshal(session)
 	if err != nil {
 		return "", err
 	}
 
-	// 计算HMAC签名以确保完整性
+	// Calculate HMAC signatures to ensure integrity
 	h := hmac.New(sha256.New, hmacSecret)
 	h.Write(sessionData)
 	signature := h.Sum(nil)
 
-	// 组合会话数据和签名
+	// Combining session data and signatures
 	finalData := append(sessionData, signature...)
 
-	// Base64编码最终结果
+	// Base64 encoding final result
 	return base64.RawURLEncoding.EncodeToString(finalData), nil
 }
 
-// 验证会话密钥的有效性
+// Verify the validity of the session key
 func verifySessionKey(sessionKey string) (*Session, error) {
-	// 解码会话数据
+	// Decode session data
 	data, err := base64.RawURLEncoding.DecodeString(sessionKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid session format: %w", err)
 	}
 
-	// 确保数据长够长，至少包含会话数据和签名
-	if len(data) < 32 { // 简单检查，实际应该更严格
+	// Make sure the data is long enough to include at least session data and signatures
+	if len(data) < 32 { // Simple inspection should actually be more rigorous
 		return nil, fmt.Errorf("session data too short")
 	}
 
-	// 分离会话数据和签名
-	sessionData := data[:len(data)-32] // 假设签名是32字节
+	// Separating session data and signatures
+	sessionData := data[:len(data)-32] // Assume the signature is 32 bytes
 	signature := data[len(data)-32:]
 
-	// 验证签名
+	// verify signature
 	h := hmac.New(sha256.New, hmacSecret)
 	h.Write(sessionData)
 	expectedSignature := h.Sum(nil)
@@ -631,13 +631,13 @@ func verifySessionKey(sessionKey string) (*Session, error) {
 		return nil, fmt.Errorf("invalid session signature")
 	}
 
-	// 解析会话数据
+	// Parsing session data
 	var session Session
 	if err := json.Unmarshal(sessionData, &session); err != nil {
 		return nil, fmt.Errorf("invalid session data: %w", err)
 	}
 
-	// 检查会话是否过期
+	// Check if the session has expired
 	if time.Now().After(session.ExpiresAt) {
 		return nil, fmt.Errorf("session expired")
 	}

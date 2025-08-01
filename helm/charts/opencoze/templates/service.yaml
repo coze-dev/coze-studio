@@ -7,10 +7,12 @@ metadata:
 spec:
   type: {{ .Values.cozeServer.service.type }}
   ports:
-    - port: {{ .Values.cozeServer.service.port }}
-      targetPort: http
+  {{- range .Values.cozeServer.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .name }}
       protocol: TCP
-      name: app-port
+  {{- end }}
   selector:
     app.kubernetes.io/name: {{ include "opencoze.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

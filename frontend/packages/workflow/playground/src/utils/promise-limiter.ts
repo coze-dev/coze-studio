@@ -15,7 +15,7 @@
  */
  
 /**
- * 限制并发数
+ * Limit concurrency
  */
 export class PromiseLimiter<T> {
   private concurrency: number;

@@ -32,7 +32,7 @@ const LLM_TEXT = {
 const DEFAULT_TEXT = {
   tabLabel: I18n.t('workflow_detail_testrun_panel_raw_output'),
 };
-/** 一些特化节点的文案 */
+/** Copywriting for some specialized nodes */
 const TEXT = {
   Code: CODE_TEXT,
   LLM: LLM_TEXT,
@@ -46,7 +46,7 @@ export enum TabValue {
 export const useOutputLog = (log: OutputLog) => {
   const [tab, setTab] = useState(TabValue.Output);
   const reporter = useTestRunReporterService();
-  /** 是否渲染原始输出 */
+  /** Whether to render the original output */
   const showRawOutput = useMemo(() => {
     const [result, err] = isDifferentOutput({
       nodeOutput: log.data,

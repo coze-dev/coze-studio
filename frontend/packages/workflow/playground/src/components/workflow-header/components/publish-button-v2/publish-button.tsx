@@ -33,8 +33,8 @@ export const PublishButton = () => {
   const { disabled, tooltip } = useIsPublishDisabled();
 
   /**
-   * 由于产品形态上围绕发布按钮有多种弹窗和浮层，为了防止彼此冲突设置一个集中的标记
-   * 这不是一种很好的做法，未来应该优化发布按钮的产品形态，现在发布实在太繁琐
+   * Since there are various pop-ups and floating layers around the publish button in the product form, a centralized markup is set to prevent conflicts with each other
+   * This is not a good practice. The product form of the release button should be optimized in the future. It is too cumbersome to release now.
    */
   const [step, setStep] = useState('none');
 

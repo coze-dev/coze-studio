@@ -114,8 +114,8 @@ export function useSegmentContextMenu({
     onContextMenu: (e, node: NodeApi<LevelDocumentTree>) => {
       e.preventDefault();
       setTreeNode(node);
-      /** 在 project ide 里面，ide 容器设置了 contain: strict, 会导致 fixed position
-       *  的偏移基础不对，所以这里需要减去 ide 容器的 left 和 top 值
+      /** In the project ide, the ide container is set to contain: strict, which will cause a fixed position.
+       *  The base of the offset is wrong, so you need to subtract the left and top values of the ide container here
        */
       let clickX = e.pageX;
       let clickY = e.pageY;

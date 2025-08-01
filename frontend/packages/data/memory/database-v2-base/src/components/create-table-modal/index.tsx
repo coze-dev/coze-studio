@@ -52,7 +52,7 @@ interface CreateTableModalExtraParams {
   creatorId?: string;
 }
 
-// RenderGenerate属性类型定义
+// RenderGenerate property type definition
 export interface RenderGenerateProps {
   tableStructureRef: RefObject<DatabaseTableStructureRef>;
   onGenerateChange: (tableMemoryList: TableMemoryItem[]) => void;
@@ -181,7 +181,7 @@ export function DatabaseCreateTableModal({
       setSaveBtnDisabled(true);
       return;
     }
-    // 系统字段不计入字段数量限制
+    // System fields do not count towards the number of fields limit
     if (list.filter(i => !i.isSystemField).length > MAX_COLUMNS) {
       setSaveBtnDisabled(true);
       return;
@@ -204,8 +204,8 @@ export function DatabaseCreateTableModal({
 
   const onSave: OnSave = async ({ response }) => {
     /**
-     * 在 DatabaseTableStructure 这个组件中，提交已经区分了 edit 和 create 两种状态，
-     * 并且存在一个onSave的回调，因此提交之后的逻辑全部收敛在这里
+     * In DatabaseTableStructure component, commit already distinguishes between edit and create states,
+     * And there is an onSave callback, so the logic after commit all converges here
      */
     await onSubmit?.(response);
   };
@@ -262,7 +262,7 @@ export function DatabaseCreateTableModal({
               />
             </div>
           </div>
-          {/* 编辑弹窗出现 Banner 提示 */}
+          {/* Banner prompt appears in the edit pop-up window */}
           {isModify ? (
             <DismissibleBanner
               type="warning"

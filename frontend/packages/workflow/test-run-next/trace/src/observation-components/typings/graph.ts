@@ -33,12 +33,12 @@ export type TraceTreeProps = {
   onCollapseChange?: (id: string) => void;
   defaultDisplayMode?: DisplayMode;
   /**
-   * 隐藏模式选择器
+   * hidden mode selector
    */
   hideModeSelect?: boolean;
-  /** 宿主用户信息 */
+  /** Host user information */
   hostUser?: {
-    /** 用户邮箱 */
+    /** user email */
     email?: string;
     /** user id */
     id?: string;

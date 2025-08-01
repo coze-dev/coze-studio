@@ -53,8 +53,8 @@ export const TextItemList: FC<TextItemListProps> = ({
 
         return (
           /**
-           * TODO: 由于目前设计不支持一条 message 渲染多个 content 这里需要借用一下发送消息的文字气泡背景色
-           * 目前只有用户才能发送 multimodal 消息
+           * TODO: Since the current design does not support one message to render multiple content, you need to borrow the text bubble background color of the sent message.
+           * Currently only users can send multimodal messages
            */
           <div
             className={typeSafeMessageBoxInnerVariants({

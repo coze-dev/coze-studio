@@ -17,7 +17,7 @@
 import { useForm } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 获取模型type
+ * Get model type
  */
 export function useModelType() {
   const form = useForm();

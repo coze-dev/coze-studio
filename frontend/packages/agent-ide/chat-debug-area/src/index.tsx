@@ -94,8 +94,8 @@ export const BotDebugChatArea = ({
   }
 
   /**
-   * @deprecated 请勿新增或修改，review 不会通过
-   * 请使用插件化方案实现
+   * @deprecated Please do not add or modify, the review will not pass
+   * Please use a plug-in solution to achieve
    */
   const chatAreaComponentTypes: Partial<ComponentTypesMap> = {
     messageActionBarFooter: MessageBoxActionBarAdapter,

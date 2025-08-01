@@ -100,7 +100,7 @@ export interface HoverRequest {
   position: HoverPosition;
   cssClasses?: string[];
   visualPreview?: (width: number) => HTMLElement | undefined;
-  /** hover 位置偏移 */
+  /** Hover position offset */
   offset?: number;
 }
 

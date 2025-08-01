@@ -104,7 +104,7 @@ export const SuggestionList: React.FC<SuggestionListProps> = ({
   }, [value, disabled]);
 
   const handleChange = (next: string[]) => {
-    // 过滤掉所有空项
+    // Filter out all empty items
     const temp = next.filter(i => Boolean(i));
     onChange(temp);
   };
@@ -119,7 +119,7 @@ export const SuggestionList: React.FC<SuggestionListProps> = ({
     handleChange(next);
   };
 
-  // 长度为 0，只在只读态出现，提示文字即可
+  // The length is 0, it only appears in the read-only state, and the prompt text can be used.
   if (!innerValue.length) {
     return (
       <Typography.Text size="small">

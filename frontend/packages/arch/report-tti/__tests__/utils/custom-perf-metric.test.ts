@@ -20,7 +20,7 @@ import { reporter } from '@coze-arch/logger';
 const mockSlardarInstance = vi.fn();
 mockSlardarInstance.config = vi.fn();
 
-// 模拟 logger 和 reporter
+// Analog loggers and reporters
 vi.mock('@coze-arch/logger', () => ({
   logger: {
     info: vi.fn(),
@@ -32,18 +32,18 @@ vi.mock('@coze-arch/logger', () => ({
 }));
 
 describe('custom-perf-metric', () => {
-  // 保存原始的全局对象
+  // Save the original global object
   const originalPerformance = global.performance;
   const originalDocument = global.document;
   const originalPerformanceObserver = global.PerformanceObserver;
 
-  // 模拟函数
+  // simulation function
   const mockObserve = vi.fn();
   const mockDisconnect = vi.fn();
   const mockGetEntriesByName = vi.fn();
   const mockPerformanceNow = vi.fn().mockReturnValue(1000);
 
-  // 模拟路由变更条目
+  // simulated route change entry
   const mockRouteChangeEntry = {
     startTime: 500,
     detail: {
@@ -53,12 +53,12 @@ describe('custom-perf-metric', () => {
     },
   };
 
-  // 确保数组有 at 方法
+  // Make sure the array has at method
   if (!Array.prototype.at) {
-    // 添加 at 方法的 polyfill
+    // Add at method polyfill
     Object.defineProperty(Array.prototype, 'at', {
       value(index) {
-        // 将负索引转换为从数组末尾开始的索引
+        // Converts a negative index to an index starting at the end of the array
         return this[index < 0 ? this.length + index : index];
       },
       writable: true,
@@ -70,13 +70,13 @@ describe('custom-perf-metric', () => {
     vi.clearAllMocks();
     vi.resetModules();
 
-    // 模拟 performance 对象
+    // Simulated performance object
     vi.stubGlobal('performance', {
       now: mockPerformanceNow,
       getEntriesByName: mockGetEntriesByName,
     });
 
-    // 默认模拟 getEntriesByName 返回值
+    // Default simulated getEntriesByName return value
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
@@ -91,18 +91,18 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 模拟 document 对象
+    // Mock document object
     global.document = {
       visibilityState: 'visible',
     } as any;
 
-    // 模拟 PerformanceObserver
+    // Analog PerformanceObserver
     global.PerformanceObserver = vi.fn().mockImplementation(callback => ({
       observe: mockObserve,
       disconnect: mockDisconnect,
     })) as any;
 
-    // 添加 supportedEntryTypes 属性
+    // Add the supportedEntryTypes property
     Object.defineProperty(global.PerformanceObserver, 'supportedEntryTypes', {
       value: ['paint'],
       configurable: true,
@@ -110,7 +110,7 @@ describe('custom-perf-metric', () => {
   });
 
   afterEach(() => {
-    // 恢复原始对象
+    // Restore original object
     global.performance = originalPerformance;
     global.document = originalDocument;
     global.PerformanceObserver = originalPerformanceObserver;
@@ -132,10 +132,10 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 执行
+    // execute
     reportTti({ key: 'value' });
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).toHaveBeenCalledWith('sendCustomPerfMetric', {
       value: 1000,
       name: PerfMetricNames.TTI,
@@ -152,16 +152,16 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 document.visibilityState
+    // Modify document visibilityState
     Object.defineProperty(global.document, 'visibilityState', {
       value: 'hidden',
       configurable: true,
     });
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).not.toHaveBeenCalled();
   });
 
@@ -170,16 +170,16 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 第一次调用
+    // first call
     reportTti({}, 'test-scene');
 
-    // 清除模拟
+    // Clear simulation
     vi.clearAllMocks();
 
-    // 第二次调用同一路由和场景
+    // Second call to the same route and scenario
     reportTti({}, 'test-scene');
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).not.toHaveBeenCalled();
   });
 
@@ -188,7 +188,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 返回多个路由变更
+    // Modify getEntriesByName to return multiple route changes
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         const entries = [
@@ -210,7 +210,7 @@ describe('custom-perf-metric', () => {
           },
         ];
 
-        // 确保数组有 at 方法
+        // Make sure the array has at method
         if (!entries.at) {
           entries.at = function (index) {
             return this[index < 0 ? this.length + index : index];
@@ -222,10 +222,10 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 执行
+    // execute
     reportTti({ key: 'value' });
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).toHaveBeenCalledWith('sendCustomPerfMetric', {
       value: 500, // 1000 - 500 = 500
       name: PerfMetricNames.TTI_HOT,
@@ -241,15 +241,15 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 performance.now 返回值
+    // Modify performance.now return value
     mockPerformanceNow.mockReturnValue(700);
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).toHaveBeenCalledWith('sendCustomPerfMetric', {
-      value: 800, // 使用 FCP 时间
+      value: 800, // Use FCP time
       name: PerfMetricNames.TTI,
       type: 'perf',
       extra: {
@@ -263,19 +263,19 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 不返回 FCP
+    // Modify getEntriesByName to not return FCP
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
       }
-      // 返回空数组表示没有 FCP
+      // Returning an empty array indicates that there is no FCP.
       return [];
     });
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockObserve).toHaveBeenCalledWith({ type: 'paint', buffered: true });
     expect(mockSlardarInstance).not.toHaveBeenCalled();
   });
@@ -285,7 +285,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 不返回 FCP
+    // Modify getEntriesByName to not return FCP
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
@@ -293,7 +293,7 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 准备模拟 PerformanceObserver 回调
+    // Prepare to simulate the PerformanceObserver callback
     let observerCallback: Function | undefined;
     global.PerformanceObserver = vi.fn().mockImplementation(callback => {
       observerCallback = callback;
@@ -303,23 +303,23 @@ describe('custom-perf-metric', () => {
       };
     }) as any;
 
-    // 执行
+    // execute
     reportTti({ key: 'value' });
 
-    // 模拟 PerformanceObserver 回调
+    // Simulate PerformanceObserver callbacks
     const mockList = {
       getEntriesByName: vi.fn().mockReturnValue([{ startTime: 900 }]),
     };
 
-    // 确保 observerCallback 已被赋值
+    // Make sure observerCallback has been assigned a value
     expect(observerCallback).toBeDefined();
 
-    // 执行回调
+    // execute callback
     if (observerCallback) {
       observerCallback(mockList);
     }
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).toHaveBeenCalledWith('sendCustomPerfMetric', {
       value: 900,
       name: PerfMetricNames.TTI,
@@ -337,7 +337,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 不返回 FCP
+    // Modify getEntriesByName to not return FCP
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
@@ -345,15 +345,15 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 模拟 observe 抛出错误
+    // Simulate observe throw error
     mockObserve.mockImplementationOnce(() => {
       throw new Error('Failed to execute observe');
     });
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockObserve).toHaveBeenCalledTimes(2);
     expect(mockObserve).toHaveBeenNthCalledWith(1, {
       type: 'paint',
@@ -371,7 +371,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 不返回 FCP
+    // Modify getEntriesByName to not return FCP
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
@@ -379,21 +379,21 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 模拟 observe 抛出错误
+    // Simulate observe throw error
     mockObserve.mockImplementationOnce(() => {
       throw new Error('Failed to execute observe');
     });
 
-    // 移除 supportedEntryTypes
+    // Remove supportedEntryTypes
     Object.defineProperty(global.PerformanceObserver, 'supportedEntryTypes', {
       value: [],
       configurable: true,
     });
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockObserve).toHaveBeenCalledTimes(1);
     expect(reporter.info).toHaveBeenCalledWith({
       message: 'Failed to execute observe',
@@ -406,7 +406,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 不返回 FCP
+    // Modify getEntriesByName to not return FCP
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         return [mockRouteChangeEntry];
@@ -414,7 +414,7 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 模拟 observe 抛出错误
+    // Simulate observe throw error
     mockObserve
       .mockImplementationOnce(() => {
         throw new Error('First error');
@@ -423,10 +423,10 @@ describe('custom-perf-metric', () => {
         throw new Error('Second error');
       });
 
-    // 执行
+    // execute
     reportTti();
 
-    // 验证
+    // verify
     expect(mockObserve).toHaveBeenCalledTimes(2);
     expect(reporter.info).toHaveBeenCalledTimes(2);
     expect(reporter.info).toHaveBeenNthCalledWith(1, {
@@ -444,7 +444,7 @@ describe('custom-perf-metric', () => {
       '../../src/utils/custom-perf-metric',
     );
 
-    // 修改 getEntriesByName 返回多个路由变更，但最后一个没有startTime
+    // Modify getEntriesByName to return multiple route changes, but the last one does not have a prepTime
     mockGetEntriesByName.mockImplementation(name => {
       if (name === 'route_change') {
         const entries = [
@@ -457,7 +457,7 @@ describe('custom-perf-metric', () => {
             },
           },
           {
-            // 没有startTime属性
+            // No StartTime property
             detail: {
               location: {
                 pathname: '/test-path2',
@@ -466,7 +466,7 @@ describe('custom-perf-metric', () => {
           },
         ];
 
-        // 确保数组有 at 方法
+        // Make sure the array has at method
         if (!entries.at) {
           entries.at = function (index) {
             return this[index < 0 ? this.length + index : index];
@@ -478,12 +478,12 @@ describe('custom-perf-metric', () => {
       return [];
     });
 
-    // 执行
+    // execute
     reportTti({ key: 'value' });
 
-    // 验证
+    // verify
     expect(mockSlardarInstance).toHaveBeenCalledWith('sendCustomPerfMetric', {
-      value: 700, // 1000 - 300 = 700 (使用了第一个路由的startTime)
+      value: 700, // 1000 - 300 = 700 (with the first route's prepTime)
       name: PerfMetricNames.TTI_HOT,
       type: 'perf',
       extra: {

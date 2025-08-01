@@ -89,17 +89,17 @@ describe('PkgRootWebpackPlugin', () => {
 
     new PkgRootWebpackPlugin(customOptions);
 
-    // 注意：Object.assign 中后面的对象会覆盖前面的对象，所以默认配置会覆盖用户配置
+    // Note: Subsequent objects in Object.assign overwrite the preceding objects, so the default configuration overrides the user configuration
     expect(OriginPkgRootWebpackPlugin).toHaveBeenCalledWith({
       customProp: 'customValue',
-      root: '@', // 被默认值覆盖
+      root: '@', // Overwritten by default
       packagesDirs: [
         'packages/project1',
         'packages/project2',
         'apps/app1',
         'apps/app2',
       ],
-      excludeFolders: [], // 被默认值覆盖
+      excludeFolders: [], // Overwritten by default
     });
   });
 
@@ -110,9 +110,9 @@ describe('PkgRootWebpackPlugin', () => {
 
     new PkgRootWebpackPlugin(customOptions);
 
-    // Object.assign 的行为：后面的对象会覆盖前面的对象属性
+    // Object.assign behavior: subsequent objects overwrite previous object properties
     expect(OriginPkgRootWebpackPlugin).toHaveBeenCalledWith({
-      root: '@', // 被默认值覆盖
+      root: '@', // Overwritten by default
       packagesDirs: [
         'packages/project1',
         'packages/project2',
@@ -139,7 +139,7 @@ describe('PkgRootWebpackPlugin', () => {
   });
 
   it('验证所有导出都正确', () => {
-    // 验证模块导出了正确的类和默认导出
+    // Verify that the module exported the correct class and the default export
     expect(PkgRootWebpackPlugin).toBeDefined();
     expect(typeof PkgRootWebpackPlugin).toBe('function');
   });
@@ -147,7 +147,7 @@ describe('PkgRootWebpackPlugin', () => {
   it('应该正确处理 Rush 配置中的项目文件夹', () => {
     new PkgRootWebpackPlugin();
 
-    // 验证传递给父类的 packagesDirs 包含所有项目文件夹
+    // Verify that the packagesDirs passed to the parent class contain all project folders
     const call = (OriginPkgRootWebpackPlugin as any).mock.calls[0];
     const options = call[0];
 
@@ -160,10 +160,10 @@ describe('PkgRootWebpackPlugin', () => {
   });
 
   it('测试插件基本功能正常工作', () => {
-    // 这个测试验证插件能正常实例化并调用父类构造函数
+    // This test verifies that the plugin can instantiate and call the parent class constructor normally
     new PkgRootWebpackPlugin();
 
-    // 验证确实调用了父类构造函数
+    // Verify that the parent class constructor is indeed called
     expect(OriginPkgRootWebpackPlugin).toHaveBeenCalled();
   });
 });

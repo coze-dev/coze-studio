@@ -55,7 +55,7 @@ const statusToReportError: PullStatus[] = ['error', 'timeout'];
 export const listenMessageUpdate = (param: {
   chatCore: ChatCore;
   /**
-   * 这个所有方法都会走 slardar 上报
+   * All methods will be reported to slardar.
    */
   reporter: Reporter;
   useMessagesStore: MessagesStore;
@@ -83,8 +83,8 @@ export const listenMessageUpdate = (param: {
   const { updateResponding, updateWaiting, clearUnsettledByReplyId } =
     useWaitingStore.getState();
   /**
-   * 注意：接收消息的主链路不应当异步化
-   * onMessageStatusChange 是同步的，因此当 onMessageUpdate 异步化可能导致两者时机存在问题
+   * Note: The main link receiving messages should not be asynchronous
+   * onMessageStatusChange are synchronous, so asynchronization when onMessageUpdate may cause problems with both timing
    */
   const onMessageUpdate = ({ data }: SdkMessageEvent) => {
     const { latestSectionId, setLatestSectionId } =
@@ -118,8 +118,8 @@ export const listenMessageUpdate = (param: {
           handleNormalMessage(processedMessage, useMessagesStore, reporter);
         }
         /**
-         * 这里和handleXXXMessage调换了一下顺序，为了保证外部拿到的waiting时机准确
-         * 这里应该不会出现啥太大的问题，后续有强依赖这里的时候需要注意下
+         * The order is reversed with handleXXXMessage here, in order to ensure that the waiting time obtained by the outside is accurate.
+         * There shouldn't be any big problems here. You need to pay attention when you have strong dependence here in the future.
          */
         updateWaiting(processedMessage);
 
@@ -211,8 +211,8 @@ export const listenMessageUpdate = (param: {
       // });
     }
 
-    // shit，还需要我手动调
-    // 说藏话了
+    // Shit, I need to adjust it manually
+    // Talk about hiding
     if (status === 'timeout') {
       abort?.();
     }
@@ -236,12 +236,12 @@ export const listenMessageUpdate = (param: {
 };
 
 /**
- * 针对 error 和 timeout 的场景未来需要跟视图配合做进一步标注，目前先简单标记为完成
+ * For the scenario of error and timeout, it needs to be further marked with the view in the future. For now, it is simply marked as complete.
  */
 const forceUpdateMessageFinishByData = (param: {
   data: SdkPullingStatusEvent['data'];
   /**
-   * 这个所有方法都会走 slardar 上报
+   * All methods will be reported to slardar.
    */
   reporter: Reporter;
   useMessagesStore: MessagesStore;
@@ -255,7 +255,7 @@ const forceUpdateMessageFinishByData = (param: {
     return;
   }
 
-  // 修改方式: 给 message 添加新的私有属性,如 _broken,并添加场景化配置,在展示逻辑中进行分化,以替代删除
+  // Modification method: Add new private properties to the message, such as _broken, and add scene-based configuration, differentiate in the display logic to replace deletion
   const updateMessageToFinish = getUpdateMessageToFinish(updateMessage);
   targetMessages.forEach(updateMessageToFinish);
 };
@@ -274,7 +274,7 @@ const handleNormalMessage = (
   reporter: Reporter,
 ) => {
   const { updateMessage, hasMessage, addMessage } = useMessageStore.getState();
-  // 下游依赖存在问题，本次不好修改，因此配合服务端在前端对结构体进行抹平
+  // There are problems with downstream dependencies, and it is not easy to modify this time, so cooperate with the server level to smooth the structure at the front end
   const fixedMessage = fixImageMessage(message, reporter);
 
   if (hasMessage(fixedMessage)) {

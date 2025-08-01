@@ -29,20 +29,20 @@ export const useValidationServiceStore = <T>(
 ) => useValidationService().store(selector);
 
 export interface ValidateError {
-  // 错误描述
+  // error description
   errorInfo: string;
-  // 错误等级
+  // error level
   errorLevel: FeedbackStatus;
-  // 错误类型： 节点 / 连线
+  // Error Type: Node/Connection
   errorType: 'node' | 'line';
-  // 节点id
+  // Node ID
   nodeId: string;
-  // 若为连线错误，还需要目标节点来确认这条连线
+  // In the case of a connection error, the target node is also required to confirm the connection
   targetNodeId?: string;
 }
 export interface WorkflowValidateError {
   workflowId: string;
-  /** 流程名 */
+  /** process name */
   name?: string;
   errors: ValidateErrorMap;
 }
@@ -61,12 +61,12 @@ export interface ValidateResultV2 {
 
 export interface ValidationState {
   /**
-   * @deprecated 请使用 errorsV2
+   * @deprecated Please use errorsV2
    */
   errors: ValidateErrorMap;
-  /** 按照流程归属分类的错误 */
+  /** Errors classified by process attribution */
   errorsV2: WorkflowValidateErrorMap;
-  /** 正在校验中 */
+  /** Verifying now. */
   validating: boolean;
 }
 
@@ -74,48 +74,48 @@ export interface ValidationService {
   store: UseBoundStoreWithEqualityFn<StoreApi<ValidationState>>;
 
   /**
-   * 前端流程校验，包括节点、表单、端口等
+   * Front-end process validation, including nodes, forms, ports, etc
    */
   validateWorkflow: () => Promise<ValidateResult>;
 
   /**
-   * 对节点的校验，包括表单、端口等
+   * Verification of nodes, including forms, ports, etc
    */
   validateNode: (node: WorkflowNodeEntity) => Promise<ValidateResult>;
 
   /**
-   * @deprecated 请使用 validateSchemaV2
-   * 流程定义合法性校验，通常为后端校验
+   * @Deprecated please use validateSchemaV2
+   * Process definition validation, usually backend validation
    */
   validateSchema: () => Promise<ValidateResult>;
   /**
-   * 流程定义合法性校验，通常为后端校验
+   * Process definition validation, usually backend validation
    */
   validateSchemaV2: () => Promise<ValidateResultV2>;
 
   /**
-   * 获取指定 id 的错误列表
+   * Gets the error list for the specified id
    */
   getErrors: (id: string) => ValidateError[];
   /**
-   * @deprecated 请使用 setErrorsV2
-   * 设置错误
+   * @deprecated Please use setErrorsV2
+   * setting error
    * @param errors
-   * @param force 强制覆盖所有错误
+   * @param force to overwrite all errors
    */
   setErrors: (errors: ValidationState['errors'], force?: boolean) => void;
 
   /**
-   * 设置错误
+   * setting error
    * @param errors
    * @returns
    */
   setErrorsV2: (errors: ValidationState['errorsV2']) => void;
   /**
-   * 清空所有错误
+   * Clear all errors
    */
   clearErrors: () => void;
-  /** 线条是否存在错误 */
+  /** Is there an error in the line? */
   isLineError: (fromId: string, toId?: string) => boolean;
 
   get validating(): boolean;

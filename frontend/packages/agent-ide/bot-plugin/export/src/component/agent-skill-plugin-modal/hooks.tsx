@@ -53,24 +53,24 @@ export interface UsePluginModalPartsProp extends PluginModalModeProps {
 }
 
 /**
- * 获取初始化类型
- * @param from 来源
- * @param spaceType 空间类型
- * @returns 初始化类型
+ * Get initialization type
+ * @Param from source
+ * @param spaceType
+ * @Returns initialization type
  */
 const getInitType = (from?: From, spaceType?: SpaceType) => {
-  // 项目workflow引用插件，默认选中项目插件
+  // Project workflow reference plug-in, the project plug-in is selected by default
   if (from === From.ProjectWorkflow) {
     return '';
   }
   if (from !== From.ProjectIde || !spaceType || !from) {
     return '';
   }
-  // projectIDE下，并且是个人空间，选中Mine
+  // Under projectIDE, and it is personal space, select Mine.
   if (spaceType === SpaceType.Personal) {
     return PluginFilterType.Mine;
   }
-  // projectIDE下，并且是团队空间，选中Team
+  // Under projectIDE, and is a team space, select Team
   if (spaceType === SpaceType.Team && from === From.ProjectIde) {
     return PluginFilterType.Team;
   }
@@ -94,7 +94,7 @@ export const usePluginModalParts = ({
   hideCreateBtn,
   initQuery,
 }: UsePluginModalPartsProp) => {
-  // 获取devId
+  // Get devId
   const userInfo = userStoreService.useUserInfo();
   const spaceType = useSpaceStore(store => store.space.space_type);
   const [query, setQuery] = useState<PluginQuery>({
@@ -103,14 +103,14 @@ export const usePluginModalParts = ({
     devId: userInfo?.user_id_str || '',
     search: '',
     page: DEFAULT_PAGE,
-    // 项目IDE插件仅展示我的插件
+    // Project IDE plugins only show my plugins
     type: initQuery?.type ?? getInitType(from, spaceType),
     orderBy: OrderBy.CreateTime,
     orderByPublic: SortType.Heat,
     orderByFavorite: SortType.Newest,
     mineActive: MineActiveEnum.All,
     isOfficial: initQuery?.isOfficial ?? undefined,
-    // project workflow添加插件，只展示云插件
+    // Add plugins to project workflow, only show cloud plugins
     pluginType:
       from === From.ProjectWorkflow ? PluginType.CLoudPlugin : undefined,
   });

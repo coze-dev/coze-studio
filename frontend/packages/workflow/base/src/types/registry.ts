@@ -34,11 +34,11 @@ import { type StandardNodeType } from './node-type';
 
 export interface WorkflowNodeVariablesMeta {
   /**
-   * 输出变量路径, 默认 ['outputs']
+   * Output variable path, default ['outputs']
    */
   outputsPathList?: string[];
   /**
-   * 输入变量路径，默认 ['inputs.inputParameters']
+   * Input variable path, default ['input.inputParameters']
    */
   inputsPathList?: string[];
   batchInputListPath?: string;
@@ -56,7 +56,7 @@ export interface NodeMeta<NodeTest = any> {
   isStart?: boolean;
   isNodeEnd?: boolean;
   deleteDisable?: boolean;
-  copyDisable?: boolean; // 无法复制
+  copyDisable?: boolean; // Unable to copy
   nodeDTOType: StandardNodeType;
   nodeMetaPath?: string;
   batchPath?: string;
@@ -65,41 +65,41 @@ export interface NodeMeta<NodeTest = any> {
   renderKey?: string;
   style?: any;
   errorStyle?: any;
-  size?: { width: number; height: number }; // 初始化时候的默认大小
+  size?: { width: number; height: number }; // Default size at initialization
   defaultPorts?: Array<any>;
   useDynamicPort?: boolean;
   disableSideSheet?: boolean;
   subCanvas?: (node: WorkflowNodeEntity) => WorkflowSubCanvas | undefined;
 
-  /** 是否展示触发器 icon */
+  /** Whether to show trigger icon */
   showTrigger?: (props: { projectId?: string }) => boolean;
-  /** 是否隐藏测试 */
+  /** Whether to hide the test */
   hideTest?: boolean;
-  /** 获取卡片输入变量标签 */
+  /** Get card input variable label */
   getInputVariableTag?: (
-    /** 变量名称 */
+    /** variable name */
     variableName: string | undefined,
-    /** 输入值或变量 */
+    /** Input value or variable */
     input: ValueExpression,
-    /** 附加参数 */
+    /** additional parameters */
     extra?: {
       /**
-       * 变量服务，从 '@coze-workflow/variable' 导入的 WorkflowVariableService
-       * 这里不写上类型，是为了避免循环引用，另外 base 包引用 variable 包内容也不合理
+       * Variable service, WorkflowVariableService imported from '@code-workflow/variable'
+       * The type is not written here to avoid circular references. In addition, it is unreasonable for the base package to refer to the content of the variable package.
        */
       variableService: any;
 
-      /** 当前节点 */
+      /** current node */
       node: WorkflowNodeEntity;
     },
   ) => VariableTagProps;
 
-  /** 是否支持单节点调试copilot生成表单参数 */
+  /** Whether to support single-node debugging copilot generation form parameters */
   enableCopilotGenerateTestNodeForm?: boolean;
   /**
-   * 获取llm ids，所有需要用到大模型选择的的节点必须实现该方法
-   * 因为用户可能存在账户升级或者模型下架，正常拉到的列表数据可能没有该id
-   * 所以模型列表获取需要遍历所有节点拿到被用过的模型id
+   * Get llm ids, all nodes that require large model selection must implement this method
+   * Because the user may have an account upgrade or the model is removed from the shelves, the list data pulled normally may not have this id.
+   * Therefore, to obtain the model list, you need to traverse all nodes to get the used model IDs.
    * @param nodeJSON
    * @returns
    */
@@ -107,17 +107,17 @@ export interface NodeMeta<NodeTest = any> {
     nodeJSON: WorkflowNodeJSON,
   ) => string[] | undefined | string | number | number[];
   /**
-   * 节点 header 不可编辑 & 隐藏 ... 按钮
+   * Node header not editable & hide... button
    */
   headerReadonly?: boolean;
   headerReadonlyAllowDeleteOperation?: boolean;
 
   /**
-   * 节点帮助文档
+   * Node Help Documentation
    */
   helpLink?: string | ((props: { apiName: string }) => string);
   /**
-   * 节点测试相关数据
+   * Node test related data
    */
   test?: NodeTest;
 }
@@ -128,14 +128,14 @@ export interface WorkflowNodeRegistry<NodeTestMeta = any>
   meta: NodeMeta<NodeTestMeta>;
 
   /**
-   * 特化：根据节点获取输入 Parameters 的值，默认通过 /inputParameters 字段判断
+   * Specialization: Get the value of the input Parameters according to the node, and judge by /inputParameters field by default
    * @param node
    * @returns
    */
   getNodeInputParameters?: (node: FlowNodeEntity) => InputValueVO[] | undefined;
 
   /**
-   * 获取舞台节点右侧更多菜单的额外操作，目前在子流程节点和插件节点中使用
+   * Get additional actions for the More menu to the right of the Stage node, currently used in the Subprocess node and the Plugin node
    * @returns
    */
   getHeaderExtraOperation?: (
@@ -144,39 +144,39 @@ export interface WorkflowNodeRegistry<NodeTestMeta = any>
   ) => React.ReactNode;
 
   /**
-   * 特化：根据节点获取输出 Outputs 的值，默认通过 /outputs 字段判断
+   * Specialization: Get the value of Outputs according to the node, and judge by /outputs field by default
    */
   getNodeOutputs?: (node: FlowNodeEntity) => OutputValueVO[] | undefined;
 
   /**
-   * 节点提交前最后一次转化，这个方法在 `formMeta.transformOnSubmit` 之后执行
-   * @param node 节点数据
-   * @param 转化后的节点数据
+   * The last conversion before the node commits, this method is executed after'formMeta.transformOnSubmit'
+   * @param node data
+   * @Param converted node data
    */
   beforeNodeSubmit?: (node: WorkflowNodeJSON) => WorkflowNodeJSON;
 
   /**
-   * - 节点 Registry 初始化，可以在这里获取初始化数据，然后再进行表单渲染，注意此时 node 还没有创建
-   * - 目前适用于 v2 表单引擎节点
-   * @param nodeJSON 节点初始化数据（点击添加时，或者从后端获取时的节点数据）
-   * @param context WorkflowPlaygroundContext，参见 packages/workflow/playground/src/workflow-playground-context.ts
+   * - Node Registry initialization, you can get the initialization data here, and then render the form. Note that the node has not been created at this time
+   * - Currently works with v2 form engine nodes
+   * @Param nodeJSON node initialization data (when clicking Add, or when fetching from the backend)
+   * @Param context WorkflowPlaygroundContext, see packages/workflow/playground/src/workflow-playground-context
    * @returns Promise<void>
    */
   onInit?: (nodeJSON: WorkflowNodeJSON, context: any) => Promise<void>;
 
   /**
-   * - 是否有错误信息（从 service 中拿），如果有错误信息返回错误信息，否则返回空串或者 undefined
-   * - 目前在 node-context-provider.tsx 中消费，监听当前节点错误信息，如果有，更新 FlowNodeErrorData 数据，从而触发节点渲染错误状态
-   * - 目前适用于 v2 表单引擎节点
-   * @param nodeJSON 节点初始化数据（点击添加时，或者从后端获取时的节点数据）
-   * @param context WorkflowPlaygroundContext，参见 packages/workflow/playground/src/workflow-playground-context.ts
+   * - Whether there is an error message (taken from the service), if there is an error message, return an error message, otherwise return an empty string or undefined
+   * - Currently consumed in node-context-provider, monitor the current node error message, if any, update the FlowNodeErrorData data, thereby triggering the node to render the error state
+   * - Currently works with v2 form engine nodes
+   * @Param nodeJSON node initialization data (when clicking Add, or when fetching from the backend)
+   * @Param context WorkflowPlaygroundContext, see packages/workflow/playground/src/workflow-playground-context
    */
   checkError?: (nodeJSON: WorkflowNodeJSON, context: any) => string | undefined;
 
   /**
-   * - 节点销毁时调用，用于做一些清理工作，例如将相关节点的错误信息清空，回收资源
-   * - 目前适用于 v2 表单引擎节点
-   * @param node 节点
+   * - Called when the node is destroyed, used to do some cleaning work, such as clearing the error information of the joint point and recycling resources
+   * - Currently works with v2 form engine nodes
+   * @param node
    * @param context workflow-playground-context
    * @returns
    */

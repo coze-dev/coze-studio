@@ -30,7 +30,7 @@ interface NodeStatusBarProps {
   hasExecuteResult?: boolean;
   needAuth?: boolean;
   /**
-   * 是否包含会话处理
+   * Is session handling included?
    */
   hasConversation?: boolean;
   onAuth?: () => void;
@@ -73,9 +73,9 @@ export const NodeStatusBar: React.FC<
   return (
     <div
       className={styles['node-status-bar']}
-      // 必须要禁止 down 冒泡，防止判定圈选和 node hover（不支持多边形）
+      // It is necessary to disable down bubbling to prevent judgment circling and node hovering (polygons are not supported)
       onMouseDown={e => e.stopPropagation()}
-      // 其他事件统一走点击事件，且也需要阻止冒泡
+      // Other events uniformly go to the click event, and it is also necessary to prevent bubbling.
       onClick={handleToggleShowDetail}
     >
       <div

@@ -40,7 +40,7 @@ export const ExecuteResult = () => {
 
   const { systemError, isSingleMode } = execEntity.config;
 
-  // 自动定位到第一个报错
+  // Automatically locate the first error
   useDeepCompareEffect(() => {
     if (firstError && !isSingleMode) {
       scrollToError(firstError);
@@ -53,12 +53,12 @@ export const ExecuteResult = () => {
 
   const isEmpty = !lastResult && !hasNodeError && !hasLineError && !systemError;
 
-  // 有节点错误时，系统错误一定会和节点错误重复，这时候不显示
+  // When there is a node error, the system error will definitely be repeated with the node error, and it will not be displayed at this time.
   const showSystemError = !!systemError && !hasNodeError && !hasLineError;
 
   return (
     <div className="flex flex-col space-y-6 overflow-x-hidden h-full">
-      {/* 单节点模式不在右侧面板展示结果*/}
+      {/* Single-node mode does not display results in the right panel*/}
       {isEmpty || isSingleMode ? (
         <EmptyDisplay />
       ) : (

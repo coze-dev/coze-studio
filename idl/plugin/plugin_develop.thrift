@@ -6,59 +6,59 @@ namespace go ocean.cloud.plugin_develop
 service PluginDevelopService {
     GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin/get_oauth_schema', api.category="plugin", api.gen_path="plugin")
     GetOAuthSchemaResponse GetOAuthSchemaAPI(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
-    // 获取已发布 workflow、plugin 列表，或者多个插件的详情
+    // Get a list of published workflows, plugins, or details of multiple plugins
     GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
-    // 通过 code 创建插件
+    // Creating plugins with code
     RegisterPluginResponse RegisterPlugin(1: RegisterPluginRequest request)(api.post='/api/plugin_api/register', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
-    // 通过 UI 创建插件
+    // Create plugins through UI
     RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
-    // 获取插件工具列表，或者多个工具详情
+    // Get a list of plug-in tools, or multiple tool details
     GetPluginAPIsResponse GetPluginAPIs(1: GetPluginAPIsRequest request) (api.post = '/api/plugin_api/get_plugin_apis', api.category = "plugin")
-    // 获取插件详情
+    // Get plugin details
     GetPluginInfoResponse GetPluginInfo(1: GetPluginInfoRequest request) (api.post = '/api/plugin_api/get_plugin_info', api.category = "plugin")
-    // 与最近一次发布版本相比，更新的工具列表
+    // Updated list of tools compared to the most recent release
     GetUpdatedAPIsResponse GetUpdatedAPIs(1: GetUpdatedAPIsRequest request) (api.post = '/api/plugin_api/get_updated_apis', api.category = "plugin")
     GetOAuthStatusResponse GetOAuthStatus(1: GetOAuthStatusRequest request)(api.post='/api/plugin_api/get_oauth_status', api.category="plugin", api.gen_path="plugin")
     CheckAndLockPluginEditResponse CheckAndLockPluginEdit(1: CheckAndLockPluginEditRequest request)(api.post='/api/plugin_api/check_and_lock_plugin_edit', api.category="plugin", api.gen_path="plugin", )
     UnlockPluginEditResponse UnlockPluginEdit(1: UnlockPluginEditRequest request)(api.post='/api/plugin_api/unlock_plugin_edit', api.category="plugin", api.gen_path="plugin")
-    // 通过 code 更新插件
+    // Update plugins via code
     UpdatePluginResponse UpdatePlugin(1: UpdatePluginRequest request) (api.post = '/api/plugin_api/update', api.category = "plugin")
-    // 删除工具
+    // removal tool
     DeleteAPIResponse DeleteAPI(1: DeleteAPIRequest request) (api.post = '/api/plugin_api/delete_api', api.category = "plugin", api.gen_path = 'plugin')
-    // 删除插件
+    // Remove plugin
     DelPluginResponse DelPlugin(1: DelPluginRequest request) (api.post = '/api/plugin_api/del_plugin', api.category = "plugin", api.gen_path = 'plugin')
-    // 发布插件
+    // publishing plugin
     PublishPluginResponse PublishPlugin(1: PublishPluginRequest request) (api.post = '/api/plugin_api/publish_plugin', api.category = "plugin")
-    // 通过UI更新插件
+    // Update plugins via UI
     UpdatePluginMetaResponse UpdatePluginMeta(1: UpdatePluginMetaRequest request) (api.post = '/api/plugin_api/update_plugin_meta', api.category = "plugin")
     GetBotDefaultParamsResponse GetBotDefaultParams(1: GetBotDefaultParamsRequest request) (api.post = '/api/plugin_api/get_bot_default_params', api.category = "plugin")
     UpdateBotDefaultParamsResponse UpdateBotDefaultParams(1: UpdateBotDefaultParamsRequest request) (api.post = '/api/plugin_api/update_bot_default_params', api.category = "plugin")
-    // 创建工具
+    // creation tool
     CreateAPIResponse CreateAPI(1: CreateAPIRequest request) (api.post = '/api/plugin_api/create_api', api.category = "plugin", api.gen_path = 'plugin')
-    // 更新工具
+    // update tool
     UpdateAPIResponse UpdateAPI(1: UpdateAPIRequest request) (api.post = '/api/plugin_api/update_api', api.category = "plugin", api.gen_path = 'plugin')
     GetUserAuthorityResponse GetUserAuthority(1: GetUserAuthorityRequest request)(api.post='/api/plugin_api/get_user_authority', api.category="plugin", api.gen_path="plugin")
     DebugAPIResponse DebugAPI(1: DebugAPIRequest request)(api.post='/api/plugin_api/debug_api', api.category="plugin", api.gen_path='plugin')
     GetPluginNextVersionResponse GetPluginNextVersion(1: GetPluginNextVersionRequest request)(api.post='/api/plugin_api/get_plugin_next_version', api.category="plugin", api.gen_path='plugin')
     GetDevPluginListResponse GetDevPluginList(1: GetDevPluginListRequest request)(api.post='/api/plugin_api/get_dev_plugin_list', api.category="plugin", api.gen_path='plugin', agw.preserve_base="true")
-    // 协议转换，如将 curl 、postman collection 协议转换为 openapi3 协议
+    // Protocol conversion, such as converting curl and mail carrier collection protocols to openapi3 protocols
     Convert2OpenAPIResponse Convert2OpenAPI(1: Convert2OpenAPIRequest request)(api.post='/api/plugin_api/convert_to_openapi', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
-    // 批量创建工具，目前是配合 Convert2OpenAPI 接口使用
+    // Batch creation tool, currently used with the Convert2 OpenAPI interface
     BatchCreateAPIResponse BatchCreateAPI(1: BatchCreateAPIRequest request)(api.post='/api/plugin_api/batch_create_api', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     RevokeAuthTokenResponse RevokeAuthToken(1: RevokeAuthTokenRequest request)(api.post='/api/plugin_api/revoke_auth_token', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     GetQueriedOAuthPluginListResponse GetQueriedOAuthPluginList(1: GetQueriedOAuthPluginListRequest request)(api.post='/api/plugin_api/get_queried_oauth_plugins', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
-    1:   optional i32       page           (api.body = "page")                           // 页码
-    2:   optional i32       size           (api.body = "size")                           // 每页大小
+    1:   optional i32       page           (api.body = "page")                           // page number
+    2:   optional i32       size           (api.body = "size")                           // page size
     4:   optional string    name           (api.body = "name")                           // ignore
-    5:   optional i64       space_id       (api.body = "space_id" api.js_conv = "str")   // 空间id
-    6:            list<string> plugin_ids  (api.body = "plugin_ids")                     // 如果存在，则根据插件id查询，无分页逻辑
-    7:            list<i32> plugin_types   (api.body = "plugin_types")                   // 长度为1 ，且为workflow时，返回已发布的workflow列表，默认返回已发布的plugin列表
+    5:   optional i64       space_id       (api.body = "space_id" api.js_conv = "str")   // Space ID
+    6:            list<string> plugin_ids  (api.body = "plugin_ids")                     // If present, query according to plug-in id, no paging logic
+    7:            list<i32> plugin_types   (api.body = "plugin_types")                   // When the length is 1 and it is a workflow, return the list of published workflows, and return the list of published plugins by default
     8:   optional i32       channel_id     (api.body = "channel_id")                     // ignore
     9:   optional bool      self_created   (api.body = "self_created")                   // ignore
-    10:  optional i32       order_by       (api.body = "order_by")                       // 排序
+    10:  optional i32       order_by       (api.body = "order_by")                       // sort
     11:  optional bool      is_get_offline (api.body = "is_get_offline")                 // ignore
     99:           string    referer        (api.header = "Referer")                      // ignore
     255: optional base.Base Base
@@ -72,10 +72,10 @@ struct GetPlaygroundPluginListResponse {
 }
 
 struct GetPluginAPIsRequest {
-    1  : required i64                                plugin_id (api.js_conv = "str"), // 插件id
-    2  :          list<string>                       api_ids , // 如果存在，则根据工具id查询，无分页逻辑
-    3  :          i32                                page     , // 页码
-    4  :          i32                                size     , // 每页大小
+    1  : required i64                                plugin_id (api.js_conv = "str"), // Plugin ID
+    2  :          list<string>                       api_ids , // If present, query according to tool id, no paging logic
+    3  :          i32                                page     , // page number
+    4  :          i32                                size     , // page size
     5  :          plugin_develop_common.APIListOrder order    , // ignore
     6  : optional string                             preview_version_ts, // ignore
     255: optional base.Base                          Base     ,
@@ -91,21 +91,21 @@ struct GetPluginAPIsResponse {
 }
 
 struct GetUpdatedAPIsRequest {
-    1  : required i64    plugin_id (api.js_conv = "str"), // 插件id
+    1  : required i64    plugin_id (api.js_conv = "str"), // Plugin ID
     255: optional base.Base Base     ,
 }
 
 struct GetUpdatedAPIsResponse {
     1  :          i64           code             ,
     2  :          string        msg              ,
-    3  :          list<string>  created_api_names, // 新创建的工具名
-    4  :          list<string>  deleted_api_names, // 被删除的工具名
-    5  :          list<string>  updated_api_names, // 被更新的工具名
+    3  :          list<string>  created_api_names, // Newly created tool name
+    4  :          list<string>  deleted_api_names, // Deleted tool name
+    5  :          list<string>  updated_api_names, // updated tool name
     255: optional base.BaseResp BaseResp         ,
 }
 
 struct GetPluginInfoRequest {
-    1  : required i64    plugin_id (api.js_conv = "str"), // 目前只支持插件openapi插件的信息
+    1  : required i64    plugin_id (api.js_conv = "str"), // Currently only plugins are supported OpenAPI plugin information
     2  : optional string preview_version_tsx // ignore
     255: optional base.Base Base     ,
 }
@@ -115,9 +115,9 @@ struct GetPluginInfoResponse {
     2  :          string                                    msg                  ,
     3  :          plugin_develop_common.PluginMetaInfo      meta_info            ,
     4  :          plugin_develop_common.CodeInfo            code_info            ,
-    5  :          bool                                      status               , // 0 无更新 1 有更新未发布
-    6  :          bool                                      published            ,  // 是否已发布
-    7  :          plugin_develop_common.Creator             creator              , // 创建人信息
+    5  :          bool                                      status               , // 0 No updates 1 Yes updates Not released
+    6  :          bool                                      published            ,  // Has it been published?
+    7  :          plugin_develop_common.Creator             creator              , // creator information
     8  :          plugin_develop_common.PluginStatisticData statistic_data       , // ignore
     9  :          plugin_develop_common.ProductStatus       plugin_product_status, // ignore
     10 :          bool                                      privacy_status       , // ignore
@@ -150,22 +150,22 @@ struct UpdatePluginResponse {
 }
 
 struct RegisterPluginMetaRequest {
-    1  : required string                                                                                     name            , // 插件名
-    2  : required string                                                                                     desc            , // 插件描述
-    3  : optional string                                                                                     url             , // 插件服务地址前缀
-    4  : required plugin_develop_common.PluginIcon                                                           icon            , // 插件图标
-    5  : optional plugin_develop_common.AuthorizationType                                                    auth_type       , // 插件授权类型
-    6  : optional plugin_develop_common.AuthorizationServiceLocation                                         location        , // 子授权类型为api/token时，token参数位置
-    7  : optional string                                                                                     key             , // 子授权类型为api/token时，token参数key
-    8  : optional string                                                                                     service_token   , // 子授权类型为api/token时，token参数value
-    9  : optional string                                                                                     oauth_info      , // 授权类型为oauth是，oauth信息，见GetOAuthSchema返回值
-    10 : required i64                                                                                        space_id  (api.js_conv = "str")      , // 空间id
-    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params   , // 插件公共参数，key为参数位置，value为参数列表
+    1  : required string                                                                                     name            , // plugin name
+    2  : required string                                                                                     desc            , // Plugin description
+    3  : optional string                                                                                     url             , // Plugin service address prefix
+    4  : required plugin_develop_common.PluginIcon                                                           icon            , // plugin icon
+    5  : optional plugin_develop_common.AuthorizationType                                                    auth_type       , // plug-in authorization type
+    6  : optional plugin_develop_common.AuthorizationServiceLocation                                         location        , // When the sub-authorization type is api/token, the token parameter position
+    7  : optional string                                                                                     key             , // When the sub-authorization type is api/token, the token parameter key
+    8  : optional string                                                                                     service_token   , // When the sub-authorization type is api/token, the token parameter value
+    9  : optional string                                                                                     oauth_info      , // The authorization type is oauth Yes, oauth information, see GetOAuthSchema return value
+    10 : required i64                                                                                        space_id  (api.js_conv = "str")      , // Space ID
+    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params   , // Plugin public parameters, key is the parameter position, value is the parameter list
     12 : optional plugin_develop_common.CreationMethod                                                       creation_method , // ignore
     13 : optional string                                                                                     ide_code_runtime, // ignore
     14 : optional plugin_develop_common.PluginType                                                           plugin_type     , // ignore 
-    15 : optional i64                                                                                        project_id  (api.js_conv = "str")    , // 应用id
-    16 : optional i32                                                                                        sub_auth_type   , // 二级授权类型，0：api/token of service，10：client credentials of oauth
+    15 : optional i64                                                                                        project_id  (api.js_conv = "str")    , // App ID
+    16 : optional i32                                                                                        sub_auth_type   , // Level 2 authorization type, 0: api/token of service, 10: client credentials of oauth
     17 : optional string                                                                                     auth_payload    , // ignore 
     18 : optional bool                                                                                       fixed_export_ip , // ignore
     255: optional base.Base                                                                                  Base            ,
@@ -185,15 +185,15 @@ struct UpdatePluginMetaRequest {
     4  : optional string                                                                                     url            , // plugin service url
     5  : optional plugin_develop_common.PluginIcon                                                           icon           ,
     6  : optional plugin_develop_common.AuthorizationType                                                    auth_type      ,
-    7  : optional plugin_develop_common.AuthorizationServiceLocation                                         location       , // 子授权类型为api/token时，token参数位置
-    8  : optional string                                                                                     key            , // 子授权类型为api/token时，token参数key
-    9  : optional string                                                                                     service_token  , // 子授权类型为api/token时，token参数value
-    10 : optional string                                                                                     oauth_info     , // 子授权类型为oauth时，oauth信息，见GetOAuthSchema返回值
-    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params  , // json序列化
+    7  : optional plugin_develop_common.AuthorizationServiceLocation                                         location       , // When the sub-authorization type is api/token, the token parameter position
+    8  : optional string                                                                                     key            , // When the sub-authorization type is api/token, the token parameter key
+    9  : optional string                                                                                     service_token  , // When the sub-authorization type is api/token, the token parameter value
+    10 : optional string                                                                                     oauth_info     , // When the sub-authorization type is oauth, for oauth information, see GetOAuthSchema return value
+    11 : optional map<plugin_develop_common.ParameterLocation,list<plugin_develop_common.commonParamSchema>> common_params  , // JSON serialization
     12 : optional plugin_develop_common.CreationMethod                                                       creation_method, // ignore
     13 : optional i32                                                                                        edit_version   , // ignore
     14 : optional plugin_develop_common.PluginType                                                           plugin_type    ,
-    15 : optional i32                                                                                        sub_auth_type  , // 二级授权类型
+    15 : optional i32                                                                                        sub_auth_type  , // Level 2 authorization type
     16 : optional string                                                                                     auth_payload   , // ignore
     17 : optional bool                                                                                       fixed_export_ip, // ignore
 
@@ -209,8 +209,8 @@ struct UpdatePluginMetaResponse {
 
 struct PublishPluginRequest {
     1  : required i64    plugin_id  (api.js_conv = "str")   ,
-    2  :          bool      privacy_status, // 隐私声明状态
-    3  :          string    privacy_info  , // 隐私声明内容
+    2  :          bool      privacy_status, // Privacy Statement Status
+    3  :          string    privacy_info  , // Privacy Statement Content
     4  :          string    version_name  ,
     5  :          string    version_desc  ,
     255: optional base.Base Base          ,
@@ -223,7 +223,7 @@ struct PublishPluginResponse {
     255: optional base.BaseResp BaseResp  ,
 }
 
-// bot引用plugin
+// Bot reference plugin
 struct GetBotDefaultParamsRequest {
     1  :          i64                                    space_id  (api.js_conv = "str")               ,
     2  :          i64                                    bot_id  (api.js_conv = "str")                 ,
@@ -273,8 +273,8 @@ struct DeleteBotDefaultParamsRequest {
     2  :          string                                    dev_id               ,
     3  :          i64                                    plugin_id  (api.js_conv = "str")          ,
     4  :          string                                    api_name             ,
-// bot删除工具时: DeleteBot = false , APIName要设置
-// 删除bot时   : DeleteBot = true  , APIName为空
+// Bot removal tool when: DeleteBot = false, APIName to set
+// Delete bot: DeleteBot = true, APIName is empty
     5  :          bool                                      delete_bot           ,
     6  :          i64                                    space_id  (api.js_conv = "str")           ,
     7  :          string                                    plugin_referrer_id   ,
@@ -373,7 +373,7 @@ struct GetOAuthSchemaResponse {
     2  :          string        msg         ,
     3  :          string        oauth_schema,
     4  :          string        ide_conf    ,
-    255: optional base.BaseResp BaseResp    , // 约定的json
+    255: optional base.BaseResp BaseResp    , // The agreed json
 }
 
 struct GetUserAuthorityRequest {
@@ -392,7 +392,7 @@ struct GetUserAuthorityResponse {
     255: optional base.BaseResp                        BaseResp                   ,
 }
 
-// 获取授权状态--plugin debug区
+// Get authorization status--plugin debug area
 struct GetOAuthStatusRequest {
     1  : required i64    plugin_id (api.js_conv = "str"),
 
@@ -400,9 +400,9 @@ struct GetOAuthStatusRequest {
 }
 
 struct GetOAuthStatusResponse {
-    1  :          bool                              is_oauth, // 是否为授权插件
-    2  :          plugin_develop_common.OAuthStatus status  , // 用户授权状态
-    3  :          string                            content , // 未授权，返回授权url
+    1  :          bool                              is_oauth, // Is it an authorized plugin?
+    2  :          plugin_develop_common.OAuthStatus status  , // user authorization status
+    3  :          string                            content , // Unauthorized, return the authorized url.
 
     253: i64 code
     254: string msg
@@ -426,8 +426,8 @@ struct CheckAndLockPluginEditResponse {
 struct GetPluginPublishHistoryRequest {
     1  : required i64    plugin_id (api.js_conv = "str"),
     2  : required i64    space_id (api.js_conv = "str"),
-    3  : optional i32       page     , // 翻页，第几页
-    4  : optional i32       size     , // 翻页，每页几条
+    3  : optional i32       page     , // Turn the page, what page?
+    4  : optional i32       size     , // Flip pages, a few entries per page
 
     255: optional base.Base Base     ,
 }
@@ -435,8 +435,8 @@ struct GetPluginPublishHistoryRequest {
 struct GetPluginPublishHistoryResponse {
     1  : i64                                           code                    ,
     2  : string                                        msg                     ,
-    3  : list<plugin_develop_common.PluginPublishInfo> plugin_publish_info_list, // 时间倒序
-    4  : i32                                           total                   , // 总共多少条，大于 page x size 说明还有下一页
+    3  : list<plugin_develop_common.PluginPublishInfo> plugin_publish_info_list, // reverse time
+    4  : i32                                           total                   , // How many in total, greater than page x size description and next page
 
     255: base.BaseResp                                 BaseResp                ,
 }
@@ -521,11 +521,11 @@ struct GetDevPluginListRequest {
     5  :          i64                                       space_id               (api.body = "space_id", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="space_id")    ,
     6  : optional plugin_develop_common.ScopeType           scope_type                                                                                                   ,
     7  : optional plugin_develop_common.OrderBy             order_by                                                                                                     ,
-    8  : optional bool                                      publish_status                                                                                               , // 发布状态筛选：true:已发布, false:未发布
-    9  : optional string                                    name                                                                                                         , // 插件名或工具名
-    10 : optional plugin_develop_common.PluginTypeForFilter plugin_type_for_filter                                                                                       , // 插件种类筛选 端/云
+    8  : optional bool                                      publish_status                                                                                               , // Release status filter: true: published, false: not published
+    9  : optional string                                    name                                                                                                         , // Plugin name or tool name
+    10 : optional plugin_develop_common.PluginTypeForFilter plugin_type_for_filter                                                                                       , // Plugin Type Filter, End/Cloud
     11 :          i64                                       project_id             (api.body = "project_id", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="project_id"),
-    12 :          list<i64>                                 plugin_ids             (api.body = "plugin_ids", agw.js_conv="str", agw.cli_conv="str", agw.key="plugin_ids"), // 插件id列表
+    12 :          list<i64>                                 plugin_ids             (api.body = "plugin_ids", agw.js_conv="str", agw.cli_conv="str", agw.key="plugin_ids"), // plugin id list
 
     255: optional base.Base                                 Base                                                                                                         ,
 }
@@ -559,8 +559,8 @@ struct Convert2OpenAPIResponse {
     6  :          list<plugin_develop_common.DuplicateAPIInfo> duplicate_api_infos, // ignore
 
 // BaseResp.StatusCode
-//     DuplicateAPIPath: 导入的文件中有重复的API Path，且 request.MergeSamePaths = false
-//     InvalidParam: 其他错误
+//     DuplicateAPIPath: Duplicate API Path in imported file with request. MergeSamePaths = false
+//     InvalidParam: Other errors
     255: optional base.BaseResp                                BaseResp           ,
 }
 
@@ -580,21 +580,21 @@ struct BatchCreateAPIRequest {
 struct BatchCreateAPIResponse {
     1  :          i64                                       code            ,
     2  :          string                                    msg             ,
-// PathsToReplace表示要覆盖的tools，
-// 如果BaseResp.StatusCode = DuplicateAPIPath，那么PathsToReplace不为空
+// PathsToReplace represents the tools to override,
+// If BaseResp. StatusCode = DuplicateAPIPath, then PathsToReplace is not empty
     3  : optional list<plugin_develop_common.PluginAPIInfo> paths_duplicated,
     4  : optional list<plugin_develop_common.PluginAPIInfo> paths_created   ,
     5  :          i32                                       edit_version    ,
 
 // BaseResp.StatusCode
-//     DuplicateAPIPath: 有重复的API Path，且 request.ReplaceDupPath = false
-//     InvalidParam: 其他错误
+//     DuplicateAPIPath: There is a duplicate API Path with request. ReplaceDupPath = false
+//     InvalidParam: Other errors
     255: required base.BaseResp                             BaseResp        ,
 }
 
 struct RevokeAuthTokenRequest {
     1  : required i64    plugin_id (api.js_conv = "str", api.body = "plugin_id"),
-    2  : optional i64    bot_id   (api.js_conv = "str", api.body = "bot_id"), // 如果不传使用uid赋值 bot_id = connector_uid
+    2  : optional i64    bot_id   (api.js_conv = "str", api.body = "bot_id"), // If not passed using uid assignment bot_id = connector_uid
     3  : optional i32       context_type (api.body = "context_type"),
     255:          base.Base Base     ,
 }
@@ -605,9 +605,9 @@ struct RevokeAuthTokenResponse {
 
 struct OAuthPluginInfo {
     1: i64                               plugin_id (api.js_conv = "str") ,
-    2: plugin_develop_common.OAuthStatus status     , // 用户授权状态
-    3: string                            name       , // 插件name
-    4: string                            plugin_icon, // 插件头像
+    2: plugin_develop_common.OAuthStatus status     , // user authorization status
+    3: string                            name       , // Plugin name
+    4: string                            plugin_icon, // plugin avatar
 }
 
 struct GetQueriedOAuthPluginListRequest {

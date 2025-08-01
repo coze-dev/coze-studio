@@ -30,50 +30,50 @@ export type NodeError = ValidateError;
 export type NodeErrorMap = Map<string, NodeError[]>;
 
 /**
- * 当前流程状态
+ * Current process status
  */
 export interface WorkflowExecState extends GetWorkFlowProcessData {
   executeId: string;
-  // 是否有执行历史
+  // Is there any execution history?
   exeHistoryStatus: WorkflowExeHistoryStatus;
   /**
-   * 当前工作流视图状态
+   * Current workflow view state
    */
   viewStatus?: WorkflowExecStatus;
 
   /**
-   * 运行结果面板显隐状态
+   * Run Results Panel Hidden Status
    */
   resultSideSheetVisible: boolean;
   resultSideSheetLoading: boolean;
 
-  // 这里的 version 暂时无意义，只是为了触发errorMap更新
+  // The version here is temporarily meaningless, just to trigger an errorMap update
   version?: number;
 
-  // 错误信息
+  // error message
   nodeErrorMap: NodeErrorMap;
 
-  // 有些错误无法定位到具体节点，放在 systemError 中
+  // Some errors cannot be located to specific nodes and are placed in systemError
   systemError?: string;
 
-  // 执行ID
+  // Execution ID
   executeLogId?: string;
 
-  // 是否为单节点运行
+  // Whether to run as a single node
   isSingleMode?: boolean;
 
-  // 运行的项目环境 id
+  // Running project environment id
   projectId?: string;
 
   nodeEvents: NodeEvent[];
 }
 
 export interface NodeErrorSetting {
-  showError: boolean; // 是否展示错误
+  showError: boolean; // Whether to display errors
 }
 
 /**
- * 流程全局状态管理 (单例)
+ * Process global state management (singleton)
  */
 export class WorkflowExecStateEntity extends ConfigEntity<WorkflowExecState> {
   static type = 'WorkflowExecStateEntity';
@@ -133,7 +133,7 @@ export class WorkflowExecStateEntity extends ConfigEntity<WorkflowExecState> {
       version: Date.now(),
     });
   }
-  /** 批量设置 */
+  /** batch setup */
   setNodeErrors(map: { [nodeId: string]: NodeError[] }) {
     Object.keys(map).forEach(nodeId => {
       const nodeError = map[nodeId];

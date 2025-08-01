@@ -20,7 +20,7 @@ function isNumberType(t: string) {
   return t === FormItemSchemaType.NUMBER || t === FormItemSchemaType.FLOAT;
 }
 
-/** 判断类型一致，**特化：**`number`和`float`视为同一类型 */
+/** Determine that the type is consistent, ** specialization: ** 'number' and'float 'are regarded as the same type */
 export const isTestsetFormSameFieldType = (t1?: string, t2?: string) => {
   if (typeof t1 === 'undefined' || typeof t2 === 'undefined') {
     return false;

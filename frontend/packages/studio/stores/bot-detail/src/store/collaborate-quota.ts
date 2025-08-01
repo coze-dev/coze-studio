@@ -42,13 +42,13 @@ export const collaborateQuota = async () => {
         bot_id: botId,
       });
     setCollaboration({
-      // 多人协作模式，或非多人协作模式有额度时可启用
+      // Multiplayer collaboration mode, or non-multiplayer collaboration mode can be enabled when there is a quota
       openCollaboratorsEnable:
         (!inCollaboration && collaborationQuota?.open_collaborators_enable) ||
         inCollaboration,
-      // 非多人协作模式 && 可以升级套餐，则展示升级套餐按钮
+      // Non-multiplayer collaboration mode & & If the package can be upgraded, the upgrade package button will be displayed.
       canUpgrade: collaborationQuota?.can_upgrade || false,
-      // 用户最大开启多人协作bot的数量限制
+      // Limit on the maximum number of user-enabled multiplayer collaborative bots
       maxCollaborationBotCount:
         collaborationQuota?.max_collaboration_bot_count || 0,
       maxCollaboratorsCount: collaborationQuota?.max_collaborators_count || 0,

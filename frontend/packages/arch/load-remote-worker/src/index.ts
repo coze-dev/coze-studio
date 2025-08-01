@@ -33,7 +33,7 @@ export class RemoteWebWorker extends Worker {
     const remoteWorkerUrl =
       url.includes('://') &&
       !url.startsWith(location.origin) &&
-      // 适配 @byted/uploader 等底层库的worker 调用
+      // Adapt worker calls to underlying libraries such as @byted/uploader
       !url.startsWith('blob:')
         ? URL.createObjectURL(
             new Blob(
@@ -51,10 +51,10 @@ export class RemoteWebWorker extends Worker {
   }
 }
 
-// TODO: 这种实现很脏，会篡改全局实例容易引发意外，但短期内为了向后兼容，暂时保留，后续需要：
-// 1. 将业务代码中的 worker 调用切换为 RemoteWebWorker 调用
-// 2. 这个 package 本身需要增加 ut
-// 3. 增加 lint 规则，不允许直接调用 Worker，统一使用 RemoteWebWorker 版本
+// TODO: This implementation is very dirty, and it is easy to cause accidents by tampering with the global instance, but for backward compatibility in the short term, it is temporarily reserved. Later needs:
+// 1. Switch worker calls in business code to RemoteWebWorker calls
+// 2. The package itself needs to add ut.
+// 3. Add the lint rule, do not allow direct calls to the Worker, and use the RemoteWebWorker version uniformly
 /**
  * @deprecated Do not use this function!!!
  */

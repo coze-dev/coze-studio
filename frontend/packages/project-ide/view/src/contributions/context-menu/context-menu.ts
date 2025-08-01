@@ -26,13 +26,13 @@ import { Menu, MenuFactory } from './menu';
 export type CanHandle = string | ((command?: string) => boolean);
 
 /**
- * 全局 contextmenu 监听
+ * Global contextmenu listening
  */
 @injectable()
 export class ContextMenu {
   @inject(MenuFactory) menuFactory: MenuFactory;
 
-  // 全局主菜单
+  // Global Main Menu
   menu: Menu;
 
   @postConstruct()
@@ -41,15 +41,15 @@ export class ContextMenu {
   }
 
   /**
-   * 删除项
+   * delete item
    */
   deleteItem(canHandle: CanHandle) {
     if (typeof canHandle === 'string') {
-      // 精确删除
+      // precise deletion
       const item = this._items.find(i => i.command === canHandle);
       ArrayExt.removeFirstOf(this._items, item);
     } else {
-      // 模糊删除
+      // blur delete
       this._items.forEach(i => {
         if (canHandle(i.command)) {
           ArrayExt.removeFirstOf(this._items, i);
@@ -59,7 +59,7 @@ export class ContextMenu {
   }
 
   /**
-   * 添加项
+   * add item
    */
   addItem(options: ContextMenu.IItemOptions): Disposable {
     const item = Private.createItem(options, this._idTick++);
@@ -72,14 +72,14 @@ export class ContextMenu {
   }
 
   /**
-   * 手动关闭 menu
+   * Manually close the menu
    */
   close() {
     this.menu.close();
   }
 
   /**
-   * 打开事件
+   * open event
    */
   open(event: React.MouseEvent, args?: any): boolean {
     Menu.saveWindowData();
@@ -141,8 +141,8 @@ export namespace ContextMenu {
     /**
      * The CSS selector for the context menu item.
      *
-     * 只有当当前元素冒泡途径 selector 元素，才会触发这个 contextmenu 事件。
-     * 底层通过 querySelector 获取，需要加上 commas
+     * The contextmenu event is triggered only when the current element is bubbling through the selector element.
+     * The bottom layer is obtained through querySelector, and commas need to be added.
      */
     selector: string;
 

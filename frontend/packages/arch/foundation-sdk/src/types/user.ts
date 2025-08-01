@@ -32,7 +32,7 @@ export interface UserConnectItem {
 export interface UserInfo {
   app_id: number;
   /**
-   * @deprecated 会因为溢出丢失精度，使用 user_id_str
+   * @Deprecated will lose precision due to overflow, use user_id_str
    */
   user_id: number;
   user_id_str: string;
@@ -102,14 +102,14 @@ export interface UserInfo {
   };
   need_check_bind_status: boolean;
   bui_audit_info?: {
-    // TODO 这里的类型定义需要再明确一点更好
+    // The type definition here in TODO needs to be more clear and better
     audit_info: {
       user_unique_name?: string;
       avatar_url?: string;
       name?: string;
       [key: string]: unknown;
     }; // Record<string, unknown>;
-    // int值。1审核中，2审核通过，3审核不通过 
+    // int value. 1 During the review, 2 passed the review, and 3 failed the review.
     audit_status: 1 | 2 | 3;
     details: Record<string, unknown>;
     is_auditing: boolean;

@@ -41,10 +41,10 @@ it('extract schema with default parser', () => {
     ],
   });
   const extractedSchema = schemaExtractor.extract({
-    // end 结束节点 2
+    // End End Node 2
     [StandardNodeType.End]: [
       {
-        // 对应输出指定内容
+        // Corresponding output specified content
         name: 'content',
         path: 'inputs.content.value.content',
       },

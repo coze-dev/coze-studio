@@ -22,8 +22,8 @@ export type LineAttrs = Pick<
   SVGAttributes<unknown>,
   'stroke' | 'strokeDasharray' | 'strokeWidth'
 > & {
-  lineRadius?: number; // line圆角半径 注意：这个数值不要大于 indent/2
-  lineGap?: number; // line距离box的gap
+  lineRadius?: number; // Line fillet radius, note: this value should not be greater than indent/2
+  lineGap?: number; // Line distance box gap
 };
 
 export interface LineStyle {
@@ -36,12 +36,12 @@ export interface LineStyle {
 export interface TreeNode {
   key: string;
   title: ReactNode | ((nodeData: TreeNodeExtra) => ReactNode);
-  selectEnabled?: boolean; // 默认值 true
-  indentDisabled?: boolean; // 关闭缩进。 仅针对如下场景生效：子节点中的最后一个节点
-  lineStyle?: LineStyle; // 当指定了此属性时，会覆盖全局的lineStyle
+  selectEnabled?: boolean; // Default value true
+  indentDisabled?: boolean; // Turn off indentation. Only works for the following scenarios: the last node in the sub-node
+  lineStyle?: LineStyle; // When this property is specified, the global lineStyle is overridden.
   children?: TreeNode[];
   zIndex?: number;
-  // 其他字段，会透传
+  // Other fields will be passed through
   extra?: unknown;
 }
 
@@ -58,12 +58,12 @@ export interface FilteredTreeNode extends SpanNode, TreeNodeInfo {
 export type TreeNodeExtra = Omit<TreeNode, 'children'> & {
   colNo: number;
   rowNo: number;
-  unindented: boolean; // 相对于父节点，是否未缩进
-  selected: boolean; // 是否被选中
-  hover: boolean; // 是否hover
+  unindented: boolean; // Is it unindented relative to the parent node?
+  selected: boolean; // Is it selected?
+  hover: boolean; // Whether to hover
 };
 
-// 拉平后的TreeNode信息
+// Flattened TreeNode information
 export type TreeNodeFlatten = Omit<TreeNodeExtra, 'selected' | 'hover'>;
 
 export interface Line {
@@ -72,9 +72,9 @@ export interface Line {
 }
 
 export interface GlobalStyle {
-  indent?: number; // 父节点和子节点的缩进距离
-  verticalInterval?: number; // node节点的垂直间距
-  nodeBoxHeight?: number; // node-box节点的高度
+  indent?: number; // Indent distance of parent and child nodes
+  verticalInterval?: number; // Vertical spacing of nodes
+  nodeBoxHeight?: number; // The height of the node-box node
   offsetX?: number;
 }
 
@@ -86,7 +86,7 @@ export interface MouseEventParams {
 export interface TreeProps {
   treeData: TreeNode;
   selectedKey?: string;
-  indentDisabled?: boolean; // 关闭缩进。 仅针对如下场景生效：最后一个节点
+  indentDisabled?: boolean; // Turn off indentation. Only works for the following scenarios: the last node
   lineStyle?: LineStyle;
   globalStyle?: GlobalStyle;
   className?: string;

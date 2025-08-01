@@ -15,7 +15,7 @@ struct Review {
     2: string document_name
     3: string document_type
     4: string tos_url
-    5: optional common.ReviewStatus status       // 状态
+    5: optional common.ReviewStatus status       // status
     6: optional string doc_tree_tos_url
     7: optional string preview_tos_url
 }

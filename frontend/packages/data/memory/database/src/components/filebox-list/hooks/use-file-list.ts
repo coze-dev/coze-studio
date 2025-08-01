@@ -53,7 +53,7 @@ export const useFileList = (
     };
     try {
       const res = await fileboxApi.FileList({
-        // 前端从 1 开始计数，方便 Math.ceil 计算，传给后端时手动减 1
+        // The front end starts counting from 1, which is convenient for Math.ceil calculation. When passing to the back end, manually subtract 1.
         page_num: page - 1,
         page_size: pageSize,
         bid: botId,

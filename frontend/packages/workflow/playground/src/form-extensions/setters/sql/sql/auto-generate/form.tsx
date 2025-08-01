@@ -67,7 +67,7 @@ export const Form: React.FC<FormProps> = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    // 防止触发节点选中
+    // Prevent trigger node selection
     <div onClick={e => e.stopPropagation()}>
       <header className={styles.header}>
         <span className={styles.title}>{I18n.t('workflow_240218_11')}</span>

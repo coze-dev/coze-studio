@@ -153,7 +153,7 @@ const translateField = (temp: any) => {
 
   return {
     title: temp.name,
-    // 一期固定为 string
+    // Fixed as string
     type: 'string',
     'x-decorator-props': {
       tag: temp.type,

@@ -27,13 +27,13 @@ export const ContextMatcher = Symbol('ContextMatcher');
 
 export interface ContextMatcher {
   /**
-   * 判断 expression 是否命中上下文
+   * Determines whether the expression hits the context
    */
   match: (expression: string) => boolean;
 }
 
 /**
- * 全局 context key 上下文管理
+ * Global context key context management
  */
 @injectable()
 export class ContextKeyService implements ContextMatcher {

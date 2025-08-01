@@ -27,7 +27,7 @@ vi.mock('@coze-arch/bot-error', () => ({
   CustomError: vi.fn(),
 }));
 
-// FIXME  改为按需 mock
+// FIXME changed to mock on demand
 vi.mock('@coze-arch/bot-api', () => ({
   DeveloperApi: {
     GetUserAuthList: vi
@@ -50,7 +50,7 @@ vi.mock('@coze-arch/bot-api', () => ({
       // .mockResolvedValueOnce({ code: 1 })
       // .mockResolvedValueOnce({ code: 0 })
       // .mockResolvedValueOnce({ code: 0 })
-      // mock 缺失 personal store && 轮询失败
+      // Mock missing personal store & & poll failed
       .mockResolvedValueOnce({ code: 0 })
       .mockResolvedValueOnce({ code: 0 })
       .mockResolvedValueOnce({ code: 0 })

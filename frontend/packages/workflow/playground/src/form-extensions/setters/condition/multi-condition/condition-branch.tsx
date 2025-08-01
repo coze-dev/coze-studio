@@ -122,7 +122,7 @@ export const ConditionBranch = (props: ConditionBranchProps) => {
   };
 
   const handleDeleteBranch = () => {
-    // 将要被删除的端口移动到最后，这样删除时不会对其他连线顺序产生影响
+    // Move the port to be deleted to the end so that the deletion does not affect other connection sequences
     onDelete?.();
   };
 

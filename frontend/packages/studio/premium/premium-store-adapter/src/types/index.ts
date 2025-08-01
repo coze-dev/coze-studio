@@ -26,22 +26,22 @@ import {
 import { type BindConnection } from '@coze-arch/bot-api/developer_api';
 
 export enum UserLevel {
-  /** 免费版。 */
+  /** The free version. */
   Free = 0,
-  /** 海外
+  /** overseas
 PremiumLite */
   PremiumLite = 10,
   /** Premium */
   Premium = 15,
   PremiumPlus = 20,
-  /** 国内
-V1火山专业版 */
+  /** domestic
+V1 Volcano Pro */
   V1ProInstance = 100,
-  /** 个人旗舰版 */
+  /** Personal flagship version */
   ProPersonal = 110,
-  /** 团队版 */
+  /** Team Edition */
   Team = 120,
-  /** 企业版 */
+  /** Enterprise Edition */
   Enterprise = 130,
 }
 

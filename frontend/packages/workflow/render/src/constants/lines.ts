@@ -14,5 +14,5 @@
  * limitations under the License.
  */
  
-// 箭头宽度
+// Arrow width
 export const LINE_OFFSET = 6;

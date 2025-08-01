@@ -105,7 +105,7 @@ export const BizIDE: FC<{
     <div className={styles.container} data-testid={setterTestId}>
       <Editor
         title={nodeMeta?.title}
-        // code 通过 panel 渲染之后，readonly 字段就非响应式了，所以从全局取比较合理
+        // After the code is rendered through the panel, the readonly field is not responsive, so it is more reasonable to take it from the global
         readonly={globalState.readonly}
         height="100%"
         width="100%"
@@ -120,7 +120,7 @@ export const BizIDE: FC<{
         testRunIcon={<IconCozPlayCircle />}
         onChange={handleOnChange}
         onClose={onClose}
-        // 按workflow实例化IDE，因为在project-ide中，会同时打开多个workflow
+        // Instantiate the IDE by workflow, because in project-ide, multiple workflows are open simultaneously
         uuid={globalState.workflowId}
         languageTemplates={languageTemplates}
         spaceId={globalState.spaceId}

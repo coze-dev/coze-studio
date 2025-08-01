@@ -50,7 +50,7 @@ describe('useInitCanvas', () => {
   const mockRequestRenderAll = vi.fn();
   const mockDispose = vi.fn();
   const mockOn = vi.fn(() => () => {
-    // 清理函数
+    // cleanup function
   });
   let mockCanvas: any;
 

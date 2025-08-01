@@ -73,7 +73,7 @@ export const CascaderItem: FC<CProps> = ({
   // @ts-expect-error -- linter-disable-autofix
   const isObjectField = (record.deep ?? 0) > 1 && record.name !== ARRAYTAG;
 
-  // 通过check触发校验（提交时）
+  // Trigger validation via check (when committed)
   useEffect(() => {
     if (check === 0) {
       return;
@@ -81,7 +81,7 @@ export const CascaderItem: FC<CProps> = ({
     handleCheck(value);
   }, [check]);
 
-  // 校验
+  // validation
   const handleCheck = (val?: CascaderValueType) => {
     const status = !val?.[0] ? 1 : 0;
     setErrorStatus(status);

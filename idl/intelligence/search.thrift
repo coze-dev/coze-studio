@@ -21,7 +21,7 @@ enum SearchScope {
 }
 
 struct GetDraftIntelligenceListOption {
-    1: bool need_replica, // 是否需要个人版本Bot数据
+    1: bool need_replica, //need personal version Bot data
 }
 
 struct GetDraftIntelligenceListRequest {
@@ -51,13 +51,13 @@ struct IntelligencePublishInfo {
 
 struct IntelligencePermissionInfo {
     1: bool in_collaboration,
-    2: bool can_delete,   // 当前用户是否可删除
-    3: bool can_view,     // 当前用户是否可查看，当前判断逻辑为用户是否在bot所在空间
+    2: bool can_delete,   // can delete
+    3: bool can_view,     // Whether the current user can view it, the current judgment logic is whether the user is in the space where the bot is located
 }
 
 struct FavoriteInfo {
-    1: bool is_fav, // 是否收藏；收藏列表使用
-    2: string fav_time, // 收藏时间；收藏列表使用
+    1: bool is_fav, // Whether to collect; use the collection list
+    2: string fav_time, // Collection time; collection list use
 }
 
 enum BotMode {
@@ -67,19 +67,19 @@ enum BotMode {
 }
 
 struct OtherInfo {
-    1: string recently_open_time,   // 最近打开时间；最近打开筛选时使用
-    2: BotMode bot_mode, // 仅bot类型返回
+    1: string recently_open_time,   // Last opened time; used when recently opened filter
+    2: BotMode bot_mode, // Only bot type returns
 }
 
 struct Intelligence {
-    1: intelligence_common_struct.IntelligenceBasicInfo        basic_info,     // 基本信息
-    2: intelligence_common_struct.IntelligenceType             type,           // 智能体类型
-    3: IntelligencePublishInfo      publish_info,   // 智能体发布信息，可选
-    4: common_struct.User                        owner_info,     // 智能体所有者信息，可选
-    5: IntelligencePermissionInfo   permission_info, // 当前用户对智能体的权限信息，可选
+    1: intelligence_common_struct.IntelligenceBasicInfo        basic_info,     // Basic information
+    2: intelligence_common_struct.IntelligenceType             type,           // Agent Type
+    3: IntelligencePublishInfo      publish_info,   // Agent publishes information, optional
+    4: common_struct.User                        owner_info,     // Agent owner information, optional
+    5: IntelligencePermissionInfo   permission_info, // The current user's permission information to the agent, optional
 }
 
-// For前端
+// For the front end
 struct IntelligenceData {
     1: intelligence_common_struct.IntelligenceBasicInfo        basic_info,
     2: intelligence_common_struct.IntelligenceType             type,
@@ -110,7 +110,7 @@ struct GetDraftIntelligenceListResponse {
 struct GetDraftIntelligenceInfoRequest {
     1: i64 intelligence_id (agw.js_conv="str", api.js_conv="true"),
     2: intelligence_common_struct.IntelligenceType intelligence_type,
-    3: optional i64 version (agw.js_conv="str", api.js_conv="true"), // 预览版本时传入
+    3: optional i64 version (agw.js_conv="str", api.js_conv="true"), // Pass in when previewing the version
 
     255: optional base.Base Base
 }
@@ -133,8 +133,8 @@ struct GetDraftIntelligenceInfoResponse {
 struct GetUserRecentlyEditIntelligenceRequest {
     1: i32 size,
     2: optional list<intelligence_common_struct.IntelligenceType> types,
-    3: optional string    enterprise_id,         // 企业id
-    4: optional string    organization_id,      // 组织id
+    3: optional string    enterprise_id,         // Enterprise ID
+    4: optional string    organization_id,      // organization id
 
     255: optional base.Base Base
 }

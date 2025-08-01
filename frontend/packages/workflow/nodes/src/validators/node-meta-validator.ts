@@ -59,7 +59,7 @@ export const nodeMetaValidator = ({
     return nodes?.length > 1;
   }
 
-  // 增加节点名重复校验
+  // Add Node Name Duplicate Validation
   const schema = NodeMetaSchema.refine(
     ({ title }: NodeMeta) => !isTitleRepeated(title),
     {

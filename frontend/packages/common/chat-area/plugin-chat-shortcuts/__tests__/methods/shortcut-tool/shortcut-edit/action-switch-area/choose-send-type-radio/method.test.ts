@@ -70,7 +70,7 @@ describe('initToolInfoByToolApi', () => {
 
     const result = initToolInfoByToolApi(plugin);
     expect(result?.tool_params_list.length).toBe(MAX_TOOL_PARAMS_COUNT + 2);
-    // 前10个是required=true的参数
+    // The first 10 parameters are required = true
     expect(
       result?.tool_params_list
         .slice(0, MAX_TOOL_PARAMS_COUNT)

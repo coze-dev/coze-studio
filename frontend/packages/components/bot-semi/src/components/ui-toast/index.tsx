@@ -29,7 +29,7 @@ import { ToastFactory, Toast } from '@douyinfe/semi-ui';
 
 import styles from './index.module.less';
 
-// Toast展示位置离top 80px
+// Toast display 80px from the top
 Toast.config({
   top: 80,
 });
@@ -61,9 +61,9 @@ function rewriteToastCreate(opts: ToastReactProps) {
       className: classNames(styles.container, className),
       icon: getIcon(),
       theme: 'light',
-      // 默认不展示close图标
+      // Default does not display close icon
       showClose: false,
-      // Toast展示位置离top 80px
+      // Toast display 80px from the top
       top: 80,
       ...rest,
     }),
@@ -83,7 +83,7 @@ function rewriteToastCreateAlias(type?: RequiredToastType) {
     return rewriteToastCreate(merge({}, opts, { type }));
   };
 }
-/* 重写Toast的方法 */
+/* How to Override Toast */
 UIToast.create = rewriteToastCreateAlias();
 UIToast.info = rewriteToastCreateAlias('info');
 UIToast.error = rewriteToastCreateAlias('error');

@@ -30,7 +30,7 @@ export interface FabricObjectSchema extends CustomFabricProps {
   lineHeight?: number;
   text?: string;
   /**
-   * 图片链接
+   * image link
    */
   src?: string;
   objects?: FabricObjectSchema[];
@@ -50,9 +50,9 @@ export interface FabricSchema extends FabricObjectSchema {
 }
 
 /**
- * 为什么不用 FabricObject.type？
- * 因为 fabricSchema.type 跟 fabricObject.type 对不上
- * eg： Textbox 在 schema 里是 textbox，实例化后是 Textbox
+ * Why not use FabricObject.type?
+ * Because fabricSchema.type does not match fabricObject.type
+ * Eg: Textbox is a textbox in the schema, and a Textbox after instantiation
  */
 export enum Mode {
   INLINE_TEXT = 'inline_text',
@@ -67,7 +67,7 @@ export enum Mode {
 }
 
 /**
- * 填充和描边
+ * Fill and Stroke
  */
 export enum ColorMode {
   FILL = 'fill',
@@ -75,7 +75,7 @@ export enum ColorMode {
 }
 
 /**
- * 文本对齐方式
+ * text alignment
  */
 export enum TextAlign {
   LEFT = 'left',
@@ -84,7 +84,7 @@ export enum TextAlign {
   JUSTIFY = 'justify',
 }
 /**
- * 图片填充方式
+ * Image filling method
  */
 export enum ImageFixedType {
   AUTO = 'auto',
@@ -97,7 +97,7 @@ export interface CustomFabricProps {
   customId: string;
   customFixedHeight?: number;
   customFixedType?: ImageFixedType;
-  /** @deprecated 兼容历史，不可新增消费 */
+  /** @deprecated compatible history, no new consumption */
   customVariableName?: string;
   [k: string]: unknown;
 }

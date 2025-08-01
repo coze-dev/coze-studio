@@ -51,7 +51,7 @@ export type MessageStoreStateAction = MessageStoreState & MessageStoreAction;
 
 export interface MessageStoreState {
   messages: Message[];
-  /** @deprecated 替换为 messageIndexStore */
+  /** @Deprecated replaced with messageIndexStore */
   pagination: MessagePagination;
   // computed
   messageGroupList: MessageGroup[];
@@ -72,18 +72,18 @@ interface MessageStoreAction {
   findMessage: (idStruct: string | MessageIdStruct) => Message | undefined;
   hasMessage: (idStruct: string | MessageIdStruct) => boolean;
   updateMessage: UpdateMessage;
-  /** 注意是 message_index 字段，不是 index */
+  /** Note that it is message_index field, not index */
   getMessageIndexRange: () => MessageIndexRange;
   /**
-   * 注意消息逆序展示
-   * ! 如果使用这个方法添加消息记录 需要判断是否是在添加历史消息 是否经过 fixHistoryMessageList
+   * Pay attention to the reverse order of the message display.
+   * ! If you use this method to add message records, you need to determine whether you are adding chat history fixHistoryMessageList
    */
   addMessages: (
     messages: Message[],
     option?: { clearFirst?: boolean; toLatest?: boolean },
   ) => void;
   /**
-   * ! 同上
+   * Ditto
    */
   addMessage: (message: Message) => void;
   deleteMessageByIdStruct: (message: MessageIdStruct) => void;
@@ -116,13 +116,13 @@ const getDefaultState = (): MessageStoreState => ({
   pagination: getDefaultPagination(),
 });
 
-// eslint-disable-next-line max-lines-per-function -- TODO: 以后再看看怎么拆吧。。
+// eslint-disable-next-line max-lines-per-function -- TODO: Let's see how to take it apart later...
 export const createMessagesStore = (mark: string) => {
   const useMessagesStore = createWithEqualityFn<
     MessageStoreState & MessageStoreAction
   >()(
     devtools(
-      // eslint-disable-next-line max-lines-per-function -- store 中没法拆 -- 乱讲，我拆了一个
+      // eslint-disable-next-line max-lines-per-function -- can't be dismantled in the store -- nonsense, I dismantled one
       subscribeWithSelector((set, get) => ({
         ...getDefaultState(),
         findMessage: idOrStruct => {
@@ -144,7 +144,7 @@ export const createMessagesStore = (mark: string) => {
           set(
             produce<MessageStoreState>(state => {
               if (findMessageByIdStruct(state.messages, message)) {
-                // TODO: throw error 注意序列化
+                // TODO: throw error attention serialization
                 console.error('unexpected addMessage duplicate');
                 return;
               }
@@ -158,7 +158,7 @@ export const createMessagesStore = (mark: string) => {
           addedMessages,
           { clearFirst = false, toLatest = false } = {},
         ) => {
-          // 此处切勿使用 immer, 按照目前实现会有性能问题
+          // Do not use immer here, there will be performance issues according to the current implementation
           set(
             state => {
               if (clearFirst) {
@@ -180,7 +180,7 @@ export const createMessagesStore = (mark: string) => {
             produce<MessageStoreState>(state => {
               const idx = findMessageIndexByIdStruct(state.messages, idStruct);
               if (idx < 0) {
-                // TODO: throw error 注意序列化; 补充上报
+                // TODO: throw error attention serialization; supplementary reporting
                 console.error(`cannot find message ${idStruct.message_id}`);
                 return;
               }
@@ -195,7 +195,7 @@ export const createMessagesStore = (mark: string) => {
             produce<MessageStoreState>(state => {
               const idx = findMessageIndexById(state.messages, id);
               if (idx < 0) {
-                // todo: 补充上报
+                // TODO: Supplementary reporting
                 console.error(`cannot find message ${id}`);
                 return;
               }
@@ -282,7 +282,7 @@ export const subscribeSectionIdToUpdateMessageGroup = (store: {
           messageList: messages,
         });
 
-        // 处理完contextDivider之后才能扫描是否展示suggestion
+        // Only after processing the contextDivider can you scan for suggestions
         scanAndMarkShowSuggestions(messageGroupList);
       });
     },
@@ -311,7 +311,7 @@ export const subscribeMessageToUpdateMessageGroup = (
         messageList: messages,
       });
 
-      // 处理完contextDivider之后才能扫描是否展示suggestion
+      // Only after processing the contextDivider can you scan for suggestions
       scanAndMarkShowSuggestions(messageGroupList);
 
       const modifiedGroup = eventCallback?.onBeforeMessageGroupListUpdate?.(

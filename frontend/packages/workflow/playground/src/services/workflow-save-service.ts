@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { debounce, isEmpty } from 'lodash-es';
 import { inject, injectable } from 'inversify';
 import { StackingContextManager } from '@flowgram-adapter/free-layout-editor';
@@ -61,7 +61,7 @@ import {
 } from '../entities';
 import { WorkflowOperationService } from './workflow-operation-service';
 
-// 这个非写死，不要用来判断开始节点，请用 flowNodeType
+// This is not written dead, do not use it to judge the start node, please use flowNodeType
 const START_NODE_ID = '100001';
 const END_NODE_ID = '900001';
 const CHAT_NODE_DEFAULT_ID = '110100';
@@ -73,7 +73,7 @@ const RENDER_DELAY_TIME = 100;
 const ERROR_CODE_SAVE_VERSION_CONFLICT = '720702239';
 
 /**
- * 创建默认，只有 start 和 end 节点
+ * Create default, only start and end nodes
  */
 function createDefaultJSON(flowMode: WorkflowMode): WorkflowJSON {
   if (flowMode === WorkflowMode.SceneFlow) {
@@ -173,13 +173,13 @@ export class WorkflowSaveService {
 
   protected saveOnChangeDisposable?: Disposable;
 
-  // 是否需要流转 test run 状态。当修改节点位置时，不需要重新 test run
+  // Whether the test run state needs to be streamed. When changing the node location, there is no need to re-test run
   ignoreStatusTransfer = true;
 
   /**
-   * 获取 workflow schema json
-   * @param commitId 流程的版本信息
-   * @param type 流程版本的类型信息 提交或发布
+   * Get workflow schema json
+   * @Param commitId process version information
+   * @Param type type information for process version, commit or publish
    */
   loadWorkflowJson = async (
     commitId?: string,
@@ -203,7 +203,7 @@ export class WorkflowSaveService {
     const isPreviewInProject = Boolean(projectId && projectCommitVersion);
     const hasExecuteId = Boolean(playgroundProps?.executeId);
 
-    // 如果是 project 查看历史版本
+    // If it is a project, check the historical version.
     if (isPreviewInProject) {
       workflowJson = await this.globalState.loadHistory({
         commit_id: commitId as string,
@@ -232,8 +232,8 @@ export class WorkflowSaveService {
       });
     } else if (playgroundProps?.from === 'communityTrial') {
       /**
-       * 如果来自 community trial 无论是否有 commitId 都要取历史的版本
-       * 主要应对在 trial 中 db 没有 commitId 请求最新 schema 的场景。数据清洗完毕后可删除该逻辑
+       * If it comes from a community trial, the historical version must be taken regardless of whether there is a commitId or not.
+       * Mainly deal with scenarios where db does not commitId request the latest schema in trial. This logic can be deleted after data cleaning is completed
        */
       workflowJson = await this.globalState.loadHistory({
         commit_id: workflowCommitId,
@@ -243,7 +243,7 @@ export class WorkflowSaveService {
       });
     } else {
       workflowJson = await this.globalState.load(workflowId, spaceId);
-      // 流程初始化设置 saveVersion
+      // Process initialization settings saveVersion
       const workflowInfo = this.globalState.config?.info;
       FLAGS?.['bot.automation.project_multi_tab'] &&
         projectId &&
@@ -264,8 +264,8 @@ export class WorkflowSaveService {
   };
 
   /**
-   * 对所有节点表单渲染前进行初始化，初始化完毕才会进行表单创建工作
-   * @param nodes 所有节点数据
+   * Initialize all node forms before rendering, and the form creation will not proceed until the initialization is completed.
+   * @param nodes All node data
    */
   async initNodeData(nodes: WorkflowNodeJSON[]) {
     const promises: Promise<void>[] = [];
@@ -287,7 +287,7 @@ export class WorkflowSaveService {
   }
 
   /**
-   * 加载文档数据
+   * Load document data
    */
   async loadDocument(doc: WorkflowDocument): Promise<void> {
     this.workflowDocument = doc;
@@ -307,7 +307,7 @@ export class WorkflowSaveService {
       const userInfo = userStoreService.getUserInfo();
       const locale = userInfo?.locale ?? navigator.language ?? 'en-US';
 
-      // 加载节点信息
+      // load node information
       const [, workflowJSON] = await Promise.all([
         this.context.loadNodeInfos(locale),
         this.loadWorkflowJson(),
@@ -324,10 +324,10 @@ export class WorkflowSaveService {
         logger.error(e.message);
       }
 
-      // 加载大模型上下文
+      // Load large model context
       this.context.models = this.modelsService.getModels() as Model[];
 
-      // 同步加载的 nodes 和 edges 到 workflow store
+      // Synchronize loaded nodes and edges to workflow store
       useWorkflowStore.getState().setNodes(workflowJSON.nodes);
       useWorkflowStore.getState().setEdges(workflowJSON.edges);
 
@@ -335,7 +335,7 @@ export class WorkflowSaveService {
 
       const renderStartTime = Date.now();
 
-      // 前置数据加载
+      // preload
       await this.initNodeData(workflowJSON.nodes as WorkflowNodeJSON[]);
 
       await this.workflowDocument.fromJSON(workflowJSON);
@@ -345,7 +345,7 @@ export class WorkflowSaveService {
         loading: false,
       });
       projectApi?.setWidgetUIState('normal');
-      // 有权限才能自动保存
+      // Only with permission can it be automatically saved.
       if (!this.globalState.readonly) {
         this.saveOnChangeDisposable = doc.onContentChange(
           this.listenContentChange,
@@ -406,26 +406,26 @@ export class WorkflowSaveService {
   }
 
   /**
-   * 默认将开始节点居中展示
+   * By default, the start node will be centered
    */
   async fitView(): Promise<void> {
-    // 等待节点渲染与布局计算
+    // Waiting for node rendering and layout calculation
     await delay(RENDER_DELAY_TIME);
 
-    // 等待 DOM resize 更新
+    // Wait for DOM resize update
     await new Promise<void>(resolve => {
       window.requestAnimationFrame(() => resolve());
     });
 
-    // 执行布局
+    // execution layout
     this.workflowDocument.fitView(false);
 
-    // 等待布局后节点渲染
+    // Wait for the node to render after layout
     await delay(RENDER_DELAY_TIME);
   }
 
   /**
-   * 保存文档数据
+   * Save document data
    */
   save = async () => {
     const { getProjectApi } = this.globalState;
@@ -433,7 +433,7 @@ export class WorkflowSaveService {
     const FLAGS = getFlags();
 
     try {
-      // 只读态禁用保存，如果在加载状态中，也禁止保存
+      // Disable saving in read-only state, and also disable saving if in the loaded state
       if (this.globalState.readonly || this.globalState.loading) {
         return;
       }
@@ -450,15 +450,15 @@ export class WorkflowSaveService {
       const json = await this.workflowDocument.toJSON();
 
       if (this.globalState.config.schemaGray) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 临时字段
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- temporary field
         (json as any).versions = this.globalState.config.schemaGray;
       }
 
-      // 保存草稿，存储 workflow 的 nodes 和 edges 到 zustand store
+      // Save the draft, store the nodes and edges of the workflow to zustand store
       useWorkflowStore.getState().setNodes(json.nodes);
       useWorkflowStore.getState().setEdges(json.edges);
 
-      // FIXME 这个问题还没定位清除，先阻止保存
+      // The problem of FIXME has not been located and cleared, so prevent the saving first.
       if (json.nodes.length === 0) {
         projectApi?.setWidgetUIState('error');
         throw new CustomError(REPORT_EVENTS.parmasValidation, 'Saving Error');
@@ -475,7 +475,7 @@ export class WorkflowSaveService {
         savingError: false,
       });
       projectApi?.setWidgetUIState('normal');
-      // save 成功后获取最新的 saveVersion
+      // Get the latest saveVersion after successful saving
       const workflowInfo = this.globalState.config.info;
       FLAGS?.['bot.automation.project_multi_tab'] &&
         this.globalState.projectId &&
@@ -490,7 +490,7 @@ export class WorkflowSaveService {
       });
       projectApi?.setWidgetUIState('error');
 
-      // 新版本节点后续统一使用 e.name 是否为 CustomNodeError 来判断
+      // The new version of the node will use e.name whether it is CustomNodeError to judge
       if (
         e.eventName === 'WorkflowSubWorkflowResourceLose' ||
         e.eventName === 'WorkflowApiNodeResourceLose' ||
@@ -501,7 +501,7 @@ export class WorkflowSaveService {
         e.code === ERROR_CODE_SAVE_VERSION_CONFLICT &&
         FLAGS?.['bot.automation.project_multi_tab']
       ) {
-        // 保存时发现工作流版本冲突，提示用户刷新页面
+        // A workflow version conflict is found when saving, prompting the user to refresh the page
         this.dependencyEntity.setRefreshModalVisible(true);
         throw e;
       } else {
@@ -513,8 +513,8 @@ export class WorkflowSaveService {
   };
 
   /**
-   * 判断是否为游离节点的改动
-   * 游离节点修改无需重新 test run
+   * Determine whether it is a change from a free node
+   * Free node modification without re-test run
    */
   isAssociateChange(entity: FlowNodeEntity | WorkflowLineEntity) {
     let isAssociateChange = false;
@@ -555,7 +555,7 @@ export class WorkflowSaveService {
   };
 
   /**
-   * 高优先级保存，包含节点内容、节点增删、线条增删
+   * High priority save, including node content, node addition and deletion, line addition and deletion
    */
   public highPrioritySave = debounce(() => {
     reporter.event({
@@ -565,7 +565,7 @@ export class WorkflowSaveService {
   }, HIGH_DEBOUNCE_TIME);
 
   /**
-   * 低优先级保存，包含节点位置移动
+   * Low-priority saving, including node location moves
    * @protected
    */
   public lowPrioritySave = debounce(() => {
@@ -585,7 +585,7 @@ export class WorkflowSaveService {
   };
 
   /**
-   * 重载文档数据
+   * Overloading document data
    */
   reloadDocument = async ({
     commitId,
@@ -598,7 +598,7 @@ export class WorkflowSaveService {
     env?: string;
     customWorkflowJson?: WorkflowJSON;
   } = {}) => {
-    // 等待 save 结束
+    // Wait for the save to end
 
     await this.waitSaving();
 
@@ -612,7 +612,7 @@ export class WorkflowSaveService {
 
     this.saveOnChangeDisposable?.dispose();
 
-    // 前置数据加载
+    // preload
     await this.initNodeData((workflowJson?.nodes as WorkflowNodeJSON[]) ?? []);
     await this.workflowDocument.reload(workflowJson, RELOAD_DELAY_TIME);
     if (!this.globalState.readonly) {

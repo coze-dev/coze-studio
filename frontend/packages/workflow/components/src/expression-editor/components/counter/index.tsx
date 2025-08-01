@@ -31,7 +31,7 @@ interface ExpressionEditorCounterProps {
 }
 
 /**
- * 长度计数器
+ * length counter
  */
 export const ExpressionEditorCounter: FC<
   ExpressionEditorCounterProps

@@ -102,7 +102,7 @@ export const FunctionCallMessagesCollapse: React.FC<
 
           const content = safeJSONParse(cur.llmOutput.content);
           if (isVerboseContent(content)) {
-            /** 跳转和长期记忆分别统计耗时 */
+            /** Time-consuming for jump and long-term memory statistics */
             if (content.msg_type === VerboseMsgType.LONG_TERM_MEMORY) {
               prev.longTerm += time;
             } else {

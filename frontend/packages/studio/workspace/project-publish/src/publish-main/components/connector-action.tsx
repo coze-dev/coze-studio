@@ -58,7 +58,7 @@ export function ConnectorAction(props: ConnectorActionProps) {
     mouseEvent.stopPropagation();
   };
 
-  // 绑定/解除绑定是同一个回调，可以根据 bind_id 是否为空来区分
+  // The bind/unbind is the same callback, which can be distinguished by whether the bind_id is empty or not
   const kvBindSuccessCallback = (value?: PublishConnectorInfo) => {
     if (value) {
       const isUnbind = !value.bind_id;
@@ -100,7 +100,7 @@ export function ConnectorAction(props: ConnectorActionProps) {
     case ConnectorBindType.KvBind:
     case ConnectorBindType.KvAuthBind:
       return (
-        // 使用 basis-full 强制 flex row 换行
+        // Force flex row wrap with basis-full
         <div
           className={classNames(
             'basis-full self-end',
@@ -155,7 +155,7 @@ export function ConnectorAction(props: ConnectorActionProps) {
           onClick={stopEventPropagation}
         />
       );
-    // 开源版暂不支持商店渠道绑定，用于未来拓展
+    // The open-source version does not support store channel binding for the time being, for future expansion
     case ConnectorBindType.StoreBind:
       return (
         <StoreBind
@@ -164,9 +164,9 @@ export function ConnectorAction(props: ConnectorActionProps) {
           onClick={stopEventPropagation}
         />
       );
-    // 开源版暂不支持模板渠道绑定，用于未来拓展
-    // bind_type=9 用作扣子第一方渠道的标识，需要按照渠道 ID 展示绑定方式
-    // TODO 后端更新 ConnectorBindType 类型定义
+    // The open-source version does not support template channel binding for future expansion
+    // bind_type = 9 is used as the logo of the first-party channel of the button, and the binding method needs to be displayed according to the channel ID.
+    // TODO backend updates ConnectorBindType type definition
     case ConnectorBindType.TemplateBind: {
       if (record.id === TEMPLATE_CONNECTOR_ID) {
         return <TemplateBind record={record} onClick={stopEventPropagation} />;

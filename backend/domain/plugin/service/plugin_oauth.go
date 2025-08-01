@@ -194,7 +194,7 @@ func (p *pluginServiceImpl) getAccessTokenByAuthorizationCode(ctx context.Contex
 	meta := ci.Meta
 	info, exist, err := p.oauthRepo.GetAuthorizationCode(ctx, ci.Meta)
 	if err != nil {
-		return "", errorx.Wrapf(err, "GetAuthorizationCode failed, userID=%s, pluginID=%d, isDraft=%p",
+		return "", errorx.Wrapf(err, "GetAuthorizationCode failed, userID=%s, pluginID=%d, isDraft=%t",
 			meta.UserID, meta.PluginID, meta.IsDraft)
 	}
 	if !exist {

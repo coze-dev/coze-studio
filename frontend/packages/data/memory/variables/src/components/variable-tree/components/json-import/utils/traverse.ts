@@ -37,9 +37,9 @@ export interface TraverseContext {
 export type TraverseHandler = (context: TraverseContext) => void;
 
 /**
- * 深度遍历对象，对每个值做处理
- * @param value 遍历对象
- * @param handle 处理函数
+ * Traverse the object in depth, processing each value
+ * @param value over object
+ * @param handling function
  */
 export const traverse = <T extends TraverseValue = TraverseValue>(
   value: T,
@@ -56,9 +56,9 @@ export const traverse = <T extends TraverseValue = TraverseValue>(
 
 namespace TraverseUtils {
   /**
-   * 深度遍历对象，对每个值做处理
-   * @param node 遍历节点
-   * @param handle 处理函数
+   * Traverse the object in depth, processing each value
+   * @param node traverse node
+   * @param handling function
    */
   export const traverseNodes = (
     node: TraverseNode,
@@ -66,11 +66,11 @@ namespace TraverseUtils {
   ): void => {
     const { value } = node;
     if (!value) {
-      // 异常处理
+      // exception handling
       return;
     }
     if (Object.prototype.toString.call(value) === '[object Object]') {
-      // 对象，遍历对象的每个属性
+      // Object, iterate through each property of the object
       Object.entries(value).forEach(([key, item]) =>
         traverseNodes(
           {
@@ -83,8 +83,8 @@ namespace TraverseUtils {
         ),
       );
     } else if (Array.isArray(value)) {
-      // 数组，遍历数组的每个元素
-      // 从数组的末尾开始遍历，这样即使中途移除了某个元素，也不会影响到未处理的元素的索引
+      // Array, iterate through each element of the array
+      // The iteration starts at the end of the array, so that even if an element is removed halfway through, it will not affect the index of the unprocessed element
       for (let index = value.length - 1; index >= 0; index--) {
         const item: string = value[index];
         traverseNodes(
@@ -116,14 +116,14 @@ namespace TraverseUtils {
   });
 
   const setValue = (node: TraverseNode, value: unknown) => {
-    // 设置值函数
-    // 引用类型，需要借助父元素修改值
-    // 由于是递归遍历，所以需要根据node来判断是给对象的哪个属性赋值，还是给数组的哪个元素赋值
+    // Set Value Function
+    // Reference type, you need to modify the value with the help of the parent element
+    // Since it is a recursive traversal, it is necessary to determine which property of the object to assign a value to, or which element of the array to assign a value to, according to node
     if (!value || !node) {
       return;
     }
     node.value = value;
-    // 从上级作用域node中取出container，key，index
+    // Remove container, key, index from upper scope node
     const { container, key, index } = node;
     if (key && container) {
       container[key] = value;
@@ -161,7 +161,7 @@ namespace TraverseUtils {
       if (typeof pathItem === 'string') {
         const re = /\W/g;
         if (re.test(pathItem)) {
-          // 包含特殊字符
+          // Contains special characters
           return `${stringifyPath}["${pathItem}"]`;
         }
         return `${stringifyPath}.${pathItem}`;

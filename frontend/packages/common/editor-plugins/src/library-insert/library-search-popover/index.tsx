@@ -59,8 +59,8 @@ export const LibrarySearchPopover = ({
         setToPosition(toB);
         setVisible(true);
       } else {
-        // 一些场景输入 { 不应该弹出提示面板
-        // 如：光标在 {{ }} 内，或在 {% %} 内，或在 {# #} 内
+        // Some scene input {should not pop up the prompt panel
+        // For example, the cursor is within {{ }} , or within {% %} , or within {# #}
         setVisible(false);
       }
     } else {
@@ -114,7 +114,7 @@ export const LibrarySearchPopover = ({
                       }),
                     },
                   });
-                  // 去除插入的快捷键, 因为原来自动添加了
+                  // Remove the inserted shortcut, because the original was automatically added
                   templateParser.insertTemplateByRange(editor, template, {
                     from: position,
                     to: toPosition,

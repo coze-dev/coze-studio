@@ -93,12 +93,12 @@ export const DatasetWriteSetting = () => {
               label: I18n.t('kl_write_012'),
               tooltip: I18n.t('kl_write_013'),
             },
-            // 一期不支持按层级分段
+            // Phase 1 does not support hierarchical segmentation
             // {
             //   value: 'layer',
-            //   label: '按层级分段',
+            //   Labels: 'Segmented by hierarchy',
             //   tooltip:
-            //     '按照文档层级结构分段,适用按层级结构来组织的文档,如论文、书籍、说明书等',
+            //     'Segmented according to the document hierarchy, suitable for documents organized according to the hierarchy, such as papers, books, manuals, etc. ',
             // },
             {
               value: 'custom',

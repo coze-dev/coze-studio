@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { vi, beforeEach, describe, it, expect } from 'vitest';
 import { logger } from '@coze-arch/logger';
 
@@ -35,7 +35,6 @@ vi.mock('@coze-arch/logger', () => ({
     info: vi.fn(),
   },
 }));
-
 
 describe('bot-tea', () => {
   const mockLocation = 'https://example.com/test';
@@ -101,7 +100,7 @@ describe('bot-tea', () => {
     const mockParams = { foo: 'bar' };
 
     it('should send event with UG params when FEATURE_ENABLE_TEA_UG is true', () => {
-      // @ts-expect-error - 模拟全局变量
+      // @ts-expect-error - simulate global variables
       window.FEATURE_ENABLE_TEA_UG = true;
       const savedUrl = 'https://example.com/saved';
       mockSessionStorage.getItem.mockReturnValue(savedUrl);
@@ -125,7 +124,7 @@ describe('bot-tea', () => {
     });
 
     it('should send event without UG params when FEATURE_ENABLE_TEA_UG is false', () => {
-      // @ts-expect-error - 模拟全局变量
+      // @ts-expect-error - simulate global variables
       window.FEATURE_ENABLE_TEA_UG = false;
 
       sendTeaEvent(mockEvent, mockParams);
@@ -140,7 +139,7 @@ describe('bot-tea', () => {
     });
 
     it('should handle undefined params', () => {
-      // @ts-expect-error - 模拟全局变量
+      // @ts-expect-error - simulate global variables
       window.FEATURE_ENABLE_TEA_UG = false;
 
       sendTeaEvent(mockEvent);

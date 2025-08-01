@@ -58,7 +58,7 @@ export class MergeGroupExpression extends BaseExpression {
 
   fromJSON(json: MergeGroupExpressionJSON): void {
     const {
-      // 默认使用“首个非空”策略
+      // The "first non-empty" policy is used by default
       mergeStrategy = MergeStrategy.FirstNotEmpty,
       expressions = [],
     } = json || {};
@@ -68,13 +68,13 @@ export class MergeGroupExpression extends BaseExpression {
       this.fireChange();
     }
 
-    // 超出长度的 expressions 需要被销毁
+    // Expressions that exceed their length need to be destroyed
     this._expressions.slice(expressions.length).forEach(_item => {
       _item.dispose();
       this.fireChange();
     });
 
-    // 剩余 expressions 的处理
+    // Processing of residual expressions
     this._expressions = expressions.map((_item, idx) => {
       const prevItem = this._expressions[idx];
 
@@ -89,7 +89,7 @@ export class MergeGroupExpression extends BaseExpression {
     });
   }
 
-  // 获取聚合变量的类型
+  // Get the type of the aggregate variable
   protected syncReturnType(): ASTNodeJSON | undefined {
     if (this._mergeStrategy === MergeStrategy.FirstNotEmpty) {
       const nextTypeJSON = this._expressions[0]?.returnType?.toJSON();
@@ -103,12 +103,12 @@ export class MergeGroupExpression extends BaseExpression {
       for (const _expr of this._expressions.slice(1)) {
         const _returnType = _expr.returnType;
 
-        // 该引用没有类型，则聚合类型为首个变量类型不下钻
+        // If the reference has no type, the aggregate type is the first variable type
         if (!_returnType) {
           return nextWeakTypeJSON;
         }
 
-        // 该引用和第一个变量没有强一致，则聚合类型为首个变量类型不下钻
+        // If the reference is not strongly consistent with the first variable, the aggregate type is the first variable type
         if (!_returnType.isTypeEqual(nextTypeJSON)) {
           return nextWeakTypeJSON;
         }
@@ -122,7 +122,7 @@ export class MergeGroupExpression extends BaseExpression {
 
   getWeakTypeJSON(fullType?: ASTNodeJSON | undefined) {
     if (fullType?.kind === ASTKind.Object) {
-      // Object 不下钻
+      // Object no drill
       return { kind: ASTKind.Object, weak: true };
     }
     if (fullType?.kind === ASTKind.Array) {
@@ -142,7 +142,7 @@ export class MergeGroupExpression extends BaseExpression {
           triggerOnInit: true,
           selector: curr => [
             curr._mergeStrategy,
-            // 表达式 hash 是否发生变更
+            // Has the expression hash changed?
             ...curr._expressions.map(_expr => _expr.hash),
           ],
         },

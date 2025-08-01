@@ -24,12 +24,12 @@ export class CustomArrayType extends ArrayType {
     // const [curr, ...rest] = keyPath || [];
 
     // if (curr === '0' && this.canDrilldownItems) {
-    //   // 数组第 0 项
+    //   //Array item 0
     //   return this.items.getByKeyPath(rest);
     // }
 
     if (this.canDrilldownItems) {
-      // Coze 中兜底为第 0 项
+      // The bottom line in Coze is item 0
       return this.items.getByKeyPath(keyPath);
     }
 

@@ -89,7 +89,7 @@ const useMockSetInSettingModalController = ({
     () => ({
       ...bizSceneCtx,
       connectorUID: uid,
-      connectorID: CONNECTOR_ID, // 业务线为Coze
+      connectorID: CONNECTOR_ID, // Business line for Coze
     }),
     [bizSceneCtx, uid, CONNECTOR_ID],
   );

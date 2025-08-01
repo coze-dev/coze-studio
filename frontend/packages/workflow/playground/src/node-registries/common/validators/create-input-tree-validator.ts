@@ -18,7 +18,7 @@ import { type Validate } from '@flowgram-adapter/free-layout-editor';
 import { inputTreeValidator } from '@coze-workflow/nodes';
 
 /**
- * 树形输入校验器
+ * tree input validator
  * @param param0
  * @returns
  */

@@ -42,7 +42,7 @@ export const useCreateKnowledgeModalV2 = (
 ) => {
   const { onFinish, beforeCreate, projectID } = params;
   const formRef = useRef<Form<CozeKnowledgeAddTypeContentFormData>>(null);
-  // 使用 useState 保证能重新渲染
+  // Use useState to ensure re-rendering
   const [currentFormatType, setCurrentFormatType] = useState(FormatType.Text);
   const spaceId = useSpaceStore(store => store.getSpaceId());
 

@@ -41,13 +41,13 @@ class ThemeService {
   @inject(PreferencesManager)
   protected readonly preferencesManager: PreferencesManager;
 
-  /** 所有注册的 theme */
+  /** All registered themes */
   private themes: Map<string, Theme> = new Map([
     [DEFAULT_THEME.type, DEFAULT_THEME],
     [DEFAULT_LIGHT_THEME.type, DEFAULT_LIGHT_THEME],
   ]);
 
-  /** 当前 theme */
+  /** Current theme */
   private current: Theme = DEFAULT_THEME;
 
   private readonly themeChange = new Emitter<ThemeDidChangeEvent>();
@@ -57,7 +57,7 @@ class ThemeService {
 
   init() {
     this.changeWithPreferences();
-    // 先手动触发一次 change 模拟从 preference 读取配置
+    // First manually trigger a change simulation to read the configuration from preference
     this.preferencesManager.onDidPreferencesChange(() => {
       this.changeWithPreferences();
     });
@@ -76,7 +76,7 @@ class ThemeService {
   }
 
   /**
-   * 注册 theme
+   * Register theme
    */
   register(...themes: Theme[]) {
     themes.forEach(theme => this.themes.set(theme.id, theme));

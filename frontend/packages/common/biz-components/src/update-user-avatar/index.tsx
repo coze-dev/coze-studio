@@ -68,7 +68,7 @@ export const UpdateUserAvatar = forwardRef(
         const { fileInstance } = file;
 
         if (fileInstance) {
-          //   业务
+          //   business
           const resp = await uploadAvatar(fileInstance);
           onChange?.(resp.web_uri);
           onUpdateSuccess?.(resp.web_uri);

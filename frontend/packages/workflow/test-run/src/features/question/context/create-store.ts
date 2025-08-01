@@ -38,7 +38,7 @@ export interface QuestionFormState {
 }
 
 export interface QuestionFormAction {
-  /** 更新状态 */
+  /** update status */
   patch: (next: Partial<QuestionFormState>) => void;
 }
 

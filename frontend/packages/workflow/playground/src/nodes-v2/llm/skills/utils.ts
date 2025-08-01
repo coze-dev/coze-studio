@@ -17,15 +17,15 @@
 import { type BoundSkills } from './types';
 
 /**
- * 根据projectId判断是否是草稿
- * 资源库里面的插件 project_id = '0'
+ * Determine whether it is a draft according to the projectId
+ * Plugins in library project_id = '0'
  */
 export function isDraftByProjectId(projectId?: string) {
   return projectId && projectId !== '0' ? true : false;
 }
 
 /**
- * 技能是否为空
+ * Is the skill empty?
  * @param value
  * @returns
  */
@@ -38,7 +38,7 @@ export function isSkillsEmpty(value: BoundSkills) {
 }
 
 /**
- * 获取技能查询参数
+ * Get skill query parameters
  * @param fcParam
  * @returns
  */

@@ -34,19 +34,19 @@ import {
 
 import { useAvailableNodeVariables } from '../hooks/use-available-node-variables';
 import { type VariableTagProps } from './variable-tag-list';
-/** 查看表单值是否非法，如果设置了必填，但是没有相关值，则返回 true */
+/** Check if the form value is illegal. If required is set, but there is no relevant value, return true. */
 const checkInvalid = (
   inputDef: VariableMetaDTO | undefined,
   input: ValueExpression,
 ) => {
   let invalid = false;
-  // 只针对必填参数做 invalid 判断
+  // Make invalid judgments only for required parameters
   if (inputDef?.required) {
     if (input?.type === ValueExpressionType.REF) {
-      // 引用必须存在 keypath 数组
+      // The reference must exist in the keypath array
       invalid = !input?.content?.keyPath?.length;
     } else if (input?.type === ValueExpressionType.LITERAL) {
-      // 指定值必须存在 content
+      // The specified value must contain content
       invalid = input?.content === '' || isNil(input?.content);
     }
   }
@@ -60,8 +60,8 @@ export function useInputParametersVariableTags(
   const variableService = useAvailableNodeVariables(node);
   const { registry } = useWorkflowNode();
 
-  // 后端有部分模板的 inputParameters 设置成了 null，此时不会走到默认赋值 [] 的逻辑
-  // 会导致下边相关方法报错，例如 Object.entries(inputParameters)，这里做个兜底
+  // The inputParameters of some templates in the back end are set to null, and the logic of the default assignment [] will not be reached at this time.
+  // It will cause the following related methods to report an error, such as Object.entries (inputParameters), here is a bottom line
   if (!inputParameters) {
     return [];
   }
@@ -83,12 +83,12 @@ export function useInputParametersVariableTags(
       }
 
       let viewType: ViewVariableType | undefined;
-      // 变量是否有效，默认有效
+      // Whether the variable is valid, it is valid by default
       let invalid = false;
 
       if (input?.rawMeta?.type) {
         viewType = input?.rawMeta?.type;
-        // 引用变量的参数，需要判断变量是否存在，来确认有效
+        // To refer to the parameters of the variable, you need to determine whether the variable exists to confirm that it is valid
         if (input && ValueExpression.isRef(input)) {
           const variable = variableService.getWorkflowVariableByKeyPath(
             (input?.content as RefExpressionContent)?.keyPath,
@@ -117,7 +117,7 @@ export function useInputParametersVariableTags(
         ) as VariableMetaDTO;
         invalid = checkInvalid(inputDef, input);
 
-        // 子流程的参数定义，优先使用参数定义的类型
+        // Parameter definition for subprocesses, preferentially using the type of parameter definition
         if (inputDef) {
           viewType = variableUtils.DTOTypeToViewType(
             inputDef.type as VariableTypeDTO,
@@ -129,7 +129,7 @@ export function useInputParametersVariableTags(
         }
       }
 
-      // 针对插件节点特殊处理
+      // Special handling for plug-in nodes
       if (node.flowNodeType === StandardNodeType.Api) {
         const nodeData = node.getData<WorkflowNodeData>(WorkflowNodeData);
         const detail = nodeData?.getNodeData<StandardNodeType.Api>();
@@ -137,7 +137,7 @@ export function useInputParametersVariableTags(
           v => v.name === name,
         ) as VariableMetaDTO;
 
-        // 如果存在参数定义，优先使用参数定义的类型
+        // If a parameter definition exists, the type of the parameter definition is preferred
         if (inputDef) {
           viewType = variableUtils.DTOTypeToViewType(inputDef.type, {
             arrayItemType: inputDef?.schema?.type,
@@ -148,7 +148,7 @@ export function useInputParametersVariableTags(
         invalid = checkInvalid(inputDef, input);
       }
 
-      // 针对 BOT_USER_INPUT 变量，设置默认值类型
+      // For BOT_USER_INPUT variables, set the default value type
       if (isUserInputStartParams(name) && !viewType) {
         viewType = ViewVariableType.String;
       }

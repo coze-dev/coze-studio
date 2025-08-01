@@ -70,7 +70,7 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	return nil
 }
 
-// 自定义 Handler，处理收到的每条消息
+// Customize the Handler to handle each message received
 type MessageHandler struct {
 	Topic           string
 	Group           string

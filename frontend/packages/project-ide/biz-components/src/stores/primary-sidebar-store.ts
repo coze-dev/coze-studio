@@ -31,13 +31,13 @@ export interface PrimarySidebarActions {
   initLoaded?: boolean;
   setSelectedResource: (resourceId?: string) => void;
   /**
-   * 调用 store 里的 refetch 方法通知资源列表刷新
-   * @param resourceType 刷新的资源类型，可选，不传时刷新所有类型的资源
+   * Call the refetch method in the store to notify the resource list to refresh
+   * @Param resourceType The type of resource to refresh, optional, refresh all types of resources when not passing
    */
   refetch: (callback?: (tree?: BizResourceTree[]) => void) => Promise<void>;
   /**
-   * 设置资源列表的刷新方法到 store 里，供其他 widget 里调用 store.refetch(xxx) 刷新资源列表
-   * @param refetchFunc 刷新方法，刷新方法里内部需要处理资源列表的 setResource
+   * Set the refresh method of the resource list to the store, and call store.refetch (xxx) in other widgets to refresh the resource list
+   * @Param refetchFunc refresh method, refresh the setResource in the method that needs to process the resource list internally
    */
   fetchResource: (
     spaceId: string,
@@ -54,15 +54,15 @@ export interface PrimarySidebarState {
   version?: string;
   resourceTree: BizResourceTree[];
   /**
-   * 资源分组展开状态，按资源分组类型分开记录
+   * Resource packet expansion status, recorded separately by resource packet type
    */
   groupExpandMap: Record<ProjectResourceGroupType, boolean>;
   /**
-   * 当前选中的资源
+   * The currently selected resource
    */
   selectedResource?: string;
   /**
-   * 是否可以关闭 popover sidebar，右键菜单打开时不允许关闭，供 ResourceFolderCoze 组件消费
+   * Can you close the popover sidebar? It is not allowed to close when the right-click menu is opened, for consumption by the ResourceFolderCoze component
    */
   canClosePopover?: boolean;
 }
@@ -135,7 +135,7 @@ export const usePrimarySidebarStore = create<
         if (!spaceId || !projectId) {
           return;
         }
-        // 服务端数据同步延迟
+        // Server level data synchronization delay
         await new Promise<void>(resolve => setTimeout(() => resolve(), 700));
         return get().fetchResource(spaceId, projectId, version, callback);
       },

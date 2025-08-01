@@ -47,7 +47,7 @@ export const formatDate = (v: number, template = 'YYYY/MM/DD HH:mm:ss') =>
 
 export const CHINESE_TIMEZONE = 'Asia/Shanghai';
 
-// 根据地区判断 海外返回UTC时间，国内返回北京时间
+// According to the regional judgment, return to UTC time overseas, and return to Beijing time domestically.
 export const getCurrentTZ = (param?: ConfigType): Dayjs => {
   if (IS_OVERSEA) {
     return dayjs(param).utc(true);
@@ -56,18 +56,18 @@ export const getCurrentTZ = (param?: ConfigType): Dayjs => {
 };
 
 /**
- * 获取dayjs add后的时间戳
+ * Get timestamp after dayjs add
  */
 export const getTimestampByAdd = (value: number, unit?: ManipulateType) =>
   dayjs().add(value, unit).unix();
 
 /**
- * 获取当前的时间戳
+ * Get the current timestamp
  */
 export const getCurrentTimestamp = () => dayjs().unix();
 
 /**
- * 获取当前时间到次日UTC0点的时间间隔，精确到分钟
+ * Gets the time interval between the current time and UTC0 the next day, accurate to the minute
  * e.g. 12h 30m
  */
 export const getRemainTime = () => {
@@ -81,43 +81,43 @@ export const getRemainTime = () => {
 };
 
 /**
- * fork 自 packages/community/pages/src/bot/utils/index.ts
- * 将11位的时间戳按以下格式显示
- * 1. 不足一分钟, 显示”Just now“
- * 2. 不足1小时, 显示”{n}min ago“，例如 3min ago
- * 3. 不足1天,显示”{n}h ago",例如 3h ago
- * 4. 不足1个月,显示"{n}d ago", 例如 3d ago
- * 5. 超过1个月,显示“{MM}/{DD}/{yyyy}”,例如12/1/2024，中文是2024 年 12 月 1 日
+ * Fork from packages/community/pages/src/bot/utils/index.ts
+ * Display the 11-digit timestamp in the following format
+ * 1. Less than a minute, showing "Just now"
+ * 2. Less than 1 hour, showing "{n} min ago", such as 3min ago
+ * 3. Less than 1 day, display "{n} h ago", such as 3h ago
+ * 4. Less than 1 month, display "{n} d ago", such as 3d ago
+ * 5. More than 1 month, display "{MM}/{DD}/{yyyy}", for example 12/1/2024, Chinese is December 1, 2024
  *
  */
 export const formatTimestamp = (timestampMs: number) => {
-  /** 秒级时间戳 */
+  /** Second timestamp */
   const timestampSecond = Math.floor(timestampMs / 1000);
   const now = Math.floor(Date.now() / 1000);
   const diff = now - timestampSecond;
 
-  // 将时间差转换成分钟、小时和天数
+  // Convert time differences to minutes, hours, and days
   const minutes = Math.floor(diff / 60);
   const hours = Math.floor(diff / 3600);
   const days = Math.floor(diff / 86400);
 
-  // 不足一分钟，显示“Just now”
+  // Less than a minute, showing "Just now"
   if (minutes < 1) {
     return I18n.t('community_time_just_now');
   }
-  // 不足一小时，显示“{n}min ago”
+  // Less than an hour, showing "{n} min ago"
   else if (hours < 1) {
     return I18n.t('community_time_min', { n: minutes });
   }
-  // 不足一天，显示“{n}h ago”
+  // Less than a day, showing "{n} h ago"
   else if (days < 1) {
     return I18n.t('community_time_hour', { n: hours });
   }
-  // 不足一个月，显示“{n}d ago”
+  // Less than a month, showing "{n} d ago"
   else if (days < 30) {
     return I18n.t('community_time_day', { n: days });
   }
-  // 超过一个月，显示“{MM}/{DD}/{yyyy}”
+  // More than a month, showing "{MM}/{DD}/{yyyy}"
   else {
     const dayObj = dayjs(timestampSecond * 1000);
     return I18n.t('community_time_date', {

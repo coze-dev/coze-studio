@@ -18,12 +18,12 @@ import classNames from 'classnames';
 
 export const getEditorWordsCls = () =>
   classNames(
-    // 换行
+    // line feed
     '[&_p]:break-words [&_p]:whitespace-pre-wrap',
-    // 保留所有空格和换行符
+    // Keep all spaces and line breaks
     '[&_.ProseMirror_*]:break-words [&_.ProseMirror_*]:whitespace-pre-wrap',
-    // 段落
+    // paragraph
     '[&_.editor-paragraph]:min-h-[1.5em] [&_.editor-paragraph]:leading-normal',
-    // 空段落
+    // Empty paragraph
     '[&_.editor-paragraph:empty]:min-h-[1.5em] [&_.editor-paragraph:empty]:block',
   );

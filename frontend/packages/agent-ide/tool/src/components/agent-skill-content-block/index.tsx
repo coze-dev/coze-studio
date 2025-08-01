@@ -77,10 +77,10 @@ export const AgentSkillContentBlock = forwardRef<
       const target = childNodeRef.current;
       if (autoExpandWhenDomChange && target && allowToggleCollapsible) {
         const config = { attributes: true, childList: true, subtree: true };
-        // 只有开启了dom改变自动展开功能才启动
+        // Only when the dom change auto-unfold function is turned on
         const callback: MutationCallback = mutationList => {
           if (mutationList.length > 0 && !isOpen) {
-            // 当dom改变并且没有开启时，会自动开启
+            // When the dom changes and is not turned on, it will automatically turn on
             setIsOpen(!isOpen);
           }
         };
@@ -113,15 +113,15 @@ export const AgentSkillContentBlock = forwardRef<
             if (!allowToggleCollapsible) {
               return;
             }
-            // @danger 不可以阻止内部节点的点击冒泡，不然无法设置节点的选中态
+            // @Danger cannot prevent the click bubbling of internal nodes, otherwise the selected state of the node cannot be set
             const el = e.target as HTMLElement;
-            // 这里需要多重判断，
-            // 第一次判断：如果包含在container内，才需要去切换open
-            // 第二次判断：如果包含在action内，则不能切换open，其他都可以
-            // @TIP contains方法会判断自身节点，即A.contains(A)也是true。但是这里就算是自身也没有影响
+            // Multiple judgments are required here,
+            // The first judgment: If it is contained in the container, you need to switch open.
+            // Second judgment: If it is included in the action, it cannot switch open, everything else is OK
+            // The @TIP contains method will determine its own node, that is, A.contains (A) is also true. But even itself has no effect here
             if (containerRef.current && containerRef.current.contains(el)) {
               if (actionDivRef.current && actionDivRef.current.contains(el)) {
-                // 此时不切换open
+                // Do not switch open at this time
                 return;
               }
               setIsOpen(!isOpen);

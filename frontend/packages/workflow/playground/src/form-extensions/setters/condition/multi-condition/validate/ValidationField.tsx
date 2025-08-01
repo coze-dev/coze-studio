@@ -49,12 +49,12 @@ export const withValidationField =
       validationService.validatedNodeMap[node.id] ? true : false,
     );
 
-    // 监听画布表单提交时，显示错误信息
+    // When listening for a canvas form submission, an error message is displayed
     useEffect(() => {
       if (flowNodeEntity) {
         const disposable =
           /* eslint-disable @typescript-eslint/no-non-null-assertion , @typescript-eslint/no-explicit-any
-          -- disable-next-line 与 unused-comment规则自动修复有冲突
+          -- disable-next-line conflicts with the automatic repair of the unused-comment rule
           */
           (
             flowNodeEntity.getData<FlowNodeFormData>(FlowNodeFormData)!

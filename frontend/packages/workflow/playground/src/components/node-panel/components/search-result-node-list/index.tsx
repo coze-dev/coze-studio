@@ -94,7 +94,7 @@ export const SearchResultNodeList: FC<{
   searchResult: NodeSearchResult;
   loading: boolean;
 }> = ({ searchResult, loading }) => {
-  // (只有前端搜索节点 && loading) => 出小圈
+  // (Only front-end search node & & loading) = > out of small circle
   const showSpinLoading = useMemo(
     () =>
       loading &&
@@ -102,7 +102,7 @@ export const SearchResultNodeList: FC<{
       searchResult[0].dataType === NodeSearchSectionType.Atom,
     [searchResult, loading],
   );
-  // (无节点 || 前端搜索、后端搜索的两种节点都有 && loading) => 出大圈
+  // (No nodes | | Both nodes of front-end search and back-end search have & & loading) = > out of a large circle
   const showMaskLoading = useMemo(
     () =>
       loading &&

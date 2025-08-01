@@ -31,12 +31,12 @@ const getFormSchemaFileUrl = (value: string) => {
     return undefined;
   }
   const match = value.match(/<#file:(https?:.+?)#>/);
-  // 未知字符串格式保留
+  // Unknown string format reserved
   if (!match) {
     return value;
   }
   const fileInfo = getFileInfo(match[1]);
-  // 没有上传完成的值直接丢弃
+  // The value that has not been uploaded is directly discarded.
   if (fileInfo.uploading) {
     return undefined;
   }
@@ -48,7 +48,7 @@ const getFormSchemaVoiceId = (value: string) => {
     return undefined;
   }
   const match = value.match(/<#voice:(\d+)#>/);
-  // 未知字符串保留
+  // Unknown string reservation
   if (!match) {
     return value;
   }
@@ -60,17 +60,17 @@ const generateJsonSchemaToFormValue = (type: ViewVariableType, value: any) => {
     return value;
   }
   let temp = value;
-  // 音色
+  // timbre
   if (ViewVariableType.isVoiceType(type)) {
     temp = getFormSchemaVoiceId(temp);
     // if (!force && !temp) {
     //   temp = '';
     // }
-    // 音色以外的文件
+    // Files other than timbre
   } else if (ViewVariableType.isFileType(type)) {
     if (ViewVariableType.isArrayType(type)) {
       temp = temp?.map(getFormSchemaFileUrl);
-      // 对于文件而言，若为空数组则要赋空
+      // For files, if the array is empty, it should be empty
       if (!temp?.length) {
         // temp = force ? undefined : [];
         temp = undefined;
@@ -82,7 +82,7 @@ const generateJsonSchemaToFormValue = (type: ViewVariableType, value: any) => {
       // }
     }
   }
-  // 复杂类型 object、array 都需要序列化
+  // Complex types such as objects and arrays require serialization
   if (
     type === ViewVariableType.Object ||
     type >= ViewVariableType.ArrayString
@@ -96,7 +96,7 @@ interface ToValuesOptions {
   mode: 'json' | 'form';
   originFormSchema: IFormSchema;
   formValues: any;
-  /** 是否强制使用 cacheData 数据 */
+  /** Whether to force the use of cacheData data */
   force?: boolean;
 }
 

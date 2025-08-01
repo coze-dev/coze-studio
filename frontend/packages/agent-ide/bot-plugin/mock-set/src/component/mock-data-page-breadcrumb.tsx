@@ -42,12 +42,12 @@ export function MockSetPageBreadcrumb({
 }: MockSetPageBreadcrumbProps) {
   const routeResponse = usePageJumpResponse(PageType.PLUGIN_MOCK_DATA);
 
-  // 插件详情
+  // plugin details
   const [pluginInfo, setPluginInfo] = useState<PluginMetaInfo>({
     name: routeResponse?.pluginName,
   });
 
-  // 获取当前 plugin 信息
+  // Get current plugin information
   const getPluginInfo = async () => {
     try {
       const res = await DeveloperApi.GetPluginInfo(

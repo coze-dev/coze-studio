@@ -1,0 +1,25 @@
+{
+  "translation": {
+    "model": "gpt-3.5-turbo",
+    "maxRetries": 3,
+    "timeout": 30000,
+    "concurrency": 3
+  },
+  "processing": {
+    "defaultExtensions": ["ts", "tsx", "js", "jsx", "go", "md"],
+    "createBackup": true,
+    "outputFormat": "console"
+  },
+  "git": {
+    "ignorePatterns": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "*.min.js",
+      "*.bundle.js"
+    ],
+    "includeUntracked": false
+  }
+}

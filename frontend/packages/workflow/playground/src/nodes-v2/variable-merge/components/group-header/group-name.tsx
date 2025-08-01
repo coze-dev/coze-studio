@@ -29,7 +29,7 @@ interface Props {
 }
 
 /**
- * 分组名,支持双击编辑
+ * Group name, support double-click editing
  * @param props
  * @returns
  */

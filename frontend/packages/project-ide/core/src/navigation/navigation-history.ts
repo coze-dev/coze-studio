@@ -25,11 +25,11 @@ import {
 import { type URI } from '../common';
 import { BrowserHistory, type HistoryState } from './browser-history';
 
-/** location 结构 */
+/** Location structure */
 interface Location {
-  /** 唯一标识，一般来说是 uri */
+  /** The unique identifier is usually a uri. */
   uri: URI;
-  /** 预留字段 */
+  /** reserved field */
 }
 
 @injectable()
@@ -68,7 +68,7 @@ class NavigationHistory {
   }
 
   pushOrReplace(location: Location, replace = false) {
-    // 如果处于回退状态，则清除之后所有的历史
+    // If it is in a fallback state, all subsequent history is cleared
     if (this.stack.length > this.idx + 1) {
       this.stack = this.stack.slice(0, this.idx + 1);
     }
@@ -99,7 +99,7 @@ class NavigationHistory {
   private go(delta: number) {
     const next = this.idx + delta;
     const nextLocation = this.stack[next];
-    // 越界按照无效处理
+    // Crossing the border is treated as invalid
     if (next >= this.stack.length || next < 0 || !nextLocation) {
       return;
     }
@@ -126,12 +126,12 @@ class NavigationHistory {
   }
 
   private listener = (state: HistoryState) => {
-    /** 无法正确识别 state 时不做任何处理 */
+    /** Do nothing when the state cannot be correctly recognized */
     if (!state || !isNumber(state.fIdx) || !state.uri) {
       return;
     }
     const { fIdx: idx } = state;
-    /** 索引越界 */
+    /** Index out of bounds */
     if (idx >= this.stack.length || idx < 0) {
       return;
     }

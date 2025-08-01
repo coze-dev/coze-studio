@@ -15,7 +15,7 @@
  */
  
 /**
- * 固定的内部 field name
+ * Fixed internal field name
  */
 export enum TestFormFieldName {
   Node = '_node',
@@ -23,7 +23,7 @@ export enum TestFormFieldName {
   Input = '_input',
   Setting = '_setting',
   JSON = '_json',
-  /** 关联内容 */
+  /** Linked Content */
   Related = '_related',
   Bot = '_bot',
   Conversation = '_conversation',

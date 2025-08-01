@@ -24,7 +24,7 @@ import {
 } from '../../../src/save-manager/utils/save-fetcher';
 import { saveTableMemory } from '../../../src/save-manager/manual-save/memory-table';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../../src/store/bot-skill', () => ({
   useBotSkillStore: {
     getState: vi.fn(),
@@ -49,7 +49,7 @@ describe('memory-table save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotSkillStore.getState as any).mockReturnValue({
       databaseList: mockDatabaseList,
       transformVo2Dto: mockTransformVo2Dto,
@@ -68,17 +68,17 @@ describe('memory-table save manager', () => {
   it('应该正确保存内存表变量', async () => {
     await saveTableMemory();
 
-    // 验证 transformVo2Dto.databaseList 被调用
+    // Verify that transformVo2Dto.DatabaseList is called
     expect(mockTransformVo2Dto.databaseList).toHaveBeenCalledWith(
       mockDatabaseList,
     );
 
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       database_list: { transformed: mockDatabaseList },
     });
 
-    // 验证 saveFetcher 被调用，并且参数正确
+    // Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemType.TABLE,

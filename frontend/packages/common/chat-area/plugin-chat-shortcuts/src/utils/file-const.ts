@@ -95,7 +95,7 @@ export const ACCEPT_UPLOAD_TYPES: {
   },
 ];
 
-// 和chat支持的文件格式做映射
+// Map with file formats supported by chat
 export const fileTypeToInputTypeMap = {
   [FileTypeEnum.IMAGE]: shortcut_command.InputType.UploadImage,
   [FileTypeEnum.AUDIO]: shortcut_command.InputType.UploadAudio,
@@ -126,7 +126,7 @@ export const acceptMap = FILE_TYPE_CONFIG.reduce<{
   return acc;
 }, {});
 
-// 根据acceptUploadItemTypes获取accept
+// Accept based on acceptUploadItemTypes
 export const getAcceptByUploadItemTypes = (
   acceptUploadItemTypes: shortcut_command.InputType[],
 ) => {
@@ -144,7 +144,7 @@ export const getAcceptByUploadItemTypes = (
   return accept.join(',');
 };
 
-// 根据fileType获取对应的fileInfo
+// Get the corresponding fileInfo according to fileType
 export const getFileInfoByFileType = (fileType: FileTypeEnum) => {
   const inputType = fileTypeToInputTypeMap[fileType];
   if (!inputType) {
@@ -153,7 +153,7 @@ export const getFileInfoByFileType = (fileType: FileTypeEnum) => {
   return ACCEPT_UPLOAD_TYPES.find(item => item.type === inputType);
 };
 
-// ACCEPT_UPLOAD_TYPES转化为map
+// ACCEPT_UPLOAD_TYPES converted to map
 export const getAcceptUploadItemTypesMap = () =>
   ACCEPT_UPLOAD_TYPES.reduce<{
     [key in shortcut_command.InputType]?: string;

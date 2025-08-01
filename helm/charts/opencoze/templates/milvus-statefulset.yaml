@@ -25,7 +25,14 @@ spec:
           securityContext:
             runAsUser: 0
           image: "{{ .Values.milvus.image.repository }}:{{ .Values.milvus.image.tag }}"
-          command: ["milvus", "run", "standalone"]
+          command:
+            - bash
+            - -c
+            - |
+              # Set proper permissions for data directories
+              chown -R root:root /var/lib/milvus
+              chmod g+s /var/lib/milvus
+              exec milvus run standalone
           env:
             - name: ETCD_ENDPOINTS
               value: "{{ include "opencoze.fullname" . }}-etcd:2379"
@@ -70,7 +77,9 @@ spec:
         name: milvus-data
       spec:
         accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.milvus.persistence.storageClassName }}
         storageClassName: {{ .Values.milvus.persistence.storageClassName | quote }}
+      {{- end }}
         resources:
           requests:
             storage: {{ .Values.milvus.persistence.size | quote }}

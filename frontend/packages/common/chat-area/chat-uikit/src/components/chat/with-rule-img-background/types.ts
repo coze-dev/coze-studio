@@ -27,22 +27,22 @@ export interface CanvasPosition {
 }
 
 export interface BackgroundImageDetail {
-  /** 原始图片 */
+  /** original image */
   origin_image_uri?: string;
   origin_image_url?: string;
-  /** 实际使用图片 */
+  /** Actual use of pictures */
   image_uri?: string;
   image_url?: string;
   theme_color?: string;
-  /** 渐变位置 */
+  /** Gradual change of position */
   gradient_position?: GradientPosition;
-  /** 裁剪画布位置 */
+  /** Crop canvas position */
   canvas_position?: CanvasPosition;
 }
 
 export interface BackgroundImageInfo {
-  /** web端背景图 */
+  /** Web background cover */
   web_background_image?: BackgroundImageDetail;
-  /** 移动端背景图 */
+  /** Mobile end background cover */
   mobile_background_image?: BackgroundImageDetail;
 }

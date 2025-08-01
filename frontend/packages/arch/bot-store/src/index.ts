@@ -15,17 +15,17 @@
  */
  
 export {
-  /** @deprecated 该使用方式已废弃，后续请使用@coze-arch/foundation-sdk导出的方法*/
+  /** @Deprecated This usage method is deprecated, please use the method exported by @code-arch/foundation-sdk in the future*/
   useSpaceStore,
-  /** @deprecated 该使用方式已废弃，后续请使用@coze-arch/foundation-sdk导出的方法*/
+  /** @Deprecated This usage method is deprecated, please use the method exported by @code-arch/foundation-sdk in the future*/
   useSpace,
-  /** @deprecated 该使用方式已废弃，后续请使用@coze-arch/foundation-sdk导出的方法*/
+  /** @Deprecated This usage method is deprecated, please use the method exported by @code-arch/foundation-sdk in the future*/
   useSpaceList,
 } from '@coze-foundation/space-store';
 
 export { useAuthStore } from './auth';
 
-/** @deprecated - 持久化方案有问题，废弃 */
+/** @Deprecated - problem with persistence scheme, deprecated */
 export { clearStorage } from './utils/get-storage';
 
 export { useSpaceGrayStore, TccKey } from './space-gray';

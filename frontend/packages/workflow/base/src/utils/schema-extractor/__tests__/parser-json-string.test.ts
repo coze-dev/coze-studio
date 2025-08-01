@@ -38,10 +38,10 @@ it('extract schema with json string parser', () => {
     ],
   });
   const extractedSchema = schemaExtractor.extract({
-    // end 结束节点 2
+    // End End Node 2
     [StandardNodeType.SceneChat]: [
       {
-        // 对应输出指定内容
+        // Corresponding output specified content
         name: 'messages',
         path: 'inputs.Messages',
         parser: SchemaExtractorParserName.JSON_STRING_PARSER,

@@ -16,17 +16,17 @@
  
 /* eslint-disable @typescript-eslint/naming-convention */
 
-/** 每一级树缩进宽度 */
+/** Indent width of each level of tree */
 export const TreeIndentWidth = 30;
-/** 树节点展开收起按钮宽度 */
+/** Tree Node Expand Collapse Button Width */
 export const TreeCollapseWidth = 24;
 
-// 名称最长50字符
+// Name Maximum 50 characters
 export const MAX_NAME_LENGTH = 50;
 
-// 最大深度限制
+// Maximum depth limit
 export const MAX_LEVEL = 3;
-// 最大变量数量限制
+// Maximum number of variables limit
 export const MAX_JSON_VARIABLE_COUNT = 1;
-// 最大JSON长度限制30kb
+// Maximum JSON length limit 30kb
 export const MAX_JSON_LENGTH = 30 * 1024;

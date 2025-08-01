@@ -28,20 +28,20 @@ type Attribute =
 
 interface Config {
   /**
-   * 影响到的属性
+   * Affected properties
    */
   key: Attribute;
   /**
-   * 吸附方向
+   * adsorption direction
    */
   direction: 'x' | 'y';
   /**
-   * 吸附到的值
+   * Adsorbed value
    */
   snapValue: number[];
 }
 
-// 计算目标元素的未来位置
+// Calculate the future position of the target element
 const getNextHelplinePoint = ({
   targetPoint,
   latestDistance,
@@ -94,7 +94,7 @@ const getNextHelplinePoint = ({
   }));
 };
 
-// 计算吸附结果
+// Calculate adsorption results
 const getNextRs = ({
   latestDistance,
   latestDistanceAbs,
@@ -176,7 +176,7 @@ const getNextRs = ({
   return {};
 };
 
-// 对齐规则
+// alignment rule
 export const alignRule: Snap.Rule = ({
   otherPoints,
   targetPoint,
@@ -275,27 +275,27 @@ export const alignRule: Snap.Rule = ({
   const config = configMap[controlType];
 
   config.forEach(item => {
-    // 需要判断吸附的点位集合
+    // It is necessary to determine the set of adsorption points
     const points = item.snapValue;
 
-    // 找到距离最近的吸附点集合
+    // Find the closest collection of adsorption points
     const {
       snapPoints,
       distance: latestDistance,
       distanceAbs: latestDistanceAbs,
     } = findLatestObject(otherPoints, points, item.direction);
 
-    // 如果距离小于阈值，则进行吸附
+    // If the distance is less than the threshold, adsorption is performed
     if (latestDistanceAbs <= threshold) {
       const helplines: Snap.Line[] = [];
       const allPoints: (Snap.Point & { isTarget?: boolean })[] = [];
 
-      // 将所有其他对象的点添加到 allPoints 中
+      // Add the points of all other objects to allPoints
       otherPoints.forEach(a => {
         allPoints.push(...Object.values(a));
       });
 
-      // 将目标对象的点添加到 allPoints 中
+      // Add the target object's points to allPoints
       allPoints.push(
         ...getNextHelplinePoint({
           targetPoint,
@@ -305,10 +305,10 @@ export const alignRule: Snap.Rule = ({
         }),
       );
 
-      // 根据吸附方向对 allPoints 进行排序
+      // Sort allPoints by adsorption direction
       const sortKey = item.direction === 'x' ? 'y' : 'x';
 
-      // 根据吸附结果，从所有点中挑选出需要绘制辅助线的点
+      // According to the adsorption results, select the points where the auxiliary line needs to be drawn from all the points
       snapPoints.forEach(sp => {
         const _helpline = allPoints
           .filter(p => numberEqual(p[item.direction], sp[item.direction]))
@@ -328,7 +328,7 @@ export const alignRule: Snap.Rule = ({
     }
   });
 
-  // x,y 一起吸附，需要对 x 吸附线的 y 坐标进行修正
+  // X and y are adsorbed together, and the y coordinate of the x adsorption line needs to be corrected.
   if (
     controlType === Snap.ControlType.Center &&
     rs.top?.isSnap &&
@@ -347,7 +347,7 @@ export const alignRule: Snap.Rule = ({
     );
   }
 
-  // x,y 一起吸附，需要对 y 吸附线的 x 坐标进行修正
+  // X and y are adsorbed together, and the x coordinate of the y adsorption line needs to be corrected.
   if (
     controlType === Snap.ControlType.Center &&
     rs.left?.isSnap &&

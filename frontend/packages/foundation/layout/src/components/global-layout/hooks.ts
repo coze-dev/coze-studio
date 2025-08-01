@@ -38,7 +38,7 @@ export const useLayoutResponsive = () => {
   useEffect(() => {
     if (config.showMobileTips) {
       if (!mobileTips && isMobile()) {
-        openMobileTipsModal(); // 不适配移动端弹窗提示
+        openMobileTipsModal(); // Not suitable for mobile end pop-up window prompt
         setMobileTips(true);
       }
 

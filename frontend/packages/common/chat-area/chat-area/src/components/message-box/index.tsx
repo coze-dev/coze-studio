@@ -42,9 +42,9 @@ import { RevealTrigger } from './reveal-trigger';
 
 import styles from './index.module.less';
 
-// TODO: 在这里区分 用户的消息和模型的消息组件
+// TODO: Here, distinguish between the user's message and the model's message component
 
-// eslint-disable-next-line  @coze-arch/max-line-per-function -- TODO 后期拆分一下
+// eslint-disable-next-line @coze-arch/max-line-per-function -- TODO will split it later.
 export const MessageBox: React.FC = memo(() => {
   const { configs, reporter } = useChatAreaContext();
 
@@ -113,10 +113,10 @@ export const MessageBox: React.FC = memo(() => {
   const ReceiveMessageBox = receiveMessageBox ?? BuildInReceiveMessageBox;
   const SendMessageBox = sendMessageBox ?? BuildInSendMessageBox;
 
-  // footer位置的answer actions，所需要props通过useMessageBoxContext透传
+  // Answer actions for footer location, required props pass through useMessageBoxContext
   const ActionBarFooter = MessageBoxActionBarFooter;
 
-  // hover才展示的answer actions，所需要props通过useMessageBoxContext透传
+  // Hover just show the answer actions, the required props pass through useMessageBoxContext
   const ActionBarHoverContent = MessageBoxActionBarHoverContent;
 
   const MessageBoxUI = isSendMessage ? SendMessageBox : ReceiveMessageBox;
@@ -124,25 +124,25 @@ export const MessageBox: React.FC = memo(() => {
   const { imageAutoSizeContainerWidth, enableImageAutoSize } =
     useUIKitMessageImageAutoSizeConfig();
 
-  // 老机制的自定义ContentBox
+  // Custom ContentBox for the old mechanism
   const UsedContentBox = ContentBox ?? BuildInContentBox;
 
-  // Render调用生命周期用于判断是否需要使用业务组件进行渲染 - 与插件化做结合
+  // The Render call life cycle is used to determine whether business components need to be used for rendering - in combination with plug-ins
   const { MessageBox: DynamicCustomMessageBox } =
     lifeCycleService.render.onMessageBoxRender({ ctx: { message, meta } }) ??
     {};
 
   const staticCustomMessageBoxConfig =
-    usePluginCustomComponents('MessageBox').at(0); // 谁先谁来 只选一个
+    usePluginCustomComponents('MessageBox').at(0); // Whoever comes first, choose only one.
 
-  // 插件化机制提供的自定义MessageBox
+  // Custom MessageBox provided by plug-in mechanism
   const StaticCustomMessageBox = staticCustomMessageBoxConfig?.Component;
 
-  // 使用的自定义MessageBox （如果有，否则返回undefined）
+  // The custom MessageBox used (if any, otherwise return undefined)
   const UsedCustomMessageBox =
     DynamicCustomMessageBox ?? StaticCustomMessageBox;
 
-  // 最终使用的MessageBox
+  // The final used MessageBox
   const UsedMessageBox = UsedCustomMessageBox ?? MessageBoxUI;
 
   const reportError = (error: unknown) => {
@@ -217,7 +217,7 @@ export const MessageBox: React.FC = memo(() => {
         {message.content_type === ContentType.Text && (
           <>
             {customTextMessageInnerTopComponentList?.map(
-              // eslint-disable-next-line @typescript-eslint/naming-convention -- 命名符合预期
+              // eslint-disable-next-line @typescript-eslint/naming-convention -- naming as expected
               ({ pluginName, Component }, index) => (
                 <PluginScopeContextProvider
                   pluginName={pluginName}
@@ -229,7 +229,7 @@ export const MessageBox: React.FC = memo(() => {
             )}
           </>
         )}
-        {/* 这里是内部实现机制，不准备告诉外面，所以只有不存在自定义组件的时候，才渲染children */}
+        {/* This is the internal implementation mechanism, and we are not going to tell the outside, so we only render children when there is no custom component. */}
         {UsedCustomMessageBox ? null : (
           <UsedContentBox
             isContentLoading={isContentLoading}
@@ -247,7 +247,7 @@ export const MessageBox: React.FC = memo(() => {
         )}
         <div className={styles['footer-slot-style']}>
           {customMessageInnerBottomComponentList?.map(
-            // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期的命名
+            // eslint-disable-next-line @typescript-eslint/naming-convention -- matches the expected naming
             ({ pluginName, Component }) => (
               <PluginScopeContextProvider
                 pluginName={pluginName}

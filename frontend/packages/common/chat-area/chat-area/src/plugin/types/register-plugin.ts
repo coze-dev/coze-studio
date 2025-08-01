@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type ReadonlyChatAreaPlugin,
   type WriteableChatAreaPlugin,
@@ -21,16 +21,16 @@ import {
 import { type ChatAreaPluginContext } from './plugin-class/chat-area-plugin-context';
 
 /**
- * @deprecated 废弃 使用 PluginRegistryEntry
+ * @deprecated, use PluginRegistryEntry
  */
 export interface RegisterPlugin<T = unknown> {
-  // 用于创建上下文的函数，期待返回插件上下文类型
+  // Function to create a context, expecting to return the plug-in context type
   createPluginBizContext: () => T;
-  // 插件实现类
+  // plugin implementation class
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Plugin: new (
     context: T,
-    // @ts-expect-error -- 这里应该就是需要unknown
+    // @ts-expect-error -- unknown should be required here.
     chatAreaPluginContext: ChatAreaPluginContext<unknown>,
   ) => ReadonlyChatAreaPlugin<T> | WriteableChatAreaPlugin<T>;
 }

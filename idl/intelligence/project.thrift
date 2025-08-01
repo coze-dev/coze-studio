@@ -8,7 +8,7 @@ struct DraftProjectCreateRequest {
     3  :          string         description,
     4  :          string         icon_uri  ,
     5  : optional MonetizationConf monetization_conf,
-    6  : optional string         create_from, // 创建来源  navi:导航栏 space:空间
+    6  : optional string         create_from, // Create source navi: navbar space: space
 
 
     255: optional base.Base      Base (api.none="true")       ,

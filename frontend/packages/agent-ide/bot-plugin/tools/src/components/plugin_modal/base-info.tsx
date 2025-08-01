@@ -96,7 +96,7 @@ export const useBaseInfo = ({
     formRef.current?.formApi.setValue('desc', desc);
   });
 
-  // 提交基础信息
+  // Submit basic information
   const submitBaseInfo = async () => {
     const status = await formRef.current?.formApi
       .validate()

@@ -139,7 +139,7 @@ export class PresetContribution
         this.services.contextmenu.registerContextMenu(menus, registry.match);
       }
     });
-    // 覆写全屏逻辑
+    // Override full screen logic
     this.commandRegistry.unregisterCommand(Command.Default.VIEW_FULL_SCREEN);
     this.commandRegistry.registerCommand(
       {
@@ -176,7 +176,7 @@ export class PresetContribution
   }
 
   private createLayout(shell: ApplicationShell) {
-    // 设置 panel 存储到 widgetManager
+    // Set up panel storage to widgetManager
     const uiBuilderPanel = new BoxPanel();
     uiBuilderPanel.id = UI_BUILDER_URI.displayName;
     this.widgetManager.setWidget(UI_BUILDER_URI.toString(), uiBuilderPanel);
@@ -238,7 +238,7 @@ export class PresetContribution
           main: {
             splitOptions: {
               maxSplitCount: 2,
-              splitOrientation: 'horizontal', // 只支持水平分屏
+              splitOrientation: 'horizontal', // Only horizontal split screen is supported.
             },
             dockPanelOptions: {
               spacing: 6,

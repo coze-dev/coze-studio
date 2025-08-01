@@ -51,7 +51,7 @@ export function NodeRenderNew(props: WorkflowNodeRenderProps) {
 
   const handleNodeClick = e => {
     selectNode(e);
-    // 处于执行中的流程禁止切换面板
+    // The process in progress prohibits switching panels
     if (globalState.viewStatus !== WorkflowExecStatus.EXECUTING && !isError) {
       testFormState.closeCommonSheet();
       openNodeSideSheet();

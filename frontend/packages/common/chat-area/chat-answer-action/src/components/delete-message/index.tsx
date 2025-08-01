@@ -58,7 +58,7 @@ export const DeleteMessage: React.FC<PropsWithChildren<DeleteMessageProps>> = ({
           />
         }
         onClick={() => {
-          // 通过 groupId 索引即可
+          // Just index through groupId.
           deleteMessageGroup(groupId);
         }}
         color="secondary"

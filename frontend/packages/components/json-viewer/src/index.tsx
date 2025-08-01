@@ -30,10 +30,10 @@ import styles from './index.module.less';
 export type { JsonValueType };
 
 export interface JsonViewerProps {
-  /** 支持对象或者纯文本渲染 */
+  /** Supports object or plain text rendering */
   data: JsonValueType;
   className?: React.HTMLAttributes<HTMLDivElement>['className'];
-  /** 默认展开所有字段 */
+  /** Expand all fields by default */
   defaultExpandAllFields?: boolean;
 }
 
@@ -43,7 +43,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
   defaultExpandAllFields,
 }) => {
   const render = () => {
-    // 兜底展示 null
+    // Bottom display null
     if (isNil(data)) {
       return (
         <JsonField
@@ -59,13 +59,13 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
       );
     }
 
-    // 文本类结果展示
+    // Text class result display
     const isStr = isString(data);
     if (isStr) {
       return <TextField text={data} />;
     }
 
-    // 其他json类型数据展示
+    // Other JSON data display
     const fields = generateFields(data);
     return (
       <JsonViewerProvider

@@ -125,7 +125,7 @@ it('extract schema with variableAssign parser', () => {
   const extractedSchema = schemaExtractor.extract({
     [StandardNodeType.SetVariable]: [
       {
-        // 对应input name
+        // Corresponding input name
         name: 'inputs',
         path: 'inputs.inputParameters',
         parser: SchemaExtractorParserName.VARIABLE_ASSIGN,
@@ -165,7 +165,7 @@ it('variableAssign parser with empty inputParameters', () => {
   const extractedSchema = schemaExtractor.extract({
     [StandardNodeType.SetVariable]: [
       {
-        // 对应input name
+        // Corresponding input name
         name: 'inputs',
         path: 'inputs.inputParameters',
         parser: SchemaExtractorParserName.VARIABLE_ASSIGN,
@@ -253,7 +253,7 @@ it('variableAssign parser with invalid schema', () => {
   const extractedSchema = schemaExtractor.extract({
     [StandardNodeType.SetVariable]: [
       {
-        // 对应input name
+        // Corresponding input name
         name: 'inputs',
         path: 'inputs.inputParameters',
         parser: SchemaExtractorParserName.VARIABLE_ASSIGN,

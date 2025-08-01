@@ -20,7 +20,7 @@ export interface TreeNode {
   id: string;
   type: string;
   meta?: FlowNodeMeta;
-  // collapsed、depth 放在 data 中
+  // Collapsed, depth in data
   data: Record<string, any>;
   parent: TreeNode[];
   children?: TreeNode[];

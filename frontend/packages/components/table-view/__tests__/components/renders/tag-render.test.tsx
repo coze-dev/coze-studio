@@ -39,7 +39,7 @@ describe('TagRender', () => {
       <TagRender value="标签文本" record={mockRecord} index={mockIndex} />,
     );
 
-    // 验证标签内容被正确渲染
+    // Verify that the tag content is rendered correctly
     const tag = screen.getByTestId('tag');
     expect(tag).toBeInTheDocument();
     expect(tag).toHaveTextContent('标签文本');
@@ -53,7 +53,7 @@ describe('TagRender', () => {
       <TagRender value="标签文本" record={mockRecord} index={mockIndex} />,
     );
 
-    // 验证标签使用默认颜色
+    // Verify that the label uses the default color
     const tag = screen.getByTestId('tag');
     expect(tag).toHaveAttribute('data-color', 'primary');
   });
@@ -71,7 +71,7 @@ describe('TagRender', () => {
       />,
     );
 
-    // 验证标签使用自定义颜色
+    // Verify labels with custom colors
     const tag = screen.getByTestId('tag');
     expect(tag).toHaveAttribute('data-color', 'red');
   });
@@ -84,7 +84,7 @@ describe('TagRender', () => {
       <TagRender value={undefined} record={mockRecord} index={mockIndex} />,
     );
 
-    // 验证标签内容为空字符串
+    // Verify tag content is empty string
     const tag = screen.getByTestId('tag');
     expect(tag).toHaveTextContent('');
   });

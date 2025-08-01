@@ -6,7 +6,7 @@
       [
         "essential-config-file",
         "error",
-        { "essentialFiles": ["OWNERS", "eslint.config.js"] }
+        { "essentialFiles": ["eslint.config.js"] }
       ]
     ]
   }

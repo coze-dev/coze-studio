@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
 import { type PluginInfoProps } from '@coze-studio/plugin-shared';
@@ -43,7 +43,7 @@ export const formRuleList = {
           message: I18n.t('create_plugin_modal_nameerror'),
         }
       : {
-          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // 国内增加支持中文
+          pattern: /^[\w\s\u4e00-\u9fa5]+$/u, // Increased domestic support for Chinese
           message: I18n.t('create_plugin_modal_nameerror_cn'),
         },
   ],
@@ -52,7 +52,7 @@ export const formRuleList = {
       required: true,
       message: I18n.t('create_plugin_modal_descrip1_error'),
     },
-    // 只有cn 线上才支持中文
+    // Only cn online supports Chinese.
     IS_OVERSEA || IS_BOE
       ? {
           // eslint-disable-next-line no-control-regex -- regex
@@ -65,10 +65,6 @@ export const formRuleList = {
     {
       required: true,
       message: I18n.t('create_plugin_modal_url1_error'),
-    },
-    {
-      pattern: /^(https):\/\/.+$/,
-      message: I18n.t('create_plugin_modal_url_error_https'),
     },
   ],
   key: [
@@ -110,7 +106,7 @@ export interface AuthOption {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- any
   [key: string]: any;
 }
-/** 递归寻找auth选项下的输入项 */
+/** Recursively find the input under the auth option */
 export const findAuthTypeItem = (data: AuthOption[], targetKey = 0) => {
   for (const item of data) {
     if (item.value === targetKey) {
@@ -168,7 +164,7 @@ export interface UsePluginSchameReturnValue {
   defaultRuntime: string;
 }
 
-// 获取schame 和 runtime options
+// Get schame and runtime options
 export const usePluginSchame = (): UsePluginSchameReturnValue => {
   const [authOption, setAuthOption] = useState<AuthOption[]>([]);
   const [runtimeOptions, setRuntimeOptions] = useState<RuntimeOptionsType[]>(

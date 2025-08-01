@@ -30,7 +30,7 @@ interface UploadFooterProps {
   controls: FooterControlsProps;
 }
 
-/** 类型断言 入参是不是 按钮数组 */
+/** Type assertion imported parameter yes no, button array */
 function isBtnArray(controls: unknown): controls is FooterBtnProps[] {
   return !!controls && isArray(controls);
 }

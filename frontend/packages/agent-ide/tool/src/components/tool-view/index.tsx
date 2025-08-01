@@ -60,14 +60,14 @@ export const ToolView: FC<PropsWithChildren<IProps>> = ({ children }) => {
       );
     }
 
-    // 遍历 GroupingContainer 的所有子元素
+    // Iterate through all child elements of GroupingContainer
     return Children.map(allChildren, childLevel1 => {
       if (Children.count(childLevel1?.props?.children)) {
         return {
           ...childLevel1,
           props: {
             ...childLevel1.props,
-            // 子元素都套一层 ToolContainer
+            // Child elements are covered with a layer of ToolContainer.
             children: Children.map(childLevel1.props.children, childLevel2 => {
               const { toolKey, title: toolTitle } = childLevel2?.props ?? {};
               const { toolGroupKey, title: groupTitle } =

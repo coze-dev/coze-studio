@@ -232,7 +232,7 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			params = append(params, apiParam)
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params, nil
@@ -257,12 +257,13 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 		Name:          paramMeta.name,
 		Desc:          paramMeta.desc,
 		Type:          apiType,
-		Location:      location, // 使用父节点的值
+		Location:      location, // Using the value of the parent node
 		IsRequired:    paramMeta.required,
 		SubParameters: []*common.APIParameter{},
 	}
 
 	if sc.Default != nil {
+		apiParam.GlobalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 		apiParam.LocalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 	}
 
@@ -452,7 +453,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			}
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params, nil

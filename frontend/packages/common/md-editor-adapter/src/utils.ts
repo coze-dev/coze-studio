@@ -18,7 +18,7 @@
 import { type Delta, type Editor } from './types';
 
 /**
- * 空实现，用于开闭源统一
+ * Empty implementation for open-closed source unification
  * @param md
  * @returns
  */

@@ -38,7 +38,7 @@ export const LinesRenderer = ({
   isViewportVisible: (bounds: Rectangle) => boolean;
   version: number;
 }) => {
-  // 单线条选中
+  // Single line selection
   const [activeLine, setActiveLine] = useState<string[]>([]);
 
   const renderState = useConfigEntity<CustomRenderStateConfigEntity>(
@@ -50,7 +50,7 @@ export const LinesRenderer = ({
     setActiveLine(renderState.activeLines);
   }, [renderState.activeLines]);
 
-  // semi 弹窗偏移计算有误，这里线条直接全部展示
+  // The offset calculation of the semi pop-up window is wrong, and the lines here are directly displayed.
   const visibleLines = lines.filter(line => {
     const bounds = Rectangle.createRectangleWithTwoPoints(
       line.fromPoint,
@@ -75,7 +75,7 @@ export const LinesRenderer = ({
       overflow="visible"
       viewBox={viewBox}
       xmlns="http://www.w3.org/2000/svg"
-      // 确保线条数量变化的时候，强制刷新
+      // Make sure to force a refresh when the number of lines changes
       key={nanoid(5)}
     >
       {allLines.map(line => {

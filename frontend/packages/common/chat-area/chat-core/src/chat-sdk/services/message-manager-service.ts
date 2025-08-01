@@ -85,7 +85,7 @@ export class MessageManagerService {
     this.reportLogWithScope = reportLogWithScope;
   }
   /**
-   * 获取历史消息
+   * Get chat history
    */
   async getHistoryMessage(props: GetHistoryMessageParams) {
     const params = filterEmptyField({
@@ -103,7 +103,7 @@ export class MessageManagerService {
     MessageManager.convertMessageList(data);
 
   /**
-   * 清空对话上下文
+   * Clear the conversation context
    */
   async clearMessageContext(params: ClearMessageContextParams) {
     return await this.messageManager.clearMessageContextUrl({
@@ -114,7 +114,7 @@ export class MessageManagerService {
   }
 
   /**
-   * 清空历史
+   * Clear history
    */
   async clearHistory() {
     return await this.messageManager.clearHistory({
@@ -125,7 +125,7 @@ export class MessageManagerService {
   }
 
   /**
-   * 删除消息
+   * delete message
    */
   async deleteMessage(params: DeleteMessageParams) {
     return await this.messageManager.deleteMessage({
@@ -137,7 +137,7 @@ export class MessageManagerService {
   }
 
   /**
-   * 点赞/点踩消息
+   * Like/click on the message
    */
   async reportMessage(params: ReportMessageParams) {
     return await this.messageManager.reportMessage({
@@ -149,7 +149,7 @@ export class MessageManagerService {
   }
 
   /**
-   * 打断消息
+   * interrupt message
    */
   async breakMessage(params: BreakMessageParams) {
     this.httpChunk.abort(params.local_message_id);
@@ -173,7 +173,7 @@ export class MessageManagerService {
   }
 
   /**
-   * ASR 语音转文字
+   * ASR speech-to-text
    */
   async chatASR(params: ChatASRParams) {
     return await this.messageManager.chatASR(params);

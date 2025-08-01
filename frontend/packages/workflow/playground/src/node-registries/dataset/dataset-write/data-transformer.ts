@@ -25,7 +25,7 @@ const TEST_RUN_FILE_NAME_KEY = 'x-wf-file_name';
 export function transformOnInit(
   value: DatasetNodeActualData,
 ): DatasetNodeFormData {
-  // 新拖入节点初始化
+  // New drag-in node initialization
   if (!value) {
     return {
       nodeMeta: undefined,

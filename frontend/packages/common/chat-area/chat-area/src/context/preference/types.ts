@@ -24,80 +24,80 @@ import {
 export type NewMessageInterruptScenario = 'replying' | 'suggesting' | 'never';
 
 export interface ProviderPassThroughPreference {
-  /** 启用双向加载机制 */
+  /** Enable bidirectional loading mechanism */
   enableTwoWayLoad: boolean;
-  /** 启用已读上报能力 */
+  /** Enable read report capability */
   enableMarkRead: boolean;
   showUserExtendedInfo: boolean;
-  /** 启用图片动态适应能力 */
+  /** Enable image dynamic adaptability */
   enableImageAutoSize: boolean;
   /**
-   * 用于计算图片尺寸的宽度（手动传入，则采用手动传入的）
+   * Used to calculate the width of the image size (manually passed in, manually passed in)
    */
   imageAutoSizeContainerWidth: number | undefined;
-  /** 启动粘贴上传能力 */
+  /** Activate paste upload capability */
   enablePasteUpload: boolean;
   /**
-   * 输入框是否只读
+   * Text box read-only
    */
   isInputReadonly: boolean;
   /**
-   * 开启拖拽上传
+   * Enable drag and drop upload
    */
   enableDragUpload: boolean;
-  /** 启用用户交互锁能力 */
+  /** enable user interlock capability */
   enableChatActionLock?: boolean;
   /**
-   * 开场白是否可选
+   * Is the opening statement optional?
    */
   enableSelectOnboarding: boolean;
   /**
-   * 配置输入框中的按钮状态
+   * Configure button status in text box
    */
   uikitChatInputButtonStatus: Partial<UiKitChatInputButtonStatus>;
   /**
-   * 开场白显示模式: wrap, random
+   * Prologue display mode: wrap, random
    */
   onboardingSuggestionsShowMode: SuggestedQuestionsShowMode;
   /**
-   * 背景图是否展示
+   * Is the background cover displayed?
    */
   showBackground: boolean;
   /**
-   * 自定义停止回复按钮的等待状态
+   * Customize the wait state of the stop reply button
    */
   stopRespondOverrideWaiting: boolean | undefined;
 }
 
 /**
- * @deprecated NOTICE: 勿在此新增属性，后逐渐替换为 ProviderPassThroughPreference
+ * @Deprecated NOTICE: Do not add attributes here, then gradually replace them with ProviderPassThroughPreference
  */
 export interface PreferenceContextInterface {
   /**
-   * 可打断并发送新会话场景
-   * - replying: 发送后, 回复过程中可打断
-   * - suggesting: 回复完成, 生成建议中可打断
-   * - never: 不可打断
+   * Can interrupt and send new session scenarios
+   * - replying: after sending, the reply process can be interrupted
+   * - suggesting: reply completed, can be interrupted in generating suggestions
+   * - never: never interrupt
    */
   newMessageInterruptScenario: NewMessageInterruptScenario;
   /**
-   * 是否启用Message Answer Actions功能
+   * Whether to enable Message Answer Actions
    */
   enableMessageBoxActionBar: boolean;
   /**
-   * 是否开始选择模式
+   * Whether to start selecting mode
    */
   selectable: boolean;
   /**
-   * 清除上下文是否显示清除线
+   * Clear whether the context shows clear lines
    */
   showClearContextDivider: boolean;
   /**
-   * 消息列表宽度
+   * message list width
    */
   messageWidth: string;
   /**
-   * 是否只读
+   * Is it read-only?
    */
   readonly: boolean;
   /**
@@ -105,59 +105,59 @@ export interface PreferenceContextInterface {
    */
   uiKitChatInputButtonConfig: Partial<UiKitChatInputButtonConfig>;
   /**
-   * UIKit 按钮状态
-   * @deprecated -- 请用Provider中的该属性
+   * UIKit button status
+   * @Deprecated -- please use this property in the Provider
    */
   uikitChatInputButtonStatus: Partial<UiKitChatInputButtonStatus>;
   /**
-   * 主题样式
+   * Theme Style
    */
   theme: 'debug' | 'store' | 'home';
   /**
-   * 开启多模态上传模式
-   * 用户可以上传文件展示到 Input 区域上方
-   * 文件和文字可以同时发送
+   * Enable multimodal upload mode
+   * Users can upload files to display above the Input area
+   * Documents and text can be sent simultaneously
    */
   enableMultimodalUpload: boolean;
   /**
-   * 用户上传文件后立即发送一条消息
-   * 文件和文字不可以同时发送
+   * The user sends a message immediately after uploading the file
+   * Documents and text cannot be sent at the same time
    */
   enableLegacyUpload: boolean;
-  /** 启动mention功能，目前为 coze home \@bot 使用 */
+  /** Start the mentioned function, currently used by coze home\ @bot */
   enableMention: boolean;
-  /** 最大可上传的文件数量 */
+  /** Maximum number of files that can be uploaded */
   fileLimit: number;
   /**
-   * 是否展示Input区域
+   * Whether to display the Input area
    */
   showInputArea: boolean;
 
   /**
-   * 是否展示开场白的消息
+   * Whether to show the opening message
    */
   showOnboardingMessage: boolean;
   /**
-   * 开场白是否居中展示
+   * Is the opening statement centered?
    */
   isOnboardingCentered: boolean;
   /**
-   * 是否展示 停止回复
+   * Whether to show, stop replying
    */
   showStopRespond: boolean;
 
   /**
-   * 是否强制展示开场白消息（跳过默认开场白页面）
+   * Whether to force the opening statement message to be displayed (skip the default opening statement page)
    */
   forceShowOnboardingMessage: boolean;
 
   /**
-   * 布局方式
+   * layout
    */
   layout: Layout;
 
   /**
-   * 是否强制展示停止回复按钮
+   * Whether to force the stop reply button to be displayed
    */
   stopRespondOverrideWaiting: boolean | undefined;
 }

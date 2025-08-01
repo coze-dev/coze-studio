@@ -24,27 +24,27 @@ import classNames from 'classnames';
 
 interface SortItemProps {
   /**
-   * 拖拽元素的类型
+   * Type of Drag Element
    */
   type: string;
   /**
-   * 拖拽元素的顺序
+   * Order of Drag and Drop Elements
    */
   index: number;
   /**
-   * 拖拽元素的值
+   * Drag and drop the value of the element
    */
   value: any;
   /**
-   * 拖拽开始回调
+   * Drag to start callback
    */
   onDragStart?: (startIndex: number) => void;
   /**
-   * 拖拽顺序改变回调
+   * Drag and drop order to change callbacks
    */
   onDragMove?: (startIndex: number, endIndex: number) => void;
   /**
-   * 拖拽结束回调
+   * Drag end callback
    */
   onDragEnd?: (startIndex: number, endIndex: number) => void;
   children: FC<{
@@ -100,9 +100,9 @@ export const SortableItem = (props: SortItemProps) => {
         const hoverIndex = index;
         if (dragIndex === hoverIndex) {
           return;
-        } // 如果回到自己的坑，那就什么都不做
-        onDragMove?.(dragIndex, hoverIndex); // 调用传入的方法完成交换
-        item.index = hoverIndex; // 将当前当前移动到Box的index赋值给当前拖动的box，不然会出现两个盒子疯狂抖动！
+        } // If you go back to your own pit, then do nothing
+        onDragMove?.(dragIndex, hoverIndex); // Call the incoming method to complete the exchange
+        item.index = hoverIndex; // Assign the index of the current move to the box to the currently dragged box, otherwise two boxes will shake wildly!
       },
     }),
     [index, onDragMove],
@@ -110,7 +110,7 @@ export const SortableItem = (props: SortItemProps) => {
 
   drag(dragRef);
 
-  // 隐藏原生拖拽预览样式， 在custom-drag-layer中实现自定义预览样式
+  // Hide native drag-and-drop preview styles and implement custom preview styles in custom-drag-layer
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);

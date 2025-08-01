@@ -71,10 +71,10 @@ const syncToSubWorkflowNodeData = ({
   const { getNodeTemplateInfoByType } = context;
   const nodeDataEntity = node.getData<WorkflowNodeData>(WorkflowNodeData);
 
-  // 对于插件来说，初始化表单数据也需要重置 nodeData 数据重新设置
+  // For plugins, initializing the form data also requires resetting the nodeData data reset
   nodeDataEntity.init();
 
-  // 这里如果插件被删除后，也需要将 nodeMeta 设置上去，便于展示具体的错误信息
+  // Here, if the plugin is deleted, you also need to set nodeMeta to display specific error messages.
   if (!workflow && nodeMeta) {
     nodeDataEntity.setNodeData<StandardNodeType.Api>({
       ...nodeMeta,
@@ -85,7 +85,7 @@ const syncToSubWorkflowNodeData = ({
   const isProjectWorkflow = Boolean(
     (workflow as WorkflowDetailInfoData)?.project_id,
   );
-  /** 来自资源库的流程需要获取最新的版本号 */
+  /** The process from the repository requires obtaining the latest version number */
   const latestVersion = isProjectWorkflow
     ? undefined
     : workflow.latest_flow_version;
@@ -95,12 +95,12 @@ const syncToSubWorkflowNodeData = ({
     : undefined;
 
   /**
-   * 从 workflow 数据中提取出 SubWorkflow 节点的一些 NodeData，设置进NodeDataEntity
+   * Extract some NodeData of the SubWorkflow node from the workflow data and set it into NodeDataEntity.
    */
   nodeDataEntity.setNodeData<StandardNodeType.SubWorkflow>({
     ...nodeMeta,
     ...omit(workflow, ['inputs', 'outputs', 'project_id']),
-    // 保留子流程输入定义
+    // Preserve subprocess input definition
     inputsDefinition: workflow?.inputs ?? [],
     description: workflow.desc || '',
     projectId: subWorkflowProjectId,
@@ -112,7 +112,7 @@ const syncToSubWorkflowNodeData = ({
 };
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   value: SubWorkflowNodeDTODataWhenOnInit,
@@ -126,7 +126,7 @@ export const transformOnInit = (
 
   const subWorkflowDetail = getSubWorkflowDetail(identifier, playgroundContext);
 
-  // 同步 apiDetail 数据到 WorkflowNodeData，很多业务逻辑从这里取数据，包括报错界面
+  // Synchronize apiDetail data to WorkflowNodeData, where a lot of business logic fetches data, including the error interface
   syncToSubWorkflowNodeData({
     node,
     context: playgroundContext,
@@ -143,8 +143,8 @@ export const transformOnInit = (
 
   const inputParameters = value?.inputs?.inputParameters ?? [];
 
-  // 由于在提交时，会将没有填值的变量给过滤掉，所以需要在初始化时，将默认值补充进来
-  // 参见：packages/workflow/nodes/src/workflow-json-format.ts:241
+  // Since variables that are not filled in will be filtered out during commit, the default value needs to be added during initialization
+  // See also: packages/workflow/nodes/src/workflow-json-format: 241
   const refillInputParamters = getSortedInputParameters(
     subWorkflowDetail.inputs,
   ).map(inputParam => {
@@ -158,11 +158,11 @@ export const transformOnInit = (
     const target = inputParameters.find(item => item.name === inputParam.name);
 
     if (target) {
-      // 如果存在
+      // If there is
       return target;
     }
 
-    // 读取参数的默认值，并回填
+    // Read the default value of the parameter and backfill it
     newValue.input = getInputDefaultValue(inputParam);
 
     return newValue;
@@ -179,7 +179,7 @@ export const transformOnInit = (
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

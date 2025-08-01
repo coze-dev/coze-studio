@@ -32,7 +32,7 @@ export type TGetModelCapabilityConfig = (params: {
   getModelById: (id: string) => Model | undefined;
 }) => ModelCapabilityConfig;
 
-// 模型能力配置的 fallback，没有配置的能力按支持处理
+// Fallback of model capability configuration, capability without configuration is handled as supported
 export const defaultModelCapConfig = Object.values(ModelFuncConfigType).reduce(
   (res, type) => ({
     ...res,
@@ -56,7 +56,7 @@ const mergeModelCapabilityConfig = (
   target
     ? Object.entries(target).reduce<ModelCapabilityConfig>(
         (merged, [key, status]) => {
-          // 未配置的能力视为完全支持
+          // Unconfigured capabilities are considered fully supported
           const [preStatus, preName] = merged[
             key as unknown as ModelFuncConfigType
           ] ?? [ModelFuncConfigStatus.FullSupport, []];

@@ -49,7 +49,7 @@ export const RawTextEditorField = withField(
             value={value as string}
             onChange={onChange}
             minHeight={minHeight}
-            // 表单内禁止编辑
+            // Forbid editing in the form
             readonly={readonly}
           />
         </EditorProvider>

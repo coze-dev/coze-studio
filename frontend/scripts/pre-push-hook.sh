@@ -1,8 +1,24 @@
 #!/bin/bash
+#
+# Copyright 2025 coze-dev Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-# 设置红色颜色的 ANSI 转义码
+
+# Set the red ANSI escape code
 RED='\033[0;31m'
-# 重置颜色的 ANSI 转义码
+# ANSI escape code to reset color
 NC='\033[0m'
 
 CURRENT_USER=$(git config user.email)

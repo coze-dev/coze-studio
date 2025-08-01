@@ -41,7 +41,7 @@ function getPath(params: {
 
   const { controls } = params;
 
-  // 渲染端点位置计算
+  // Render endpoint position calculation
   const renderToPos: IPoint = { x: toPos.x, y: toPos.y };
 
   const getPathData = (): string => {

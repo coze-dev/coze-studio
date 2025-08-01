@@ -51,7 +51,7 @@ export const commentNodeHandler = (
   if (!followToNode) {
     return;
   }
-  // 加一点小偏移，防止连续触发两次后跟随节点变动
+  // Add a small offset to prevent the following node from changing after triggering twice in a row
   node.offset = {
     x: 0,
     y: -5,

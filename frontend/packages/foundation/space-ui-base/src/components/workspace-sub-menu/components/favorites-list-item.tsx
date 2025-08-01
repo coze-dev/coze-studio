@@ -45,7 +45,7 @@ const getSubPath = (type: IntelligenceType | undefined) => {
     return 'project-ide';
   }
   if (type === IntelligenceType.Bot) {
-    //跳转至 Bot编辑页，后续会改成新的URL/space/:spaceId/agent/:agentId
+    //Jump to the Bot edit page, which will be changed to a new URL/space/: spaceId/agent/: agentId later.
     return 'bot';
   }
   return '';
@@ -63,7 +63,7 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
   basic_info = {},
   type,
 }) => {
-  // 取消收藏
+  // Cancel Favorite
   const clickToUnfavorite = async () => {
     try {
       const res: FavoriteProductResponse =
@@ -76,7 +76,7 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
           entity_id: id,
         });
       if (res.code === 0) {
-        // 取消收藏成功，刷新收藏列表
+        // Cancel the collection successfully, refresh the collection list
         cozeMitt.emit('refreshFavList', {
           id,
           numDelta: -1,
@@ -113,7 +113,7 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
           need_login: true,
           have_access: true,
         });
-        //跳转至 Bot编辑页，后续会改成新的URL/space/:spaceId/agent/:agentId
+        //Jump to the Bot edit page, which will be changed to a new URL/space/: spaceId/agent/: agentId later.
         window.open(getIntelligenceNavigateUrl({ basic_info, type }), '_blank');
       }}
       data-testid="workspace.favorites.list.item"

@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { IConfig } from '../../autoinstallers/plugins/node_modules/rush-init-project-plugin';
-import ShowChatAreaTemplatePlugin from './ShowChatAreaTemplatePlugin';
-import SetFornaxChildAppPlugin from './SetFornaxChildAppPlugin';
+import ShowTemplatePlugin from './ShowTemplatePlugin';
 
 const config: IConfig = {
-  plugins: [new ShowChatAreaTemplatePlugin(), new SetFornaxChildAppPlugin()]
+  plugins: [new ShowTemplatePlugin()],
 };
 
 export default config;

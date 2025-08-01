@@ -102,7 +102,7 @@ export const createWorkflowVariablePlugins = () => [
     extendASTNodes,
     layoutConfig: {
       transformCovers(scopes, { scope, variableEngine }) {
-        // 全局变量作用域覆盖所有其他作用域
+        // Global variable scope covers all other scopes
         if (scope.id === GLOBAL_VARIABLE_SCOPE_ID) {
           return variableEngine
             .getAllScopes()
@@ -114,7 +114,7 @@ export const createWorkflowVariablePlugins = () => [
           return scopes;
         }
 
-        // private 只能访问当前节点的子节点和自己的 public
+        // Private can only access the sub-node of the current node and its own public.
         // if (scope.meta?.type === 'private' && scope.meta?.node) {
         //   const visibleNodes = [
         //     scope.meta?.node,
@@ -125,7 +125,7 @@ export const createWorkflowVariablePlugins = () => [
         //   );
         // }
 
-        // 特化：父节点的 public 可以访问子节点的 public（用于聚合输出）
+        // Specialization: The public of the parent node can access the public of the sub-node (for aggregating output).
         const parentPublic = getParentPublic(node);
         if (parentPublic) {
           return [...scopes, parentPublic];
@@ -148,7 +148,7 @@ export const createWorkflowVariablePlugins = () => [
           return scopes;
         }
 
-        // 特化：父节点的 public 可以访问子节点的 public（用于聚合输出）, 且不能选择全局变量
+        // Specialization: The public of the parent node can access the public of the sub-node (for aggregate output), and cannot select global variables
         if (scope.meta?.type === 'public' && hasChildCanvas(node)) {
           return getHasChildCanvasNodePublicDeps(node);
         }

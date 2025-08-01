@@ -36,7 +36,7 @@ import {
 } from './validators';
 import { ValidationChain } from './validators/validation-chain';
 
-/** 是否合法节点 */
+/** Is it a legal node? */
 export const isValidNode = (params: {
   node: WorkflowClipboardNodeJSON;
   parent?: WorkflowNodeEntity;
@@ -46,15 +46,15 @@ export const isValidNode = (params: {
 }): boolean => {
   const validationChain = new ValidationChain();
   validationChain
-    // 1. 相同空间，相同工作流
+    // 1. Same space, same workflow
     .setNext(new DropValidator())
     .setNext(new LoopContextValidator())
     .setNext(new NestedLoopBatchValidator())
     .setNext(new SubWorkflowSelfRefValidator())
-    // 2. 相同空间，不同工作流
+    // 2. Same space, different workflows
     .setNext(new SameWorkflowValidator())
     .setNext(new SceneNodeValidator())
-    // 3. 跨空间空间
+    // 3. Cross-spatial space
     .setNext(new SameSpaceValidator())
     .setNext(new ApiNodeValidator())
     .setNext(new CrossSpaceNodeValidator());

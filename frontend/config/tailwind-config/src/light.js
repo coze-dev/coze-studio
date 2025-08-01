@@ -1,4 +1,20 @@
-// 浅色模式的 CSS 变量
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// CSS Variables for Light Mode
 const lightModeVariables = {
   background: '255, 255, 255',
   foreground: '28, 28, 35',
@@ -27,7 +43,7 @@ const lightModeVariables = {
   'coze-fg-3': '15, 21, 40',
   'coze-fg-2': '32, 41, 69',
   'coze-fg-1': '55, 67, 106',
-  // TODO: 需要删除bg9
+  // TODO: need to remove bg9
   'coze-bg-9': '6, 7, 9',
   'coze-bg-8': '68, 83, 130',
   'coze-bg-7': '75, 90, 140',
@@ -151,7 +167,7 @@ const lightModeVariables = {
   'coze-3': '3px',
   'coze-2': '2px',
   'coze-1': '1px',
-  // TODO: rspress编译不出来，需要通过一些工具处理，目前没有用到，暂时注释处理
+  // TODO: rspress cannot be compiled, and it needs to be processed by some tools. It is not used at present. Temporary comment processing
   // 'coze-0.5': '0.5px',
   'coze-0-5': '0.5px',
 
@@ -174,7 +190,7 @@ const lightModeVariables = {
   'coze-bg-6-alpha': '0.13',
   'coze-bg-7-alpha': '0.19',
   'coze-bg-8-alpha': '0.25',
-  // TODO: 需要删除bg9
+  // TODO: need to remove bg9
   'coze-bg-9-alpha': '0.16',
   'coze-stroke-5-alpha': '0.13',
   'coze-stroke-6-alpha': '0.25',

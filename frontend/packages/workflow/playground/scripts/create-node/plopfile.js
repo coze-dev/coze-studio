@@ -1,23 +1,39 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const path = require('path');
 const fs = require('fs');
 
 const ROOT_DIR = process.cwd();
 
-// 工具函数 aa-bb-cc -> AaBbCc
+// Tool function aa-bb-cc - > AaBbCc
 const getPascalName = name =>
   name
     .split('-')
     .map(s => s.slice(0, 1).toUpperCase() + s.slice(1))
     .join('');
 
-// 工具函数 aa-bb-cc -> aaBbCc
+// Tool function aa-bb-cc - > aaBbCc
 const getCamelName = name =>
   name
     .split('-')
     .map((s, i) => (i === 0 ? s : s.slice(0, 1).toUpperCase() + s.slice(1)))
     .join('');
 
-// 工具函数 aa-bb-cc -> AA_BB_CC
+// Tool function aa-bb-cc - > AA_BB_CC
 const getConstantName = name =>
   name
     .split('-')
@@ -25,30 +41,30 @@ const getConstantName = name =>
     .join('_');
 
 module.exports = plop => {
-  // 注册一个新的动作，用于在导出文件和注册文件中添加新的节点注册信息
+  // Register a new action to add new node registration information in the export and registration files
   plop.setActionType('registryNode', async answers => {
     const { name, pascalName, supportTest } = answers;
     const constantName = getConstantName(name);
     const registryName = `${constantName}_NODE_REGISTRY`;
 
-    // 修改导出文件
+    // Modify the export file
     const nodeExportFilePath = './src/node-registries/index.ts';
     const nodeContent = fs.readFileSync(nodeExportFilePath, 'utf8');
     const nodeContentNew = nodeContent.replace(
       '// cli 脚本插入标识（registry），请勿修改/删除此行注释',
       `export { ${registryName} } from './${name}';
-// cli 脚本插入标识（registry），请勿修改/删除此行注释`,
+// The cli script inserts the identifier (registry), please do not modify/delete this line comment `,
     );
     fs.writeFileSync(nodeExportFilePath, nodeContentNew, 'utf8');
 
-    // 修改注册文件
+    // Modify registration documents
     const nodeRegistryFilePath = './src/nodes-v2/constants.ts';
     const nodeRegistryContent = fs.readFileSync(nodeRegistryFilePath, 'utf8');
     const nodeRegistryContentNew = nodeRegistryContent
       .replace(
         '// cli 脚本插入标识（import），请勿修改/删除此行注释',
         `${registryName},
-  // cli 脚本插入标识（import），请勿修改/删除此行注释`,
+  // The cli script inserts the identity (import), please do not modify/delete this line comment `,
       )
       .replace(
         '// cli 脚本插入标识（registry），请勿修改/删除此行注释',
@@ -57,7 +73,7 @@ module.exports = plop => {
       );
     fs.writeFileSync(nodeRegistryFilePath, nodeRegistryContentNew, 'utf8');
 
-    // 修改 node-content 注册文件
+    // Modify the node-content registration file
     const nodeContentRegistryFilePath =
       './src/components/node-render/node-render-new/content/index.tsx';
     const nodeContentRegistryContent = fs.readFileSync(
@@ -69,12 +85,12 @@ module.exports = plop => {
       .replace(
         '// cli 脚本插入标识（import），请勿修改/删除此行注释',
         `import { ${pascalName}Content } from '@/node-registries/${name}';
-// cli 脚本插入标识（import），请勿修改/删除此行注释`,
+// The cli script inserts the identity (import), please do not modify/delete this line comment `,
       )
       .replace(
         '// cli 脚本插入标识（registry），请勿修改/删除此行注释',
         `[StandardNodeType.${pascalName}]: ${pascalName}Content,
-  // cli 脚本插入标识（registry），请勿修改/删除此行注释`,
+  // The cli script inserts the identifier (registry), please do not modify/delete this line comment `,
       );
     fs.writeFileSync(
       nodeContentRegistryFilePath,
@@ -82,7 +98,7 @@ module.exports = plop => {
       'utf8',
     );
 
-    // 如果节点无需支持单节点测试，删除 node-test 文件
+    // If the node does not need to support single-node testing, delete the node-test file
     const testFilePath = path.resolve(
       ROOT_DIR,
       `./src/node-registries/${name}/node-test.ts`,
@@ -94,7 +110,7 @@ module.exports = plop => {
     return `节点 ${name} 已注册`;
   });
 
-  // 注册一个新的生成器，用于创建新的节点目录和文件
+  // Register a new generator for creating new node directories and files
   plop.setGenerator('create node', {
     description: 'generate template',
     prompts: [

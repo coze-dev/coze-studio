@@ -15,7 +15,7 @@
  */
  
 /**
- * 获取最近一个可滚动元素
+ * Get the latest scrollable element
  */
 export function closestScrollableElement(element: HTMLElement) {
   const htmlElement = document.documentElement;
@@ -47,7 +47,7 @@ export function closestScrollableElement(element: HTMLElement) {
   return htmlElement;
 }
 
-// 解决浏览器拦截window.open行为，接口catch则跳错误兜底页
+// Solve browser interception window.open behavior, interface catch jump error default page
 export const openNewWindow = async (
   callbackUrl: () => Promise<string> | string,
   defaultUrl?: string,

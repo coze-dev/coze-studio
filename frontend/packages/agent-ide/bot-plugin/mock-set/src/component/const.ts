@@ -23,7 +23,7 @@ export const REAL_DATA_MOCKSET = {
   name: I18n.t('real_data'),
 };
 
-// 初始化仅有real_data
+// Initialization only real_data
 export const MOCK_OPTION_LIST = [REAL_DATA_MOCKSET];
 
 export const POLLING_INTERVAL = 10000;

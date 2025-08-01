@@ -37,16 +37,16 @@ export const usePreviewContextMenu = ({
   onActiveChunkChange,
   onAddChunk,
 }: UsePreviewContextMenuProps) => {
-  // 使用ref保存最新的chunks引用
+  // Use ref to save the latest chunks reference
   const chunksRef = useRef(chunks);
   const { deleteSlice } = useDeleteChunk();
 
-  // 每次props.chunks更新时，更新ref
+  // Every time props.chunks is updated, update the ref.
   useEffect(() => {
     chunksRef.current = chunks;
   }, [chunks]);
 
-  // 激活特定分片的编辑模式
+  // Activate edit mode for specific shardings
   const handleActivateEditMode = useCallback(
     (chunk: Chunk) => {
       onActiveChunkChange?.(chunk);
@@ -54,10 +54,10 @@ export const usePreviewContextMenu = ({
     [onActiveChunkChange],
   );
 
-  // 在特定分片前添加新分片
+  // Add new shardings before specific shardings
   const handleAddChunkBefore = useCallback(
     (chunk: Chunk) => {
-      // 从ref中获取最新的chunks
+      // Get the latest chunks from the ref
       const currentChunks = chunksRef.current;
       const index = currentChunks.findIndex(
         c =>
@@ -86,17 +86,17 @@ export const usePreviewContextMenu = ({
 
       onChunksChange?.(updatedChunks);
 
-      // 自动激活新分片的编辑模式
+      // Automatically activate editing mode for new shardings
       onActiveChunkChange?.(newChunk);
       onAddChunk?.(newChunk);
     },
     [onChunksChange, onActiveChunkChange, documentId, onAddChunk],
   );
 
-  // 在特定分片后添加新分片
+  // Add new shardings after specific shardings
   const handleAddChunkAfter = useCallback(
     (chunk: Chunk) => {
-      // 从ref中获取最新的chunks
+      // Get the latest chunks from the ref
       const currentChunks = chunksRef.current;
       const index = currentChunks.findIndex(
         c =>
@@ -123,7 +123,7 @@ export const usePreviewContextMenu = ({
         ...currentChunks.slice(index + 1),
       ];
 
-      // 自动激活新分片的编辑模式
+      // Automatically activate editing mode for new shardings
       onActiveChunkChange?.(newChunk);
       onChunksChange?.(updatedChunks);
       onAddChunk?.(newChunk);
@@ -131,10 +131,10 @@ export const usePreviewContextMenu = ({
     [onChunksChange, onActiveChunkChange, documentId, onAddChunk],
   );
 
-  // 删除特定分片
+  // Remove specific shardings
   const handleDeleteChunk = useCallback(
     (chunk: Chunk) => {
-      // 从ref中获取最新的chunks
+      // Get the latest chunks from the ref
       const currentChunks = chunksRef.current;
       const updatedChunks = currentChunks.filter(
         c =>

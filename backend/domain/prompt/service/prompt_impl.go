@@ -87,12 +87,12 @@ func searchPromptResourceList(ctx context.Context, resource []*entity.PromptReso
 		if promptResource == nil {
 			continue
 		}
-		// 名称匹配
+		// name match
 		if strings.Contains(strings.ToLower(promptResource.Name), strings.ToLower(keyword)) {
 			retVal = append(retVal, promptResource)
 			continue
 		}
-		// 正文匹配
+		// Body Match
 		if strings.Contains(strings.ToLower(promptResource.PromptText), strings.ToLower(keyword)) {
 			retVal = append(retVal, promptResource)
 		}

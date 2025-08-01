@@ -25,24 +25,24 @@ export const requiredRules = {
 };
 
 /**
- * 检查变量名称是否重复
- * 1、检查变量名称在同组&同层级是否重复
- * 2、检查变量名称在不同组的Root节点名称是否重复
+ * Check if variable names are duplicate
+ * 1. Check whether the variable names are duplicated in the same group & level
+ * 2. Check whether the variable names are duplicated in the root node names of different groups
  */
 export const duplicateRules = {
   validate: (value: Variable, groups: VariableGroup[]): boolean => {
     if (!value.name) {
       return true;
-    } // 如果名称为空则跳过检查
+    } // Skip check if name is empty
 
-    // 1. 检查同组同层级是否重复
+    // 1. Check whether the same group and level are duplicated
     const currentGroup = groups.find(group => group.groupId === value.groupId);
 
     if (!currentGroup) {
       return true;
     }
 
-    // 获取当前节点所在的所有同层级节点（包括嵌套在其他节点children中的）
+    // Get all nodes at the same level as the current node (including those nested in other node children)
     const findSiblings = (
       variables: Variable[],
       targetParentId: string | null,
@@ -50,14 +50,14 @@ export const duplicateRules = {
       let result: Variable[] = [];
 
       for (const variable of variables) {
-        // 如果当前变量的parentId与目标parentId相同，且不是自身，则添加到结果中
+        // If the parentId of the current variable is the same as the target parentId and is not itself, it is added to the result
         if (
           variable.parentId === targetParentId &&
           variable.variableId !== value.variableId
         ) {
           result.push(variable);
         }
-        // 递归检查children
+        // Check children recursively
         if (variable.children?.length) {
           result = result.concat(
             findSiblings(variable.children, targetParentId),
@@ -74,8 +74,8 @@ export const duplicateRules = {
       return false;
     }
 
-    // 2. 检查是否与其他组的根节点重名
-    // 只有当前节点是根节点时才需要检查
+    // 2. Check if it has the same name as the root node of other groups
+    // Check only if the current node is the root node
     if (!value.parentId) {
       const otherGroupsRootNodes = groups
         .filter(group => group.groupId !== value.groupId)

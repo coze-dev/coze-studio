@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createAPI } from './../../api/config';
 export interface AppUserInfo {
   user_unique_name: string

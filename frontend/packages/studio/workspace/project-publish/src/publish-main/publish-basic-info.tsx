@@ -100,7 +100,7 @@ export function PublishBasicInfo() {
             'left-0',
             '!coz-bg-max',
           )}
-          // 比渠道 tab 高就可以, 避免遮挡
+          // It is higher than the channel tab to avoid occlusion.
           textAreaStyle={{ zIndex: CONNECTOR_TAB_BAR_Z_INDEX + 1 }}
           onChange={value => {
             setProjectPublishInfo({

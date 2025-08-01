@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /** @type {(import('eslint').Linter.Config)[]} */
 module.exports = [
   {
@@ -59,9 +75,9 @@ module.exports = [
         {
           vars: 'all',
           args: 'none', // function arguments should not force to match this rule.
-          argsIgnorePattern: '^_', // 规范允许下划线
-          ignoreRestSiblings: true, //使用rest语法（如 `var { foo, ...rest } = data`) 忽略foo。
-          destructuredArrayIgnorePattern: '^_', //结构数组允许使用_
+          argsIgnorePattern: '^_', // Specifications allow underlining
+          ignoreRestSiblings: true, //Use rest syntax (such as'var {foo,... rest} = data ') to ignore foo.
+          destructuredArrayIgnorePattern: '^_', //Structural arrays allow _
           caughtErrors: 'none',
           // "caughtErrorsIgnorePattern": "^e$"
         },
@@ -314,7 +330,7 @@ module.exports = [
     },
   },
 
-  // TODO: 之前overides的内容，后需可考虑直接合入上面标准配置
+  // TODO: The content of overides before can be considered to be directly integrated into the above standard configuration later
   {
     files: ['**/*.?(m|c)ts?(x)'],
     rules: {
@@ -324,8 +340,8 @@ module.exports = [
           fixStyle: 'inline-type-imports',
         },
       ],
-      // 这些规则都是从 packages/config/.eslintrc.react.js 复制迁移过来
-      // 后续在做调整
+      // These rules are copied and migrated from packages/config/.eslintrc.react.js
+      // Adjustments are being made later.
       '@typescript-eslint/no-redundant-type-constituents': 0,
       '@typescript-eslint/no-throw-literal': 'off',
       '@typescript-eslint/no-unnecessary-condition': 0,
@@ -335,14 +351,14 @@ module.exports = [
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-shadow': 'off',
       '@typescript-eslint/no-shadow': 'error',
-      // TODO: 后续开启
+      // TODO: Follow-up opening
       // 'import/no-cycle': 'error',
 
       '@typescript-eslint/prefer-string-starts-ends-with': 0,
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 0,
       '@typescript-eslint/no-implied-eval': 0, // warning
 
-      // TODO: 打开下面这些配置
+      // TODO: Open the following configurations
       // fix: https://stackoverflow.com/questions/63961803/eslint-says-all-enums-in-typescript-app-are-already-declared-in-the-upper-scope
       // 'no-shadow': 'off',
       // '@typescript-eslint/no-shadow': ['error'],
@@ -364,7 +380,7 @@ module.exports = [
       //   },
       // ],
       // complexity: ['error', { max: 15 }],
-      // 后面统一使用CustomError后 再开启
+      // After using CustomError uniformly later, open it again.
       '@coze-arch/no-new-error': 'off',
     },
   },

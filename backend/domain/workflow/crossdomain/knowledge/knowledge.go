@@ -67,9 +67,9 @@ type CreateDocumentResponse struct {
 type SearchType string
 
 const (
-	SearchTypeSemantic SearchType = "semantic"  // 语义
-	SearchTypeFullText SearchType = "full_text" // 全文
-	SearchTypeHybrid   SearchType = "hybrid"    // 混合
+	SearchTypeSemantic SearchType = "semantic"  // semantics
+	SearchTypeFullText SearchType = "full_text" // full text
+	SearchTypeHybrid   SearchType = "hybrid"    // mix
 )
 
 type RetrievalStrategy struct {

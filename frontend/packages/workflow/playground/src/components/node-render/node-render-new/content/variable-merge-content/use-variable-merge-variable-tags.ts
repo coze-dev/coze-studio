@@ -32,7 +32,7 @@ import { VARIABLE_TYPE_ICON_MAP } from '../../fields/constants';
 import { type VariableMergeGroup } from './types';
 
 /**
- * 获取合并变量的变量标签列表
+ * Get a list of variable labels for the merged variable
  * @returns
  */
 export function useVariableMergeVariableTags(): VariableMergeGroup[] {
@@ -54,7 +54,7 @@ export function useVariableMergeVariableTags(): VariableMergeGroup[] {
           );
 
           const isLiteral = ValueExpression.isLiteral(v);
-          // 校验变量是否有效
+          // Verify whether the variable is valid
           const invalid =
             !isLiteral &&
             !variableService.getWorkflowVariableByKeyPath(
@@ -62,7 +62,7 @@ export function useVariableMergeVariableTags(): VariableMergeGroup[] {
               { node, checkScope: true },
             );
 
-          // 是否为运行的输出变量
+          // Is it the output variable of the run?
           const isOutput = isOutputVariable(
             groupIndex,
             index,
@@ -83,7 +83,7 @@ export function useVariableMergeVariableTags(): VariableMergeGroup[] {
         })
         .filter(v => v.type && VARIABLE_TYPE_ICON_MAP[v.type]);
 
-      // 类型取第一个变量的类型
+      // Type Take the type of the first variable
       const type = variableTags[0]?.type;
       const label = type ? VARIABLE_TYPE_ALIAS_MAP[type] : '';
 

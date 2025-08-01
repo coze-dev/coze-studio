@@ -68,11 +68,11 @@ export type VariableSelectorProps = WithCustomStyle<{
   emptyContent?: TreeSelectProps['emptyContent'];
   invalidContent?: string;
   readonly?: boolean;
-  // 可以用 disabledTypes 替代
+  // Can be replaced by disabledTypes
   optionFilter?: (value: string[]) => boolean;
   dropdownClassName?: string;
   showClear?: boolean;
-  // 当发生变量 rename 时候触发 onChange
+  // Trigger onChange when variable rename occurs
   triggerChangeWhenRename?: boolean;
   renderDisplayVarName?: RenderDisplayVarName;
   customFilterVar?: CustomFilterVar;
@@ -80,13 +80,13 @@ export type VariableSelectorProps = WithCustomStyle<{
   onPopoverVisibleChange?: (visible: boolean) => void;
   renderExtraOption?: (data?: TreeNodeData[]) => ReactNode;
   handleDataSource?: (data: TreeNodeData[]) => TreeNodeData[];
-  // 是否允许选择节点
+  // Whether to allow node selection
   enableSelectNode?: boolean;
   popoverStyle?: React.CSSProperties;
 }>;
 
 /**
- * 一个无状态的组件，value 由外部控制
+ * A stateless component where value is externally controlled
  */
 // eslint-disable-next-line complexity
 export const VariableSelector: FC<VariableSelectorProps> = props => {
@@ -120,7 +120,7 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
   const [query, setQuery] = useState('');
   const treeSelectRef = useRef<HTMLDivElement>(null);
 
-  /** 默认兜底的可选择变量数据 */
+  /** Selectable variable data with default backstop */
   const defaultVariableDataSource = useFormatVariableDataSource({
     disabledTypes,
   });
@@ -129,7 +129,7 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
     rawDataSource || defaultVariableDataSource,
   );
 
-  // 处理 DataSource 数据，添加部分字段 / 渲染
+  // Process DataSource data, add partial fields/renders
   const variableDataSource = processDataSourceLabelRender({
     dataSource: dataSourceWithGlobal,
     disabledTypes,
@@ -164,8 +164,8 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
       }
       if (!enableSelectNode && path.length === 1) {
         /**
-         * 禁止只选择 node
-         * length 为 1 时说明值选择了 node 没有选择变量
+         * Disable node selection only
+         * When length is 1, node is selected and no variable is selected
          */
         return;
       }
@@ -178,7 +178,7 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
     onChange?.(undefined);
   };
 
-  /** 根据基线变量和 path 获取到当前选中的子变量 */
+  /** Get the currently selected subvariable according to the baseline variable and path */
   const workflowVariable = useWorkflowVariableByKeyPath(value);
   const valueSubVariableMeta =
     value && workflowVariable?.viewMeta
@@ -190,7 +190,7 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
 
   const onRename = usePersistCallback(({ modifyIndex, modifyKey }) => {
     if (isArray(value)) {
-      // 直接更改 value 引用，防止 triggerValidate 将老的 keyPath onChange 出去
+      // Change the value reference directly to prevent triggerValidate from onChanging the old keyPath
       value[modifyIndex] = modifyKey;
 
       if (triggerChangeWhenRename) {
@@ -199,7 +199,7 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
     }
   });
 
-  // 重命名时更新 value，非受控组件也需要更新内部状态
+  // Update value when renaming, uncontrolled components also need to update internal state
   useVariableRename({
     keyPath: value,
     onRename,
@@ -219,9 +219,9 @@ export const VariableSelector: FC<VariableSelectorProps> = props => {
     triggerValidate();
   }, [isUnknownValue]);
 
-  // searchPosition="trigger" 和 hover tooltip 互斥
-  // 需要在点击到 selectSelection(tooltip) 元素的时候，主动触发 input 的focus
-  // 从而实现既可以 hover 到 selectSelection 元素，又可以触发 selectSearchInput 搜索
+  // searchPosition = "trigger" and hover tooltip mutual exclusion
+  // You need to actively trigger the focus of the input when you click on the selectSelection (tooltip) element
+  // So that you can hover to the selectSelection element and trigger the selectSearchInput search
   useEffect(() => {
     setTimeout(() => {
       const selectSelection = treeSelectRef.current?.getElementsByClassName?.(

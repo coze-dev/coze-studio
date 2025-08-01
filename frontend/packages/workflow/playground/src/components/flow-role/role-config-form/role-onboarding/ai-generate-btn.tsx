@@ -32,10 +32,10 @@ const formatContent = (str: string) => {
   let questions: string[] = [];
   for (const part of parts) {
     if (part.startsWith(PROLOGUE_KEY)) {
-      prologue = part.replace(`${PROLOGUE_KEY}\n`, '').trim(); // 提取开场白并去掉标签
+      prologue = part.replace(`${PROLOGUE_KEY}\n`, '').trim(); // Extract the opening line and remove the label
     } else if (part.startsWith(QUESTION_KEY)) {
-      const questionLines = part.replace(`${QUESTION_KEY}\n`, '').trim(); // 去掉标签
-      questions = questionLines.split('\n').map(q => q.trim()); // 去掉编号
+      const questionLines = part.replace(`${QUESTION_KEY}\n`, '').trim(); // Remove the label
+      questions = questionLines.split('\n').map(q => q.trim()); // Remove the number
     }
   }
 

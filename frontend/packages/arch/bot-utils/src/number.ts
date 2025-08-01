@@ -38,7 +38,7 @@ const THOUSAND = 1e3;
 const MILLION = 1e6;
 const BILLION = 1e9;
 const TRILLION = 1e12;
-//将数字转换成K、M等单位
+//Convert numbers into K, M, and other units
 export const formatNumber = (num: number) => {
   const absNum = Math.abs(num);
   if (absNum >= TRILLION) {
@@ -56,7 +56,7 @@ export const formatNumber = (num: number) => {
   return num;
 };
 
-// 将数字转换成百分数, 向上取整
+// Convert a number to a percentage, round it up
 export const formatPercent = (num?: number): string => {
   if (num === undefined || num === null) {
     return 'NaN%';
@@ -65,17 +65,17 @@ export const formatPercent = (num?: number): string => {
 
   let formatted = percentage.toFixed(1);
 
-  // 如果小数点后一位是0，则移除小数点和0
+  // If the decimal place is 0, remove the decimal point and 0.
   if (formatted.endsWith('.0')) {
     formatted = formatted.slice(0, -2);
   }
 
-  // 添加百分号并返回结果
+  // Add a percent sign and return the result
   return `${formatted}%`;
 };
 
-// 格式化时间, 毫秒, 保留一位小数点
-// 比如6.7s, 3.2min, 100ms, 1.3h
+// Format time, milliseconds, one decimal place reserved
+// For example, 6.7s, 3.2min, 100ms, 1.3h
 export const formatTime = (ms: number) => {
   const absMs = Math.abs(ms);
 
@@ -103,7 +103,7 @@ export const getEllipsisCount = (num: number, max: number): string =>
   num > max ? `${max}+` : `${num}`;
 
 /**
- * @deprecated 不知道这个函数是干啥的。。。
+ * @Deprecated doesn't know what this function does...
  */
 export const exhaustiveCheck = (_v: never) => {
   // empty

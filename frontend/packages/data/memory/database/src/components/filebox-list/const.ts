@@ -14,5 +14,5 @@
  * limitations under the License.
  */
  
-// Coze的渠道id，在某些场景下需要写死传递给后端
+// Coze's channel ID, in some scenarios, needs to be written dead and passed to the backend
 export const COZE_CONNECTOR_ID = '10000010';

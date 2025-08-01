@@ -123,7 +123,7 @@ export const useSubmitCroppedImage = ({
       ) {
         upload(currentOriginImage.fileInstance);
       } else {
-        // 回填文件时 不需要存原图
+        // When backfilling the document, there is no need to save the original image.
         handleUploadAllSuccess();
       }
     } catch (error) {

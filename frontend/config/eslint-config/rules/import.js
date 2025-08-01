@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const importPlugin = require('eslint-plugin-import');
 
 /** @type {(import('eslint').Linter.Config)[]} */
@@ -5,7 +21,7 @@ module.exports = [
   {
     files: ['**/*.?(m|c)?(j|t)s?(x)'],
     settings: {
-      // TODO: 全局保留一份配置
+      // TODO: Keep a configuration globally
       'import/resolver': {
         node: {
           moduleDirectory: ['node_modules', 'src'],
@@ -72,8 +88,8 @@ module.exports = [
       },
     },
     rules: {
-      // TODO: 目前由于 edenx 会动态生成一些插件模块，因此启动会报错
-      // 后续需要修复问题，启动下述规则
+      // TODO: At present, because edenx will dynamically generate some plug-in modules, an error will be reported when starting.
+      // You need to fix the problem later, and start the following rules.
       // "import/no-unresolved": "error"
     },
   },

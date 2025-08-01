@@ -38,8 +38,8 @@ export const getUploader = (config: Config, isOversea?: boolean) => {
   ).replace(/^https:\/\//, config.schema ? `${config.schema}://` : '');
   const uploader = new Uploader({
     /**
-     * 需要根据当前用户的部署环境动态获取schema
-     * schema 兼容特殊 http 场景字段
+     * The schema needs to be dynamically obtained according to the deployment environment of the current user
+     * Schema compatibility with special HTTP scenario fields
      */
     schema: config.schema,
     region: isOversea ? 'ap-singapore-1' : 'cn-north-1',

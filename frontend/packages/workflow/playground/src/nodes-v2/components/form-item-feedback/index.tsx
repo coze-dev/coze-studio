@@ -28,7 +28,7 @@ import s from './index.module.less';
 
 export interface FormItemErrorProps extends WithCustomStyle {
   errors?: FieldState['errors'];
-  // coze 暂无warnings
+  // Coze has no warnings
   // warnings?: FieldState['warnings'];
 }
 

@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import { getFileInfo } from '../src/util';
 import { FileTypeEnum } from '../src/const';
 
-// 创建模拟的 File 对象
+// Create a simulated File object
 function createMockFile(name: string, type: string): File {
   return {
     name,
@@ -140,7 +140,7 @@ describe('getFileInfo', () => {
   });
 
   it('当文件类型和扩展名不匹配时，应该优先使用文件类型判断', () => {
-    // 文件名是 .txt 但 MIME 类型是图片
+    // The file name is .txt, but the MIME type is image
     const file = createMockFile('image.txt', 'image/jpeg');
     const fileInfo = getFileInfo(file);
 

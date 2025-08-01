@@ -52,7 +52,7 @@ export const settingOnErrorValidator = ({
     }
     return true;
   }
-  // json 合法性校验
+  // json legitimacy check
   const schemeParesd = SettingOnErrorSchema.refine(
     settingOnError => isJSONVerified(settingOnError),
     {

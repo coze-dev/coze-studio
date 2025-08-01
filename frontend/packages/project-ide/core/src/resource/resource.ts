@@ -23,8 +23,8 @@ import {
 import { type URI, type URIHandler } from '../common';
 
 export interface ResourceInfo {
-  displayName?: string; // 显示标题
-  lastModification?: number | string; // 最后修改时间
+  displayName?: string; // Show title
+  lastModification?: number | string; // Last modification time
   version?: number | string;
 }
 export interface Resource<T = any, INFO extends ResourceInfo = ResourceInfo>
@@ -62,7 +62,7 @@ export const ResourceHandler = Symbol('ResourceHandler');
 export interface ResourceHandler<T extends Resource = Resource>
   extends URIHandler {
   /**
-   * 创建资源
+   * Create a resource
    * @param uri
    */
   resolve: (uri: URI) => T;

@@ -24,28 +24,28 @@ interface UseAddEmptyChunkActionProps {
   onChunksChange?: (params: { newChunk: Chunk; chunks: Chunk[] }) => void;
 }
 /**
- * 在特定分片后添加新分片的 hook
+ * Add new sharding hook after specific sharding
  *
- * 提供在特定分片后添加新分片的功能
+ * Provides the ability to add new shardings after specific shardings
  */
 export const useAddEmptyChunkAction = ({
   chunks,
   onChunksChange,
 }: UseAddEmptyChunkActionProps) => {
-  // 使用ref保存最新的chunks引用
+  // Use ref to save the latest chunks reference
   const chunksRef = useRef<Chunk[]>(chunks);
 
-  // 每次props.chunks更新时，更新ref
+  // Every time props.chunks is updated, update the ref.
   useEffect(() => {
     chunksRef.current = chunks;
   }, [chunks]);
 
   /**
-   * 在特定分片后添加新分片
-   * @returns 包含新分片和更新后的分片列表的结果对象
+   * Add new shardings after specific shardings
+   * @Returns the result object containing the new sharding and the updated sharding list
    */
   const handleAddEmptyChunkAfter = (chunk: Chunk) => {
-    // 从ref中获取最新的chunks
+    // Get the latest chunks from the ref
     const currentChunks = chunksRef.current;
     const index = currentChunks.findIndex(
       c =>
@@ -79,10 +79,10 @@ export const useAddEmptyChunkAction = ({
   };
 
   /**
-   * 在特定分片前添加新分片
+   * Add new shardings before specific shardings
    */
   const handleAddEmptyChunkBefore = (chunk: Chunk) => {
-    // 从ref中获取最新的chunks
+    // Get the latest chunks from the ref
     const currentChunks = chunksRef.current;
     const index = currentChunks.findIndex(
       c =>

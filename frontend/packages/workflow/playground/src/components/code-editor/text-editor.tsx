@@ -56,7 +56,7 @@ const lineHeightOption = (value?: string | number) =>
 const extensions = [
   mixLanguages({}),
   RawEditorTheme,
-  // ...其他 extensions
+  // ... Other extensions
   history(),
   keymap.of([...defaultKeymap, ...historyKeymap]),
 ];

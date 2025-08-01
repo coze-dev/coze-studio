@@ -22,7 +22,7 @@ interface FormData {
 }
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

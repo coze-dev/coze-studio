@@ -79,7 +79,7 @@ const renderSubText = (
   }
   let subDesc = '';
   if (hasURLImport) {
-    // 更新频率
+    // update frequency
     const updateInterval = hoursToDays(item?.update_interval || 0);
     subDesc = getFrequencyMap(updateInterval);
   } else {

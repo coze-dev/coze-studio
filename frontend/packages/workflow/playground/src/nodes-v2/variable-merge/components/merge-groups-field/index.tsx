@@ -35,7 +35,7 @@ interface Props {
 }
 
 /**
- * 变量聚合分组
+ * variable aggregation grouping
  * @param param0
  * @returns
  */

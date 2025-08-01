@@ -80,5 +80,5 @@ const logger = new Logger();
 
 export { logger };
 
-/** @deprecated 该使用方式已废弃，请使用`import { logger } from  '@coze-arch/rush-logger' */
+/** @Deprecated This usage is deprecated, please use'import {logger} from '@code-arch/rush-logger' */
 export default logger;

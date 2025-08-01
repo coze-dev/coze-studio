@@ -24,7 +24,7 @@ import { type MessagesStore } from './messages';
 import { getMessageIndexRange } from './action-implement/messages/get-message-index-range';
 
 export interface MessageIndexState {
-  // 忽略拉取历史消息及消息通知（home bot续聊场景用）
+  // Ignore the pull chat history and message notification (for the home bot to continue the chat scene)
   ignoreIndexAndHistoryMessages: boolean;
   endIndex: string;
   readIndex: string;
@@ -39,8 +39,8 @@ export interface MessageIndexState {
   scrollViewFarFromBottom: boolean;
 
   /**
-   * 1. 抢占加载过程,值为时间戳
-   * 2. 校验异步回调
+   * 1. Preemptive loading process, the value is timestamp
+   * 2. Verify asynchronous callbacks
    */
   loadLock: Record<LoadAction, number | null>;
   loadError: LoadAction[];
@@ -72,10 +72,10 @@ export interface MessageIndexAction {
     ignoreIndexAndHistoryMessages: boolean,
   ) => void;
   /**
-   * 仅取用更大值
+   * Take only larger values
    */
   updateIndex: UpdateMessageIndex;
-  /** 仅供在 subscribe message 中使用 */
+  /** For use in subscribed messages only */
   privateUpdateLoadIndexRange: (max: string) => void;
   updateHasMore: (opt: UpdateHasMoreParam) => void;
   updateCursor: (opt: UpdateCursorParam) => void;
@@ -109,7 +109,7 @@ const getDefaultState = (): MessageIndexState => ({
   loadError: [],
 });
 
-/** 通过 service/load-more 模块进行操控 */
+/** Control via service/load-more module */
 export const createMessageIndexStore = (mark: string) => {
   const useMessageIndexStore = create<MessageIndexState & MessageIndexAction>()(
     devtools(

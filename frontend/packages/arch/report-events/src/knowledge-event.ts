@@ -101,10 +101,10 @@ export enum KnowledgeEvents {
   KnowledgeSearchFeishuDocument = 'knowledge_search_feishu_document',
   KnowledgeGetFeishuDocumentTreeList = 'knowledge_get_feishu_document_tree_list',
 
-  // bot页面中的知识库
+  // Knowledge base in bot page
   KnowledgeGetDataSetList = 'knowledge_get_dataset_list',
 
-  // 新版知识库交互
+  // New Knowledge Base Interaction
   KnowledgeGetDataSetDeatil = 'knowledge_get_dataset_detail',
 
   KnowledgeRefreshDocument = 'knowledge_refresh_document',

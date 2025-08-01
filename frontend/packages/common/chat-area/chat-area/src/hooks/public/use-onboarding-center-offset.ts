@@ -19,7 +19,7 @@ import { usePreference } from '../../context/preference';
 
 export const useOnboardingCenterOffset = ({
   onboardingHeight = 0,
-  // 默认最小 margin by ui 设计顶部预留 24px 由 top-safe-area 撑起
+  // Default minimum margin by ui design Top reserved 24px supported by top-safe-area
   minOffset = 0,
 }: {
   onboardingHeight?: number;

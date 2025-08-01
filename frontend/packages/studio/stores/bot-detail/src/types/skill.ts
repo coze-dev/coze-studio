@@ -46,7 +46,7 @@ import type {
 interface DefaultPluginApi extends PluginApi {
   isAuto?: boolean;
   autoAddCss?: boolean;
-  // #region api所在的 plugin 维度字段
+  // #The plugin dimension field where the region api is located
   plugin_type?: PluginType;
   is_official?: boolean;
   plugin_icon?: string;
@@ -56,53 +56,53 @@ interface DefaultPluginApi extends PluginApi {
 export type EnabledPluginApi = Omit<DefaultPluginApi, 'debug_example'>;
 
 export interface BotDetailSkill {
-  // region Bot 和 Agent 维度共有 skills
-  /** 已选的 plugin api */
+  // Region Bot and Agent dimension common skills
+  /** Selected plugin api */
   pluginApis: EnabledPluginApi[];
-  /** 已选 workflow */
+  /** Selected workflow */
   workflows: WorkFlowItemType[];
-  /** Knowledge 配置 */
+  /** Knowledge Allocation */
   knowledge: KnowledgeConfig;
   // endregion
 
-  // region Bot 维度独有 skills
+  // Region Bot Dimension Unique skills
   /**
-   * task 配置
+   * Task configuration
    *
-   * 不含已添加的 task，已添加的在组件内独立管理
+   * No added tasks are included, and those added are managed independently within the component
    */
   taskInfo: TaskManageInfo;
   /**
-   * variable 默认值配置
+   * Variable default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   variables: VariableItem[];
   /**
-   * database 默认值配置
+   * Database default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   database: DatabaseInfo;
   /**
-   * database 多表默认值配置
+   * Database multi-table default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   databaseList: DatabaseList;
-  /** 开场白配置 */
+  /** Opener configuration */
   onboardingContent: ExtendOnboardingContent;
-  /** 用户问题建议配置 */
+  /** User Questions Suggested Configuration */
   suggestionConfig: BotSuggestionConfig;
   // endregion
-  /** 文字转语音 */
+  /** Text to Speech */
   tts: TTSInfo;
-  // 时间胶囊
+  // Time Capsule
   timeCapsule: TimeCapsuleConfig;
   filebox: FileboxConfig;
-  // 聊天背景图
+  // Chat background cover
   backgroundImageInfoList: BackgroundImageInfo[];
-  // 快捷指令
+  // Quick Instruction
   shortcut: ShortCutStruct;
   // hooks
   devHooks?: HookInfo;
@@ -111,19 +111,19 @@ export interface BotDetailSkill {
 
 export interface TaskManageInfo {
   user_task_allowed: boolean;
-  /** 请求task loading状态，业务使用 */
+  /** Request task loading status, business usage */
   loading: boolean;
-  /** task接口数据，业务使用 */
+  /** Task interface data, business use */
   data: TaskInfoData[];
-  /** 新版task接口数据，业务使用 */
+  /** New task interface data for business use */
   task_list: TaskInfo[];
 }
 
 export enum VariableKeyErrType {
-  KEY_CHECK_PASS = 0, // 检查通过
-  KEY_NAME_USED = 1, // 名称被占用
+  KEY_CHECK_PASS = 0, // Check passed
+  KEY_NAME_USED = 1, // Name is occupied
 
-  KEY_IS_NULL = 2, // 为空值
+  KEY_IS_NULL = 2, // is null
 }
 
 export interface TableMemoryItem extends FieldItem {
@@ -131,8 +131,8 @@ export interface TableMemoryItem extends FieldItem {
   disableMustRequired?: boolean;
   nanoid?: string;
   /**
-   * 是否是内置字段
-   * @description 内置字段: 仅作展示用，用户不可修改，不可创建同名字段
+   * Is it a built-in field?
+   * @Description Built-in field: For display only, users cannot modify it, and fields with the same name cannot be created
    */
   isSystemField?: boolean;
 }
@@ -219,7 +219,7 @@ export interface WorkFlowItemType {
 }
 
 export interface KnowledgeConfig {
-  /** 已选的 knowledge */
+  /** Selected knowledge */
   dataSetList: Array<Dataset>;
   dataSetInfo: {
     min_score: number;
@@ -246,7 +246,7 @@ export interface ExtendOnboardingContent {
 }
 
 export interface BotSuggestionConfig {
-  /** 0 开启; 1 自定义; 2 关闭; 3 跟随 bot（仅 agentflow bot 节点） */
+  /** 0 on; 1 custom; 2 off; 3 follow bot (agentflow bot nodes only) */
   suggest_reply_mode: SuggestReplyMode;
   customized_suggest_prompt: string;
 }

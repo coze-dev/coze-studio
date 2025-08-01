@@ -124,7 +124,7 @@ export const LinkDropItem = (props: {
         </Space>
 
         <Tooltip content={I18n.t('Copy_link')} position="right">
-          {/* flow 目前不支持粘贴分享链接，coming soon.. */}
+          {/* Flow currently does not support pasting and sharing links, coming soon.. */}
           {mouseIn &&
           linkInfo.share_link &&
           linkInfo.id !== FLOW_PUBLISH_ID &&

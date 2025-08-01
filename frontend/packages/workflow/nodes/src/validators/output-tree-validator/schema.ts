@@ -19,7 +19,7 @@ import { ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 
 import { jsonSchemaValidator } from '../json-schema-validator';
-// 定义节点Schema
+// Define Node Schema
 const OutputTreeNodeSchema: ZodSchema<any> = z.lazy(() =>
   z
     .object({
@@ -41,7 +41,7 @@ const OutputTreeNodeSchema: ZodSchema<any> = z.lazy(() =>
 
 export const OutputTreeSchema = z.array(OutputTreeNodeSchema);
 
-// 定义一个辅助函数，用于查找重复名字的节点并返回错误路径
+// Define a helper function to find nodes with duplicate names and return the error path
 const findDuplicates = (nodes, path = []) => {
   const seen = new Set();
   let result: {
@@ -52,7 +52,7 @@ const findDuplicates = (nodes, path = []) => {
   for (let i = 0; i < nodes.length; i++) {
     const { name } = nodes[i];
     if (seen.has(name)) {
-      // 找到重复项时返回路径和错误信息
+      // Returns paths and error messages when duplicates are found
       result = {
         // @ts-expect-error -- linter-disable-autofix
         path: path.concat(i, 'name'),
@@ -62,7 +62,7 @@ const findDuplicates = (nodes, path = []) => {
     }
     seen.add(name);
     if (nodes[i].children) {
-      // 递归检查子节点
+      // Recursively check sub-node
       const found = findDuplicates(
         nodes[i].children,
         // @ts-expect-error -- linter-disable-autofix
@@ -78,35 +78,35 @@ const findDuplicates = (nodes, path = []) => {
   return result;
 };
 
-// 定义同级命名唯一的树结构Schema
+// Define a sibling-named unique tree structure schema
 export const OutputTreeUniqueNameSchema = z
   .array(OutputTreeNodeSchema)
   .refine(
     data => {
-      // 使用自定义函数进行检查
+      // Check with a custom function
       const duplicate = findDuplicates(data);
       return !duplicate;
     },
     data => {
-      // 使用自定义函数进行检查
+      // Check with a custom function
       const duplicate = findDuplicates(data);
       return {
         path: duplicate.path,
         message: duplicate.message,
-        // FIXME: 表单校验底层依赖了 validation / code，去掉就跑不通了
+        // FIXME: The underlying layer of form validation relies on validation/code, so it won't work if you remove it.
         validation: 'regex',
         code: 'invalid_string',
       };
     },
   )
   .superRefine((data, ctx) => {
-    // 使用自定义函数进行检查
+    // Check with a custom function
     const issues = checkObjectDefaultValue(data);
     issues.forEach(issue => {
       ctx.addIssue({
         path: issue.path,
         message: issue.message,
-        // FIXME: 表单校验底层依赖了 validation / code，去掉就跑不通了
+        // FIXME: The underlying layer of form validation relies on validation/code, so it won't work if you remove it.
         validation: 'regex',
         code: 'invalid_string',
       });
@@ -128,15 +128,15 @@ const checkObjectDefaultValue = nodes => {
       continue;
     }
     if (!jsonSchemaValidator(defaultValue, nodes[i])) {
-      // 找到重复项时返回路径和错误信息
+      // Returns paths and error messages when duplicates are found
       result.push({
         path: [i, 'defaultValue'],
         message: I18n.t('workflow_debug_wrong_json'),
       });
     }
-    // json 类型只检查第一层，不需要递归检查
+    // The JSON type only checks the first layer, no recursive check is required
   }
   return result;
 };
-// 导出类型别名
+// export type alias
 export type OutputTree = z.infer<typeof OutputTreeSchema>;

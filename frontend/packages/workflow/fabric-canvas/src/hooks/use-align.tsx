@@ -26,7 +26,7 @@ export const useAlign = ({
   canvas?: Canvas;
   selectObjects?: FabricObject[];
 }) => {
-  // 水平居左
+  // Horizontal left
   const alignLeft = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -48,7 +48,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 水平居右
+  // Horizontal right
   const alignRight = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -66,7 +66,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 水平居中
+  // centered text
   const alignCenter = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -84,7 +84,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 垂直居上
+  // vertical top
   const alignTop = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -102,7 +102,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 垂直居中
+  // Vertically centered
   const alignMiddle = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -120,7 +120,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 垂直居下
+  // vertical
   const alignBottom = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -138,7 +138,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 水平均分
+  // horizontal average fraction
   const verticalAverage = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -155,7 +155,7 @@ export const useAlign = ({
     const spacing =
       (activeObject.width - totalWidth) / (selectObjects.length - 1);
 
-    let currentLeft = -activeObject.width / 2; // 初始位置
+    let currentLeft = -activeObject.width / 2; // initial position
 
     selectObjects
       .sort((a, b) => a.getBoundingRect().left - b.getBoundingRect().left)
@@ -169,7 +169,7 @@ export const useAlign = ({
     canvas.requestRenderAll();
   }, [canvas, selectObjects]);
 
-  // 垂直均分
+  // vertical equipartition
   const horizontalAverage = useCallback(() => {
     if (!canvas || selectObjects.length < 2) {
       return;
@@ -186,7 +186,7 @@ export const useAlign = ({
     const spacing =
       (activeObject.height - totalHeight) / (selectObjects.length - 1);
 
-    let currentTop = -activeObject.height / 2; // 初始位置
+    let currentTop = -activeObject.height / 2; // initial position
 
     selectObjects
       .sort((a, b) => a.getBoundingRect().top - b.getBoundingRect().top)

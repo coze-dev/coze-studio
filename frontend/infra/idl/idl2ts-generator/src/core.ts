@@ -163,7 +163,7 @@ export class ClientGenerator {
 
   private processIdlAst(ast: IParseResultItem) {
     try {
-      // 新的解析器貌似不是按原来位置排序的，这里要重新排序
+      // The new parser doesn't seem to be sorted by the original position, so it needs to be reordered here.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ast.statements.sort((a, b) => a.loc!.start.line - b.loc!.start.line);
     } catch (error) {

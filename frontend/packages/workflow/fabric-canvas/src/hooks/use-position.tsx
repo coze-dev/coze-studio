@@ -49,7 +49,7 @@ const getElementTitlePosition = ({
   let left = targetElementTopLeft.x * scale;
   let top = targetElementTopLeft.y * scale;
 
-  // 图片特化，需要考虑比例拉伸，位置限定在 group 范围内
+  // Image specialization, proportional stretching needs to be considered, and the position is limited to the group range
   if (isImg) {
     const strokeWidth =
       (element as unknown as Group).getObjects()?.[1]?.strokeWidth ?? 0;
@@ -84,7 +84,7 @@ export const usePosition = ({
   const [screenPositions, setScreenPositions] = useState<IRefPosition[]>([]);
 
   const _setPositions = useCallback(() => {
-    // 为什么要 setTimeout？批量时，需要延迟才能拿到正确的坐标
+    // Why setTimeout? When batching, you need to delay to get the correct coordinates.
     setTimeout(() => {
       if (!canvas) {
         return;

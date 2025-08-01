@@ -32,62 +32,62 @@ struct PublishConnectorListResponse {
 struct PublishConnectorListData {
     1: list<PublishConnectorInfo> connector_list
     2: LastPublishInfo last_publish_info
-    3: map<i64, ConnectorUnionInfo> connector_union_info_map // 渠道集合信息，key是connector_union_id
+    3: map<i64, ConnectorUnionInfo> connector_union_info_map // Channel collection information, the key is connector_union_id
 }
 
 struct PublishConnectorInfo {
     1: required i64 id (agw.js_conv="str", api.js_conv="true")
     2: required string name
     3: required string icon_url
-    4: required string description // 描述
-    5: string description_extra // 描述扩展
-    6: required ConnectorClassification connector_classification // 渠道类型
-    7: required ConnectorConfigStatus config_status // 配置状态
-    8: ConnectorStatus connector_status // 渠道状态
-    9: required ConnectorBindType bind_type // 绑定类型
-    10: required map<string,string> bind_info // 绑定信息 key字段名 value是值
-    11: optional string bind_id // 绑定id信息，用于解绑使用
-    12: optional AuthLoginInfo auth_login_info // 用户授权登陆信息
-    13: string privacy_policy // 隐私政策
-    14: string user_agreement // 用户协议
-    15: bool allow_publish // 是否允许发布
-    16: optional string not_allow_publish_reason // 不允许发布的原因
-    17: optional i64 connector_union_id (agw.js_conv="str", api.js_conv="true") // 渠道集合id，表示需要聚合展示的渠道
-    18: optional list<UIOption> UIOptions // UI选项
-    19: optional bool support_monetization // 支持商业化
-    20: optional string installation_guide  // 安装指引
-    21: optional UserAuthStatus auth_status   // 目前仅 bind_type == 8 时这个字段才有 
-    22: optional string config_status_toast // 配置状态toast
-    23: optional string to_complete_info_url // connector_status为审核中时补全信息按钮的url
-    24: optional string connector_tips // 渠道发布提示
+    4: required string description // describe
+    5: string description_extra // description extension
+    6: required ConnectorClassification connector_classification // channel type
+    7: required ConnectorConfigStatus config_status // configuration status
+    8: ConnectorStatus connector_status // channel status
+    9: required ConnectorBindType bind_type // binding type
+    10: required map<string,string> bind_info // Binding information key field name value is value
+    11: optional string bind_id // Bind id information for unbinding and use
+    12: optional AuthLoginInfo auth_login_info // user authorization login information
+    13: string privacy_policy // Privacy Policy
+    14: string user_agreement // User Agreement
+    15: bool allow_publish // Whether to allow publishing
+    16: optional string not_allow_publish_reason // Reasons for not allowing publishing
+    17: optional i64 connector_union_id (agw.js_conv="str", api.js_conv="true") // Channel collection id, indicating the channel that needs to be aggregated and displayed.
+    18: optional list<UIOption> UIOptions // UI Options
+    19: optional bool support_monetization // Support commercialization
+    20: optional string installation_guide  // Installation Guidelines
+    21: optional UserAuthStatus auth_status   // Currently this field is only available bind_type == 8
+    22: optional string config_status_toast // Configuration status toast
+    23: optional string to_complete_info_url // connector_status the URL of the Complete Info button while under review
+    24: optional string connector_tips // Channel release tips
 }
 
 struct LastPublishInfo {
     1: string version_number
     2: list<i64> connector_ids (agw.js_conv="str", api.js_conv="true")
-    3: map<i64,ConnectorPublishConfig> connector_publish_config // 渠道发布配置
+    3: map<i64,ConnectorPublishConfig> connector_publish_config // channel release configuration
 }
 
 enum ConnectorClassification {
-    APIOrSDK = 1 // api或sdk
-    SocialPlatform = 2 // 社交平台
-    Coze = 3 // Coze商店/模板
-    MiniProgram = 4 // 小程序
-    CozeSpaceExtensionLibrary = 5 // MCP扩展库
+    APIOrSDK = 1 // API or SDK
+    SocialPlatform = 2 // social platform
+    Coze = 3 // Coze Shop/Template
+    MiniProgram = 4 // Mini Program
+    CozeSpaceExtensionLibrary = 5 // MCP Extension Library
 }
 
 enum ConnectorConfigStatus {
-    Configured        = 1 // 已配置
-    NotConfigured     = 2 // 未配置
-    Disconnected      = 3 // Token发生变化
-    Configuring       = 4 // 配置中，授权中
-    NeedReconfiguring = 5 // 需要重新配置 
+    Configured        = 1 // Configured
+    NotConfigured     = 2 // Not configured
+    Disconnected      = 3 // Token changes
+    Configuring       = 4 // Configuring, authorizing
+    NeedReconfiguring = 5 // Need to reconfigure
 }
 
 enum ConnectorStatus {
-    Normal   = 0 // 正常
-    InReview = 1 // 审核中
-    Offline  = 2 // 已下线
+    Normal   = 0 // Normal
+    InReview = 1 // Under review.
+    Offline  = 2 // offline
 }
 
 struct ConnectorUnionInfo {
@@ -99,15 +99,15 @@ struct ConnectorUnionInfo {
 }
 
 enum ConnectorBindType {
-    NoBindRequired = 1 // 无需绑定
-    AuthBind       = 2 // Auth绑定
-    KvBind         = 3 // Kv绑定
-    KvAuthBind     = 4 // Kv并Auth授权
-    ApiBind        = 5 // api渠道绑定
+    NoBindRequired = 1 // No binding required
+    AuthBind       = 2 // Auth binding
+    KvBind         = 3 // Kv binding
+    KvAuthBind     = 4 // Kv and Auth authorization
+    ApiBind        = 5 // API channel binding
     WebSDKBind     = 6
     StoreBind      = 7
-    AuthAndConfig  = 8 // 授权和配置各一个按钮
-    TemplateBind   = 9 // 模板渠道绑定
+    AuthAndConfig  = 8 // One button each for authorization and configuration
+    TemplateBind   = 9 // template channel binding
 }
 
 struct AuthLoginInfo {
@@ -122,24 +122,24 @@ struct AuthLoginInfo {
 }
 
 struct UIOption {
-    1: i64 ui_channel (agw.js_conv="str", api.js_conv="true") // UIChannel选项
-    2: bool available // 是否可选
-    3: string unavailable_reason // 不可选原因
+    1: i64 ui_channel (agw.js_conv="str", api.js_conv="true") // UIChannel Options
+    2: bool available // Is it optional
+    3: string unavailable_reason // unselectable reason
 }
 
 enum UserAuthStatus {
-    Authorized = 1 // 已授权
-    UnAuthorized = 2 // 未授权
-    Authorizing = 3 // 授权中
+    Authorized = 1 // Authorized
+    UnAuthorized = 2 // unauthorized
+    Authorizing = 3 // Authorizing
 }
 
 struct ConnectorPublishConfig {
-    1: list<SelectedWorkflow> selected_workflows // 发布渠道选择的Workflow/ChatFlow
+    1: list<SelectedWorkflow> selected_workflows // Workflow/ChatFlow selected by publishing channel
 }
 
 struct ConnectorUnionInfoOption {
-    1: required i64 connector_id (agw.js_conv="str", api.js_conv="true") // 渠道 ID
-    2: required string show_name // 展示名，如：托管发布、下载代码
+    1: required i64 connector_id (agw.js_conv="str", api.js_conv="true") // Channel ID
+    2: required string show_name // Display name, such as: hosted release, download code
 }
 
 struct SelectedWorkflow {
@@ -168,10 +168,10 @@ struct CheckProjectVersionNumberData {
 
 struct PublishProjectRequest {
     1: required i64 project_id (agw.js_conv="str", api.js_conv="true")
-    2: required string version_number // 版本号
-    3: optional string description // 描述
-    4: optional map<i64,map<string,string>> connectors // key代表connector_id，value是渠道发布的参数
-    5: optional map<i64,ConnectorPublishConfig> connector_publish_config // 渠道发布配置，key代表connector_id
+    2: required string version_number // version number
+    3: optional string description // describe
+    4: optional map<i64,map<string,string>> connectors // The key represents connector_id, and the value is the parameter published by the channel
+    5: optional map<i64,ConnectorPublishConfig> connector_publish_config // Channel release configuration, key represents connector_id
 
     255: optional base.Base Base (api.none="true")
 }
@@ -185,8 +185,8 @@ struct PublishProjectResponse {
 }
 
 struct PublishProjectData {
-    1: i64 publish_record_id (agw.js_conv="str", api.js_conv="true") // 发布记录ID用于前端轮询
-    2: optional bool publish_monetization_result // 收费配置发布结果，海外环境才有
+    1: i64 publish_record_id (agw.js_conv="str", api.js_conv="true") // Publish record ID for front-end polling
+    2: optional bool publish_monetization_result // The charging configuration is released, and the overseas environment is only available.
 }
 
 struct GetPublishRecordListRequest {
@@ -206,44 +206,44 @@ struct GetPublishRecordListResponse {
 struct PublishRecordDetail {
     1: i64 publish_record_id (agw.js_conv="str", api.js_conv="true")
     2: string version_number
-    3: PublishRecordStatus publish_status // 发布状态
-    4: string publish_status_msg // 该字段废弃，请使用publish_status_detail
-    5: optional list<ConnectorPublishResult> connector_publish_result // 渠道发布结果
-    6: optional PublishRecordStatusDetail publish_status_detail // 发布状态补充信息
+    3: PublishRecordStatus publish_status // release status
+    4: string publish_status_msg // This field is deprecated, please use publish_status_detail
+    5: optional list<ConnectorPublishResult> connector_publish_result // Channel release results
+    6: optional PublishRecordStatusDetail publish_status_detail // Release status Supplementary information
 }
 
 enum PublishRecordStatus {
-    Packing = 0 // 打包中
-    PackFailed = 1 // 打包失败
-    Auditing = 2 // 审核中
-    AuditNotPass = 3 // 审核未通过
-    ConnectorPublishing = 4 // 渠道发布中
-    PublishDone = 5 // 发布完成
+    Packing = 0 // Packing
+    PackFailed = 1 // Packaging failed
+    Auditing = 2 // Under review.
+    AuditNotPass = 3 // review disapproved
+    ConnectorPublishing = 4 // Channel is being released.
+    PublishDone = 5 // release complete
 }
 
 struct ConnectorPublishResult {
     1: i64 connector_id (agw.js_conv="str", api.js_conv="true")
     2: string connector_name
     3: string connector_icon_url
-    4: ConnectorPublishStatus connector_publish_status // 渠道发布状态
-    5: string connector_publish_status_msg // 渠道发布状态补充信息
-    6: optional string share_link // OpenIn链接
-    7: optional string download_link // 小程序渠道下载链接
-    8: optional ConnectorPublishConfig connector_publish_config // 渠道发布配置
-    9: optional map<string,string> connector_bind_info // 渠道绑定信息 key字段名 value是值
+    4: ConnectorPublishStatus connector_publish_status // channel release status
+    5: string connector_publish_status_msg // Channel Release Status Supplementary Information
+    6: optional string share_link // OpenIn Link
+    7: optional string download_link // Mini Program Channel Download Link
+    8: optional ConnectorPublishConfig connector_publish_config // channel release configuration
+    9: optional map<string,string> connector_bind_info // Channel binding information key field name value is value
 }
 
 struct PublishRecordStatusDetail {
-    1: optional list<PackFailedDetail> pack_failed_detail // 打包失败详情
+    1: optional list<PackFailedDetail> pack_failed_detail // Packaging failure details
 }
 
 //project
 enum ConnectorPublishStatus {
-    Default = 0 // 发布中
-    Auditing = 1 // 审核中
-    Success = 2 // 成功
-    Failed = 3 // 失败
-    Disable = 4   //禁用
+    Default = 0 // In release
+    Auditing = 1 // Under review.
+    Success = 2 // success
+    Failed = 3 // fail
+    Disable = 4   //disable
 }
 
 struct PackFailedDetail {
@@ -254,7 +254,7 @@ struct PackFailedDetail {
 
 struct GetPublishRecordDetailRequest {
     1: required i64 project_id (agw.js_conv="str", api.js_conv="true")
-    2: optional i64 publish_record_id (agw.js_conv="str", api.js_conv="true") // 不传则获取最近一次发布记录
+    2: optional i64 publish_record_id (agw.js_conv="str", api.js_conv="true") // If you don't upload it, get the last release record.
 
     255: optional base.Base Base (api.none="true")
 }

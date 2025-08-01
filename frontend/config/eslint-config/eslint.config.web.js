@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const globals = require('globals');
 
 /** @type {(import('eslint').Linter.Config[])} */
@@ -5,7 +21,7 @@ module.exports = [
   ...require('./eslint.config.base.js'),
   {
     plugins: {
-      // TODO: 需要根据不同类型配置plugin？需要阅读源码确认是否影响性能
+      // TODO: Need to configure plugins according to different types? You need to read the source code to confirm whether it affects performance
       'react-hooks': require('eslint-plugin-react-hooks'),
       react: require('eslint-plugin-react'),
       risxss: require('eslint-plugin-risxss'),

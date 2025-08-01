@@ -156,7 +156,7 @@ export const UISelect: ForwardRefExoticComponent<
   Omit<FilterProps & Omit<SelectProps, 'clickToHide'>, 'ref'> &
     RefAttributes<SemiSelectActions>
 > & {
-  // follow Semi 组件命名
+  // Name the following Semi components
 
   OptGroup: typeof Select.OptGroup;
 

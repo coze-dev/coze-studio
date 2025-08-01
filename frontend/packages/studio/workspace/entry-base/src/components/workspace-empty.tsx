@@ -21,8 +21,8 @@ import { IconCozEmpty, IconCozBroom } from '@coze-arch/coze-design/icons';
 import { Button } from '@coze-arch/coze-design';
 
 interface WorkspaceEmptyProps {
-  onClear?: () => void; // 清空按钮点击事件
-  hasFilter?: boolean; // 是否有筛选项
+  onClear?: () => void; // Clear button click event
+  hasFilter?: boolean; // Is there a filter
 }
 
 export const WorkspaceEmpty: FC<WorkspaceEmptyProps> = ({

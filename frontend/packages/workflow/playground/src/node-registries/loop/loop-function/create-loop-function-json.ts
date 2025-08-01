@@ -73,7 +73,7 @@ export const createLoopFunctionJSON = (params: {
         const transform = node.getData<FlowNodeTransformData>(
           FlowNodeTransformData,
         );
-        // 鼠标开始时所在位置不包括当前节点时才可选中
+        // The mouse can only be selected when the starting position does not include the current node
         return !transform.bounds.contains(mousePos.x, mousePos.y);
       },
       renderSubCanvas: () => ({

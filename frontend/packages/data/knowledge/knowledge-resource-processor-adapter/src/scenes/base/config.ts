@@ -61,17 +61,17 @@ const getConfigV2 = () => ({
 });
 
 /**
- * Knowledge 信息架构重构改动不小，故拆成两个 config。改动点：
- * 1、所有链路去掉 update 操作
- * 2、text 的 resegment 共用一个，因为交互上已经是同一个了
- * 3、有一些细节UI改动
- * 4、所有接口都迁移到了 KnowledgeApi
+ * Knowledge information architecture reconstruction changes are not small, so split into two configs. Change points:
+ * 1. Remove the update operation from all links
+ * 2. The resegment of the text shares one, because the interaction is already the same
+ * 3. There are some detailed UI changes
+ * 4. All interfaces have been migrated to KnowledgeAPI.
  */
 export const getUploadConfig: GetUploadConfig<
   number,
   UploadBaseState<number> & UploadBaseAction<number>
 > = (type, opt) => {
-  const optKey = opt || OptType.ADD; // 当 opt === '' 时，默认当做 ADD
+  const optKey = opt || OptType.ADD; // When opt === '' , the default is ADD.
   const config = getConfigV2();
 
   return get(config, `${type}.${optKey}`, null);

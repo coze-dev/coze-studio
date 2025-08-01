@@ -51,7 +51,7 @@ export interface RectNode {
   end: number;
   rectStyle?: RectStyle;
   labelStyle?: Pick<LabelStyle, 'fill'>;
-  // 其他字段，会透传
+  // Other fields will be passed through
   extra?: unknown;
 }
 
@@ -71,7 +71,7 @@ export interface FlamethreadProps {
   rectStyle?: RectStyle;
   labelStyle?: LabelStyle;
   labelText?: LabelText;
-  // 结构太复杂，直接暴漏即可
+  // The structure is too complicated, just leak it directly
   tooltip?: Tooltip;
   globalStyle?: GlobalStyle;
   rowHeight?: number;

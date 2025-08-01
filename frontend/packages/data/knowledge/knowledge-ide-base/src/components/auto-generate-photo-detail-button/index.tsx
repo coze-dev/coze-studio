@@ -61,17 +61,17 @@ export const AutoGenerateButton: React.FC<AutoGenerateButtonProps> = ({
         onProgress(false);
       }
     };
-    // 如果没有 caption，则不用confirm
+    // If there is no caption, do not confirm
     if (!currentValue) {
       await generateCaption();
       return;
     }
     UIModal.warning({
-      // 必填参数，统一 confirm modal 的样式
+      // Required parameters to confirm modal style
       className: styles['confirm-modal'],
       closeIcon: <IconCloseKnowledge />,
 
-      // 自定义参数
+      // custom parameters
       title: I18n.t('knowledge_photo_021'),
       content: I18n.t('knowledge_photo_022'),
       icon: <IconWarningSize24 />,

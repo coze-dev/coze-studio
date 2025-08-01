@@ -106,13 +106,13 @@ export function upLoadFile({
   getUploader,
   getUploadAuthToken,
 }: {
-  /** 业务, 不同业务对应不同的 ImageX 服务 */
+  /** Business, different businesses correspond to different ImageX services */
   biz?: 'bot' | 'workflow' | string;
   file: File;
   fileType?: 'image' | 'object';
   getProgress?: (progress: number) => void;
   getUploader?: (uploader: BytedUploader) => void;
-  // 业务方自己获取upload token
+  // The business party obtains the upload token by itself
   getUploadAuthToken?: () => Promise<developer_api.GetUploadAuthTokenResponse>;
 }) {
   const config = bizConfig[biz];
@@ -163,9 +163,9 @@ export function upLoadFile({
             userId: userStoreService.getUserInfo()?.user_id_str || '',
             appId: APP_ID,
             // cp-disable-next-line
-            imageHost: `https://${uploadHost}`, //imageX上传必填
+            imageHost: `https://${uploadHost}`, //imageX upload required
             imageConfig: {
-              serviceId: serviceId || '', // 在视频云中申请的服务id
+              serviceId: serviceId || '', // The service id applied for in the video cloud.
             },
             objectConfig: {
               serviceId: serviceId || '',
@@ -196,7 +196,7 @@ export function upLoadFile({
         const fileKey = bytedUploader.addFile({
           file,
           stsToken,
-          type: fileType, // 上传文件类型，三个可选值：video(视频或者音频，默认值)，image(图片)，object（普通文件）
+          type: fileType, // Upload file type, three optional values: video (video or audio, default), image (picture), object (normal file)
         });
         bytedUploader.start(fileKey);
       } catch (e) {

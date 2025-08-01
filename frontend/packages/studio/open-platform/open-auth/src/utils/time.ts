@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import dayjs from 'dayjs';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 
-const MAX_EXPIRATION_DAYS = 30;
-// 1-30天有效期
 export const disabledDate = (date?: Date) => {
-  const today = dayjs().startOf('day'); // 当天的开始时间
-  const thirtyDaysLater = today.add(MAX_EXPIRATION_DAYS, 'day'); // 30天后的日期
+  const today = dayjs().startOf('day'); // Start time of the day
 
-  return (
-    dayjs(date).isBefore(today, 'day') ||
-    dayjs(date).isSame(today, 'day') ||
-    dayjs(date).isAfter(thirtyDaysLater, 'day')
-  );
+  return dayjs(date).isBefore(today, 'day') || dayjs(date).isSame(today, 'day');
 };
 
 export enum ExpirationDate {

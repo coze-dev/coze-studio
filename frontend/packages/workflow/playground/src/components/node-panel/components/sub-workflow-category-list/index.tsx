@@ -58,7 +58,7 @@ export const SubWorkflowCategoryList: FC<SubWorkflowCategoryListProps> = ({
 
     try {
       onAddingNode?.(true);
-      // 补全版本信息
+      // Complete version information
       const versionName = await getWorkflowVersionByPluginId({
         spaceId,
         pluginId: nodeTemplate.plugin_id,

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
  
-/** 清空会话历史节点 */
+/** Clear session history node */
 
 export { CLEAR_CONTEXT_NODE_REGISTRY } from './node-registry';

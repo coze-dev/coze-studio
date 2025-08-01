@@ -25,7 +25,7 @@ import { type NodeTestMeta } from '@/test-run-kit';
 export const test: NodeTestMeta = {
   generateRelatedContext(node, context) {
     const { isInProject, isChatflow } = context;
-    /** 不在会话流，LLM 节点无需关联环境 */
+    /** Not in session flow, LLM nodes do not need to be associated with the environment */
     const formData = node
       .getData(FlowNodeFormData)
       .formModel.getFormItemValueByPath('/');

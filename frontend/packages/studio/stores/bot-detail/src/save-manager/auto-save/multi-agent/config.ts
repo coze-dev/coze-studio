@@ -42,7 +42,7 @@ export const registerMultiAgentConfig: RegisterSystemContent = {
     'model.max_tokens': DebounceTime.Medium,
     'model.top_p': DebounceTime.Medium,
     'model.ShortMemPolicy.HistoryRound': DebounceTime.Medium,
-    prompt: DebounceTime.Long, // agent 提示词
+    prompt: DebounceTime.Long, // Agent prompt word
     'suggestion.customized_suggest_prompt': DebounceTime.Long,
     intents: { arrayType: true, action: { E: DebounceTime.Long } },
   },

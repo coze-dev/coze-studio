@@ -24,7 +24,7 @@ export type LevelDocumentTreeNode = Omit<ILevelSegment, 'children' | 'parent'> &
   Chunk & {
     parent?: string;
     children?: LevelDocumentTreeNode[];
-    renderLevel?: string; // 用于唯一标识chunk的渲染路径
+    renderLevel?: string; // Rendering path used to uniquely identify chunks
   };
 
 export type LevelDocumentTree = LevelDocumentTreeNode[];

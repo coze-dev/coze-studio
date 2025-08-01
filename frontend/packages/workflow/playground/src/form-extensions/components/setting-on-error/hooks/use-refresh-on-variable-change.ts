@@ -31,7 +31,7 @@ export function useRefreshOnVariableChange(node: FlowNodeEntity) {
 
   useEffect(() => {
     const disposable = outputVariablesData.onAnyVariablesChange(() => {
-      // 变量类型变化后刷新
+      // Refresh after variable type changes
       refresh();
     });
 

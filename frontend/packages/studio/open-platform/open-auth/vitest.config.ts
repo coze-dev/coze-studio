@@ -40,16 +40,16 @@ export default defineConfig(
           'src/components/**',
           'src/pages/**',
           'src/constants/**',
-          'src/utils/public-private-keys.ts', // window 提供的 api
-          'src/utils/docs.ts', // 线上未使用 仅 boe使用 即将删除
-          'src/utils/time.ts', // dayjs api 的调用
+          'src/utils/public-private-keys.ts', // Windows API
+          'src/utils/docs.ts', // Unused online, only boe used, about to be deleted
+          'src/utils/time.ts', // Dayjs API calls
           'src/utils//analytics/index.ts',
           'src/utils//analytics/chart.ts', // 有图表 dom 相关内容
-          'src/hooks/pat/action/**', // 操作类 hook
-          'src/hooks/oauth-app/action/**', // 操作类 hook
-          'src/hooks/use-arcosite.ts', // 线上未使用 仅 boe使用
-          'src/hooks/use-show-mask.ts', // 主要为获取 dom 的 scrollTop
-          'src/hooks/use-docs-path.ts', // useNavigate 相关内容
+          'src/hooks/pat/action/**', // Action class hook
+          'src/hooks/oauth-app/action/**', // Action class hook
+          'src/hooks/use-arcosite.ts', // Not used online, only boe used
+          'src/hooks/use-show-mask.ts', // Mainly scrollTop for getting dom
+          'src/hooks/use-docs-path.ts', // useNavigate related content
         ],
       },
     },

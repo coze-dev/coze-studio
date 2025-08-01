@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as marketplace_common from './../marketplace_common';
 export { marketplace_common };
 export enum ProductEntityType {

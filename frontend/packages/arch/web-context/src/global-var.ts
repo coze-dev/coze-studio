@@ -15,12 +15,12 @@
  */
  
 /* eslint-disable @typescript-eslint/naming-convention */
-// 需要全局共享的值，可以提前到这里注册类型
+// Values that need to be shared globally can be registered here in advance
 interface GlobalVars {
   /**
    * Last Execute ID that extracts from apps/bot/src/store/bot-detail/utils/execute-draft-bot-request-id.ts
    *
-   * 用于 debug 记录对话接口的 log id，不需要响应式，所以直接存 const 里了
+   * The log id of the debug record dialogue interface does not need to be reactive, so it is directly stored in const.
    */
   LAST_EXECUTE_ID: string;
   [key: string | symbol]: unknown;
@@ -45,6 +45,6 @@ const createGlobalVarsStorage = () => {
 };
 
 /**
- * 通用全局变量
+ * universal global variable
  */
 export const globalVars = createGlobalVarsStorage();

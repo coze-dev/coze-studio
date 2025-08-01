@@ -46,7 +46,7 @@ export function getByNamePath(
     ...(node?.getData(FlowNodeVariableData)?.private?.depScopes || []),
   ]);
 
-  // 节点的依赖作用域中是否存在 nodeId 的 private
+  // Is there a private nodeId in the node's dependency scope?
   if (nodeDepScopes?.find(_scope => _scope.id === `${nodeId}_private`)) {
     return variableEngine.globalVariableTable.getByKeyPath([
       `${nodeId}.locals`,
@@ -54,7 +54,7 @@ export function getByNamePath(
     ]);
   }
 
-  // 节点的依赖作用域是否存在 nodeId 的 public
+  // Does the node's dependency scope have a public nodeId?
   if (nodeDepScopes?.find(_scope => _scope.id === `${nodeId}`)) {
     return variableEngine.globalVariableTable.getByKeyPath([
       `${nodeId}.outputs`,
@@ -62,7 +62,7 @@ export function getByNamePath(
     ]);
   }
 
-  // 如果业务验证是否在作用域内，不在作用域内直接返回结果
+  // If the business verification is in scope, return the result directly if it is not in scope
   if (checkScope) {
     return;
   }

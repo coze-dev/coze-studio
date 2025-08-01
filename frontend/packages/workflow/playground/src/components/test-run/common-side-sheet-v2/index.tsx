@@ -24,7 +24,7 @@ import { WORKFLOW_PLAYGROUND_CONTENT_ID } from '@/constants';
 import { SheetKeys } from './sheet-keys';
 
 interface CommonSideSheetV2Props {
-  /** 唯一 key */
+  /** Unique key */
   sheetKey: SheetKeys;
   width?: number;
 }

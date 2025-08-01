@@ -41,7 +41,7 @@ export const TestsetSelect: React.FC<TestsetSelectProps> = ({ disabled }) => {
   const handleSelectTestset = (data: any) => {
     const originSchema = getSchema();
     if (!data || !originSchema) {
-      // 如果数据不存在，表示是删除了数据，不需要继续往下走
+      // If the data does not exist, it means that the data has been deleted and there is no need to proceed further.
       return;
     }
     const mode = schema['x-form-mode'] || 'form';
@@ -52,7 +52,7 @@ export const TestsetSelect: React.FC<TestsetSelectProps> = ({ disabled }) => {
       nextValues: data,
       cover: true,
     });
-    /** 如果保存处于勾选状态则取消勾选 */
+    /** Uncheck if save is in the ticked state */
     if (next?.[TestFormFieldName.TestsetSave] === true) {
       next[TestFormFieldName.TestsetSave] = false;
     }

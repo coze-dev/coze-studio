@@ -28,7 +28,7 @@ export interface DynamicParams extends Record<string, string | undefined> {
   mock_set_id?: string;
   conversation_id: string;
   commit_version?: string;
-  /** 社会场景 */
+  /** social scene */
   scene_id?: string;
   post_id?: string;
 

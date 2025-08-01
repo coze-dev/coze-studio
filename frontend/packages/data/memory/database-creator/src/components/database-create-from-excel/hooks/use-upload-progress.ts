@@ -76,7 +76,7 @@ export const useUploadProgress = (params: {
     try {
       let res: QueryTableFileTaskStatusResponse;
       try {
-        // TODO:此需求暂停，后端下线，后续待开放
+        // TODO: This demand is suspended, the backend is offline, and it will be opened later.
         // res = await DataModelApi.QueryTableFileTaskStatus({
         //   table_id: tableID,
         //   bot_id: botID,
@@ -89,7 +89,7 @@ export const useUploadProgress = (params: {
         throw error;
       }
 
-      // 不在Processing则停止轮询
+      // Stop polling without Processing
       // @ts-expect-error -- linter-disable-autofix
       if (res?.status !== ImportFileTaskStatus.Enqueue) {
         clearInterval(importResultRef.current);
@@ -97,8 +97,8 @@ export const useUploadProgress = (params: {
       }
 
       /**
-       * 成功后---写入localStorage
-       * 没有任务---写入localStorage
+       * After success --- write to localStorage
+       * No task --- write to localStorage
        */
       if (
         // @ts-expect-error -- linter-disable-autofix
@@ -129,7 +129,7 @@ export const useUploadProgress = (params: {
   };
 
   useEffect(() => {
-    // 读取localStorage，减少不必要的请求次数
+    // Read localStorage to reduce unnecessary requests
     const lsMap = readFromLocalStorage();
     const inLocaleStorage = (lsMap[botID] || []).includes(tableID);
 

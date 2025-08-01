@@ -27,7 +27,7 @@ import { type CustomFilterVar } from '@/form-extensions/components/tree-variable
 import { getVariableViewType } from '../../utils/get-variable-view-type';
 import { getMatchedVariableTypes } from '../../utils/get-matched-variable-types';
 /**
- * 变量过滤
+ * variable filtering
  */
 export const useVariablesFilter = (
   variables: ValueExpression[],
@@ -44,7 +44,7 @@ export const useVariablesFilter = (
     node,
   );
 
-  // 只允许选择和第一个变量相同类型的变量
+  // Only variables of the same type as the first variable are allowed to be selected
   const matchedTypes = getMatchedVariableTypes(viewType);
   const disabledTypes =
     matchedTypes.length > 0 ? ViewVariableType.getComplement(matchedTypes) : [];
@@ -55,7 +55,7 @@ export const useVariablesFilter = (
     .filter(Boolean)
     .map(path => (path as string[]).join('.'));
 
-  // 已经选择的变量不允许再选择
+  // Variables that have been selected are not allowed to be selected again
   const customFilterVar: CustomFilterVar = ({ meta: _meta, path }) =>
     !paths.includes((path || []).join('.'));
 

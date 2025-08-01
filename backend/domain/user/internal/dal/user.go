@@ -134,12 +134,12 @@ func (dao *UserDAO) CheckEmailExist(ctx context.Context, email string) (bool, er
 	return true, nil
 }
 
-// CreateUser 创建新用户
+// CreateUser Create a new user
 func (dao *UserDAO) CreateUser(ctx context.Context, user *model.User) error {
 	return dao.query.User.WithContext(ctx).Create(user)
 }
 
-// GetUserBySessionKey 根据会话密钥查询用户
+// GetUserBySessionKey Query users based on session key
 func (dao *UserDAO) GetUserBySessionKey(ctx context.Context, sessionKey string) (*model.User, bool, error) {
 	sm, err := dao.query.User.WithContext(ctx).Where(
 		dao.query.User.SessionKey.Eq(sessionKey),
@@ -154,7 +154,7 @@ func (dao *UserDAO) GetUserBySessionKey(ctx context.Context, sessionKey string) 
 	return sm, true, nil
 }
 
-// GetUsersByIDs 批量查询用户信息
+// GetUsersByIDs Query user information in batches
 func (dao *UserDAO) GetUsersByIDs(ctx context.Context, userIDs []int64) ([]*model.User, error) {
 	return dao.query.User.WithContext(ctx).Where(
 		dao.query.User.ID.In(userIDs...),

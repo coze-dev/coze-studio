@@ -40,7 +40,7 @@ import type { RangeType, InputVariableInfo } from '../types';
 import s from '../index.module.less';
 
 /**
- * 变量文本替换为自定义样式
+ * Variable text is replaced with a custom style
  */
 export const useVariableInjector = ({
   availableVariables,
@@ -111,7 +111,7 @@ export const useVariableInjector = ({
 
             varibaleInfoRef.current = varaibleInfo;
 
-            // 变量不存在
+            // Variable does not exist
             if (!varaibleInfo?.isVariableExist) {
               const variableDeleteWidget = new VariableDeleteWidget(
                 {
@@ -121,7 +121,7 @@ export const useVariableInjector = ({
                 (range: RangeType) => {
                   openUpdateDropdownRef.current();
                   updateRange.current = range;
-                  // 点击变量时，设置弹窗位置
+                  // When clicking on a variable, set the pop-up position
                   setPos(from);
                 },
               );
@@ -140,7 +140,7 @@ export const useVariableInjector = ({
               (range: RangeType) => {
                 openUpdateDropdownRef.current();
                 updateRange.current = range;
-                // 点击变量时，设置弹窗位置
+                // When clicking on a variable, set the pop-up position
                 setPos(from);
               },
               {
@@ -165,7 +165,7 @@ export const useVariableInjector = ({
               (range: RangeType) => {
                 openUpdateDropdownRef.current();
                 updateRange.current = range;
-                // 点击变量时，设置弹窗位置
+                // When clicking on a variable, set the pop-up position
                 setPos(from);
               },
             );
@@ -191,7 +191,7 @@ export const useVariableInjector = ({
                     type: 'replace',
                     from: from + nodeNameWithDotLength,
                     to,
-                    // 全局变量场景 不可编辑变量字段
+                    // Global variable scene, non-editable variable fields
                     widget: variableSubfixWidget,
                     atomicRange: true,
                   }

@@ -94,7 +94,7 @@ describe('AutosaveManager', () => {
     manager.start();
     expect(manager.observerList.length).toBe(1);
 
-    manager.start(); // 再次调用 start
+    manager.start(); // Call start again.
     expect(manager.observerList.length).toBe(1);
   });
 
@@ -188,7 +188,7 @@ describe('AutosaveManager', () => {
     });
 
     const observer = manager.getObserver('testKey');
-    // 确保所有异步操作完成
+    // Make sure all asynchronous operations are completed
     await Promise.resolve();
 
     expect(observer.lock).toBe(false);

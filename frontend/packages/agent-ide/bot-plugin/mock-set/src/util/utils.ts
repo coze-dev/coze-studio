@@ -29,7 +29,7 @@ export function transUpperCase(str?: string) {
   return str ? `${str.slice(0, 1).toUpperCase()}${str.slice(1)}` : '';
 }
 
-// 仅开发中使用
+// Only used in development
 export function sleep(t = 1000) {
   return new Promise(r => {
     setTimeout(() => {
@@ -46,7 +46,7 @@ export function safeJSONParse<T>(str: string, errCb?: () => T | undefined) {
   }
 }
 
-// 根据 value 生成 displayValue
+// Generate displayValue from value
 function getTargetValue(
   type: MockDataValueType,
   value: string | number | boolean | undefined,
@@ -58,10 +58,10 @@ function getTargetValue(
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- plugin resp 的类型由用户定义，包含任何可能
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- The type of the plugin resp is user-defined and contains any possible
 type PluginRespType = any;
 
-// 合并 schema 和 mock data
+// Merge schema and mock data
 export function getMergedDataWithStatus(
   schemaData?: MockDataWithStatus,
   currentMock?: string,
@@ -84,12 +84,12 @@ export function getMergedDataWithStatus(
       ? safeJSONParse<PluginRespType>(currentMock) || currentMock
       : currentMock;
 
-  // 将 mock 转换为 MockDataWithStatus 格式
+  // Convert mock to MockDataWithStatus format
   const processedMock = transMockData2DataWithStatus(ROOT_KEY, mock, {
     defaultStatus: MockDataStatus.REMOVED,
   });
 
-  // 合并
+  // merge
   const { merged, incompatible } = mergeDataWithStatus(
     schemaData.children,
     processedMock?.children,
@@ -105,7 +105,7 @@ export function getMergedDataWithStatus(
   };
 }
 
-// 解析当前 realValue 所属于的 MockDataValueType
+// Parse the MockDataValueType to which the current realValue belongs
 function getMockDataType(currentMock: PluginRespType) {
   let dataTypeName = typeof currentMock as MockDataValueType | undefined;
   if (currentMock instanceof Array) {
@@ -118,7 +118,7 @@ function compareMockDataType(
   mockDataType?: MockDataValueType,
   initDataType?: MockDataValueType,
 ) {
-  // mock data 的类型是根据值识别出的，存在 Integer 类型被识别为 Number 的情况
+  // The type of mock data is recognized by value, and there are cases where the Integer type is recognized as Number.
   if (mockDataType === MockDataValueType.NUMBER) {
     return (
       initDataType === MockDataValueType.NUMBER ||
@@ -129,7 +129,7 @@ function compareMockDataType(
   }
 }
 
-// 转换 Object 格式到 DataWithStatus 格式
+// Convert Object format to DataWithStatus format
 export function transMockData2DataWithStatus(
   label: string,
   currentMock: PluginRespType,
@@ -262,8 +262,8 @@ function merge2DataList(
     }
   }
 
-  // 在合并 array 时，会出现 autoInitDataList(originData) 中只存在一个初始化数据，而 mockDataListWithStatus(appendData) 存在多个相同结构的数据
-  // 需要将 mockDataListWithStatus 中剩余的数据进行合入
+  // When combining arrays, it appears that only one initialization data exists in autoInitDataList (originData), while mockDataListWithStatus (appendData) has multiple data of the same structure
+  // The remaining data in the mockDataListWithStatus needs to be incorporated
   if (appendData.length && isArrayType) {
     const target = autoInitDataList[0];
     appendData.forEach(item => {
@@ -285,7 +285,7 @@ function merge2DataList(
   };
 }
 
-// 合并两个 MockDataWithStatus 数组，以 autoInitDataList 顺序优先
+// Merge two MockDataWithStatus arrays, in autoInitDataList order first
 export function mergeDataWithStatus(
   autoInitDataList?: MockDataWithStatus[],
   mockDataListWithStatus?: MockDataWithStatus[],
@@ -301,7 +301,7 @@ export function mergeDataWithStatus(
     };
   }
 
-  // 在合并 array 时，存在 mockDataListWithStatus 为空的情况，此时直接判断
+  // When merging the array, there is a situation where the mockDataListWithStatus is empty. At this time, it is directly judged
   if (mockDataListWithStatus.length === 0 && isArrayType) {
     return {
       merged: [],

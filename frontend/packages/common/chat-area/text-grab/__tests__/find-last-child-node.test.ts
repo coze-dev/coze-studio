@@ -18,7 +18,7 @@ import { findLastChildNode } from '../src/utils/helper/find-last-child-node';
 
 describe('findLastChildNode', () => {
   it('should return the last child node of a nested node structure', () => {
-    // 创建一个嵌套的节点结构
+    // Create a nested node structure
     const parentNode = document.createElement('div');
     const childNode1 = document.createElement('span');
     const childNode2 = document.createElement('p');
@@ -28,21 +28,21 @@ describe('findLastChildNode', () => {
     childNode1.appendChild(childNode2);
     childNode2.appendChild(lastChildNode);
 
-    // 调用 findLastChildNode 函数
+    // Call the findLastChildNode function
     const result = findLastChildNode(parentNode);
 
-    // 验证结果是否为最深层的子节点
+    // Verify that the result is the deepest sub-node
     expect(result).toBe(lastChildNode);
   });
 
   it('should return the node itself if it has no children', () => {
-    // 创建一个没有子节点的节点
+    // Create a node without a sub-node
     const singleNode = document.createElement('div');
 
-    // 调用 findLastChildNode 函数
+    // Call the findLastChildNode function
     const result = findLastChildNode(singleNode);
 
-    // 验证结果是否为节点本身
+    // Verify whether the result is the node itself
     expect(result).toBe(singleNode);
   });
 });

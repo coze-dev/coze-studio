@@ -19,7 +19,7 @@ import { createContext, useContext } from 'react';
 
 export interface FormContextType {
   /**
-   * 当设置为 true 时，表单字段应处于只读状态
+   * When set to true, form fields should be read-only
    */
   readonly?: boolean;
 }

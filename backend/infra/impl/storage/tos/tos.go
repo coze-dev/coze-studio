@@ -21,10 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"time"
 
 	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
@@ -32,6 +29,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -66,7 +64,7 @@ func getTosClient(ctx context.Context, ak, sk, bucketName, endpoint, region stri
 		bucketName: bucketName,
 	}
 
-	// 创建存储桶
+	// Create bucket
 	err = t.CheckAndCreateBucket(ctx)
 	if err != nil {
 		return nil, err
@@ -84,14 +82,14 @@ func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (stor
 }
 
 func (t *tosClient) test() {
-	// 测试上传
+	// test upload
 	objectKey := fmt.Sprintf("test-%s.txt", time.Now().Format("20060102150405"))
 	err := t.PutObject(context.Background(), objectKey, []byte("hello world"))
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
-	// 测试下载
+	// test download
 	content, err := t.GetObject(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "GetObject failed, objectKey: %s, err: %v", objectKey, err)
@@ -99,7 +97,7 @@ func (t *tosClient) test() {
 
 	logs.CtxInfof(context.Background(), "GetObject content: %s", string(content))
 
-	// 测试获取URL
+	// Test Get URL
 	url, err := t.GetObjectUrl(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "GetObjectUrl failed, objectKey: %s, err: %v", objectKey, err)
@@ -107,7 +105,7 @@ func (t *tosClient) test() {
 
 	logs.CtxInfof(context.Background(), "GetObjectUrl url: %s", url)
 
-	// 测试删除
+	// test delete
 	err = t.DeleteObject(context.Background(), objectKey)
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "DeleteObject failed, objectKey: %s, err: %v", objectKey, err)
@@ -129,7 +127,7 @@ func (t *tosClient) CheckAndCreateBucket(ctx context.Context) error {
 	}
 
 	if serverErr.StatusCode == http.StatusNotFound {
-		// 存储桶不存在
+		// Bucket does not exist
 		logs.CtxInfof(ctx, "Bucket not found.")
 		resp, err := client.CreateBucketV2(context.Background(), &tos.CreateBucketV2Input{
 			Bucket: bucketName,
@@ -165,7 +163,7 @@ func (t *tosClient) GetObject(ctx context.Context, objectKey string) ([]byte, er
 	client := t.client
 	bucketName := t.bucketName
 
-	// 下载数据到内存
+	// Download data to memory
 	getOutput, err := client.GetObjectV2(ctx, &tos.GetObjectV2Input{
 		Bucket:                  bucketName,
 		Key:                     objectKey,
@@ -190,7 +188,7 @@ func (t *tosClient) DeleteObject(ctx context.Context, objectKey string) error {
 	client := t.client
 	bucketName := t.bucketName
 
-	// 删除存储桶中指定对象
+	// Delete the specified object in the bucket
 	_, err := client.DeleteObjectV2(ctx, &tos.DeleteObjectV2Input{
 		Bucket: bucketName,
 		Key:    objectKey,
@@ -213,34 +211,9 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 		return "", err
 	}
 
-	// url parse
-	url, err := url.Parse(output.SignedUrl)
-	if err != nil {
-		logs.CtxWarnf(ctx, "[GetObjectUrl] url parse failed, err: %v", err)
-		return output.SignedUrl, nil
-	}
-
-	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
-	if len(proxyPort) > 0 {
-		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-		if !ok {
-			return output.SignedUrl, nil
-		}
-
-		currentScheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-		if !ok {
-			return output.SignedUrl, nil
-		}
-
-		host, _, err := net.SplitHostPort(currentHost)
-		if err != nil {
-			host = currentHost
-		}
-		minioProxyHost := host + proxyPort
-		url.Host = minioProxyHost
-		url.Scheme = currentScheme
-		// logs.CtxDebugf(ctx, "[GetObjectUrl] reset \n ORG.URL = %s \n TOS.URL = %s", output.SignedUrl, url.String())
-		return url.String(), nil
+	ok, proxyURL := proxy.CheckIfNeedReplaceHost(ctx, output.SignedUrl)
+	if ok {
+		return proxyURL, nil
 	}
 
 	return output.SignedUrl, nil

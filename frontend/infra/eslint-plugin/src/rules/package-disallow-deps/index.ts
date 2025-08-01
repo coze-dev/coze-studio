@@ -56,7 +56,7 @@ export const disallowDepRule: Rule.RuleModule = {
         return;
       }
       const [, blockVersion, tips] = definition;
-      // 没有提供 version 参数，判定为不允许所有版本号
+      // No version parameter is provided, and it is determined that all version numbers are not allowed
       if (typeof blockVersion !== 'string' || blockVersion.length <= 0) {
         context.report({
           node,

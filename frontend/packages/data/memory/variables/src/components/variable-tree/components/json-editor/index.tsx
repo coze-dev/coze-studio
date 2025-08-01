@@ -143,7 +143,7 @@ export const JSONEditor: FC<JSONEditorProps> = props => {
 
   const isValid = useMemo(() => validate(value), [value]);
 
-  // 同步 value 和 schema
+  // Synchronizing values and schemas
   useEffect(() => {
     const _schema = convert(value);
     setSchema(_schema);
@@ -185,7 +185,7 @@ export const JSONEditor: FC<JSONEditorProps> = props => {
             key={id}
             value={value}
             defaultLanguage="json"
-            /** 通过 css 样式覆盖 icube-dark 主题 */
+            /** Override icube-dark theme with css style */
             className={lightStyles.light}
             options={{
               fontSize: 13,

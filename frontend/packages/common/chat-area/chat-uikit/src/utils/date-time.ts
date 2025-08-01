@@ -20,7 +20,7 @@ export const formatMessageBoxContentTime = (contentTime: number): string => {
   if (contentTime < 1) {
     return '';
   }
-  // 当天：hh:mm；跨天：mm-dd hh:mm；跨年：yyyy-mm-dd hh:mm
+  // Day: hh: mm; across the sky: mm-dd hh: mm; New Year's Eve: yyyy-mm-dd hh: mm
   const now = Date.now();
   const today = dayjs(now);
   const messageDay = dayjs(contentTime);

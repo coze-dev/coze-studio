@@ -250,7 +250,7 @@ export const useTableSegmentModal = ({
     const newData = [...tableData];
     newData[index].value = newValue;
 
-    // 针对语义匹配行进行检验
+    // Verify against semantic matching rows
     if (newData[index]?.is_semantic) {
       if (newValue.length === 0) {
         newData[index].error = I18n.t('knowledge_table_content_empty');

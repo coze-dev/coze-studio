@@ -42,9 +42,9 @@ export interface AuthorizeButtonProps {
   revokeSuccess: (id: string) => void;
   authInfo: AuthLoginInfo;
   isMouseIn?: boolean;
-  /** 是否使用 Coze 2.0 的 Button 组件，默认 false */
+  /** Whether to use the Button component of Coze 2.0, the default is false */
   isV2?: boolean;
-  /** 自定义 Coze 2.0 Button 的 props */
+  /** Custom Coze 2.0 Button props */
   v2ButtonProps?: ButtonProps;
   onBeforeAuthRedirect?: (
     parameters: Pick<AuthorizeButtonProps, 'id' | 'authInfo' | 'origin'>,
@@ -156,7 +156,7 @@ export const AuthorizeButton = ({
 
   return status === ConfigStatus.Configured ? (
     <>
-      {/* 在 hover 渠道表单对应行，或“撤销授权”弹窗显示中时，显示“撤销授权”按钮 */}
+      {/* Display the "Revoke Authorization" button in the corresponding line of the hover channel form, or in the display of the "Revoke Authorization" pop-up window */}
       {isMouseIn || revokeModalVisible ? authButton : null}
       {revokeModal(
         agentType === 'project' ? (

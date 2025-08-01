@@ -25,7 +25,7 @@ const parseRules = (rules: RuleItem[]): RuleItem[] =>
     if (rule.required) {
       return {
         ...rule,
-        //  required 情况下，禁止输入空格
+        //  Do not enter spaces if required
         validator: (r, v) => !!v?.trim(),
       };
     }

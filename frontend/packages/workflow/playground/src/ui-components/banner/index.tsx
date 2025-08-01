@@ -15,7 +15,7 @@
  */
  
 /**
- * 对 semi-ui 的 banner 做一个简单的样式封装，符合 UX 设计稿规范
+ * Make a simple style encapsulation for the banner of semi-ui, which conforms to the UX design draft specification
  */
 
 import { type FC } from 'react';

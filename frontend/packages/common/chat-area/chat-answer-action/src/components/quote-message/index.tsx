@@ -61,13 +61,13 @@ export const QuoteMessage: React.FC<
 };
 
 /**
- * 哥哥们改动这里要小心一点喔，QuoteMessageImpl的前置依赖项是 message-grab
+ * Brothers, be careful with changes here. The pre-dependency of QuoteMessageImpl is message-grab.
  */
 export const QuoteMessageImpl: React.FC<
   PropsWithChildren<QuoteMessageProps>
 > = ({ className, ...props }) => {
-  // INFO: 这里使用 as 是因为明确的知道 父组件提前尝试取 plugin 并且提前拦截的情况
-  // 后续如果有改动，请务必注意这里
+  // INFO: As is used here because it is clear that the parent component tries to fetch the plugin in advance and intercepts it in advance
+  // If there are any changes in the future, please be sure to pay attention here.
   const plugin = useQuotePlugin() as WriteableChatAreaPlugin<
     GrabPluginBizContext,
     unknown

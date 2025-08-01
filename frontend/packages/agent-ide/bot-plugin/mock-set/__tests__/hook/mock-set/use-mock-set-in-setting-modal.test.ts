@@ -249,8 +249,8 @@ describe('useMockSetInSettingModalController', () => {
 
     await waitForNextUpdate();
 
-    expect(result.current.isEnabled).toBeFalsy(); // 初始状态应该是不启用
-    expect(result.current.mockSetData).toEqual([]); // 初始mockSetData应该是空数组
+    expect(result.current.isEnabled).toBeFalsy(); // The initial state should be not enabled
+    expect(result.current.mockSetData).toEqual([]); // The initial mockSetData should be an empty array
   });
 
   it('should act export action', async () => {
@@ -260,25 +260,25 @@ describe('useMockSetInSettingModalController', () => {
 
     await waitForNextUpdate();
 
-    expect(result.current.isEnabled).toBeTruthy(); // 有选中的mock数据的前提下，会自动启用
-    expect(result.current.mockSetData.length).toEqual(7); // mockSetData 数据是 7
+    expect(result.current.isEnabled).toBeTruthy(); // If there is selected mock data, it will be automatically enabled
+    expect(result.current.mockSetData.length).toEqual(7); // mockSetData is 7.
 
     act(() => result.current.doSetCreateModal(true));
-    expect(result.current.showCreateModal).toBeTruthy(); // 打开创建modal
+    expect(result.current.showCreateModal).toBeTruthy(); // Open Create modal
 
-    act(() => result.current.doHandleView({ id: 'record-id' })); // 点击查看
+    act(() => result.current.doHandleView({ id: 'record-id' })); // Click to view
 
-    act(() => result.current.doEnabled()); // 关闭
-    expect(result.current.isEnabled).toBeFalsy(); // 禁用
+    act(() => result.current.doEnabled()); // close
+    expect(result.current.isEnabled).toBeFalsy(); // disable
 
-    act(() => result.current.doSetDeleteId('record-id')); // 删除
+    act(() => result.current.doSetDeleteId('record-id')); // delete
     expect(result.current.deleteRenderTitle).toBe(
       'Translated: delete_the_mockset {}',
-    ); // 删除后应该显示删除的title
+    ); // The deleted title should be displayed after deletion.
 
-    act(() => result.current.doConfirmDelete()); // 确认删除
+    act(() => result.current.doConfirmDelete()); // Confirm deletion
 
-    act(() => result.current.doChangeMock({ id: 'change-mock' })); // 修改mock
-    expect(result.current.selectedMockSet).toStrictEqual({ id: 'change-mock' }); // 修改mock后应该显示新的mock
+    act(() => result.current.doChangeMock({ id: 'change-mock' })); // Modify mock
+    expect(result.current.selectedMockSet).toStrictEqual({ id: 'change-mock' }); // After modifying the mock, the new mock should be displayed.
   });
 });

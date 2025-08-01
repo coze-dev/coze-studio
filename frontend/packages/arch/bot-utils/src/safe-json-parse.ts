@@ -18,7 +18,7 @@ import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { logger, reporter } from '@coze-arch/logger';
 
 /**
- * @deprecated 这其实是 unsafe 的，请换用 typeSafeJSONParse
+ * @Deprecated This is actually unsafe, please use typeSafeJSONParse instead
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const safeJSONParse: (v: any, emptyValue?: any) => any = (

@@ -34,7 +34,7 @@ export const ConnectorLink = ({
   botId: string;
   initValue?: TFormData;
 }) => {
-  //支持通配URL
+  //Support for wildcard URLs
   const formatUrl = (url?: string) => {
     let newUrl = url ?? '';
     if (newUrl) {

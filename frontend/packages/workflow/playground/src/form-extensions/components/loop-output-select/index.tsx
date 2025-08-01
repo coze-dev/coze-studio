@@ -78,7 +78,7 @@ export const LoopOutputSelect: FC<LoopOutputSelectProps> = ({
 
   let variableType = originType;
   if (!isLoopSelfVariable && originType) {
-    // 暂时不支持二维数组
+    // Two-dimensional arrays are temporarily not supported
     if (ViewVariableType.isArrayType(originType)) {
       variableType = undefined;
     } else {
@@ -94,7 +94,7 @@ export const LoopOutputSelect: FC<LoopOutputSelectProps> = ({
     onTypeChange: ({ variableMeta }) => {
       if (
         !variableMeta ||
-        // LoopFunction 内的变量暂时不支持二维数组
+        // Variables in LoopFunction temporarily do not support 2D arrays
         (!isLoopSelfVariable &&
           ViewVariableType.isArrayType(variableMeta?.type))
       ) {
@@ -136,19 +136,19 @@ export const LoopOutputSelect: FC<LoopOutputSelectProps> = ({
         enableSelectNode={true}
         renderDisplayVarName={({ meta: _meta, path }) => {
           if (path?.[0] === node.id) {
-            return _meta?.name || ''; // 循环中间变量
+            return _meta?.name || ''; // loop intermediate variable
           }
-          return `[${_meta?.name}] * n`; // 循环体内节点输出变量
+          return `[${_meta?.name}] * n`; // loop body node output variable
         }}
         customFilterVar={({ meta: _meta, path }) => {
           if (path?.[0] === node.id) {
             if (path.length === 2) {
               return !!_meta?.mutable;
             }
-            // 当前节点 Variable 下的变量保留
+            // Variables under Current Node Variable Reserved
             return true;
           }
-          // 暂时不支持对循环体内的二维数组进行拼装
+          // For the time being, it is not supported to assemble two-dimensional arrays in the loop body.
           return !!_meta?.type && !ViewVariableType.isArrayType(_meta?.type);
         }}
         handleDataSource={datasource =>

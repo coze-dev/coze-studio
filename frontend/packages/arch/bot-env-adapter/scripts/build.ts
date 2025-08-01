@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import {
@@ -39,7 +39,7 @@ const updateDTS = ({
   envVarName,
   outputFileName,
 }: TUpdateDTSParams) => {
-  // 初始化一个 ts-morph 项目
+  // Initialize a ts-morph project
   const project = new Project({
     compilerOptions: {
       incremental: true,
@@ -49,25 +49,40 @@ const updateDTS = ({
       noEmitOnError: true,
     },
   });
-  // 添加想要解析的文件
+  // Add the file you want to parse
   const file = project.addSourceFileAtPath(inputFileName);
 
-  // 获取你想要解析的变量
+  // Get the variable you want to parse
   const envs = file.getVariableDeclarationOrThrow(envVarName);
-  // 获取 envs 变量的初始值
+  // Get the initial value of the envs variable
   const initializer = envs.getInitializerIfKindOrThrow(
     SyntaxKind.ObjectLiteralExpression,
   );
-  // 获取 envs 对象的属性
+  // Get the properties of the envs object
   const properties = initializer.getProperties();
 
   const baseDir = path.resolve(__dirname, '../');
-  // 创建一个新的文件，用来保存生成的类型定义
+  // Create a new file to hold the generated type definition
   const typeDefs = project.createSourceFile(
     outputFileName,
-    `/* eslint-disable */
+    `/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/* eslint-disable */
 /* prettier-ignore */
-// 基于${path.relative(baseDir, inputFileName)}自动生成，请勿手动修改`,
+// Automatically generated based on ${path.relative(baseDir, inputFileName)}, do not modify manually `,
     {
       overwrite: true,
     },
@@ -82,7 +97,7 @@ const updateDTS = ({
     });
   };
 
-  // 遍历每一个属性
+  // Iterate through each attribute
   properties.forEach(property => {
     if (
       property instanceof PropertyAssignment ||
@@ -94,9 +109,9 @@ const updateDTS = ({
       const type = expression.getType();
 
       if (type.isObject()) {
-        // 如果类型是一个对象类型，获取其属性
+        // If the type is an object type, obtain its properties
         const spreadProperties = type.getProperties();
-        // 遍历属性
+        // traversal properties
         for (const spreadProperty of spreadProperties) {
           const declaration = spreadProperty.getDeclarations()?.[0];
           if (declaration) {
@@ -114,7 +129,7 @@ const updateDTS = ({
       }
     }
   });
-  // 保存文件
+  // Save file
   typeDefs.addVariableStatements(
     declarations
       .sort((a, b) => (a.name > b.name ? 1 : -1))

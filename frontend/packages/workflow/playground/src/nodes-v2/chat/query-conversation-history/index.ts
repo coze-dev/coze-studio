@@ -14,6 +14,6 @@
  * limitations under the License.
  */
  
-/** 查询会话历史节点 */
+/** Query session history node */
 
 export { QUERY_CONVERSATION_HISTORY_NODE_REGISTRY } from './node-registry';

@@ -35,11 +35,11 @@ const PADDING = 12;
 export interface BezierLineProps {
   fromColor?: string;
   toColor?: string;
-  color?: string; // 高亮颜色，优先级最高
+  color?: string; // Highlight color, highest priority
   selected?: boolean;
   showControlPoints?: boolean;
   line: WorkflowLineEntity;
-  version: string; // 用于控制 memo 刷新
+  version: string; // Used to control memo refresh
 }
 
 export const BezierLineRender = React.memo(
@@ -48,14 +48,14 @@ export const BezierLineRender = React.memo(
     const renderData = line.getData(WorkflowLineRenderData);
     const { bounds: bbox } = renderData;
     const { position } = line;
-    // 相对位置
+    // relative position
     const toRelative = (p: IPoint) => ({
       x: p.x - bbox.x + PADDING,
       y: p.y - bbox.y + PADDING,
     });
     const fromPos = toRelative(position.from);
     const toPos = toRelative(position.to);
-    // 真正连接线需要到的点的位置
+    // The location of the point that the real connection line needs to go to
     const arrowToPos = {
       x: toPos.x - POINT_RADIUS,
       y: toPos.y,

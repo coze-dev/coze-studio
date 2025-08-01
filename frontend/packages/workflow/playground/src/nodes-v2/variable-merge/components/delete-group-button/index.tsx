@@ -31,7 +31,7 @@ interface Props {
 }
 
 /**
- * 删除分组按钮
+ * Delete group button
  * @param param0
  * @returns
  */

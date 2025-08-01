@@ -27,8 +27,8 @@ import { WorkflowSaveService } from '../../services/workflow-save-service';
 import { type WorkflowGlobalStateEntity } from '../../entities';
 
 /**
- * 开始节点的入参 BotUserInput 是否进行了数据补偿（从必填改成了非必填）
- * 在 packages/workflow/nodes/src/workflow-nodes/start-node/index.ts 修改了必填设置
+ * Whether the imported parameter BotUserInput of the start node has been compensated for (changed from required to non-required)
+ * Changed the required settings in packages/workflow/nodes/src/workflow-nodes/start-node/index.ts
  * @param schemaJson
  * @returns
  */
@@ -53,7 +53,7 @@ export function useDataCompensation(workflowState: WorkflowGlobalStateEntity) {
   useEffect(() => {
     const disposable = loggerService.onLogger(({ event }) => {
       if (event === LoggerEvent.CANVAS_TTI) {
-        // 上报 TTI 时，节点画布层渲染完毕
+        // When reporting TTI, the node canvas layer is rendered
 
         const { inPluginUpdated } = workflowState || {};
         const isBotUserInputUpdated = isBotUserInputChanged(
@@ -66,7 +66,7 @@ export function useDataCompensation(workflowState: WorkflowGlobalStateEntity) {
             eventName: 'workflow_data_compensation_save',
           });
 
-          // 数据补偿保存到草稿
+          // Data Compensation Save to Draft
           workflowSaveService.highPrioritySave();
         }
       }

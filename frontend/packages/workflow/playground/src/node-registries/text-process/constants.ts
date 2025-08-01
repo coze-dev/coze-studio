@@ -23,13 +23,13 @@ export enum StringMethod {
 
 export const PREFIX_STR = 'String';
 
-/** 自定义分隔符/拼接符最大个数 */
+/** Maximum number of custom separators/splices */
 export const MAX_CUSTOM_LENGTH = 20;
 
-/** 下拉框最多展示多少个分隔字符 */
+/** The maximum number of delimiter characters displayed in the drop-down box */
 export const MAX_TAG_SIZE = 4;
 
-/** 前端表单字段名 */
+/** Front-end form field name */
 export const FIELD_NAME_MAP = {
   method: 'method',
   concatResult: 'concatResult',
@@ -38,7 +38,7 @@ export const FIELD_NAME_MAP = {
   outputs: 'outputs',
 };
 
-/** 后端字段名 */
+/** backend field name */
 export const BACK_END_NAME_MAP = {
   delimiters: 'delimiters',
   allDelimiters: 'allDelimiters',
@@ -46,7 +46,7 @@ export const BACK_END_NAME_MAP = {
   arrayItemConcatChar: 'arrayItemConcatChar',
 };
 
-/** 字符串处理方法集合 */
+/** Collection of string handling methods */
 export const STRING_METHOD_OPTIONS = [
   {
     label: I18n.t('workflow_stringprocess_node_method_concat'),
@@ -58,7 +58,7 @@ export const STRING_METHOD_OPTIONS = [
   },
 ];
 
-/** 分隔符选项 */
+/** separator option */
 export const OPTION_SCHEMA = {
   type: 'object',
   schema: [
@@ -80,53 +80,53 @@ export const OPTION_SCHEMA = {
   ],
 };
 
-/** 拼接模式下的默认参数 */
+/** Default parameters in splicing mode */
 export const CONCAT_DEFAULT_INPUTS = [
   { name: `${PREFIX_STR}1`, input: { type: 'ref' } },
 ];
 
-/** 拼接方法，组件选项设置 */
+/** Splicing method, component option settings */
 export const CONCAT_CHAR_SETTINGS = {
   key: '',
 
-  /** 只能选择一个拼接符 */
+  /** Only one splice can be selected. */
   multiple: false,
 
-  /** 允许自定义 */
+  /** Allow customization */
   enableCustom: true,
 
-  /** 最大自定义个数 */
+  /** Maximum number of customizations */
   maxCustomLength: MAX_CUSTOM_LENGTH,
 
-  /** 最大展示个数 */
+  /** maximum number of impressions */
   maxTagCount: MAX_TAG_SIZE,
 
-  /** 下拉框提示 */
+  /** drop-down box prompt */
   placeholder: I18n.t('workflow_stringprocess_delimiter_option'),
 
-  /** 输入框提示 */
+  /** Text box prompt */
   inputPlaceholder: I18n.t('workflow_textprocess_custom_shading'),
 };
 
-/** 分隔方法，组件选项设置 */
+/** Separation method, component option settings */
 export const SPLIT_CHAR_SETTING = {
   key: '',
 
-  /** 可以选择多个分隔符 */
+  /** Multiple separators can be selected */
   multiple: true,
 
-  /** 允许自定义 */
+  /** Allow customization */
   enableCustom: true,
 
-  /** 最大自定义个数 */
+  /** Maximum number of customizations */
   maxCustomLength: MAX_CUSTOM_LENGTH,
 
-  /** 最大展示个数 */
+  /** maximum number of impressions */
   maxTagCount: MAX_TAG_SIZE,
 
-  /** 下拉框提示 */
+  /** drop-down box prompt */
   placeholder: I18n.t('workflow_stringprocess_delimiter_option'),
 
-  /** 输入框提示 */
+  /** Text box prompt */
   inputPlaceholder: I18n.t('workflow_stringprocess_delimiter_option'),
 };

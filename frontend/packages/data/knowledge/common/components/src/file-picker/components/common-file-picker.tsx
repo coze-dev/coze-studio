@@ -43,61 +43,61 @@ import styles from './common-file-picker.module.less';
 
 export interface CommonFilePickerProps
   extends Omit<TreeProps, 'onChange' | 'onSelect'> {
-  /** 渲染使用的树数据 */
+  /** Tree data used for rendering */
   treeData: FileNode[];
-  /** 提供一个定制化的 render tree node */
+  /** Provide a customized render tree node */
   customTreeDataRenderer?: (
     renderProps: RenderFullLabelProps,
   ) => React.ReactNode;
 
-  /** 是否只能选中叶子结点 如果传入 customRenderTreeData 则失效 */
+  /** Whether only leaf nodes can be selected, invalid if customRenderTreeData is passed in */
   onlySelectLeaf?: boolean;
-  /** 是否多选 如果自定义 customTreeDataRenderer 一定要传入, 选项会影响 customTreeDataRenderer 的入参 */
+  /** Whether to multi-select, if the custom customTreeDataRenderer must be passed in, the option will affect customTreeDataRenderer imported parameter */
   multiple?: boolean;
 
   /**
-   * 是否开启虚拟化
+   * Whether to enable virtualization
    */
   enableVirtualize?: boolean;
-  /** 虚拟化选项 */
-  /** 虚拟化容器高度 */
+  /** virtualization options */
+  /** virtualized container height */
   virtualizeHeight?: number;
-  /** 每个 item 高度 */
+  /** Height of each item */
   virtualizeItemSize?: number;
 
-  /** 默认已经选中的内容 可以作为 initValue 使用，也可以作为 value 的代替者使用 */
+  /** The content already selected by default can be used as initValue or as a substitute for value */
   defaultValue?: FileNode[] | FileId[];
 
-  /** 样式渲染特性 */
+  /** style rendering feature */
   normalLabelStyle?: React.CSSProperties;
   selectedLabelStyle?: React.CSSProperties;
   halfSelectedLabelStyle?: React.CSSProperties;
 
-  /** 缩进大小 默认大小 25px 如果 backgroundMode 为 position 将会反应为 left 如果为 padding 将会反应成 padding-left */
+  /** Indent size, default size 25px If backgroundMode is position, it will react to left If it is padding, it will react to padding-left. */
   indentSize?: number;
 
-  /** 树组件展开的 icon */
+  /** Tree component expansion icon */
   expandIcon?: React.ReactNode;
 
-  /** onChange 业务层可以透传 */
+  /** onChange business layer can be passed through */
   onChange?: (args?: FileNode[]) => void;
 
-  /** onSelect 业务层可以透传 */
+  /** onSelect business layer can pass through */
   onSelect?: (key: string, selected: boolean, node: FileNode) => void;
 
-  /** 用来转换 selectedFiles, 发生在 设置选中态 到 提交给上层组件 之间 注意 处理有先后顺序，前一个中间件的返回将作为后一个的输入 */
+  /** Used to convert selectedFiles, occurs in, sets the selected state, to submit to the upper component, between, note that there is a sequence of processing, the return of the previous middleware will be used as the input of the latter */
   transSelectedFilesMiddlewares?: TransSelectedFilesMiddleware[];
 
-  /** 设置选择态的钩子 发生在 点击选中框 到 设置选择态 之间 处理有先后顺序 */
+  /** The hook for setting the selection state occurs between clicking the check box and setting the selection state, and the processing is in sequence */
   selectFilesMiddlewares?: CalcCurrentSelectFilesMiddleware[];
 
-  /** disable select 禁止选择 */
+  /** Disable select disable select */
   disableSelect?: boolean;
 
-  /** checkRelation: 父子节点选中态是否关联 */
+  /** checkRelation: Whether the selected state of the parent and child nodes is related */
   checkRelation?: 'related' | 'unRelated';
 
-  /** 默认展开的节点 key */
+  /** Default expanded node key */
   defaultExpandKeys?: FileId[];
 }
 
@@ -145,7 +145,7 @@ function transDefaultValueToFileNodes(
   const treeDataMap = levelMapTreeNodesToMap(treeData);
   return (
     defaultValue?.map(element => {
-      // 因为开了 onChangeWithObject 所以这里选中态要用 object 存储
+      // Because onChangeWithObject is opened, the selected state here should be stored with object.
       if (typeof element === 'string') {
         return (
           treeDataMap.get(element) ?? {
@@ -161,7 +161,7 @@ function transDefaultValueToFileNodes(
 function transDefaultValueToRenderNode(defaultValue?: FileId[] | FileNode[]) {
   return (
     defaultValue?.map(element => {
-      // 因为开了 onChangeWithObject 所以这里选中态要用 object 存储
+      // Because onChangeWithObject is opened, the selected state here should be stored with object.
       if (typeof element === 'string') {
         return {
           key: element,
@@ -175,10 +175,10 @@ function transDefaultValueToRenderNode(defaultValue?: FileId[] | FileNode[]) {
 /**
  * ------------------
  * common file picker
- * 用于数据上传选择文件
+ * Select file for data upload
  * ------------------
  * useImperativeHandle:
- * search: 提供树搜索能力
+ * Search: Provides tree search capability
  * ------------------
  * props: FilePickerProps
  * ------------------
@@ -205,7 +205,7 @@ export const CommonFilePicker = React.forwardRef(
     } = props;
 
     const treeRef = useRef<Tree>(null);
-    // 使用受控模式
+    // Use controlled mode
     const [selectValue, setSelectValue] = useState<FileNode[]>(
       transDefaultValueToRenderNode(defaultValue),
     );
@@ -287,13 +287,13 @@ export const CommonFilePicker = React.forwardRef(
               transedChangeNodes = [changeNodes as unknown as FileNode];
             }
 
-            // 计算 diff
+            // Calculate diff
             const [addNodes, removeNodes, retainNodes] = diffChangeNodes(
               prevChangeNodes.current,
               transedChangeNodes as FileNode[],
             );
 
-            // 这里的中间件更多用在定制化选中态的场景 比如想要反选所有子节点但是保持父亲节点选中
+            // The middleware here is more used in scenarios where the selected state is customized, such as wanting to unselect all sub-nodes but keep the parent node selected
             transedChangeNodes = distinctFileNodes(
               selectFilesMiddlewares.reduce(
                 (selectedElements, middleware) =>
@@ -313,10 +313,10 @@ export const CommonFilePicker = React.forwardRef(
                 key: transedNode.key,
               })),
             );
-            // 虽然这里返回的是父节点带 children 但是因为都是后端一次接口的快照
-            // 具体上报什么数据交给业务方
-            // 这里的中间件主要用在定制化上报给上层组件的选中数据的场景，比如 checkRelation 'related' 模式下 上面返回的只有父亲节点的数据，但是父组件想要所有数据
-            // 警告：这里如果使用 loadData 时拿不到没请求的子节点（换句话说拿到的最后一层的数据不一定是叶子结点, 同样的在这里选中之后交回给后端的其实也只是一个父节点 不能保证在一个快照里
+            // Although the parent node with children is returned here, because they are all snapshots of the backend interface
+            // What data to report to the business party?
+            // The middleware here is mainly used in scenarios where the selected data is reported to the upper component, such as checkRelation'related 'mode, where only the data of the parent node is returned, but the parent component wants all the data
+            // Warning: If you can't get the unrequested sub-node when using loadData here (in other words, the last layer of data you get is not necessarily a leaf node), the same is true here. After selecting it, it is only a parent node, and it cannot be guaranteed to be in a snapshot.
             if (transSelectedFilesMiddlewares) {
               transedChangeNodes = transSelectedFilesMiddlewares.reduce(
                 (selectedElements, middleware) => middleware(selectedElements),

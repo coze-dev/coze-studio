@@ -1,4 +1,20 @@
 #!/usr/bin/env node
+
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 const path = require('path');
 const fs = require('fs');
 
@@ -19,7 +35,7 @@ const styleFile = path.join(componentDir, `${setterName}.module.less`);
 const packageIndexFile = path.join(__dirname, '..', 'src', 'index.ts');
 const componentName = pascalize(setterName);
 
-// 创建组件目录
+// Create component catalog
 if (fs.existsSync(componentDir)) {
   console.error('can not created because this setter existed.');
   process.exit(1);
@@ -27,12 +43,12 @@ if (fs.existsSync(componentDir)) {
 
 fs.mkdirSync(componentDir);
 
-// 创建 index.ts 文件
+// Create the index.ts file
 const indexContent = `export { ${componentName} } from './${setterName}';
 export type { ${componentName}Options } from './${setterName}';`;
 fs.writeFileSync(indexFile, indexContent);
 
-// 创建 {setterName}.tsx 文件
+// Create the {setterName} .tsx file
 const componentContent = `import type { Setter } from '../types';
 
 import styles from './${setterName}.module.less';
@@ -45,7 +61,7 @@ export const ${componentName}: Setter<string, ${componentName}Options> = ({value
 `;
 fs.writeFileSync(componentFile, componentContent);
 
-// 创建 index.stories.tsx 文件
+// Create the index.stories.tsx file
 const storiesContent = `import type { StoryObj, Meta } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 
@@ -79,7 +95,7 @@ type Story = StoryObj<typeof ${componentName}>;
 export const Base: Story = {};`;
 fs.writeFileSync(storiesFile, storiesContent);
 
-// 创建 index.test.tsx 文件
+// Create the index.test.tsx file
 const testContent = `import '@testing-library/jest-dom';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -101,14 +117,14 @@ describe('${componentName} Setter', () => {
 `;
 fs.writeFileSync(testFile, testContent);
 
-// 创建 {setterName}.module.less 文件
+// Create the {setterName} .module.less file
 const styleContent = `.${setterName} {
   // Your styles here
 }
 `;
 fs.writeFileSync(styleFile, styleContent);
 
-// 在包入口追加setter到导出
+// Append setter to export in package entry
 const packageIndexAppendedExportContent = `export { ${componentName} } from './${setterName}';
 export type { ${componentName}Options } from './${setterName}';`;
 fs.appendFileSync(packageIndexFile, packageIndexAppendedExportContent);

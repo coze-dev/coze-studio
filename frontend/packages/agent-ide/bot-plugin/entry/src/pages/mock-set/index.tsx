@@ -65,7 +65,7 @@ import { getDisplayCols } from './get-col';
 import styles from './index.module.less';
 
 interface ListParams {
-  pageNo?: number; // 用于前端计算数量
+  pageNo?: number; // Quantity for front-end computing
   pageSize?: number;
   pageToken?: string;
   order?: {
@@ -80,13 +80,13 @@ const TOOL_NOT_FOUND_CODE = '600303108';
 const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
   const resourceNavigate = usePluginNavigate();
 
-  // user信息
+  // User information
   const userInfo = userStoreService.useUserInfo();
 
-  // 路由信息
+  // routing information
 
   const [params, setParams] = useState<ListParams>({
-    //请求参数
+    //request parameters
     pageSize: PAGE_SIZE,
     pageNo: 1,
   });
@@ -101,11 +101,11 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
     })),
   );
 
-  // space信息
+  // Space information
   const space = useSpace(spaceID);
   const isPersonal = space?.space_type === SpaceType.Personal;
 
-  // API 详情
+  // API Details
   const [apiInfo, setApiInfo] = useState<PluginAPIInfo>();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -118,7 +118,7 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
 
   const [editDisabled, setEditDisabled] = useState(false);
 
-  // 后端需要的mock上下文信息
+  // The mock context information required by the backend
   const ctxInfo = {
     bizCtx: {
       trafficScene: TrafficScene.Undefined,
@@ -216,7 +216,7 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
     }
   };
 
-  // 获取当前tool信息
+  // Get current tool information
   const getPluginToolInfo = async () => {
     try {
       const { api_info = [] } = await PluginDevelopApi.GetPluginAPIs({
@@ -351,13 +351,13 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
                     if (!editDisabled) {
                       handleEdit(record);
                     }
-                  }, // 点击行
+                  }, // Click line
                 }),
                 onChange: e => {
                   if (e.sorter?.sortOrder) {
                     tableRef.current?.reset();
 
-                    //时间排序
+                    //chronological sorting
                     setParams(p => ({
                       ...p,
                       pageSize: PAGE_SIZE,
@@ -410,7 +410,7 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
         ></MockSetEditModal>
       ) : null}
       {
-        // 删除弹窗
+        // Delete pop-up window
         deleteMockSet ? (
           <MockSetDeleteModal
             visible={!!deleteMockSet}

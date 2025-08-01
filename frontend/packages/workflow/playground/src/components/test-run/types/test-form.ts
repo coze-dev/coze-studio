@@ -16,7 +16,7 @@
  
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*******************************************************************************
- * test form 相关类型
+ * Test form related types
  */
 
 import type { CSSProperties } from 'react';
@@ -25,24 +25,24 @@ import type { TestFormType } from '../constants';
 
 export type TestFormField = any;
 /**
- * 运行 test run 所需的 test form schema
+ * Run the test run required test form schema
  */
 export interface TestFormSchema {
   /**
-   * 起始节点 id
-   * 单节点运行为该节点 id
-   * 全量运行为 start 节点 id
+   * Start Node ID
+   * A single node runs for the node id.
+   * Full run as start node id
    */
   id: string;
 
   /**
-   * 表单的类型
+   * Type of form
    */
   type: TestFormType;
-  /** 表单模型 */
+  /** form model */
   mode?: 'form' | 'json';
   /**
-   * 渲染表单的 schema
+   * Render the form schema
    */
   fields: TestFormField[];
 }
@@ -50,7 +50,7 @@ export interface TestFormSchema {
 export type FormDataType = any;
 
 /**
- * test form 物料的公共 props
+ * Common props for testing formed materials
  */
 export interface ComponentAdapterCommonProps<T> {
   value: T;
@@ -64,6 +64,6 @@ export interface TestFormDefaultValue {
   input?: Record<string, string>;
   batch?: Record<string, string>;
   bot_id?: string;
-  // 为空表示全流程
+  // Null indicates the whole process
   node_id?: string;
 }

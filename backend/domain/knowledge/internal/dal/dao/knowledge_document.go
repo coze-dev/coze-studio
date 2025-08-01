@@ -132,12 +132,12 @@ func (dao *KnowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int6
 			tx.Commit()
 		}
 	}()
-	// 删除document
+	// Delete document
 	err = tx.WithContext(ctx).Model(&model.KnowledgeDocument{}).Where("id in ?", ids).Delete(&model.KnowledgeDocument{}).Error
 	if err != nil {
 		return err
 	}
-	// 删除document_slice
+	// Delete document_slice
 	err = tx.WithContext(ctx).Model(&model.KnowledgeDocumentSlice{}).Where("document_id in?", ids).Delete(&model.KnowledgeDocumentSlice{}).Error
 	if err != nil {
 		return err

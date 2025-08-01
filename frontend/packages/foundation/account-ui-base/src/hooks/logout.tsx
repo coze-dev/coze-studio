@@ -40,7 +40,7 @@ export const useLogout = (): UseLogoutReturnType => {
       onOk={async () => {
         await logout();
         setVisible(false);
-        // 跳转到根路径
+        // Jump to root path
         navigate('/');
       }}
       onCancel={() => {

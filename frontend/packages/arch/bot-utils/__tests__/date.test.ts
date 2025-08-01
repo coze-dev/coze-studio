@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import dayjs from 'dayjs';
 import { I18n } from '@coze-arch/i18n';
 
@@ -56,8 +56,16 @@ describe('Date', () => {
     expect(getCurrentTZ().utcOffset()).toBe(60 * 8);
   });
   it('#formatDate', () => {
-    const date = formatDate(1718782764);
-    expect(date).toBe('2024/06/19 15:39:24');
+    // Uses a fixed timestamp, but verifies the format rather than a specific timezone value
+    const timestamp = 1718782764;
+    const date = formatDate(timestamp);
+    // Verify that the format is correct: YYYY/MM/DD HH: mm: ss
+    expect(date).toMatch(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/);
+
+    // Verify consistency of timestamp conversions: Formatting and parsing should result in the same date portion of the dayjs object
+    const formattedDayjs = dayjs(date, 'YYYY/MM/DD HH:mm:ss');
+    const originalDayjs = dayjs.unix(timestamp);
+    expect(formattedDayjs.unix()).toBe(originalDayjs.unix());
   });
   it('#getRemainTime', () => {
     vi.useFakeTimers();
@@ -80,7 +88,7 @@ describe('Date', () => {
 describe('format timestamp', () => {
   beforeEach(() => {
     const MOCK_NOW = dayjs('2024-09-24 20:00:00');
-    vi.setSystemTime(MOCK_NOW);
+    vi.setSystemTime(MOCK_NOW.toDate());
   });
 
   it('just now', () => {

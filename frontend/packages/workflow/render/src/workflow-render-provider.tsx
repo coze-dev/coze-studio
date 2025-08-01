@@ -39,16 +39,16 @@ export interface WorkflowRenderProviderProps {
 }
 
 /**
- * 画布引擎渲染
+ * Canvas Engine Rendering
  */
 export const WorkflowRenderProvider = (props: WorkflowRenderProviderProps) => {
   const modules = useMemo(
     () => [
-      FlowDocumentContainerModule, // 默认文档
-      FlowRendererContainerModule, // 默认渲染
-      // FlowActivitiesContainerModule, // 这是固定画布的 module，目前不需要依赖
-      WorkflowDocumentContainerModule, // 扩展文档
-      WorkflowRenderContainerModule, // 扩展渲染
+      FlowDocumentContainerModule, // default document
+      FlowRendererContainerModule, // default rendering
+      // FlowActivitiesContainerModule,//This is a module to fix the canvas, no dependency is currently required
+      WorkflowDocumentContainerModule, // extended document
+      WorkflowRenderContainerModule, // extended rendering
       ...(props.containerModules || []),
     ],
     [],
@@ -57,7 +57,7 @@ export const WorkflowRenderProvider = (props: WorkflowRenderProviderProps) => {
   const preset = useCallback(
     () => [
       createFreeAutoLayoutPlugin({}),
-      createFreeStackPlugin({}), // 渲染层级管理
+      createFreeStackPlugin({}), // rendering hierarchy management
       createNodeCorePlugin({}),
       ...(props.preset?.() || []),
     ],

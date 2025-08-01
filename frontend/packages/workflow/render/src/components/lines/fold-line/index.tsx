@@ -28,14 +28,14 @@ import ArrowRenderer from '../arrow';
 import { STROKE_WIDTH, STROKE_WIDTH_SLECTED } from '../../../constants/points';
 
 /**
- * 折叠线
+ * fold line
  */
 export const FoldLineRender = React.memo(
   WithPopover((props: BezierLineProps) => {
     const { selected, color, line } = props;
     const { to } = line.position;
     const strokeWidth = selected ? STROKE_WIDTH_SLECTED : STROKE_WIDTH;
-    // 真正连接线需要到的点的位置
+    // The location of the point that the real connection line needs to go to
     const arrowToPos = {
       x: to.x - POINT_RADIUS,
       y: to.y,

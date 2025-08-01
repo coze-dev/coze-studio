@@ -111,11 +111,11 @@ export const useGenerateTopology = (
 
   const [topologicalData, setTopologicalData] = useState<TopologicalData>();
 
-  // 静态topo接口原始数据及计算数据缓存
+  // Static topo interface original data source and computing data cache
   const staticTopologyDataRef = useRef<Record<string, StaticTopologyDataCache>>(
     {},
   );
-  // 某个span最近的上游可查询到topo的span节点缓存
+  // The nearest upstream of a span can be queried to the span node cache of topo
   const nearestTopologyRootSpanMapRef = useRef<DynamicNodeMap>({});
 
   const resetStatus = () => {
@@ -136,7 +136,7 @@ export const useGenerateTopology = (
       const traceTree = buildTraceTree(spanData, false);
       return extractOriginDynamicNodeMap(traceTree, botId || entityId || '');
     } else {
-      // TraceId类型暂不实现
+      // The TraceId type is not yet implemented
       return undefined;
     }
   };
@@ -151,7 +151,7 @@ export const useGenerateTopology = (
       setLoading(true);
       /**
        * Step 1
-       * 获取动态tracing tree数据，找到当前选中节点
+       * Get dynamic tracing tree data and find the currently selected node
        */
       const originDynamicData = getOriginDynamicData();
       const currentSelectedSpanNode =
@@ -163,7 +163,7 @@ export const useGenerateTopology = (
       }
 
       const getNearestTopologyRootSpanNode = () => {
-        // 命中缓存
+        // hit cache
         if (nearestTopologyRootSpanMapRef.current[selectedSpanId]) {
           return nearestTopologyRootSpanMapRef.current[selectedSpanId];
         }
@@ -178,7 +178,7 @@ export const useGenerateTopology = (
 
       /**
        * Step 2
-       * 从当前节点开始向上找到最近的可绘制topo的节点，并请求得到静态原始topo数据
+       * Find the nearest drawable topo node starting from the current node and request static raw topo data
        */
       const nearestTopologyRootSpanNode = getNearestTopologyRootSpanNode() as
         | CSpanAttrInvokeAgent
@@ -193,7 +193,7 @@ export const useGenerateTopology = (
 
       const { type } = nearestTopologyRootSpanNode;
 
-      // 当前支持InvokeAgent和Workflow类型，分别取bot和workflow的id以及version
+      // Currently supports InvokeAgent and Workflow types, taking the id and version of bot and workflow respectively
       const getStaticTopologyMetaData = (): Partial<
         Pick<GetTopoInfoReq, 'resource_id' | 'version'>
       > => {
@@ -237,7 +237,7 @@ export const useGenerateTopology = (
       ] as StaticTopologyDataCache | undefined;
 
       const topoInfo =
-        // 优先从缓存读取
+        // Read from cache first
         staticTopologyDataCache?.topoInfoMap ??
         (await fetchStaticTopologyData(processedGetTopoInfoReq));
 
@@ -248,16 +248,16 @@ export const useGenerateTopology = (
 
       /**
        * Step 3
-       * 过滤出当前静态topo节点中需要展示动态调用链路的节点
+       * Filter out the nodes in the current static topo node that need to display the dynamic call link
        */
       const topoMetaInfo =
-        // 优先从缓存读取
+        // Read from cache first
         staticTopologyDataCache?.topoMetaInfo ??
         generateTopologyMetaInfo(topoInfo);
 
       const upstreamNodeMap = staticTopologyDataCache?.upstreamNodeMap ?? {};
 
-      // 判断当前节点自身是否有topo信息（即当前所需要展示的topo的根节点）
+      // Determine whether the current node itself has topo information (that is, the root node of the topo that needs to be displayed at present)
       const isSelectedNodeTopologyRoot =
         currentSelectedSpanNode.id === nearestTopologyRootSpanNode.id;
 
@@ -266,8 +266,8 @@ export const useGenerateTopology = (
           getNodeResourceId(currentSelectedSpanNode, botId || entityId || '')
         ];
 
-      // 如果当前节点为topo根节点，那么展示所有动态节点信息；
-      // 否则，过滤出当前节点在静态topo中的所有上游节点，只对这些上游节点进行展示
+      // If the current node is the topo root node, then all dynamic node information is displayed.
+      // Otherwise, filter out all upstream nodes of the current node in the static topo and display only those upstream nodes
       const currentDynamicNodeMap = isSelectedNodeTopologyRoot
         ? originDynamicData.dynamicNodeMap
         : filterObjectByKeys(
@@ -288,7 +288,7 @@ export const useGenerateTopology = (
 
       /**
        * Step 4
-       * 补齐动态节点信息 & 布局信息到静态topo
+       * Complement dynamic node information & layout information to static topo
        */
       const originalTopologicalData = completeDynamicTopologyInfo(
         topoInfo,
@@ -301,7 +301,7 @@ export const useGenerateTopology = (
         layoutDirection,
       );
 
-      // 存入缓存
+      // cache
       staticTopologyDataRef.current[staticTopologyDataMapKey] = {
         topoInfoMap: topoInfo,
         topoMetaInfo,
@@ -318,7 +318,7 @@ export const useGenerateTopology = (
   }, [botId, entityId, spaceId, dataSource, selectedSpanId]);
 
   useEffect(
-    // 销毁时清空缓存
+    // Clear cache on destruction
     () => () => {
       staticTopologyDataRef.current = {
         topoInfoMap: {},

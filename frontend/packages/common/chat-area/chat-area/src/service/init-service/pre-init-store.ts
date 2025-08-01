@@ -45,7 +45,7 @@ export class PreInitStoreService {
   }
 
   /**
-   * 清除 Store Set
+   * Clear Store Set
    */
   public clearStoreSet() {
     if (!this.prePositionedStoreSet) {

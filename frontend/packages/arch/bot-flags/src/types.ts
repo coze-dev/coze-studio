@@ -19,11 +19,11 @@ import { type FEATURE_FLAGS as ORIGIN_FEATURE_FLAGS } from './feature-flags';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 type FEATURE_FLAGS = ORIGIN_FEATURE_FLAGS & {
   /**
-   * 返回所有可用 key 列表
+   * Returns a list of all available keys
    */
   keys: string[];
   /**
-   * FG 是否已经完成初始化
+   * Has FG completed initialization?
    */
   isInited: boolean;
 };

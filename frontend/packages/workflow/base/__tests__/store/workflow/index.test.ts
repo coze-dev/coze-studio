@@ -22,7 +22,7 @@ import { useWorkflowStore } from '../../../src/store/workflow';
 
 describe('useWorkflowStore', () => {
   beforeEach(() => {
-    // 重置 store 状态
+    // Reset store state
     useWorkflowStore.setState({
       nodes: [],
       edges: [],
@@ -63,7 +63,7 @@ describe('useWorkflowStore', () => {
     });
 
     it('应该能够重置为空数组', () => {
-      // 先设置一些数据
+      // Let's set up some data.
       useWorkflowStore.getState().setNodes([
         {
           id: '1',
@@ -75,7 +75,7 @@ describe('useWorkflowStore', () => {
         },
       ]);
 
-      // 设置为空数组
+      // Set to empty array
       useWorkflowStore.getState().setNodes([]);
       expect(useWorkflowStore.getState().nodes).toEqual([]);
     });
@@ -99,7 +99,7 @@ describe('useWorkflowStore', () => {
     });
 
     it('应该能够重置为空数组', () => {
-      // 先设置一些数据
+      // Let's set up some data.
       useWorkflowStore.getState().setEdges([
         {
           sourceNodeID: '1',
@@ -107,7 +107,7 @@ describe('useWorkflowStore', () => {
         },
       ]);
 
-      // 设置为空数组
+      // Set to empty array
       useWorkflowStore.getState().setEdges([]);
       expect(useWorkflowStore.getState().edges).toEqual([]);
     });
@@ -115,11 +115,11 @@ describe('useWorkflowStore', () => {
 
   describe('setIsCreatingWorkflow', () => {
     it('应该正确设置创建状态', () => {
-      // 设置为 true
+      // Set to true
       useWorkflowStore.getState().setIsCreatingWorkflow(true);
       expect(useWorkflowStore.getState().isCreatingWorkflow).toBe(true);
 
-      // 设置为 false
+      // Set to false
       useWorkflowStore.getState().setIsCreatingWorkflow(false);
       expect(useWorkflowStore.getState().isCreatingWorkflow).toBe(false);
     });

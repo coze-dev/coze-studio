@@ -22,7 +22,7 @@ import { render, screen } from '@testing-library/react';
 import { FieldItem } from '../../../src/components/base-form-materials/field-item';
 
 describe('FieldItem', () => {
-  // 测试基本渲染
+  // Test basic rendering
   it('should render title', () => {
     const title = 'Test Title';
     render(<FieldItem title={title} />);
@@ -30,14 +30,14 @@ describe('FieldItem', () => {
     expect(titleElement).toBeInTheDocument();
   });
 
-  // 测试必填标记渲染
+  // Test required tag rendering
   it('should render required marker', () => {
     render(<FieldItem title="Test" required />);
     const requiredMarker = screen.getByText('*');
     expect(requiredMarker).toBeInTheDocument();
   });
 
-  // 测试提示信息渲染
+  // Test prompt information rendering
   it('should render tooltip', () => {
     const tooltipText = 'This is a tooltip';
     const el = render(<FieldItem title="Test" tooltip={tooltipText} />);
@@ -47,7 +47,7 @@ describe('FieldItem', () => {
     expect(tooltipIcon).toBeInTheDocument();
   });
 
-  // 测试标签渲染
+  // test label rendering
   it('should render tag', () => {
     const tagText = 'New';
     render(<FieldItem title="Test" tag={tagText} />);
@@ -55,7 +55,7 @@ describe('FieldItem', () => {
     expect(tagElement).toBeInTheDocument();
   });
 
-  // 测试描述信息渲染
+  // Test description information rendering
   it('should render description', () => {
     const descriptionText = 'This is a description';
     render(<FieldItem title="Test" description={descriptionText} />);
@@ -63,7 +63,7 @@ describe('FieldItem', () => {
     expect(descriptionElement).toBeInTheDocument();
   });
 
-  // 测试反馈信息渲染
+  // Test feedback rendering
   it('should render feedback', () => {
     const feedbackText = 'This is a feedback';
     render(<FieldItem title="Test" feedback={feedbackText} />);
@@ -71,7 +71,7 @@ describe('FieldItem', () => {
     expect(feedbackElement).toBeInTheDocument();
   });
 
-  // 测试子元素渲染
+  // Test child element rendering
   it('should render children', () => {
     const childText = 'Child Content';
     render(<FieldItem title="Test">{childText}</FieldItem>);

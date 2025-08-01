@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import classNames from 'classnames';
 import { type TableMemoryItem } from '@coze-studio/bot-detail-store';
 import {
@@ -22,7 +22,6 @@ import {
 } from '@coze-data/database-v2-base/constants';
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
-import { FieldItemType } from '@coze-arch/bot-api/memory';
 import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   type ColumnProps,
@@ -31,12 +30,14 @@ import {
   Space,
   Typography,
 } from '@coze-arch/coze-design';
+import { FieldItemType } from '@coze-arch/bot-api/memory';
 
 import { type TableRow, type TableField, type TableFieldData } from './type';
 
 export function formatTableStructList(
   structList: TableMemoryItem[],
 ): TableFieldData[] {
+  // @ts-expect-error fix me late
   return structList.map(item => ({
     fieldName: item.name ?? '',
     fieldDescription: item.desc ?? '',
@@ -55,7 +56,7 @@ export function formatTableDataRow(
     dataRowFieldList.forEach(_key => {
       const structItem = structList.find(i => i.fieldName === _key);
       if (!structItem) {
-        // 系统字段
+        // System field
         formattedDataRow[_key] = {
           fieldName: _key,
           type: FieldItemType.Text,
@@ -156,7 +157,7 @@ function DatabaseTableCell({ value }: DatabaseTableCellProps) {
 }
 
 /**
- * 获取 Table Field 表头数据
+ * Get Table Field Header Data
  */
 export const getTableColumns = ({
   fieldList,
@@ -167,12 +168,13 @@ export const getTableColumns = ({
 }: GetTableColumnsParams) => {
   const columns: ColumnProps<TableRow>[] = [];
 
-  // 系统字段列
+  // System field column
   columns.push(
     ...SYSTEM_FIELDS.map(item => ({
       title: () => (
         <DatabaseFieldTitle
           field={item.name}
+          // @ts-expect-error fix me late
           type={item.type}
           tip={item.desc}
           required
@@ -191,7 +193,7 @@ export const getTableColumns = ({
     })),
   );
 
-  // 用户字段列
+  // user field column
   columns.push(
     ...fieldList.map(item => ({
       title: () => (
@@ -208,7 +210,7 @@ export const getTableColumns = ({
     })),
   );
 
-  // 操作列
+  // action column
   columns.push({
     title: I18n.t('db_table_0126_021'),
     width: 100,

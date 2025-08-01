@@ -15,31 +15,31 @@
  */
  
 /**
- * 通过 TagName 寻找祖先节点(包括自身)
+ * Find ancestor nodes (including itself) by TagName
  * @param node Node | null
- * @param tagName 目标 tagName
+ * @param tagName Target tagName
  * @returns Node | null
  */
 export const findAncestorNodeByTagName = (
   node: Node | null,
   tagName: string,
 ): Element | null => {
-  // 将标签名转换为大写，因为 DOM 中的标签名通常是大写的
+  // Convert the tag signature to uppercase, as tag signatures in the DOM are usually uppercase
   const upperTagName = tagName.toUpperCase();
 
-  // 遍历节点的祖先节点直到找到匹配的标签名或到达根节点
+  // Traverse the node's ancestors until a matching tag is found or the root node is reached
   while (node) {
-    // 确保当前节点是元素节点，并且标签名匹配
+    // Make sure that the current node is an element node and that the tag signatures match
     if (
       node.nodeType === Node.ELEMENT_NODE &&
       (node as Element).tagName === upperTagName
     ) {
       return node as Element;
     }
-    // 移动到父节点
+    // Move to Parent Node
     node = node.parentNode;
   }
 
-  // 如果没有找到符合条件的祖先节点，返回 null
+  // If no eligible ancestor is found, return null.
   return null;
 };

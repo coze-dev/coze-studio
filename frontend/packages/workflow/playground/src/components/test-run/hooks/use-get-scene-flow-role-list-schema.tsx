@@ -42,7 +42,7 @@ export const useGetSceneFlowRoleListSchema = () => {
         player_description: item.description,
       })),
       component: {
-        // 数组渲染的setter
+        // Array rendering setter
         type: 'Array',
       },
       decorator: {

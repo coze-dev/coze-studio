@@ -15,8 +15,8 @@
  */
  
 /**
- * 发布到多环境
- * 是一个单独模块，抽象到一个组件内
+ * Publish to multiple environments
+ * Is a single module, abstracted into a component
  */
 import { useMemo } from 'react';
 
@@ -42,12 +42,12 @@ const usePublishEnv = () => {
     useGlobalState();
   const { vcsData, plugin_id } = info;
 
-  /** 是否支持发布 PPE */
+  /** Whether to support the release of PPE */
   const canPublishEnv = useMemo(
     () => isCollaboratorMode && vcsData?.can_edit && isDevSpace,
     [isDevSpace, isCollaboratorMode, vcsData],
   );
-  /** 从未发布过 */
+  /** It's never been published. */
   const neverPublished = useMemo(
     () => !plugin_id || plugin_id === '0',
     [plugin_id],

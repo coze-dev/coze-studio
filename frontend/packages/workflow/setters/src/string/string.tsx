@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import cx from 'classnames';
@@ -27,7 +27,7 @@ export interface StringOptions {
   placeholder?: string;
   width?: number | string;
   maxCount?: number;
-  // 新增这个配置的原因是readonly样式带有输入框 有些场景需要只展示文本
+  // Text-only mode for readonly scenarios that need plain text display instead of input box
   textMode?: boolean;
   testId?: string;
 }

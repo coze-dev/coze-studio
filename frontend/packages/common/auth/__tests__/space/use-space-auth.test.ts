@@ -20,12 +20,12 @@ import { SpaceRoleType } from '@coze-arch/idl/developer_api';
 
 import { ESpacePermisson } from '../../src/space/constants';
 
-// 模拟 useSpaceRole
+// Simulation useSpaceRole
 vi.mock('../../src/space/use-space-role', () => ({
   useSpaceRole: vi.fn(),
 }));
 
-// 模拟 calcPermission
+// simulated calcPermission
 vi.mock('../../src/space/calc-permission', () => ({
   calcPermission: vi.fn(),
 }));
@@ -40,26 +40,26 @@ describe('useSpaceAuth', () => {
     const permissionKey = ESpacePermisson.UpdateSpace;
     const mockRoles = [SpaceRoleType.Owner];
 
-    // 模拟 useSpaceRole 返回角色
+    // Simulate useSpaceRole return role
     (useSpaceRole as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       mockRoles,
     );
 
-    // 模拟 calcPermission 返回权限结果
+    // Simulate calcPermission return permission result
     (calcPermission as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       true,
     );
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useSpaceAuth(permissionKey, spaceId));
 
-    // 验证 useSpaceRole 被调用，并传入正确的 spaceId
+    // Verify that useSpaceRole is called, passing in the correct spaceId.
     expect(useSpaceRole).toHaveBeenCalledWith(spaceId);
 
-    // 验证 calcPermission 被调用，并传入正确的参数
+    // Verify that calcPermission is called, passing in the correct parameters
     expect(calcPermission).toHaveBeenCalledWith(permissionKey, mockRoles);
 
-    // 验证返回值与 calcPermission 的返回值一致
+    // Verify that the return value is consistent with the return value of calcPermission
     expect(result.current).toBe(true);
   });
 
@@ -68,20 +68,20 @@ describe('useSpaceAuth', () => {
     const permissionKey = ESpacePermisson.UpdateSpace;
     const mockRoles = [SpaceRoleType.Member];
 
-    // 模拟 useSpaceRole 返回角色
+    // Simulate useSpaceRole return role
     (useSpaceRole as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       mockRoles,
     );
 
-    // 模拟 calcPermission 返回权限结果
+    // Simulate calcPermission return permission result
     (calcPermission as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       false,
     );
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useSpaceAuth(permissionKey, spaceId));
 
-    // 验证返回值与 calcPermission 的返回值一致
+    // Verify that the return value is consistent with the return value of calcPermission
     expect(result.current).toBe(false);
   });
 
@@ -90,23 +90,23 @@ describe('useSpaceAuth', () => {
     const permissionKey = ESpacePermisson.UpdateSpace;
     const mockRoles: SpaceRoleType[] = [];
 
-    // 模拟 useSpaceRole 返回空角色数组
+    // Simulate useSpaceRole returns an empty character array
     (useSpaceRole as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       mockRoles,
     );
 
-    // 模拟 calcPermission 返回权限结果
+    // Simulate calcPermission return permission result
     (calcPermission as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       false,
     );
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useSpaceAuth(permissionKey, spaceId));
 
-    // 验证 calcPermission 被调用，并传入正确的参数
+    // Verify that calcPermission is called, passing in the correct parameters
     expect(calcPermission).toHaveBeenCalledWith(permissionKey, mockRoles);
 
-    // 验证返回值与 calcPermission 的返回值一致
+    // Verify that the return value is consistent with the return value of calcPermission
     expect(result.current).toBe(false);
   });
 });

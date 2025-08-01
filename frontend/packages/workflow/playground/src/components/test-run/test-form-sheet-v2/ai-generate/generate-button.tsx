@@ -32,8 +32,8 @@ import css from './generate-button.module.less';
 interface AIGenerateButtonProps {
   schema?: TestFormSchema;
   /**
-   * flow: 流程
-   * node: 单节点
+   * Flow: Flow
+   * Node: Single Node
    */
   type: 'flow' | 'node';
   onGenerate: (data: any, cover: boolean) => void;

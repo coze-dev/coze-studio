@@ -18,7 +18,7 @@ import { StandardNodeType } from '@coze-workflow/base';
 import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 /**
- * 排除开始和结束节点
+ * Exclude start and end nodes
  * @param nodes
  * @returns
  */

@@ -29,14 +29,14 @@ import {
 } from '../../../constants/message';
 
 /**
- * 直接搞最下面的数据
+ * Go directly to the bottom data
  */
 export class LoadEagerly extends LoadCommand {
   action: LoadAction = 'load-eagerly';
 
   constructor(
     envTools: LoadCommandEnvTools,
-    // 语音通话无条件刷新消息列表专用
+    // Voice call unconditional refresh message list dedicated
     private unconditionally = false,
   ) {
     super(envTools);

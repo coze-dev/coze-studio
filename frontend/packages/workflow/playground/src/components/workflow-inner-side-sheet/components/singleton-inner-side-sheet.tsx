@@ -25,7 +25,7 @@ import {
 } from '../hooks/use-inner-side-sheet-store';
 import { getWorkflowInnerSideSheetHolder } from '../../../utils/get-workflow-inner-side-sheet-holder';
 
-/* 单例 InnerSideSheet 弹窗， 打开一个时关闭其他的 */
+/* Singleton InnerSideSheet pop-up window, open one and close the other */
 export const SingletonInnerSideSheet = (
   props: PropsWithChildren<
     SingletonSideSheetProps & {

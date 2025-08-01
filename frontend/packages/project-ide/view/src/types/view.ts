@@ -34,7 +34,7 @@ export enum LayoutPanelType {
   SECONDARY_SIDEBAR = 'secondarySidebar',
   BOTTOM_PANEL = 'bottomPanel',
   STATUS_BAR = 'statusBar',
-  // 暂时未用到，留作扩展
+  // Not used yet, reserved for expansion
   RIGHT_BAR = 'rightBar',
 }
 
@@ -50,34 +50,34 @@ export const allLayoutEnums = [
 ];
 
 /**
- * widget 描述数据
+ * Widget description data
  */
 interface WidgetDescription {
   uri: URI;
   innerState: string;
 }
 interface TabPanelData {
-  /** 固定值 */
+  /** fixed value */
   type: 'tab-area';
-  /** 当前激活的 tab */
+  /** Currently active tab */
   currentIndex?: number;
   widgets?: WidgetDescription[];
 }
 /**
- * main panel 的数据结构
+ * Main panel data structure
  */
 interface MainPanelData {
   main?: TabPanelData;
 }
 interface BottomPanelData {
   main?: TabPanelData;
-  /** 是否默认折叠 */
+  /** Whether to fold by default */
   expanded?: boolean;
 }
 
 export interface ActivityBarItem {
   /**
-   * menu 位置
+   * Menu location
    */
   position: 'top' | 'bottom';
   /**
@@ -85,11 +85,11 @@ export interface ActivityBarItem {
    */
   uri: URI;
   /**
-   * tooltip 提示文案
+   * Tooltip Copywriting
    */
   tooltip?: string;
   /**
-   * 业务侧劫持实现 item 点击
+   * Business side hijacking implementation item click
    */
   onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
@@ -100,15 +100,15 @@ export interface StatusBarItem {
 }
 
 /**
- * 支持传入 DockPanel options
+ * Support for incoming DockPanel options
  */
 export interface SplitOptions {
   /**
-   * 最大分屏数量限制
+   * Maximum number of split screens
    */
   maxSplitCount: number;
   /**
-   * 分屏方向限制，不传则不限制
+   * Split screen direction limit, no limit if not transmitted
    */
   splitOrientation?: 'horizontal' | 'vertical';
 }
@@ -123,7 +123,7 @@ export interface SplitScreenConfig {
   bottom?: DockPanelConfig;
 }
 
-/** 预设数据 */
+/** default data */
 export interface LayoutData {
   debugBar?: {
     render: () => ReactElementType;
@@ -138,63 +138,63 @@ export interface LayoutData {
   statusBarItems?: StatusBarItem[];
   defaultWidgets?: URI[];
 
-  /** 持久化数据 */
+  /** persistent data */
   mainPanel?: MainPanelData;
   bottomPanel?: BottomPanelData;
 }
 
 export interface PresetConfigType {
   /**
-   * 自定义分屏规则配置
+   * Custom split-screen rule configuration
    */
   splitScreenConfig?: SplitScreenConfig;
   /**
-   * 禁用预置右键菜单
+   * Disable preset right-click menu
    */
   disableContextMenu?: boolean;
   /**
-   * 禁用全屏
+   * Disable full screen
    */
   disableFullScreen?: boolean;
 }
 
 export interface ViewPluginOptions {
-  // 预置配置
+  // preset configuration
   presetConfig?: PresetConfigType;
   /**
-   * 所有自定义 widget 工厂
+   * All custom widget factories
    */
   widgetFactories?: WidgetFactory[];
   /**
-   * widget 报错渲染
+   * Widget error rendering
    */
   widgetFallbackRender?: React.FC<{ widget: ReactWidget } & FallbackProps>;
   /**
-   * 默认布局信息
+   * Default layout information
    */
   defaultLayoutData?: LayoutData;
 
   /**
-   * 持久化数据存储的 key
+   * The key to persistent data storage
    */
   getStorageKey?: () => string;
 
   /**
-   * 关闭持久化逻辑
+   * Turn off persistence logic
    */
   restoreDisabled?: boolean;
   /**
-   * 自定义设置
+   * custom settings
    */
   customPreferenceConfigs?: CustomPreferenceConfig[];
 
   /**
-   * 自定义 IDE 布局
+   * Custom IDE layout
    */
   customLayout?: (shell: ApplicationShell) => BoxLayout;
 }
 
 /**
- * 菜单路径
+ * menu path
  */
 export type MenuPath = string[];

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { I18n } from '@coze-arch/i18n';
 import {
@@ -129,7 +129,7 @@ export const getBasicConfig = () => ({
   },
   [UnitType.TEXT_WECHAT]: {
     unitType: UnitType.TEXT_WECHAT,
-    // @ts-expect-error -- 暂时没有翻译 TODO: hzf
+    // @ts-expect-error -- no translation yet TODO: hzf
     name: I18n.t('公众号'),
     icon: <IconCozWechatFill className="w-4 h-4 [&>path]:fill-current" />,
   },

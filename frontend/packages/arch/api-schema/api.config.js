@@ -1,18 +1,34 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // apps/logistics/api.config.js
 
 const path = require('path');
 
 const config = [
   {
-    idlRoot: '../../../../opencoze', // idl 根目录
+    idlRoot: path.resolve(__dirname, '../../../../'), // IDL root directory
     entries: {
-      passport: './idl/passport/passport.thrift', // 入口服务名称及路径
+      passport: './idl/passport/passport.thrift', // Entry service name and path
       explore:
         './idl/flow/marketplace/flow_marketplace_product/public_api.thrift',
     },
-    commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // 自定义配置文件
-    output: './src', // 产物所在位置
-    plugins: [], // 自定义插件
+    commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
+    output: './src', // Product location
+    plugins: [], // custom plugin
   },
 ];
 

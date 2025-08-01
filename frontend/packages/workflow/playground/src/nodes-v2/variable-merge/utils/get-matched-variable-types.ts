@@ -19,7 +19,7 @@ import { type ViewVariableType } from '@coze-workflow/base';
 import { MATCHED_VARIABLE_TYPES } from '../constants';
 
 /**
- * 获取匹配的类型
+ * Get the matching type
  * @param viewType
  * @returns
  */

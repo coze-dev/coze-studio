@@ -35,7 +35,7 @@ export const getMessageTimeCost = (ext?: MessageExt) => ext?.time_cost;
 export const getMessageUnitsByFunctionCallMessageList = (
   functionCallMessageList: Message[],
 ) => {
-  // 生成messageUnits
+  // Generate messageUnits
   const messageUnits = functionCallMessageList
     .map((m, i) => {
       const role = getRoleByMessage(m);
@@ -45,16 +45,16 @@ export const getMessageUnitsByFunctionCallMessageList = (
       return {
         role,
         llmOutput: m,
-        // 后续统一走id对匹配
+        // Follow-up unified ID pair matching
         callId: m.extra_info.call_id,
-        // TODO：【该方式为兜底，后续逐渐下掉，都用id匹配】消息顺序倒序,response消息在前一位。
+        // TODO: [This method is to cover the bottom, and then gradually drop it, all use id matching] The message order is reversed, and the response message is in the first place.
         apiIndexMark: role === MessageUnitRole.TOOL ? i - 1 : undefined,
         time: getMessageTimeCost(m.extra_info),
       };
     })
     .filter(Boolean) as FunctionCallMessageUnit[];
 
-  // 根据tool_response修改messageUnits
+  // Modify messageUnits according to tool_response
   const modifiedMessageUnits = functionCallMessageList.reduceRight(
     (acc, message, index) => {
       modifyMessageUnitByToolResponseMessage(message, acc, index);
@@ -63,11 +63,11 @@ export const getMessageUnitsByFunctionCallMessageList = (
     messageUnits,
   );
 
-  // 接收到的消息是倒叙，需要正序渲染
+  // The received message is a flashback and needs to be rendered in order.
   return modifiedMessageUnits.reverse();
 };
 
-//根据message获取对应的role
+//Get the corresponding role according to the message
 const getRoleByMessage = (message: Message) => {
   const { type, content } = message;
 
@@ -86,7 +86,7 @@ const getRoleByMessage = (message: Message) => {
 
   if (!isVerboseContent(parsedContent)) {
     /**
-     * 这是遗留的错误 verbose 数据, 暂时保留使得线上功能正常
+     * This is the legacy error verbose data, temporarily retained to make the online function normal
      */
     if (isKnowledgeRecallVerboseContentDeprecated(parsedContent)) {
       return MessageUnitRole.DATA_SET;
@@ -102,7 +102,7 @@ const getRoleByMessage = (message: Message) => {
     return MessageUnitRole.DATA_SET;
   }
 
-  /** 需要渲染的verbose协议 */
+  /** Verbose protocol to render */
   if (
     msg_type === VerboseMsgType.JUMP_TO ||
     msg_type === VerboseMsgType.BACK_WORD ||
@@ -112,7 +112,7 @@ const getRoleByMessage = (message: Message) => {
   }
 
   /**
-   * 不对这两个 verbose 消息做任何处理
+   * Do nothing with these two verbose messages
    */
   if (
     msg_type === VerboseMsgType.GENERATE_ANSWER_FINISH ||
@@ -127,7 +127,7 @@ const getRoleByMessage = (message: Message) => {
   return;
 };
 
-// index+1、streamId兜底匹配function_call，兼容场景：普通场景、流式插件
+// Index + 1, streamId bottom matching function_call, compatible scenes: ordinary scenes, streaming plug-ins
 const findTargetToolUnit = (
   messageUnits: FunctionCallMessageUnit[],
   index: number,
@@ -140,7 +140,7 @@ const findTargetToolUnit = (
         ? unit.streamUuid === streamUuid
         : unit.apiIndexMark === index),
   );
-// function_call通用匹配机制，id对匹配
+// function_call universal matching mechanism, id pair matching
 const findTargetFunctionCall = (
   messageUnits: FunctionCallMessageUnit[],
   id?: string,
@@ -150,7 +150,7 @@ const findTargetFunctionCall = (
       unit.role === MessageUnitRole.TOOL && unit.callId === id,
   );
 
-// 匹配function_call id，将tool_response中的id与其进行匹配，并更新插件结果
+// Match function_call id, match the id in the tool_response with it, and update the plugin results
 const handelMatchCallId = (
   message: Message,
   messageUnits: FunctionCallMessageUnit[],
@@ -171,23 +171,23 @@ const handelMatchCallId = (
   return;
 };
 
-/** 处理tool_response结果，找到对应的function调用，并将其插入输出结果
- *  场景：id对匹配、index+1普通匹配、流式插件verbose匹配
+/** Process tool_response result, find the corresponding function call, and insert it into the output
+ *  Scenario: ID pair matching, index + 1 normal matching, streaming plug-in verbose matching
  */
 const modifyMessageUnitByToolResponseMessage = (
   message: Message,
   messageUnits: FunctionCallMessageUnit[],
   index: number,
 ) => {
-  // 插件相关的消息
-  // p0、优先匹配function call_id
+  // Plugin related news
+  // P0, priority matching function call_id
   if (isHaveFunctionId(message)) {
     handelMatchCallId(message, messageUnits);
     return;
   }
-  // 1、非流式插件
+  // 1. Non-streaming plugins
   if (isNormalPlugin(message)) {
-    // 获取 targetToolUnit
+    // Get target ToolUnit
     const targetToolUnit = findTargetToolUnit(messageUnits, index);
     if (!targetToolUnit) {
       return;
@@ -200,9 +200,9 @@ const modifyMessageUnitByToolResponseMessage = (
     ).toFixed(1);
     return;
   }
-  // 2、流式插件开始
+  // 2. Start streaming plugins
   if (isStreamPluginRunning(message)) {
-    // 获取 targetToolUnit
+    // Get target ToolUnit
     const targetToolUnit = findTargetToolUnit(messageUnits, index);
     if (!targetToolUnit) {
       return;
@@ -211,7 +211,7 @@ const modifyMessageUnitByToolResponseMessage = (
     targetToolUnit.apiResponse = message;
     return;
   }
-  // 2、流式插件结束
+  // 2. End of streaming plugin
   if (isStreamPluginFinish(message)) {
     const messageContentObj =
       getVerboseContentObj<VerboseMsgType.STREAM_PLUGIN_FINISH>(
@@ -225,7 +225,7 @@ const modifyMessageUnitByToolResponseMessage = (
       return;
     }
     const { tool_output_content, uuid } = dataObj;
-    // 获取 targetToolUnit
+    // Get target ToolUnit
     const targetToolUnit = findTargetToolUnit(messageUnits, index, uuid);
     if (!targetToolUnit) {
       return;
@@ -242,7 +242,7 @@ const modifyMessageUnitByToolResponseMessage = (
   }
 };
 
-// 是否是流式插件
+// Is it a streaming plugin?
 export function isStreamPlugin(message: Message): boolean {
   return isStreamPluginRunning(message) || isStreamPluginFinish(message);
 }
@@ -258,7 +258,7 @@ export function isNormalPlugin(message: Message): boolean {
   return message.type === 'tool_response' && !isStreamPlugin(message);
 }
 
-// 是否有function_call id做匹配
+// Is there a function_call ID match?
 export function isHaveFunctionId(message: Message): boolean {
   return message.type === 'tool_response' && !!message.extra_info.call_id;
 }

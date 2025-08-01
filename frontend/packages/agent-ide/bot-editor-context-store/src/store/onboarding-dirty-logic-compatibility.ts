@@ -37,7 +37,7 @@ export interface OnboardingDirtyLogicCompatibilityAction {
 }
 
 /**
- * 用来处理 bot 编辑页 onboarding 的复杂、脏业务逻辑
+ * Complex, dirty business logic for handling bot edit page onboarding
  */
 export const createOnboardingDirtyLogicCompatibilityStore = () =>
   create<

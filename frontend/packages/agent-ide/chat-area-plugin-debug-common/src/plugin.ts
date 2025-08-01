@@ -26,19 +26,19 @@ import { bizLifeCycleServiceGenerator } from './services/life-cycle';
 
 export class BizPlugin extends WriteableChatAreaPlugin<PluginBizContext> {
   /**
-   * 插件类型
-   * PluginMode.Readonly = 只读模式
-   * PluginMode.Writeable = 可写模式
+   * plugin type
+   * PluginMode. Readonly = read-only mode
+   * PluginMode. Writeable = Writable Mode
    */
   public pluginMode = PluginMode.Writeable;
   /**
-   * 插件名称
-   * 请点 PluginName 里面去定义
+   * plugin name
+   * Please click PluginName to define it.
    */
   public pluginName = PluginName.DebugCommon;
 
   /**
-   * 生命周期服务
+   * lifecycle services
    */
   public lifeCycleServices = createWriteableLifeCycleServices(
     this,

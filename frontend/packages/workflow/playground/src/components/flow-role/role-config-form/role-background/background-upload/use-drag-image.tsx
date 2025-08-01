@@ -18,7 +18,7 @@ import type React from 'react';
 import { type DragEventHandler, useRef, useState } from 'react';
 
 const checkHasFileOnDrag = (e: React.DragEvent<HTMLDivElement>) =>
-  // 判断的依据直接看 types 的类型解释就好了
+  // The basis for the judgment is to directly look at the type explanation of types
   Boolean(e.dataTransfer?.types.includes('Files'));
 
 export const useDragImage = () => {

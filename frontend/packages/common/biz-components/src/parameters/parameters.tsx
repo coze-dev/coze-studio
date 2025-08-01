@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import React, { type PropsWithChildren, useState } from 'react';
 
@@ -56,26 +56,26 @@ export function Parameters(props: PropsWithChildren<ParametersProps>) {
     allowValueEmpty = true,
     onChange,
   } = props;
-  // 监听该值的变化
+  // Monitor for changes in this value
   const isValueEmpty = !value || value.length === 0;
   const { data: formattedTreeData, hasObjectLike } = formatTreeData(
     cloneDeep(value) as TreeNodeCustomData[],
   );
 
   /**
-   * 表示当前哪一行的父亲节点的 description 处于多行状态(LLM节点)
-   * 用于渲染树形竖线，处于多行文本的下一行竖线应该延长
-   * 若 param name 有错误信息，竖线从错误信息下方延展，长度有所变化
+   * The description of the parent node of which row is currently in a multi-row state (LLM node)
+   * For rendering tree vertical lines, the next vertical line in multiple lines of text should be extended
+   * If the param name has an error message, the vertical bar extends below the error message and the length changes
    */
   const [activeMultiInfo, setActiveMultiInfo] = useState<ActiveMultiInfo>({
     activeMultiKey: '',
   });
 
-  // 该组件的 change 方法
+  // How to change this component
   const onValueChange = (freshValue?: Array<TreeNodeCustomData>) => {
     if (onChange) {
       freshValue = (freshValue || []).concat([]);
-      // 清理掉无用字段
+      // Clean up useless fields
       traverse<TreeNodeCustomData>(freshValue, node => {
         const { key, name, type, description, children } = node;
         // eslint-disable-next-line guard-for-in
@@ -95,9 +95,9 @@ export function Parameters(props: PropsWithChildren<ParametersProps>) {
     }
   };
 
-  // 树节点的 change 方法
+  // Tree node change method
   const onTreeNodeChange = (mode: ChangeMode, param: TreeNodeCustomData) => {
-    // 先clone一份，因为Tree内部会对treeData执行isEqual，克隆一份一定是false
+    // Clone one first, because the Tree will execute isEqual on treeData, cloning one must be false.
     const cloneDeepTreeData = cloneDeep(
       formattedTreeData,
     ) as Array<TreeNodeCustomData>;
@@ -108,13 +108,13 @@ export function Parameters(props: PropsWithChildren<ParametersProps>) {
     if (findResult) {
       switch (mode) {
         case ChangeMode.Append: {
-          // 新增不可以用 parentData 做标准，要在当前 data 下新增
+          // You can't use parentData as a standard for adding, you need to add it under the current data.
           const { data } = findResult;
           const currentChildren = data.children || [];
-          // @ts-expect-error 有些值不需要此时指定，因为在 rerender 的时候会执行 format
+          // @ts-expect-error Some values do not need to be specified at this time because format is executed during rerender
           data.children = currentChildren.concat({
             ...getDefaultAppendValue(),
-            // 增加 field
+            // Add field
             field: `${data.field}.children[${currentChildren.length}]`,
           });
           onValueChange(cloneDeepTreeData);

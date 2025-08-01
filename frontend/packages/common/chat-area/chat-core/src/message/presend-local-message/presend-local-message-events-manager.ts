@@ -32,7 +32,7 @@ export interface PreSendLocalMessageEventsManagerProps {
 }
 
 /**
- * 主要处理预发送消息的状态管理
+ * Mainly handles state management of pre-sent messages
  */
 export class PreSendLocalMessageEventsManager {
   private reportLog: ReportLog;
@@ -55,7 +55,7 @@ export class PreSendLocalMessageEventsManager {
     PreSendLocalMessage<ContentType>
   > = new Map();
 
-  // 新增需要缓存的本地消息
+  // Add local messages that need to be cached
   add(message: Message<ContentType>) {
     this.preSendLocalMessageEventsMap.set(
       message.extra_info.local_message_id,
@@ -87,7 +87,7 @@ export class PreSendLocalMessageEventsManager {
     }
   }
 
-  // 获取缓存的本地消息
+  // Get cached local messages
   getStashedLocalMessage(local_message_id: string) {
     return this.preSendLocalMessageEventsMap.get(local_message_id);
   }
@@ -111,7 +111,7 @@ export class PreSendLocalMessageEventsManager {
     params: Parameters<PreSendLocalMessageEventsMap[T]>[0],
   ) {
     this.preSendLocalMessageEvents.emit(event, params);
-    // 发送成功, 清除
+    // Sent successfully, clear
     if (event === PreSendLocalMessageEventsEnum.MESSAGE_SEND_SUCCESS) {
       const message = params as Message<ContentType>;
       this.preSendLocalMessageEventsMap.delete(
@@ -126,7 +126,7 @@ export class PreSendLocalMessageEventsManager {
       return;
     }
 
-    // 发送失败/超时, 清除
+    // Send failed/timed out, clear
     if (
       [
         PreSendLocalMessageEventsEnum.MESSAGE_SEND_FAIL,
@@ -145,7 +145,7 @@ export class PreSendLocalMessageEventsManager {
       return;
     }
 
-    // 上传状态修改
+    // Upload status modification
     if (event === PreSendLocalMessageEventsEnum.FILE_UPLOAD_STATUS_CHANGE) {
       const message = params as Message<ContentType>;
       this.preSendLocalMessageEventsMap.set(
@@ -156,7 +156,7 @@ export class PreSendLocalMessageEventsManager {
   }
 
   /**
-   * 销毁
+   * destroy
    */
   destroy() {
     this.preSendLocalMessageEvents.removeAllListeners();

@@ -59,7 +59,7 @@ export const StaticChatList = ({
   renderCreateInput: () => React.ReactNode;
   handleCreateInput?: () => void;
 }) => {
-  // 存储 session_id
+  // Storage session_id
   const [editingUniqueId, setEditingUniqueId] = useState('');
 
   const handleEditSession = (inputStr?: string, error?: ErrorCode) => {
@@ -74,8 +74,8 @@ export const StaticChatList = ({
   };
 
   /**
-   * ux @wangwenbo.me 设计，default 放在首位，
-   * 剩余的接口返回按照创建先后顺序倒序排序（后创建的放前边）
+   * UX @wangwenbo.me design, default first,
+   * The remaining interfaces are returned in reverse order according to the order in which they were created (the ones created later are placed first).
    */
   return (
     <>
@@ -153,7 +153,7 @@ export const StaticChatList = ({
                     handleSessionVisible(item.unique_id);
                   }}
                 />
-                {/* 默认会话不可删除 */}
+                {/* Default session cannot be deleted */}
                 <IconButton
                   size="small"
                   color="secondary"

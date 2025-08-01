@@ -21,11 +21,11 @@ import { workflowApi } from '@coze-arch/bot-api';
 
 import { useSpaceGrayStore, TccKey } from '../../src/space-gray';
 
-// 模拟全局变量
+// simulated global variable
 vi.stubGlobal('IS_DEV_MODE', false);
 vi.stubGlobal('IS_BOT_OP', false);
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/logger', () => ({
   reporter: {
     error: vi.fn(),
@@ -51,7 +51,7 @@ describe('space-gray', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 重置 store 状态
+    // Reset store state
     act(() => {
       useSpaceGrayStore.setState({
         spaceId: '',
@@ -59,7 +59,7 @@ describe('space-gray', () => {
       });
     });
 
-    // 模拟 API 响应
+    // Simulate API response
     (workflowApi.GetWorkflowGrayFeature as any).mockResolvedValue({
       data: mockFeatureItems,
     });
@@ -104,7 +104,7 @@ describe('space-gray', () => {
       });
 
       it('当 IS_BOT_OP 为 true 时应该调用 OPGetWorkflowGrayFeature API', async () => {
-        // 设置 IS_BOT_OP 为 true
+        // Set IS_BOT_OP to true
         vi.stubGlobal('IS_BOT_OP', true);
 
         const { result } = renderHook(() => useSpaceGrayStore());
@@ -120,22 +120,22 @@ describe('space-gray', () => {
         expect(result.current.spaceId).toBe(mockSpaceId);
         expect(result.current.grayFeatureItems).toEqual(mockFeatureItems);
 
-        // 恢复 IS_BOT_OP 为 false
+        // Restore IS_BOT_OP to false
         vi.stubGlobal('IS_BOT_OP', false);
       });
 
       it('当 spaceId 与缓存的相同时不应该调用 API', async () => {
         const { result } = renderHook(() => useSpaceGrayStore());
 
-        // 先加载一次
+        // Load once first
         await act(async () => {
           await result.current.load(mockSpaceId);
         });
 
-        // 清除之前的调用记录
+        // Clear previous call history
         vi.clearAllMocks();
 
-        // 再次加载相同的 spaceId
+        // Load the same spaceId again.
         await act(async () => {
           await result.current.load(mockSpaceId);
         });
@@ -167,7 +167,7 @@ describe('space-gray', () => {
       it('当特性在灰度列表中且 in_gray 为 true 时应该返回 true', async () => {
         const { result } = renderHook(() => useSpaceGrayStore());
 
-        // 先加载灰度特性
+        // Load grey release feature first
         await act(async () => {
           await result.current.load(mockSpaceId);
         });
@@ -193,7 +193,7 @@ describe('space-gray', () => {
 
         const { result } = renderHook(() => useSpaceGrayStore());
 
-        // 先加载灰度特性
+        // Load grey release feature first
         await act(async () => {
           await result.current.load(mockSpaceId);
         });
@@ -208,12 +208,12 @@ describe('space-gray', () => {
       it('当特性不在灰度列表中时应该返回 false', async () => {
         const { result } = renderHook(() => useSpaceGrayStore());
 
-        // 先加载灰度特性
+        // Load grey release feature first
         await act(async () => {
           await result.current.load(mockSpaceId);
         });
 
-        // 使用一个不存在的 key
+        // Use a non-existent key
         const isHit = result.current.isHitSpaceGray('NonExistentKey' as TccKey);
 
         expect(isHit).toBe(false);

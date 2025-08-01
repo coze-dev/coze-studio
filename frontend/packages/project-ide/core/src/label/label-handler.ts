@@ -41,7 +41,7 @@ export interface LabelHandler {
   getIcon?: (uri: URI) => string | undefined | React.ReactNode;
 
   /**
-   * 自定义渲染 label
+   * Custom render label
    */
   renderer?: (uri: URI, opt?: any) => React.ReactNode;
 

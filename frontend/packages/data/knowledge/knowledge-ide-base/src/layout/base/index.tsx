@@ -59,14 +59,14 @@ export const KnowledgeIDEBaseLayout = ({
 
   const pollingTaskProgressInternal = usePollingTaskProgress();
   const { reload, loading: isReloading, reset } = useReloadKnowledgeIDE();
-  // 初始化
+  // initialization
   useEffect(() => {
     reload();
     return () => {
       reset();
     };
   }, []);
-  // 回调 project IDE tab
+  // Callback to project IDE tab
   useEffect(() => {
     if (dataSetDetail?.name) {
       onUpdateDisplayName?.(dataSetDetail.name);
@@ -92,7 +92,7 @@ export const KnowledgeIDEBaseLayout = ({
     }
   }, [dataSetDetail]);
 
-  // 构建渲染上下文
+  // Build the rendering context
   const renderContext: KnowledgeRenderContext = {
     layoutProps: {
       keepDocTitle,
@@ -114,7 +114,7 @@ export const KnowledgeIDEBaseLayout = ({
     },
   };
 
-  // 编辑简介
+  // Editor Profile
   return (
     <DataErrorBoundary namespace={DataNamespace.KNOWLEDGE}>
       <Layout
@@ -127,9 +127,9 @@ export const KnowledgeIDEBaseLayout = ({
         )}
         keepDocTitle={keepDocTitle}
       >
-        {/* 导航栏 */}
+        {/* navigation bar */}
         {renderNavBar?.(renderContext)}
-        {/* 内容区 */}
+        {/* content area */}
         {renderContent?.(renderContext)}
       </Layout>
     </DataErrorBoundary>

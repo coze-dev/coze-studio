@@ -15,7 +15,7 @@
  */
  
 /**
- * 表单物料
+ * form material
  */
 export { InputString } from './input-string';
 export { FieldItem } from './field-item';

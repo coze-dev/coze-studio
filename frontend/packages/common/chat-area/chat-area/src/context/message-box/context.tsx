@@ -18,7 +18,7 @@ import { createContext } from 'react';
 
 import { type MessageMeta, type Message } from '../../store/types';
 
-// TODO 可以再优化
+// TODO can be further optimized.
 export interface MessageBoxContextProviderProps {
   messageUniqKey: string;
   groupId: string;
@@ -28,7 +28,7 @@ export interface MessageBoxContextProviderProps {
   isFirstUserOrFinalAnswerMessage: boolean;
   isLastUserOrFinalAnswerMessage: boolean;
   functionCallMessageIdList?: string[];
-  /** 这条消息属于的 group 是否正在进行对话 */
+  /** Is the group to which this message belongs having a conversation? */
   isGroupChatActive: boolean;
 }
 

@@ -24,14 +24,14 @@ export interface TraceListState {
   spaceId: string;
   workflowId: string;
   isInOp?: boolean;
-  /** 初次打开时需要先请求列表，然后选中第一项 */
+  /** When opening it for the first time, you need to request the list first, and then select the first item. */
   ready: boolean;
-  /** 当前选中的 span */
+  /** Currently selected span */
   span: Span | null;
 }
 
 export interface TraceListAction {
-  /** 更新状态 */
+  /** update status */
   patch: (next: Partial<TraceListState>) => void;
 }
 

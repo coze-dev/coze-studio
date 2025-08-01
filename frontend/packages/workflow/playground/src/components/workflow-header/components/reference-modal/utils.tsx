@@ -84,7 +84,7 @@ export const navigateResource = ({
         return;
     }
   }
-  // 只有插件可能是来源为商店
+  // Only plugins may be sourced for the store
   if (info.type === NodeType.PLUGIN && info.from === DependencyOrigin.SHOP) {
     window.open(`/store/plugin/${info.id}`);
   }

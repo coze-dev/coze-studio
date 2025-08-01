@@ -27,12 +27,12 @@ export interface OnTextContentRenderingContext {
 
 export interface OnMessageBoxRenderContext {
   /**
-   * 动态注入的自定义渲染组件
+   * Dynamic injection of custom rendering components
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期的命名
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- matches the expected naming
   MessageBox?: CustomComponent['MessageBox'];
   /**
-   * 消息体
+   * message body
    */
   message: Message<ContentType>;
   /**

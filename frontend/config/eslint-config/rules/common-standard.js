@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const path = require('path');
 const fs = require('fs');
 
@@ -28,7 +44,7 @@ const readBlockList = () =>
 
 /** @type {(import('eslint').Linter.Config)[]} */
 module.exports = [
-  // NOTE: 不能和下一项配置合并
+  // NOTE: Cannot be merged with the next configuration
   {
     ignores: [
       '**/*.d.ts',
@@ -68,7 +84,7 @@ module.exports = [
   ...require('@coze-arch/eslint-plugin').configs.recommended,
   require('@coze-arch/eslint-plugin/zustand').configs.recommended,
   {
-    files: ['**/*.?(m|c)?(j|t)s?(x)'], // 排除规则对package.json生效
+    files: ['**/*.?(m|c)?(j|t)s?(x)'], // Exclusion rules take effect for package.json
     plugins: {
       prettier: require('eslint-plugin-prettier'),
       '@babel': require('@babel/eslint-plugin'),

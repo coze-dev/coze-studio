@@ -27,13 +27,14 @@ import (
 )
 
 type denseOnlyWrap struct {
-	dims int64
+	dims      int64
+	batchSize int
 	embedding.Embedder
 }
 
 func (d denseOnlyWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	resp := make([][]float64, 0, len(texts))
-	for _, part := range slices.Chunks(texts, 100) {
+	for _, part := range slices.Chunks(texts, d.batchSize) {
 		partResult, err := d.Embedder.EmbedStrings(ctx, part, opts...)
 		if err != nil {
 			return nil, err

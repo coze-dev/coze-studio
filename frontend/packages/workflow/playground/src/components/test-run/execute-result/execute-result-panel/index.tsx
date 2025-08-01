@@ -30,7 +30,7 @@ import styles from './index.module.less';
 
 type ExecuteResultPanelProps = {
   node: FlowNodeEntity;
-  /** 打开子工作流跳转链接 */
+  /** Open sub-workflow jump link */
   onOpenWorkflowLink?: (data: WorkflowLinkLogData) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
@@ -46,10 +46,10 @@ const ExecuteResultPanel: React.FC<ExecuteResultPanelProps> = ({
   const globalState = useGlobalState();
 
   /**
-   * hover 事件统一走的是 mousemove 冒泡，由于 hover node 的算法没有考虑 node 为多边形的情况
-   * 会在浮层中的 move 误判为 playground or line 会触发圈选逻辑或者高亮线条，所以阻止 mousemove 冒泡
-   * mousedown 也必须阻止冒泡，否则会判定圈选
-   * drag 事件统一走的 mousemove 捕获，所以拖拽不受影响
+   * The hover event uniformly goes through mousemove bubbling, because the hover node algorithm does not consider the case that the node is a polygon
+   * The move in the floating layer will be misjudged as playground or line, which will trigger the circling logic or highlight the line, so prevent mousemove from bubbling.
+   * Mousedown must also prevent bubbling, otherwise it will determine the circling
+   * Drag events go mousemove capture uniformly, so drag is not affected
    */
   const handleStepPropagation = useCallback<
     React.MouseEventHandler<HTMLDivElement>

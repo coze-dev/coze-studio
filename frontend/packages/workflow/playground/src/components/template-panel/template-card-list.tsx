@@ -68,9 +68,9 @@ export const TemplateCardList = React.forwardRef(
     const handleMouseMove = event => {
       event.preventDefault();
       const curRef = (ref as React.RefObject<HTMLDivElement>)?.current;
-      const walk = (event.clientX - startX) * 0.1; // 控制滚动速度
+      const walk = (event.clientX - startX) * 0.1; // Control rolling speed
 
-      // mouseDown 且 鼠标移动才算开始拖动
+      // mouseDown, the mouse movement starts to drag
       setMove(isDragActive && !!walk);
 
       if (!isDragActive || !curRef || !isMouseMode) {
@@ -83,7 +83,7 @@ export const TemplateCardList = React.forwardRef(
       templateState.closePreview();
     };
     const handleCardFouce = templateInfo => {
-      // 如果正在拖拽，展示预览示例
+      // If you are dragging, show a preview example
       if (isDragActive) {
         return;
       }
@@ -97,7 +97,7 @@ export const TemplateCardList = React.forwardRef(
           ref={ref as { current: HTMLDivElement | null }}
           className={classNames(
             'flex flex-1  gap-[13px] overflow-x-scroll overflow-y-hidden',
-            // 卡片高度 116 多 8px 避免阴影被裁切
+            // Card height 116 + 8px to avoid shadows being cut
             'w-0 h-[124px] pt-[8px]',
             styles['list-container'],
             isCardsOver ? 'justify-start' : 'justify-center',

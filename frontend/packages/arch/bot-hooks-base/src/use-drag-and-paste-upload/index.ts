@@ -24,38 +24,38 @@ import { getFileListByDragOrPaste } from './helper/get-file-list-by-drag';
 export interface UseDragAndPasteUploadParam {
   ref: RefObject<HTMLDivElement>;
   /**
-   * 触发上传的回调
+   * Callback that triggers upload
    */
   onUpload: (fileList: File[]) => void;
   /**
-   * 是否禁用拖拽上传
+   * Whether to disable drag-and-drop uploads
    */
   disableDrag: boolean;
   /**
-   * 是否禁用粘贴上传
+   * Whether to disable paste uploads
    */
   disablePaste: boolean;
   /**
-   * 最大上传的文件数量
+   * Maximum number of uploaded files
    */
   fileLimit: number;
   /**
-   * 文件大小, eg: 10MB = 10 * 1024 * 1024
+   * File size, eg: 10MB = 10 * 1024 * 1024
    */
   maxFileSize: number;
   invalidSizeMessage: string | undefined;
   invalidFormatMessage: string | undefined;
   fileExceedsMessage: string | undefined;
   /**
-   * 文件格式是否合法
+   * Is the file format legal?
    */
   isFileFormatValid: (file: File) => boolean;
   /**
-   * @returns 已存在文件的数量
+   * @Returns the number of existing files
    */
   getExistingFileCount: () => number;
   /**
-   * 用户离开拖拽区域时, state 变化的延迟
+   * Delay in state change when the user leaves the drag area
    * @default 100
    */
   closeDelay: number | undefined;
@@ -79,9 +79,9 @@ export const useDragAndPasteUpload = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   /**
-   * drag 时, 指针从 parent dom 进入到 child dom 时会快速连续触发 onDragEnter onDragLeave 导致状态流转错误
-   * 在 onLeave 时给状态流转加上延时能够避免流转问题
-   * 触发 dragEnter dragLeave 时, event.target 不一定指向 parent dom, 所以也无法通过 target 来判断
+   * When dragging, the pointer from the parent dom to the child dom will fire onDragEnter onDragLeave in quick succession, resulting in a state flow error
+   * Adding a delay to the state flow on onLeave avoids the flow problem
+   * When dragEnter dragLeave is triggered, event.target does not necessarily point to parent dom, so it cannot be judged by target
    */
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -147,10 +147,10 @@ export const useDragAndPasteUpload = ({
     const onDragOver = (e: HTMLElementEventMap['dragover']) => {
       /**
        * {@link https://segmentfault.com/q/1010000011746669}
-       * 原理:
-       * 这里阻止的默认行为是开启可编辑模式，具体就是document.designMode属性，
-       * 该属性默认是off关闭的，当开启之后就可以对网页进行编辑
-       * 开启的方式就是document.designMode = "on"; 开启之后就不用在监听dragover事件中阻止默认了
+       * Principle:
+       * The default behavior blocked here is to enable editable mode, specifically the document.designMode property,
+       * This property is turned off by default, and when turned on, you can edit the webpage.
+       * The way to open it is document.designMode = "on"; after opening it, there is no need to block the default in the monitor dragover event.
        */
       e.preventDefault();
       clearTimer();

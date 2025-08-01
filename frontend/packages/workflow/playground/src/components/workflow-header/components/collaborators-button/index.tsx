@@ -48,7 +48,7 @@ const InnerCollaboratorButton: React.FC = () => {
         space_id: spaceId,
       });
     }
-    // 切换协作状态后刷新状态
+    // Refresh state after switching collaboration state
     await globalState.reload();
   };
 
@@ -71,7 +71,7 @@ export const CollaboratorsButton = () => {
   const globalState = useGlobalState();
   const { canCollaboration, readonly } = globalState;
 
-  // 1. 灰度开关 2.团队空间 3.非只读
+  // 1. grey release switch 2. team space 3. not read-only
   if (!canCollaboration || readonly) {
     return null;
   }

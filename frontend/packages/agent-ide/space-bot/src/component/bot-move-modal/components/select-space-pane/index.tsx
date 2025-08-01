@@ -65,7 +65,7 @@ export function useSelectSpacePane() {
             ) : (
               <SelectorItem
                 space={{
-                  // MOCK: 用于展示未加入任何空间的兜底情况
+                  // MOCK: used to show the bottom of the cover without joining any space
                   name: I18n.t('resource_move_no_team_joined'),
                 }}
                 disabled

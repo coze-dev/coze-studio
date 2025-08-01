@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import Mock from 'mockjs';
 
 import { ChatCoreUploadPlugin } from '@/plugins/upload-plugin';
@@ -29,7 +29,7 @@ import ChatSDK from '@/chat-sdk';
 const random = Mock.Random;
 
 describe('创建消息', () => {
-  // 创建 ChatSDK 实例
+  // Create a ChatSDK instance
   const sdkProps: CreateProps = {
     bot_id: random.string(),
     biz: 'third_part',
@@ -41,15 +41,15 @@ describe('创建消息', () => {
   };
   const chat = new ChatSDK(sdkProps);
 
-  // 注册插件
-  // @ts-expect-error -- 测试文件中不需要真实的插件
+  // Register plugin
+  // @ts-expect-error -- no real plugin is required in the test file
   chat.registerPlugin('upload-plugin', ChatCoreUploadPlugin, {
     userId: '123',
     appId: 123,
   });
 
   it('createTextMessage', () => {
-    // 标准输出的 Message
+    // Standard Output Message
     const messageStand = {
       bot_id: sdkProps.bot_id,
       role: 'user',
@@ -117,7 +117,7 @@ describe('创建消息', () => {
         },
       ],
     };
-    // 标准输出的 Message
+    // Standard Output Message
     const messageStand = {
       bot_id: sdkProps.bot_id,
       role: 'user',
@@ -157,15 +157,15 @@ describe('创建消息', () => {
     };
     const options = { section_id: '123' };
 
-    // 注册插件
-    // @ts-expect-error -- test文件忽略
+    // Register plugin
+    // @ts-expect-error -- test file ignored
     chat.registerPlugin('upload-plugin', ChatCoreUploadPlugin, {
       userId: '123',
       appId: 123,
     });
 
     // Execute
-    // @ts-expect-error -- 测试文件
+    // @ts-expect-error -- test file
     const message = chat.createImageMessage(props, options);
 
     // Assert
@@ -185,7 +185,7 @@ describe('创建消息', () => {
         },
       ],
     };
-    // 标准输出的 Message
+    // Standard Output Message
     const messageStand = {
       bot_id: sdkProps.bot_id,
       role: 'user',
@@ -230,7 +230,7 @@ describe('创建消息', () => {
     const options = { section_id: '123' };
 
     // Execute
-    // @ts-expect-error -- 测试文件
+    // @ts-expect-error -- test file
     const message = chat.createFileMessage(props, options);
 
     // Assert
@@ -248,7 +248,7 @@ describe('创建消息', () => {
           },
           {
             type: ContentType.File,
-            // @ts-expect-error -- 测试文件
+            // @ts-expect-error -- test file
             file: {
               type: 'pdf',
               name: 'file.pdf',
@@ -258,7 +258,7 @@ describe('创建消息', () => {
           },
           {
             type: ContentType.Image,
-            // @ts-expect-error -- 测试文件
+            // @ts-expect-error -- test file
             file: {
               type: 'png',
               name: 'image.png',
@@ -310,7 +310,7 @@ describe('创建消息', () => {
       ],
     };
 
-    // 标准输出的 Message
+    // Standard Output Message
     const messageStand = {
       bot_id: sdkProps.bot_id,
       role: 'user',
@@ -395,7 +395,7 @@ describe('创建消息', () => {
       ],
     };
 
-    // 标准输出的 Message
+    // Standard Output Message
     const messageStand = {
       bot_id: sdkProps.bot_id,
       role: 'user',

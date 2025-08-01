@@ -39,7 +39,7 @@ export const ConfigModeWidgetPopover = (props: {
     }
     const handleViewUpdate = (e: ViewUpdate) => {
       if (e.docChanged) {
-        // 判断当前光标是否在 slot 节点内
+        // Determine whether the current cursor is in the slot node
         const { state } = e;
         const range = templateParser.getCursorInMarkNodeRange(state);
         if (!range) {

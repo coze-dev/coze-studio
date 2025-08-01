@@ -45,7 +45,7 @@ export type RadioProps = SetterComponentProps<
     direction?: 'vertical' | 'horizontal';
     customClassName?: string;
     radioCardClassName?: string;
-    // 忽略 readonly 状态，强制可交互
+    // Ignore readonly state, force interactivity
     ignoreReadonly?: boolean;
     disabled?: boolean;
   }

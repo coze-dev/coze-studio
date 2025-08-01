@@ -36,7 +36,7 @@ import { DragUploadContent } from './drag-upload-content';
 import CropperImg from './cropper';
 
 export const checkHasFileOnDrag = (e: React.DragEvent<HTMLDivElement>) =>
-  // 判断的依据直接看 types 的类型解释就好了
+  // The basis for the judgment is to directly look at the type explanation of types
   Boolean(e.dataTransfer?.types.includes('Files'));
 export interface CropperUploadProps {
   pictureValue?: Partial<FileItem>;
@@ -91,7 +91,7 @@ const CopperUpload: React.FC<CropperUploadProps> = ({
         if (validateSize) {
           onSuccess(file);
           onChange?.(file);
-          // 手动上传后 需要把候选图的选中态清掉
+          // After uploading manually, you need to clear the selected state of the candidate image.
           setGenerateBackgroundModalByImmer(state => {
             state.selectedImage = {};
           });

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import OriginPkgRootWebpackPlugin from '@coze-arch/pkg-root-webpack-plugin-origin';
 type PkgRootWebpackPluginOptions = Record<string, unknown>;
 declare class PkgRootWebpackPlugin extends OriginPkgRootWebpackPlugin {

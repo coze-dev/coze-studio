@@ -22,11 +22,11 @@ import {
 import { useLineService } from './use-line-service';
 
 /**
- * 端口排序更新后，需要重新连线。
+ * After the port ordering is updated, it needs to be reconnected.
  *
- * 多端口的情况下，使用了index作为portId， 而不是uid。
+ * In the case of multiple ports, index is used as the portId instead of the uid.
  *
- * 当port排序变更后，index并不会改变，如果希望连线和数据保持一致，只能重新连线。
+ * When the port ordering changes, the index does not change. If you want the connection and data to remain consistent, you can only reconnect.
  *
  * */
 export const useUpdateSortedPortLines = (
@@ -37,8 +37,8 @@ export const useUpdateSortedPortLines = (
   const lineService = useLineService();
 
   /**
-   *  将startIndex 到 endIndex 中间所有的连线全部重新连接
-   *  两两交互，例：
+   *  Reconnect all the connections between gastIndex and endIndex
+   *  Interacting in pairs, for example:
    *
    *  0 1 2
    *
@@ -65,7 +65,7 @@ export const useUpdateSortedPortLines = (
       lineService.replaceLineByPort(oldPortInfo, newPortInfo);
     }
 
-    // 拖拽结束后端口dom对应的portId变更，需要更新一下
+    // After the drag ends, the portId corresponding to the port dom changes and needs to be updated.
     node
       .getData<WorkflowNodePortsData>(WorkflowNodePortsData)
       .updateDynamicPorts();

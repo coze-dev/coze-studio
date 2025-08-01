@@ -25,7 +25,7 @@ import type {
 import { safeFn } from '../../utils';
 
 /**
- * 缩放快捷键
+ * Zoom shortcut
  */
 @injectable()
 export class WorkflowZoomShortcutsContribution
@@ -33,7 +33,7 @@ export class WorkflowZoomShortcutsContribution
 {
   @inject(PlaygroundConfigEntity)
   private playgroundConfig: PlaygroundConfigEntity;
-  /** 注册快捷键 */
+  /** Registration shortcut */
   public registerShortcuts(registry: WorkflowShortcutsRegistry): void {
     registry.addHandlers({
       commandId: WorkflowCommands.ZOOM_IN,

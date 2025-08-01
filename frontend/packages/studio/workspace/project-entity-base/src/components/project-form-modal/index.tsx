@@ -86,7 +86,7 @@ export const ProjectFormModal: React.FC<BizProjectFormModalProps> = ({
       const auditData = await request(formApi.current.getValues());
       setAuditResult(auditData);
 
-      // 没有通过校验就不关闭弹窗
+      // Do not close the pop-up window without passing the verification
       if (auditData.check_not_pass) {
         return;
       }
@@ -125,7 +125,7 @@ export const ProjectFormModal: React.FC<BizProjectFormModalProps> = ({
       {auditResult.check_not_pass ? (
         <div className="coz-fg-hglt-red mt-[-8px]">
           <ReactMarkdown skipHtml={true} linkTarget="_blank">
-            {/* 注意使用 || msg undefined 或者空字符串都走兜底 */}
+            {/* Note that using | | msg undefined or empty string goes to the bottom */}
             {auditResult.check_not_pass_msg || I18n.t('publish_audit_pop7')}
           </ReactMarkdown>
         </div>

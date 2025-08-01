@@ -124,7 +124,7 @@ export class ApplicationShell extends Widget {
   closeWidgetUriStack: URI[] = [];
 
   /**
-   * 当前 focus widget 变化
+   * Current focus widget change
    */
   protected readonly onCurrentWidgetChangeEmitter = new Emitter<
     AbstractWidget | undefined
@@ -146,15 +146,15 @@ export class ApplicationShell extends Widget {
     this.bottomPanel.hide();
 
     this.topPanel = this.createPanel(LayoutPanelType.TOP_BAR);
-    // 扩展，目前暂时未用到。
+    // Extension, not currently in use.
     this.rightToolbar = this.createPanel(LayoutPanelType.RIGHT_BAR);
-    // 默认模式下 rightToolbar 隐藏
+    // Default mode rightToolbar hide
     this.rightToolbar.hide();
     this.statusBar = this.createPanel(LayoutPanelType.STATUS_BAR);
     this.activityBar = this.createPanel(LayoutPanelType.ACTIVITY_BAR);
     this.secondarySidebar = this.createPanel(LayoutPanelType.SECONDARY_SIDEBAR);
 
-    // 创建左侧面板
+    // Create left panel
     this.leftPanelHandler = this.sidePanelHandlerFactory();
     this.leftPanelHandler.create('left');
     this.leftPanelHandler.expand();
@@ -163,7 +163,7 @@ export class ApplicationShell extends Widget {
     this.primarySidebar.id = uri.displayName;
     this.widgetManager.setWidget(uri.toString(), this.primarySidebar);
 
-    // 默认右侧隐藏
+    // Default right side hide
     this.secondarySidebar.hide();
     this.layout = createLayout?.(this) || this.createLayout();
 
@@ -219,7 +219,7 @@ export class ApplicationShell extends Widget {
       default:
         throw new Error(`Unexpected area: ${options?.area}`);
     }
-    // topBar 和 statusbar 不监听
+    // topBar and statusbar do not listen
     if (
       area !== LayoutPanelType.STATUS_BAR &&
       area !== LayoutPanelType.TOP_BAR
@@ -270,7 +270,7 @@ export class ApplicationShell extends Widget {
     }
   }
 
-  // 给本地持久化消费使用的方法
+  // Methods for local persistent consumption
   setCurrentWidget(widget?: ReactWidget) {
     this._currentWidget = widget;
     this._currentWidgetParent = widget?.parent;
@@ -311,10 +311,10 @@ export class ApplicationShell extends Widget {
 
     const leftRightSplitLayout = createSplitLayout(
       [
-        // 左边的不可伸缩 bar
+        // Unretractable bar on the left
         this.primarySidebar,
         middleContentPanel,
-        // 右边的不可伸缩 bar
+        // Non-retractable bar on the right
         this.secondarySidebar,
       ],
       [0, 1, 0],
@@ -325,10 +325,10 @@ export class ApplicationShell extends Widget {
 
     const centerLayout = createBoxLayout(
       [
-        // 左边的不可伸缩 bar
+        // Unretractable bar on the left
         this.activityBar,
         mainDockPanel,
-        // 右边的不可伸缩 bar
+        // Non-retractable bar on the right
         this.rightToolbar,
       ],
       [0, 1, 0],
@@ -395,7 +395,7 @@ export class ApplicationShell extends Widget {
   }
 
   /**
-   * 将当前选中的 widget 的 tab 滚动到视区内
+   * Scroll the tab of the currently selected widget to the viewport
    */
   tabbarIntoView(behavior?: boolean) {
     const { mainPanel } = this;
@@ -435,7 +435,7 @@ export class ApplicationShell extends Widget {
           const index = this.closeWidgetUriStack.findIndex(p =>
             isURIMatch(p, uri),
           );
-          // 有重复的先删除，再 push
+          // If there are duplicates, delete them first, and then push them.
           if (index !== -1) {
             this.closeWidgetUriStack.splice(index, 1);
           }
@@ -458,11 +458,11 @@ export class ApplicationShell extends Widget {
   }
 
   /***********************************************************************
-   * layout 相关
+   * Layout related
    */
 
   getLayoutData(): LayoutData {
-    // 记录子分屏 layout 数据
+    // Record subscreen layout data
     const widgets: Widget[] = [];
     this.primarySidebar.widgets.forEach(_widget => {
       widgets.push(_widget);
@@ -518,7 +518,7 @@ export class ApplicationShell extends Widget {
     }
   }
 
-  // 下边是 tabs 切换，等 mainPanel 切换成 dockpanel 的时候启用
+  // Below is tabs switching, which will be enabled when mainPanel switches to dockpanel.
   // activateWithLabel(widget: Widget) {
   //   this.mainPanel.activateWidget(widget);
   // }

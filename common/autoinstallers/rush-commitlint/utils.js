@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const { RushConfiguration } = require('@rushstack/rush-sdk')
 
 const getRushConfiguration = (function () {
@@ -19,7 +35,7 @@ function getChangedPackages(changedFiles) {
     const lookup = rushConfiguration.getProjectLookupForRoot(rushJsonFolder)
     for (const file of changedFiles) {
       const project = lookup.findChildPath(file)
-      // 如果没找到注册的包信息，则认为是通用文件更改
+      // If the registered package information is not found, it is considered a generic file change
       const packageName = project?.packageName || 'misc'
       if (!changedPackages.has(packageName)) {
         changedPackages.add(packageName)

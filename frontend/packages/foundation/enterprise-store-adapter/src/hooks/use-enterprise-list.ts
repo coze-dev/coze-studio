@@ -15,14 +15,14 @@
  */
  
 /**
- * @file 开源版暂时不提供企业管理功能，本文件中导出的方法用于未来拓展使用。
+ * The @file open-source version does not provide enterprise management functions for the time being. The methods exported in this file are for future expansion.
  */
 
 import { useEnterpriseStore } from '../stores/enterprise';
 /**
- * 获取企业列表的hook。
- * 从企业store中获取企业列表，并返回企业信息列表。
- * @returns {Array} 企业信息列表
+ * Hook to get the business list.
+ * Get the business list from the business store and return the list of business information.
+ * @Returns {Array} Enterprise Information List
  */
 export const useEnterpriseList = () => {
   const list = useEnterpriseStore(store => store.enterpriseList);

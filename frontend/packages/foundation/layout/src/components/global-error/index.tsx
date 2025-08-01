@@ -30,7 +30,7 @@ import { useSpaceStore, useSpaceApp } from '@coze-foundation/space-store';
 
 import s from './index.module.less';
 
-// i18n 的配置，对齐 starling 文案后再替换
+// The configuration of i18n, align the starling copy and then replace it.
 export const GlobalError: FC = () => {
   const navigate = useNavigate();
   const spaceApp = useSpaceApp();
@@ -87,7 +87,7 @@ export const GlobalError: FC = () => {
               const spaceId =
                 id ??
                 getPersonalSpaceID() ??
-                // 企业下无个人空间，缺省跳转到第一个空间
+                // There is no personal space under the enterprise, so jump to the first space by default.
                 useSpaceStore.getState().spaceList[0]?.id;
               url = spaceId ? `/space/${spaceId}/${spaceApp}` : '/space';
             } else if (base && base in BaseEnum) {

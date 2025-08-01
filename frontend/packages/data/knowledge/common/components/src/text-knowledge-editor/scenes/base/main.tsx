@@ -46,12 +46,12 @@ export const BaseTextKnowledgeEditor = ({
   const [chunks, setChunks] = useState<DocumentChunk[]>(initialChunks);
   const [activeChunk, setActiveChunk] = useState<DocumentChunk | null>(null);
 
-  // 使用编辑器核心功能
+  // Using the core editor functions
   const { editor } = useInitEditor({
     chunk: activeChunk,
   });
 
-  // 退出新增分片功能
+  // Exit the new sharding feature
   const { saveChunk } = useSaveChunk({
     chunks,
     documentId,
@@ -63,7 +63,7 @@ export const BaseTextKnowledgeEditor = ({
     onDeleteChunk,
   });
 
-  // 监听右键菜单事件
+  // Monitor right-click menu events
   useEventListener(
     'previewContextMenuItemAction',
     useCallback(
@@ -88,7 +88,7 @@ export const BaseTextKnowledgeEditor = ({
     ),
   );
 
-  // 监听悬浮编辑栏事件
+  // Monitor floating edit bar events
   useEventListener(
     'hoverEditBarAction',
     useCallback(

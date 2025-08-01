@@ -35,11 +35,11 @@ export class EncapsulateLinesService {
   @inject(WorkflowLinesManager) declare linesManager: WorkflowLinesManager;
 
   /**
-   * 获取有效的封装连接端口
-   * @param nodes 封装范围内的节点数组
-   * @throws Error 输入线不符合封装规则
-   * @throws Error 输出线不符合封装规则
-   * @returns 封装范围内的输入和输出端口对象
+   * Get a valid encapsulation connection port
+   * @Param nodes Encapsulated array of nodes
+   * @throws Error input line does not conform to encapsulation rules
+   * @Throws Error Output line does not conform to encapsulation rules
+   * @Returns Encapsulated input and output port objects
    */
   getValidEncapsulateConnectPorts(
     nodes: WorkflowNodeEntity[],
@@ -98,9 +98,9 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 获取封装范围内的所有输入线
-   * @param nodes 流程图节点数组
-   * @returns 封装范围内的输入线数组
+   * Get all input lines in the package range
+   * @Param nodes flowchart node array
+   * @Returns array of input lines in the encapsulated range
    */
   getEncapsulateNodesInputLines(
     nodes: WorkflowNodeEntity[],
@@ -118,9 +118,9 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 获取封装范围内的所有输出线
-   * @param nodes 流程图节点数组
-   * @returns 封装范围内的输出线数组
+   * Get all output lines in the package range
+   * @Param nodes flowchart node array
+   * @Returns array of output lines in the encapsulated range
    */
   getEncapsulateNodesOutputLines(
     nodes: WorkflowNodeEntity[],
@@ -138,7 +138,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 校验封装范围内的输入和输出线是否符合封装规则
+   * Verify that the input and output lines within the package range comply with the package rules
    */
   validateEncapsulateLines(lines: WorkflowLineEntity[]): boolean {
     const isFromPortUniq =
@@ -148,7 +148,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建封装连线
+   * Create encapsulation connection
    * @param ports
    * @param subFlowNode
    * @returns
@@ -197,7 +197,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建解封线
+   * Create unsealing line
    * @param options
    */
   createDecapsulateLines(options: {
@@ -210,7 +210,7 @@ export class EncapsulateLinesService {
     const { node, startNodeId, endNodeId, idsMap, workflowJSON } = options;
     const edges = [
       ...workflowJSON.edges,
-      // 子画布中的连线
+      // Lines in the sub-canvas
       ...workflowJSON.nodes
         .map(n => n.edges)
         .filter(Boolean)
@@ -228,20 +228,20 @@ export class EncapsulateLinesService {
       return 'internal';
     });
 
-    // 内部连线
+    // interconnect
     const internalLines = this.createDecapsulateInternalLines(
       edgesGroup.internal || [],
       idsMap,
     );
 
-    // 输入连线
+    // input connection
     const inputLines = this.createDecapsulateInputLines(
       edgesGroup.input || [],
       node,
       idsMap,
     );
 
-    // 输出连线
+    // output connection
     const outputLines = this.createDecapsulateOutputLines(
       edgesGroup.output || [],
       node,
@@ -256,7 +256,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建解封内部连线
+   * Create an unblocked internal connection
    * @param internalEdges
    * @param idsMap
    * @returns
@@ -300,7 +300,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建解封输入连线
+   * Create an unsealed input connection
    * @param inputEdges
    * @param node
    * @param idsMap
@@ -314,7 +314,7 @@ export class EncapsulateLinesService {
     const createdLines: WorkflowLineEntity[] = [];
     const { inputLines } = node.getData(WorkflowNodeLinesData);
 
-    // 封装多开头+封装上游多个输入 不创建连线
+    // Encapsulate multiple starts + encapsulate multiple upstream inputs, do not create connections
     if (inputLines.length > 1 && inputEdges.length > 1) {
       return createdLines;
     }
@@ -341,7 +341,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建解封输出连线
+   * Create an unsealed output connection
    * @param outputEdges
    * @param node
    * @param idsMap
@@ -355,7 +355,7 @@ export class EncapsulateLinesService {
     const createdLines: WorkflowLineEntity[] = [];
     const { outputLines } = node.getData(WorkflowNodeLinesData);
 
-    // 封装多输出+封装下游多个输出 不创建连线
+    // Encapsulate multiple outputs + Encapsulate multiple downstream outputs without creating wires
     if (outputLines.length > 1 && outputEdges.length > 1) {
       return createdLines;
     }
@@ -382,7 +382,7 @@ export class EncapsulateLinesService {
   }
 
   /**
-   * 创建连线
+   * Create a connection
    * @param info
    * @param createdLines
    */
@@ -399,9 +399,9 @@ export class EncapsulateLinesService {
 
   private isSubCanvasLinkLine(line: WorkflowLineEntity): boolean {
     if (
-      // loop内的最后一根线
+      // The last wire in the loop
       line.toPort?.portID === 'loop-function-inline-input' ||
-      // loop内的第一根线
+      // The first wire in the loop
       line.fromPort.portID === 'loop-function-inline-output'
     ) {
       return true;

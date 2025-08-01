@@ -33,7 +33,7 @@ export const ConversationSelect = () => {
   const [value, setValue] = useState<string | undefined>();
 
   const projectId = useMemo(() => {
-    // 处于项目中，直接使用项目的 id
+    // In the project, use the project's ID directly.
     if (myProjectId) {
       return myProjectId;
     }
@@ -43,7 +43,7 @@ export const ConversationSelect = () => {
     return null;
   }, [myProjectId, sessionInfo]);
 
-  // 没有 projectId 时不渲染
+  // No rendering without projectId
   if (!projectId) {
     return null;
   }

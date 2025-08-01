@@ -163,7 +163,7 @@ export const Upload: FC = () => {
     }
 
     try {
-      // 业务
+      // business
       const { name, fileInstance } = file;
 
       if (fileInstance) {
@@ -246,7 +246,7 @@ export const Upload: FC = () => {
     setCurrentState({
       fileList: fileList.filter((f, i) => index !== i),
     });
-    // reset 配置
+    // Reset configuration
     setTableStructure({
       excelBasicInfo: undefined,
       excelValue: undefined,
@@ -380,7 +380,7 @@ export const Upload: FC = () => {
         style={{
           height: '100%',
           /**
-           * NOTE: 此处采取 css 隐藏是为了保持 upload 过程，否则会取消上传
+           * NOTE: css hiding is taken here to keep the upload process, otherwise the upload will be cancelled
            */
           ...(fileList.length > 0
             ? {
@@ -395,8 +395,8 @@ export const Upload: FC = () => {
           });
         }}
         beforeUpload={fileInfo => {
-          // 不通过 maxSize 属性来限制的原因是
-          // 只有 beforeUpload 钩子能改 validateMessage
+          // The reason for not limiting by the maxSize property is
+          // Only the beforeUpload hook can change validateMessage
           const res = {
             fileInstance: fileInfo.file.fileInstance,
             status: fileInfo.file.status,
@@ -438,7 +438,7 @@ export const Upload: FC = () => {
         dragMainText={I18n.t('db_table_0126_016')}
         dragSubText={I18n.t('db_table_0126_017')}
         onChange={({ fileList: files }) => {
-          // 存在校验通过的才上传
+          // It will only be uploaded if the verification is passed.
           if (files.some(f => f.shouldUpload)) {
             setCurrentState({
               fileList: files,

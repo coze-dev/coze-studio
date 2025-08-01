@@ -49,7 +49,7 @@ interface AutoMergeUrlParamsOptions {
 }
 
 interface IOptions {
-  omitKeys?: string[]; // 在 url 中不展示的字段但是还是会传到最后的返回的 value 中
+  omitKeys?: string[]; // Fields that are not displayed in the url but will still be passed to the final returned value
   autoFormat?: boolean;
   autoMergeUrlParamsOptions?: AutoMergeUrlParamsOptions;
   autoMergeUrlParams?: boolean;
@@ -94,7 +94,7 @@ function formatValueFn<T>(obj: T, autoFormat: boolean): KeysObj<T> {
   }
 }
 
-// 第一次初始化是 url merge defaultValue ，然后后续 setValue 用 value merge url
+// The first initialization is url merge defaultValue, then subsequent setValue merges url with value
 // eslint-disable-next-line max-params
 function getMergeValue<T>(
   value: T,
@@ -131,7 +131,7 @@ function getMergeValue<T>(
   return mergeValue as T;
 }
 
-// 初始化 initValue 其中的 value 值可能会有 number 类型, 会被在 url 转成 Object 全部转换成 string, 需自行处理下
+// Initialize initValue The value value in it may have a number type, which will be converted to Object in the url and all converted to string. You need to deal with it yourself.
 // The value in the initialization initValue may be a number,
 // which will be converted into an Object in the url and all converted into a string, which needs to be processed manually.
 function useUrlParams<T>(

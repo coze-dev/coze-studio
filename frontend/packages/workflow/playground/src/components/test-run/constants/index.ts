@@ -33,14 +33,14 @@ export {
   INPUT_JSON_FIELD_TEMPLATE,
 } from './test-form';
 
-/** test set connector ID 是一个固定的字符串 */
+/** Test set connector ID is a fixed string */
 export const TESTSET_CONNECTOR_ID = '10000';
 
-/** 该字符串没有任何意义，仅做一个标记，不可用于判断 start 节点 */
+/** This string has no meaning, it is only a marker and cannot be used to determine the start node */
 export const START_NODE_ID = '100001';
 
 /*******************************************************************************
- * log 相关的常量
+ * Log related constants
  */
 
 export enum EndTerminalPlan {

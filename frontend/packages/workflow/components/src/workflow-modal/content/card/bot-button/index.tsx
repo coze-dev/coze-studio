@@ -98,7 +98,7 @@ export const WorkflowBotButton: FC<WorkflowBotButtonProps> = ({
       }
     }
 
-    // 如果已添加，展示已添加按钮
+    // If added, display the Added button
     if (isAdded) {
       return (
         <Popconfirm
@@ -117,8 +117,8 @@ export const WorkflowBotButton: FC<WorkflowBotButtonProps> = ({
         </Popconfirm>
       );
     }
-    // 未添加，判断发布状态
-    // 未发布，展示下面的按钮
+    // Not added, judge the release status
+    // Unpublished, show the button below
     if (!canAdd) {
       let key: I18nKeysNoOptionsType = 'workflow_add_not_allow_before_publish';
       if (isFromWorkflow) {
@@ -143,7 +143,7 @@ export const WorkflowBotButton: FC<WorkflowBotButtonProps> = ({
         </Tooltip>
       );
     }
-    // 已发布并且未添加，展示添加按钮
+    // Published and not added, show the add button
     if (!isAdded) {
       return (
         <LoadingButton

@@ -36,7 +36,7 @@ const getStaticStringValue = node => {
  *
  * @param node
  * @returns
- * 为什么需要这个判断，对于下面这种函数
+ * Why is this judgment necessary for a function such as
  * ```
  * var obj1 = {
  *  set
@@ -46,9 +46,9 @@ const getStaticStringValue = node => {
  *    }
  * }
  *```
- * 如果不采用下面这个判断，函数判断将得到3，实际应该为5.  类似的还有
+ * If you don't use the following judgment, the function judgment will get 3, which should actually be 5. Similarly, there are
  * ```
- * //如果不采用下面这个判断，函数判断将得到3，实际应该为8
+ * //If the following judgment is not used, the function judgment will get 3, which should actually be 8ing judgment, the function judgment will get 3, which should actually be 8.
  * class A {
         static
         [
@@ -85,14 +85,14 @@ const isEmbedded = node => {
  *
  * @param node
  * @returns function name
- * Q：为什么不直接用 node.id.value获取函数名称 ?
- * A：这种方式对于 传统的函数写法没问题，但是对于
+ * Q: Why not get the function name directly with node.id?
+ * A: This method is fine for traditional function writing, but for
  *  const tips = {
  *     fun: () => {}
  *    };
- *   或者
+ *   or
  *   const fun2 = () => {}
- *  方式书写函数得到的名称为null，所以采取下面这种方式获取，
+ *  The name of the function written in the following way is null, so it is obtained in the following way.
  *
  */
 
@@ -192,7 +192,7 @@ const getStaticPropertyName = node => {
     case 'VariableDeclarator':
       prop = node.id;
       break;
-    //TODO： CallExpression 场景较为复杂，目前应该没有完全覆盖
+    //TODO: The CallExpression scenario is more complex and should not be fully covered at present
     case 'CallExpression':
       prop = node.callee;
       break;
@@ -240,7 +240,7 @@ export const maxLinePerFunctionRule: Rule.RuleModule = {
     function checkFunctionLength(funcNode) {
       const node = isEmbedded(funcNode) ? funcNode.parent : funcNode;
 
-      // 针对函数声明，函数表达式，箭头函数，函数定义四种类型
+      // Four types of function declarations, function expressions, arrow functions, and function definitions
       if (
         node.type === 'FunctionDeclaration' ||
         node.type === 'FunctionExpression' ||

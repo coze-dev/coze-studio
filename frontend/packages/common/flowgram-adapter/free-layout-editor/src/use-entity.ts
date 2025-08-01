@@ -25,8 +25,8 @@ import {
 } from '@flowgram.ai/free-layout-editor';
 
 /**
- * 获取 entity 并监听变化
- * 请使用 useConfigEntity 替代
+ * Get entities and listen for changes
+ * Please use useConfigEntity instead
  * @deprecated
  */
 export function useEntity<T extends Entity>(

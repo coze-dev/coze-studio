@@ -66,15 +66,15 @@ const useShouldUpdateAnchor = () => {
 
 export interface GrabProps {
   /**
-   * 拖拽的锚点
+   * Drag anchor
    * @default grabTarget
    */
   grabAnchor?: RefObject<HTMLDivElement>;
-  /** 被拖拽移动的目标 */
+  /** Dragged moving target */
   grabTarget: RefObject<HTMLDivElement>;
-  /** 是否直接修改 style 达到移动的效果 */
+  /** Whether to directly modify the style to achieve the effect of moving */
   isModifyStyle: boolean;
-  /** 位置改变时的回调 */
+  /** Callback when position changes */
   onPositionChange?: (param: { left: number; top: number }) => void;
 }
 
@@ -113,8 +113,8 @@ export const useGrab = ({
     e.preventDefault();
 
     /**
-     * 计算页面宽度和目标宽度, 和拖拽的位置进行比较
-     * 避免将弹窗拖离页面
+     * Calculate the page width and target width, and compare with the drag position
+     * Avoid dragging pop-ups off the page
      */
     const currentLeft = Math.min(
       Math.max(e.clientX - anchorOffsetX.current, 0),
@@ -157,8 +157,8 @@ export const useGrab = ({
       return;
     }
     /**
-     * 计算鼠标在拖拽目标 dom 中的相对位置
-     * 用于后续和全局鼠标位置进行差值计算得到拖拽位置
+     * Calculate the relative position of the mouse in the drag target dom
+     * Use for subsequent and global mouse position difference calculations to get the drag position
      */
     const left = target.offsetLeft;
     const top = target.offsetTop;
@@ -176,7 +176,7 @@ export const useGrab = ({
     const handleAnchorMouseDown = (e: MouseEvent) => {
       /**
        * https://developer.mozilla.org/zh-CN/docs/Web/API/MouseEvent/buttons
-       * 只识别鼠标主按键(左键)按下
+       * Only the main mouse button (left button) is recognized and pressed.
        */
       if (e.button !== 0) {
         return;
@@ -188,8 +188,8 @@ export const useGrab = ({
     };
 
     /**
-     * 当弹窗到达边界/由于 resize 导致弹窗超出边界后
-     * 鼠标移动过程中需要更新 anchor 位置, 否则会出现鼠标移动但是弹窗位置不更新的问题
+     * When the pop-up window reaches the boundary/after the pop-up window exceeds the boundary due to resize
+     * The anchor position needs to be updated during the mouse movement, otherwise there will be a problem that the mouse moves but the pop-up window position is not updated.
      */
     const handleAnchorMouseMove = (e: MouseEvent) => {
       if (!isGrabbingRef.current) {
@@ -203,8 +203,8 @@ export const useGrab = ({
       updateGrabAnchorBuffer();
 
       /**
-       * 避免正常拖拽时 anchor 位置和全局鼠标位置同时变化
-       * 导致差值计算后位置不更新
+       * Avoid changing anchor position and global mouse position simultaneously during normal dragging
+       * The position is not updated after the difference is calculated
        */
       if (!getGrabAnchorBufferExceed()) {
         return;

@@ -17,6 +17,7 @@
 package mysql
 
 import (
+	"fmt"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -25,5 +26,10 @@ import (
 
 func New() (*gorm.DB, error) {
 	dsn := os.Getenv("MYSQL_DSN")
-	return gorm.Open(mysql.Open(dsn))
+	db, err := gorm.Open(mysql.Open(dsn))
+	if err != nil {
+		return nil, fmt.Errorf("mysql open, dsn: %s, err: %w", dsn, err)
+	}
+
+	return db, nil
 }

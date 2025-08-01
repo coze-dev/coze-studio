@@ -27,7 +27,7 @@ export const typeSafeJsonParse = (
 };
 
 /**
- * 泛型类型标注可能需要使用 type 声明,
+ * Generic type annotations may require the use of type declarations.
  * refer: https://github.com/microsoft/TypeScript/issues/15300.
  */
 export const typeSafeJsonParseEnhanced = <T>({
@@ -39,12 +39,12 @@ export const typeSafeJsonParseEnhanced = <T>({
   str: string;
   onParseError: (error: Error) => void;
   /**
-   * 实现一个类型校验,返回是否通过(boolean);实际上还是靠自觉.
-   * 可以单独定义, 也可以写作内联 function, 但是注意返回值标注为 predicate,
+   * Implement a type check that returns whether it passes (boolean); in fact, it depends on self-awareness.
+   * It can be defined separately or written as an internal connection function, but note that the return value is marked as predicate,
    * refer: https://github.com/microsoft/TypeScript/issues/38390.
    */
   verifyStruct: (sth: unknown) => sth is T;
-  /** 错误原因: 校验崩溃; 校验未通过 */
+  /** Error cause: validation crashed; validation failed */
   onVerifyError: (error: Error) => void;
 }): T | null => {
   const res = typeSafeJsonParse(str, onParseError);

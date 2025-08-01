@@ -50,7 +50,7 @@ export const intelligenceSearchService = {
       },
     });
     const intelligenceList = resp?.data?.intelligences ?? [];
-    // 只保留single mode bot
+    // Keep only single mode bots
     const singleModeBotList = intelligenceList.filter(
       intelligence => intelligence.other_info?.bot_mode === BotMode.SingleMode,
     );

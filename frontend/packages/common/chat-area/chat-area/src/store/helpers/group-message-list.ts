@@ -24,7 +24,7 @@ import { type SystemLifeCycleService } from '../../plugin/life-cycle';
 import { markGroupShowContextDivider } from './mark-group-context-divider';
 import { getDefaultDistributeMemberSetType } from './get-default-distribute-merber-set-type';
 /**
- * query的 message_id 和回答的 reply_id 相同 coze home 还有 bot store 一样
+ * The message_id of the query is the same as the answer reply_id coze home and bot store
  */
 const getMessageGroupId = (message: Message) => {
   if (message.role === 'assistant') {
@@ -78,7 +78,7 @@ export const groupMessageList = (
     const defaultMemberSetType = getDefaultDistributeMemberSetType({ message });
 
     /**
-     * 分发消息类型的生命周期
+     * Lifecycle of a distribution message type
      */
     const { memberSetType = defaultMemberSetType } =
       lifeCycleService.message.onBeforeDistributeMessageIntoMemberSet({
@@ -121,7 +121,7 @@ export const groupMessageList = (
     }
   };
 
-  // messages 是最新的在最前，但是聚合逻辑按照先来后到，所以倒序聚合
+  // Messages are the latest at the beginning, but the aggregation logic is on a first-come, first-served basis, so the aggregation is reversed
   for (let i = messageList.length - 1; i > -1; i--) {
     const message = messageList.at(i);
     if (!message) {
@@ -130,7 +130,7 @@ export const groupMessageList = (
     scanMessageToMakeGroups(message);
   }
 
-  // BTW reverse 其实是 mutate 方法
+  // BTW reverse is actually a mutated method
   const groupIdList = reversedGroupIdList.reverse();
   const messageGroupList = flatMapByKeyList(groupMap, groupIdList);
   messageGroupList.forEach(reverseMemberSet);

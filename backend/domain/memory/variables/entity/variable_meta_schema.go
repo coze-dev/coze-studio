@@ -169,7 +169,7 @@ func (v *VariableMetaSchema) nameValidate() bool {
 		return false
 	}
 
-	// 检查是否符合后面的部分正则规则
+	// Check if some of the following regular rules are met
 	pattern := `^[a-zA-Z_][a-zA-Z_$0-9]*$`
 	match, _ := regexp.MatchString(pattern, identifier)
 

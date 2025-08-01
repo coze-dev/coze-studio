@@ -20,13 +20,13 @@ import { useDestorySpace } from '@coze-common/auth';
 import { useInitSpaceRole } from '@coze-common/auth-adapter';
 
 const SpaceIdContainer = ({ spaceId }: { spaceId: string }) => {
-  // 空间组件销毁时，清空对应space数据
+  // When the space component is destroyed, empty the corresponding space data
   useDestorySpace(spaceId);
 
-  // 初始化空间权限数据
+  // Initialize spatial permission data
   const isCompleted = useInitSpaceRole(spaceId);
 
-  // isCompleted 的 判断条件很重要，确保了在Space空间内能够获取到空间的权限数据。
+  // isCompleted, the judgment condition is very important to ensure that the permission data of the space can be obtained in the Space space.
   return isCompleted ? <Outlet /> : null;
 };
 

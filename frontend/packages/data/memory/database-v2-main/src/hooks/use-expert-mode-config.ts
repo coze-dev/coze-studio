@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState } from 'react';
 
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
@@ -55,7 +55,7 @@ export const useExpertModeConfig = (params: {
         res = await MemoryApi.GetModeConfig({
           bot_id: botId,
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 复制历史文件
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Copy history file
       } catch (error: any) {
         dataReporter.errorEvent(DataNamespace.DATABASE, {
           eventName: REPORT_EVENTS.DatabaseGetExpertConfig,

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
  
-// diff表格缩进的长度
-// diff表格子节点缩进的长度
+// The length of the diff table indent
+// Diff table sub-node indented length
 export const DIFF_TABLE_INDENT_LENGTH = 20;
-// diff表格缩进的基础长度
+// Base length of diff table indentation
 export const DIFF_TABLE_INDENT_BASE = 8;

@@ -15,7 +15,7 @@
  */
  
 /**
- * 此模块用于实现扩展 chat area 数据的生命周期
+ * This module is used to extend the lifecycle of chat area data
  */
 
 import { type Scene } from '@coze-common/chat-core';
@@ -24,7 +24,7 @@ import { type InitService } from '../init-service';
 import { type StoreSet } from '../../context/chat-area-context/type';
 
 type Data = StoreSet;
-/** 先凑活用，短时间内只能看到 coze home 有这个需求 */
+/** Make use of it first, and you can only see that coze homes have this demand in a short time. */
 type Biz = Scene;
 
 const map = new Map<Biz, Data>();

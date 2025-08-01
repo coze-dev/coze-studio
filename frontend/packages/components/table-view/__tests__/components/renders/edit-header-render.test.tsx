@@ -22,7 +22,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { EditHeaderRender } from '../../../src/components/renders/edit-header-render';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/bot-semi', () => {
   const uiButton = ({ children, onClick, ...props }: any) => (
     <button data-testid="button" onClick={onClick} {...props}>
@@ -82,7 +82,7 @@ describe('EditHeaderRender', () => {
       <EditHeaderRender value="测试标题" onBlur={mockOnBlur} validator={{}} />,
     );
 
-    // 验证预览模式显示正确的值
+    // Verify that the preview mode displays the correct value
     const previewElement = screen.getByText('测试标题');
     expect(previewElement).toBeInTheDocument();
   });
@@ -94,11 +94,11 @@ describe('EditHeaderRender', () => {
       <EditHeaderRender value="测试标题" onBlur={mockOnBlur} validator={{}} />,
     );
 
-    // 点击预览文本
+    // Click to preview text
     const previewElement = screen.getByText('测试标题');
     fireEvent.click(previewElement);
 
-    // 验证输入框出现
+    // Verify text box appears
     const inputElement = screen.getByTestId('input');
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveValue('测试标题');
@@ -108,7 +108,7 @@ describe('EditHeaderRender', () => {
     const mockOnBlur = vi.fn();
     const mockEditPropsOnBlur = vi.fn();
 
-    // 渲染组件
+    // rendering component
     render(
       <EditHeaderRender
         value="测试标题"
@@ -120,17 +120,17 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 点击预览文本进入编辑模式
+    // Click on the preview text to enter edit mode
     const previewElement = screen.getByText('测试标题');
     fireEvent.click(previewElement);
 
-    // 获取输入框
+    // Get text box
     const inputElement = screen.getByTestId('input');
 
-    // 触发 blur 事件，让组件内部的 onBlurFn 函数被调用
+    // The blur event is triggered, causing the onBlurFn function inside the component to be called
     fireEvent.blur(inputElement);
 
-    // 验证 editProps.onBlur 被调用，并且传递了正确的参数
+    // Verify that editProps.onBlur is called and the correct parameters are passed
     expect(mockEditPropsOnBlur).toHaveBeenCalledWith('测试标题');
   });
 
@@ -149,15 +149,15 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 点击预览文本进入编辑模式
+    // Click on the preview text to enter edit mode
     const previewElement = screen.getByText('测试标题');
     fireEvent.click(previewElement);
 
-    // 获取输入框并修改值
+    // Get the text box and modify the value
     const inputElement = screen.getByTestId('input');
     fireEvent.change(inputElement, { target: { value: '新标题' } });
 
-    // 验证 onChange 回调被调用
+    // Verify that the onChange callback is invoked
     expect(mockOnChange).toHaveBeenCalledWith('新标题');
   });
 
@@ -177,11 +177,11 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 点击删除按钮
+    // Click the Delete button.
     const deleteButton = screen.getByTestId('button');
     fireEvent.click(deleteButton);
 
-    // 验证 onDelete 回调被调用
+    // Verify that the onDelete callback is invoked
     expect(mockOnDelete).toHaveBeenCalledWith('测试标题');
   });
 
@@ -201,11 +201,11 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 验证删除按钮被禁用
+    // Verify that the delete button is disabled
     const deleteButton = screen.getByTestId('button');
     expect(deleteButton).toHaveAttribute('disabled');
 
-    // 点击删除按钮不应调用回调
+    // Clicking the delete button should not invoke a callback
     fireEvent.click(deleteButton);
     expect(mockOnDelete).not.toHaveBeenCalled();
   });
@@ -222,7 +222,7 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 验证删除按钮不存在
+    // Verify that the delete button does not exist
     expect(screen.queryByTestId('button')).not.toBeInTheDocument();
   });
 
@@ -241,12 +241,12 @@ describe('EditHeaderRender', () => {
       />,
     );
 
-    // 点击预览文本进入编辑模式
+    // Click on the preview text to enter edit mode
     const previewElement = screen.getByText('测试标题');
     fireEvent.click(previewElement);
 
-    // 由于我们的模拟实现中，错误图标和提示是通过 suffix 属性传递的
-    // 所以我们需要检查 tooltip 和 error-icon 是否存在于文档中
+    // Since in our simulation implementation, error icons and hints are passed through the suffix attribute
+    // So we need to check if tooltip and error-icon exist in the document
     expect(screen.getByTestId('error-icon')).toBeInTheDocument();
     expect(screen.getByTestId('tooltip')).toHaveAttribute(
       'data-content',

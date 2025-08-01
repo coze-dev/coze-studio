@@ -32,7 +32,7 @@ describe('useValue', () => {
     const value = 'test-value';
     localStorageService.setValue(permanentKey, value);
 
-    // 等待事件触发
+    // Wait for the event to fire
     await new Promise(resolve => setTimeout(resolve, 0));
 
     const { result } = renderHook(() => useValue(permanentKey));
@@ -42,12 +42,12 @@ describe('useValue', () => {
   it('当值改变时应该更新', async () => {
     const { result } = renderHook(() => useValue(permanentKey));
 
-    // 等待事件触发
+    // Wait for the event to fire
     await new Promise(resolve => setTimeout(resolve, 0));
 
     await act(async () => {
       localStorageService.setValue(permanentKey, 'new-value');
-      // 等待事件触发
+      // Wait for the event to fire
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
@@ -57,14 +57,14 @@ describe('useValue', () => {
   it('当值被删除时应该返回 undefined', async () => {
     localStorageService.setValue(permanentKey, 'test-value');
 
-    // 等待事件触发
+    // Wait for the event to fire
     await new Promise(resolve => setTimeout(resolve, 0));
 
     const { result } = renderHook(() => useValue(permanentKey));
 
     await act(async () => {
       localStorageService.setValue(permanentKey, undefined);
-      // 等待事件触发
+      // Wait for the event to fire
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
@@ -74,18 +74,18 @@ describe('useValue', () => {
   it('卸载时应该清理事件监听', async () => {
     const { unmount } = renderHook(() => useValue(permanentKey));
 
-    // 等待事件触发
+    // Wait for the event to fire
     await new Promise(resolve => setTimeout(resolve, 0));
 
     unmount();
 
-    // 确保不会触发已卸载组件的状态更新
+    // Make sure that status updates for uninstalled components are not triggered
     localStorageService.setValue(permanentKey, 'new-value');
-    // 如果事件监听没有被清理，这里会抛出 React 警告
+    // If the event listener is not cleaned up, a React warning will be thrown here
   });
 
   describe('用户相关的值', () => {
-    // 使用一个确定绑定了用户的 key
+    // Use a key that confirms the user is bound.
     const userBindKey = 'coachmark' as const;
     const userId = 'test-user-id';
 
@@ -96,7 +96,7 @@ describe('useValue', () => {
     it('应该返回当前用户的值', async () => {
       localStorageService.setValue(userBindKey, 'user-value');
 
-      // 等待事件触发
+      // Wait for the event to fire
       await new Promise(resolve => setTimeout(resolve, 0));
 
       const { result } = renderHook(() => useValue(userBindKey));
@@ -107,7 +107,7 @@ describe('useValue', () => {
       const userId2 = 'test-user-id-2';
       localStorageService.setValue(userBindKey, 'user1-value');
 
-      // 等待事件触发
+      // Wait for the event to fire
       await new Promise(resolve => setTimeout(resolve, 0));
 
       const { result } = renderHook(() => useValue(userBindKey));
@@ -116,7 +116,7 @@ describe('useValue', () => {
       await act(async () => {
         localStorageService.setUserId(userId2);
         localStorageService.setValue(userBindKey, 'user2-value');
-        // 等待事件触发
+        // Wait for the event to fire
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
@@ -124,7 +124,7 @@ describe('useValue', () => {
 
       await act(async () => {
         localStorageService.setUserId(userId);
-        // 等待事件触发
+        // Wait for the event to fire
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 

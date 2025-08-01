@@ -200,7 +200,7 @@ export function useWorkflowProductList({
     return { workflowId, pluginId };
   };
   return {
-    // 筛选条件
+    // filter criteria
     updatePageParam,
 
     //
@@ -213,7 +213,7 @@ export function useWorkflowProductList({
     isFetchingNextPage,
     hasNextPage,
 
-    // 操作
+    // operation
     copyProduct,
   } as const;
 }

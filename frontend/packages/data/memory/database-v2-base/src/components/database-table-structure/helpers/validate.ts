@@ -24,7 +24,7 @@ import {
   VerifyType,
 } from '../../../types/database-field';
 
-// 校验 Table Name 和 Field Name
+// Validation Table Name and Field Name
 const namingRegexMapper = [
   {
     type: 1,
@@ -53,7 +53,7 @@ export const validateNaming = (str: string, errList: string[] = []) => {
   return list;
 };
 
-// 校验 Table Fields
+// Validation Table Fields
 export const thMapper: MapperItem[] = [
   {
     label: I18n.t('db_add_table_field_name'),
@@ -124,7 +124,7 @@ export const validateFields = (
         const msg = verifyItem.message;
         switch (verifyItem.type) {
           case VerifyType.Required: {
-            // 报错出现时机：点击保存按钮时，出现提示。表中某一行填写了数据，但是未填写必填字段时，需要报错
+            // When the error occurs: When clicking the Save button, a prompt appears. When a row in the table fills in the data, but the required fields are not filled in, an error needs to be reported.
             if (
               trigger === 'save' &&
               !value &&
@@ -135,14 +135,14 @@ export const validateFields = (
             ) {
               listItem.errorMapper[thKey].push(msg);
             }
-            // 报错消失时机：必填输入框输入了内容后，报错立刻消失
+            // Error reporting and disappearance timing: Required text box After entering the content, the error will disappear immediately
             if (trigger === 'change' && value) {
               listItem.errorMapper[thKey] = errTarget.filter(i => i !== msg);
             }
             break;
           }
           case VerifyType.Unique: {
-            // 报错出现时机：点击保存按钮时，出现提示。
+            // When the error occurs: When you click the Save button, a prompt appears.
             if (
               trigger === 'save' &&
               value &&
@@ -150,7 +150,7 @@ export const validateFields = (
             ) {
               listItem.errorMapper[thKey].push(msg);
             }
-            // 报错消失时机：必填输入框输入了内容后，报错立刻消失
+            // Error reporting and disappearance timing: Required text box After entering the content, the error will disappear immediately
             if (
               trigger === 'change' &&
               value &&
@@ -161,7 +161,7 @@ export const validateFields = (
             break;
           }
           case VerifyType.Naming: {
-            // 报错出现时机：命名格式有问题，失去焦点时，立刻校验格式
+            // Error timing: There is a problem with the naming format. When you lose focus, check the format immediately
             if (
               trigger === 'save' ||
               trigger === 'blur' ||

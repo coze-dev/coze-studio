@@ -36,9 +36,9 @@ import {
 import { type Message } from '../../lumino/messaging';
 import { SPLIT_PANEL_CLASSNAME } from '../../constants/view';
 
-// 展开状态 className
+// Expand state className
 const EXPAND_CLASSNAME = 'expand';
-// 关闭状态 className
+// Close state className
 const CLOSE_CLASSNAME = 'close';
 
 export interface SplitPanelType {
@@ -64,14 +64,14 @@ export abstract class SplitWidget
   @inject(LayoutRestorer) protected layoutRestorer: LayoutRestorer;
 
   /**
-   * 存在表示启用内部分区
-   * 使用 Orientation 标明布局分割方向
-   * 水平 - horizontal
-   * 垂直 - vertical
+   * Presence indicates that internal partitioning is enabled
+   * Use Orientation to indicate the layout split direction
+   * Horizontal - horizontal
+   * Vertical - vertical
    */
   private _orientation: SplitLayout.Orientation | undefined;
 
-  /** 默认布局，初始化子面板的时候使用该布局 */
+  /** Default layout, used when initializing subpanels */
   private _defaultStretch?: number[];
 
   get defaultStretch() {
@@ -113,7 +113,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 所有分区面板
+   * All partition panels
    */
   protected panels: Panel[] = [];
 
@@ -122,19 +122,19 @@ export abstract class SplitWidget
   splitPanels: SplitPanelType[] = [];
 
   /**
-   * 方向
+   * direction
    */
   direction?: BoxLayout.Direction = 'left-to-right';
 
   protected onFitRequest(msg: Message): void {
     super.onFitRequest(msg);
-    // 水平布局生效
+    // Horizontal layout takes effect
     if (!this.panels?.length || this.orientation !== 'horizontal') {
       return;
     }
     /**
-     * 修复 lumino 原生问题
-     * 劫持 fit 方法，当面板 close 的时候移除前一个 handler
+     * Fix lumino native issues
+     * Hijack the fit method, remove the previous handler when the panel is closed
      */
     this.panels.forEach(panel => {
       const panelDom = panel?.node;
@@ -169,16 +169,16 @@ export abstract class SplitWidget
   }
 
   /**
-   * 初始化 panel node className
+   * Initialize panel node className
    */
   addClassNames() {
-    // 数据不存在的时候不执行 classname 逻辑
+    // Does not execute classname logic when data does not exist
     if (!this.storeData?.panelClose) {
       return;
     }
     this.panels.forEach((_, idx) => {
-      // 1. 默认 expand 状态
-      // 2. storeData 存储状态为 close 时初始化为 close
+      // 1. Default expand state
+      // 2. storeData is initialized to close when the storage state is closed
       const isExpand = !this.storeData?.panelClose?.[idx];
       if (!isExpand) {
         this.closePanel(idx);
@@ -189,7 +189,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 根据 uri 获取 widget
+   * Get widget by URI
    */
   getWidget(uri: URI) {
     const id = this.widgetManager.uriToWidgetID(uri);
@@ -197,7 +197,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 根据 widget uri 获取 expand 状态
+   * Get expanded state according to widget uri
    */
   getWidgetExpand(uri?: URI): boolean {
     if (!uri) {
@@ -209,7 +209,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 创建 panel
+   * Create panel
    */
   protected async createPanels(stretch: number[]) {
     this.splitPanels.sort(
@@ -218,11 +218,11 @@ export abstract class SplitWidget
     return Promise.all(
       this.splitPanels.map(async ({ widgetUri, widget }, idx) => {
         const panel = this.createPanel(widgetUri);
-        // 面板关闭状态
+        // Panel closed status
         if (stretch?.[idx] === 0) {
           panel.node.classList.add(CLOSE_CLASSNAME);
         } else {
-          // 默认 expand
+          // Default expand
           panel.node.classList.add(EXPAND_CLASSNAME);
         }
         let panelWidget;
@@ -246,7 +246,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 通过 uri 展开 / 收起子面板
+   * Expand/retract subpanels via URI
    */
   toggleSubWidget(uri?: URI) {
     if (!uri || !this.layout) {
@@ -261,8 +261,8 @@ export abstract class SplitWidget
       // const currentHandler = handlers[idx];
       const isExpand = panel.node.classList.contains(EXPAND_CLASSNAME);
       if (idx === expandIdx && isExpand) {
-        // 执行 close panel
-        // 隐藏 handler，避免关闭 panel 调整。
+        // Execute close panel
+        // Hide handlers to avoid closing panel adjustments.
         // currentHandler.classList.add('lm-mod-hidden');
         relativeSizes[idx] = 0;
         panel.node.classList.remove(EXPAND_CLASSNAME);
@@ -308,10 +308,10 @@ export abstract class SplitWidget
     panel.node.classList.add(EXPAND_CLASSNAME);
   }
 
-  /** 通过 relativeSizes 直接控制面板开关 */
+  /** Direct control panel switches via relativeSizes */
   /**
-   * 为什么 RelativeSizes 不直接和 expand 状态绑定：
-   * 面板关闭状态下可能默认展示标题高度，无法根据 relativeSizes 直接判断
+   * Why RelativeSizes is not directly bound to the expand state:
+   * When the panel is closed, the title height may be displayed by default, which cannot be directly judged according to relativeSizes.
    */
   syncPanelRelativeSizes(sizes: number[]) {
     this.contentPanel.setRelativeSizes(sizes);
@@ -331,9 +331,9 @@ export abstract class SplitWidget
     this.contentPanel.setRelativeSizes(sizes);
   }
 
-  /** 默认初始化分区布局 */
+  /** Default initialization of partition layout */
   protected getDefaultStretch() {
-    // 从默认配置中取
+    // From the default configuration
     if (this.defaultStretch) {
       return this.defaultStretch;
     }
@@ -343,7 +343,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 创建 container
+   * Create container
    */
   protected async createContainer() {
     const stretch = this.getDefaultStretch();
@@ -363,7 +363,7 @@ export abstract class SplitWidget
   }
 
   /**
-   * 默认不渲染
+   * Default does not render
    */
   render(): ReactElementType {
     return null;

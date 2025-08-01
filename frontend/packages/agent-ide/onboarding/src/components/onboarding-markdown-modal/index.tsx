@@ -53,7 +53,7 @@ export interface OnboardingMarkdownModalProps
   prologue: string;
   onPrologueChange: (prologue: string) => void;
   /**
-   * 要预览的和能编辑的可能不一样
+   * What you want to preview and what you can edit may be different.
    */
   previewSuggestions?: BotEditorOnboardingSuggestion[];
 }

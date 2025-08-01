@@ -42,20 +42,20 @@ import type {
 } from './types';
 
 /**
- * 获取当前主题
+ * Get the current topic
  */
 export declare function useCurrentTheme(): ThemeType;
 
 //------- Passport
 /**
- * 退出登录
+ * log out
  */
 export declare function logoutOnly(): Promise<void>;
 
 /**
- * 上传用户头像
- * @param file - 头像文件
- * @returns web_uri - 头像文件对应的 url
+ * Upload user avatar
+ * @param file - avatar file
+ * @Returns web_uri - URL for avatar file
  */
 export declare function uploadAvatar(file: File): Promise<{ web_uri: string }>;
 //-------
@@ -63,87 +63,87 @@ export declare function uploadAvatar(file: File): Promise<{ web_uri: string }>;
 //------- User
 
 /**
- * 刷新用户信息
+ * Refresh user information
  */
 export declare function refreshUserInfo(): Promise<void>;
 
 /**
- * 获取登录状态
- * @returns LoginStatus - 检查中/已登录/未登录
+ * Get login status
+ * @returns LoginStatus - checking/logged in/not logged in
  */
 export declare function getLoginStatus(): LoginStatus;
 
 /**
- * 获取登录校验是否完成
- * @returns boolean 登录校验是否完成
+ * Get whether the login verification is complete
+ * @Returns boolean login verification completed
  */
 export declare function getIsSettled(): boolean;
 
 /**
- * 获取是否登录，如需要获取真实登录状态，请配合 getIsSettled/useIsSettled 使用
- * @deprecated - 推荐使用 getLoginStatus
- * @returns boolean 是否登录
+ * Get whether to log in. If you need to get the real login status, please use it with getIsSettled/useIsSettled
+ * @deprecated - recommended getLoginStatus
+ * @returns boolean whether to log in
  */
 export declare function getIsLogined(): boolean;
 
 /**
- * 获取用户信息
- * @returns UserInfo | null - 用户信息
+ * Acquire user information
+ * @returns UserInfo | null - user information
  */
 export declare function getUserInfo(): UserInfo | null;
 
 /**
- * 获取用户三方授权信息
+ * Obtain user tripartite authorization information
  * @returns Promise<void>
  */
 export declare function getUserAuthInfos(): Promise<void>;
 
 /**
- * 响应式获取登录状态
- * @returns LoginStatus - 检查中/已登录/未登录
+ * Responsive access to login status
+ * @returns LoginStatus - checking/logged in/not logged in
  */
 export declare function useLoginStatus(): LoginStatus;
 
 /**
- * 响应式获取登录校验是否完成
- * @returns boolean 登录校验是否完成
+ * Responsive Get Login Verification Completed
+ * @Returns boolean login verification completed
  */
 export declare function useIsSettled(): boolean;
 
 /**
- * 响应式获取是否登录，如需要获取真实登录状态，请配合 getIsSettled/useIsSettled 使用
- * @deprecated - 推荐使用 useLoginStatus
- * @returns boolean 是否登录
+ * Responsive to get whether to log in. If you need to get the real login status, please use it with getIsSettled/useIsSettled
+ * @deprecated - useLoginStatus
+ * @returns boolean whether to log in
  */
 export declare function useIsLogined(): boolean;
 
 /**
- * 响应式获取用户信息
- * @returns UserInfo | null - 用户信息
+ * Responsive acquisition of user information
+ * @returns UserInfo | null - user information
  */
 export declare function useUserInfo(): UserInfo | null;
 
 /**
- * 响应式获取用户三方授权信息
+ * Responsive acquisition of user tripartite authorization information
  * @returns UserAuthInfo[]
  */
 export declare function useUserAuthInfo(): UserAuthInfo[];
 
 /**
- * 响应式获取用户用户标签
+ * Responsive acquisition of user tags
  * @returns UserLabel
  */
 export declare function useUserLabel(): UserLabel | null;
 
 /**
- * 订阅 UserAuthInfo 变化
- * @param callback - 回调函数
+ * Subscribe to UserAuthInfo Changes
+ * @param callback - callback function
  */
 export declare function subscribeUserAuthInfos(
   callback: (state: UserAuthInfo[], prev: UserAuthInfo[]) => void,
 ): () => void;
 
-//------- layout组件
+//------- layout component
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export declare const SideSheetMenu: FC;
@@ -163,6 +163,6 @@ export interface MenuItem {
 }
 
 /**
- * 根据spaceId获取space信息
+ * Get space information based on spaceId
  */
 export declare function useSpace(spaceId: string): BotSpace | undefined;

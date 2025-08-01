@@ -34,13 +34,13 @@ interface KvBindButtonProps {
   setDataSource?: (value: SetStateAction<BotPublishConnectorInfo[]>) => void;
   setSelectedPlatforms?: (id: SetStateAction<string[]>) => void;
   record: BotPublishConnectorInfo | PublishConnectorInfo;
-  /** 渠道配置成功的回调。若不传入 `unbindCallback`，解绑渠道也会调用该回调，且 bind_id 为空字符串 `''` */
+  /** The callback of the successful channel configuration. If'unbindCallback 'is not passed, the callback will also be called by unbinding the channel, and the bind_id is empty string "" */
   bindSuccessCallback?: (value: PublishConnectorInfo | undefined) => void;
-  /** 解绑渠道的回调 */
+  /** Callback of untied channels */
   unbindCallback?: () => void;
-  /** 绑定的 agent_type 。默认为 bot */
+  /** Bound agent_type. Defaults to bot */
   origin?: 'project' | 'bot';
-  /** 绑定的 bot_id/project_id 。不传则根据 origin 从路由参数中获取 */
+  /** The bound bot_id/project_id. If not passed, get it from the route parameter according to origin */
   originId?: string;
 }
 
@@ -54,7 +54,7 @@ export const KvBindButton = ({
   originId,
 }: KvBindButtonProps) => {
   const { bot_id = '', project_id = '' } = useParams<DynamicParams>();
-  // 传给后端的参数名字是 bot_id，另外使用参数 agent_type 来区分 0-bot 1-project
+  // The name of the parameter passed to the backend is bot_id, and the parameter agent_type is used to distinguish 0-bot 1-project.
   const botId = originId ?? (origin === 'bot' ? bot_id : project_id);
   const bindSuccessCb = (
     value: BotPublishConnectorInfo | PublishConnectorInfo | undefined,
@@ -66,7 +66,7 @@ export const KvBindButton = ({
     setDataSource?.((list: BotPublishConnectorInfo[]) => {
       const target = list.find(l => l.id === value?.id);
       if (target) {
-        // 解绑旧的服务号后，需要隐藏掉旧的服务号渠道，不允许再绑定
+        // After unbinding the old service number, you need to hide the old service number channel and do not allow it to be bound again.
         if (target.id === OLD_WX_FWH_ID && !value?.bind_id) {
           return list.filter(item => item.id !== OLD_WX_FWH_ID);
         }

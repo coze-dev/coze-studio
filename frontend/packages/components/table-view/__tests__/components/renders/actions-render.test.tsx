@@ -22,7 +22,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ActionsRender } from '../../../src/components/renders/actions-render';
 
-// 使用vi.mock的回调函数形式来避免linter错误
+// Use the callback function form of vi.mock to avoid linter errors
 vi.mock('@coze-arch/coze-design/icons', () => ({
   IconCozEdit: () => <div data-testid="edit-icon" />,
   IconCozTrashCan: () => <div data-testid="delete-icon" />,
@@ -49,9 +49,9 @@ describe('ActionsRender', () => {
 
     render(<ActionsRender record={mockRecord} index={mockIndex} />);
 
-    // 验证按钮被渲染
+    // Verify button is rendered
     const buttons = screen.getAllByTestId('button');
-    expect(buttons).toHaveLength(2); // 编辑和删除按钮
+    expect(buttons).toHaveLength(2); // Edit and delete buttons
   });
 
   test('应该在点击编辑按钮时调用onEdit回调', () => {
@@ -67,11 +67,11 @@ describe('ActionsRender', () => {
       />,
     );
 
-    // 点击编辑按钮
+    // Click the Edit button
     const buttons = screen.getAllByTestId('button');
-    fireEvent.click(buttons[0]); // 第一个按钮是编辑按钮
+    fireEvent.click(buttons[0]); // The first button is the edit button
 
-    // 验证编辑回调被调用
+    // Verify edit callback is invoked
     expect(mockOnEdit).toHaveBeenCalledWith(mockRecord, mockIndex);
   });
 
@@ -88,11 +88,11 @@ describe('ActionsRender', () => {
       />,
     );
 
-    // 点击删除按钮
+    // Click the Delete button.
     const buttons = screen.getAllByTestId('button');
-    fireEvent.click(buttons[1]); // 第二个按钮是删除按钮
+    fireEvent.click(buttons[1]); // The second button is the delete button.
 
-    // 验证删除回调被调用
+    // Verify that the delete callback is invoked
     expect(mockOnDelete).toHaveBeenCalledWith(mockIndex);
   });
 
@@ -108,7 +108,7 @@ describe('ActionsRender', () => {
       />,
     );
 
-    // 验证只有一个按钮（删除按钮）
+    // Verify that there is only one button (delete button)
     const buttons = screen.getAllByTestId('button');
     expect(buttons).toHaveLength(1);
   });
@@ -125,7 +125,7 @@ describe('ActionsRender', () => {
       />,
     );
 
-    // 验证只有一个按钮（编辑按钮）
+    // Verify that there is only one button (edit button)
     const buttons = screen.getAllByTestId('button');
     expect(buttons).toHaveLength(1);
   });

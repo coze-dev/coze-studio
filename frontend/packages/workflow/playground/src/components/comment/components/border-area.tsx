@@ -41,51 +41,51 @@ export const BorderArea: FC<IBorderArea> = props => {
 
   return (
     <div className="workflow-comment-border-area z-[999]">
-      {/* 左边 */}
+      {/* Left */}
       <DragArea
         className="left-[-10px] top-[10px] w-[20px] h-[calc(100%-20px)]"
         model={model}
       />
-      {/* 右边 */}
+      {/* Right */}
       <DragArea
         className={classNames('right-[-10px] top-[10px] h-[calc(100%-20px)]', {
-          'w-[10px]': overflow, // 防止遮挡滚动条
+          'w-[10px]': overflow, // Prevent occlusion of scroll bars
           'w-[20px]': !overflow,
         })}
         model={model}
       />
-      {/* 上边 */}
+      {/* above */}
       <DragArea
         className="top-[-10px] left-[10px] w-[calc(100%-20px)] h-[20px]"
         model={model}
       />
-      {/* 下边 */}
+      {/* below */}
       <DragArea
         className="bottom-[-10px] left-[10px] w-[calc(100%-20px)] h-[20px]"
         model={model}
       />
-      {/** 左上角 */}
+      {/** upper left corner */}
       <ResizeArea
         className="left-0 top-0 cursor-nwse-resize"
         model={model}
         getDelta={({ x, y }) => ({ top: y, right: 0, bottom: 0, left: x })}
         onResize={onResize}
       />
-      {/** 右上角 */}
+      {/** upper right corner */}
       <ResizeArea
         className="right-0 top-0 cursor-nesw-resize"
         model={model}
         getDelta={({ x, y }) => ({ top: y, right: x, bottom: 0, left: 0 })}
         onResize={onResize}
       />
-      {/** 右下角 */}
+      {/** lower right corner */}
       <ResizeArea
         className="right-0 bottom-0 cursor-nwse-resize"
         model={model}
         getDelta={({ x, y }) => ({ top: 0, right: x, bottom: y, left: 0 })}
         onResize={onResize}
       />
-      {/** 左下角 */}
+      {/** Lower left corner */}
       <ResizeArea
         className="left-0 bottom-0 cursor-nesw-resize"
         model={model}

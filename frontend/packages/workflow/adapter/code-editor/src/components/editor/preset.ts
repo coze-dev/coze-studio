@@ -18,7 +18,7 @@ import { api, type InferEditorAPIFromPlugins } from '@coze-editor/editor/react';
 import preset from '@coze-editor/editor/preset-code';
 import { type EditorView } from '@codemirror/view';
 
-// 忽略 readOnly 强制设置值
+// Ignore readOnly to force a value
 const forceSetValue =
   ({ view }: { view: EditorView }) =>
   (value: string) => {

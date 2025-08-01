@@ -39,26 +39,26 @@ const generateTestFormInitialValue = (
   const initialValue = fields.reduce<undefined | FormDataType>(
     (previous, current) => {
       const { name, visible } = current;
-      /** 如果是不生效的项，姑且不需要初始值 */
+      /** If it is an invalid item, no initial value is required for the time being */
       if (isBoolean(visible) && !visible) {
         return previous;
       }
       if (!name || current.type === 'FormVoid') {
-        /** 如果 name 不存在，则为 UI 或者虚拟节点，取其 children 继续递归，且值平铺展开即可 */
+        /** If name does not exist, it is a UI or virtual node, take its children to continue recursion, and expand the value tiled. */
         return {
           ...previous,
           ...generateTestFormInitialValue(current.children, cacheData),
         };
       }
       const data: FormDataType = get(cacheData, name);
-      /** 说明是可以下钻的 */
+      /** It means that it can be drilled. */
       if (current.children) {
         return {
           ...previous,
           [name]: generateTestFormInitialValue(current.children, data),
         };
       }
-      /** 值是否有效，取决于值是否存在以及类型是否匹配 */
+      /** Valid values depend on whether the values exist and whether the types match */
       const isUseValue =
         data?.type === current.originType && !isUndefined(data?.value);
       return isUseValue
@@ -77,7 +77,7 @@ const generateTestFormInitialValue = (
 const generateCacheValues2InitialValue = (
   fields: TestFormSchema['fields'],
   cacheData: FormDataType,
-  /** 是否强制使用 cacheData 数据 */
+  /** Whether to force the use of cacheData data */
   force?: boolean,
 ) => {
   if (!fields || !Array.isArray(fields) || !fields.length || !cacheData) {
@@ -85,7 +85,7 @@ const generateCacheValues2InitialValue = (
   }
   fields.forEach(field => {
     const { name, visible, type, children, originType } = field;
-    /** 如果是不生效的项，姑且不需要初始值 */
+    /** If it is an invalid item, no initial value is required for the time being */
     if (isBoolean(visible) && !visible) {
       return;
     }
@@ -122,7 +122,7 @@ const generateCacheDataType = (
         ...generateCacheDataType(current?.children, cacheData),
       };
     }
-    // 在黑名单里的字段不需要保存
+    // Fields in the blacklist do not need to be saved
     if (blacks.includes(name)) {
       return previous;
     }
@@ -180,7 +180,7 @@ const formatObjectValue = (field: TestFormField, data: any) => {
       return data;
     }
   }
-  // 如果不符合任何条件，也直接返回作为兜底值
+  // If no conditions are met, it is also returned directly as the bottom line value.
   return data;
 };
 const generateHistoryValues2InitialValue = (

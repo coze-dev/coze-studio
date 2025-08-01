@@ -56,7 +56,7 @@ export default function ParamOperator({
   const { testId } = useOutputTreeContext();
   const { concatTestId } = useNodeTestId();
   const isLimited = level >= 3;
-  // 是否展示新增子项的按钮
+  // Whether to display the button for adding a child item
   const _needRenderAppendChild =
     ObjectLikeTypes.includes(data.type) && !isLimited;
 

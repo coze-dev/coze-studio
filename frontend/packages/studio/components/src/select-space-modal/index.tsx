@@ -106,7 +106,7 @@ export const SelectSpaceModal: React.FC<
           const params = form.current?.formApi.getValues();
           await onConfirm?.(params?.spaceId ?? '', params?.name);
         } catch {
-          // 审核不通过会走到这个逻辑，调用接口处会上报自定义异常
+          // If the review fails, you will go to this logic, and a custom exception will be reported at the calling interface.
           setLoading(false);
         }
       }}

@@ -26,7 +26,7 @@ export const VariableGroupWrapper = (
       key: string | ReactNode;
       description: string | ReactNode;
     };
-    defaultOpen?: boolean; // 添加默认展开属性
+    defaultOpen?: boolean; // Add default expansion properties
     level?: number;
   }>,
 ) => {

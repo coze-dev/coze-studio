@@ -55,49 +55,49 @@ export const getDefaultBotInfoStore = (): BotInfoStore => ({
   raw: {},
 });
 
-/** 定义bot的基础信息*/
+/** Define the basic information of the bot*/
 export interface BotInfoStore {
   botId: string;
-  /** 发布的业务线详情 */
+  /** Published business line details */
   connectors: Array<ConnectorInfo>;
-  /** for前端，发布时间 */
+  /** For frontend, release time */
   publish_time: string;
-  /** 空间id */
+  /** Space ID */
   space_id: string;
-  /** 是否已发布 */
+  /** Has it been published? */
   has_publish: boolean;
   mode: BotMode;
-  /** 最新发布版本时传发布人 */
+  /** Publisher of the latest release */
   publisher: UserInfo;
-  /** bot上架后的商品状态 */
+  /** The product status after the bot is put on the shelves */
   botMarketStatus: BotMarketStatus;
-  /** bot名称 */
+  /** bot name */
   name: string;
-  /** bot描述 */
+  /** Bot description */
   description: string;
-  /** bot 图标uri */
+  /** Bot icon uri */
   icon_uri: string;
-  /** bot 图标url */
+  /** Bot icon url */
   icon_url: string;
-  /** 创建时间 */
+  /** creation time */
   create_time: string;
-  /** 创建人id */
+  /** creator id */
   creator_id: string;
-  /** 更新时间 */
+  /** update time */
   update_time: string;
-  /** 业务线 */
+  /** line of business */
   connector_id: string;
-  /** multi agent mode agent信息 */
+  /** Multi agent mode agent information */
   // agents?: Array<Agent>;
-  /** 版本，毫秒 */
+  /** Version, ms */
   version: string;
-  /** multi_agent结构体 */
+  /** multi_agent structure */
   // multi_agent_info?: MultiAgentInfo;
-  /** @ 保存了原始bot数据, readonly **/
+  /** @Save the original bot data, readonly **/
   raw: BotInfo;
-  /** 抖音分身应用id */
+  /** Douyin doppelganger app id */
   appId?: string;
-  /** 业务类型 默认0 分身业务1  */
+  /** Business Type, Default 0 Clone Business 1  */
   businessType?: BusinessType;
 }
 
@@ -118,7 +118,7 @@ export const useBotInfoStore = create<BotInfoStore & BotInfoAction>()(
         set(produce<BotInfoStore>(state => update(state))),
       // eslint-disable-next-line complexity
       transformVo2Dto: data => {
-        // 将botData转化为botInfoStore, 只取BotInfoStore中的固定字段
+        // Convert botData to botInfoStore, taking only the fixed fields in BotInfoStore
         const botInfo = data.bot_info ?? {};
         return {
           botId: botInfo?.bot_id ?? '',

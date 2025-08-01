@@ -65,7 +65,7 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
 
   const isReadonly = useBotDetailIsReadonly();
 
-  // 用户从特殊模型切换到正常模型后, 可选项列表将发生变化，于是用户再也切换不回去了
+  // After the user switches from the special model to the normal model, the list of options will change, so the user can never switch back
   const modelList = getModelOptionList({
     onlineModelList,
     offlineModelMap,

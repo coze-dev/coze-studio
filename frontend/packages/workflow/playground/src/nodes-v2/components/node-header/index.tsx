@@ -15,8 +15,8 @@
  */
  
 /**
- * 组件迁移自 packages/workflow/playground/src/form-extensions/setters/node-header
- * 仅做了对新版节点引擎接口适配
+ * Components migrated from packages/workflow/playground/src/form-extensions/setters/node-header
+ * Only the interface adaptation of the new version of the node engine has been done.
  */
 import React from 'react';
 
@@ -70,7 +70,7 @@ export const NodeHeader = withValidation<NodeHeaderProps>(
       <NodeHeaderComponent
         title={title}
         subTitle={subTitle}
-        // 如果是coze2.0新版节点渲染 隐藏掉描述
+        // If it is the new version of coze2.0 node rendering, hide the description.
         description={description}
         logo={icon}
         onTitleChange={newTitle => {

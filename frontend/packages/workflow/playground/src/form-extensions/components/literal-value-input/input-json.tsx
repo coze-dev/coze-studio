@@ -81,7 +81,7 @@ export const InputJson: FC<LiteralValueInputProps> = ({
     onChange?.(e.value);
   };
 
-  // 值受控;
+  // Value controlled;
   // useEffect(() => {
   // const editor = apiRef.current;
   // if (!editor) {

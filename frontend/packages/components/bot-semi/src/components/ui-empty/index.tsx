@@ -120,7 +120,7 @@ export function UIEmpty({
   );
 }
 
-// 无图场景下的原生用法
+// Native usage in non-graphic scenarios
 UIEmpty.Semi = Empty;
 
 export default UIEmpty;

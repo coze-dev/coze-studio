@@ -21,14 +21,14 @@ import {
 } from '@coze-arch/idl/intelligence_api';
 
 /**
- * 判断发布过程是否已经结束，可以停止轮询
+ * Determine whether the publishing process has ended and stop polling
  */
 export function isPublishFinish(record: PublishRecordDetail) {
-  // project 打包失败/审核不通过
+  // Project packaging failed/review failed
   const projectFinish =
     record.publish_status === PublishRecordStatus.PackFailed ||
     record.publish_status === PublishRecordStatus.AuditNotPass;
-  // 所有渠道均处于 审核中/失败/成功 状态
+  // All channels are under review, failed, or successful
   const connectorsFinish =
     record.connector_publish_result?.every(
       item =>

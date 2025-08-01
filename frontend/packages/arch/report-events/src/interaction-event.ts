@@ -28,12 +28,12 @@ export enum InteractionEvents {
   updateOcean = 'update_ocean',
   // clickBotCard = 'click_bot_card', -- deprecated
   getHistoryInfo = 'get_history_info',
-  publishBot = 'publish_bot', // Bot发布
+  publishBot = 'publish_bot', // Bot release
   // offlineBot = 'offline_bot', -- deprecated
-  botDebugMessageReploy = 'bot_debug_message_reploy', // Bot调试内容返回
-  getDatasetList = 'get_dataset_list', // 获取dataset列表
-  createDataSet = 'create_dataset', // 创建dataset
-  updateDataset = 'update_dataset', // 更新dataset
+  botDebugMessageReploy = 'bot_debug_message_reploy', // Bot debug content return
+  getDatasetList = 'get_dataset_list', // Get dataset list
+  createDataSet = 'create_dataset', // Create dataset
+  updateDataset = 'update_dataset', // Update dataset
   deleteDataset = 'delete_dataset',
   submitDatasetUrl = 'submit_dataset_url',
   uploadDatasetFile = 'upload_dataset_file',
@@ -51,9 +51,9 @@ export enum InteractionEvents {
   botDebugShareBotGetLink = 'bot_debug_share_bot_get_link',
   // botDebugShareBotOpen = 'bot_debug_share_bot_open', -- deprecated
   // botDebugShareBotClose = 'bot_debug_share_bot_close', -- deprecated
-  botDebugGetRecord = 'bot_debug_get_record', // Bot详情页初始化
+  botDebugGetRecord = 'bot_debug_get_record', // Bot details page initialization
   // botDebugCheckItemId = 'bot_debug_check_item_id', -- deprecated
-  botDebugAutosaveItem = 'bot_debug_autosave_item', // Bot自动保存
+  botDebugAutosaveItem = 'bot_debug_autosave_item', // Bot auto save
   botDebugGetPluginList = 'bot_debug_get_plugin_list',
   pluginPageGetPluginList = 'plugin_page_get_plugin_list',
   botDebugUploadImage = 'bot_debug_upload_image',
@@ -61,7 +61,7 @@ export enum InteractionEvents {
   botRevert = 'bot_revert',
   botSubmit = 'bot_submit',
   botMergeToDraft = 'bot_merge_to_draft',
-  botGetDraftBotInfo = 'bot_get_draft_bot_info', // bot获取详情
+  botGetDraftBotInfo = 'bot_get_draft_bot_info', // Bot Get Details
   copy = 'copy',
   botDuplicate = 'bot_duplicate',
   botExperience = 'bot_experience',
@@ -71,7 +71,7 @@ export enum InteractionEvents {
   botGetScheduleTasks = 'bot_get_schedule_tasks',
   botRemoveScheduleTask = 'bot_remove_schedule_task',
   parseJSON = 'parse_json_error',
-  botGetAiGenerateAvatar = 'bot_get_ai_generate_avatar', // AI生成头像
+  botGetAiGenerateAvatar = 'bot_get_ai_generate_avatar', // AI-generated avatar
   ttsVoiceConfig = 'tts_voice_config',
   ttsVoiceToken = 'tts_voice_token',
   ttsVoiceWs = 'tts_voice_ws',

@@ -41,7 +41,7 @@ export interface RefExpressionJSON extends KeyPathExpressionJSON {
 }
 
 /**
- * 业务重新定义 KeyPath 的实现方式
+ * Business redefines how KeyPath is implemented
  */
 export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON> {
   get renameService(): VariableFieldKeyRenameService {
@@ -51,7 +51,7 @@ export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON
   _rawMeta?: RefExpressionJSON['rawMeta'];
 
   /**
-   * 重载 getRefFields 方法
+   * Overloading the getRefFields method
    * @returns
    */
   getRefFields(): WorkflowVariableField[] {
@@ -60,9 +60,9 @@ export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON
       node: this.scope.meta?.node,
     });
 
-    // 刷新引用时，检测循环引用，如果存在循环引用则不引用该变量
+    // When refreshing the reference, the circular reference is detected, and the variable is not referenced if there is a circular reference
     if (checkRefCycle(this, [ref])) {
-      // 提示存在循环引用
+      // Prompt for a circular reference
       console.warn(
         '[CustomKeyPathExpression] checkRefCycle: Reference Cycle Existed',
         getParentFields(this)
@@ -85,8 +85,8 @@ export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON
     super.fromJSON(json);
   }
 
-  // 直接生成新的 returnType 节点而不是直接复用
-  // 确保不同的 keyPath 不指向同一个 Field
+  // Generate new returnType nodes directly instead of directly reusing them
+  // Make sure that different keypaths do not point to the same Field.
   _returnType: BaseType;
 
   get returnType() {
@@ -114,11 +114,11 @@ export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON
 
     if (this._rawMeta?.type) {
       const shouldUseRawMeta =
-        // 1. 没有引用变量时，使用 rawMeta 的类型
+        // 1. When no variable is referenced, use the type of rawMeta
         !ref ||
-        // 2. 非 Object 和 Array<Object>，使用 rawMeta 的类型
+        // 2. Non-Object and Array < Object >, using the type of rawMeta
         !ViewVariableType.canDrilldown(this._rawMeta.type) ||
-        // 3. 如果是可下钻的类型，需要判断引用的变量类型和 rawMeta 的类型是否一致，不一致时使用 rawMeta 的数据
+        // 3. If it is a drillable type, you need to determine whether the referenced variable type is the same as the type of rawMeta. If it is inconsistent, use the data of rawMeta
         getViewVariableTypeByAST(ref.type).type !== this._rawMeta.type;
 
       if (shouldUseRawMeta) {
@@ -156,7 +156,7 @@ export class CustomKeyPathExpression extends KeyPathExpression<RefExpressionJSON
 
     this.toDispose.pushAll([
       Disposable.create(() => subscription.unsubscribe()),
-      // 当前引用被 rename 时，刷新一下引用
+      // When the current reference is renamed, refresh the reference
       this.renameService.onRename(({ before, after }) => {
         const field = this.refs?.[0];
 

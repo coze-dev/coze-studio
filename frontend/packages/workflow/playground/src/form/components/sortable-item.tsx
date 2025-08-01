@@ -44,7 +44,7 @@ export const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <Draggable draggableId={`${sortableID}`} index={index}>
       {(provided, snapshot) => {
-        // 在 IDE 中，拖拽节点时，需要减去画布的偏移量
+        // In the IDE, when dragging a node, you need to subtract the offset of the canvas
         if (snapshot.isDragging && isInIDE) {
           const offset = getCanvasOffset();
           const x = provided.draggableProps.style.left - offset.x;

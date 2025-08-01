@@ -31,15 +31,15 @@ import { type TabItem } from './type';
 import s from './index.module.less';
 
 export interface GenerateImageTabProps {
-  // tab列表
+  // tab list
   tabs: TabItem[];
-  // 是否可折叠
+  // Is it foldable?
   enableCollapsible?: boolean;
-  // 当前激活的tab
+  // Currently active tab
   activeKey?: string;
-  // 当前激活的tab变化回调
+  // Currently active tab change callback
   onTabChange?: (tabKey: string) => void;
-  // 是否展示wait文案
+  // Whether to show the waiting copy
   showWaitTip?: boolean;
   disabled?: boolean;
 }
@@ -62,7 +62,7 @@ export const GenerateImageTab: React.FC<GenerateImageTabProps> = ({
     setOpen(!isOpen);
   };
 
-  // tabPane 不卸载
+  // tabPane does not uninstall
   const component = (
     <div>
       {tabs.map(item => (
@@ -124,7 +124,7 @@ export const GenerateImageTab: React.FC<GenerateImageTabProps> = ({
         ) : null}
       </div>
       {enableCollapsible ? (
-        // keepDOM 异常失效使用collapseHeight 不销毁dom保留状态
+        // keepDOM exception fails using collapseHeight does not destroy dom keep state
         <Collapsible isOpen={isOpen} keepDOM collapseHeight={1}>
           <div> {component} </div>
         </Collapsible>

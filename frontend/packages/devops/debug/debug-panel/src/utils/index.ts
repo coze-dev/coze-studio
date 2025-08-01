@@ -31,7 +31,7 @@ dayjs.extend(utc);
 const jsonBig = JSONBig({ storeAsString: true });
 
 /**
- * 转换时间戳为当前格式化当前时区时间
+ * Convert timestamp to current format current time zone
  * @param timestamp string | number
  * @returns UTCTimeInfo
  */
@@ -62,7 +62,7 @@ export const getPastWeekDates = (): string[] => {
 };
 
 /**
- * 从格式化时间提取其当前对应的开始/结束时间戳
+ * Extract its current corresponding start/end timestamp from the format time
  * @param formattedDate QueryFilterItemId
  * @returns DailyTime
  */

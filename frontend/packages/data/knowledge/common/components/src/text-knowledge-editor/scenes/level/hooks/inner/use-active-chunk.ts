@@ -24,18 +24,18 @@ export interface ActiveChunkInfo {
 }
 
 /**
- * 管理文档中活动的chunk
- * 使用renderLevel字段来唯一标识chunk的渲染位置
+ * Manage active chunks in documents
+ * Use the renderLevel field to uniquely identify the render location of the chunk
  */
 export const useActiveChunk = () => {
-  // 存储活动的chunk和它的renderLevel
+  // Store the active chunk and its renderLevel
   const [activeChunkInfo, setActiveChunkInfo] = useState<ActiveChunkInfo>({
     chunk: null,
     renderLevel: null,
   });
 
   /**
-   * 清除活动chunk信息
+   * Clear active chunks
    */
   const clearActiveChunk = () => {
     setActiveChunkInfo({
@@ -45,8 +45,8 @@ export const useActiveChunk = () => {
   };
 
   /**
-   * 设置活动chunk和它的renderLevel
-   * 在用户交互（如双击）时使用
+   * Set the active chunk and its renderLevel
+   * Use during user interaction (e.g. double-clicking)
    */
   const setActiveChunkWithLevel = (chunk: LevelDocumentTreeNode) => {
     if (!chunk.renderLevel) {
@@ -61,7 +61,7 @@ export const useActiveChunk = () => {
   };
 
   /**
-   * 检查给定的chunk是否是当前活动的chunk
+   * Checks whether the given chunk is the currently active chunk
    */
   const isActiveChunk = (renderLevel: string | undefined) => {
     if (!renderLevel) {

@@ -37,7 +37,7 @@ interface ResultProps {
   onOk: () => void;
 }
 
-// 新建编辑 PAT
+// New Edit PAT
 export const ResultModal = ({ visible, onOk, data }: ResultProps) => {
   const doCopyAsync = useMemoizedFn(() => {
     const targetKey = data?.token;

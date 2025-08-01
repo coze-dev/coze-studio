@@ -62,7 +62,7 @@ export const useModeFormSchema = (options: UseModeFormSchemaOptions) => {
   const testFormService = useTestFormService();
   const { getDefaultValues } = useFormDefaultValues();
   /**
-   * 计算 schema
+   * Computation schema
    */
   const generate = useMemoizedFn(async () => {
     const schema = await generateFormSchema({

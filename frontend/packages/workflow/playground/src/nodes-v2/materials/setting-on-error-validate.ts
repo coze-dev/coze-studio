@@ -18,7 +18,7 @@ import { type Validate } from '@flowgram-adapter/free-layout-editor';
 import { settingOnErrorValidator } from '@coze-workflow/nodes';
 
 /**
- * 异常设置校验
+ * exception setting check
  * @param param0
  * @returns
  */

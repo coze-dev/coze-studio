@@ -21,7 +21,7 @@ import { type DocumentSource } from '@coze-arch/bot-api/knowledge';
 import { isFeishuOrLarkDocumentSource } from './feishu-lark';
 
 /**
- * FIXME: 由于后端限制，前端需要在Feishu/Lark路径上去除30天的更新频率，等后续后端解决后即可去掉
+ * FIXME: Due to backend limitations, the front end needs to remove the 30-day update frequency on the Feishu/Lark path, which can be removed after the subsequent backend is resolved.
  */
 export const getUpdateIntervalOptions = (
   params: {
@@ -84,7 +84,7 @@ export const getAppendUpdateIntervalOptions = () => [
   },
 ];
 
-// table类型暂时禁用追加更新的更新类型，待后续支持后下掉区分逻辑
+// Table type Temporarily disables the update type of additional updates, and drops the distinction logic after subsequent support
 export const getUpdateTypeOptions = (type: FormatType) => [
   {
     value: 1,

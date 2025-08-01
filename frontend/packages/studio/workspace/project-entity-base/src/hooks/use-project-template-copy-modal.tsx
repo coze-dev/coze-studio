@@ -51,7 +51,7 @@ export const useProjectTemplateCopyModal = (props: {
   onBefore?: BeforeProjectTemplateCopyCallback;
   onError?: () => void;
   onSuccess?: ProjectTemplateCopySuccessCallback;
-  /** 埋点参数 - 当前页面/来源 */
+  /** Event tracking parameters - current page/source */
   source: NonNullable<
     ParamsTypeDefine[EVENT_NAMES.template_action_front]['source']
   >;
@@ -161,7 +161,7 @@ export const useProjectTemplateCopyModal = (props: {
       ...rest
     }: ProjectTemplateCopyValue & {
       isSelectSpace: boolean;
-      /** 用于提取埋点参数 */
+      /** Used to extract event tracking parameters */
       sourceProduct: ProductInfo;
     }) => {
       setSelectSpace(inputIsSelectSpace);

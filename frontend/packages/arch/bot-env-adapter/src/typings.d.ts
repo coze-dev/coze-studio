@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
 /* eslint-disable */
 /* prettier-ignore */
-// 基于src/index.ts自动生成，请勿手动修改
+// Automatically generated based on src/index.ts, do not modify manually 
 declare const APP_ID: number;
 declare const APP_KEY: string;
 declare const AWEME_ORIGIN: string;
@@ -109,3 +108,4 @@ declare const VOLCANO_PLATFORM_APP_KEY: string | null;
 declare const VOLCANO_PLATFORM_ID: number | null;
 declare const VOLC_PRIVATE_POLICY: string;
 declare const VOLC_TERMS_OF_SERVICE: string;
+ 

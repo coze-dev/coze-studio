@@ -22,49 +22,49 @@ import { CustomError } from '@coze-arch/bot-error';
 import { FileBizType } from '@coze-arch/bot-api/developer_api';
 import { DeveloperApi } from '@coze-arch/bot-api';
 
-/** 图片上传错误码 */
+/** image upload error code */
 export enum ImgUploadErrNo {
   Success = 0,
-  /** 缺少文件 */
+  /** Missing document */
   NoFile,
-  /** 上传失败 */
+  /** Upload failed. */
   UploadFail,
-  /** 上传超时 */
+  /** Upload timed out */
   UploadTimeout,
-  /** 获取 URL 失败 */
+  /** Failed to get URL */
   GetUrlFail,
-  /** 校验异常, 但是不明确具体异常 */
+  /** Check exception, but not specific exception */
   ValidateError,
-  /** 文件尺寸超出限制 */
+  /** File size exceeds limit */
   MaxSizeError,
-  /** 文件类型不支持 */
+  /** File type not supported */
   SuffixError,
-  /** 最大宽度限制 */
+  /** Maximum width limit */
   MaxWidthError,
-  /** 最大高度限制 */
+  /** Maximum height limit */
   MaxHeightError,
-  /** 最小宽度限制 */
+  /** minimum width limit */
   MinWidthError,
-  /** 最小高度限制 */
+  /** Minimum height limit */
   MinHeightError,
-  /** 固定宽高比 */
+  /** Fixed Aspect Ratio */
   AspectRatioError,
 }
 
 export interface ImageRule {
-  /** 文件大小限制, 单位 b, 1M = 1 * 1024 * 1024 */
+  /** File size limit, unit b, 1M = 1 * 1024 * 1024 */
   maxSize?: number;
-  /** 文件后缀 */
+  /** file suffix */
   suffix?: string[];
-  /** 最大宽度限制 */
+  /** Maximum width limit */
   maxWidth?: number;
-  /** 最大高度限制 */
+  /** Maximum height limit */
   maxHeight?: number;
-  /** 最小宽度限制 */
+  /** minimum width limit */
   minWidth?: number;
-  /** 最小高度限制 */
+  /** Minimum height limit */
   minHeight?: number;
-  /** 固定宽高比 */
+  /** Fixed Aspect Ratio */
   aspectRatio?: number;
 }
 
@@ -82,34 +82,34 @@ type UploadResult =
     };
 
 /**
- * Workflow 图片上传
+ * Workflow image upload
  */
 class ImageUploader {
-  /** 任务 ID, 用于避免 ABA 问题 */
+  /** Task ID to avoid ABA issues */
   private taskId = 0;
   /**
-   * 上传模式
-   * - api 直接使用接口上传
-   * - uploader 上传到视频云服务, 走 workflow 服务. !海外版未经过测试
+   * upload mode
+   * - API directly uses the interface to upload
+   * - uploader to Video Cloud as a Service, go workflow service.! Overseas version has not been tested
    */
   mode: 'uploader' | 'api' = 'uploader';
-  /** 校验规则 */
+  /** validation rule */
   rules?: ImageRule;
-  /** 上传的文件 */
+  /** Uploaded file */
   file?: File;
-  /** 展示 Url, 添加文件后生成, 用于预览 */
+  /** Show URLs, generated after adding files, for preview */
   displayUrl?: string;
-  /** 上传状态 */
+  /** Upload Status */
   isUploading = false;
-  /** 超时时间 */
+  /** timeout */
   timeout?: number;
-  /** 校验结果 */
+  /** verification result */
   validateResult?: {
     isSuccess: boolean;
     errNo: ImgUploadErrNo;
     msg?: string;
   };
-  /** 上传结果 */
+  /** Upload result */
   uploadResult?: UploadResult;
 
   constructor(config?: {
@@ -122,7 +122,7 @@ class ImageUploader {
     this.timeout = config?.timeout ?? this.timeout;
   }
 
-  /** 选择待上传文件 */
+  /** Select the file to upload */
   async select(file: File) {
     if (!file) {
       throw new CustomError('normal_error', '选择文件为空');
@@ -140,16 +140,16 @@ class ImageUploader {
     });
   }
 
-  /** 上传图片 */
+  /** Upload image */
   async upload() {
-    // 未选择文件或文件不符合要求
+    // No file was selected or the file does not meet the requirements
     if (!this.file || !this.validateResult?.isSuccess || this.isUploading) {
       return;
     }
 
     this.isUploading = true;
 
-    // 添加任务 ID,避免 ABA 问题
+    // Add task IDs to avoid ABA issues
     this.taskId += 1;
     const currentId = this.taskId;
 
@@ -208,7 +208,7 @@ class ImageUploader {
         if (!uri) {
           return;
         }
-        // 获取 url
+        // Get URL
         const resp = await workflowApi
           .SignImageURL(
             {
@@ -301,7 +301,7 @@ class ImageUploader {
   reset() {
     this.file = undefined;
     if (this.displayUrl) {
-      // 是内部链接
+      // Is an internal link
       URL.revokeObjectURL(this.displayUrl);
       this.displayUrl = undefined;
     }
@@ -319,7 +319,7 @@ class ImageUploader {
 
     const rules = this.rules || {};
 
-    // 文件尺寸
+    // file size
     if (rules.maxSize) {
       if (this.file.size > rules.maxSize) {
         this.validateResult = {
@@ -333,7 +333,7 @@ class ImageUploader {
       }
     }
 
-    // 文件后缀
+    // file suffix
     if (Array.isArray(rules.suffix) && rules.suffix.length > 0) {
       const fileExtension = getFileExtension(this.file.name);
       if (!rules.suffix.includes(fileExtension)) {
@@ -348,7 +348,7 @@ class ImageUploader {
       }
     }
 
-    // 图片尺寸
+    // image size
     const { width, height } = await getImageSize(this.displayUrl);
 
     if (!width || !height) {
@@ -445,14 +445,14 @@ function getBase64(file: Blob): Promise<string> {
   });
 }
 
-/** 获取文件名后缀 */
+/** Get filename suffix */
 function getFileExtension(name: string) {
   const index = name.lastIndexOf('.');
   return name.slice(index + 1).toLowerCase();
 }
 
 /**
- * @param url 获取图片宽高
+ * @Param url Get image width and height
  */
 function getImageSize(url: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
@@ -468,9 +468,9 @@ function getImageSize(url: string): Promise<{ width: number; height: number }> {
 }
 
 /**
- * 格式化文件大小
- * @param bytes 文件大小
- * @param decimals 小数位数, 默认 2 位
+ * Format file size
+ * @param bytes file size
+ * @Param decimals, default 2 digits
  * @example
  * formatBytes(1024);       // 1KB
  * formatBytes('1024');     // 1KB

@@ -21,7 +21,7 @@ export {
 } from './condition';
 
 /**
- * test form 相关常量
+ * Test form correlation constants
  */
 export { FieldName } from './form';
 

@@ -36,7 +36,7 @@ export const DeleteButton = ({
   };
 
   const handleDelete = () =>
-    // 使用 promise 让按钮出现 loading 的效果，参见
+    // Use promises to make the button appear loading, see
     // https://semi.design/zh-CN/feedback/popconfirm
     new Promise((resolve, reject) => {
       onDelete?.()
@@ -45,7 +45,7 @@ export const DeleteButton = ({
           resolve(true);
         })
         .catch(error => {
-          // 处理错误
+          // Handle errors
           logger.error({
             error: error as Error,
             eventName: 'delete workflow error',

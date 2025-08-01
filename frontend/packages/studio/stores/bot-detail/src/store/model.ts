@@ -64,10 +64,10 @@ export const getDefaultModelStore = (): ModelStore => ({
   modelList: [],
 });
 
-/** Persona & Prompt 区域 */
+/** Persona & Prompted Areas */
 export interface ModelStore {
   config: ModelInfoConfig;
-  /** 全部可选模型 */
+  /** All optional models */
   modelList: Model[];
 }
 

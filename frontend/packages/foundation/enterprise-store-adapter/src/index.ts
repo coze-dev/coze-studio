@@ -15,7 +15,7 @@
  */
  
 /**
- * @file 开源版暂时不提供企业管理功能，本文件中导出的方法用于未来拓展使用。
+ * The @file open-source version does not provide enterprise management functions for the time being. The methods exported in this file are for future expansion.
  */
 
 export { PERSONAL_ENTERPRISE_ID } from './constants';
@@ -34,6 +34,6 @@ export {
   CurrentEnterpriseInfoProps,
 } from './hooks/use-current-enterprise-info';
 
-// 工具方法
+// tool method
 export { switchEnterprise } from './utils/switch-enterprise';
 export { isPersonalEnterprise } from './utils/personal';

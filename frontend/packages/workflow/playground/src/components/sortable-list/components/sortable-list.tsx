@@ -22,15 +22,15 @@ import { CustomDragLayer } from './custom-drag-layer';
 
 interface DragOption {
   /**
-   * 提供拖拽能力的ref，绑定到对应的元素上即可进行拖拽
+   * The ref that provides the ability to drag and drop can be bound to the corresponding element to drag and drop.
    */
   dragRef?: React.RefObject<HTMLDivElement>;
   /**
-   * 当前元素是否在拖拽中
+   * Is the current element being dragged?
    */
   isDragging?: boolean;
   /**
-   * 当前元素是否为拖拽预览态
+   * Whether the current element is in a drag-and-drop preview state
    */
   isPreview?: boolean;
 }
@@ -44,15 +44,15 @@ export interface DraggableListProps {
     dragOption?: DragOption,
   ) => React.ReactElement;
   /**
-   * 拖拽开始回调
+   * Drag to start callback
    */
   onDragStart?: (startIndex: number) => void;
   /**
-   * 拖拽顺序改变回调
+   * Drag and drop order to change callbacks
    */
   onDragMove?: (startIndex: number, endIndex: number) => void;
   /**
-   * 拖拽结束回调
+   * Drag end callback
    */
   onDragEnd?: (startIndex: number, endIndex: number) => void;
 

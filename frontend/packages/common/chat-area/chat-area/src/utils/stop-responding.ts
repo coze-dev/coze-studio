@@ -30,7 +30,7 @@ import { getMessagesByGroup } from './message-group/get-message-by-group';
 import { findMessageById } from './message';
 
 /**
- * @deprecated 没有地方使用了
+ * @Deprecated No place to use
  */
 export const getBreakRespondingInfo = (param: {
   responding: ReturnType<WaitingStore['getState']>['responding'];
@@ -41,9 +41,9 @@ export const getBreakRespondingInfo = (param: {
     return null;
   }
   const { replyId, response } = responding;
-  // 提问message
+  // Question message
   const questionMessage = findMessageById(messages, replyId);
-  // 回答message
+  // Answer the message
   const respondingMessages = response
     .map(({ id }) => findMessageById(messages, id))
     .filter((m): m is Message => !!m);
@@ -92,7 +92,7 @@ export const breakGenerally = async ({
   try {
     await chatCore.breakMessage({
       query_message_id: waiting?.replyId || '',
-      // 如果进入了 suggestion 生成阶段，应该不需要回落到 local message id
+      // If you enter the suggestion generation stage, you should not need to fall back to the local message id.
       local_message_id: waiting?.questionLocalMessageId || '',
     });
     reporter.successEvent({
@@ -106,7 +106,7 @@ export const breakGenerally = async ({
   }
 };
 
-// 打断消息，break当前回复
+// Break the message, break the current reply
 export const stopResponding = async (context: {
   storeSet: Pick<
     StoreSet,
@@ -133,7 +133,7 @@ export const stopResponding = async (context: {
   );
 
   if (!waiting) {
-    // 可能正常的，未在对话中
+    // It may be normal, not in the conversation.
     console.log('call stop, but not found waiting');
     await lifeCycleService.command.onStopRespondingError({
       ctx: {
@@ -145,7 +145,7 @@ export const stopResponding = async (context: {
 
   clearAllUnsettledUnconditionally();
 
-  // 多条answer情况,只找最新的answer
+  // Multiple answers, only the latest answers
   try {
     if (finalAnswer) {
       await breakAccurately({ waiting, finalAnswer, chatCore, reporter });
@@ -163,7 +163,7 @@ export const stopResponding = async (context: {
   invokeOnAfterStopRespondingCallback(waiting.replyId, context);
 };
 
-/** waiting replyId 必须传入旧的，不能从 store 中读取 */
+/** Waiting replyId must be passed in old and cannot be read from store */
 const invokeOnAfterStopRespondingCallback = async (
   brokenReplyId: string,
   chatAreaContext: {

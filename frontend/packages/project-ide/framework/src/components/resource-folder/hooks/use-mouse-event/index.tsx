@@ -70,7 +70,7 @@ const useMouseEvent = ({
   iconRender,
   config,
 }: {
-  draggable: boolean; // 是否可以拖拽
+  draggable: boolean; // Can you drag and drop?
   uniqId: string;
   updateId: () => void;
   resourceTreeWrapperRef: React.MutableRefObject<HTMLDivElement | null>;
@@ -100,7 +100,7 @@ const useMouseEvent = ({
   const isFocusRef = useRef(false);
   const dragService = useIDEService<DragService>(DragService);
   /**
-   * 存储拖拽过程中是否合法的字段
+   * Store legal fields during drag and drop
    */
   const [draggingError, setDraggingError] = useState<string>('');
 
@@ -114,7 +114,7 @@ const useMouseEvent = ({
   });
 
   /**
-   * 用于开启拖拽到 mainPanel 下打开资源的方法
+   * The method used to open resources by dragging and dropping to mainPanel
    */
   const dragAndOpenResource = e => {
     if (!config?.resourceUriHandler) {
@@ -140,7 +140,7 @@ const useMouseEvent = ({
       },
       backdropTransform: {
         /**
-         * 通过边缘检测的方式，阻止  lm-cursor-backdrop  元素进入树组件内
+         * Prevent lm-cursor-backdrop elements from entering the tree component through edge detection
          */
         clientX: (eventX: number) =>
           Math.max(
@@ -180,11 +180,11 @@ const useMouseEvent = ({
   );
 
   /**
-   * 用于记录拖拽过程中，当前 hover 元素的 父元素 id。
+   * Used to record the parent ID of the current hover element during drag and drop.
    */
   const hoverItemParentId = useRef<string | null>(null);
   /**
-   * 用于记录拖拽过程中，当前 hover 元素的 父元素及其下钻所有节点的id表
+   * The ID table used to record the parent element of the current hover element and all nodes drilled down during the drag and drop process
    */
   const [highlightItemMap, setHighlightItemMap] = useState<ResourceMapType>({});
 
@@ -238,7 +238,7 @@ const useMouseEvent = ({
     );
 
     /**
-     * 将文件夹下的文件给过滤掉，防止拖拽之后失去层级结构
+     * Filter out the files in the folder to prevent the hierarchy from being lost after dragging
      */
     resourceList = resourceList.filter(resource => {
       const { type, path } = resourceMap.current[resource.id];
@@ -273,7 +273,7 @@ const useMouseEvent = ({
       };
     }
 
-    // 这里要选中一次是保证拖动前选中正确的 item
+    // This should be selected once to ensure that the correct item is selected before dragging.
     if (typeof target === 'object' && !e.shiftKey && !e.metaKey) {
       let currentSelected: ResourceType | null = null;
 
@@ -306,7 +306,7 @@ const useMouseEvent = ({
       return;
     }
 
-    // 点到右键的 panel 中 啥也别操作
+    // Click on the right-click panel and don't operate anything.
     if (target === CLICK_CONTEXT_MENU) {
       return;
     }
@@ -329,7 +329,7 @@ const useMouseEvent = ({
       }
 
       /**
-       * 如果点击了 more tools 三颗点，那需要先将临时选中表重置为只选中该 item。 用于右键菜单的消费。
+       * If you click the more tools three dots, you need to reset the temporary selection table to select only this item first. For right-click menu consumption.
        */
       if (target.customTag === MORE_TOOLS_CLASS_NAME) {
         const nextSelected = { [currentSelected.id]: currentSelected };
@@ -337,7 +337,7 @@ const useMouseEvent = ({
         return;
       }
 
-      // 如果右键， 并且点击在已经被选中的资源上，则不再做操作，因为要弹操作栏
+      // If you right-click and click on a resource that has already been selected, you will no longer do the operation because the action bar will pop up.
       if (
         e.ctrlKey ||
         (e.button === 2 &&
@@ -358,7 +358,7 @@ const useMouseEvent = ({
           return;
         }
 
-        // 批量一下子多选
+        // multiple selection in batches
         let nextSelected: any = getResourceListFromIdToId({
           resourceTree: resourceTreeRef.current,
           from: firstSelectedId,
@@ -379,7 +379,7 @@ const useMouseEvent = ({
         }
         changeTempSelectedMap(nextSelected);
       } else if (e.metaKey) {
-        // 挑着多选
+        // Choose more
         let nextSelected = { ...tempSelectedMapRef.current };
         if (currentSelected?.id) {
           if (nextSelected[currentSelected.id]) {
@@ -452,7 +452,7 @@ const useMouseEvent = ({
     }
 
     /**
-     * 开始拖拽
+     * Start dragging
      */
     if (!isDraggingRef.current) {
       startDrag(e);
@@ -469,7 +469,7 @@ const useMouseEvent = ({
       uniqId,
     });
 
-    // 点到右键的 panel 中 啥也别操作
+    // Click on the right-click panel and don't operate anything.
     if (target === CLICK_CONTEXT_MENU) {
       return;
     }
@@ -516,7 +516,7 @@ const useMouseEvent = ({
         uniqId,
       });
 
-      // 点到右键的 panel 中 啥也别操作
+      // Click on the right-click panel and don't operate anything.
       if (target === CLICK_CONTEXT_MENU || !target) {
         return;
       }

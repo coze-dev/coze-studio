@@ -104,7 +104,7 @@ const getSubGroupListByDto = ({
     subGroupList?.map(subGroup => ({
       ...getBaseGroupInfoByDto({
         ...subGroup,
-        DefaultChannel: group.DefaultChannel, // 服务端返回的 subGroup 没有 DefaultChannel需要手动设置
+        DefaultChannel: group.DefaultChannel, // The subGroup returned by the server level has no DefaultChannel and needs to be set manually
       }),
       groupId,
       varInfoList: getGroupVariableListByDto({

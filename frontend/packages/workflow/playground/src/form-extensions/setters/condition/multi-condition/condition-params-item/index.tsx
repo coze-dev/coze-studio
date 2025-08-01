@@ -56,27 +56,27 @@ const ValueExpressionInputField = withValidationField<
 export interface ConditionParamsItemProps {
   branchIndex: number;
   /**
-   * 当前condition数据索引
+   * Current condition data index
    */
   index: number;
   /**
-   * 当前condition的数据
+   * Current condition data
    */
   data: ConditionItem;
   /**
-   * 只读
+   * read only
    */
   readonly?: boolean;
   /**
-   * 当前condition数据发生变化后的回调
+   * Callback after the current condition data has changed
    */
   onDataChange: (value: ConditionItem) => void;
   /**
-   * 删除当前condition时的回调
+   * Remove callback on current condition
    */
   onDelete?: () => void;
   /**
-   * 校验结果
+   * verification result
    */
   conditionValidateResult?: ConditionValidateResult;
   className?: string;
@@ -84,7 +84,7 @@ export interface ConditionParamsItemProps {
   deletable?: boolean;
 }
 
-// TODO 转换统一收到一处
+// TODO conversion is received uniformly in one place.
 const valueToRefExpression = (value: string[]): RefExpression => ({
   type: ValueExpressionType.REF,
   content: {
@@ -143,12 +143,12 @@ export default function ConditionParamsItem({
       onDataChange?.(newData);
     };
 
-  // 监听联动变量变化，从而重新触发 effect
+  // Monitor changes in linkage variables to re-trigger the effect
   useVariableTypeChange({
     keyPath: data.left?.content?.keyPath,
     onTypeChange: ({ variableMeta }) => {
       if (!variableMeta) {
-        // 变量被删除了
+        // Variables have been deleted
         onDataChange?.({});
         return;
       }

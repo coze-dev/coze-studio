@@ -27,7 +27,7 @@ describe('page jump', () => {
   const spaceID = '234';
   const workflowID = '345';
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 这是组件
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- this is the component
   const MockWorkflowPage = () => {
     const jumpResponse = usePageJumpResponse(PageType.WORKFLOW);
     const [cleared, setCleared] = useState(false);

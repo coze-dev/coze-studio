@@ -19,21 +19,21 @@ import { findRespondRecord, type Responding } from '../../src/store/waiting';
 vi.mock('@coze-common/chat-core', () => ({
   ContentType: vi.fn(),
   VerboseMsgType: {
-    /** 跳转节点 */
+    /** jump node */
     JUMP_TO: 'multi_agents_jump_to_agent',
-    /** 回溯节点 */
+    /** backtracking node */
     BACK_WORD: 'multi_agents_backwards',
-    /** 长期记忆节点 */
+    /** long-term memory node */
     LONG_TERM_MEMORY: 'time_capsule_recall',
     /** finish answer*/
     GENERATE_ANSWER_FINISH: 'generate_answer_finish',
-    /** 流式插件调用状态 */
+    /** Streaming plugin call status */
     STREAM_PLUGIN_FINISH: 'stream_plugin_finish',
-    /** 知识库召回 */
+    /** knowledge base recall */
     KNOWLEDGE_RECALL: 'knowledge_recall',
-    /** 中断消息：目前只用于地理位置授权 */
+    /** Interrupt message: Currently only used for geolocation authorization */
     INTERRUPT: 'interrupt',
-    /** hooks调用 */
+    /** Hooks call */
     HOOK_CALL: 'hook_call',
   },
   Scene: {

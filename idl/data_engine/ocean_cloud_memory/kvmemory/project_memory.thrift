@@ -10,7 +10,7 @@ enum VariableChannel{
     System   = 2
     Location = 3
     Feishu   = 4
-    APP      = 5 // 项目变量
+    APP      = 5 // project variable
 }
 
 struct Variable{
@@ -20,8 +20,8 @@ struct Variable{
     4: VariableChannel Channel
     5: string Description
     6: bool Enable
-    7: optional list<string> EffectiveChannelList //生效渠道
-    8: string Schema //新老数据都会有schema，除项目变量外其他默认为string
+    7: optional list<string> EffectiveChannelList //effective channel
+    8: string Schema //New and old data will have schemas, except for project variables, the default is string.
     9: bool IsReadOnly
 }
 
@@ -81,7 +81,7 @@ struct GetMemoryVariableMetaReq  {
     255: optional base.Base Base
 }
 
-//应该是给workflow用的rpc接口，不需要鉴权，VariableChannel
+//It should be the rpc interface for workflow, no authentication is required, VariableChannel
 struct GetMemoryVariableMetaResp {
     1: map<VariableChannel, list<Variable>> VariableMap
 

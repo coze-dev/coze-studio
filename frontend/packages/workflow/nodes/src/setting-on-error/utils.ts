@@ -23,7 +23,7 @@ import {
 } from './constants';
 
 /**
- * 是不是v2版本的节点
+ * Is it a node of the v2 version?
  * @param type
  * @returns
  */
@@ -31,7 +31,7 @@ export const isSettingOnErrorV2 = (type?: StandardNodeType) =>
   type && SETTING_ON_ERROR_V2_NODES.includes(type);
 
 /**
- * 是不是开启异常设置的节点
+ * Is it the node with the abnormal setting turned on?
  * @param type
  * @returns
  */
@@ -39,7 +39,7 @@ export const isSettingOnError = (type?: StandardNodeType) =>
   type && SETTING_ON_ERROR_NODES.includes(type);
 
 /**
- * 是不是动态通道的节点
+ * Is it a node of the dynamic channel?
  * @param type
  * @returns
  */

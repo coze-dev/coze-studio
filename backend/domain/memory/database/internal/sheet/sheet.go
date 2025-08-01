@@ -118,7 +118,7 @@ func (t *TosTableParser) getLocalSheetMeta(ctx context.Context, maxLine int64) (
 	}
 
 	reader := bytes.NewReader(object)
-	if documentExtension == "csv" { // 处理 csv 文件
+	if documentExtension == "csv" { // Processing csv files
 		records, err := csv.NewReader(reader).ReadAll()
 		if err != nil {
 			return nil, err
@@ -457,7 +457,7 @@ func getXlsLocalSheetMetaWithTmpFileCallback(ctx context.Context, tmpFile string
 func (t *TosTableParser) PredictColumnType(columns []*common.DocTableColumn, sampleData [][]string, sheetIdx, startLineIdx int64) ([]*common.DocTableColumn, error) {
 	if len(sampleData) == 0 {
 		for _, column := range columns {
-			column.ColumnType = common.ColumnTypePtr(common.ColumnType_Text) // 兜底展示
+			column.ColumnType = common.ColumnTypePtr(common.ColumnType_Text) // bottom line display
 			column.ContainsEmptyValue = ptr.Of(true)
 		}
 		return columns, nil

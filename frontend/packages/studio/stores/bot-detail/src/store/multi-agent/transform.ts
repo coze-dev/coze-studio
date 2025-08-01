@@ -76,7 +76,7 @@ export const transformDto2Vo = {
       model,
       prompt,
       description: data?.description || DEFAULT_AGENT_DESCRIPTION(),
-      // 默认的业务状态bizInfo
+      // Default business state bizInfo
       bizInfo: DEFAULT_AGENT_BIZ_INFO(),
       system_info_all: [],
       skills: {
@@ -188,7 +188,7 @@ export const transformVo2Dto = {
 
       current_version:
         targetAgent.update_type === ReferenceUpdateType.AutoUpdate
-          ? // 如果当前agent是自动更新，则将current_version置为"0"
+          ? // If the current agent is automatically updated, set the current_version to "0"
             '0'
           : targetAgent.current_version,
     };

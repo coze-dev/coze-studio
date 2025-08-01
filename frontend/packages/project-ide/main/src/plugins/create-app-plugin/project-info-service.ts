@@ -66,7 +66,7 @@ export class ProjectInfoService {
 
   init() {
     this.updateProjectInfo().catch(() => {
-      // project 信息接口报错跳转到兜底页
+      // Project information interface error Jump to default page
       this.errorService.toErrorPage();
     });
     if (!IS_OPEN_SOURCE) {
@@ -80,12 +80,12 @@ export class ProjectInfoService {
     const res = await intelligenceApi.DraftProjectInnerTaskList({
       project_id: this.optionsService.projectId,
     });
-    // 和后端确认，默认 task_list 长度为 1.
-    // 如果有长度为 2 没有都住的场景，用户刷新后也可以获取到下一个。
+    // And backend confirmation, the default task_list length is 1.
+    // If there is a scene with a length of 2 that is not lived, the user can also get the next one after refreshing.
     const { task_list } = res.data || {};
     const taskId = task_list?.[0]?.task_id;
     if (taskId) {
-      // 请求轮询接口获取基础信息
+      // Request polling interface to obtain basic information
       const { task_detail } = await PluginDevelopApi.ResourceCopyDetail({
         task_id: taskId,
       });
@@ -99,7 +99,7 @@ export class ProjectInfoService {
   }
 
   /**
-   * 打开 project 页面需要上报，后端才能筛选出最近打开
+   * To open the project page, you need to report it, and the backend can filter out the most recently opened.
    */
   reportUserBehavior() {
     PlaygroundApi.ReportUserBehavior({
@@ -111,8 +111,8 @@ export class ProjectInfoService {
   }
 
   /**
-   * 单向请求接口
-   * 提前唤醒 ide 插件，无需消费返回值
+   * one-way request interface
+   * Wake up the ide plugin in advance, no need to consume the return value
    */
   wakeUpPlugin() {
     PluginDevelopApi.WakeupIdePlugin({

@@ -114,7 +114,7 @@ export const CreateFormPluginModal: FC<CreatePluginFormProps> = props => {
       return;
     }
     if (visible) {
-      // 显示后滚动条滑动到最上边
+      // Scroll bar after display to top
       const modalContent = document.querySelector(
         '.create-plugin-modal-content .semi-modal-body',
       );
@@ -122,7 +122,7 @@ export const CreateFormPluginModal: FC<CreatePluginFormProps> = props => {
         modalContent.scrollTop = 0;
       }
     } else {
-      // 隐藏后重置表单
+      // Reset form after hiding
       formApi?.current?.reset();
     }
   }, [visible]);

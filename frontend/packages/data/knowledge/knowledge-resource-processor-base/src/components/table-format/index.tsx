@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-// 组件相关
+// component related
 export {
   TableSettingBar,
   type TableSettingBarProps,

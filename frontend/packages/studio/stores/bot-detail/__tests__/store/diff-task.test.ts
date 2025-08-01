@@ -21,7 +21,7 @@ import {
 
 describe('diff-task store', () => {
   beforeEach(() => {
-    // 每个测试前重置 store 状态
+    // Reset the stored state before each test
     useDiffTaskStore.getState().clear();
   });
 
@@ -99,7 +99,7 @@ describe('diff-task store', () => {
 
     const state = useDiffTaskStore.getState();
     expect(state.diffTask).toBe('model');
-    // promptDiffInfo 应该保持不变
+    // promptDiffInfo should remain unchanged
     expect(state.promptDiffInfo).toEqual(
       getDefaultDiffTaskStore().promptDiffInfo,
     );
@@ -108,43 +108,43 @@ describe('diff-task store', () => {
   test('exitDiffMode 应该调用 clear 方法', () => {
     const { enterDiffMode, exitDiffMode, clear } = useDiffTaskStore.getState();
 
-    // 模拟 clear 方法
+    // Simulated clearing method
     const mockClear = vi.fn();
     useDiffTaskStore.setState(state => ({ ...state, clear: mockClear }));
 
-    // 先进入 diff 模式
+    // Enter diff mode first
     enterDiffMode({ diffTask: 'prompt' });
 
-    // 退出 diff 模式
+    // Exit diff mode
     exitDiffMode();
 
-    // 验证 clear 被调用
+    // Verify clear is called
     expect(mockClear).toHaveBeenCalledTimes(1);
 
-    // 恢复原始的 clear 方法
+    // Restore the original clear method
     useDiffTaskStore.setState(state => ({ ...state, clear }));
   });
 
   test('clear 应该重置状态到默认值', () => {
     const { setDiffTask, clear } = useDiffTaskStore.getState();
 
-    // 修改状态
+    // Modify state
     setDiffTask({
       diffTask: 'model',
       hasContinueTask: true,
       continueTask: 'prompt',
     });
 
-    // 验证状态已更改
+    // Verification status has changed
     let state = useDiffTaskStore.getState();
     expect(state.diffTask).toBe('model');
     expect(state.hasContinueTask).toBe(true);
     expect(state.continueTask).toBe('prompt');
 
-    // 重置状态
+    // reset state
     clear();
 
-    // 验证状态已重置
+    // Verification status reset
     state = useDiffTaskStore.getState();
     expect(state).toEqual({
       ...getDefaultDiffTaskStore(),

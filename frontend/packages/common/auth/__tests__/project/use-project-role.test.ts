@@ -21,7 +21,7 @@ import { useProjectRole } from '../../src/project/use-project-role';
 import { useProjectAuthStore } from '../../src/project/store';
 import { ProjectRoleType } from '../../src/project/constants';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../src/project/store', () => ({
   useProjectAuthStore: vi.fn(),
 }));
@@ -36,38 +36,38 @@ describe('useProjectRole', () => {
   it('应该返回正确的项目角色', () => {
     const expectedRoles = [ProjectRoleType.Owner];
 
-    // 模拟 useProjectAuthStore 返回项目角色和 ready 状态
+    // Mock useProjectAuthStore returns project role and ready state
     (useProjectAuthStore as any).mockReturnValue({
       isReady: true,
       role: expectedRoles,
     });
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useProjectRole(projectId));
 
-    // 验证 useProjectAuthStore 被调用
+    // Verify useProjectAuthStore is called
     expect(useProjectAuthStore).toHaveBeenCalled();
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toEqual(expectedRoles);
   });
 
   it('应该在项目未准备好时抛出错误', () => {
-    // 模拟 useProjectAuthStore 返回未准备好的状态
+    // Simulate useProjectAuthStore returns an unprepared state
     (useProjectAuthStore as any).mockReturnValue({
       isReady: false,
       role: [],
     });
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证抛出错误
+    // validation throws error
     expect(() => {
       const { result } = renderHook(() => useProjectRole(projectId));
-      // 强制访问 result.current 触发错误
+      // Force access result.current trigger error
       console.log(result.current);
     }).toThrow(
       'useProjectAuth must be used after useInitProjectRole has been completed.',
@@ -75,32 +75,32 @@ describe('useProjectRole', () => {
   });
 
   it('应该在角色为 undefined 时返回空数组', () => {
-    // 模拟 useProjectAuthStore 返回 undefined 角色
+    // Emulate useProjectAuthStore returns undefined role
     (useProjectAuthStore as any).mockReturnValue({
       isReady: true,
       role: undefined,
     });
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useProjectRole(projectId));
 
-    // 验证返回值为空数组
+    // Verify that the return value is an empty array
     expect(result.current).toEqual([]);
   });
 
   it('应该处理多种角色类型', () => {
     const expectedRoles = [ProjectRoleType.Owner, ProjectRoleType.Editor];
 
-    // 模拟 useProjectAuthStore 返回多种角色
+    // Emulate useProjectAuthStore returns multiple roles
     (useProjectAuthStore as any).mockReturnValue({
       isReady: true,
       role: expectedRoles,
     });
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useProjectRole(projectId));
 
-    // 验证返回值
+    // Validate the return value
     expect(result.current).toEqual(expectedRoles);
   });
 });

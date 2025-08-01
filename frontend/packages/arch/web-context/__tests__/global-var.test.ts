@@ -19,10 +19,10 @@ import { globalVars } from '../src/global-var';
 describe('global-var', () => {
   test('should be able to set and get a property', () => {
     const testValue = 'Hello, World';
-    // 设置一个属性
+    // Set a property
     globalVars.TEST_PROP = testValue;
 
-    // 确保我们能获取到相同的属性
+    // Make sure we can get the same properties
     expect(globalVars.TEST_PROP).toBe(testValue);
   });
 
@@ -34,11 +34,11 @@ describe('global-var', () => {
     const firstValue = 'First Value';
     const secondValue = 'Second Value';
 
-    // 先设置一个属性
+    // Set a property first
     globalVars.OVERWRITE_PROP = firstValue;
     expect(globalVars.OVERWRITE_PROP).toBe(firstValue);
 
-    // 再覆盖这个属性
+    // Override this property again
     globalVars.OVERWRITE_PROP = secondValue;
     expect(globalVars.OVERWRITE_PROP).toBe(secondValue);
   });

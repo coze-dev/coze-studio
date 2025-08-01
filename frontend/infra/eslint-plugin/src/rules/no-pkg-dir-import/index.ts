@@ -40,7 +40,7 @@ export const noPkgDirImport: Rule.RuleModule = {
         const modulePath = resolve(importPath, context);
 
         if (!modulePath) {
-          // 解析不到的情况，暂不处理
+          // If it cannot be resolved, it will not be dealt with for the time being.
           return;
         }
 
@@ -56,15 +56,15 @@ export const noPkgDirImport: Rule.RuleModule = {
           return;
         }
 
-        // 本地link会解析到node_modules目录，需要拿到pkg name再次解析。
+        // The local link will resolve to the node_modules directory, and you need to get the pkg name to resolve it again.
         const moduleRealPath = resolve(pkg.name, context);
 
         if (
-          // 包名称就是引用路径
+          // The package name is the reference path
           pkg.name === importPath ||
-          // 解析到其他包，如@type
+          // Parse to other packages, such as @type
           !importPath.startsWith(pkg.name) ||
-          // 解析到自己包的文件
+          // Parse to the file of your own package
           currentPkgPath === importPkgPath ||
           !moduleRealPath ||
           moduleRealPath.includes('node_modules')

@@ -46,11 +46,11 @@ import { KNOWLEDGE_OPEN_SEARCH_ERROR } from './knowledge-recall';
 
 import s from './index.module.less';
 
-// 失败状态
+// failure state
 const FAILED = '1';
 
 /**
- * coze home插件展示，这里保留为兜底逻辑
+ * Coze home plugin display, keep it as fallback logic here
  */
 const specialPluginNameMap = {
   'ts-bot_creator-bot_creator': {
@@ -94,7 +94,7 @@ export const HeaderTitleText: React.FC<
   </>
 );
 
-// Bot调试区调用插件兜底逻辑（原逻辑）
+// Bot debugging area calls plugin fallback logic (original logic)
 const getFunctionCallMessageIconAndName: (props: {
   content: string;
   ext: MessageExt;
@@ -134,7 +134,7 @@ const getFunctionCallMessageIconAndName: (props: {
     };
   }
 
-  // coze home相关提示
+  // Coze home related tips
   const specialPluginNameText = getPluginNameText(name);
 
   const prefix = isLoading ? I18n.t('Using') : I18n.t('Used');
@@ -157,7 +157,7 @@ const getFunctionCallMessageIconAndName: (props: {
   };
 };
 
-// Bot调试区调用插件提示优化
+// Bot debugging area call plug-in prompt optimization
 export const getFunctionCallMessageIconAndNameOptimization: (props: {
   content: string;
   ext: MessageExt;
@@ -172,7 +172,7 @@ export const getFunctionCallMessageIconAndNameOptimization: (props: {
       ext?.execute_display_name || '',
       null,
     );
-    // 只有等于1的时候是失败，0或者空字符串的时候都是成功
+    // It only fails when it is equal to 1, and succeeds when it is 0 or empty string.
     const message = resExt
       ? resExt.plugin_status === FAILED
         ? executeDisplayName?.value?.name_execute_failed
@@ -180,8 +180,8 @@ export const getFunctionCallMessageIconAndNameOptimization: (props: {
       : executeDisplayName?.value?.name_executing;
 
     if (!message) {
-      // 兜底走原逻辑
-      // TODO: 兜底逻辑处理和@徐雯沟通完后续放到服务端处理 --@李慧文
+      // Go through the original logic
+      // TODO: fallback logic processing After communicating with @Xu Wen, it will be processed at the server level -- @Li Huiwen
       return getFunctionCallMessageIconAndName({
         content,
         ext,
@@ -194,7 +194,7 @@ export const getFunctionCallMessageIconAndNameOptimization: (props: {
       title: <HeaderTitleText>{message}</HeaderTitleText>,
     };
   } catch {
-    // 兜底走原逻辑
+    // Go through the original logic
     return getFunctionCallMessageIconAndName({
       content,
       ext,
@@ -336,7 +336,7 @@ export const getVerboseMessageHeaderConfig = ({
     const contentData = safeJSONParse(content.data);
 
     if (isVerboseContentData(contentData)) {
-      /** 长期记忆 */
+      /** long-term memory */
       if (content?.msg_type === VerboseMsgType.LONG_TERM_MEMORY) {
         if (
           isLatestFunctionCallOfRelatedChat &&
@@ -359,7 +359,7 @@ export const getVerboseMessageHeaderConfig = ({
         };
       }
 
-      /** 跳转、回溯，无loading态 */
+      /** Jump, backtrack, no loading */
       return {
         icon: <IconCozJump />,
         title: (
@@ -374,7 +374,7 @@ export const getVerboseMessageHeaderConfig = ({
     }
   }
 
-  /** 兜底 */
+  /** bottom line */
   return {
     icon: <IconCozJump />,
     title: '',

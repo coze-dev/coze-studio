@@ -33,7 +33,7 @@ const ProjectIDEContainer = ({
 }) => {
   useDestoryProject(projectId);
 
-  // 初始化Project角色数据
+  // Initializing Project Role Data
   const isCompleted = useInitProjectRole(spaceId, projectId);
 
   return isCompleted ? (

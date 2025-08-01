@@ -19,24 +19,24 @@ import fs from 'fs/promises';
 
 import { OUTPUT_DIR } from './const';
 
-// 复制目录的函数
+// Function to copy directory
 const copyDir = async (src: string, dest: string) => {
-  // 读取目录下所有文件/文件夹
+  // Read all files/folders in the directory
   const entries = await fs.readdir(src, { withFileTypes: true });
 
-  // 创建目标目录
+  // Create target directory
   await fs.mkdir(dest, { recursive: true });
 
-  // 遍历所有文件/文件夹
+  // Iterate through all files/folders
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      // 如果是文件夹则递归复制
+      // If it is a folder, copy it recursively.
       await copyDir(srcPath, destPath);
     } else {
-      // 如果是文件则直接复制
+      // If it is a file, copy it directly.
       await fs.copyFile(srcPath, destPath);
     }
   }

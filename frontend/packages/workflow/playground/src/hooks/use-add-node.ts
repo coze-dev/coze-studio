@@ -83,7 +83,7 @@ export const useAddNode = () => {
       );
       return;
     }
-    // 记录历史位置，打开子流程弹窗
+    // Record the historical location and open the subprocess pop-up window
     prevAddNodeRef.current = {
       x: coord.x,
       y: coord.y,
@@ -104,7 +104,7 @@ export const useAddNode = () => {
       if (!(await nodeVersionService.addApiCheck(pluginId, version))) {
         return;
       }
-      // 节点添加面板，拖拽添加具体插件节点逻辑
+      // Node add panel, drag and drop to add specific plug-in node logic
       editService.addNode(
         nodeType,
         nodeJson,
@@ -113,14 +113,14 @@ export const useAddNode = () => {
       );
       return;
     }
-    // 记录历史位置，打开插件弹窗
+    // Record the historical location and open the plug-in pop-up window.
     prevAddNodeRef.current = {
       x: coord.x,
       y: coord.y,
       isDrag,
     };
 
-    // 打开插件弹窗添加节点
+    // Open the plug-in pop-up window to add a node
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     openPlugin({ modalProps: modalProps as any });
   };
@@ -133,16 +133,16 @@ export const useAddNode = () => {
     const { nodeType } = item;
 
     if (nodeType === StandardNodeType.Api) {
-      // 节点添加面板，拖拽添加具体子插件
+      // Node add panel, drag and drop to add specific child plugins
       return handleAddPlugin(item, coord, isDrag);
     }
 
     if (nodeType === StandardNodeType.SubWorkflow) {
-      // 节点添加面板，拖拽添加具体子流程
+      // Node add panel, drag and drop to add specific sub-processes
       return handleAddSubWorkflow(item, coord, isDrag);
     }
 
-    // 节点添加面板，拖拽添加普通节点
+    // Node add panel, drag and drop to add ordinary nodes
     editService.addNode(
       item.nodeType,
       item.nodeJson,

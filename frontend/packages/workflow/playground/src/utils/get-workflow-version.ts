@@ -17,7 +17,7 @@
 import { PluginType } from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 /**
- * 根据 workflow 的 pluginId 获取 workflow 的版本号
+ * Get the version number of the workflow according to the pluginId of the workflow.
  */
 export const getWorkflowVersionByPluginId = async ({
   spaceId,
@@ -42,7 +42,7 @@ export const getWorkflowVersionByPluginId = async ({
     },
   );
 
-  // 补全版本信息
+  // Complete version information
   const versionName = resp.data?.plugin_list?.[0]?.version_name;
   return versionName;
 };

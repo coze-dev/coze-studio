@@ -30,10 +30,10 @@ interface FilterPageConfig {
 }
 
 interface Document {
-  // TODO: 扩充
+  // TODO: Expansion
   id: string;
   title: string;
-  /** 是否存在过滤内容 */
+  /** Is there filtered content? */
   filterPageConfigList: FilterPageConfig[];
 }
 

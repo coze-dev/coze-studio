@@ -22,7 +22,7 @@ import { type WorkflowGlobalStateEntity } from '@/typing';
 import { type WorkflowClipboardData } from '../../type';
 import { WORKFLOW_CLIPBOARD_TYPE } from '../../constant';
 
-/** 检查数据是否合法 */
+/** Check if the data is legitimate */
 export const isValidData = (params: {
   data: WorkflowClipboardData;
   globalState: WorkflowGlobalStateEntity;
@@ -31,11 +31,11 @@ export const isValidData = (params: {
   if (data.type !== WORKFLOW_CLIPBOARD_TYPE) {
     return false;
   }
-  // 跨域名表示不同环境，上架插件不同，不能复制
+  // The cross-domain name represents different environments, and the plug-ins on the shelves are different and cannot be copied.
   if (data.source.host !== window.location.host) {
     return false;
   }
-  // 抖音空间不兼容正常空间
+  // Douyin space is not compatible with normal space
   if (data.source.isDouyin !== globalState.isBindDouyin) {
     Toast.warning({
       content: I18n.t(
@@ -47,7 +47,7 @@ export const isValidData = (params: {
     });
     return false;
   }
-  // 不同的画布类型不能复制
+  // Different canvas types cannot be copied
   if (data.source.flowMode !== globalState.flowMode) {
     Toast.warning({
       content: I18n.t(

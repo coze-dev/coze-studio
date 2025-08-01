@@ -30,7 +30,7 @@ export interface InputComponentRegistry {
     | InputType
     | ((
         inputType: InputType,
-        // 下拉框选项列表
+        // dropdown box option list
         optionsList?: { label: string; value: string }[],
       ) => boolean);
   component: React.FC<LiteralValueInputProps>;
@@ -51,7 +51,7 @@ export interface LiteralValueInputProps {
     min?: number;
     max?: number;
     jsonSchema?: SchemaObject;
-    // 下拉框选项列表，根据这个字段来判断是否需要渲染成下拉框
+    // Drop-down box option list, according to this field to determine whether it needs to be rendered as a drop-down box
     optionsList?: { label: string; value: string }[];
     onRequestInputExpand?: (expand: boolean) => void;
   };

@@ -37,7 +37,7 @@ export const addFileType = (fileMessage: Message<ContentType.File>) => {
 
     const { file_name, file_type } = targetFile;
 
-    // TODO: 再讨论下这里的实现
+    // TODO: Let's discuss the implementation here again
     const fileType =
       FILE_TYPE_CONFIG.find(
         c =>

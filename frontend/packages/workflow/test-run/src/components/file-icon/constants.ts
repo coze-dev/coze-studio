@@ -23,5 +23,5 @@ export enum FileItemStatus {
   Wait = 'wait',
 }
 
-// 支持预览的图片类型
+// Image types that support preview
 export const PREVIEW_IMAGE_TYPE = ['jpg', 'jpeg', 'png', 'webp', 'svg'];

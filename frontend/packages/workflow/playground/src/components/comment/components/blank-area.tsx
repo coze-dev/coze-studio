@@ -41,7 +41,7 @@ export const BlankArea: FC<IBlankArea> = props => {
         e.stopPropagation();
         model.setFocus(false);
         selectNode(e);
-        playground.node.focus(); // 防止节点无法被删除
+        playground.node.focus(); // Prevent nodes from being deleted
       }}
       onClick={e => {
         model.setFocus(true);

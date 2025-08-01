@@ -96,7 +96,7 @@ export const StoreBind: React.FC<StoreBindProps> = ({
           setSourceConfig(true);
         } else {
           setSourceConfig(false);
-          // 兜底逻辑：如果出错，或不在白名单中，则自动更改为“私有配置”发布
+          // Fallback logic: if there is an error, or it is not in the whitelist, it is automatically changed to "private configuration" publishing
           handleSelect('open_source', BotSubmitStatus.Private);
         }
       },
@@ -107,7 +107,7 @@ export const StoreBind: React.FC<StoreBindProps> = ({
     async () => {
       const res = await ProductApi.PublicGetProductCategoryList(
         {
-          // 代表含义：无商品也返回类型，即为全量的类型
+          // Representative meaning: no goods also return the type, that is, the type of the full amount
           need_empty_category: true,
           entity_type: ProductEntityType.Bot,
         },

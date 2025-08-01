@@ -27,7 +27,7 @@ import {
   type MemberVersionRights,
 } from '../types';
 
-// 只处理最低和最高订阅服务档位
+// Only handle the lowest and highest subscription service gears
 export enum PremiumPlanLevel {
   Free = 0,
 
@@ -47,31 +47,31 @@ export interface VolcanoInfo {
 }
 
 interface PremiumStoreState {
-  polling: boolean; // 是否开启订阅数据自动轮询
-  plans: PremiumPlan[]; // 付费订阅计划列表
-  subs: PremiumSubs; // 所有订阅数据
-  currentPlan: SubscriptionDetail; // 当前订阅详情
+  polling: boolean; // Whether to enable automatic polling of subscription data
+  plans: PremiumPlan[]; // List of paid subscription plans
+  subs: PremiumSubs; // All subscription data
+  currentPlan: SubscriptionDetail; // Current subscription details
   hasTrial: boolean;
-  connections: BindConnection[]; // 第三方账号连接数据
-  benefit: SubscriptionDetailV2; // 用户权益数据
-  plansCN: Array<MemberVersionRights>; // 国内订阅套餐列表
-  volcanoInfo: VolcanoInfo; // oauth跳转到火山需要用到的参数
+  connections: BindConnection[]; // third-party account connection data
+  benefit: SubscriptionDetailV2; // user rights data
+  plansCN: Array<MemberVersionRights>; // List of domestic subscription packages
+  volcanoInfo: VolcanoInfo; // Oauth jump to the volcano required parameters
 }
 
 interface PremiumStoreAction {
   /**
-   * 重置状态
+   * reset state
    */
   reset: () => void;
   /**
-   * 设置是否轮询获取订阅数据，以下场景需要：
-   * - Bot详情判断是否需要显示订阅卡片
-   * - 左侧菜单栏判断是否需要显示'coze premium'
-   * - 左侧菜单栏展示credits数量信息
+   * To set whether to poll for subscription data, the following scenarios are required:
+   * - Bot details to determine whether the subscription card needs to be displayed
+   * - The left menu bar determines whether to display'coze premium'
+   * - The left menu bar displays the number of credits
    */
   setPolling: (polling: boolean) => void;
   /**
-   * 获取海外订阅套餐列表
+   * Get a list of overseas subscription packages
    */
   fetchPremiumPlans: () => Promise<{
     plans: PremiumPlan[];
@@ -79,35 +79,35 @@ interface PremiumStoreAction {
     hasTrial: boolean;
   }>;
   /**
-   * 设置国内套餐列表
+   * Set up a list of domestic packages
    */
   setPremiumPlansCN: (plans: Array<MemberVersionRights>) => void;
   /**
-   * 恢复订阅，暂时只有海外
+   * Resume subscription, only overseas for the time being
    */
   renewCurrentPlan: (plan: SubscriptionDetail) => void;
   /**
-   * 获取当前用户订阅详情，暂时只有海外
+   * Get the current user subscription details, only overseas for the time being
    */
   fetchPremiumPlan: () => Promise<SubscriptionDetail>;
   /**
-   * 取消订阅，暂时只有海外
+   * Cancel the subscription, only overseas for the time being.
    */
   cancelCurrentPlan: () => void;
   /**
-   * 获取渠道绑定信息，暂时只有海外
+   * Get channel binding information, only overseas for the time being.
    */
   fetchConnections: () => Promise<void>;
   /**
-   * 取消渠道用户绑定，暂时只有海外
+   * Cancel the channel user binding, only overseas for the time being
    */
   disconnectUser: (connectorId: string) => void;
   /**
-   * 设置当前登录用户权益信息，海内外通用
+   * Set the current logged in user rights and interests information, common at home and abroad
    */
   setUserBenefit: (benefit: unknown) => void;
   /**
-   * 设置当前账号相关火山信息
+   * Set the current account related volcano information
    */
   setVolcanoInfo: (info: VolcanoInfo) => void;
 }

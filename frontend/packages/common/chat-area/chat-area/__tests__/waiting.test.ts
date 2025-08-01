@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContentType, type Message } from '@coze-common/chat-core';
 
 import {
@@ -28,21 +28,21 @@ import {
 vi.mock('@coze-common/chat-core', () => ({
   ContentType: vi.fn(),
   VerboseMsgType: {
-    /** 跳转节点 */
+    /** jump node */
     JUMP_TO: 'multi_agents_jump_to_agent',
-    /** 回溯节点 */
+    /** backtracking node */
     BACK_WORD: 'multi_agents_backwards',
-    /** 长期记忆节点 */
+    /** long-term memory node */
     LONG_TERM_MEMORY: 'time_capsule_recall',
     /** finish answer*/
     GENERATE_ANSWER_FINISH: 'generate_answer_finish',
-    /** 流式插件调用状态 */
+    /** Streaming plugin call status */
     STREAM_PLUGIN_FINISH: 'stream_plugin_finish',
-    /** 知识库召回 */
+    /** knowledge base recall */
     KNOWLEDGE_RECALL: 'knowledge_recall',
-    /** 中断消息：目前只用于地理位置授权 */
+    /** Interrupt message: Currently only used for geolocation authorization */
     INTERRUPT: 'interrupt',
-    /** hooks调用 */
+    /** Hooks call */
     HOOK_CALL: 'hook_call',
   },
   Scene: {
@@ -159,7 +159,7 @@ describe('normal text message', () => {
 
     startSending(sentMessage);
 
-    // 检测 Sending 是否存在
+    // Check if Sending exists
 
     const { sending } = useWaitingStore.getState();
 
@@ -171,11 +171,11 @@ describe('normal text message', () => {
 
     startSending(sentMessage);
 
-    // 检测 Sending 是否存在
+    // Check if Sending exists
     const { sending } = useWaitingStore.getState();
     expect(sending).toStrictEqual(sentMessage);
 
-    // 清除 Sending
+    // Clear Sending
 
     clearSending();
     const { sending: afterClearSending } = useWaitingStore.getState();
@@ -198,7 +198,7 @@ describe('normal text message', () => {
   });
 
   it('update responding is correct', () => {
-    // 检测 responding 是否存在
+    // Detection of responding presence
     const { updateResponding } = useWaitingStore.getState();
 
     updateResponding(llmMessage);
@@ -225,7 +225,7 @@ describe('normal text message', () => {
       is_finish: true,
     };
 
-    // @ts-expect-error -- 单测
+    // @ts-expect-error -- single test
     updateResponding(allFinishedMessage);
 
     const { responding } = useWaitingStore.getState();
@@ -241,7 +241,7 @@ describe('normal text message', () => {
       type: 'tool_response',
     };
 
-    // @ts-expect-error -- 单测
+    // @ts-expect-error -- single test
     updateResponding(toolResponseMessage);
 
     const { responding } = useWaitingStore.getState();
@@ -254,7 +254,7 @@ describe('normal text message', () => {
 
     updateResponding(llmMessage);
 
-    // 修改 reply_id 造成冲突假象
+    // Modifying reply_id creates the illusion of conflict
     const modifiedMessage = {
       ...llmMessage,
       reply_id: '嘤嘤嘤',
@@ -281,7 +281,7 @@ describe('normal text message', () => {
       }),
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(verboseMessage);
 
     const finishedMessage = {
@@ -292,7 +292,7 @@ describe('normal text message', () => {
       }),
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
 
     updateResponding(finishedMessage);
 
@@ -329,7 +329,7 @@ describe('normal text message', () => {
       type: 'function_call',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(functionCallMessage);
 
     const respondingMessage = {
@@ -338,7 +338,7 @@ describe('normal text message', () => {
       index: 2,
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(respondingMessage);
 
     const { responding } = useWaitingStore.getState();
@@ -410,7 +410,7 @@ describe('normal text message', () => {
       type: 'function_call',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(functionCallMessage);
 
     const respondingMessage = {
@@ -419,14 +419,14 @@ describe('normal text message', () => {
       index: -1,
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(respondingMessage);
 
     const { responding } = useWaitingStore.getState();
 
     expect(responding).toStrictEqual({
       replyId: llmMessage.reply_id,
-      // @ts-expect-error -- 测试
+      // @ts-expect-error -- test
       response: [getResponse(functionCallMessage)],
     });
   });
@@ -439,7 +439,7 @@ describe('normal text message', () => {
       type: 'function_call',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(functionCallMessage);
 
     const respondingMessage = {
@@ -448,14 +448,14 @@ describe('normal text message', () => {
       index: 'hhhh',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(respondingMessage);
 
     const { responding } = useWaitingStore.getState();
 
     expect(responding).toStrictEqual({
       replyId: llmMessage.reply_id,
-      // @ts-expect-error -- 测试
+      // @ts-expect-error -- test
       response: [getResponse(functionCallMessage)],
     });
   });
@@ -468,7 +468,7 @@ describe('normal text message', () => {
       type: 'function_call',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(functionCallMessage);
 
     const functionCallMessage2 = {
@@ -481,7 +481,7 @@ describe('normal text message', () => {
       type: 'function_call',
     };
 
-    // @ts-expect-error -- 测试
+    // @ts-expect-error -- test
     updateResponding(functionCallMessage2);
 
     const { responding } = useWaitingStore.getState();
@@ -489,9 +489,9 @@ describe('normal text message', () => {
     expect(responding).toStrictEqual({
       replyId: llmMessage.reply_id,
       response: [
-        // @ts-expect-error -- 测试
+        // @ts-expect-error -- test
         getResponse(functionCallMessage),
-        // @ts-expect-error -- 测试
+        // @ts-expect-error -- test
         getResponse(functionCallMessage2),
       ],
     });

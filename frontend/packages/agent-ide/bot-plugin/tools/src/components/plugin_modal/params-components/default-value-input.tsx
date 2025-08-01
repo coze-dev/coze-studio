@@ -89,7 +89,7 @@ const DefaultValueModal = ({
   };
 
   const handleSave = () => {
-    // 校验是否必填
+    // Verification is required
     setCheck(check + 1);
     const errorEle = document.getElementsByClassName('errorDebugClassTag');
     if (errorEle.length > 0) {
@@ -153,8 +153,8 @@ export const DefaultValueInput = ({
   data,
   setData,
   canReference = false,
-  defaultKey = 'global_default', //输入框的key
-  disableKey = 'global_disable', //开启按钮key
+  defaultKey = 'global_default', //Text box key
+  disableKey = 'global_disable', //Open button key
   referenceOption,
 }: DefaultValueInputProps) => {
   // @ts-expect-error -- linter-disable-autofix
@@ -173,7 +173,7 @@ export const DefaultValueInput = ({
     return <></>;
   }
 
-  // 复杂类型暂不支持引用变量
+  // Complex types do not currently support reference variables
   if (record.type === ParameterType.Array) {
     return (
       <div className={styles['modal-wrapper']}>

@@ -15,7 +15,7 @@
  */
  
 /**
- * project ide app 初始化时打开 url 上携带的资源
+ * Open resources carried on the url when the project ide app is initialized
  */
 import { inject, injectable } from 'inversify';
 import {
@@ -47,20 +47,20 @@ export class OpenURIResourceService {
   private disposable = new DisposableCollection();
 
   /**
-   * 针对 1.直接打开；2.外部系统跳转的场景，请勿在此添加其他副作用逻辑
+   * For scenarios where 1. Open directly; 2. External system jumps, please do not add other side effect logic here.
    */
   open() {
     const { resourceType } = getResourceByPathname(window.location.pathname);
     // ui-builder
     if (resourceType === UI_BUILDER_URI.displayName) {
       this.openDesign();
-      // 展示默认页
+      // Show default page
       this.tryOpenDefault();
     } else {
       const path = getURIPathByPathname(window.location.pathname);
       if (!path || path.startsWith(MAIN_PANEL_DEFAULT_URI.displayName)) {
         this.tryOpenDefault();
-        // 路由不匹配时需要手动激活 currentWidget
+        // When the routes do not match, you need to manually activate currentWidget.
         if (this.applicationShell.mainPanel.currentTitle?.owner) {
           this.applicationShell.setCurrentWidget(
             this.applicationShell.mainPanel?.currentTitle?.owner as ReactWidget,

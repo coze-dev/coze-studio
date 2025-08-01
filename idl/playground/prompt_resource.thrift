@@ -68,7 +68,7 @@ struct DeletePromptResourceResponse {
     255: required base.BaseResp BaseResp
 }
 
-// 参数优先级从上往下
+// Parameter priority from top to bottom
 struct SyncPromptResourceToEsRequest {
     1: optional bool SyncAll
     2: optional list<i64> PromptResourceIDList
@@ -84,8 +84,8 @@ struct SyncPromptResourceToEsResponse {
 
 
 struct MGetDisplayResourceInfoRequest {
-    1 : list<i64> ResIDs,    // 最大传一页的数量，实现方可以限制最大100个
-    2 : i64 CurrentUserID,   // 当前的用户，实现方用于判断权限
+    1 : list<i64> ResIDs,    // The maximum number of one page can be transferred, and the implementer can limit the maximum to 100.
+    2 : i64 CurrentUserID,   // The current user, the implementation is used to determine the authority
     255: base.Base Base  ,
 }
 
@@ -95,36 +95,36 @@ struct MGetDisplayResourceInfoResponse {
 }
 
 enum ActionKey{
-    Copy    = 1,        //复制
-    Delete  = 2,        //删除
-    EnableSwitch = 3,   //启用/禁用
-    Edit = 4,   //编辑
-    CrossSpaceCopy = 10, // 跨空间复制
+    Copy    = 1,        //copy
+    Delete  = 2,        //delete
+    EnableSwitch = 3,   //enable/disable
+    Edit = 4,   //edit
+    CrossSpaceCopy = 10, //Cross-space copy
 }
 
 struct ResourceAction{
-    // 一个操作对应一个唯一的key，key由资源侧约束
+    // An operation corresponds to a unique key, and the key is constrained by the resource side
     1 : required ActionKey Key (go.tag = "json:\"key\""),
-    //ture=可以操作该Action，false=置灰
+    //ture = can operate this Action, false = grey out
     2 : required bool Enable (go.tag = "json:\"enable\""),
 }
 
-// 展示用，实现方提供展示信息
+// For display, the implementer provides display information
 struct DisplayResourceInfo{
-    1 : optional i64    ResID,    // 资源id
-    5 : optional string Desc,// 资源描述
-    6 : optional string Icon,// 资源Icon，完整url
-    12 : optional i32   BizResStatus, // 资源状态，各类型资源自身定义
-    13 : optional bool  CollaborationEnable, // 是否开启多人编辑
-    16 : optional map<string, string> BizExtend,  // 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
-    17 : optional list<ResourceAction> Actions,  // 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
-    18 : optional bool DetailDisable,  // 是否禁止进详情页
-    19 : optional string Name // 资源名称
-    20 : optional ResourcePublishStatus   PublishStatus, // 资源发布状态，1-未发布，2-已发布
-    21 : optional i64 EditTime,  // 最近编辑时间, unix秒级时间戳
+    1 : optional i64    ResID,    // Resource ID
+    5 : optional string Desc,// resource description
+    6 : optional string Icon,// Resource Icon, full url
+    12 : optional i32   BizResStatus, // Resource status, each type of resource defines itself
+    13 : optional bool  CollaborationEnable, // Whether to enable multi-person editing
+    16 : optional map<string, string> BizExtend,  // Business carry extended information to res_type distinguish, each res_type defined schema and meaning is not the same, need to judge before use res_type
+    17 : optional list<ResourceAction> Actions,  // Different types of different operation buttons are agreed upon by the resource implementer and the front end. Return is displayed, if you want to hide a button, do not return;
+    18 : optional bool DetailDisable,  // Whether to ban entering the details page
+    19 : optional string Name // resource name
+    20 : optional ResourcePublishStatus   PublishStatus, // Resource release status, 1 - unpublished, 2 - published
+    21 : optional i64 EditTime,  // Last edited, unix timestamp
 }
 
 enum ResourcePublishStatus{
-    UnPublished    = 1,        //未发布
-    Published    = 2,        //已发布
+    UnPublished    = 1,        //unpublished
+    Published    = 2,        //Published
 }

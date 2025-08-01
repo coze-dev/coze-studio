@@ -34,14 +34,14 @@ export interface PlaygroundContext {
   readonly variableValidationService: WorkflowVariableValidationService;
 
   /**
-   * 根据meta 类型获取信息
+   * Get information by meta type
    * @param type
    */
   getNodeTemplateInfoByType: (
     type: StandardNodeType,
   ) => NodeTemplateInfo | undefined;
   /**
-   * 是否为 不可编辑模式
+   * Yes No, non-editable mode
    */
   disabled: boolean;
 }

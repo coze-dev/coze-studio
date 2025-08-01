@@ -41,21 +41,21 @@ export class ViewService {
   private prevPanelMap = new Map<LayoutPanelType, boolean>();
 
   /**
-   * 唤起底部面板
+   * Evoke the bottom panel
    */
   toggleBottomLayout() {
     this.shell.bottomSplitLayout.setRelativeSizes([0.7, 0.3]);
   }
 
   /**
-   * 隐藏底部面板
+   * Hide bottom panel
    */
   hideBottomLayout() {
     this.shell.bottomSplitLayout.setRelativeSizes([1, 0]);
   }
 
   /**
-   * 获取所有打开的 tab title
+   * Get all open tab titles
    */
   getOpenTitles() {
     let titles: CustomTitleType[] = [];
@@ -69,7 +69,7 @@ export class ViewService {
   }
 
   /**
-   * 获取当前 panel 打开的所有 tab
+   * Get all tabs currently open in the panel
    */
   getAllTabsFromArea(
     area: LayoutPanelType.MAIN_PANEL | LayoutPanelType.BOTTOM_PANEL,
@@ -86,7 +86,7 @@ export class ViewService {
   }
 
   /**
-   * 关闭除了当前 tab 以外的所有 tab
+   * Close all tabs except the current tab
    */
   closeOtherTabs(dispose = true) {
     try {
@@ -111,7 +111,7 @@ export class ViewService {
   }
 
   /**
-   * 打开主面板的下一个 tab
+   * Open the next tab in the main panel
    */
   openNextTab() {
     const tabBars = (
@@ -135,7 +135,7 @@ export class ViewService {
   }
 
   /**
-   * 打开主面板的上一个 tab
+   * Open the previous tab of the main panel
    */
   openLastTab() {
     const tabBars = (
@@ -160,7 +160,7 @@ export class ViewService {
   }
 
   /**
-   * 开启全屏模式
+   * Enable full screen mode
    */
   enableFullScreenMode() {
     if (this.isFullScreenMode) {
@@ -178,7 +178,7 @@ export class ViewService {
   }
 
   /**
-   * 关闭全屏模式
+   * Turn off full screen mode
    */
   disableFullScreenMode() {
     if (!this.isFullScreenMode) {
@@ -196,7 +196,7 @@ export class ViewService {
   }
 
   /**
-   * 全屏模式切换
+   * full screen mode toggle
    */
   switchFullScreenMode() {
     if (!this.isFullScreenMode) {
@@ -207,14 +207,14 @@ export class ViewService {
   }
 
   /**
-   * 设置当前 activityBar 激活 item
+   * Set the current activityBar item
    */
   setActivityBarUri(uri: URI) {
     this.shell.activityBarWidget.setCurrentUri(uri);
   }
 
   /**
-   * 获取当前 activityBar 激活的 item
+   * Get the current activityBar active item
    */
   get activityBarUri() {
     return this.shell.activityBarWidget.currentUri;

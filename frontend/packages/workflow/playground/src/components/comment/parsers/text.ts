@@ -19,10 +19,10 @@ import type { CommentEditorBlock, CommentEditorLeaf } from '../type';
 import { CommentEditorBlockFormat } from '../constant';
 
 export namespace CommentEditorTextParser {
-  // 将叶子节点转换为纯文本
+  // Convert leaf nodes to plain text
   const convertLeafToText = (leaf: CommentEditorLeaf): string => leaf.text;
 
-  // 将段落转换为纯文本
+  // Convert paragraphs to plain text
   const convertParagraphToText = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -35,7 +35,7 @@ export namespace CommentEditorTextParser {
     return `${content}\n`;
   };
 
-  // 将标题转换为纯文本
+  // Convert the title to plain text
   const convertHeadingToText = (block: CommentEditorBlock): string => {
     const content: string = block.children
       .map(child => {
@@ -48,7 +48,7 @@ export namespace CommentEditorTextParser {
     return `${content}\n`;
   };
 
-  // 将引用转换为纯文本
+  // Convert a reference to plain text
   const convertBlockquoteToText = (block: CommentEditorBlock): string => {
     const processQuoteContent = (
       child: CommentEditorLeaf | CommentEditorBlock,
@@ -67,7 +67,7 @@ export namespace CommentEditorTextParser {
     return `${content}\n`;
   };
 
-  // 将列表转换为纯文本
+  // Convert a list to plain text
   const convertListToText = (
     block: CommentEditorBlock,
     indent = '',
@@ -102,7 +102,7 @@ export namespace CommentEditorTextParser {
     return content;
   };
 
-  // 将块转换为纯文本
+  // Convert a block to plain text
   const convertBlockToText = (block: CommentEditorBlock): string => {
     switch (block.type) {
       case CommentEditorBlockFormat.Paragraph:
@@ -121,7 +121,7 @@ export namespace CommentEditorTextParser {
     }
   };
 
-  // 主函数：将整个 schema 转换为纯文本
+  // Main function: Converts the entire schema to plain text
   export const to = (schema: CommentEditorBlock[]): string => {
     const text: string = schema
       .map(block => convertBlockToText(block))

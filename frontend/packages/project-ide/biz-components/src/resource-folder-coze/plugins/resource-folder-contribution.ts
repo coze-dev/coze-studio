@@ -45,7 +45,7 @@ export class ResourceFolderContribution
   }
 
   registerShortcuts(registry: ShortcutsRegistry): void {
-    // 重命名
+    // rename
     registry.registerHandlers({
       commandId: BizResourceContextMenuBtnType.Rename,
       keybinding: 'enter',
@@ -54,7 +54,7 @@ export class ResourceFolderContribution
       when: RESOURCE_FOLDER_CONTEXT_KEY,
     });
 
-    // 删除
+    // delete
     registry.registerHandlers({
       commandId: BizResourceContextMenuBtnType.Delete,
       keybinding: 'meta backspace',
@@ -63,7 +63,7 @@ export class ResourceFolderContribution
       when: RESOURCE_FOLDER_CONTEXT_KEY,
     });
 
-    // 创建文件夹
+    // Create Folder
     registry.registerHandlers({
       commandId: BizResourceContextMenuBtnType.CreateFolder,
       keybinding: 'alt shift n',
@@ -72,7 +72,7 @@ export class ResourceFolderContribution
       when: RESOURCE_FOLDER_CONTEXT_KEY,
     });
 
-    // 创建资源
+    // Create a resource
     registry.registerHandlers({
       commandId: BizResourceContextMenuBtnType.CreateResource,
       keybinding: 'alt n',
@@ -81,7 +81,7 @@ export class ResourceFolderContribution
       when: RESOURCE_FOLDER_CONTEXT_KEY,
     });
 
-    // 创建副本
+    // Create a copy
     registry.registerHandlers({
       commandId: BizResourceContextMenuBtnType.DuplicateResource,
       keybinding: 'alt d',
@@ -91,7 +91,7 @@ export class ResourceFolderContribution
     });
   }
   registerCommands(commands: CommandRegistry): void {
-    // 重命名 command
+    // Rename command
     commands.registerCommand(
       {
         id: BizResourceContextMenuBtnType.Rename,
@@ -105,7 +105,7 @@ export class ResourceFolderContribution
       },
     );
 
-    // 删除 command
+    // Delete command
     commands.registerCommand(
       {
         id: BizResourceContextMenuBtnType.Delete,
@@ -117,7 +117,7 @@ export class ResourceFolderContribution
       },
     );
 
-    // 新建文件夹 command
+    // New folder command
     commands.registerCommand(
       {
         id: BizResourceContextMenuBtnType.CreateFolder,
@@ -131,13 +131,13 @@ export class ResourceFolderContribution
             );
           resourceFolderDispatch?.onCreateFolder?.();
         },
-        // 禁用文件夹创建
+        // Disable folder creation
         isEnabled: opt => false, //!opt?.disabled,
         isVisible: opt => !opt?.isHidden,
       },
     );
 
-    // 新建资源 command
+    // New resource command
     commands.registerCommand(
       {
         id: BizResourceContextMenuBtnType.CreateResource,
@@ -150,7 +150,7 @@ export class ResourceFolderContribution
         isVisible: opt => !opt?.isHidden,
       },
     );
-    // 新建副本 command
+    // New replica command
     commands.registerCommand(
       {
         id: BizResourceContextMenuBtnType.DuplicateResource,

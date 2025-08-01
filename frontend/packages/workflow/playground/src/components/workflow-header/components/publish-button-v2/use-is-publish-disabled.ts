@@ -22,11 +22,11 @@ import { VCSCanvasType } from '@coze-arch/bot-api/workflow_api';
 import { useGlobalState } from '@/hooks';
 
 /**
- * 总结发布按钮不可用的 case：
- * 1. 流程处于运行中或保存中，不可发布
- * 2. 多人模式下，流程未提交，不可发布
- * 3. vcs 模式下，流程已经发布过了，不可发布
- * 4. db 模式无其他限制，可随意发布
+ * Summarize cases where the publish button is not available:
+ * 1. The process is running or saved and cannot be published
+ * 2. In multiplayer mode, the process is not submitted and cannot be published
+ * 3. In vcs mode, the process has already been published and cannot be published.
+ * 4.DB mode has no other restrictions and can be released at will
  */
 export const useIsPublishDisabled = () => {
   const { isCollaboratorMode, isExecuting, isVcsMode, config, info } =
@@ -35,11 +35,11 @@ export const useIsPublishDisabled = () => {
   const { saving } = config;
 
   const disabled = useMemo(() => {
-    // 执行中或保存中的流程不能发布
+    // Processes in progress or saved cannot be published
     if (isExecuting || saving) {
       return true;
     }
-    // 多人协作模式：流程处于提交态且流程处于可发布状态
+    // Multiplayer Collaboration Mode: The process is committed and the process is publishable
     if (isCollaboratorMode) {
       const canPublish = vcsData?.type === VCSCanvasType.Submit;
       return !canPublish;

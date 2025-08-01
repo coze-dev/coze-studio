@@ -19,26 +19,26 @@ import { create } from 'zustand';
 import { type SpaceRoleType } from '@coze-arch/idl/developer_api';
 
 interface SpaceAuthStoreState {
-  // 每一个空间的角色数据
+  // Role data for each space
   roles: {
     [spaceId: string]: SpaceRoleType[];
   };
-  // 每一个空间的角色数据的初始化状态，是否完成初始化。
+  // The initialization status of the character data in each space, and whether the initialization is completed.
   isReady: {
     [spaceId: string]: boolean;
   };
 }
 
 interface SpaceAuthStoreAction {
-  // 设置spaceId对应的空间的角色
+  // Set the role of the space corresponding to the spaceId
   setRoles: (spaceId: string, roles: SpaceRoleType[]) => void;
-  // 设置spaceId对应的空间的数据是否ready
+  // Set whether the data of the space corresponding to the spaceId is ready
   setIsReady: (spaceId: string, isReady: boolean) => void;
-  // 回收空间数据
+  // Recovering spatial data
   destory: (spaceId) => void;
 }
 /**
- * SpaceAuthStore设计成支持多空间切换，维护多个空间的数据，位置因为空间切换时序导致的bug。
+ * SpaceAuthStore is designed to support multi-space switching and maintain data in multiple spaces. The location is due to bugs caused by the timing of space switching.
  */
 export const useSpaceAuthStore = create<
   SpaceAuthStoreState & SpaceAuthStoreAction

@@ -16,19 +16,19 @@
  
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// 模拟 pdfjs-dist 模块
+// Emulate pdfjs-dist module
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {
     workerSrc: '',
   },
 }));
 
-// 模拟 generate-assets 模块
+// Simulate generate-assets module
 vi.mock('../src/generate-assets', () => ({
   generatePdfAssetsUrl: vi.fn().mockReturnValue('mocked-worker-url'),
 }));
 
-// 导入被测试的模块
+// Import the tested module
 import { GlobalWorkerOptions } from 'pdfjs-dist';
 
 import { initPdfJsWorker } from '../src/init-pdfjs-dist';
@@ -36,43 +36,43 @@ import { generatePdfAssetsUrl } from '../src/generate-assets';
 
 describe('initPdfJsWorker', () => {
   beforeEach(() => {
-    // 每个测试前重置 GlobalWorkerOptions.workerSrc
+    // Reset GlobalWorkerOptions.workerSrc before each test
     GlobalWorkerOptions.workerSrc = '';
-    // 清除所有模拟函数的调用记录
+    // Clear all call records for simulated functions
     vi.clearAllMocks();
   });
 
   afterEach(() => {
-    // 每个测试后重置模拟
+    // Reset simulation after each test
     vi.resetAllMocks();
   });
 
   it('应该设置 GlobalWorkerOptions.workerSrc 当它为空时', () => {
-    // 确保 workerSrc 初始为空
+    // Make sure workerSrc is initially empty
     expect(GlobalWorkerOptions.workerSrc).toBe('');
 
-    // 调用初始化函数
+    // Invoke initialization function
     initPdfJsWorker();
 
-    // 验证 generatePdfAssetsUrl 被调用，且参数正确
+    // Verify generatePdfAssetsUrl is called and the parameters are correct
     expect(generatePdfAssetsUrl).toHaveBeenCalledTimes(1);
     expect(generatePdfAssetsUrl).toHaveBeenCalledWith('pdf.worker');
 
-    // 验证 workerSrc 被正确设置
+    // Verify that workerSrc is set correctly
     expect(GlobalWorkerOptions.workerSrc).toBe('mocked-worker-url');
   });
 
   it('不应该重新设置 GlobalWorkerOptions.workerSrc 当它已经有值时', () => {
-    // 预先设置 workerSrc
+    // Pre-set workerSrc
     GlobalWorkerOptions.workerSrc = 'existing-worker-url';
 
-    // 调用初始化函数
+    // Invoke initialization function
     initPdfJsWorker();
 
-    // 验证 generatePdfAssetsUrl 没有被调用
+    // Verify generatePdfAssetsUrl not called
     expect(generatePdfAssetsUrl).not.toHaveBeenCalled();
 
-    // 验证 workerSrc 保持不变
+    // Verify that workerSrc remains unchanged
     expect(GlobalWorkerOptions.workerSrc).toBe('existing-worker-url');
   });
 });

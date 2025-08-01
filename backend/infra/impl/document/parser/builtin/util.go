@@ -35,7 +35,7 @@ const imgSrcFormat = `<img src="" data-tos-key="%s">`
 func createSecret(uid int64, fileType string) string {
 	num := 10
 	input := fmt.Sprintf("upload_%d_Ma*9)fhi_%d_gou_%s_rand_%d", uid, time.Now().Unix(), fileType, rand.Intn(100000))
-	// 做md5，取前20个,// mapIntToBase62 把数字映射到 Base62
+	// Do md5, take the first 20,//mapIntToBase62 map the number to Base62
 	hash := sha256.Sum256([]byte(fmt.Sprintf("%s", input)))
 	hashString := base64.StdEncoding.EncodeToString(hash[:])
 	if len(hashString) > num {

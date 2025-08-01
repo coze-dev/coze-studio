@@ -23,7 +23,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
@@ -217,6 +216,7 @@ func (t *toolRepoImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *e
 
 func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
 	toolProducts := pluginConf.MGetToolProducts(toolIDs)
+
 	tools = slices.Transform(toolProducts, func(tool *pluginConf.ToolInfo) *entity.ToolInfo {
 		return tool.Info
 	})
@@ -270,13 +270,38 @@ func (t *toolRepoImpl) MGetVersionTools(ctx context.Context, versionTools []enti
 }
 
 func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
-	onlineTools, err := t.MGetOnlineTools(ctx, toolIDs)
+	opt := &dal.ToolSelectedOption{
+		ToolID: true,
+	}
+	draftAgentTools, err := t.agentToolDraftDAO.GetAll(ctx, agentID, opt)
 	if err != nil {
 		return err
 	}
 
-	if len(onlineTools) == 0 {
-		return t.agentToolDraftDAO.DeleteAll(ctx, agentID)
+	draftAgentToolIDMap := slices.ToMap(draftAgentTools, func(tool *entity.ToolInfo) (int64, bool) {
+		return tool.ID, true
+	})
+
+	bindToolIDMap := slices.ToMap(toolIDs, func(toolID int64) (int64, bool) {
+		return toolID, true
+	})
+
+	newBindToolIDs := make([]int64, 0, len(toolIDs))
+	for _, toolID := range toolIDs {
+		_, ok := draftAgentToolIDMap[toolID]
+		if ok {
+			continue
+		}
+		newBindToolIDs = append(newBindToolIDs, toolID)
+	}
+
+	removeToolIDs := make([]int64, 0, len(draftAgentTools))
+	for toolID := range draftAgentToolIDMap {
+		_, ok := bindToolIDMap[toolID]
+		if ok {
+			continue
+		}
+		removeToolIDs = append(removeToolIDs, toolID)
 	}
 
 	tx := t.query.Begin()
@@ -299,17 +324,29 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 		}
 	}()
 
-	err = t.agentToolDraftDAO.DeleteAllWithTX(ctx, tx, agentID)
+	onlineTools, err := t.MGetOnlineTools(ctx, newBindToolIDs)
 	if err != nil {
 		return err
 	}
 
-	err = t.agentToolDraftDAO.BatchCreateWithTX(ctx, tx, agentID, onlineTools)
+	if len(onlineTools) > 0 {
+		err = t.agentToolDraftDAO.BatchCreateIgnoreConflictWithTX(ctx, tx, agentID, onlineTools)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = t.agentToolDraftDAO.DeleteWithTX(ctx, tx, agentID, removeToolIDs)
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *toolRepoImpl) GetAgentPluginIDs(ctx context.Context, agentID int64) (pluginIDs []int64, err error) {
@@ -317,7 +354,7 @@ func (t *toolRepoImpl) GetAgentPluginIDs(ctx context.Context, agentID int64) (pl
 }
 
 func (t *toolRepoImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
-	tools, err := t.agentToolDraftDAO.GetAll(ctx, fromAgentID)
+	tools, err := t.agentToolDraftDAO.GetAll(ctx, fromAgentID, nil)
 	if err != nil {
 		return err
 	}
@@ -371,7 +408,7 @@ func (t *toolRepoImpl) UpdateDraftAgentTool(ctx context.Context, req *UpdateDraf
 }
 
 func (t *toolRepoImpl) GetSpaceAllDraftAgentTools(ctx context.Context, agentID int64) (tools []*entity.ToolInfo, err error) {
-	return t.agentToolDraftDAO.GetAll(ctx, agentID)
+	return t.agentToolDraftDAO.GetAll(ctx, agentID, nil)
 }
 
 func (t *toolRepoImpl) GetVersionAgentTool(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
@@ -388,42 +425,4 @@ func (t *toolRepoImpl) MGetVersionAgentTool(ctx context.Context, agentID int64, 
 
 func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID int64, agentVersion string, tools []*entity.ToolInfo) (err error) {
 	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, agentVersion, tools)
-}
-
-func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
-	tx := t.query.Begin()
-	if tx.Error != nil {
-		return tx.Error
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
-			}
-			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
-			return
-		}
-		if err != nil {
-			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
-			}
-		}
-	}()
-
-	err = t.toolDraftDAO.UpdateWithTX(ctx, tx, updatedTool)
-	if err != nil {
-		return err
-	}
-
-	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
-		ID:         pluginID,
-		OpenapiDoc: doc,
-	})
-	err = t.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
 }

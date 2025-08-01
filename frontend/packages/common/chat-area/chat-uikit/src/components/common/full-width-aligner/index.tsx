@@ -20,7 +20,7 @@ import classNames from 'classnames';
 import './index.less';
 
 /**
- * 套壳组件，默认宽度通栏，用于帮助孤立组件与 message box 保持宽度对齐
+ * Sleeve component, the default width bar, is used to help the isolated component maintain width alignment with the message box
  */
 export const FullWidthAligner = (
   props: PropsWithChildren<{

@@ -19,10 +19,10 @@ package processor
 import "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 
 type DocProcessor interface {
-	BeforeCreate() error         // 获取数据源
-	BuildDBModel() error         // 构建Doc记录
-	InsertDBModel() error        // 向数据库中插入一条Doc记录
-	Indexing() error             // 发起索引任务
-	GetResp() []*entity.Document // 返回处理后的文档信息
+	BeforeCreate() error         // Get data source
+	BuildDBModel() error         // Build Doc Record
+	InsertDBModel() error        // Insert a Doc record into the database
+	Indexing() error             // Initiate indexing task
+	GetResp() []*entity.Document // Return the processed document information
 	//GetColumnName()
 }

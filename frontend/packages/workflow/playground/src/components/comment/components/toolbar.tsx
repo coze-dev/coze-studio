@@ -91,7 +91,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           e.stopPropagation();
         }}
       >
-        {/** 文本样式 */}
+        {/** Text style */}
         <Dropdown
           position="bottom"
           trigger="hover"
@@ -106,7 +106,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
                   '0px 8px 24px 0px rgba(0, 0, 0, 0.16), 0px 16px 48px 0px rgba(0, 0, 0, 0.08)',
               }}
             >
-              {/** 正文 */}
+              {/** text */}
               <div
                 className={classNames(textItemClass, {
                   [textItemMarkedClass]: model.isBlockMarked(
@@ -120,7 +120,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
                 <IconCozTextStyle className="text-xxl" />
                 <p>{I18n.t('workflow_note_main_text')}</p>
               </div>
-              {/** 一级标题 */}
+              {/** first-level title */}
               <div
                 className={classNames(textItemClass, {
                   [textItemMarkedClass]: model.isBlockMarked(
@@ -134,7 +134,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
                 <IconCozH1 className="text-xxl" />
                 <p>{I18n.t('workflow_note_heading')} 1</p>
               </div>
-              {/** 二级标题 */}
+              {/** secondary title */}
               <div
                 className={classNames(textItemClass, {
                   [textItemMarkedClass]: model.isBlockMarked(
@@ -148,7 +148,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
                 <IconCozH2 className="text-xxl" />
                 <p>{I18n.t('workflow_note_heading')} 2</p>
               </div>
-              {/** 三级标题 */}
+              {/** third-level title */}
               <div
                 className={classNames(textItemClass, {
                   [textItemMarkedClass]: model.isBlockMarked(
@@ -173,7 +173,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
 
         <div className={separatorClass} />
 
-        {/** 粗体 */}
+        {/** bold */}
         <Tooltip
           content={I18n.t('workflow_note_bold')}
           mouseEnterDelay={tooltipDelay}
@@ -192,7 +192,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           </span>
         </Tooltip>
 
-        {/** 斜体 */}
+        {/** Italic */}
         <Tooltip
           content={I18n.t('workflow_note_italic')}
           mouseEnterDelay={tooltipDelay}
@@ -211,7 +211,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           </span>
         </Tooltip>
 
-        {/** 下划线 */}
+        {/** underline */}
         <Tooltip
           content={I18n.t('workflow_note_underline')}
           mouseEnterDelay={tooltipDelay}
@@ -230,7 +230,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           </span>
         </Tooltip>
 
-        {/** 删除线 */}
+        {/** Strikethrough */}
         <Tooltip
           content={I18n.t('workflow_note_strikethrough')}
           mouseEnterDelay={tooltipDelay}
@@ -251,7 +251,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
 
         <div className={separatorClass} />
 
-        {/** 无序列表 */}
+        {/** unordered list */}
         <Tooltip
           content={I18n.t('workflow_note_bulleted_list')}
           mouseEnterDelay={tooltipDelay}
@@ -270,7 +270,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           </span>
         </Tooltip>
 
-        {/** 有序列表 */}
+        {/** ordered list */}
         <Tooltip
           content={I18n.t('workflow_note_numbered_list')}
           mouseEnterDelay={tooltipDelay}
@@ -289,7 +289,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           </span>
         </Tooltip>
 
-        {/** 引用 */}
+        {/** quote */}
         <Tooltip
           content={I18n.t('workflow_note_quote')}
           mouseEnterDelay={tooltipDelay}
@@ -310,7 +310,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
 
         <div className={separatorClass} />
 
-        {/** 链接 */}
+        {/** link */}
         <Tooltip
           content={I18n.t('workflow_note_hyperlink')}
           mouseEnterDelay={tooltipDelay}
@@ -346,7 +346,7 @@ export const CommentToolbar: FC<ICommentToolbar> = props => {
           // cp-disable-next-line
           placeholder="https://"
           style={{
-            // 这里需要覆盖样式，tailwind class优先级不够高
+            // Overlay style is needed here, tailwind class priority is not high enough
             backgroundColor: '#fff',
             display: 'flex',
             alignItems: 'center',

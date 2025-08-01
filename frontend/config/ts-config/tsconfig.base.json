@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "module": "CommonJS",
     "noFallthroughCasesInSwitch": true,
-    // 这个普遍反馈会让代码变得啰嗦，暂定遵循原本 bot 的设置，关闭
+    // This general feedback will make the code verbose, tentatively follow the original bot's settings, close
     "noImplicitReturns": false,
     "removeComments": false,
     "resolveJsonModule": true,

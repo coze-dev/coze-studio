@@ -21,7 +21,7 @@ import {
   type FlowNodeRegister,
 } from '@flowgram-adapter/fixed-layout-editor';
 /**
- * 无 BlockOrderIcon 的分支节点
+ * BlockOrderIcon-free branch nodes
  */
 export const Split: FlowNodeRegister = {
   type: 'split',
@@ -29,11 +29,11 @@ export const Split: FlowNodeRegister = {
   onBlockChildCreate(
     originParent: FlowNodeEntity,
     blockData: FlowNodeJSON,
-    addedNodes: FlowNodeEntity[] = [], // 新创建的节点都要存在这里
+    addedNodes: FlowNodeEntity[] = [], // All newly created nodes must exist here
   ) {
     const { document } = originParent;
     const parent = document.getNode(`$inlineBlocks$${originParent.id}`);
-    // 块节点会生成一个空的 Block 节点用来切割 Block
+    // The block node will generate an empty block node to cut the block.
     const proxyBlock = document.addNode({
       id: `$block$${blockData.id}`,
       type: FlowNodeBaseType.BLOCK,

@@ -30,7 +30,7 @@ export const getPreferInteractiveType = () => {
   return IS_MAC_OS ? InteractiveType.Pad : InteractiveType.Mouse;
 };
 
-/** 记录选择的交互模式 */
+/** Record the selected interaction mode */
 export const setPreferInteractiveType = (type: InteractiveType) => {
   localStorage.setItem(CACHE_KEY, type);
 };

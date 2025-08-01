@@ -77,29 +77,29 @@ export class HttpChunkService {
     this.chatSdkEventBus = chatSdkEventBus;
   }
   /**
-   * 处理channel监听到的事件
+   * Handle events listened to by the channel
    */
   onHttpChunkEvents() {
     this.httpChunk.on(
       HttpChunkEvents.FETCH_START,
       this.handleHttpChunkFetchStart,
     );
-    // 读取流
+    // read stream
     this.httpChunk.on(
       HttpChunkEvents.MESSAGE_RECEIVED,
       this.handleHttpChunkMessageReceived,
     );
-    // 整体拉流成功
+    // Overall flow success
     this.httpChunk.on(
       HttpChunkEvents.ALL_SUCCESS,
       this.handleHttpChunkStreamSuccess,
     );
-    // 开始读取流
+    // Start reading stream
     this.httpChunk.on(
       HttpChunkEvents.READ_STREAM_START,
       this.handleHttpChunkReadStreamStart,
     );
-    // fetch阶段异常, 还没到读流阶段
+    // Fetch phase exception, not yet reached the read stream phase
     this.httpChunk.on(
       HttpChunkEvents.FETCH_ERROR,
       this.handleHttpChunkFetchError,
@@ -108,7 +108,7 @@ export class HttpChunkService {
       HttpChunkEvents.READ_STREAM_ERROR,
       this.handleReadStreamError,
     );
-    // 包间超时
+    // Private room timeout
     this.httpChunk.on(
       HttpChunkEvents.BETWEEN_CHUNK_TIMEOUT,
       this.handleHttpChunkTimeout,
@@ -130,7 +130,7 @@ export class HttpChunkService {
       ackMessage?.extra_info || receiveMessage.chunk.message.extra_info;
 
     let pullingStatus: PullingStatus = 'pulling';
-    // 判断是否是final answer
+    // Is it the final answer?
     if (this.chunkProcessor.isMessageAnswerEnd(chunk)) {
       pullingStatus = 'answerEnd';
     }
@@ -148,7 +148,7 @@ export class HttpChunkService {
       .eventNames()
       .includes(SdkEventsEnum.MESSAGE_RECEIVED_AND_UPDATE);
 
-    // 判断接收到的消息是否已经存在
+    // Determine whether the received message already exists
     if (this.chunkProcessor.isFirstReplyMessage(chunk)) {
       this.reportEventsTracer?.pullStreamTracer?.receiveFirstAnsChunk(
         local_message_id,
@@ -189,7 +189,7 @@ export class HttpChunkService {
     });
   };
 
-  // 读取流异常
+  // read stream exception
   private handleReadStreamError = (errorInfo: ErrorInfo) => {
     const {
       ext: {
@@ -212,7 +212,7 @@ export class HttpChunkService {
     const stashedAckMessage =
       this.chunkProcessor.getAckMessageByLocalMessageId(local_message_id);
 
-    // 读取流异常，要区分在首包接受到了么
+    // The read stream is abnormal, do you want to distinguish between receiving it in the first package?
     if (!stashedAckMessage) {
       this.preSendLocalMessageEventsManager.emit(
         PreSendLocalMessageEventsEnum.MESSAGE_SEND_FAIL,
@@ -221,7 +221,7 @@ export class HttpChunkService {
       return;
     }
 
-    // 如果是发送消息成功，则表示是拉流阶段失败
+    // If the message is sent successfully, it means that the pull phase failed.
     if (stashedAckMessage) {
       this.chatSdkEventEmit(SdkEventsEnum.MESSAGE_PULLING_STATUS, {
         name: SdkEventsEnum.MESSAGE_PULLING_STATUS,
@@ -240,7 +240,7 @@ export class HttpChunkService {
     });
   };
 
-  // fetch异常，还没到拉流阶段
+  // Fetch is abnormal, it has not yet reached the pull flow stage
   private handleHttpChunkFetchError = (errorInfo: ErrorInfo) => {
     const {
       ext: {

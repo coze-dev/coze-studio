@@ -22,9 +22,9 @@ import { Tag } from '@coze-arch/coze-design';
 import { useGlobalState } from '../../../hooks';
 
 /*
-  区分单人模式和协作模式。
-  单人模式：只要发布过，就显示已发布；
-  协作模式： 显示当前状态 草稿｜ 提交 ｜ 发布
+  Distinguish between single-player mode and collaborative mode.
+  Single-player mode: as long as it has been published, it shows that it has been published;
+  Collaboration Mode: Display current status, draft | submit | publish
 */
 export const PublishStatus = () => {
   const { info, config } = useGlobalState();

@@ -121,7 +121,7 @@ export const ImageKnowledgeWorkspace: FC<
     setCurrentPhotoId,
     reload: reloadAsync,
     onCancel: () => {
-      // 重置url参数
+      // Reset url parameters
       resetUrlQueryParams();
     },
     onSubmit: () => {
@@ -129,12 +129,12 @@ export const ImageKnowledgeWorkspace: FC<
     },
   });
 
-  // 手动控制 data 加载时机
+  // Manually control data loading timing
   useEffect(() => {
     if (dataSetDetail?.dataset_id) {
       reloadAsync();
 
-      // 重新加载时，回到最顶部
+      // When reloading, return to the top
       ref.current?.scrollTo?.({
         top: 0,
         behavior: 'smooth',
@@ -142,7 +142,7 @@ export const ImageKnowledgeWorkspace: FC<
     }
   }, [searchValue, photoFilterValue, dataSetDetail?.dataset_id]);
 
-  // 自动打开编辑弹窗
+  // Automatically open the editing pop-up window
   useEffect(() => {
     if (shouldAutoOpenDetailModal) {
       if (firstAutoOpenEditDocumentId) {
@@ -182,10 +182,10 @@ export const ImageKnowledgeWorkspace: FC<
                   caption: originCaption,
                   status: originStatus,
                 } = item;
-                // 此处使用 progressMap 可以保持不断刷新直至完成
+                // Use progressMap here to keep refreshing until completion
                 // @ts-expect-error -- linter-disable-autofix
                 const status = progressMap[document_id]?.status || originStatus;
-                // 使用 progressMap 获取最新的caption
+                // Use progressMap to get the latest caption
                 const caption =
                   // @ts-expect-error -- linter-disable-autofix
                   (progressMap[document_id] as ProgressItem & PhotoInfo)
@@ -202,11 +202,11 @@ export const ImageKnowledgeWorkspace: FC<
 
                 const handleDelete = () => {
                   UIModal.error({
-                    // 必填参数，统一 confirm modal 的样式
+                    // Required parameters to confirm modal style
                     className: styles['confirm-modal'],
                     closeIcon: <IconCloseKnowledge />,
 
-                    // 自定义参数
+                    // custom parameters
                     title: I18n.t('kl2_007'),
                     content: I18n.t(
                       'dataset_detail_table_deleteModel_description',
@@ -247,7 +247,7 @@ export const ImageKnowledgeWorkspace: FC<
                 const isAudiFailed =
                   originStatus === DocumentStatus.AuditFailed;
                 const getCaption = () => {
-                  // 违规图片
+                  // Illegal pictures
                   if (isAudiFailed) {
                     return (
                       <span>
@@ -256,7 +256,7 @@ export const ImageKnowledgeWorkspace: FC<
                     );
                   }
 
-                  // 处理失败
+                  // Processing failed
                   if (status === DocumentStatus.Failed) {
                     return (
                       <span className={styles['failed-tag']}>
@@ -265,7 +265,7 @@ export const ImageKnowledgeWorkspace: FC<
                     );
                   }
 
-                  // 处理中
+                  // Processing
                   if (status === DocumentStatus.Processing) {
                     return (
                       <span className={styles['processing-tag']}>
@@ -274,12 +274,12 @@ export const ImageKnowledgeWorkspace: FC<
                     );
                   }
 
-                  // 已标注
+                  // marked
                   if (hasCaption) {
                     return caption;
                   }
 
-                  // 未标注
+                  // unmarked
                   return I18n.t('knowledge_photo_016');
                 };
 
@@ -295,7 +295,7 @@ export const ImageKnowledgeWorkspace: FC<
                       ) : (
                         <Image
                           src={url}
-                          // 仅设置宽度，高度会按图片原比例自动缩放
+                          // Only set the width, and the height will be automatically scaled according to the original scale of the picture.
                           width={222}
                           preview={false}
                           onClick={handleEdit}

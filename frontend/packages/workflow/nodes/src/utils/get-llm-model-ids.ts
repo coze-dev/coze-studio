@@ -22,7 +22,7 @@ import {
 import { type WorkflowNodeRegistry } from '@coze-workflow/base';
 
 /**
- * 根据node meta中定义的getLLMModelIdsByNodeJSON方法获取大模型id
+ * Get the large model id according to the getLLMModelIdsByNodeJSON method defined in node meta
  * @param nodeJSON
  * @param ids
  * @param document
@@ -56,7 +56,7 @@ function getLLMModelIdsByNodeJSON(
 }
 
 /**
- * 获取模型ids
+ * Get model ids
  * @param json
  * @param document
  * @returns

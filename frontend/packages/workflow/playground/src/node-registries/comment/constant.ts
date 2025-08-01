@@ -15,13 +15,13 @@
  */
  
 /* eslint-disable @typescript-eslint/naming-convention -- todo */
-/** 备注默认尺寸 */
+/** Remarks Default size */
 export const CommentDefaultSize = {
   width: 240,
   height: 150,
 };
 
-/** 备注默认值 */
+/** Remarks Default value */
 export const CommentDefaultNote = JSON.stringify([
   {
     type: 'paragraph',

@@ -39,7 +39,7 @@ export class EncapsulateFormValidator
   }
 
   async validate(node: WorkflowNodeEntity, result: EncapsulateValidateResult) {
-    // 注释节点不需要校验
+    // Note nodes do not require validation
     if (
       [StandardNodeType.Comment].includes(node.flowNodeType as StandardNodeType)
     ) {

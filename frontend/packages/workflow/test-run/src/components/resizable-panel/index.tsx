@@ -56,7 +56,7 @@ export interface ResizablePanelRef {
 const MIN_HEIGHT = 156;
 
 /**
- * TODO: 这里的核心伸缩能力后面想换成 semi 的 Resizable，这里先临时写一些逻辑适配
+ * TODO: The core telescopic ability here wants to be replaced by semi Resizable later. Here are some temporary logical adaptations.
  */
 export const ResizablePanel = forwardRef<
   ResizablePanelRef,
@@ -95,7 +95,7 @@ export const ResizablePanel = forwardRef<
     const handleMouseMove = useCallback(
       e => {
         if (isResizing.current) {
-          const newHeight = startHeight.current - (e.clientY - startY.current); // 计算新的高度
+          const newHeight = startHeight.current - (e.clientY - startY.current); // Calculate the new height
           setHeight(newHeight > MIN_HEIGHT ? newHeight : MIN_HEIGHT);
         }
       },
@@ -103,17 +103,17 @@ export const ResizablePanel = forwardRef<
     );
     const handleMouseUp = useCallback(() => {
       isResizing.current = false;
-      document.removeEventListener('mousemove', handleMouseMove); // 取消监听
-      document.removeEventListener('mouseup', handleMouseUp); // 取消监听
+      document.removeEventListener('mousemove', handleMouseMove); // Cancel listening
+      document.removeEventListener('mouseup', handleMouseUp); // Cancel listening
     }, [handleMouseMove]);
 
     const handleMouseDown = useCallback(
       e => {
         isResizing.current = true;
-        startY.current = e.clientY; // 记录鼠标开始拖拽时的 Y 轴坐标
+        startY.current = e.clientY; // Record the Y-axis coordinates when the mouse starts dragging
         startHeight.current = innerRef.current?.offsetHeight || 0;
-        document.addEventListener('mousemove', handleMouseMove); // 监听鼠标移动事件
-        document.addEventListener('mouseup', handleMouseUp); // 监听鼠标抬起事件
+        document.addEventListener('mousemove', handleMouseMove); // Monitor mouse movement events
+        document.addEventListener('mouseup', handleMouseUp); // Monitor mouse lift events
       },
       [handleMouseMove, handleMouseUp],
     );

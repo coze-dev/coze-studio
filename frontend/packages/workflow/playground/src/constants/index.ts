@@ -29,32 +29,32 @@ export const WORKFLOW_CONTENT_ID = 'workflow-content';
 export const SYSTEM_PROMPT_PANEL = 'system-prompt-panel';
 
 export enum LayoutPanelKey {
-  /** 节点表单 */
+  /** Node Form */
   NodeForm = 'node-form',
-  /** 试运行流程表单 */
+  /** Practice running process forms */
   TestFlowForm = 'test-flow-form',
-  /** 试运行 chatflow */
+  /** Practice running chatflow */
   TestChatFlowForm = 'test-chat-flow-form',
-  /** 日志列表 */
+  /** log list */
   TraceList = 'trace-list',
-  /** 日志详情 */
+  /** log details */
   TraceDetail = 'trace-detail',
-  /** 角色配置 */
+  /** role configuration */
   RoleConfig = 'role-config',
 }
 
 /**
- * 依赖来源类型
+ * dependent source type
  */
 export enum DependencySourceType {
-  /** 数据库 */
+  /** database */
   DataBase = 'database',
-  /** 知识库 */
+  /** Knowledge Base */
   DataSet = 'dataset',
-  /** 大模型 */
+  /** Large model */
   LLM = 'llm',
-  /** 插件 */
+  /** plugin */
   Plugin = 'plugin',
-  /** 工作流 */
+  /** Workflow */
   Workflow = 'workflow',
 }

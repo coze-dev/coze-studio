@@ -48,8 +48,8 @@ import styles from './index.module.less';
 const TEST_RUN_FILE_NAME_KEY = 'x-wf-file_name';
 
 /**
- * 生成文件 url 并添加文件名参数。
- * 当文件为非必填时，应返回 undefined
+ * Generate the file URL and add the file name parameter.
+ * When a file is not required, it should return undefined.
  */
 const getFormatFileUrl = (curFile: FileItem) => {
   const originUrl = curFile?.url;
@@ -173,13 +173,13 @@ export const FileBaseAdapter: React.FC<BaseFileProps> = props => {
 
   const handleChange = usePersistCallback(val => onChange?.(val));
 
-  // 当fileList更新时，触发onChange
+  // When the fileList is updated, onChange is triggered.
   useUpdateEffect(() => {
     const newVal = getSubmitValue();
     handleChange?.(newVal);
   }, [fileList]);
 
-  // 当表单值更新时，同步到fileList
+  // When the form value is updated, sync to fileList
   useEffect(() => {
     const val = getSubmitValue();
     if (val !== value) {

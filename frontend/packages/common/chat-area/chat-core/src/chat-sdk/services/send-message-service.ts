@@ -66,7 +66,7 @@ export class SendMessageService {
   }
 
   /**
-   * 发送resume消息
+   * Send resume message
    */
   resumeMessage(message: Message<ContentType>, options?: SendMessageOptions) {
     const mergedOptions: SendMessageMergedOptions = {
@@ -92,7 +92,7 @@ export class SendMessageService {
   }
 
   /**
-   * 发送消息
+   * Send message
    */
   async sendMessage(
     message: Message<ContentType>,
@@ -134,7 +134,7 @@ export class SendMessageService {
   }
 
   /**
-   * 发送图片消息
+   * Send picture message
    */
   private async sendImageMessage(
     message: PreSendLocalMessage<ContentType.Image>,
@@ -150,7 +150,7 @@ export class SendMessageService {
   }
 
   /**
-   * 发送文件消息
+   * Send file message
    * @param message
    * @param options
    * @private
@@ -169,7 +169,7 @@ export class SendMessageService {
   }
 
   /**
-   * 发送文本消息
+   * Send a text message
    */
   private async sendTextMessage(
     message: PreSendLocalMessage<ContentType.Text>,
@@ -181,26 +181,26 @@ export class SendMessageService {
   }
 
   /**
-   * 上传图片&文件上传事件完成
+   * Upload image & file upload event complete
    */
   private onUploadEventFinish<T extends ContentType.Image | ContentType.File>(
     message: PreSendLocalMessage<T>,
     sendMessageOptions?: SendMessageOptions,
   ): Promise<PreSendLocalMessage<T>> {
     return new Promise((resolve, reject) => {
-      // 如果是重新生成消息，直接返回
+      // If it is to regenerate the message, return it directly.
       if (sendMessageOptions?.isRegenMessage) {
         resolve(message);
         return;
       }
-      // 根据 message_id 查询是否已经上传完成
+      // According to message_id, check whether the upload has been completed
       const stashedLocalMessage =
         this.preSendLocalMessageEventsManager.getStashedLocalMessage(
           message.extra_info.local_message_id,
         ) as PreSendLocalMessage<T>;
       if (stashedLocalMessage?.file_upload_result) {
         if (stashedLocalMessage?.file_upload_result === 'success') {
-          // todo 改成直接 resolve message，stashed 不应存入全量 request，容易引起误会
+          // Todo is changed to directly resolve message, stashed should not be stored in the full amount of requests, which is easy to cause misunderstandings
           resolve(message);
           return;
         }
@@ -214,7 +214,7 @@ export class SendMessageService {
         return;
       }
 
-      // 消息上传完成
+      // Message upload complete
       this.preSendLocalMessageEventsManager.on(
         PreSendLocalMessageEventsEnum.FILE_UPLOAD_STATUS_CHANGE,
         (preSendLocalMessage: Message<ContentType>) => {
@@ -241,9 +241,9 @@ export class SendMessageService {
   }
 
   /**
-   * httpChunk 发送消息事件模式改为 await 模式
-   * @param message 最终要发送给服务端的消息格式
-   * @param options 发送消息配置
+   * HttpChunk send message event mode changed to await mode
+   * @Param message The final message format to be sent to the server
+   * @Param options send message configuration
    */
   private sendChannelMessage(
     message: SendMessage,
@@ -282,7 +282,7 @@ export class SendMessageService {
         headers,
         requestScene: RequestScene.SendMessage,
       });
-      // 监听消息发送成功
+      // The monitor message was sent successfully.
       this.preSendLocalMessageEventsManager.once(
         PreSendLocalMessageEventsEnum.MESSAGE_SEND_SUCCESS,
         (receiveMessage: Message<ContentType>) => {
@@ -307,7 +307,7 @@ export class SendMessageService {
           resolve(receiveMessage);
         },
       );
-      // 监听消息发送失败
+      // Listening message sending failed
       this.preSendLocalMessageEventsManager.once(
         PreSendLocalMessageEventsEnum.MESSAGE_SEND_FAIL,
         (error: ChatCoreError) => {

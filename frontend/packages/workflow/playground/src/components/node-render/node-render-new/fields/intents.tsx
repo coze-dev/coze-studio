@@ -15,7 +15,7 @@
  */
  
 /**
- * 意图识别节点，选项组件渲染
+ * Intent to identify nodes, option component rendering
  */
 
 import { INTENT_NODE_MODE } from '@coze-workflow/nodes';

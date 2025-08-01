@@ -15,8 +15,8 @@
  */
  
 /**
- * 从 @flow-devops/observation-components copy
- * 暂不去理解其中逻辑
+ * From @flow-devops/observation-components copy
+ * I don't understand the logic yet.
  */
 export { TraceTree } from './trace-tree';
 export { TraceFlameThread } from './trace-flame-thread';

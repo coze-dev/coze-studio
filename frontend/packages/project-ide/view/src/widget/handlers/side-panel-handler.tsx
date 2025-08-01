@@ -22,7 +22,7 @@ import { Panel, BoxLayout, BoxPanel, PanelLayout } from '../../lumino/widgets';
 export const SidePanelHandlerFactory = Symbol('SidePanelHandlerFactory');
 
 /**
- * 侧边栏分级面板 handler
+ * Sidebar grading panel handler
  */
 @injectable()
 export class SidePanelHandler {

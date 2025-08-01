@@ -18,12 +18,12 @@ import pkg from '../package.json';
 
 type AssetsType = 'cmaps' | 'pdf.worker';
 
-// 这里需要写 bnpm 已经发布的版本
+// Here you need to write the version that bnpm has released.
 //
 const DEFAULT_VERSION = '0.1.0-alpha.x6e892414ec';
 
 /**
- * 该方法用于生产 unpkg 环境的 worker & cmaps 链接，注意并非 pdfjs 原生方法
+ * This method is used to produce the worker & cmaps link of the unpkg environment. Note that it is not a native method of pdfjs
  */
 export const generatePdfAssetsUrl = (assets: AssetsType) => {
   const { name } = pkg;

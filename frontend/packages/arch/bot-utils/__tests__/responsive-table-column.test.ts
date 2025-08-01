@@ -15,13 +15,13 @@
  */
  
 /*
- 表格单元格宽度适配
- 当 width 小于 WidthThresholds.Small 时应该返回 ColumnSize.Default。
- 当 width 大于等于 WidthThresholds.Small 但小于 WidthThresholds.Medium 时应该返回 ColumnSize.Small。
- 当 width 大于等于 WidthThresholds.Medium 但小于 WidthThresholds.Large 时应该返回 ColumnSize.Medium。
- 当 width 大于等于 WidthThresholds.Large 时应该返回 ColumnSize.Large。
- 当 minWidth 为 'auto' 时应该返回 'auto'。
- 当 minWidth 是一个指定数字时，应该返回 minWidth 和 columnWidth 中较大的一个。*/
+ Table cell width adaptation
+ ColumnSize. Default should be returned when width is less than WidthThresholds. Small.
+ ColumnSize. Small should be returned when width is greater than or equal to WidthThresholds. Small but less than WidthThresholds. Medium.
+ ColumnSize. Medium should be returned when width is greater than or equal to WidthThresholds. Medium but less than WidthThresholds. Large.
+ ColumnSize. Large should be returned when width is greater than or equal to WidthThresholds. Large.
+ 'Auto 'should be returned when minWidth is'auto'.
+ When minWidth is a specified number, the larger of minWidth and columnWidth should be returned.*/
 
 import { describe, it, expect } from 'vitest';
 

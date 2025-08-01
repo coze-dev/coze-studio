@@ -27,30 +27,30 @@ import {
 import { type UserLabelInfo } from '../user-label';
 
 /**
- * 样式主题
- * @deprecated 考虑替换实现方式，目前使用不够灵活
+ * style theme
+ * @Deprecated Consider alternative implementations, currently not flexible enough
  */
 export type MessageBoxTheme =
-  /** 主题色 */
+  /** theme color */
   | 'primary'
-  /** 白色背景 */
+  /** White Background */
   | 'whiteness'
   /**
-   * 灰色背景
+   * Grey background
    */
   | 'grey'
-  /** home用的炫彩底色 */
+  /** Colorful base colors for home use */
   | 'colorful'
-  /** 官方通知，有彩色边框 */
+  /** Official notice with colored borders */
   | 'color-border'
-  /** 官方通知，有彩色边框，但是不留 padding */
+  /** Official notice, with colored borders, but no padding. */
   | 'color-border-card'
   | 'border'
   | 'none';
 
 interface MessageBoxBasicProps {
   /**
-   * 用户信息
+   * user information
    */
   senderInfo: {
     userUniqueName?: string;
@@ -60,77 +60,77 @@ interface MessageBoxBasicProps {
     userLabel?: UserLabelInfo | null;
   };
   /**
-   * 消息 id
+   * Message ID
    */
   messageId: string | null;
 
   showUserInfo?: boolean;
   /**
-   * 主题
+   * theme
    */
   theme?: MessageBoxTheme;
   /**
-   * 插入消息的footer
+   * Insert the footer of the message
    */
   renderFooter?: (refreshContainerWidth: () => void) => React.ReactNode;
-  /** 鼠标悬浮时展示的组件 */
+  /** Components displayed while the mouse is hovering */
   hoverContent?: ReactNode;
   /**
-   * 左侧插槽
+   * Left Slot
    */
   right?: React.ReactNode;
   /**
-   * 右上角插槽
+   * Upper right slot
    */
   topRightSlot?: React.ReactNode;
   getBotInfo: GetBotInfo;
   /**
-   * 是否是移动端
+   * Is it a mobile end?
    */
   layout?: Layout;
   classname?: string;
 
   messageBubbleWrapperClassname?: string;
-  messageBoxWraperClassname?: string; // message box的直接父亲样式
-  messageBubbleClassname?: string; // message消息气泡的样式
-  messageErrorWrapperClassname?: string; // message错误的父亲样式
-  isHoverShowUserInfo?: boolean; // hover的时候是否显示用户详细信息
+  messageBoxWraperClassname?: string; // Direct father style of message box
+  messageBubbleClassname?: string; // Message The style of the message bubble
+  messageErrorWrapperClassname?: string; // Message wrong father style
+  isHoverShowUserInfo?: boolean; // Whether to display user details when hovering
 
   showBackground?: boolean;
   /**
-   * 容器动态宽度，用于动态计算图片尺寸
+   * Container dynamic width for dynamically calculating image dimensions
    */
   imageAutoSizeContainerWidth?: number;
   /**
-   * 是否启用图片自适应模式
+   * Whether to enable picture adaptation mode
    */
   enableImageAutoSize?: boolean;
   /**
-   * 事件回调
+   * event callback
    */
   eventCallbacks?: IEventCallbacks;
   /**
-   * 针对 JS Error 的响应
+   * Response to JS Error
    */
   onError?: (error: unknown) => void;
 }
 
-/** 只是套壳，内容由 children 呈现 */
+/** It's just a shell, the content is presented by children */
 export interface MessageBoxShellProps extends MessageBoxBasicProps {
   children: React.ReactNode;
 }
 
-/** 含有完整内置实现的 MessageBox */
+/** MessageBox with full built-in implementation */
 export interface NormalMessageBoxProps extends MessageBoxBasicProps {
   /**
-   * 消息体
+   * message body
    */
   message: IMessage;
   /**
-   * 文件需要用到的必备参数
+   * Required parameters for the file
    */
   contentConfigs?: IContentConfigs;
-  /** 样式主题 */
+  /** style theme */
   theme?: MessageBoxTheme;
   footer?: ReactNode;
   readonly?: boolean;
@@ -147,11 +147,11 @@ export interface MessageBoxWrapProps {
   showUserInfo?: boolean;
   renderFooter?: (refreshContainerWidth: () => void) => React.ReactNode;
 
-  /** 鼠标悬浮时展示的组件 */
+  /** Components displayed while the mouse is hovering */
   hoverContent?: React.ReactNode;
   right?: React.ReactNode;
   /**
-   * 右上角插槽
+   * Upper right slot
    */
   topRightSlot?: React.ReactNode;
   messageId: string | null;
@@ -160,11 +160,11 @@ export interface MessageBoxWrapProps {
   contentTime: number | undefined;
   classname?: string;
 
-  messageBoxWraperClassname?: string; // message box的直接父亲样式
-  messageBubbleClassname?: string; // message消息气泡的样式
-  messageBubbleWrapperClassname?: string; // message消息气泡的父亲样式
-  messageErrorWrapperClassname?: string; // message错误的父亲样式
-  isHoverShowUserInfo?: boolean; // hover的时候是否显示用户详细信息
+  messageBoxWraperClassname?: string; // Direct father style of message box
+  messageBubbleClassname?: string; // Message The style of the message bubble
+  messageBubbleWrapperClassname?: string; // Message message bubble father style
+  messageErrorWrapperClassname?: string; // Message wrong father style
+  isHoverShowUserInfo?: boolean; // Whether to display user details when hovering
 
   showBackground?: boolean;
   extendedUserInfo?: {
@@ -172,16 +172,16 @@ export interface MessageBoxWrapProps {
     userUniqueName?: string;
   };
   /**
-   * 容器动态宽度，用于动态计算图片尺寸
+   * Container dynamic width for dynamically calculating image dimensions
    */
   imageAutoSizeContainerWidth?: number;
   /**
-   * 是否启用图片自适应模式
+   * Whether to enable picture adaptation mode
    */
   enableImageAutoSize?: boolean;
   eventCallbacks?: IEventCallbacks;
   /**
-   * 针对 JS Error 的响应
+   * Response to JS Error
    */
   onError?: (error: unknown) => void;
 }

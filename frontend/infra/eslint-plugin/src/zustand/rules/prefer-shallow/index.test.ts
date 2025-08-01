@@ -25,7 +25,7 @@ ruleTester.run('prefer-shallow', preferShallow, {
     'new Foo()',
     'useShallowedFooStore()',
     'useFooStore((s) => s.value)',
-    'useFooStore(selector)', // 暂时豁免
+    'useFooStore(selector)', // Temporary exemption
     'useShallowFooStore(() => ({}))',
     'useFooStore(useShallow(() => ({})))',
     'useFooStore(useShallow(() => ([])))',

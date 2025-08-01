@@ -29,20 +29,20 @@ import { type StandardNodeType } from '@coze-workflow/base';
 import { Port } from '../port';
 
 /**
- * 异常端口
+ * abnormal port
  */
 export function ExceptionPort() {
   const node = useCurrentEntity();
   const portsData = node.getData<WorkflowNodePortsData>(WorkflowNodePortsData);
 
   useEffect(() => {
-    // 动态端口的节点
+    // Nodes for dynamic ports
     if (isSettingOnErrorDynamicPort(node.flowNodeType as StandardNodeType)) {
       portsData.updateDynamicPorts();
       return;
     }
 
-    // 静态端口的节点
+    // Node on static port
     portsData.updateStaticPorts([
       { type: 'input' },
       { type: 'output', portID: 'default' },

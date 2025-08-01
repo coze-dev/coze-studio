@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState, useRef, useEffect } from 'react';
 
 import classnames from 'classnames';
@@ -72,7 +72,7 @@ const UploadContent: FC<{
         },
       )}
       style={{
-        // @ts-expect-error ts 无法识别自定义变量
+        // @ts-expect-error ts cannot recognize custom variable
         '--var-percent': `${file.percent}%`,
       }}
     >
@@ -152,7 +152,7 @@ const FileUpload: FC<
         percent: 0,
         status: 'uploading',
       });
-      // 立即清理错误状态
+      // Immediately clean up the error state
       fieldApi.setError(true);
       uidRef.current = newFile?.uid;
       uploadFile?.({
@@ -188,7 +188,7 @@ const FileUpload: FC<
           if (uidRef.current !== newFile.uid) {
             return;
           }
-          // 上传失败，触发错误状态
+          // Upload failed, error status triggered
           fieldApi.setError(false);
           setFile({
             ...newFile,
@@ -221,13 +221,13 @@ const FileUpload: FC<
           }
         }}
         customRequest={({ onSuccess }) => {
-          // 即使 action="" ，在不传 customRequest 仍然会触发一次向当前 URL 上传文件的请求
-          // 这里传一个 mock customRequest 来阻止 semi 默认的上传行为
+          // Even if action = ", a request to upload a file to the current URL will still be triggered without customRequest
+          // Here is a mock customRequest to prevent semi default upload behavior
           onSuccess('');
         }}
         showUploadList={false}
         onChange={({ currentFile }) => {
-          // semi 同一个文件会触发多次 onChange，这里只响应首个
+          // Semi The same file will trigger multiple onChanges, only the first one is responded here
           if (
             uidRef.current !== currentFile.uid &&
             (!props.maxSize ||
@@ -247,7 +247,7 @@ const FileUpload: FC<
               setFile(undefined);
               onChange?.('');
               setTimeout(() => {
-                // 删除文件，清理错误状态避免立刻飘红
+                // Delete files, clean up error states to avoid immediate redness
                 fieldApi.setError(true);
               });
             }}
@@ -295,17 +295,17 @@ const FileInput: FC<
   </>
 );
 
-// 为了方便控制向外传递的 value
+// To facilitate control of the value passed outward
 const UploadInner = withField((props: UploadProps) => {
   const [showInput, setShowInput] = useState(false);
   const hasError = props.validateStatus === 'error';
   const fieldApi = useFieldApi(props.name);
 
-  // 避免清空输入导致的飘红
+  // Avoid flushing red caused by empty input
   useEffect(() => {
     setTimeout(() => {
       props.onChange?.('');
-      // 避免 onchange 触发校验导致立刻飘红
+      // Avoid onchange triggering verification and causing immediate redness
       setTimeout(() => {
         fieldApi.setError(true);
       });

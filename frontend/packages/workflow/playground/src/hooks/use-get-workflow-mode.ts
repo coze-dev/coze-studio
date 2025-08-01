@@ -15,7 +15,7 @@
  */
  
 /**
- * 这个 hooks 用来快速判断 workflow 的类型
+ * This hooks are used to quickly determine the type of workflow
  */
 
 import { useEntity } from '@flowgram-adapter/free-layout-editor';

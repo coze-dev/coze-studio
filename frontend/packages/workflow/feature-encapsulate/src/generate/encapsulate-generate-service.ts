@@ -41,7 +41,7 @@ import {
 } from './types';
 
 /**
- * 封装生成服务，产生workflow相关的json数据
+ * Encapsulate the generation service and generate json data related to workflow
  */
 @injectable()
 export class EncapsulateGenerateServiceImpl
@@ -61,7 +61,7 @@ export class EncapsulateGenerateServiceImpl
   private encapsulateContext: EncapsulateContext;
 
   /**
-   * 生成workflow的json
+   * Generate json for workflow
    * @param nodes
    * @param options
    * @returns
@@ -75,7 +75,7 @@ export class EncapsulateGenerateServiceImpl
     const json = await this.workflowDocument.toJSON();
     const nodeIds = nodes.map(node => node.id);
 
-    // step 1: 生成json
+    // Step 1: Generate JSON
     const defaultJSON = this.defaultJSON();
     const startNode = defaultJSON.nodes.find(
       node => node.type === StandardNodeType.Start,
@@ -88,7 +88,7 @@ export class EncapsulateGenerateServiceImpl
       throw new Error('start or end node not found');
     }
 
-    // step 2: 生成封装节点的json
+    // Step 2: Generate JSON for encapsulated nodes
     const parentId = getNodesParentId(nodes);
     const parentNodes =
       parentId === 'root'
@@ -107,14 +107,14 @@ export class EncapsulateGenerateServiceImpl
         nodeIds.includes(edge.targetNodeID),
     );
 
-    // step 3: 将 start end 连接到封装节点
+    // Step 3: Connect the start end to the encapsulation node
     const { startEdges, endEdges } = this.generateStartEndEdges(
       startNode,
       endNode,
       ports,
     );
 
-    // step 4: 更新start end 的位置
+    // Step 4: Update the start end position
     if (options?.startEndRects) {
       setNodePositionByRect(startNode, options.startEndRects.start);
       setNodePositionByRect(endNode, options.startEndRects.end);
@@ -130,7 +130,7 @@ export class EncapsulateGenerateServiceImpl
       ],
     };
 
-    // step 5: 更新变量引用关系
+    // Step 5: Update variable reference relationships
     const vars = this.encapsulateVariableService.getEncapsulateVars(nodes);
     workflowJSON = this.encapsulateVariableService.updateVarsInEncapsulateJSON(
       workflowJSON,
@@ -140,7 +140,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 生成子流程节点
+   * Generate subprocess nodes
    * @param param0
    * @returns
    */
@@ -169,7 +169,7 @@ export class EncapsulateGenerateServiceImpl
   };
 
   /**
-   * 生成开始结束边
+   * Generate start end edge
    * @param startNode
    * @param endNode
    * @param ports
@@ -211,7 +211,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 默认的工作流json
+   * Default workflow json
    */
   private defaultJSON() {
     return {
@@ -222,7 +222,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 生成开始节点
+   * Generate start node
    */
   private generateStartNode() {
     return {
@@ -239,7 +239,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 生成结束节点
+   * end node generation
    */
   private generateEndNode() {
     return {
@@ -256,7 +256,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 获取节点的元数据
+   * Get the node's metadata
    */
   private getTemplateNodeMeta(type: StandardNodeType) {
     const template = this.encapsulateContext.getNodeTemplate(type);
@@ -271,7 +271,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 查找子工作流对应的json
+   * Find the json corresponding to the child workflow
    * @param nodeJSONs
    * @param parentId
    * @returns
@@ -285,7 +285,7 @@ export class EncapsulateGenerateServiceImpl
   }
 
   /**
-   * 查找子画布对应的节点
+   * Find the node corresponding to the child canvas
    * @param subCanvasId
    * @returns
    */

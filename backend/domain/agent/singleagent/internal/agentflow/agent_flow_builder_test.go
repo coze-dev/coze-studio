@@ -70,7 +70,7 @@ func TestBuildAgent(t *testing.T) {
 	// 					PluginID: 999,
 	// 					Operation: &pluginEntity.Openapi3Operation{
 	// 						OperationID: "get_user_salary",
-	// 						Summary:     "了解用户的月收入情况",
+	// 						Summary: "Understand the monthly income of users",
 	// 						Parameters: openapi3.Parameters{
 	// 							{
 	// 								Value: &openapi3.Parameter{
@@ -126,7 +126,7 @@ func TestBuildAgent(t *testing.T) {
 	// 							RawContent: []*knowledgeEntity.SliceContent{
 	// 								{
 	// 									Type: knowledgeEntity.SliceContentTypeText,
-	// 									Text: ptr.Of("learn computer science, become software developer, 月薪 2W 左右"),
+	// 									Text: ptr. Of ("learn computer science, become software developer, monthly salary is about 2W"),
 	// 								},
 	// 							},
 	// 						},
@@ -168,7 +168,7 @@ func TestBuildAgent(t *testing.T) {
 	// 				KnowledgeInfo: []*bot_common.KnowledgeInfo{
 	// 					{
 	// 						Id:   ptr.Of("777"),
-	// 						Name: ptr.Of("赚钱指南：根据你的个人兴趣、个人条件规划职业发展路径，达成所需的赚钱目标"),
+	// 						Name: ptr. Of ("Making Money Guide: Plan a career development path according to your personal interests and personal conditions to achieve the desired earning goals"),
 	// 					},
 	// 				},
 	// 			},

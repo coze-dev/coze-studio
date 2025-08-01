@@ -71,7 +71,7 @@ const getChildren = (
     }
   }, []);
 
-/** 兜底情况，如果 idp 的结果没有标题，则补上标题 */
+/** Bottom line, if the result of idp has no title, add the title */
 export const withTitle = (
   segments: LevelDocumentChunk[],
   title?: string,

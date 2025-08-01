@@ -10,12 +10,6 @@ RUN apk add --no-cache git gcc libc-dev
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
-
-COPY docker/proxy ./proxy
-
-# Build the proxy application
-RUN go build -ldflags="-s -w" -o /app/proxy_app ./proxy/proxy.go
-
 # Copy the entire backend source code
 COPY backend/ ./
 
@@ -31,7 +25,7 @@ WORKDIR /app
 # Install runtime dependencies for Go app and base for Python
 # pax-utils for scanelf, python3 for running Python, python3-dev for headers/shared libs
 # bind-tools for nslookup etc., file for debugging file types
-RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno
+RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno curl
 
 # Install Python build dependencies, create venv, install packages, then remove build deps
 RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
@@ -50,7 +44,6 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
 
 # Copy the built Go binary from the builder stage
 COPY --from=builder /app/opencoze /app/opencoze
-COPY --from=builder /app/proxy_app /app/proxy
 
 # Copy Python application scripts
 COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
@@ -74,13 +67,14 @@ ENV PATH="/app/.venv/bin:${PATH}"
 RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
     find /app/.venv/bin -type f -exec chmod +x {} \;
 
-# Ensure Go binaries are executable
-RUN chmod +x /app/opencoze /app/proxy
 
 EXPOSE 8888
 
 # Use a script to start both applications
 COPY backend/script/bootstrap.sh /app/bootstrap.sh
-RUN chmod +x /app/bootstrap.sh
+COPY docker/volumes/elasticsearch/setup_es.sh /app/setup_es.sh
+COPY docker/volumes/elasticsearch/es_index_schema /app/es_index_schemas
+
+RUN chmod +x /app/bootstrap.sh /app/setup_es.sh
 
 CMD ["/app/bootstrap.sh"]

@@ -80,7 +80,7 @@ const ActionComponent = (props: {
     <span className="action-placeholder file-selector"></span>
   );
 
-  // 当前整棵树是多选 并且 只能选中叶子结点
+  // At present, the entire tree is multi-selected, and only leaf nodes can be selected
   if (multiple && onlySelectLeaf) {
     return isLeaf && !unCheckable ? (
       <>
@@ -94,7 +94,7 @@ const ActionComponent = (props: {
     );
   }
 
-  // 当前整棵树是多选 并且 能选中所有结点
+  // The current entire tree is multi-selected, and all nodes can be selected
   if (multiple && !onlySelectLeaf) {
     if (unCheckable) {
       return (
@@ -111,7 +111,7 @@ const ActionComponent = (props: {
     );
   }
 
-  // 当前整棵树是单选 并且 只能选中叶子结点
+  // The current entire tree is radio-selected, and only leaf nodes can be selected
   if (!multiple && onlySelectLeaf) {
     return isLeaf && !unCheckable ? (
       <>
@@ -126,7 +126,7 @@ const ActionComponent = (props: {
     );
   }
 
-  // 当前整棵树是单选 并且 能选中所有结点
+  // The current entire tree is radio-selected, and all nodes can be selected
   if (!multiple && !onlySelectLeaf) {
     if (unCheckable) {
       return (
@@ -195,12 +195,12 @@ const LabelContent = (props: {
 
 /**
  * -----------------------------
- * 获取默认的文件树 label renderer 这层不感知平台信息
+ * Get the default file tree label renderer layer that is not platform aware
  * -----------------------------
- * @param {boolean} multiple 是否多选
- * @param {boolean} onlySelectLeaf 是否只能选中叶子结点
- * @param {{indentSize: 树组件缩进尺寸, expandIcon: 树组件可展开节点 展开图标, disableSelect: 选择的 disable 状态}} renderOption 渲染相关的自定义选项
- * @returns label render 函数
+ * @param {boolean} multiple or not
+ * @param {boolean} onlySelectLeaf Whether only leaf nodes can be selected
+ * @param {{indentSize: tree component indent size, expandIcon: tree component expandable node, expand icon, disableSelect: selected disabled state}} renderOption Render-related customization options
+ * @Returns label rendering function
  */
 export function useDefaultLabelRenderer(
   multiple: boolean,
@@ -243,10 +243,10 @@ export function useDefaultLabelRenderer(
     }`;
 
   /**
-   * 在整行点击的处理函数 不是点击 checkbox 或者 radio 或者 expandIcon 的处理函数
-   * @param isLeaf: 是否是叶子结点
-   * @param onExpand: 展开行 处理函数
-   * @param onCheck: 选中状态的 toggle
+   * The handler that clicks on the entire line, not the handler that clicks on checkbox or radio or expandIcon
+   * @Param isLeaf: whether it is a leaf node
+   * @Param onExpand: expand the line, handle function
+   * @param onCheck: toggle in selected state
    **/
   const getItemAction = (params: {
     isLeaf: boolean;
@@ -256,8 +256,8 @@ export function useDefaultLabelRenderer(
   }) => {
     const { onExpand, onCheck, isLeaf, unCheckable } = params;
     return function (e: React.MouseEvent<Element, MouseEvent>) {
-      // 如果只能选中叶子结点 那么无论 多选 / 单选 父节点只能展开，叶子结点可以选中
-      // 反之 父节点子节点 都是选中 无论多选单选，想要展开就点击 expand icon
+      // If only the leaf node can be selected, then no matter whether it is multi-select/single-select, the parent node can only be expanded, and the leaf node can be selected
+      // On the contrary, the parent node sub-node is selected, regardless of the multi-select radio, if you want to expand, click the expand icon.
       if (onlySelectLeaf) {
         if (!isLeaf) {
           onExpand(e);
@@ -301,14 +301,14 @@ export function useDefaultLabelRenderer(
       readonly,
       unCheckable = false,
     } = data;
-    // 单选选中选项的 key
+    // Radio select the key of the selected option
     const singleSelectCheckStatus = singleSelectedKey === key;
     const rowCheckStatus = multiple
       ? checkStatus
       : {
           checked: singleSelectCheckStatus,
         };
-    // 只要 data isLeaf 不是空 永远先看 data.isLeaf
+    // As long as data isLeaf is not empty, always look at data.isLeaf first
     const isLeaf = data?.isLeaf ?? !(data.children && data.children.length);
     const checkItem = multiple
       ? (e: React.MouseEvent<Element, MouseEvent>) => {

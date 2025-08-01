@@ -41,11 +41,11 @@ export function findInputVariable(
     nodePart: string;
     globalVariableKey: string;
     /**
-     * 流程变量字段名
+     * Process variable field name
      */
     fieldPart: string;
     /**
-     * 全局变量字段名
+     * Global variable field name
      */
     parsedKeyPath: string[];
   },
@@ -137,12 +137,12 @@ export function getVariableRanges(state: EditorState) {
 }
 
 /**
- * 将字符串路径转换为键路径数组
- * - 输入: `["Ob+.\".j"]["child"]`
- * - 输出: ['Ob+.".j', 'child']
+ * Convert string path to key path array
+ * - Enter: '["Ob +.\" .j "] [" child "]'
+ * - Output: ['Ob +. ".j', 'child']
  */
 export function convertStrPathToKeyPath(str: string): string[] {
-  // 去除字符串两端的方括号
+  // Remove square brackets at both ends of string
   str = str.slice(2, -2);
   const parts = str.split('"]["');
 
@@ -163,7 +163,7 @@ export function getOptionInfoFromDOM(
     return;
   }
 
-  // 获取所有的选项元素
+  // Get all option elements
   const foundNodes = root.querySelectorAll(classNames ?? '.semi-list-item');
 
   if (foundNodes.length === 0) {
@@ -172,7 +172,7 @@ export function getOptionInfoFromDOM(
 
   const optionElements = [...foundNodes];
 
-  // 找到当前高亮的选项
+  // Find the currently highlighted option
   const selectedIndex = optionElements.findIndex(element =>
     element.classList.contains(SELECTED_OPTION_CLASSNAME),
   );
@@ -223,7 +223,7 @@ export function getVariableInfoFromExpression(expression: string): {
   nodeId: string;
   nodeName: string;
   /**
-   * 包含 . 的变量名，仅用于流程变量
+   * Variable names containing., used only for process variables
    */
   nodeNameWithDot: string;
   fieldPart: string;
@@ -239,11 +239,11 @@ export function getVariableInfoFromExpression(expression: string): {
   let fieldKeyPath;
   let parsedKeyPath;
 
-  // block_output_ 为流程变量特化前缀，由 block-output_ 转换来
+  // block_output_ specialised prefix for process variables, converted from block-output_
   let matches = expression.match(
     `^(${TRANS_WORKFLOW_VARIABLE_SOURCE}\\d+)\\.?`,
   );
-  // 全局变量格式 {{global_variable_app["aaa"]["bbb"]}}
+  // Global variable format {{global_variable_app ["aaa"] ["bbb"]}}
   allGlobalVariableKeys?.forEach((varKey: string) => {
     const globalVariableRegexStr = `^(${varKey})`;
     const curMatch = expression.match(globalVariableRegexStr);

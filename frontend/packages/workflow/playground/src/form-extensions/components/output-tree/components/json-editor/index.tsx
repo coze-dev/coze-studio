@@ -112,7 +112,7 @@ export const JSONEditor: FC<JSONEditorProps> = props => {
     }
   };
 
-  // 同步 value 和 schema
+  // Synchronizing values and schemas
   useEffect(() => {
     const handler = async () => {
       const _schema = await convert(value);

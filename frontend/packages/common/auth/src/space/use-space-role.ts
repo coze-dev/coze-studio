@@ -20,7 +20,7 @@ import { useSpace } from '@coze-arch/foundation-sdk';
 import { useSpaceAuthStore } from './store';
 
 export function useSpaceRole(spaceId: string) {
-  // 获取space信息，已有hook。
+  // Get space information, there are hooks.
   const space = useSpace(spaceId);
 
   if (!space) {

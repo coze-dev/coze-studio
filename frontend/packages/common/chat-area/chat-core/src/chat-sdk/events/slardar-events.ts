@@ -18,23 +18,23 @@ import { type ReportLog, type Tracer } from '../../report-log';
 import type { ChatCoreError } from '../../custom-error';
 
 /**
- * 承接所有 sdk 的 slardar 自定义事件
+ * Undertake all sdk slardar custom events
  */
 export enum SlardarEvents {
-  // sdk初始化，用于数据统计
+  // SDK initialization for data statistics
   SDK_INIT = 'chat_sdk_init',
-  // 上传失败
+  // Upload failed.
   SDK_MESSAGE_UPLOAD_FAIL = 'chat_sdk_message_upload_fail',
-  // 打断消息
+  // interrupt message
   SDK_BREAK_MESSAGE = 'chat_sdk_break_message',
-  // 消息发送链路监控
+  // messaging link monitoring
   SDK_MESSAGE_SEND_TRACER = 'chat_sdk_message_send_tracer',
-  // 拉流链路耗时监控
+  // Pull link time monitoring
   SDK_PULL_STREAM_TRACER = 'chat_sdk_pull_stream_tracer',
 }
 
 /**
- * slardar事件追踪
+ * Slardar Event Tracking
  */
 export class ReportEventsTracer {
   private reporter: ReportLog;
@@ -52,7 +52,7 @@ export class ReportEventsTracer {
   }
 
   /**
-   * 消息发送事件追踪
+   * Messaging Event Tracking
    */
   sendMessageTracer = {
     start: (local_message_id: string, meta?: Record<string, unknown>) => {
@@ -111,7 +111,7 @@ export class ReportEventsTracer {
   };
 
   /*
-   * 拉取流事件追踪
+   * Pull stream event tracking
    */
   pullStreamTracer = {
     start: (local_message_id: string, meta?: Record<string, unknown>) => {
@@ -139,7 +139,7 @@ export class ReportEventsTracer {
         local_message_id,
         SlardarEvents.SDK_PULL_STREAM_TRACER,
       );
-      // 打断算成功
+      // Interrupt is successful
       trace?.('success', {
         meta,
       });
@@ -202,14 +202,14 @@ export class ReportEventsTracer {
   };
 
   /**
-   * 组装获取唯一key
+   * Assemble to get unique key
    */
   static getUniqueKey(local_message_id: string, event: SlardarEvents): string {
     return `${local_message_id}_${event}`;
   }
 
   /**
-   * 根据local_message_id、event获取trace
+   * Get trace based on local_message_id, event
    */
   getTracer(local_message_id: string, event: SlardarEvents) {
     return (
@@ -222,7 +222,7 @@ export class ReportEventsTracer {
   }
 
   /**
-   * 根据local_message_id、event新增trace
+   * Add trace based on local_message_id and event
    */
   setTracer(
     local_message_id: string,
@@ -243,7 +243,7 @@ export class ReportEventsTracer {
   }
 
   /**
-   * 删除trace
+   * Delete trace
    */
   deleteTracer(local_message_id: string, event: SlardarEvents) {
     this.eventTracers.delete(
@@ -252,7 +252,7 @@ export class ReportEventsTracer {
   }
 
   /**
-   * 创建trace
+   * Create trace
    */
   createTracer(eventName: SlardarEvents) {
     return this.reporter.slardarTracer({

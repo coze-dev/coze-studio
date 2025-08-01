@@ -102,7 +102,7 @@ export const ExpandSheetEditor: FC<ExpandSheetEditorProps> = props => {
   const getConversationId = () => '';
   const getPromptContextInfo = useMemo(
     () => () => ({
-      // workflow 场景下 bot_id 不用传
+      // No need to pass bot_id workflow scenario
       botId: '',
       name,
       description: desc,

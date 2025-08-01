@@ -70,13 +70,13 @@ const useAgentSkillPluginSettingModalController = (
     },
     {
       refreshDeps: [commonParams],
-      // 即将支持，敬请期待
+      // Support soon, so stay tuned.
       ready: visible && FLAGS['bot.devops.plugin_mockset'],
     },
   );
 
-  // mock-set 支持设置禁用，端插件类型不支持
-  // 没有 response的 也不能 开启 mock-set
+  // mock-set support setting is disabled, end plug-in type is not supported
+  // If there is no response, you can't open mock-set.
   const isDisabledMockSet = useMemo(
     () => !responseData?.length || isCheckingResponse,
     [responseData, isCheckingResponse],

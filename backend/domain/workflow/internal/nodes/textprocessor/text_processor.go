@@ -87,7 +87,7 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 			return nil, fmt.Errorf("input string field must string type but got %T", valueString)
 		}
 		values := strings.Split(valueString, t.config.Separators[0])
-		// 对每个分隔符进行迭代处理
+		// Iterate over each delimiter
 		for _, sep := range t.config.Separators[1:] {
 			var tempParts []string
 			for _, part := range values {

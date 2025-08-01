@@ -25,11 +25,11 @@ import styles from './condition-item-logic.module.less';
 
 export interface ConditionItemLogicProps {
   /**
-   * 逻辑 And Or
+   * And Logic Or
    */
   logic: Logic;
   /**
-   * 逻辑 And Or change 回调
+   * And Or change the logic
    */
   onChange: (logic: Logic) => void;
   showStroke?: boolean;

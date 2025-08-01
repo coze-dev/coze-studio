@@ -49,28 +49,28 @@ export default function ParamOperator({
 }: ParamOperatorProps) {
   const isLimited = level >= 3;
 
-  // 是否可以添加子项
+  // Is it possible to add children?
   const canAddChild = !readonly && ObjectLikeTypes.includes(data.type);
-  // 子项按钮是否可用
+  // Is the child button available?
   const enableAddChildButton =
     !readonly && hasObjectLike && canAddChild && needRenderAppendChild;
-  // 是否显示删除按钮
+  // Whether to display the delete button
   const showDeleteButton = !readonly;
-  // 是否显示开启/关闭按钮
+  // Whether to display the on/off button
   const enabledSwitch = level === 0;
 
   const { variablePageCanEdit } = useVariableContext();
 
   return (
     <div className="flex items-center h-[24px] flex-shrink-0 justify-start gap-x-2 w-[130px]">
-      {/* 开启/关闭 */}
+      {/* Open/close */}
       <Switch
         size="small"
         disabled={!variablePageCanEdit || !enabledSwitch}
         checked={data.enabled}
         onChange={onEnabledChange}
       />
-      {/* 添加子项 */}
+      {/* Add child item */}
       {needRenderAppendChild ? (
         <div className="flex items-center justify-center">
           <Tooltip
@@ -89,7 +89,7 @@ export default function ParamOperator({
           </Tooltip>
         </div>
       ) : null}
-      {/* 删除 */}
+      {/* delete */}
       <IconButton
         data-testid={VariableE2e.VariableTreeDeleteBtn}
         color="secondary"

@@ -97,14 +97,14 @@ export const ResourceList = ({
     spaceId,
   );
 
-  // 存在版本信息，预览状态无法创建资源
+  // Version information exists, preview status cannot create resource
   if (commitVersion) {
     canCreate = false;
   }
 
   const projectRoles = useProjectRole(projectId);
   const hideMoreBtn = useMemo(
-    // 没有任何权限，或者存在版本信息，需要隐藏操作按钮
+    // There is no permission, or there is version information, you need to hide the operation button.
     () => (projectRoles?.length ?? 0) === 0 || !!commitVersion,
     [projectRoles, commitVersion],
   );
@@ -135,7 +135,7 @@ export const ResourceList = ({
         resourceTree={pluginResource}
         canCreate={canCreate}
         initLoaded={initLoaded}
-        // 业务实现
+        // business realization
         onChangeName={changeNamePlugin}
         onCustomCreate={createPlugin}
         onDelete={deletePlugin}
@@ -170,9 +170,9 @@ export const ResourceList = ({
               <div className="flex items-center">
                 {datasetIconMap[resource.biz_extend?.format_type]}
                 {/**
-                 * 1: 启用
-                 * 2: 删除，一般没有
-                 * 3: 禁用
+                 * 1: Enable
+                 * 2: Delete, generally not
+                 * 3: Disable
                  */}
                 {resource.biz_res_status === 3 ? (
                   <span className="ml-[3px]">已禁用</span>

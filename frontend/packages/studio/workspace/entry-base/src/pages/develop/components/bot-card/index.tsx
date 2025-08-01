@@ -53,7 +53,7 @@ export interface BotCardProps {
   intelligenceInfo: IntelligenceData;
   timePrefixType?: 'recentOpen' | 'publish' | 'edit';
   /**
-   * 返回 true 时会打断默认的跳转行为
+   * Returning true interrupts the default jump behavior
    */
   onClick?: (() => true) | (() => void);
   onDelete?: (param: {
@@ -128,7 +128,7 @@ export const BotCard: React.FC<BotCardProps> = ({
   };
 
   if (!id || !space_id) {
-    // id 和 space id 对 bot 卡片来说是必须的，这里约束一下 ts 类型
+    // The id and space id are necessary for the bot card. Here are the constraints on the ts type
     throw Error('No botID or no spaceID which are necessary');
   }
 
@@ -169,9 +169,9 @@ export const BotCard: React.FC<BotCardProps> = ({
     return formatDate(Number(timestamp), getFormatDateType(Number(timestamp)));
   }, [timePrefixType, publish_time, update_time, recently_open_time]);
 
-  // 是否展示 card 复层操作按钮
+  // Whether to display the card layering operation button
   const [showActions, setShowActions] = useState(false);
-  // 是否展示 menu 菜单，这里有其他组件主动调用，需要受控
+  // Whether to display the menu menu, there are other components actively calling here, which need to be controlled
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -211,20 +211,20 @@ export const BotCard: React.FC<BotCardProps> = ({
           }}
           data-testid="bot-list-page.bot-card"
         >
-          {/* 展示迁移失败状态 icon */}
+          {/* Display migration failure status icon */}
           {statusExtra}
 
-          {/* bot 基本信息 */}
+          {/* Bot basic information */}
           <div className="flex justify-between">
             <div className="flex flex-col gap-[4px] w-[calc(100%-76px)]">
               <div className="flex items-center gap-[4px]">
                 <Name name={name} />
                 {isBanned ? (
-                  // 如果失效了，高优展示失效 icon
+                  // If it fails, display the failure icon
                   <IconCozWarningCircleFill className="text-xxl coz-fg-hglt-red flex-shrink-0" />
                 ) : (
                   <>
-                    {/* 发布状态 icon */}
+                    {/* Publish status icon */}
                     {renderPublishStatusIcon()}
                     {headerExtra}
                   </>
@@ -240,10 +240,10 @@ export const BotCard: React.FC<BotCardProps> = ({
             />
           </div>
 
-          {/* 项目/智能体 */}
+          {/* Projects/Agents */}
           <IntelligenceTag intelligenceType={type} />
 
-          {/* bot 作者信息 */}
+          {/* Bot author information */}
           {!!owner_info && (
             <Creator
               avatar={owner_info.avatar_url}
@@ -252,7 +252,7 @@ export const BotCard: React.FC<BotCardProps> = ({
             />
           )}
 
-          {/* actions 浮层 action 浮层出现的时候下方有一个白色遮罩 */}
+          {/* Actions Floating layer action When the floating layer appears, there is a white mask below */}
           {!hideOperation ? (
             <>
               {showActions && actionsMenuVisible ? (
@@ -267,14 +267,14 @@ export const BotCard: React.FC<BotCardProps> = ({
               <div
                 className="absolute bottom-[16px] right-[16px] flex gap-[4px]"
                 onClick={e => {
-                  // 阻止 click 事件冒泡到 card 最外层
+                  // Prevent click events from bubbling to the outermost layer of the card
                   e.stopPropagation();
                 }}
               >
                 {showActions && actionsMenuVisible ? (
                   <>
                     {!isBanned ? (
-                      // 收藏 bot
+                      // Favorite bot
                       <FavoriteIconBtn
                         useButton
                         isVisible
@@ -295,7 +295,7 @@ export const BotCard: React.FC<BotCardProps> = ({
                         }}
                       />
                     ) : null}
-                    {/* 下拉菜单 */}
+                    {/* dropdown menu */}
                     <Menu
                       keepDOM
                       className="w-fit mt-4px mb-4px"
@@ -304,7 +304,7 @@ export const BotCard: React.FC<BotCardProps> = ({
                       visible={showMenu}
                       render={
                         <Menu.SubMenu mode="menu">
-                          {/* 复制 bot */}
+                          {/* Copy bot */}
                           {isAgent ? (
                             <MenuCopyBot
                               id={id}
@@ -330,7 +330,7 @@ export const BotCard: React.FC<BotCardProps> = ({
                             </Tooltip>
                           ) : null}
                           {extraMenu}
-                          {/* 删除 bot */}
+                          {/* Delete bot */}
                           <Tooltip
                             position="left"
                             trigger={can_delete ? 'custom' : 'hover'}
@@ -365,7 +365,7 @@ export const BotCard: React.FC<BotCardProps> = ({
                     </Menu>
                   </>
                 ) : is_fav && !isBanned ? (
-                  // 如果 bot 已经收藏了，非 hover 时展示 icon
+                  // If the bot has already been collected, display the icon when not hovering.
                   <IconButton
                     className="!pt-[20px]"
                     color="secondary"

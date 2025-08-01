@@ -131,7 +131,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = props => {
     mapOfShouldHidingDatabaseTableStructureTips,
     setMapOfShouldHidingDatabaseTableStructureTips,
   ] = useLocalStorageState<string | undefined>(
-    // FIXME: 此属性名意义不明确，处为了兼容，暂不修改此属性名，但后续需要使用更明确的命名
+    // FIXME: The meaning of this property name is unclear. For compatibility, this property name will not be modified for the time being, but a more explicit naming needs to be used in the future.
     'use-local-storage-state-modify-tips',
     {
       defaultValue: '',
@@ -181,9 +181,9 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = props => {
   const showEntry = isEntry && !isEdit && !NL2DBInfo;
   const shouldShowAIGenerate =
     /**
-     * 1. 入口不展示
-     * 2. 编辑态不展示
-     * 3. Excel导入时不展示
+     * 1. The entrance is not displayed
+     * 2. Editing status is not displayed
+     * 3. Excel is not displayed when importing
      */
     !showEntry && !isEdit && createType !== CreateType.excel;
 
@@ -280,8 +280,8 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = props => {
         })),
       });
 
-      // data 是初始值，此处需要手动 setState 更新子组件状态
-      // 若 Modal 已提前关闭，子组件卸载，则 ref 为空，需要加上可选链判断一下
+      // Data is the initial value, where you need to manually setState to update the subcomponent state
+      // If Modal has been closed early and the subassembly is uninstalled, the ref is empty. You need to add an optional chain to judge.
       tableStructureRef.current?.setTableFieldsList(
         // @ts-expect-error -- linter-disable-autofix
         res.bot_table_list[0].field_list.map(i => ({
@@ -562,7 +562,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = props => {
           onDeleteField={list => {
             setIsDeletedField(
               !database.tableMemoryList.every(i =>
-                // TODO: 当前field id生成规则有问题，故暂时使用 nanoid 替换
+                // TODO: There is a problem with the current field id generation rule, so the nanoid is temporarily replaced
                 list.find(j => j.nanoid === i.nanoid),
               ),
             );

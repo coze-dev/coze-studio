@@ -103,9 +103,9 @@ const useCreateEditResource = ({
 
   const [createResourceInfo, setCreateResourceInfo] = useState<{
     /**
-     * 用于定位渲染位置的 index
-     * 资源在文件夹后面，所有资源前面
-     * 文件夹在当前文件夹下最前面
+     * The index used to locate the render position
+     * Resources are behind folders and in front of all resources
+     * The folder is at the front of the current folder
      */
     index: number;
     parentId: IdType;
@@ -196,7 +196,7 @@ const useCreateEditResource = ({
     }
 
     /**
-     * 同名检测
+     * same name test
      */
     // if (editResourceRef.current) {
     //   const parentFolder = createResourceInfoRef.current
@@ -237,7 +237,7 @@ const useCreateEditResource = ({
 
     if (createResourceInfoRef?.current) {
       /**
-       * 新建资源
+       * new resource
        */
       const parentPath =
         resourceMap.current[createResourceInfoRef?.current?.parentId]?.path;
@@ -251,7 +251,7 @@ const useCreateEditResource = ({
       });
     } else if (editResourceRef?.current) {
       /**
-       * 编辑资源
+       * editing resources
        */
       const path = editResourceRef?.current?.path || [];
       const parentPath = path.slice(0, path?.length - 1);
@@ -287,7 +287,7 @@ const useCreateEditResource = ({
     }
 
     if (selectResource.type !== 'folder' && selectResource?.path) {
-      // 如果不是 folder 则选中父亲 folder
+      // If it is not a folder, select the parent folder.
       selectResource =
         resourceMap.current[
           selectResource.path[selectResource.path.length - 2]

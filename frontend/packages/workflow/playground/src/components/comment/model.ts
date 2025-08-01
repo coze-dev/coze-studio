@@ -66,12 +66,12 @@ export class CommentEditorModel {
     this.innerBlocks = CommentEditorDefaultBlocks as CommentEditorBlock[];
   }
 
-  /** 获取当前值 */
+  /** Get the current value */
   public get value(): string {
     return this.innerValue;
   }
 
-  /** 外部设置模型值 */
+  /** External setting model values */
   public setValue(newValue?: string): void {
     const value = newValue ?? CommentEditorDefaultValue;
     if (value === this.innerValue) {
@@ -90,12 +90,12 @@ export class CommentEditorModel {
     });
   }
 
-  /** 获取所有块 */
+  /** Get all blocks */
   public get blocks(): CommentEditorBlock[] {
     return this.innerBlocks;
   }
 
-  /** 获取编辑器 DOM 节点 */
+  /** Get editor DOM node */
   public get element(): HTMLDivElement | null {
     try {
       return ReactEditor.toDOMNode(this.editor, this.editor) as HTMLDivElement;
@@ -105,20 +105,20 @@ export class CommentEditorModel {
     }
   }
 
-  /** 注册命令 */
+  /** Register command */
   public registerCommand(command: CommentEditorCommand): this {
     this.commands.push(command);
     return this;
   }
 
-  /** 键盘事件 */
+  /** keyboard event */
   public keydown(
     event: Parameters<KeyboardEventHandler<HTMLDivElement>>[0],
   ): void {
     const { ctrlKey, metaKey, shiftKey, key } = event;
-    // 使用 ctrlKey 或 metaKey 作为统一的修饰键检查
+    // Use ctrlKey or metaKey as a unified modifier key check
     const modifierKey = ctrlKey || metaKey;
-    // 遍历所有注册的命令
+    // Iterate through all registered commands
     const matchedCommands = this.commands
       .filter(command => command.key === key)
       .filter(
@@ -137,7 +137,7 @@ export class CommentEditorModel {
     });
   }
 
-  /** 粘贴事件 */
+  /** paste event */
   public paste(event: ClipboardEvent<HTMLDivElement>): void {
     const fragment = event.clipboardData.getData(
       'application/x-slate-fragment',
@@ -151,12 +151,12 @@ export class CommentEditorModel {
       return;
     }
     if (this.isBlockMarked(CommentEditorBlockFormat.ListItem)) {
-      // 清除列表格式，防止粘贴场景下列表嵌套
+      // Clear list format to prevent nesting of lists under paste scenes
       this.markBlock(CommentEditorBlockFormat.Paragraph);
     }
   }
 
-  /** 注册事件 */
+  /** Register an event */
   public on<T extends CommentEditorEvent>(
     event: T,
     callback: (params: CommentEditorEventParams<T>) => void,
@@ -167,7 +167,7 @@ export class CommentEditorModel {
     };
   }
 
-  /** 编辑器聚焦/失焦 */
+  /** Editor Focus/Out of Focus */
   public setFocus(focused: boolean): void {
     if (focused && !this.focused) {
       ReactEditor.focus(this.editor);
@@ -178,9 +178,9 @@ export class CommentEditorModel {
     }
   }
 
-  /** 选择末尾 */
+  /** Select end */
   public selectEnd(): void {
-    // 获取编辑器中的所有节点
+    // Get all nodes in the editor
     const nodes = Array.from(
       Editor.nodes(this.editor, {
         at: [],
@@ -188,34 +188,34 @@ export class CommentEditorModel {
       }),
     );
 
-    // 如果没有节点，直接返回
+    // If there is no node, return directly
     if (nodes.length === 0) {
       return;
     }
 
-    // 获取最后一个块级节点的路径
+    // Get the path to the last block-level node
     const lastNodeEntry = nodes[nodes.length - 1];
     const lastPath = lastNodeEntry[1];
 
-    // 获取最后一个节点的末尾点
+    // Get the end point of the last node
     const endPoint = Editor.end(this.editor, lastPath);
 
-    // 创建一个新的范围，起点和终点都是最后一个节点的末尾
+    // Create a new range, starting and ending at the end of the last node
     const range: Range = {
       anchor: endPoint,
       focus: endPoint,
     };
 
-    // 将选择设置为新创建的范围
+    // Set the selection to the newly created range
     Transforms.select(this.editor, range);
   }
 
-  /** 获取聚焦状态 */
+  /** Get focus status */
   public get focused(): boolean {
     return ReactEditor.isFocused(this.editor);
   }
 
-  /** 数据变更事件 */
+  /** data change event */
   public async fireChange(): Promise<void> {
     const isAstChange = this.editor.operations.some(
       op => 'set_selection' !== op.type,
@@ -233,11 +233,11 @@ export class CommentEditorModel {
     }
   }
 
-  /** 标记块 */
+  /** tag block */
   public markBlock(format: CommentEditorBlockFormat): void {
     const isMarked = this.isBlockMarked(format);
     const isListBlock = CommentEditorListBlockFormat.includes(format);
-    // 清空父级存在的块
+    // Empty parent existing blocks
     Transforms.unwrapNodes<CommentEditorNode>(this.editor, {
       match: n =>
         !Editor.isEditor(n) &&
@@ -249,11 +249,11 @@ export class CommentEditorModel {
     });
     const getBlockType = () => {
       if (isMarked) {
-        // 重置为段落
+        // Reset to paragraph
         return CommentEditorBlockFormat.Paragraph;
       }
       if (isListBlock) {
-        // 列表块重置为列表项
+        // List block is reset to list item
         return CommentEditorBlockFormat.ListItem;
       }
       return format;
@@ -278,7 +278,7 @@ export class CommentEditorModel {
     }
   }
 
-  /** 块是否标记 */
+  /** Is the block marked? */
   public isBlockMarked(format: CommentEditorBlockFormat): boolean {
     const { selection } = this.editor;
     if (!selection) {
@@ -297,7 +297,7 @@ export class CommentEditorModel {
     return !!match;
   }
 
-  /** 标记叶子 */
+  /** Mark leaves */
   public markLeaf(
     format: CommentEditorLeafFormat,
     value: boolean | string = true,
@@ -310,13 +310,13 @@ export class CommentEditorModel {
     }
   }
 
-  /** 叶子是否标记 */
+  /** Are the leaves marked? */
   public isLeafMarked(format: CommentEditorFormat): boolean {
     const marks = Editor.marks(this.editor);
     return !!marks && !!marks[format];
   }
 
-  /** 获取叶子值 */
+  /** Get leaf value */
   public getLeafValue(
     format: CommentEditorFormat,
   ): boolean | string | undefined {
@@ -324,7 +324,7 @@ export class CommentEditorModel {
     return marks?.[format];
   }
 
-  /** 设置叶子值 */
+  /** Set leaf value */
   public setLeafValue(
     format: CommentEditorFormat,
     value: boolean | string = true,
@@ -332,7 +332,7 @@ export class CommentEditorModel {
     Editor.addMark(this.editor, format, value);
   }
 
-  /** 清除当前块的所有格式 */
+  /** Clear all formatting of the current block */
   public clearFormat(): void {
     Object.values(CommentEditorLeafFormat).forEach(format => {
       Editor.removeMark(this.editor, format);
@@ -340,7 +340,7 @@ export class CommentEditorModel {
     this.markBlock(CommentEditorBlockFormat.Paragraph);
   }
 
-  /** 获取块文本 */
+  /** Get block text */
   public getBlockText(): {
     text: string;
     before: string;
@@ -349,53 +349,53 @@ export class CommentEditorModel {
     const { selection } = this.editor;
     const emptyResult = { text: '', before: '', after: '' };
 
-    // 如果不存在光标，返回空结果
+    // If no cursor exists, return an empty result
     if (!selection?.anchor) {
       return emptyResult;
     }
 
-    // 获取当前块级元素
+    // Get the current block-level element
     const entry = Editor.above(this.editor, {
       match: (n): boolean =>
         SlateElement.isElement(n) && Editor.isBlock(this.editor, n),
     });
 
-    // 如果没有找到块级元素，返回空结果
+    // If no block-level elements are found, an empty result is returned
     if (!entry) {
       return emptyResult;
     }
 
     const [block, path] = entry;
 
-    // 确保 block 是 Element 类型
+    // Make sure the block is an Element type
     if (!SlateElement.isElement(block)) {
       return emptyResult;
     }
 
-    // 获取完整文本
+    // Get the full text
     const text = SlateNode.string(block);
 
-    // 创建一个范围从块的开始到当前光标位置
+    // Create a range from the beginning of the block to the current cursor position
     const beforeRange = {
       anchor: Editor.start(this.editor, path),
       focus: selection.anchor,
     };
 
-    // 获取光标前的文本
+    // Get the text in front of the cursor
     const before = Editor.string(this.editor, beforeRange);
 
-    // 计算光标后的文本
+    // Calculate the text after the cursor
     const after = text.slice(before.length);
 
     return { text, before, after };
   }
 
-  /** 创建编辑器 */
+  /** Create editor */
   private createEditor(): ReactEditor {
     return this.withInsertBreak(withReact(withHistory(createEditor())));
   }
 
-  /** 是否初始化 */
+  /** Whether to initialize */
   private get initialized(): boolean {
     return (
       Array.isArray(this.editor.children) && this.editor.children.length > 0
@@ -403,43 +403,43 @@ export class CommentEditorModel {
   }
 
   /**
-   * 同步编辑器实例内容
-   * > **NOTICE:** *为确保不影响性能，应仅在外部值变更导致编辑器值与模型值不一致时调用*
+   * Synchronize editor instance content
+   * > ** NOTICE: ** * To ensure that performance is not affected, it should only be called when an external value change causes the editor value to be inconsistent with the model value.
    */
   private syncEditorValue(): void {
     if (!this.initialized) {
-      // 未初始化时 Slate DOM 未创建，无需主动同步，否则 Slate 会报错找不到 DOM
+      // Slate DOM is not created when not initialized, no active synchronization is required, otherwise Slate will report an error and cannot find the DOM.
       return;
     }
     try {
       Editor.withoutNormalizing(this.editor, () => {
-        // 删除所有现有内容
+        // Delete all existing content
         Transforms.delete(this.editor, {
           at: {
             anchor: Editor.start(this.editor, []),
             focus: Editor.end(this.editor, []),
           },
         });
-        // 确保选区在文档开始
+        // Make sure the selection is at the beginning of the document
         Transforms.select(this.editor, Editor.start(this.editor, []));
-        // 插入新的空白文档
-        // 直接设置编辑器的 children
+        // Insert a new blank document
+        // Set the children of the editor directly
         this.editor.children = this.blocks as unknown as Descendant[];
       });
     } catch (error) {
-      // Slate 内部可能存在 DOM 处理错误，不会影响外部使用
+      // There may be DOM handling errors inside Slate, which will not affect external use
       console.error('@CommentEditorModel::SyncEditorValue::Error', error);
     }
   }
 
-  /** 插入换行 */
+  /** Insert newline */
   private withInsertBreak(editor: ReactEditor): ReactEditor {
     const { insertBreak } = editor;
 
     editor.insertBreak = () => {
       const { selection } = editor;
 
-      // 如果没有选择或选择不是折叠的，执行默认的换行操作
+      // If there is no selection or the selection is not collapsed, perform the default line wrapping operation
       if (!selection || !Range.isCollapsed(selection)) {
         insertBreak();
         return;
@@ -451,7 +451,7 @@ export class CommentEditorModel {
 
       const { after } = this.getBlockText();
 
-      // 如果没有找到块或者不在行尾，执行默认的换行操作
+      // If no block is found or not at the end of the line, perform the default line break
       if (!result || after !== '') {
         insertBreak();
         return;
@@ -460,13 +460,13 @@ export class CommentEditorModel {
       const [node, path] = result;
       const blockType = (node as unknown as CommentEditorBlock).type;
 
-      // 执行原本的换行操作
+      // Execute the original line feed
       insertBreak();
 
-      // 获取新插入的块的路径
+      // Get the path to the newly inserted block
       const newPath = SlatePath.next(path);
 
-      // 只有在非列表和非引用的情况下才清除格式
+      // Clear formatting only if it is not a list or a reference
       const shouldClearFormat = ![
         CommentEditorBlockFormat.NumberedList,
         CommentEditorBlockFormat.BulletedList,
@@ -478,23 +478,23 @@ export class CommentEditorModel {
         this.clearFormatAtPath(newPath);
       }
 
-      // 确保光标在新行的开始
+      // Make sure the cursor is at the beginning of a new line
       Transforms.select(editor, Editor.start(editor, newPath));
     };
 
     return editor;
   }
 
-  /** 清除指定路径的块级格式和内联格式 */
+  /** Clears the block-level and internal connection formats of the specified path */
   private clearFormatAtPath(path: SlatePath): void {
-    // 选中指定路径的整个块
+    // Select the entire block of the specified path
     Transforms.select(this.editor, path);
 
-    // 使用现有的 clearFormat 方法清除格式
+    // Use the existing clearFormat method to clear the format
     this.clearFormat();
   }
 
-  /** 数据变更事件 */
+  /** data change event */
   private change(): void {
     this.innerBlocks = this.editor.children as unknown as CommentEditorBlock[];
     const value = this.serialize(this.innerBlocks);
@@ -508,7 +508,7 @@ export class CommentEditorModel {
     });
   }
 
-  /** 单选事件 */
+  /** radio event */
   private select(): void {
     const { selection } = this.editor;
     if (!selection) {
@@ -521,7 +521,7 @@ export class CommentEditorModel {
     this.emitter.emit(CommentEditorEvent.Select, {});
   }
 
-  /** 多选事件 */
+  /** multiple choice event */
   private multiSelect(): void {
     const { selection } = this.editor;
     if (!selection) {
@@ -534,12 +534,12 @@ export class CommentEditorModel {
     this.emitter.emit(CommentEditorEvent.MultiSelect, {});
   }
 
-  /** 序列化 */
+  /** Serialization */
   private serialize(blocks: CommentEditorBlock[]): string | undefined {
     return CommentEditorParser.toJSON(blocks);
   }
 
-  /** 反序列化 */
+  /** deserialization */
   private deserialize(value?: string): CommentEditorBlock[] | undefined {
     return CommentEditorParser.fromJSON(value);
   }

@@ -22,7 +22,7 @@ import '@testing-library/jest-dom';
 
 import { TableView } from '../../../src/components/table-view';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('ahooks', () => ({
   useDebounceFn: fn => ({
     run: fn,
@@ -125,7 +125,7 @@ vi.mock('../../../src/components/table-view/edit-menu', () => ({
     ) : null,
 }));
 
-// 模拟样式
+// simulation style
 vi.mock('../../../src/components/table-view/index.module.less', () => ({
   default: {
     'data-table-view': 'data-table-view-class',
@@ -196,7 +196,7 @@ describe('TableView 组件', () => {
   test('当启用虚拟滚动时应渲染AutoSizer', () => {
     render(<TableView {...defaultProps} isVirtualized={true} />);
 
-    // 由于我们模拟了AutoSizer，我们可以检查UITable是否接收了正确的props
+    // Since we simulate AutoSizer, we can check if UITable receives the correct props.
     const uiTable = screen.getByTestId('ui-table');
     expect(uiTable).toBeInTheDocument();
   });
@@ -204,23 +204,23 @@ describe('TableView 组件', () => {
   test('当启用行选择时应传递rowSelection属性', () => {
     render(<TableView {...defaultProps} rowSelect={true} />);
 
-    // 由于我们模拟了UITable，我们无法直接检查rowSelection属性
-    // 但我们可以检查表格是否正确渲染
+    // Since we simulate UITable, we cannot directly check the rowSelection property
+    // But we can check if the table is rendered correctly.
     expect(screen.getByTestId('ui-table')).toBeInTheDocument();
   });
 
   test('当启用列伸缩时应传递resizable属性', () => {
     render(<TableView {...defaultProps} resizable={true} />);
 
-    // 由于我们模拟了UITable，我们无法直接检查resizable属性
-    // 但我们可以检查表格是否正确渲染
+    // Since we simulate UITable, we cannot directly check the resizable property
+    // But we can check if the table is rendered correctly.
     expect(screen.getByTestId('ui-table')).toBeInTheDocument();
   });
 
   test('当滚动到底部时应调用scrollToBottom回调', () => {
     render(<TableView {...defaultProps} isVirtualized={true} />);
 
-    // 模拟滚动事件
+    // simulated rolling event
     act(() => {
       const onScrollProp = vi.fn();
       onScrollProp({
@@ -231,25 +231,25 @@ describe('TableView 组件', () => {
       });
     });
 
-    // 由于我们模拟了useDebounceFn，scrollToBottom会被立即调用
-    // 但由于我们无法直接触发onScroll回调，这个测试实际上并不能验证scrollToBottom是否被调用
-    // 这里只是为了测试代码覆盖率
+    // Since we emulated useDebounceFn, scrollToBottom will be called immediately
+    // But since we can't directly trigger the onScroll callback, this test doesn't actually verify that scrollToBottom was called
+    // This is just to test code coverage
   });
 
   test('应该正确处理右键菜单', () => {
     render(<TableView {...defaultProps} rowOperation={true} />);
 
-    // 模拟右键点击
+    // Simulated right click
     const firstRow = screen.getByTestId('row-0');
     const firstCell = firstRow.querySelector('td');
 
     if (firstCell) {
-      // 模拟右键点击
+      // Simulated right click
       fireEvent.contextMenu(firstCell);
 
-      // 检查菜单是否显示
-      // 注意：由于我们无法直接触发onCell.onMouseDown，这个测试实际上并不能验证菜单是否显示
-      // 这里只是为了测试代码覆盖率
+      // Check if the menu is displayed
+      // Note: Since we cannot directly trigger onCell.onMouseDown, this test does not actually verify that the menu is displayed
+      // This is just to test code coverage
     }
   });
 
@@ -258,14 +258,14 @@ describe('TableView 组件', () => {
       <TableView {...defaultProps} rowSelect={true} />,
     );
 
-    // 初始状态下工具栏不应显示
+    // The toolbar should not be displayed in the initial state
     expect(screen.queryByTestId('edit-toolbar')).not.toBeInTheDocument();
 
-    // 模拟选择行
-    // 注意：由于我们无法直接设置selected状态，这个测试实际上并不能验证工具栏是否显示
-    // 这里只是为了测试代码覆盖率
+    // Simulate select row
+    // Note: Since we can't set the selected state directly, this test doesn't actually verify that the toolbar is displayed
+    // This is just to test code coverage
 
-    // 重新渲染组件
+    // Rerender component
     rerender(<TableView {...defaultProps} rowSelect={true} />);
   });
 
@@ -273,11 +273,11 @@ describe('TableView 组件', () => {
     const ref = React.createRef();
     render(<TableView {...defaultProps} ref={ref} />);
 
-    // 检查ref是否包含正确的方法
+    // Check if the ref contains the correct method
     expect(ref.current).toHaveProperty('resetSelected');
     expect(ref.current).toHaveProperty('getTableHeight');
 
-    // 调用ref方法
+    // Call the ref method
     act(() => {
       ref.current.resetSelected();
     });
@@ -287,8 +287,8 @@ describe('TableView 组件', () => {
       height = ref.current.getTableHeight();
     });
 
-    // 验证getTableHeight返回正确的高度
-    // 行高56 * 3行 + 表头高41 = 209
+    // Verify that getTableHeight returns the correct height
+    // Line height 56 * 3 lines + header height 41 = 209
     expect(height).toBe(209);
   });
 });

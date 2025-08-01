@@ -61,13 +61,13 @@ export class LinesLayer extends Layer {
   private _backLineEntities: WorkflowLineEntity[] = [];
   private _version = 0;
   /**
-   * 节点下边的线条
+   * The line under the node
    */
   protected backLines = domUtils.createDivWithClass(
     'gedit-playground-layer gedit-flow-lines-layer back',
   );
   /**
-   * 节点前面的线条
+   * The line in front of the node
    */
   protected frontLines = domUtils.createDivWithClass(
     'gedit-playground-layer gedit-flow-lines-layer front',
@@ -78,7 +78,7 @@ export class LinesLayer extends Layer {
     this.frontLines.style.transform = `scale(${scale})`;
   }
 
-  // 用来绕过 memo
+  // To bypass the memo
   private bumpVersion() {
     this._version = this._version + 1;
     if (this._version === Number.MAX_SAFE_INTEGER) {
@@ -100,7 +100,7 @@ export class LinesLayer extends Layer {
     ]);
   }
   getLineColor(line: WorkflowLineEntity): string {
-    // 隐藏的优先级比 hasError 高
+    // Hidden priority is higher than hasError
     if (line.isHidden) {
       return line.highlightColor;
     }
@@ -144,7 +144,7 @@ export class LinesLayer extends Layer {
               : this.selectService.isSelected(line.id);
             const renderData = line.getData(WorkflowLineRenderData);
             const version = `${this._version}:${line.version}:${renderData.renderVersion}`;
-            // 正在绘制中的线条使用贝塞尔曲线
+            // The line being drawn uses a Bézier curve
             if (lineType === LineType.LINE_CHART) {
               return (
                 <FoldLineRender
@@ -179,7 +179,7 @@ export class LinesLayer extends Layer {
       return true;
     }
     // const { activatedNode } = this.selectService
-    // // 将选中的节点的连接线放置到前面
+    // //Place the cable of the selected node to the front
     // if (activatedNode) {
     //   const { inputLines, outputLines } = activatedNode.getData<WorkflowNodeLinesData>(WorkflowNodeLinesData)!
     //   if (inputLines.includes(line) || outputLines.includes(line)) {
@@ -205,7 +205,7 @@ export class LinesLayer extends Layer {
   //   this.render();
   // }, 100);
   /**
-   * 对线条进行分组
+   * Group lines
    */
   groupLines(): void {
     this._backLineEntities = [];
@@ -221,7 +221,7 @@ export class LinesLayer extends Layer {
 
   render(): JSX.Element {
     // const isViewportVisible = this.config.isViewportVisible.bind(this.config);
-    // 对线条进行分组
+    // Group lines
     this.groupLines();
     return (
       <>

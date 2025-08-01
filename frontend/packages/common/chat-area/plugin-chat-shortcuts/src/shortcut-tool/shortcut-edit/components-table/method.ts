@@ -58,7 +58,7 @@ export const checkDuplicateName = (
     }
   });
   setTimeout(() => {
-    // 避免修改后立刻被 field 自己的校验状态覆盖
+    // Avoid being overwritten by the field's own check state immediately after modification
     Object.entries(fieldMap).forEach(([name, indexArray]) => {
       const isDuplicated = indexArray.length > 1;
       indexArray.forEach(index => {
@@ -81,7 +81,7 @@ export const getComponentTypeSelectFormInitValues = (): ComponentTypeItem => ({
   type: 'text',
 });
 
-// 定义一个映射对象，将ComponentTypeItem的type映射到对应的input_type和其他字段
+// Define a mapping object that maps the ComponentTypeItem type to the corresponding input_type and other fields
 const componentTypeHandlers = {
   text: () => ({ input_type: InputType.TextInput }),
   select: (value: ComponentTypeItem) => {
@@ -126,11 +126,11 @@ export const getSubmitFieldFromComponentTypeForm = (
     return result;
   }
 
-  // 如果没有找到处理函数，就返回默认值
+  // If no handler is found, the default value is returned
   return { input_type: InputType.TextInput };
 };
 
-// 是否是上传类型
+// Is it the upload type?
 export const isUploadType = (
   type: InputType,
 ): type is
@@ -157,7 +157,7 @@ export const isUploadType = (
     InputType.MixUpload,
   ].includes(type);
 
-// 将input_type映射到对应的处理函数
+// Map input_type to the corresponding handler
 const inputTypeHandlers = {
   [InputType.TextInput]: () => ({ type: 'text' }),
   [InputType.Select]: (options: string[] = []) => ({
@@ -194,7 +194,7 @@ export const getComponentTypeFormBySubmitField = (
 };
 
 /**
- * 1. 修改components列表中对应组件的hide：true
+ * 1. Modify the hide of the corresponding component in the components list: true
  */
 export const modifyComponentWhenSwitchChange = ({
   components,
@@ -215,7 +215,7 @@ export const modifyComponentWhenSwitchChange = ({
     return item;
   });
 
-// components switch是否disable
+// Components switching disabled
 export const isSwitchDisabled = ({
   components,
   record,
@@ -233,17 +233,17 @@ export const isSwitchDisabled = ({
     }
 
     /**
-     * 使用工具&为必填参数
+     * Use tools & required parameters
      */
     return !!toolInfo?.tool_params_list?.find(t => t.name === record.parameter)
       ?.required;
   })();
 
-  // 组件超过最大数量, 不允许开启
+  // Components exceed the maximum number and are not allowed to be opened
   const isMaxCount =
     record.hide && components.filter(com => !com.hide).length >= MAX_COMPONENTS;
 
-  /** 必填且没有默认值不允许关闭 */
+  /** Required and no default value Closure is not allowed */
   const isFinalRequired = isRequired && !isWithDefaultValue;
 
   return isFinalRequired || isMaxCount;

@@ -101,12 +101,12 @@ const ShortcutBarRenderImpl: React.FC<{
       })}
       onActiveShortcutChange={(shortcutInfo, isTemplateShortcutActive) => {
         activeShortcutRef.current = shortcutInfo;
-        // 开启template快捷指令时，隐藏输入框&快捷指令bar
+        // Hide text box & shortcut bar when opening template shortcut command
         const chatInputSlotVisible = !isTemplateShortcutActive;
         controller.setChatInputSlotVisible(chatInputSlotVisible);
-        // 当template快捷指令激活时，禁用发送多模态消息
+        // Disable sending multimodal messages when template shortcuts are active
         onShortcutActive?.(shortcutInfo);
-        // 如果指定了agent，切换到指定的agent
+        // If an agent is specified, switch to the specified agent
         if (mode === BotMode.MultiMode) {
           shortcutInfo?.agent_id && manuallySwitchAgent(shortcutInfo.agent_id);
         }

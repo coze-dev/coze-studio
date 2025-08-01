@@ -58,9 +58,7 @@ func (dao *KnowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []
 func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {
 	s := dao.Query.KnowledgeDocumentSlice
 	updates := map[string]any{s.Status.ColumnName().String(): status}
-	if reason != "" {
-		updates[s.FailReason.ColumnName().String()] = reason
-	}
+	updates[s.FailReason.ColumnName().String()] = reason
 	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Where(s.ID.In(ids...)).Updates(updates)
 	return err
@@ -122,7 +120,7 @@ func (dao *KnowledgeDocumentSliceDAO) listBatch(ctx context.Context, knowledgeID
 	pos []*model.KnowledgeDocumentSlice, hasMore bool, err error) {
 
 	if batchSize <= 0 {
-		batchSize = 100 // 默认批量大小
+		batchSize = 100 // Default batch size
 	}
 
 	do, err := dao.listDo(ctx, knowledgeID, documentID)
@@ -163,7 +161,7 @@ func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 	if len(docIDs) == 0 {
 		return nil, errors.New("empty document ids")
 	}
-	// doc可能会有很多slice，所以批量处理
+	// Doc may have many slices, so batch processing
 	sliceIDs = make([]int64, 0)
 	var mu sync.Mutex
 	errGroup, ctx := errgroup.WithContext(ctx)

@@ -29,7 +29,7 @@ interface SelectionState {
   selectedReplyIdList: string[];
   selectedOnboardingId: string | null;
   /**
-   * 考虑到目前只有选择依赖onboardingId 因此放入进来了
+   * Considering that currently only the option depends on onboardingId, it is put in.
    */
   onboardingIdList: string[];
 }
@@ -150,7 +150,7 @@ export const subscribeSelectionUpdate = (
       );
 
       const selectedMessageGroupList = selectableMessageGroupList.filter(
-        // waiting sending responding 过程中不能选择消息 所以 groupId 一定为 reply_id
+        // The message cannot be selected while waiting sending responding, so the groupId must be reply_id
         messageGroup => replyIdList.includes(messageGroup.groupId),
       );
 

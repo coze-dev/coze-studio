@@ -134,7 +134,7 @@ export const DynamicChatList = ({
     !!canEdit &&
     !!list?.length &&
     !inBatch &&
-    // 即将支持，敬请期待
+    // Support soon, so stay tuned.
     FLAGS['bot.automation.conversation_batch_delete'];
   const exitBatch = () => {
     setInBatch(false);
@@ -151,7 +151,7 @@ export const DynamicChatList = ({
   const handleBatchDelete = async (items: ProjectConversation[]) => {
     const ids = items.map(i => i.unique_id).filter((i): i is string => !!i);
     await onBatchDelete(ids);
-    // 删除成功后退出批量操作模式
+    // Exit batch operation mode after successful deletion
     exitBatch();
   };
   return (

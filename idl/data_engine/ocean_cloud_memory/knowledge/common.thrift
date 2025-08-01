@@ -1,26 +1,26 @@
 struct DocTableSheet {
-    1: i64 id;            // sheet 的编号
-    2: string sheet_name; // sheet 名
-    3: i64 total_row;     // 总行数
+    1: i64 id;            // Number of sheet
+    2: string sheet_name; // Sheet name
+    3: i64 total_row;     // total number of rows
 }
 
 enum ColumnType {
     Unknown = 0
-    Text   = 1                  // 文本
-    Number = 2                  // 数字
-    Date   = 3                  // 时间
+    Text   = 1                  // Text
+    Number = 2                  // number
+    Date   = 3                  // time
     Float   = 4                 // float
     Boolean = 5                 // bool
-    Image   = 6                 // 图片
+    Image   = 6                 // picture
 }
 
-// 表格的列信息
+// Table column information
 struct DocTableColumn {
-    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id");            // 列 id
-    2: string   column_name;   // 列名
-    3: bool     is_semantic;   // 是否为语义匹配列
-    4: i64      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence");      // 列原本在 excel 的序号
-    5: optional ColumnType column_type; // 列类型
+    1: i64      id(agw.js_conv="str", api.js_conv="true", api.body="id");            // Column ID
+    2: string   column_name;   // column_name
+    3: bool     is_semantic;   // Is it a semantically matched column?
+    4: i64      sequence(agw.js_conv="str", api.js_conv="true", api.body="sequence");      // List the serial number originally in excel
+    5: optional ColumnType column_type; // column type
     6: optional bool contains_empty_value
-    7: optional string   desc;          // 描述
+    7: optional string   desc;          // describe
 }

@@ -38,6 +38,6 @@ class FeatureRegistryManager extends ExternalStore<
 }
 
 /**
- * FeatureRegistryManager 的实例，用于注册和注销 FeatureRegistry。开发过程中 FeatureRegistry 初始化的时候会写入到这个实例中，方便调试。
+ * FeatureRegistryManager instance for registering and unregistering FeatureRegistry. It will be written to this instance when FeatureRegistry is initialized during development, which is convenient for debugging.
  */
 export const featureRegistryManager = new FeatureRegistryManager();

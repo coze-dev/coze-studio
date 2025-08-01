@@ -25,7 +25,7 @@ interface InputObjectRefVO extends InputValueVO {
 }
 
 /**
- * 有没有变量引用
+ * Is there a variable reference?
  * @param vos
  * @returns
  */
@@ -40,8 +40,8 @@ function hasRef(vos?: InputValueVO[]): boolean {
 }
 
 /**
- * 是不是静态的object ref
- * 里面都是使用的常量
+ * Is it a static object ref?
+ * Inside are the constants used
  */
 export function isStaticObjectRef(value: InputObjectRefVO): boolean {
   const input = value?.input;

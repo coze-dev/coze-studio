@@ -60,12 +60,12 @@ export const Interactive = () => {
 
   function handleUpdateInteractiveType(interType: InteractiveType) {
     if (interType === InteractiveType.Mouse) {
-      // 鼠标优先交互模式：更新状态 & 设置小手
+      // Mouse First Interactive Mode: Update Status & Set Small Hands
       playground.editorState.changeState(
         EditorState.STATE_MOUSE_FRIENDLY_SELECT.id,
       );
     } else if (interType === InteractiveType.Pad) {
-      // 触控板优先交互模式：更新状态 & 设置箭头
+      // Trackpad Priority Interaction Mode: Update Status & Settings Arrows
       playground.editorState.changeState(EditorState.STATE_SELECT.id);
     }
     setInteractiveType(interType);
@@ -75,7 +75,7 @@ export const Interactive = () => {
   useEffect(() => {
     handleUpdateMouseScrollDelta(zoom => zoom / 20);
 
-    // 从缓存读取交互模式，应用生效
+    // Read interactive mode from cache, application takes effect
     const preferInteractiveType = getPreferInteractiveType();
     handleUpdateInteractiveType(preferInteractiveType as InteractiveType);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- init
@@ -92,7 +92,7 @@ export const Interactive = () => {
             value={interactiveType}
             onChange={value => {
               setInteractiveType(value);
-              // 目前逻辑是，只从画布读取设置。
+              // The current logic is to only read settings from the canvas.
               // setPreferInteractiveType(value);
               handleUpdateInteractiveType(value as unknown as InteractiveType);
             }}

@@ -75,10 +75,10 @@ const syncToApiNodeData = ({
   const { getNodeTemplateInfoByType } = context;
   const nodeDataEntity = node.getData<WorkflowNodeData>(WorkflowNodeData);
 
-  // 对于插件来说，初始化表单数据也需要重置 nodeData 数据重新设置
+  // For plugins, initializing the form data also requires resetting the nodeData data reset
   nodeDataEntity.init();
 
-  // 这里如果插件被删除后，也需要将 nodeMeta 设置上去，便于展示具体的错误信息
+  // Here, if the plugin is deleted, you also need to set nodeMeta to display specific error messages.
   if (!apiDetail && nodeMeta) {
     nodeDataEntity.setNodeData<StandardNodeType.Api>({
       ...nodeMeta,
@@ -87,7 +87,7 @@ const syncToApiNodeData = ({
   }
 
   /**
-   * 从 apiDetail 中提取出 api 节点的一些 NodeData，设置进 NodeDataEntity
+   * Extract some NodeData of the API node from apiDetail and set it into NodeDataEntity.
    */
   const apiNodeData = extractApiNodeData(apiDetail);
 
@@ -95,18 +95,18 @@ const syncToApiNodeData = ({
     ...apiNodeData,
     ...computeNodeVersion(apiDetail),
 
-    // 这个是插件默认的 description，最新修改的 description 需要从 nodeMeta.description 获取
+    // This is the default description of the plugin. The newly modified description needs to be obtained from nodeMeta.description.
     description: apiDetail.desc || '',
     title: apiDetail.name || '',
     icon: apiDetail.icon || '',
     mainColor: getNodeTemplateInfoByType(StandardNodeType.Api)?.mainColor ?? '',
-    // 这里部分历史数据依赖 projectId，例如 use-node-origin.ts
+    // Here some historical data depends on the projectId, such as use-node-origination.ts
     projectId: apiDetail.projectID,
   });
 };
 
 /**
- * 节点后端数据 -> 前端表单数据
+ * Node Backend Data - > Frontend Form Data
  */
 export const transformOnInit = (
   value: ApiNodeDTODataWhenOnInit,
@@ -115,7 +115,7 @@ export const transformOnInit = (
   const { node, playgroundContext } = context;
   const apiDetail = getApiDetail(value, playgroundContext);
 
-  // 同步 apiDetail 数据到 WorkflowNodeData，很多业务逻辑从这里取数据，包括报错界面
+  // Synchronize apiDetail data to WorkflowNodeData, where a lot of business logic fetches data, including the error interface
   syncToApiNodeData({
     node,
     context: playgroundContext,
@@ -127,7 +127,7 @@ export const transformOnInit = (
     return value as unknown as ApiNodeFormData;
   }
 
-  // 检测插件是否有更新（apiName，inputs, outputs）
+  // Check if the plugin has been updated (apiName, inputs, outputs)
   const isUpdated = checkPluginUpdated({
     params: value?.inputs?.apiParam ?? [],
     inputParameters: value.inputs.inputParameters ?? [],
@@ -136,16 +136,16 @@ export const transformOnInit = (
     apiNodeDetail: apiDetail,
   });
 
-  // 存在更新，更新 inPluginUpdated 值，试运行完毕后，重置 inPluginUpdated 的值
+  // There is an update, update the inPluginUpdated value, after the practice runs, reset the value of inPluginUpdated
   if (isUpdated) {
     context.playgroundContext.globalState.inPluginUpdated = true;
   }
 
-  // 如果有更新，同步最新的数据（apiName, inputs, outputs）
+  // If there is an update, synchronize the latest data (apiName, inputs, outputs)
   let latestValue = isUpdated ? syncToLatestValue(value, apiDetail) : value;
 
-  // 之前在同步插件输出数据的方法 syncOutputs 中，如果插件输出参数有变更，会忽略掉 errorBody 参数
-  // 这里重新将 errorBody 补充进来，其实更好的做法应该将这个逻辑放到 syncOutputs 中去
+  // In the previous method syncOutputs to synchronize the plug-in output data, if the plug-in output parameters are changed, the errorBody parameter will be ignored
+  // Here, add the errorBody again. In fact, it is better to put this logic in syncOutputs.
   latestValue = withErrorBody(value, latestValue);
 
   const { inputs } = latestValue || {};
@@ -153,8 +153,8 @@ export const transformOnInit = (
 
   const { inputs: pluginInputs, outputs: pluginOutputs } = apiDetail;
 
-  // 由于在提交时，会将没有填值的变量给过滤掉，所以需要在初始化时，将默认值补充进来
-  // 参见：packages/workflow/nodes/src/workflow-json-format.ts:241
+  // Since variables that are not filled in will be filtered out during commit, the default value needs to be added during initialization
+  // See also: packages/workflow/nodes/src/workflow-json-format: 241
   const refillInputParamters = getSortedInputParameters(pluginInputs).map(
     inputParam => {
       const { key, defaultValue } = getCustomSetterProps(inputParam) || {};
@@ -174,9 +174,9 @@ export const transformOnInit = (
       );
 
       if (target) {
-        // 自定义组件修正自定义值
+        // Custom component correction custom value
         if (isCustomSetter) {
-          // 自定义组件的值不需要采用 ValueExpression 的格式
+          // The value of a custom component does not need to be formatted in ValueExpression
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           target.input = getCustomVal(target.input, inputParam) as any;
         }
@@ -214,7 +214,7 @@ export const transformOnInit = (
 };
 
 /**
- * 前端表单数据 -> 节点后端数据
+ * Front-end form data - > node back-end data
  * @param value
  * @returns
  */

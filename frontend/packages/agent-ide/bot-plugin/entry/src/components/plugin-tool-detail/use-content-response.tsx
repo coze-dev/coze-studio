@@ -66,12 +66,12 @@ export const useContentResponse = ({
   onSuccess,
   renderParamsComponent,
 }: UseContentResponseProps) => {
-  // 是否显示安全检查失败信息
+  // Is the security check failure message displayed?
   const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
     useState(false);
   const [isResponseParamsDisabled, setIsResponseParamsDisabled] =
     useState(true);
-  // 第三步，设置相应参数的hooks组件
+  // The third step is to set the corresponding parameters of the hooks component
   const { responseParamsNode, submitResponseParams, extra } = useResponseParams(
     {
       apiInfo,
@@ -94,7 +94,7 @@ export const useContentResponse = ({
     },
   );
 
-  // 处理 debug 时 example数据先显示后隐藏的问题
+  // When dealing with debugging, the example data is displayed first and then hidden
   useEffect(() => {
     if (!isResponseParamsDisabled) {
       setDebugApiInfo({
@@ -133,7 +133,7 @@ export const useContentResponse = ({
             onClick={async e => {
               e.stopPropagation();
               const status = await submitResponseParams();
-              // 更新成功后进入下一步
+              // After the update is successful, proceed to the next step
               if (status) {
                 handleInit();
                 setIsResponseParamsDisabled(true);

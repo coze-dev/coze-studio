@@ -22,7 +22,7 @@ import { useBotInfoStore } from '../../../src/store/bot-info';
 import { saveFetcher } from '../../../src/save-manager/utils/save-fetcher';
 import { saveRequest } from '../../../src/save-manager/auto-save/request';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('@coze-arch/bot-api', () => ({
   PlaygroundApi: {
     UpdateDraftBotInfoAgw: vi.fn(),
@@ -53,7 +53,7 @@ describe('auto-save request', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotInfoStore.getState as any).mockReturnValue({
       botId: mockBotId,
     });
@@ -71,19 +71,19 @@ describe('auto-save request', () => {
   it('应该使用正确的参数调用 saveFetcher', async () => {
     await saveRequest(mockPayload, mockItemType);
 
-    // 验证 saveFetcher 被调用
+    // Verify that saveFetcher is called
     expect(saveFetcher).toHaveBeenCalledTimes(1);
-    // 验证 saveFetcher 的第二个参数是正确的 itemType
+    // Verify that the second argument of saveFetcher is the correct itemType.
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       mockItemType,
     );
 
-    // 获取并执行 saveFetcher 的第一个参数（函数）
+    // Get and execute the first argument (function) of saveFetcher.
     const saveRequestFn = (saveFetcher as any).mock.calls[0][0];
     await saveRequestFn();
 
-    // 验证 UpdateDraftBotInfoAgw 被调用，并且参数正确
+    // Verify that UpdateDraftBotInfoAgw is called and the parameters are correct
     expect(PlaygroundApi.UpdateDraftBotInfoAgw).toHaveBeenCalledWith({
       bot_info: {
         bot_id: mockBotId,

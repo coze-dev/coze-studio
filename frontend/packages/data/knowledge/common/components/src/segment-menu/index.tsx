@@ -74,7 +74,7 @@ const SegmentMenu: React.FC<ISegmentMenuProps> = props => {
       ) : null}
       <div className="pl-2 h-6 mt-4 mb-1 flex items-center">
         <div className="coz-fg-secondary text-[12px] font-[400] leading-4 shrink-0">
-          {/**文档列表 */}
+          {/**document list */}
           {I18n.t('knowledge_level_012')}
         </div>
       </div>
@@ -114,7 +114,7 @@ const SegmentMenu: React.FC<ISegmentMenuProps> = props => {
             <div className="flex flex-col gap-1 !overflow-auto">
               <div className="w-full pl-2 h-6 items-center flex gap-[4px]">
                 <div className="coz-fg-secondary text-[12px] font-[400] leading-4 shrink-0">
-                  {/**分段层级 */}
+                  {/**segment hierarchy */}
                   {I18n.t('knowledge_level_adjust')}
                 </div>
                 {treeDisabled ? null : (

@@ -75,7 +75,7 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 			var rowData []*document.ColumnData
 			for j := range row {
 				colSchema, found := rev[j]
-				if !found { // 列裁剪
+				if !found { // column clipping
 					continue
 				}
 

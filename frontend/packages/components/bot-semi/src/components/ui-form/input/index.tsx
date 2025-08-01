@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FC, useRef } from 'react';
 
 import cs from 'classnames';
@@ -35,7 +35,7 @@ export const UIFormInput: FC<CommonFieldProps & InputProps> = ({
   return (
     <div
       style={{
-        // @ts-expect-error ts 无法识别 css 自定义变量
+        // @ts-expect-error ts cannot recognize css custom variable
         '--var-error-msg-offset': props.addonBefore
           ? `${inputRef.current?.offsetLeft ?? 0}px`
           : '0px',

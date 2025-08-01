@@ -135,7 +135,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
   ...modalProps
 }) => (
   <Modal
-    // 清除 modal 自带边距 由内部 padding 撑开 展示按钮阴影
+    // Clear the modal's own margins, propped up by the internal padding, and show the button shadow
     className={styles['guide-modal']}
     size="xl"
     title={I18n.t('create_title')}

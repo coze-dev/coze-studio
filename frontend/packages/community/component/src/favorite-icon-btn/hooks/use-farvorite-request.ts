@@ -35,7 +35,7 @@ export const useFavoriteStatusRequest = ({
       setIsFavorite(!isCurFavorite);
       try {
         await ProductApi.PublicFavoriteProduct({
-          // 后端不能处理空字符串
+          // Backend cannot handle empty strings
           product_id: productId || undefined,
           entity_type: entityType as ProductEntityType,
           is_cancel: isCurFavorite,

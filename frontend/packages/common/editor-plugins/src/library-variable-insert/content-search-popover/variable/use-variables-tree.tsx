@@ -65,7 +65,7 @@ export default function useVariablesTree({
 
   const selected = useSelectedValue(completionContext?.text, variableTree);
 
-  // 基于用户选中项，替换所在 {{}} 中的内容
+  // Replace content in {{}} based on user selection
   const handleSelect = useCallback(
     (_: string, __: boolean, node: TreeNodeData) => {
       if (!editor || !completionContext) {
@@ -101,7 +101,7 @@ export default function useVariablesTree({
     treeRef,
   );
 
-  // 上下键切换推荐项，回车填入
+  // Press the up and down keys to switch the recommended items, and press Enter to fill in.
   useKeyboard(enableKeyboard, {
     ArrowUp: prev,
     ArrowDown: next,

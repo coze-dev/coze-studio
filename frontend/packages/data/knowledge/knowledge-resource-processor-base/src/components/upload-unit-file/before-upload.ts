@@ -29,8 +29,8 @@ export const getBeforeUpload: (params: {
 }) => UploadProps['beforeUpload'] =
   ({ maxSizeMB }) =>
   async fileInfo => {
-    // 不通过 maxSize 属性来限制的原因是
-    // 只有 beforeUpload 钩子能改 validateMessage
+    // The reason for not limiting by the maxSize property is
+    // Only the beforeUpload hook can change validateMessage
     const res = {
       fileInstance: fileInfo.file.fileInstance,
       status: fileInfo.file.status,
@@ -73,7 +73,7 @@ export const getBeforeUpload: (params: {
 
     if (getFileExtension(fileInstance.name).toLowerCase() === 'pdf') {
       try {
-        // TODO: 后续其他位置的 pdfjs 调用也都应该改成异步加载
+        // TODO: Subsequent pdfjs calls from other locations should also be changed to asynchronous loading
         const pdfjs = await import('@coze-arch/pdfjs-shadow');
         const { getDocument, initPdfJsWorker } = pdfjs;
 

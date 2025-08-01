@@ -90,11 +90,11 @@ export const useDatabaseConfig: UseEntityConfigHook = ({
         );
       },
       renderActions: (item: ResourceInfo) => {
-        // 是否能删除
+        // Can it be deleted?
         const deleteDisabled = !item.actions?.find(
           action => action.key === ActionKey.Delete,
         )?.enable;
-        // 是否启用
+        // Whether to enable
 
         // delete operation
         const deleteProps = {

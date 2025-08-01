@@ -129,7 +129,7 @@ func parseCURL(_ context.Context, rawCURL string) (req *curlRequest, err error) 
 		Method:      "",
 		Header:      http.Header{},
 		Query:       url.Values{},
-		Body:        map[string]any{}, // TODO(@maronghong): 支持 array
+		Body:        map[string]any{}, // TODO (@maronghong): support array
 		dataToQuery: false,
 	}
 
@@ -559,7 +559,7 @@ func parseRequestToBodySchemaRef(ctx context.Context, desc string, value any) (*
 }
 
 func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
-	bodyValue, ok := bodyValue.(map[string]any) // TODO(@maronghong): 支持 array
+	bodyValue, ok := bodyValue.(map[string]any) // TODO (@maronghong): support array
 	if !ok {
 		return nil, errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KV(errno.PluginMsgKey,
 			"request body only supports 'object' type"))
@@ -946,14 +946,10 @@ func fillManifestWithOpenapiDoc(mf *entity.PluginManifest, doc *model.Openapi3T)
 }
 
 func addHTTPProtocolHeadIfNeed(url string) string {
-	if strings.HasPrefix(url, "https://") {
+	if strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://") {
 		return url
 	}
-	if strings.HasPrefix(url, "http://") {
-		url = strings.Replace(url, "http://", "https://", 1)
-		return url
-	}
-	return "https://" + url
+	return "http://" + url
 }
 
 func fillNecessaryInfoForOpenapi3Doc(doc *model.Openapi3T) {

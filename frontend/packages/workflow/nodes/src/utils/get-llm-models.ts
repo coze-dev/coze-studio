@@ -32,7 +32,7 @@ import { DeveloperApi as developerApi } from '@coze-arch/bot-api';
 
 import { getLLMModelIds } from './get-llm-model-ids';
 
-/** 默认的 response format 值 */
+/** Default response format value */
 export const getDefaultResponseFormat = () => ({
   name: RESPONSE_FORMAT_NAME,
   label: I18n.t('model_config_response_format'),
@@ -68,20 +68,20 @@ const queryClient = new QueryClient({
 });
 
 /**
- * 1. 给模型列表中每个模型的 response_format 参数项补全
- * 2. 硬编码设置 response_format 的默认值为 JSON
- * @param modelList 模型列表
- * @returns 补全 response_format 参数后的模型列表
+ * 1. Complete the response_format parameter items for each model in the model list
+ * 2. hardcoding settings response_format default value is JSON
+ * @param modelList
+ * @Returns List of models after completing response_format parameters
  */
 const repairResponseFormatInModelList = (modelList: Model[]) => {
-  // 找到模型列表中 model_params 的第一个 response_format 参数项
-  // 这段代码从下边循环中提出来，不需要每次循环计算一次
+  // Find the first response_format item model_params in the model list
+  // This code is taken from the following loop and does not need to be evaluated every time
   const modelHasResponseFormatItem = modelList
     .find(_m => _m.model_params?.find(p => p.name === RESPONSE_FORMAT_NAME))
     ?.model_params?.find(p => p.name === RESPONSE_FORMAT_NAME);
 
   return modelList.map(m => {
-    // 兼容后端未刷带的数据，没有 responseFormat 就补上
+    // Compatible with unflashed data on the backend, it will be added without responseFormat.
     const responseFormat = m.model_params?.find(
       p => p?.name === RESPONSE_FORMAT_NAME,
     ) as ModelParameter;
@@ -90,23 +90,23 @@ const repairResponseFormatInModelList = (modelList: Model[]) => {
       if (modelHasResponseFormatItem) {
         m.model_params?.push(modelHasResponseFormatItem as ModelParameter);
       } else {
-        // 填充一个默认的 response_format 参数
+        // Fill in a default response_format parameter
         m.model_params?.push(getDefaultResponseFormat());
       }
     }
 
-    // 此时再找一次 responseFormat，因为上边补全了 responseFormat
+    // At this point, find the responseFormat again, because the responseFormat is completed above.
     const newResponseFormat = m.model_params?.find(
       p => p?.name === RESPONSE_FORMAT_NAME,
     ) as ModelParameter;
 
-    // 重置默认值为 JSON
+    // Reset the default value to JSON
     Object.keys(newResponseFormat?.default_val ?? {}).forEach(k => {
       newResponseFormat.default_val[k] = ResponseFormat.JSON;
     });
 
     if (newResponseFormat) {
-      // 重置选项，text markdown json 都要支持
+      // Reset options, text markdown json must be supported
       newResponseFormat.options = [
         {
           label: I18n.t('model_config_history_text'),
@@ -154,8 +154,8 @@ export const getLLMModels = async ({
         const resp = await developerApi.GetTypeList(getTypeListParams);
         const _modelList: Model[] = resp?.data?.model_list ?? [];
 
-        // 从这里开始到 return modelList 全是给后端擦屁股
-        // 这里有 hard code ，需要把输出格式的默认值设置为 JSON
+        // From here to return modelList is all about wiping the butt of the backend
+        // There is hard code here, you need to set the default value of the output format to JSON
         return repairResponseFormatInModelList(_modelList);
       },
       staleTime: 3000,
@@ -166,7 +166,7 @@ export const getLLMModels = async ({
       error: error as Error,
       eventName: 'api/bot/get_type_list fetch error',
     });
-    // 上报js错误
+    // Report a js error
     captureException(
       new Error(
         I18n.t('workflow_detail_error_message', {
@@ -174,7 +174,7 @@ export const getLLMModels = async ({
         }),
       ),
     );
-    // 兜底返回空数组
+    // Return empty array
     return [];
   }
 };

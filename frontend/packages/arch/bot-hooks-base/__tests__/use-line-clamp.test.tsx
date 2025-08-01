@@ -69,12 +69,12 @@ describe('useLineClamp', () => {
 
     const { result } = renderHook(() => useLineClamp());
 
-    // 使用 vi.spyOn 来模拟 contentRef.current
+    // Use vi.spyOn to simulate contentRef.current
     vi.spyOn(result.current.contentRef, 'current', 'get').mockReturnValue(
       mockDiv,
     );
 
-    // 使用 act 包装异步操作
+    // Wrap asynchronous operations with act
     act(() => {
       window.dispatchEvent(new Event('resize'));
     });
@@ -85,10 +85,10 @@ describe('useLineClamp', () => {
   it('should handle null contentRef', () => {
     const { result } = renderHook(() => useLineClamp());
 
-    // 使用 vi.spyOn 来模拟 contentRef.current 为 null
+    // Use vi.spyOn to simulate contentRef. current is null
     vi.spyOn(result.current.contentRef, 'current', 'get').mockReturnValue(null);
 
-    // 使用 act 包装异步操作
+    // Wrap asynchronous operations with act
     act(() => {
       window.dispatchEvent(new Event('resize'));
     });

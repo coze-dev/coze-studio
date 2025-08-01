@@ -263,7 +263,7 @@ func TestDatabaseCURD(t *testing.T) {
 }
 
 func TestHttpRequester(t *testing.T) {
-	listener, err := net.Listen("tcp", "127.0.0.1:8080") // 指定IP和端口
+	listener, err := net.Listen("tcp", "127.0.0.1:8080") // Specify IP and port
 	assert.NoError(t, err)
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/http_error" {

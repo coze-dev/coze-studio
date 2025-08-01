@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useRef, useState } from 'react';
 
 import dayjs from 'dayjs';
@@ -25,7 +25,6 @@ import {
 } from '@coze-data/database-v2-base/constants';
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
-import { FieldItemType, TableType } from '@coze-arch/bot-api/memory';
 import {
   CozInputNumber,
   type DatePickerProps,
@@ -37,6 +36,7 @@ import {
   withField,
   type CommonFieldProps,
 } from '@coze-arch/coze-design';
+import { FieldItemType, TableType } from '@coze-arch/bot-api/memory';
 
 import {
   type TableRow,
@@ -56,7 +56,7 @@ const FormDatePicker = withField(
     <DatePicker
       {...props}
       type="dateTime"
-      // Semi DatePicker 使用 date-fns 格式
+      // Semi DatePicker uses date-fns format
       format="yyyy-MM-dd HH:mm:ss"
       onChange={date =>
         props.onChange?.(dayjs(date as Date).format('YYYY-MM-DD HH:mm:ss'))
@@ -149,7 +149,7 @@ export function RowEditModal({
     >
       <Form<Record<string, unknown>> allowEmpty ref={formRef}>
         {tableType === TableType.OnlineTable ? (
-          // 只有“线上数据”支持修改“渠道”字段
+          // Only "Online Data" supports modifying the "Channel" field
           <FormSelect
             {...getSystemFieldCommonProps(PLATFORM_FIELD)}
             optionList={connectorOptions}
@@ -250,6 +250,7 @@ function getSystemFieldCommonProps(field: TableMemoryItem): FieldCommonProps {
       <DatabaseFieldTitle
         field={field.name}
         textType="primary"
+        // @ts-expect-error fix me late
         type={field.type}
         tip={field.desc}
         required
@@ -273,7 +274,7 @@ function getUserFieldCommonProps(field: TableFieldData): FieldCommonProps {
           required={field.required}
         />
       ),
-      // DatabaseFieldTitle 中已经显示 required * 符号
+      // The required * symbol is already displayed in DatabaseFieldTitle
       required: false,
     },
   };

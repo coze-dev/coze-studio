@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 布局框架 */
+/** layout framework */
 export { SideSheetMenu } from './components/side-sheet-menu';
 export { GlobalError } from './components/global-error';
 export { BackButton } from './components/back-button';

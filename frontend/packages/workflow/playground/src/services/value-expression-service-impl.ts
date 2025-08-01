@@ -67,7 +67,7 @@ export class ValueExpressionServiceImpl implements ValueExpressionService {
     return ValueExpressionUtils.isLiteral(value as ValueExpression);
   }
 
-  // 将 ValueExpression 转换为 ValueExpressionDTO
+  // Convert ValueExpression to ValueExpressionDTO
   public toDTO(
     valueExpression?: ValueExpression,
     currentNode?: FlowNodeEntity,
@@ -85,7 +85,7 @@ export class ValueExpressionServiceImpl implements ValueExpressionService {
     return dto;
   }
 
-  // 从 ValueExpressionDTO 生成 ValueExpression
+  // Generating ValueExpression from ValueExpressionDTO
   public toVO(dto?: ValueExpressionDTO): ValueExpression | undefined {
     if (!dto) {
       return undefined;

@@ -45,7 +45,7 @@ export const useTextSend = ({
   onSubmit: (text: string) => void;
   defaultValue?: string;
   /**
-   * 是否允许空字符串提交
+   * Whether to allow empty string submission
    * @default false
    */
   allowEmpty?: boolean;
@@ -172,10 +172,10 @@ export const useTextSend = ({
       return;
     }
 
-    // 计算光标的当前位置
+    // Calculate the current position of the cursor
     const cursorPosition = textarea.selectionStart;
 
-    // 在光标位置插入新行
+    // Inserts a new row at the cursor position
     const newValue = `${inputText.substring(
       0,
       cursorPosition,

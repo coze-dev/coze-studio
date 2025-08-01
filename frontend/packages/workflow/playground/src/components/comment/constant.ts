@@ -21,35 +21,35 @@ export enum CommentEditorFormField {
   Note = 'note',
 }
 
-/** 编辑器事件 */
+/** editor event */
 export enum CommentEditorEvent {
-  /** 内容变更事件 */
+  /** content change event */
   Change = 'change',
-  /** 多选事件 */
+  /** multiple choice event */
   MultiSelect = 'multiSelect',
-  /** 单选事件 */
+  /** radio event */
   Select = 'select',
-  /** 失焦事件 */
+  /** out of focus event */
   Blur = 'blur',
 }
 
-/** 编辑器块格式 */
+/** editor block format */
 export enum CommentEditorBlockFormat {
-  /** 段落 */
+  /** paragraph */
   Paragraph = 'paragraph',
-  /** 标题一 */
+  /** Title I */
   HeadingOne = 'heading-one',
-  /** 标题二 */
+  /** Title II */
   HeadingTwo = 'heading-two',
-  /** 标题三 */
+  /** Title III */
   HeadingThree = 'heading-three',
-  /** 引用 */
+  /** quote */
   Blockquote = 'block-quote',
-  /** 无序列表 */
+  /** unordered list */
   BulletedList = 'bulleted-list',
-  /** 有序列表 */
+  /** ordered list */
   NumberedList = 'numbered-list',
-  /** 列表项 */
+  /** list item */
   ListItem = 'list-item',
 }
 
@@ -60,21 +60,21 @@ export const CommentEditorListBlockFormat = [
 
 export const CommentEditorLeafType = 'text';
 
-/** 编辑器叶子节点格式 */
+/** Editor leaf node format */
 export enum CommentEditorLeafFormat {
-  /** 粗体 */
+  /** bold */
   Bold = 'bold',
-  /** 斜体 */
+  /** Italic */
   Italic = 'italic',
-  /** 下划线 */
+  /** underline */
   Underline = 'underline',
-  /** 删除线 */
+  /** Strikethrough */
   Strikethrough = 'strikethrough',
-  /** 链接 */
+  /** link */
   Link = 'link',
 }
 
-/** 编辑器默认块 */
+/** Editor default block */
 export const CommentEditorDefaultBlocks = [
   {
     type: CommentEditorBlockFormat.Paragraph,
@@ -82,13 +82,13 @@ export const CommentEditorDefaultBlocks = [
   },
 ];
 
-/** 编辑器默认值 */
+/** Editor Default */
 export const CommentEditorDefaultValue = JSON.stringify(
   CommentEditorDefaultBlocks,
 );
 
-/** 工具栏显示延迟 */
+/** Toolbar display delay */
 export const CommentToolbarDisplayDelay = 200;
 
-/** 默认链接 */
+/** default link */
 export const CommentDefaultLink = 'about:blank';

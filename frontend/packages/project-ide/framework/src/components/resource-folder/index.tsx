@@ -69,35 +69,35 @@ import s from './index.module.less';
 
 interface RefType {
   /**
-   * 创建文件夹
+   * Create Folder
    */
   createFolder: () => void;
   /**
-   * 创建资源
+   * Create a resource
    */
   createResource: (type: string) => void;
   /**
-   * 重命名资源
+   * rename resource
    */
   renameResource: (id: IdType) => void;
   /**
-   * 手动关闭右键菜单
+   * Close the right-click menu manually
    */
   closeContextMenu: () => void;
   /**
-   * 收起所有文件夹
+   * Close all folders
    */
   collapseAll: () => void;
   /**
-   * 展开所有文件夹
+   * Expand all folders
    */
   expandAll: () => void;
   /**
-   * 手动聚焦
+   * manual focus
    */
   focus: () => void;
   /**
-   * 手动失焦
+   * Manual out of focus
    */
   blur: () => void;
 }
@@ -110,16 +110,16 @@ interface Props {
   disabled?: boolean;
 
   /**
-   * 主要的资源类型，非必填。
-   * 主要用于快捷键创建资源的默认类型。
+   * Main resource type, optional.
+   * Mainly used to shortcut the default type for creating resources.
    */
   defaultResourceType?: string;
   /**
-   * 是否使用乐观 ui;
-   * false 时，onChange 失效;
+   * Whether to use optimistic UI;
+   * When false, onChange is invalid;
    * default = true
    *
-   * 传入 loadingRender 时，会对乐观保存的 item 尾部增加一个渲染块，由外部控制渲染
+   * When passing in loadingRender, a render block will be added to the tail of the optimistically saved item, which will be rendered by external control
    */
   useOptimismUI?:
     | boolean
@@ -128,22 +128,22 @@ interface Props {
       };
 
   /**
-   * 当前选中的资源 id， 受控的
+   * The currently selected resource id, controlled
    */
   selected?: string;
 
   /**
-   * 是否渲染每个 item 末尾的 more 按钮，hover 等同于 右键
+   * Whether to render the more button at the end of each item, hover is equivalent to right click
    */
   renderMoreSuffix?: RenderMoreSuffixType;
 
   /**
-   * 用于 name 校验的配置
+   * Configuration for name validation
    */
   validateConfig?: ValidatorConfigType;
 
   /**
-   * 支持搜索, 高亮展示
+   * Support search, highlight
    */
   searchConfig?: {
     searchKey?: string;
@@ -151,84 +151,84 @@ interface Props {
   };
 
   /**
-   * 可选。
-   * 传入则是受控的收起展开树。
-   * 不传则内部自己维护树
+   * Optional.
+   * The incoming is a controlled retract expansion tree.
+   * If you don't pass it on, you will maintain the tree internally.
    */
   collapsedMap?: Record<string, boolean>;
   setCollapsedMap?: (v: Record<string, boolean>) => void;
 
   /**
-   * 树变更的回调函数，依赖 useOptimismUI 为 true。
+   * Callback function for tree changes, depending on useOptimismUI to be true.
    */
   onChange?: (resource: ResourceType[]) => void;
 
   /**
-   * 单击选中资源的回调，仅支持非 folder 类型资源
+   * Click the callback for the selected resource, only non-folder type resources are supported
    */
   onSelected?: (id: string | number, resource: ResourceType) => void;
   /**
-   * 拖拽完成之后的回调
+   * Callback after dragging is complete
    */
   onDrag?: (v: DragPropType) => void;
   /**
-   * 修改 name 之后的回调
+   * Callback after modifying name
    */
   onChangeName?: (v: ChangeNameType) => void;
   /**
-   * 创建资源的回调
+   * Create a callback for a resource
    */
   onCreate?: (v: CreateResourcePropType) => void;
   /**
-   * 删除的回调。该方法不会被乐观 ui 逻辑改写，最好业务层加一个二次确认逻辑，删除之后走数据更新的方式来更新树组件
+   * Deleted callback. This method will not be overwritten by optimistic ui logic. It is best to add a secondary confirmation logic to the business layer. After deletion, take the data update method to update the tree component.
    */
   onDelete?: (ids: ResourceType[]) => void;
 
   /**
-   * 用于自定义配置渲染资源的 icon
-   * @returns react 节点
+   * Icons for customizing configuration rendering resources
+   * @returns react node
    */
   iconRender?: (v: CommonRenderProps) => React.ReactElement | undefined;
 
   /**
-   * 用于自定义配置每一项末尾的元素
+   * Use to customize the elements at the end of each item
    */
   suffixRender?: {
-    width: number; // 用于文本超长的 tooltip 偏移量计算的，是一个必填字段
+    width: number; // Used for the calculation of the tooltip offset for very long text, is a required field
     render: (v: CommonRenderProps) => React.ReactElement | undefined;
   };
 
   /**
-   * 用于自定义配置每一个资源的文本渲染器。
-   * 如果采用自定义渲染，则需要自己实现搜索高亮能力
-   * @returns react 节点
+   * Text renderer for custom configuration of each resource.
+   * If you use custom rendering, you need to implement the search highlighting capability yourself
+   * @returns react node
    */
   textRender?: (v: CommonRenderProps) => React.ReactElement | undefined;
 
   /**
-   * 右键菜单配置
-   * @param v 当前临时选中的资源列表。 可以通过 id 判断是否是根文件。（ROOT_KEY: 根文件 id）
-   * @returns 组件内置注册好的命令和菜单，详见 BaseResourceContextMenuBtnType 枚举
+   * right-click menu configuration
+   * @Param v List of currently temporarily selected resources. You can determine whether it is a root file by id. (ROOT_KEY: root file id)
+   * @Returns component built-in registered commands and menus, see BaseResourceContextMenuBtnType enumeration
    */
   contextMenuHandler?: (v: ResourceType[]) => RightPanelConfigType[];
 
   /**
-   * 右键菜单弹窗展示和隐藏的回调。
+   * Right-click menu pop-ups to show and hide callbacks.
    */
   onContextMenuVisibleChange?: (v: boolean) => void;
 
   /**
-   * 禁用右键菜单，主要是兼容在 popover 的场景内
+   * Disable the right-click menu, mainly compatible in the popover scene
    */
   contextMenuDisabled?: boolean;
 
   /**
-   * 一些用于杂七杂八的配置项
+   * Some configuration items for miscellaneous purposes
    */
   config?: ConfigType;
 
   /**
-   * 能力黑名单
+   * ability blacklist
    */
   powerBlackMap?: {
     dragAndDrop?: boolean;
@@ -236,7 +236,7 @@ interface Props {
   };
 
   /**
-   * 列表为空的渲染组件
+   * Rendering component with empty list
    */
   empty?: React.ReactElement;
 }
@@ -288,7 +288,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
     const renderMoreSuffix = contextMenuDisabled ? false : _renderMoreSuffix;
 
     /**
-     * 临时选中的表
+     * Temporarily selected table
      */
     const [tempSelectedMapRef, setTempSelectedMap] = useStateRef<
       Record<string, ResourceType>
@@ -297,12 +297,12 @@ const ResourceFolder = forwardRef<RefType, Props>(
     });
 
     /**
-     * 打平的树
+     * Flattened Tree
      */
     const resourceMap = useRef<ResourceMapType>(_resourceMap || {});
     const changeResourceMap = nextMap => {
       resourceMap.current = nextMap;
-      // 变更之后维护临时选中表
+      // Maintain the temporary selection table after the change
       tempSelectedMapRef.current = Object.keys(
         tempSelectedMapRef.current,
       ).reduce((pre, cur) => {
@@ -321,7 +321,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
     }, [_resourceMap]);
 
     /**
-     * 处理一系列收起展开的 hook
+     * Handle a series of retracted and unfolded hooks
      */
     const { collapsedMapRef, handleCollapse, setCollapsed, collapsedState } =
       useCollapsedMap({
@@ -331,7 +331,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
       });
 
     /**
-     * 用于渲染的树
+     * Tree for rendering
      */
     const [resourceTreeRef, setResourceTree] = useStateRef<ResourceType>(
       {
@@ -376,7 +376,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
     }, [disabled]);
 
     /**
-     * 用于收敛树组件的滚动，聚焦逻辑的 hook
+     * Hooks for scrolling, focusing logic of convergent tree components
      */
     const { scrollInView, scrollWrapper, tempDisableScroll } = useFocusResource(
       {
@@ -418,7 +418,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
     }, [_resourceTree]);
 
     /**
-     * 处理选中的资源变更之后的副作用
+     * Handling side effects after changes to selected resources
      */
     const selectedIdRef = useSelectedChange({
       selected,
@@ -606,7 +606,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
       const list = renderResourceList || [];
 
       /**
-       * 为空数组，或者数组中只有一个 root 节点
+       * Is an empty array, or there is only one root node in the array
        */
       if (
         (list.length === 0 ||
@@ -672,7 +672,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
 
               const isExpand = !collapsedMapRef.current[resource.id];
               const highlightItem =
-                !powerBlackMap?.folder && // 不支持文件夹则不需支持拖拽时候的高亮
+                !powerBlackMap?.folder && // If folders are not supported, there is no need to support highlighting when dragging.
                 !!dragAndDropContext.highlightItemMap[resource.id];
               const preHighlightItem =
                 resourceList.current[i - 1]?.id !== ROOT_KEY &&
@@ -686,7 +686,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
 
               const extraClassName = [
                 /**
-                 * 拖拽过程中的样式
+                 * Styles during drag and drop
                  */
                 ...(highlightItem
                   ? [
@@ -700,7 +700,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
                   : []),
                 isSelected ? 'item-is-selected' : '',
                 /**
-                 * 拖拽过程中的 hover 态优先级 大于 临时选中态的优先级
+                 * The priority of the hover state during the dragging process is greater than the priority of the temporarily selected state
                  */
                 ...(isTempSelected && !highlightItem
                   ? [
@@ -740,7 +740,7 @@ const ResourceFolder = forwardRef<RefType, Props>(
               );
             })}
             {emptyRender()}
-            {/* 添加 24px 底部间距，标识加载完全 */}
+            {/* Add 24px bottom spacing to identify fully loaded */}
             <div style={{ padding: 12 }}></div>
           </div>
         </div>

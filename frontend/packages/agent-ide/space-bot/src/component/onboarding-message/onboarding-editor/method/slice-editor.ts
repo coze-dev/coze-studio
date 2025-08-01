@@ -36,7 +36,7 @@ export const sliceEditor = (editorRef: RefObject<Editor>, maxCount: number) => {
   const sliceCount = currentCount - maxCount;
   if (sliceCount > 0) {
     const delta = new ZoneDelta({ zoneId: zone });
-    // 保留maxCount, 删除之后的内容
+    // Keep maxCount, delete the content
     delta.retain(maxCount).delete(sliceCount);
     editor.getContentState().apply(delta);
   }

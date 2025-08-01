@@ -18,7 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { I18n, initI18nInstance } from '../../src/raw';
 
-// 模拟本地化资源
+// Simulate localized resources
 vi.mock('../../src/resource.ts', () => ({
   default: {
     en: { i18n: { test: 'Test' } },

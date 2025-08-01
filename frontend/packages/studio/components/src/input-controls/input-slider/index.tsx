@@ -109,7 +109,7 @@ export const InputSlider: React.FC<InputSliderProps> = ({
   const onNumberChange = (numberValue: number) => {
     updateInputNumber();
 
-    // 防止 -0
+    // Prevent -0
     if (numberValue === 0) {
       onChange?.(0);
       return;
@@ -124,7 +124,7 @@ export const InputSlider: React.FC<InputSliderProps> = ({
     onChange?.(expectedFormattedValue);
   };
 
-  // 防止 -0 导致 InputNumber 无限循环更新
+  // Prevent -0 from causing InputNumber to update indefinitely
   const fixedValue = Object.is(value, -0) ? 0 : value;
 
   useEffect(() => {

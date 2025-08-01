@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { VARIABLE_MERGE_NODE_REGISTRY } from '@/nodes-v2/variable-merge';
 import { VARIABLE_ASSIGN_NODE_REGISTRY } from '@/nodes-v2/variable-assign';
 import { LLM_NODE_REGISTRY } from '@/nodes-v2/llm';
@@ -51,7 +51,8 @@ import {
   PLUGIN_NODE_REGISTRY,
   SUB_WORKFLOW_NODE_REGISTRY,
   VARIABLE_NODE_REGISTRY,
-  // cli 脚本插入标识（import），请勿修改/删除此行注释
+  JSON_STRINGIFY_NODE_REGISTRY,
+  // CLI script insert ID (import), do not modify/delete this line comment
 } from '@/node-registries';
 
 import {
@@ -68,7 +69,8 @@ import {
 } from './chat';
 
 export const NODES_V2 = [
-  // cli 脚本插入标识（registry），请勿修改/删除此行注释
+  // The cli script inserts the identifier (registry), do not modify/delete this line comment
+  JSON_STRINGIFY_NODE_REGISTRY,
   IF_NODE_REGISTRY,
   INTENT_NODE_REGISTRY,
   SUB_WORKFLOW_NODE_REGISTRY,

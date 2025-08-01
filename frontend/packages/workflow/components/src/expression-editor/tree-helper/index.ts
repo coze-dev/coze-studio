@@ -165,7 +165,7 @@ export namespace ExpressionEditorTreeHelper {
     const lastSegment = segments[segments.length - 1];
     const segmentsRemovedLast =
       lastSegment.type === ExpressionEditorSegmentType.ArrayIndex
-        ? segments.slice(0, segments.length - 2) // 数组索引属于上一层级，需要去除两层
+        ? segments.slice(0, segments.length - 2) // The array index belongs to the previous level, and two layers need to be removed.
         : segments.slice(0, segments.length - 1);
     let treeLayer = tree;
     segmentsRemovedLast.forEach(segment => {
@@ -193,7 +193,7 @@ export namespace ExpressionEditorTreeHelper {
     const pathList: { objectKey: string; arrayIndex?: number }[] = [];
     while (current) {
       if (current.variable?.type === ViewVariableType.ArrayObject) {
-        // 默认第0个
+        // Default 0th
         pathList.unshift({
           objectKey: current.label,
           arrayIndex: 0,
@@ -213,7 +213,7 @@ export namespace ExpressionEditorTreeHelper {
       const pathItem = pathList[pathIndex];
       pathIndex++;
       if (pathItem.objectKey !== segment.objectKey) {
-        // 退出循环
+        // exit the loop
         return true;
       }
       const nextSegment = segments[index + 1];
@@ -253,7 +253,7 @@ export namespace ExpressionEditorTreeHelper {
         return false;
       };
       const beforeTreeNode = treeBranch[treeBranch.length - 1];
-      // 确认非法情况：是否对非数组类型使用数组索引
+      // Verify Illegal Case: Whether to Use Array Indexing for Non-Array Types
       if (
         segment.type === ExpressionEditorSegmentType.ArrayIndex &&
         beforeTreeNode &&
@@ -262,7 +262,7 @@ export namespace ExpressionEditorTreeHelper {
       ) {
         return itemInvalid();
       }
-      // 确认非法情况：数组只能跟随数组下标
+      // Confirm illegal condition: Array can only follow array subscript
       if (
         beforeTreeNode?.variable?.type &&
         ViewVariableType.isArrayType(beforeTreeNode.variable.type) &&
@@ -270,12 +270,12 @@ export namespace ExpressionEditorTreeHelper {
       ) {
         return itemInvalid();
       }
-      // 忽略
+      // ignore
       if (segment.type !== ExpressionEditorSegmentType.ObjectKey) {
         return itemValid();
       }
       const treeNode = treeLayer.find(node => node.label === segment.objectKey);
-      // 确认非法情况：每一个 object key 必须对应一个 variable node
+      // Verify illegal condition: each object key must correspond to a variable node
       if (!treeNode) {
         return itemInvalid();
       }

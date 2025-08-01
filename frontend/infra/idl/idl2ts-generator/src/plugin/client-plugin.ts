@@ -403,7 +403,7 @@ export class ClientPlugin implements IPlugin {
       });
     const enumAst = t.tsEnumDeclaration(t.identifier(name.value), enumArr);
 
-    // 从后向前删除枚举项，避免索引变化影响
+    // Delete enumeration items from back to front to avoid the impact of index changes
     enumItemIndexArray
       .sort((a, b) => b - a)
       .forEach(index => {

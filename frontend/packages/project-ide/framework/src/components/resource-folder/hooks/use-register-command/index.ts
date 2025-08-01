@@ -77,7 +77,7 @@ const useRegisterCommand = ({
           });
         }
       } else if (command.execute) {
-        // 如果有自定义的 execute 函数才会需要重新注册
+        // If there is a custom execute function, it will only need to be re-registered.
         if (commandRegistry.getCommand(command.id)) {
           commandRegistry.unregisterCommand(command.id);
         }

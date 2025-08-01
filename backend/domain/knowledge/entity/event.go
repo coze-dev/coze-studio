@@ -29,20 +29,20 @@ type Event struct {
 
 type EventType string
 
-// 文档 event
-// 切分 + 写入向量库操作事务性由实现自行保证
+// Document event
+// Split + write vector library operation transactionality is guaranteed by the implementation itself
 const (
 	EventTypeIndexDocuments EventType = "index_documents"
 
-	// EventTypeIndexDocument 文档信息已写入 orm，逻辑中需要解析+切分+搜索数据入库
+	// EventTypeIndexDocument document information has been written to orm, the logic needs to parse + split + search data warehousing
 	// Event requires: Event.Document
 	EventTypeIndexDocument EventType = "index_document"
 
-	// EventTypeIndexSlice 切片信息已写入 orm，逻辑中仅写入搜索数据
+	// EventTypeIndexSlice slice information has been written to orm, and only search data is written in the logic
 	// Event requires: Event.Slice
 	EventTypeIndexSlice EventType = "index_slice"
 
-	// EventTypeDeleteKnowledgeData 删除 knowledge
+	// EventTypeDeleteKnowledgeData remove knowledge
 	// Event requires: Event.KnowledgeID, Event.SliceIDs
 	EventTypeDeleteKnowledgeData EventType = "delete_knowledge_data"
 

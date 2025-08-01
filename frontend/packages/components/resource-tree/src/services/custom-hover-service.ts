@@ -76,7 +76,7 @@ export class CustomHoverService {
   }
 
   /**
-   * 根据鼠标位置计算和线条的间距
+   * Calculate and line spacing based on mouse position
    */
   getCloseInLineFromMousePos(
     mousePos: IPoint,
@@ -123,7 +123,7 @@ export class CustomHoverService {
     }
   }
 
-  // 折叠策略：访问所有连线的元素，同时访问其父元素，执行 collapse。
+  // Collapse strategy: access all connected elements and access their parent elements simultaneously, performing collapse.
   hoverCollapse(from?: FlowNodeEntity) {
     this.onHoverCollapseEmitter.fire(from);
   }
@@ -143,7 +143,7 @@ export class CustomHoverService {
     const selectNodes = this.getRelatedNodes(node);
     this.renderStateEntity.setSelectNodes(selectNodes);
     this.renderStateEntity.setActivatedNode(node);
-    // 高亮所有相关的线条
+    // Highlight all relevant lines
     const activeLines: string[] = [];
     this.linesManager.lines.map(line => {
       const fromInclude = selectNodes.includes(line.from.id);
@@ -164,9 +164,9 @@ export class CustomHoverService {
     }
     this.edges.forEach(edge => {
       if (edge.to === getTreeIdFromNodeId(node.id)) {
-        // push 额外线条
+        // Push extra lines
         ancArr.push(edge.from);
-        // 遍历之前的节点信息
+        // Traverse the previous node information
         const fromNode = this.document.getNode(getNodeIdFromTreeId(edge.from));
         if (fromNode) {
           const arr = this.traverseAncestors(fromNode);
@@ -195,7 +195,7 @@ export class CustomHoverService {
   };
 
   /**
-   * 根据当前树结构，遍历节点并且选中
+   * According to the current tree structure, iterate through the nodes and select
    */
   getRelatedNodes = (node: FlowNodeEntity) => {
     const parentRelated = this.traverseAncestors(node);

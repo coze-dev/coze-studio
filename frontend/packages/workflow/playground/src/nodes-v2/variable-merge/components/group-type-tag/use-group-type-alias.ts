@@ -23,7 +23,7 @@ import { getGroupTypeAlias } from '../../utils/get-group-type-alias';
 import { type MergeGroup } from '../../types';
 
 /**
- * 获取分组类型别名
+ * Get group type alias
  */
 export function useGroupTypeAlias(mergeGroup: MergeGroup) {
   const variableService: WorkflowVariableService = useVariableService();

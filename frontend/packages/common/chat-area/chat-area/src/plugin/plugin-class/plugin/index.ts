@@ -24,25 +24,25 @@ export abstract class ChatAreaPlugin<
   K = unknown,
 > {
   /**
-   * 业务方自持的业务Context信息
+   * Business Context Information Owned by Business Parties
    */
   public pluginBizContext: T;
   /**
-   * 插件名称
+   * plugin name
    */
   public abstract pluginName: PluginName;
   /**
-   * 插件模式
-   * @enum PluginMode.Readonly - 只读
-   * @enum PluginMode.Writeable - 可写
+   * plugin pattern
+   * @enum PluginMode. Readonly - Read Only
+   * @enum PluginMode. Writeable
    */
   public pluginMode: PluginMode = PluginMode.Readonly;
   /**
-   * ChatArea提供的上下文
+   * Context provided by ChatArea
    */
   public chatAreaPluginContext: ChatAreaPluginContext<U>;
   /**
-   * 自定义组件
+   * custom component
    */
   public customComponents?: Partial<CustomComponent>;
   constructor(
@@ -53,7 +53,7 @@ export abstract class ChatAreaPlugin<
     this.chatAreaPluginContext = chatAreaPluginContext;
   }
   /**
-   * 业务方请勿使用：注入ChatAreaContext信息
+   * Business parties should not use: Inject ChatAreaContext information
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   public _injectChatAreaContext(
@@ -68,7 +68,7 @@ export abstract class ChatAreaPlugin<
   }
 
   /**
-   * 对外暴露的公共方法
+   * Public methods of exposure
    */
   public publicMethods?: K;
 }
@@ -77,7 +77,7 @@ export abstract class ReadonlyChatAreaPlugin<
   T = unknown,
   K = unknown,
 > extends ChatAreaPlugin<PluginMode.Readonly, T, K> {
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- 需要透传
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- pass-through required
   constructor(
     pluginBizContext: T,
     chatAreaPluginContext: ChatAreaPluginContext<PluginMode.Readonly>,

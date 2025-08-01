@@ -43,7 +43,7 @@ import { EncapsulateContext } from '../encapsulate-context';
 import { ENCAPSULATE_START_END_PAD } from './constants';
 
 /**
- * 节点操作服务
+ * Node Operation Service
  */
 @injectable()
 export class EncapsulateNodesService {
@@ -66,9 +66,9 @@ export class EncapsulateNodesService {
   private playgroundContext: PlaygroundContext;
 
   /**
-   * 获取一批节点的中心点
-   * @param nodes 节点数组
-   * @returns 中心点的坐标对象
+   * Get the center point of a batch of nodes
+   * @param nodes array
+   * @Returns the coordinate object of the center point
    */
   getNodesMiddlePoint(
     nodes: Array<WorkflowNodeEntity | WorkflowNodeJSON>,
@@ -86,9 +86,9 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 创建解封节点
-   * @param sourceNode 原始被解封的节点
-   * @param nodes 要生成节点的node json数据
+   * Create an unblocked node
+   * @param sourceNode The original unblocked node
+   * @Param nodes to generate node json data
    * @returns
    */
   async createDecapsulateNodes(
@@ -102,7 +102,7 @@ export class EncapsulateNodesService {
     }
     const nodePoint = getNodePoint(sourceNode);
     const centerPoint = this.getNodesMiddlePoint(middleNodes);
-    // 平移到中心
+    // Translate to Center
     const translate: IPoint = {
       x: nodePoint.x - centerPoint.x,
       y: nodePoint.y - centerPoint.y,
@@ -122,7 +122,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 创建封装节点
+   * Create encapsulation node
    * @param name
    * @param nodes
    * @returns
@@ -151,7 +151,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 通过json创建一个新节点
+   * Create a new node with JSON
    * @param json
    * @returns
    */
@@ -172,7 +172,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 解封布局，将所有节点向外平移一半的宽高
+   * Unseal the layout and move all nodes outward by half their width and height
    */
   decapsulateLayout(sourceNode: WorkflowNodeEntity, nodes: WorkflowNodeJSON[]) {
     const point = getNodePoint(sourceNode);
@@ -227,10 +227,10 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 获取解封后的节点JSON
-   * @param nodeJSON 原来的node json
-   * @param translate 平移的距离
-   * @param idsMap ids映射
+   * Get the unblocked node JSON.
+   * @param nodeJSON original node json
+   * @param translate distance
+   * @param idsMap ids
    * @returns
    */
   private getDecapsulateNodeJSON(
@@ -264,7 +264,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 获取解封后的节点坐标
+   * Get the unblocked node coordinates
    * @param nodeJSON
    * @param translate
    * @returns
@@ -284,7 +284,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 节点分组
+   * Node grouping
    * @param nodes
    * @returns
    */
@@ -310,7 +310,7 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 获取多个节点合起来的宽高
+   * Get the combined width and height of multiple nodes
    * @param nodes
    * @returns
    */
@@ -351,13 +351,13 @@ export class EncapsulateNodesService {
   }
 
   /**
-   * 删除节点
+   * Delete Node
    * @param node   */
   async deleteNodes(nodes: WorkflowNodeEntity[]) {
     nodes.forEach(node => {
       node.dispose();
     });
-    // 有些节点删除会有删除出相关连线，等待其执行完成
+    // Some nodes will delete the relevant connection and wait for its execution to complete.
     await delay(10);
   }
 

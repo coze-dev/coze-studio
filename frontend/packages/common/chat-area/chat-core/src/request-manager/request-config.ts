@@ -37,10 +37,10 @@ const useCsrfRequestHook = (config: InternalAxiosRequestConfig) => {
     config.method?.toLowerCase() === 'post' &&
     !config.headers.get('content-type')
   ) {
-    // 新的 csrf 防护需要 post 请求全部带上这个 header
+    // The new CSRF protection requires all post requests to have this header.
     config.headers.set('content-type', 'application/json');
     if (!config.data) {
-      // axios 会自动在 data 为空时清除 content-type，所以需要设置一个空对象
+      // Axios will automatically clear the content-type when the data is empty, so you need to set an empty object
       config.data = {};
     }
   }

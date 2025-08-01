@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { StandardNodeType, useWorkflowNode } from '@coze-workflow/base';
 
 import { VariableContent } from '@/node-registries/variable';
@@ -27,6 +27,7 @@ import { PluginContent } from '@/node-registries/plugin';
 import { OutputContent } from '@/node-registries/output';
 import { LtmContent } from '@/node-registries/ltm';
 import { LoopContent } from '@/node-registries/loop';
+import { JsonStringifyContent } from '@/node-registries/json-stringify';
 import { IntentContent } from '@/node-registries/intent';
 import { InputContent } from '@/node-registries/input';
 import { ImageCanvasContent } from '@/node-registries/image-canvas';
@@ -51,7 +52,7 @@ import { DatabaseDeleteContent } from './database-delete-content';
 import { DatabaseCreateContent } from './database-create-content';
 import { DatabaseContent } from './database-content';
 import { CommonContent } from './common-content';
-// cli 脚本插入标识（import），请勿修改/删除此行注释
+// CLI script insert ID (import), do not modify/delete this line comment
 
 import styles from './index.module.less';
 
@@ -89,11 +90,12 @@ const ContentMap = {
   [StandardNodeType.TriggerRead]: TriggerReadContent,
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
-  // cli 脚本插入标识（registry），请勿修改/删除此行注释
+  [StandardNodeType.JsonStringify]: JsonStringifyContent,
+  // The cli script inserts the identifier (registry), do not modify/delete this line comment
 };
 
 /**
- * 节点内容区域
+ * Node content area
  */
 export function Content() {
   const { type } = useWorkflowNode();

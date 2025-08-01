@@ -89,9 +89,9 @@ export const SuggestQuestionItemContent: React.FC<{
 
   useEffect(() => {
     if (message.highlight) {
-      // bot详情 - 用户定时任务 - 在开场白中添加引导 - 需要展开开场白模块
+      // Bot Details - User Timed Tasks - Add Bootstrap to Opener - Need to Expand Opener Module
       emitEvent(OpenBlockEvent.ONBORDING_MESSAGE_BLOCK_OPEN);
-      // 动画效果
+      // animation effect
       const duration = 250;
       setTimeout(() => {
         const settingAreaScrollElement =
@@ -103,7 +103,7 @@ export const SuggestQuestionItemContent: React.FC<{
             behavior: 'smooth',
           });
         }
-        // 折叠区域展开 250ms 动画时间
+        // Folded area unfolded 250ms animation time
       }, duration);
 
       setTimeout(() => {

@@ -29,12 +29,12 @@ export const TopBar = () => (
   <div className={styles.container}>
     <Row className={styles['top-bar']}>
       <Col span={8} className={styles['left-col']}>
-        {/* 返回按钮 */}
+        {/* Back button */}
         <GoBackButton />
-        {/* 项目标题 */}
+        {/* Project title */}
         <ProjectInfo />
       </Col>
-      {/* 海外版暂时不上 uibuilder 切换功能 */}
+      {/* The overseas version does not have the uibuilder switching function for the time being. */}
       <Col span={8} className={styles['middle-col']}>
         {IS_OVERSEA ? null : <ModeTab />}
       </Col>

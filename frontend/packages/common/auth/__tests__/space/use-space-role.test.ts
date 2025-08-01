@@ -20,23 +20,23 @@ import { SpaceRoleType } from '@coze-arch/idl/developer_api';
 
 import { useSpaceAuthStore } from '../../src/space/store';
 
-// 模拟 zustand
+// Analog zustand
 vi.mock('zustand/react/shallow', () => ({
   useShallow: fn => fn,
 }));
 
-// 模拟 foundation-sdk
+// Simulation foundation-sdk
 const mockUseSpace = vi.fn();
 vi.mock('@coze-arch/foundation-sdk', () => ({
   useSpace: (...args) => mockUseSpace(...args),
 }));
 
-// 模拟 store
+// Simulated store
 vi.mock('../../src/space/store', () => ({
   useSpaceAuthStore: vi.fn(),
 }));
 
-// 导入实际模块，确保在模拟之后导入
+// Import the actual module, make sure to import it after simulation
 import { useSpaceRole } from '../../src/space/use-space-role';
 
 describe('useSpaceRole', () => {
@@ -49,40 +49,40 @@ describe('useSpaceRole', () => {
     const mockSpace = { id: spaceId, name: 'Test Space' };
     const mockRoles = [SpaceRoleType.Owner];
 
-    // 模拟 useSpace 返回 space 对象
+    // Simulate useSpace Return space object
     mockUseSpace.mockReturnValue(mockSpace);
 
-    // 模拟 useSpaceAuthStore 返回 isReady 和 role
+    // Emulate useSpaceAuthStore returns isReady and role
     (useSpaceAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       isReady: true,
       role: mockRoles,
     });
 
-    // 渲染 hook
+    // Render hook
     const { result } = renderHook(() => useSpaceRole(spaceId));
 
-    // 验证 useSpace 被调用，并传入正确的 spaceId
+    // Verify that useSpace is called, passing in the correct spaceId.
     expect(mockUseSpace).toHaveBeenCalledWith(spaceId);
 
-    // 验证 useSpaceAuthStore 被调用，并传入正确的选择器
+    // Verify that useSpaceAuthStore is called, passing in the correct selector
     expect(useSpaceAuthStore).toHaveBeenCalled();
 
-    // 验证返回值与预期一致
+    // Verify that the return value is as expected
     expect(result.current).toEqual(mockRoles);
   });
 
   it('应该在 space 不存在时抛出错误', () => {
     const spaceId = 'test-space-id';
 
-    // 模拟 useSpace 返回 null
+    // Simulate useSpace returns null
     mockUseSpace.mockReturnValue(null);
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证渲染 hook 时抛出错误
+    // Error thrown while validating render hook
     expect(() => useSpaceRole(spaceId)).toThrow(
       'useSpaceAuth must be used after space list has been pulled.',
     );
@@ -92,21 +92,21 @@ describe('useSpaceRole', () => {
     const spaceId = 'test-space-id';
     const mockSpace = { id: spaceId, name: 'Test Space' };
 
-    // 模拟 useSpace 返回 space 对象
+    // Simulate useSpace Return space object
     mockUseSpace.mockReturnValue(mockSpace);
 
-    // 模拟 useSpaceAuthStore 返回 isReady 为 false
+    // Emulate useSpaceAuthStore returns isReady to false
     (useSpaceAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       isReady: false,
       role: null,
     });
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证渲染 hook 时抛出错误
+    // Error thrown while validating render hook
     expect(() => useSpaceRole(spaceId)).toThrow(
       'useSpaceAuth must be used after useInitSpaceRole has been completed.',
     );
@@ -116,21 +116,21 @@ describe('useSpaceRole', () => {
     const spaceId = 'test-space-id';
     const mockSpace = { id: spaceId, name: 'Test Space' };
 
-    // 模拟 useSpace 返回 space 对象
+    // Simulate useSpace Return space object
     mockUseSpace.mockReturnValue(mockSpace);
 
-    // 模拟 useSpaceAuthStore 返回 isReady 为 true，但 role 为 null
+    // Emulate useSpaceAuthStore returns isReady as true, but role as null
     (useSpaceAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       isReady: true,
       role: null,
     });
 
-    // 使用 vi.spyOn 监听 console.error 以防止测试输出错误信息
+    // Use vi.spyOn to listen to console.error to prevent test output error messages
     vi.spyOn(console, 'error').mockImplementation(() => {
-      // 空实现，防止错误输出
+      // Empty implementation to prevent error output
     });
 
-    // 验证渲染 hook 时抛出错误
+    // Error thrown while validating render hook
     expect(() => useSpaceRole(spaceId)).toThrow(
       `Can not get space role of space: ${spaceId}`,
     );

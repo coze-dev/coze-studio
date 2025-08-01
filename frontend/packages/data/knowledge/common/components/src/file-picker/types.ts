@@ -30,53 +30,53 @@ export interface PickerRef {
 }
 
 /**
- * 文件选择树节点
+ * file selection tree node
  */
 export interface FileNode extends TreeNodeData {
-  /** 独一无二的 key 标识 可以用 文件 id */
+  /** Unique key identifier, can be used, file id */
   key: string;
   value?: string;
   label?: React.ReactNode;
   type?: TreeNodeType;
-  // icon 的 URL
+  // URL of the icon
   icon?: string;
   children?: FileNode[];
-  /** 标识当前节点是不是叶子结点 loadData 时必备 */
+  /** Required when identifying whether the current node is a leaf node loadData */
   isLeaf?: boolean;
-  /** 该节点是否可以选中 */
+  /** Can the node be selected? */
   selectable?: boolean;
-  /** 节点的 loading 状态，开启后 loading 默认替换 icon，展示 loadingInfo，
-   *  注意这个和 semi 本身带的 loading 不一样，semi 的 loading 指的是 展开的 loading 状态 */
+  /** The loading status of the node, after opening, the loading default replaces the icon, and displays the loadingInfo.
+   *  Note that this is different from the loading of the semi itself. The loading of the semi refers to the unfolded loading state. */
   isLoading?: boolean;
-  /** 节点 loading 的提示，默认是 `获取中` */
+  /** Node loading prompt, the default is "getting" */
   loadingInfo?: string;
-  /** 具体的文档类型 比如 doc docx txt 等 */
+  /** Specific document types, such as doc docx txt, etc */
   file_type?: string;
-  /** 三方文档链接  */
+  /** Three-way document link  */
   file_url?: string;
-  /** 【飞书场景】wiki 空间id,*/
+  /** [Feishu scene] wiki space id,*/
   space_id?: string;
-  /** 【飞书场景】wiki 叶子id,*/
+  /** [Feishu scene] wiki leaf id,*/
   obj_token?: string;
-  /** 自定义渲染 Item */
+  /** Custom Rendering Items */
   render?: () => ReactNode;
-  /** 只读，不可交互 */
+  /** Read-only, not interactive */
   readonly?: boolean;
-  /** 节点是否不可选择，默认为 false */
+  /** Whether the node is not selectable, the default is false */
   unCheckable?: boolean;
 }
 
 export type FileId = string;
 
 /**
- * 文件选择树 节点选择状态
+ * File selection tree, node selection status
  */
 export interface FileSelectCheckStatus {
   checked: boolean;
   halfChecked: boolean;
 }
 
-// 三部分 当前选中的 新增选中的 较上次不选中的 较上次不变的
+// Three parts, currently selected, newly selected, unselected from last time, unchanged from last time
 export type TransSelectedFilesMiddleware = (
   fileNodes: FileNode[],
 ) => FileNode[];
@@ -88,12 +88,12 @@ export type CalcCurrentSelectFilesMiddleware = (
   retainNodes?: FileNode[],
 ) => FileNode[];
 
-/** 类型断言 节点是不是 fileNode */
+/** Type assertion, node is not fileNode */
 export function isFileNode(fileNode: unknown): fileNode is FileNode {
   return !!fileNode && isObject(fileNode) && !!(fileNode as FileNode).key;
 }
 
-/** 类型断言 数组是不是 fileNode 数组 */
+/** Type assertion, array is not a fileNode array */
 export function isFileNodeArray(fileNodes: unknown[]): fileNodes is FileNode[] {
   return fileNodes.every(fileNode => isFileNode(fileNode));
 }

@@ -128,7 +128,7 @@ const getParamsTitle = (isShowExampleTag: boolean, disabled: boolean) =>
     )
   );
 
-// eslint-disable-next-line @coze-arch/max-line-per-function -- 已经在拆了
+// eslint-disable-next-line @coze-arch/max-line-per-function -- already dismantling
 const ParamsForm = (
   props: ParamsFormProps,
   ref: Ref<{ data: Array<APIParameter> } | null>,
@@ -160,7 +160,7 @@ const ParamsForm = (
   }));
 
   const [flag, setFlag] = useState<boolean>(false);
-  // 添加子节点
+  // Add sub-node
   const addChildNode = (record: APIParameter) => {
     if (!data) {
       return;
@@ -168,7 +168,7 @@ const ParamsForm = (
     let result: APIParameter & {
       path?: Array<number>;
     } = {};
-    // 1.查找路径
+    // 1. Find the path
     findPathById({
       data,
       callback: (item: APIParameter, path: Array<number>) => {
@@ -178,16 +178,16 @@ const ParamsForm = (
       },
     });
 
-    // 2.拼接路径
+    // 2. Splicing path
     const path = (result?.path || [])
       .map((v: number) => [v, childrenRecordName])
       .flat();
-    // newPath是模版的路径，下面添加节点newNode可以直接从该路径引用
+    // newPath is the path of the template. The following node newNode can be directly referenced from this path
     const newPath = findTemplateNodeByPath(resourceData, path);
-    // 3.添加节点
+    // 3. Add a node
     const newData = cloneDeep(data);
     if (Array.isArray(ObjectGet(newData, path))) {
-      // 这一步是为了根据newPath找到对应的根节点，并且克隆一个新节点
+      // This step is to find the corresponding root node according to newPath and clone a new node
       const newNode = cloneWithRandomKey(ObjectGet(resourceData, newPath)[0]);
       ObjectSet(newData, path, [...ObjectGet(newData, path), newNode]);
     }

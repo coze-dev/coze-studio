@@ -28,30 +28,30 @@ export const fixEndEmpty = ({
   endNode: Node;
   endOffset: number;
 }): boolean => {
-  // 检查是否需要修复：结束节点和开始节点不同且结束偏移量为0
+  // Check if it needs to be fixed: the end node and the start node are different and the end offset is 0
   if (startNode === endNode || endOffset !== 0) {
-    return false; // 不需要修复
+    return false; // No repair required.
   }
 
-  // 初始化当前节点为结束节点的前一个兄弟节点
+  // Initializes the current node to the previous sibling of the end node
   let currentNode: Node | null = findNotContainsPreviousSibling(endNode);
 
-  // 寻找一个有效的非空前一个兄弟节点
+  // Find a valid non-unprecedented sibling node
   while (currentNode) {
     if (currentNode.nodeType === Node.TEXT_NODE) {
-      // 如果是文本节点，检查是否非空
+      // If it is a text node, check if it is not empty
       const textContent = currentNode.textContent?.trim();
       if (textContent && currentNode.textContent?.length) {
-        // 非空，修复选区结束位置
+        // Not empty, fix the end of the selection
         range.setEnd(currentNode, currentNode.textContent.length);
         return true;
       }
     } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
-      // 如果是元素节点，检查是否有可见内容
+      // If it is an element node, check if there is any visible content
       const textContent = currentNode.textContent?.trim();
       if (textContent) {
-        // 有可见内容，尝试更精确地设置结束位置
-        // 如果元素内部有文本节点，尝试定位到最后一个文本节点
+        // With visible content, try to set the end position more precisely
+        // If there is a text node inside the element, try to navigate to the last text node
         let lastTextNode: Node | null = null;
 
         const allChildNodes = getAllChildNodesInNode(currentNode);
@@ -68,10 +68,10 @@ export const fixEndEmpty = ({
         }
       }
     }
-    // 如果当前节点为空或不满足条件，继续向前/向上遍历
+    // If the current node is empty or does not meet the conditions, continue to traverse forward/upward
     currentNode = findNotContainsPreviousSibling(currentNode);
   }
 
-  // 如果遍历完所有前一个兄弟节点都没有找到合适的节点，返回false
+  // If no suitable node is found after traversing all previous siblings, return false.
   return false;
 };

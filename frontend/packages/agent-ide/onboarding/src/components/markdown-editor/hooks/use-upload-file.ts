@@ -24,7 +24,7 @@ import { Toast } from '@coze-arch/bot-semi';
 import { type UploadState } from '../type';
 import { UploadController } from '../service/upload-controller';
 /**
- * 暂时没有场景，所以这里将多实例、一次行上传多文件的能力屏蔽了
+ * There is no scene for the time being, so the ability to upload multiple files with multiple instances and one line is blocked here.
  */
 export const useUpload = ({
   getUserId,

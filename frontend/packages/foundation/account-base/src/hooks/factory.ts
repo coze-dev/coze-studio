@@ -28,11 +28,11 @@ import { type UserInfo } from '../types';
 import { useUserStore } from '../store/user';
 
 /**
- * 用于页面初始化时，检查登录状态，并监听登录态失效的接口报错
- * 在登录态失效时，会重定向到登录页
- * @param needLogin 是否需要登录
- * @param checkLogin 检查登录状态的具体实现
- * @param goLogin 重定向到登录页的具体实现
+ * It is used to check the login status when the page is initialized, and listen for the interface error if the login status is invalid.
+ * When the login status fails, it will be redirected to the login page
+ * @param needLogin is required
+ * @Param checkLogin Check the specific implementation of login status
+ * @Param goLogin Redirect to login page concrete implementation
  */
 export const useCheckLoginBase = (
   needLogin: boolean,
@@ -54,7 +54,7 @@ export const useCheckLoginBase = (
 
   useEffect(() => {
     const isLogined = !!useUserStore.getState().userInfo?.user_id_str;
-    // 当前页面要求登录，登录检查结果为未登录时，重定向回登录页
+    // The current page requires login. If the login check result is not logged in, redirect back to the login page.
     if (needLogin && isSettled && !isLogined) {
       memoizedGoLogin();
     }
@@ -71,7 +71,7 @@ export const useCheckLoginBase = (
         }
       }
     };
-    // ajax 请求后端接口出现未 授权/登录 时，触发该函数
+    // This function is triggered when the Ajax request backend interface appears not authorized/logged in
     handleAPIErrorEvent(APIErrorEvent.UNAUTHORIZED, handleUnauthorized);
     return () => {
       removeAPIErrorEvent(APIErrorEvent.UNAUTHORIZED, handleUnauthorized);

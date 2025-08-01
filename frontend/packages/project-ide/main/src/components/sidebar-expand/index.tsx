@@ -83,7 +83,7 @@ export const SidebarExpand = () => {
   }, [pathname]);
 
   useEffect(() => {
-    // 侧边栏显隐状态切换时，更新按钮状态
+    // Update button status when sidebar hidden status switch
     const disposable = projectIDEServices.view.onSidebarVisibleChange(vis => {
       setVisible(vis);
     });
@@ -97,7 +97,7 @@ export const SidebarExpand = () => {
     setPopoverVisible(false);
   }, []);
 
-  // 右边分屏不展示 hover icon
+  // The split screen on the right does not show the hover icon.
   if (direction === 'right') {
     return null;
   }

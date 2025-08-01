@@ -61,7 +61,7 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 
 		groupName := variable.GroupName
 		if groupName == "" {
-			groupName = "未分组" // 处理空分组名
+			groupName = "未分组" // Handling empty group names
 		}
 
 		if _, ok := groups[groupName]; !ok {
@@ -75,13 +75,13 @@ func (v SysConfVariables) GroupByName() []*kvmemory.GroupVariableInfo {
 		groups[groupName].VarInfoList = append(groups[groupName].VarInfoList, variable)
 	}
 
-	// 转换为切片并按组名排序
+	// Convert to slices and sort by group name
 	result := make([]*kvmemory.GroupVariableInfo, 0, len(groups))
 	for _, group := range groups {
 		result = append(result, group)
 	}
 
-	// 可选：按组名排序
+	// Optional: sort by group name
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].GroupName < result[j].GroupName
 	})

@@ -61,7 +61,7 @@ interface NodesContainerProps {
   containerNode?: WorkflowNodeEntity;
   adaptiveHeight?: number;
   /**
-   * 更新正在添加节点的状态，此时 clickOutside 不会关闭节点面板，避免添加节点完成前面板触发 onClose 关闭，之前的连线不能销毁
+   * Update the status of the node being added. At this time, clickOutside will not close the node panel to avoid triggering onClose to close before the addition of the node is completed, and the previous connection cannot be destroyed.
    * @param isAdding
    * @returns
    */
@@ -119,7 +119,7 @@ export const NodeList = forwardRef<NodeListRefType, NodesContainerProps>(
     }));
 
     useEffect(() => {
-      const text = input.replaceAll(' ', ''); // 删除空格
+      const text = input.replaceAll(' ', ''); // Remove spaces
       handleKeywordChange(text);
     }, [input]);
 

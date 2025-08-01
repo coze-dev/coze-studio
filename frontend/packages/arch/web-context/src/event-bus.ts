@@ -45,9 +45,9 @@ export class GlobalEventBus<T extends ValidEventTypes> {
   }
 
   /**
-   * 触发事件
-   * @param event 事件名称
-   * @param args 参数
+   * trigger event
+   * @param event name
+   * @param args parameter
    */
   emit<P extends EventEmitter.EventNames<T>>(
     event: P,
@@ -64,9 +64,9 @@ export class GlobalEventBus<T extends ValidEventTypes> {
   }
 
   /**
-   * 订阅事件
-   * @param event 事件名称
-   * @param fn 事件回调
+   * subscribe to events
+   * @param event name
+   * @param fn event callback
    */
   on<P extends EventEmitter.EventNames<T>>(
     event: P,
@@ -76,9 +76,9 @@ export class GlobalEventBus<T extends ValidEventTypes> {
   }
 
   /**
-   * 取消订阅事件
-   * @param event 事件名称
-   * @param fn 事件回调
+   * unsubscribe from the event
+   * @param event name
+   * @param fn event callback
    */
   off<P extends EventEmitter.EventNames<T>>(
     event: P,
@@ -88,7 +88,7 @@ export class GlobalEventBus<T extends ValidEventTypes> {
   }
 
   /**
-   * 开启缓存事件订阅器，开启时会将关闭时收到的事件对应的回调按顺序逐一触发
+   * Turn on the cached event subscriber, and when turned on, the callbacks corresponding to the events received when closed will be fired one by one in sequence
    */
   start() {
     this.started = true;
@@ -98,14 +98,14 @@ export class GlobalEventBus<T extends ValidEventTypes> {
   }
 
   /**
-   * 关闭缓存事件订阅器，在关闭时收到的事件会被缓存并延迟到下次开启时触发
+   * Close the cached event subscriber. Events received during shutdown will be cached and delayed until the next time it is turned on
    */
   stop() {
     this.started = false;
   }
 
   /**
-   * 清除缓存事件订阅器缓存的事件，使得在重新开启（start）时不会触发在关闭（stop）时收到的事件对应的回调
+   * Clears the cached events of the event subscriber so that the callback corresponding to the event received at stop is not triggered when starting again
    */
   clear() {
     this.buffer = [];

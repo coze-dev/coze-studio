@@ -40,7 +40,7 @@ export const noDuplicatedDepsRule: Rule.RuleModule = {
         if (!properties) {
           return;
         }
-        // 对比 dependencies 与 devDependencies 之间是否存在重复依赖
+        // Compare dependencies with devDependencies for duplicate dependencies
         const dependencies = properties.find(
           p => p.key.value === 'dependencies',
         );

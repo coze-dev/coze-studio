@@ -58,13 +58,13 @@ export const mergeFormValues = (options: MergeFormValuesOptions) => {
     if (isObject(next)) {
       next = JSON.stringify(next, undefined, 2);
     }
-    // ai 场景要舍弃文件类型
+    // AI scene to discard file type
     if (ai && ViewVariableType.isFileType(type)) {
       return prev;
     }
     /**
-     * 1.如果是空值就直接覆盖
-     * 2.如果是强制覆盖也直接覆盖
+     * 1. If it is null, overwrite it directly
+     * 2. If it is mandatory coverage, it is also directly covered.
      */
     if (isEmpty(prev) || cover) {
       return next;

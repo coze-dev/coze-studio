@@ -38,7 +38,7 @@ export const typeSafeJSONParse = (
     }
     return JSON.parse(String(v));
   } catch (e) {
-    // 日志解析
+    // log parsing
     if (options?.needReport) {
       reporter.errorEvent({
         error: e as Error,

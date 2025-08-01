@@ -96,57 +96,57 @@ export const getDefaultBotSkillStore = (): BotSkillStore => ({
   devHooks: {},
 });
 
-/** Persona & Prompt 区域 */
+/** Persona & Prompted Areas */
 export interface BotSkillStore {
-  // region Bot 和 Agent 维度共有 skills
-  /** 已选的 plugin api */
+  // Region Bot and Agent dimension common skills
+  /** Selected plugin api */
   pluginApis: EnabledPluginApi[];
-  /** 已选 workflow */
+  /** Selected workflow */
   workflows: WorkFlowItemType[];
-  /** Knowledge 配置 */
+  /** Knowledge Allocation */
   knowledge: KnowledgeConfig;
   // endregion
 
-  // region Bot 维度独有 skills
+  // Region Bot Dimension Unique skills
   /**
-   * task 配置
+   * Task configuration
    *
-   * 不含已添加的 task，已添加的在组件内独立管理
+   * No added tasks are included, and those added are managed independently within the component
    */
   taskInfo: TaskManageInfo;
   /**
-   * variable 默认值配置
+   * Variable default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   variables: VariableItem[];
   /**
-   * database 默认值配置
+   * Database default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   database: DatabaseInfo;
   /**
-   * database 多表默认值配置
+   * Database multi-table default configuration
    *
-   * 不含右上角现值，现值为打开弹窗后请求获得的组件状态
+   * The present value in the upper right corner is not included. The present value is the component state requested after opening the pop-up window.
    */
   databaseList: DatabaseList;
-  /** 开场白配置 */
+  /** Opener configuration */
   onboardingContent: ExtendOnboardingContent;
-  /** 用户问题建议配置 */
+  /** User Questions Suggested Configuration */
   suggestionConfig: BotSuggestionConfig;
   // endregion
-  /** 文字转语音 */
+  /** Text to Speech */
   tts: TTSInfo;
-  /** 语音设置 上面 tts 在命名和含义划分上已经不准确了 但是牵扯甚广 */
+  /** Voice settings, the above tts are no longer accurate in naming and meaning division, but they are very involved */
   voicesInfo: VoicesInfo;
-  // 时间胶囊
+  // Time Capsule
   timeCapsule: TimeCapsuleConfig;
   filebox: FileboxConfig;
-  // 聊天背景图
+  // Chat background cover
   backgroundImageInfoList: BackgroundImageInfo[];
-  // 快捷指令
+  // Quick Instruction
   shortcut: ShortCutStruct;
   // hooks
   devHooks?: HookInfo;

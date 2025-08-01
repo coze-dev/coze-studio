@@ -29,7 +29,7 @@ export interface URILabelProps {
 }
 
 /**
- * 渲染 Label 的 react 组件
+ * React component for rendering Label
  * @param props
  * @constructor
  */

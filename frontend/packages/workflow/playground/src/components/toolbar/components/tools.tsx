@@ -66,7 +66,7 @@ export const Tools = (props: ITool) => {
       </div>
       <div className={cls(css['tools-section'], css['test-run'])}>
         {isChatflow ? <RoleButton /> : null}
-        {/* 运维平台不需要调试和试运行，只需要查看信息排查问题 */}
+        {/* The operation and maintenance platform does not need debugging and practice running, just need to view the information to troubleshoot problems */}
         {IS_BOT_OP ? (
           <OpenTraceButton />
         ) : (

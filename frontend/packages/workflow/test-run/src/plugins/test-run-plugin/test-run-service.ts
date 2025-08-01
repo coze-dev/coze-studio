@@ -18,11 +18,11 @@ export const TestRunService = Symbol('TestRunService');
 
 export interface TestRunService {
   /**
-   * 停止试运行
+   * Stop practicing running
    */
   pauseTestRun: () => void;
   /**
-   * 继续试运行
+   * Keep practicing running
    */
   continueTestRun: () => void;
 }

@@ -20,7 +20,7 @@ import { KnowledgeApi } from '@coze-arch/bot-api';
 import { type ViewOnlinePageDetailProps } from '@/types';
 
 /**
- * 将API返回的网页信息转换为视图数据
+ * Convert the web page information returned by the API into view data
  */
 const transformWebInfoToViewData = (webInfo: {
   id?: string;
@@ -47,7 +47,7 @@ export const useGetWebInfo = (): {
         include_content: true,
       });
 
-      // 如果没有数据，返回空数组
+      // If there is no data, return an empty array
       if (!responseData?.[webID]?.web_info) {
         return [] as ViewOnlinePageDetailProps[];
       }
@@ -56,7 +56,7 @@ export const useGetWebInfo = (): {
       const mainPageData = transformWebInfoToViewData(webInfo);
       const result = [mainPageData];
 
-      // 处理子页面数据
+      // Processing subpage data
       if (webInfo?.subpages?.length) {
         const subpagesData = webInfo.subpages.map(transformWebInfoToViewData);
         result.push(...subpagesData);

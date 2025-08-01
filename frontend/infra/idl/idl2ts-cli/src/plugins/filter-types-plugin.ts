@@ -186,7 +186,7 @@ export class FilterTypesPlugin {
     } else if (isIdentifier(fieldType)) {
       const statement = getStatementById(fieldType, current);
       if (isEnumDefinition(statement)) {
-        // 强制转位 number
+        // Forced indexing number
         // @ts-expect-error fixme late
         fieldType.type = SyntaxType.I32Keyword;
         let namespace = current.unifyNamespace;

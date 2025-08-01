@@ -56,19 +56,19 @@ export interface OnboardingEditorProps {
     prologue: string;
   };
   isReadonly?: boolean;
-  // 生成中
+  // Generating
   isGenerating?: boolean;
-  // 聚焦展开
+  // Focus Expand
   focusExpand?: boolean;
   onChange?: (context: OnboardingEditorContext) => void;
   onBlur?: (context: OnboardingEditorContext) => void;
-  noExpand?: boolean; // 右下角展开icon
-  onExpand?: () => void; // 点击展开icon
+  noExpand?: boolean; // Expand icon in lower right corner
+  onExpand?: () => void; // Click expand icon
   style?: CSSProperties;
-  businessKey?: string; // 用于注册toolbar
+  businessKey?: string; // To register the toolbar
   noLabel?: boolean;
   /**
-   * 开启 plainText 模式后，输入内容与原生 textarea 不会有区别，会取消 markdown 支持，并隐藏 toolbar（会覆盖 noToolbar 属性）
+   * When plainText mode is enabled, the input content will not be different from the native textarea, markdown support will be removed, and toolbar will be hidden (the noToolbar property will be overridden).
    * @default false
    */
   plainText?: boolean;

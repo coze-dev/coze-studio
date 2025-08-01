@@ -84,10 +84,10 @@ export class RequestManager {
   }
 
   /**
-   * 传入的request hooks, 可以对每个scene单独做拦截
+   * Incoming request hooks can be intercepted separately for each scene
    */
   private useRequestInterceptor() {
-    // 执行传入的统一的hooks
+    // Execute incoming unified hooks
     const onCommonBeforeRequest = async (
       config: InternalAxiosRequestConfig,
     ) => {
@@ -101,7 +101,7 @@ export class RequestManager {
       }
       return merge(config, rest);
     };
-    // 执行每个scene的hooks
+    // Execute hooks for each scene
     const onSceneBeforeRequest = async (config: InternalAxiosRequestConfig) => {
       const { scenes } = this.mergedBaseOptions;
       if (!scenes) {
@@ -124,22 +124,22 @@ export class RequestManager {
       return merge({ ...rest }, config);
     };
     this.request.interceptors.request.use(async config => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention -- 临时变量, 挺正常的
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
       const _config = await onCommonBeforeRequest(config);
       return await onSceneBeforeRequest(_config);
     });
   }
 
   /**
-   * 传入的response hooks, 可以对每个scene单独做拦截
+   * Incoming response hooks, can be intercepted individually for each scene
    */
   private useResponseInterceptor() {
-    // 执行传入的统一的hooks
+    // Execute incoming unified hooks
     const onCommonAfterResponse = async (
       response: AxiosResponse,
       hooksName: 'onAfterResponse' | 'onErrrorResponse' = 'onAfterResponse',
     ): Promise<AxiosResponse> => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention -- 临时变量, 挺正常的
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
       let _response: AxiosResponse | Promise<AxiosResponse> = response;
       const { hooks } = this.mergedBaseOptions;
       if (!hooks) {
@@ -151,13 +151,13 @@ export class RequestManager {
       }
       return _response;
     };
-    // 执行每个scene的hooks
+    // Execute hooks for each scene
     const onSceneAfterResponse = async (
       response: AxiosResponse,
       hooksName: 'onAfterResponse' | 'onErrrorResponse' = 'onAfterResponse',
     ): Promise<AxiosResponse> => {
       const { scenes } = this.mergedBaseOptions;
-      // eslint-disable-next-line @typescript-eslint/naming-convention -- 临时变量, 挺正常的
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
       let _response: AxiosResponse | Promise<AxiosResponse> = response;
       if (!scenes) {
         return response;
@@ -180,12 +180,12 @@ export class RequestManager {
     };
     this.request.interceptors.response.use(
       async response => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention -- 临时变量, 挺正常的
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
         const _response = await onCommonAfterResponse(response);
         return await onSceneAfterResponse(_response);
       },
       async response => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention -- 临时变量, 挺正常的
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
         const _response = await onCommonAfterResponse(
           response,
           'onErrrorResponse',
@@ -196,7 +196,7 @@ export class RequestManager {
   }
 
   /**
-   * 获取配置信息
+   * Get configuration information
    */
   getSceneConfig(scene: RequestScene): PartiallyRequired<SceneConfig, 'url'> {
     const { hooks, scenes, ...rest } = this.mergedBaseOptions;

@@ -520,7 +520,7 @@ const (
 type RefSourceType string
 
 const (
-	RefSourceTypeBlockOutput  RefSourceType = "block-output" // 代表引用了某个 Block 的输出隐式声明的变量
+	RefSourceTypeBlockOutput  RefSourceType = "block-output" // Represents an implicitly declared variable that references the output of a block
 	RefSourceTypeGlobalApp    RefSourceType = "global_variable_app"
 	RefSourceTypeGlobalSystem RefSourceType = "global_variable_system"
 	RefSourceTypeGlobalUser   RefSourceType = "global_variable_user"

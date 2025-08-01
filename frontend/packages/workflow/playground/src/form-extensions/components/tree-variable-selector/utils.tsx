@@ -42,7 +42,7 @@ import {
   type VariableTreeDataNode,
 } from './types';
 
-/** 过滤不符合条件(类型)的变量 */
+/** Filter variables that do not match the criteria (types) */
 export const doesNodeIncludeEnabledTypes = (
   node: ViewVariableTreeNode,
   enabledTypes: Array<ViewVariableType>,
@@ -115,7 +115,7 @@ export function formatWithNodeVariables(
     .map(([key, value]) => {
       const nodeVariables = normalizeTreeData(value, disabledTypes);
 
-      // 没有变量的节点无需展示
+      // Nodes without variables do not need to be displayed
       if (!nodeVariables?.length) {
         return null;
       }
@@ -186,7 +186,7 @@ export const renderLabelWithItem = (
         position="left"
         style={{ maxWidth: 800, display: 'block', wordBreak: 'break-word' }}
         spacing={16}
-        // 画布内可以自由移动，翻转反而会定位错误
+        // The canvas can move freely, but flipping will lead to wrong positioning.
         autoAdjustOverflow={false}
       >
         <Space spacing={4}>
@@ -269,8 +269,8 @@ export const genGlobalVariableData = (
 };
 
 /**
- * 处理 DataSource 数据，添加部分字段 / 渲染
- * 对于 TreeSelect 来说，需要将 path 放在每一个 dataSource Item 上，帮助 TreeSelect 选择的时候确定 path
+ * Process DataSource data, add partial fields/renders
+ * For TreeSelect, you need to put the path on each dataSource Item to help TreeSelect determine the path when selecting.
  */
 export const processDataSourceLabelRender = (params: {
   dataSource?: VariableTreeDataNode[];
@@ -334,8 +334,8 @@ export const processDataSourceLabelRender = (params: {
           key: path.join('-') as string,
           path,
           namePath,
-          // TODO: 也可以通过 disableTypes 来进行判断
-          // 第一层的节点不应该被选中 && 不通过optionFilter的节点不能选
+          // TODO: can also be judged by disableTypes
+          // Nodes in the first layer should not be selected & & Nodes that do not pass the optionFilter cannot be selected
           disabled:
             path?.length === 1 ||
             (disabledTypes &&
@@ -353,10 +353,10 @@ export const processDataSourceLabelRender = (params: {
           }),
         };
       })
-      // 过滤没有输出变量的节点
+      // Filter nodes without output variables
       .filter(_item => {
         if (enableSelectNode) {
-          // 允许选根节点的情况下无需过滤
+          // No filtering required if root node selection is allowed
           return true;
         }
         if (!_item.isTop) {
@@ -393,7 +393,7 @@ export const getLabelPath = (
   return path;
 };
 
-// 往上查找挂载节点
+// Look up the mount node
 export const findActivityDOM = (node?: HTMLElement | null): HTMLElement => {
   if (!node) {
     return document.body;
@@ -409,7 +409,7 @@ export const findActivityDOM = (node?: HTMLElement | null): HTMLElement => {
   return document.body;
 };
 
-/** 向上找到节点信息 */
+/** Go up and find the node information. */
 export const findNodeInfo = (
   node: TreeNodeData,
 ): {

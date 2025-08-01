@@ -23,7 +23,7 @@ import { type BotSpace } from '@coze-arch/bot-api/developer_api';
 export const useRefreshSpaces = (refresh?: boolean) => {
   const [loading, setLoading] = useState(true);
   const enterpriseInfo = useCurrentEnterpriseInfo();
-  // 企业发生变化，重新获取空间列表
+  // Businesses change, regain the list of spaces
   useEffect(() => {
     if (refresh || !useSpaceStore.getState().inited) {
       setLoading(true);

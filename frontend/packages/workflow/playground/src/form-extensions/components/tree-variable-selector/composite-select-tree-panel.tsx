@@ -154,7 +154,7 @@ const CompositeSelectTreePanel = React.forwardRef(
           maxHeight: treeListWrapperMaxHeight,
         }}
       >
-        {/* coze-design 的 Search 组件会引起popover定位出错，暂时先注释 */}
+        {/* The Search component of coze-design will cause an error in the popover positioning. Please note for the time being. */}
         {/* <Search className="mb-1" value={query} onChange={setQuery} /> */}
         {renderContent()}
       </div>

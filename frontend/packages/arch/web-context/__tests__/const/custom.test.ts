@@ -34,8 +34,8 @@ describe('const/custom', () => {
       expect(COZE_TOKEN_INSUFFICIENT_ERROR_CODE).toContain('702095072');
     });
 
-    // 移除失败的测试用例
-    // 原因：在 JavaScript 中，即使使用 const 声明数组，其内容仍然是可变的
-    // 只有数组引用是不可变的，而不是数组内容
+    // Remove failed test cases
+    // Reason: In JavaScript, even if an array is declared with const, its content is still mutable
+    // Only the array reference is immutable, not the array content
   });
 });

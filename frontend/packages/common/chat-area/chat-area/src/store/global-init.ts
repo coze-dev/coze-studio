@@ -23,7 +23,7 @@ import { getFakeChatCore } from '../utils/fake-chat-core';
 export type InitStatus = 'unInit' | 'loading' | 'initSuccess' | 'initFail';
 
 export interface GlobalInitState {
-  /** 响应式 */
+  /** responsive */
   initStatus: InitStatus;
   chatCore: ChatCore | null;
   offChatCoreListen: () => void;

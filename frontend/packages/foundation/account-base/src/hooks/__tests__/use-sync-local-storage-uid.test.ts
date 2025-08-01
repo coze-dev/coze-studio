@@ -43,13 +43,13 @@ describe('useSyncLocalStorageUid', () => {
       initialProps: {},
     });
 
-    // 初始状态：未登录
+    // Initial status: not logged in
     (useLoginStatus as Mock).mockReturnValue('not_login');
     (useUserInfo as Mock).mockReturnValue(null);
     rerender();
     expect(localStorageService.setUserId).toHaveBeenCalledWith();
 
-    // 切换到登录状态
+    // Switch to login status
     (useLoginStatus as Mock).mockReturnValue('logined');
     (useUserInfo as Mock).mockReturnValue(mockUserInfo);
     rerender();

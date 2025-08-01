@@ -56,12 +56,12 @@ export const useFloatMenuListener = ({
   } | null>(null);
 
   /**
-   * 是否在 Scrolling 中
+   * In Scrolling
    */
   const [isScrolling, setIsScrolling] = useState(false);
 
   /**
-   * Scrolling 计时器
+   * Scrolling timer
    */
   const scrollingTimer = useRef<NodeJS.Timeout | null>(null);
 

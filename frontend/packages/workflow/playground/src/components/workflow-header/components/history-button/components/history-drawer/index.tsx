@@ -100,7 +100,7 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
   const [activeItem, setActiveItem] = useState(defaultActiveItem);
 
   /**
-   * 是否展示当前版本
+   * Whether to display the current version
    */
   const showLatest = useMemo(
     () =>
@@ -159,7 +159,7 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
       visible={visible}
       getPopupContainer={getWorkflowOuterSideSheetHolder}
       title={<SideSheetTitle />}
-      // 动画过程中会撑开父容器的 scrollWidth, 导致出现滚动条。 在动画结束后触发重新计算使滚动条消失
+      // During the animation, the scrollWidth of the parent container will be stretched open, resulting in the scrollbar. Trigger a recalculation after the animation to make the scrollbar disappear
       afterVisibleChange={() => requestAnimationFrame(() => undefined)}
       closable={false}
       mask={false}

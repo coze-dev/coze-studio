@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
- * 前端变量类型
+ * Front-end variable type
  */
 export enum ViewVariableType {
   String = 1,
@@ -39,7 +39,7 @@ export enum ViewVariableType {
   Svg,
   Voice,
   Time,
-  // 上面是 api 中定义的 InputType。下面是整合后的。从 99 开始，避免和后端定义撞车
+  // The above is the InputType defined in the api. The following is the integrated one. Start from 99 to avoid collisions with the backend definition.
   ArrayString = 99,
   ArrayInteger,
   ArrayBoolean,

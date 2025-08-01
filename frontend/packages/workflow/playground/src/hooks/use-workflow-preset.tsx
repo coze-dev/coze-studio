@@ -61,11 +61,11 @@ const createEncapsulatePlugin = (props?: WorkflowPlaygroundProps) =>
       }
 
       if (res.projectId) {
-        // project中刷新流程列表并rename到新建的流程
+        // Refresh process list in project and rename to newly created process
         await props?.refetchProjectResourceList?.();
         await props?.renameProjectResource?.(res.workflowId);
       } else {
-        // 资源库中更新生成流程绑定的Bot信息
+        // Update the Bot information bound by the generation process in the resource library
         const relatedCaseDataService = ctx.get<RelatedCaseDataService>(
           RelatedCaseDataService,
         );

@@ -155,13 +155,13 @@ export const FileUpload: React.FC<FileUploadProps> = props => {
 
   const handleChange = useMemoizedFn(val => onChange?.(val));
 
-  // 当fileList更新时，触发onChange
+  // When the fileList is updated, onChange is triggered.
   useUpdateEffect(() => {
     const newVal = getSubmitValue();
     handleChange?.(newVal);
   }, [fileList]);
 
-  // 当表单值更新时，同步到fileList
+  // When the form value is updated, sync to fileList
   useEffect(() => {
     const val = getSubmitValue();
     if (val !== value) {

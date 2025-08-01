@@ -15,8 +15,8 @@
  */
  
 /**
- * 获取格式化的 SelectionNodeList 数据
- * 获取喂给大模型的文本内容
+ * Get formatted SelectionNodeList data
+ * Get the text content fed to the large model
  */
 import { type GrabNode } from '../../types/node';
 import { isGrabTextNode } from './is-grab-text-node';

@@ -42,19 +42,19 @@ export class Logger extends RawLogger {
   }
 
   /**
-   * @deprecated logger方法仅作控制台打印用，无需手动添加slardar client，如需日志上报请使用`import { reporter } from '@coze-arch/logger'，具体规范：
+   * The @deprecated logger method is only used for console printing, and there is no need to manually add the slardar client. If you need to report the log, please use'import {reporter} from '@code-arch/logger'. Specific specifications:
    */
   addClient(client: LoggerReportClient): void {
     super.addClient(client);
   }
 
   /**
-   * @deprecated 该方法已废弃，请统一使用`import { reporter } from '@coze-arch/logger'替换，具体规范：
+   * @Deprecated This method is deprecated, please use'import {reporter} from '@code-arch/logger' to replace it uniformly. Specific specifications:
    */
   persist: BaseLogger<CommonLogOptions> = this.persist;
 
   /**
-   * @deprecated logger方法仅作控制台打印用，无需手动添加slardar client，如需日志上报请使用`import { reporter } from '@coze-arch/logger'，具体规范：
+   * The @deprecated logger method is only used for console printing, and there is no need to manually add the slardar client. If you need to report the log, please use'import {reporter} from '@code-arch/logger'. Specific specifications:
    */
   init(slardarInstance: SlardarInstance) {
     const client = new SlardarReportClient(slardarInstance);

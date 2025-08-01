@@ -57,7 +57,7 @@ export const PLUGIN_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
     nodeMetaPath: DEFAULT_NODE_META_PATH,
     outputsPath: DEFAULT_OUTPUTS_PATH,
     batchPath: DEFAULT_BATCH_PATH,
-    inputParametersPath: INPUT_PARAMS_PATH, // 入参路径，试运行等功能依赖该路径提取参数
+    inputParametersPath: INPUT_PARAMS_PATH, // Imported parameter path, practice running and other functions rely on this path to extract parameters
     test,
     helpLink: ({ apiName }) =>
       NOT_FREE_PLUGINS_APINAME_DOC_MAP[apiName] ||

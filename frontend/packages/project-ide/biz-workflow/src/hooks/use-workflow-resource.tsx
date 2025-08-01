@@ -233,7 +233,7 @@ export const useWorkflowResource = (): UseWorkflowResourceReturn => {
           subType: WorkflowMode.Workflow,
           tooltip: <WorkflowTooltip flowMode={WorkflowMode.Workflow} />,
         },
-        // 开源版本暂不支持对话流
+        // The open-source version does not currently support conversation streaming
         IS_OPEN_SOURCE
           ? null
           : {

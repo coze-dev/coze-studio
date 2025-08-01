@@ -18,8 +18,8 @@ import { type RightPanelConfigType } from '../../type';
 import { ContextMenuConfigMap } from './constant';
 
 /**
- * 主要替换资源树默认支持的 右键菜单配置，
- * 并且对三方注入的右键菜单的 id 进行包装
+ * The main replacement resource tree is supported by default, right-click menu configuration,
+ * And wraps the id of the right-click menu injected by the three parties.
  */
 export const handleConfig = (
   baseConfig: RightPanelConfigType[],

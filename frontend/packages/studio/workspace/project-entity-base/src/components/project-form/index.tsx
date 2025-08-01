@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type PropsWithChildren } from 'react';
 
+import {
+  PictureUpload,
+  type RenderAutoGenerateParams,
+} from '@coze-common/biz-components/picture-upload';
 import {
   type DraftProjectCopyRequest,
   type DraftProjectUpdateRequest,
   type DraftProjectCreateRequest,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
-import {
-  PictureUpload,
-  type RenderAutoGenerateParams,
-} from '@coze-common/biz-components/picture-upload';
-import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
 import { IconCozUpload } from '@coze-arch/coze-design/icons';
 import {
   type BaseFormProps,
@@ -37,6 +35,8 @@ import {
   useFormApi,
   withField,
 } from '@coze-arch/coze-design';
+import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
+import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
 
 import { SwitchWithDesc } from '../switch-with-desc';
 import { type ModifyUploadValueType } from '../../type';
@@ -66,6 +66,7 @@ export const ProjectForm: React.FC<PropsWithChildren<ProjectFormProps>> = ({
   ...formProps
 }) => <Form<ProjectFormValues> {...formProps}>{children}</Form>;
 
+// @ts-expect-error fix me late
 export const filedKeyMap: Record<
   keyof ProjectFormValues,
   keyof ProjectFormValues

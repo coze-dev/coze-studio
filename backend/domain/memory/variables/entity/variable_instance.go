@@ -60,7 +60,7 @@ const (
 )
 
 func (v *UserVariableMeta) GenSystemKV(ctx context.Context, keyword string) (*kvmemory.KVItem, error) {
-	if keyword != sysUUIDKey { // 外场暂时只支持这一个变量
+	if keyword != sysUUIDKey { // The outfield only supports this one variable for the time being
 		return nil, nil
 	}
 
@@ -94,7 +94,7 @@ func (v *UserVariableMeta) genUUID(ctx context.Context) (*kvmemory.KVItem, error
 }
 
 func (v *UserVariableMeta) encryptSysUUIDKey(ctx context.Context) string {
-	// 拼接四个字段，中间用特殊分隔符（如 | ）
+	// Combine four fields with a special delimiter (e.g. |)
 	plain := fmt.Sprintf("%d|%s|%s|%d", v.BizType, v.BizID, v.ConnectorUID, v.ConnectorID)
 	return base64.StdEncoding.EncodeToString([]byte(plain))
 }

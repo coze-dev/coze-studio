@@ -46,7 +46,7 @@ export const generateFormRelatedField = async ({
       workflowId,
     });
   }
-  /** 若自定义逻辑判定无需选择环境，则还需要判定一下变量引用 */
+  /** If the custom logic determines that the environment does not need to be selected, it is also necessary to determine the variable reference */
   if (
     !field &&
     !isInProject &&

@@ -25,30 +25,30 @@ export type ExpressionEditorProps = SetterComponentProps<
   string,
   {
     key?: string;
-    /** 最大长度 */
+    /** Maximum length */
     maxLength?: number;
-    /** 最小行数 */
+    /** minimum number of rows */
     minRows?: number;
-    /** 占位文本 */
+    /** placeholder text */
     placeholder?: string | (() => string);
-    /** 是否禁用变量引用模式，输入 {{ 弹出变量浮层，默认启用，可以配置关闭 */
+    /** Whether to disable the variable reference mode, enter {{pop-up variable floating layer, enabled by default, and can be configured to close */
     disableSuggestion?: boolean;
-    /** 是否禁用长度计数器，默认禁用，可配置开启 */
+    /** Whether to disable the length counter, disabled by default, configurable to turn on */
     disableCounter?: boolean;
-    /** 失焦回调 */
+    /** out of focus callback */
     onBlur?: () => void;
-    /** 聚焦回调 */
+    /** focus callback */
     onFocus?: () => void;
-    /** 是否展示错误状态 */
+    /** Whether to display the error status */
     isError?: boolean;
-    /** 输入变量（仅用于触发rehaje重新渲染表单 */
+    /** Input variables (used only to trigger rehaje to rerender the form) */
     inputParameters?: unknown[];
-    /** 自定义 className */
+    /** Custom className */
     customClassName?: string;
   }
 >;
 
-// TODO 临时hack方法，兜底线上问题，排查出来具体原因后删除
+// TODO temporary hacking method, cover the online problem, and delete it after troubleshooting the specific reason.
 const getAnyValueContent = (value: unknown): string => {
   if (
     isObject(value) &&
@@ -83,7 +83,7 @@ export const ExpressionEditor = ({
     customClassName,
   } = options;
 
-  // TODO 临时Hack 兜底线上问题
+  // TODO Temporary Hack Backup Online Issue
   const text = getAnyValueContent(value);
 
   return (

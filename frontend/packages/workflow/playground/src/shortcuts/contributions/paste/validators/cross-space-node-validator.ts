@@ -25,7 +25,7 @@ export class CrossSpaceNodeValidator extends BaseNodeValidator {
   protected validate(context: NodeValidationContext): boolean | null {
     const { node } = context;
 
-    // 不允许跨空间复制的节点
+    // Nodes that do not allow cross-spatial replication
     if (
       [
         StandardNodeType.Dataset,

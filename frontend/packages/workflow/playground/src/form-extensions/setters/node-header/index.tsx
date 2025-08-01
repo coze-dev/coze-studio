@@ -47,7 +47,7 @@ const NodeHeaderWithValidation = withValidation(
       <NodeHeader
         title={title}
         subTitle={subTitle}
-        // 如果是coze2.0新版节点渲染 隐藏掉描述
+        // If it is the new version of coze2.0 node rendering, hide the description.
         description={description}
         logo={icon}
         onTitleChange={newTitle => {
@@ -55,7 +55,7 @@ const NodeHeaderWithValidation = withValidation(
         }}
         onDescriptionChange={desc => onChange({ ...value, description: desc })}
         readonly={readonly || workflowReadonly}
-        // 【运维平台】是只读的，不需要展示测试按钮，项目的提交历史也是只读，暂时不能试运行
+        // [Operation and maintenance platform] is read-only, there is no need to display the test button, and the submission history of the project is also read-only, so practice running cannot be done for the time being.
         hideTest={
           hideTest || IS_BOT_OP || !!(projectId && projectCommitVersion)
         }

@@ -75,13 +75,13 @@ interface PromptLibraryProps extends ModalProps {
   importPromptWhenEmpty?: string;
   defaultActiveTab?: 'Recommended' | 'Team';
   tabs?: ('Recommended' | 'Team')[];
-  /** 用于埋点: 页面来源 */
+  /** For event tracking: page source */
   source: string;
-  /** 用于埋点: bot_id */
+  /** For event tracking: bot_id */
   botId?: string;
-  /** 用于埋点: project_id */
+  /** For event tracking: project_id */
   projectId?: string;
-  /** 用于埋点: workflow_id */
+  /** For event tracking: workflow_id */
   workflowId?: string;
   onInsertPrompt?: (prompt: string, selectedLibrary: ActionExtraInfo) => void;
   onUpdateSuccess?: (
@@ -195,7 +195,7 @@ export const PromptLibrary = ({
     });
   }, [selectedLibraryId, dataList, isLoading]);
 
-  // 切换tab、无选中提示词，重置搜索词
+  // Switch tab, no selected prompt word, reset search term
   useEffect(() => {
     setSelectedLibraryId('');
     setPrompt('');

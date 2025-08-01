@@ -49,7 +49,7 @@ interface ModelFormImplProps extends ModelFormProps {
 
 const ModelFormImpl: React.FC<ModelFormImplProps> = ({
   formilyCore,
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 此规则不适用这个 case
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- this rule does not apply to this case
   formilyReact: { createSchemaField, FormProvider },
   currentModelId,
   onModelChange,
@@ -67,7 +67,7 @@ const ModelFormImpl: React.FC<ModelFormImplProps> = ({
   );
 
   useEffect(() => {
-    // 在 promise executor 中执行回调，其中的错误会异步产生 promise rejection ，而不是导致页面白屏
+    // Execute a callback in a promise executor where an error causes a promise rejection asynchronously instead of a white screen
     new Promise(() => onFormInit(form, formilyCore));
 
     return onFormUnmount;

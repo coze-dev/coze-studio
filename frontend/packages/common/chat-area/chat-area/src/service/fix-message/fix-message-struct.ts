@@ -26,8 +26,8 @@ import { FileStatus, type Message } from '../../store/types';
 import { SERVER_MESSAGE_REPLY_ID_PLACEHOLDER_VALUES } from '../../constants/message';
 import { fixImageMessage } from './fix-image-message';
 
-// 后端接口返回的数据与 core sdk 不一致
-// 在这里抹平
+// The data returned by the backend interface is inconsistent with the core SDK
+// Smooth here
 export const fixMessageStruct = (
   message: ChatMessage,
   reporter: Reporter,
@@ -56,8 +56,8 @@ export const fixMessageStruct = (
       tool_name: '',
       plugin: '',
     },
-    /** 正常、打断状态 拉消息列表时使用，chat运行时没有这个字段 */
-    /** 打断位置 */
+    /** Normal, interrupted state, used when pulling the message list, this field is not available when chat is running. */
+    /** interrupt position */
     broken_pos: 9999999,
     sender_id: '',
     mention_list: [],

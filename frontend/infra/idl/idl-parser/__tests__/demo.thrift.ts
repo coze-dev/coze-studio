@@ -32,8 +32,8 @@ struct UserDeleteDataMap {
 We
 */
 enum AvatarMetaType {
-    UNKNOWN = 0,  // 没有数据, 错误数据或者系统错误降级
-    RANDOM = 1,   // 在修改 or 创建时，用户未指定 name 或者选中推荐的文字时，程序随机选择的头像
+    UNKNOWN = 0,  // No data, incorrect data, or system error downgrade
+    RANDOM = 1,   // When modifying or creating, the user does not specify a name or select the recommended text, the program randomly selects the avatar
 }
 `;
 

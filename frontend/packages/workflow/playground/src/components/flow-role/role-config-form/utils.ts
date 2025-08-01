@@ -27,9 +27,9 @@ export const formValue2Data = (values: any) => {
   const temp = values || {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: Record<string, any> = {
-    // 角色名称
+    // role name
     name: temp.name,
-    // 角色描述
+    // Role Description
     description: temp.description,
     onboarding_info: {
       display_all_suggestions: values.display_all_suggestions ?? false,
@@ -43,7 +43,7 @@ export const formValue2Data = (values: any) => {
     },
   };
 
-  // 角色头像
+  // avatar
   if (Array.isArray(temp.avatar) && temp.avatar.length) {
     const nextAvatar = temp.avatar[0];
     data.avatar = {
@@ -52,17 +52,17 @@ export const formValue2Data = (values: any) => {
     };
   }
 
-  // 开场白文案
+  // Introductory copy
   if (temp.prologue) {
     data.onboarding_info.prologue = temp.prologue.replace(/[\r\n]+$/g, '');
   }
 
-  // 开场白问题
+  // Opening question
   if (temp.questions) {
     data.onboarding_info.suggested_questions = temp.questions;
   }
 
-  // 用户建议
+  // user suggestion
   if (temp.suggest && isObject(temp.suggest)) {
     data.suggest_reply_info = temp.suggest;
   }
@@ -71,7 +71,7 @@ export const formValue2Data = (values: any) => {
     data.background_image_info = temp.background;
   }
 
-  // 音色
+  // timbre
   if (temp.voices && isObject(temp.voices)) {
     if (temp.voices.config && isObject(temp.voices.config)) {
       data.audio_config.voice_config_map = temp.voices.config;
@@ -97,7 +97,7 @@ export const data2FormValue = (data: ChatFlowRole = {}) => {
     voices: {},
     background: {},
     suggest_reply_info: {
-      // 默认是打开状态
+      // The default is open.
       suggest_reply_mode: SuggestReplyInfoMode.System,
     },
     display_all_suggestions:

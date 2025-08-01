@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+#
+# Copyright 2025 coze-dev Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${SCRIPT_DIR}/.."
@@ -16,7 +32,7 @@ BUILD_BRANCH=opencoze-local rush rebuild -o @coze-studio/app --verbose
 
 popd
 
-# 复制构建产物到后端静态目录
+# Copy bundle to backend static directory
 echo -e "${YELLOW}正在复制构建产物到后端静态目录...${NC}"
 BACKEND_STATIC_DIR="${SCRIPT_DIR}/../backend/static"
 BIN_STATIC_DIR="${SCRIPT_DIR}/../bin/resources/static"
@@ -27,7 +43,7 @@ rm -rf "${BIN_STATIC_DIR}"
 mkdir -p "${BACKEND_STATIC_DIR}"
 mkdir -p "${BIN_STATIC_DIR}"
 
-# 清空目标目录并复制新的构建产物
+# Clear the target directory and copy the new bundle
 rm -rf "${BACKEND_STATIC_DIR}"/*
 cp -r "${FRONTEND_DIST_DIR}"/* "${BACKEND_STATIC_DIR}/"
 cp -r "${FRONTEND_DIST_DIR}"/* "${BIN_STATIC_DIR}/"

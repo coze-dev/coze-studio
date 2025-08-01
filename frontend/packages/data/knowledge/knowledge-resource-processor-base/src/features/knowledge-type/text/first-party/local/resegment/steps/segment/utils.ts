@@ -32,7 +32,7 @@ export const getButtonNextStatus = (
       return FooterBtnStatus.DISABLE;
     }
   }
-  // TODO: 分层相关
+  // TODO: Hierarchical correlation
 
   return FooterBtnStatus.ENABLE;
 };

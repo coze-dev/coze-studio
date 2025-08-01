@@ -64,7 +64,7 @@ export function PublishConnectors() {
   const { project_id = '' } = useParams<DynamicParams>();
 
   const {
-    connectorList, // 开源版仅支持API 和 Chat SDK 渠道
+    connectorList, // The open-source version only supports API and Chat SDK channels
     connectorUnionMap,
     monetizeConfig,
     selectedConnectorIds,
@@ -122,7 +122,7 @@ export function PublishConnectors() {
     }
   };
 
-  // Collapse Panel 展开状态下，不在 header 中展示已选渠道的图标
+  // Collapse Panel does not display the icon of the selected channel in the header when expanded
   const getGroupHeaderList = (groupId: ConnectorClassification) => {
     const group = connectorGroups.find(g => g.type === groupId);
     if (!group) {
@@ -189,7 +189,7 @@ export function PublishConnectors() {
         ))}
       </ConnectorTabbar>
       {connectorGroups.map((i, index) => {
-        // 开源版暂不支持社交平台渠道
+        // The open-source version does not support social platform channels for the time being
         const isSocialPlatform =
           i.type === ConnectorClassification.SocialPlatform;
         return (
@@ -208,7 +208,7 @@ export function PublishConnectors() {
                 closeAnimation(i.type);
               }}
             />
-            {/* 开源版暂不支持社交平台渠道 */}
+            {/* The open-source version does not support social platform channels for the time being */}
             {isSocialPlatform ? (
               <SocialPlatformChatflow className="mb-8px" />
             ) : null}

@@ -39,17 +39,17 @@ export enum ModalI18nKey {
 }
 
 /**
- * i18n 文案有变量时使用这个结构
+ * Use this structure when the i18n text has variables
  */
 interface I18nKeyWithOptions {
-  /* i18n 文案的 key */
+  /* I18n copy key */
   key: string;
-  /* 变量参数对象 */
+  /* variable parameter object */
   options?: Record<string, ReactNode>;
 }
 export type I18nKey = string | I18nKeyWithOptions;
 
-// 用于存放 workflow 和 imageflow 的各个 i18n 文案的 key
+// The key to each i18n copy used to store workflow and imageflow
 export const WORKFLOW_MODAL_I18N_KEY_MAP: {
   [WorkflowMode.Workflow]: Record<ModalI18nKey, I18nKey>;
   [WorkflowMode.Imageflow]: Record<ModalI18nKey, I18nKey>;
@@ -102,7 +102,7 @@ export const WORKFLOW_MODAL_I18N_KEY_MAP: {
     [ModalI18nKey.TabMine]: 'workflow_add_created_tab_mine',
     [ModalI18nKey.ListEmptyTitle]: 'scene_workflow_popup_search_empty',
     [ModalI18nKey.CreatedListEmptyTitle]: 'scene_workflow_popup_list_empty',
-    // 场景工作流没有描述
+    // Scenario workflow not described
     [ModalI18nKey.CreatedListEmptyDescription]: '',
     [ModalI18nKey.NavigationCreate]: 'workflow_add_navigation_create',
     [ModalI18nKey.ListError]: 'workflow_add_list_added_id_empty',
@@ -122,7 +122,7 @@ export const WORKFLOW_MODAL_I18N_KEY_MAP: {
 };
 
 /**
- * 自动根据 flowMode 返回对应国际化文案
+ * Automatically returns the corresponding internationalization copy according to flowMode
  */
 export function useI18nText() {
   const context = useContext(WorkflowModalContext);

@@ -15,7 +15,7 @@
  */
  
 /**
- * 表单引擎
+ * form engine
  */
 export { createSchemaField } from './fields';
 export { FormSchema } from './shared';

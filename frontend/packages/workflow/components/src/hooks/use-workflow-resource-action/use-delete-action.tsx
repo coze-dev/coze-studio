@@ -39,7 +39,7 @@ export const useDeleteAction = (
   const [deleteModalConfig, setDeleteModalConfig] =
     useState<DeleteModalConfig>();
   /**
-   * 逻辑来自 useWorkflowList（@coze-workflow/components）,由于入参变了，不再复用
+   * Logic comes from useWorkflowList (@code-workflow/components), no longer reused because imported parameters have changed
    * @param item
    */
   const handleDeleteWorkflowResource = async (item: ResourceInfo) => {
@@ -56,7 +56,7 @@ export const useDeleteAction = (
 
     let deleteType = DeleteType.CanDelete;
 
-    // 从服务端查询删除模式
+    // Delete mode from server level query
     const resp = await workflowApi.GetDeleteStrategy({
       space_id: spaceId,
       workflow_id: item.res_id,
@@ -95,10 +95,10 @@ export const useDeleteAction = (
           message: 'workflow_list_delete_row_success',
         });
 
-        // 兜底服务主从延迟
+        // Bottom line leader/follower delay
         await wait(300);
 
-        // 刷新列表
+        // refresh list
         refreshPage?.();
       } catch (error) {
         reporter.error({

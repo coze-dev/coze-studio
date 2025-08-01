@@ -70,7 +70,7 @@ import s from './index.module.less';
 const { Text, Paragraph } = Typography;
 
 const stopPro = (e: MouseEvent<HTMLDivElement>) => {
-  e.stopPropagation(); //阻止冒泡
+  e.stopPropagation(); //Stop bubbling
 };
 
 const exampleStatusConfig = {
@@ -134,7 +134,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
     customRender,
   } = props ?? {};
 
-  /** 是否开启api */
+  /** Whether to open api */
   const openApi = async ({
     apiId,
     disabled,
@@ -216,7 +216,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
                 color="grey"
                 size="small"
                 style={{
-                  /** 确保没有极端的闪动case */
+                  /** Make sure there are no extreme flashing cases */
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
@@ -443,7 +443,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
                 visible={record.api_id === showDropdownItem?.api_id}
                 render={
                   <Dropdown.Menu className="px-[4px]">
-                    {/* 即将支持，敬请期待 */}
+                    {/* Support soon, so stay tuned. */}
                     {FLAGS2['bot.devops.plugin_import_export'] ? (
                       <Dropdown.Item
                         disabled={
@@ -459,7 +459,7 @@ export const useGetToolColumns = (props: UseGetToolColumnsProps) => {
                         {I18n.t('code_snippet')}
                       </Dropdown.Item>
                     ) : null}
-                    {/* 即将支持，敬请期待 */}
+                    {/* Support soon, so stay tuned. */}
                     {FLAGS2['bot.devops.plugin_mockset'] ? (
                       <Dropdown.Item
                         className="rounded-[4px]"

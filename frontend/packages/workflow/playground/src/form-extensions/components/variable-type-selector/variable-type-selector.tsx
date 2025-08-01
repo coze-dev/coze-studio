@@ -56,9 +56,9 @@ export interface VariableTypeSelectorProps {
   onChange?: SelectProps['onChange'];
   readonly?: boolean;
   disabled?: boolean;
-  /** 不支持使用的类型 */
+  /** Types not supported */
   disabledTypes?: ViewVariableType[];
-  /** 隐藏类型 */
+  /** hidden type */
   hiddenTypes?: ViewVariableType[];
   validateStatus?: SelectProps['validateStatus'];
   onBlur?: () => void;

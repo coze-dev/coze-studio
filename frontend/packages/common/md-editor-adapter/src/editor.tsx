@@ -42,10 +42,10 @@ export const EditorFullInputInner = forwardRef<EditorHandle, EditorInputProps>(
     } = props;
     const [value, setValue] = useState(propsValue);
 
-    // 创建一个可变引用以存储最新的value值
+    // Create a mutable reference to store the latest value
     const valueRef = useRef(value);
 
-    // 当value更新时，同步更新valueRef
+    // When value is updated, synchronously update valueRef
     useEffect(() => {
       valueRef.current = value;
     }, [value]);

@@ -24,12 +24,12 @@ export const useMessagesOverview = () => {
   const latestSectionId = useSectionIdStore(state => state.latestSectionId);
 
   /**
-   * 过滤插入的消息
+   * Filter inserted messages
    */
   const { isEmpty, latestSectionHasMessage } = useMessagesStore(
     useShallow(state => ({
       isEmpty: state.messages.length === 0,
-      // todo 优化为 group 判断，无需全量扫描 messages
+      // Todo is optimized for group judgment, no need to scan all messages
       latestSectionHasMessage: !!state.messages.filter(
         msg => msg.section_id === latestSectionId,
       ).length,

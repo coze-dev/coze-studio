@@ -21,7 +21,7 @@ import { type Contexts, HOOK } from '../context';
 
 const MAGIC_COMMENT_KEY = '\n*@magic-comment';
 
-// 忽略 struct 中的字段
+// Ignore fields in struct
 export class CommentFormatPlugin {
   apply(p: Program<Contexts>) {
     p.register(after('PARSE_ENTRY'), ctx => {

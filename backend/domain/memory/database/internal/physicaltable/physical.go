@@ -180,18 +180,18 @@ func UpdateFieldInfo(newFieldItems []*database.FieldItem, existingFieldItems []*
 	return updatedFieldItems, updatedColumns, droppedColumns, nil
 }
 
-// UpdatePhysicalTableWithDrops 更新物理表结构，包括显式指定要删除的列
+// UpdatePhysicalTableWithDrops update the physical table structure, including explicitly specifying columns to drop
 func UpdatePhysicalTableWithDrops(ctx context.Context, db rdb.RDB, existingTable *entity3.Table, newColumns []*entity3.Column, droppedColumns []string, tableName string) error {
-	// 创建列名到列的映射
+	// Create a column name-to-column mapping
 	existingColumnMap := make(map[string]*entity3.Column)
 	for _, col := range existingTable.Columns {
 		existingColumnMap[col.Name] = col
 	}
 
-	// 收集要添加和修改的列
+	// Collect columns to add and modify
 	var columnsToAdd, columnsToModify []*entity3.Column
 
-	// 查找要添加和修改的列
+	// Find columns to add and modify
 	for _, newCol := range newColumns {
 		if _, exists := existingColumnMap[newCol.Name]; exists {
 			columnsToModify = append(columnsToModify, newCol)
@@ -200,7 +200,7 @@ func UpdatePhysicalTableWithDrops(ctx context.Context, db rdb.RDB, existingTable
 		}
 	}
 
-	// 应用变更到物理表
+	// Apply changes to physical tables
 	if len(columnsToAdd) > 0 || len(columnsToModify) > 0 || len(droppedColumns) > 0 {
 		// build AlterTableRequest
 		alterReq := &rdb.AlterTableRequest{
@@ -208,7 +208,7 @@ func UpdatePhysicalTableWithDrops(ctx context.Context, db rdb.RDB, existingTable
 			Operations: getOperation(columnsToAdd, columnsToModify, droppedColumns),
 		}
 
-		// 执行表结构变更
+		// Perform table structure changes
 		_, err := db.AlterTable(ctx, alterReq)
 		if err != nil {
 			return err
@@ -218,11 +218,11 @@ func UpdatePhysicalTableWithDrops(ctx context.Context, db rdb.RDB, existingTable
 	return nil
 }
 
-// getOperation 将列的添加、修改和删除操作转换为 AlterTableOperation 数组
+// getOperation converts column add, modify, and delete operations into an AlterTableOperation array
 func getOperation(columnsToAdd, columnsToModify []*entity3.Column, droppedColumns []string) []*rdb.AlterTableOperation {
 	operations := make([]*rdb.AlterTableOperation, 0)
 
-	// 处理添加列操作
+	// Handle add column operations
 	for _, column := range columnsToAdd {
 		operations = append(operations, &rdb.AlterTableOperation{
 			Action: entity3.AddColumn,
@@ -230,7 +230,7 @@ func getOperation(columnsToAdd, columnsToModify []*entity3.Column, droppedColumn
 		})
 	}
 
-	// 处理修改列操作
+	// Handle modify column operations
 	for _, column := range columnsToModify {
 		operations = append(operations, &rdb.AlterTableOperation{
 			Action: entity3.ModifyColumn,
@@ -238,7 +238,7 @@ func getOperation(columnsToAdd, columnsToModify []*entity3.Column, droppedColumn
 		})
 	}
 
-	// 处理删除列操作
+	// Handle delete column operations
 	for _, columnName := range droppedColumns {
 		operations = append(operations, &rdb.AlterTableOperation{
 			Action: entity3.DropColumn,

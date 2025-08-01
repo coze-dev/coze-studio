@@ -16,17 +16,17 @@
  
 import { GlobalEventBus } from '@coze-arch/web-context';
 
-// api 请求有关事件
+// API request related events
 export enum APIErrorEvent {
-  // 无登录状态
+  // No login status
   UNAUTHORIZED = 'unauthorized',
-  // 登录了 没权限
+  // Logged in, no permission.
   NOACCESS = 'noAccess',
-  // 风控拦截
+  // Risk control interception
   SHARK_BLOCK = 'sharkBlocked',
-  // 国家限制
+  // State restrictions
   COUNTRY_RESTRICTED = 'countryRestricted',
-  // COZE TOKEN 不足
+  // Insufficient COZE TOKEN
   COZE_TOKEN_INSUFFICIENT = 'cozeTokenInsufficient',
 }
 

@@ -21,7 +21,7 @@ import {
 import { deleteMessageGroupById } from '../../utils/message-group/message-group';
 import { useChatActionLockService } from '../../context/chat-action-lock';
 
-// 正在上传中的文件消息、图片消息被删除 需要清除副作用 &
+// File messages and picture messages that are being uploaded are deleted, and side effects need to be cleared &
 export const useDeleteMessageGroup = () => {
   const context = useChatAreaContext();
   const storeSet = useChatAreaStoreSet();

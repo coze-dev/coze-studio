@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-/** 此文件放的是 table 通用 utils */
+/** This file contains table utils */
 import { get } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
 
@@ -44,7 +44,7 @@ export interface IValidateRes {
   valid: boolean;
   errorMsg: string;
 }
-// 校验tableStructure列名及表明是否包含特殊字符
+// Verify tableStructure column names and indicate whether they contain special characters
 export const validateField = (
   fieldName: string,
   emptyMsg = '',
@@ -52,7 +52,7 @@ export const validateField = (
   let valid = true;
   let errorMsg = '';
 
-  // 是否包含特殊字符-->单引号，双引号，转义符，反引号
+  // Whether it contains special characters -- > single quotes, double quotes, escape characters, backquotes
   const notationReg = /["'`\\]+/g;
 
   if (!fieldName) {
@@ -66,7 +66,7 @@ export const validateField = (
     valid = false;
     errorMsg = I18n.t('knowledge_tableStructure_field_errLegally');
   }
-  // 不能包含_knowledge_slice_id关键字
+  // Cannot contain _knowledge_slice_id keywords
   if (['_knowledge_slice_id'].includes(fieldName)) {
     valid = false;
     errorMsg = I18n.t('knowledge_tableStructure_errSystemField');
@@ -81,10 +81,10 @@ export const getSrcFromImg = (str: string): string[] => {
     return [];
   }
   const imgRegx = /<img[^>]+src\s*=\s*['"]([^'"]+)['"][^>]*>/g;
-  // 使用正则表达式进行匹配
+  // Matching using regular expressions
   const matches = str.match(imgRegx);
 
-  // 提取匹配结果中的src属性值
+  // Extract the value of the src attribute from the matching result
   const srcList: string[] = [];
   if (matches) {
     for (let i = 0; i < matches.length; i++) {

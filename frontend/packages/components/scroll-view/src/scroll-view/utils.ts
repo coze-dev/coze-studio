@@ -15,7 +15,7 @@
  */
  
 /**
- * 出自：https://stackoverflow.com/questions/4900436/how-to-detect-the-installed-chrome-version
+ * From: https://stackoverflow.com/questions/4900436/how-to-detect-the-installed-chrome-version
  */
 export const getChromeVersion = () => {
   const pieces = navigator.userAgent.match(
@@ -38,13 +38,13 @@ export const getChromeVersion = () => {
 };
 
 /**
- * 是否支持在column-reverse模式下为负数的scrollTop，chromium最低支持版本83.0.4086.1（上一个版本为82.0.4082.0）
+ * Whether to support scrollTop with negative numbers in column-reverse mode, chromium minimum supported version 83.0.4086 (previous version was 82.0.4082)
  */
 export const supportNegativeScrollTop = () => {
   const chromeVersion = getChromeVersion();
 
   if (!chromeVersion) {
-    /** 假设非chromium系浏览器均支持 */
+    /** Suppose all non-chromium browsers support it */
     return true;
   }
 

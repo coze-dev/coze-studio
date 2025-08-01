@@ -101,9 +101,9 @@ const BaseTableMemory: FC<TableMemoryProps> = ({
       if (removeCallback) {
         removeCallback?.();
       }
-      // 更新 list
+      // Update list
       await reloadDatabaseList();
-      // 更新 bot draft
+      // Update bot draft
       await saveTableMemory();
     } else {
       Toast.error(res.msg);
@@ -111,14 +111,14 @@ const BaseTableMemory: FC<TableMemoryProps> = ({
   };
 
   const onCreateDatabase = async (databaseId: string, draftId: string) => {
-    // NOTE: 绑定/解绑 bot 数据库，需要传入 DatabaseInfo 的 draft_id
+    // NOTE: Bind/unbind the bot database, you need to pass in the draft_id of DatabaseInfo
     await MemoryApi.BindDatabase({
       database_id: draftId,
       bot_id: botId,
     });
-    // 更新 list
+    // Update list
     await reloadDatabaseList();
-    // 更新 bot draft
+    // Update bot draft
     await saveTableMemory();
   };
 
@@ -135,9 +135,9 @@ const BaseTableMemory: FC<TableMemoryProps> = ({
       if (addCallback) {
         addCallback?.();
       }
-      // 更新 list
+      // Update list
       await reloadDatabaseList();
-      // 更新 bot draft
+      // Update bot draft
       await saveTableMemory();
     } else {
       Toast.error(res.msg);

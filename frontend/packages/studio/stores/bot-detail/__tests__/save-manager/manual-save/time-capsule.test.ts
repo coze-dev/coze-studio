@@ -24,7 +24,7 @@ import {
 import { ItemTypeExtra } from '../../../src/save-manager/types';
 import { saveTimeCapsule } from '../../../src/save-manager/manual-save/time-capsule';
 
-// 模拟依赖
+// simulated dependency
 vi.mock('../../../src/store/bot-skill', () => ({
   useBotSkillStore: {
     getState: vi.fn(),
@@ -54,7 +54,7 @@ describe('time-capsule save manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // 设置默认状态
+    // Set default state
     (useBotSkillStore.getState as any).mockReturnValue({
       timeCapsule: mockTimeCapsule,
       transformVo2Dto: mockTransformVo2Dto,
@@ -73,17 +73,17 @@ describe('time-capsule save manager', () => {
   it('应该正确保存 time capsule 配置', async () => {
     await saveTimeCapsule();
 
-    // 验证 transformVo2Dto.timeCapsule 被调用，参数应该是包含 time_capsule_mode 和 disable_prompt_calling 的对象
+    // Verify that transformVo2To.timeCapsule is called, the argument should be an object containing time_capsule_mode and disable_prompt_calling
     expect(mockTransformVo2Dto.timeCapsule).toHaveBeenCalledWith({
       time_capsule_mode: mockTimeCapsule.time_capsule_mode,
       disable_prompt_calling: mockTimeCapsule.disable_prompt_calling,
     });
-    // 验证 updateBotRequest 被调用，并且参数正确
+    // Verify that updateBotRequest was called and the parameters are correct
     expect(updateBotRequest).toHaveBeenCalledWith({
       bot_tag_info: mockTransformedTimeCapsule,
     });
 
-    //  验证 saveFetcher 被调用，并且参数正确
+    //  Verify that saveFetcher is called and the parameters are correct
     expect(saveFetcher).toHaveBeenCalledWith(
       expect.any(Function),
       ItemTypeExtra.TimeCapsule,

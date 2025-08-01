@@ -15,7 +15,7 @@
  */
  
 /**
- * 业务层数据持久化
+ * Business layer data persistence
  */
 import { isPlainObject } from 'lodash-es';
 import { inject, injectable } from 'inversify';
@@ -34,7 +34,7 @@ import {
 import { saveLayoutData, readLayoutData } from './utils/layout-store';
 
 /**
- * 被持久化的 widget 可能是普通的 widget 也可能是 project 特定的 widget
+ * The persistent widget may be a normal widget or a project-specific widget.
  */
 type LayoutWidget = ReactWidget | ProjectIDEWidget;
 
@@ -45,7 +45,7 @@ interface LayoutWidgetData {
 }
 
 /**
- * 判断是否是 ProjectIDEWidget
+ * Determine if it is a ProjectIDEWidget
  */
 const isProjectIDEWidget = (w: LayoutWidget): w is ProjectIDEWidget =>
   !!(w as ProjectIDEWidget).context;
@@ -63,13 +63,13 @@ export class LayoutRestoreService {
   private optionsService: OptionsService;
 
   /**
-   * 本地数据是否生效
+   * Is the local data valid?
    */
   private _openFirstWorkflow = false;
 
   /**
-   * 是否启用持久化，暂时不可配置，若开发过程中出现问题，可以关闭
-   * 此开关只会开关是否在初始化时恢复布局数据
+   * Whether to enable persistence is temporarily unconfigurable. If there is a problem during development, it can be turned off.
+   * This switch only switches whether to restore layout data during initialization
    */
   private enabled = true;
   // private enabled = false;
@@ -93,7 +93,7 @@ export class LayoutRestoreService {
     );
   }
   async restoreLayout() {
-    // 无论是否需要持久化，这一步必须要做
+    // This step must be done whether persistence is required or not
     await this.addSidebarWidget();
     if (this.enabled) {
       const data = await readLayoutData(
@@ -111,15 +111,15 @@ export class LayoutRestoreService {
   }
 
   /**
-   * 生成当前 ide 的布局数据
+   * Generate layout data for the current IDE
    */
   getLayoutData() {
     const data: Record<string, any> = {};
     const { primarySidebar, mainPanel } = this.applicationShell;
 
     /**
-     * primarySidebar 数据
-     * 在当前特化业务下，primarySidebar 只可能打开特定的 widget，所以这里无需存储通用的 widgets 数据
+     * Primary Sidebar Data
+     * In the current specialized business, primarySidebar can only open specific widgets, so there is no need to store general widgets data here
      */
     data.primarySidebar = {
       isHidden: !!primarySidebar?.isHidden,
@@ -134,10 +134,10 @@ export class LayoutRestoreService {
     const { primarySidebar, mainPanel } = data || {};
 
     /**
-     * primarySidebar 面板初始化
-     * 1. 数据不存在时，说明没有本地数据，需要默认打开
-     * 2. 数据存在，且 hidden 为假，默认打开
-     * 3. 其他情况不打开
+     * PrimarySidebar panel initialization
+     * 1. When the data does not exist, it means that there is no local data and needs to be opened by default.
+     * 2. The data exists, and hidden is false, open by default
+     * 3. Do not open in other cases
      */
     if (!primarySidebar || !primarySidebar.isHidden) {
       this.applicationShell.primarySidebar.show();
@@ -147,21 +147,21 @@ export class LayoutRestoreService {
 
     if (mainPanel) {
       const mainPanelData = await this.widgetsParseBFS(mainPanel);
-      // 如果初始化的时候没有 widget 打开，默认打开一个。
+      // If no widget is opened when initializing, one is opened by default.
       // widget: tab
-      // children: 分屏
+      // Children: split screen
       const { main } = mainPanelData || {};
       if (!main?.widgets?.length && !main?.children?.length) {
         this._openFirstWorkflow = true;
       }
       this.applicationShell.mainPanel.restoreLayout(mainPanelData);
-      // FlowDockPanel 需要挂载监听
+      // FlowDockPanel requires a monitor to be mounted
       this.applicationShell.mainPanel.initWidgets();
     }
   }
 
   /**
-   * 挂载默认的 sidebar widget
+   * Mount the default sidebar widget
    */
   async addSidebarWidget() {
     const widget = await this.widgetParse({

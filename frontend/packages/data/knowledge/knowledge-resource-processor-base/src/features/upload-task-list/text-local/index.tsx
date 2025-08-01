@@ -46,7 +46,7 @@ export const TextLocalTaskList: FC<
     return null;
   }
 
-  // 实现自己的getTextLocalInfo方法
+  // Implement your own getTextLocalInfo method
   const getTextLocalInfo = (data: RenderColumnsProps) => {
     const { record } = data;
     const curStatus = getProcessStatus(record?.status);

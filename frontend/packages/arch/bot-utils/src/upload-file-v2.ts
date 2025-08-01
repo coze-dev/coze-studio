@@ -39,8 +39,8 @@ const removeAllListeners = (instance: UploaderInstance) => {
 export interface FileItem {
   file: File;
   /**
-   * 非图片的文件 type 为 object
-   * 这里显得很奇怪, 是为了对齐 @byted/uploader 的设计
+   * Non-image file type is object
+   * This seems strange, to align the design of @byted/uploader
    */
   fileType: 'image' | 'object';
 }
@@ -61,12 +61,12 @@ export interface UploadFileV2Param {
 }
 
 /**
- * 改良版本的上传方法
- * 1. 能够支持打断, 清除副作用
- * 2. 更完善的回调函数
- * 3. 支持一次上传多文件
+ * Improved version upload method
+ * 1. Able to support interruption and clear side effects
+ * 2. Better callback function
+ * 3. Support uploading multiple files at one time
  */
-// eslint-disable-next-line max-lines-per-function -- 内部的方法分了模块但是都依赖同一个 context 作打断无法拆出去
+// eslint-disable-next-line max-lines-per-function -- the internal methods are divided into modules, but they all rely on the same context for interruption and cannot be removed
 export function uploadFileV2({
   fileItemList,
   userId,
@@ -125,13 +125,13 @@ export function uploadFileV2({
         {
           schema,
           useFileExtension: true,
-          // 解决报错问题：
+          // Solve the error problem:
           userId,
           appId: APP_ID,
           // cp-disable-next-line
-          imageHost: `https://${upload_host}`, //imageX上传必填
+          imageHost: `https://${upload_host}`, //imageX upload required
           imageConfig: {
-            serviceId: service_id || '', // 在视频云中申请的服务id
+            serviceId: service_id || '', // The service id applied for in the video cloud.
           },
           objectConfig: {
             serviceId: service_id || '',
@@ -155,7 +155,7 @@ export function uploadFileV2({
             AccessKeyId: auth?.access_key_id || '',
             SecretAccessKey: auth?.secret_access_key || '',
           },
-          type: fileType, // 上传文件类型，三个可选值：video(视频或者音频，默认值)，image(图片)，object（普通文件）
+          type: fileType, // Upload file type, three optional values: video (video or audio, default), image (picture), object (normal file)
         });
         return { file, fileType, fileKey };
       });
@@ -170,7 +170,7 @@ export function uploadFileV2({
 
         list.push(inform as any);
         if (list.length === fileAndKeyList.length) {
-          // 按顺序赋值
+          // Assignment in order
           // @ts-expect-error -- linter-disable-autofix
           list = fileAndKeyList.map(({ fileKey }) =>
             list.find(v => v.key === fileKey),

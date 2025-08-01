@@ -46,7 +46,7 @@ interface MockDataCardProps {
   bizCtx: infra.BizCtx;
 }
 
-/** mock data 展示卡片 */
+/** Mock data display card */
 export function MockDataCard({
   mock,
   readOnly,

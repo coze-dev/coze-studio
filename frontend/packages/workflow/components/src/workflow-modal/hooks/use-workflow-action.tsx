@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useNavigate, useParams } from 'react-router-dom';
 import { useContext, useEffect } from 'react';
@@ -51,9 +51,9 @@ import {
 import { reporter, wait } from '../../utils';
 
 /**
- * 特殊错误码
- * - 788664021: 由于模型原因，暂不支持复制商店中的工作流
- * - 788664024: 模板未购买，请前往模板详情页购买后再复制
+ * special error code
+ * - 788664021: Due to model reasons, replicating workflows in the store is not currently supported
+ * - 788664024: The template has not been purchased, please go to the template details page to buy and then copy it.
  */
 const copyProductErrorCodes = ['788664021', '788664024'];
 
@@ -70,7 +70,7 @@ export interface WorkflowCardProps extends WorkFlowModalModeProps {
     pluginId: string;
   }>;
   /**
-   * workflow 删除按钮点击时触发的 handler
+   * Workflow delete the handler that is triggered when the button is clicked
    * @param row
    */
   handleDeleteWorkflow?: (row: WorkflowInfo) => Promise<{
@@ -81,25 +81,25 @@ export interface WorkflowCardProps extends WorkFlowModalModeProps {
       | undefined;
   }>;
   /**
-   * 是否为专业版特供
+   * Is it a special offer for the professional version?
    */
   isProfessionalTemplate?: boolean;
 }
 
 interface UseWorkflowActionReturn {
-  /** 复制官方流程模板 */
+  /** Copy the official process template */
   dupWorkflowTpl: () => Promise<void>;
-  /** 复制流程商品 */
+  /** Copy process product */
   dupProduct: () => Promise<void>;
-  /** 添加流程 */
+  /** Add process */
   addWorkflow: () => Promise<boolean>;
-  /** 移除流程 */
+  /** removal process */
   removeWorkflow: () => void;
   /**
-   * 删除流程
+   * delete process
    */
   deleteWorkflow: () => Promise<void>;
-  /** 流程项点击 */
+  /** Process item click */
   itemClick: () => void;
 }
 
@@ -159,7 +159,7 @@ export function useWorkflowAction({
       },
     );
 
-    // 先获取工作流的信息
+    // Get the workflow information first
     const workflowInfos = resp.data ?? [];
     if (!workflowInfos?.length) {
       Toast.error(I18n.t('workflow_add_list_added_id_empty'));
@@ -168,7 +168,7 @@ export function useWorkflowAction({
     return workflowInfos.at(0) as BotPluginWorkFlowItem;
   }
   /**
-   * 通过插件 ID 构造新 workflowItem
+   * Construct a new workflowItem by plugin ID
    */
   // eslint-disable-next-line complexity
   async function getWorkflowItemByPluginId(config: {
@@ -199,7 +199,7 @@ export function useWorkflowAction({
       },
     );
 
-    // 先获取工作流的信息
+    // Get the workflow information first
     const pluginInfos = resp.data?.plugin_list ?? [];
     if (!pluginInfos?.length) {
       Toast.error(
@@ -236,7 +236,7 @@ export function useWorkflowAction({
     return context?.modalState.dataSourceType === DataSourceType.Workflow;
   }
 
-  /** 打开流程详情页 */
+  /** Open the process details page */
   function openWorkflowDetailPage(workflow: WorkflowInfo | ProductInfo) {
     const flowData = workflow as Workflow;
     const wId = (flowData as WorkflowInfo).workflow_id ?? '';
@@ -258,7 +258,7 @@ export function useWorkflowAction({
     }
 
     if (isProfessionalTemplate && !isCozePro) {
-      // 跳转到专业版登录
+      // Jump to professional version login
       navigate(
         `/sign/oauth?redirect=${encodeURIComponent(
           '/store/bot',
@@ -288,7 +288,7 @@ export function useWorkflowAction({
       return;
     }
 
-    // 延迟刷新列表, 兜底服务端主从延迟导致问题
+    // Delayed refresh list, server level leader/follower delay caused problems
     await wait(100);
 
     try {
@@ -301,14 +301,14 @@ export function useWorkflowAction({
           ProductEntityType.ImageflowTemplateV2,
       });
 
-      // 构造新的绑定的工作流列表
+      // Construct a new bound workflow list
       onWorkFlowListChange?.([...(workFlowList ?? []), newWorkflow]);
       onAdd?.(newWorkflow, { isDup: true, spaceId: context.spaceId });
 
       if (onDupSuccess) {
         onDupSuccess(newWorkflow);
       } else {
-        // 复制商品成功
+        // Copy product successfully
         Toast.success({
           content: (
             <Space spacing={6}>
@@ -383,7 +383,7 @@ export function useWorkflowAction({
       return;
     }
 
-    // 延迟刷新列表, 兜底服务端主从延迟导致问题
+    // Delayed refresh list, server level leader/follower delay caused problems
     await wait(100);
 
     try {
@@ -400,7 +400,7 @@ export function useWorkflowAction({
         newWorkflow.flow_mode = sourceFlowMode;
       }
 
-      // 构造新的绑定的工作流列表
+      // Construct a new bound workflow list
       onWorkFlowListChange?.([...(workFlowList ?? []), newWorkflow]);
       onAdd?.(newWorkflow, { isDup: true, spaceId: context.spaceId });
 
@@ -475,14 +475,14 @@ export function useWorkflowAction({
         newWorkflow.flow_mode = data?.flow_mode;
       }
 
-      // 构造新的绑定的工作流列表
+      // Construct a new bound workflow list
       onWorkFlowListChange?.([...(workFlowList ?? []), newWorkflow]);
       const addResult = await onAdd?.(newWorkflow, {
         isDup: false,
         spaceId: context.spaceId,
       });
       /**
-       * 允许外部业务逻辑添加失败
+       * Allow external business logic to add failure
        */
       if (isBoolean(addResult)) {
         return addResult as unknown as boolean;
@@ -536,7 +536,7 @@ export function useWorkflowAction({
     reporter.info({ message: 'workflow_modal: itemClick' });
 
     if (onItemClick) {
-      // @ts-expect-error 符合预期
+      // @ts-expect-error meets expectations
       const item: WorkflowItemType = {
         item: data,
         type: context.modalState.dataSourceType,

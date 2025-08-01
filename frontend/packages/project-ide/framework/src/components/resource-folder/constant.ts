@@ -38,7 +38,7 @@ const MAX_DEEP = 5;
 const RESOURCE_FOLDER_CONTEXT_KEY = 'resourceFolderContextKey';
 
 /**
- * 乐观 ui 创建文件的 ID 默认前缀
+ * Optimistic UI creates the default prefix for the ID of the file
  */
 const OPTIMISM_ID_PREFIX = 'resource-folder-optimism-id-';
 
@@ -48,7 +48,7 @@ const MORE_TOOLS_CLASS_NAME = 'more-tools-class-name';
 
 enum ItemStatus {
   Normal = 'normal',
-  Disabled = 'disabled', // 禁止操作
+  Disabled = 'disabled', // Prohibited operation
 }
 
 const COLOR_CONFIG = {

@@ -43,7 +43,7 @@ var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
 func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *developer_api.GetTypeListRequest) (
 	resp *developer_api.GetTypeListResponse, err error,
 ) {
-	// 一般不太可能同时配置这么多模型
+	// It is generally not possible to configure so many models simultaneously
 	const modelMaxLimit = 300
 
 	modelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
@@ -186,7 +186,7 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 			PriceOut:          0,
 			SystemPromptLimit: nil,
 		},
-		ModelName:      mm.Name,
+		ModelName:      model.Name,
 		ModelClassName: mm.Protocol.TOModelClass().String(),
 		IsOffline:      mm.Status != modelmgr.StatusInUse,
 		ModelParams:    mps,
@@ -201,7 +201,7 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 		ModelTagList:   nil,
 		IsUpRequired:   nil,
 		ModelBriefDesc: model.Description.Read(locale),
-		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
+		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: Replace with real configuration
 			SeriesName: "热门模型",
 		},
 		ModelStatusDetails: nil,

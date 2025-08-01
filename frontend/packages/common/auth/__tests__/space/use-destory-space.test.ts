@@ -17,38 +17,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react-hooks';
 
-// 模拟 React 的 useEffect
+// The useEffect of React
 const cleanupFns = new Map();
 vi.mock('react', () => ({
   useEffect: vi.fn((fn, deps) => {
-    // 执行 effect 函数并获取清理函数
+    // Execute the effect function and get the cleanup function
     const cleanup = fn();
-    // 存储清理函数，以便在 unmount 时调用
+    // Store the cleanup function to call when unmounted
     cleanupFns.set(fn, cleanup);
-    // 返回清理函数
+    // Return cleanup function
     return cleanup;
   }),
 }));
 
-// 模拟 store
+// Simulated store
 const mockDestory = vi.fn();
 vi.mock('../../src/space/store', () => ({
   useSpaceAuthStore: vi.fn(selector => selector({ destory: mockDestory })),
 }));
 
-// 创建一个包装函数，确保在 unmount 时调用清理函数
+// Create a wrapper function to ensure that the cleanup function is called when unmounted
 function renderHookWithCleanup(callback, options = {}) {
   const result = renderHook(callback, options);
   const originalUnmount = result.unmount;
 
   result.unmount = () => {
-    // 调用所有清理函数
+    // Call all cleanup functions
     cleanupFns.forEach(cleanup => {
       if (typeof cleanup === 'function') {
         cleanup();
       }
     });
-    // 调用原始的 unmount
+    // Call the original unmount
     originalUnmount();
   };
 
@@ -66,16 +66,16 @@ describe('useDestorySpace', () => {
   it('应该在组件卸载时调用 destory 方法', () => {
     const spaceId = 'test-space-id';
 
-    // 渲染 hook
+    // Render hook
     const { unmount } = renderHookWithCleanup(() => useDestorySpace(spaceId));
 
-    // 初始时不应调用 destory
+    // Destory should not be called initially
     expect(mockDestory).not.toHaveBeenCalled();
 
-    // 模拟组件卸载
+    // Simulate component uninstall
     unmount();
 
-    // 卸载时应调用 destory 并传入正确的 spaceId
+    // When uninstalling, call destory and pass in the correct spaceId.
     expect(mockDestory).toHaveBeenCalledTimes(1);
     expect(mockDestory).toHaveBeenCalledWith(spaceId);
   });
@@ -84,25 +84,25 @@ describe('useDestorySpace', () => {
     const spaceId1 = 'space-id-1';
     const spaceId2 = 'space-id-2';
 
-    // 渲染第一个 hook 实例
+    // Render the first hook instance
     const { unmount: unmount1 } = renderHookWithCleanup(() =>
       useDestorySpace(spaceId1),
     );
 
-    // 渲染第二个 hook 实例
+    // Render the second hook instance
     const { unmount: unmount2 } = renderHookWithCleanup(() =>
       useDestorySpace(spaceId2),
     );
 
-    // 卸载第一个实例
+    // Uninstall the first instance
     unmount1();
     expect(mockDestory).toHaveBeenCalledWith(spaceId1);
 
-    // 卸载第二个实例
+    // Uninstall the second instance
     unmount2();
     expect(mockDestory).toHaveBeenCalledWith(spaceId2);
 
-    // 总共应调用两次
+    // It should be called twice in total.
     expect(mockDestory).toHaveBeenCalledTimes(4);
   });
 });

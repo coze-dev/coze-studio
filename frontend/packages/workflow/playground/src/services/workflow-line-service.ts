@@ -85,14 +85,14 @@ export class WorkflowLinesService {
 
   isError(fromId?: string, toId?: string): boolean {
     if (!fromId) {
-      // 不允许无输入端口
+      // No input port allowed
       return true;
     }
 
     const line = this.getLine(fromId, toId);
 
     if (!line) {
-      // 输出不存在
+      // Output does not exist
       return false;
     }
 
@@ -111,7 +111,7 @@ export class WorkflowLinesService {
     allLines.forEach(line => line.validate());
   }
 
-  // 将两个端口的连线进行交换
+  // Swap the connection between the two ports
   replaceLineByPort(
     oldPortInfo: WorkflowLinePortInfo,
     newPortInfo: WorkflowLinePortInfo,
@@ -130,16 +130,16 @@ export class WorkflowLinesService {
         line.info.fromPort === newPortInfo.fromPort,
     );
 
-    // 记录所有连线终点交集
+    // Record the intersection of all connection endpoints
     const intersectionToPort = intersection(
       oldPortLines.map(line => line.toPort?.id),
       newPortLines.map(line => line.toPort?.id),
     );
 
     oldPortLines
-      // 若两条线的终点相同则放弃交换，
-      // 1. 没必要交换，交换后的连线是相同的
-      // 2. 过程中会生成两条相同连线，但是画布中不允许有两条相同连线，会导致一条连线丢失
+      // If the ends of the two lines are the same, the exchange is abandoned.
+      // 1. There is no need to exchange, the connection after the exchange is the same
+      // 2. Two identical connections will be generated during the process, but two identical connections are not allowed in the canvas, which will cause one connection to be lost.
       .filter(
         line => !intersectionToPort.some(portId => portId === line.toPort?.id),
       )
@@ -164,7 +164,7 @@ export class WorkflowLinesService {
     this.linesManager.forceUpdate();
   }
 
-  /** 监听拖拽空线条时 */
+  /** Monitor when dragging an empty line */
   private onDragLineEnd(): Disposable {
     return this.dragService.onDragLineEnd(
       async (params: {

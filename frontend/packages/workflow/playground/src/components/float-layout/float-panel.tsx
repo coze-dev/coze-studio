@@ -30,16 +30,16 @@ export const FloatPanel: React.FC<FloatPanelProps> = ({ panel }) => {
   useEffect(() => {
     const dispose = panel.onUpdate(next => {
       /**
-       * 点击空白区域关闭 SideSheet 的场景下
+       * Click on the blank area to close the scene of SideSheet.
        *
-       * 问题：
-       * - 直接关闭 SideSheet 会导致抽屉内表单的 Blur 事件没有触发，UI 就先销毁了
+       * Question:
+       * - Closing SideSheet directly will cause the Blur event of the form in the drawer to not be triggered, and the UI will be destroyed first
        *
-       * 解决思路：
-       * - UI 更新的优先级需要低于抽屉内表单 Blur 相关的数据更新
+       * Solution ideas:
+       * - UI updates need to be prioritized lower than form blur related data updates in the drawer
        *
-       * 具体方案：
-       * - 使用 startTransition 将这次 UI 销毁的优先级降低执行，让 Blur 相关的数据更新可以先于抽屉的 UI 销毁前执行
+       * Specific plan:
+       * - Use start Transition to lower the priority of UI destruction this time, so that Blur-related data updates can be executed before the UI destruction of the drawer
        */
       startTransition(() => {
         nodeRef.current = next;

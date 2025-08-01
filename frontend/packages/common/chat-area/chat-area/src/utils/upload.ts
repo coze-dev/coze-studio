@@ -117,13 +117,13 @@ export function uploadFile({
         {
           schema,
           useFileExtension: true,
-          // 解决报错问题：
+          // Solve the error problem:
           userId,
           appId: APP_ID,
           // cp-disable-next-line
-          imageHost: `https://${upload_host}`, //imageX上传必填
+          imageHost: `https://${upload_host}`, //imageX upload required
           imageConfig: {
-            serviceId: service_id || '', // 在视频云中申请的服务id
+            serviceId: service_id || '', // The service id applied for in the video cloud.
           },
           objectConfig: {
             serviceId: service_id || '',
@@ -159,7 +159,7 @@ export function uploadFile({
           AccessKeyId: auth?.access_key_id || '',
           SecretAccessKey: auth?.secret_access_key || '',
         },
-        type: fileType, // 上传文件类型，三个可选值：video(视频或者音频，默认值)，image(图片)，object（普通文件）
+        type: fileType, // Upload file type, three optional values: video (video or audio, default), image (picture), object (normal file)
       });
 
       bytedUploader.start(fileKey);
@@ -233,7 +233,7 @@ export const isFileSizeNotExceed = (file: File) =>
 export const isNotEmptyFile = (file: File) => file.size > 0;
 
 export const checkHasFileOnDrag = (e: HTMLElementEventMap['drag']) =>
-  // 判断的依据直接看 types 的类型解释就好了
+  // The basis for the judgment is to directly look at the type explanation of types
   Boolean(e.dataTransfer?.types.includes('Files'));
 
 export const formatFileDataListToMessagePayload = (
@@ -322,7 +322,7 @@ export const createNormalizedFilePayload = (
     fileTypeConfig: getFileTypConfig(fileData.file),
   }));
 
-  // 为了收窄类型使用
+  // To narrow the type use
   const validFinalFileList = finalFileList.filter(
     (
       finalFile,

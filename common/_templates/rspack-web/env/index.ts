@@ -16,8 +16,8 @@
  
 const { NODE_ENV } = process.env;
 
-const IS_DEV_MODE = NODE_ENV === 'development'; // 本地环境
-const IS_PRODUCT_MODE = NODE_ENV === 'production'; // 生产环境
+const IS_DEV_MODE = NODE_ENV === 'development'; // local environment
+const IS_PRODUCT_MODE = NODE_ENV === 'production'; // production environment
 
 const IS_CI = process.env.CI === 'true';
 

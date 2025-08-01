@@ -61,7 +61,7 @@ export const BaseBashEditor = (props: BaseBashEditorProps) => {
     [onChange],
   );
 
-  // 值受控;
+  // Value controlled;
   useEffect(() => {
     const editor = apiRef.current;
 

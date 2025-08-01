@@ -41,7 +41,7 @@ export function convertModelValueType(
     return Number(value);
   }
 
-  // 理论上不走这里
+  // Theoretically not going here
   primitiveExhaustiveCheck(type);
   return value;
 }

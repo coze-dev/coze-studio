@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @typescript-eslint/no-explicit-any -- 历史代码 */
+
+/* eslint-disable @typescript-eslint/no-explicit-any -- history code */
 /**
- * 适配 coze graph 2.0 的 test form
+ * Adapt coze graph 2.0 test form
  */
 
 import { useRef } from 'react';
@@ -171,7 +171,7 @@ const TestFormSheetV2: React.FC<TestWorkflowFormPanelProps> = ({ node }) => {
   };
 
   const handleSubmit = async () => {
-    // 先关闭上一次试运行的结果
+    // The result of closing a practice run first
     runService.clearTestRun();
     await testRunFlowV3();
   };

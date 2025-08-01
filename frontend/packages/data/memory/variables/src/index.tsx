@@ -37,7 +37,7 @@ export const VariablesPage = () => {
         type="text"
         className={classNames(
           'h-full flex flex-col',
-          // 滚动条位置调整到 tab 内容中
+          // Scroll bar position is adjusted to tab content
           '[&_.semi-tabs-content]:p-0 [&_.semi-tabs-content]:grow [&_.semi-tabs-content]:overflow-hidden',
           '[&_.semi-tabs-pane-active]:h-full',
           '[&_.semi-tabs-pane-motion-overlay]:h-full [&_.semi-tabs-pane-motion-overlay]:overflow-auto',

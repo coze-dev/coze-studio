@@ -20,8 +20,8 @@ import { type UserInfo } from '../types';
 import { useUserStore } from '../store/user';
 
 /**
- * 主动触发刷新用户信息
- * @param checkLogin 登录检查函数
+ * Actively trigger to refresh user information
+ * @param checkLogin check function
  */
 export const refreshUserInfoBase = async (
   checkLogin: () => Promise<UserInfo>,

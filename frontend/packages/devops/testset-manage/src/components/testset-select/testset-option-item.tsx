@@ -32,7 +32,7 @@ import s from './testset-option-item.module.less';
 interface TestsetOptionItemProps {
   className?: string;
   data: TestsetData;
-  /** 有编辑权限 */
+  /** Have editing permission */
   editable?: boolean;
   onEdit?: (data: TestsetData) => void;
   onDelete?: (data: TestsetData) => void;
@@ -40,7 +40,7 @@ interface TestsetOptionItemProps {
 
 const { Text } = Typography;
 
-/** 多行文本展示优化 */
+/** multi-line text display optimization */
 const MULTILINE_TOOLTIP_STYLE: CSSProperties = { wordBreak: 'break-word' };
 
 export function TestsetOptionItem({
@@ -54,7 +54,7 @@ export function TestsetOptionItem({
   const testsetName = data.caseBase?.name ?? '-';
 
   const onOptionClick = (evt: MouseEvent<HTMLDivElement>) => {
-    // 非兼容时需要阻止冒泡
+    // Bubbling needs to be prevented when incompatible
     if (incompatible) {
       evt.preventDefault();
       evt.stopPropagation();
@@ -123,7 +123,7 @@ export function TestsetOptionItem({
   );
 }
 
-/** 选中的回填项 */
+/** Selected backfill */
 export function SelectedTestsetOptionItem({
   data,
   className,

@@ -50,7 +50,7 @@ export const ContextDivider = ({ text }: ContextDividerProps) => {
       <div
         className={classNames(
           styles['divider-line'],
-          // ui 要求分割线颜色特别处理 不使用 token
+          // UI requires special handling of divider color, no token is used
           styles['coz-divider-line-style'],
           {
             '!coz-bg-images-secondary': showBackground,

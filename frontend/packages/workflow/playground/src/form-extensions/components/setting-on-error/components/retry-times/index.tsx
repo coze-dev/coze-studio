@@ -22,7 +22,7 @@ import { Select } from '@coze-arch/coze-design';
 import { type SettingOnErrorItemProps } from '../../types';
 
 /**
- * 重试次数
+ * number of retries
  */
 export const RetryTimes: FC<SettingOnErrorItemProps<number>> = ({
   value,

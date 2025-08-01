@@ -112,7 +112,7 @@ func (v *vkSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 		return nil, fmt.Errorf("[Retrieve] vikingdb failed to build filter, %w", err)
 	}
 	if filter != nil {
-		// 不支持跨 partition 召回，使用 filter 替代
+		// Cross-partition recall is not supported, use filter instead
 		searchOpts = searchOpts.SetFilter(filter)
 	}
 

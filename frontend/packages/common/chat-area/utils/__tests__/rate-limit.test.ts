@@ -47,13 +47,13 @@ it('limit rate', async () => {
   await vi.advanceTimersByTimeAsync(1000);
   expect(request.mock.calls.length).toBe(7);
 
-  // 离开窗口
+  // Leave the window
   await vi.advanceTimersByTimeAsync(5000);
   limiter.invoke();
   limiter.invoke();
   limiter.invoke();
   expect(request.mock.calls.length).toBe(10);
-  // 进入限流
+  // Access to limited viewership of
   limiter.invoke();
   await vi.advanceTimersByTimeAsync(100);
   expect(request.mock.calls.length).toBe(10);

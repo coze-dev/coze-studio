@@ -30,7 +30,7 @@ interface Props {
 }
 
 /**
- * copilot生成
+ * Copilot generation
  * @param param0
  * @returns
  */

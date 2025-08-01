@@ -82,7 +82,7 @@ type GetControls = (props?: {
   needResetScaleAndSnap?: boolean;
 }) => Control;
 /**
- * 直线起点控制点
+ * Straight Start Control Point
  */
 export const getLineStartControl: GetControls = (props = {}) => {
   const { x, y, callback } = props;
@@ -102,12 +102,12 @@ export const getLineStartControl: GetControls = (props = {}) => {
       callback?.({ element: transformData.target });
       return true;
     },
-    actionName: 'startControl', // 控制点的名称
+    actionName: 'startControl', // The name of the control point
   });
 };
 
 /**
- * 直线终点控制点
+ * straight endpoint control point
  */
 export const getLineEndControl: GetControls = (props = {}) => {
   const { x, y, callback } = props;
@@ -127,7 +127,7 @@ export const getLineEndControl: GetControls = (props = {}) => {
       callback?.({ element: transformData.target });
       return true;
     },
-    actionName: 'endControl', // 控制点的名称
+    actionName: 'endControl', // The name of the control point
   });
 };
 
@@ -191,7 +191,7 @@ const scaleToSize = (
   transformData.target.set({
     width: targetWidth,
     height: targetHeight,
-    // textBox 特化属性
+    // textBox specialization property
     customFixedHeight: targetHeight,
     scaleX: 1,
     scaleY: 1,
@@ -200,11 +200,11 @@ const scaleToSize = (
   });
 };
 /**
- * 直接问 GPT：
- 一个矩形，宽度 w ，高度 h
- 将矩形顺时针旋转角度 a，左上角坐标为 x1 y1
- 拉伸矩形左上角，使矩形右下角保持不变，宽度增加到 w1，高度增加到 h1
- 求左上角坐标
+ * Ask the GPT directly:
+ A rectangle, width w, height h
+ Rotate the rectangle clockwise by angle a with the upper left coordinate x1 y1.
+ Stretch the upper left corner of the rectangle so that the lower right corner of the rectangle remains unchanged, increasing the width to w1 and the height to h1.
+ Find the coordinates of the upper left corner
  */
 const calcLeftTopByTopLeft: LeftTopCalcFn = ({
   angle,
@@ -233,12 +233,12 @@ const calcLeftTopByTopLeft: LeftTopCalcFn = ({
 };
 
 /**
- * 直接问 GPT：
-一个矩形，宽度 w ，高度 h
-将矩形顺时针旋转角度 a , 左上角坐标为 x1 y1
-拉伸矩形右上角，使矩形左下角保持不变，宽度增加到 w1，高度增加到 h1
-求左上角坐标
-（GPT 给的答案不准确，需要稍微理解下，修改加减）
+ * Ask the GPT directly:
+A rectangle, width w, height h
+Rotate the rectangle clockwise by angle a, with the upper left coordinate x1 y1.
+Stretch the upper right corner of the rectangle so that the lower left corner of the rectangle remains unchanged, increasing the width to w1 and the height to h1.
+Find the coordinates of the upper left corner
+(The answer given by GPT is inaccurate, you need to understand it a little, modify it, add and subtract)
  */
 const calcLeftTopByTopRight: LeftTopCalcFn = ({
   angle,
@@ -255,13 +255,13 @@ const calcLeftTopByTopRight: LeftTopCalcFn = ({
 };
 
 /**
- * 直接问 GPT：
-一个矩形，宽度 w ，高度 h
-将矩形顺时针旋转角度 a , 左上角坐标为 x1 y1
-拉伸矩形左下角，使矩形右上角保持不变，宽度增加到 w1，高度增加到 h1
-求左上角坐标
+ * Ask the GPT directly:
+A rectangle, width w, height h
+Rotate the rectangle clockwise by angle a, with the upper left coordinate x1 y1.
+Stretch the lower left corner of the rectangle so that the upper right corner of the rectangle remains unchanged, increasing the width to w1 and the height to h1.
+Find the coordinates of the upper left corner
 
-GPT 给的答案不准确，这个比较麻烦，所以写出了每一步的推导过程
+The answer given by GPT is inaccurate, which is more troublesome, so I wrote out the derivation process of each step
  */
 const calcLeftTopByBottomLeft: LeftTopCalcFn = ({
   angle,
@@ -271,18 +271,18 @@ const calcLeftTopByBottomLeft: LeftTopCalcFn = ({
   newWidth,
   newHeight,
 }) => {
-  // 将角度转换为弧度
+  // Convert angle to radians
   const aRad = (angle * Math.PI) / 180;
 
-  // 计算旋转后的右上角坐标
+  // Calculate the coordinates of the upper right corner after rotation
   const x2 = originLeft + originWidth * Math.cos(aRad);
   const y2 = originTop + originWidth * Math.sin(aRad);
 
-  // 计算拉伸后的左下角坐标
+  // Calculate the lower left corner coordinates after stretching
   const x3 = x2 - newHeight * Math.sin(aRad) - newWidth * Math.cos(aRad);
   const y3 = y2 + newHeight * Math.cos(aRad) - newWidth * Math.sin(aRad);
 
-  // 计算拉伸后的左上角坐标
+  // Calculate the coordinates of the upper left corner after stretching
   const x1New = x3 + newHeight * Math.sin(aRad);
   const y1New = y3 - newHeight * Math.cos(aRad);
   return {
@@ -344,7 +344,7 @@ const _actionHandler = ({
   leftTopCalcFn?: LeftTopCalcFn;
 }) => {
   const rs = fn(
-    // 如果使用吸附则禁用默认缩放；否则取反
+    // Disable default scaling if adsorption is used; otherwise reverse
     { ...e, shiftKey: needResetScaleAndSnap ? true : !e.shiftKey },
     transformData,
     x,
@@ -363,7 +363,7 @@ const _actionHandler = ({
 };
 
 /**
- * 上左
+ * upper left
  */
 export const getResizeTLControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap = true } = props;
@@ -386,11 +386,11 @@ export const getResizeTLControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeTLControl', // 控制点的名称
+    actionName: 'resizeTLControl', // The name of the control point
   });
 };
 /**
- * 上中
+ * upper middle school
  */
 export const getResizeMTControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap = true } = props;
@@ -413,12 +413,12 @@ export const getResizeMTControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeMTControl', // 控制点的名称
+    actionName: 'resizeMTControl', // The name of the control point
   });
 };
 
 /**
- * 上右
+ * upper right
  */
 export const getResizeTRControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -441,12 +441,12 @@ export const getResizeTRControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeTRControl', // 控制点的名称
+    actionName: 'resizeTRControl', // The name of the control point
   });
 };
 
 /**
- * 中左
+ * center left
  */
 export const getResizeMLControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -470,12 +470,12 @@ export const getResizeMLControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeMLControl', // 控制点的名称
+    actionName: 'resizeMLControl', // The name of the control point
   });
 };
 
 /**
- * 中右
+ * center right
  */
 export const getResizeMRControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -498,12 +498,12 @@ export const getResizeMRControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeMRControl', // 控制点的名称
+    actionName: 'resizeMRControl', // The name of the control point
   });
 };
 
 /**
- * 下左
+ * Lower left
  */
 export const getResizeBLControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -527,12 +527,12 @@ export const getResizeBLControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeBLControl', // 控制点的名称
+    actionName: 'resizeBLControl', // The name of the control point
   });
 };
 
 /**
- * 下中
+ * lower middle
  */
 export const getResizeMBControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -555,12 +555,12 @@ export const getResizeMBControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeMBControl', // 控制点的名称
+    actionName: 'resizeMBControl', // The name of the control point
   });
 };
 
 /**
- * 下右
+ * Lower right
  */
 export const getResizeBRControl: GetControls = (props = {}) => {
   const { callback, needResetScaleAndSnap } = props;
@@ -583,7 +583,7 @@ export const getResizeBRControl: GetControls = (props = {}) => {
       return rs;
     },
     mouseDownHandler: _mouseDownHandler,
-    actionName: 'resizeBRControl', // 控制点的名称
+    actionName: 'resizeBRControl', // The name of the control point
   });
 };
 
@@ -605,7 +605,7 @@ const _getRotateControl =
   }): GetControls =>
   (props = {}) => {
     const { callback } = props;
-    // 这个大小，取决于 resize 控制点的大小
+    // This size depends on the size of the resize control point
     const offset = 12;
     return new Control({
       x,
@@ -614,15 +614,15 @@ const _getRotateControl =
       sizeY: 20,
       offsetY: offsetY * offset,
       offsetX: offsetX * offset,
-      // 覆盖旋转控制点渲染，预期不显示，所以啥都没写
+      // Override the rotation control point rendering, it is not expected to be displayed, so nothing is written.
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       render: () => {},
-      // 只能做到 hover 上时的 cursor，旋转过程中 cursor 无法修改
+      // You can only do the cursor when hovering, and the cursor cannot be modified during rotation.
       cursorStyleHandler: (eventData, control, object) =>
         `url(${getCursor(object.angle + rotateStaff)}) 16 16, crosshair`,
 
       actionHandler: (e, transformData, _x, _y) => {
-        // 旋转吸附，单位：角度 一圈 = 360度
+        // Rotational adsorption, unit: angle, one turn = 360 degrees
         if (e.shiftKey) {
           transformData.target.set({
             snapAngle: 15,
@@ -647,11 +647,11 @@ const _getRotateControl =
 
         return rs;
       },
-      actionName, // 控制点的名称
+      actionName, // The name of the control point
     });
   };
 
-// 上左旋转点
+// Top Left Rotation Point
 export const getRotateTLControl: GetControls = (props = {}) =>
   _getRotateControl({
     x: -0.5,
@@ -662,7 +662,7 @@ export const getRotateTLControl: GetControls = (props = {}) =>
     actionName: 'rotateTLControl',
   })(props);
 
-// 上右旋转点
+// Top right rotation point
 export const getRotateTRControl: GetControls = (props = {}) =>
   _getRotateControl({
     x: 0.5,
@@ -673,7 +673,7 @@ export const getRotateTRControl: GetControls = (props = {}) =>
     actionName: 'rotateTRControl',
   })(props);
 
-// 下右旋转点
+// Lower right rotation point
 export const getRotateBRControl: GetControls = (props = {}) =>
   _getRotateControl({
     x: 0.5,
@@ -684,7 +684,7 @@ export const getRotateBRControl: GetControls = (props = {}) =>
     actionName: 'rotateBRControl',
   })(props);
 
-// 下左旋转点
+// Lower left rotation point
 export const getRotateBLControl: GetControls = (props = {}) =>
   _getRotateControl({
     x: -0.5,

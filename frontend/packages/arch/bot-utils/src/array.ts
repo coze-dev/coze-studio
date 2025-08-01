@@ -25,12 +25,12 @@ export const ArrayUtil = {
   mapAndFilter,
 };
 
-// region array2Map 重载声明
-// 和 OptionUtil.array2Map 虽然相似，但在用法和类型约束上还是很不一样的
+// Region array2Map Overload Statement
+// Although similar to OptionUtil.array2Map, it is still very different in terms of usage and type constraints
 /**
- * 将列表转化为 map
+ * Convert a list to a map
  * @param items
- * @param key 指定 item[key] 作为 map 的键
+ * @Param key Specifies item [key] as the key of the map
  * @example
  * const items = [{name: 'a', id: 1}];
  * array2Map(items, 'id');
@@ -41,10 +41,10 @@ function array2Map<T extends Obj, K extends keyof T>(
   key: K,
 ): Record<T[K], T>;
 /**
- * 将列表转化为 map
+ * Convert a list to a map
  * @param items
- * @param key 指定 item[key] 作为 map 的键
- * @param value 指定 item[value] 作为 map 的值
+ * @Param key Specifies item [key] as the key of the map
+ * @Param value Specifies item [value] as the value of the map
  * @example
  * const items = [{name: 'a', id: 1}];
  * array2Map(items, 'id', 'name');
@@ -56,10 +56,10 @@ function array2Map<T extends Obj, K extends keyof T, V extends keyof T>(
   value: V,
 ): Record<T[K], T[V]>;
 /**
- * 将列表转化为 map
+ * Convert a list to a map
  * @param items
- * @param key 指定 item[key] 作为 map 的键
- * @param value 获取值
+ * @Param key Specifies item [key] as the key of the map
+ * @param value get value
  * @example
  * const items = [{name: 'a', id: 1}];
  * array2Map(items, 'id', (item) => `${item.id}-${item.name}`);
@@ -72,7 +72,7 @@ function array2Map<T extends Obj, K extends keyof T, V>(
 ): Record<T[K], V>;
 // endregion
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/** 将列表转化为 map */
+/** Convert a list to a map */
 function array2Map<T extends Obj, K extends keyof T>(
   items: T[],
   key: K,
@@ -111,10 +111,10 @@ function mapAndFilter<I = Obj, T = Obj>(
     const realValue = map ? map(currentValue) : currentValue;
     const filtered = filter ? filter(currentValue) : true;
     if (!filtered) {
-      // 如果filtered是false，表示此项需要跳过
+      // If filtered is false, this item needs to be skipped
       return previousValue;
     }
-    // 如果filtered是true，表示需要加上此项
+    // If filtered is true, it means that this item needs to be added
     return [...previousValue, realValue] as Array<I>;
   }, [] as Array<I>);
 }

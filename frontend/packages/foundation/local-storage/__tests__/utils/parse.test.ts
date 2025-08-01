@@ -72,7 +72,7 @@ describe('解析工具函数', () => {
     it('应该返回空对象当永久缓存数据格式无效', () => {
       const data = {
         permanent: {
-          key: 123, // 应该是字符串
+          key: 123, // Should be string.
         },
       };
       expect(paseLocalStorageValue(JSON.stringify(data))).toEqual({});
@@ -82,7 +82,7 @@ describe('解析工具函数', () => {
       const data = {
         userRelated: {
           'user-1': {
-            key: 123, // 应该是字符串
+            key: 123, // Should be string.
           },
         },
       };

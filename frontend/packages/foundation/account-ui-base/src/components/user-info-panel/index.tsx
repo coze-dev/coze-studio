@@ -44,7 +44,7 @@ import { UserInfoField, type UserInfoFieldProps } from './user-info-field';
 
 import styles from './index.module.less';
 
-// 用户输入 username 自动检查的时间
+// The time when the user enters the username to automatically check
 export const CHECK_USER_NAME_DEBOUNCE_TIME = 1000;
 
 const WrappedInputWithCount: React.FC<
@@ -213,7 +213,7 @@ export const UserInfoPanel = () => {
       });
       localStorage.setItem('i18next', newLang === 'en-US' ? 'en' : newLang);
       updateProfileEvent.success();
-      // 更新语言设置需要刷新页面才能生效
+      // Updating the language settings requires a page refresh to take effect
       setTimeout(() => {
         window.location.reload();
       }, 500);
@@ -310,7 +310,7 @@ export const UserInfoPanel = () => {
     setAvatar(userInfo?.avatar_url ?? '');
   }, [userInfo]);
 
-  // 在进入和离开时均刷新一次用户信息
+  // Refresh user information once upon entry and exit
   useEffect(() => {
     refreshUserInfo();
     return () => {

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any -- Array operations require flexible typing */
 import React, { useState } from 'react';
 
 import { IconCozPlus, IconCozMinus } from '@coze-arch/coze-design/icons';
@@ -32,17 +32,17 @@ export interface ArrayOptions {
   getDefaultAppendValue?: () => any;
   fields?: Field[];
 
-  /** 入参最大数量，若没有提供，默认为整数最大值 */
+  /** The maximum number of imported parameters, if not provided, defaults to the maximum integer value */
   maxItems?: number;
 
-  /** 入参最小数量，若没有提供，默认为 0 */
+  /** The minimum number of imported parameters, if not provided, the default is 0 */
   minItems?: number;
 
-  /** 单条是否可删除 */
+  /** Can a single item be deleted? */
   disableDeleteItem?: ((value: unknown, index: number) => boolean) | boolean;
 }
 
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity -- Array component requires complex logic for field operations
 export const Array: Setter<Array<any>, ArrayOptions> = ({
   value = [],
   readonly = false,
@@ -59,7 +59,7 @@ export const Array: Setter<Array<any>, ArrayOptions> = ({
   const [currentAddIndex, setCurrentAddIndex] = useState<number | undefined>();
   const { node, meta } = context || {};
 
-  // 后端返回的 value 可能为 null，此时不会赋值给 []，这里重新兜底下
+  // Backend may return null, fallback to empty array to ensure proper initialization
   const originValue = value || [];
 
   const add = () => {

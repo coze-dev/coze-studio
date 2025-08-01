@@ -55,11 +55,11 @@ export interface PluginQuery {
   orderByPublic: SortType | OrderBy;
   mineActive: MineActiveEnum;
   orderByFavorite: SortType;
-  // 后端规定传 undefined 才不拼 query，
+  // The backend stipulates that passing undefined does not spell query.
   isOfficial: undefined | true;
-  // multiAgent模式下传递
+  // Transfer in multiAgent mode
   agentId?: string;
-  // 根据bot推荐插件
+  // Recommend plugins according to bot
   botInfo?: {
     current_entity_type?: product_common.ProductEntityType;
     current_entity_id?: Int64;
@@ -68,29 +68,29 @@ export interface PluginQuery {
   pluginType?: PluginType;
 }
 
-/** plugin 弹窗打开来源 */
+/** Plugin pop-up window open source */
 export enum From {
-  /** 在 workflow 打开 */
+  /** Open in workflow */
   WorkflowAddNode = 'workflow_addNode',
 
-  /** 在 bot skills 打开 */
+  /** Open in bot skills */
   BotSkills = 'bot_skills',
 
-  /** 在 bot triggers 打开  */
+  /** Open in bot triggers  */
   BotTrigger = 'bot_trigger',
 
-  /** 在 project ide 打开 */
+  /** Open in project ide */
   ProjectIde = 'project_ide',
 
-  /** 在 project workflow 打开 */
+  /** Open in project workflow */
   ProjectWorkflow = 'project_workflow',
 }
 
 export { OpenModeType };
 export interface PluginModalModeProps {
-  /** 打开弹窗模式：
-   * 默认不传
-   * only_once_add：仅可添加一次后关闭，并返回callback函数
+  /** Open pop-up mode:
+   * Do not pass by default
+   * only_once_add: close after adding only once and return the callback function
    */
   openMode?: OpenModeType;
   from?: From;
@@ -105,23 +105,23 @@ export interface PluginModalModeProps {
   showButton?: boolean;
   showCopyPlugin?: boolean;
   onCopyPluginCallback?: (val: { pluginID?: string; name?: string }) => void;
-  // project ide 场景下传递需要传已选的插件，反显用
+  // In the project ide scenario, you need to pass the selected plug-in, which is used inversely
   pluginApiList?: PluginApi[];
-  // project ide 场景下传递projectId
+  // Pass projectId in the project ide scene
   projectId?: string;
-  // 关闭弹窗回调
+  // Close pop-up callback
   closeCallback?: () => void;
-  // project 场景下点击插件回调
+  // Click on the plugin callback in the project scene
   clickProjectPluginCallback?: (
     val?: PluginInfoForPlayground & {
       listed_at?: Int64;
     },
   ) => void;
-  // 创建成功回调
+  // Create a successful callback
   onCreateSuccess?: (val?: { spaceId?: string; pluginId?: string }) => void;
-  // 是否展示商店插件
+  // Whether to display store plugins
   isShowStorePlugin?: boolean;
-  // 隐藏创建按钮
+  // Hide create button
   hideCreateBtn?: boolean;
   initQuery?: Partial<PluginQuery>;
 }

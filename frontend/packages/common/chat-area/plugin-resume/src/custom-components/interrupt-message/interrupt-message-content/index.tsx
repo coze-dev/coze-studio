@@ -38,7 +38,7 @@ export const InterruptMessageContent: React.FC<{
   const { sendResumeMessage, stopResponding } =
     plugin.chatAreaPluginContext?.writeableAPI.message ?? {};
 
-  // 获取中断场景、续聊id
+  // Get interrupt scene, continue chat id
   const toolCall =
     interruptMessage.required_action?.submit_tool_outputs?.tool_calls?.[0];
 

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const {
   excludeIgnoredFiles,
   groupChangedFilesByProject,
@@ -25,7 +41,7 @@ module.exports = {
           .map(f => path.relative(projectFolder, f))
           .join(' ');
         // TSESTREE_SINGLE_RUN doc https://typescript-eslint.io/packages/parser/#allowautomaticsingleruninference
-        // 切换到项目文件夹，并运行 ESLint 命令
+        // Switch to the project folder and run the ESLint command
         const cmd = [
           `cd ${projectFolder}`,
           `TSESTREE_SINGLE_RUN=true eslint --fix --cache ${filesToCheck} --no-error-on-unmatched-pattern`,
@@ -47,8 +63,8 @@ module.exports = {
     }
 
     return [
-      // 这里不能直接返回 eslintCmds 数组，因为 lint-staged 会依次串行执行每个命令
-      // 而 concurrently 会并行执行多个命令
+      // The eslintCmds array cannot be returned directly here, because lint-staged executes each command in sequence
+      // And concurrently execute multiple commands in parallel
       `concurrently --max-process 8  --names ${eslintCmds
         .map(r => `${r.name}`)
         .join(',')} --kill-others-on-fail ${eslintCmds
@@ -57,7 +73,7 @@ module.exports = {
     ];
   },
   '**/*.{less,scss,css}': files => {
-    // 暂时只修复，不报错卡点
+    // It is only repaired for the time being, and no errors are reported.
     return [`stylelint ${files.join(' ')} --fix || exit 0`];
   },
   '**/package.json': async files => {
@@ -68,7 +84,7 @@ module.exports = {
     if (!filesToLint) return [];
     return [
       // https://eslint.org/docs/latest/flags/#enable-feature-flags-with-the-cli
-      // eslint v9默认从cwd找配置，这里需要使用 unstable_config_lookup_from_file 配置，否则会报错
+      // Eslint v9 finds the configuration from cwd by default. You need to use unstable_config_lookup_from_file configuration here, otherwise an error will be reported.
       `eslint --cache ${filesToLint} --flag unstable_config_lookup_from_file`,
       `prettier ${filesToLint} --write`,
     ];

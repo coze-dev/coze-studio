@@ -36,7 +36,7 @@ interface ExpressionEditorRenderProps {
 }
 
 /**
- * 应当只包含编辑器逻辑，业务无关
+ * It should only contain editor logic, business-independent
  */
 export const ExpressionEditorRender: React.FC<
   ExpressionEditorRenderProps
@@ -57,7 +57,7 @@ export const ExpressionEditorRender: React.FC<
         editor={model.editor}
         initialValue={model.lines}
         onChange={value => {
-          // eslint-disable-next-line @typescript-eslint/require-await -- 防止阻塞 slate 渲染
+          // eslint-disable-next-line @typescript-eslint/require-await -- prevent blocking slate rendering
           const asyncOnChange = async () => {
             const lines = value as ExpressionEditorLine[];
             model.change(lines);

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 const path = require('path');
 
 const { ESLint } = require('eslint');
@@ -13,7 +29,7 @@ const getRushConfiguration = (function () {
   };
 })();
 
-// 获取变更文件所在的项目路径
+// Get the project path where the change file is located
 function withProjectFolder(changedFiles) {
   const projectFolders = [];
 
@@ -24,7 +40,7 @@ function withProjectFolder(changedFiles) {
 
     for (const file of changedFiles) {
       const project = lookup.findChildPath(path.relative(rushJsonFolder, file));
-      // 忽略不在 rush.json 内定义的项目
+      // Ignore items not defined in rush.json
       if (project) {
         const projectFolder = project?.projectFolder ?? rushJsonFolder;
         const packageName = project?.packageName;
@@ -72,7 +88,7 @@ async function excludeIgnoredFiles(changedFiles) {
   }
 }
 
-// 获取发生变更的项目路径
+// Get the project path that changed
 function getChangedProjects(changedFiles) {
   const changedProjectFolders = new Set();
   const changedProjects = new Set();

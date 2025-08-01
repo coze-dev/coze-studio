@@ -109,7 +109,7 @@ export const useBotWorkFlowListModal = ({
   );
 
   const modalState = useMemo(() => {
-    // 在默认打开的状态下获取初始值
+    // Get the initial value in the default open state
     if (!jumpResponse || !defaultVisible) {
       return;
     }
@@ -211,11 +211,11 @@ export const useBotWorkFlowListModal = ({
 
 function safeParse<T>(jsonString: string): T | undefined {
   try {
-    // 尝试解析 JSON 字符串
+    // Attempt to parse JSON strings
     return JSON.parse(jsonString);
     // eslint-disable-next-line @coze-arch/use-error-in-catch
   } catch (error) {
-    // 如果解析时出现错误，返回 null
+    // If there is an error during parsing, return null.
     return undefined;
   }
 }

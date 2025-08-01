@@ -33,9 +33,9 @@ type NodeConfigFormProps = PropsWithChildren<{
 }>;
 
 /**
- * NodeConfigForm组件
- * 用于展示节点配置表单
- * @param children - 子组件，用于渲染表单内容
+ * NodeConfigForm component
+ * Used to display node configuration forms
+ * @Param children - child component for rendering form content
  */
 export function NodeConfigForm({
   children,

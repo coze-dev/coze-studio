@@ -29,8 +29,8 @@ interface HooksParams {
 }
 
 /**
- * @deprecated 变量销毁存在部分 Bad Case
- * - 全局变量因切换 Project 销毁后，变量引用会被置空，导致变量引用失效
+ * @Deprecated Variable Destruction Partial Bad Case
+ * - After the global variable is destroyed due to the switch Project, the variable reference will be set empty, resulting in the invalidation of the variable reference
  */
 export function useVariableDispose(params: HooksParams) {
   const { keyPath, onDispose } = params;

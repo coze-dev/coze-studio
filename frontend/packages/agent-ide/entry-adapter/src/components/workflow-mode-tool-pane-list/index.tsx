@@ -35,7 +35,7 @@ export const WorkflowModeToolPaneList: React.FC<
   }
   return (
     <DebugToolList showBackground={showBackground}>
-      {/* memory查看数据入口 */}
+      {/* Memory view data entry */}
       <MemoryToolPane />
     </DebugToolList>
   );

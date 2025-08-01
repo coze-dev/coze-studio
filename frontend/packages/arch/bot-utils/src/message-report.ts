@@ -26,7 +26,7 @@ import {
 import { reporter } from '@coze-arch/logger';
 import { CustomError } from '@coze-arch/bot-error';
 
-// 这段代码是从 apps/bot/src/store/socket/utils.ts 复制出来的，后续也可以考虑统一
+// This code is copied from apps/bot/src/store/socket/utils.ts, and you can also consider unification in the future.
 const hasSuggestion = (ext?: unknown) =>
   isObject(ext) && 'has_suggest' in ext && ext.has_suggest === '1';
 
@@ -113,7 +113,7 @@ export class MessageReportEvent {
 
   private _receiveTotalMessagesEvent = {
     start: () => {
-      // 打断了
+      // interrupted
       this._receiveTotalMessagesReportEvent =
         this._createReceiveTotalMessagesEvent();
     },
@@ -219,7 +219,7 @@ export class MessageReportEvent {
         return;
       }
       if (!message.content) {
-        // 回复消息为空的错误事件上报
+        // Error event reporting with empty reply message
         reporter.errorEvent({
           eventName: ReportEventNames.emptyReceiveMessage,
           error: new CustomError(

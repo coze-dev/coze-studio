@@ -33,28 +33,28 @@ import { transformOnSubmit } from './data-transformer';
 import { OUTPUTS } from './constants';
 
 export const INPUT_FORM_META: FormMetaV2<FormData> = {
-  // 节点表单渲染
+  // Node form rendering
   render: () => <FormRender />,
 
-  // 验证触发时机
+  // verification trigger timing
   validateTrigger: ValidateTrigger.onChange,
 
-  // 验证规则
+  // validation rules
   validate: {
     nodeMeta: nodeMetaValidate,
-    // 必填
+    // Required
     outputs: createOutputsValidator({ uniqueName: true }),
   },
 
   defaultValues: {
     outputs: OUTPUTS,
   } as any,
-  // 副作用管理
+  // Side effect management
   effect: {
     nodeMeta: fireNodeTitleChange,
     outputs: provideNodeOutputVariablesEffect,
   },
 
-  // 前端表单数据 -> 节点后端数据
+  // Front-end form data - > node back-end data
   formatOnSubmit: transformOnSubmit,
 };

@@ -69,7 +69,7 @@ const ConnectorTagMap: Record<
     color: 'green',
     text: 'project_release_success',
   },
-  [ConnectorPublishStatus.Disable]: null, // 对应状态不会返回给前端，不进行适配
+  [ConnectorPublishStatus.Disable]: null, // The corresponding state will not be returned to the front end and will not be adapted.
 };
 
 export function ConnectorStatus({
@@ -78,7 +78,7 @@ export function ConnectorStatus({
   onShowWebSdkGuide,
 }: ConnectorStatusProps) {
   const tagConfig = ConnectorTagMap[result.connector_publish_status ?? 0];
-  // Web SDK 渠道发布成功时，展示安装指引
+  // When the Web SDK channel is successfully released, the installation instructions will be displayed
   const shouldShowWebSdkGuide =
     result.connector_id === WEB_SDK_CONNECTOR_ID &&
     result.connector_publish_status === ConnectorPublishStatus.Success;
@@ -132,13 +132,13 @@ export function ConnectorStatus({
             {result.connector_publish_status_msg}
           </Typography.Text>
         ) : null}
-        {/* Web SDK 渠道 - 安装指引 */}
+        {/* Web SDK Channel - Installation Guide */}
         {shouldShowWebSdkGuide ? (
           <Typography.Text fontSize="14px" link onClick={showWebSdkGuide}>
             {I18n.t('project_release_guide')}
           </Typography.Text>
         ) : null}
-        {/* 小程序渠道 - 下载代码 & 安装指引 */}
+        {/* Mini Program Channel - Download Code & Installation Guide */}
         {result.download_link ? (
           <>
             <Typography.Text

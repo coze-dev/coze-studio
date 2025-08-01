@@ -32,7 +32,7 @@ import {
 
 import { CollapsibleIconButtonContext, useWrapper, useItem } from './context';
 
-/** 能让 Group 内的所有 CollapsibleIconButton 根据空余宽度自动展开（露出文案）收起（隐藏文案只剩图标） */
+/** Can make all the CollapsibleIconButton in the Group automatically expand according to the free width (expose the copy) and put away (hide the copy and only the icon is left) */
 export const CollapsibleIconButtonGroup: FC<
   PropsWithChildren<{
     /** @default 12 */
@@ -67,12 +67,12 @@ export const CollapsibleIconButton = forwardRef<
 
   return (
     <span ref={ref}>
-      {/* 不可见时渲染到屏幕外侧，用于获取宽度 */}
+      {/* Render to the outside of the screen when not visible for width */}
       <div className={showText ? '' : 'fixed left-[-999px]'} ref={contentRef}>
         <Button
           size="default"
           color="secondary"
-          // 不可见时不附带 testid，避免对 E2E 产生影响
+          // Invisible without testid to avoid impact on E2E
           {...(showText ? rest : omit(rest, 'data-testid'))}
         >
           {text}
@@ -87,7 +87,7 @@ export const CollapsibleIconButton = forwardRef<
   );
 });
 
-/** 更为通用的版本 */
+/** A more general version */
 export const Collapsible = forwardRef<
   HTMLSpanElement,
   {
@@ -102,7 +102,7 @@ export const Collapsible = forwardRef<
 
   return (
     <span ref={ref}>
-      {/* 不可见时渲染到屏幕外侧，用于获取宽度 */}
+      {/* Render to the outside of the screen when not visible for width */}
       <div className={showFull ? '' : 'fixed left-[-999px]'} ref={contentRef}>
         {fullContent}
       </div>
@@ -118,7 +118,7 @@ export const Collapsible = forwardRef<
   );
 });
 
-/** 不会折叠，但参与宽度计算的元素 */
+/** Elements that do not collapse, but participate in width calculations */
 export function PlaceholderContainer({
   itemKey,
   children,
