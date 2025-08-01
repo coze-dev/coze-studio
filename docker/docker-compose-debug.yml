@@ -505,6 +505,13 @@ services:
       - coze-network
     restart: 'no'
 
+  coze-server:
+    build:
+      context: ../
+      dockerfile: backend/Dockerfile
+    image: opencoze/opencoze:latest
+    profiles: ['build-server']
+
 networks:
   coze-network:
     driver: bridge

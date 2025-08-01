@@ -56,10 +56,17 @@ middleware:
 	@echo "Start middleware docker environment for opencoze app"
 	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware up -d --wait
 
+build_docker:
+	@echo "Build docker image"
+	@docker compose -f $(COMPOSE_FILE) --profile build-server build
 
 web:
 	@echo "Start web server in docker"
 	@docker compose -f docker/docker-compose.yml  up -d
+
+down_web:
+	@echo "Stop web server in docker"
+	@docker compose -f docker/docker-compose.yml  down
 
 down: env
 	@echo "Stop all docker containers"
