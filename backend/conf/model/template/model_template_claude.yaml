@@ -80,5 +80,6 @@ meta:
             secret_access_key: ""
             session_token: ""
             region: ""
+            budget_tokens: 0
         custom: {}
     status: 0

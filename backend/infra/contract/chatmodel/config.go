@@ -63,6 +63,7 @@ type ClaudeConfig struct {
 	SecretAccessKey string `json:"secret_access_key,omitempty" yaml:"secret_access_key"`
 	SessionToken    string `json:"session_token,omitempty" yaml:"session_token"`
 	Region          string `json:"region,omitempty" yaml:"region"`
+	BudgetTokens    *int   `json:"budget_tokens,omitempty" yaml:"budget_tokens"`
 }
 
 type ArkConfig struct {
