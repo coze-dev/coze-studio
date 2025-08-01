@@ -24,6 +24,8 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -33,9 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type minioClient struct {
@@ -231,9 +231,9 @@ func (m *minioClient) GetServerID() string {
 }
 
 func (m *minioClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	scheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-	if !ok {
-		return nil, errorx.New(errno.ErrUploadHostSchemaNotExistCode)
+	scheme := strings.ToLower(os.Getenv(consts.StorageUploadHTTPScheme))
+	if scheme == "" {
+		scheme = "http"
 	}
 	return &imagex.SecurityToken{
 		AccessKeyID:     "",
