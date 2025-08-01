@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
@@ -31,11 +33,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type tosClient struct {
@@ -232,9 +232,9 @@ func (t *tosClient) GetServerID() string {
 }
 
 func (t *tosClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	scheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-	if !ok {
-		return nil, errorx.New(errno.ErrUploadHostSchemaNotExistCode)
+	scheme := strings.ToLower(os.Getenv(consts.StorageUploadHTTPScheme))
+	if scheme == "" {
+		scheme = "http"
 	}
 	return &imagex.SecurityToken{
 		AccessKeyID:     "",
