@@ -77,8 +77,8 @@ type FunctionInfo struct {
 
 type FunctionCallInfo struct {
 	FunctionInfo
-	CallID    string `json:"-"`
-	Arguments string `json:"arguments"`
+	CallID    string         `json:"-"`
+	Arguments map[string]any `json:"arguments"`
 }
 
 type ToolResponseInfo struct {

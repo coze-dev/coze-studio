@@ -30,6 +30,7 @@ import (
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
 type Service interface {
 	GetPluginToolsInfo(ctx context.Context, req *ToolsInfoRequest) (*ToolsInfoResponse, error)
+	UnwrapArrayItemFieldsInVariable(v *vo.Variable) error
 	GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (map[int64]InvokableTool, error)
 	ExecutePlugin(ctx context.Context, input map[string]any, pe *Entity,
 		toolID int64, cfg ExecConfig) (map[string]any, error)
