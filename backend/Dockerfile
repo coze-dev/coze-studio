@@ -70,11 +70,4 @@ RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
 
 EXPOSE 8888
 
-# Use a script to start both applications
-COPY backend/script/bootstrap.sh /app/bootstrap.sh
-COPY docker/volumes/elasticsearch/setup_es.sh /app/setup_es.sh
-COPY docker/volumes/elasticsearch/es_index_schema /app/es_index_schemas
-
-RUN chmod +x /app/bootstrap.sh /app/setup_es.sh
-
-CMD ["/app/bootstrap.sh"]
+CMD ["/app/opencoze"]

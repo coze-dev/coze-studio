@@ -89,11 +89,13 @@ services:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
       - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schemas
     healthcheck:
       test:
         [
           'CMD-SHELL',
-          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]',
+          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ] && [ -f /tmp/es_init_complete ]',
         ]
       interval: 5s
       timeout: 10s
@@ -101,7 +103,7 @@ services:
       start_period: 10s
     networks:
       - coze-network
-    # Install smartcn analyzer plugin
+    # Install smartcn analyzer plugin and initialize ES
     command: >
       bash -c "
         /opt/bitnami/scripts/elasticsearch/setup.sh
@@ -133,9 +135,27 @@ services:
         touch /tmp/es_plugins_ready;
         echo 'Plugin installation successful, marker file created';
 
+        # Start initialization script in background
+        (
+          echo 'Waiting for Elasticsearch to be ready...'
+          until curl -s -f http://localhost:9200/_cat/health >/dev/null 2>&1; do
+            echo 'Elasticsearch not ready, waiting...'
+            sleep 2
+          done
+          echo 'Elasticsearch is ready!'
+
+          # Run ES initialization script
+          echo 'Running Elasticsearch initialization...'
+          sed 's/\r$$//' /setup_es.sh > /setup_es_fixed.sh
+          chmod +x /setup_es_fixed.sh
+          /setup_es_fixed.sh --index-dir /es_index_schemas
+          # Create marker file indicating initialization completion
+          touch /tmp/es_init_complete
+          echo 'Elasticsearch initialization completed successfully!'
+        ) &
+
         # Start Elasticsearch
         exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
-
         echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
       "
 
@@ -351,7 +371,6 @@ services:
         condition: service_healthy
       milvus:
         condition: service_healthy
-    command: ['/app/bootstrap.sh']
 
 networks:
   coze-network:
