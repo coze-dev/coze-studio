@@ -29,8 +29,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"

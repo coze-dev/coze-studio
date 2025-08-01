@@ -29,13 +29,14 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	intelligence "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	intelligence "github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
@@ -636,7 +637,7 @@ func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, 
 	return &playground.ReportUserBehaviorResponse{}, nil
 }
 
-func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, req *playground.GetBotOnlineInfoReq) (*bot_common.OpenAPIBotInfo, error) {
+func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, req *bot_open_api.GetBotOnlineInfoReq) (*bot_common.OpenAPIBotInfo, error) {
 
 	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
 

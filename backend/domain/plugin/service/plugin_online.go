@@ -23,7 +23,7 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
-	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"

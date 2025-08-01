@@ -20,9 +20,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 )
 
 func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, req *developer_api.GetUploadAuthTokenRequest) (*developer_api.GetUploadAuthTokenResponse, error) {

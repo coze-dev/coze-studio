@@ -25,10 +25,10 @@ import (
 	"strings"
 	"time"
 
-	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/common"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
+	dataset "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"

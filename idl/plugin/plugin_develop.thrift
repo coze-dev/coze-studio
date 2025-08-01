@@ -1,7 +1,7 @@
 include "../base.thrift"
 include "./plugin_develop_common.thrift"
 
-namespace go ocean.cloud.plugin_develop
+namespace go plugin_develop
 
 service PluginDevelopService {
     GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin/get_oauth_schema', api.category="plugin", api.gen_path="plugin")

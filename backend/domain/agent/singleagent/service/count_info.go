@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 )
 
 func makeAgentPopupInfoKey(uid, agentID int64, agentPopupType playground.BotPopupType) string {

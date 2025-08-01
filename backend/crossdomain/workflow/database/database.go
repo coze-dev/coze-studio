@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	nodedatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"

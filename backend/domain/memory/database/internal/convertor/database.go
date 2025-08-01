@@ -19,7 +19,7 @@ package convertor
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
 )
 
