@@ -321,7 +321,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 }
 
 func needResetDebugStatusTool(_ context.Context, nt, ot *model.Openapi3Operation) bool {
-	if len(ot.Parameters) != len(ot.Parameters) {
+	if len(nt.Parameters) != len(ot.Parameters) {
 		return true
 	}
 
