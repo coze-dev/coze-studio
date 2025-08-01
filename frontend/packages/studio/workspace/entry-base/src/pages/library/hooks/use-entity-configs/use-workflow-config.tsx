@@ -77,18 +77,15 @@ export const useWorkflowConfig: UseEntityConfigHook = ({
           >
             {I18n.t('library_resource_type_workflow')}
           </Menu.Item>
-          {/* The open-source version does not support conversation streaming for the time being */}
-          {!IS_OPEN_SOURCE ? (
-            <Menu.Item
-              data-testid="workspace.library.header.create.chatflow"
-              icon={<IconCozChat />}
-              onClick={() => {
-                openCreateModal(WorkflowMode.ChatFlow);
-              }}
-            >
-              {I18n.t('wf_chatflow_76')}
-            </Menu.Item>
-          ) : null}
+          <Menu.Item
+            data-testid="workspace.library.header.create.chatflow"
+            icon={<IconCozChat />}
+            onClick={() => {
+              openCreateModal(WorkflowMode.ChatFlow);
+            }}
+          >
+            {I18n.t('wf_chatflow_76')}
+          </Menu.Item>
         </>
       ),
       target: [ResType.Workflow, ResType.Imageflow],

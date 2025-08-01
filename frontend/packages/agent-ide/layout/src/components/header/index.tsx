@@ -129,10 +129,8 @@ export const BotHeader: React.FC<BotHeaderProps> = props => {
             editBotInfoFn={editBotInfoFn}
             deployButton={props.deployButton}
           />
-          {/** mode selector */}
-          {diffTask || IS_OPEN_SOURCE ? null : (
-            <ModeSelect optionList={props.modeOptionList} />
-          )}
+          {/** 模式选择器 */}
+          {diffTask ? null : <ModeSelect optionList={props.modeOptionList} />}
         </div>
 
         {/* 2. Middle bot menu area - offline */}
