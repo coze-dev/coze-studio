@@ -1,10 +1,10 @@
-id: 60060
-name: Doubao-1.5-Vision-Lite
+id: 64020
+name: Doubao-Seed-1.6
 icon_uri: default_icon/doubao_v2.png
 icon_url: ""
 description:
-    zh: doubao-1.5-vision-lite，极具性价比的多模态大模型，支持任意分辨率和极端长宽比图像识别，增强视觉推理、文档识别、细节信息理解和指令遵循能力。
-    en: doubao-1.5-vision-lite is a highly cost-effective multimodal large model that supports image recognition at any resolution and extreme aspect ratios, enhancing visual reasoning, document recognition, detailed information comprehension, and instruction-following capabilities.
+    zh: 全新多模态深度思考模型，同时支持 thinking、non-thinking、auto三种思考模式。其中 non-thinking 模型对比 doubao-1.5-pro-32k-250115 模型大幅提升。
+    en: 'A brand-new multimodal deep thinking model supports three thinking modes: thinking, non-thinking, and auto. Among them, the non-thinking model has significantly improved compared to the doubao-1.5-pro-32k-250115 model.'
 default_parameters:
     - name: temperature
       label:
@@ -90,21 +90,23 @@ default_parameters:
 meta:
     protocol: ark
     capability:
-        function_call: false
+        function_call: true
         input_modal:
             - text
             - image
-        input_tokens: 96000
-        json_mode: false
-        max_tokens: 128000
+            - video
+        input_tokens: 224000
+        json_mode: true
+        max_tokens: 256000
         output_modal:
             - text
-        output_tokens: 16000
-        prefix_caching: false
-        reasoning: false
+        output_tokens: 32000
+        prefix_caching: true
+        reasoning: true
         prefill_response: false
     conn_config:
-        base_url: "https://ark.cn-beijing.volces.com/api/v3/"
+        # you could change the base_url to your own
+        base_url: "https://ark.ap-southeast.bytepluses.com/api/v3"
         api_key: ""
         timeout: 0s
         model: "" # model_id / endpoint_id
