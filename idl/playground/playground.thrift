@@ -1,9 +1,9 @@
 include "../base.thrift"
-include "../bot_common/bot_common.thrift"
+include "../app/bot_common.thrift"
 include "shortcut_command.thrift"
 include "prompt_resource.thrift"
 
-namespace go ocean.cloud.playground
+namespace go playground
 
 struct UpdateDraftBotInfoAgwResponse {
     1: required UpdateDraftBotInfoAgwData data,
@@ -447,20 +447,6 @@ struct GetFileUrlsResponse {
     255: base.BaseResp BaseResp
 }
 
-struct UploadFileOpenRequest {
-    1: required string ContentType (api.header = "Content-Type", agw.source = "header", agw.key = "Content-Type"), // file type
-    2: required binary Data (api.raw_body = ""),          // binary data
-    255: base.Base Base
-}
-
-
-struct UploadFileOpenResponse {
-    1: optional File File (api.body = "data")
-    253: required i64 code
-    254: required string msg
-    255: base.BaseResp BaseResp
-}
-
 struct File{
     1: string URI (api.body = "uri"),                  // File URI
     2: i64 Bytes (api.body = "bytes"),               // file bytes
@@ -469,18 +455,6 @@ struct File{
     5: string URL (api.body = "url")
 }
 
-struct GetBotOnlineInfoReq {
-    1 : required i64 bot_id  (api.js_conv="true")           // botId
-    2:  optional string connector_id // Keep it first, don't expose it, and don't use the field
-    3 : optional string version        // bot version, get the latest version if you don't pass it on.
-}
-
-// resp
-struct GetBotOnlineInfoResp {
-    1: required i32 code
-    2: required string msg
-    3: required bot_common.OpenAPIBotInfo data
-}
 
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -506,9 +480,4 @@ service PlaygroundService {
     GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
     MGetUserBasicInfoResponse MGetUserBasicInfo(1: MGetUserBasicInfoRequest request) (api.post='/api/playground_api/mget_user_info', api.category="playground_api",agw.preserve_base="true")
 
-    //openapi
-    GetBotOnlineInfoResp GetBotOnlineInfo(1: GetBotOnlineInfoReq request)(api.get='/v1/bot/get_online_info', api.category="bot", api.tag="openapi", api.gen_path="personal_api")
-
-    // File related OpenAPI
-    UploadFileOpenResponse UploadFileOpen(1: UploadFileOpenRequest request)(api.post = "/v1/files/upload", api.category="file", api.tag="openapi", agw.preserve_base="true")
 }

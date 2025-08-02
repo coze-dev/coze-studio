@@ -1,4 +1,4 @@
-namespace go ocean.cloud.playground
+namespace go playground
 include "../base.thrift"
 
 struct GetOfficialPromptResourceListRequest {
