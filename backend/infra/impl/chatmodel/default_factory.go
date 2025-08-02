@@ -28,6 +28,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"github.com/ollama/ollama/api"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 	"google.golang.org/genai"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
@@ -126,6 +127,14 @@ func claudeBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Too
 		cfg.SessionToken = config.Claude.SessionToken
 		cfg.Region = config.Claude.Region
 	}
+	if config.EnableThinking != nil {
+		cfg.Thinking = &claude.Thinking{
+			Enable: ptr.From(config.EnableThinking),
+		}
+		if config.Claude != nil && config.Claude.BudgetTokens != nil {
+			cfg.Thinking.BudgetTokens = ptr.From(config.Claude.BudgetTokens)
+		}
+	}
 	return claude.NewChatModel(ctx, cfg)
 }
 
@@ -180,6 +189,21 @@ func arkBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCa
 		cfg.RetryTimes = config.Ark.RetryTimes
 		cfg.CustomHeader = config.Ark.CustomHeader
 	}
+
+	if config.EnableThinking != nil {
+		cfg.Thinking = func() *model.Thinking {
+			var arkThinkingType model.ThinkingType
+			switch {
+			case ptr.From(config.EnableThinking):
+				arkThinkingType = model.ThinkingTypeEnabled
+			default:
+				arkThinkingType = model.ThinkingTypeDisabled
+			}
+			return &model.Thinking{
+				Type: arkThinkingType,
+			}
+		}()
+	}
 	return ark.NewChatModel(ctx, cfg)
 }
 
@@ -199,6 +223,9 @@ func ollamaBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Too
 			FrequencyPenalty: ptr.From(config.FrequencyPenalty),
 			Stop:             config.Stop,
 		},
+	}
+	if config.EnableThinking != nil {
+		cfg.Thinking = config.EnableThinking
 	}
 	return ollama.NewChatModel(ctx, cfg)
 }
