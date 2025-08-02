@@ -201,7 +201,7 @@ func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin
 		)
 		if toolExample != nil {
 			requestExample = toolExample.RequestExample
-			responseExample = toolExample.RequestExample
+			responseExample = toolExample.ResponseExample
 		}
 
 		response.ToolInfoList[tf.ID] = crossplugin.ToolInfo{
@@ -327,7 +327,7 @@ func (t *pluginService) ExecutePlugin(ctx context.Context, input map[string]any,
 	}
 
 	var output map[string]any
-	err = sonic.UnmarshalString(r.RawResp, &output)
+	err = sonic.UnmarshalString(r.TrimmedResp, &output)
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}

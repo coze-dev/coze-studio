@@ -2520,6 +2520,12 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		return nil, err
 	}
 
+	for _, v := range outputVars {
+		if err := unwrapArrayItemFieldsInVariable(v); err != nil {
+			return nil, err
+		}
+	}
+
 	toolDetailInfo := &vo.ToolDetailInfo{
 		ApiDetailData: &workflow.ApiDetailData{
 			PluginID:            req.GetPluginID(),
@@ -2541,6 +2547,64 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 	}
 
 	return toolDetailInfo, nil
+}
+
+func unwrapArrayItemFieldsInVariable(v *vo.Variable) error {
+	if v == nil {
+		return nil
+	}
+
+	if v.Type == vo.VariableTypeObject {
+		subVars, ok := v.Schema.([]*vo.Variable)
+		if !ok {
+			return nil
+		}
+
+		newSubVars := make([]*vo.Variable, 0, len(subVars))
+		for _, subVar := range subVars {
+			if subVar.Name == "[Array Item]" {
+				// Recursively unwrap the array item itself first
+				if err := unwrapArrayItemFieldsInVariable(subVar); err != nil {
+					return err
+				}
+				// If the array item is an object, append its children
+				if subVar.Type == vo.VariableTypeObject {
+					if innerSubVars, ok := subVar.Schema.([]*vo.Variable); ok {
+						newSubVars = append(newSubVars, innerSubVars...)
+					}
+				} else {
+					// If the array item is a primitive type, clear its name and append it
+					subVar.Name = "" // Clear the "[Array Item]" name
+					newSubVars = append(newSubVars, subVar)
+				}
+			} else {
+				// For other sub-variables, recursively unwrap and append
+				if err := unwrapArrayItemFieldsInVariable(subVar); err != nil {
+					return err
+				}
+				newSubVars = append(newSubVars, subVar)
+			}
+		}
+		v.Schema = newSubVars
+
+	} else if v.Type == vo.VariableTypeList {
+		if v.Schema != nil {
+			subVar, ok := v.Schema.(*vo.Variable)
+			if !ok {
+				return nil
+			}
+
+			if err := unwrapArrayItemFieldsInVariable(subVar); err != nil {
+				return err
+			}
+			// If the array item definition itself has "[Array Item]" name, clear it
+			if subVar.Name == "[Array Item]" {
+				subVar.Name = ""
+			}
+			v.Schema = subVar
+		}
+	}
+	return nil
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (
@@ -3701,7 +3765,7 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 	case workflow.ParameterType_Array:
 		v.Type = vo.VariableTypeList
 		if len(p.SubParameters) > 0 {
-			subVs := make([]any, 0)
+			subVs := make([]*vo.Variable, 0)
 			for _, ap := range p.SubParameters {
 				av, err := toVariable(ap)
 				if err != nil {

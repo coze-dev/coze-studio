@@ -2061,7 +2061,7 @@ func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool, // whether the node has enabled batch mode
+	enabled bool,    // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil
