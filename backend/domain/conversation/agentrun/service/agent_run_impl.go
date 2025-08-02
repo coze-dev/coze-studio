@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"runtime/debug"
 	"strconv"
 	"sync"
@@ -47,6 +48,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -714,9 +716,19 @@ func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
 }
 
 func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+
+	errMsg := errorx.ErrorWithoutStack(err)
+	if os.Getenv(consts.RunMode) != "debug" {
+		var statusErr errorx.StatusError
+		if errors.As(err, &statusErr) {
+			errMsg = statusErr.Msg()
+		} else {
+			errMsg = "Internal Server Error"
+		}
+	}
 	c.runEvent.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
-		Code: errno.ErrConversationAgentRunError,
-		Msg:  errorx.ErrorWithoutStack(err),
+		Code: errno.ErrAgentRun,
+		Msg:  errMsg,
 	})
 }
 
