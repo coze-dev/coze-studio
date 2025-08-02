@@ -286,7 +286,7 @@ func concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[call
 		msgs := convToolsNodeCallbackOutput(cbOut)
 
 		for _, msg := range msgs {
-			if msg == nil || msg.ToolCallID == "" {
+			if msg == nil {
 				continue
 			}
 
