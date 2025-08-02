@@ -20,11 +20,11 @@ package coze
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-
-	"github.com/coze-dev/coze-studio/backend/application/plugin"
 
 	bot_open_api "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_open_api"
 )
@@ -49,11 +49,14 @@ func OauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginApplicationSVC.OauthAuthorizationCode(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
+	//resp, err := plugin.PluginApplicationSVC.OauthAuthorizationCode(ctx, &req)
+	//if err != nil {
+	//	internalServerErrorResponse(ctx, c, err)
+	//	return
+	//}
 
-	c.JSON(consts.StatusOK, resp)
+	redirectURL := fmt.Sprintf("http://%s/information/auth/success", os.Getenv("SERVER_HOST"))
+	c.Redirect(consts.StatusFound, []byte(redirectURL))
+	c.Abort()
+	return
 }

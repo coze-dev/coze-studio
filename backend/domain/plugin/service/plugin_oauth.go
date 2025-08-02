@@ -458,7 +458,7 @@ func getStanderOAuthConfig(config *model.OAuthAuthorizationCodeConfig) *oauth2.C
 			TokenURL: config.AuthorizationURL,
 			AuthURL:  config.ClientURL,
 		},
-		RedirectURL: fmt.Sprintf("https://%s/api/oauth/authorization_code", os.Getenv("SERVER_HOST")),
+		RedirectURL: fmt.Sprintf("http://%s/api/oauth/authorization_code", os.Getenv("SERVER_HOST")),
 		Scopes:      strings.Split(config.Scope, " "),
 	}
 }
