@@ -33,9 +33,8 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # Activate venv and install packages
     . /app/.venv/bin/activate && \
     # If you want to use other third-party libraries, you can install them here.
-    pip install git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
     pip install urllib3==1.26.16 && \
-    pip install --no-cache-dir pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
+    pip install --no-cache-dir h11==0.16.0 httpx==0.28.1 pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
