@@ -204,7 +204,7 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 		if item == nil {
 			continue
 		}
-		if item.Role != string(schema.User) {
+		if item.Role != string(schema.User) && item.Role != string(schema.Assistant) {
 			return nil, contentType, errors.New("role not match")
 		}
 		if item.ContentType == run.ContentTypeText {
