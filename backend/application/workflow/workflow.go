@@ -2520,6 +2520,12 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		return nil, err
 	}
 
+	for _, v := range outputVars {
+		if err := crossplugin.GetPluginService().UnwrapArrayItemFieldsInVariable(v); err != nil {
+			return nil, err
+		}
+	}
+
 	toolDetailInfo := &vo.ToolDetailInfo{
 		ApiDetailData: &workflow.ApiDetailData{
 			PluginID:            req.GetPluginID(),
@@ -3701,7 +3707,7 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 	case workflow.ParameterType_Array:
 		v.Type = vo.VariableTypeList
 		if len(p.SubParameters) > 0 {
-			subVs := make([]any, 0)
+			subVs := make([]*vo.Variable, 0)
 			for _, ap := range p.SubParameters {
 				av, err := toVariable(ap)
 				if err != nil {

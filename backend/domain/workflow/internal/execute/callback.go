@@ -27,6 +27,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
@@ -1271,13 +1273,21 @@ func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
 		return ctx
 	}
 
+	var args map[string]any
+	if input.ArgumentsInJSON != "" {
+		if err := sonic.UnmarshalString(input.ArgumentsInJSON, &args); err != nil {
+			logs.Errorf("failed to unmarshal arguments: %v", err)
+			return ctx
+		}
+	}
+
 	t.ch <- &Event{
 		Type:    FunctionCall,
 		Context: GetExeCtx(ctx),
 		functionCall: &entity.FunctionCallInfo{
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
-			Arguments:    input.ArgumentsInJSON,
+			Arguments:    args,
 		},
 	}
 

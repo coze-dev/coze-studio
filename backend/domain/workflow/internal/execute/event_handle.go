@@ -887,7 +887,12 @@ func getFCInfos(ctx context.Context, nodeKey vo.NodeKey) map[string]*fcInfo {
 }
 
 func (f *fcInfo) inputString() string {
+	if f.input == nil {
+		return ""
+	}
+
 	m, err := sonic.MarshalString(f.input)
+
 	if err != nil {
 		panic(err)
 	}
@@ -899,12 +904,5 @@ func (f *fcInfo) outputString() string {
 		return ""
 	}
 
-	m := map[string]any{
-		"data": f.output.Response, // TODO: traceID, code, message?
-	}
-	b, err := sonic.MarshalString(m)
-	if err != nil {
-		panic(err)
-	}
-	return b
+	return f.output.Response
 }
