@@ -338,13 +338,23 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			arkEmbeddingApiKey  = os.Getenv("ARK_EMBEDDING_API_KEY")
 			// deprecated: use ARK_EMBEDDING_API_KEY instead
 			// ARK_EMBEDDING_AK will be removed in the future
-			arkEmbeddingAK   = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
+			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingAPIType = os.Getenv("ARK_EMBEDDING_API_TYPE")
 		)
 
 		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
+		}
+
+		apiType := ark.APITypeText
+		if arkEmbeddingAPIType != "" {
+			if t := ark.APIType(arkEmbeddingAPIType); t != ark.APITypeText && t != ark.APITypeMultiModal {
+				return nil, fmt.Errorf("init ark embedding api_type failed, invalid api_type=%s", t)
+			} else {
+				apiType = t
+			}
 		}
 
 		emb, err = arkemb.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
@@ -356,6 +366,7 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			}(),
 			Model:   arkEmbeddingModel,
 			BaseURL: arkEmbeddingBaseURL,
+			APIType: &apiType,
 		}, dims, batchSize)
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
