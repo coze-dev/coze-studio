@@ -641,7 +641,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			cond := &rdb.Condition{
 				Field:    database.DefaultUidColName,
 				Operator: entity3.OperatorEqual,
-				Value:    req.UserID,
+				Value:    strconv.FormatInt(req.UserID, 10),
 			}
 
 			condition.Conditions = append(condition.Conditions, cond)
@@ -711,7 +711,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 		cond := &rdb.Condition{
 			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
+			Value:    strconv.FormatInt(req.UserID, 10),
 		}
 
 		condition.Conditions = append(condition.Conditions, cond)
@@ -773,20 +773,21 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 			Conditions: []*rdb.Condition{cond},
 		}
 	}
-
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
-		cond := &rdb.Condition{
-			Field:    database.DefaultUidColName,
-			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
-		}
-
-		if complexCondition == nil {
-			complexCondition = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
+	if req.TableType == table.TableType_DraftTable {
+		if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
+			cond := &rdb.Condition{
+				Field:    database.DefaultUidColName,
+				Operator: entity3.OperatorEqual,
+				Value:    strconv.FormatInt(req.UserID, 10),
 			}
-		} else {
-			complexCondition.Conditions = append(complexCondition.Conditions, cond)
+
+			if complexCondition == nil {
+				complexCondition = &rdb.ComplexCondition{
+					Conditions: []*rdb.Condition{cond},
+				}
+			} else {
+				complexCondition.Conditions = append(complexCondition.Conditions, cond)
+			}
 		}
 	}
 
