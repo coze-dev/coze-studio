@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strconv"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components"
@@ -274,7 +275,7 @@ func convInterruptEventType(interruptEvent any) singleagent.InterruptEventType {
 
 func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) ([]*schema.Message, error) {
 	defer output.Close()
-	toolsMsgChunks := make([][]*schema.Message, 0, 5)
+	var toolsMsgChunks [][]*schema.Message
 	var sr *schema.StreamReader[*schema.Message]
 	var sw *schema.StreamWriter[*schema.Message]
 	defer func() {
@@ -283,6 +284,10 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 	}()
 	var streamInitialized bool
+	returnDirectToolsMap := make(map[string]bool)
+	isReturnDirectToolsFirstCheck := true
+	isNeedtoolsMsgChunks := true
+
 	for {
 		cbOut, err := output.Recv()
 		if errors.Is(err, io.EOF) {
@@ -297,13 +302,25 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 
 		msgs := convToolsNodeCallbackOutput(cbOut)
+		for mIndex, msg := range msgs {
 
-		for _, msg := range msgs {
+			if isNeedtoolsMsgChunks {
+				for len(toolsMsgChunks) <= mIndex {
+					toolsMsgChunks = append(toolsMsgChunks, nil)
+				}
+			}
+
 			if msg == nil {
 				continue
 			}
 			if len(r.returnDirectlyTools) > 0 {
-				if _, ok := r.returnDirectlyTools[msg.ToolName]; ok {
+				if isReturnDirectToolsFirstCheck {
+					if _, ok := r.returnDirectlyTools[msg.ToolName]; ok {
+						returnDirectToolsMap[strconv.FormatInt(int64(mIndex), 10)] = true
+					}
+				}
+
+				if _, ok := returnDirectToolsMap[strconv.FormatInt(int64(mIndex), 10)]; ok {
 					if !streamInitialized {
 						sr, sw = schema.Pipe[*schema.Message](5)
 						r.sw.Send(&entity.AgentEvent{
@@ -316,19 +333,14 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 				}
 			}
 
-			findSameMsg := false
-			for i, msgChunks := range toolsMsgChunks {
-				if msg.ToolCallID == msgChunks[0].ToolCallID {
-					toolsMsgChunks[i] = append(toolsMsgChunks[i], msg)
-					findSameMsg = true
-					break
-				}
-			}
-
-			if !findSameMsg {
-				toolsMsgChunks = append(toolsMsgChunks, []*schema.Message{msg})
+			if toolsMsgChunks[mIndex] == nil {
+				toolsMsgChunks[mIndex] = []*schema.Message{msg}
+			} else {
+				toolsMsgChunks[mIndex] = append(toolsMsgChunks[mIndex], msg)
 			}
 		}
+		isReturnDirectToolsFirstCheck = false
+		isNeedtoolsMsgChunks = false
 	}
 
 	toolMessages := make([]*schema.Message, 0, len(toolsMsgChunks))
