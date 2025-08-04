@@ -108,8 +108,8 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 // If you want to use other third-party libraries, you can add them to this whitelist.
 // And you also need to install them in `/scripts/setup/python.sh` and `/backend/Dockerfile` via `pip install`.
 var pythonThirdPartyWhitelist = map[string]struct{}{
-	"requests_async": {},
-	"numpy":          {},
+	"httpx": {},
+	"numpy": {},
 }
 
 type Config struct {
