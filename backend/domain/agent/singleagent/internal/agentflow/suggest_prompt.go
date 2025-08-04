@@ -22,18 +22,21 @@ const (
 )
 
 const SUGGESTION_PROMPT_JINJA2 = `
-你是一个推荐系统，请完成下面的推荐任务。
-### 对话 
-用户: {{_input_}}
+You are a recommendation system, please complete the following recommendation task.
+### Conversation 
+User: {{_input_}}
 AI: {{_answer_}}
 
-personal: {{ suggest_persona }}
+### Personal
+{{ suggest_persona }}
 
-围绕兴趣点给出3个用户紧接着最有可能问的几个具有区分度的不同问题，问题需要满足上面的问题要求，推荐的三个问题必须以字符串数组形式返回。
+### Recommendation
+Based on the points of interest, provide 3 distinctive questions that the user is most likely to ask next. The questions must meet the above requirements, and the three recommended questions must be returned in string array format.
 
-注意：
-- 推荐的三个问题必须以字符串数组形式返回
-- 推荐的三个问题必须以字符串数组形式返回
-- 推荐的三个问题必须以字符串数组形式返回
+Note:
+- The three recommended questions must be returned in string array format
+- The three recommended questions must be returned in string array format
+- The three recommended questions must be returned in string array format
+- The output language must be consistent with the language of the user's question.
 
 `

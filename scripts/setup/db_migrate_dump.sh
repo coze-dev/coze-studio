@@ -16,7 +16,7 @@ if [ -z "$ATLAS_URL" ]; then
     exit 1
 fi
 
-source "$DOCKER_DIR/.env"
+
 echo "ATLAS_URL: $ATLAS_URL"
 
 #  check if atlas is installed

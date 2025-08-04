@@ -507,7 +507,8 @@ table "app_release_record" {
   }
 }
 table "connector_workflow_version" {
-  schema = schema.opencoze
+  schema  = schema.opencoze
+  comment = "connector workflow version"
   column "id" {
     null           = false
     type           = bigint
@@ -550,7 +551,7 @@ table "connector_workflow_version" {
   index "idx_connector_id_workflow_id_create_at" {
     columns = [column.connector_id, column.workflow_id, column.created_at]
   }
-  index "idx_connector_id_workflow_id_version" {
+  index "uniq_connector_id_workflow_id_version" {
     unique  = true
     columns = [column.connector_id, column.workflow_id, column.version]
   }
@@ -862,7 +863,7 @@ table "knowledge" {
     null    = false
     type    = varchar(150)
     default = ""
-    comment = "knowledge's name"
+    comment = "knowledge_s name"
   }
   column "app_id" {
     null    = false
@@ -1647,7 +1648,7 @@ table "node_execution" {
     null     = true
     type     = bigint
     unsigned = true
-    comment  = "loop or batch's execution index"
+    comment  = "loop or batch_s execution index"
   }
   column "composite_node_items" {
     null    = true
@@ -1658,7 +1659,7 @@ table "node_execution" {
   column "parent_node_id" {
     null    = true
     type    = varchar(128)
-    comment = "when as inner node for loop or batch, this is the parent node's key"
+    comment = "when as inner node for loop or batch, this is the parent node_s key"
     collate = "utf8mb4_unicode_ci"
   }
   column "sub_execute_id" {
@@ -2005,12 +2006,12 @@ table "plugin_oauth_auth" {
     comment = "Authorization Code OAuth Config"
   }
   column "access_token" {
-    null    = false
+    null    = true
     type    = text
     comment = "Access Token"
   }
   column "refresh_token" {
-    null    = false
+    null    = true
     type    = text
     comment = "Refresh Token"
   }
@@ -2523,7 +2524,7 @@ table "single_agent_draft" {
     comment = "Agent Name"
   }
   column "description" {
-    null    = false
+    null    = true
     type    = text
     comment = "Agent Description"
   }
@@ -2751,7 +2752,7 @@ table "single_agent_version" {
     comment = "Agent Name"
   }
   column "description" {
-    null    = false
+    null    = true
     type    = text
     comment = "Agent Description"
   }
@@ -3526,7 +3527,7 @@ table "workflow_draft" {
     comment  = "workflow ID"
   }
   column "canvas" {
-    null    = false
+    null    = true
     type    = mediumtext
     comment = "Front end schema"
   }
@@ -3948,7 +3949,7 @@ table "workflow_snapshot" {
     comment = "the commit id of the workflow draft"
   }
   column "canvas" {
-    null    = false
+    null    = true
     type    = mediumtext
     comment = "frontend schema for this snapshot"
   }
@@ -4010,7 +4011,7 @@ table "workflow_version" {
     comment = "Version Description"
   }
   column "canvas" {
-    null    = false
+    null    = true
     type    = mediumtext
     comment = "Front end schema"
   }

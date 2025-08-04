@@ -24,26 +24,32 @@
     "sourceMap": true,
     "strict": true,
     "disableReferencedProjectLoad": true,
-    // "disableSolutionSearching": true,
-    // "disableSourceOfProjectReferenceRedirect": true,
+    "disableSolutionSearching": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "target": "es2018"
   },
   "watchOptions": {
-    "fallbackPolling": "dynamicpriority",
+    "fallbackPolling": "dynamicPriorityPolling",
     "synchronousWatchDirectory": false,
-    "watchDirectory": "fixedChunkSizePolling",
+    "watchDirectory": "useFsEvents",
     "watchFile": "useFsEventsOnParentDirectory",
     "excludeDirectories": [
       "../../**/__tests__/",
       "../../**/__coverage__/",
       "../../**/__mocks__/",
-      "/**/node_modules/**"
+      "/**/node_modules/**",
+      "/**/dist/**",
+      "/**/lib/**",
+      "**/temp/**"
     ],
     "excludeFiles": [
-      "../../**/__tests__",
-      "../../**/__coverage__",
-      "../../**/__mocks__",
-      "/**/node_modules/**"
+      "../../**/__tests__/**",
+      "../../**/__coverage__/**",
+      "../../**/__mocks__/**",
+      "/**/node_modules/**",
+      "/**/dist/**",
+      "/**/lib/**",
+      "**/temp/**"
     ]
   }
 }
