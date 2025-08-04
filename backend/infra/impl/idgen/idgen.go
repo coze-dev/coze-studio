@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
@@ -33,7 +33,7 @@ const (
 
 type IDGenerator = idgen.IDGenerator
 
-func New(client *redis.Client) (idgen.IDGenerator, error) {
+func New(client cache.Cmdable) (idgen.IDGenerator, error) {
 	// Initialization code.
 	return &idGenImpl{
 		cli: client,
@@ -41,7 +41,7 @@ func New(client *redis.Client) (idgen.IDGenerator, error) {
 }
 
 type idGenImpl struct {
-	cli       *redis.Client
+	cli       cache.Cmdable
 	namespace string
 }
 

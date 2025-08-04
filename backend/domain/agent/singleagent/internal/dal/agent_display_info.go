@@ -22,10 +22,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/redis/go-redis/v9"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -53,7 +52,7 @@ func (sa *SingleAgentDraftDAO) UpdateDisplayInfo(ctx context.Context, userID int
 func (sa *SingleAgentDraftDAO) GetDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error) {
 	key := makeAgentDisplayInfoKey(userID, agentID)
 	data, err := sa.cacheClient.Get(ctx, key).Result()
-	if errors.Is(err, redis.Nil) {
+	if errors.Is(err, cache.Nil) {
 		tabStatusDefault := developer_api.TabStatus_Default
 		return &entity.AgentDraftDisplayInfo{
 			AgentID: agentID,

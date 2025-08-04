@@ -19,15 +19,15 @@ package repository
 import (
 	"context"
 
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
 
-func NewSingleAgentRepo(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) SingleAgentDraftRepo {
+func NewSingleAgentRepo(db *gorm.DB, idGen idgen.IDGenerator, cli cache.Cmdable) SingleAgentDraftRepo {
 	return dal.NewSingleAgentDraftDAO(db, idGen, cli)
 }
 
@@ -35,7 +35,7 @@ func NewSingleAgentVersionRepo(db *gorm.DB, idGen idgen.IDGenerator) SingleAgent
 	return dal.NewSingleAgentVersion(db, idGen)
 }
 
-func NewCounterRepo(cli *redis.Client) CounterRepository {
+func NewCounterRepo(cli cache.Cmdable) CounterRepository {
 	return dal.NewCountRepo(cli)
 }
 

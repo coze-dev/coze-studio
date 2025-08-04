@@ -21,14 +21,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type cancelSignalStoreImpl struct {
-	redis *redis.Client
+	redis cache.Cmdable
 }
 
 const workflowExecutionCancelStatusKey = "workflow:cancel:status:%d"

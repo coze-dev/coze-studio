@@ -32,6 +32,8 @@ import (
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/table"
@@ -64,10 +66,10 @@ type databaseService struct {
 	onlineDAO          repository.OnlineDAO
 	agentToDatabaseDAO repository.AgentToDatabaseDAO
 	storage            storage.Storage
-	cache              *redis.Client
+	cache              cache.Cmdable
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, cacheCli *redis.Client) Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, cacheCli cache.Cmdable) Database {
 	return &databaseService{
 		rdb:                rdb,
 		db:                 db,

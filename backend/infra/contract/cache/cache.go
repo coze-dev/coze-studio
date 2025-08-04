@@ -21,3 +21,5 @@ import (
 )
 
 type Cmdable = redis.Cmdable
+
+const Nil = redis.Nil

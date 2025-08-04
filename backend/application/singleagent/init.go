@@ -18,8 +18,9 @@ package singleagent
 
 import (
 	"github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
@@ -50,7 +51,7 @@ var SingleAgentSVC *SingleAgentApplicationService
 type ServiceComponents struct {
 	IDGen       idgen.IDGenerator
 	DB          *gorm.DB
-	Cache       *redis.Client
+	Cache       cache.Cmdable
 	TosClient   storage.Storage
 	ImageX      imagex.ImageX
 	EventBus    search.ProjectEventBus

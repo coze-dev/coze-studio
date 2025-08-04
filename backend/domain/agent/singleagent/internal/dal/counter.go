@@ -20,24 +20,23 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/redis/go-redis/v9"
-
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 )
 
-func NewCountRepo(cli *redis.Client) *CounterImpl {
+func NewCountRepo(cli cache.Cmdable) *CounterImpl {
 	return &CounterImpl{
 		cacheClient: cli,
 	}
 }
 
 type CounterImpl struct {
-	cacheClient *redis.Client
+	cacheClient cache.Cmdable
 }
 
 func (c *CounterImpl) Get(ctx context.Context, key string) (int64, error) {
 	val, err := c.cacheClient.Get(ctx, key).Result()
-	if err == redis.Nil {
+	if err == cache.Nil {
 		return 0, nil
 	}
 	if err != nil {
