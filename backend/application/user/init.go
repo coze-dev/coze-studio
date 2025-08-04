@@ -18,6 +18,7 @@ package user
 
 import (
 	"context"
+	"github.com/redis/go-redis/v9"
 
 	"gorm.io/gorm"
 
@@ -27,12 +28,13 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
 )
 
-func InitService(ctx context.Context, db *gorm.DB, oss storage.Storage, idgen idgen.IDGenerator) *UserApplicationService {
+func InitService(ctx context.Context, db *gorm.DB, oss storage.Storage, idgen idgen.IDGenerator, cache *redis.Client) *UserApplicationService {
 	UserApplicationSVC.DomainSVC = service.NewUserDomain(ctx, &service.Components{
 		IconOSS:   oss,
 		IDGen:     idgen,
 		UserRepo:  repository.NewUserRepo(db),
 		SpaceRepo: repository.NewSpaceRepo(db),
+		Cache:     cache,
 	})
 	UserApplicationSVC.oss = oss
 

@@ -25,6 +25,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,7 @@ type Components struct {
 	IDGen     idgen.IDGenerator
 	UserRepo  repository.UserRepository
 	SpaceRepo repository.SpaceRepository
+	Cache     *redis.Client
 }
 
 func NewUserDomain(ctx context.Context, c *Components) User {

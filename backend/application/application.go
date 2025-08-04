@@ -157,7 +157,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
-	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
+	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC, infra.CacheCli)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
 		DB:      infra.DB,
 		IDGen:   infra.IDGenSVC,
