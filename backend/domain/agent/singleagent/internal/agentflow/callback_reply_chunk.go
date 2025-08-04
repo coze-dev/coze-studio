@@ -285,7 +285,7 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 	var streamInitialized bool
 	returnDirectToolsMap := make(map[int]bool)
 	isReturnDirectToolsFirstCheck := true
-	isNeedToolsMsgChunks := true
+	isToolsMsgChunksInit := false
 
 	for {
 		cbOut, err := output.Recv()
@@ -301,12 +301,14 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 
 		msgs := convToolsNodeCallbackOutput(cbOut)
+
+		if !isToolsMsgChunksInit {
+			isToolsMsgChunksInit = true
+			toolsMsgChunks = make([][]*schema.Message, len(msgs))
+		}
+
 		for mIndex, msg := range msgs {
 
-			if isNeedToolsMsgChunks {
-				isNeedToolsMsgChunks = false
-				toolsMsgChunks = make([][]*schema.Message, len(msgs))
-			}
 			if msg == nil {
 				continue
 			}
