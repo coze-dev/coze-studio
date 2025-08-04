@@ -21,16 +21,15 @@ import (
 	"errors"
 	"time"
 
-	redisV9 "github.com/redis/go-redis/v9"
-
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type AppCache struct {
-	cacheCli *redisV9.Client
+	cacheCli cache.Cmdable
 }
 
-func NewAppCache(cacheCli *redisV9.Client) *AppCache {
+func NewAppCache(cacheCli cache.Cmdable) *AppCache {
 	return &AppCache{
 		cacheCli: cacheCli,
 	}
@@ -39,7 +38,7 @@ func NewAppCache(cacheCli *redisV9.Client) *AppCache {
 func (a *AppCache) Get(ctx context.Context, key string) (value string, exist bool, err error) {
 	cmd := a.cacheCli.Get(ctx, key)
 	if cmd.Err() != nil {
-		if errors.Is(cmd.Err(), redisV9.Nil) {
+		if errors.Is(cmd.Err(), cache.Nil) {
 			return "", false, nil
 		}
 		return "", false, cmd.Err()

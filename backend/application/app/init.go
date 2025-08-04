@@ -17,7 +17,6 @@
 package app
 
 import (
-	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
@@ -26,6 +25,7 @@ import (
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -35,7 +35,7 @@ type ServiceComponents struct {
 	IDGen           idgen.IDGenerator
 	DB              *gorm.DB
 	OSS             storage.Storage
-	CacheCli        *redisV9.Client
+	CacheCli        cache.Cmdable
 	ProjectEventBus search.ProjectEventBus
 
 	ModelMgr     modelmgr.Manager

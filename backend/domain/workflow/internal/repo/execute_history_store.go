@@ -23,13 +23,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
@@ -40,7 +40,7 @@ import (
 
 type executeHistoryStoreImpl struct {
 	query *query.Query
-	redis *redis.Client
+	redis cache.Cmdable
 }
 
 func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) (err error) {
@@ -457,7 +457,7 @@ func (e *executeHistoryStoreImpl) loadNodeExecutionFromRedis(ctx context.Context
 
 	result, err := e.redis.Get(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return nil
 		}
 		return vo.WrapError(errno.ErrRedisError, err)
@@ -523,7 +523,7 @@ func (e *executeHistoryStoreImpl) GetTestRunLatestExeID(ctx context.Context, wfI
 	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
 	exeIDStr, err := e.redis.Get(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return 0, nil
 		}
 		return 0, vo.WrapError(errno.ErrRedisError, err)
@@ -548,7 +548,7 @@ func (e *executeHistoryStoreImpl) GetNodeDebugLatestExeID(ctx context.Context, w
 	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
 	exeIDStr, err := e.redis.Get(ctx, key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return 0, nil
 		}
 		return 0, vo.WrapError(errno.ErrRedisError, err)
