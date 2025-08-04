@@ -23,7 +23,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 )
 
 const (
@@ -63,22 +62,6 @@ func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.Too
 			}
 		}
 	}
-	if len(toolsReturnDirectly) > 0 {
-		setReturnDirectly(ctx, toolsReturnDirectly)
-	}
 
 	return workflowTools, toolsReturnDirectly, err
-}
-
-func setReturnDirectly(ctx context.Context, toolsReturnDirectly map[string]struct{}) {
-	ctxcache.Store(ctx, toolsReturnDirectlyKey, toolsReturnDirectly)
-}
-
-func getReturnDirectly(ctx context.Context) map[string]struct{} {
-	directTools, ok := ctxcache.Get[map[string]struct{}](ctx, toolsReturnDirectlyKey)
-
-	if !ok {
-		return nil
-	}
-	return directTools
 }

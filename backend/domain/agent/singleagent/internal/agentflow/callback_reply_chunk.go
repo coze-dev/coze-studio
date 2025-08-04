@@ -38,14 +38,15 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
-func newReplyCallback(_ context.Context, executeID string) (clb callbacks.Handler,
+func newReplyCallback(_ context.Context, executeID string, returnDirectlyTools map[string]struct{}) (clb callbacks.Handler,
 	sr *schema.StreamReader[*entity.AgentEvent], sw *schema.StreamWriter[*entity.AgentEvent],
 ) {
 	sr, sw = schema.Pipe[*entity.AgentEvent](10)
 
 	rcc := &replyChunkCallback{
-		sw:        sw,
-		executeID: executeID,
+		sw:                  sw,
+		executeID:           executeID,
+		returnDirectlyTools: returnDirectlyTools,
 	}
 
 	clb = callbacks.NewHandlerBuilder().
@@ -59,8 +60,9 @@ func newReplyCallback(_ context.Context, executeID string) (clb callbacks.Handle
 }
 
 type replyChunkCallback struct {
-	sw        *schema.StreamWriter[*entity.AgentEvent]
-	executeID string
+	sw                  *schema.StreamWriter[*entity.AgentEvent]
+	executeID           string
+	returnDirectlyTools map[string]struct{}
 }
 
 func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
@@ -281,7 +283,6 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 	}()
 	var streamInitialized bool
-	returnDirectTools := getReturnDirectly(ctx)
 	for {
 		cbOut, err := output.Recv()
 		if errors.Is(err, io.EOF) {
@@ -289,6 +290,9 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 
 		if err != nil {
+			if sw != nil {
+				sw.Send(nil, err)
+			}
 			return nil, err
 		}
 
@@ -298,8 +302,8 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 			if msg == nil {
 				continue
 			}
-			if len(returnDirectTools) > 0 {
-				if _, ok := returnDirectTools[msg.ToolName]; ok {
+			if len(r.returnDirectlyTools) > 0 {
+				if _, ok := r.returnDirectlyTools[msg.ToolName]; ok {
 					if !streamInitialized {
 						sr, sw = schema.Pipe[*schema.Message](5)
 						r.sw.Send(&entity.AgentEvent{
