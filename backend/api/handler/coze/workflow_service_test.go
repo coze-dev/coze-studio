@@ -40,12 +40,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
 
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
@@ -231,9 +232,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		t.Fatalf("Failed to start miniredis: %v", err)
 	}
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
+	redisClient := redis.NewWithAddAndPassword(s.Addr(), "")
 
 	cpStore := checkpoint.NewRedisStore(redisClient)
 

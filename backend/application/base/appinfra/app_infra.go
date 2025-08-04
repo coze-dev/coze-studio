@@ -25,6 +25,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
@@ -42,7 +43,7 @@ import (
 
 type AppDependencies struct {
 	DB                    *gorm.DB
-	CacheCli              *redis.Client
+	CacheCli              cache.Cmdable
 	IDGenSVC              idgen.IDGenerator
 	ESClient              es.Client
 	ImageXClient          imagex.ImageX
