@@ -301,12 +301,12 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 
 		msgs := convToolsNodeCallbackOutput(cbOut)
-		if isNeedtoolsMsgChunks {
-			isNeedtoolsMsgChunks = false
-			toolsMsgChunks = make([][]*schema.Message, len(msgs))
-		}
 		for mIndex, msg := range msgs {
 
+			if isNeedtoolsMsgChunks {
+				isNeedtoolsMsgChunks = false
+				toolsMsgChunks = make([][]*schema.Message, len(msgs))
+			}
 			if msg == nil {
 				continue
 			}
