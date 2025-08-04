@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
@@ -1921,22 +1920,22 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 		currentFileName = draftCurrentFileName
 	}
 	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	progressNum, err := d.cache.Get(ctx, fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	failReason, err := d.cache.Get(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	fileName, err := d.cache.Get(ctx, fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
