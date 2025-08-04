@@ -345,7 +345,7 @@ services:
     # build:
     #   context: ../
     #   dockerfile: backend/Dockerfile
-    image: opencoze/opencoze:latest
+    image: bdcoze:v1.0.0
     restart: always
     container_name: coze-server
     env_file: *env_file

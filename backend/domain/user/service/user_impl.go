@@ -65,23 +65,112 @@ type userImpl struct {
 }
 
 func (u *userImpl) Login(ctx context.Context, email, password string) (user *userEntity.User, err error) {
+	// ==================== 新增代码开始 ====================
+	// TODO: 临时修改 - 总是返回验证成功，用于测试外部认证
+	// 步骤1：先进行认证验证（测试阶段总是通过）
+	// 后续需要在这里调用外部认证API进行真实验证
+	valid := true // 模拟验证总是成功
+	logs.Infof("[TEST MODE] External auth simulation - always pass for user: %s", email)
+
+	// 如果认证失败，直接返回错误（测试阶段不会执行到这里）
+	if !valid {
+		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
+	}
+	// ==================== 新增代码结束 ====================
+
+	// 步骤2：获取用户信息
 	userModel, exist, err := u.UserRepo.GetUsersByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
 
+	// ==================== 新增代码开始 ====================
+	// 步骤3：如果用户不存在，创建新用户（适用于外部认证系统的用户首次登录）
 	if !exist {
-		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
-	}
+		logs.Infof("[TEST MODE] User not found, creating new user for: %s", email)
 
-	// Verify the password using the Argon2id algorithm
-	valid, err := verifyPassword(password, userModel.Password)
-	if err != nil {
-		return nil, err
+		// 从邮箱中提取用户名
+		username := strings.Split(email, "@")[0]
+
+		// 生成临时密码的哈希值（虽然在外部认证模式下不会使用）
+		hashedPassword, err := hashPassword(password)
+		if err != nil {
+			return nil, fmt.Errorf("failed to hash password: %w", err)
+		}
+
+		// 生成用户ID
+		userID, err := u.IDGen.GenID(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate user id: %w", err)
+		}
+
+		now := time.Now().UnixMilli()
+
+		// 创建新用户记录
+		userModel = &model.User{
+			ID:           userID,
+			Email:        email,
+			Name:         username,
+			UniqueName:   u.getUniqueNameFormEmail(ctx, email), // 使用已有的方法生成唯一名称
+			Password:     hashedPassword,
+			IconURI:      uploadEntity.UserIconURI, // 使用默认头像
+			Description:  "",
+			UserVerified: false,
+			Locale:       "zh-CN", // 默认语言
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		}
+
+		// 保存用户到数据库
+		err = u.UserRepo.CreateUser(ctx, userModel)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+
+		// 创建个人空间
+		spaceID, err := u.IDGen.GenID(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate space id: %w", err)
+		}
+
+		err = u.SpaceRepo.CreateSpace(ctx, &model.Space{
+			ID:          spaceID,
+			Name:        "Personal Space",
+			Description: "This is your personal space",
+			IconURI:     uploadEntity.EnterpriseIconURI,
+			OwnerID:     userID,
+			CreatorID:   userID,
+			CreatedAt:   now,
+			UpdatedAt:   now,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create personal space: %w", err)
+		}
+
+		// 将用户加入空间
+		err = u.SpaceRepo.AddSpaceUser(ctx, &model.SpaceUser{
+			SpaceID:   spaceID,
+			UserID:    userID,
+			RoleType:  1, // 管理员角色
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to add user to space: %w", err)
+		}
+
+		logs.Infof("[TEST MODE] Successfully created new user with ID: %d", userModel.ID)
 	}
-	if !valid {
-		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
-	}
+	// ==================== 新增代码结束 ====================
+
+	// 原始密码验证逻辑（已被上面的外部认证逻辑替代）
+	// valid, err := verifyPassword(password, userModel.Password)
+	// if err != nil {
+	//     return nil, err
+	// }
+	// if !valid {
+	//     return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
+	// }
 
 	uniqueSessionID, err := u.IDGen.GenID(ctx)
 	if err != nil {
@@ -93,7 +182,7 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, err
 	}
 
-	// Update user session key
+	// 更新用户会话密钥
 	err = u.UserRepo.UpdateSessionKey(ctx, userModel.ID, sessionKey)
 	if err != nil {
 		return nil, err

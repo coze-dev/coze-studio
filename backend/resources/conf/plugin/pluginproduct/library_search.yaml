@@ -1,0 +1,73 @@
+info:
+  description: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+  title: 文库搜索
+  version: v1
+openapi: 3.0.1
+paths:
+  /document/coze:
+    get:
+      operationId: document_search
+      parameters:
+        - description: 用以检索的关键词
+          in: query
+          name: keyword
+          required: true
+          schema:
+            description: 用以检索的关键词
+            type: string
+        - description: 获得的数据条数，默认10条，最大50条
+          in: query
+          name: number
+          schema:
+            description: 获得的数据条数，默认10条，最大50条
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    description: 返回的数据
+                    properties:
+                      documents:
+                        description: 文档数据集合
+                        items:
+                          description: 单个文档数据
+                          properties:
+                            name:
+                              description: 文档名称
+                              type: string
+                            precis:
+                              description: 文档预览
+                              type: string
+                            url:
+                              description: 文档链接
+                              type: string
+                          required:
+                            - name
+                            - precis
+                            - url
+                          type: object
+                        type: array
+                    required:
+                      - documents
+                    type: object
+                  message:
+                    description: 提示信息，默认为success
+                    type: string
+                required:
+                  - message
+                  - data
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 根据关键词检索豆柴文档
+servers:
+  - url: https://www.douchai.cn

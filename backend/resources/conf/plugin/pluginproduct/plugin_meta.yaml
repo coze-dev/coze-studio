@@ -1,0 +1,913 @@
+- plugin_id: 2
+  product_id: 7376228190244618278
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: library_search.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: wenkusousuo
+    name_for_human: 文库搜索
+    description_for_model: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    description_for_human: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_library_search.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+        - name: X-Requested-With
+          value: XMLHttpRequest
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 20001
+      deprecated: false
+      method: get
+      sub_url: /document/coze
+- plugin_id: 3
+  product_id: 7496002227321143350
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: bocha_search.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: bochasousuo
+    name_for_human: 博查搜索
+    description_for_model: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+    description_for_human: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      # service token apply to https://open.bochaai.com/
+      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_bocha_search.jpeg
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 30001
+      deprecated: false
+      method: post
+      sub_url: /v1/web-search
+- plugin_id: 4
+  product_id: 7328314516272463923
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: wolfram_alpha.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: Wolfram_Alpha
+    name_for_human: Wolfram Alpha
+    description_for_model: 强大的数学工具
+    description_for_human: 强大的数学工具
+    auth:
+      type: service_http
+      key: appid
+      sub_type: token/api_key
+      # service token apply to https://developer.wolframalpha.com/
+      payload: '{"key": "appid", "service_token": "", "location": "Query"}'
+    logo_url: official_plugin_icon/plugin_wolfram_alpha.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header: [ ]
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 40001
+      deprecated: false
+      method: get
+      sub_url: /v1/conversation.jsp
+    - tool_id: 40002
+      deprecated: false
+      method: get
+      sub_url: /v2/query
+- plugin_id: 5
+  product_id: 7351267469065011241
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: maker_smart_design.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: chuangketiezhinengsheji
+    name_for_human: 创客贴智能设计
+    description_for_model: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
+    description_for_human: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_maker_smart_design.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 50001
+      deprecated: false
+      method: get
+      sub_url: /coze
+- plugin_id: 6
+  product_id: 7343894357063385100
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: sohu_hot_news.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: souhurewen
+    name_for_human: 搜狐热闻
+    description_for_model: 帮助用户获取搜狐网上的每日热闻
+    description_for_human: 帮助用户获取搜狐网上的每日热闻
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_sohu_hot_news.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 60001
+      deprecated: false
+      method: get
+      sub_url: /blog/outer/temp/feeds/ark
+- plugin_id: 9
+  product_id: 7461926057290153993
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: image_compression.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: tupianyasuo
+    name_for_human: 图片压缩
+    description_for_model: 上传图片链接，返回压缩后的base64
+    description_for_human: 上传图片链接，返回压缩后的base64
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_image_compression.jpeg
+    api:
+      type: openapi
+    common_params: { }
+  tools:
+    - tool_id: 90001
+      deprecated: false
+      method: post
+      sub_url: /img2base64/img2base64
+- plugin_id: 10
+  product_id: 7355060468744044595
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: worth_buying.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: shenmezhidemai
+    name_for_human: 什么值得买
+    description_for_model: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+    description_for_human: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+    auth:
+      type: service_http
+      key: token
+      sub_type: token/api_key
+      # service token apply to https://openapi.zhidemai.com/
+      payload: '{"key": "token", "service_token": "", "location": "Query"}'
+    logo_url: official_plugin_icon/plugin_worth_buying.jpeg
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 100001
+      deprecated: false
+      method: get
+      sub_url: /query
+- plugin_id: 11
+  product_id: 7358789295274049572
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: chestnut_sign.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: banlikanban
+    name_for_human: 板栗看板
+    description_for_model: 任务拆解
+    description_for_human: 任务拆解
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_chestnut_sign.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 110001
+      deprecated: false
+      method: post
+      sub_url: /generate_tasks
+- plugin_id: 12
+  product_id: 7407722060627247143
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: sky_eye_check.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: tianyancha
+    name_for_human: 天眼查
+    description_for_model: 利用天眼查官方API接口,以关键词检索企业列表实现企业搜索功能，并支持查询企业基本信息、新闻舆情、经营异常及变更记录等信息。
+    description_for_human: 利用天眼查官方API接口,以关键词检索企业列表实现企业搜索功能，并支持查询企业基本信息、新闻舆情、经营异常及变更记录等信息。
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      # apply token [https://open.tianyancha.com/console/mydata]
+      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_sky_eye_check.jpeg
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 120001
+      deprecated: false
+      method: get
+      sub_url: /ic/baseinfoV2/2.0
+    - tool_id: 120002
+      deprecated: false
+      method: get
+      sub_url: /ic/changeinfo/2.0
+    - tool_id: 120003
+      deprecated: false
+      method: get
+      sub_url: /mr/abnormal/2.0
+    - tool_id: 120004
+      deprecated: false
+      method: get
+      sub_url: /ps/news/2.0
+    - tool_id: 120005
+      deprecated: false
+      method: get
+      sub_url: /search/2.0
+- plugin_id: 14
+  product_id: 7395041877151514662
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_authentication_authorization.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishurenzhengjishouquan
+    name_for_human: 飞书认证及授权
+    description_for_model: 飞书认证及授权
+    description_for_human: 飞书认证及授权
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_lark_authentication_authorization.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 140001
+      deprecated: false
+      method: post
+      sub_url: /access_token/get_tenant_access_token
+- plugin_id: 15
+  product_id: 7395041302766944275
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_message.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishuxiaoxi
+    name_for_human: 飞书消息
+    description_for_model: '飞书消息，支持以下功能
+
+
+      1. 使用飞书自定义机器人 webhook 发送消息；
+
+      2. 使用飞书应用机器人发送消息；
+
+      3. 获取指定单聊、群聊的消息历史；
+
+      4. 获取指定话题的消息历史；'
+    description_for_human: '飞书消息，支持以下功能
+
+
+      1. 使用飞书自定义机器人 webhook 发送消息；
+
+      2. 使用飞书应用机器人发送消息；
+
+      3. 获取指定单聊、群聊的消息历史；
+
+      4. 获取指定话题的消息历史；'
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"im:message im:message.group_msg","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_message.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 150001
+      deprecated: false
+      method: get
+      sub_url: /message/get_chat_messages
+    - tool_id: 15002
+      deprecated: false
+      method: get
+      sub_url: /message/get_thread_messages
+    - tool_id: 150003
+      deprecated: false
+      method: post
+      sub_url: /message/send_bot_message
+    - tool_id: 150004
+      deprecated: false
+      method: post
+      sub_url: /message/send_webhook_message
+- plugin_id: 16
+  product_id: 7395043460165779483
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_base.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishuduoweibiaoge
+    name_for_human: 飞书多维表格
+    description_for_model: '飞书多维表格，支持以下功能：
+
+
+      1. 创建多维表格；
+
+      2. 创建多维表格数据表；
+
+      3. 列出多维表格下的全部数据表；
+
+      4. 获取多维表格的元数据；
+
+      5. 在多维表格数据表中新增多条记录；
+
+      6. 根据 record_id 检索多维表格数据表中的记录；
+
+      7. 批量更新多维表格数据表中的现有记录；
+
+      8. 查询多维表格数据表中的记录；
+
+      9. 搜索多维表格类型的文档；'
+    description_for_human: '飞书多维表格，支持以下功能：
+
+
+      1. 创建多维表格；
+
+      2. 创建多维表格数据表；
+
+      3. 列出多维表格下的全部数据表；
+
+      4. 获取多维表格的元数据；
+
+      5. 在多维表格数据表中新增多条记录；
+
+      6. 根据 record_id 检索多维表格数据表中的记录；
+
+      7. 批量更新多维表格数据表中的现有记录；
+
+      8. 查询多维表格数据表中的记录；
+
+      9. 搜索多维表格类型的文档；'
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"bitable:app","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_base.png
+    api:
+      type: openapi
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+        - name: x-use-ppe
+          value: '1'
+        - name: x-tt-env
+          value: ppe_lark_plugin_coze
+  tools:
+    - tool_id: 160001
+      deprecated: false
+      method: post
+      sub_url: /base/add_field
+    - tool_id: 160002
+      deprecated: false
+      method: post
+      sub_url: /base/add_records
+    - tool_id: 160003
+      deprecated: false
+      method: post
+      sub_url: /base/create_base
+    - tool_id: 160004
+      deprecated: false
+      method: post
+      sub_url: /base/create_table
+    - tool_id: 160005
+      deprecated: false
+      method: delete
+      sub_url: /base/delete_field
+    - tool_id: 160006
+      deprecated: false
+      method: post
+      sub_url: /base/delete_records
+    - tool_id: 160007
+      deprecated: false
+      method: post
+      sub_url: /base/delete_tables
+    - tool_id: 160008
+      deprecated: false
+      method: get
+      sub_url: /base/get_base_info
+    - tool_id: 160009
+      deprecated: false
+      method: get
+      sub_url: /base/list_fields
+    - tool_id: 160010
+      deprecated: false
+      method: get
+      sub_url: /base/list_tables
+    - tool_id: 160011
+      deprecated: false
+      method: post
+      sub_url: /base/search_base
+    - tool_id: 160012
+      deprecated: false
+      method: post
+      sub_url: /base/search_record
+    - tool_id: 160013
+      deprecated: false
+      method: post
+      sub_url: /base/update_field
+    - tool_id: 160014
+      deprecated: false
+      method: post
+      sub_url: /base/update_records
+- plugin_id: 17
+  product_id: 7395040352337559578
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_sheet.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishudianzibiaoge
+    name_for_human: 飞书电子表格
+    description_for_model: '对飞书电子表格做操作，包含以下操作：
+
+      1.创建电子表格；
+
+      2.新增多行至工作表；
+
+      3.新增多列至工作表；
+
+      4.搜索电子表格类型文档；
+
+      5.获取电子表格信息；
+
+      6.获取所有工作表；
+
+      7.读取工作表行列内容；'
+    description_for_human: '对飞书电子表格做操作，包含以下操作：
+
+      1.创建电子表格；
+
+      2.新增多行至工作表；
+
+      3.新增多列至工作表；
+
+      4.搜索电子表格类型文档；
+
+      5.获取电子表格信息；
+
+      6.获取所有工作表；
+
+      7.读取工作表行列内容；'
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_sheet.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 170001
+      deprecated: false
+      method: post
+      sub_url: /spreadsheet/add_cols
+    - tool_id: 170002
+      deprecated: false
+      method: post
+      sub_url: /spreadsheet/add_rows
+    - tool_id: 170003
+      deprecated: false
+      method: post
+      sub_url: /spreadsheet/create_spreadsheet
+    - tool_id: 170004
+      deprecated: false
+      method: delete
+      sub_url: /spreadsheet/delete_cols
+    - tool_id: 170005
+      deprecated: false
+      method: delete
+      sub_url: /spreadsheet/delete_rows
+    - tool_id: 170006
+      deprecated: false
+      method: get
+      sub_url: /spreadsheet/get_spreadsheet
+    - tool_id: 170007
+      deprecated: false
+      method: get
+      sub_url: /spreadsheet/list_spreadsheet_sheets
+    - tool_id: 170008
+      deprecated: false
+      method: get
+      sub_url: /spreadsheet/read_cols
+    - tool_id: 170009
+      deprecated: false
+      method: get
+      sub_url: /spreadsheet/read_rows
+    - tool_id: 170010
+      deprecated: false
+      method: get
+      sub_url: /spreadsheet/read_table
+    - tool_id: 170011
+      deprecated: false
+      method: post
+      sub_url: /spreadsheet/search_spreadsheet
+- plugin_id: 18
+  product_id: 7395041172152156186
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_task.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishurenwu
+    name_for_human: 飞书任务
+    description_for_model: '调用飞书开放平台任务相关API，支持以下操作：
+
+      1.创建任务：输入任务标题、开始时间、结束时间等信息创建飞书任务；
+
+      2.更新任务：对飞书任务的任务标题、任务时间等信息做修改；
+
+      3.删除任务：对创建的飞书任务做删除；
+
+      4.列出所有任务：查询用户下单所有飞书任务；'
+    description_for_human: '调用飞书开放平台任务相关API，支持以下操作：
+
+      1.创建任务：输入任务标题、开始时间、结束时间等信息创建飞书任务；
+
+      2.更新任务：对飞书任务的任务标题、任务时间等信息做修改；
+
+      3.删除任务：对创建的飞书任务做删除；
+
+      4.列出所有任务：查询用户下单所有飞书任务；'
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"task:task:write","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_task.png
+    api:
+      type: openapi
+    common_params:
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+  tools:
+    - tool_id: 180001
+      deprecated: false
+      method: post
+      sub_url: /task/create_task
+    - tool_id: 180002
+      deprecated: false
+      method: delete
+      sub_url: /task/delete_task
+    - tool_id: 180003
+      deprecated: false
+      method: get
+      sub_url: /task/list_tasks
+    - tool_id: 180004
+      deprecated: false
+      method: patch
+      sub_url: /task/update_task
+- plugin_id: 19
+  product_id: 7395041536909574154
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_docx.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishuyunwendang
+    name_for_human: 飞书云文档
+    description_for_model: '飞书云文档，支持以下操作：
+
+
+      1. 创建文档；
+
+      2. 在文档中新增内容，支持 纯文本或者 markdown 格式；
+
+      3. 获取文档的内容，支持以纯文本或者 Markdown 格式返回；
+
+      4. 获取文档的所有块；
+
+      5. 获取文档的基本信息；
+
+      6. 搜索文档类型的文档；
+
+      7. 搜索 PPT 类型的文档；'
+    description_for_human: '飞书云文档，支持以下操作：
+
+
+      1. 创建文档；
+
+      2. 在文档中新增内容，支持 纯文本或者 markdown 格式；
+
+      3. 获取文档的内容，支持以纯文本或者 Markdown 格式返回；
+
+      4. 获取文档的所有块；
+
+      5. 获取文档的基本信息；
+
+      6. 搜索文档类型的文档；
+
+      7. 搜索 PPT 类型的文档；'
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_docx.png
+    api:
+      type: openapi
+    common_params:
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+      body: [ ]
+  tools:
+    - tool_id: 190001
+      deprecated: false
+      method: post
+      sub_url: /document/create_document
+    - tool_id: 190002
+      deprecated: false
+      method: get
+      sub_url: /document/get_document_content
+    - tool_id: 190003
+      deprecated: false
+      method: get
+      sub_url: /document/get_document_info
+    - tool_id: 190004
+      deprecated: false
+      method: get
+      sub_url: /document/list_document_blocks
+    - tool_id: 190005
+      deprecated: false
+      method: post
+      sub_url: /document/search_document
+    - tool_id: 190006
+      deprecated: false
+      method: post
+      sub_url: /document/search_slides
+    - tool_id: 190007
+      deprecated: false
+      method: post
+      sub_url: /document/write_document
+    - tool_id: 190008
+      deprecated: false
+      method: get
+      sub_url: /drive/download_media
+    - tool_id: 190009
+      deprecated: false
+      method: post
+      sub_url: /drive/upload_media
+- plugin_id: 20
+  product_id: 7408195262340104230
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_wiki.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishuzhishiku
+    name_for_human: 飞书知识库
+    description_for_model: 飞书知识库搜索Wiki、获取Wiki全部子节点列表
+    description_for_human: 飞书知识库搜索Wiki、获取Wiki全部子节点列表
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"wiki:wiki","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_wiki.png
+    api:
+      type: openapi
+    common_params:
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+      body: [ ]
+  tools:
+    - tool_id: 200001
+      deprecated: false
+      method: post
+      sub_url: /wiki/search_wiki
+- plugin_id: 21
+  product_id: 7395041856574423075
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: lark_calendar.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: feishurili
+    name_for_human: 飞书日历
+    description_for_model: 在飞书上日历上创建日程、更新日程、删除日程、查询日程信息
+    description_for_human: 在飞书上日历上创建日程、更新日程、删除日程、查询日程信息
+    auth:
+      type: oauth
+      sub_type: authorization_code
+      # client_id and client_secret apply to https://open.larkoffice.com/app
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"calendar:calendar calendar:calendar:read","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+    logo_url: official_plugin_icon/plugin_lark_calendar.png
+    api:
+      type: openapi
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+  tools:
+    - tool_id: 210001
+      deprecated: false
+      method: post
+      sub_url: /calendar/create_event
+    - tool_id: 210002
+      deprecated: false
+      method: delete
+      sub_url: /calendar/delete_event/{event_id}
+    - tool_id: 210003
+      deprecated: false
+      method: get
+      sub_url: /calendar/get_primary_calendar
+    - tool_id: 210004
+      deprecated: false
+      method: get
+      sub_url: /calendar/list_events
+    - tool_id: 210005
+      deprecated: false
+      method: post
+      sub_url: /calendar/search_events
+    - tool_id: 210006
+      deprecated: false
+      method: patch
+      sub_url: /calendar/update_event/{event_id}
+- plugin_id: 22
+  product_id: 7379953949534715956
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: gaode_map.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: gaodedetu
+    name_for_human: 高德地图
+    description_for_model: 高德地图相关工具，可以帮助用户规划路线、搜索附近相关地点、还有其他常用小工具
+    description_for_human: 高德地图相关工具，可以帮助用户规划路线、搜索附近相关地点、还有其他常用小工具
+    logo_url: official_plugin_icon/plugin_gaode_map.jpeg
+    api:
+      type: openapi
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      payload: '{"key": "key", "service_token": "", "location": "Query"}'  # apply token on the Gaode Open Platform(https://lbs.amap.com/api).
+  tools:
+    - tool_id: 220001
+      deprecated: false
+      method: get
+      sub_url: /v3/geocode/geo
+    - tool_id: 220002
+      deprecated: false
+      method: get
+      sub_url: /v3/ip
+    - tool_id: 220003
+      deprecated: false
+      method: get
+      sub_url: /v3/geocode/regeo
+    - tool_id: 220004
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/bicycling
+    - tool_id: 220005
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/driving
+    - tool_id: 220006
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/electrobike
+    - tool_id: 220007
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/transit/integrated
+    - tool_id: 220008
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/walking
+    - tool_id: 220009
+      deprecated: false
+      method: get
+      sub_url: /v5/place/around

@@ -1,0 +1,409 @@
+info:
+  description: |-
+    调用飞书开放平台任务相关API，支持以下操作：
+    1.创建任务：输入任务标题、开始时间、结束时间等信息创建飞书任务；
+    2.更新任务：对飞书任务的任务标题、任务时间等信息做修改；
+    3.删除任务：对创建的飞书任务做删除；
+    4.列出所有任务：查询用户下单所有飞书任务；
+  title: 飞书任务
+  version: v1
+openapi: 3.0.1
+paths:
+  /task/create_task:
+    post:
+      operationId: create_task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                completed_at:
+                  description: 任务完成时间，格式：2006-01-02 15:04:05，不填写表示创建一个未完成任务；填写一个具体的时间表示创建一个已完成任务
+                  type: string
+                description:
+                  description: 任务备注
+                  type: string
+                end_time:
+                  description: 任务结束时间，格式：2006-01-02 15:04:05
+                  type: string
+                start_time:
+                  description: 任务开始时间，格式：2006-01-02 15:04:05
+                  type: string
+                summary:
+                  description: 任务标题
+                  type: string
+              required:
+                - summary
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非0表示失败
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      completed_at:
+                        description: 任务完成时间，格式：2024-07-19 20:50:00
+                        type: string
+                      created_at:
+                        description: 任务创建时间，格式：2024-07-19 20:50:00
+                        type: string
+                      creator:
+                        description: 任务创建者信息
+                        properties:
+                          id:
+                            description: 创建者用户 ID
+                            type: string
+                          type:
+                            description: 创建者类型
+                            type: string
+                        type: object
+                      description:
+                        description: 任务描述
+                        type: string
+                      end_time:
+                        description: 任务截止时间，格式：2024-07-19 21:20:00
+                        type: string
+                      guid:
+                        description: 任务guid，任务的唯一ID
+                        type: string
+                      is_end_time_all_day:
+                        description: 结束时间是否截止到一个日期
+                        type: boolean
+                      is_start_time_all_day:
+                        description: 开始时间是否截止到一个日期
+                        type: boolean
+                      members:
+                        description: 成员列表
+                        items:
+                          description: 成员信息
+                          properties:
+                            id:
+                              description: 成员 ID
+                              type: string
+                            name:
+                              description: 成员名称
+                              type: string
+                            role:
+                              description: 成员角色
+                              type: string
+                            type:
+                              description: 成员类型
+                              type: string
+                          type: object
+                        type: array
+                      mode:
+                        description: 任务的模式。1 - 会签任务；2 - 或签任务
+                        type: integer
+                      parent_task_guid:
+                        description: 如果当前任务为某个任务的子任务，返回父任务的guid
+                        type: string
+                      repeat_rule:
+                        description: 如果任务为重复任务，返回重复任务的配置
+                        type: string
+                      source:
+                        description: 任务来源
+                        type: integer
+                      start_time:
+                        description: 任务开始时间，格式：2024-07-19 20:20:00
+                        type: string
+                      status:
+                        description: 任务状态，支持"todo"和"done"两种状态
+                        type: string
+                      subtask_count:
+                        description: 该任务的子任务的个数
+                        type: integer
+                      summary:
+                        description: 任务标题
+                        type: string
+                      task_id:
+                        description: 任务界面上的代码
+                        type: string
+                      url:
+                        description: 任务的分享链接
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建飞书任务,根据输入的任务标题、任务时间创建飞书任务
+  /task/delete_task:
+    delete:
+      operationId: delete_task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                task_guid:
+                  description: 要删除的任务guid，支持传任务ID和任务链接URL，任务ID 例如：8b5425ec-9f2a-43bd-a3ab-01912f50282b；任务链接url 例如：https://applink.feishu-pre.net/client/todo/detail?guid=8c6bf822-e4da-449a-b82a-dc44020f9be9&suite_entity_num=t21587362
+                  type: string
+              required:
+                - task_guid
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: ' 错误描述'
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除飞书任务
+  /task/list_tasks:
+    get:
+      operationId: list_tasks
+      parameters:
+        - description: 用户 ID 类型
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 每页的任务数量，取值范围1-100
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            type: integer
+        - description: 查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 是否按任务完成进行过滤。填写true表示只列出已完成任务；填写false表示只列出未完成任务。不填写表示不过滤。
+          in: query
+          name: completed
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非0表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 返回的任务列表
+                        items:
+                          description: 任务信息
+                          properties:
+                            completed_at:
+                              description: 任务完成的时间，格式：2024-07-19 21:20:00
+                              type: string
+                            created_at:
+                              description: 任务创建时间，格式：2024-07-19 21:20:00
+                              type: string
+                            creator:
+                              description: 任务创建者
+                              properties:
+                                id:
+                                  description: 表示member的id
+                                  type: string
+                                role:
+                                  description: 成员角色
+                                  type: string
+                                type:
+                                  description: 成员的类型
+                                  type: string
+                              type: object
+                            description:
+                              description: 任务备注
+                              type: string
+                            end_time:
+                              description: 任务结束时间，格式：2024-07-19 21:20:00
+                              type: string
+                            guid:
+                              description: 任务guid，任务的唯一ID
+                              type: string
+                            is_end_time_all_day:
+                              description: 结束时间是否截止到一个日期
+                              type: boolean
+                            is_milestone:
+                              description: 是否是里程碑任务
+                              type: boolean
+                            is_start_time_all_day:
+                              description: 开始时间是否截止到一个日期
+                              type: boolean
+                            members:
+                              description: 任务成员列表
+                              items:
+                                description: 成员信息
+                                properties:
+                                  id:
+                                    description: 表示member的id
+                                    type: string
+                                  role:
+                                    description: 成员角色
+                                    type: string
+                                  type:
+                                    description: 成员的类型
+                                    type: string
+                                type: object
+                              type: array
+                            mode:
+                              description: 任务的模式。1 - 会签任务；2 - 或签任务
+                              type: integer
+                            parent_task_guid:
+                              description: 如果当前任务为某个任务的子任务，返回父任务的guid
+                              type: string
+                            repeat_rule:
+                              description: 如果任务为重复任务，返回重复任务的配置
+                              type: string
+                            source:
+                              description: 任务创建的来源
+                              type: integer
+                            start_time:
+                              description: 任务开始时间，格式：2024-07-19 21:20:00
+                              type: string
+                            status:
+                              description: 任务的状态，支持"todo"和"done"两种状态
+                              type: string
+                            subtask_count:
+                              description: 该任务的子任务个数
+                              type: integer
+                            summary:
+                              description: 任务标题
+                              type: string
+                            task_id:
+                              description: 任务界面上的代码
+                              type: string
+                            updated_at:
+                              description: 任务最后一次更新的时间，格式：2024-07-19 21:20:00
+                              type: string
+                            url:
+                              description: 任务的分享链接
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 列取飞书任务列表
+  /task/update_task:
+    patch:
+      operationId: update_task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                completed_time:
+                  description: 任务完成时间,有传入才更新，格式：2024-08-19 11:20:00
+                  type: string
+                description:
+                  description: 任务描述：如：进行一场需求评审会
+                  type: string
+                end_time:
+                  description: 任务结束时间,有传入才更新，格式：2024-08-15 23:20:00
+                  type: string
+                start_time:
+                  description: 任务开始时间,有传入才更新，格式：2024-08-15 23:00:00
+                  type: string
+                summary:
+                  description: 任务标题，如：需求评审
+                  type: string
+                task_guid:
+                  description: 任务ID，支持 传入任务ID和任务链接URL，任务ID 如：42cad8a0-f8c8-4344-9be2-d1d7e8e91b64；任务链接url 如：https://applink.feishu-pre.net/client/todo/detail?guid=42cad8a0-f8c8-4344-9be2-d1d7e8e91b64&suite_entity_num=t21700217
+                  type: string
+              required:
+                - task_guid
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 任务信息
+                    properties:
+                      completed_time:
+                        description: 任务完成时间，格式：2024-09-17 23:30:00
+                        type: string
+                      created_at:
+                        description: 创建时间，格式：2024-09-17 23:30:00
+                        type: string
+                      description:
+                        description: 任务描述
+                        type: string
+                      end_time:
+                        description: 任务结束时间，格式：2024-08-17 12:00:00
+                        type: string
+                      start_time:
+                        description: 任务开始时间，格式：2024-08-16 10:00:00
+                        type: string
+                      summary:
+                        description: ' 任务标题'
+                        type: string
+                      task_guid:
+                        description: 任务 ID
+                        type: string
+                      updated_at:
+                        description: 更新时间，格式：2024-09-17 23:30:00
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 更新飞书任务
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

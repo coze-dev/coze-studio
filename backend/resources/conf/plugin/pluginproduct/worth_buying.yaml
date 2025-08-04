@@ -1,0 +1,77 @@
+info:
+  description: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址。
+  title: 什么值得买
+  version: v1
+openapi: 3.0.1
+paths:
+  /query:
+    get:
+      operationId: smzdm_haojia_articles
+      parameters:
+        - description: 搜索词，商品的品类词、品牌词、型号词等，如手机、iPhone、iphone15
+          in: query
+          name: Query
+          required: true
+          schema:
+            type: string
+        - description: 最低价，如“1000”，“1500”
+          in: query
+          name: min_price
+          schema:
+            type: string
+        - description: 最高价，如“5000”，“5500”
+          in: query
+          name: max_price
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  Content:
+                    description: 总结
+                    type: string
+                  Content_source:
+                    description: 商品列表
+                    items:
+                      properties:
+                        coin_unit:
+                          description: 价格的单位
+                          type: string
+                        desc:
+                          description: 商品描述
+                          type: string
+                        digital_price:
+                          description: 价格的数字
+                          type: string
+                        focus_pic_url:
+                          description: 商品图
+                          type: string
+                        subtitle:
+                          description: 价格描述，如”2178.01元包邮（双重优惠）“，”299元“
+                          type: string
+                        title:
+                          description: 商品标题
+                          type: string
+                        url:
+                          description: 购买链接
+                          type: string
+                      type: object
+                    type: array
+                  Query:
+                    description: 关键词
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 帮助用户查询商品的优惠信息，根据用户输入的商品相关提问，返回商品概况、价格、购买渠道、性价比推荐等信息，并给出优惠商品的链接地址
+servers:
+  - url: https://open.smzdm.com/byte/coze
