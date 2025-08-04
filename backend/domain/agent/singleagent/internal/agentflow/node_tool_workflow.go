@@ -25,10 +25,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
-const (
-	toolsReturnDirectlyKey = "ReturnDirectlyToolsList"
-)
-
 type workflowConfig struct {
 	wfInfos []*bot_common.WorkflowInfo
 }
