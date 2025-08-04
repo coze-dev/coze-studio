@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -1703,7 +1704,12 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
 
-	stateBytes, err := utils.DecryptByAES(stateStr, utils.StateSecretKey)
+	secret := os.Getenv(utils.StateSecretEnv)
+	if secret == "" {
+		secret = utils.DefaultStateSecret
+	}
+
+	stateBytes, err := utils.DecryptByAES(stateStr, secret)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}

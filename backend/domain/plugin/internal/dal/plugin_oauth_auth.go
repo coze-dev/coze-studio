@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"gorm.io/gorm"
 
@@ -42,14 +43,19 @@ func NewPluginOAuthAuthDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginOAuthAut
 type pluginOAuthAuthPO model.PluginOauthAuth
 
 func (p pluginOAuthAuthPO) ToDO() *entity.AuthorizationCodeInfo {
+	secret := os.Getenv(utils.OAuthTokenSecretEnv)
+	if secret == "" {
+		secret = utils.DefaultOAuthTokenSecret
+	}
+
 	if p.RefreshToken != "" {
-		refreshToken, err := utils.DecryptByAES(p.RefreshToken, utils.OAuthTokenSecretKey)
+		refreshToken, err := utils.DecryptByAES(p.RefreshToken, secret)
 		if err == nil {
 			p.RefreshToken = string(refreshToken)
 		}
 	}
 	if p.AccessToken != "" {
-		accessToken, err := utils.DecryptByAES(p.AccessToken, utils.OAuthTokenSecretKey)
+		accessToken, err := utils.DecryptByAES(p.AccessToken, secret)
 		if err == nil {
 			p.AccessToken = string(accessToken)
 		}
@@ -103,16 +109,20 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 	}
 
 	meta := info.Meta
+	secret := os.Getenv(utils.OAuthTokenSecretEnv)
+	if secret == "" {
+		secret = utils.DefaultOAuthTokenSecret
+	}
 
 	var accessToken, refreshToken string
 	if info.AccessToken != "" {
-		accessToken, err = utils.EncryptByAES([]byte(info.AccessToken), utils.OAuthTokenSecretKey)
+		accessToken, err = utils.EncryptByAES([]byte(info.AccessToken), secret)
 		if err != nil {
 			return err
 		}
 	}
 	if info.RefreshToken != "" {
-		refreshToken, err = utils.EncryptByAES([]byte(info.RefreshToken), utils.OAuthTokenSecretKey)
+		refreshToken, err = utils.EncryptByAES([]byte(info.RefreshToken), secret)
 		if err != nil {
 			return err
 		}
