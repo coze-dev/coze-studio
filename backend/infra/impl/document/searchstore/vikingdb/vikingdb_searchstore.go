@@ -72,6 +72,12 @@ func (v *vkSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 		if err := v.collection.UpsertData(docsWithVector); err != nil {
 			return nil, err
 		}
+
+		if implSpecOptions.ProgressBar != nil {
+			if err = implSpecOptions.ProgressBar.AddN(len(part)); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	ids = slices.Transform(docs, func(a *schema.Document) string { return a.ID })
