@@ -200,7 +200,7 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 		return message.MessageTypeKnowledge, nil
 	case singleagent.EventTypeOfToolsMessage:
 		return message.MessageTypeToolResponse, nil
-	case singleagent.EventTypeOfChatModelAnswer:
+	case singleagent.EventTypeOfChatModelAnswer, singleagent.EventTypeOfToolsAsChatModelStream:
 		return message.MessageTypeAnswer, nil
 	case singleagent.EventTypeOfSuggest:
 		return message.MessageTypeFlowUp, nil
