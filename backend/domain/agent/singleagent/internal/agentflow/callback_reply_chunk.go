@@ -186,6 +186,10 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 	logs.CtxInfof(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Component {
 	case compose.ComponentOfGraph, components.ComponentOfChatModel:
+		if info.Name == keyOfReActAgent {
+			r.processToolsReturnDirectlyStreamWithLazyInit(ctx, output)
+			return ctx
+		}
 		if info.Name != keyOfReActAgentChatModel && info.Name != keyOfLLM {
 			output.Close()
 			return ctx
@@ -324,6 +328,56 @@ func convToolsNodeCallbackInput(input callbacks.CallbackInput) *schema.Message {
 		return t
 	default:
 		return nil
+	}
+}
+func convToolsNodeCallbackOutputMessage(output callbacks.CallbackOutput) *schema.Message {
+	switch t := output.(type) {
+	case *schema.Message:
+		return t
+	default:
+		return nil
+	}
+}
+
+func (r *replyChunkCallback) processToolsReturnDirectlyStreamWithLazyInit(_ context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) {
+	var streamInitialized bool
+	var sr *schema.StreamReader[*schema.Message]
+	var sw *schema.StreamWriter[*schema.Message]
+
+	for {
+		cbOut, err := output.Recv()
+		if errors.Is(err, io.EOF) {
+			if sw != nil {
+				sw.Close()
+			}
+			break
+		}
+		if err != nil {
+			if sw != nil {
+				sw.Send(nil, err)
+				sw.Close()
+			}
+			break
+		}
+		msg := convToolsNodeCallbackOutputMessage(cbOut)
+
+		if msg == nil {
+			break
+		}
+		if msg.Role != schema.Tool {
+			break
+		}
+		if msg.Role == schema.Tool {
+			if !streamInitialized {
+				sr, sw = schema.Pipe[*schema.Message](5)
+				r.sw.Send(&entity.AgentEvent{
+					EventType:       singleagent.EventTypeOfChatModelAnswer,
+					ChatModelAnswer: sr,
+				}, nil)
+				streamInitialized = true
+			}
+			sw.Send(msg, nil)
+		}
 	}
 }
 
