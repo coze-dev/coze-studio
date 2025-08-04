@@ -18,9 +18,9 @@ package variableassigner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -31,38 +31,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
-
-type AppVariables struct {
-	vars map[string]any
-	mu   sync.RWMutex
-}
-
-func NewAppVariables() *AppVariables {
-	return &AppVariables{
-		vars: make(map[string]any),
-	}
-}
-
-func (av *AppVariables) Set(key string, value any) {
-	av.mu.Lock()
-	av.vars[key] = value
-	av.mu.Unlock()
-}
-
-func (av *AppVariables) Get(key string) (any, bool) {
-	av.mu.RLock()
-	defer av.mu.RUnlock()
-
-	if value, ok := av.vars[key]; ok {
-		return value, ok
-	}
-	return nil, false
-}
-
-type AppVariableStore interface {
-	GetAppVariableValue(key string) (any, bool)
-	SetAppVariableValue(key string, value any)
-}
 
 type VariableAssigner struct {
 	config *Config
@@ -109,16 +77,16 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[s
 		vType := *pair.Left.VariableType
 		switch vType {
 		case vo.GlobalAPP:
-			err := compose.ProcessState(ctx, func(ctx context.Context, appVarsStore AppVariableStore) error {
-				if len(pair.Left.FromPath) != 1 {
-					return fmt.Errorf("can only assign to top level variable: %v", pair.Left.FromPath)
-				}
-				appVarsStore.SetAppVariableValue(pair.Left.FromPath[0], right)
-				return nil
-			})
-			if err != nil {
-				return nil, err
+			appVS := execute.GetAppVarStore(ctx)
+			if appVS == nil {
+				return nil, errors.New("exeCtx or AppVarStore not found for variable assigner")
 			}
+
+			if len(pair.Left.FromPath) != 1 {
+				return nil, fmt.Errorf("can only assign to top level variable: %v", pair.Left.FromPath)
+			}
+
+			appVS.Set(pair.Left.FromPath[0], right)
 		case vo.GlobalUser:
 			opts := make([]variable.OptionFn, 0, 1)
 			if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {

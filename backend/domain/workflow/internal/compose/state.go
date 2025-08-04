@@ -34,7 +34,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -53,7 +52,6 @@ type State struct {
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
-	AppVariableStore    *variableassigner.AppVariables                                       `json:"variable_app_store,omitempty"`
 }
 
 func init() {
@@ -85,15 +83,7 @@ func init() {
 	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
 	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
 	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
-	_ = compose.RegisterSerializableType[*variableassigner.AppVariables]("app_variables")
-}
-
-func (s *State) SetAppVariableValue(key string, value any) {
-	s.AppVariableStore.Set(key, value)
-}
-
-func (s *State) GetAppVariableValue(key string) (any, bool) {
-	return s.AppVariableStore.Get(key)
+	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -271,19 +261,6 @@ func (s *State) NodeExecuted(key vo.NodeKey) bool {
 
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
-		var parentState *State
-		_ = compose.ProcessState(ctx, func(ctx context.Context, s *State) error {
-			parentState = s
-			return nil
-		})
-
-		var appVariableStore *variableassigner.AppVariables
-		if parentState == nil {
-			appVariableStore = variableassigner.NewAppVariables()
-		} else {
-			appVariableStore = parentState.AppVariableStore
-		}
-
 		return &State{
 			Answers:              make(map[vo.NodeKey][]string),
 			Questions:            make(map[vo.NodeKey][]*qa.Question),
@@ -296,7 +273,6 @@ func GenState() compose.GenLocalState[*State] {
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			LLMToResumeData:      make(map[vo.NodeKey]string),
-			AppVariableStore:     appVariableStore,
 		}
 	}
 }
@@ -422,10 +398,9 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 	intermediateVarStore := &nodes.ParentIntermediateStore{}
 
 	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-
 		opts := make([]variable.OptionFn, 0, 1)
-
-		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+		var exeCtx *execute.Context
+		if exeCtx = execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
@@ -452,13 +427,20 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
-				if v, ok = state.GetAppVariableValue(path); !ok {
+				if exeCtx == nil || exeCtx.AppVarStore == nil {
 					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 					if err != nil {
 						return nil, err
 					}
+				} else {
+					if v, ok = exeCtx.AppVarStore.Get(path); !ok {
+						v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+						if err != nil {
+							return nil, err
+						}
 
-					state.SetAppVariableValue(path, v)
+						exeCtx.AppVarStore.Set(path, v)
+					}
 				}
 			default:
 				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
@@ -494,15 +476,18 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 		var (
 			variables = make(map[string]any)
 			opts      = make([]variable.OptionFn, 0, 1)
-			exeCfg    = execute.GetExeCtx(ctx).RootCtx.ExeCfg
+			exeCtx    *execute.Context
 		)
 
-		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-			AgentID:      exeCfg.AgentID,
-			AppID:        exeCfg.AppID,
-			ConnectorID:  exeCfg.ConnectorID,
-			ConnectorUID: exeCfg.ConnectorUID,
-		}))
+		if exeCtx = execute.GetExeCtx(ctx); exeCtx != nil {
+			exeCfg := exeCtx.RootCtx.ExeCfg
+			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+				AgentID:      exeCfg.AgentID,
+				AppID:        exeCfg.AppID,
+				ConnectorID:  exeCfg.ConnectorID,
+				ConnectorUID: exeCfg.ConnectorUID,
+			}))
+		}
 
 		for _, input := range vars {
 			if input == nil {
@@ -518,13 +503,20 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
-				if v, ok = state.GetAppVariableValue(path); !ok {
+				if exeCtx == nil || exeCtx.AppVarStore == nil {
 					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 					if err != nil {
 						return nil, err
 					}
+				} else {
+					if v, ok = exeCtx.AppVarStore.Get(path); !ok {
+						v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+						if err != nil {
+							return nil, err
+						}
 
-					state.SetAppVariableValue(path, v)
+						exeCtx.AppVarStore.Set(path, v)
+					}
 				}
 			default:
 				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
@@ -776,7 +768,8 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 		opts := make([]variable.OptionFn, 0, 1)
 
-		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+		var exeCtx *execute.Context
+		if exeCtx = execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
@@ -801,13 +794,20 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
-				if v, ok = state.GetAppVariableValue(path); !ok {
+				if exeCtx == nil || exeCtx.AppVarStore == nil {
 					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 					if err != nil {
 						return nil, err
 					}
+				} else {
+					if v, ok = exeCtx.AppVarStore.Get(path); !ok {
+						v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+						if err != nil {
+							return nil, err
+						}
 
-					state.SetAppVariableValue(path, v)
+						exeCtx.AppVarStore.Set(path, v)
+					}
 				}
 			default:
 				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
@@ -845,9 +845,10 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 		var (
 			variables = make(map[string]any)
 			opts      = make([]variable.OptionFn, 0, 1)
+			exeCtx    *execute.Context
 		)
 
-		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+		if exeCtx = execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
@@ -869,13 +870,20 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 			case vo.GlobalAPP:
 				var ok bool
 				path := strings.Join(input.Source.Ref.FromPath, ".")
-				if v, ok = state.GetAppVariableValue(path); !ok {
+				if exeCtx == nil || exeCtx.AppVarStore == nil {
 					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 					if err != nil {
 						return nil, err
 					}
+				} else {
+					if v, ok = exeCtx.AppVarStore.Get(path); !ok {
+						v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+						if err != nil {
+							return nil, err
+						}
 
-					state.SetAppVariableValue(path, v)
+						exeCtx.AppVarStore.Set(path, v)
+					}
 				}
 			default:
 				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
