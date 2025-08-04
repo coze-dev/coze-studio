@@ -302,13 +302,11 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 
 		msgs := convToolsNodeCallbackOutput(cbOut)
+		if isNeedtoolsMsgChunks {
+			isNeedtoolsMsgChunks = false
+			toolsMsgChunks = make([][]*schema.Message, 0, len(msgs))
+		}
 		for mIndex, msg := range msgs {
-
-			if isNeedtoolsMsgChunks {
-				for len(toolsMsgChunks) <= mIndex {
-					toolsMsgChunks = append(toolsMsgChunks, nil)
-				}
-			}
 
 			if msg == nil {
 				continue
@@ -332,7 +330,9 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 					sw.Send(msg, nil)
 				}
 			}
-
+			if len(toolsMsgChunks) <= mIndex {
+				toolsMsgChunks = append(toolsMsgChunks, nil)
+			}
 			if toolsMsgChunks[mIndex] == nil {
 				toolsMsgChunks[mIndex] = []*schema.Message{msg}
 			} else {
