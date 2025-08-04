@@ -24,7 +24,7 @@ import (
 	"time"
 
 	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
+
 	"github.com/spf13/cast"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
@@ -39,6 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -67,7 +68,7 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 	}
 }
 
-func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
 	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel) workflow.Repository {
 	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel)
 }

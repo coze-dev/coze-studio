@@ -25,12 +25,12 @@ import (
 	"sync"
 	"time"
 
-	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/query"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -50,7 +50,7 @@ type appRepoImpl struct {
 type APPRepoComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
-	CacheCli *redisV9.Client
+	CacheCli cache.Cmdable
 }
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {

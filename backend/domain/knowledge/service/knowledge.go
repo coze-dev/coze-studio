@@ -32,21 +32,19 @@ import (
 	"unicode/utf8"
 
 	"github.com/bytedance/sonic"
-	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
-
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor/impl"
+	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
@@ -1484,7 +1482,7 @@ func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, er
 		if err != nil {
 			return "", errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", fmt.Sprintf("get object url failed, %v", err)))
 		}
-		if errors.Is(cmd.Err(), redisV9.Nil) {
+		if errors.Is(cmd.Err(), cache.Nil) {
 			err = k.cacheCli.Set(ctx, uri, url, cacheTime*time.Second).Err()
 			if err != nil {
 				logs.CtxErrorf(ctx, "[getObjectURL] set cache failed, %v", err)

@@ -25,7 +25,6 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/maps"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
@@ -41,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	cm "github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -61,7 +61,7 @@ const (
 type RepositoryImpl struct {
 	idgen.IDGenerator
 	query *query.Query
-	redis *redis.Client
+	redis cache.Cmdable
 	tos   storage.Storage
 	einoCompose.CheckPointStore
 	workflow.InterruptEventStore
@@ -70,7 +70,7 @@ type RepositoryImpl struct {
 	builtinModel cm.BaseChatModel
 }
 
-func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
 	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel) workflow.Repository {
 	return &RepositoryImpl{
 		IDGenerator:     idgen,

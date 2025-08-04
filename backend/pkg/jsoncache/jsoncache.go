@@ -21,15 +21,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 )
 
 type JsonCache[T any] struct {
-	cache  *redis.Client
+	cache  cache.Cmdable
 	prefix string
 }
 
-func New[T any](prefix string, cache *redis.Client) *JsonCache[T] {
+func New[T any](prefix string, cache cache.Cmdable) *JsonCache[T] {
 	return &JsonCache[T]{
 		prefix: prefix,
 		cache:  cache,
@@ -59,7 +59,7 @@ func (g *JsonCache[T]) Get(ctx context.Context, k string) (*T, error) {
 	var obj T
 
 	data, err := g.cache.Get(ctx, key).Result()
-	if err == redis.Nil {
+	if err == cache.Nil {
 		return &obj, nil
 	}
 

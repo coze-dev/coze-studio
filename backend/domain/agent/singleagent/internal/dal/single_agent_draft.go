@@ -20,13 +20,13 @@ import (
 	"context"
 	"errors"
 
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/query"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -35,10 +35,10 @@ import (
 type SingleAgentDraftDAO struct {
 	idGen       idgen.IDGenerator
 	dbQuery     *query.Query
-	cacheClient *redis.Client
+	cacheClient cache.Cmdable
 }
 
-func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) *SingleAgentDraftDAO {
+func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli cache.Cmdable) *SingleAgentDraftDAO {
 	query.SetDefault(db)
 
 	return &SingleAgentDraftDAO{
