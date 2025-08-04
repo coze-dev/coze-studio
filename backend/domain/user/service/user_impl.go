@@ -25,7 +25,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/redis/go-redis/v9"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"strconv"
 	"strings"
 	"time"
@@ -53,7 +53,7 @@ type Components struct {
 	IDGen     idgen.IDGenerator
 	UserRepo  repository.UserRepository
 	SpaceRepo repository.SpaceRepository
-	Cache     *redis.Client
+	Cache     cache.Cmdable
 }
 
 func NewUserDomain(ctx context.Context, c *Components) User {
