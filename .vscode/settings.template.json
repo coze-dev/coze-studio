@@ -102,23 +102,37 @@
   "typescript.referencesCodeLens.enabled": false,
   "typescript.preferGoToSourceDefinition": true,
   "typescript.updateImportsOnFileMove.enabled": "never",
-  // tsserver logs are not automatically deleted and accumulate over time, causing disk space issues, so disabled by default
+  // tsserver log 不会自动删除，日积月累，导致磁盘空间不足，因此默认关闭
   "typescript.tsserver.log": "off",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  // "typescript.tsserver.useSeparateSyntaxServer": true,
+  "typescript.tsserver.forceConsistentCasingInFileNames": true,
   "typescript.workspaceSymbols.excludeLibrarySymbols": true,
   "editor.minimap.enabled": true,
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.autoImports": true,
-  "typescript.tsserver.maxTsServerMemory": 10240,
+  "typescript.tsserver.maxTsServerMemory": 16384,
   "typescript.tsserver.enableRegionDiagnostics": false,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
   "typescript.tsserver.watchOptions": {
     "fallbackPolling": "dynamicPriorityPolling",
-    "synchronousWatchDirectory": true,
+    "synchronousWatchDirectory": false,
     "watchDirectory": "useFsEvents",
     "watchFile": "useFsEventsOnParentDirectory",
-    "excludeDirectories": ["/**/node_modules"],
+    "excludeDirectories": [
+      "/**/node_modules",
+      "/**/dist",
+      "/**/lib",
+      "/**/coverage",
+      "**/temp"
+    ],
     "excludeLibrarySymbols": true,
-    "excludeFiles": ["/**/node_modules/**"]
+    "excludeFiles": [
+      "/**/node_modules/**",
+      "/**/dist/**",
+      "/**/lib/**",
+      "/**/coverage/**",
+      "**/temp/**"
+    ]
   },
   "css.validate": false,
   "scss.validate": false,
