@@ -1,0 +1,177 @@
+name: Backend Tests
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'docker/atlas/**'
+      - '.github/workflows/ci@backend.yml'
+      - '.github/.testcoverage.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'docker/atlas/**'
+      - '.github/workflows/ci@backend.yml'
+      - '.github/.testcoverage.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+env:
+  DEFAULT_GO_VERSION: "1.24"
+
+jobs:
+  backend-unit-test:
+    name: backend-unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    env:
+      COVERAGE_FILE: coverage.out
+      BREAKDOWN_FILE: main.breakdown
+      
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      # - name: Shutdown Ubuntu MySQL
+      #   run: service mysql stop
+
+      - name: Set Up MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          character set server: 'utf8mb4'
+          collation server: 'utf8mb4_general_ci'
+          mysql version: '8.4.5'
+          mysql database: 'opencoze'
+          mysql root password: 'root'
+          
+      - name: Verify MySQL Startup
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..60}; do
+            if cat /proc/net/tcp | grep 0CEA; then
+              echo "MySQL port 3306 is listening!"
+              break
+            fi
+            echo "Waiting for MySQL port... ($i/60)"
+            sleep 1
+          done
+          echo "Final verification: MySQL port 3306 is accessible"
+
+      - name: Install MySQL Client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Initialize Database
+        run: mysql -h 127.0.0.1 -P 3306 -u root -proot opencoze < docker/volumes/mysql/schema.sql
+                    
+      - name: Run Go Test
+        run: |
+          modules=`find . -name "go.mod" -exec dirname {} \;`
+          echo $modules
+          list=""
+          coverpkg=""
+          if [[ ! -f "go.work" ]];then go work init;fi
+          for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
+          go work sync
+          go test -race -v -coverprofile=${{ env.COVERAGE_FILE }} -gcflags="all=-l -N" -coverpkg=$coverpkg $list
+          
+      - name: Download Artifact (main.breakdown)
+        id: download-main-breakdown
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ env.BREAKDOWN_FILE }}
+          
+      - name: Create main.breakdown If Not Exist
+        run: |
+          if [ ! -f ${{ env.BREAKDOWN_FILE }} ]; then
+            echo "${{ env.BREAKDOWN_FILE }} not found. Creating an empty file."
+            touch ${{ env.BREAKDOWN_FILE }}
+          else
+            echo "${{ env.BREAKDOWN_FILE }} found."
+          fi
+          
+      - name: Calculate Coverage
+        id: coverage
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          config: .github/.testcoverage.yml
+          profile: ${{ env.COVERAGE_FILE}}
+          breakdown-file-name: ${{ github.ref_name == 'main' && env.BREAKDOWN_FILE || '' }}
+          diff-base-breakdown-file-name: ${{ env.BREAKDOWN_FILE }}
+
+          # to generate and embed coverage badges in markdown files
+          git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
+          git-branch: badges
+          
+      - name: Upload Artifact (main.breakdown)
+        uses: actions/upload-artifact@v4
+        if: github.ref_name == 'main'
+        with:
+          name: ${{ env.BREAKDOWN_FILE }}
+          path: ${{ env.BREAKDOWN_FILE }}
+          if-no-files-found: error
+      - name: Find If coverage Report Exist
+        if: ${{ github.event.pull_request.number != null }}
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '📊 Coverage Report'
+      - name: Send Coverage Report
+        if: ${{ github.event.pull_request.number != null }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.fc.outputs.comment-id || '' }}
+          edit-mode: replace
+          body: |
+            ## 📊 Coverage Report:
+            
+            ```
+            ${{ steps.coverage.outputs.report && fromJSON(steps.coverage.outputs.report) || 'No coverage report available' }}
+            ```
+
+      - name: Check Coverage
+        if: steps.coverage.outcome == 'failure'
+        shell: bash
+        run: echo "coverage check failed" && exit 1
+      - name: Shutdown MySQL
+        if: always()
+        continue-on-error: true
+        run: docker rm -f $(docker ps -q --filter "ancestor=mysql:8.4.5")
+  benchmark-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Run Go Benchmark
+        run: |
+          modules=`find . -name "go.mod" -exec dirname {} \;`
+          echo $modules
+          list=""
+          coverpkg=""
+          if [[ ! -f "go.work" ]];then go work init;fi
+          for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
+          go work sync
+          go test -race -v -bench=. -benchmem -run=none -gcflags="all=-l -N" $list

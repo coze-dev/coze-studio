@@ -1,0 +1,43 @@
+# (optional; but recommended to set)
+# When specified reported file paths will not contain local prefix in the output.
+local-prefix: "github.com/coze-dev/coze-studio/backend"
+
+# Holds coverage thresholds percentages, values should be in range [0-100].
+threshold:
+  # (optional; default 0)
+  # Minimum overall project coverage percentage required.
+  total: 0
+
+  package: 0
+
+  # (optional; default 0)
+  # Minimum coverage percentage required for individual files.
+  file: 0
+
+by-package:
+  threshold: 0
+  show-all: false        
+  top-n: 5              
+  bottom-n: 5           
+
+by-file:
+  threshold: 0
+  show-all: false      
+  top-n: 5             
+  bottom-n: 5          
+
+diff:
+  threshold: 0
+  show-all: true       
+  new-code: true       
+  modified-code: true 
+
+# Holds regexp rules which will exclude matched files or packages
+# from coverage statistics.
+exclude:
+  paths:
+    - "tests"
+    - "examples/"
+    - "mock/"
+    - "callbacks/interface.go"
+    - "utils/safe"
