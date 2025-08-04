@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudwego/eino/compose"
@@ -45,6 +46,8 @@ type Context struct {
 	StartTime int64 // UnixMilli
 
 	CheckPointID string
+
+	AppVarStore *AppVariables
 }
 
 type RootCtx struct {
@@ -106,12 +109,15 @@ func restoreWorkflowCtx(ctx context.Context, h *WorkflowHandler) (context.Contex
 	}
 
 	storedCtx.ResumeEvent = h.resumeEvent
+	currentC := GetExeCtx(ctx)
+	if currentC != nil {
+		// restore the parent-child relationship between token collectors
+		if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
+			currentTokenCollector := currentC.TokenCollector
+			storedCtx.TokenCollector.Parent = currentTokenCollector
+		}
 
-	// restore the parent-child relationship between token collectors
-	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
-		currentC := GetExeCtx(ctx)
-		currentTokenCollector := currentC.TokenCollector
-		storedCtx.TokenCollector.Parent = currentTokenCollector
+		storedCtx.AppVarStore = currentC.AppVarStore
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
@@ -150,12 +156,15 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
 	}
 
+	currentC := GetExeCtx(ctx)
+
 	// restore the parent-child relationship between token collectors
 	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
-		currentC := GetExeCtx(ctx)
 		currentTokenCollector := currentC.TokenCollector
 		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
+
+	storedCtx.AppVarStore = currentC.AppVarStore
 
 	storedCtx.NodeCtx.CurrentRetryCount = 0
 
@@ -184,6 +193,7 @@ func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context
 	existingC := GetExeCtx(ctx)
 	if existingC != nil {
 		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
+		storedCtx.AppVarStore = existingC.AppVarStore
 	}
 
 	// restore the parent-child relationship between token collectors
@@ -213,6 +223,7 @@ func PrepareRootExeCtx(ctx context.Context, h *WorkflowHandler) (context.Context
 
 		TokenCollector: newTokenCollector(fmt.Sprintf("wf_%d", h.rootWorkflowBasic.ID), parentTokenCollector),
 		StartTime:      time.Now().UnixMilli(),
+		AppVarStore:    NewAppVariables(),
 	}
 
 	if h.requireCheckpoint {
@@ -266,6 +277,7 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 		TokenCollector: newTokenCollector(fmt.Sprintf("sub_wf_%d", wb.ID), c.TokenCollector),
 		CheckPointID:   newCheckpointID,
 		StartTime:      time.Now().UnixMilli(),
+		AppVarStore:    c.AppVarStore,
 	}
 
 	if requireCheckpoint {
@@ -308,6 +320,7 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 		BatchInfo:    c.BatchInfo,
 		StartTime:    time.Now().UnixMilli(),
 		CheckPointID: c.CheckPointID,
+		AppVarStore:  c.AppVarStore,
 	}
 
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
@@ -354,6 +367,7 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 			CompositeNodeKey: c.NodeCtx.NodeKey,
 		},
 		CheckPointID: newCheckpointID,
+		AppVarStore:  c.AppVarStore,
 	}), newCheckpointID
 }
 
@@ -362,4 +376,39 @@ type ExeContextStore interface {
 	SetNodeCtx(key vo.NodeKey, value *Context) error
 	GetWorkflowCtx() (*Context, bool, error)
 	SetWorkflowCtx(value *Context) error
+}
+
+type AppVariables struct {
+	Vars map[string]any
+	mu   sync.RWMutex
+}
+
+func NewAppVariables() *AppVariables {
+	return &AppVariables{
+		Vars: make(map[string]any),
+	}
+}
+
+func (av *AppVariables) Set(key string, value any) {
+	av.mu.Lock()
+	av.Vars[key] = value
+	av.mu.Unlock()
+}
+
+func (av *AppVariables) Get(key string) (any, bool) {
+	av.mu.RLock()
+	defer av.mu.RUnlock()
+
+	if value, ok := av.Vars[key]; ok {
+		return value, ok
+	}
+	return nil, false
+}
+
+func GetAppVarStore(ctx context.Context) *AppVariables {
+	c := ctx.Value(contextKey{})
+	if c == nil {
+		return nil
+	}
+	return c.(*Context).AppVarStore
 }

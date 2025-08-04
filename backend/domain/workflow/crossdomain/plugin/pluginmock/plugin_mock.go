@@ -29,8 +29,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	plugin "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	schema "github.com/cloudwego/eino/schema"
+	plugin "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
+	vo "github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -101,6 +102,20 @@ func (m *MockService) GetPluginToolsInfo(ctx context.Context, req *plugin.ToolsI
 func (mr *MockServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockService)(nil).GetPluginToolsInfo), ctx, req)
+}
+
+// UnwrapArrayItemFieldsInVariable mocks base method.
+func (m *MockService) UnwrapArrayItemFieldsInVariable(v *vo.Variable) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnwrapArrayItemFieldsInVariable", v)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnwrapArrayItemFieldsInVariable indicates an expected call of UnwrapArrayItemFieldsInVariable.
+func (mr *MockServiceMockRecorder) UnwrapArrayItemFieldsInVariable(v any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnwrapArrayItemFieldsInVariable", reflect.TypeOf((*MockService)(nil).UnwrapArrayItemFieldsInVariable), v)
 }
 
 // MockInvokableTool is a mock of InvokableTool interface.
