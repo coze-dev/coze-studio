@@ -303,7 +303,7 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		msgs := convToolsNodeCallbackOutput(cbOut)
 		if isNeedtoolsMsgChunks {
 			isNeedtoolsMsgChunks = false
-			toolsMsgChunks = make([][]*schema.Message, 0, len(msgs))
+			toolsMsgChunks = make([][]*schema.Message, len(msgs))
 		}
 		for mIndex, msg := range msgs {
 
@@ -312,6 +312,7 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 			}
 			if len(r.returnDirectlyTools) > 0 {
 				if isReturnDirectToolsFirstCheck {
+					isReturnDirectToolsFirstCheck = false
 					if _, ok := r.returnDirectlyTools[msg.ToolName]; ok {
 						returnDirectToolsMap[mIndex] = true
 					}
@@ -329,17 +330,12 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 					sw.Send(msg, nil)
 				}
 			}
-			if len(toolsMsgChunks) <= mIndex {
-				toolsMsgChunks = append(toolsMsgChunks, nil)
-			}
 			if toolsMsgChunks[mIndex] == nil {
 				toolsMsgChunks[mIndex] = []*schema.Message{msg}
 			} else {
 				toolsMsgChunks[mIndex] = append(toolsMsgChunks[mIndex], msg)
 			}
 		}
-		isReturnDirectToolsFirstCheck = false
-		isNeedtoolsMsgChunks = false
 	}
 
 	toolMessages := make([]*schema.Message, 0, len(toolsMsgChunks))
