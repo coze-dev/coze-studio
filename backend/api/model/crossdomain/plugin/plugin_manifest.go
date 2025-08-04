@@ -19,6 +19,7 @@ package plugin
 import (
 	"encoding/json"
 	"net/url"
+	"os"
 	"strings"
 
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
@@ -74,7 +75,12 @@ func (mf *PluginManifest) EncryptAuthPayload() (*PluginManifest, error) {
 		return mf_, nil
 	}
 
-	payload_, err := utils.EncryptByAES([]byte(mf_.Auth.Payload), utils.AuthSecretKey)
+	secret := os.Getenv(utils.AuthSecretEnv)
+	if secret == "" {
+		secret = utils.DefaultAuthSecret
+	}
+
+	payload_, err := utils.EncryptByAES([]byte(mf_.Auth.Payload), secret)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +363,12 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 	}
 
 	if auth.Payload != "" {
-		payload_, err := utils.DecryptByAES(auth.Payload, utils.AuthSecretKey)
+		secret := os.Getenv(utils.AuthSecretEnv)
+		if secret == "" {
+			secret = utils.DefaultAuthSecret
+		}
+
+		payload_, err := utils.DecryptByAES(auth.Payload, secret)
 		if err == nil {
 			auth.Payload = string(payload_)
 		}

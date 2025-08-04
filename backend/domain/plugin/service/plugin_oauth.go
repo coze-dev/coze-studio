@@ -437,7 +437,13 @@ func genAuthURL(info *entity.AuthorizationCodeInfo) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("marshal state failed, err=%v", err)
 	}
-	encryptState, err := utils.EncryptByAES(stateStr, utils.StateSecretKey)
+
+	secret := os.Getenv(utils.StateSecretEnv)
+	if secret == "" {
+		secret = utils.DefaultStateSecret
+	}
+
+	encryptState, err := utils.EncryptByAES(stateStr, secret)
 	if err != nil {
 		return "", fmt.Errorf("encrypt state failed, err=%v", err)
 	}
