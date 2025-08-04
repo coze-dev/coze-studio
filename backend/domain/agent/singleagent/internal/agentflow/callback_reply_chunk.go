@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"strconv"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components"
@@ -284,7 +283,7 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 		}
 	}()
 	var streamInitialized bool
-	returnDirectToolsMap := make(map[string]bool)
+	returnDirectToolsMap := make(map[int]bool)
 	isReturnDirectToolsFirstCheck := true
 	isNeedtoolsMsgChunks := true
 
@@ -314,11 +313,11 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 			if len(r.returnDirectlyTools) > 0 {
 				if isReturnDirectToolsFirstCheck {
 					if _, ok := r.returnDirectlyTools[msg.ToolName]; ok {
-						returnDirectToolsMap[strconv.FormatInt(int64(mIndex), 10)] = true
+						returnDirectToolsMap[mIndex] = true
 					}
 				}
 
-				if _, ok := returnDirectToolsMap[strconv.FormatInt(int64(mIndex), 10)]; ok {
+				if _, ok := returnDirectToolsMap[mIndex]; ok {
 					if !streamInitialized {
 						sr, sw = schema.Pipe[*schema.Message](5)
 						r.sw.Send(&entity.AgentEvent{
