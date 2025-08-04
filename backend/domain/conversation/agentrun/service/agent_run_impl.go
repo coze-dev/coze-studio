@@ -26,6 +26,7 @@ import (
 	"os"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -718,7 +719,7 @@ func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
 func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 
 	errMsg := errorx.ErrorWithoutStack(err)
-	if os.Getenv(consts.RunMode) != "debug" {
+	if strings.ToLower(os.Getenv(consts.RunMode)) != "debug" {
 		var statusErr errorx.StatusError
 		if errors.As(err, &statusErr) {
 			errMsg = statusErr.Msg()
