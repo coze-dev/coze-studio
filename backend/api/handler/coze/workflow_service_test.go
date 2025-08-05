@@ -105,26 +105,28 @@ import (
 
 func TestMain(m *testing.M) {
 	callbacks.AppendGlobalHandlers(service.GetTokenCallbackHandler())
+	service.RegisterAllNodeAdaptors()
 	os.Exit(m.Run())
 }
 
 type wfTestRunner struct {
-	t           *testing.T
-	h           *server.Hertz
-	ctrl        *gomock.Controller
-	idGen       *mock.MockIDGenerator
-	search      *searchmock.MockNotifier
-	appVarS     *mockvar.MockStore
-	userVarS    *mockvar.MockStore
-	varGetter   *mockvar.MockVariablesMetaGetter
-	modelManage *mockmodel.MockManager
-	plugin      *mockPlugin.MockPluginService
-	tos         *storageMock.MockStorage
-	knowledge   *knowledgemock.MockKnowledgeOperator
-	database    *databasemock.MockDatabaseOperator
-	pluginSrv   *pluginmock.MockService
-	ctx         context.Context
-	closeFn     func()
+	t             *testing.T
+	h             *server.Hertz
+	ctrl          *gomock.Controller
+	idGen         *mock.MockIDGenerator
+	search        *searchmock.MockNotifier
+	appVarS       *mockvar.MockStore
+	userVarS      *mockvar.MockStore
+	varGetter     *mockvar.MockVariablesMetaGetter
+	modelManage   *mockmodel.MockManager
+	plugin        *mockPlugin.MockPluginService
+	tos           *storageMock.MockStorage
+	knowledge     *knowledgemock.MockKnowledgeOperator
+	database      *databasemock.MockDatabaseOperator
+	pluginSrv     *pluginmock.MockService
+	internalModel *testutil.UTChatModel
+	ctx           context.Context
+	closeFn       func()
 }
 
 var req2URL = map[reflect.Type]string{
@@ -243,9 +245,11 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 
 	cpStore := checkpoint.NewRedisStore(redisClient)
 
+	utChatModel := &testutil.UTChatModel{}
+
 	mockTos := storageMock.NewMockStorage(ctrl)
 	mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, nil)
+	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, utChatModel)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -312,22 +316,23 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	}
 
 	return &wfTestRunner{
-		t:           t,
-		h:           h,
-		ctrl:        ctrl,
-		idGen:       mockIDGen,
-		search:      mockSearchNotify,
-		appVarS:     mockGlobalAppVarStore,
-		userVarS:    mockGlobalUserVarStore,
-		varGetter:   mockVarGetter,
-		modelManage: mockModelManage,
-		plugin:      mPlugin,
-		tos:         mockTos,
-		knowledge:   mockKwOperator,
-		database:    mockDatabaseOperator,
-		ctx:         context.Background(),
-		closeFn:     f,
-		pluginSrv:   mockPluginSrv,
+		t:             t,
+		h:             h,
+		ctrl:          ctrl,
+		idGen:         mockIDGen,
+		search:        mockSearchNotify,
+		appVarS:       mockGlobalAppVarStore,
+		userVarS:      mockGlobalUserVarStore,
+		varGetter:     mockVarGetter,
+		modelManage:   mockModelManage,
+		plugin:        mPlugin,
+		tos:           mockTos,
+		knowledge:     mockKwOperator,
+		database:      mockDatabaseOperator,
+		internalModel: utChatModel,
+		ctx:           context.Background(),
+		closeFn:       f,
+		pluginSrv:     mockPluginSrv,
 	}
 }
 
@@ -1110,7 +1115,8 @@ func TestValidateTree(t *testing.T) {
 						assert.Equal(t, i.Message, `node "代码_1" not connected`)
 					}
 					if i.NodeError.NodeID == "160892" {
-						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`, `node "意图识别"'s port "default" not connected;`)
+						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`)
+						assert.Contains(t, i.Message, `node "意图识别"'s port "default" not connected`)
 					}
 
 				}
@@ -1157,7 +1163,8 @@ func TestValidateTree(t *testing.T) {
 						assert.Equal(t, i.Message, `node "代码_1" not connected`)
 					}
 					if i.NodeError.NodeID == "160892" {
-						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`, `node "意图识别"'s port "default" not connected;`)
+						assert.Contains(t, i.Message, `node "意图识别"'s port "branch_1" not connected`)
+						assert.Contains(t, i.Message, `node "意图识别"'s port "default" not connected`)
 					}
 				}
 			}
@@ -2950,41 +2957,41 @@ func TestLLMWithSkills(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		utChatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
-				if index == 0 {
-					assert.Equal(t, 1, len(in))
-					assert.Contains(t, in[0].Content, "7512369185624686592", "你是一个知识库意图识别AI Agent", "北京有哪些著名的景点")
-					return &schema.Message{
-						Role:    schema.Assistant,
-						Content: "7512369185624686592",
-						ResponseMeta: &schema.ResponseMeta{
-							Usage: &schema.TokenUsage{
-								PromptTokens:     10,
-								CompletionTokens: 11,
-								TotalTokens:      21,
-							},
+		utChatModel := r.internalModel
+		utChatModel.InvokeResultProvider = func(index int, in []*schema.Message) (*schema.Message, error) {
+			if index == 0 {
+				assert.Equal(t, 1, len(in))
+				assert.Contains(t, in[0].Content, "7512369185624686592", "你是一个知识库意图识别AI Agent", "北京有哪些著名的景点")
+				return &schema.Message{
+					Role:    schema.Assistant,
+					Content: "7512369185624686592",
+					ResponseMeta: &schema.ResponseMeta{
+						Usage: &schema.TokenUsage{
+							PromptTokens:     10,
+							CompletionTokens: 11,
+							TotalTokens:      21,
 						},
-					}, nil
+					},
+				}, nil
 
-				} else if index == 1 {
-					assert.Equal(t, 2, len(in))
-					for _, message := range in {
-						if message.Role == schema.System {
-							assert.Equal(t, "你是一个旅游推荐专家，通过用户提出的问题，推荐用户具体城市的旅游景点", message.Content)
-						}
-						if message.Role == schema.User {
-							assert.Contains(t, message.Content, "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌", "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉")
-						}
+			} else if index == 1 {
+				assert.Equal(t, 2, len(in))
+				for _, message := range in {
+					if message.Role == schema.System {
+						assert.Equal(t, "你是一个旅游推荐专家，通过用户提出的问题，推荐用户具体城市的旅游景点", message.Content)
 					}
-					return &schema.Message{
-						Role:    schema.Assistant,
-						Content: `八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌`,
-					}, nil
+					if message.Role == schema.User {
+						assert.Contains(t, message.Content, "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌", "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉")
+					}
 				}
-				return nil, fmt.Errorf("unexpected index: %d", index)
-			},
+				return &schema.Message{
+					Role:    schema.Assistant,
+					Content: `八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌`,
+				}, nil
+			}
+			return nil, fmt.Errorf("unexpected index: %d", index)
 		}
+
 		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		r.knowledge.EXPECT().ListKnowledgeDetail(gomock.Any(), gomock.Any()).Return(&knowledge.ListKnowledgeDetailResponse{
@@ -3767,10 +3774,10 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		var validateCv func(ns []*vo.Node)
 		validateCv = func(ns []*vo.Node) {
 			for _, n := range ns {
-				if n.Type == vo.BlockTypeBotSubWorkflow {
+				if n.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					assert.Equal(t, n.Data.Inputs.WorkflowVersion, version)
 				}
-				if n.Type == vo.BlockTypeBotAPI {
+				if n.Type == entity.NodeTypePlugin.IDStr() {
 					for _, apiParam := range n.Data.Inputs.APIParams {
 						// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
 						if apiParam.Name == "pluginVersion" {
@@ -3779,7 +3786,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 					}
 				}
 
-				if n.Type == vo.BlockTypeBotLLM {
+				if n.Type == entity.NodeTypeLLM.IDStr() {
 					if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.PluginFCParam != nil {
 						// In the application, the workflow llm node When the plugin version is equal to 0, the plugin is a plugin created in the application
 						for _, p := range n.Data.Inputs.FCParam.PluginFCParam.PluginList {
@@ -4063,8 +4070,8 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			var validateSubWorkflowIDs func(nodes []*vo.Node)
 			validateSubWorkflowIDs = func(nodes []*vo.Node) {
 				for _, node := range nodes {
-					switch node.Type {
-					case vo.BlockTypeBotAPI:
+					switch entity.IDStrToNodeType(node.Type) {
+					case entity.NodeTypePlugin:
 						apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
 							return e.Name, e
 						})
@@ -4082,7 +4089,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 							assert.Equal(t, "100100", pID)
 						}
 
-					case vo.BlockTypeBotSubWorkflow:
+					case entity.NodeTypeSubWorkflow:
 						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
 						wfId, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 						assert.NoError(t, err)
@@ -4096,7 +4103,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 						err = sonic.UnmarshalString(subWf.Canvas, subworkflowCanvas)
 						assert.NoError(t, err)
 						validateSubWorkflowIDs(subworkflowCanvas.Nodes)
-					case vo.BlockTypeBotLLM:
+					case entity.NodeTypeLLM:
 						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
@@ -4116,13 +4123,13 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 								assert.Equal(t, "100100", k.ID)
 							}
 						}
-					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+					case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
 						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
 						for idx := range knowledgeIDs {
 							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
 						}
-					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+					case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
 						for _, d := range node.Data.Inputs.DatabaseInfoList {
 							assert.Equal(t, "100100", d.DatabaseInfoID)
 						}
@@ -4208,10 +4215,10 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			var validateSubWorkflowIDs func(nodes []*vo.Node)
 			validateSubWorkflowIDs = func(nodes []*vo.Node) {
 				for _, node := range nodes {
-					switch node.Type {
-					case vo.BlockTypeBotSubWorkflow:
+					switch entity.IDStrToNodeType(node.Type) {
+					case entity.NodeTypeSubWorkflow:
 						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
-					case vo.BlockTypeBotLLM:
+					case entity.NodeTypeLLM:
 						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
@@ -4229,13 +4236,13 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 								assert.Equal(t, "100100", k.ID)
 							}
 						}
-					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+					case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
 						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
 						for idx := range knowledgeIDs {
 							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
 						}
-					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+					case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
 						for _, d := range node.Data.Inputs.DatabaseInfoList {
 							assert.Equal(t, "100100", d.DatabaseInfoID)
 						}
@@ -4356,7 +4363,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 			err = sonic.Unmarshal(data, mainCanvas)
 			assert.NoError(t, err)
 			for _, node := range mainCanvas.Nodes {
-				if node.Type == vo.BlockTypeBotSubWorkflow {
+				if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					if node.Data.Inputs.WorkflowID == "7516826260387921920" {
 						node.Data.Inputs.WorkflowID = c1IdStr
 					}
@@ -4372,7 +4379,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 			err = sonic.Unmarshal(cc1Data, cc1Canvas)
 			assert.NoError(t, err)
 			for _, node := range cc1Canvas.Nodes {
-				if node.Type == vo.BlockTypeBotSubWorkflow {
+				if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					if node.Data.Inputs.WorkflowID == "7516826283318181888" {
 						node.Data.Inputs.WorkflowID = c2IdStr
 					}
@@ -4423,7 +4430,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 			assert.NoError(t, err)
 
 			for _, node := range newMainCanvas.Nodes {
-				if node.Type == vo.BlockTypeBotSubWorkflow {
+				if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					assert.True(t, newSubWorkflowID[node.Data.Inputs.WorkflowID])
 					assert.Equal(t, "v0.0.1", node.Data.Inputs.WorkflowVersion)
 				}
@@ -4437,7 +4444,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 			assert.NoError(t, err)
 
 			for _, node := range cc1Canvas.Nodes {
-				if node.Type == vo.BlockTypeBotSubWorkflow {
+				if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					assert.True(t, newSubWorkflowID[node.Data.Inputs.WorkflowID])
 					assert.Equal(t, "v0.0.1", node.Data.Inputs.WorkflowVersion)
 				}
@@ -4508,10 +4515,10 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 		var validateSubWorkflowIDs func(nodes []*vo.Node)
 		validateSubWorkflowIDs = func(nodes []*vo.Node) {
 			for _, node := range nodes {
-				if node.Type == vo.BlockTypeBotSubWorkflow {
+				if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 					assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
 				}
-				if node.Type == vo.BlockTypeBotLLM {
+				if node.Type == entity.NodeTypeLLM.IDStr() {
 					if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 						for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 							assert.True(t, copiedIDMap[w.WorkflowID])

@@ -30,6 +30,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
@@ -41,7 +42,7 @@ type invokableWorkflow struct {
 	invoke        func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (map[string]any, error)
 	terminatePlan vo.TerminatePlan
 	wfEntity      *entity.Workflow
-	sc            *WorkflowSchema
+	sc            *schema2.WorkflowSchema
 	repo          wf.Repository
 }
 
@@ -49,7 +50,7 @@ func NewInvokableWorkflow(info *schema.ToolInfo,
 	invoke func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (map[string]any, error),
 	terminatePlan vo.TerminatePlan,
 	wfEntity *entity.Workflow,
-	sc *WorkflowSchema,
+	sc *schema2.WorkflowSchema,
 	repo wf.Repository,
 ) wf.ToolFromWorkflow {
 	return &invokableWorkflow{
@@ -112,7 +113,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 			return "", err
 		}
 
-		var entryNode *NodeSchema
+		var entryNode *schema2.NodeSchema
 		for _, node := range i.sc.Nodes {
 			if node.Type == entity.NodeTypeEntry {
 				entryNode = node
@@ -190,7 +191,7 @@ type streamableWorkflow struct {
 	stream        func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
 	terminatePlan vo.TerminatePlan
 	wfEntity      *entity.Workflow
-	sc            *WorkflowSchema
+	sc            *schema2.WorkflowSchema
 	repo          wf.Repository
 }
 
@@ -198,7 +199,7 @@ func NewStreamableWorkflow(info *schema.ToolInfo,
 	stream func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error),
 	terminatePlan vo.TerminatePlan,
 	wfEntity *entity.Workflow,
-	sc *WorkflowSchema,
+	sc *schema2.WorkflowSchema,
 	repo wf.Repository,
 ) wf.ToolFromWorkflow {
 	return &streamableWorkflow{
@@ -261,7 +262,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 			return nil, err
 		}
 
-		var entryNode *NodeSchema
+		var entryNode *schema2.NodeSchema
 		for _, node := range s.sc.Nodes {
 			if node.Type == entity.NodeTypeEntry {
 				entryNode = node

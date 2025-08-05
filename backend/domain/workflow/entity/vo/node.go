@@ -47,12 +47,6 @@ type FieldSource struct {
 	Val any        `json:"val,omitempty"`
 }
 
-type ImplicitNodeDependency struct {
-	NodeID    string
-	FieldPath compose.FieldPath
-	TypeInfo  *TypeInfo
-}
-
 type TypeInfo struct {
 	Type         DataType             `json:"type"`
 	ElemTypeInfo *TypeInfo            `json:"elem_type_info,omitempty"`

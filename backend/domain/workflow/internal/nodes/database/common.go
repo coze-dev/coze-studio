@@ -342,7 +342,7 @@ func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.
 	return ret, nil
 }
 
-func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*database.ConditionGroup, error) {
+func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*database.ConditionGroup, error) {
 	var (
 		rightValue any
 		ok         bool
@@ -394,13 +394,13 @@ func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	return conditionGroup, nil
 }
 
-func convertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*UpdateInventory, error) {
+func convertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*updateInventory, error) {
 	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, clauseGroup, input)
 	if err != nil {
 		return nil, err
 	}
 	fields := parseToInput(input)
-	inventory := &UpdateInventory{
+	inventory := &updateInventory{
 		ConditionGroup: conditionGroup,
 		Fields:         fields,
 	}

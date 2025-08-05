@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -42,7 +43,7 @@ type WorkflowRunner struct {
 	basic        *entity.WorkflowBasic
 	input        string
 	resumeReq    *entity.ResumeRequest
-	schema       *WorkflowSchema
+	schema       *schema2.WorkflowSchema
 	streamWriter *schema.StreamWriter[*entity.Message]
 	config       vo.ExecuteConfig
 
@@ -76,7 +77,7 @@ func WithStreamWriter(sw *schema.StreamWriter[*entity.Message]) WorkflowRunnerOp
 	}
 }
 
-func NewWorkflowRunner(b *entity.WorkflowBasic, sc *WorkflowSchema, config vo.ExecuteConfig, opts ...WorkflowRunnerOption) *WorkflowRunner {
+func NewWorkflowRunner(b *entity.WorkflowBasic, sc *schema2.WorkflowSchema, config vo.ExecuteConfig, opts ...WorkflowRunnerOption) *WorkflowRunner {
 	options := &workflowRunOptions{}
 	for _, opt := range opts {
 		opt(options)

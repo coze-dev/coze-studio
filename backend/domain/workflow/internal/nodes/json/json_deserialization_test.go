@@ -24,6 +24,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
@@ -31,19 +32,9 @@ import (
 func TestNewJsonDeserializer(t *testing.T) {
 	ctx := context.Background()
 
-	// Test with nil config
-	_, err := NewJsonDeserializer(ctx, nil)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "config required")
-
-	// Test with missing OutputFields config
-	_, err = NewJsonDeserializer(ctx, &DeserializationConfig{})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "OutputFields is required")
-
 	// Test with missing output key in OutputFields
-	_, err = NewJsonDeserializer(ctx, &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
+	_, err := (&DeserializationConfig{}).Build(ctx, &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
 			"testKey": {Type: vo.DataTypeString},
 		},
 	})
@@ -51,12 +42,12 @@ func TestNewJsonDeserializer(t *testing.T) {
 	assert.Contains(t, err.Error(), "no output field specified in deserialization config")
 
 	// Test with valid config
-	validConfig := &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
+	validConfig := &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
 			OutputKeyDeserialization: {Type: vo.DataTypeString},
 		},
 	}
-	processor, err := NewJsonDeserializer(ctx, validConfig)
+	processor, err := (&DeserializationConfig{}).Build(ctx, validConfig)
 	assert.NoError(t, err)
 	assert.NotNil(t, processor)
 }
@@ -65,16 +56,16 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 	ctx := context.Background()
 
 	// Base type test config
-	baseTypeConfig := &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
-			"output": {Type: vo.DataTypeString},
+	baseTypeConfig := &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
+			OutputKeyDeserialization: {Type: vo.DataTypeString},
 		},
 	}
 
 	// Object type test config
-	objectTypeConfig := &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
-			"output": {
+	objectTypeConfig := &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
+			OutputKeyDeserialization: {
 				Type: vo.DataTypeObject,
 				Properties: map[string]*vo.TypeInfo{
 					"name": {Type: vo.DataTypeString, Required: true},
@@ -85,9 +76,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 	}
 
 	// Array type test config
-	arrayTypeConfig := &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
-			"output": {
+	arrayTypeConfig := &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
+			OutputKeyDeserialization: {
 				Type:         vo.DataTypeArray,
 				ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeInteger},
 			},
@@ -95,9 +86,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 	}
 
 	// Nested array object test config
-	nestedArrayConfig := &DeserializationConfig{
-		OutputFields: map[string]*vo.TypeInfo{
-			"output": {
+	nestedArrayConfig := &schema.NodeSchema{
+		OutputTypes: map[string]*vo.TypeInfo{
+			OutputKeyDeserialization: {
 				Type: vo.DataTypeArray,
 				ElemTypeInfo: &vo.TypeInfo{
 					Type: vo.DataTypeObject,
@@ -113,7 +104,7 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name           string
-		config         *DeserializationConfig
+		config         *schema.NodeSchema
 		inputJSON      string
 		expectedOutput any
 		expectErr      bool
@@ -127,9 +118,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test integer deserialization",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `123`,
@@ -138,9 +129,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test boolean deserialization",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeBoolean},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeBoolean},
 			},
 		},
 		inputJSON:      `true`,
@@ -180,9 +171,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test type mismatch warning",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `"not a number"`,
@@ -198,9 +189,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test string to integer conversion",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `"123"`,
@@ -209,9 +200,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test float to integer conversion (integer part)",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `123.0`,
@@ -220,9 +211,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test float to integer conversion (non-integer part)",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `123.5`,
@@ -231,9 +222,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test boolean to integer conversion",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `true`,
@@ -242,9 +233,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 1,
 	}, {
 		name: "Test string to boolean conversion",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeBoolean},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeBoolean},
 			},
 		},
 		inputJSON:      `"true"`,
@@ -252,10 +243,11 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectErr:      false,
 		expectWarnings: 0,
 	}, {
-		name: "Test string to integer conversion in nested object",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {
+		name:      "Test string to integer conversion in nested object",
+		inputJSON: `{"age":"456"}`,
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {
 					Type: vo.DataTypeObject,
 					Properties: map[string]*vo.TypeInfo{
 						"age": {Type: vo.DataTypeInteger},
@@ -263,15 +255,14 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 				},
 			},
 		},
-		inputJSON:      `{"age":"456"}`,
 		expectedOutput: map[string]any{"age": 456},
 		expectErr:      false,
 		expectWarnings: 0,
 	}, {
 		name: "Test string to integer conversion for array elements",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {
 					Type:         vo.DataTypeArray,
 					ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeInteger},
 				},
@@ -283,9 +274,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 0,
 	}, {
 		name: "Test string with non-numeric characters to integer conversion",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {Type: vo.DataTypeInteger},
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {Type: vo.DataTypeInteger},
 			},
 		},
 		inputJSON:      `"123abc"`,
@@ -294,9 +285,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 1,
 	}, {
 		name: "Test type mismatch in nested object field",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {
 					Type: vo.DataTypeObject,
 					Properties: map[string]*vo.TypeInfo{
 						"score": {Type: vo.DataTypeInteger},
@@ -310,9 +301,9 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 		expectWarnings: 1,
 	}, {
 		name: "Test partial conversion failure in array elements",
-		config: &DeserializationConfig{
-			OutputFields: map[string]*vo.TypeInfo{
-				"output": {
+		config: &schema.NodeSchema{
+			OutputTypes: map[string]*vo.TypeInfo{
+				OutputKeyDeserialization: {
 					Type:         vo.DataTypeArray,
 					ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeInteger},
 				},
@@ -326,12 +317,12 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			processor, err := NewJsonDeserializer(ctx, tt.config)
+			processor, err := (&DeserializationConfig{}).Build(ctx, tt.config)
 			assert.NoError(t, err)
 
 			ctxWithCache := ctxcache.Init(ctx)
 			input := map[string]any{"input": tt.inputJSON}
-			result, err := processor.Invoke(ctxWithCache, input)
+			result, err := processor.(*Deserializer).Invoke(ctxWithCache, input)
 
 			if tt.expectErr {
 				assert.Error(t, err)

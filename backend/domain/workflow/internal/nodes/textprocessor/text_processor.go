@@ -22,7 +22,11 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -34,42 +38,92 @@ const (
 )
 
 type Config struct {
-	Type        Type                         `json:"type"`
-	Tpl         string                       `json:"tpl"`
-	ConcatChar  string                       `json:"concatChar"`
-	Separators  []string                     `json:"separator"`
-	FullSources map[string]*nodes.SourceInfo `json:"fullSources"`
+	Type       Type     `json:"type"`
+	Tpl        string   `json:"tpl"`
+	ConcatChar string   `json:"concatChar"`
+	Separators []string `json:"separator"`
 }
 
-type TextProcessor struct {
-	config *Config
-}
-
-func NewTextProcessor(_ context.Context, cfg *Config) (*TextProcessor, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("config requried")
+func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeTextProcessor,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
 	}
-	if cfg.Type == ConcatText && len(cfg.Tpl) == 0 {
+
+	if n.Data.Inputs.Method == vo.Concat {
+		c.Type = ConcatText
+		params := n.Data.Inputs.ConcatParams
+		for _, param := range params {
+			if param.Name == "concatResult" {
+				c.Tpl = param.Input.Value.Content.(string)
+			} else if param.Name == "arrayItemConcatChar" {
+				c.ConcatChar = param.Input.Value.Content.(string)
+			}
+		}
+	} else if n.Data.Inputs.Method == vo.Split {
+		c.Type = SplitText
+		params := n.Data.Inputs.SplitParams
+		separators := make([]string, 0, len(params))
+		for _, param := range params {
+			if param.Name == "delimiters" {
+				delimiters := param.Input.Value.Content.([]any)
+				for _, d := range delimiters {
+					separators = append(separators, d.(string))
+				}
+			}
+		}
+		c.Separators = separators
+
+	} else {
+		return nil, fmt.Errorf("not supported method: %s", n.Data.Inputs.Method)
+	}
+
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if c.Type == ConcatText && len(c.Tpl) == 0 {
 		return nil, fmt.Errorf("config tpl requried")
 	}
 
 	return &TextProcessor{
-		config: cfg,
+		typ:         c.Type,
+		tpl:         c.Tpl,
+		concatChar:  c.ConcatChar,
+		separators:  c.Separators,
+		fullSources: ns.FullSources,
 	}, nil
+}
 
+type TextProcessor struct {
+	typ         Type
+	tpl         string
+	concatChar  string
+	separators  []string
+	fullSources map[string]*schema.SourceInfo
 }
 
 const OutputKey = "output"
 
 func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	switch t.config.Type {
+	switch t.typ {
 	case ConcatText:
 		arrayRenderer := func(i any) (string, error) {
 			vs := i.([]any)
-			return join(vs, t.config.ConcatChar)
+			return join(vs, t.concatChar)
 		}
 
-		result, err := nodes.Render(ctx, t.config.Tpl, input, t.config.FullSources,
+		result, err := nodes.Render(ctx, t.tpl, input, t.fullSources,
 			nodes.WithCustomRender(reflect.TypeOf([]any{}), arrayRenderer))
 		if err != nil {
 			return nil, err
@@ -86,9 +140,9 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 		if !ok {
 			return nil, fmt.Errorf("input string field must string type but got %T", valueString)
 		}
-		values := strings.Split(valueString, t.config.Separators[0])
+		values := strings.Split(valueString, t.separators[0])
 		// Iterate over each delimiter
-		for _, sep := range t.config.Separators[1:] {
+		for _, sep := range t.separators[1:] {
 			var tempParts []string
 			for _, part := range values {
 				tempParts = append(tempParts, strings.Split(part, sep)...)
@@ -102,7 +156,7 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 
 		return map[string]any{OutputKey: anyValues}, nil
 	default:
-		return nil, fmt.Errorf("not support type %s", t.config.Type)
+		return nil, fmt.Errorf("not support type %s", t.typ)
 	}
 }
 

@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
@@ -107,7 +108,7 @@ func newPrompts(sp, up *promptTpl, model ModelWithInfo) *prompts {
 }
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
-	sources map[string]*nodes.SourceInfo,
+	sources map[string]*schema2.SourceInfo,
 	supportedModals map[modelmgr.Modal]bool,
 ) (*schema.Message, error) {
 	if !pl.hasMultiModal || len(supportedModals) == 0 {
@@ -247,7 +248,7 @@ func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Opt
 	}
 	sk := fmt.Sprintf(sourceKey, nodeKey)
 
-	sources, ok := ctxcache.Get[map[string]*nodes.SourceInfo](ctx, sk)
+	sources, ok := ctxcache.Get[map[string]*schema2.SourceInfo](ctx, sk)
 	if !ok {
 		return nil, fmt.Errorf("resolved sources not found llm node, key: %s", sk)
 	}

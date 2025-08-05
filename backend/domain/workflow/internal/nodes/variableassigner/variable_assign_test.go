@@ -37,36 +37,34 @@ func TestVariableAssigner(t *testing.T) {
 	arrVar := any([]any{1, "2"})
 
 	va := &InLoop{
-		config: &Config{
-			Pairs: []*Pair{
-				{
-					Left: vo.Reference{
-						FromPath:     compose.FieldPath{"int_var_s"},
-						VariableType: ptr.Of(vo.ParentIntermediate),
-					},
-					Right: compose.FieldPath{"int_var_t"},
+		pairs: []*Pair{
+			{
+				Left: vo.Reference{
+					FromPath:     compose.FieldPath{"int_var_s"},
+					VariableType: ptr.Of(vo.ParentIntermediate),
 				},
-				{
-					Left: vo.Reference{
-						FromPath:     compose.FieldPath{"str_var_s"},
-						VariableType: ptr.Of(vo.ParentIntermediate),
-					},
-					Right: compose.FieldPath{"str_var_t"},
+				Right: compose.FieldPath{"int_var_t"},
+			},
+			{
+				Left: vo.Reference{
+					FromPath:     compose.FieldPath{"str_var_s"},
+					VariableType: ptr.Of(vo.ParentIntermediate),
 				},
-				{
-					Left: vo.Reference{
-						FromPath:     compose.FieldPath{"obj_var_s"},
-						VariableType: ptr.Of(vo.ParentIntermediate),
-					},
-					Right: compose.FieldPath{"obj_var_t"},
+				Right: compose.FieldPath{"str_var_t"},
+			},
+			{
+				Left: vo.Reference{
+					FromPath:     compose.FieldPath{"obj_var_s"},
+					VariableType: ptr.Of(vo.ParentIntermediate),
 				},
-				{
-					Left: vo.Reference{
-						FromPath:     compose.FieldPath{"arr_var_s"},
-						VariableType: ptr.Of(vo.ParentIntermediate),
-					},
-					Right: compose.FieldPath{"arr_var_t"},
+				Right: compose.FieldPath{"obj_var_t"},
+			},
+			{
+				Left: vo.Reference{
+					FromPath:     compose.FieldPath{"arr_var_s"},
+					VariableType: ptr.Of(vo.ParentIntermediate),
 				},
+				Right: compose.FieldPath{"arr_var_t"},
 			},
 		},
 		intermediateVarStore: &nodes.ParentIntermediateStore{},
@@ -79,7 +77,7 @@ func TestVariableAssigner(t *testing.T) {
 		"arr_var_s": &arrVar,
 	}, nil)
 
-	_, err := va.Assign(ctx, map[string]any{
+	_, err := va.Invoke(ctx, map[string]any{
 		"int_var_t": 2,
 		"str_var_t": "str2",
 		"obj_var_t": map[string]any{

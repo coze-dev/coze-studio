@@ -18,26 +18,167 @@ package intentdetector
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type Config struct {
 	Intents      []string
 	SystemPrompt string
 	IsFastMode   bool
-	ChatModel    model.BaseChatModel
+	LLMParams    *model.LLMParams
+}
+
+func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema2.NodeSchema, error) {
+	ns := &schema2.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeIntentDetector,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+
+	param := n.Data.Inputs.LLMParam
+	if param == nil {
+		return nil, fmt.Errorf("intent detector node's llmParam is nil")
+	}
+
+	llmParam, ok := param.(vo.IntentDetectorLLMParam)
+	if !ok {
+		return nil, fmt.Errorf("llm node's llmParam must be LLMParam, got %v", llmParam)
+	}
+
+	paramBytes, err := sonic.Marshal(param)
+	if err != nil {
+		return nil, err
+	}
+	var intentDetectorConfig = &vo.IntentDetectorLLMConfig{}
+
+	err = sonic.Unmarshal(paramBytes, &intentDetectorConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	modelLLMParams := &model.LLMParams{}
+	modelLLMParams.ModelType = int64(intentDetectorConfig.ModelType)
+	modelLLMParams.ModelName = intentDetectorConfig.ModelName
+	modelLLMParams.TopP = intentDetectorConfig.TopP
+	modelLLMParams.Temperature = intentDetectorConfig.Temperature
+	modelLLMParams.MaxTokens = intentDetectorConfig.MaxTokens
+	modelLLMParams.ResponseFormat = model.ResponseFormat(intentDetectorConfig.ResponseFormat)
+	modelLLMParams.SystemPrompt = intentDetectorConfig.SystemPrompt.Value.Content.(string)
+
+	c.LLMParams = modelLLMParams
+	c.SystemPrompt = modelLLMParams.SystemPrompt
+
+	var intents = make([]string, 0, len(n.Data.Inputs.Intents))
+	for _, it := range n.Data.Inputs.Intents {
+		intents = append(intents, it.Name)
+	}
+	c.Intents = intents
+
+	if n.Data.Inputs.Mode == "top_speed" {
+		c.IsFastMode = true
+	}
+
+	if err = convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (c *Config) Build(ctx context.Context, _ *schema2.NodeSchema, _ ...schema2.BuildOption) (any, error) {
+	if !c.IsFastMode && c.LLMParams == nil {
+		return nil, errors.New("config chat model is required")
+	}
+
+	if len(c.Intents) == 0 {
+		return nil, errors.New("config intents is required")
+	}
+
+	m, _, err := model.GetManager().GetModel(ctx, c.LLMParams)
+	if err != nil {
+		return nil, err
+	}
+
+	chain := compose.NewChain[map[string]any, *schema.Message]()
+
+	spt := ternary.IFElse[string](c.IsFastMode, FastModeSystemIntentPrompt, SystemIntentPrompt)
+
+	intents, err := toIntentString(c.Intents)
+	if err != nil {
+		return nil, err
+	}
+
+	sptTemplate, err := nodes.TemplateRender(spt, map[string]interface{}{
+		"intents": intents,
+	})
+	if err != nil {
+		return nil, err
+	}
+	prompts := prompt.FromMessages(schema.Jinja2,
+		&schema.Message{Content: sptTemplate, Role: schema.System},
+		&schema.Message{Content: "{{query}}", Role: schema.User})
+
+	r, err := chain.AppendChatTemplate(prompts).AppendChatModel(m).Compile(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &IntentDetector{
+		isFastMode:   c.IsFastMode,
+		systemPrompt: c.SystemPrompt,
+		runner:       r,
+	}, nil
+}
+
+func (c *Config) BuildBranch(_ context.Context) (
+	func(ctx context.Context, nodeOutput map[string]any) (int64, bool, error), bool) {
+	return func(ctx context.Context, nodeOutput map[string]any) (int64, bool, error) {
+		classificationId, ok := nodeOutput[classificationID]
+		if !ok {
+			return -1, false, fmt.Errorf("failed to take classification id from input map: %v", nodeOutput)
+		}
+
+		cID64, ok := classificationId.(int64)
+		if !ok {
+			return -1, false, fmt.Errorf("classificationID not of type int64, actual type: %T", classificationId)
+		}
+
+		if cID64 == 0 {
+			return -1, true, nil
+		}
+
+		return cID64 - 1, false, nil
+	}, true
+}
+
+func (c *Config) ExpectPorts(ctx context.Context, n *vo.Node) []string {
+	expects := make([]string, len(n.Data.Inputs.Intents)+1)
+	expects[0] = schema2.PortDefault
+	for i := 0; i < len(n.Data.Inputs.Intents); i++ {
+		expects[i+1] = fmt.Sprintf(schema2.PortBranchFormat, i)
+	}
+	return expects
 }
 
 const SystemIntentPrompt = `
@@ -95,71 +236,39 @@ Note:
 ##Limit
 - Please do not reply in text.`
 
+const classificationID = "classificationId"
+
 type IntentDetector struct {
-	config *Config
-	runner compose.Runnable[map[string]any, *schema.Message]
-}
-
-func NewIntentDetector(ctx context.Context, cfg *Config) (*IntentDetector, error) {
-	if cfg == nil {
-		return nil, errors.New("cfg is required")
-	}
-	if !cfg.IsFastMode && cfg.ChatModel == nil {
-		return nil, errors.New("config chat model is required")
-	}
-
-	if len(cfg.Intents) == 0 {
-		return nil, errors.New("config intents is required")
-	}
-	chain := compose.NewChain[map[string]any, *schema.Message]()
-
-	spt := ternary.IFElse[string](cfg.IsFastMode, FastModeSystemIntentPrompt, SystemIntentPrompt)
-
-	sptTemplate, err := nodes.TemplateRender(spt, map[string]interface{}{
-		"intents": toIntentString(cfg.Intents),
-	})
-	if err != nil {
-		return nil, err
-	}
-	prompts := prompt.FromMessages(schema.Jinja2,
-		&schema.Message{Content: sptTemplate, Role: schema.System},
-		&schema.Message{Content: "{{query}}", Role: schema.User})
-
-	r, err := chain.AppendChatTemplate(prompts).AppendChatModel(cfg.ChatModel).Compile(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &IntentDetector{
-		config: cfg,
-		runner: r,
-	}, nil
+	isFastMode   bool
+	systemPrompt string
+	runner       compose.Runnable[map[string]any, *schema.Message]
 }
 
 func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error) {
-	nodeOutput := make(map[string]any)
-	nodeOutput["classificationId"] = 0
 	if content == "" {
-		return nodeOutput, errors.New("content is empty")
+		return nil, errors.New("intent detector's LLM output content is empty")
 	}
 
-	if id.config.IsFastMode {
+	if id.isFastMode {
 		cid, err := strconv.ParseInt(content, 10, 64)
 		if err != nil {
-			return nodeOutput, err
+			return nil, err
 		}
-		nodeOutput["classificationId"] = cid
-		return nodeOutput, nil
+		return map[string]any{
+			classificationID: cid,
+		}, nil
 	}
 
 	leftIndex := strings.Index(content, "{")
 	rightIndex := strings.Index(content, "}")
 	if leftIndex == -1 || rightIndex == -1 {
-		return nodeOutput, errors.New("content is invalid")
+		return nil, fmt.Errorf("intent detector's LLM output content is invalid: %s", content)
 	}
 
-	err := json.Unmarshal([]byte(content[leftIndex:rightIndex+1]), &nodeOutput)
+	var nodeOutput map[string]any
+	err := sonic.UnmarshalString(content[leftIndex:rightIndex+1], &nodeOutput)
 	if err != nil {
-		return nodeOutput, err
+		return nil, err
 	}
 
 	return nodeOutput, nil
@@ -178,8 +287,8 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 
 	vars := make(map[string]any)
 	vars["query"] = queryStr
-	if !id.config.IsFastMode {
-		ad, err := nodes.TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
+	if !id.isFastMode {
+		ad, err := nodes.TemplateRender(id.systemPrompt, map[string]any{"query": query})
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +302,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	return id.parseToNodeOut(o.Content)
 }
 
-func toIntentString(its []string) string {
+func toIntentString(its []string) (string, error) {
 	type IntentVariableItem struct {
 		ClassificationID int64  `json:"classificationId"`
 		Content          string `json:"content"`
@@ -207,6 +316,6 @@ func toIntentString(its []string) string {
 			Content:          it,
 		})
 	}
-	itsBytes, _ := json.Marshal(vs)
-	return string(itsBytes)
+
+	return sonic.MarshalString(vs)
 }
