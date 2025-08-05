@@ -268,8 +268,6 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 		}
 	}
 
-	cancelCtx = execute.InitExecutedNodesCounter(cancelCtx)
-
 	lastEventChan := make(chan *execute.Event, 1)
 	go func() {
 		defer func() {
