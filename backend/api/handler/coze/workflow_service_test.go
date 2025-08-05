@@ -32,6 +32,7 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
+	"github.com/cloudwego/eino/callbacks"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -101,6 +102,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
+
+func TestMain(m *testing.M) {
+	callbacks.AppendGlobalHandlers(service.GetTokenCallbackHandler())
+	os.Exit(m.Run())
+}
 
 type wfTestRunner struct {
 	t           *testing.T
