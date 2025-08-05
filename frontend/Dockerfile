@@ -31,7 +31,7 @@ COPY scripts/ ./scripts/
 RUN find . -name "*.sh" -type f -exec dos2unix {} \;
 
 # Install all dependencies
-RUN rush install
+RUN chmod +x scripts/hooks/post-rush-install.sh && rm -rf /app/common/temp && rush install
 
 # Use rush build to build the specific project
 RUN rush build --to @coze-studio/app

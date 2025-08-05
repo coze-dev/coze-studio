@@ -354,7 +354,7 @@ services:
     networks:
       - coze-network
     ports:
-      # - '8888:8888'
+      - '8888'
       - '8889:8889'
     volumes:
       - .env:/app/.env
@@ -373,11 +373,12 @@ services:
         condition: service_healthy
     command: ['/app/opencoze']
 
-  coze-frontend:
-    build:
-      context: ..
-      dockerfile: frontend/Dockerfile
-    container_name: coze-frontend
+  coze-web:
+    # build:
+    #   context: ..
+    #   dockerfile: frontend/Dockerfile
+    image: opencoze/web:latest
+    container_name: coze-web
     restart: always
     ports:
       - "8888:80"
