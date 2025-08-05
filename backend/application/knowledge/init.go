@@ -175,7 +175,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
 	})
 
-	if err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
+	if err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
 		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
 	}
 

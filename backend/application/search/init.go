@@ -71,14 +71,14 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.MQServer)
 
-	err := eventbus.RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
+	err := eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
 	if err != nil {
 		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
 	}
 
 	searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
 
-	err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
+	err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
 	if err != nil {
 		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
 	}
