@@ -178,7 +178,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	suite.handler = knowledgeEventHandler
 
-	err = eventbus.RegisterConsumer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, suite)
+	err = eventbus.DefaultSVC().RegisterConsumer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, suite)
 	if err != nil {
 		panic(err)
 	}

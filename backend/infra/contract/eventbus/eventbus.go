@@ -24,7 +24,20 @@ type Producer interface {
 	BatchSend(ctx context.Context, bodyArr [][]byte, opts ...SendOpt) error
 }
 
-type Consumer interface{}
+var defaultSVC ConsumerService
+
+func SetDefaultSVC(svc ConsumerService) {
+	defaultSVC = svc
+}
+
+func GetDefaultSVC() ConsumerService {
+	return defaultSVC
+}
+
+type ConsumerService interface {
+	RegisterConsumer(nameServer, topic, group string, consumerHandler ConsumerHandler, opts ...ConsumerOpt) error
+}
+
 type ConsumerHandler interface {
 	HandleMessage(ctx context.Context, msg *Message) error
 }
