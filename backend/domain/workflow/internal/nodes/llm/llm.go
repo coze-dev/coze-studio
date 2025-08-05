@@ -24,8 +24,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudwego/eino-ext/components/model/ark"
-	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
@@ -217,17 +215,7 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 }
 
 func getReasoningContent(message *schema.Message) string {
-	c, ok := deepseek.GetReasoningContent(message)
-	if ok {
-		return c
-	}
-
-	c, ok = ark.GetReasoningContent(message)
-	if ok {
-		return c
-	}
-
-	return ""
+	return message.ReasoningContent
 }
 
 type Options struct {
