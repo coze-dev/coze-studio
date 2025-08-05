@@ -18,17 +18,14 @@ package execute
 
 import (
 	"context"
-	"sync/atomic"
 	"time"
-
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 )
 
 const (
-	foregroundRunTimeout     = 10 * time.Minute
-	backgroundRunTimeout     = 24 * time.Hour
-	maxNodeCountPerWorkflow  = 1000
-	maxNodeCountPerExecution = 1000
+	foregroundRunTimeout     = 0 // timeout for workflow execution in foreground mode, 0 means no timeout
+	backgroundRunTimeout     = 0 // timeout for workflow execution in background mode, 0 means no timeout
+	maxNodeCountPerWorkflow  = 0 // maximum node count for a workflow, 0 means no limit
+	maxNodeCountPerExecution = 0 // maximum node count for a workflow execution, 0 means no limit
 	cancelCheckInterval      = 200 * time.Millisecond
 )
 
@@ -52,17 +49,17 @@ const (
 	executedNodeCountKey = "executed_node_count"
 )
 
-func IncrAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
-	counter, ok := ctxcache.Get[atomic.Int64](ctx, executedNodeCountKey)
-	if !ok {
+func IncrementAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
+	exeCtx := GetExeCtx(ctx)
+	if exeCtx == nil {
 		return 0, false
 	}
 
-	current := counter.Add(1)
-	return current, current > maxNodeCountPerExecution
-}
+	counter := exeCtx.executed
+	if counter == nil {
+		return 0, false
+	}
 
-func InitExecutedNodesCounter(ctx context.Context) context.Context {
-	ctxcache.Store(ctx, executedNodeCountKey, atomic.Int64{})
-	return ctx
+	current := (*counter).Add(1)
+	return current, current > maxNodeCountPerExecution
 }

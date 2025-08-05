@@ -1552,7 +1552,6 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		AgentID:       agentID,
 		ConnectorID:   connectorID,
 		ConnectorUID:  strconv.FormatInt(userID, 10),
-		TaskType:      vo.TaskTypeForeground,
 		InputFailFast: true,
 		BizType:       vo.BizTypeWorkflow,
 	}
@@ -1563,6 +1562,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 	if req.GetIsAsync() {
 		exeCfg.SyncPattern = vo.SyncPatternAsync
+		exeCfg.TaskType = vo.TaskTypeBackground
 		exeID, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, parameters)
 		if err != nil {
 			return nil, err
@@ -1575,6 +1575,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	exeCfg.SyncPattern = vo.SyncPatternSync
+	exeCfg.TaskType = vo.TaskTypeForeground
 	wfExe, tPlan, err := GetWorkflowDomainSVC().SyncExecute(ctx, exeCfg, parameters)
 	if err != nil {
 		return nil, err

@@ -124,13 +124,15 @@ func newNodeRunConfig[O any](ns *schema2.NodeSchema,
 		}, opts.init...)
 	}
 
-	opts.init = append(opts.init, func(ctx context.Context) (context.Context, error) {
-		current, exceeded := execute.IncrAndCheckExecutedNodes(ctx)
-		if exceeded {
-			return nil, fmt.Errorf("exceeded max executed node count: %d, current: %d", execute.GetStaticConfig().MaxNodeCountPerExecution, current)
-		}
-		return ctx, nil
-	})
+	if execute.GetStaticConfig().MaxNodeCountPerExecution > 0 {
+		opts.init = append(opts.init, func(ctx context.Context) (context.Context, error) {
+			current, exceeded := execute.IncrementAndCheckExecutedNodes(ctx)
+			if exceeded {
+				return nil, fmt.Errorf("exceeded max executed node count: %d, current: %d", execute.GetStaticConfig().MaxNodeCountPerExecution, current)
+			}
+			return ctx, nil
+		})
+	}
 
 	return &nodeRunConfig[O]{
 		nodeKey:                 ns.Key,
@@ -325,12 +327,23 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 		}()
 
 		for _, i := range runner.init {
-			if ctx, err = i(ctx); err != nil {
+			var newCtx context.Context
+			if newCtx, err = i(ctx); err != nil {
+				var err1 error
+				if ctx, err1 = runner.onStart(ctx, input); err1 != nil {
+					return nil, err1
+				}
 				return nil, err
+			} else {
+				ctx = newCtx
 			}
 		}
 
 		if input, err = runner.preProcess(ctx, input); err != nil {
+			var err1 error
+			if ctx, err1 = runner.onStart(ctx, input); err1 != nil {
+				return nil, err1
+			}
 			return nil, err
 		}
 
@@ -373,12 +386,23 @@ func (nc *nodeRunConfig[O]) stream() func(ctx context.Context, input map[string]
 		}()
 
 		for _, i := range runner.init {
-			if ctx, err = i(ctx); err != nil {
+			var newCtx context.Context
+			if newCtx, err = i(ctx); err != nil {
+				var err1 error
+				if ctx, err1 = runner.onStart(ctx, input); err1 != nil {
+					return nil, err1
+				}
 				return nil, err
+			} else {
+				ctx = newCtx
 			}
 		}
 
 		if input, err = runner.preProcess(ctx, input); err != nil {
+			var err1 error
+			if ctx, err1 = runner.onStart(ctx, input); err1 != nil {
+				return nil, err1
+			}
 			return nil, err
 		}
 
@@ -387,6 +411,60 @@ func (nc *nodeRunConfig[O]) stream() func(ctx context.Context, input map[string]
 		}
 
 		return runner.stream(ctx, input, opts...)
+	}
+}
+
+func (nc *nodeRunConfig[O]) collect() func(ctx context.Context, input *schema.StreamReader[map[string]any], opts ...O) (output map[string]any, err error) {
+	if nc.c == nil {
+		return nil
+	}
+
+	return func(ctx context.Context, input *schema.StreamReader[map[string]any], opts ...O) (output map[string]any, err error) {
+		ctx, runner := newNodeRunner(ctx, nc)
+
+		defer func() {
+			if panicErr := recover(); panicErr != nil {
+				err = safego.NewPanicErr(panicErr, debug.Stack())
+			}
+
+			if err == nil {
+				err = runner.onEnd(ctx, output)
+			}
+
+			if err != nil {
+				errOutput, hasErrOutput := runner.onError(ctx, err)
+				if hasErrOutput {
+					output = errOutput
+					err = nil
+					if output, err = runner.postProcess(ctx, output); err != nil {
+						logs.CtxErrorf(ctx, "postProcess failed after returning error output: %v", err)
+					}
+				}
+			}
+		}()
+
+		for _, i := range runner.init {
+			var newCtx context.Context
+			if newCtx, err = i(ctx); err != nil {
+				var err1 error
+				if ctx, _, err1 = runner.onStartStream(ctx, input); err1 != nil {
+					return nil, err1
+				}
+				return nil, err
+			} else {
+				ctx = newCtx
+			}
+		}
+
+		for _, p := range runner.streamPreProcessors {
+			input = p(ctx, input)
+		}
+
+		if ctx, input, err = runner.onStartStream(ctx, input); err != nil {
+			return nil, err
+		}
+
+		return runner.collect(ctx, input, opts...)
 	}
 }
 
@@ -417,8 +495,15 @@ func (nc *nodeRunConfig[O]) transform() func(ctx context.Context, input *schema.
 		}()
 
 		for _, i := range runner.init {
-			if ctx, err = i(ctx); err != nil {
+			var newCtx context.Context
+			if newCtx, err = i(ctx); err != nil {
+				var err1 error
+				if ctx, _, err1 = runner.onStartStream(ctx, input); err1 != nil {
+					return nil, err1
+				}
 				return nil, err
+			} else {
+				ctx = newCtx
 			}
 		}
 
@@ -439,7 +524,7 @@ func (nc *nodeRunConfig[O]) toNode() *Node {
 	opts = append(opts, compose.WithLambdaType(string(nc.nodeType)))
 	opts = append(opts, compose.WithLambdaCallbackEnable(true))
 
-	l, err := compose.AnyLambda(nc.invoke(), nc.stream(), nil, nc.transform(), opts...)
+	l, err := compose.AnyLambda(nc.invoke(), nc.stream(), nc.collect(), nc.transform(), opts...)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create lambda for node %s, err: %v", nc.nodeName, err))
 	}
@@ -568,6 +653,49 @@ func (r *nodeRunner[O]) stream(ctx context.Context, input map[string]any, opts .
 		}
 
 		output, err = r.s(ctx, input, opts...)
+		if err != nil {
+			if _, ok := compose.IsInterruptRerunError(err); ok { // interrupt, won't retry
+				r.interrupted = true
+				return nil, err
+			}
+
+			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			if r.maxRetry > n {
+				n++
+				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
+					exeCtx.CurrentRetryCount++
+				}
+				continue
+			}
+			return nil, err
+		}
+
+		return output, nil
+	}
+}
+
+func (r *nodeRunner[O]) collect(ctx context.Context, input *schema.StreamReader[map[string]any], opts ...O) (output map[string]any, err error) {
+	if r.maxRetry == 0 {
+		return r.c(ctx, input, opts...)
+	}
+
+	copied := input.Copy(int(r.maxRetry))
+
+	var n int64
+	defer func() {
+		for i := n + 1; i < r.maxRetry; i++ {
+			copied[i].Close()
+		}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+
+		output, err = r.c(ctx, copied[n], opts...)
 		if err != nil {
 			if _, ok := compose.IsInterruptRerunError(err); ok { // interrupt, won't retry
 				r.interrupted = true
