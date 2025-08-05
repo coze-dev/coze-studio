@@ -33,9 +33,9 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
@@ -43,7 +43,7 @@ import (
 
 type ServiceComponents struct {
 	DB                   *gorm.DB
-	Cache                *redis.Client
+	Cache                cache.Cmdable
 	TOS                  storage.Storage
 	ESClient             es.Client
 	ProjectEventBus      ProjectEventBus
