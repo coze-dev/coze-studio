@@ -268,7 +268,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
 		SupportBatch: true,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 3 * 60 * 1000, // 3 minutes
 			PreFillZero:      true,
 			PostFillNil:      true,
 			InputSourceAware: true,
@@ -288,9 +287,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
 		SupportBatch: true,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 3 * 60 * 1000, // 3 minutes
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Plugin",
 		EnUSDescription: "Used to access external real-time data and perform operations",
@@ -306,10 +304,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
-			UseCtxCache:      true,
+			PreFillZero: true,
+			PostFillNil: true,
+			UseCtxCache: true,
 		},
 		EnUSName:        "Code",
 		EnUSDescription: "Write code to process input variables to generate return values.",
@@ -325,9 +322,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Knowledge retrieval",
 		EnUSDescription: "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
@@ -371,9 +367,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "SQL Customization",
 		EnUSDescription: "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
@@ -425,10 +420,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
-			MayUseChatModel:  true,
+			PreFillZero:     true,
+			PostFillNil:     true,
+			MayUseChatModel: true,
 		},
 		EnUSName:        "Question",
 		EnUSDescription: "Support asking questions to the user in the middle of the conversation, with both preset options and open-ended questions",
@@ -472,10 +466,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite:      true,
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			IsComposite: true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Loop",
 		EnUSDescription: "Used to repeatedly execute a series of tasks by setting the number of iterations and logic",
@@ -491,10 +484,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
-			MayUseChatModel:  true,
+			PreFillZero:     true,
+			PostFillNil:     true,
+			MayUseChatModel: true,
 		},
 		EnUSName:        "Intent recognition",
 		EnUSDescription: "Used for recognizing the intent in user input and matching it with preset intent options.",
@@ -510,9 +502,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Knowledge writing",
 		EnUSDescription: "The write node can add a knowledge base of type text. Only one knowledge base can be added.",
@@ -528,10 +519,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite:      true,
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			IsComposite: true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Batch",
 		EnUSDescription: "By setting the number of batch runs and logic, run the tasks in the batch body.",
@@ -670,8 +660,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-update.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
+			PreFillZero: true,
 		},
 		EnUSName:        "Update Data",
 		EnUSDescription: "Modify the existing data records in the table, and the user specifies the update conditions and contents to update the data",
@@ -687,8 +676,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
+			PreFillZero: true,
 		},
 		EnUSName:        "Query Data",
 		EnUSDescription: "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions",
@@ -704,8 +692,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
+			PreFillZero: true,
 		},
 		EnUSName:        "Delete Data",
 		EnUSDescription: "Delete data records from the table, and the user specifies the deletion conditions to delete the records that meet the conditions",
@@ -721,9 +708,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "HTTP request",
 		EnUSDescription: "It is used to send API requests and return data from the interface.",
@@ -739,8 +725,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
+			PreFillZero: true,
 		},
 		EnUSName:        "Add Data",
 		EnUSDescription: "Add new data records to the table, and insert them into the database after the user enters the data content",
@@ -780,8 +765,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 
 		// ExecutableMeta configures certain common aspects of request-time behaviors for this node.
 		ExecutableMeta: ExecutableMeta{
-			// DefaultTimeoutMS configures the default timeout for this node, in milliseconds. 0 means no timeout.
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
 			// PreFillZero decides whether to pre-fill zero value for any missing fields in input.
 			PreFillZero: true,
 			// PostFillNil decides whether to post-fill nil value for any missing fields in output.
@@ -803,10 +786,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-from_json.png",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
-			UseCtxCache:      true,
+			PreFillZero: true,
+			PostFillNil: true,
+			UseCtxCache: true,
 		},
 		EnUSName:        "JSON deserialization",
 		EnUSDescription: "Parse JSON string to variable",
@@ -822,9 +804,8 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS: 60 * 1000, // 1 minute
-			PreFillZero:      true,
-			PostFillNil:      true,
+			PreFillZero: true,
+			PostFillNil: true,
 		},
 		EnUSName:        "Knowledge delete",
 		EnUSDescription: "The delete node can delete a document in knowledge base.",
