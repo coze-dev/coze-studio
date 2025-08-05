@@ -32,7 +32,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -46,8 +45,6 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 		resumedEvent = r.interruptEvent
 		sw           = r.streamWriter
 	)
-
-	const tokenCallbackKey = "token_callback_key"
 
 	if wb.AppID != nil && exeCfg.AppID == nil {
 		exeCfg.AppID = wb.AppID
@@ -122,12 +119,6 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 
 	if workflowSC.requireCheckPoint {
 		opts = append(opts, einoCompose.WithCheckPointID(strconv.FormatInt(executeID, 10)))
-	}
-
-	if !ctxcache.HasKey(ctx, tokenCallbackKey) {
-		opts = append(opts, einoCompose.WithCallbacks(execute.GetTokenCallbackHandler()))
-		ctx = ctxcache.Init(ctx)
-		ctxcache.Store(ctx, tokenCallbackKey, true)
 	}
 
 	return ctx, opts, nil
