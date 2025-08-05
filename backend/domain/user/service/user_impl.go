@@ -467,15 +467,6 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 }
 
 func (u *userImpl) GetUserByEmail(ctx context.Context, email string) (user *userEntity.User, err error) {
-	//userInfos, err := u..(ctx, []int64{userID})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if len(userInfos) == 0 {
-	//	return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("type", "user"),
-	//		errorx.KV("id", conv.Int64ToStr(userID)))
-	//}
 
 	// 获取用户信息（优化版）
 	userModel, exists, err := u.UserRepo.GetUsersByEmail(ctx, email)
