@@ -21,27 +21,45 @@ import (
 	"errors"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
-type DeleterConfig struct {
-	KnowledgeID      int64
-	KnowledgeDeleter knowledge.KnowledgeOperator
-}
+type DeleterConfig struct{}
 
-type KnowledgeDeleter struct {
-	config *DeleterConfig
-}
-
-func NewKnowledgeDeleter(_ context.Context, cfg *DeleterConfig) (*KnowledgeDeleter, error) {
-	if cfg.KnowledgeDeleter == nil {
-		return nil, errors.New("knowledge deleter is required")
+func (d *DeleterConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeKnowledgeDeleter,
+		Name:    n.Data.Meta.Title,
+		Configs: d,
 	}
-	return &KnowledgeDeleter{
-		config: cfg,
+
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (d *DeleterConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	return &Deleter{
+		knowledgeDeleter: knowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
-func (k *KnowledgeDeleter) Delete(ctx context.Context, input map[string]any) (map[string]any, error) {
+type Deleter struct {
+	knowledgeDeleter knowledge.KnowledgeOperator
+}
+
+func (k *Deleter) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	documentID, ok := input["documentID"].(string)
 	if !ok {
 		return nil, errors.New("documentID is required and must be a string")
@@ -51,7 +69,7 @@ func (k *KnowledgeDeleter) Delete(ctx context.Context, input map[string]any) (ma
 		DocumentID: documentID,
 	}
 
-	response, err := k.config.KnowledgeDeleter.Delete(ctx, req)
+	response, err := k.knowledgeDeleter.Delete(ctx, req)
 	if err != nil {
 		return nil, err
 	}

@@ -23,9 +23,10 @@ import (
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
-func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.NodeKey, opts ...compose.GraphCompileOption) (
+func NewWorkflowFromNode(ctx context.Context, sc *schema.WorkflowSchema, nodeKey vo.NodeKey, opts ...compose.GraphCompileOption) (
 	*Workflow, error) {
 	sc.Init()
 	ns := sc.GetNode(nodeKey)
@@ -37,7 +38,7 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 		schema:            sc,
 		fromNode:          true,
 		streamRun:         false, // single node run can only invoke
-		requireCheckpoint: sc.requireCheckPoint,
+		requireCheckpoint: sc.RequireCheckpoint(),
 		input:             ns.InputTypes,
 		output:            ns.OutputTypes,
 		terminatePlan:     vo.ReturnVariables,

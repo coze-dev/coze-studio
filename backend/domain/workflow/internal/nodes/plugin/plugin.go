@@ -18,16 +18,21 @@ package plugin
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -35,29 +40,76 @@ type Config struct {
 	PluginID      int64
 	ToolID        int64
 	PluginVersion string
+}
 
-	PluginService plugin.Service
+func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypePlugin,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+	inputs := n.Data.Inputs
+
+	apiParams := slices.ToMap(inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+		return e.Name, e
+	})
+
+	ps, ok := apiParams["pluginID"]
+	if !ok {
+		return nil, fmt.Errorf("plugin id param is not found")
+	}
+
+	pID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
+
+	c.PluginID = pID
+
+	ps, ok = apiParams["apiID"]
+	if !ok {
+		return nil, fmt.Errorf("plugin id param is not found")
+	}
+
+	tID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	c.ToolID = tID
+
+	ps, ok = apiParams["pluginVersion"]
+	if !ok {
+		return nil, fmt.Errorf("plugin version param is not found")
+	}
+	version := ps.Input.Value.Content.(string)
+
+	c.PluginVersion = version
+
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	return &Plugin{
+		pluginID:      c.PluginID,
+		toolID:        c.ToolID,
+		pluginVersion: c.PluginVersion,
+		pluginService: plugin.GetPluginService(),
+	}, nil
 }
 
 type Plugin struct {
-	config *Config
-}
+	pluginID      int64
+	toolID        int64
+	pluginVersion string
 
-func NewPlugin(_ context.Context, cfg *Config) (*Plugin, error) {
-	if cfg == nil {
-		return nil, errors.New("config is nil")
-	}
-	if cfg.PluginID == 0 {
-		return nil, errors.New("plugin id is required")
-	}
-	if cfg.ToolID == 0 {
-		return nil, errors.New("tool id is required")
-	}
-	if cfg.PluginService == nil {
-		return nil, errors.New("tool service is required")
-	}
-
-	return &Plugin{config: cfg}, nil
+	pluginService plugin.Service
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
@@ -65,10 +117,10 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 	if ctxExeCfg := execute.GetExeCtx(ctx); ctxExeCfg != nil {
 		exeCfg = ctxExeCfg.ExeCfg
 	}
-	result, err := p.config.PluginService.ExecutePlugin(ctx, parameters, &vo.PluginEntity{
-		PluginID:      p.config.PluginID,
-		PluginVersion: ptr.Of(p.config.PluginVersion),
-	}, p.config.ToolID, exeCfg)
+	result, err := p.pluginService.ExecutePlugin(ctx, parameters, &vo.PluginEntity{
+		PluginID:      p.pluginID,
+		PluginVersion: ptr.Of(p.pluginVersion),
+	}, p.toolID, exeCfg)
 	if err != nil {
 		if extra, ok := compose.IsInterruptRerunError(err); ok {
 			// TODO: temporarily replace interrupt with real error, because frontend cannot handle interrupt for now

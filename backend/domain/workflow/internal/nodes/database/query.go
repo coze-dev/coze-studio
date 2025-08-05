@@ -20,68 +20,137 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type QueryConfig struct {
 	DatabaseInfoID int64
 	QueryFields    []string
 	OrderClauses   []*database.OrderClause
-	OutputConfig   map[string]*vo.TypeInfo
 	ClauseGroup    *database.ClauseGroup
 	Limit          int64
-	Op             database.DatabaseOperator
 }
 
-type Query struct {
-	config *QueryConfig
-}
-
-func NewQuery(_ context.Context, cfg *QueryConfig) (*Query, error) {
-	if cfg == nil {
-		return nil, errors.New("config is required")
+func (q *QueryConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeDatabaseQuery,
+		Name:    n.Data.Meta.Title,
+		Configs: q,
 	}
-	if cfg.DatabaseInfoID == 0 {
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	q.DatabaseInfoID = dsID
+
+	selectParam := n.Data.Inputs.SelectParam
+	q.Limit = selectParam.Limit
+
+	queryFields := make([]string, 0)
+	for _, v := range selectParam.FieldList {
+		queryFields = append(queryFields, strconv.FormatInt(v.FieldID, 10))
+	}
+	q.QueryFields = queryFields
+
+	orderClauses := make([]*database.OrderClause, 0, len(selectParam.OrderByList))
+	for _, o := range selectParam.OrderByList {
+		orderClauses = append(orderClauses, &database.OrderClause{
+			FieldID: strconv.FormatInt(o.FieldID, 10),
+			IsAsc:   o.IsAsc,
+		})
+	}
+	q.OrderClauses = orderClauses
+
+	clauseGroup := &database.ClauseGroup{}
+
+	if selectParam.Condition != nil {
+		clauseGroup, err = buildClauseGroupFromCondition(selectParam.Condition)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	q.ClauseGroup = clauseGroup
+
+	if err = setDatabaseInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (q *QueryConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if q.DatabaseInfoID == 0 {
 		return nil, errors.New("database info id is required and greater than 0")
 	}
 
-	if cfg.Limit == 0 {
+	if q.Limit == 0 {
 		return nil, errors.New("limit is required and greater than 0")
 	}
 
-	if cfg.Op == nil {
-		return nil, errors.New("op is required")
-	}
-
-	return &Query{config: cfg}, nil
-
+	return &Query{
+		databaseInfoID: q.DatabaseInfoID,
+		queryFields:    q.QueryFields,
+		orderClauses:   q.OrderClauses,
+		outputTypes:    ns.OutputTypes,
+		clauseGroup:    q.ClauseGroup,
+		limit:          q.Limit,
+		op:             database.GetDatabaseOperator(),
+	}, nil
 }
 
-func (ds *Query) Query(ctx context.Context, in map[string]any) (map[string]any, error) {
-	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
+type Query struct {
+	databaseInfoID int64
+	queryFields    []string
+	orderClauses   []*database.OrderClause
+	outputTypes    map[string]*vo.TypeInfo
+	clauseGroup    *database.ClauseGroup
+	limit          int64
+	op             database.DatabaseOperator
+}
+
+func (ds *Query) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
+	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, ds.clauseGroup, in)
 	if err != nil {
 		return nil, err
 	}
 
 	req := &database.QueryRequest{
-		DatabaseInfoID: ds.config.DatabaseInfoID,
-		OrderClauses:   ds.config.OrderClauses,
-		SelectFields:   ds.config.QueryFields,
-		Limit:          ds.config.Limit,
+		DatabaseInfoID: ds.databaseInfoID,
+		OrderClauses:   ds.orderClauses,
+		SelectFields:   ds.queryFields,
+		Limit:          ds.limit,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
 
 	req.ConditionGroup = conditionGroup
 
-	response, err := ds.config.Op.Query(ctx, req)
+	response, err := ds.op.Query(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := responseFormatted(ds.config.OutputConfig, response)
+	ret, err := responseFormatted(ds.outputTypes, response)
 	if err != nil {
 		return nil, err
 	}
@@ -93,18 +162,18 @@ func notNeedTakeMapValue(op database.Operator) bool {
 }
 
 func (ds *Query) ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error) {
-	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
+	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, ds.clauseGroup, in)
 	if err != nil {
 		return nil, err
 	}
 
-	return toDatabaseQueryCallbackInput(ds.config, conditionGroup)
+	return ds.toDatabaseQueryCallbackInput(conditionGroup)
 }
 
-func toDatabaseQueryCallbackInput(config *QueryConfig, conditionGroup *database.ConditionGroup) (map[string]any, error) {
+func (ds *Query) toDatabaseQueryCallbackInput(conditionGroup *database.ConditionGroup) (map[string]any, error) {
 	result := make(map[string]any)
 
-	databaseID := config.DatabaseInfoID
+	databaseID := ds.databaseInfoID
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
 	result["selectParam"] = map[string]any{}
 
@@ -116,8 +185,8 @@ func toDatabaseQueryCallbackInput(config *QueryConfig, conditionGroup *database.
 		FieldID    string `json:"fieldId"`
 		IsDistinct bool   `json:"isDistinct"`
 	}
-	fieldList := make([]Field, 0, len(config.QueryFields))
-	for _, f := range config.QueryFields {
+	fieldList := make([]Field, 0, len(ds.queryFields))
+	for _, f := range ds.queryFields {
 		fieldList = append(fieldList, Field{FieldID: f})
 	}
 	type Order struct {
@@ -126,7 +195,7 @@ func toDatabaseQueryCallbackInput(config *QueryConfig, conditionGroup *database.
 	}
 
 	OrderList := make([]Order, 0)
-	for _, c := range config.OrderClauses {
+	for _, c := range ds.orderClauses {
 		OrderList = append(OrderList, Order{
 			FieldID: c.FieldID,
 			IsAsc:   c.IsAsc,
@@ -135,12 +204,11 @@ func toDatabaseQueryCallbackInput(config *QueryConfig, conditionGroup *database.
 	result["selectParam"] = map[string]any{
 		"condition":   condition,
 		"fieldList":   fieldList,
-		"limit":       config.Limit,
+		"limit":       ds.limit,
 		"orderByList": OrderList,
 	}
 
 	return result, nil
-
 }
 
 type ConditionItem struct {
@@ -216,6 +284,5 @@ func convertToLogic(rel database.ClauseRelation) (string, error) {
 		return "AND", nil
 	default:
 		return "", fmt.Errorf("unknown clause relation %v", rel)
-
 	}
 }

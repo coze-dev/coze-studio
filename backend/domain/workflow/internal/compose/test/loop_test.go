@@ -26,15 +26,20 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop"
+	_break "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop/break"
+	_continue "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop/continue"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 func TestLoop(t *testing.T) {
 	t.Run("by iteration", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->continue] -> end
-		innerNode := &compose2.NodeSchema{
+		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
 			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
@@ -54,31 +59,30 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		continueNode := &compose2.NodeSchema{
-			Key:  "continueNode",
-			Type: entity.NodeTypeContinue,
+		continueNode := &schema.NodeSchema{
+			Key:     "continueNode",
+			Type:    entity.NodeTypeContinue,
+			Configs: &_continue.Config{},
 		}
 
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-			Configs: map[string]any{
-				"DefaultValues": map[string]any{},
-			},
+		entryN := &schema.NodeSchema{
+			Key:     entity.EntryNodeKey,
+			Type:    entity.NodeTypeEntry,
+			Configs: &entry.Config{},
 		}
 
-		loopNode := &compose2.NodeSchema{
+		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
 			Type: entity.NodeTypeLoop,
-			Configs: map[string]any{
-				"LoopType": loop.ByIteration,
+			Configs: &loop.Config{
+				LoopType: loop.ByIteration,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{loop.Count},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"count"},
 						},
 					},
@@ -97,11 +101,11 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		exit := &compose2.NodeSchema{
+		exitN := &schema.NodeSchema{
 			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
+			Configs: &exit.Config{
+				TerminatePlan: vo.ReturnVariables,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
@@ -116,11 +120,11 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
-				entry,
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entryN,
 				loopNode,
-				exit,
+				exitN,
 				innerNode,
 				continueNode,
 			},
@@ -128,7 +132,7 @@ func TestLoop(t *testing.T) {
 				"innerNode":    "loop_node_key",
 				"continueNode": "loop_node_key",
 			},
-			Connections: []*compose2.Connection{
+			Connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -142,12 +146,12 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: entry.Key,
+					FromNode: entryN.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   exit.Key,
+					ToNode:   exitN.Key,
 				},
 			},
 		}
@@ -168,7 +172,7 @@ func TestLoop(t *testing.T) {
 
 	t.Run("infinite", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->break] -> end
-		innerNode := &compose2.NodeSchema{
+		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
 			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
@@ -188,24 +192,23 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		breakNode := &compose2.NodeSchema{
-			Key:  "breakNode",
-			Type: entity.NodeTypeBreak,
+		breakNode := &schema.NodeSchema{
+			Key:     "breakNode",
+			Type:    entity.NodeTypeBreak,
+			Configs: &_break.Config{},
 		}
 
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-			Configs: map[string]any{
-				"DefaultValues": map[string]any{},
-			},
+		entryN := &schema.NodeSchema{
+			Key:     entity.EntryNodeKey,
+			Type:    entity.NodeTypeEntry,
+			Configs: &entry.Config{},
 		}
 
-		loopNode := &compose2.NodeSchema{
+		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
 			Type: entity.NodeTypeLoop,
-			Configs: map[string]any{
-				"LoopType": loop.Infinite,
+			Configs: &loop.Config{
+				LoopType: loop.Infinite,
 			},
 			OutputSources: []*vo.FieldInfo{
 				{
@@ -220,11 +223,11 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		exit := &compose2.NodeSchema{
+		exitN := &schema.NodeSchema{
 			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
+			Configs: &exit.Config{
+				TerminatePlan: vo.ReturnVariables,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
@@ -239,11 +242,11 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
-				entry,
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entryN,
 				loopNode,
-				exit,
+				exitN,
 				innerNode,
 				breakNode,
 			},
@@ -251,7 +254,7 @@ func TestLoop(t *testing.T) {
 				"innerNode": "loop_node_key",
 				"breakNode": "loop_node_key",
 			},
-			Connections: []*compose2.Connection{
+			Connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -265,12 +268,12 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: entry.Key,
+					FromNode: entryN.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   exit.Key,
+					ToNode:   exitN.Key,
 				},
 			},
 		}
@@ -290,14 +293,14 @@ func TestLoop(t *testing.T) {
 	t.Run("by array", func(t *testing.T) {
 		// start-> loop_node_key[innerNode->variable_assign] -> end
 
-		innerNode := &compose2.NodeSchema{
+		innerNode := &schema.NodeSchema{
 			Key:  "innerNode",
 			Type: entity.NodeTypeLambda,
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				item1 := in["item1"].(string)
 				item2 := in["item2"].(string)
 				count := in["count"].(int)
-				return map[string]any{"total": int(count) + len(item1) + len(item2)}, nil
+				return map[string]any{"total": count + len(item1) + len(item2)}, nil
 			}),
 			InputSources: []*vo.FieldInfo{
 				{
@@ -330,16 +333,18 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		assigner := &compose2.NodeSchema{
+		assigner := &schema.NodeSchema{
 			Key:  "assigner",
 			Type: entity.NodeTypeVariableAssignerWithinLoop,
-			Configs: []*variableassigner.Pair{
-				{
-					Left: vo.Reference{
-						FromPath:     compose.FieldPath{"count"},
-						VariableType: ptr.Of(vo.ParentIntermediate),
+			Configs: &variableassigner.InLoopConfig{
+				Pairs: []*variableassigner.Pair{
+					{
+						Left: vo.Reference{
+							FromPath:     compose.FieldPath{"count"},
+							VariableType: ptr.Of(vo.ParentIntermediate),
+						},
+						Right: compose.FieldPath{"total"},
 					},
-					Right: compose.FieldPath{"total"},
 				},
 			},
 			InputSources: []*vo.FieldInfo{
@@ -355,19 +360,17 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		entry := &compose2.NodeSchema{
-			Key:  entity.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-			Configs: map[string]any{
-				"DefaultValues": map[string]any{},
-			},
+		entryN := &schema.NodeSchema{
+			Key:     entity.EntryNodeKey,
+			Type:    entity.NodeTypeEntry,
+			Configs: &entry.Config{},
 		}
 
-		exit := &compose2.NodeSchema{
+		exitN := &schema.NodeSchema{
 			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
+			Configs: &exit.Config{
+				TerminatePlan: vo.ReturnVariables,
 			},
 			InputSources: []*vo.FieldInfo{
 				{
@@ -382,12 +385,13 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		loopNode := &compose2.NodeSchema{
+		loopNode := &schema.NodeSchema{
 			Key:  "loop_node_key",
 			Type: entity.NodeTypeLoop,
-			Configs: map[string]any{
-				"LoopType": loop.ByArray,
-				"IntermediateVars": map[string]*vo.TypeInfo{
+			Configs: &loop.Config{
+				LoopType:    loop.ByArray,
+				InputArrays: []string{"items1", "items2"},
+				IntermediateVars: map[string]*vo.TypeInfo{
 					"count": {
 						Type: vo.DataTypeInteger,
 					},
@@ -408,7 +412,7 @@ func TestLoop(t *testing.T) {
 					Path: compose.FieldPath{"items1"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"items1"},
 						},
 					},
@@ -417,7 +421,7 @@ func TestLoop(t *testing.T) {
 					Path: compose.FieldPath{"items2"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: entry.Key,
+							FromNodeKey: entryN.Key,
 							FromPath:    compose.FieldPath{"items2"},
 						},
 					},
@@ -442,11 +446,11 @@ func TestLoop(t *testing.T) {
 			},
 		}
 
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
-				entry,
+		ws := &schema.WorkflowSchema{
+			Nodes: []*schema.NodeSchema{
+				entryN,
 				loopNode,
-				exit,
+				exitN,
 				innerNode,
 				assigner,
 			},
@@ -454,7 +458,7 @@ func TestLoop(t *testing.T) {
 				"innerNode": "loop_node_key",
 				"assigner":  "loop_node_key",
 			},
-			Connections: []*compose2.Connection{
+			Connections: []*schema.Connection{
 				{
 					FromNode: "loop_node_key",
 					ToNode:   "innerNode",
@@ -468,12 +472,12 @@ func TestLoop(t *testing.T) {
 					ToNode:   "loop_node_key",
 				},
 				{
-					FromNode: entry.Key,
+					FromNode: entryN.Key,
 					ToNode:   "loop_node_key",
 				},
 				{
 					FromNode: "loop_node_key",
-					ToNode:   exit.Key,
+					ToNode:   exitN.Key,
 				},
 			},
 		}

@@ -93,8 +93,8 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 
 	toQueryTypes := make(map[entity.NodeType]bool)
 	for _, t := range req.NodeTypes {
-		entityType, err := nodeType2EntityNodeType(t)
-		if err != nil {
+		entityType := entity.IDStrToNodeType(t)
+		if len(entityType) == 0 {
 			logs.Warnf("get node type %v failed, err:=%v", t, err)
 			continue
 		}
@@ -116,23 +116,19 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			Name: category,
 		}
 		for _, nodeMeta := range nodeMetaList {
-			tplType, err := entityNodeTypeToAPINodeTemplateType(nodeMeta.Type)
-			if err != nil {
-				return nil, err
-			}
 			tpl := &workflow.NodeTemplate{
 				ID:           fmt.Sprintf("%d", nodeMeta.ID),
-				Type:         tplType,
+				Type:         workflow.NodeTemplateType(nodeMeta.ID),
 				Name:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSName, nodeMeta.Name),
 				Desc:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSDescription, nodeMeta.Desc),
 				IconURL:      nodeMeta.IconURL,
 				SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
-				NodeType:     fmt.Sprintf("%d", tplType),
+				NodeType:     fmt.Sprintf("%d", nodeMeta.ID),
 				Color:        nodeMeta.Color,
 			}
 
 			resp.Data.TemplateList = append(resp.Data.TemplateList, tpl)
-			categoryMap[category].NodeTypeList = append(categoryMap[category].NodeTypeList, fmt.Sprintf("%d", tplType))
+			categoryMap[category].NodeTypeList = append(categoryMap[category].NodeTypeList, fmt.Sprintf("%d", nodeMeta.ID))
 		}
 	}
 
@@ -178,7 +174,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		IconURI:          req.IconURI,
 		AppID:            parseInt64(req.ProjectID),
 		Mode:             ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
-		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(i18n.GetLocale(ctx)),
+		InitCanvasSchema: vo.GetDefaultInitCanvasJsonSchema(i18n.GetLocale(ctx)),
 	}
 
 	id, err := GetWorkflowDomainSVC().Create(ctx, wf)
@@ -1041,7 +1037,8 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 	return wf.ID, nil
 }
 
-func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (_ int64, _ []*vo.ValidateIssue, err error) {
+func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, /*not used for now*/
+	appID int64) (_ int64, _ []*vo.ValidateIssue, err error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1127,15 +1124,10 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
-	nType, err := entityNodeTypeToAPINodeTemplateType(nodeExe.NodeType)
-	if err != nil {
-		return nil, err
-	}
-
 	nr := &workflow.NodeResult{
 		NodeId:      nodeExe.NodeID,
 		NodeName:    nodeExe.NodeName,
-		NodeType:    nType.String(),
+		NodeType:    entity.NodeMetaByNodeType(nodeExe.NodeType).GetDisplayKey(),
 		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
 		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
 		Input:       ptr.FromOrDefault(nodeExe.Input, ""),
@@ -1316,13 +1308,6 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return nil, schema.ErrNoValue
 			}
 
-			var nodeType workflow.NodeTemplateType
-			nodeType, err = entityNodeTypeToAPINodeTemplateType(msg.NodeType)
-			if err != nil {
-				logs.Errorf("convert node type %v failed, err:=%v", msg.NodeType, err)
-				nodeType = workflow.NodeTemplateType(0)
-			}
-
 			res = &workflow.OpenAPIStreamRunFlowResponse{
 				ID:           strconv.Itoa(messageID),
 				Event:        string(MessageEvent),
@@ -1330,7 +1315,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				Content:      ptr.Of(msg.Content),
 				ContentType:  ptr.Of("text"),
 				NodeIsFinish: ptr.Of(msg.Last),
-				NodeType:     ptr.Of(nodeType.String()),
+				NodeType:     ptr.Of(entity.NodeMetaByNodeType(msg.NodeType).GetDisplayKey()),
 				NodeID:       ptr.Of(msg.NodeID),
 			}
 
@@ -3344,178 +3329,6 @@ func toWorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {
 	return wp, nil
 }
 
-func nodeType2EntityNodeType(t string) (entity.NodeType, error) {
-	i, err := strconv.Atoi(t)
-	if err != nil {
-		return "", fmt.Errorf("invalid node type string '%s': %w", t, err)
-	}
-
-	switch i {
-	case 1:
-		return entity.NodeTypeEntry, nil
-	case 2:
-		return entity.NodeTypeExit, nil
-	case 3:
-		return entity.NodeTypeLLM, nil
-	case 4:
-		return entity.NodeTypePlugin, nil
-	case 5:
-		return entity.NodeTypeCodeRunner, nil
-	case 6:
-		return entity.NodeTypeKnowledgeRetriever, nil
-	case 8:
-		return entity.NodeTypeSelector, nil
-	case 9:
-		return entity.NodeTypeSubWorkflow, nil
-	case 12:
-		return entity.NodeTypeDatabaseCustomSQL, nil
-	case 13:
-		return entity.NodeTypeOutputEmitter, nil
-	case 15:
-		return entity.NodeTypeTextProcessor, nil
-	case 18:
-		return entity.NodeTypeQuestionAnswer, nil
-	case 19:
-		return entity.NodeTypeBreak, nil
-	case 20:
-		return entity.NodeTypeVariableAssignerWithinLoop, nil
-	case 21:
-		return entity.NodeTypeLoop, nil
-	case 22:
-		return entity.NodeTypeIntentDetector, nil
-	case 27:
-		return entity.NodeTypeKnowledgeIndexer, nil
-	case 28:
-		return entity.NodeTypeBatch, nil
-	case 29:
-		return entity.NodeTypeContinue, nil
-	case 30:
-		return entity.NodeTypeInputReceiver, nil
-	case 32:
-		return entity.NodeTypeVariableAggregator, nil
-	case 37:
-		return entity.NodeTypeMessageList, nil
-	case 38:
-		return entity.NodeTypeClearMessage, nil
-	case 39:
-		return entity.NodeTypeCreateConversation, nil
-	case 40:
-		return entity.NodeTypeVariableAssigner, nil
-	case 42:
-		return entity.NodeTypeDatabaseUpdate, nil
-	case 43:
-		return entity.NodeTypeDatabaseQuery, nil
-	case 44:
-		return entity.NodeTypeDatabaseDelete, nil
-	case 45:
-		return entity.NodeTypeHTTPRequester, nil
-	case 46:
-		return entity.NodeTypeDatabaseInsert, nil
-	case 58:
-		return entity.NodeTypeJsonSerialization, nil
-	case 59:
-		return entity.NodeTypeJsonDeserialization, nil
-	case 60:
-		return entity.NodeTypeKnowledgeDeleter, nil
-	default:
-		// Handle all unknown or unsupported types here
-		return "", fmt.Errorf("unsupported or unknown node type ID: %d", i)
-	}
-}
-
-// entityNodeTypeToAPINodeTemplateType converts an entity.NodeType to the corresponding workflow.NodeTemplateType.
-func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.NodeTemplateType, error) {
-	switch nodeType {
-	case entity.NodeTypeEntry:
-		return workflow.NodeTemplateType_Start, nil
-	case entity.NodeTypeExit:
-		return workflow.NodeTemplateType_End, nil
-	case entity.NodeTypeLLM:
-		return workflow.NodeTemplateType_LLM, nil
-	case entity.NodeTypePlugin:
-		// Maps to Api type in the API model
-		return workflow.NodeTemplateType_Api, nil
-	case entity.NodeTypeCodeRunner:
-		return workflow.NodeTemplateType_Code, nil
-	case entity.NodeTypeKnowledgeRetriever:
-		// Maps to Dataset type in the API model
-		return workflow.NodeTemplateType_Dataset, nil
-	case entity.NodeTypeSelector:
-		// Maps to If type in the API model
-		return workflow.NodeTemplateType_If, nil
-	case entity.NodeTypeSubWorkflow:
-		return workflow.NodeTemplateType_SubWorkflow, nil
-	case entity.NodeTypeDatabaseCustomSQL:
-		// Maps to the generic Database type in the API model
-		return workflow.NodeTemplateType_Database, nil
-	case entity.NodeTypeOutputEmitter:
-		// Maps to Message type in the API model
-		return workflow.NodeTemplateType_Message, nil
-	case entity.NodeTypeTextProcessor:
-		return workflow.NodeTemplateType_Text, nil
-	case entity.NodeTypeQuestionAnswer:
-		return workflow.NodeTemplateType_Question, nil
-	case entity.NodeTypeBreak:
-		return workflow.NodeTemplateType_Break, nil
-	case entity.NodeTypeVariableAssigner:
-		return workflow.NodeTemplateType_AssignVariable, nil
-	case entity.NodeTypeVariableAssignerWithinLoop:
-		return workflow.NodeTemplateType_LoopSetVariable, nil
-	case entity.NodeTypeLoop:
-		return workflow.NodeTemplateType_Loop, nil
-	case entity.NodeTypeIntentDetector:
-		return workflow.NodeTemplateType_Intent, nil
-	case entity.NodeTypeKnowledgeIndexer:
-		// Maps to DatasetWrite type in the API model
-		return workflow.NodeTemplateType_DatasetWrite, nil
-	case entity.NodeTypeBatch:
-		return workflow.NodeTemplateType_Batch, nil
-	case entity.NodeTypeContinue:
-		return workflow.NodeTemplateType_Continue, nil
-	case entity.NodeTypeInputReceiver:
-		return workflow.NodeTemplateType_Input, nil
-	case entity.NodeTypeMessageList:
-		return workflow.NodeTemplateType(37), nil
-	case entity.NodeTypeVariableAggregator:
-		return workflow.NodeTemplateType(32), nil
-	case entity.NodeTypeClearMessage:
-		return workflow.NodeTemplateType(38), nil
-	case entity.NodeTypeCreateConversation:
-		return workflow.NodeTemplateType(39), nil
-	// Note: entity.NodeTypeVariableAggregator (ID 32) has no direct mapping in NodeTemplateType
-	// Note: entity.NodeTypeMessageList (ID 37) has no direct mapping in NodeTemplateType
-	// Note: entity.NodeTypeClearMessage (ID 38) has no direct mapping in NodeTemplateType
-	// Note: entity.NodeTypeCreateConversation (ID 39) has no direct mapping in NodeTemplateType
-	case entity.NodeTypeDatabaseUpdate:
-		return workflow.NodeTemplateType_DatabaseUpdate, nil
-	case entity.NodeTypeDatabaseQuery:
-		// Maps to DatabasesELECT (ID 43) in the API model (note potential typo)
-		return workflow.NodeTemplateType_DatabasesELECT, nil
-	case entity.NodeTypeDatabaseDelete:
-		return workflow.NodeTemplateType_DatabaseDelete, nil
-
-	// Note: entity.NodeTypeHTTPRequester (ID 45) has no direct mapping in NodeTemplateType
-	case entity.NodeTypeHTTPRequester:
-		return workflow.NodeTemplateType(45), nil
-
-	case entity.NodeTypeDatabaseInsert:
-		// Maps to DatabaseInsert (ID 41) in the API model, despite entity ID being 46.
-		// return workflow.NodeTemplateType_DatabaseInsert, nil
-		return workflow.NodeTemplateType(46), nil
-	case entity.NodeTypeJsonSerialization:
-		return workflow.NodeTemplateType(58), nil
-	case entity.NodeTypeJsonDeserialization:
-		return workflow.NodeTemplateType_JsonDeserialization, nil
-	case entity.NodeTypeKnowledgeDeleter:
-		return workflow.NodeTemplateType_DatasetDelete, nil
-	case entity.NodeTypeLambda:
-		return 0, nil
-	default:
-		// Handle entity types that don't have a corresponding NodeTemplateType
-		return workflow.NodeTemplateType(0), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
-	}
-}
-
 func i64PtrToStringPtr(i *int64) *string {
 	if i == nil {
 		return nil
@@ -3761,7 +3574,7 @@ func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, ex
 func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
 	var endNode *vo.Node
 	for _, n := range c.Nodes {
-		if n.Type == vo.BlockTypeBotEnd {
+		if n.Type == entity.NodeTypeExit.IDStr() {
 			endNode = n
 			break
 		}

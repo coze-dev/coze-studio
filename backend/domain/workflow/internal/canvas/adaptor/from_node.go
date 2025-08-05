@@ -26,10 +26,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
-	*compose.WorkflowSchema, error) {
+	*schema.WorkflowSchema, error) {
 	var (
 		n          *vo.Node
 		nodeFinder func(nodes []*vo.Node) *vo.Node
@@ -62,35 +63,27 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		n = batchN
 	}
 
-	implicitDependencies, err := extractImplicitDependency(n, c.Nodes)
-	if err != nil {
-		return nil, err
-	}
-	opts := make([]OptionFn, 0, 1)
-	if len(implicitDependencies) > 0 {
-		opts = append(opts, WithImplicitNodeDependencies(implicitDependencies))
-	}
-	nsList, hierarchy, err := NodeToNodeSchema(ctx, n, opts...)
+	nsList, hierarchy, err := NodeToNodeSchema(ctx, n, c)
 	if err != nil {
 		return nil, err
 	}
 
 	var (
-		ns          *compose.NodeSchema
-		innerNodes  map[vo.NodeKey]*compose.NodeSchema // inner nodes of the composite node if nodeKey is composite
-		connections []*compose.Connection
+		ns          *schema.NodeSchema
+		innerNodes  map[vo.NodeKey]*schema.NodeSchema // inner nodes of the composite node if nodeKey is composite
+		connections []*schema.Connection
 	)
 
 	if len(nsList) == 1 {
 		ns = nsList[0]
 	} else {
-		innerNodes = make(map[vo.NodeKey]*compose.NodeSchema)
+		innerNodes = make(map[vo.NodeKey]*schema.NodeSchema)
 		for i := range nsList {
 			one := nsList[i]
 			if _, ok := hierarchy[one.Key]; ok {
 				innerNodes[one.Key] = one
 				if one.Type == entity.NodeTypeContinue || one.Type == entity.NodeTypeBreak {
-					connections = append(connections, &compose.Connection{
+					connections = append(connections, &schema.Connection{
 						FromNode: one.Key,
 						ToNode:   vo.NodeKey(nodeID),
 					})
@@ -106,13 +99,13 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 	}
 
 	const inputFillerKey = "input_filler"
-	connections = append(connections, &compose.Connection{
+	connections = append(connections, &schema.Connection{
 		FromNode: einoCompose.START,
 		ToNode:   inputFillerKey,
-	}, &compose.Connection{
+	}, &schema.Connection{
 		FromNode: inputFillerKey,
 		ToNode:   ns.Key,
-	}, &compose.Connection{
+	}, &schema.Connection{
 		FromNode: ns.Key,
 		ToNode:   einoCompose.END,
 	})
@@ -209,7 +202,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		return newOutput, nil
 	}
 
-	inputFiller := &compose.NodeSchema{
+	inputFiller := &schema.NodeSchema{
 		Key:    inputFillerKey,
 		Type:   entity.NodeTypeLambda,
 		Lambda: einoCompose.InvokableLambda(i),
@@ -227,10 +220,16 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		OutputTypes: startOutputTypes,
 	}
 
-	trimmedSC := &compose.WorkflowSchema{
-		Nodes:       append([]*compose.NodeSchema{ns, inputFiller}, maps.Values(innerNodes)...),
+	branches, err := schema.BuildBranches(connections)
+	if err != nil {
+		return nil, err
+	}
+
+	trimmedSC := &schema.WorkflowSchema{
+		Nodes:       append([]*schema.NodeSchema{ns, inputFiller}, maps.Values(innerNodes)...),
 		Connections: connections,
 		Hierarchy:   hierarchy,
+		Branches:    branches,
 	}
 
 	if enabled {

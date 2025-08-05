@@ -24,7 +24,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/cast"
+
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
@@ -32,30 +39,88 @@ type IndexerConfig struct {
 	KnowledgeID      int64
 	ParsingStrategy  *knowledge.ParsingStrategy
 	ChunkingStrategy *knowledge.ChunkingStrategy
-	KnowledgeIndexer knowledge.KnowledgeOperator
 }
 
-type KnowledgeIndexer struct {
-	config *IndexerConfig
+func (i *IndexerConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeKnowledgeIndexer,
+		Name:    n.Data.Meta.Title,
+		Configs: i,
+	}
+
+	inputs := n.Data.Inputs
+	datasetListInfoParam := inputs.DatasetParam[0]
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+	if len(datasetIDs) == 0 {
+		return nil, fmt.Errorf("dataset ids is required")
+	}
+	knowledgeID, err := cast.ToInt64E(datasetIDs[0])
+	if err != nil {
+		return nil, err
+	}
+
+	i.KnowledgeID = knowledgeID
+	ps := inputs.StrategyParam.ParsingStrategy
+	parseMode, err := convertParsingType(ps.ParsingType)
+	if err != nil {
+		return nil, err
+	}
+	parsingStrategy := &knowledge.ParsingStrategy{
+		ParseMode:    parseMode,
+		ImageOCR:     ps.ImageOcr,
+		ExtractImage: ps.ImageExtraction,
+		ExtractTable: ps.TableExtraction,
+	}
+	i.ParsingStrategy = parsingStrategy
+
+	cs := inputs.StrategyParam.ChunkStrategy
+	chunkType, err := convertChunkType(cs.ChunkType)
+	if err != nil {
+		return nil, err
+	}
+	chunkingStrategy := &knowledge.ChunkingStrategy{
+		ChunkType: chunkType,
+		Separator: cs.Separator,
+		ChunkSize: cs.MaxToken,
+		Overlap:   int64(cs.Overlap * float64(cs.MaxToken)),
+	}
+	i.ChunkingStrategy = chunkingStrategy
+
+	if err = convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
 
-func NewKnowledgeIndexer(_ context.Context, cfg *IndexerConfig) (*KnowledgeIndexer, error) {
-	if cfg.ParsingStrategy == nil {
+func (i *IndexerConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if i.ParsingStrategy == nil {
 		return nil, errors.New("parsing strategy is required")
 	}
-	if cfg.ChunkingStrategy == nil {
+	if i.ChunkingStrategy == nil {
 		return nil, errors.New("chunking strategy is required")
 	}
-	if cfg.KnowledgeIndexer == nil {
-		return nil, errors.New("knowledge indexer is required")
-	}
-	return &KnowledgeIndexer{
-		config: cfg,
+	return &Indexer{
+		knowledgeID:      i.KnowledgeID,
+		parsingStrategy:  i.ParsingStrategy,
+		chunkingStrategy: i.ChunkingStrategy,
+		knowledgeIndexer: knowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
-func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map[string]any, error) {
+type Indexer struct {
+	knowledgeID      int64
+	parsingStrategy  *knowledge.ParsingStrategy
+	chunkingStrategy *knowledge.ChunkingStrategy
+	knowledgeIndexer knowledge.KnowledgeOperator
+}
 
+func (k *Indexer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	fileURL, ok := input["knowledge"].(string)
 	if !ok {
 		return nil, errors.New("knowledge is required")
@@ -68,15 +133,15 @@ func (k *KnowledgeIndexer) Store(ctx context.Context, input map[string]any) (map
 	}
 
 	req := &knowledge.CreateDocumentRequest{
-		KnowledgeID:      k.config.KnowledgeID,
-		ParsingStrategy:  k.config.ParsingStrategy,
-		ChunkingStrategy: k.config.ChunkingStrategy,
+		KnowledgeID:      k.knowledgeID,
+		ParsingStrategy:  k.parsingStrategy,
+		ChunkingStrategy: k.chunkingStrategy,
 		FileURL:          fileURL,
 		FileName:         fileName,
 		FileExtension:    ext,
 	}
 
-	response, err := k.config.KnowledgeIndexer.Store(ctx, req)
+	response, err := k.knowledgeIndexer.Store(ctx, req)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package loop
+package _break
 
 import (
 	"context"
@@ -22,21 +22,36 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type Break struct {
 	parentIntermediateStore variable.Store
 }
 
-func NewBreak(_ context.Context, store variable.Store) (*Break, error) {
+type Config struct{}
+
+func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	return &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeBreak,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}, nil
+}
+
+func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
 	return &Break{
-		parentIntermediateStore: store,
+		parentIntermediateStore: &nodes.ParentIntermediateStore{},
 	}, nil
 }
 
 const BreakKey = "$break"
 
-func (b *Break) DoBreak(ctx context.Context, _ map[string]any) (map[string]any, error) {
+func (b *Break) Invoke(ctx context.Context, _ map[string]any) (map[string]any, error) {
 	err := b.parentIntermediateStore.Set(ctx, compose.FieldPath{BreakKey}, true)
 	if err != nil {
 		return nil, err

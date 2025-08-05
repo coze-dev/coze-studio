@@ -20,47 +20,93 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
-	OutputConfig   map[string]*vo.TypeInfo
-	Updater        database.DatabaseOperator
+}
+
+func (u *UpdateConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeDatabaseUpdate,
+		Name:    n.Data.Meta.Title,
+		Configs: u,
+	}
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	u.DatabaseInfoID = dsID
+
+	updateParam := n.Data.Inputs.UpdateParam
+	if updateParam == nil {
+		return nil, fmt.Errorf("update param is requird")
+	}
+	clauseGroup, err := buildClauseGroupFromCondition(&updateParam.Condition)
+	if err != nil {
+		return nil, err
+	}
+	u.ClauseGroup = clauseGroup
+
+	if err = setDatabaseInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (u *UpdateConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if u.DatabaseInfoID == 0 {
+		return nil, errors.New("database info id is required and greater than 0")
+	}
+
+	if u.ClauseGroup == nil {
+		return nil, errors.New("clause group is required and greater than 0")
+	}
+
+	return &Update{
+		databaseInfoID: u.DatabaseInfoID,
+		clauseGroup:    u.ClauseGroup,
+		outputTypes:    ns.OutputTypes,
+		updater:        database.GetDatabaseOperator(),
+	}, nil
 }
 
 type Update struct {
-	config *UpdateConfig
+	databaseInfoID int64
+	clauseGroup    *database.ClauseGroup
+	outputTypes    map[string]*vo.TypeInfo
+	updater        database.DatabaseOperator
 }
-type UpdateInventory struct {
+
+type updateInventory struct {
 	ConditionGroup *database.ConditionGroup
 	Fields         map[string]any
 }
 
-func NewUpdate(_ context.Context, cfg *UpdateConfig) (*Update, error) {
-	if cfg == nil {
-		return nil, errors.New("config is required")
-	}
-	if cfg.DatabaseInfoID == 0 {
-		return nil, errors.New("database info id is required and greater than 0")
-	}
-
-	if cfg.ClauseGroup == nil {
-		return nil, errors.New("clause group is required and greater than 0")
-	}
-
-	if cfg.Updater == nil {
-		return nil, errors.New("updater is required")
-	}
-
-	return &Update{config: cfg}, nil
-}
-
-func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any, error) {
-	inventory, err := convertClauseGroupToUpdateInventory(ctx, u.config.ClauseGroup, in)
+func (u *Update) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
+	inventory, err := convertClauseGroupToUpdateInventory(ctx, u.clauseGroup, in)
 	if err != nil {
 		return nil, err
 	}
@@ -72,20 +118,20 @@ func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any,
 	}
 
 	req := &database.UpdateRequest{
-		DatabaseInfoID: u.config.DatabaseInfoID,
+		DatabaseInfoID: u.databaseInfoID,
 		ConditionGroup: inventory.ConditionGroup,
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
 
-	response, err := u.config.Updater.Update(ctx, req)
+	response, err := u.updater.Update(ctx, req)
 
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := responseFormatted(u.config.OutputConfig, response)
+	ret, err := responseFormatted(u.outputTypes, response)
 	if err != nil {
 		return nil, err
 	}
@@ -94,15 +140,15 @@ func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any,
 }
 
 func (u *Update) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
-	inventory, err := convertClauseGroupToUpdateInventory(context.Background(), u.config.ClauseGroup, in)
+	inventory, err := convertClauseGroupToUpdateInventory(context.Background(), u.clauseGroup, in)
 	if err != nil {
 		return nil, err
 	}
 	return u.toDatabaseUpdateCallbackInput(inventory)
 }
 
-func (u *Update) toDatabaseUpdateCallbackInput(inventory *UpdateInventory) (map[string]any, error) {
-	databaseID := u.config.DatabaseInfoID
+func (u *Update) toDatabaseUpdateCallbackInput(inventory *updateInventory) (map[string]any, error) {
+	databaseID := u.databaseInfoID
 	result := make(map[string]any)
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
 	result["updateParam"] = map[string]any{}
@@ -128,6 +174,6 @@ func (u *Update) toDatabaseUpdateCallbackInput(inventory *UpdateInventory) (map[
 		"condition": condition,
 		"fieldInfo": fieldInfo,
 	}
-	return result, nil
 
+	return result, nil
 }
