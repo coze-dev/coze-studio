@@ -25,6 +25,10 @@ import (
 
 	"golang.org/x/exp/maps"
 
+	code2 "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -113,48 +117,75 @@ var pythonThirdPartyWhitelist = map[string]struct{}{
 }
 
 type Config struct {
-	Code         string
-	Language     coderunner.Language
-	OutputConfig map[string]*vo.TypeInfo
-	Runner       coderunner.Runner
+	Code     string
+	Language coderunner.Language
+
+	Runner coderunner.Runner
 }
 
-type CodeRunner struct {
-	config      *Config
-	importError error
+func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeCodeRunner,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+	inputs := n.Data.Inputs
+
+	code := inputs.Code
+	c.Code = code
+
+	language, err := convertCodeLanguage(inputs.Language)
+	if err != nil {
+		return nil, err
+	}
+	c.Language = language
+
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
 
-func NewCodeRunner(ctx context.Context, cfg *Config) (*CodeRunner, error) {
-	if cfg == nil {
-		return nil, errors.New("cfg is required")
+func convertCodeLanguage(l int64) (coderunner.Language, error) {
+	switch l {
+	case 5:
+		return coderunner.JavaScript, nil
+	case 3:
+		return coderunner.Python, nil
+	default:
+		return "", fmt.Errorf("invalid language: %d", l)
 	}
+}
 
-	if cfg.Language == "" {
-		return nil, errors.New("language is required")
-	}
+func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
 
-	if cfg.Code == "" {
-		return nil, errors.New("code is required")
-	}
-
-	if cfg.Language != coderunner.Python {
+	if c.Language != coderunner.Python {
 		return nil, errors.New("only support python language")
 	}
 
-	if len(cfg.OutputConfig) == 0 {
-		return nil, errors.New("output config is required")
-	}
+	importErr := validatePythonImports(c.Code)
 
-	if cfg.Runner == nil {
-		return nil, errors.New("run coder is required")
-	}
-
-	importErr := validatePythonImports(cfg.Code)
-
-	return &CodeRunner{
-		config:      cfg,
-		importError: importErr,
+	return &Runner{
+		code:         c.Code,
+		language:     c.Language,
+		outputConfig: ns.OutputTypes,
+		runner:       code2.GetCodeRunner(),
+		importError:  importErr,
 	}, nil
+}
+
+type Runner struct {
+	outputConfig map[string]*vo.TypeInfo
+	code         string
+	language     coderunner.Language
+	runner       coderunner.Runner
+	importError  error
 }
 
 func validatePythonImports(code string) error {
@@ -191,11 +222,11 @@ func validatePythonImports(code string) error {
 	return nil
 }
 
-func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
+func (c *Runner) Invoke(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
 	if c.importError != nil {
 		return nil, vo.WrapError(errno.ErrCodeExecuteFail, c.importError, errorx.KV("detail", c.importError.Error()))
 	}
-	response, err := c.config.Runner.Run(ctx, &coderunner.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
+	response, err := c.runner.Run(ctx, &coderunner.RunRequest{Code: c.code, Language: c.language, Params: input})
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
 	}
@@ -203,7 +234,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 	result := response.Result
 	ctxcache.Store(ctx, coderRunnerRawOutputCtxKey, result)
 
-	output, ws, err := nodes.ConvertInputs(ctx, result, c.config.OutputConfig)
+	output, ws, err := nodes.ConvertInputs(ctx, result, c.outputConfig)
 	if err != nil {
 		return nil, vo.WrapIfNeeded(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
 	}
@@ -217,7 +248,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 
 }
 
-func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
+func (c *Runner) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
 	rawOutput, ok := ctxcache.Get[map[string]any](ctx, coderRunnerRawOutputCtxKey)
 	if !ok {
 		return nil, errors.New("raw output config is required")

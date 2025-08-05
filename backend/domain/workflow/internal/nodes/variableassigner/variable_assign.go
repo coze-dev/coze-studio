@@ -25,29 +25,75 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type VariableAssigner struct {
-	config *Config
+	pairs   []*Pair
+	handler *variable.Handler
 }
 
 type Config struct {
-	Pairs   []*Pair
-	Handler *variable.Handler
+	Pairs []*Pair
 }
 
-type Pair struct {
-	Left  vo.Reference
-	Right compose.FieldPath
+func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeVariableAssigner,
+		Name:    n.Data.Meta.Title,
+		Configs: c,
+	}
+
+	var pairs = make([]*Pair, 0, len(n.Data.Inputs.InputParameters))
+	for i, param := range n.Data.Inputs.InputParameters {
+		if param.Left == nil || param.Input == nil {
+			return nil, fmt.Errorf("variable assigner node's param left or input is nil")
+		}
+
+		leftSources, err := convert.CanvasBlockInputToFieldInfo(param.Left, compose.FieldPath{fmt.Sprintf("left_%d", i)}, n.Parent())
+		if err != nil {
+			return nil, err
+		}
+
+		if leftSources[0].Source.Ref == nil {
+			return nil, fmt.Errorf("variable assigner node's param left source ref is nil")
+		}
+
+		if leftSources[0].Source.Ref.VariableType == nil {
+			return nil, fmt.Errorf("variable assigner node's param left source ref's variable type is nil")
+		}
+
+		if *leftSources[0].Source.Ref.VariableType == vo.GlobalSystem {
+			return nil, fmt.Errorf("variable assigner node's param left's ref's variable type cannot be variable.GlobalSystem")
+		}
+
+		inputSource, err := convert.CanvasBlockInputToFieldInfo(param.Input, leftSources[0].Source.Ref.FromPath, n.Parent())
+		if err != nil {
+			return nil, err
+		}
+		ns.AddInputSource(inputSource...)
+		pair := &Pair{
+			Left:  *leftSources[0].Source.Ref,
+			Right: inputSource[0].Path,
+		}
+		pairs = append(pairs, pair)
+	}
+
+	c.Pairs = pairs
+
+	return ns, nil
 }
 
-func NewVariableAssigner(_ context.Context, conf *Config) (*VariableAssigner, error) {
-	for _, pair := range conf.Pairs {
+func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	for _, pair := range c.Pairs {
 		if pair.Left.VariableType == nil {
 			return nil, fmt.Errorf("cannot assign to output of nodes in VariableAssigner, ref: %v", pair.Left)
 		}
@@ -63,12 +109,18 @@ func NewVariableAssigner(_ context.Context, conf *Config) (*VariableAssigner, er
 	}
 
 	return &VariableAssigner{
-		config: conf,
+		pairs:   c.Pairs,
+		handler: variable.GetVariableHandler(),
 	}, nil
 }
 
-func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[string]any, error) {
-	for _, pair := range v.config.Pairs {
+type Pair struct {
+	Left  vo.Reference
+	Right compose.FieldPath
+}
+
+func (v *VariableAssigner) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
+	for _, pair := range v.pairs {
 		right, ok := nodes.TakeMapValue(in, pair.Right)
 		if !ok {
 			return nil, vo.NewError(errno.ErrInputFieldMissing, errorx.KV("name", strings.Join(pair.Right, ".")))
@@ -98,7 +150,7 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[s
 					ConnectorUID: exeCfg.ConnectorUID,
 				}))
 			}
-			err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right, opts...)
+			err := v.handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right, opts...)
 			if err != nil {
 				return nil, vo.WrapIfNeeded(errno.ErrVariablesAPIFail, err)
 			}

@@ -20,54 +20,84 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type InsertConfig struct {
 	DatabaseInfoID int64
-	OutputConfig   map[string]*vo.TypeInfo
-	Inserter       database.DatabaseOperator
 }
 
-type Insert struct {
-	config *InsertConfig
-}
-
-func NewInsert(_ context.Context, cfg *InsertConfig) (*Insert, error) {
-	if cfg == nil {
-		return nil, errors.New("config is required")
+func (i *InsertConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeDatabaseInsert,
+		Name:    n.Data.Meta.Title,
+		Configs: i,
 	}
-	if cfg.DatabaseInfoID == 0 {
+
+	dsList := n.Data.Inputs.DatabaseInfoList
+	if len(dsList) == 0 {
+		return nil, fmt.Errorf("database info is requird")
+	}
+	databaseInfo := dsList[0]
+
+	dsID, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	i.DatabaseInfoID = dsID
+
+	if err = setDatabaseInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err = convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (i *InsertConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	if i.DatabaseInfoID == 0 {
 		return nil, errors.New("database info id is required and greater than 0")
 	}
 
-	if cfg.Inserter == nil {
-		return nil, errors.New("inserter is required")
-	}
 	return &Insert{
-		config: cfg,
+		databaseInfoID: i.DatabaseInfoID,
+		outputTypes:    ns.OutputTypes,
+		inserter:       database.GetDatabaseOperator(),
 	}, nil
-
 }
 
-func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]any, error) {
+type Insert struct {
+	databaseInfoID int64
+	outputTypes    map[string]*vo.TypeInfo
+	inserter       database.DatabaseOperator
+}
 
+func (is *Insert) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	fields := parseToInput(input)
 	req := &database.InsertRequest{
-		DatabaseInfoID: is.config.DatabaseInfoID,
+		DatabaseInfoID: is.databaseInfoID,
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
 
-	response, err := is.config.Inserter.Insert(ctx, req)
+	response, err := is.inserter.Insert(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := responseFormatted(is.config.OutputConfig, response)
+	ret, err := responseFormatted(is.outputTypes, response)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +106,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 }
 
 func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
-	databaseID := is.config.DatabaseInfoID
+	databaseID := is.databaseInfoID
 	fs := parseToInput(input)
 	result := make(map[string]any)
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}

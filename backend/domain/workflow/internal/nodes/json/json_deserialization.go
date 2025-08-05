@@ -20,8 +20,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
@@ -34,30 +37,40 @@ const (
 	warningsKey              = "deserialization_warnings"
 )
 
-type DeserializationConfig struct {
-	OutputFields map[string]*vo.TypeInfo `json:"outputFields,omitempty"`
+type DeserializationConfig struct{}
+
+func (d *DeserializationConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (
+	*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeJsonDeserialization,
+		Name:    n.Data.Meta.Title,
+		Configs: d,
+	}
+
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
 }
 
-type Deserializer struct {
-	config   *DeserializationConfig
-	typeInfo *vo.TypeInfo
-}
-
-func NewJsonDeserializer(_ context.Context, cfg *DeserializationConfig) (*Deserializer, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("config required")
-	}
-	if cfg.OutputFields == nil {
-		return nil, fmt.Errorf("OutputFields is required for deserialization")
-	}
-	typeInfo := cfg.OutputFields[OutputKeyDeserialization]
-	if typeInfo == nil {
+func (d *DeserializationConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
+	typeInfo, ok := ns.OutputTypes[OutputKeyDeserialization]
+	if !ok {
 		return nil, fmt.Errorf("no output field specified in deserialization config")
 	}
 	return &Deserializer{
-		config:   cfg,
 		typeInfo: typeInfo,
 	}, nil
+}
+
+type Deserializer struct {
+	typeInfo *vo.TypeInfo
 }
 
 func (jd *Deserializer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {

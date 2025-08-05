@@ -40,7 +40,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/internal/testutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -108,22 +112,20 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			llmNode := &compose2.NodeSchema{
+			llmNode := &schema2.NodeSchema{
 				Key:  "llm_node_key",
 				Type: entity.NodeTypeLLM,
-				Configs: map[string]any{
-					"SystemPrompt": "{{sys_prompt}}",
-					"UserPrompt":   "{{query}}",
-					"OutputFormat": llm.FormatText,
-					"LLMParams": &model.LLMParams{
+				Configs: &llm.Config{
+					SystemPrompt: "{{sys_prompt}}",
+					UserPrompt:   "{{query}}",
+					OutputFormat: llm.FormatText,
+					LLMParams: &model.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -132,7 +134,7 @@ func TestLLM(t *testing.T) {
 						Path: compose.FieldPath{"sys_prompt"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"sys_prompt"},
 							},
 						},
@@ -141,7 +143,7 @@ func TestLLM(t *testing.T) {
 						Path: compose.FieldPath{"query"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"query"},
 							},
 						},
@@ -162,11 +164,11 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -181,20 +183,20 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					llmNode,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   llmNode.Key,
 					},
 					{
 						FromNode: llmNode.Key,
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}
@@ -228,27 +230,20 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			llmNode := &compose2.NodeSchema{
+			llmNode := &schema2.NodeSchema{
 				Key:  "llm_node_key",
 				Type: entity.NodeTypeLLM,
-				Configs: map[string]any{
-					"SystemPrompt":    "you are a helpful assistant",
-					"UserPrompt":      "what's the largest country in the world and it's area size in square kilometers?",
-					"OutputFormat":    llm.FormatJSON,
-					"IgnoreException": true,
-					"DefaultOutput": map[string]any{
-						"country_name": "unknown",
-						"area_size":    int64(0),
-					},
-					"LLMParams": &model.LLMParams{
+				Configs: &llm.Config{
+					SystemPrompt: "you are a helpful assistant",
+					UserPrompt:   "what's the largest country in the world and it's area size in square kilometers?",
+					OutputFormat: llm.FormatJSON,
+					LLMParams: &model.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -264,11 +259,11 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -292,20 +287,20 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					llmNode,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   llmNode.Key,
 					},
 					{
 						FromNode: llmNode.Key,
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}
@@ -337,22 +332,20 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			llmNode := &compose2.NodeSchema{
+			llmNode := &schema2.NodeSchema{
 				Key:  "llm_node_key",
 				Type: entity.NodeTypeLLM,
-				Configs: map[string]any{
-					"SystemPrompt": "you are a helpful assistant",
-					"UserPrompt":   "list the top 5 largest countries in the world",
-					"OutputFormat": llm.FormatMarkdown,
-					"LLMParams": &model.LLMParams{
+				Configs: &llm.Config{
+					SystemPrompt: "you are a helpful assistant",
+					UserPrompt:   "list the top 5 largest countries in the world",
+					OutputFormat: llm.FormatMarkdown,
+					LLMParams: &model.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -363,11 +356,11 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.ReturnVariables,
+				Configs: &exit.Config{
+					TerminatePlan: vo.ReturnVariables,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -382,20 +375,20 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					llmNode,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   llmNode.Key,
 					},
 					{
 						FromNode: llmNode.Key,
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}
@@ -456,22 +449,20 @@ func TestLLM(t *testing.T) {
 				}
 			}
 
-			entry := &compose2.NodeSchema{
-				Key:  entity.EntryNodeKey,
-				Type: entity.NodeTypeEntry,
-				Configs: map[string]any{
-					"DefaultValues": map[string]any{},
-				},
+			entryN := &schema2.NodeSchema{
+				Key:     entity.EntryNodeKey,
+				Type:    entity.NodeTypeEntry,
+				Configs: &entry.Config{},
 			}
 
-			openaiNode := &compose2.NodeSchema{
+			openaiNode := &schema2.NodeSchema{
 				Key:  "openai_llm_node_key",
 				Type: entity.NodeTypeLLM,
-				Configs: map[string]any{
-					"SystemPrompt": "you are a helpful assistant",
-					"UserPrompt":   "plan a 10 day family visit to China.",
-					"OutputFormat": llm.FormatText,
-					"LLMParams": &model.LLMParams{
+				Configs: &llm.Config{
+					SystemPrompt: "you are a helpful assistant",
+					UserPrompt:   "plan a 10 day family visit to China.",
+					OutputFormat: llm.FormatText,
+					LLMParams: &model.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -482,14 +473,14 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			deepseekNode := &compose2.NodeSchema{
+			deepseekNode := &schema2.NodeSchema{
 				Key:  "deepseek_llm_node_key",
 				Type: entity.NodeTypeLLM,
-				Configs: map[string]any{
-					"SystemPrompt": "you are a helpful assistant",
-					"UserPrompt":   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
-					"OutputFormat": llm.FormatText,
-					"LLMParams": &model.LLMParams{
+				Configs: &llm.Config{
+					SystemPrompt: "you are a helpful assistant",
+					UserPrompt:   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
+					OutputFormat: llm.FormatText,
+					LLMParams: &model.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -503,12 +494,11 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			emitterNode := &compose2.NodeSchema{
+			emitterNode := &schema2.NodeSchema{
 				Key:  "emitter_node_key",
 				Type: entity.NodeTypeOutputEmitter,
-				Configs: map[string]any{
-					"Template": "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
-					"Mode":     nodes.Streaming,
+				Configs: &emitter.Config{
+					Template: "prefix {{inputObj.field1}} {{input2}} {{deepseek_reasoning}} \n\n###\n\n {{openai_output}} \n\n###\n\n {{deepseek_output}} {{inputObj.field2}} suffix",
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -542,7 +532,7 @@ func TestLLM(t *testing.T) {
 						Path: compose.FieldPath{"inputObj"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"inputObj"},
 							},
 						},
@@ -551,7 +541,7 @@ func TestLLM(t *testing.T) {
 						Path: compose.FieldPath{"input2"},
 						Source: vo.FieldSource{
 							Ref: &vo.Reference{
-								FromNodeKey: entry.Key,
+								FromNodeKey: entryN.Key,
 								FromPath:    compose.FieldPath{"input2"},
 							},
 						},
@@ -559,11 +549,11 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			exit := &compose2.NodeSchema{
+			exitN := &schema2.NodeSchema{
 				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
-				Configs: map[string]any{
-					"TerminalPlan": vo.UseAnswerContent,
+				Configs: &exit.Config{
+					TerminatePlan: vo.UseAnswerContent,
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -596,17 +586,17 @@ func TestLLM(t *testing.T) {
 				},
 			}
 
-			ws := &compose2.WorkflowSchema{
-				Nodes: []*compose2.NodeSchema{
-					entry,
+			ws := &schema2.WorkflowSchema{
+				Nodes: []*schema2.NodeSchema{
+					entryN,
 					openaiNode,
 					deepseekNode,
 					emitterNode,
-					exit,
+					exitN,
 				},
-				Connections: []*compose2.Connection{
+				Connections: []*schema2.Connection{
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   openaiNode.Key,
 					},
 					{
@@ -614,7 +604,7 @@ func TestLLM(t *testing.T) {
 						ToNode:   emitterNode.Key,
 					},
 					{
-						FromNode: entry.Key,
+						FromNode: entryN.Key,
 						ToNode:   deepseekNode.Key,
 					},
 					{
@@ -623,7 +613,7 @@ func TestLLM(t *testing.T) {
 					},
 					{
 						FromNode: emitterNode.Key,
-						ToNode:   exit.Key,
+						ToNode:   exitN.Key,
 					},
 				},
 			}

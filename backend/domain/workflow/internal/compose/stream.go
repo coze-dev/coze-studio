@@ -21,19 +21,20 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
-// SetFullSources calculates REAL input sources for a node.
+// GetFullSources calculates REAL input sources for a node.
 // It may be different from a NodeSchema's InputSources because of the following reasons:
 //  1. a inner node under composite node may refer to a field from a node in its parent workflow,
 //     this is instead routed to and sourced from the inner workflow's start node.
 //  2. at the same time, the composite node needs to delegate the input source to the inner workflow.
 //  3. also, some node may have implicit input sources not defined in its NodeSchema's InputSources.
-func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *dependencyInfo) error {
-	fullSource := make(map[string]*nodes.SourceInfo)
+func GetFullSources(s *schema.NodeSchema, sc *schema.WorkflowSchema, dep *dependencyInfo) (
+	map[string]*schema.SourceInfo, error) {
+	fullSource := make(map[string]*schema.SourceInfo)
 	var fieldInfos []vo.FieldInfo
 	for _, s := range dep.staticValues {
 		fieldInfos = append(fieldInfos, vo.FieldInfo{
@@ -113,14 +114,14 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *depen
 					tInfo = tInfo.Properties[path[j]]
 				}
 				if current, ok := currentSource[path[j]]; !ok {
-					currentSource[path[j]] = &nodes.SourceInfo{
+					currentSource[path[j]] = &schema.SourceInfo{
 						IsIntermediate: true,
-						FieldType:      nodes.FieldNotStream,
+						FieldType:      schema.FieldNotStream,
 						TypeInfo:       tInfo,
-						SubSources:     make(map[string]*nodes.SourceInfo),
+						SubSources:     make(map[string]*schema.SourceInfo),
 					}
 				} else if !current.IsIntermediate {
-					return fmt.Errorf("existing sourceInfo for path %s is not intermediate, conflict", path[:j+1])
+					return nil, fmt.Errorf("existing sourceInfo for path %s is not intermediate, conflict", path[:j+1])
 				}
 
 				currentSource = currentSource[path[j]].SubSources
@@ -135,9 +136,9 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *depen
 
 		// static values or variables
 		if fInfo.Source.Ref == nil || fInfo.Source.Ref.FromNodeKey == "" {
-			currentSource[lastPath] = &nodes.SourceInfo{
+			currentSource[lastPath] = &schema.SourceInfo{
 				IsIntermediate: false,
-				FieldType:      nodes.FieldNotStream,
+				FieldType:      schema.FieldNotStream,
 				TypeInfo:       tInfo,
 			}
 			continue
@@ -145,25 +146,25 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *depen
 
 		fromNodeKey := fInfo.Source.Ref.FromNodeKey
 		var (
-			streamType nodes.FieldStreamType
+			streamType schema.FieldStreamType
 			err        error
 		)
 		if len(fromNodeKey) > 0 {
 			if fromNodeKey == compose.START {
-				streamType = nodes.FieldNotStream // TODO: set start node to not stream for now until composite node supports transform
+				streamType = schema.FieldNotStream // TODO: set start node to not stream for now until composite node supports transform
 			} else {
-				fromNode, ok := allNS[fromNodeKey]
-				if !ok {
-					return fmt.Errorf("node %s not found", fromNodeKey)
+				fromNode := sc.GetNode(fromNodeKey)
+				if fromNode == nil {
+					return nil, fmt.Errorf("node %s not found", fromNodeKey)
 				}
-				streamType, err = fromNode.IsStreamingField(fInfo.Source.Ref.FromPath, allNS)
+				streamType, err = nodes.IsStreamingField(fromNode, fInfo.Source.Ref.FromPath, sc)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 		}
 
-		currentSource[lastPath] = &nodes.SourceInfo{
+		currentSource[lastPath] = &schema.SourceInfo{
 			IsIntermediate: false,
 			FieldType:      streamType,
 			FromNodeKey:    fromNodeKey,
@@ -172,121 +173,5 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *depen
 		}
 	}
 
-	s.Configs.(map[string]any)["FullSources"] = fullSource
-	return nil
-}
-
-func (s *NodeSchema) IsStreamingField(path compose.FieldPath, allNS map[vo.NodeKey]*NodeSchema) (nodes.FieldStreamType, error) {
-	if s.Type == entity.NodeTypeExit {
-		if mustGetKey[nodes.Mode]("Mode", s.Configs) == nodes.Streaming {
-			if len(path) == 1 && path[0] == "output" {
-				return nodes.FieldIsStream, nil
-			}
-		}
-
-		return nodes.FieldNotStream, nil
-	} else if s.Type == entity.NodeTypeSubWorkflow { // TODO: why not use sub workflow's Mode configuration directly?
-		subSC := s.SubWorkflowSchema
-		subExit := subSC.GetNode(entity.ExitNodeKey)
-		subStreamType, err := subExit.IsStreamingField(path, nil)
-		if err != nil {
-			return nodes.FieldNotStream, err
-		}
-
-		return subStreamType, nil
-	} else if s.Type == entity.NodeTypeVariableAggregator {
-		if len(path) == 2 { // asking about a specific index within a group
-			for _, fInfo := range s.InputSources {
-				if len(fInfo.Path) == len(path) {
-					equal := true
-					for i := range fInfo.Path {
-						if fInfo.Path[i] != path[i] {
-							equal = false
-							break
-						}
-					}
-
-					if equal {
-						if fInfo.Source.Ref == nil || fInfo.Source.Ref.FromNodeKey == "" {
-							return nodes.FieldNotStream, nil
-						}
-						fromNodeKey := fInfo.Source.Ref.FromNodeKey
-						fromNode, ok := allNS[fromNodeKey]
-						if !ok {
-							return nodes.FieldNotStream, fmt.Errorf("node %s not found", fromNodeKey)
-						}
-						return fromNode.IsStreamingField(fInfo.Source.Ref.FromPath, allNS)
-					}
-				}
-			}
-		} else if len(path) == 1 { // asking about the entire group
-			var streamCount, notStreamCount int
-			for _, fInfo := range s.InputSources {
-				if fInfo.Path[0] == path[0] { // belong to the group
-					if fInfo.Source.Ref != nil && len(fInfo.Source.Ref.FromNodeKey) > 0 {
-						fromNode, ok := allNS[fInfo.Source.Ref.FromNodeKey]
-						if !ok {
-							return nodes.FieldNotStream, fmt.Errorf("node %s not found", fInfo.Source.Ref.FromNodeKey)
-						}
-						subStreamType, err := fromNode.IsStreamingField(fInfo.Source.Ref.FromPath, allNS)
-						if err != nil {
-							return nodes.FieldNotStream, err
-						}
-
-						if subStreamType == nodes.FieldMaybeStream {
-							return nodes.FieldMaybeStream, nil
-						} else if subStreamType == nodes.FieldIsStream {
-							streamCount++
-						} else {
-							notStreamCount++
-						}
-					}
-				}
-			}
-
-			if streamCount > 0 && notStreamCount == 0 {
-				return nodes.FieldIsStream, nil
-			}
-
-			if streamCount == 0 && notStreamCount > 0 {
-				return nodes.FieldNotStream, nil
-			}
-
-			return nodes.FieldMaybeStream, nil
-		}
-	}
-
-	if s.Type != entity.NodeTypeLLM {
-		return nodes.FieldNotStream, nil
-	}
-
-	if len(path) != 1 {
-		return nodes.FieldNotStream, nil
-	}
-
-	outputs := s.OutputTypes
-	if len(outputs) != 1 && len(outputs) != 2 {
-		return nodes.FieldNotStream, nil
-	}
-
-	var outputKey string
-	for key, output := range outputs {
-		if output.Type != vo.DataTypeString {
-			return nodes.FieldNotStream, nil
-		}
-
-		if key != "reasoning_content" {
-			if len(outputKey) > 0 {
-				return nodes.FieldNotStream, nil
-			}
-			outputKey = key
-		}
-	}
-
-	field := path[0]
-	if field == "reasoning_content" || field == outputKey {
-		return nodes.FieldIsStream, nil
-	}
-
-	return nodes.FieldNotStream, nil
+	return fullSource, nil
 }

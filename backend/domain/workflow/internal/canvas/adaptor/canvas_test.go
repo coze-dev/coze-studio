@@ -58,6 +58,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
+func TestMain(m *testing.M) {
+	RegisterAllNodeAdaptors()
+	m.Run()
+}
+
 func TestIntentDetectorAndDatabase(t *testing.T) {
 	mockey.PatchConvey("intent detector & database custom sql", t, func() {
 		data, err := os.ReadFile("../examples/intent_detector_database_custom_sql.json")

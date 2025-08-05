@@ -22,7 +22,9 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/coze-dev/coze-studio/backend/application/internal"
+
 	wfdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/database"
 	wfknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/knowledge"
 	wfmodel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
@@ -43,6 +45,7 @@ import (
 	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
 	crossvariable "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
+	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
@@ -76,6 +79,9 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	if !ok {
 		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
 	}
+
+	service.RegisterAllNodeAdaptors()
+
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
 		components.Tos, components.CPStore, bcm)
 	workflow.SetRepository(workflowRepo)
@@ -89,6 +95,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
 	crosscode.SetCodeRunner(components.CodeRunner)
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
+	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX

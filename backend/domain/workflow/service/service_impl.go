@@ -37,8 +37,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/intentdetector"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
@@ -73,7 +76,7 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmd
 	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel)
 }
 
-func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
+func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 
@@ -82,7 +85,7 @@ func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]b
 		if meta.Disabled {
 			return false
 		}
-		nodeType := meta.Type
+		nodeType := meta.Key
 		if nodeTypes == nil || len(nodeTypes) == 0 {
 			return true // No filter, include all
 		}
@@ -192,10 +195,10 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 		if startNode != nil && endNode != nil {
 			break
 		}
-		if node.Type == vo.BlockTypeBotStart {
+		if node.Type == entity.NodeTypeEntry.IDStr() {
 			startNode = node
 		}
-		if node.Type == vo.BlockTypeBotEnd {
+		if node.Type == entity.NodeTypeExit.IDStr() {
 			endNode = node
 		}
 	}
@@ -207,7 +210,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 			if err != nil {
 				return nil, err
 			}
-			nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+			nInfo, err := convert.VariableToNamedTypeInfo(v)
 			if err != nil {
 				return nil, err
 			}
@@ -220,7 +223,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 
 	if endNode != nil {
 		outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
-			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
+			return convert.BlockInputToNamedTypeInfo(a.Name, a.Input)
 		})
 		if err != nil {
 			logs.Warn(fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
@@ -316,6 +319,34 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*v
 	return ret, nil
 }
 
+type workflowIdentity struct {
+	ID      string `json:"id"`
+	Version string `json:"version"`
+}
+
+func getAllSubWorkflowIdentities(c *vo.Canvas) []*workflowIdentity {
+	workflowEntities := make([]*workflowIdentity, 0)
+
+	var collectSubWorkFlowEntities func(nodes []*vo.Node)
+	collectSubWorkFlowEntities = func(nodes []*vo.Node) {
+		for _, n := range nodes {
+			if n.Type == entity.NodeTypeSubWorkflow.IDStr() {
+				workflowEntities = append(workflowEntities, &workflowIdentity{
+					ID:      n.Data.Inputs.WorkflowID,
+					Version: n.Data.Inputs.WorkflowVersion,
+				})
+			}
+			if len(n.Blocks) > 0 {
+				collectSubWorkFlowEntities(n.Blocks)
+			}
+		}
+	}
+
+	collectSubWorkFlowEntities(c.Nodes)
+
+	return workflowEntities
+}
+
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
 	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
 	issues, err := validateWorkflowTree(ctx, validateConfig)
@@ -337,7 +368,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			fmt.Errorf("failed to unmarshal canvas schema: %w", err))
 	}
 
-	subWorkflowIdentities := c.GetAllSubWorkflowIdentities()
+	subWorkflowIdentities := getAllSubWorkflowIdentities(c)
 
 	if len(subWorkflowIdentities) > 0 {
 		var ids []int64
@@ -421,25 +452,21 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	}
 
 	for _, n := range canvas.Nodes {
-		if n.Type == vo.BlockTypeBotSubWorkflow {
-			nodeSchema := &compose.NodeSchema{
+		if n.Type == entity.NodeTypeSubWorkflow.IDStr() {
+			nodeSchema := &schema.NodeSchema{
 				Key:  vo.NodeKey(n.ID),
 				Type: entity.NodeTypeSubWorkflow,
 				Name: n.Data.Meta.Title,
 			}
-			err := adaptor.SetInputsForNodeSchema(n, nodeSchema)
-			if err != nil {
-				return nil, err
-			}
-			blockType, err := entityNodeTypeToBlockType(nodeSchema.Type)
+			err := convert.SetInputsForNodeSchema(n, nodeSchema)
 			if err != nil {
 				return nil, err
 			}
 			prop := &vo.NodeProperty{
-				Type:                string(blockType),
-				IsEnableUserQuery:   nodeSchema.IsEnableUserQuery(),
-				IsEnableChatHistory: nodeSchema.IsEnableChatHistory(),
-				IsRefGlobalVariable: nodeSchema.IsRefGlobalVariable(),
+				Type:                nodeSchema.Type.IDStr(),
+				IsEnableUserQuery:   isEnableUserQuery(nodeSchema),
+				IsEnableChatHistory: isEnableChatHistory(nodeSchema),
+				IsRefGlobalVariable: isRefGlobalVariable(nodeSchema),
 			}
 			nodePropertyMap[string(nodeSchema.Key)] = prop
 			wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
@@ -478,26 +505,76 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			prop.SubWorkflow = ret
 
 		} else {
-			nodeSchemas, _, err := adaptor.NodeToNodeSchema(ctx, n)
+			nodeSchemas, _, err := adaptor.NodeToNodeSchema(ctx, n, canvas)
 			if err != nil {
 				return nil, err
 			}
 			for _, nodeSchema := range nodeSchemas {
-				blockType, err := entityNodeTypeToBlockType(nodeSchema.Type)
-				if err != nil {
-					return nil, err
-				}
 				nodePropertyMap[string(nodeSchema.Key)] = &vo.NodeProperty{
-					Type:                string(blockType),
-					IsEnableUserQuery:   nodeSchema.IsEnableUserQuery(),
-					IsEnableChatHistory: nodeSchema.IsEnableChatHistory(),
-					IsRefGlobalVariable: nodeSchema.IsRefGlobalVariable(),
+					Type:                nodeSchema.Type.IDStr(),
+					IsEnableUserQuery:   isEnableUserQuery(nodeSchema),
+					IsEnableChatHistory: isEnableChatHistory(nodeSchema),
+					IsRefGlobalVariable: isRefGlobalVariable(nodeSchema),
 				}
 			}
 
 		}
 	}
 	return nodePropertyMap, nil
+}
+
+func isEnableUserQuery(s *schema.NodeSchema) bool {
+	if s == nil {
+		return false
+	}
+	if s.Type != entity.NodeTypeEntry {
+		return false
+	}
+
+	if len(s.OutputSources) == 0 {
+		return false
+	}
+
+	for _, source := range s.OutputSources {
+		fieldPath := source.Path
+		if len(fieldPath) == 1 && (fieldPath[0] == "BOT_USER_INPUT" || fieldPath[0] == "USER_INPUT") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isEnableChatHistory(s *schema.NodeSchema) bool {
+	if s == nil {
+		return false
+	}
+
+	switch s.Type {
+
+	case entity.NodeTypeLLM:
+		llmParam := s.Configs.(*llm.Config).LLMParams
+		return llmParam.EnableChatHistory
+	case entity.NodeTypeIntentDetector:
+		llmParam := s.Configs.(*intentdetector.Config).LLMParams
+		return llmParam.EnableChatHistory
+	default:
+		return false
+	}
+}
+
+func isRefGlobalVariable(s *schema.NodeSchema) bool {
+	for _, source := range s.InputSources {
+		if source.IsRefGlobalVariable() {
+			return true
+		}
+	}
+	for _, source := range s.OutputSources {
+		if source.IsRefGlobalVariable() {
+			return true
+		}
+	}
+	return false
 }
 
 func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
@@ -510,7 +587,7 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 	var getRefFn func([]*vo.Node) error
 	getRefFn = func(nodes []*vo.Node) error {
 		for _, node := range nodes {
-			if node.Type == vo.BlockTypeBotSubWorkflow {
+			if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 				referredID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
 					return vo.WrapError(errno.ErrSchemaConversionFail, err)
@@ -521,19 +598,21 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 					ReferType:        vo.ReferTypeSubWorkflow,
 					ReferringBizType: vo.ReferringBizTypeWorkflow,
 				}] = struct{}{}
-			} else if node.Type == vo.BlockTypeBotLLM {
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
-						referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
-						if err != nil {
-							return vo.WrapError(errno.ErrSchemaConversionFail, err)
+			} else if node.Type == entity.NodeTypeLLM.IDStr() {
+				if node.Data.Inputs.LLM != nil {
+					if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+						for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+							referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
+							if err != nil {
+								return vo.WrapError(errno.ErrSchemaConversionFail, err)
+							}
+							wfRefs[entity.WorkflowReferenceKey{
+								ReferredID:       referredID,
+								ReferringID:      referringID,
+								ReferType:        vo.ReferTypeTool,
+								ReferringBizType: vo.ReferringBizTypeWorkflow,
+							}] = struct{}{}
 						}
-						wfRefs[entity.WorkflowReferenceKey{
-							ReferredID:       referredID,
-							ReferringID:      referringID,
-							ReferType:        vo.ReferTypeTool,
-							ReferringBizType: vo.ReferringBizTypeWorkflow,
-						}] = struct{}{}
 					}
 				}
 			} else if len(node.Blocks) > 0 {
@@ -832,7 +911,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 	validateAndBuildWorkflowReference = func(nodes []*vo.Node, wf *copiedWorkflow) error {
 		for _, node := range nodes {
-			if node.Type == vo.BlockTypeBotSubWorkflow {
+			if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 				var (
 					v    *vo.DraftInfo
 					wfID int64
@@ -883,7 +962,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 			}
 
-			if node.Type == vo.BlockTypeBotLLM {
+			if node.Type == entity.NodeTypeLLM.IDStr() {
 				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 						var (
@@ -1086,7 +1165,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 	var buildWorkflowReference func(nodes []*vo.Node, wf *copiedWorkflow) error
 	buildWorkflowReference = func(nodes []*vo.Node, wf *copiedWorkflow) error {
 		for _, node := range nodes {
-			if node.Type == vo.BlockTypeBotSubWorkflow {
+			if node.Type == entity.NodeTypeSubWorkflow.IDStr() {
 				var (
 					v    *vo.DraftInfo
 					wfID int64
@@ -1121,7 +1200,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 				}
 
 			}
-			if node.Type == vo.BlockTypeBotLLM {
+			if node.Type == entity.NodeTypeLLM.IDStr() {
 				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 						var (
@@ -1323,8 +1402,8 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 	var collectDependence func(nodes []*vo.Node) error
 	collectDependence = func(nodes []*vo.Node) error {
 		for _, node := range nodes {
-			switch node.Type {
-			case vo.BlockTypeBotAPI:
+			switch entity.IDStrToNodeType(node.Type) {
+			case entity.NodeTypePlugin:
 				apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
 					return e.Name, e
 				})
@@ -1347,7 +1426,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					ds.PluginIDs = append(ds.PluginIDs, pID)
 				}
 
-			case vo.BlockTypeBotDatasetWrite, vo.BlockTypeBotDataset:
+			case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
 				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
 				for _, id := range datasetIDs {
@@ -1357,7 +1436,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 					ds.KnowledgeIDs = append(ds.KnowledgeIDs, k)
 				}
-			case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+			case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
 				dsList := node.Data.Inputs.DatabaseInfoList
 				if len(dsList) == 0 {
 					return fmt.Errorf("database info is requird")
@@ -1369,7 +1448,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 					ds.DatabaseIDs = append(ds.DatabaseIDs, dsID)
 				}
-			case vo.BlockTypeBotLLM:
+			case entity.NodeTypeLLM:
 				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
 					for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
 						pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
@@ -1396,7 +1475,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 				}
 
-			case vo.BlockTypeBotSubWorkflow:
+			case entity.NodeTypeSubWorkflow:
 				wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
 					return err
@@ -1567,8 +1646,8 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 	)
 
 	for _, node := range nodes {
-		switch node.Type {
-		case vo.BlockTypeBotSubWorkflow:
+		switch entity.IDStrToNodeType(node.Type) {
+		case entity.NodeTypeSubWorkflow:
 			if !hasWorkflowRelated {
 				continue
 			}
@@ -1580,7 +1659,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				node.Data.Inputs.WorkflowID = strconv.FormatInt(wf.ID, 10)
 				node.Data.Inputs.WorkflowVersion = wf.Version
 			}
-		case vo.BlockTypeBotAPI:
+		case entity.NodeTypePlugin:
 			if !hasPluginRelated {
 				continue
 			}
@@ -1623,7 +1702,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				apiIDParam.Input.Value.Content = strconv.FormatInt(refApiID, 10)
 			}
 
-		case vo.BlockTypeBotLLM:
+		case entity.NodeTypeLLM:
 			if hasWorkflowRelated && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 				for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 					wf := node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
@@ -1669,7 +1748,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				}
 			}
 
-		case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+		case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
 			if !hasKnowledgeRelated {
 				continue
 			}
@@ -1685,7 +1764,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				}
 			}
 
-		case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+		case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
 			if !hasDatabaseRelated {
 				continue
 			}
@@ -1712,4 +1791,8 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 
 	}
 	return nil
+}
+
+func RegisterAllNodeAdaptors() {
+	adaptor.RegisterAllNodeAdaptors()
 }

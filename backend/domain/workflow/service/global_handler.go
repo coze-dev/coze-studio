@@ -14,32 +14,13 @@
  * limitations under the License.
  */
 
-package loop
+package service
 
 import (
-	"context"
-
-	"github.com/cloudwego/eino/compose"
-
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
+	"github.com/cloudwego/eino/callbacks"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 )
 
-type Break struct {
-	parentIntermediateStore variable.Store
-}
-
-func NewBreak(_ context.Context, store variable.Store) (*Break, error) {
-	return &Break{
-		parentIntermediateStore: store,
-	}, nil
-}
-
-const BreakKey = "$break"
-
-func (b *Break) DoBreak(ctx context.Context, _ map[string]any) (map[string]any, error) {
-	err := b.parentIntermediateStore.Set(ctx, compose.FieldPath{BreakKey}, true)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]any{}, nil
+func GetTokenCallbackHandler() callbacks.Handler {
+	return execute.GetTokenCallbackHandler()
 }

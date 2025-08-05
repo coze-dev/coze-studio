@@ -37,12 +37,13 @@ type AgentRuntime struct {
 type EventType string
 
 const (
-	EventTypeOfChatModelAnswer EventType = "chatmodel_answer"
-	EventTypeOfToolsMessage    EventType = "tools_message"
-	EventTypeOfFuncCall        EventType = "func_call"
-	EventTypeOfSuggest         EventType = "suggest"
-	EventTypeOfKnowledge       EventType = "knowledge"
-	EventTypeOfInterrupt       EventType = "interrupt"
+	EventTypeOfChatModelAnswer        EventType = "chatmodel_answer"
+	EventTypeOfToolsAsChatModelStream EventType = "tools_as_chatmodel_answer"
+	EventTypeOfToolsMessage           EventType = "tools_message"
+	EventTypeOfFuncCall               EventType = "func_call"
+	EventTypeOfSuggest                EventType = "suggest"
+	EventTypeOfKnowledge              EventType = "knowledge"
+	EventTypeOfInterrupt              EventType = "interrupt"
 )
 
 type AgentEvent struct {

@@ -30,6 +30,7 @@ import (
 	"github.com/bytedance/sonic/ast"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -156,7 +157,7 @@ func removeSlice(s string) string {
 
 type renderOptions struct {
 	type2CustomRenderer map[reflect.Type]func(any) (string, error)
-	reservedKey         map[string]struct{}
+	reservedKey         map[string]struct{} // a reservedKey will always render, won't check for node skipping
 	nilRenderer         func() (string, error)
 }
 
@@ -300,7 +301,7 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	}
 }
 
-func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped bool, invalid bool) {
+func (tp TemplatePart) Skipped(resolvedSources map[string]*schema.SourceInfo) (skipped bool, invalid bool) {
 	if len(resolvedSources) == 0 { // no information available, maybe outside the scope of a workflow
 		return false, false
 	}
@@ -316,7 +317,7 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped 
 	}
 
 	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == FieldSkipped, false
+		return matchingSource.FieldType == schema.FieldSkipped, false
 	}
 
 	for _, subPath := range tp.SubPathsBeforeSlice {
@@ -325,20 +326,20 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped 
 			if matchingSource.IsIntermediate { // the user specified a non-existing source, just skip it
 				return false, true
 			}
-			return matchingSource.FieldType == FieldSkipped, false
+			return matchingSource.FieldType == schema.FieldSkipped, false
 		}
 
 		matchingSource = subSource
 	}
 
 	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == FieldSkipped, false
+		return matchingSource.FieldType == schema.FieldSkipped, false
 	}
 
-	var checkSourceSkipped func(sInfo *SourceInfo) bool
-	checkSourceSkipped = func(sInfo *SourceInfo) bool {
+	var checkSourceSkipped func(sInfo *schema.SourceInfo) bool
+	checkSourceSkipped = func(sInfo *schema.SourceInfo) bool {
 		if !sInfo.IsIntermediate {
-			return sInfo.FieldType == FieldSkipped
+			return sInfo.FieldType == schema.FieldSkipped
 		}
 		for _, subSource := range sInfo.SubSources {
 			if !checkSourceSkipped(subSource) {
@@ -373,7 +374,7 @@ func (tp TemplatePart) TypeInfo(types map[string]*vo.TypeInfo) *vo.TypeInfo {
 	return currentType
 }
 
-func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo, opts ...RenderOption) (string, error) {
+func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*schema.SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
 	if err != nil {
 		return "", err
