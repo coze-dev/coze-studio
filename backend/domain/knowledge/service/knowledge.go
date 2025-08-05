@@ -1497,12 +1497,26 @@ func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, er
 
 func (k *knowledgeSVC) genMultiIDs(ctx context.Context, counts int) ([]int64, error) {
 	allIDs := make([]int64, 0)
+	retryInterval := 5 * time.Millisecond
 	for l := 0; l < counts; l += 100 {
 		r := min(l+100, counts)
 		batchSize := r - l
-		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
-		if err != nil {
-			return nil, errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
+		var ids []int64
+		var err error
+		maxRetries := 5
+		retryCount := 0
+		for {
+			ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
+			if err != nil {
+				if retryCount >= maxRetries {
+					return nil, errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
+				}
+				logs.CtxErrorf(ctx, "[genMultiIDs] GenMultiIDs failed, retry %d/%d: %v", retryCount+1, maxRetries, err)
+				time.Sleep(retryInterval)
+				retryCount++
+				continue
+			}
+			break
 		}
 		allIDs = append(allIDs, ids...)
 	}
