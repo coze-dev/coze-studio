@@ -466,6 +466,33 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 	}), nil
 }
 
+func (u *userImpl) GetUserByEmail(ctx context.Context, email string) (user *userEntity.User, err error) {
+	//userInfos, err := u..(ctx, []int64{userID})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if len(userInfos) == 0 {
+	//	return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("type", "user"),
+	//		errorx.KV("id", conv.Int64ToStr(userID)))
+	//}
+
+	// 获取用户信息（优化版）
+	userModel, exists, err := u.UserRepo.GetUsersByEmail(ctx, email)
+
+	if !exists || userModel == nil {
+		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("type", "user"),
+			errorx.KV("email", email))
+	}
+
+	iconURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user icon URL: %w", err)
+	}
+
+	return userPo2Do(userModel, iconURL), nil
+}
+
 func spacePo2Do(space *model.Space, iconUrl string) *userEntity.Space {
 	return &userEntity.Space{
 		ID:          space.ID,

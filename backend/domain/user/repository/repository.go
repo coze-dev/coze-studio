@@ -46,7 +46,6 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User) error
 	GetUserBySessionKey(ctx context.Context, sessionKey string) (*model.User, bool, error)
 	GetUsersByIDs(ctx context.Context, userIDs []int64) ([]*model.User, error)
-	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
 type SpaceRepository interface {
