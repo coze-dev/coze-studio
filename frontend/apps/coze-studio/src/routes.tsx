@@ -111,6 +111,7 @@ const AgentPublishPage = lazy(() =>
 );
 
 const DocsRedirect = lazy(() => import('./pages/docs'));
+const Redirect = lazy(() => import('./pages/redirect'));
 
 export const router: ReturnType<typeof createBrowserRouter> =
   createBrowserRouter([
@@ -125,6 +126,14 @@ export const router: ReturnType<typeof createBrowserRouter> =
     {
       path: '/docs/*',
       Component: DocsRedirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
+    {
+      path: '/information/auth/success',
+      Component: Redirect,
       loader: () => ({
         hasSider: false,
         requireAuth: false,
