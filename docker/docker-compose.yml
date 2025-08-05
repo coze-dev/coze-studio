@@ -349,12 +349,12 @@ services:
     restart: always
     container_name: coze-server
     env_file: *env_file
-    environment:
-      LISTEN_ADDR: 0.0.0.0:8888
+    # environment:
+    #   LISTEN_ADDR: 0.0.0.0:8888
     networks:
       - coze-network
     ports:
-      - '8888:8888'
+      # - '8888:8888'
       - '8889:8889'
     volumes:
       - .env:/app/.env
@@ -371,6 +371,25 @@ services:
         condition: service_healthy
       milvus:
         condition: service_healthy
+    command: ['/app/opencoze']
+
+  coze-frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: coze-frontend
+    restart: always
+    ports:
+      - "8888:80"
+      # - "443:443"  # SSL port (uncomment if using SSL)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Main nginx config
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro  # Proxy config
+      # - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates (uncomment if using SSL)
+    depends_on:
+      - coze-server
+    networks:
+      - coze-network
 
 networks:
   coze-network:
