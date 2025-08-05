@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { WorkspaceSubMenu as BaseWorkspaceSubMenu } from '@coze-foundation/space-ui-base';
 import { useSpaceStore } from '@coze-foundation/space-store';
 import { I18n } from '@coze-arch/i18n';
-import { useRouteConfig } from '@coze-arch/bot-hooks';
 import {
   IconCozBot,
   IconCozBotFill,
   IconCozKnowledge,
   IconCozKnowledgeFill,
+  IconCozSetting,
+  IconCozSettingFill,
 } from '@coze-arch/coze-design/icons';
 import { Space, Avatar, Typography } from '@coze-arch/coze-design';
+import { useRouteConfig } from '@coze-arch/bot-hooks';
 
 import { SpaceSubModuleEnum } from '@/const';
 
@@ -47,6 +49,13 @@ export const WorkspaceSubMenu = () => {
       title: () => I18n.t('navigation_workspace_library', {}, 'Library'),
       path: SpaceSubModuleEnum.LIBRARY,
       dataTestId: 'navigation_workspace_library',
+    },
+    {
+      icon: <IconCozSetting />,
+      activeIcon: <IconCozSettingFill />,
+      title: () => '模型配置',
+      path: SpaceSubModuleEnum.MODELS,
+      dataTestId: 'navigation_workspace_models',
     },
   ];
 

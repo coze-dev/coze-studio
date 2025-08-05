@@ -23,6 +23,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/template"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	"github.com/coze-dev/coze-studio/backend/api/handler/coze"
+	"github.com/coze-dev/coze-studio/backend/domain/model/service"
+	"github.com/coze-dev/coze-studio/backend/domain/model/repository"
 
 	"github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
@@ -138,6 +141,12 @@ func Init(ctx context.Context) (err error) {
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
+
+	// Initialize Model Service
+	modelService := initModelService(infra)
+	if modelService != nil {
+		coze.InitModelService(modelService)
+	}
 
 	return nil
 }
@@ -354,4 +363,9 @@ func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.S
 		ImageX:               infra.ImageXClient,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
+}
+
+func initModelService(infra *appinfra.AppDependencies) service.ModelService {
+	repo := repository.NewModelRepository(infra.DB)
+	return service.NewModelService(repo)
 }

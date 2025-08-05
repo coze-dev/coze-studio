@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import axios, { type AxiosRequestConfig } from 'axios';
 import { globalVars } from '@coze-arch/web-context';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
@@ -81,7 +81,8 @@ type ExportFunctions =
   | 'SaveBindConnectorConfig'
   | 'CommitDraftBot'
   | 'CheckDraftBotCommit'
-  | 'GetCardRespStruct';
+  | 'GetCardRespStruct'
+  | 'GetSpaceModelList';
 
 type ExportService = {
   [K in ExportFunctions]: (
@@ -147,3 +148,11 @@ const spaceApiService = new Proxy(Object.create(null), {
 export const SpaceApi = spaceApiService;
 
 export { SpaceApiV2 } from './space-api-v2';
+export {
+  type SpaceModelItem,
+  type GetSpaceModelListRequest,
+  type GetSpaceModelListResponse,
+  getSpaceModelList,
+  getModelsByProtocol,
+  searchModels,
+} from './space-model-api';

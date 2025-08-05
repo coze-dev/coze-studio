@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type AxiosRequestConfig } from 'axios';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';

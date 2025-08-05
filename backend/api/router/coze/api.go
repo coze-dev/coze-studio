@@ -291,6 +291,10 @@ func Register(r *server.Hertz) {
 			{
 				_space := _playground_api.Group("/space", _spaceMw()...)
 				_space.POST("/list", append(_getspacelistv2Mw(), coze.GetSpaceListV2)...)
+				{
+					_model := _space.Group("/model", _modelMw()...)
+					_model.POST("/list", append(_getspacemodellistMw(), coze.GetSpaceModelList)...)
+				}
 			}
 		}
 		{
