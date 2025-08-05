@@ -29,12 +29,13 @@ import (
 func New() cache.Cmdable {
 	addr := os.Getenv("REDIS_ADDR")
 	password := os.Getenv("REDIS_PASSWORD")
-	cache.SetDefaultNilError(redis.Nil)
 
 	return NewWithAddrAndPassword(addr, password)
 }
 
 func NewWithAddrAndPassword(addr, password string) cache.Cmdable {
+	cache.SetDefaultNilError(redis.Nil)
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr, // Redis地址
 		DB:       0,    // 默认数据库
