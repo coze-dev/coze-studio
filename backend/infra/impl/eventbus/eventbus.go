@@ -29,13 +29,23 @@ import (
 
 type (
 	Producer        = eventbus.Producer
-	Consumer        = eventbus.Consumer
+	ConsumerService = eventbus.ConsumerService
 	ConsumerHandler = eventbus.ConsumerHandler
 	ConsumerOpt     = eventbus.ConsumerOpt
 	Message         = eventbus.Message
 )
 
-func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
+type consumerServiceImpl struct{}
+
+func NewConsumerService() ConsumerService {
+	return &consumerServiceImpl{}
+}
+
+func DefaultSVC() ConsumerService {
+	return eventbus.GetDefaultSVC()
+}
+
+func (consumerServiceImpl) RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	tp := os.Getenv(consts.MQTypeKey)
 	switch tp {
 	case "nsq":
