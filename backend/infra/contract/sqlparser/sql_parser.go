@@ -48,6 +48,13 @@ const (
 	OperationTypeUnknown  OperationType = "UNKNOWN"
 )
 
+type SQLFilterOp string
+
+const (
+	SQLFilterOpAnd SQLFilterOp = "AND"
+	SQLFilterOpOr  SQLFilterOp = "OR"
+)
+
 // SQLParser defines the interface for parsing and modifying SQL statements
 type SQLParser interface {
 	// ParseAndModifySQL parses SQL and replaces table/column names according to the provided message
@@ -64,4 +71,7 @@ type SQLParser interface {
 
 	// GetInsertDataNums extracts the number of rows to be inserted from a SQL statement. Only supports single-table insert.
 	GetInsertDataNums(sql string) (int, error)
+
+	// AppendSQLFilter appends a filter condition to the SQL statement.
+	AppendSQLFilter(sql string, op SQLFilterOp, filter string) (string, error)
 }
