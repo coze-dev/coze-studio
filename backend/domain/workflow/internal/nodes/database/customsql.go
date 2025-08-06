@@ -104,6 +104,7 @@ func (c *CustomSQL) Invoke(ctx context.Context, input map[string]any) (map[strin
 		DatabaseInfoID: c.databaseInfoID,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
+		ConnectorID:    getConnectorID(ctx),
 	}
 
 	inputBytes, err := sonic.Marshal(input)

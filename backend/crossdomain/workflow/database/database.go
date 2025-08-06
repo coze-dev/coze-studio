@@ -64,6 +64,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		SQL:         &request.SQL,
 		TableType:   tableType,
 		UserID:      strconv.FormatInt(request.UserID, 10),
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
@@ -106,6 +107,7 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		OperateType: database.OperateType_Delete,
 		TableType:   tableType,
 		UserID:      strconv.FormatInt(request.UserID, 10),
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	if request.ConditionGroup != nil {
@@ -141,6 +143,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		OperateType: database.OperateType_Select,
 		TableType:   tableType,
 		UserID:      strconv.FormatInt(request.UserID, 10),
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
@@ -196,6 +199,7 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 		OperateType: database.OperateType_Update,
 		SQLParams:   make([]*database.SQLParamVal, 0),
 		TableType:   tableType,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -243,6 +247,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 		OperateType: database.OperateType_Insert,
 		TableType:   tableType,
 		UserID:      strconv.FormatInt(request.UserID, 10),
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
