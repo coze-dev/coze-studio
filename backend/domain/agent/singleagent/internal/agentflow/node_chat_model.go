@@ -20,15 +20,23 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/libs/acl/openai"
+
+	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type config struct {
-	modelFactory chatmodel.Factory
-	modelInfo    *modelmgr.Model
+	modelFactory      chatmodel.Factory
+	modelInfo         *modelmgr.Model
+	agentModelSetting *bot_common.ModelInfo
 }
 
 func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatModel, error) {
@@ -43,6 +51,23 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 		return nil, errorx.New(errno.ErrAgentSupportedChatModelProtocol,
 			errorx.KV("protocol", string(modelMeta.Protocol)))
 	}
+	logs.CtxInfof(ctx, "chatModel-before: %v", conv.DebugJsonToStr(modelDetail.Meta.ConnConfig))
+	if conf.agentModelSetting != nil {
+		if conf.agentModelSetting.TopP != nil {
+			modelDetail.Meta.ConnConfig.TopP = ptr.Of(float32(*conf.agentModelSetting.TopP))
+		}
+		if conf.agentModelSetting.Temperature != nil {
+			modelDetail.Meta.ConnConfig.Temperature = ptr.Of(float32(*conf.agentModelSetting.Temperature))
+		}
+		if conf.agentModelSetting.MaxTokens != nil {
+			modelDetail.Meta.ConnConfig.MaxTokens = ptr.Of(int(*conf.agentModelSetting.MaxTokens))
+		}
+		if conf.agentModelSetting.ResponseFormat != nil {
+			modelDetail.Meta = parseResponseFormat(conf.agentModelSetting.ResponseFormat, modelMeta)
+		}
+
+	}
+	logs.CtxInfof(ctx, "chatModel-after: %v", conv.DebugJsonToStr(modelDetail.Meta.ConnConfig))
 
 	cm, err := conf.modelFactory.CreateChatModel(ctx, modelDetail.Meta.Protocol, conf.modelInfo.Meta.ConnConfig)
 	if err != nil {
@@ -50,6 +75,89 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 	}
 
 	return cm, nil
+}
+
+func parseResponseFormat(responseFormat *bot_common.ModelResponseFormat, modelMeta modelmgr.ModelMeta) modelmgr.ModelMeta {
+	if responseFormat == nil {
+		return modelMeta
+	}
+
+	switch modelMeta.Protocol {
+	case chatmodel.ProtocolOpenAI:
+		if modelMeta.ConnConfig.OpenAI == nil {
+			modelMeta.ConnConfig.Qwen = &chatmodel.QwenConfig{
+				ResponseFormat: &openai.ChatCompletionResponseFormat{
+					Type: responseFormatToOpenai(responseFormat),
+				},
+			}
+		} else {
+			if modelMeta.ConnConfig.OpenAI.ResponseFormat == nil {
+				modelMeta.ConnConfig.OpenAI.ResponseFormat = &openai.ChatCompletionResponseFormat{
+					Type: responseFormatToOpenai(responseFormat),
+				}
+			} else {
+				modelMeta.ConnConfig.OpenAI.ResponseFormat.Type = responseFormatToOpenai(responseFormat)
+			}
+		}
+	case chatmodel.ProtocolDeepseek:
+		if modelMeta.ConnConfig.Deepseek == nil {
+			modelMeta.ConnConfig.Deepseek = &chatmodel.DeepseekConfig{
+				ResponseFormatType: responseFormatToDeepseek(responseFormat),
+			}
+		} else {
+			modelMeta.ConnConfig.Deepseek.ResponseFormatType = responseFormatToDeepseek(responseFormat)
+		}
+	case chatmodel.ProtocolQwen:
+		if modelMeta.ConnConfig.Qwen == nil {
+			modelMeta.ConnConfig.Qwen = &chatmodel.QwenConfig{
+				ResponseFormat: &openai.ChatCompletionResponseFormat{
+					Type: responseFormatToOpenai(responseFormat),
+				},
+			}
+		} else {
+			if modelMeta.ConnConfig.Qwen.ResponseFormat == nil {
+				modelMeta.ConnConfig.Qwen.ResponseFormat = &openai.ChatCompletionResponseFormat{
+					Type: responseFormatToOpenai(responseFormat),
+				}
+			} else {
+				modelMeta.ConnConfig.Qwen.ResponseFormat.Type = responseFormatToOpenai(responseFormat)
+			}
+		}
+
+	default:
+		return modelMeta
+	}
+	return modelMeta
+}
+
+func responseFormatToDeepseek(responseFormat *bot_common.ModelResponseFormat) deepseek.ResponseFormatType {
+	var deepseekResponseFormatType deepseek.ResponseFormatType = deepseek.ResponseFormatTypeText
+	if responseFormat == nil {
+		return deepseekResponseFormatType
+	}
+	switch *responseFormat {
+	case bot_common.ModelResponseFormat_Text:
+		deepseekResponseFormatType = deepseek.ResponseFormatTypeText
+	case bot_common.ModelResponseFormat_JSON:
+		deepseekResponseFormatType = deepseek.ResponseFormatTypeJSONObject
+	}
+	return deepseekResponseFormatType
+}
+
+func responseFormatToOpenai(responseFormat *bot_common.ModelResponseFormat) openai.ChatCompletionResponseFormatType {
+
+	openaiResponseFormatType := openai.ChatCompletionResponseFormatTypeText
+	if responseFormat == nil {
+		return openaiResponseFormatType
+	}
+	switch *responseFormat {
+	case bot_common.ModelResponseFormat_Text:
+		openaiResponseFormatType = openai.ChatCompletionResponseFormatTypeText
+	case bot_common.ModelResponseFormat_JSON:
+		openaiResponseFormatType = openai.ChatCompletionResponseFormatTypeJSONObject
+	}
+
+	return openaiResponseFormatType
 }
 
 func loadModelInfo(ctx context.Context, manager modelmgr.Manager, modelID int64) (*modelmgr.Model, error) {
