@@ -18,6 +18,7 @@ package ctxcache
 
 import (
 	"context"
+	"reflect"
 	"sync"
 )
 
@@ -42,6 +43,21 @@ func Get[T any](ctx context.Context, key any) (value T, ok bool) {
 
 	if v, match := loadedValue.(T); match {
 		return v, true
+	}
+
+	// 特殊处理 T 是 string 的情况
+	if reflect.TypeOf(zero).Kind() == reflect.String {
+		switch v := loadedValue.(type) {
+		case []byte:
+			return any(string(v)).(T), true
+		case []int8:
+			// 转换 []int8 到 []byte，避免 unsafe
+			b := make([]byte, len(v))
+			for i, val := range v {
+				b[i] = byte(val)
+			}
+			return any(string(b)).(T), true
+		}
 	}
 
 	return zero, false
