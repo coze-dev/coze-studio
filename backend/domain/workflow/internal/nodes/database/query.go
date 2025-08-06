@@ -141,6 +141,7 @@ func (ds *Query) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 		Limit:          ds.limit,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
+		ConnectorID:    getConnectorID(ctx),
 	}
 
 	req.ConditionGroup = conditionGroup

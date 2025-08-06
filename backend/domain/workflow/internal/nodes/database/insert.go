@@ -90,6 +90,7 @@ func (is *Insert) Invoke(ctx context.Context, input map[string]any) (map[string]
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
+		ConnectorID:    getConnectorID(ctx),
 	}
 
 	response, err := is.inserter.Insert(ctx, req)
