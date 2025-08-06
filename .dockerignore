@@ -1,0 +1,36 @@
+# Exclude node_modules directories
+**/node_modules
+**/node_modules/**
+
+# Exclude build artifacts
+**/dist
+**/build
+**/.rush/temp
+**/.rush/build-cache
+**/common/temp
+
+# Exclude development files
+**/.git
+**/.gitignore
+**/.eslintrc*
+**/.prettierrc*
+**/*.log
+
+# Exclude test files
+**/__tests__
+**/*.test.*
+**/*.spec.*
+
+# Exclude documentation
+**/README.md
+**/CHANGELOG.md
+**/docs
+
+# Exclude IDE files
+**/.vscode
+**/.idea
+**/*.swp
+**/*.swo
+*.iml
+*.iws
+*.ipr
