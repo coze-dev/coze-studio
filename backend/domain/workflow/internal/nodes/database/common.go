@@ -415,12 +415,16 @@ func isDebugExecute(ctx context.Context) bool {
 	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeNodeDebug
 }
 
-func getExecUserID(ctx context.Context) int64 {
+func getExecUserID(ctx context.Context) string {
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	return execCtx.RootCtx.ExeCfg.Operator
+	if execCtx.RootCtx.ExeCfg.AgentID != nil {
+		return execCtx.RootCtx.ExeCfg.ConnectorUID
+	}
+	uIDStr := strconv.FormatInt(execCtx.RootCtx.ExeCfg.Operator, 10)
+	return uIDStr
 }
 
 func getConnectorID(ctx context.Context) int64 {
