@@ -123,6 +123,7 @@ func (u *Update) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
+		ConnectorID:    getConnectorID(ctx),
 	}
 
 	response, err := u.updater.Update(ctx, req)

@@ -423,6 +423,14 @@ func getExecUserID(ctx context.Context) int64 {
 	return execCtx.RootCtx.ExeCfg.Operator
 }
 
+func getConnectorID(ctx context.Context) int64 {
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx == nil {
+		panic(fmt.Errorf("unable to get exe context"))
+	}
+	return execCtx.RootCtx.ExeCfg.ConnectorID
+}
+
 func parseToInput(input map[string]any) map[string]any {
 	result := make(map[string]any, len(input))
 	for key, value := range input {

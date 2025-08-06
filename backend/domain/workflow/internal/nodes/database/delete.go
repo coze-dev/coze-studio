@@ -108,6 +108,7 @@ func (d *Delete) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 		ConditionGroup: conditionGroup,
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
+		ConnectorID:    getConnectorID(ctx),
 	}
 
 	response, err := d.deleter.Delete(ctx, request)
