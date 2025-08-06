@@ -161,6 +161,7 @@ func setCrashOutput() {
 	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
 }
 
+// TODO: remove me later
 func asyncStartMinioProxyServer(ctx context.Context) {
 	storageType := getEnv(consts.StorageType, "minio")
 	proxyURL := getEnv(consts.MinIOAPIHost, "http://localhost:9000")
