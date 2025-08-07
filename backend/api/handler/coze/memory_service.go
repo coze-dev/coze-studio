@@ -24,12 +24,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	table "github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 )
@@ -223,51 +220,6 @@ func GetPlayGroundMemory(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := memory.VariableApplicationSVC.GetPlayGroundMemory(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-
-	c.JSON(consts.StatusOK, resp)
-}
-
-// GetDocumentTableInfo .
-// @router /api/memory/doc_table_info [GET]
-func GetDocumentTableInfo(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req document.GetDocumentTableInfoRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(document.GetDocumentTableInfoResponse)
-	resp, err = knowledge.KnowledgeSVC.GetDocumentTableInfo(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-	c.JSON(consts.StatusOK, resp)
-}
-
-// GetModeConfig .
-// @router /api/memory/table_mode_config [GET]
-func GetModeConfig(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req table.GetModeConfigRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	if req.BotID == 0 {
-		invalidParamRequestResponse(c, "bot_id is zero")
-		return
-	}
-
-	resp, err := memory.DatabaseApplicationSVC.GetModeConfig(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

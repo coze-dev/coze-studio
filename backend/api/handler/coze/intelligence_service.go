@@ -24,12 +24,11 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	project "github.com/coze-dev/coze-studio/backend/api/model/project"
-	publish "github.com/coze-dev/coze-studio/backend/api/model/publish"
-	task "github.com/coze-dev/coze-studio/backend/api/model/task"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
+	project "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/project"
+	publish "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/publish"
+	task "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/task"
 	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/search"
 )

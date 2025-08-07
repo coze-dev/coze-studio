@@ -19,8 +19,8 @@ package entity
 import (
 	"github.com/xuri/excelize/v2"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 )
 
 type Database = database.Database
@@ -54,16 +54,16 @@ type TableReaderMeta struct {
 	StartLineIdx  int64
 	ReaderMethod  database.TableReadDataMethod
 	ReadLineCnt   int64
-	Schema        []*common.DocTableColumn
+	Schema        []*knowledge.DocTableColumn
 }
 
 type TableReaderSheetData struct {
-	Columns    []*common.DocTableColumn
+	Columns    []*knowledge.DocTableColumn
 	SampleData [][]string
 }
 
 type ExcelExtraInfo struct {
-	Sheets        []*common.DocTableSheet
+	Sheets        []*knowledge.DocTableSheet
 	ExtensionName string // extension
 	FileSize      int64  // file size
 	SourceFileID  int64
@@ -80,7 +80,7 @@ type LocalTableMeta struct {
 }
 
 type ColumnInfo struct {
-	ColumnType         common.ColumnType
+	ColumnType         knowledge.ColumnType
 	ContainsEmptyValue bool
 }
 
