@@ -186,7 +186,6 @@ services:
   elasticsearch:
     image: bitnami/elasticsearch:8.18.0
     container_name: coze-elasticsearch
-    restart: always
     user: root
     privileged: true
     profiles: ['middleware']
