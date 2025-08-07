@@ -23,8 +23,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/prompt"
 	"github.com/coze-dev/coze-studio/backend/application/shortcutcmd"
@@ -369,45 +368,5 @@ func GetFileUrls(ctx context.Context, c *app.RequestContext) {
 	resp.FileList = iconList
 	resp.Code = 0
 
-	c.JSON(consts.StatusOK, resp)
-}
-
-// UploadFileOpen .
-// @router /v1/files/upload [POST]
-func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req playground.UploadFileOpenRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(playground.UploadFileOpenResponse)
-	resp, err = upload.SVC.UploadFileOpen(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-	c.JSON(consts.StatusOK, resp)
-}
-
-// GetBotOnlineInfo .
-// @router /v1/bot/get_online_info [GET]
-func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req playground.GetBotOnlineInfoReq
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp, err := singleagent.SingleAgentSVC.GetAgentOnlineInfo(ctx, &req)
-
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
 	c.JSON(consts.StatusOK, resp)
 }

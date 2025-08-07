@@ -22,7 +22,7 @@ import (
 	"os"
 	"strings"
 
-	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"

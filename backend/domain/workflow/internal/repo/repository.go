@@ -30,7 +30,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
+	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"

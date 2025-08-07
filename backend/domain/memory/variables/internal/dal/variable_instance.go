@@ -22,7 +22,7 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/internal/dal/query"

@@ -21,7 +21,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"

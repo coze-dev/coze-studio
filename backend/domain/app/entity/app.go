@@ -17,8 +17,8 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	publishAPI "github.com/coze-dev/coze-studio/backend/api/model/publish"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
+	publishAPI "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/publish"
 	resourceCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )

@@ -17,7 +17,7 @@
 package entity
 
 import (
-	publishAPI "github.com/coze-dev/coze-studio/backend/api/model/publish"
+	publishAPI "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/publish"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 

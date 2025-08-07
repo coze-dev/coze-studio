@@ -17,7 +17,7 @@
 package vo
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"

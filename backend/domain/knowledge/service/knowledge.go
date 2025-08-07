@@ -34,9 +34,9 @@ import (
 	"github.com/bytedance/sonic"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"

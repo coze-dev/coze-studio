@@ -26,10 +26,10 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
+	dataset "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	document "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	resource "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/search"

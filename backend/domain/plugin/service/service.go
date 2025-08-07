@@ -25,7 +25,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"

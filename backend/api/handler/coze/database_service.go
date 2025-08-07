@@ -23,9 +23,8 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 )
@@ -341,7 +340,7 @@ func GetDatabaseTableSchema(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var resp *document.GetTableSchemaInfoResponse
+	var resp *knowledge.GetTableSchemaInfoResponse
 	resp, err = memory.DatabaseApplicationSVC.GetDatabaseTableSchema(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)

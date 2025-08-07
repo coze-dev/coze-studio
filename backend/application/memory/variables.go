@@ -24,8 +24,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"

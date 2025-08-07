@@ -22,14 +22,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	gonanoid "github.com/matoous/go-nanoid"
-
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
 )
 
 type ToolInfo struct {
@@ -40,7 +38,7 @@ type ToolInfo struct {
 	Version   *string
 
 	ActivatedStatus *ActivatedStatus
-	DebugStatus     *plugin_develop_common.APIDebugStatus
+	DebugStatus     *common.APIDebugStatus
 
 	Method    *string
 	SubURL    *string
