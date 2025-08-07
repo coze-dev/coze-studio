@@ -27,8 +27,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 
-	coze "github.com/coze-dev/coze-studio/backend/api/router/coze"
 	cozeHandler "github.com/coze-dev/coze-studio/backend/api/handler/coze"
+	coze "github.com/coze-dev/coze-studio/backend/api/router/coze"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -84,9 +84,23 @@ func staticFileRegister(r *server.Hertz) {
 func manualRegisterImportExport(r *server.Hertz) {
 	api := r.Group("/api")
 	workflowAPI := api.Group("/workflow_api")
-	
+
 	// Register import/export routes
 	workflowAPI.POST("/export", cozeHandler.ExportWorkflow)
 	workflowAPI.POST("/import", cozeHandler.ImportWorkflow)
 	workflowAPI.POST("/validate_import", cozeHandler.ValidateImport)
+
+	// Register model management routes
+	modelAPI := api.Group("/model")
+	modelAPI.POST("/create", cozeHandler.CreateModel)
+	modelAPI.POST("/detail", cozeHandler.GetModel)
+	modelAPI.POST("/update", cozeHandler.UpdateModel)
+	modelAPI.POST("/delete", cozeHandler.DeleteModel)
+
+	// Register space model management routes
+	spaceAPI := api.Group("/space")
+	spaceAPI.POST("/model/list", cozeHandler.GetSpaceModelList)
+	spaceAPI.POST("/model/add", cozeHandler.AddModelToSpace)
+	spaceAPI.POST("/model/remove", cozeHandler.RemoveModelFromSpace)
+	spaceAPI.POST("/model/config/update", cozeHandler.UpdateSpaceModelConfig)
 }

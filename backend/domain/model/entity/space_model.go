@@ -38,6 +38,7 @@ type SpaceModelView struct {
 	Description   string                 `json:"description"`
 	ContextLength int64                  `json:"context_length"`
 	IconURI       string                 `json:"icon_uri"`
+	IconURL       string                 `json:"icon_url,omitempty"`
 	Protocol      string                 `json:"protocol"`
 	CustomConfig  map[string]interface{} `json:"custom_config,omitempty"`
 }

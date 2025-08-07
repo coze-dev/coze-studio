@@ -117,7 +117,6 @@ class ModelImporter:
             'model_name': conn_config.get('model', meta.get('name', '')),
             'protocol': meta.get('protocol', ''),
             'icon_uri': config.get('icon_uri', ''),
-            'icon_url': config.get('icon_url', ''),
             'capability': json.dumps(capability) if capability else None,
             'conn_config': json.dumps(conn_config) if conn_config else None,
             'description': json.dumps(description) if description else None,
@@ -148,12 +147,16 @@ class ModelImporter:
             'updated_at': current_time
         }
     
-    def check_model_exists(self, model_name: str) -> bool:
-        """检查模型是否已存在"""
+    def check_model_exists(self, model_name: str, model_id: Optional[int] = None) -> bool:
+        """检查模型是否已存在（通过名称或ID）"""
         try:
             with self.connection.cursor() as cursor:
-                sql = "SELECT COUNT(*) FROM model_entity WHERE name = %s"
-                cursor.execute(sql, (model_name,))
+                if model_id:
+                    sql = "SELECT COUNT(*) FROM model_entity WHERE name = %s OR id = %s"
+                    cursor.execute(sql, (model_name, model_id))
+                else:
+                    sql = "SELECT COUNT(*) FROM model_entity WHERE name = %s"
+                    cursor.execute(sql, (model_name,))
                 count = cursor.fetchone()[0]
                 return count > 0
         except Exception as e:
@@ -166,13 +169,13 @@ class ModelImporter:
             with self.connection.cursor() as cursor:
                 sql = """
                 INSERT INTO model_meta 
-                (id, model_name, protocol, icon_uri, icon_url, capability, 
+                (id, model_name, protocol, icon_uri, capability, 
                  conn_config, description, status, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(sql, (
                     data['id'], data['model_name'], data['protocol'],
-                    data['icon_uri'], data['icon_url'], data['capability'],
+                    data['icon_uri'], data['capability'],
                     data['conn_config'], data['description'], data['status'],
                     data['created_at'], data['updated_at']
                 ))
@@ -213,14 +216,21 @@ class ModelImporter:
             self.logger.error("配置文件中缺少模型名称")
             return False
         
-        # 检查模型是否已存在
-        if not force and self.check_model_exists(model_name):
-            self.logger.warning(f"模型 {model_name} 已存在，跳过导入")
-            return True
+        # 获取 YAML 中的 ID，如果没有则生成新的
+        entity_id = config.get('id')
         
-        # 生成 ID
-        meta_id = self.generate_id()
-        entity_id = self.generate_id()
+        # 检查模型是否已存在
+        if not force and self.check_model_exists(model_name, entity_id):
+            self.logger.warning(f"模型 {model_name} (ID: {entity_id}) 已存在，跳过导入")
+            return True
+        if not entity_id:
+            entity_id = self.generate_id()
+            self.logger.warning(f"配置文件中未定义 ID，自动生成: {entity_id}")
+        else:
+            self.logger.info(f"使用配置文件中的 ID: {entity_id}")
+        
+        # meta_id 与 entity_id 保持一致
+        meta_id = entity_id
         
         # 准备数据
         meta_data = self.prepare_model_meta_data(config, meta_id)

@@ -27,12 +27,12 @@ import (
 
 func TestValidateImportPackage_EmptyPackage(t *testing.T) {
 	service := &impl{}
-	
+
 	ctx := context.Background()
 	policy := vo.ImportWorkflowPolicy{}
-	
+
 	result, err := service.ValidateImportPackage(ctx, nil, policy)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.False(t, result.IsValid)
@@ -42,10 +42,10 @@ func TestValidateImportPackage_EmptyPackage(t *testing.T) {
 
 func TestValidateImportPackage_ValidPackage(t *testing.T) {
 	service := &impl{}
-	
+
 	ctx := context.Background()
 	policy := vo.ImportWorkflowPolicy{}
-	
+
 	// Create a minimal valid package
 	importPackage := &vo.WorkflowExportPackage{
 		Version:     "1.0",
@@ -78,9 +78,9 @@ func TestValidateImportPackage_ValidPackage(t *testing.T) {
 			ExportFormat:        "json",
 		},
 	}
-	
+
 	result, err := service.ValidateImportPackage(ctx, importPackage, policy)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.True(t, result.IsValid)
@@ -92,10 +92,10 @@ func TestValidateImportPackage_ValidPackage(t *testing.T) {
 
 func TestValidateImportPackage_InvalidWorkflow(t *testing.T) {
 	service := &impl{}
-	
+
 	ctx := context.Background()
 	policy := vo.ImportWorkflowPolicy{}
-	
+
 	// Create a package with invalid workflow (missing meta)
 	importPackage := &vo.WorkflowExportPackage{
 		Version:     "1.0",
@@ -121,9 +121,9 @@ func TestValidateImportPackage_InvalidWorkflow(t *testing.T) {
 			ExportFormat:        "json",
 		},
 	}
-	
+
 	result, err := service.ValidateImportPackage(ctx, importPackage, policy)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.False(t, result.IsValid)
@@ -134,10 +134,10 @@ func TestValidateImportPackage_InvalidWorkflow(t *testing.T) {
 
 func TestValidateImportPackage_InvalidCanvas(t *testing.T) {
 	service := &impl{}
-	
+
 	ctx := context.Background()
 	policy := vo.ImportWorkflowPolicy{}
-	
+
 	// Create a package with invalid canvas JSON
 	importPackage := &vo.WorkflowExportPackage{
 		Version:     "1.0",
@@ -170,9 +170,9 @@ func TestValidateImportPackage_InvalidCanvas(t *testing.T) {
 			ExportFormat:        "json",
 		},
 	}
-	
+
 	result, err := service.ValidateImportPackage(ctx, importPackage, policy)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.False(t, result.IsValid)
@@ -182,10 +182,10 @@ func TestValidateImportPackage_InvalidCanvas(t *testing.T) {
 
 func TestValidateImportPackage_VersionMismatch(t *testing.T) {
 	service := &impl{}
-	
+
 	ctx := context.Background()
 	policy := vo.ImportWorkflowPolicy{}
-	
+
 	// Create a package with different version
 	importPackage := &vo.WorkflowExportPackage{
 		Version:     "2.0", // Different version
@@ -218,9 +218,9 @@ func TestValidateImportPackage_VersionMismatch(t *testing.T) {
 			ExportFormat:        "json",
 		},
 	}
-	
+
 	result, err := service.ValidateImportPackage(ctx, importPackage, policy)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.True(t, result.IsValid) // Still valid, but with warnings

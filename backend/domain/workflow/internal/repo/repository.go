@@ -1531,7 +1531,7 @@ func (r *RepositoryImpl) ExportWorkflowData(ctx context.Context, workflowID int6
 		ID:    workflowID,
 		QType: vo.FromDraft,
 	}
-	
+
 	wfEntity, err := r.GetEntity(ctx, policy)
 	if err != nil {
 		return nil, err

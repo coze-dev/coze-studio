@@ -16,7 +16,7 @@ type KnowledgeDocumentSlice struct {
 	KnowledgeID int64          `gorm:"column:knowledge_id;not null;comment:knowledge id" json:"knowledge_id"`            // knowledge id
 	DocumentID  int64          `gorm:"column:document_id;not null;comment:document id" json:"document_id"`               // document id
 	Content     string         `gorm:"column:content;comment:切片内容" json:"content"`                                       // 切片内容
-	Sequence    float64        `gorm:"column:sequence;not null;type:decimal(20,5);comment:切片顺序号, 从1开始" json:"sequence"`                     // 切片顺序号, 从1开始
+	Sequence    float64        `gorm:"column:sequence;not null;type:decimal(20,5);comment:切片顺序号, 从1开始" json:"sequence"`  // 切片顺序号, 从1开始
 	CreatedAt   int64          `gorm:"column:created_at;not null;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64          `gorm:"column:updated_at;not null;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`          // Delete Time in Milliseconds

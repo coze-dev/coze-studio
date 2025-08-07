@@ -26,6 +26,7 @@ interface SpaceModel {
   context_length?: number;
   protocol: string;
   icon_uri?: string;
+  icon_url?: string;
 }
 
 interface ModelCardProps {
@@ -47,6 +48,44 @@ interface ModelFiltersProps {
   onSearchChange: (value: string) => void;
 }
 
+const CONTEXT_LENGTH_DIVISOR = 1000;
+
+function ModelDropdownMenu({ modelId, isEnabled, onToggleEnabled }: { modelId: number; isEnabled: boolean; onToggleEnabled: (id: number, enabled: boolean) => void }) {
+  return (
+    <Dropdown.Menu>
+      <Dropdown.Item
+        onClick={() => {
+          onToggleEnabled(modelId, true);
+          console.log('启用模型', modelId);
+        }}
+        disabled={isEnabled}
+      >
+        启用
+      </Dropdown.Item>
+      <Dropdown.Item
+        onClick={() => {
+          onToggleEnabled(modelId, false);
+          console.log('停用模型', modelId);
+        }}
+        disabled={!isEnabled}
+      >
+        停用
+      </Dropdown.Item>
+      <Dropdown.Item
+        onClick={() => console.log('编辑模型', modelId)}
+      >
+        编辑
+      </Dropdown.Item>
+      <Dropdown.Item
+        type="danger"
+        onClick={() => console.log('删除模型', modelId)}
+      >
+        删除
+      </Dropdown.Item>
+    </Dropdown.Menu>
+  );
+}
+
 function ModelCard({ model, isEnabled, isFavorite, isHovered, onHover, onToggleFavorite, onToggleEnabled }: ModelCardProps) {
   return (
     <div 
@@ -63,9 +102,9 @@ function ModelCard({ model, isEnabled, isFavorite, isHovered, onHover, onToggleF
               shape="square"
               style={{ width: 40, height: 40 }}
             >
-              {model.icon_uri ? (
+              {(model.icon_url || model.icon_uri) ? (
                 <img 
-                  src={model.icon_uri} 
+                  src={model.icon_url || model.icon_uri} 
                   alt={model.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -109,7 +148,7 @@ function ModelCard({ model, isEnabled, isFavorite, isHovered, onHover, onToggleF
         
         <div className="flex items-center gap-[4px] text-[12px]">
           <span className="coz-fg-tertiary">上下文长度</span>
-          <span className="coz-fg-secondary">{model.context_length ? `${Math.floor(model.context_length / 1000)}K` : '未知'}</span>
+          <span className="coz-fg-secondary">{model.context_length ? `${Math.floor(model.context_length / CONTEXT_LENGTH_DIVISOR)}K` : '未知'}</span>
           <span className="coz-fg-tertiary ml-[8px]">厂商</span>
           <span className="coz-fg-secondary">{model.protocol}</span>
         </div>
@@ -138,39 +177,7 @@ function ModelCard({ model, isEnabled, isFavorite, isHovered, onHover, onToggleF
               <Dropdown
                 trigger="click"
                 position="bottomRight"
-                render={
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() => {
-                        onToggleEnabled(model.id, true);
-                        console.log('启用模型', model.id);
-                      }}
-                      disabled={isEnabled}
-                    >
-                      启用
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        onToggleEnabled(model.id, false);
-                        console.log('停用模型', model.id);
-                      }}
-                      disabled={!isEnabled}
-                    >
-                      停用
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => console.log('编辑模型', model.id)}
-                    >
-                      编辑
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      type="danger"
-                      onClick={() => console.log('删除模型', model.id)}
-                    >
-                      删除
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                }
+                render={<ModelDropdownMenu modelId={model.id} isEnabled={isEnabled} onToggleEnabled={onToggleEnabled} />}
               >
                 <IconButton icon={<IconCozMore />} />
               </Dropdown>

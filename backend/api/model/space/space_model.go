@@ -31,6 +31,7 @@ type SpaceModelItem struct {
 	Description   string                 `json:"description"`
 	ContextLength int64                  `json:"context_length"`
 	IconURI       string                 `json:"icon_uri"`
+	IconURL       string                 `json:"icon_url,omitempty"`
 	Protocol      string                 `json:"protocol"`
 	CustomConfig  map[string]interface{} `json:"custom_config,omitempty"`
 }
@@ -52,6 +53,7 @@ func ConvertToSpaceModelItem(model *entity.SpaceModelView) *SpaceModelItem {
 		Description:   model.Description,
 		ContextLength: model.ContextLength,
 		IconURI:       model.IconURI,
+		IconURL:       model.IconURL,
 		Protocol:      model.Protocol,
 		CustomConfig:  model.CustomConfig,
 	}

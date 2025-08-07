@@ -1,5 +1,5 @@
 id: 2004
-name: DeepSeek-V3
+name: deepseek-chat
 icon_uri: default_icon/deepseek_v2.png
 icon_url: ""
 description:
@@ -69,7 +69,7 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: DeepSeek-V3
+    name: deepseek-chat
     protocol: deepseek
     capability:
         function_call: false
@@ -85,10 +85,10 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
-        api_key: ""
-        timeout: 0s
-        model: ""
+        base_url: "https://api.deepseek.com"
+        api_key: "sk-7558b1dc9426484488c4ff4e992f4092"
+        timeout: 10s
+        model: "deepseek-chat"
         temperature: 0.7
         frequency_penalty: 0
         presence_penalty: 0

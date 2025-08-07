@@ -94,7 +94,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ModelMgr, err = initModelMgr()
+	deps.ModelMgr, err = initModelMgr(deps.DB, deps.CacheCli)
 	if err != nil {
 		return nil, err
 	}

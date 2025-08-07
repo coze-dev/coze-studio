@@ -3900,7 +3900,7 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 	// Parse import package
 	var importPackage vo.WorkflowExportPackage
 	if err := sonic.UnmarshalString(req.ImportPackage, &importPackage); err != nil {
-		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, 
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
 			fmt.Errorf("failed to parse import package: %w", err))
 	}
 
@@ -3929,9 +3929,9 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 		}
 
 		// Convert validation result to import result format
-		summary := fmt.Sprintf("Validation completed. Found %d workflows. Valid: %t", 
+		summary := fmt.Sprintf("Validation completed. Found %d workflows. Valid: %t",
 			validationResult.WorkflowCount, validationResult.IsValid)
-		
+
 		resultJSON, err := sonic.Marshal(validationResult)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
@@ -4006,7 +4006,7 @@ func (w *ApplicationService) ValidateImport(ctx context.Context, req *workflow.V
 	}
 
 	// Create summary
-	summary := fmt.Sprintf("Validation result: %t. Found %d workflows from %s", 
+	summary := fmt.Sprintf("Validation result: %t. Found %d workflows from %s",
 		validationResult.IsValid, validationResult.WorkflowCount, validationResult.SourceSystem)
 	if len(validationResult.Errors) > 0 {
 		summary += fmt.Sprintf(", %d errors", len(validationResult.Errors))

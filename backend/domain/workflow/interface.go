@@ -38,7 +38,7 @@ type Service interface {
 	Publish(ctx context.Context, policy *vo.PublishPolicy) (err error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) (err error)
 	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
-	
+
 	// Import/Export functionality
 	ExportWorkflow(ctx context.Context, workflowIDs []int64, policy vo.ExportWorkflowPolicy) (*vo.WorkflowExportPackage, error)
 	ImportWorkflow(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ImportResult, error)
@@ -92,7 +92,7 @@ type Repository interface {
 	WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
 
 	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
-	
+
 	// Import/Export functionality at repository level
 	ExportWorkflowData(ctx context.Context, workflowID int64) (*vo.WorkflowExportData, error)
 	ImportWorkflowData(ctx context.Context, importData *vo.WorkflowExportData, policy vo.ImportWorkflowPolicy) (*entity.Workflow, error)

@@ -18,9 +18,16 @@ package modelmgr
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strconv"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/domain/model/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/model/repository"
+	"github.com/coze-dev/coze-studio/backend/domain/model/service"
+	inframodelmgr "github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -30,8 +37,10 @@ import (
 )
 
 type ModelmgrApplicationService struct {
-	Mgr       modelmgr.Manager
-	TosClient storage.Storage
+	Mgr          inframodelmgr.Manager
+	TosClient    storage.Storage
+	ModelService service.ModelService
+	ModelRepo    repository.ModelRepository
 }
 
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
@@ -42,7 +51,7 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	// 一般不太可能同时配置这么多模型
 	const modelMaxLimit = 300
 
-	modelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
+	modelResp, err := m.Mgr.ListModel(ctx, &inframodelmgr.ListModelRequest{
 		Limit:  modelMaxLimit,
 		Cursor: nil,
 	})
@@ -51,7 +60,7 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	}
 
 	locale := i18n.GetLocale(ctx)
-	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *modelmgr.Model) (*developer_api.Model, error) {
+	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *inframodelmgr.Model) (*developer_api.Model, error) {
 		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", mm.DefaultParameters)
 		if mm.IconURI != "" {
 			iconUrl, err := m.TosClient.GetObjectUrl(ctx, mm.IconURI)
@@ -74,11 +83,255 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	}, nil
 }
 
-func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
+// CreateModel 创建模型
+func (m *ModelmgrApplicationService) CreateModel(ctx context.Context, req *modelmgr.CreateModelReq) (*modelmgr.ModelDetail, error) {
+	// 转换为实体
+	metaEntity := &entity.ModelMeta{
+		ModelName: req.Meta.Name,
+		Protocol:  req.Meta.Protocol,
+		IconURI:   req.IconURI,
+		IconURL:   req.IconURL,
+		Status:    1, // 默认启用
+	}
+
+	// 处理 Capability
+	capabilityJSON, err := json.Marshal(req.Meta.Capability)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal capability: %w", err)
+	}
+	capabilityStr := string(capabilityJSON)
+	metaEntity.Capability = &capabilityStr
+
+	// 处理 ConnConfig
+	connConfigJSON, err := json.Marshal(req.Meta.ConnConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal conn_config: %w", err)
+	}
+	connConfigStr := string(connConfigJSON)
+	metaEntity.ConnConfig = &connConfigStr
+
+	// 处理 Description
+	if len(req.Description) > 0 {
+		descJSON, err := json.Marshal(req.Description)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal description: %w", err)
+		}
+		metaEntity.Description = string(descJSON)
+	}
+
+	// 处理 DefaultParameters
+	paramsJSON, err := json.Marshal(req.DefaultParameters)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal default_parameters: %w", err)
+	}
+
+	modelEntity := &entity.ModelEntity{
+		Name:          req.Name,
+		DefaultParams: string(paramsJSON),
+		Scenario:      1, // 默认场景
+		Status:        1, // 默认启用
+	}
+
+	// 处理 Description
+	if len(req.Description) > 0 {
+		descJSON, err := json.Marshal(req.Description)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal description: %w", err)
+		}
+		descStr := string(descJSON)
+		modelEntity.Description = &descStr
+	}
+
+	// 调用领域服务创建模型
+	if err := m.ModelService.CreateModel(ctx, modelEntity, metaEntity); err != nil {
+		return nil, err
+	}
+
+	// 返回创建的模型详情
+	return m.convertToModelDetail(modelEntity, metaEntity), nil
+}
+
+// GetModel 获取模型详情
+func (m *ModelmgrApplicationService) GetModel(ctx context.Context, modelID string) (*modelmgr.ModelDetail, error) {
+	id, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid model id: %w", err)
+	}
+
+	model, meta, err := m.ModelService.GetModel(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.convertToModelDetail(model, meta), nil
+}
+
+// UpdateModel 更新模型
+func (m *ModelmgrApplicationService) UpdateModel(ctx context.Context, req *modelmgr.UpdateModelReq) (*modelmgr.ModelDetail, error) {
+	id, err := strconv.ParseUint(req.ModelID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid model id: %w", err)
+	}
+
+	// 获取现有模型
+	model, meta, err := m.ModelService.GetModel(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// 更新字段
+	if req.Name != nil {
+		model.Name = *req.Name
+	}
+	if req.IconURI != nil {
+		meta.IconURI = *req.IconURI
+	}
+	if req.IconURL != nil {
+		meta.IconURL = *req.IconURL
+	}
+	if req.Status != nil {
+		model.Status = *req.Status
+		meta.Status = *req.Status
+	}
+	if len(req.Description) > 0 {
+		descJSON, err := json.Marshal(req.Description)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal description: %w", err)
+		}
+		descStr := string(descJSON)
+		model.Description = &descStr
+	}
+	if len(req.DefaultParameters) > 0 {
+		paramsJSON, err := json.Marshal(req.DefaultParameters)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal default_parameters: %w", err)
+		}
+		model.DefaultParams = string(paramsJSON)
+	}
+
+	// 更新模型
+	if err := m.ModelService.UpdateModel(ctx, model); err != nil {
+		return nil, err
+	}
+	if err := m.ModelService.UpdateModelMeta(ctx, meta); err != nil {
+		return nil, err
+	}
+
+	return m.convertToModelDetail(model, meta), nil
+}
+
+// DeleteModel 删除模型
+func (m *ModelmgrApplicationService) DeleteModel(ctx context.Context, modelID string) error {
+	id, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	return m.ModelService.DeleteModel(ctx, id)
+}
+
+// AddModelToSpace 添加模型到空间
+func (m *ModelmgrApplicationService) AddModelToSpace(ctx context.Context, spaceID, modelID string, userID uint64) error {
+	sid, err := strconv.ParseUint(spaceID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid space id: %w", err)
+	}
+
+	mid, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	return m.ModelService.AddModelToSpace(ctx, sid, mid, userID)
+}
+
+// RemoveModelFromSpace 从空间移除模型
+func (m *ModelmgrApplicationService) RemoveModelFromSpace(ctx context.Context, spaceID, modelID string) error {
+	sid, err := strconv.ParseUint(spaceID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid space id: %w", err)
+	}
+
+	mid, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	return m.ModelService.RemoveModelFromSpace(ctx, sid, mid)
+}
+
+// UpdateSpaceModelConfig 更新空间模型配置
+func (m *ModelmgrApplicationService) UpdateSpaceModelConfig(ctx context.Context, spaceID, modelID string, config map[string]interface{}) error {
+	sid, err := strconv.ParseUint(spaceID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid space id: %w", err)
+	}
+
+	mid, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	return m.ModelService.UpdateSpaceModelConfig(ctx, sid, mid, config)
+}
+
+// convertToModelDetail 转换为模型详情
+func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEntity, meta *entity.ModelMeta) *modelmgr.ModelDetail {
+	detail := &modelmgr.ModelDetail{
+		ID:        strconv.FormatUint(model.ID, 10),
+		Name:      model.Name,
+		IconURI:   meta.IconURI,
+		IconURL:   meta.IconURL,
+		CreatedAt: int64(model.CreatedAt),
+		UpdatedAt: int64(model.UpdatedAt),
+		Meta: modelmgr.ModelMetaOutput{
+			ID:       strconv.FormatUint(meta.ID, 10),
+			Name:     meta.ModelName,
+			Protocol: meta.Protocol,
+			Status:   meta.Status,
+		},
+	}
+
+	// 处理 Description
+	if model.Description != nil && *model.Description != "" {
+		var desc map[string]string
+		if err := json.Unmarshal([]byte(*model.Description), &desc); err == nil {
+			detail.Description = desc
+		}
+	}
+
+	// 处理 DefaultParameters
+	if model.DefaultParams != "" {
+		var params []modelmgr.ModelParameterOutput
+		if err := json.Unmarshal([]byte(model.DefaultParams), &params); err == nil {
+			detail.DefaultParameters = params
+		}
+	}
+
+	// 处理 Capability
+	if meta.Capability != nil && *meta.Capability != "" {
+		var cap modelmgr.ModelCapability
+		if err := json.Unmarshal([]byte(*meta.Capability), &cap); err == nil {
+			detail.Meta.Capability = cap
+		}
+	}
+
+	// 处理 ConnConfig
+	if meta.ConnConfig != nil && *meta.ConnConfig != "" {
+		var config map[string]interface{}
+		if err := json.Unmarshal([]byte(*meta.ConnConfig), &config); err == nil {
+			detail.Meta.ConnConfig = config
+		}
+	}
+
+	return detail
+}
+
+func modelDo2To(model *inframodelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
-		func(param *modelmgr.Parameter) *developer_api.ModelParameter {
+		func(param *inframodelmgr.Parameter) *developer_api.ModelParameter {
 			return parameterDo2To(param, locale)
 		},
 	)
@@ -108,7 +361,7 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 		},
 		ModelName:      mm.Name,
 		ModelClassName: mm.Protocol.TOModelClass().String(),
-		IsOffline:      mm.Status != modelmgr.StatusInUse,
+		IsOffline:      mm.Status != inframodelmgr.StatusInUse,
 		ModelParams:    mps,
 		ModelDesc: []*developer_api.ModelDescGroup{
 			{
@@ -128,16 +381,16 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 		ModelAbility: &developer_api.ModelAbility{
 			CotDisplay:         ptr.Of(mm.Capability.Reasoning),
 			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
-			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalImage)),
-			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalVideo)),
-			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalAudio)),
+			ImageUnderstanding: ptr.Of(modalSet.Contains(inframodelmgr.ModalImage)),
+			VideoUnderstanding: ptr.Of(modalSet.Contains(inframodelmgr.ModalVideo)),
+			AudioUnderstanding: ptr.Of(modalSet.Contains(inframodelmgr.ModalAudio)),
 			SupportMultiModal:  ptr.Of(len(modalSet) > 1),
 			PrefillResp:        ptr.Of(mm.Capability.PrefillResponse),
 		},
 	}, nil
 }
 
-func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
+func parameterDo2To(param *inframodelmgr.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
 	if param == nil {
 		return nil
 	}
@@ -152,19 +405,19 @@ func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_ap
 
 	var custom string
 	var creative, balance, precise *string
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeDefault]; ok {
+	if val, ok := param.DefaultVal[inframodelmgr.DefaultTypeDefault]; ok {
 		custom = val
 	}
 
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeCreative]; ok {
+	if val, ok := param.DefaultVal[inframodelmgr.DefaultTypeCreative]; ok {
 		creative = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeBalance]; ok {
+	if val, ok := param.DefaultVal[inframodelmgr.DefaultTypeBalance]; ok {
 		balance = ptr.Of(val)
 	}
 
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypePrecise]; ok {
+	if val, ok := param.DefaultVal[inframodelmgr.DefaultTypePrecise]; ok {
 		precise = ptr.Of(val)
 	}
 
@@ -174,11 +427,11 @@ func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_ap
 		Desc:  param.Desc.Read(locale),
 		Type: func() developer_api.ModelParamType {
 			switch param.Type {
-			case modelmgr.ValueTypeBoolean:
+			case inframodelmgr.ValueTypeBoolean:
 				return developer_api.ModelParamType_Boolean
-			case modelmgr.ValueTypeInt:
+			case inframodelmgr.ValueTypeInt:
 				return developer_api.ModelParamType_Int
-			case modelmgr.ValueTypeFloat:
+			case inframodelmgr.ValueTypeFloat:
 				return developer_api.ModelParamType_Float
 			default:
 				return developer_api.ModelParamType_String
@@ -197,9 +450,9 @@ func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_ap
 		ParamClass: &developer_api.ModelParamClass{
 			ClassID: func() int32 {
 				switch param.Style.Widget {
-				case modelmgr.WidgetSlider:
+				case inframodelmgr.WidgetSlider:
 					return 1
-				case modelmgr.WidgetRadioButtons:
+				case inframodelmgr.WidgetRadioButtons:
 					return 2
 				default:
 					return 0

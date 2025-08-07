@@ -1721,7 +1721,7 @@ func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy v
 	// Export each workflow
 	workflows := make([]vo.WorkflowExportData, 0, len(workflowIDs))
 	var globalDeps *vo.GlobalDependencyInfo
-	
+
 	if policy.IncludeDependencies {
 		globalDeps = &vo.GlobalDependencyInfo{
 			Plugins:   make(map[int64]*vo.PluginEntity),
@@ -1736,7 +1736,7 @@ func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy v
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Collect global dependencies if requested
 		if policy.IncludeDependencies && exportData.Dependencies != nil {
 			// Collect plugin dependencies
@@ -1748,14 +1748,14 @@ func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy v
 					}
 				}
 			}
-			
+
 			// Collect knowledge dependencies (ID -> name mapping)
 			for _, knowledgeID := range exportData.Dependencies.KnowledgeIDs {
 				if _, exists := globalDeps.Knowledge[knowledgeID]; !exists {
 					globalDeps.Knowledge[knowledgeID] = fmt.Sprintf("Knowledge_%d", knowledgeID)
 				}
 			}
-			
+
 			// Collect database dependencies (ID -> name mapping)
 			for _, databaseID := range exportData.Dependencies.DatabaseIDs {
 				if _, exists := globalDeps.Databases[databaseID]; !exists {
@@ -1763,7 +1763,7 @@ func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy v
 				}
 			}
 		}
-		
+
 		workflows = append(workflows, *exportData)
 	}
 
@@ -1877,7 +1877,7 @@ func (i *impl) ValidateImportPackage(ctx context.Context, importPackage *vo.Work
 	// Validate each workflow
 	for idx, workflowData := range importPackage.Workflows {
 		workflowID := workflowData.OriginalID
-		
+
 		// Check required fields
 		if workflowData.Meta == nil {
 			validationResult.Errors = append(validationResult.Errors, vo.ValidationError{
