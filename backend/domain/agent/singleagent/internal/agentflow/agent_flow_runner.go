@@ -34,6 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 )
 
 type AgentState struct {
@@ -108,11 +109,11 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 		composeOpts = append(composeOpts, compose.WithCheckPointID(defaultCheckPointID))
 	}
 	if r.containWfTool && workflowMsgSr != nil {
-		go func() {
-			r.processWfMidMsgStream(ctx, sw, workflowMsgSr)
-		}()
+		safego.Go(ctx, func() {
+			r.processWfMidAnswerStream(ctx, sw, workflowMsgSr)
+		})
 	}
-	go func() {
+	safego.Go(ctx, func() {
 		defer func() {
 			if pe := recover(); pe != nil {
 				logs.CtxErrorf(ctx, "[AgentRunner] StreamExecute recover, err: %v", pe)
@@ -122,12 +123,12 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 			sw.Close()
 		}()
 		_, _ = r.runner.Stream(ctx, req, composeOpts...)
-	}()
+	})
 
 	return sr, nil
 }
 
-func (r *AgentRunner) processWfMidMsgStream(ctx context.Context, sw *schema.StreamWriter[*entity.AgentEvent], wfStream *schema.StreamReader[*crossworkflow.WorkflowMessage]) {
+func (r *AgentRunner) processWfMidAnswerStream(_ context.Context, sw *schema.StreamWriter[*entity.AgentEvent], wfStream *schema.StreamReader[*crossworkflow.WorkflowMessage]) {
 	streamInitialized := false
 	var srT *schema.StreamReader[*schema.Message]
 	var swT *schema.StreamWriter[*schema.Message]
@@ -138,16 +139,14 @@ func (r *AgentRunner) processWfMidMsgStream(ctx context.Context, sw *schema.Stre
 	}()
 	for {
 		msg, err := wfStream.Recv()
-		logs.CtxInfof(ctx, "[AgentRunner] StreamExecute, msg: %v, err:%v", conv.DebugJsonToStr(msg), err)
+
 		if err == io.EOF {
 			break
 		}
-		if msg == nil {
+		if msg == nil || msg.DataMessage == nil {
 			continue
 		}
-		if msg.DataMessage == nil {
-			continue
-		}
+
 		if msg.DataMessage.NodeType != crossworkflow.NodeTypeOutputEmitter {
 			continue
 		}
@@ -155,17 +154,17 @@ func (r *AgentRunner) processWfMidMsgStream(ctx context.Context, sw *schema.Stre
 			streamInitialized = true
 			srT, swT = schema.Pipe[*schema.Message](5)
 			sw.Send(&entity.AgentEvent{
-				EventType:     singleagent.EventTypeOfToolMidAnswerMsg,
+				EventType:     singleagent.EventTypeOfToolMidAnswer,
 				ToolMidAnswer: srT,
 			}, nil)
 		}
 		swT.Send(&schema.Message{
 			Role:    msg.DataMessage.Role,
 			Content: msg.DataMessage.Content,
-			Extra: func(msgDataMessage *crossworkflow.WorkflowMessage) map[string]any {
+			Extra: func(msg *crossworkflow.WorkflowMessage) map[string]any {
 
 				extra := make(map[string]any)
-				extra["workflow_node_name"] = msgDataMessage.NodeTitle
+				extra["workflow_node_name"] = msg.NodeTitle
 				if msg.DataMessage.Last {
 					extra["is_finish"] = true
 				}

@@ -102,6 +102,6 @@ const (
 	MessageTypeInterrupt    MessageType = "interrupt"
 	MessageTypeVerbose      MessageType = "verbose"
 
-	MessageTypeToolAsAnswer     MessageType = "tool_as_answer"
-	MessageTypeToolMidAnswerMsg MessageType = "tool_mid_answer_msg"
+	MessageTypeToolAsAnswer  MessageType = "tool_as_answer"
+	MessageTypeToolMidAnswer MessageType = "tool_mid_answer"
 )

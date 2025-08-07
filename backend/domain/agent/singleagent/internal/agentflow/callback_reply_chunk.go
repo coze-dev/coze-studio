@@ -316,8 +316,8 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 					if !streamInitialized {
 						sr, sw = schema.Pipe[*schema.Message](5)
 						r.sw.Send(&entity.AgentEvent{
-							EventType:     singleagent.EventTypeOfToolsAsChatModelStream,
-							ToolMsgAnswer: sr,
+							EventType:             singleagent.EventTypeOfToolsAsChatModelStream,
+							ToolAsChatModelAnswer: sr,
 						}, nil)
 						streamInitialized = true
 					}

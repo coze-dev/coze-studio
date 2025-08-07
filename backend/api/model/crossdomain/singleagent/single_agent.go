@@ -39,7 +39,7 @@ type EventType string
 const (
 	EventTypeOfChatModelAnswer        EventType = "chatmodel_answer"
 	EventTypeOfToolsAsChatModelStream EventType = "tools_as_chatmodel_answer"
-	EventTypeOfToolMidAnswerMsg       EventType = "tool_mid_answer_msg"
+	EventTypeOfToolMidAnswer          EventType = "tool_mid_answer"
 	EventTypeOfToolsMessage           EventType = "tools_message"
 	EventTypeOfFuncCall               EventType = "func_call"
 	EventTypeOfSuggest                EventType = "suggest"
@@ -50,8 +50,8 @@ const (
 type AgentEvent struct {
 	EventType EventType
 
-	ToolMidAnswer *schema.StreamReader[*schema.Message]
-	ToolMsgAnswer *schema.StreamReader[*schema.Message]
+	ToolMidAnswer         *schema.StreamReader[*schema.Message]
+	ToolAsChatModelAnswer *schema.StreamReader[*schema.Message]
 
 	ChatModelAnswer *schema.StreamReader[*schema.Message]
 	ToolsMessage    []*schema.Message

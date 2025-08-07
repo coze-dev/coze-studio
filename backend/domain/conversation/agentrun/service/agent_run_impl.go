@@ -207,8 +207,8 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 		return message.MessageTypeAnswer, nil
 	case singleagent.EventTypeOfToolsAsChatModelStream:
 		return message.MessageTypeToolAsAnswer, nil
-	case singleagent.EventTypeOfToolMidAnswerMsg:
-		return message.MessageTypeToolMidAnswerMsg, nil
+	case singleagent.EventTypeOfToolMidAnswer:
+		return message.MessageTypeToolMidAnswer, nil
 	case singleagent.EventTypeOfSuggest:
 		return message.MessageTypeFlowUp, nil
 	case singleagent.EventTypeOfInterrupt:
@@ -467,7 +467,7 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 			Interrupt:    rm.Interrupt,
 
 			ToolMidAnswer: rm.ToolMidAnswer,
-			ToolMsgAnswer: rm.ToolMsgAnswer,
+			ToolMsgAnswer: rm.ToolAsChatModelAnswer,
 		}
 
 		mainChan <- respChunk
@@ -544,7 +544,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			if err != nil {
 				return
 			}
-		case message.MessageTypeToolMidAnswerMsg:
+		case message.MessageTypeToolMidAnswer:
 			fullMidAnswerContent := bytes.NewBuffer([]byte{})
 			var usage *msgEntity.UsageExt
 			toolMidAnswerMsg, cErr := c.PreCreateAnswer(ctx, rtDependence)
