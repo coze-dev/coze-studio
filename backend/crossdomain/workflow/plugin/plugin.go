@@ -220,63 +220,6 @@ func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin
 	return response, nil
 }
 
-func (t *pluginService) UnwrapArrayItemFieldsInVariable(v *vo.Variable) error {
-	if v == nil {
-		return nil
-	}
-
-	if v.Type == vo.VariableTypeObject {
-		subVars, ok := v.Schema.([]*vo.Variable)
-		if !ok {
-			return nil
-		}
-
-		newSubVars := make([]*vo.Variable, 0, len(subVars))
-		for _, subVar := range subVars {
-			if subVar.Name == "[Array Item]" {
-				if err := t.UnwrapArrayItemFieldsInVariable(subVar); err != nil {
-					return err
-				}
-				// If the array item is an object, append its children
-				if subVar.Type == vo.VariableTypeObject {
-					if innerSubVars, ok := subVar.Schema.([]*vo.Variable); ok {
-						newSubVars = append(newSubVars, innerSubVars...)
-					}
-				} else {
-					// If the array item is a primitive type, clear its name and append it
-					subVar.Name = ""
-					newSubVars = append(newSubVars, subVar)
-				}
-			} else {
-				// For other sub-variables, recursively unwrap and append
-				if err := t.UnwrapArrayItemFieldsInVariable(subVar); err != nil {
-					return err
-				}
-				newSubVars = append(newSubVars, subVar)
-			}
-		}
-		v.Schema = newSubVars
-
-	} else if v.Type == vo.VariableTypeList {
-		if v.Schema != nil {
-			subVar, ok := v.Schema.(*vo.Variable)
-			if !ok {
-				return nil
-			}
-
-			if err := t.UnwrapArrayItemFieldsInVariable(subVar); err != nil {
-				return err
-			}
-			// If the array item definition itself has "[Array Item]" name, clear it
-			if subVar.Name == "[Array Item]" {
-				subVar.Name = ""
-			}
-			v.Schema = subVar
-		}
-	}
-	return nil
-}
-
 func (t *pluginService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.ToolsInvokableRequest) (
 	_ map[int64]crossplugin.InvokableTool, err error) {
 	defer func() {
@@ -563,7 +506,23 @@ func toWorkflowAPIParameter(parameter *common.APIParameter) *workflow3.APIParame
 		p.AssistType = ptr.Of(workflow3.AssistParameterType(*parameter.AssistType))
 	}
 
-	if len(parameter.SubParameters) > 0 {
+	// Check if it's an array that needs unwrapping.
+	if parameter.Type == common.ParameterType_Array && len(parameter.SubParameters) == 1 && parameter.SubParameters[0].Name == "[Array Item]" {
+		arrayItem := parameter.SubParameters[0]
+		p.SubType = ptr.Of(workflow3.ParameterType(arrayItem.Type))
+		// If the "[Array Item]" is an object, its sub-parameters become the array's sub-parameters.
+		if arrayItem.Type == common.ParameterType_Object {
+			p.SubParameters = make([]*workflow3.APIParameter, 0, len(arrayItem.SubParameters))
+			for _, subParam := range arrayItem.SubParameters {
+				p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
+			}
+		} else {
+			// The array's SubType is the Type of the "[Array Item]".
+			p.SubParameters = make([]*workflow3.APIParameter, 0, 1)
+			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(arrayItem))
+			p.SubParameters[0].Name = "" // Remove the "[Array Item]" name.
+		}
+	} else if len(parameter.SubParameters) > 0 { // A simple object or a non-wrapped array.
 		p.SubParameters = make([]*workflow3.APIParameter, 0, len(parameter.SubParameters))
 		for _, subParam := range parameter.SubParameters {
 			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
