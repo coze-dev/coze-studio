@@ -467,7 +467,7 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 			Interrupt:    rm.Interrupt,
 
 			ToolMidAnswer: rm.ToolMidAnswer,
-			ToolMsgAnswer: rm.ToolAsChatModelAnswer,
+			ToolAsAnswer:  rm.ToolAsChatModelAnswer,
 		}
 
 		mainChan <- respChunk
@@ -625,7 +625,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 
 			for {
-				streamMsg, receErr := chunk.ToolMsgAnswer.Recv()
+				streamMsg, receErr := chunk.ToolAsAnswer.Recv()
 				if receErr != nil {
 					if errors.Is(receErr, io.EOF) {
 

@@ -144,7 +144,7 @@ type AgentRespEvent struct {
 	EventType message.MessageType `json:"event_type"`
 
 	ToolMidAnswer *schema.StreamReader[*schema.Message]
-	ToolMsgAnswer *schema.StreamReader[*schema.Message]
+	ToolAsAnswer  *schema.StreamReader[*schema.Message]
 	ModelAnswer   *schema.StreamReader[*schema.Message]
 	ToolsMessage  []*schema.Message
 	FuncCall      *schema.Message
