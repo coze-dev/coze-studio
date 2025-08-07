@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 )
 
 type Variables interface {

@@ -19,7 +19,7 @@ package vo
 import (
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 )
 
 type ContentType = workflow.WorkFlowType

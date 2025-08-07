@@ -180,3 +180,48 @@ func (o *Operator) ToCanvasOperatorType() vo.OperatorType {
 		panic(fmt.Sprintf("unknown operator: %+v", o))
 	}
 }
+
+func ToSelectorOperator(o vo.OperatorType, leftType *vo.TypeInfo) (Operator, error) {
+	switch o {
+	case vo.Equal:
+		return OperatorEqual, nil
+	case vo.NotEqual:
+		return OperatorNotEqual, nil
+	case vo.LengthGreaterThan:
+		return OperatorLengthGreater, nil
+	case vo.LengthGreaterThanEqual:
+		return OperatorLengthGreaterOrEqual, nil
+	case vo.LengthLessThan:
+		return OperatorLengthLesser, nil
+	case vo.LengthLessThanEqual:
+		return OperatorLengthLesserOrEqual, nil
+	case vo.Contain:
+		if leftType.Type == vo.DataTypeObject {
+			return OperatorContainKey, nil
+		}
+		return OperatorContain, nil
+	case vo.NotContain:
+		if leftType.Type == vo.DataTypeObject {
+			return OperatorNotContainKey, nil
+		}
+		return OperatorNotContain, nil
+	case vo.Empty:
+		return OperatorEmpty, nil
+	case vo.NotEmpty:
+		return OperatorNotEmpty, nil
+	case vo.True:
+		return OperatorIsTrue, nil
+	case vo.False:
+		return OperatorIsFalse, nil
+	case vo.GreaterThan:
+		return OperatorGreater, nil
+	case vo.GreaterThanEqual:
+		return OperatorGreaterOrEqual, nil
+	case vo.LessThan:
+		return OperatorLesser, nil
+	case vo.LessThanEqual:
+		return OperatorLesserOrEqual, nil
+	default:
+		return "", fmt.Errorf("unsupported operator type: %d", o)
+	}
+}

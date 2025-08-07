@@ -23,6 +23,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/cloudwego/eino/compose"
@@ -30,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type Context struct {
@@ -48,6 +50,8 @@ type Context struct {
 	CheckPointID string
 
 	AppVarStore *AppVariables
+
+	executed *atomic.Int64
 }
 
 type RootCtx struct {
@@ -118,6 +122,7 @@ func restoreWorkflowCtx(ctx context.Context, h *WorkflowHandler) (context.Contex
 		}
 
 		storedCtx.AppVarStore = currentC.AppVarStore
+		storedCtx.executed = currentC.executed
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
@@ -158,13 +163,16 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 
 	currentC := GetExeCtx(ctx)
 
-	// restore the parent-child relationship between token collectors
-	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
-		currentTokenCollector := currentC.TokenCollector
-		storedCtx.TokenCollector.Parent = currentTokenCollector
-	}
+	if currentC != nil {
+		// restore the parent-child relationship between token collectors
+		if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
+			currentTokenCollector := currentC.TokenCollector
+			storedCtx.TokenCollector.Parent = currentTokenCollector
+		}
 
-	storedCtx.AppVarStore = currentC.AppVarStore
+		storedCtx.AppVarStore = currentC.AppVarStore
+		storedCtx.executed = currentC.executed
+	}
 
 	storedCtx.NodeCtx.CurrentRetryCount = 0
 
@@ -200,6 +208,9 @@ func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context
 	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil && existingC != nil {
 		currentTokenCollector := existingC.TokenCollector
 		storedCtx.TokenCollector.Parent = currentTokenCollector
+
+		storedCtx.AppVarStore = existingC.AppVarStore
+		storedCtx.executed = existingC.executed
 	}
 
 	storedCtx.NodeCtx.CurrentRetryCount = 0
@@ -224,6 +235,7 @@ func PrepareRootExeCtx(ctx context.Context, h *WorkflowHandler) (context.Context
 		TokenCollector: newTokenCollector(fmt.Sprintf("wf_%d", h.rootWorkflowBasic.ID), parentTokenCollector),
 		StartTime:      time.Now().UnixMilli(),
 		AppVarStore:    NewAppVariables(),
+		executed:       ptr.Of(atomic.Int64{}),
 	}
 
 	if h.requireCheckpoint {
@@ -278,6 +290,7 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 		CheckPointID:   newCheckpointID,
 		StartTime:      time.Now().UnixMilli(),
 		AppVarStore:    c.AppVarStore,
+		executed:       c.executed,
 	}
 
 	if requireCheckpoint {
@@ -321,6 +334,7 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 		StartTime:    time.Now().UnixMilli(),
 		CheckPointID: c.CheckPointID,
 		AppVarStore:  c.AppVarStore,
+		executed:     c.executed,
 	}
 
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
@@ -368,6 +382,7 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 		},
 		CheckPointID: newCheckpointID,
 		AppVarStore:  c.AppVarStore,
+		executed:     c.executed,
 	}), newCheckpointID
 }
 

@@ -16,7 +16,7 @@
 
 package connector
 
-import "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+import "github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 
 type Connector struct {
 	ID              int64                                `json:"id"`

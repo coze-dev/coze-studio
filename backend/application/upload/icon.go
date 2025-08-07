@@ -43,10 +43,11 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	dataset "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/file/upload"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -356,7 +357,7 @@ func (u *UploadService) GetShortcutIcons(ctx context.Context) ([]*playground.Fil
 	return fileList, nil
 }
 
-func parseMultipartFormData(ctx context.Context, req *playground.UploadFileOpenRequest) (*multipart.Form, error) {
+func parseMultipartFormData(ctx context.Context, req *bot_open_api.UploadFileOpenRequest) (*multipart.Form, error) {
 	_, params, err := mime.ParseMediaType(req.ContentType)
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadInvalidContentTypeCode, errorx.KV("content-type", req.ContentType))
@@ -382,9 +383,9 @@ func genObjName(name string, id string) string {
 	)
 }
 
-func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.UploadFileOpenRequest) (*playground.UploadFileOpenResponse, error) {
-	resp := playground.UploadFileOpenResponse{}
-	resp.File = new(playground.File)
+func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.UploadFileOpenRequest) (*bot_open_api.UploadFileOpenResponse, error) {
+	resp := bot_open_api.UploadFileOpenResponse{}
+	resp.File = new(bot_open_api.File)
 	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
 	if uid == 0 {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))

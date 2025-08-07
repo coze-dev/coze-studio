@@ -20,9 +20,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
 )
 

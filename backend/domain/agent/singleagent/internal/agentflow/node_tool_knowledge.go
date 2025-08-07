@@ -27,7 +27,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
 	knowledgeEntity "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 )

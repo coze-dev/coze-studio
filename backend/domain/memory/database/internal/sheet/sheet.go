@@ -35,8 +35,8 @@ import (
 	"github.com/extrame/xls"
 	"github.com/xuri/excelize/v2"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -47,8 +47,8 @@ import (
 
 type CellTypeIdentifier struct {
 	Priority         int64
-	IdentifyCellType func(cellValue string) *common.ColumnType
-	TargetColumnType common.ColumnType
+	IdentifyCellType func(cellValue string) *knowledge.ColumnType
+	TargetColumnType knowledge.ColumnType
 }
 
 var (
@@ -102,7 +102,7 @@ func (t *TosTableParser) GetTableDataBySheetIDx(ctx context.Context, rMeta entit
 		return nil, nil, ocErr
 	}
 	for i := range meta.SheetsRowCount {
-		extra.Sheets = append(extra.Sheets, &common.DocTableSheet{
+		extra.Sheets = append(extra.Sheets, &knowledge.DocTableSheet{
 			ID:        int64(i),
 			SheetName: meta.SheetsNameList[i],
 			TotalRow:  int64(meta.SheetsRowCount[i]),
@@ -205,7 +205,7 @@ func (t *TosTableParser) getTableDataBySheetIdx(ctx context.Context, rMeta entit
 	}
 
 	res := &entity.TableReaderSheetData{
-		Columns: make([]*common.DocTableColumn, 0),
+		Columns: make([]*knowledge.DocTableColumn, 0),
 	}
 	defer func() {
 		if localMeta != nil && localMeta.ExcelFile != nil {
@@ -226,7 +226,7 @@ func (t *TosTableParser) getTableDataBySheetIdx(ctx context.Context, rMeta entit
 	}
 
 	for colIndex, cell := range headLine {
-		res.Columns = append(res.Columns, &common.DocTableColumn{
+		res.Columns = append(res.Columns, &knowledge.DocTableColumn{
 			ColumnName: cell,
 			Sequence:   int64(colIndex),
 		})
@@ -454,10 +454,10 @@ func getXlsLocalSheetMetaWithTmpFileCallback(ctx context.Context, tmpFile string
 	}, nil
 }
 
-func (t *TosTableParser) PredictColumnType(columns []*common.DocTableColumn, sampleData [][]string, sheetIdx, startLineIdx int64) ([]*common.DocTableColumn, error) {
+func (t *TosTableParser) PredictColumnType(columns []*knowledge.DocTableColumn, sampleData [][]string, sheetIdx, startLineIdx int64) ([]*knowledge.DocTableColumn, error) {
 	if len(sampleData) == 0 {
 		for _, column := range columns {
-			column.ColumnType = common.ColumnTypePtr(common.ColumnType_Text) // bottom line display
+			column.ColumnType = knowledge.ColumnTypePtr(knowledge.ColumnType_Text) // bottom line display
 			column.ContainsEmptyValue = ptr.Of(true)
 		}
 		return columns, nil
@@ -516,8 +516,8 @@ func transposeExcelContent(excelContent [][]string, columnCount int) [][]string 
 	return transposedExcelContent
 }
 
-func predictColumnType(columnContent []string) (common.ColumnType, bool) {
-	columnType := common.ColumnType_Text
+func predictColumnType(columnContent []string) (knowledge.ColumnType, bool) {
+	columnType := knowledge.ColumnType_Text
 	containsEmptyValue := false
 	for i, col := range columnContent {
 		if col == "" {
@@ -532,7 +532,7 @@ func predictColumnType(columnContent []string) (common.ColumnType, bool) {
 		}
 
 		if GetColumnTypeCategory(columnType) != GetColumnTypeCategory(cellType) {
-			return common.ColumnType_Text, containsEmptyValue
+			return knowledge.ColumnType_Text, containsEmptyValue
 		}
 
 		if GetColumnTypePriority(cellType) < GetColumnTypePriority(columnType) {
@@ -542,7 +542,7 @@ func predictColumnType(columnContent []string) (common.ColumnType, bool) {
 	return columnType, containsEmptyValue
 }
 
-func GetColumnTypePriority(columnType common.ColumnType) int64 {
+func GetColumnTypePriority(columnType knowledge.ColumnType) int64 {
 	for _, identifier := range identifierChain {
 		if identifier.TargetColumnType == columnType {
 			return identifier.Priority
@@ -551,16 +551,16 @@ func GetColumnTypePriority(columnType common.ColumnType) int64 {
 	return 0
 }
 
-func GetColumnTypeCategory(columnType common.ColumnType) database.ColumnTypeCategory {
-	if columnType == common.ColumnType_Number || columnType == common.ColumnType_Float {
+func GetColumnTypeCategory(columnType knowledge.ColumnType) database.ColumnTypeCategory {
+	if columnType == knowledge.ColumnType_Number || columnType == knowledge.ColumnType_Float {
 		return database.ColumnTypeCategoryNumber
 	}
 	return database.ColumnTypeCategoryText
 }
 
-func GetCellType(cellValue string) common.ColumnType {
+func GetCellType(cellValue string) knowledge.ColumnType {
 	InitIdentifier()
-	cellTypeResult := common.ColumnType_Text
+	cellTypeResult := knowledge.ColumnType_Text
 	for _, identifier := range identifierChain {
 		cellType := identifier.IdentifyCellType(cellValue)
 		if cellType != nil {
@@ -571,40 +571,40 @@ func GetCellType(cellValue string) common.ColumnType {
 	return cellTypeResult
 }
 
-func IdentifyNumber(cellValue string) *common.ColumnType {
+func IdentifyNumber(cellValue string) *knowledge.ColumnType {
 	_, err := strconv.ParseInt(cellValue, 10, 64)
 	if err != nil {
 		return nil
 	}
-	return common.ColumnTypePtr(common.ColumnType_Number)
+	return knowledge.ColumnTypePtr(knowledge.ColumnType_Number)
 }
 
-func IdentifyFloat(cellValue string) *common.ColumnType {
+func IdentifyFloat(cellValue string) *knowledge.ColumnType {
 	_, err := strconv.ParseFloat(cellValue, 64)
 	if err != nil {
 		return nil
 	}
-	return common.ColumnTypePtr(common.ColumnType_Float)
+	return knowledge.ColumnTypePtr(knowledge.ColumnType_Float)
 }
 
-func IdentifyBoolean(cellValue string) *common.ColumnType {
+func IdentifyBoolean(cellValue string) *knowledge.ColumnType {
 	lowerCellValue := strings.ToLower(cellValue)
 	if lowerCellValue != "true" && lowerCellValue != "false" {
 		return nil
 	}
-	return common.ColumnTypePtr(common.ColumnType_Boolean)
+	return knowledge.ColumnTypePtr(knowledge.ColumnType_Boolean)
 }
 
-func IdentifyDate(cellValue string) *common.ColumnType {
+func IdentifyDate(cellValue string) *knowledge.ColumnType {
 	matched, err := regexp.MatchString(dateTimePattern, cellValue)
 	if err != nil || !matched {
 		return nil
 	}
-	return common.ColumnTypePtr(common.ColumnType_Date)
+	return knowledge.ColumnTypePtr(knowledge.ColumnType_Date)
 }
 
-func IdentifyText(cellValue string) *common.ColumnType {
-	return common.ColumnTypePtr(common.ColumnType_Text)
+func IdentifyText(cellValue string) *knowledge.ColumnType {
+	return knowledge.ColumnTypePtr(knowledge.ColumnType_Text)
 }
 
 func InitIdentifier() {
@@ -613,27 +613,27 @@ func InitIdentifier() {
 			{
 				Priority:         5,
 				IdentifyCellType: IdentifyNumber,
-				TargetColumnType: common.ColumnType_Number,
+				TargetColumnType: knowledge.ColumnType_Number,
 			},
 			{
 				Priority:         4,
 				IdentifyCellType: IdentifyFloat,
-				TargetColumnType: common.ColumnType_Float,
+				TargetColumnType: knowledge.ColumnType_Float,
 			},
 			{
 				Priority:         3,
 				IdentifyCellType: IdentifyBoolean,
-				TargetColumnType: common.ColumnType_Boolean,
+				TargetColumnType: knowledge.ColumnType_Boolean,
 			},
 			{
 				Priority:         2,
 				IdentifyCellType: IdentifyDate,
-				TargetColumnType: common.ColumnType_Date,
+				TargetColumnType: knowledge.ColumnType_Date,
 			},
 			{
 				Priority:         1,
 				IdentifyCellType: IdentifyText,
-				TargetColumnType: common.ColumnType_Text,
+				TargetColumnType: knowledge.ColumnType_Text,
 			},
 		}
 
@@ -686,7 +686,7 @@ func getDateTimeRegExp(datePatternList []string, timePatterList []string) string
 	return fmt.Sprintf("^(%s)( +(%s))?$", datePattern, timePattern)
 }
 
-func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*common.DocTableColumn, sampleData [][]string, previewLine int) (previewData []map[int64]string, err error) {
+func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*knowledge.DocTableColumn, sampleData [][]string, previewLine int) (previewData []map[int64]string, err error) {
 	previewData = make([]map[int64]string, 0)
 
 	for idx, line := range sampleData {
@@ -710,7 +710,7 @@ func (t *TosTableParser) TransferPreviewData(ctx context.Context, columns []*com
 	return previewData, nil
 }
 
-func CheckSheetIsValid(fields []*database.FieldItem, parsedColumns []*common.DocTableColumn, sheet *entity.ExcelExtraInfo) (bool, *string) {
+func CheckSheetIsValid(fields []*database.FieldItem, parsedColumns []*knowledge.DocTableColumn, sheet *entity.ExcelExtraInfo) (bool, *string) {
 	if len(fields) != len(parsedColumns) {
 		return false, ptr.Of("field number not match")
 	}

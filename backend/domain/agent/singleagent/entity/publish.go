@@ -17,7 +17,7 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 

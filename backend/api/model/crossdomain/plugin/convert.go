@@ -21,7 +21,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 )
 
 var httpParamLocations = map[common.ParameterLocation]HTTPParamLocation{

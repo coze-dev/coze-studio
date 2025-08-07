@@ -31,7 +31,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"

@@ -19,9 +19,9 @@ package singleagent
 import (
 	"context"
 
-	intelligence "github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	intelligence "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"

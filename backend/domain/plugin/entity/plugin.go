@@ -25,7 +25,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -149,7 +149,7 @@ func NewDefaultPluginManifest() *PluginManifest {
 		Auth: &model.AuthV2{
 			Type: model.AuthzTypeOfNone,
 		},
-		CommonParams: map[model.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
+		CommonParams: map[model.HTTPParamLocation][]*common.CommonParamSchema{
 			model.ParamInBody: {},
 			model.ParamInHeader: {
 				{

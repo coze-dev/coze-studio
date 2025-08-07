@@ -64,7 +64,9 @@ import (
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
 	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
+	implEventbus "github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 )
 
 type eventbusImpl struct {
@@ -144,6 +146,7 @@ func Init(ctx context.Context) (err error) {
 
 func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 	e := &eventbusImpl{}
+	eventbus.SetDefaultSVC(implEventbus.NewConsumerService())
 	e.resourceEventBus = search.NewResourceEventBus(infra.ResourceEventProducer)
 	e.projectEventBus = search.NewProjectEventBus(infra.AppEventProducer)
 

@@ -19,7 +19,7 @@ package template
 import (
 	"context"
 
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
+	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/domain/template/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/template/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"

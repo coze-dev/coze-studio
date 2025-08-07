@@ -22,9 +22,10 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	document "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
@@ -48,8 +49,8 @@ type DatabaseApplicationService struct {
 
 var DatabaseApplicationSVC = DatabaseApplicationService{}
 
-func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *table.GetModeConfigRequest) (*table.GetModeConfigResponse, error) {
-	return &table.GetModeConfigResponse{
+func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *knowledge.GetModeConfigRequest) (*knowledge.GetModeConfigResponse, error) {
+	return &knowledge.GetModeConfigResponse{
 		Code:          0,
 		Msg:           "success",
 		BotID:         req.BotID,

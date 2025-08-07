@@ -437,7 +437,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"bitable:app","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"bitable:app wiki:wiki","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_base.png
     api:
       type: openapi
@@ -448,10 +448,6 @@
       header:
         - name: User-Agent
           value: Coze/1.0
-        - name: x-use-ppe
-          value: '1'
-        - name: x-tt-env
-          value: ppe_lark_plugin_coze
   tools:
     - tool_id: 160001
       deprecated: false

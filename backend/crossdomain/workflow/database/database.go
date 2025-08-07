@@ -19,13 +19,12 @@ package database
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cast"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	nodedatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
@@ -63,7 +62,8 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		OperateType: database.OperateType_Custom,
 		SQL:         &request.SQL,
 		TableType:   tableType,
-		UserID:      strconv.FormatInt(request.UserID, 10),
+		UserID:      request.UserID,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
@@ -105,7 +105,8 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Delete,
 		TableType:   tableType,
-		UserID:      strconv.FormatInt(request.UserID, 10),
+		UserID:      request.UserID,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	if request.ConditionGroup != nil {
@@ -140,7 +141,8 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Select,
 		TableType:   tableType,
-		UserID:      strconv.FormatInt(request.UserID, 10),
+		UserID:      request.UserID,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
@@ -196,6 +198,8 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 		OperateType: database.OperateType_Update,
 		SQLParams:   make([]*database.SQLParamVal, 0),
 		TableType:   tableType,
+		UserID:      request.UserID,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -242,7 +246,8 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Insert,
 		TableType:   tableType,
-		UserID:      strconv.FormatInt(request.UserID, 10),
+		UserID:      request.UserID,
+		ConnectorID: ptr.Of(request.ConnectorID),
 	}
 
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)

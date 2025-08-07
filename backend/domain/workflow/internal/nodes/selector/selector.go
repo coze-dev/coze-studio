@@ -23,23 +23,32 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 type Selector struct {
-	config *Config
+	clauses []*OneClauseSchema
+	ns      *schema.NodeSchema
+	ws      *schema.WorkflowSchema
 }
 
-func NewSelector(_ context.Context, config *Config) (*Selector, error) {
-	if config == nil {
-		return nil, fmt.Errorf("config is nil")
+type Config struct {
+	Clauses []*OneClauseSchema `json:"clauses"`
+}
+
+func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, opts ...schema.BuildOption) (any, error) {
+	ws := schema.GetBuildOptions(opts...).WS
+	if ws == nil {
+		return nil, fmt.Errorf("workflow schema is required")
 	}
 
-	if len(config.Clauses) == 0 {
+	if len(c.Clauses) == 0 {
 		return nil, fmt.Errorf("config clauses are empty")
 	}
 
-	for _, clause := range config.Clauses {
+	for _, clause := range c.Clauses {
 		if clause.Single == nil && clause.Multi == nil {
 			return nil, fmt.Errorf("single clause and multi clause are both nil")
 		}
@@ -60,8 +69,40 @@ func NewSelector(_ context.Context, config *Config) (*Selector, error) {
 	}
 
 	return &Selector{
-		config: config,
+		clauses: c.Clauses,
+		ns:      ns,
+		ws:      ws,
 	}, nil
+}
+
+func (c *Config) BuildBranch(_ context.Context) (
+	func(ctx context.Context, nodeOutput map[string]any) (int64, bool, error), bool) {
+	return func(ctx context.Context, nodeOutput map[string]any) (int64, bool, error) {
+		choice := nodeOutput[SelectKey].(int64)
+		if choice < 0 || choice > int64(len(c.Clauses)+1) {
+			return -1, false, fmt.Errorf("selector choice out of range: %d", choice)
+		}
+
+		if choice == int64(len(c.Clauses)) { // default
+			return -1, true, nil
+		}
+
+		return choice, false, nil
+	}, true
+}
+
+func (c *Config) ExpectPorts(_ context.Context, n *vo.Node) []string {
+	expects := make([]string, len(n.Data.Inputs.Branches)+1)
+	expects[0] = "false" // default branch
+	if len(n.Data.Inputs.Branches) > 0 {
+		expects[1] = "true" // first condition
+	}
+
+	for i := 1; i < len(n.Data.Inputs.Branches); i++ { // other conditions
+		expects[i+1] = "true_" + strconv.Itoa(i)
+	}
+
+	return expects
 }
 
 type Operants struct {
@@ -76,14 +117,14 @@ const (
 	SelectKey = "selected"
 )
 
-func (s *Selector) Select(_ context.Context, input map[string]any) (out map[string]any, err error) {
-	in, err := s.SelectorInputConverter(input)
+func (s *Selector) Invoke(_ context.Context, input map[string]any) (out map[string]any, err error) {
+	in, err := s.selectorInputConverter(input)
 	if err != nil {
 		return nil, err
 	}
 
-	predicates := make([]Predicate, 0, len(s.config.Clauses))
-	for i, oneConf := range s.config.Clauses {
+	predicates := make([]Predicate, 0, len(s.clauses))
+	for i, oneConf := range s.clauses {
 		if oneConf.Single != nil {
 			left := in[i].Left
 			right := in[i].Right
@@ -132,23 +173,15 @@ func (s *Selector) Select(_ context.Context, input map[string]any) (out map[stri
 		}
 
 		if isTrue {
-			return map[string]any{SelectKey: i}, nil
+			return map[string]any{SelectKey: int64(i)}, nil
 		}
 	}
 
-	return map[string]any{SelectKey: len(in)}, nil // default choice
+	return map[string]any{SelectKey: int64(len(in))}, nil // default choice
 }
 
-func (s *Selector) GetType() string {
-	return "Selector"
-}
-
-func (s *Selector) ConditionCount() int {
-	return len(s.config.Clauses)
-}
-
-func (s *Selector) SelectorInputConverter(in map[string]any) (out []Operants, err error) {
-	conf := s.config.Clauses
+func (s *Selector) selectorInputConverter(in map[string]any) (out []Operants, err error) {
+	conf := s.clauses
 
 	for i, oneConf := range conf {
 		if oneConf.Single != nil {
@@ -187,8 +220,8 @@ func (s *Selector) SelectorInputConverter(in map[string]any) (out []Operants, er
 }
 
 func (s *Selector) ToCallbackOutput(_ context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
-	count := len(s.config.Clauses)
-	out := output[SelectKey].(int)
+	count := int64(len(s.clauses))
+	out := output[SelectKey].(int64)
 	if out == count {
 		cOutput := map[string]any{"result": "pass to else branch"}
 		return &nodes.StructuredCallbackOutput{

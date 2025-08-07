@@ -19,10 +19,10 @@ package service
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 )
 
@@ -189,8 +189,8 @@ type GetDatabaseTableSchemaRequest struct {
 }
 
 type GetDatabaseTableSchemaResponse struct {
-	SheetList   []*common.DocTableSheet
-	TableMeta   []*common.DocTableColumn
+	SheetList   []*knowledge.DocTableSheet
+	TableMeta   []*knowledge.DocTableColumn
 	PreviewData []map[int64]string
 }
 

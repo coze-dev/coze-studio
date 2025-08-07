@@ -30,7 +30,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	developer_api "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"

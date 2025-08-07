@@ -33,22 +33,22 @@ import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"gopkg.in/yaml.v3"
 
+	botOpenAPI "github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
-	productCommon "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_common"
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	botOpenAPI "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_open_api"
-	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/plugin_develop"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	productCommon "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
+	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
+	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -1704,12 +1704,12 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
 
-	secret := os.Getenv(utils.StateSecretEnv)
+	secret := os.Getenv(encrypt.StateSecretEnv)
 	if secret == "" {
-		secret = utils.DefaultStateSecret
+		secret = encrypt.DefaultStateSecret
 	}
 
-	stateBytes, err := utils.DecryptByAES(stateStr, secret)
+	stateBytes, err := encrypt.DecryptByAES(stateStr, secret)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}

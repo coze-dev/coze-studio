@@ -19,6 +19,7 @@ package consts
 import "time"
 
 const (
+	RunMode            = "RUN_MODE"
 	MySQLDsn           = "MYSQL_DSN"
 	RedisAddr          = "REDIS_ADDR"
 	VeImageXAK         = "VE_IMAGEX_AK"

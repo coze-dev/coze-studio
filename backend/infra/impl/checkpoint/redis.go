@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 )
@@ -52,6 +51,6 @@ func (r *redisStore) Set(ctx context.Context, checkPointID string, checkPoint []
 	return r.client.Set(ctx, fmt.Sprintf(checkpointKeyTpl, checkPointID), checkPoint, checkpointExpire).Err()
 }
 
-func NewRedisStore(client *redis.Client) compose.CheckPointStore {
+func NewRedisStore(client cache.Cmdable) compose.CheckPointStore {
 	return &redisStore{client: client}
 }

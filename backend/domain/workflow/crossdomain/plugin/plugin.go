@@ -22,7 +22,7 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
+	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 )
@@ -30,7 +30,6 @@ import (
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
 type Service interface {
 	GetPluginToolsInfo(ctx context.Context, req *ToolsInfoRequest) (*ToolsInfoResponse, error)
-	UnwrapArrayItemFieldsInVariable(v *vo.Variable) error
 	GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (map[int64]InvokableTool, error)
 	ExecutePlugin(ctx context.Context, input map[string]any, pe *Entity,
 		toolID int64, cfg ExecConfig) (map[string]any, error)
