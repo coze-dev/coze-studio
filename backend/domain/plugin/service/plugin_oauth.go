@@ -29,8 +29,9 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -438,12 +439,12 @@ func genAuthURL(info *entity.AuthorizationCodeInfo) (string, error) {
 		return "", fmt.Errorf("marshal state failed, err=%v", err)
 	}
 
-	secret := os.Getenv(utils.StateSecretEnv)
+	secret := os.Getenv(encrypt.StateSecretEnv)
 	if secret == "" {
-		secret = utils.DefaultStateSecret
+		secret = encrypt.DefaultStateSecret
 	}
 
-	encryptState, err := utils.EncryptByAES(stateStr, secret)
+	encryptState, err := encrypt.EncryptByAES(stateStr, secret)
 	if err != nil {
 		return "", fmt.Errorf("encrypt state failed, err=%v", err)
 	}
@@ -464,7 +465,7 @@ func getStanderOAuthConfig(config *model.OAuthAuthorizationCodeConfig) *oauth2.C
 			TokenURL: config.AuthorizationURL,
 			AuthURL:  config.ClientURL,
 		},
-		RedirectURL: fmt.Sprintf("https://%s/api/oauth/authorization_code", os.Getenv("SERVER_HOST")),
+		RedirectURL: fmt.Sprintf("%s/api/oauth/authorization_code", conf.GetServerHost()),
 		Scopes:      strings.Split(config.Scope, " "),
 	}
 }

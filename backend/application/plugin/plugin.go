@@ -45,10 +45,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -1704,12 +1704,12 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
 
-	secret := os.Getenv(utils.StateSecretEnv)
+	secret := os.Getenv(encrypt.StateSecretEnv)
 	if secret == "" {
-		secret = utils.DefaultStateSecret
+		secret = encrypt.DefaultStateSecret
 	}
 
-	stateBytes, err := utils.DecryptByAES(stateStr, secret)
+	stateBytes, err := encrypt.DecryptByAES(stateStr, secret)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
