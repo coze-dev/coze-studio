@@ -332,8 +332,15 @@ func (t *pluginService) ExecutePlugin(ctx context.Context, input map[string]any,
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
+	var uID string
+	if cfg.AgentID != nil {
+		uID = cfg.ConnectorUID
+	} else {
+		uID = conv.Int64ToStr(cfg.Operator)
+	}
+
 	req := &service.ExecuteToolRequest{
-		UserID:          conv.Int64ToStr(cfg.Operator),
+		UserID:          uID,
 		PluginID:        pe.PluginID,
 		ToolID:          toolID,
 		ExecScene:       plugin.ExecSceneOfWorkflow,
