@@ -273,7 +273,6 @@ func convInterruptEventType(interruptEvent any) singleagent.InterruptEventType {
 }
 
 func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) ([]*schema.Message, error) {
-	defer output.Close()
 	var toolsMsgChunks [][]*schema.Message
 	var sr *schema.StreamReader[*schema.Message]
 	var sw *schema.StreamWriter[*schema.Message]
@@ -286,7 +285,6 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 	returnDirectToolsMap := make(map[int]bool)
 	isReturnDirectToolsFirstCheck := true
 	isToolsMsgChunksInit := false
-
 	for {
 		cbOut, err := output.Recv()
 		if errors.Is(err, io.EOF) {
@@ -324,8 +322,8 @@ func (r *replyChunkCallback) concatToolsNodeOutput(ctx context.Context, output *
 					if !streamInitialized {
 						sr, sw = schema.Pipe[*schema.Message](5)
 						r.sw.Send(&entity.AgentEvent{
-							EventType:       singleagent.EventTypeOfToolsAsChatModelStream,
-							ChatModelAnswer: sr,
+							EventType:     singleagent.EventTypeOfToolsAsChatModelStream,
+							ToolMsgAnswer: sr,
 						}, nil)
 						streamInitialized = true
 					}

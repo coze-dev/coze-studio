@@ -19,8 +19,9 @@ package plugin
 import (
 	"testing"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
 func TestPluginService_UnwrapArrayItemFieldsInVariable(t *testing.T) {

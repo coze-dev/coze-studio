@@ -200,8 +200,12 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 		return message.MessageTypeKnowledge, nil
 	case singleagent.EventTypeOfToolsMessage:
 		return message.MessageTypeToolResponse, nil
-	case singleagent.EventTypeOfChatModelAnswer, singleagent.EventTypeOfToolsAsChatModelStream:
+	case singleagent.EventTypeOfChatModelAnswer:
 		return message.MessageTypeAnswer, nil
+	case singleagent.EventTypeOfToolsAsChatModelStream:
+		return message.MessageTypeToolAsAnswer, nil
+	case singleagent.EventTypeOfToolMidAnswerMsg:
+		return message.MessageTypeToolMidAnswerMsg, nil
 	case singleagent.EventTypeOfSuggest:
 		return message.MessageTypeFlowUp, nil
 	case singleagent.EventTypeOfInterrupt:
@@ -238,12 +242,12 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		buildExt = arm.Ext
 
 		msg.DisplayContent = arm.DisplayContent
-	case message.MessageTypeAnswer:
+	case message.MessageTypeAnswer, message.MessageTypeToolAsAnswer:
 		msg.Role = schema.Assistant
 		msg.ContentType = message.ContentTypeText
 
 	case message.MessageTypeToolResponse:
-		msg.Role = schema.Tool
+		msg.Role = schema.Assistant
 		msg.ContentType = message.ContentTypeText
 		msg.Content = chunk.ToolsMessage[0].Content
 
@@ -258,7 +262,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		msg.Role = schema.Assistant
 		msg.ContentType = message.ContentTypeText
 
-		knowledgeContent := c.buildKnowledge(ctx, arm, chunk)
+		knowledgeContent := c.buildKnowledge(ctx, chunk)
 		if knowledgeContent != nil {
 			knInfo, err := json.Marshal(knowledgeContent)
 			if err == nil {
@@ -458,6 +462,9 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 			Knowledge:    rm.Knowledge,
 			Suggest:      rm.Suggest,
 			Interrupt:    rm.Interrupt,
+
+			ToolMidAnswer: rm.ToolMidAnswer,
+			ToolMsgAnswer: rm.ToolMsgAnswer,
 		}
 
 		mainChan <- respChunk
@@ -475,9 +482,12 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 	}()
 
 	reasoningContent := bytes.NewBuffer([]byte{})
-	var createPreMsg = true
-	var preFinalAnswerMsg *msgEntity.Message
 
+	var firstAnswerMsg *msgEntity.Message
+	var reasoningMsg *msgEntity.Message
+	isSendFinishAnswer := false
+	var preToolResponseMsg *msgEntity.Message
+	toolResponseMsgContent := bytes.NewBuffer([]byte{})
 	for {
 		chunk, ok := <-mainChan
 		if !ok || chunk == nil {
@@ -486,6 +496,19 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		logs.CtxInfof(ctx, "hanlder event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
 		if chunk.Err != nil {
 			if errors.Is(chunk.Err, io.EOF) {
+				if !isSendFinishAnswer {
+					isSendFinishAnswer = true
+					if firstAnswerMsg != nil && len(reasoningContent.String()) > 0 {
+						c.saveReasoningContent(ctx, firstAnswerMsg, reasoningContent.String())
+						reasoningContent.Reset()
+					}
+
+					finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
+					if finishErr != nil {
+						err = finishErr
+						return
+					}
+				}
 				return
 			}
 			c.handlerErr(ctx, chunk.Err, sw)
@@ -498,43 +521,154 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			if err != nil {
 				return
 			}
+
+			if preToolResponseMsg == nil {
+				var cErr error
+				preToolResponseMsg, cErr = c.PreCreateAnswer(ctx, rtDependence)
+				if cErr != nil {
+					err = cErr
+					return
+				}
+			}
 		case message.MessageTypeToolResponse:
-			err = c.handlerTooResponse(ctx, chunk, sw, rtDependence)
+			err = c.handlerTooResponse(ctx, chunk, sw, rtDependence, preToolResponseMsg, toolResponseMsgContent.String())
 			if err != nil {
 				return
 			}
+			preToolResponseMsg = nil // reset
 		case message.MessageTypeKnowledge:
 			err = c.handlerKnowledge(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
+		case message.MessageTypeToolMidAnswerMsg:
+			fullMidAnswerContent := bytes.NewBuffer([]byte{})
+			var usage *msgEntity.UsageExt
+			toolMidAnswerMsg, cErr := c.PreCreateAnswer(ctx, rtDependence)
+
+			if cErr != nil {
+				err = cErr
+				return
+			}
+
+			var preMsgIsFinish = false
+			for {
+				streamMsg, receErr := chunk.ToolMidAnswer.Recv()
+				if receErr != nil {
+					if errors.Is(receErr, io.EOF) {
+						break
+					}
+					err = receErr
+					return
+				}
+				if preMsgIsFinish {
+					toolMidAnswerMsg, cErr = c.PreCreateAnswer(ctx, rtDependence)
+					if cErr != nil {
+						err = cErr
+						return
+					}
+					preMsgIsFinish = false
+				}
+				if streamMsg == nil {
+					continue
+				}
+				if firstAnswerMsg == nil && len(streamMsg.Content) > 0 {
+					if reasoningMsg != nil {
+						toolMidAnswerMsg = deepcopy.Copy(reasoningMsg).(*msgEntity.Message)
+					}
+					firstAnswerMsg = deepcopy.Copy(toolMidAnswerMsg).(*msgEntity.Message)
+				}
+
+				if streamMsg.Extra != nil {
+					if val, ok := streamMsg.Extra["workflow_node_name"]; ok && val != nil {
+						toolMidAnswerMsg.Ext["message_title"] = val.(string)
+					}
+				}
+
+				sendMidAnswerMsg := c.buildSendMsg(ctx, toolMidAnswerMsg, false, rtDependence)
+				sendMidAnswerMsg.Content = streamMsg.Content
+				toolResponseMsgContent.WriteString(streamMsg.Content)
+				fullMidAnswerContent.WriteString(streamMsg.Content)
+
+				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMidAnswerMsg, sw)
+
+				if streamMsg != nil && streamMsg.ResponseMeta != nil {
+					usage = c.handlerUsage(streamMsg.ResponseMeta)
+				}
+
+				if streamMsg.Extra["is_finish"] == true {
+					preMsgIsFinish = true
+					sendMidAnswerMsg := c.buildSendMsg(ctx, toolMidAnswerMsg, false, rtDependence)
+					sendMidAnswerMsg.Content = fullMidAnswerContent.String()
+					fullMidAnswerContent.Reset()
+					hfErr := c.handlerAnswer(ctx, sendMidAnswerMsg, sw, usage, rtDependence, toolMidAnswerMsg)
+					if hfErr != nil {
+						err = hfErr
+						return
+					}
+				}
+			}
+
+		case message.MessageTypeToolAsAnswer:
+			var usage *msgEntity.UsageExt
+			fullContent := bytes.NewBuffer([]byte{})
+			toolAsAnswerMsg, cErr := c.PreCreateAnswer(ctx, rtDependence)
+			if cErr != nil {
+				err = cErr
+				return
+			}
+			if firstAnswerMsg == nil {
+				firstAnswerMsg = toolAsAnswerMsg
+			}
+
+			for {
+				streamMsg, receErr := chunk.ToolMsgAnswer.Recv()
+				if receErr != nil {
+					if errors.Is(receErr, io.EOF) {
+
+						answer := c.buildSendMsg(ctx, toolAsAnswerMsg, false, rtDependence)
+						answer.Content = fullContent.String()
+						hfErr := c.handlerAnswer(ctx, answer, sw, usage, rtDependence, toolAsAnswerMsg)
+						if hfErr != nil {
+							err = hfErr
+							return
+						}
+						break
+					}
+					err = receErr
+					return
+				}
+
+				if streamMsg != nil && streamMsg.ResponseMeta != nil {
+					usage = c.handlerUsage(streamMsg.ResponseMeta)
+				}
+				sendMsg := c.buildSendMsg(ctx, toolAsAnswerMsg, false, rtDependence)
+				fullContent.WriteString(streamMsg.Content)
+				sendMsg.Content = streamMsg.Content
+				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMsg, sw)
+			}
+
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
 			var usage *msgEntity.UsageExt
 			var isToolCalls = false
-
+			var modelAnswerMsg *msgEntity.Message
 			for {
 				streamMsg, receErr := chunk.ModelAnswer.Recv()
-
 				if receErr != nil {
 					if errors.Is(receErr, io.EOF) {
 
 						if isToolCalls {
 							break
 						}
-
-						finalAnswer := c.buildSendMsg(ctx, preFinalAnswerMsg, false, rtDependence)
-
-						finalAnswer.Content = fullContent.String()
-						finalAnswer.ReasoningContent = ptr.Of(reasoningContent.String())
-						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage, rtDependence, preFinalAnswerMsg)
+						if modelAnswerMsg == nil {
+							break
+						}
+						answer := c.buildSendMsg(ctx, modelAnswerMsg, false, rtDependence)
+						answer.Content = fullContent.String()
+						hfErr := c.handlerAnswer(ctx, answer, sw, usage, rtDependence, modelAnswerMsg)
 						if hfErr != nil {
 							err = hfErr
-							return
-						}
-						finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
-						if finishErr != nil {
-							err = finishErr
 							return
 						}
 						break
@@ -554,25 +688,54 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 				if streamMsg != nil && len(streamMsg.ReasoningContent) == 0 && len(streamMsg.Content) == 0 {
 					continue
 				}
-				if createPreMsg && (len(streamMsg.ReasoningContent) > 0 || len(streamMsg.Content) > 0) {
-					preFinalAnswerMsg, err = c.PreCreateFinalAnswer(ctx, rtDependence)
-					if err != nil {
-						return
+
+				if len(streamMsg.ReasoningContent) > 0 {
+					if reasoningMsg == nil {
+						reasoningMsg, err = c.PreCreateAnswer(ctx, rtDependence)
+						if err != nil {
+							return
+						}
 					}
-					createPreMsg = false
+
+					sendReasoningMsg := c.buildSendMsg(ctx, reasoningMsg, false, rtDependence)
+					reasoningContent.WriteString(streamMsg.ReasoningContent)
+					sendReasoningMsg.ReasoningContent = ptr.Of(streamMsg.ReasoningContent)
+					c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendReasoningMsg, sw)
 				}
+				if len(streamMsg.Content) > 0 {
 
-				sendMsg := c.buildSendMsg(ctx, preFinalAnswerMsg, false, rtDependence)
-				reasoningContent.WriteString(streamMsg.ReasoningContent)
-				sendMsg.ReasoningContent = ptr.Of(streamMsg.ReasoningContent)
+					if modelAnswerMsg == nil {
+						modelAnswerMsg, err = c.PreCreateAnswer(ctx, rtDependence)
+						if err != nil {
+							return
+						}
+						if firstAnswerMsg == nil {
+							firstAnswerMsg = modelAnswerMsg
+						}
+					}
 
-				fullContent.WriteString(streamMsg.Content)
-				sendMsg.Content = streamMsg.Content
-
-				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMsg, sw)
+					sendAnswerMsg := c.buildSendMsg(ctx, modelAnswerMsg, false, rtDependence)
+					fullContent.WriteString(streamMsg.Content)
+					sendAnswerMsg.Content = streamMsg.Content
+					c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendAnswerMsg, sw)
+				}
 			}
 
 		case message.MessageTypeFlowUp:
+			if isSendFinishAnswer {
+
+				if firstAnswerMsg != nil && len(reasoningContent.String()) > 0 {
+					c.saveReasoningContent(ctx, firstAnswerMsg, reasoningContent.String())
+				}
+
+				isSendFinishAnswer = true
+				finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
+				if finishErr != nil {
+					err = finishErr
+					return
+				}
+			}
+
 			err = c.handlerSuggest(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
@@ -587,12 +750,22 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 	}
 }
 
+func (c *runImpl) saveReasoningContent(ctx context.Context, firstAnswerMsg *msgEntity.Message, reasoningContent string) {
+	_, err := crossmessage.DefaultSVC().Edit(ctx, &message.Message{
+		ID:               firstAnswerMsg.ID,
+		ReasoningContent: reasoningContent,
+	})
+	if err != nil {
+		logs.CtxInfof(ctx, "save reasoning content failed, err: %v", err)
+	}
+}
+
 func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
 	interruptData, cType, err := c.parseInterruptData(ctx, chunk.Interrupt)
 	if err != nil {
 		return err
 	}
-	preMsg, err := c.PreCreateFinalAnswer(ctx, rtDependence)
+	preMsg, err := c.PreCreateAnswer(ctx, rtDependence)
 	if err != nil {
 		return err
 	}
@@ -614,7 +787,7 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 	c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, deltaAnswer, sw)
 	finalAnswer := deepcopy.Copy(deltaAnswer).(*entity.ChunkMessageItem)
 
-	err = c.handlerFinalAnswer(ctx, finalAnswer, sw, nil, rtDependence, preMsg)
+	err = c.handlerAnswer(ctx, finalAnswer, sw, nil, rtDependence, preMsg)
 	if err != nil {
 		return err
 	}
@@ -720,7 +893,7 @@ func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWrit
 	})
 }
 
-func (c *runImpl) PreCreateFinalAnswer(ctx context.Context, rtDependence *runtimeDependence) (*msgEntity.Message, error) {
+func (c *runImpl) PreCreateAnswer(ctx context.Context, rtDependence *runtimeDependence) (*msgEntity.Message, error) {
 	arm := rtDependence.runMeta
 	msgMeta := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
@@ -752,7 +925,7 @@ func (c *runImpl) PreCreateFinalAnswer(ctx context.Context, rtDependence *runtim
 	return crossmessage.DefaultSVC().PreCreate(ctx, msgMeta)
 }
 
-func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence, preFinalAnswerMsg *msgEntity.Message) error {
+func (c *runImpl) handlerAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence, preAnswerMsg *msgEntity.Message) error {
 
 	if len(msg.Content) == 0 && len(ptr.From(msg.ReasoningContent)) == 0 {
 		return nil
@@ -788,12 +961,15 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 	if err != nil {
 		return err
 	}
-	preFinalAnswerMsg.Content = msg.Content
-	preFinalAnswerMsg.ReasoningContent = ptr.From(msg.ReasoningContent)
-	preFinalAnswerMsg.Ext = msg.Ext
-	preFinalAnswerMsg.ContentType = msg.ContentType
-	preFinalAnswerMsg.ModelContent = string(mc)
-	_, err = crossmessage.DefaultSVC().Create(ctx, preFinalAnswerMsg)
+	preAnswerMsg.Content = msg.Content
+	preAnswerMsg.ReasoningContent = ptr.From(msg.ReasoningContent)
+	preAnswerMsg.Ext = msg.Ext
+	preAnswerMsg.ContentType = msg.ContentType
+	preAnswerMsg.ModelContent = string(mc)
+	preAnswerMsg.CreatedAt = 0
+	preAnswerMsg.UpdatedAt = 0
+
+	_, err = crossmessage.DefaultSVC().Create(ctx, preAnswerMsg)
 	if err != nil {
 		return err
 	}
@@ -847,9 +1023,23 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 	return nil
 }
 
-func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence, preToolResponseMsg *msgEntity.Message, toolResponseMsgContent string) error {
+
 	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse, rtDependence)
-	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
+
+	var cmData *message.Message
+	var err error
+
+	if preToolResponseMsg != nil {
+		cm.ID = preToolResponseMsg.ID
+		cm.CreatedAt = preToolResponseMsg.CreatedAt
+		cm.UpdatedAt = preToolResponseMsg.UpdatedAt
+		if len(toolResponseMsgContent) > 0 {
+			cm.Content = toolResponseMsgContent + "\n" + cm.Content
+		}
+	}
+
+	cmData, err = crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -889,7 +1079,7 @@ func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespE
 	return nil
 }
 
-func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, chunk *entity.AgentRespEvent) *msgEntity.VerboseInfo {
+func (c *runImpl) buildKnowledge(_ context.Context, chunk *entity.AgentRespEvent) *msgEntity.VerboseInfo {
 	var recallDatas []msgEntity.RecallDataInfo
 	for _, kOne := range chunk.Knowledge {
 		recallDatas = append(recallDatas, msgEntity.RecallDataInfo{
