@@ -713,6 +713,9 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 							return
 						}
 						if firstAnswerMsg == nil {
+							if reasoningMsg != nil {
+								modelAnswerMsg.ID = reasoningMsg.ID
+							}
 							firstAnswerMsg = modelAnswerMsg
 						}
 					}
