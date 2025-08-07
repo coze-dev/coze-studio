@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package entity
+package conf
 
-type SortField string
-
-const (
-	SortByCreatedAt SortField = "created_at"
-	SortByUpdatedAt SortField = "updated_at"
+import (
+	"os"
+	"strings"
 )
 
-type OAuthProvider string
+func GetServerHost() string {
+	host := os.Getenv("SERVER_HOST")
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		return host
+	}
+	return "https://" + host
+}

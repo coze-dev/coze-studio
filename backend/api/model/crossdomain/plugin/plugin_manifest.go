@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 
@@ -75,12 +75,12 @@ func (mf *PluginManifest) EncryptAuthPayload() (*PluginManifest, error) {
 		return mf_, nil
 	}
 
-	secret := os.Getenv(utils.AuthSecretEnv)
+	secret := os.Getenv(encrypt.AuthSecretEnv)
 	if secret == "" {
-		secret = utils.DefaultAuthSecret
+		secret = encrypt.DefaultAuthSecret
 	}
 
-	payload_, err := utils.EncryptByAES([]byte(mf_.Auth.Payload), secret)
+	payload_, err := encrypt.EncryptByAES([]byte(mf_.Auth.Payload), secret)
 	if err != nil {
 		return nil, err
 	}
@@ -363,12 +363,12 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 	}
 
 	if auth.Payload != "" {
-		secret := os.Getenv(utils.AuthSecretEnv)
+		secret := os.Getenv(encrypt.AuthSecretEnv)
 		if secret == "" {
-			secret = utils.DefaultAuthSecret
+			secret = encrypt.DefaultAuthSecret
 		}
 
-		payload_, err := utils.DecryptByAES(auth.Payload, secret)
+		payload_, err := encrypt.DecryptByAES(auth.Payload, secret)
 		if err == nil {
 			auth.Payload = string(payload_)
 		}
