@@ -748,7 +748,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 
 		case message.MessageTypeInterrupt:
-			err = c.handlerInterrupt(ctx, chunk, sw, rtDependence)
+			err = c.handlerInterrupt(ctx, chunk, sw, rtDependence, firstAnswerMsg, reasoningContent.String())
 			if err != nil {
 				return
 			}
@@ -766,7 +766,7 @@ func (c *runImpl) saveReasoningContent(ctx context.Context, firstAnswerMsg *msgE
 	}
 }
 
-func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence, firstAnswerMsg *msgEntity.Message, reasoningCOntent string) error {
 	interruptData, cType, err := c.parseInterruptData(ctx, chunk.Interrupt)
 	if err != nil {
 		return err
@@ -792,18 +792,15 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, deltaAnswer, sw)
 	finalAnswer := deepcopy.Copy(deltaAnswer).(*entity.ChunkMessageItem)
-
+	if len(reasoningCOntent) > 0 && firstAnswerMsg == nil {
+		finalAnswer.ReasoningContent = ptr.Of(reasoningCOntent)
+	}
 	err = c.handlerAnswer(ctx, finalAnswer, sw, nil, rtDependence, preMsg)
 	if err != nil {
 		return err
 	}
 
 	err = c.handlerInterruptVerbose(ctx, chunk, sw, rtDependence)
-	if err != nil {
-		return err
-	}
-
-	err = c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
 	if err != nil {
 		return err
 	}
