@@ -1,5 +1,5 @@
-id: 2001
-name: GPT-4o
+id: 2000
+name: gpt-5-mini
 icon_uri: default_icon/openai_v2.png
 icon_url: ""
 description:
@@ -128,7 +128,7 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: GPT-4o
+    name: gpt-5-mini
     protocol: openai
     capability:
         function_call: true
@@ -147,8 +147,8 @@ meta:
     conn_config:
         base_url: "https://api.hyprlab.io/v1"
         api_key: "hypr-lab-AhlUmIPK999Z51T1zq3sT3BlbkFJMtsLVnBefsOcvFSJSlNV"
-        timeout: 0s
-        model: "gpt-4o"
+        timeout: 10s
+        model: "gpt-5-mini"
         temperature: 0.7
         frequency_penalty: 0
         presence_penalty: 0
@@ -156,6 +156,7 @@ meta:
         top_p: 1
         top_k: 0
         stop: []
+        enable_thinking: false
         openai:
             by_azure: false
             api_version: ""

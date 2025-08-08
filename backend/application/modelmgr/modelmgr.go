@@ -217,6 +217,12 @@ func (m *ModelmgrApplicationService) UpdateModel(ctx context.Context, req *model
 		return nil, err
 	}
 
+	// 刷新缓存
+	if err := m.Mgr.RefreshCache(ctx, int64(id)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh model cache, id=%d, err=%v", id, err)
+		// 不中断流程，只记录警告
+	}
+
 	return m.convertToModelDetail(model, meta), nil
 }
 
@@ -227,7 +233,17 @@ func (m *ModelmgrApplicationService) DeleteModel(ctx context.Context, modelID st
 		return fmt.Errorf("invalid model id: %w", err)
 	}
 
-	return m.ModelService.DeleteModel(ctx, id)
+	if err := m.ModelService.DeleteModel(ctx, id); err != nil {
+		return err
+	}
+
+	// 删除缓存
+	if err := m.Mgr.RefreshCache(ctx, int64(id)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh model cache after delete, id=%d, err=%v", id, err)
+		// 不中断流程，只记录警告
+	}
+
+	return nil
 }
 
 // AddModelToSpace 添加模型到空间
@@ -272,7 +288,17 @@ func (m *ModelmgrApplicationService) UpdateSpaceModelConfig(ctx context.Context,
 		return fmt.Errorf("invalid model id: %w", err)
 	}
 
-	return m.ModelService.UpdateSpaceModelConfig(ctx, sid, mid, config)
+	if err := m.ModelService.UpdateSpaceModelConfig(ctx, sid, mid, config); err != nil {
+		return err
+	}
+
+	// 刷新缓存
+	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh model cache after config update, id=%d, err=%v", mid, err)
+		// 不中断流程，只记录警告
+	}
+
+	return nil
 }
 
 // convertToModelDetail 转换为模型详情
