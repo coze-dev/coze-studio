@@ -22,7 +22,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/telemetry"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -38,6 +41,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/imagex/veimagex"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/mysql"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
+	ck "github.com/coze-dev/coze-studio/backend/infra/impl/telemetry/clickhouse"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
@@ -52,6 +56,8 @@ type AppDependencies struct {
 	AppEventProducer      eventbus.Producer
 	ModelMgr              modelmgr.Manager
 	CodeRunner            coderunner.Runner
+	TracerProvider        telemetry.TracerProvider
+	QueryClient           telemetry.QueryClient
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -101,6 +107,11 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	}
 
 	deps.CodeRunner = initCodeRunner()
+
+	deps.TracerProvider, deps.QueryClient, err = initTelemetry()
+	if err != nil {
+		return nil, err
+	}
 
 	return deps, nil
 }
@@ -182,4 +193,73 @@ func initCodeRunner() coderunner.Runner {
 	default:
 		return direct.NewRunner()
 	}
+}
+
+func initTelemetry() (telemetry.TracerProvider, telemetry.QueryClient, error) {
+	typ := os.Getenv(consts.TelemetryType)
+	switch typ {
+	case "clickhouse":
+		opts := &clickhouse.Options{
+			Addr: strings.Split(os.Getenv(consts.ClickhouseAddr), ";"),
+			Auth: clickhouse.Auth{
+				Database: getEnvOrDefault(os.Getenv(consts.ClickhouseDBName), "default"),
+				Username: getEnvOrDefault(os.Getenv(consts.ClickhouseUserName), "default"),
+				Password: getEnvOrDefault(os.Getenv(consts.ClickhousePassword), "clickhouse123"),
+			},
+			// Debug: true,
+			// Debugf: func(format string, v ...any) {
+			// 	fmt.Printf(format+"\n", v...)
+			// },
+			Settings: clickhouse.Settings{
+				"max_execution_time": 60,
+			},
+			Compression: &clickhouse.Compression{
+				Method: clickhouse.CompressionZSTD,
+				Level:  1,
+			},
+			DialTimeout:          time.Second * 30,
+			MaxOpenConns:         5,
+			MaxIdleConns:         5,
+			ConnMaxLifetime:      time.Duration(10) * time.Minute,
+			ConnOpenStrategy:     clickhouse.ConnOpenInOrder,
+			BlockBufferSize:      10,
+			MaxCompressionBuffer: 10240,
+		}
+
+		indexRootOnly := os.Getenv(consts.TelemetryIndexRootOnly) == "true"
+		tracerConfig := &ck.TracerConfig{
+			ClickhouseOptions:     opts,
+			TracerProviderOptions: nil,
+			IndexRootOnly:         indexRootOnly,
+		}
+		tp, err := ck.NewTracerProvider(tracerConfig)
+		if err != nil {
+			return nil, nil, err
+		}
+		var emptySpanID *string
+		if v := os.Getenv(consts.ClickhouseEmptySpanID); v != "" {
+			emptySpanID = &v
+		}
+		queryClientConfig := &ck.QueryClientConfig{
+			ClickhouseOptions: opts,
+			EmptySpanID:       emptySpanID,
+		}
+		qc, err := ck.NewQueryClient(queryClientConfig)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return tp, qc, nil
+
+	default:
+		// TODO: not return errors to achieve compatible upgrades ?
+		return nil, nil, fmt.Errorf("unknown telemetry type: %s", typ)
+	}
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultValue
 }

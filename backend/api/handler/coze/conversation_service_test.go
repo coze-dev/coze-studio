@@ -35,7 +35,7 @@ import (
 
 func TestClearConversationCtx(t *testing.T) {
 	h := server.Default()
-	err := application.Init(context.Background())
+	_, err := application.Init(context.Background())
 
 	t.Logf("application init err: %v", err)
 	h.POST("/api/conversation/create_section", ClearConversationCtx)
@@ -55,7 +55,7 @@ func TestClearConversationCtx(t *testing.T) {
 
 func TestClearConversationHistory(t *testing.T) {
 	h := server.Default()
-	err := application.Init(context.Background())
+	_, err := application.Init(context.Background())
 	t.Logf("application init err: %v", err)
 	h.POST("/api/conversation/clear_message", ClearConversationHistory)
 	req := &conversation.ClearConversationHistoryRequest{

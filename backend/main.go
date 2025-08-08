@@ -32,6 +32,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
 	"github.com/joho/godotenv"
 
@@ -56,15 +57,16 @@ func main() {
 
 	setLogLevel()
 
-	if err := application.Init(ctx); err != nil {
+	shutdown, err := application.Init(ctx)
+	if err != nil {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
 	asyncStartMinioProxyServer(ctx)
-	startHttpServer()
+	startHttpServer(shutdown)
 }
 
-func startHttpServer() {
+func startHttpServer(shutdown []route.CtxCallback) {
 	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
 	maxSize := conv.StrToInt64D(maxRequestBodySize, 1024*1024*200)
 	addr := getEnv("LISTEN_ADDR", ":8888")
@@ -105,7 +107,8 @@ func startHttpServer() {
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.I18nMW()) // must after SessionAuthMW
-
+	s.OnShutdown = append(s.OnShutdown, shutdown...)
+	
 	router.GeneratedRegister(s)
 	s.Spin()
 }

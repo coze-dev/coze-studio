@@ -525,6 +525,30 @@ services:
       - coze-network
     restart: 'no'
 
+  clickhouse:
+    image: bitnami/clickhouse:25
+    container_name: coze-clickhouse
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - CLICKHOUSE_ADMIN_USER=${CLICKHOUSE_ADMIN_USER:-default}
+      - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-clickhouse123}
+    ports:
+      - '8123:8123'
+      - '8124:9000' # CLICKHOUSE_TCP_PORT
+      - '9004:9004'
+      - '9005:9005'
+      - '9009:9009'
+    volumes:
+      - ./data/bitnami/clickhouse:/bitnami/clickhouse:rw,Z
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+
   coze-server:
     build:
       context: ../
