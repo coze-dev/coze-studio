@@ -1379,7 +1379,9 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	var appID, agentID *int64
-	if req.IsSetProjectID() {
+	if req.IsSetAppID() {
+		appID = ptr.Of(mustParseInt64(req.GetAppID()))
+	} else if req.IsSetProjectID() {
 		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
 	}
 	if req.IsSetBotID() {
@@ -1526,7 +1528,9 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	var appID, agentID *int64
-	if req.IsSetProjectID() {
+	if req.IsSetAppID() {
+		appID = ptr.Of(mustParseInt64(req.GetAppID()))
+	} else if req.IsSetProjectID() {
 		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
 	}
 	if req.IsSetBotID() {

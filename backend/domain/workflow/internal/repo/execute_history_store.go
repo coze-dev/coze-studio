@@ -303,7 +303,7 @@ func (e *executeHistoryStoreImpl) UpdateNodeExecutionStreaming(ctx context.Conte
 
 	key := fmt.Sprintf(nodeExecOutputKey, execution.ID)
 
-	if err := e.redis.Set(ctx, key, execution.Output, nodeExecDataExpiry).Err(); err != nil {
+	if err := e.redis.Set(ctx, key, *execution.Output, nodeExecDataExpiry).Err(); err != nil {
 		return vo.WrapError(errno.ErrRedisError, err)
 	}
 
