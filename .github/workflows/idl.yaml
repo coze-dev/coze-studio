@@ -12,6 +12,9 @@ on:
       - 'idl/**'
       - '.github/workflows/idl.yaml'
 
+permissions:
+  contents: read
+
 jobs:
   validate-thrift:
     runs-on: ubuntu-latest

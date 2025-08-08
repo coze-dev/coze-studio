@@ -9,6 +9,9 @@ on:
       - 'rush.json'
     types: [opened, edited, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   common-checks:
     name: PR Common Checks
