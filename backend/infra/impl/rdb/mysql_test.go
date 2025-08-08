@@ -20,8 +20,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -38,9 +36,6 @@ import (
 
 func setupTestDB(t *testing.T) (*gorm.DB, rdb.RDB) {
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-	if os.Getenv("CI_JOB_NAME") != "" {
-		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-	}
 	db, err := gorm.Open(mysql.Open(dsn))
 	assert.NoError(t, err)
 
@@ -51,7 +46,7 @@ func setupTestDB(t *testing.T) (*gorm.DB, rdb.RDB) {
 	return db, NewService(db, idGen)
 }
 
-func cleanupTestDB(t *testing.T, db *gorm.DB, tableNames ...string) {
+func cleanupTestDB(_ *testing.T, db *gorm.DB, tableNames ...string) {
 	for _, tableName := range tableNames {
 		db.WithContext(context.Background()).Exec(fmt.Sprintf("DROP TABLE IF EXISTS `%s`", tableName))
 	}
@@ -126,7 +121,6 @@ func TestCreateTable(t *testing.T) {
 }
 
 func TestAlterTable(t *testing.T) {
-
 	db, svc := setupTestDB(t)
 	defer cleanupTestDB(t, db, "test_table")
 
@@ -315,7 +309,7 @@ func TestUpdateData(t *testing.T) {
 
 	err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS test_update_table (
-			id INT NOT NULL AUTO_INCREMENT,
+			id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 			name VARCHAR(255) NOT NULL,
 			age INT,
 			status VARCHAR(20) DEFAULT 'active',
@@ -524,7 +518,6 @@ func TestSelectData(t *testing.T) {
 }
 
 func TestExecuteSQL(t *testing.T) {
-
 	t.Run("success", func(t *testing.T) {
 		db, svc := setupTestDB(t)
 		defer cleanupTestDB(t, db, "test_sql_table")
