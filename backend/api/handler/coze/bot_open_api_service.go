@@ -29,6 +29,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
 )
 

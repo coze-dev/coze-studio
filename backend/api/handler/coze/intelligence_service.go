@@ -24,6 +24,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
 	project "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/project"

@@ -19,10 +19,13 @@ package workflow
 import (
 	"context"
 
+	"github.com/cloudwego/eino/compose"
 	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -70,6 +73,10 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig,
 
 func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
 	return i.DomainSVC.WithExecuteConfig(cfg)
+}
+
+func (i *impl) WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message]) {
+	return i.DomainSVC.WithMessagePipe()
 }
 
 func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error) {

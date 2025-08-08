@@ -34,6 +34,7 @@ output/*
 
 # Vscode files
 .vscode/settings.json
+.vscode/launch.json
 
 /patches
 /oldimpl

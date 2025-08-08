@@ -19,10 +19,11 @@ package plugin
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestToWorkflowAPIParameter(t *testing.T) {

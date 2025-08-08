@@ -141,15 +141,17 @@ type AgentRunResponse struct {
 }
 
 type AgentRespEvent struct {
-	EventType message.MessageType
+	EventType message.MessageType `json:"event_type"`
 
-	ModelAnswer  *schema.StreamReader[*schema.Message]
-	ToolsMessage []*schema.Message
-	FuncCall     *schema.Message
-	Suggest      *schema.Message
-	Knowledge    []*schema.Document
-	Interrupt    *singleagent.InterruptInfo
-	Err          error
+	ToolMidAnswer *schema.StreamReader[*schema.Message]
+	ToolAsAnswer  *schema.StreamReader[*schema.Message]
+	ModelAnswer   *schema.StreamReader[*schema.Message]
+	ToolsMessage  []*schema.Message
+	FuncCall      *schema.Message
+	Suggest       *schema.Message
+	Knowledge     []*schema.Document
+	Interrupt     *singleagent.InterruptInfo
+	Err           error
 }
 
 type ModelAnswerEvent struct {

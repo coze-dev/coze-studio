@@ -241,6 +241,12 @@ func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) 
 		UpdatedAt:        time.Now().UnixMilli(),
 		ReasoningContent: msgDo.ReasoningContent,
 	}
+	if msgDo.CreatedAt > 0 {
+		msgPO.CreatedAt = msgDo.CreatedAt
+	}
+	if msgDo.UpdatedAt > 0 {
+		msgPO.UpdatedAt = msgDo.UpdatedAt
+	}
 
 	if msgDo.ModelContent != "" {
 		msgPO.ModelContent = msgDo.ModelContent
