@@ -19,9 +19,12 @@ package crossworkflow
 import (
 	"context"
 
+	"github.com/cloudwego/eino/compose"
 	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
@@ -37,10 +40,18 @@ type Workflow interface {
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
 	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
 	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
+	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
 }
 
 type ExecuteConfig = vo.ExecuteConfig
 type ExecuteMode = vo.ExecuteMode
+type NodeType = entity.NodeType
+
+type WorkflowMessage = entity.Message
+
+const (
+	NodeTypeOutputEmitter NodeType = "OutputEmitter"
+)
 
 const (
 	ExecuteModeDebug     ExecuteMode = "debug"
