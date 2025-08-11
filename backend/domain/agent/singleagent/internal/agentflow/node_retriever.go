@@ -26,7 +26,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	knowledgeEntity "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"

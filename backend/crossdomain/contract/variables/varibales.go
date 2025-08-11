@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossvariables
+package variables
 
 import (
 	"context"

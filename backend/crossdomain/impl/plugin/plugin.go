@@ -20,7 +20,7 @@ import (
 	"context"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"

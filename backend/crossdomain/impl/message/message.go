@@ -20,7 +20,7 @@ import (
 	"context"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmessage"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
 )
 

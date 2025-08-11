@@ -38,7 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"

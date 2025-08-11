@@ -59,7 +59,7 @@ import (
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	plugin3 "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/plugin"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"

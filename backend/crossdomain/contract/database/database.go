@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossdatabase
+package database
 
 import (
 	"context"
