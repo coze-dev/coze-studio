@@ -121,6 +121,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	opts := []pluginEntity.ExecuteToolOpt{
+		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 		plugin.WithToolVersion(p.toolInfo.GetVersion()),
 		plugin.WithProjectInfo(p.projectInfo),
 	}

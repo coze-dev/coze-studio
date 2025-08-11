@@ -1152,6 +1152,16 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		Resp:    "{}",
 	}
 
+	opts := []model.ExecuteToolOpt{}
+	switch req.Operation {
+	case common.DebugOperation_Debug:
+		opts = append(opts, model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnErr))
+	case common.DebugOperation_Parse:
+		opts = append(opts, model.WithAutoGenRespSchema(),
+			model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnRaw),
+		)
+	}
+
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
 		UserID:          conv.Int64ToStr(*userID),
 		PluginID:        req.PluginID,
@@ -1159,7 +1169,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		ExecScene:       model.ExecSceneOfToolDebug,
 		ExecDraftTool:   true,
 		ArgumentsInJson: req.Parameters,
-	}, model.WithAutoGenRespSchema())
+	}, opts...)
 	if err != nil {
 		var e errorx.StatusError
 		if errors.As(err, &e) {
