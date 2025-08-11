@@ -42,7 +42,7 @@ import (
 	appmemory "github.com/coze-dev/coze-studio/backend/application/memory"
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	workflowDomain "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"

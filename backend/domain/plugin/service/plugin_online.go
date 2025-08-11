@@ -25,7 +25,7 @@ import (
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"

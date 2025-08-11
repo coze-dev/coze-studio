@@ -14,24 +14,27 @@
  * limitations under the License.
  */
 
-package crossconversation
+package knowledge
 
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 )
 
-type Conversation interface {
-	GetCurrentConversation(ctx context.Context, req *conversation.GetCurrent) (*conversation.Conversation, error)
+type Knowledge interface {
+	ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error)
+	GetKnowledgeByID(ctx context.Context, request *knowledge.GetKnowledgeByIDRequest) (response *knowledge.GetKnowledgeByIDResponse, err error)
+	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error)
+	DeleteKnowledge(ctx context.Context, request *knowledge.DeleteKnowledgeRequest) error
 }
 
-var defaultSVC Conversation
+var defaultSVC Knowledge
 
-func DefaultSVC() Conversation {
+func DefaultSVC() Knowledge {
 	return defaultSVC
 }
 
-func SetDefaultSVC(c Conversation) {
+func SetDefaultSVC(c Knowledge) {
 	defaultSVC = c
 }
