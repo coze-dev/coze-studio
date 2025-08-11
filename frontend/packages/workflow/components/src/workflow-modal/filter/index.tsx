@@ -55,13 +55,8 @@ const flowModeOptions = [
     label: I18n.t('wf_chatflow_76'),
     value: WorkflowMode.ChatFlow,
   },
-].filter(item => {
-  // The open-source version does not currently support conversation streaming
-  if (item.value === WorkflowMode.ChatFlow && IS_OPEN_SOURCE) {
-    return false;
-  }
-  return true;
-});
+];
+
 const WorkflowModalFilter: FC<WorkFlowModalModeProps> = props => {
   const context = useContext(WorkflowModalContext);
   const { i18nText, ModalI18nKey } = useI18nText();
