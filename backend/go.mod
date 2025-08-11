@@ -7,6 +7,7 @@ replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 replace google.golang.org/grpc => google.golang.org/grpc v1.68.0
 
 require (
+	github.com/ClickHouse/clickhouse-go/v2 v2.37.2
 	github.com/IBM/sarama v1.45.1
 	github.com/apache/rocketmq-client-go/v2 v2.1.3-0.20250427084711-67ec50b93040
 	github.com/apache/thrift v0.21.0
@@ -75,13 +76,16 @@ require (
 	golang.org/x/image v0.22.0
 	golang.org/x/oauth2 v0.23.0
 	google.golang.org/genai v1.13.0
+	gorm.io/driver/clickhouse v0.7.0
 )
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.9.3 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
+	github.com/ClickHouse/ch-go v0.66.1 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
+	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.18 // indirect
@@ -89,14 +93,18 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
+	github.com/go-faster/city v1.0.1 // indirect
+	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
-	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde // indirect
+	github.com/paulmach/orb v0.11.1 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
+	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -264,12 +272,12 @@ require (
 	go.etcd.io/etcd/server/v3 v3.5.5 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 // indirect
-	go.opentelemetry.io/otel v1.36.0 // indirect
+	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.20.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.20.0 // indirect
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.36.0 // indirect
-	go.opentelemetry.io/otel/trace v1.36.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.36.0
+	go.opentelemetry.io/otel/trace v1.36.0
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect

@@ -35,7 +35,7 @@ import (
 
 func TestGetMessageList(t *testing.T) {
 	h := server.Default()
-	err := application.Init(context.Background())
+	_, err := application.Init(context.Background())
 
 	t.Logf("application init err: %v", err)
 

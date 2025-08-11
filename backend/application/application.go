@@ -20,9 +20,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/template"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 
 	"github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
@@ -104,27 +106,33 @@ type complexServices struct {
 	conversationSVC *conversation.ConversationApplicationService
 }
 
-func Init(ctx context.Context) (err error) {
+func Init(ctx context.Context) (shutdown []route.CtxCallback, err error) {
 	infra, err := appinfra.Init(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	shutdown = append(shutdown, func(ctx context.Context) {
+		if e := infra.TracerProvider.Shutdown(ctx); e != nil {
+			logs.CtxErrorf(ctx, "shut down tracer provider failed, trace might loss, err=%v", e)
+		}
+	})
 
 	eventbus := initEventBus(infra)
 
 	basicServices, err := initBasicServices(ctx, infra, eventbus)
 	if err != nil {
-		return fmt.Errorf("Init - initBasicServices failed, err: %v", err)
+		return nil, fmt.Errorf("Init - initBasicServices failed, err: %v", err)
 	}
 
 	primaryServices, err := initPrimaryServices(ctx, basicServices)
 	if err != nil {
-		return fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
+		return nil, fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
 	}
 
 	complexServices, err := initComplexServices(ctx, primaryServices)
 	if err != nil {
-		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
+		return nil, fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
 
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
@@ -141,7 +149,7 @@ func Init(ctx context.Context) (err error) {
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 
-	return nil
+	return shutdown, nil
 }
 
 func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {

@@ -87,6 +87,14 @@ const (
 	UseSSL      = "USE_SSL"
 	SSLCertFile = "SSL_CERT_FILE"
 	SSLKeyFile  = "SSL_KEY_FILE"
+
+	TelemetryType          = "TELEMETRY_TYPE" // clickhouse / cozeloop
+	TelemetryIndexRootOnly = "TELEMETRY_INDEX_ROOT_ONLY"
+	ClickhouseAddr         = "CLICKHOUSE_ADDR"
+	ClickhouseDBName       = "CLICKHOUSE_DB_NAME"
+	ClickhouseUserName     = "CLICKHOUSE_USERNAME"
+	ClickhousePassword     = "CLICKHOUSE_PASSWORD"
+	ClickhouseEmptySpanID  = "CLICKHOUSE_EMPTY_SPAN_ID"
 )
 
 const (
