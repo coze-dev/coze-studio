@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 coze-dev Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
- 
 import * as marketplace_common from './../marketplace_common';
 export { marketplace_common };
 import * as product_common from './product_common';
@@ -225,6 +209,16 @@ export interface UserBehaviorInfo {
   /** 最近使用时间戳 */
   used_at?: string,
 }
+export enum PluginAuthMode {
+  /** 不需要授权 */
+  NoAuth = 0,
+  /** 需要授权，但无授权配置 */
+  Required = 1,
+  /** 需要授权，且已经配置 */
+  Configured = 2,
+  /** 需要授权，但授权配置可能是用户级别，可由用户自己配置 */
+  Supported = 3,
+}
 export interface PluginExtraInfo {
   tools?: PluginToolInfo[],
   total_api_count: number,
@@ -247,6 +241,8 @@ export interface PluginExtraInfo {
   material_id?: string,
   connectors: PluginConnectorInfo[],
   plugin_type?: product_common.PluginType,
+  /** for opencoze */
+  auth_mode?: PluginAuthMode,
 }
 export interface ToolParameter {
   name: string,

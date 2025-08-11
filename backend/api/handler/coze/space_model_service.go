@@ -18,7 +18,6 @@ package coze
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -35,47 +34,18 @@ func InitModelService(ms service.ModelService) {
 	modelService = ms
 }
 
-// GetSpaceModelList 获取空间模型列表
+// GetSpaceModelList 获取空间模型列表（兼容性接口，推荐使用新的 /api/model/list）
 // @router /api/space/model/list [POST]
+// @deprecated 请使用新的 /api/model/list 接口
 func GetSpaceModelList(ctx context.Context, c *app.RequestContext) {
-	var req space.GetSpaceModelListReq
-	if err := c.BindAndValidate(&req); err != nil {
-		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
-		return
-	}
-
-	// 从请求体中获取 space_id
-	spaceID, err := strconv.ParseUint(req.SpaceID, 10, 64)
-	if err != nil {
-		invalidParamRequestResponse(c, "空间ID格式错误")
-		return
-	}
-
-
-	if modelService == nil {
-		internalServerErrorResponse(ctx, c, context.DeadlineExceeded)
-		return
-	}
-
-	models, err := modelService.ListSpaceModels(ctx, spaceID)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-
-	// 转换为 API 响应格式
-	modelItems := make([]*space.SpaceModelItem, 0, len(models))
-	for _, model := range models {
-		modelItems = append(modelItems, space.ConvertToSpaceModelItem(model))
-	}
-
+	// 返回弃用提示，引导用户使用新接口
 	c.JSON(consts.StatusOK, &space.GetSpaceModelListResp{
 		BaseResp: &base.BaseResp{
-			StatusCode:    0,
-			StatusMessage: "success",
+			StatusCode:    10001,
+			StatusMessage: "此接口已弃用，请使用新的 /api/model/list 接口",
 		},
 		Data: &space.SpaceModelListData{
-			Models: modelItems,
+			Models: []*space.SpaceModelItem{},
 		},
 	})
 }

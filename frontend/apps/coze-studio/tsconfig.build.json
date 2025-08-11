@@ -64,6 +64,9 @@
       "path": "../../packages/arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
+      "path": "../../packages/arch/bot-space-api/tsconfig.build.json"
+    },
+    {
       "path": "../../packages/arch/bot-typings/tsconfig.build.json"
     },
     {

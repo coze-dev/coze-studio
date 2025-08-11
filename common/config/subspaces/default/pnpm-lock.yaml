@@ -60,6 +60,9 @@ importers:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
         version: link:../../packages/arch/bot-md-box-adapter
+      '@coze-arch/bot-space-api':
+        specifier: workspace:*
+        version: link:../../packages/arch/bot-space-api
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.101d0c
         version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
@@ -8053,6 +8056,9 @@ importers:
       '@coze-arch/web-context':
         specifier: workspace:*
         version: link:../web-context
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       axios:
         specifier: ^1.4.0
         version: 1.10.0(debug@4.3.3)
@@ -38170,7 +38176,7 @@ packages:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /character-entities-html4@1.1.4:
     resolution: {integrity: sha512-HRcDxZuZqMx3/a+qrzxdBKBPUpxWEq9xw2OPZ3a/174ihfrQKVsFhqtthBInFy1zZ9GgZyFXOatNujm8M+El3g==}
@@ -53487,6 +53493,7 @@ packages:
 
   /tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+    dev: false
 
   /tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}

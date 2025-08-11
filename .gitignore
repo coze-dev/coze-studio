@@ -53,3 +53,6 @@ common/temp
 
 # backend/conf/model/*.yaml
 CLAUDE.md
+
+7.-开发规范.md
+7.-Development-Standards.md

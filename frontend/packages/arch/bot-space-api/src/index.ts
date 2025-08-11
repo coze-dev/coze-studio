@@ -109,7 +109,7 @@ const spaceApiService = new Proxy(Object.create(null), {
       case 'ExecuteDraftBot': {
         const defaults = axios.defaults?.transformResponse;
         externalConfig.transformResponse = [].concat(
-          // @ts-expect-error -- linter-disable-autofix
+          // @ts-expect-error -- ignoring type mismatch for axios transform response array
           ...(Array.isArray(defaults) ? defaults : [defaults]),
           (data, headers) => {
             globalVars.LAST_EXECUTE_ID = headers['x-tt-logid'];
@@ -134,7 +134,7 @@ const spaceApiService = new Proxy(Object.create(null), {
       options: AxiosRequestConfig = {},
     ): Promise<ReturnType<D[S]>> =>
       DeveloperApi[funcName](
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- required for dynamic parameter spread
         { ...params, space_id: spaceId } as any,
         {
           ...externalConfig,
@@ -149,10 +149,36 @@ export const SpaceApi = spaceApiService;
 
 export { SpaceApiV2 } from './space-api-v2';
 export {
+  // 类型定义
   type SpaceModelItem,
-  type GetSpaceModelListRequest,
-  type GetSpaceModelListResponse,
-  getSpaceModelList,
+  type ModelDetailOutput,
+  type ListModelsRequest,
+  type ListModelsResponse,
+  type CreateModelRequest,
+  type CreateModelResponse,
+  type UpdateModelRequest,
+  type UpdateModelResponse,
+  type DeleteModelRequest,
+  type DeleteModelResponse,
+  type AddModelToSpaceRequest,
+  type AddModelToSpaceResponse,
+  type RemoveModelFromSpaceRequest,
+  type RemoveModelFromSpaceResponse,
+  type GetSpaceModelConfigRequest,
+  type GetSpaceModelConfigResponse,
+  type UpdateSpaceModelConfigRequest,
+  type UpdateSpaceModelConfigResponse,
+  type CustomConfig,
+  // 新的模型管理API函数
+  listModels,
+  createModel,
+  updateModel,
+  deleteModel,
+  addModelToSpace,
+  removeModelFromSpace,
+  getSpaceModelConfig,
+  updateSpaceModelConfig,
+  // 辅助函数
   getModelsByProtocol,
   searchModels,
 } from './space-model-api';

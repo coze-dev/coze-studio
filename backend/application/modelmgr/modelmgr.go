@@ -24,6 +24,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	oceanmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/model/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/model/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/model/service"
@@ -81,6 +82,73 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 			ModelList: modelList,
 		},
 	}, nil
+}
+
+// ListModels 获取模型列表（新接口）
+func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanmodelmgr.ListModelsRequest) (*oceanmodelmgr.ListModelsResponse, error) {
+	// 构建查询请求
+	listReq := &inframodelmgr.ListModelRequest{
+		Limit: int(req.GetPageSize()),
+	}
+
+	// 设置分页参数
+	if req.GetPageToken() != "" {
+		listReq.Cursor = ptr.Of(req.GetPageToken())
+	}
+
+	// 设置默认页大小
+	if listReq.Limit <= 0 {
+		listReq.Limit = 20
+	}
+	if listReq.Limit > 100 {
+		listReq.Limit = 100 // 最大限制
+	}
+
+	// 处理过滤条件
+	if req.GetFilter() != "" {
+		listReq.FuzzyModelName = ptr.Of(req.GetFilter())
+	}
+
+	// 调用基础设施层获取模型列表
+	modelResp, err := m.Mgr.ListModel(ctx, listReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list models: %w", err)
+	}
+
+	// 转换模型数据
+	modelDetailList := make([]*oceanmodelmgr.ModelDetailOutput, 0, len(modelResp.ModelList))
+	for _, model := range modelResp.ModelList {
+		// 处理图标URL
+		if model.IconURI != "" && m.TosClient != nil {
+			iconUrl, err := m.TosClient.GetObjectUrl(ctx, model.IconURI)
+			if err == nil {
+				model.IconURL = iconUrl
+			}
+		}
+
+		// 转换为API格式
+		detail, err := m.convertToModelDetailOutput(model)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert model, id=%d, err=%v", model.ID, err)
+			continue
+		}
+		modelDetailList = append(modelDetailList, detail)
+	}
+
+	// 构建响应
+	resp := &oceanmodelmgr.ListModelsResponse{
+		Data:       modelDetailList,
+		TotalCount: ptr.Of(int32(len(modelDetailList))),
+		Code:       0,
+		Msg:        "success",
+	}
+
+	// 设置下一页令牌
+	if modelResp.HasMore && modelResp.NextCursor != nil {
+		resp.NextPageToken = modelResp.NextCursor
+	}
+
+	return resp, nil
 }
 
 // CreateModel 创建模型
@@ -351,6 +419,202 @@ func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEnt
 	}
 
 	return detail
+}
+
+// convertToModelDetailOutput 转换为新的API格式
+func (m *ModelmgrApplicationService) convertToModelDetailOutput(model *inframodelmgr.Model) (*oceanmodelmgr.ModelDetailOutput, error) {
+	detail := &oceanmodelmgr.ModelDetailOutput{
+		ID:        strconv.FormatInt(model.ID, 10),
+		Name:      model.Name,
+		CreatedAt: int64(model.ID), // 临时使用ID作为创建时间，实际应该从数据库获取
+		UpdatedAt: int64(model.ID), // 临时使用ID作为更新时间，实际应该从数据库获取
+	}
+
+	// 设置图标信息
+	if model.IconURI != "" {
+		detail.IconURI = ptr.Of(model.IconURI)
+	}
+	if model.IconURL != "" {
+		detail.IconURL = ptr.Of(model.IconURL)
+	}
+
+	// 处理多语言描述
+	if model.Description != nil {
+		descMap := make(map[string]string)
+		if model.Description.ZH != "" {
+			descMap["zh"] = model.Description.ZH
+		}
+		if model.Description.EN != "" {
+			descMap["en"] = model.Description.EN
+		}
+		if len(descMap) > 0 {
+			detail.Description = descMap
+		}
+	}
+
+	// 转换默认参数
+	if len(model.DefaultParameters) > 0 {
+		params := make([]*oceanmodelmgr.ModelParameterOutput, 0, len(model.DefaultParameters))
+		for _, param := range model.DefaultParameters {
+			apiParam, err := m.convertToModelParameterOutput(param)
+			if err != nil {
+				logs.Warnf("failed to convert parameter %s: %v", param.Name, err)
+				continue
+			}
+			params = append(params, apiParam)
+		}
+		detail.DefaultParameters = params
+	}
+
+	// 转换模型元数据
+	meta, err := m.convertToModelMetaOutput(&model.Meta)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert meta: %w", err)
+	}
+	detail.Meta = meta
+
+	return detail, nil
+}
+
+// convertToModelParameterOutput 转换模型参数
+func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *inframodelmgr.Parameter) (*oceanmodelmgr.ModelParameterOutput, error) {
+	apiParam := &oceanmodelmgr.ModelParameterOutput{
+		Name: string(param.Name),
+		Type: string(param.Type),
+	}
+
+	// 转换多语言标签
+	if param.Label != nil {
+		labelMap := make(map[string]string)
+		if param.Label.ZH != "" {
+			labelMap["zh"] = param.Label.ZH
+		}
+		if param.Label.EN != "" {
+			labelMap["en"] = param.Label.EN
+		}
+		apiParam.Label = labelMap
+	}
+
+	// 转换多语言描述
+	if param.Desc != nil {
+		descMap := make(map[string]string)
+		if param.Desc.ZH != "" {
+			descMap["zh"] = param.Desc.ZH
+		}
+		if param.Desc.EN != "" {
+			descMap["en"] = param.Desc.EN
+		}
+		apiParam.Desc = descMap
+	}
+
+	// 设置范围
+	if param.Min != "" {
+		apiParam.Min = ptr.Of(param.Min)
+	}
+	if param.Max != "" {
+		apiParam.Max = ptr.Of(param.Max)
+	}
+
+	// 转换默认值
+	defaultValMap := make(map[string]string)
+	for key, val := range param.DefaultVal {
+		defaultValMap[string(key)] = val
+	}
+	apiParam.DefaultVal = defaultValMap
+
+	// 设置精度
+	if param.Precision > 0 {
+		apiParam.Precision = ptr.Of(int32(param.Precision))
+	}
+
+	// 转换选项
+	if len(param.Options) > 0 {
+		options := make([]*oceanmodelmgr.ModelParamOption, 0, len(param.Options))
+		for _, opt := range param.Options {
+			options = append(options, &oceanmodelmgr.ModelParamOption{
+				Label: ptr.Of(opt.Label),
+				Value: ptr.Of(opt.Value),
+			})
+		}
+		apiParam.Options = options
+	}
+
+	// 转换显示样式
+	style := &oceanmodelmgr.ParamDisplayStyle{
+		Widget: string(param.Style.Widget),
+	}
+	if param.Style.Label != nil {
+		labelMap := make(map[string]string)
+		if param.Style.Label.ZH != "" {
+			labelMap["zh"] = param.Style.Label.ZH
+		}
+		if param.Style.Label.EN != "" {
+			labelMap["en"] = param.Style.Label.EN
+		}
+		style.Label = labelMap
+	}
+	apiParam.Style = style
+
+	return apiParam, nil
+}
+
+// convertToModelMetaOutput 转换模型元数据
+func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmgr.ModelMeta) (*oceanmodelmgr.ModelMetaOutput, error) {
+	apiMeta := &oceanmodelmgr.ModelMetaOutput{
+		ID:       strconv.FormatInt(int64(meta.Status), 10), // 临时使用status作为ID
+		Name:     meta.Name,
+		Protocol: string(meta.Protocol),
+		Status:   int32(meta.Status),
+	}
+
+	// 转换能力信息
+	if meta.Capability != nil {
+		capability := &oceanmodelmgr.ModelCapability{
+			FunctionCall:    ptr.Of(meta.Capability.FunctionCall),
+			JSONMode:        ptr.Of(meta.Capability.JSONMode),
+			MaxTokens:       ptr.Of(int32(meta.Capability.MaxTokens)),
+			PrefixCaching:   ptr.Of(meta.Capability.PrefixCaching),
+			Reasoning:       ptr.Of(meta.Capability.Reasoning),
+			PrefillResponse: ptr.Of(meta.Capability.PrefillResponse),
+		}
+
+		// 转换输入模态
+		if len(meta.Capability.InputModal) > 0 {
+			inputModal := make([]string, 0, len(meta.Capability.InputModal))
+			for _, modal := range meta.Capability.InputModal {
+				inputModal = append(inputModal, string(modal))
+			}
+			capability.InputModal = inputModal
+		}
+
+		// 转换输出模态
+		if len(meta.Capability.OutputModal) > 0 {
+			outputModal := make([]string, 0, len(meta.Capability.OutputModal))
+			for _, modal := range meta.Capability.OutputModal {
+				outputModal = append(outputModal, string(modal))
+			}
+			capability.OutputModal = outputModal
+		}
+
+		capability.InputTokens = ptr.Of(int32(meta.Capability.InputTokens))
+		capability.OutputTokens = ptr.Of(int32(meta.Capability.OutputTokens))
+
+		apiMeta.Capability = capability
+	}
+
+	// 转换连接配置
+	if meta.ConnConfig != nil {
+		connConfig := &oceanmodelmgr.ConnConfig{}
+
+		// 这里需要根据实际的 chatmodel.Config 结构来转换
+		// 暂时先创建一个空的配置对象
+		apiMeta.ConnConfig = connConfig
+	} else {
+		// 如果没有连接配置，创建一个默认的空配置
+		apiMeta.ConnConfig = &oceanmodelmgr.ConnConfig{}
+	}
+
+	return apiMeta, nil
 }
 
 func modelDo2To(model *inframodelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {

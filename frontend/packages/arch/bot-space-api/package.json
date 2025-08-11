@@ -13,12 +13,13 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/report-events": "workspace:*",
     "@coze-arch/web-context": "workspace:*",
+    "@coze-studio/api-schema": "workspace:*",
     "axios": "^1.4.0"
   },
   "devDependencies": {
