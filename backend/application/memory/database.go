@@ -28,7 +28,7 @@ import (
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/search"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	databaseEntity "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"

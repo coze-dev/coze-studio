@@ -33,7 +33,7 @@ import (
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/openapi"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"

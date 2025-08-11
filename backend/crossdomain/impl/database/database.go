@@ -20,7 +20,7 @@ import (
 	"context"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 )
 

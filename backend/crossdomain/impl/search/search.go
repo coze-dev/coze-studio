@@ -20,7 +20,7 @@ import (
 	"context"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	"github.com/coze-dev/coze-studio/backend/domain/search/service"
 )
 

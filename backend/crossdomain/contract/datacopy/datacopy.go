@@ -14,29 +14,28 @@
  * limitations under the License.
  */
 
-package crossuser
+package datacopy
 
 import (
 	"context"
 
-	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
-	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/user/service"
+	"gorm.io/gorm"
+
+	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
 )
 
-var defaultSVC crossuser.User
-
-type impl struct {
-	DomainSVC service.User
+type DataCopy interface {
+	CheckAndGenCopyTask(ctx context.Context, req *datacopy.CheckAndGenCopyTaskReq) (*datacopy.CheckAndGenCopyTaskResp, error)
+	UpdateCopyTask(ctx context.Context, req *datacopy.UpdateCopyTaskReq) error
+	UpdateCopyTaskWithTX(ctx context.Context, req *datacopy.UpdateCopyTaskReq, tx *gorm.DB) error
 }
 
-func InitDomainService(u service.User) crossuser.User {
-	defaultSVC = &impl{
-		DomainSVC: u,
-	}
+var defaultSVC DataCopy
+
+func DefaultSVC() DataCopy {
 	return defaultSVC
 }
 
-func (u *impl) GetUserSpaceList(ctx context.Context, userID int64) (spaces []*entity.Space, err error) {
-	return u.DomainSVC.GetUserSpaceList(ctx, userID)
+func SetDefaultSVC(c DataCopy) {
+	defaultSVC = c
 }

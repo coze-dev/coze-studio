@@ -25,7 +25,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
