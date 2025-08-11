@@ -22,7 +22,7 @@ if [[ "$CODE_RUNNER_TYPE" == "sandbox" ]] && ! command -v deno &> /dev/null; the
     export PATH="$HOME/.deno/bin:$PATH"
 fi
 
-echo "🧹 Checking for sandbo availability..."
+echo "🧹 Checking for sandbox availability..."
 
 echo "🧹 Checking for goimports availability..."
 
