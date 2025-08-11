@@ -165,6 +165,10 @@ func (c *impl) buildSchemaMessage(ctx context.Context, msgs []*message.Message) 
 		if err != nil {
 			continue
 		}
+		if len(sm.ReasoningContent) > 0 {
+			sm.ReasoningContent = ""
+		}
+
 		schemaMessage = append(schemaMessage, c.parseMessageURI(ctx, sm))
 	}
 
