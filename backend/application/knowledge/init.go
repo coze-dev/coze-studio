@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	netHTTP "net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -113,6 +114,10 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		inst.Client.SetAccessKey(ocrAK)
 		inst.Client.SetSecretKey(ocrSK)
 		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
+	case "paddleocr":
+		ppocrURL := os.Getenv("PADDLEOCR_OCR_API_URL")
+		client := &netHTTP.Client{}
+		ocrImpl = veocr.NewPPOCR(&veocr.PPOCRConfig{Client: client, URL: ppocrURL})
 	default:
 		// accept ocr not configured
 	}
