@@ -41,7 +41,7 @@ export const TestFormFloatButton = ({
   }
 
   return (
-    <>
+    <div className={css['float-button-container']}>
       <div
         className={css['float-button']}
         onClick={handleOpenForm}
@@ -56,6 +56,6 @@ export const TestFormFloatButton = ({
         </Typography.Text>
         <IconCozAdjust className="coz-fg-dim" />
       </div>
-    </>
+    </div>
   );
 };
