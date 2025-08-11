@@ -181,6 +181,9 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 				if err != nil {
 					return nil, err
 				}
+				if subParam == nil {
+					continue
+				}
 
 				subParams[paramName] = subParam
 			}

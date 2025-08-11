@@ -1037,33 +1037,33 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 		return "", nil
 	}
 
-	// FIXME: trimming is a weak dependency function and does not affect the response
-
 	var trimmedRespMap map[string]any
 	switch t.invalidRespProcessStrategy {
 	case model.InvalidResponseProcessStrategyOfReturnRaw:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
-			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnRaw failed, err=%v", err)
-			return rawResp, nil
+			return "", err
 		}
 
 	case model.InvalidResponseProcessStrategyOfReturnDefault:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
-			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnDefault failed, err=%v", err)
-			return rawResp, nil
+			return "", err
+		}
+
+	case model.InvalidResponseProcessStrategyOfReturnErr:
+		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnErr(ctx, respMap, schemaVal)
+		if err != nil {
+			return "", err
 		}
 
 	default:
-		logs.CtxErrorf(ctx, "invalid response process strategy '%d'", t.invalidRespProcessStrategy)
-		return rawResp, nil
+		return rawResp, fmt.Errorf("invalid response process strategy '%d'", t.invalidRespProcessStrategy)
 	}
 
 	trimmedResp, err = sonic.MarshalString(trimmedRespMap)
 	if err != nil {
-		logs.CtxErrorf(ctx, "marshal trimmed response failed, err=%v", err)
-		return rawResp, nil
+		return "", errorx.Wrapf(err, "marshal trimmed response failed")
 	}
 
 	return trimmedResp, nil
@@ -1093,6 +1093,115 @@ func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnRaw(ctx cont
 	}
 
 	return paramVals, nil
+}
+
+func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnErr(_ context.Context, paramVals map[string]any, paramSchema *openapi3.Schema) (map[string]any, error) {
+	var processor func(paramName string, paramVal any, schemaVal *openapi3.Schema) (any, error)
+	processor = func(paramName string, paramVal any, schemaVal *openapi3.Schema) (any, error) {
+		switch schemaVal.Type {
+		case openapi3.TypeObject:
+			newParamValMap := map[string]any{}
+			paramValMap, ok := paramVal.(map[string]any)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'object', but got '%T'", paramName, paramVal))
+			}
+
+			for paramName_, paramVal_ := range paramValMap {
+				paramSchema_, ok := schemaVal.Properties[paramName]
+				if !ok || t.disabledParam(paramSchema_.Value) { // Only the object field can be disabled, and the top level of request and response must be the object structure
+					continue
+				}
+				newParamVal, err := processor(paramName_, paramVal_, paramSchema_.Value)
+				if err != nil {
+					return nil, err
+				}
+				newParamValMap[paramName_] = newParamVal
+			}
+
+			return newParamValMap, nil
+
+		case openapi3.TypeArray:
+			newParamValSlice := []any{}
+			paramValSlice, ok := paramVal.([]any)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'array', but got '%T'", paramName, paramVal))
+			}
+
+			for _, paramVal_ := range paramValSlice {
+				newParamVal, err := processor(paramName, paramVal_, schemaVal.Items.Value)
+				if err != nil {
+					return nil, err
+				}
+				if newParamVal != nil {
+					newParamValSlice = append(newParamValSlice, newParamVal)
+				}
+			}
+
+			return newParamValSlice, nil
+
+		case openapi3.TypeString:
+			paramValStr, ok := paramVal.(string)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'string', but got '%T'", paramName, paramVal))
+			}
+
+			return paramValStr, nil
+
+		case openapi3.TypeBoolean:
+			paramValBool, ok := paramVal.(bool)
+			if !ok {
+				return false, fmt.Errorf("expected '%s' to be of type 'boolean', but got '%T'", paramName, paramVal)
+			}
+
+			return paramValBool, nil
+
+		case openapi3.TypeInteger:
+			paramValNum, ok := paramVal.(json.Number)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'integer', but got '%T'", paramName, paramVal))
+			}
+			paramValInt, err := paramValNum.Int64()
+			if err != nil {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'integer', but got '%T'", paramName, paramVal))
+			}
+
+			return paramValInt, nil
+
+		case openapi3.TypeNumber:
+			paramValNum, ok := paramVal.(json.Number)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
+					"expected '%s' to be of type 'number', but got '%T'", paramName, paramVal))
+			}
+
+			return paramValNum, nil
+
+		default:
+			return nil, fmt.Errorf("unsupported type '%s'", schemaVal.Type)
+		}
+	}
+
+	newParamVals := make(map[string]any, len(paramVals))
+	for paramName, paramVal_ := range paramVals {
+		paramSchema_, ok := paramSchema.Properties[paramName]
+		if !ok || t.disabledParam(paramSchema_.Value) {
+			continue
+		}
+
+		newParamVal, err := processor(paramName, paramVal_, paramSchema_.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		newParamVals[paramName] = newParamVal
+	}
+
+	return newParamVals, nil
 }
 
 func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnDefault(_ context.Context, paramVals map[string]any, paramSchema *openapi3.Schema) (map[string]any, error) {
@@ -1156,9 +1265,13 @@ func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnDefault(_ co
 			return paramValBool, nil
 
 		case openapi3.TypeInteger:
-			paramValInt, ok := paramVal.(float64)
+			paramValNum, ok := paramVal.(json.Number)
 			if !ok {
-				return float64(0), nil
+				return int64(0), nil
+			}
+			paramValInt, err := paramValNum.Int64()
+			if err != nil {
+				return int64(0), nil
 			}
 
 			return paramValInt, nil

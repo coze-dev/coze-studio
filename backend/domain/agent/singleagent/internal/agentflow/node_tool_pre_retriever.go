@@ -69,6 +69,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			}
 
 			opts := []pluginEntity.ExecuteToolOpt{
+				plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 				plugin.WithProjectInfo(&plugin.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
 					ProjectType:    plugin.ProjectTypeOfAgent,
