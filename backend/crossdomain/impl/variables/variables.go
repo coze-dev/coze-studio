@@ -22,7 +22,7 @@ import (
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 )

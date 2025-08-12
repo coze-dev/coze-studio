@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossplugin
+package plugin
 
 import (
 	"context"

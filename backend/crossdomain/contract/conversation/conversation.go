@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-package crossconnector
+package conversation
 
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
 )
 
-type Connector interface {
-	List(ctx context.Context) ([]*connector.Connector, error)
-	GetByIDs(ctx context.Context, ids []int64) (map[int64]*connector.Connector, error)
-	GetByID(ctx context.Context, id int64) (*connector.Connector, error)
+type Conversation interface {
+	GetCurrentConversation(ctx context.Context, req *conversation.GetCurrent) (*conversation.Conversation, error)
 }
 
-var defaultSVC Connector
+var defaultSVC Conversation
 
-func DefaultSVC() Connector {
+func DefaultSVC() Conversation {
 	return defaultSVC
 }
 
-func SetDefaultSVC(c Connector) {
+func SetDefaultSVC(c Conversation) {
 	defaultSVC = c
 }

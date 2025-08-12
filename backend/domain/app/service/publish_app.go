@@ -22,8 +22,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	resourceCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"

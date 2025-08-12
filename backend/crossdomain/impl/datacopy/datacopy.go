@@ -22,7 +22,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
+	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy/service"
 )

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
+	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"

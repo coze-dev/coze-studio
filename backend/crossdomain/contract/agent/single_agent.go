@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossagent
+package agent
 
 import (
 	"context"

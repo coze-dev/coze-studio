@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 
-package crossdatacopy
+package search
 
 import (
 	"context"
 
-	"gorm.io/gorm"
-
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 )
 
-type DataCopy interface {
-	CheckAndGenCopyTask(ctx context.Context, req *datacopy.CheckAndGenCopyTaskReq) (*datacopy.CheckAndGenCopyTaskResp, error)
-	UpdateCopyTask(ctx context.Context, req *datacopy.UpdateCopyTaskReq) error
-	UpdateCopyTaskWithTX(ctx context.Context, req *datacopy.UpdateCopyTaskReq, tx *gorm.DB) error
+type Search interface {
+	SearchResources(ctx context.Context, req *model.SearchResourcesRequest) (resp *model.SearchResourcesResponse, err error)
 }
 
-var defaultSVC DataCopy
+var defaultSVC Search
 
-func DefaultSVC() DataCopy {
+func DefaultSVC() Search {
 	return defaultSVC
 }
 
-func SetDefaultSVC(c DataCopy) {
-	defaultSVC = c
+func SetDefaultSVC(svc Search) {
+	defaultSVC = svc
 }

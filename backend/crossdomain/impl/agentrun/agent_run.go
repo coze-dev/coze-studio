@@ -19,7 +19,7 @@ package agentrun
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagentrun"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	agentrun "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/service"
 )
 

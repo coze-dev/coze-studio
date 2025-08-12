@@ -28,7 +28,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
+	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
 	copyEntity "github.com/coze-dev/coze-studio/backend/domain/datacopy/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"

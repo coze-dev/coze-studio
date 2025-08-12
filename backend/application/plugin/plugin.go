@@ -43,7 +43,7 @@ import (
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
