@@ -36,11 +36,12 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -399,9 +400,9 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 					workflowToolConfig.OutputParametersConfig = wf.FCSetting.ResponseParameters
 				}
 
-				locator := vo.FromDraft
+				locator := plugin.FromDraft
 				if wf.WorkflowVersion != "" {
-					locator = vo.FromSpecificVersion
+					locator = plugin.FromSpecificVersion
 				}
 
 				wfTool, err := workflow.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{
@@ -455,7 +456,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 					}
 				} else {
 					pluginToolsInfoRequest := &plugin.ToolsInvokableRequest{
-						PluginEntity: plugin.Entity{
+						PluginEntity: plugin.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
 						},
@@ -473,12 +474,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
 			for _, req := range pluginToolsInvokableReq {
-				toolMap, err := plugin.GetPluginService().GetPluginInvokableTools(ctx, req)
+				toolMap, err := crossplugin.DefaultSVC().GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
 				}
 				for _, t := range toolMap {
-					inInvokableTools = append(inInvokableTools, plugin.NewInvokableTool(t))
+					inInvokableTools = append(inInvokableTools, newInvokableTool(t))
 				}
 			}
 			if len(inInvokableTools) > 0 {

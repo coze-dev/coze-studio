@@ -67,17 +67,17 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
-	plugin3 "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/plugin"
+	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search/searchmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
@@ -125,7 +125,7 @@ type wfTestRunner struct {
 	tos           *storageMock.MockStorage
 	knowledge     *knowledgemock.MockKnowledge
 	database      *databasemock.MockDatabase
-	pluginSrv     *pluginmock.MockService
+	pluginSrv     *pluginmock.MockPluginService
 	internalModel *testutil.UTChatModel
 	ctx           context.Context
 	closeFn       func()
@@ -296,8 +296,8 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 	crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
-	mockPluginSrv := pluginmock.NewMockService(ctrl)
-	plugin.SetPluginService(mockPluginSrv)
+	mockPluginSrv := pluginmock.NewMockPluginService(ctrl)
+	crossplugin.SetDefaultSVC(mockPluginSrv)
 
 	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
 		UserBasicInfoMap: make(map[string]*playground.UserBasicInfo),
@@ -2876,9 +2876,8 @@ func TestLLMWithSkills(t *testing.T) {
 			{ID: int64(7509353598782816256), Operation: operation},
 		}, nil).AnyTimes()
 
-		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
-
-		plugin.SetPluginService(pluginSrv)
+		pluginSrv := pluginImpl.InitDomainService(r.plugin, r.tos)
+		crossplugin.SetDefaultSVC(pluginSrv)
 
 		t.Run("llm with plugin tool", func(t *testing.T) {
 			id := r.load("llm_node_with_skills/llm_node_with_plugin_tool.json")
@@ -3414,8 +3413,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 
-		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
-		plugin.SetPluginService(pluginSrv)
+		pluginSrv := pluginImpl.InitDomainService(r.plugin, r.tos)
+		crossplugin.SetDefaultSVC(pluginSrv)
 
 		t.Run("plugin tool info ", func(t *testing.T) {
 			fcSettingDetailReq := &workflow.GetLLMNodeFCSettingDetailRequest{
@@ -3531,8 +3530,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 
-		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
-		plugin.SetPluginService(pluginSrv)
+		pluginSrv := pluginImpl.InitDomainService(r.plugin, r.tos)
+		crossplugin.SetDefaultSVC(pluginSrv)
 
 		t.Run("plugin merge", func(t *testing.T) {
 			fcSettingMergedReq := &workflow.GetLLMNodeFCSettingsMergedRequest{
@@ -3698,7 +3697,7 @@ func TestCopyWorkflow(t *testing.T) {
 
 		_, err := appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
 			ID:       wid,
-			QType:    vo.FromDraft,
+			QType:    plugin2.FromDraft,
 			CommitID: "",
 		})
 		assert.NotNil(t, err)
@@ -3760,7 +3759,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 
 		wf, err = appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
 			ID:      100100100100,
-			QType:   vo.FromSpecificVersion,
+			QType:   plugin2.FromSpecificVersion,
 			Version: version,
 		})
 		assert.NoError(t, err)
@@ -4054,7 +4053,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			}
 			wf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 				ID:    event.WorkflowID,
-				QType: vo.FromLatestVersion,
+				QType: plugin2.FromLatestVersion,
 			})
 			copiedIDs = append(copiedIDs, event.WorkflowID)
 			assert.NoError(t, err)
@@ -4096,7 +4095,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 						subWf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 							ID:    wfId,
-							QType: vo.FromLatestVersion,
+							QType: plugin2.FromLatestVersion,
 						})
 						assert.NoError(t, err)
 						subworkflowCanvas := &vo.Canvas{}
@@ -4199,7 +4198,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			}
 			wf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 				ID:    event.WorkflowID,
-				QType: vo.FromLatestVersion,
+				QType: plugin2.FromLatestVersion,
 			})
 
 			copiedIDs = append(copiedIDs, event.WorkflowID)

@@ -240,7 +240,7 @@ func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context
 				return a.GetWorkflowId()
 			}),
 		},
-		QType: vo.FromLatestVersion,
+		QType: plugin.FromLatestVersion,
 	}
 	ret, _, err := s.appContext.WorkflowDomainSVC.MGet(ctx, policy)
 	if err != nil {

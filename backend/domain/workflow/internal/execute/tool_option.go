@@ -21,14 +21,14 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
 type workflowToolOption struct {
 	resumeReq            *entity.ResumeRequest
 	sw                   *schema.StreamWriter[*entity.Message]
-	exeCfg               vo.ExecuteConfig
+	exeCfg               plugin.ExecuteConfig
 	allInterruptEvents   map[string]*entity.ToolInterruptEvent
 	parentTokenCollector *TokenCollector
 }
@@ -46,7 +46,7 @@ func WithIntermediateStreamWriter(sw *schema.StreamWriter[*entity.Message]) tool
 	})
 }
 
-func WithExecuteConfig(cfg vo.ExecuteConfig) tool.Option {
+func WithExecuteConfig(cfg plugin.ExecuteConfig) tool.Option {
 	return tool.WrapImplSpecificOptFn(func(opts *workflowToolOption) {
 		opts.exeCfg = cfg
 	})
@@ -62,7 +62,7 @@ func GetIntermediateStreamWriter(opts ...tool.Option) *schema.StreamWriter[*enti
 	return opt.sw
 }
 
-func GetExecuteConfig(opts ...tool.Option) vo.ExecuteConfig {
+func GetExecuteConfig(opts ...tool.Option) plugin.ExecuteConfig {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
 	return opt.exeCfg
 }

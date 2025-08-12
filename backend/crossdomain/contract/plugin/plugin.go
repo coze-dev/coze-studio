@@ -19,6 +19,8 @@ package plugin
 import (
 	"context"
 
+	"github.com/cloudwego/eino/schema"
+
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 )
 
@@ -35,6 +37,14 @@ type PluginService interface {
 	PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error)
 	GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*model.PluginInfo, err error)
 	MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*model.ToolInfo, err error)
+	GetPluginToolsInfo(ctx context.Context, req *model.ToolsInfoRequest) (*model.ToolsInfoResponse, error)
+	GetPluginInvokableTools(ctx context.Context, req *model.ToolsInvokableRequest) (map[int64]InvokableTool, error)
+	ExecutePlugin(ctx context.Context, input map[string]any, pe *model.PluginEntity, toolID int64, cfg model.ExecuteConfig) (map[string]any, error)
+}
+
+type InvokableTool interface {
+	Info(ctx context.Context) (*schema.ToolInfo, error)
+	PluginInvoke(ctx context.Context, argumentsInJSON string, cfg model.ExecuteConfig) (string, error)
 }
 
 var defaultSVC PluginService
