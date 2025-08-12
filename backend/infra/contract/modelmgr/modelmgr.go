@@ -30,6 +30,7 @@ type Manager interface {
 type ListModelRequest struct {
 	FuzzyModelName *string
 	Status         []ModelStatus // default is default and in_use status
+	SpaceID        *uint64       // 可选的空间ID，用于按空间过滤模型
 	Limit          int
 	Cursor         *string
 }

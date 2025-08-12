@@ -61,6 +61,11 @@ func NewModelMgr(db *gorm.DB, redis *redis.Client) (modelmgr.Manager, error) {
 
 // ListModel 查询模型列表
 func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
+	// 如果指定了空间ID，需要通过space_model表来过滤
+	if req.SpaceID != nil {
+		return m.listModelsBySpace(ctx, req)
+	}
+
 	// 先查询 model_entity
 	query := m.db.WithContext(ctx).Model(&entity.ModelEntity{}).
 		Where("deleted_at IS NULL")
@@ -160,6 +165,158 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 		models = append(models, model)
 		// 使用最后一个模型的ID作为下一个游标
 		cursor := strconv.FormatInt(int64(entity.ID), 10)
+		nextCursor = &cursor
+	}
+
+	return &modelmgr.ListModelResponse{
+		ModelList:  models,
+		HasMore:    hasMore,
+		NextCursor: nextCursor,
+	}, nil
+}
+
+// listModelsBySpace 根据空间ID查询模型列表
+func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
+	// 首先查询空间中的模型实体
+	spaceModelQuery := m.db.WithContext(ctx).
+		Table("space_model sm").
+		Select("sm.model_entity_id").
+		Where("sm.space_id = ?", *req.SpaceID).
+		Where("sm.status = ?", 1).
+		Where("sm.deleted_at IS NULL")
+
+	// 处理游标 - 使用space_model的ID作为游标
+	if req.Cursor != nil && *req.Cursor != "" {
+		cursorID, err := strconv.ParseInt(*req.Cursor, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid cursor: %w", err)
+		}
+		spaceModelQuery = spaceModelQuery.Where("sm.id > ?", cursorID)
+	}
+
+	// 设置限制和排序
+	limit := req.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+	spaceModelQuery = spaceModelQuery.Order("sm.id ASC").Limit(limit + 1)
+
+	// 获取space_model记录
+	type spaceModelResult struct {
+		ModelEntityID uint64 `json:"model_entity_id"`
+		SpaceModelID  uint64 `json:"space_model_id"`
+	}
+	
+	var spaceModels []spaceModelResult
+	if err := spaceModelQuery.Select("sm.model_entity_id, sm.id as space_model_id").Scan(&spaceModels).Error; err != nil {
+		return nil, fmt.Errorf("failed to query space models: %w", err)
+	}
+
+	if len(spaceModels) == 0 {
+		return &modelmgr.ListModelResponse{
+			ModelList:  []*modelmgr.Model{},
+			HasMore:    false,
+			NextCursor: nil,
+		}, nil
+	}
+
+	// 提取模型实体ID列表
+	entityIDs := make([]uint64, 0, len(spaceModels))
+	spaceModelIDMap := make(map[uint64]uint64) // modelEntityID -> spaceModelID
+	for _, sm := range spaceModels {
+		entityIDs = append(entityIDs, sm.ModelEntityID)
+		spaceModelIDMap[sm.ModelEntityID] = sm.SpaceModelID
+	}
+
+	// 查询 model_entity
+	entityQuery := m.db.WithContext(ctx).Model(&entity.ModelEntity{}).
+		Where("id IN ?", entityIDs).
+		Where("deleted_at IS NULL")
+
+	// 处理模糊查询
+	if req.FuzzyModelName != nil && *req.FuzzyModelName != "" {
+		entityQuery = entityQuery.Where("name LIKE ?", "%"+*req.FuzzyModelName+"%")
+	}
+
+	var entities []entity.ModelEntity
+	if err := entityQuery.Find(&entities).Error; err != nil {
+		return nil, fmt.Errorf("failed to query model entities: %w", err)
+	}
+
+	// 收集 meta_id
+	metaIDs := make([]uint64, 0, len(entities))
+	for _, e := range entities {
+		metaIDs = append(metaIDs, e.MetaID)
+	}
+
+	// 查询 model_meta
+	var metas []entity.ModelMeta
+	metaQuery := m.db.WithContext(ctx).Model(&entity.ModelMeta{}).
+		Where("id IN ?", metaIDs).
+		Where("deleted_at IS NULL")
+
+	// 处理状态过滤
+	if len(req.Status) > 0 {
+		statusValues := make([]int, len(req.Status))
+		for i, s := range req.Status {
+			statusValues[i] = int(s)
+		}
+		metaQuery = metaQuery.Where("status IN ?", statusValues)
+	} else {
+		// 默认查询 default 和 in_use 状态
+		metaQuery = metaQuery.Where("status IN ?", []int{int(modelmgr.StatusDefault), int(modelmgr.StatusInUse)})
+	}
+
+	if err := metaQuery.Find(&metas).Error; err != nil {
+		return nil, fmt.Errorf("failed to query model metas: %w", err)
+	}
+
+	// 构建 meta map
+	metaMap := make(map[uint64]*entity.ModelMeta)
+	for i := range metas {
+		metaMap[metas[i].ID] = &metas[i]
+	}
+
+	// 转换结果
+	models := make([]*modelmgr.Model, 0, len(entities))
+	hasMore := false
+	var nextCursor *string
+
+	// 按照space_model的顺序来排序entities
+	entityMap := make(map[uint64]*entity.ModelEntity)
+	for i := range entities {
+		entityMap[entities[i].ID] = &entities[i]
+	}
+
+	processedCount := 0
+	for _, sm := range spaceModels {
+		if processedCount >= limit {
+			hasMore = true
+			break
+		}
+
+		entity, ok := entityMap[sm.ModelEntityID]
+		if !ok {
+			continue // 可能被其他条件过滤掉了
+		}
+
+		meta, ok := metaMap[entity.MetaID]
+		if !ok {
+			// 如果没有找到对应的 meta，跳过
+			continue
+		}
+
+		model, err := m.convertToModel(entity, meta)
+		if err != nil {
+			logs.Warnf("failed to convert model, id=%d, err=%v", entity.ID, err)
+			continue
+		}
+
+		models = append(models, model)
+		processedCount++
+		
+		// 使用space_model的ID作为下一个游标
+		cursor := strconv.FormatUint(sm.SpaceModelID, 10)
 		nextCursor = &cursor
 	}
 

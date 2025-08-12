@@ -109,6 +109,15 @@ func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanm
 		listReq.FuzzyModelName = ptr.Of(req.GetFilter())
 	}
 
+	// 处理空间ID过滤
+	if req.GetSpaceID() != "" {
+		spaceID, err := strconv.ParseUint(req.GetSpaceID(), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid space_id: %w", err)
+		}
+		listReq.SpaceID = ptr.Of(spaceID)
+	}
+
 	// 调用基础设施层获取模型列表
 	modelResp, err := m.Mgr.ListModel(ctx, listReq)
 	if err != nil {

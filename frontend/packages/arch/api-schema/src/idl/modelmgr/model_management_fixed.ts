@@ -152,6 +152,7 @@ export interface ListModelsRequest {
   page_token?: string,
   filter?: string,
   sort_by?: string,
+  space_id?: string,
 }
 export interface ListModelsResponse {
   data?: ModelDetailOutput[],
@@ -250,7 +251,7 @@ export const ListModels = /*#__PURE__*/createAPI<ListModelsRequest, ListModelsRe
   "name": "ListModels",
   "reqType": "ListModelsRequest",
   "reqMapping": {
-    "body": ["page_size", "page_token", "filter", "sort_by"]
+    "body": ["page_size", "page_token", "filter", "sort_by", "space_id"]
   },
   "resType": "ListModelsResponse",
   "schemaRoot": "api://schemas/idl_modelmgr_model_management_fixed",

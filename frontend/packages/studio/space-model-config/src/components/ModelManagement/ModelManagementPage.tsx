@@ -51,6 +51,7 @@ export const ModelManagementPage: React.FC<ModelManagementPageProps> = ({ spaceI
     page_token: pageToken,
     filter: searchKeyword,
     sort_by: 'created_at',
+    space_id: spaceId,
   });
 
   // 创建模型

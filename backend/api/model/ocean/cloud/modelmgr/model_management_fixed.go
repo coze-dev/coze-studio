@@ -6658,6 +6658,7 @@ type ListModelsRequest struct {
 	PageToken *string    `thrift:"page_token,2,optional" form:"page_token" json:"page_token,omitempty" query:"page_token"`
 	Filter    *string    `thrift:"filter,3,optional" form:"filter" json:"filter,omitempty" query:"filter"`
 	SortBy    *string    `thrift:"sort_by,4,optional" form:"sort_by" json:"sort_by,omitempty" query:"sort_by"`
+	SpaceID   *string    `thrift:"space_id,5,optional" form:"space_id" json:"space_id,omitempty" query:"space_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
 }
 
@@ -6704,6 +6705,15 @@ func (p *ListModelsRequest) GetSortBy() (v string) {
 	return *p.SortBy
 }
 
+var ListModelsRequest_SpaceID_DEFAULT string
+
+func (p *ListModelsRequest) GetSpaceID() (v string) {
+	if !p.IsSetSpaceID() {
+		return ListModelsRequest_SpaceID_DEFAULT
+	}
+	return *p.SpaceID
+}
+
 var ListModelsRequest_Base_DEFAULT *base.Base
 
 func (p *ListModelsRequest) GetBase() (v *base.Base) {
@@ -6718,6 +6728,7 @@ var fieldIDToName_ListModelsRequest = map[int16]string{
 	2:   "page_token",
 	3:   "filter",
 	4:   "sort_by",
+	5:   "space_id",
 	255: "Base",
 }
 
@@ -6735,6 +6746,10 @@ func (p *ListModelsRequest) IsSetFilter() bool {
 
 func (p *ListModelsRequest) IsSetSortBy() bool {
 	return p.SortBy != nil
+}
+
+func (p *ListModelsRequest) IsSetSpaceID() bool {
+	return p.SpaceID != nil
 }
 
 func (p *ListModelsRequest) IsSetBase() bool {
@@ -6786,6 +6801,14 @@ func (p *ListModelsRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6872,6 +6895,17 @@ func (p *ListModelsRequest) ReadField4(iprot thrift.TProtocol) error {
 	p.SortBy = _field
 	return nil
 }
+func (p *ListModelsRequest) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.SpaceID = _field
+	return nil
+}
 func (p *ListModelsRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -6901,6 +6935,10 @@ func (p *ListModelsRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -6996,6 +7034,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *ListModelsRequest) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceID() {
+		if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.SpaceID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *ListModelsRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

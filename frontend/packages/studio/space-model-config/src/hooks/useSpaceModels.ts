@@ -42,10 +42,10 @@ export interface UseSpaceModelsResult {
  * 获取空间模型列表的 Hook（使用 ahooks，保持向后兼容）
  * @deprecated 推荐使用 useModelList 或 useListModels
  */
-export const useSpaceModels = (): UseSpaceModelsResult => {
+export const useSpaceModels = (spaceId?: string): UseSpaceModelsResult => {
   const { data, loading, error, refresh } = useRequest(
     async () => {
-      const response = await modelmgr.ListModels({});
+      const response = await modelmgr.ListModels({ space_id: spaceId });
       if (response.data) {
         // 将ModelDetailOutput转换为SpaceModelItem格式以保持向后兼容
         return response.data.map((model: modelmgr.ModelDetailOutput): SpaceModelItem => ({

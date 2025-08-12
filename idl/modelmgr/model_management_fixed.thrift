@@ -145,6 +145,7 @@ struct ListModelsRequest {
     2: optional string page_token,
     3: optional string filter,
     4: optional string sort_by,
+    5: optional string space_id,
 
     255: optional base.Base Base (api.none="true"),
 }

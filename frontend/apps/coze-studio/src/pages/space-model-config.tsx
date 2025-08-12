@@ -292,8 +292,8 @@ function useModelData(spaceId: string) {
     const fetchModels = async () => {
       try {
         setLoading(true);
-        // 直接使用新的模型管理API
-        const modelsData = await listModels({});
+        // 直接使用新的模型管理API，传入space_id进行过滤
+        const modelsData = await listModels({ space_id: spaceId });
 
         if (modelsData) {
           // 将ModelDetailOutput转换为SpaceModel
