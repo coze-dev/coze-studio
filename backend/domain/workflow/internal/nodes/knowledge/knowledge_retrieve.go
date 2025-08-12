@@ -35,8 +35,9 @@ import (
 const outputList = "outputList"
 
 type RetrieveConfig struct {
-	KnowledgeIDs      []int64
-	RetrievalStrategy *knowledge.RetrievalStrategy
+	KnowledgeIDs       []int64
+	RetrievalStrategy  *knowledge.RetrievalStrategy
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (r *RetrieveConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {

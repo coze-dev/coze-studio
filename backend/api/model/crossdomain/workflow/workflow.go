@@ -24,22 +24,33 @@ const (
 	FromLatestVersion
 )
 
+import (
+	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+)
+
 type ExecuteConfig struct {
-	ID            int64
-	From          Locator
-	Version       string
-	CommitID      string
-	Operator      int64
-	Mode          ExecuteMode
-	AppID         *int64
-	AgentID       *int64
-	ConnectorID   int64
-	ConnectorUID  string
-	TaskType      TaskType
-	SyncPattern   SyncPattern
-	InputFailFast bool // whether to fail fast if input conversion has warnings
-	BizType       BizType
-	Cancellable   bool
+	ID                  int64
+	From                Locator
+	Version             string
+	CommitID            string
+	Operator            int64
+	Mode                ExecuteMode
+	AppID               *int64
+	AgentID             *int64
+	ConnectorID         int64
+	ConnectorUID        string
+	TaskType            TaskType
+	SyncPattern         SyncPattern
+	InputFailFast       bool // whether to fail fast if input conversion has warnings
+	BizType             BizType
+	Cancellable         bool
+	WorkflowMode        WorkflowMode
+	RoundID             *int64 // if workflow is chat flow, conversation round id is required
+	ConversationID      *int64 // if workflow is chat flow, conversation id is required
+	UserMessage         *schema.Message
+	ConversationHistory []*conversation.Message
 }
 
 type ExecuteMode string
@@ -49,6 +60,8 @@ const (
 	ExecuteModeRelease   ExecuteMode = "release"
 	ExecuteModeNodeDebug ExecuteMode = "node_debug"
 )
+
+type WorkflowMode = workflow.WorkflowMode
 
 type TaskType string
 
