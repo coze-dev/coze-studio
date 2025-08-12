@@ -23,10 +23,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -158,7 +160,7 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 }
 
 func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
-	return []*common.ProjectResourceAction{
+	actions := []*common.ProjectResourceAction{
 		{
 			Key:    common.ProjectResourceActionKey_Rename,
 			Enable: true,
@@ -184,6 +186,21 @@ func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common
 			Enable: true,
 		},
 	}
+	meta, err := w.appContext.WorkflowDomainSVC.Get(ctx, &vo.GetPolicy{
+		ID:       w.resID,
+		MetaOnly: true,
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "get policy failed with '%s', err=%v", w.resID, err)
+		return actions
+	}
+	key := ternary.IFElse(meta.Mode == workflow.WorkflowMode_Workflow, common.ProjectResourceActionKey_SwitchToChatflow, common.ProjectResourceActionKey_SwitchToFuncflow)
+	action := &common.ProjectResourceAction{
+		Enable: true,
+		Key:    key,
+	}
+
+	return append(actions, action)
 }
 
 type knowledgePacker struct {
