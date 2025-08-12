@@ -60,6 +60,9 @@ importers:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
         version: link:../../packages/arch/bot-md-box-adapter
+      '@coze-arch/bot-space-api':
+        specifier: workspace:*
+        version: link:../../packages/arch/bot-space-api
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.101d0c
         version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
@@ -8053,6 +8056,9 @@ importers:
       '@coze-arch/web-context':
         specifier: workspace:*
         version: link:../web-context
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       axios:
         specifier: ^1.4.0
         version: 1.10.0(debug@4.3.3)
