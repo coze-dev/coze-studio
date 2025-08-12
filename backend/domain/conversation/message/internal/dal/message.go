@@ -84,14 +84,21 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int
 	}
 
 	if cursor > 0 {
-		if direction == entity.ScrollPageDirectionPrev {
-			do = do.Where(m.CreatedAt.Lt(cursor))
-		} else {
-			do = do.Where(m.CreatedAt.Gt(cursor))
+		msg, err := m.Where(m.ID.Eq(cursor)).First()
+		if err != nil {
+			return nil, false, err
 		}
+		if direction == entity.ScrollPageDirectionPrev {
+			do = do.Where(m.CreatedAt.Lt(msg.CreatedAt))
+			do = do.Order(m.CreatedAt.Desc())
+		} else {
+			do = do.Where(m.CreatedAt.Gt(msg.CreatedAt))
+			do = do.Order(m.CreatedAt.Asc())
+		}
+	} else {
+		do = do.Order(m.CreatedAt.Desc())
 	}
 
-	do = do.Order(m.CreatedAt.Desc())
 	messageList, err := do.Find()
 
 	var hasMore bool
