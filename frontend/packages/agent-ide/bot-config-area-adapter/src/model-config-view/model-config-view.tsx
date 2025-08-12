@@ -28,13 +28,11 @@ export const ModelConfigView: React.FC<{
   const currentModel = useGetSingleAgentCurrentModel();
 
   if (mode === BotMode.SingleMode) {
-    // Always show the model selector even if current model doesn't exist
-    // This allows users to select a valid model when the current one is invalid
-    return (
+    return currentModel?.model_type ? (
       <SingleAgentModelView
         modelListExtraHeaderSlot={modelListExtraHeaderSlot}
       />
-    );
+    ) : null;
   }
   if (mode === BotMode.MultiMode || mode === BotMode.WorkflowMode) {
     return (

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1em" height="1em" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>知识库</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="20" height="20"></rect>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="03猎鹰智能体平台_工作空间_MCP" transform="translate(-100.000000, -359.000000)">
+            <g id="编组-6" transform="translate(80.000000, 0.000000)">
+                <g id="编组-9备份-10" transform="translate(8.000000, 353.000000)">
+                    <g id="知识库" transform="translate(12.000000, 6.000000)">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <g id="矩形"></g>
+                        <g mask="url(#mask-2)" fill-rule="nonzero" id="路径" stroke="#358AFF">
+                            <g transform="translate(3.000000, 2.000000)">
+                                <path
+                                    d="M12.9204819,0.5 C13.4308335,0.811944689 13.5,0.989523385 13.5,1.18367819 L13.5,14.8163218 C13.5,15.0104766 13.4308335,15.1880553 13.31409,15.3160631 L1.07951807,15.5 C0.569166506,15.1880553 0.5,15.0104766 0.5,14.8163218 L0.5,1.18367819 C0.5,0.989523385 0.569166506,0.811944689 0.68590999,0.683936906 Z">
+                                </path>
+                                <path
+                                    d="M10.189167,0.560904433 L10.6464488,5.60432787 L8.33475464,4.65968372 L6.47799348,6.34444348 L6.22996108,1.06053941 L10.189167,0.560904433 Z">
+                                </path>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

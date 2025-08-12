@@ -81,7 +81,8 @@ type ExportFunctions =
   | 'SaveBindConnectorConfig'
   | 'CommitDraftBot'
   | 'CheckDraftBotCommit'
-  | 'GetCardRespStruct';
+  | 'GetCardRespStruct'
+  | 'GetSpaceModelList';
 
 type ExportService = {
   [K in ExportFunctions]: (
@@ -147,3 +148,11 @@ const spaceApiService = new Proxy(Object.create(null), {
 export const SpaceApi = spaceApiService;
 
 export { SpaceApiV2 } from './space-api-v2';
+export {
+  type SpaceModelItem,
+  type GetSpaceModelListRequest,
+  type GetSpaceModelListResponse,
+  getSpaceModelList,
+  getModelsByProtocol,
+  searchModels,
+} from './space-model-api';

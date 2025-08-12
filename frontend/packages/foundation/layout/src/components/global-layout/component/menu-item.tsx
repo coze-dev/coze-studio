@@ -23,7 +23,7 @@ import { reportNavClick } from '../utils';
 import { type LayoutMenuItem } from '../types';
 
 const menuStyle = classNames(
-  'w-[60px] h-[48px]',
+  'w-[60px] h-[58px]',
   'flex flex-col items-center justify-center',
   'rounded-[6px]',
   'transition-all',
@@ -69,9 +69,7 @@ export const GLobalLayoutMenuItem: FC<LayoutMenuItem> = ({
       <div
         className={classNames(
           menuStyle,
-          isActive
-            ? 'coz-mg-primary coz-fg-plus'
-            : 'coz-bg-max coz-fg-secondary',
+          isActive ? 'coz-mg-primary coz-fg-plus' : 'coz-bg-max coz-fg-primary',
         )}
         id={navId}
       >

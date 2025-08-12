@@ -113,6 +113,17 @@ export const usePromptConfig: UseEntityConfigHook = ({
         label: I18n.t('library_resource_type_prompt'),
         value: ResType.Prompt,
       },
+      onCreate: () => {
+        sendTeaEvent(EVENT_NAMES.widget_create_click, {
+          source: 'menu_bar',
+          workspace_type: isPersonalSpace
+            ? 'personal_workspace'
+            : 'team_workspace',
+        });
+        openCreatePrompt({
+          mode: 'create',
+        });
+      },
       renderCreateMenu: () => (
         <Menu.Item
           data-testid="workspace.library.header.create.prompt"

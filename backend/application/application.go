@@ -20,9 +20,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/api/handler/coze"
 	"github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/template"
 	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
+	modelrepository "github.com/coze-dev/coze-studio/backend/domain/model/repository"
+	modelservice "github.com/coze-dev/coze-studio/backend/domain/model/service"
 
 	"github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
@@ -141,6 +144,12 @@ func Init(ctx context.Context) (err error) {
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 
+	// Initialize Model Service
+	modelService := initModelService(infra)
+	if modelService != nil {
+		coze.InitModelService(modelService)
+	}
+
 	return nil
 }
 
@@ -158,7 +167,10 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	upload.InitService(infra.TOSClient, infra.CacheCli)
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
-	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
+	// Initialize model repository and service
+	modelRepo := modelrepository.NewModelRepository(infra.DB)
+	modelService := modelservice.NewModelService(modelRepo, infra.TOSClient)
+	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient, modelService, modelRepo)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
@@ -360,4 +372,9 @@ func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.S
 		ImageX:               infra.ImageXClient,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
+}
+
+func initModelService(infra *appinfra.AppDependencies) modelservice.ModelService {
+	repo := modelrepository.NewModelRepository(infra.DB)
+	return modelservice.NewModelService(repo, infra.TOSClient)
 }

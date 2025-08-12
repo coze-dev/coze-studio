@@ -7,7 +7,8 @@
   "maintainers": [],
   "exports": {
     "./develop": "./src/pages/develop/index.tsx",
-    "./library": "./src/pages/library/index.tsx"
+    "./library": "./src/pages/library/index.tsx",
+    "./members": "./src/pages/members/index.tsx"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -17,6 +18,9 @@
       ],
       "library": [
         "./src/pages/library/index.tsx"
+      ],
+      "members": [
+        "./src/pages/members/index.tsx"
       ]
     }
   },

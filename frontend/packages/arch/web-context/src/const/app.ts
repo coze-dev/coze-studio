@@ -18,6 +18,7 @@
 export enum BaseEnum {
   Home = 'home', //Home
   Explore = 'explore', //explore
+  Template = 'template', // template
   Store = 'store', // store
   Model = 'model', //Model Arena
   Space = 'space', //In space

@@ -24,11 +24,11 @@ const subMenu = lazy(() =>
     default: exps.ExploreSubMenu,
   })),
 );
-const TemplatePage = lazy(() =>
-  import('@coze-community/explore').then(exps => ({
-    default: exps.TemplatePage,
-  })),
-);
+// const TemplatePage = lazy(() =>
+//   import('@coze-community/explore').then(exps => ({
+//     default: exps.TemplatePage,
+//   })),
+// );
 const PluginPage = lazy(() =>
   import('@coze-community/explore').then(exps => ({
     default: exps.PluginPage,
@@ -55,12 +55,12 @@ export const exploreRouter: RouteObject = {
         type: 'plugin',
       }),
     },
-    {
-      path: 'template',
-      element: <TemplatePage />,
-      loader: () => ({
-        type: 'template',
-      }),
-    },
+    // {
+    //   path: 'template',
+    //   element: <TemplatePage />,
+    //   loader: () => ({
+    //     type: 'template',
+    //   }),
+    // },
   ],
 };

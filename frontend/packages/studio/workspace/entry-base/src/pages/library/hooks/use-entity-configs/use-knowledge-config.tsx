@@ -212,6 +212,7 @@ export const useKnowledgeConfig: UseEntityConfigHook = ({
     modals: <>{createKnowledgeModal}</>,
     config: {
       typeFilter: getTypeFilters(),
+      onCreate: openCreateKnowledgeModal,
       renderCreateMenu: () => (
         <Menu.Item
           data-testid="workspace.library.header.create.knowledge"

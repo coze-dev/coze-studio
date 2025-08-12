@@ -29,7 +29,7 @@
     "target": "es2018"
   },
   "watchOptions": {
-    "fallbackPolling": "dynamicpriority", 
+    "fallbackPolling": "dynamicPriorityPolling",
     "synchronousWatchDirectory": false,
     "watchDirectory": "useFsEvents",
     "watchFile": "useFsEventsOnParentDirectory",

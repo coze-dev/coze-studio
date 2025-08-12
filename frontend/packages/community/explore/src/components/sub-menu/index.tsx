@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
 
-import { SubMenuItem } from '@coze-community/components';
+import { SubMenuItem, SubMenu } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
 import {
-  IconCozTemplate,
-  IconCozTemplateFill,
+  // IconCozTemplate,
+  // IconCozTemplateFill,
   IconCozPlugin,
   IconCozPluginFill,
 } from '@coze-arch/coze-design/icons';
@@ -30,6 +31,28 @@ import { useExploreRoute } from '../../hooks/use-explore-route';
 
 const getMenuConfig = () => [
   {
+    type: 'project',
+    icon: <IconCozPlugin />,
+    activeIcon: <IconCozPluginFill />,
+    title: I18n.t('Project'),
+    // isActive: true,
+    // path: '/explore/project',
+    children: [
+      {
+        type: 'project-latest',
+        title: I18n.t('Project_latest'),
+        isActive: true,
+        path: '/explore/project/latest',
+      },
+      {
+        type: 'project-tools',
+        title: I18n.t('Project_tools'),
+        isActive: true,
+        path: '/explore/project/tools',
+      },
+    ],
+  },
+  {
     type: 'plugin',
     icon: <IconCozPlugin />,
     activeIcon: <IconCozPluginFill />,
@@ -37,31 +60,47 @@ const getMenuConfig = () => [
     isActive: true,
     path: '/explore/plugin',
   },
-  {
-    icon: <IconCozTemplate />,
-    activeIcon: <IconCozTemplateFill />,
-    title: I18n.t('template_name'),
-    isActive: true,
-    type: 'template',
-    path: '/explore/template',
-  },
+  // {
+  //   icon: <IconCozTemplate />,
+  //   activeIcon: <IconCozTemplateFill />,
+  //   title: I18n.t('template_name'),
+  //   isActive: true,
+  //   type: 'template',
+  //   path: '/explore/template',
+  // },
 ];
 
 export const ExploreSubMenu = () => {
   const navigate = useNavigate();
   const { type } = useExploreRoute();
+  const [active, setActive] = useState(true);
+  console.log('🚀 ~ ExploreSubMenu ~ type:', type);
   const menuConfig = getMenuConfig();
   return (
     <Space spacing={4} vertical>
-      {menuConfig.map(item => (
+      {menuConfig.map(item => [
         <SubMenuItem
+          key={item.type}
           {...item}
           isActive={item.type === type}
+          suffix={item?.children?.length ? '>' : ''}
           onClick={() => {
-            navigate(item.path);
+            item.path ? navigate(item.path) : setActive(!active);
           }}
-        />
-      ))}
+        />,
+        active &&
+          item?.children?.map(child => (
+            <SubMenuItem
+              key={child.type}
+              {...child}
+              className="sub-menu-item"
+              isActive={child.type === type}
+              onClick={() => {
+                navigate(child.path);
+              }}
+            />
+          )),
+      ])}
     </Space>
   );
 };

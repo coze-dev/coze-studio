@@ -82,23 +82,10 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
   });
 
   useEffect(() => {
-    // If current model doesn't exist, try to use the first available model as fallback
-    if (currentModelId) {
-      setCurrentModelIdState(currentModelId);
-    } else if (modelList.length > 0) {
-      const fallbackModelId = String(modelList[0].model_type);
-      setCurrentModelIdState(fallbackModelId);
-      // Also update the model store with the fallback model
-      setModelByImmer(draft => {
-        draft.config = {
-          ...draft.config,
-          model: fallbackModelId,
-        };
-      });
-    }
-  }, [currentModelId, modelList, setModelByImmer]);
+    setCurrentModelIdState(currentModelId);
+  }, [currentModelId]);
 
-  return (
+  return currentModelIdState ? (
     <>
       <ModelSelect
         popoverClassName="h-auto !max-h-[70vh]"
@@ -126,7 +113,7 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
           onConfigChange: v => {
             setModelByImmer(draft => {
               draft.config = {
-                model: currentModelIdState || modelList[0]?.model_type?.toString(),
+                model: currentModelIdState,
                 ...v,
               };
             });
@@ -137,5 +124,5 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
         modalSlot={modalNode}
       />
     </>
-  );
+  ) : null;
 }

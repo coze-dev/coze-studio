@@ -71,9 +71,9 @@ const FLOW_BRAND_NAME = extractEnvValue<string>({
 
 const BOT_BRAND_NAME = extractEnvValue<string>({
   cn: {
-    boe: '扣子',
-    inhouse: '扣子',
-    release: '扣子',
+    boe: '猎鹰',
+    inhouse: '猎鹰',
+    release: '猎鹰',
   },
   sg: {
     inhouse: 'Coze',

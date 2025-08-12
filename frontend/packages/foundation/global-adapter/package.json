@@ -30,6 +30,7 @@
     "@coze-agent-ide/space-bot": "workspace:*",
     "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
@@ -74,4 +75,3 @@
     "react-dom": ">=18.2.0"
   }
 }
-

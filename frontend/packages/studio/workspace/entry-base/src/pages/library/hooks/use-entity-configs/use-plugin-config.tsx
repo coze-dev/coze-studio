@@ -71,6 +71,9 @@ export const usePluginConfig: UseEntityConfigHook = ({
         label: I18n.t('library_resource_type_plugin'),
         value: ResType.Plugin,
       },
+      onCreate: () => {
+        setShowFormPluginModel(true);
+      },
       renderCreateMenu: () => (
         <Menu.Item
           data-testid="workspace.library.header.create.plugin"

@@ -16,5 +16,7 @@
 
 export { WorkspaceSubMenu } from './components/workspace-sub-menu';
 export { SpaceIdLayout } from './components/space-id-layout';
+export { SpaceSelector } from './components/space-selector';
+export { CreateSpaceModal } from './components/create-space-modal';
 
 export { useInitSpace } from './hooks/use-init-space';

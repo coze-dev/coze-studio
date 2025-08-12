@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>MCP市场</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="24" height="24"></rect>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#D9E9FF" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01猎鹰智能体平台_工作空间_项目开发" transform="translate(-100.000000, -27.000000)">
+            <g id="编组-6" transform="translate(80.000000, 0.000000)">
+                <g id="编组-9备份-10" transform="translate(8.000000, 20.000000)">
+                    <g id="MCP市场" transform="translate(12.000000, 7.000000)">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <g id="矩形"></g>
+                        <path d="M8.16,0 C10.32,0 10.32,2.80555101 12.72,2.80555104 L21.6,2.80555104 C22.92,2.80555104 23.88,3.93012246 24,5.47395919 L24,21.194449 C24,22.7363266 22.92,24 21.6,24 L2.4,24 C1.08,24 0,22.7363265 0,21.194449 L0,2.80555104 C0,1.26367347 1.08,0 2.4,0 L8.16,0 Z" id="路径" fill="#358AFF" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                        <path d="M12,13 C10.6360295,13 9.32792364,13.6848195 8.36345084,14.9038059 C7.39897804,16.1227924 6.85714287,17.7760928 6.85714287,19.5 L17.1428571,19.5 C17.1428571,17.7760928 16.601022,16.1227924 15.6365492,14.9038059 C14.6720764,13.6848195 13.3639705,13 12,13 L12,13 Z" id="路径" fill="url(#linearGradient-3)" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                        <path d="M12,7.14285705 C10.1059789,7.14333054 8.57095519,8.67912177 8.57142847,10.5731429 C8.57190197,12.467164 10.1076932,14.0021877 12.0017143,14.0017144 C13.8957354,14.0012409 15.4307591,12.4654497 15.4302858,10.5714286 C15.4298123,8.67740748 13.8940211,7.14238377 12,7.14285705 Z" id="路径" fill="#FFFFFF" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

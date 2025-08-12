@@ -56,6 +56,9 @@ export const useWorkflowConfig: UseEntityConfigHook = ({
         label: I18n.t('library_resource_type_workflow'),
         value: ResType.Workflow,
       },
+      onCreate: (isChat: Boolean) => {
+        openCreateModal(isChat ? WorkflowMode.ChatFlow : WorkflowMode.Workflow);
+      },
       parseParams: params => {
         // After the workflow image stream is merged, the selected workflow needs to also pull out the image stream
         if (params?.res_type_filter?.[0] === ResType.Workflow) {

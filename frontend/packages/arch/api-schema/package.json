@@ -8,7 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./passport": "./src/idl/passport/passport.ts",
-    "./marketplace": "./src/idl/marketplace/public_api.ts"
+    "./marketplace": "./src/idl/flow/marketplace/flow_marketplace_product/public_api.ts"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -17,7 +17,7 @@
         "./src/idl/passport/passport.ts"
       ],
       "marketplace": [
-        "./src/idl/marketplace/public_api.ts"
+        "./src/idl/flow/marketplace/flow_marketplace_product/public_api.ts"
       ]
     }
   },

@@ -16,13 +16,30 @@
 
 import { type FC, useState } from 'react';
 
-import { CozeBrand } from '@coze-studio/components/coze-brand';
+// import { CozeBrand } from '@coze-studio/components/coze-brand';
 import { I18n } from '@coze-arch/i18n';
 import { Button, Form } from '@coze-arch/coze-design';
 import { SignFrame, SignPanel } from '@coze-arch/bot-semi';
 
 import { useLoginService } from './service';
-import { Favicon } from './favicon';
+
+import cls from 'classnames';
+import styles from './index.module.less';
+
+import svgEmail from './icon-email.svg';
+import svgPassword from './icon-pswd.svg';
+
+const IconEmail: FC = () => (
+  <div className="w-[38px] h-[38px] p-[8px]">
+    <img src={svgEmail} alt="" className="block w-full h-full" />
+  </div>
+);
+
+const IconPassword: FC = () => (
+  <div className="w-[38px] h-[38px] p-[8px]">
+    <img src={svgPassword} alt="" className="block w-full h-full" />
+  </div>
+);
 
 export const LoginPage: FC = () => {
   const [email, setEmail] = useState('');
@@ -37,14 +54,23 @@ export const LoginPage: FC = () => {
   const submitDisabled = !email || !password || hasError;
 
   return (
-    <SignFrame brandNode={<CozeBrand isOversea={IS_OVERSEA} />}>
-      <SignPanel className="w-[600px] h-[640px] pt-[96px]">
-        <div className="flex flex-col items-center w-full h-full">
-          <Favicon />
-          <div className="text-[24px] font-medium coze-fg-plug leading-[36px] mt-[32px]">
-            {I18n.t('open_source_login_welcome')}
+    <SignFrame>
+      <SignPanel className="flex w-[1000px] h-[520px]">
+        <div className={cls('w-[50%] h-full', styles.bgCover)}></div>
+        <div className="flex flex-col items-center w-[50%] h-full">
+          <div
+            className="text-[24px] w-[320px] font-medium coze-fg-plug mt-[80px]"
+            dangerouslySetInnerHTML={{
+              __html: I18n.t('open_source_login_welcome').replace(
+                I18n.t('platform_name'),
+                `<span class="${styles.sub}">${I18n.t('platform_name')}</span>`,
+              ),
+            }}
+          />
+          <div className="text-[14px] w-[320px] mt-[4px] coz-fg-secondary">
+            {I18n.t('open_source_login_slogan')}
           </div>
-          <div className="mt-[64px] w-[320px] flex flex-col items-stretch [&_.semi-input-wrapper]:overflow-hidden">
+          <div className="mt-[40px] w-[320px] flex flex-col items-stretch [&_.semi-input-wrapper]:overflow-hidden">
             <Form
               onErrorChange={errors => {
                 setHasError(Object.keys(errors).length > 0);
@@ -53,8 +79,10 @@ export const LoginPage: FC = () => {
               <Form.Input
                 data-testid="login.input.email"
                 noLabel
+                size="large"
                 type="email"
                 field="email"
+                prefix={<IconEmail />}
                 rules={[
                   {
                     required: true,
@@ -73,6 +101,8 @@ export const LoginPage: FC = () => {
               <Form.Input
                 data-testid="login.input.password"
                 noLabel
+                size="large"
+                prefix={<IconPassword />}
                 rules={[
                   {
                     required: true,
@@ -92,6 +122,7 @@ export const LoginPage: FC = () => {
               onClick={login}
               loading={loginLoading}
               color="hgltplus"
+              size="large"
             >
               {I18n.t('login_button_text')}
             </Button>
@@ -102,19 +133,10 @@ export const LoginPage: FC = () => {
               onClick={register}
               loading={registerLoading}
               color="primary"
+              size="large"
             >
               {I18n.t('register')}
             </Button>
-            <div className="mt-[12px] flex justify-center">
-              <a
-                data-testid="login.link.terms"
-                href="https://github.com/coze-dev/coze-studio?tab=Apache-2.0-1-ov-file"
-                target="_blank"
-                className="no-underline coz-fg-hglt"
-              >
-                {I18n.t('open_source_terms_linkname')}
-              </a>
-            </div>
           </div>
         </div>
       </SignPanel>

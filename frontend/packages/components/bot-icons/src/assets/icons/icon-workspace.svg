@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>工作空间</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="24" height="24"></rect>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="工作空间">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <g id="矩形"></g>
+            <g mask="url(#mask-2)" fill-rule="nonzero" id="路径" stroke="#333333" stroke-width="1.2">
+                <g transform="translate(2.400000, 1.200000)">
+                    <path d="M0.6,8.22948636 L7.7132239,11.9421787 L7.95633149,20.2911388 L0.575720283,16.4622824 L0.6,8.22948636 Z"></path>
+                    <path d="M9.33149301,0.779988706 L18.5990137,5.87642772 L18.6,16.4453025 L11.6081506,20.5354773 L11.2023868,10.8998394 C11.1971568,10.4777911 10.9685712,10.0998987 10.6112204,9.8823554 L2.59035227,5.17734865 L9.33149301,0.779988706 Z"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

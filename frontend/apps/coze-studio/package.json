@@ -9,8 +9,8 @@
   "maintainers": [],
   "sideEffects": false,
   "scripts": {
-    "build": "IS_OPEN_SOURCE=true rsbuild build",
-    "dev": "IS_OPEN_SOURCE=true CUSTOM_VERSION=release rsbuild dev",
+    "build": "cross-env IS_OPEN_SOURCE=false rsbuild build",
+    "dev": "cross-env IS_OPEN_SOURCE=false CUSTOM_VERSION=release rsbuild dev",
     "lint": "eslint ./ --cache --quiet",
     "preview": "rsbuild preview",
     "test": "vitest --run --passWithNoTests",
@@ -72,6 +72,7 @@
     "@types/react": "18.2.37",
     "@types/react-dom": "18.2.15",
     "@vitest/coverage-v8": "~3.0.5",
+    "cross-env": "^10.0.0",
     "sucrase": "^3.32.0",
     "tailwindcss": "~3.3.3",
     "typescript": "~5.8.2",

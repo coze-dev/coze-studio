@@ -38,6 +38,7 @@ interface IWorkspaceListItemProps extends IWorkspaceListItem {
 export const WorkspaceListItem: FC<IWorkspaceListItemProps> = ({
   icon,
   activeIcon,
+  type,
   title,
   path,
   currentSubMenu,
@@ -49,6 +50,17 @@ export const WorkspaceListItem: FC<IWorkspaceListItemProps> = ({
       spaceId: store.space.id,
     })),
   );
+
+  if (type === 'title') {
+    return (
+      <div className="w-full flex items-start gap-[8px] mt-[16px] pl-[8px]">
+        <div className="coz-fg-secondary text-[12px] leading-[20px]">
+          {title?.()}
+        </div>
+      </div>
+    );
+  }
+
   return spaceId ? (
     <div
       onClick={() => {
