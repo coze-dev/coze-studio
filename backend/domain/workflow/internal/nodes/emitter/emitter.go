@@ -295,45 +295,6 @@ func (c *cacheStore) readyForPart(part nodes.TemplatePart, sw *schema.StreamWrit
 	return false, false
 }
 
-func (c *cacheStore) fillZero(nodeKey vo.NodeKey) map[string]any {
-	filled := make(map[string]any)
-	for field, sInfo := range c.infos {
-		if !sInfo.FromNode(nodeKey) {
-			continue
-		}
-
-		cacheV, ok := c.store[field]
-		if !sInfo.IsIntermediate {
-			if !ok {
-				c.store[field] = &cachedVal{
-					val:       sInfo.TypeInfo.Zero(),
-					finished:  true,
-					subCaches: nil,
-				}
-
-				filled[field] = true
-			}
-
-			continue
-		}
-
-		if !ok {
-			cacheV = &cachedVal{
-				val:       make(map[string]any),
-				subCaches: newCacheStore(sInfo.SubSources),
-			}
-			c.store[field] = cacheV
-		}
-
-		subFilled := cacheV.subCaches.fillZero(nodeKey)
-		if len(subFilled) > 0 {
-			filled[field] = subFilled
-		}
-	}
-
-	return filled
-}
-
 func merge(a, b any) any {
 	aStr, ok1 := a.(string)
 	bStr, ok2 := b.(string)
@@ -446,28 +407,6 @@ func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[m
 						// current part is not fulfilled, emit the literal part content and move on to next part
 						sw.Send(map[string]any{outputKey: part.Value}, nil)
 						break
-					}
-
-					if sn, ok := schema.GetSourceName(err); ok {
-						// received end signal for a particular predecessor nodeID, do the following:
-						// - obtain the field sources mapped from this predecessor node
-						// - check which fields are still missing in the cache store
-						// - fill zero value for these missing fields
-						// - check if the current template part should be rendered and sent immediately
-						// - check if we should move on to next part in template
-						filled := caches.fillZero(vo.NodeKey(sn))
-						if _, okk := filled[part.Root]; okk {
-							// current part is influenced by the 'fill zero' operation
-							hasErr, shouldChangePart = caches.readyForPart(part, sw)
-							if hasErr {
-								return
-							}
-							if shouldChangePart {
-								continue partsLoop
-							}
-						}
-
-						continue
 					}
 
 					hasErr = true

@@ -148,11 +148,6 @@ func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema, opts ...Workflo
 		compileOpts = append(compileOpts, compose.WithGraphName(strconv.FormatInt(wfOpts.wfID, 10)))
 	}
 
-	fanInConfigs := sc.FanInMergeConfigs()
-	if len(fanInConfigs) > 0 {
-		compileOpts = append(compileOpts, compose.WithFanInMergeConfig(fanInConfigs))
-	}
-
 	r, err := wf.Compile(ctx, compileOpts...)
 	if err != nil {
 		return nil, err

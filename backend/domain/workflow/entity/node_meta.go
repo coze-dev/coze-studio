@@ -77,13 +77,12 @@ type Category struct {
 }
 
 type ExecutableMeta struct {
-	IsComposite          bool  `json:"is_composite,omitempty"`
-	DefaultTimeoutMS     int64 `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
-	PreFillZero          bool  `json:"pre_fill_zero,omitempty"`
-	PostFillNil          bool  `json:"post_fill_nil,omitempty"`
-	MayUseChatModel      bool  `json:"may_use_chat_model,omitempty"`
-	InputSourceAware     bool  `json:"input_source_aware,omitempty"`      // whether this node needs to know the runtime status of its input sources
-	StreamSourceEOFAware bool  `json:"needs_stream_source_eof,omitempty"` // whether this node needs to be aware stream sources' SourceEOF error
+	IsComposite      bool  `json:"is_composite,omitempty"`
+	DefaultTimeoutMS int64 `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
+	PreFillZero      bool  `json:"pre_fill_zero,omitempty"`
+	PostFillNil      bool  `json:"post_fill_nil,omitempty"`
+	MayUseChatModel  bool  `json:"may_use_chat_model,omitempty"`
+	InputSourceAware bool  `json:"input_source_aware,omitempty"` // whether this node needs to know the runtime status of its input sources
 
 	// IncrementalOutput indicates that the node's output is intended for progressive, user-facing streaming.
 	// This distinguishes nodes that actually stream text to the user (e.g., 'Exit', 'Output')
@@ -256,10 +255,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:          true,
-			InputSourceAware:     true,
-			StreamSourceEOFAware: true,
-			IncrementalOutput:    true,
+			PreFillZero:       true,
+			InputSourceAware:  true,
+			IncrementalOutput: true,
 		},
 		EnUSName:        "End",
 		EnUSDescription: "The final node of the workflow, used to return the result information after the workflow runs.",
@@ -393,10 +391,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:          true,
-			InputSourceAware:     true,
-			StreamSourceEOFAware: true,
-			IncrementalOutput:    true,
+			PreFillZero:       true,
+			InputSourceAware:  true,
+			IncrementalOutput: true,
 		},
 		EnUSName:        "Output",
 		EnUSDescription: "The node is renamed from \"message\" to \"output\", Supports message output in the intermediate process and streaming and non-streaming methods",
