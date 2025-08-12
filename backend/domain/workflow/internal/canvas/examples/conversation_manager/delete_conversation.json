@@ -1,0 +1,129 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -13.523809523809522,
+          "y": -25.294372294372295
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 890.3549783549786,
+          "y": -71.48917748917748
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "118024",
+                    "name": "isSuccess"
+                  },
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "118024",
+      "type": "52",
+      "meta": {
+        "position": {
+          "x": 423.6623376623378,
+          "y": -126.39999999999999
+        }
+      },
+      "data": {
+        "outputs": [
+          {
+            "type": "boolean",
+            "name": "isSuccess"
+          }
+        ],
+        "nodeMeta": {
+          "title": "删除会话",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除会话.jpg",
+          "description": "用于删除会话",
+          "mainColor": "#F2B600",
+          "subTitle": "删除会话"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "conversationName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "118024"
+    },
+    {
+      "sourceNodeID": "118024",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

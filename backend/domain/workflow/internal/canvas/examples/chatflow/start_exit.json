@@ -1,0 +1,89 @@
+{
+	"nodes": [{
+		"blocks": [],
+		"data": {
+			"nodeMeta": {
+				"description": "工作流的起始节点，用于设定启动工作流需要的信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+				"subTitle": "",
+				"title": "开始"
+			},
+			"outputs": [{
+				"name": "USER_INPUT",
+				"required": false,
+				"type": "string"
+			}, {
+				"defaultValue": "Default",
+				"description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+				"name": "CONVERSATION_NAME",
+				"required": false,
+				"type": "string"
+			}],
+			"trigger_parameters": []
+		},
+		"edges": null,
+		"id": "100001",
+		"meta": {
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		"type": "1"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"content": {
+					"type": "string",
+					"value": {
+						"content": "{{output}}",
+						"type": "literal"
+					}
+				},
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "USER_INPUT",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "output"
+				}],
+				"streamingOutput": true,
+				"terminatePlan": "useAnswerContent"
+			},
+			"nodeMeta": {
+				"description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+				"subTitle": "",
+				"title": "结束"
+			}
+		},
+		"edges": null,
+		"id": "900001",
+		"meta": {
+			"position": {
+				"x": 1000,
+				"y": 0
+			}
+		},
+		"type": "2"
+	}],
+	"edges": [{
+		"sourceNodeID": "100001",
+		"targetNodeID": "900001",
+		"sourcePortID": ""
+	}],
+	"versions": {
+		"loop": "v2"
+	}
+}

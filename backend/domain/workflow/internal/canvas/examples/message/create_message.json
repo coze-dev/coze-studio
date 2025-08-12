@@ -1,0 +1,234 @@
+{
+	"nodes": [{
+		"blocks": [],
+		"data": {
+			"nodeMeta": {
+				"description": "工作流的起始节点，用于设定启动工作流需要的信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+				"subTitle": "",
+				"title": "开始"
+			},
+			"outputs": [{
+				"name": "USER_INPUT",
+				"required": false,
+				"type": "string"
+			}, {
+				"defaultValue": "Default",
+				"description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+				"name": "CONVERSATION_NAME",
+				"required": false,
+				"type": "string"
+			}],
+			"trigger_parameters": []
+		},
+		"edges": null,
+		"id": "100001",
+		"meta": {
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		"type": "1"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "boolean",
+						"value": {
+							"content": {
+								"blockID": "195185",
+								"name": "isSuccess",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 3
+							},
+							"type": "ref"
+						}
+					},
+					"name": "output"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "195185",
+								"name": "message.messageId",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "mID"
+				}],
+				"terminatePlan": "returnVariables"
+			},
+			"nodeMeta": {
+				"description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+				"subTitle": "",
+				"title": "结束"
+			}
+		},
+		"edges": null,
+		"id": "900001",
+		"meta": {
+			"position": {
+				"x": 1000,
+				"y": 0
+			}
+		},
+		"type": "2"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "CONVERSATION_NAME",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "conversationName"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": "user",
+							"type": "literal"
+						}
+					},
+					"name": "role"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": "1",
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "literal"
+						}
+					},
+					"name": "content"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于创建消息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-创建消息.jpg",
+				"mainColor": "#F2B600",
+				"subTitle": "创建消息",
+				"title": "创建消息"
+			},
+			"outputs": [{
+				"name": "isSuccess",
+				"type": "boolean"
+			}, {
+				"name": "message",
+				"schema": [{
+					"name": "messageId",
+					"type": "string"
+				}, {
+					"name": "role",
+					"type": "string"
+				}, {
+					"name": "contentType",
+					"type": "string"
+				}, {
+					"name": "content",
+					"type": "string"
+				}],
+				"type": "object"
+			}]
+		},
+		"edges": null,
+		"id": "195185",
+		"meta": {
+			"position": {
+				"x": 482,
+				"y": -13
+			}
+		},
+		"type": "55"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "CONVERSATION_NAME",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "conversationName"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于创建会话",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+				"mainColor": "#F2B600",
+				"subTitle": "创建会话",
+				"title": "创建会话"
+			},
+			"outputs": [{
+				"name": "isSuccess",
+				"type": "boolean"
+			}, {
+				"name": "isExisted",
+				"type": "boolean"
+			}, {
+				"name": "conversationId",
+				"type": "string"
+			}]
+		},
+		"edges": null,
+		"id": "121849",
+		"meta": {
+			"position": {
+				"x": 302,
+				"y": -236
+			}
+		},
+		"type": "39"
+	}],
+	"edges": [{
+		"sourceNodeID": "100001",
+		"targetNodeID": "121849",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "195185",
+		"targetNodeID": "900001",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "121849",
+		"targetNodeID": "195185",
+		"sourcePortID": ""
+	}],
+	"versions": {
+		"loop": "v2"
+	}
+}
