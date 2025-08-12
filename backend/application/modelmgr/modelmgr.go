@@ -23,10 +23,7 @@ import (
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	oceanmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/modelmgr"
+	modelmgrapi "github.com/coze-dev/coze-studio/backend/api/model/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/model/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/model/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/model/service"
@@ -87,7 +84,7 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 }
 
 // ListModels 获取模型列表（新接口）
-func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanmodelmgr.ListModelsRequest) (*oceanmodelmgr.ListModelsResponse, error) {
+func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *modelmgrapi.ListModelsRequest) (*modelmgrapi.ListModelsResponse, error) {
 	// 构建查询请求
 	listReq := &inframodelmgr.ListModelRequest{
 		Limit: int(req.GetPageSize()),
@@ -127,7 +124,7 @@ func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanm
 	}
 
 	// 转换模型数据
-	modelDetailList := make([]*oceanmodelmgr.ModelDetailOutput, 0, len(modelResp.ModelList))
+	modelDetailList := make([]*modelmgrapi.ModelDetailOutput, 0, len(modelResp.ModelList))
 	for _, model := range modelResp.ModelList {
 		// 处理图标URL
 		if model.IconURI != "" && m.TosClient != nil {
@@ -147,7 +144,7 @@ func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanm
 	}
 
 	// 构建响应
-	resp := &oceanmodelmgr.ListModelsResponse{
+	resp := &modelmgrapi.ListModelsResponse{
 		Data:       modelDetailList,
 		TotalCount: ptr.Of(int32(len(modelDetailList))),
 		Code:       0,
@@ -163,14 +160,24 @@ func (m *ModelmgrApplicationService) ListModels(ctx context.Context, req *oceanm
 }
 
 // CreateModel 创建模型
-func (m *ModelmgrApplicationService) CreateModel(ctx context.Context, req *modelmgr.CreateModelReq) (*modelmgr.ModelDetail, error) {
+func (m *ModelmgrApplicationService) CreateModel(ctx context.Context, req *modelmgrapi.CreateModelRequest) (*modelmgrapi.ModelDetailOutput, error) {
 	// 转换为实体
 	metaEntity := &entity.ModelMeta{
 		ModelName: req.Meta.Name,
 		Protocol:  req.Meta.Protocol,
-		IconURI:   req.IconURI,
-		IconURL:   req.IconURL,
-		Status:    1, // 默认启用
+		IconURI: func() string {
+			if req.IconURI != nil {
+				return *req.IconURI
+			}
+			return ""
+		}(),
+		IconURL: func() string {
+			if req.IconURL != nil {
+				return *req.IconURL
+			}
+			return ""
+		}(),
+		Status: 1, // 默认启用
 	}
 
 	// 处理 Capability
@@ -231,7 +238,7 @@ func (m *ModelmgrApplicationService) CreateModel(ctx context.Context, req *model
 }
 
 // GetModel 获取模型详情
-func (m *ModelmgrApplicationService) GetModel(ctx context.Context, modelID string) (*modelmgr.ModelDetail, error) {
+func (m *ModelmgrApplicationService) GetModel(ctx context.Context, modelID string) (*modelmgrapi.ModelDetailOutput, error) {
 	id, err := strconv.ParseUint(modelID, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid model id: %w", err)
@@ -246,7 +253,7 @@ func (m *ModelmgrApplicationService) GetModel(ctx context.Context, modelID strin
 }
 
 // UpdateModel 更新模型
-func (m *ModelmgrApplicationService) UpdateModel(ctx context.Context, req *modelmgr.UpdateModelReq) (*modelmgr.ModelDetail, error) {
+func (m *ModelmgrApplicationService) UpdateModel(ctx context.Context, req *modelmgrapi.UpdateModelRequest) (*modelmgrapi.ModelDetailOutput, error) {
 	id, err := strconv.ParseUint(req.ModelID, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid model id: %w", err)
@@ -269,8 +276,8 @@ func (m *ModelmgrApplicationService) UpdateModel(ctx context.Context, req *model
 		meta.IconURL = *req.IconURL
 	}
 	if req.Status != nil {
-		model.Status = *req.Status
-		meta.Status = *req.Status
+		model.Status = int(*req.Status)
+		meta.Status = int(*req.Status)
 	}
 	if len(req.Description) > 0 {
 		descJSON, err := json.Marshal(req.Description)
@@ -381,19 +388,19 @@ func (m *ModelmgrApplicationService) UpdateSpaceModelConfig(ctx context.Context,
 }
 
 // convertToModelDetail 转换为模型详情
-func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEntity, meta *entity.ModelMeta) *modelmgr.ModelDetail {
-	detail := &modelmgr.ModelDetail{
+func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEntity, meta *entity.ModelMeta) *modelmgrapi.ModelDetailOutput {
+	detail := &modelmgrapi.ModelDetailOutput{
 		ID:        strconv.FormatUint(model.ID, 10),
 		Name:      model.Name,
-		IconURI:   meta.IconURI,
-		IconURL:   meta.IconURL,
+		IconURI:   &meta.IconURI,
+		IconURL:   &meta.IconURL,
 		CreatedAt: int64(model.CreatedAt),
 		UpdatedAt: int64(model.UpdatedAt),
-		Meta: modelmgr.ModelMetaOutput{
+		Meta: &modelmgrapi.ModelMetaOutput{
 			ID:       strconv.FormatUint(meta.ID, 10),
 			Name:     meta.ModelName,
 			Protocol: meta.Protocol,
-			Status:   meta.Status,
+			Status:   int32(meta.Status),
 		},
 	}
 
@@ -407,7 +414,7 @@ func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEnt
 
 	// 处理 DefaultParameters
 	if model.DefaultParams != "" {
-		var params []modelmgr.ModelParameterOutput
+		var params []*modelmgrapi.ModelParameterOutput
 		if err := json.Unmarshal([]byte(model.DefaultParams), &params); err == nil {
 			detail.DefaultParameters = params
 		}
@@ -415,15 +422,15 @@ func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEnt
 
 	// 处理 Capability
 	if meta.Capability != nil && *meta.Capability != "" {
-		var cap modelmgr.ModelCapability
+		var cap modelmgrapi.ModelCapability
 		if err := json.Unmarshal([]byte(*meta.Capability), &cap); err == nil {
-			detail.Meta.Capability = cap
+			detail.Meta.Capability = &cap
 		}
 	}
 
 	// 处理 ConnConfig
 	if meta.ConnConfig != nil && *meta.ConnConfig != "" {
-		var config map[string]interface{}
+		var config *modelmgrapi.ConnConfig
 		if err := json.Unmarshal([]byte(*meta.ConnConfig), &config); err == nil {
 			detail.Meta.ConnConfig = config
 		}
@@ -433,8 +440,8 @@ func (m *ModelmgrApplicationService) convertToModelDetail(model *entity.ModelEnt
 }
 
 // convertToModelDetailOutput 转换为新的API格式
-func (m *ModelmgrApplicationService) convertToModelDetailOutput(model *inframodelmgr.Model) (*oceanmodelmgr.ModelDetailOutput, error) {
-	detail := &oceanmodelmgr.ModelDetailOutput{
+func (m *ModelmgrApplicationService) convertToModelDetailOutput(model *inframodelmgr.Model) (*modelmgrapi.ModelDetailOutput, error) {
+	detail := &modelmgrapi.ModelDetailOutput{
 		ID:        strconv.FormatInt(model.ID, 10),
 		Name:      model.Name,
 		CreatedAt: int64(model.ID), // 临时使用ID作为创建时间，实际应该从数据库获取
@@ -465,7 +472,7 @@ func (m *ModelmgrApplicationService) convertToModelDetailOutput(model *inframode
 
 	// 转换默认参数
 	if len(model.DefaultParameters) > 0 {
-		params := make([]*oceanmodelmgr.ModelParameterOutput, 0, len(model.DefaultParameters))
+		params := make([]*modelmgrapi.ModelParameterOutput, 0, len(model.DefaultParameters))
 		for _, param := range model.DefaultParameters {
 			apiParam, err := m.convertToModelParameterOutput(param)
 			if err != nil {
@@ -488,8 +495,8 @@ func (m *ModelmgrApplicationService) convertToModelDetailOutput(model *inframode
 }
 
 // convertToModelParameterOutput 转换模型参数
-func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *inframodelmgr.Parameter) (*oceanmodelmgr.ModelParameterOutput, error) {
-	apiParam := &oceanmodelmgr.ModelParameterOutput{
+func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *inframodelmgr.Parameter) (*modelmgrapi.ModelParameterOutput, error) {
+	apiParam := &modelmgrapi.ModelParameterOutput{
 		Name: string(param.Name),
 		Type: string(param.Type),
 	}
@@ -540,9 +547,9 @@ func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *infram
 
 	// 转换选项
 	if len(param.Options) > 0 {
-		options := make([]*oceanmodelmgr.ModelParamOption, 0, len(param.Options))
+		options := make([]*modelmgrapi.ModelParamOption, 0, len(param.Options))
 		for _, opt := range param.Options {
-			options = append(options, &oceanmodelmgr.ModelParamOption{
+			options = append(options, &modelmgrapi.ModelParamOption{
 				Label: ptr.Of(opt.Label),
 				Value: ptr.Of(opt.Value),
 			})
@@ -551,7 +558,7 @@ func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *infram
 	}
 
 	// 转换显示样式
-	style := &oceanmodelmgr.ParamDisplayStyle{
+	style := &modelmgrapi.ParamDisplayStyle{
 		Widget: string(param.Style.Widget),
 	}
 	if param.Style.Label != nil {
@@ -570,17 +577,17 @@ func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *infram
 }
 
 // convertToModelMetaOutput 转换模型元数据
-func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmgr.ModelMeta) (*oceanmodelmgr.ModelMetaOutput, error) {
-	apiMeta := &oceanmodelmgr.ModelMetaOutput{
-		ID:       strconv.FormatInt(int64(meta.Status), 10), // 临时使用status作为ID
-		Name:     meta.Name,
+func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmgr.ModelMeta) (*modelmgrapi.ModelMetaOutput, error) {
+	apiMeta := &modelmgrapi.ModelMetaOutput{
+		ID: strconv.FormatInt(int64(meta.Status), 10), // 临时使用status作为ID
+		// Name:     meta.Name, // TODO: ModelMeta没有Name字段，需要从其他地方获取
 		Protocol: string(meta.Protocol),
 		Status:   int32(meta.Status),
 	}
 
 	// 转换能力信息
 	if meta.Capability != nil {
-		capability := &oceanmodelmgr.ModelCapability{
+		capability := &modelmgrapi.ModelCapability{
 			FunctionCall:    ptr.Of(meta.Capability.FunctionCall),
 			JSONMode:        ptr.Of(meta.Capability.JSONMode),
 			MaxTokens:       ptr.Of(int32(meta.Capability.MaxTokens)),
@@ -615,14 +622,14 @@ func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmg
 
 	// 转换连接配置
 	if meta.ConnConfig != nil {
-		connConfig := &oceanmodelmgr.ConnConfig{}
+		connConfig := &modelmgrapi.ConnConfig{}
 
 		// 这里需要根据实际的 chatmodel.Config 结构来转换
 		// 暂时先创建一个空的配置对象
 		apiMeta.ConnConfig = connConfig
 	} else {
 		// 如果没有连接配置，创建一个默认的空配置
-		apiMeta.ConnConfig = &oceanmodelmgr.ConnConfig{}
+		apiMeta.ConnConfig = &modelmgrapi.ConnConfig{}
 	}
 
 	return apiMeta, nil

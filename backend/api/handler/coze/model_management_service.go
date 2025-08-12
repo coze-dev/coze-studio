@@ -18,6 +18,8 @@ package coze
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -30,7 +32,7 @@ import (
 // CreateModel 创建模型
 // @router /api/model/create [POST]
 func CreateModel(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.CreateModelReq
+	var req apimodelmgr.CreateModelRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -44,7 +46,7 @@ func CreateModel(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.CreateModelResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.CreateModelResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -56,7 +58,7 @@ func CreateModel(ctx context.Context, c *app.RequestContext) {
 // GetModel 获取模型详情
 // @router /api/model/detail [POST]
 func GetModel(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.GetModelReq
+	var req apimodelmgr.GetModelRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -68,7 +70,7 @@ func GetModel(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.GetModelResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.GetModelResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -80,7 +82,7 @@ func GetModel(ctx context.Context, c *app.RequestContext) {
 // UpdateModel 更新模型
 // @router /api/model/update [POST]
 func UpdateModel(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.UpdateModelReq
+	var req apimodelmgr.UpdateModelRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -94,7 +96,7 @@ func UpdateModel(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.UpdateModelResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.UpdateModelResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -106,7 +108,7 @@ func UpdateModel(ctx context.Context, c *app.RequestContext) {
 // DeleteModel 删除模型
 // @router /api/model/delete [POST]
 func DeleteModel(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.DeleteModelReq
+	var req apimodelmgr.DeleteModelRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -120,7 +122,7 @@ func DeleteModel(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.DeleteModelResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.DeleteModelResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -131,7 +133,7 @@ func DeleteModel(ctx context.Context, c *app.RequestContext) {
 // AddModelToSpace 添加模型到空间
 // @router /api/space/model/add [POST]
 func AddModelToSpace(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.AddModelToSpaceReq
+	var req apimodelmgr.AddModelToSpaceRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -146,7 +148,7 @@ func AddModelToSpace(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.AddModelToSpaceResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.AddModelToSpaceResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -157,7 +159,7 @@ func AddModelToSpace(ctx context.Context, c *app.RequestContext) {
 // RemoveModelFromSpace 从空间移除模型
 // @router /api/space/model/remove [POST]
 func RemoveModelFromSpace(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.RemoveModelFromSpaceReq
+	var req apimodelmgr.RemoveModelFromSpaceRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -171,7 +173,7 @@ func RemoveModelFromSpace(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.RemoveModelFromSpaceResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.RemoveModelFromSpaceResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",
@@ -182,7 +184,7 @@ func RemoveModelFromSpace(ctx context.Context, c *app.RequestContext) {
 // UpdateSpaceModelConfig 更新空间模型配置
 // @router /api/space/model/config/update [POST]
 func UpdateSpaceModelConfig(ctx context.Context, c *app.RequestContext) {
-	var req apimodelmgr.UpdateSpaceModelConfigReq
+	var req apimodelmgr.UpdateSpaceModelConfigRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		invalidParamRequestResponse(c, "参数验证失败: "+err.Error())
 		return
@@ -190,13 +192,27 @@ func UpdateSpaceModelConfig(ctx context.Context, c *app.RequestContext) {
 
 	// TODO: 添加认证中间件
 
-	err := modelmgr.ModelmgrApplicationSVC.UpdateSpaceModelConfig(ctx, req.SpaceID, req.ModelID, req.CustomConfig)
+	// 将CustomConfig转换为map[string]interface{}
+	var configMap map[string]interface{}
+	if req.CustomConfig != nil {
+		configBytes, err := json.Marshal(req.CustomConfig)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, fmt.Errorf("failed to marshal custom config: %w", err))
+			return
+		}
+		if err := json.Unmarshal(configBytes, &configMap); err != nil {
+			internalServerErrorResponse(ctx, c, fmt.Errorf("failed to unmarshal custom config: %w", err))
+			return
+		}
+	}
+
+	err := modelmgr.ModelmgrApplicationSVC.UpdateSpaceModelConfig(ctx, req.SpaceID, req.ModelID, configMap)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
-	c.JSON(consts.StatusOK, &apimodelmgr.UpdateSpaceModelConfigResp{
+	c.JSON(consts.StatusOK, &apimodelmgr.UpdateSpaceModelConfigResponse{
 		BaseResp: &base.BaseResp{
 			StatusCode:    0,
 			StatusMessage: "success",

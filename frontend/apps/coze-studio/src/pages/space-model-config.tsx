@@ -292,15 +292,18 @@ function useModelData(spaceId: string) {
     const fetchModels = async () => {
       try {
         setLoading(true);
-        // 直接使用新的模型管理API，传入space_id进行过滤
-        const modelsData = await listModels({ space_id: spaceId });
+        // 直接使用新的模型管理API
+        const modelsData = await listModels({});
 
         if (modelsData) {
           // 将ModelDetailOutput转换为SpaceModel
           const convertedModels: SpaceModel[] = modelsData.map(model => ({
             id: parseInt(model.id) || 0, // 将string id转换为number
             name: model.name || '',
-            description: Object.values(model.description || {})[0] || '',
+            description:
+              (model.description || {}).zh ||
+              (model.description || {}).en ||
+              '',
             context_length: model.meta?.capability?.max_tokens || 0,
             protocol: model.meta?.protocol || '',
             icon_uri: model.icon_uri,

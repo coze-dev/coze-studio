@@ -24,7 +24,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/template"
 	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
 	modelrepository "github.com/coze-dev/coze-studio/backend/domain/model/repository"
 	modelservice "github.com/coze-dev/coze-studio/backend/domain/model/service"
 

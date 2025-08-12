@@ -259,8 +259,6 @@ export interface PluginExtraInfo {
   plugin_type?: product_common.PluginType,
   /** for opencoze */
   auth_mode?: PluginAuthMode,
-  /** for opencoze */
-  auth_mode?: PluginAuthMode,
 }
 export interface ToolParameter {
   name: string,

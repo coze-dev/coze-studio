@@ -1,6 +1,6 @@
 include "../base.thrift"
 
-namespace go ocean.cloud.modelmgr
+namespace go modelmgr
 
 // 模型管理与空间模型配置相关接口
 

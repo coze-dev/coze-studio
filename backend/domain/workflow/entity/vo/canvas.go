@@ -558,6 +558,17 @@ const (
 	AssistTypeTime AssistType = 10000
 )
 
+// Node type constants
+const (
+	BlockTypeBotDataset      = "6"  // Dataset node
+	BlockTypeBotDatasetWrite = "27" // DatasetWrite node
+	BlockTypeDatabase        = "12" // Database node
+	BlockTypeDatabaseSelect  = "43" // DatabaseQuery node
+	BlockTypeDatabaseInsert  = "46" // DatabaseCreate node
+	BlockTypeDatabaseDelete  = "44" // DatabaseDelete node
+	BlockTypeDatabaseUpdate  = "42" // DatabaseUpdate node
+)
+
 type BlockInputValueType string
 
 const (
