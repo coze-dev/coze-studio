@@ -354,8 +354,8 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 			logs.CtxErrorf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
 				resource.ResID, resource.ResType, err)
 		} else {
-			info.BizResStatus = ptr.Of(*di.status)
-			if *di.status == int32(knowledgeModel.KnowledgeStatusDisable) {
+			info.BizResStatus = di.status
+			if di.status != nil && *di.status == int32(knowledgeModel.KnowledgeStatusDisable) {
 				actions := slices.Clone(info.Actions)
 				for _, a := range actions {
 					if a.Key == common.ProjectResourceActionKey_Disable {
