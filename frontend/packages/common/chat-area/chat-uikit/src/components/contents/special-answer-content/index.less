@@ -1,6 +1,6 @@
 .special-answer-content {
   position: relative;
-  width: 600px; // 固定宽度，不允许变化
+  width: 375px; // 手机屏幕宽度比例
   flex-shrink: 0; // 防止被压缩
   
   .answer-footer {
@@ -13,7 +13,7 @@
     .view-mode-toggle {
       display: flex;
       align-items: center;
-      max-width: 200px; // 限制切换器宽度
+      max-width: 150px; // 适合手机宽度的切换器
       border: 1px solid #e0e0e0;
       border-radius: 4px;
       overflow: hidden;
@@ -75,8 +75,8 @@
     border-radius: 8px;
     padding: 16px;
     background-color: #fff;
-    min-height: 400px; // 与 iframe 保持一致的高度
-    width: 568px; // 固定宽度（600px - 32px padding）
+    min-height: 500px; // 适合手机比例的高度
+    width: 343px; // 固定宽度（375px - 32px padding）
     box-sizing: border-box; // 包含padding在宽度内
     overflow: hidden; // 防止内容溢出
     word-wrap: break-word; // 强制换行
@@ -131,15 +131,16 @@
     border-radius: 8px;
     overflow: hidden;
     background-color: #fff;
-    width: 600px; // 与最外层容器保持一致
+    width: 375px; // 手机屏幕宽度比例
     box-sizing: border-box;
     
     iframe {
       display: block;
       border: none;
-      min-height: 400px;
+      min-height: 500px; // 手机比例的最小高度
       width: 100%;
       background-color: #fff;
+      transition: height 0.3s ease; // 添加高度变化的平滑动画
     }
   }
 }

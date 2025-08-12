@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, type FC } from 'react';
+import { useState, useRef, useEffect, type FC } from 'react';
 import { Button } from '@coze-arch/coze-design';
 import { type IBaseContentProps } from '@coze-common/chat-uikit-shared';
 
@@ -37,9 +37,65 @@ export interface SpecialAnswerContentProps extends IBaseContentProps {
 export const SpecialAnswerContent: FC<SpecialAnswerContentProps> = props => {
   const { message, contentList, ...restProps } = props;
   const [viewMode, setViewMode] = useState<'iframe' | 'native'>('iframe'); // 默认显示卡片
+  const [iframeHeight, setIframeHeight] = useState<number>(600); // 默认高度，使用手机比例
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // 检查是否有displayResponseType内容
   const specialContent = contentList?.find(item => item.displayResponseType);
+
+  // 监听iframe加载完成，自动调整高度
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleIframeLoad = () => {
+      try {
+        // 尝试获取iframe内容的高度
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDocument) {
+          const body = iframeDocument.body;
+          const html = iframeDocument.documentElement;
+          const height = Math.max(
+            body?.scrollHeight || 0,
+            body?.offsetHeight || 0,
+            html?.clientHeight || 0,
+            html?.scrollHeight || 0,
+            html?.offsetHeight || 0
+          );
+          
+          if (height > 100) { // 确保有合理的高度
+            setIframeHeight(height + 20); // 添加一些padding
+            console.log('🔗 自动调整iframe高度:', height + 20);
+          }
+        }
+      } catch (error) {
+        // 跨域问题，使用默认高度
+        console.log('无法获取iframe内容高度，使用默认高度');
+      }
+    };
+
+    // 监听来自iframe的消息（用于跨域高度获取）
+    const handleMessage = (event: MessageEvent) => {
+      // 验证消息来源（安全考虑）
+      if (event.origin !== 'https://agent.finmall.com') return;
+      
+      if (event.data && typeof event.data === 'object' && event.data.type === 'resize') {
+        const newHeight = event.data.height;
+        if (typeof newHeight === 'number' && newHeight > 100) {
+          setIframeHeight(newHeight + 20);
+          console.log('🔗 通过postMessage调整iframe高度:', newHeight + 20);
+        }
+      }
+    };
+
+    iframe.addEventListener('load', handleIframeLoad);
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      iframe.removeEventListener('load', handleIframeLoad);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [specialContent]);
 
   if (!specialContent) {
     // 如果没有特殊内容，回退到普通文本组件
@@ -90,9 +146,10 @@ export const SpecialAnswerContent: FC<SpecialAnswerContentProps> = props => {
         ) : (
           <div className="special-answer-iframe">
             <iframe
+              ref={iframeRef}
               src={generateIframeUrl()}
               width="100%"
-              height="400px"
+              height={`${iframeHeight}px`}
               frameBorder="0"
               title="Special Answer Content"
               sandbox="allow-scripts allow-same-origin allow-forms"
