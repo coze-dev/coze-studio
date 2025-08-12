@@ -21,6 +21,8 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+
 	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
 )
 
@@ -52,4 +54,12 @@ func (c *impl) Edit(ctx context.Context, msg *model.Message) (*model.Message, er
 
 func (c *impl) PreCreate(ctx context.Context, msg *model.Message) (*model.Message, error) {
 	return c.DomainSVC.PreCreate(ctx, msg)
+}
+
+func (c *impl) List(ctx context.Context, lm *entity.ListMeta) (*entity.ListResult, error) {
+	return c.DomainSVC.List(ctx, lm)
+}
+
+func (c *impl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
+	return c.DomainSVC.Delete(ctx, req)
 }
