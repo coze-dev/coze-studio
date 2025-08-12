@@ -33,16 +33,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type State struct {
-	Answers              map[vo.NodeKey][]string                   `json:"answers,omitempty"`
-	Questions            map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
 	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
 	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
 	WorkflowExeContext   *execute.Context                          `json:"-"`
@@ -54,13 +48,13 @@ type State struct {
 	GroupChoices  map[vo.NodeKey]map[string]int                 `json:"group_choices,omitempty"`
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
-	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
+
+	ResumeData         map[vo.NodeKey]string         `json:"resume_data,omitempty"`
+	IntermediateResult map[vo.NodeKey]map[string]any `json:"intermediate_result,omitempty"`
 }
 
 func init() {
 	_ = compose.RegisterSerializableType[*State]("schema_state")
-	_ = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
-	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
 	_ = compose.RegisterSerializableType[vo.NodeKey]("node_key")
 	_ = compose.RegisterSerializableType[*execute.Context]("exe_context")
 	_ = compose.RegisterSerializableType[execute.RootCtx]("root_ctx")
@@ -96,18 +90,6 @@ func init() {
 	_ = compose.RegisterSerializableType[*vo.TypeInfo]("type_info")
 	_ = compose.RegisterSerializableType[vo.DataType]("data_type")
 	_ = compose.RegisterSerializableType[vo.FileSubType]("file_sub_type")
-}
-
-func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
-	s.Questions[nodeKey] = append(s.Questions[nodeKey], question)
-}
-
-func (s *State) AddAnswer(nodeKey vo.NodeKey, answer string) {
-	s.Answers[nodeKey] = append(s.Answers[nodeKey], answer)
-}
-
-func (s *State) GetQuestionsAndAnswers(nodeKey vo.NodeKey) ([]*qa.Question, []string) {
-	return s.Questions[nodeKey], s.Answers[nodeKey]
 }
 
 func (s *State) GetNodeCtx(key vo.NodeKey) (*execute.Context, bool, error) {
@@ -283,12 +265,12 @@ func (s *State) GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entit
 }
 
 func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error) {
-	resumeData, ok := s.LLMToResumeData[llmNodeKey]
+	resumeData, ok := s.ResumeData[llmNodeKey]
 	if !ok {
 		return "", fmt.Errorf("resume data not found for llm node %s", llmNodeKey)
 	}
 	delete(s.ToolInterruptEvents[llmNodeKey], toolCallID)
-	delete(s.LLMToResumeData, llmNodeKey)
+	delete(s.ResumeData, llmNodeKey)
 	return resumeData, nil
 }
 
@@ -300,11 +282,27 @@ func (s *State) NodeExecuted(key vo.NodeKey) bool {
 	return ok
 }
 
+func (s *State) GetAndClearResumeData(nodeKey vo.NodeKey) (string, bool) {
+	rd, ok := s.ResumeData[nodeKey]
+	if !ok {
+		return "", false
+	}
+
+	delete(s.ResumeData, nodeKey)
+	return rd, true
+}
+
+func (s *State) SetIntermediateResult(nodeKey vo.NodeKey, r map[string]any) {
+	s.IntermediateResult[nodeKey] = r
+}
+
+func (s *State) GetIntermediateResult(nodeKey vo.NodeKey) map[string]any {
+	return s.IntermediateResult[nodeKey]
+}
+
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			Answers:              make(map[vo.NodeKey][]string),
-			Questions:            make(map[vo.NodeKey][]*qa.Question),
 			Inputs:               make(map[vo.NodeKey]map[string]any),
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
 			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
@@ -313,7 +311,8 @@ func GenState() compose.GenLocalState[*State] {
 			SourceInfos:          make(map[vo.NodeKey]map[string]*schema2.SourceInfo),
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
-			LLMToResumeData:      make(map[vo.NodeKey]string),
+			ResumeData:           make(map[vo.NodeKey]string),
+			IntermediateResult:   make(map[vo.NodeKey]map[string]any),
 		}
 	}
 }
@@ -326,14 +325,7 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 
 	if s.Type == entity.NodeTypeQuestionAnswer {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			// even on first execution before any interruption, the input could be empty
-			// so we need to check if we have stored any questions in state, to decide whether this is the first execution
-			isFirst := false
-			if _, ok := state.Questions[s.Key]; !ok {
-				isFirst = true
-			}
-
-			if isFirst {
+			if _, ok := state.Inputs[s.Key]; !ok {
 				state.Inputs[s.Key] = in
 				return in, nil
 			}
@@ -343,17 +335,7 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 				out[k] = v
 			}
 
-			out[qa.QuestionsKey] = state.Questions[s.Key]
-			out[qa.AnswersKey] = state.Answers[s.Key]
 			return out, nil
-		})
-	} else if s.Type == entity.NodeTypeInputReceiver {
-		// InputReceiver node's only input is set by StateModifier when resuming
-		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if userInput, ok := state.Inputs[s.Key]; ok && len(userInput) > 0 {
-				return userInput, nil
-			}
-			return in, nil
 		})
 	} else if entity.NodeMetaByNodeType(s.Type).IsComposite {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
@@ -804,44 +786,10 @@ func streamStatePostHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePos
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string,
-	exeCfg workflowModel.ExecuteConfig) (stateModifier compose.StateModifier) {
-	// TODO: can we unify them all to a map[NodeKey]resumeData?
-	switch e {
-	case entity.InterruptEventInput:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
-			if exeCfg.BizType == workflowModel.BizTypeAgent {
-				m := make(map[string]any)
-				sList := strings.Split(resumeData, "\n")
-				for _, s := range sList {
-					firstColon := strings.Index(s, ":")
-					k := s[:firstColon]
-					v := s[firstColon+1:]
-					m[k] = v
-				}
-				resumeData, err = sonic.MarshalString(m)
-				if err != nil {
-					return err
-				}
-			}
-
-			input := map[string]any{
-				receiver.ReceivedDataKey: resumeData,
-			}
-			state.(*State).Inputs[nodeKey] = input
-			return nil
-		}
-	case entity.InterruptEventQuestion:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			state.(*State).AddAnswer(nodeKey, resumeData)
-			return nil
-		}
-	case entity.InterruptEventLLM:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			state.(*State).LLMToResumeData[nodeKey] = resumeData
-			return nil
-		}
-	default:
-		panic(fmt.Sprintf("unimplemented interrupt event type: %v", e))
+	_ workflowModel.ExecuteConfig) (stateModifier compose.StateModifier) {
+	stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
+		state.(*State).ResumeData[nodeKey] = resumeData
+		return nil
 	}
 
 	return stateModifier

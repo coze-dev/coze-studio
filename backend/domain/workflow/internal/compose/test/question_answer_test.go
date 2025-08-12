@@ -195,11 +195,12 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's your name?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
+			assert.Equal(t, "what's your name?", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.QuestionKey].(string))
 
 			answer := "my name is eino"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
+				state.(*compose2.State).ResumeData[ns.Key] = answer
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -358,13 +359,16 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's would you make in Coze?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
-			assert.Equal(t, "make agent", info.State.(*compose2.State).Questions[ns.Key][0].Choices[0])
-			assert.Equal(t, "make workflow", info.State.(*compose2.State).Questions[ns.Key][0].Choices[1])
+			assert.Equal(t, "what's would you make in Coze?", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.QuestionKey].(string))
+			assert.Equal(t, "make agent", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.ChoicesKey].([]string)[0])
+			assert.Equal(t, "make workflow", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.ChoicesKey].([]string)[1])
 
 			chosenContent := "I would make all kinds of stuff"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], chosenContent)
+				state.(*compose2.State).ResumeData[ns.Key] = chosenContent
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -495,13 +499,16 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's the capital city of China?", info.State.(*compose2.State).Questions[ns.Key][0].Question)
-			assert.Equal(t, "beijing", info.State.(*compose2.State).Questions[ns.Key][0].Choices[0])
-			assert.Equal(t, "shanghai", info.State.(*compose2.State).Questions[ns.Key][0].Choices[1])
+			assert.Equal(t, "what's the capital city of China?", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.QuestionKey].(string))
+			assert.Equal(t, "beijing", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.ChoicesKey].([]string)[0])
+			assert.Equal(t, "shanghai", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.ChoicesKey].([]string)[1])
 
 			chosenContent := "beijing"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], chosenContent)
+				state.(*compose2.State).ResumeData[ns.Key] = chosenContent
 				return nil
 			}
 			out, err := wf.Runner.Invoke(context.Background(), nil, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -656,12 +663,13 @@ func TestQuestionAnswer(t *testing.T) {
 
 			info, existed := compose.ExtractInterruptInfo(err)
 			assert.True(t, existed)
-			assert.Equal(t, "what's your name?", info.State.(*compose2.State).Questions["qa_node_key"][0].Question)
+			assert.Equal(t, "what's your name?", info.State.(*compose2.State).
+				IntermediateResult[ns.Key][qa.QuestionsKey].([]map[string]any)[0][qa.QuestionKey].(string))
 
 			qaCount++
 			answer := "my name is eino"
 			stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
+				state.(*compose2.State).ResumeData[ns.Key] = answer
 				return nil
 			}
 			_, err = wf.Runner.Invoke(ctx, map[string]any{}, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
@@ -672,7 +680,7 @@ func TestQuestionAnswer(t *testing.T) {
 			qaCount++
 			answer = "my age is 1 years old"
 			stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-				state.(*compose2.State).Answers[ns.Key] = append(state.(*compose2.State).Answers[ns.Key], answer)
+				state.(*compose2.State).ResumeData[ns.Key] = answer
 				return nil
 			}
 			out, err := wf.Runner.Invoke(ctx, map[string]any{}, compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))

@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
@@ -99,17 +100,20 @@ const (
 	receiverWarningKey = "receiver_warning_%d_%s"
 )
 
-func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
-	var input string
-	if in != nil {
-		receivedData, ok := in[ReceivedDataKey]
-		if ok {
-			input = receivedData.(string)
-		}
-	}
+func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[string]any, error) {
+	var (
+		resumeData string
+		resumed    bool
+		err        error
+	)
 
-	if len(input) == 0 {
-		err := compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
+	_ = compose.ProcessState(ctx, func(_ context.Context, s nodes.InterruptEventStore) error {
+		resumeData, resumed = s.GetAndClearResumeData(i.nodeKey)
+		return nil
+	})
+
+	if !resumed {
+		err = compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
 			_, found, e := ieStore.GetInterruptEvent(i.nodeKey) // TODO: try not use InterruptEventStore or state in general
 			if e != nil {
 				return e
@@ -139,7 +143,23 @@ func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[stri
 		return nil, compose.InterruptAndRerun
 	}
 
-	out, err := jsonParseRelaxed(ctx, input, i.outputTypes)
+	exeCfg := execute.GetExeCtx(ctx).ExeCfg
+	if exeCfg.BizType == vo.BizTypeAgent {
+		m := make(map[string]any)
+		sList := strings.Split(resumeData, "\n")
+		for _, s := range sList {
+			firstColon := strings.Index(s, ":")
+			k := s[:firstColon]
+			v := s[firstColon+1:]
+			m[k] = v
+		}
+		resumeData, err = sonic.MarshalString(m)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	out, err := jsonParseRelaxed(ctx, resumeData, i.outputTypes)
 	if err != nil {
 		return nil, err
 	}
