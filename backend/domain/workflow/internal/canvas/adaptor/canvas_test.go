@@ -38,11 +38,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -85,7 +85,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		}).Build()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
-		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+		mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {

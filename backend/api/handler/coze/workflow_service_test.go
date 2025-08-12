@@ -49,6 +49,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
@@ -64,6 +65,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	plugin3 "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/plugin"
@@ -73,8 +76,6 @@ import (
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
@@ -282,7 +283,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 
 	mockModelManage := mockmodel.NewMockManager(ctrl)
 	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil, nil).AnyTimes()
-	m3 := mockey.Mock(model.GetManager).Return(mockModelManage).Build()
+	m3 := mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManage).Build()
 
 	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
 	m1 := mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{

@@ -35,10 +35,11 @@ import (
 	"golang.org/x/exp/maps"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -360,7 +361,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		knowledgeRecallConfig *KnowledgeRecallConfig
 	)
 
-	chatModel, info, err = crossmodel.GetManager().GetModel(ctx, c.LLMParams)
+	chatModel, info, err = crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +370,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	if exceptionConf != nil && exceptionConf.MaxRetry > 0 {
 		backupModelParams := c.BackupLLMParams
 		if backupModelParams != nil {
-			fallbackM, fallbackI, err = crossmodel.GetManager().GetModel(ctx, backupModelParams)
+			fallbackM, fallbackI, err = crossmodelmgr.DefaultSVC().GetModel(ctx, backupModelParams)
 			if err != nil {
 				return nil, err
 			}
