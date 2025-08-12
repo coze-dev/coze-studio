@@ -42,6 +42,9 @@ type Workflow interface {
 	SyncExecuteWorkflow(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
 	StreamExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error)
 	WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option
+
+	StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (*schema.StreamReader[*entity.Message], error)
+
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
 	InitApplicationDefaultConversationTemplate(ctx context.Context, spaceID int64, appID int64, userID int64) error
 }
@@ -50,10 +53,14 @@ type ExecuteConfig = workflowModel.ExecuteConfig
 type ExecuteMode = workflowModel.ExecuteMode
 
 type WorkflowMessage = workflowEntity.Message
+
+type StateMessage = workflowEntity.StateMessage
+
 type NodeType = entity.NodeType
 type MessageType = entity.MessageType
 type InterruptEvent = workflowEntity.InterruptEvent
 type EventType = workflowEntity.InterruptEventType
+type ResumeRequest = entity.ResumeRequest
 
 const (
 	Answer       MessageType = "answer"
