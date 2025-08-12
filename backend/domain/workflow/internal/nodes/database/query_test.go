@@ -26,8 +26,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database/databasemock"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
@@ -95,10 +96,9 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 			}}
-			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query())
-
-			defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+			crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 			ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 				OutputTypes: map[string]*vo.TypeInfo{
@@ -159,10 +159,9 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Relation, cfg.ClauseGroup.Multi.Relation)
 
 			}}
-			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
-
-			defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+			crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 			ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 				OutputTypes: map[string]*vo.TypeInfo{
@@ -219,10 +218,9 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 			}}
-			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
-
-			defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+			crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 			ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 				OutputTypes: map[string]*vo.TypeInfo{
@@ -278,10 +276,9 @@ func TestDataset_Query(t *testing.T) {
 				assert.Equal(t, cGroup.Conditions[0].Left, cfg.ClauseGroup.Single.Left)
 				assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 			}}
-			mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+			mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 			mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
-
-			defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+			crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 			ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 				OutputTypes: map[string]*vo.TypeInfo{
@@ -347,10 +344,9 @@ func TestDataset_Query(t *testing.T) {
 			assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 		}}
-		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
-
-		defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+		crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 		ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 			OutputTypes: map[string]*vo.TypeInfo{
@@ -425,10 +421,9 @@ func TestDataset_Query(t *testing.T) {
 			assert.Equal(t, cGroup.Conditions[0].Operator, cfg.ClauseGroup.Single.Operator)
 
 		}}
-		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery.Query()).AnyTimes()
-
-		defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+		crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 		ds, err := cfg.Build(context.Background(), &schema.NodeSchema{
 			OutputTypes: map[string]*vo.TypeInfo{

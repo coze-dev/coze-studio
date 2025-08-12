@@ -14,37 +14,37 @@
  * limitations under the License.
  */
 
-package model
+package modelmgr
 
 import (
 	"context"
 	"fmt"
 
-	model2 "github.com/cloudwego/eino/components/model"
-
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
+	eino "github.com/cloudwego/eino/components/model"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	chatmodel2 "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
-type ModelManager struct {
+type modelManager struct {
 	modelMgr modelmgr.Manager
 	factory  chatmodel.Factory
 }
 
-func NewModelManager(m modelmgr.Manager, f chatmodel.Factory) *ModelManager {
+func InitDomainService(m modelmgr.Manager, f chatmodel.Factory) crossmodelmgr.Manager {
 	if f == nil {
 		f = chatmodel2.NewDefaultFactory()
 	}
-	return &ModelManager{
+	return &modelManager{
 		modelMgr: m,
 		factory:  f,
 	}
 }
 
-func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+func (m *modelManager) GetModel(ctx context.Context, params *model.LLMParams) (eino.BaseChatModel, *modelmgr.Model, error) {
 	modelID := params.ModelType
 	models, err := m.modelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelID},

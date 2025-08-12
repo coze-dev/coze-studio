@@ -25,7 +25,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
@@ -349,7 +349,7 @@ func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database
 	)
 
 	conditionGroup := &database.ConditionGroup{
-		Conditions: make([]*database.Condition, 0),
+		Conditions: make([]*database.ConditionStr, 0),
 		Relation:   database.ClauseRelationAND,
 	}
 
@@ -362,7 +362,7 @@ func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database
 			}
 		}
 
-		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.Condition{
+		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.ConditionStr{
 			Left:     clause.Left,
 			Operator: clause.Operator,
 			Right:    rightValue,
@@ -373,7 +373,7 @@ func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database
 	if clauseGroup.Multi != nil {
 		conditionGroup.Relation = clauseGroup.Multi.Relation
 
-		conditionGroup.Conditions = make([]*database.Condition, len(clauseGroup.Multi.Clauses))
+		conditionGroup.Conditions = make([]*database.ConditionStr, len(clauseGroup.Multi.Clauses))
 		multiSelect := clauseGroup.Multi
 		for idx, clause := range multiSelect.Clauses {
 			if !notNeedTakeMapValue(clause.Operator) {
@@ -382,7 +382,7 @@ func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database
 					return nil, fmt.Errorf("cannot take multi clause from input")
 				}
 			}
-			conditionGroup.Conditions[idx] = &database.Condition{
+			conditionGroup.Conditions[idx] = &database.ConditionStr{
 				Left:     clause.Left,
 				Operator: clause.Operator,
 				Right:    rightValue,
