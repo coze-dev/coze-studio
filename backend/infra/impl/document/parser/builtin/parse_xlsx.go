@@ -27,7 +27,7 @@ import (
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
-func parseXLSX(config *contract.Config) parseFn {
+func ParseXLSX(config *contract.Config) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		f, err := excelize.OpenReader(reader)
 		if err != nil {

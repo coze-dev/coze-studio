@@ -29,7 +29,7 @@ import (
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
-func parseJSONMaps(config *contract.Config) parseFn {
+func ParseJSONMaps(config *contract.Config) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		b, err := io.ReadAll(reader)
 		if err != nil {

@@ -24,12 +24,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-type p struct {
-	parseFn
+type Parser struct {
+	ParseFn
 }
 
-func (p p) Parse(ctx context.Context, reader io.Reader, opts ...parser.Option) ([]*schema.Document, error) {
-	return p.parseFn(ctx, reader, opts...)
+func (p Parser) Parse(ctx context.Context, reader io.Reader, opts ...parser.Option) ([]*schema.Document, error) {
+	return p.ParseFn(ctx, reader, opts...)
 }
 
-type parseFn func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error)
+type ParseFn func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error)

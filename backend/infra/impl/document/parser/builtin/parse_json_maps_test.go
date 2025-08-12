@@ -85,7 +85,7 @@ func TestParseTableCustomContent(t *testing.T) {
 		},
 	}
 
-	pfn := parseJSONMaps(config)
+	pfn := ParseJSONMaps(config)
 	docs, err := pfn(ctx, reader, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),

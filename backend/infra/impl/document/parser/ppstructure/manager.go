@@ -14,34 +14,33 @@
  * limitations under the License.
  */
 
-package builtin
+package ppstructure
 
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 )
 
-func NewManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
+func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage) parser.Manager {
 	return &manager{
-		storage: storage,
-		ocr:     ocr,
-		model:   imageAnnotationModel,
+		apiConfig: apiConfig,
+		ocr:       ocr,
+		storage:   storage,
 	}
 }
 
 type manager struct {
-	ocr     ocr.OCR
-	storage storage.Storage
-	model   chatmodel.BaseChatModel
+	apiConfig *APIConfig
+	ocr       ocr.OCR
+	storage   storage.Storage
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
-	var pFn ParseFn
 
 	if config.ParsingStrategy.HeaderLine == 0 && config.ParsingStrategy.DataStartLine == 0 {
 		config.ParsingStrategy.DataStartLine = 1
@@ -50,28 +49,38 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 			config.ParsingStrategy.HeaderLine, config.ParsingStrategy.DataStartLine)
 	}
 
+	var pFn builtin.ParseFn
 	switch config.FileExtension {
-	case parser.FileExtensionPDF:
-		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_pdf.py"))
+	case parser.FileExtensionPDF, parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
+		var fileType int
+		if config.FileExtension == parser.FileExtensionPDF {
+			fileType = 0
+		} else {
+			fileType = 1
+		}
+		return &ppstructureParser{config, m.apiConfig, fileType, m.ocr, m.storage}, nil
 	case parser.FileExtensionTXT:
-		pFn = ParseText(config)
+		pFn = builtin.ParseText(config)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionMarkdown:
-		pFn = ParseMarkdown(config, m.storage, m.ocr)
+		pFn = builtin.ParseMarkdown(config, m.storage, m.ocr)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionDocx:
-		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
+		pFn = builtin.ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionCSV:
-		pFn = ParseCSV(config)
+		pFn = builtin.ParseCSV(config)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionXLSX:
-		pFn = ParseXLSX(config)
+		pFn = builtin.ParseXLSX(config)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionJSON:
-		pFn = ParseJSON(config)
+		pFn = builtin.ParseJSON(config)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionJsonMaps:
-		pFn = ParseJSONMaps(config)
-	case parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
-		pFn = ParseImage(config, m.model)
+		pFn = builtin.ParseJSONMaps(config)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	default:
 		return nil, fmt.Errorf("[Parse] document type not support, type=%s", config.FileExtension)
 	}
-
-	return &Parser{ParseFn: pFn}, nil
 }

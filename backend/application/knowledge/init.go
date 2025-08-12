@@ -42,6 +42,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
@@ -52,8 +53,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/ppocr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
 	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/ppstructure"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
@@ -115,9 +118,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		inst.Client.SetSecretKey(ocrSK)
 		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
 	case "paddleocr":
-		ppocrURL := os.Getenv("PADDLEOCR_OCR_API_URL")
+		url := os.Getenv("PADDLEOCR_OCR_API_URL")
 		client := &netHTTP.Client{}
-		ocrImpl = veocr.NewPPOCR(&veocr.PPOCRConfig{Client: client, URL: ppocrURL})
+		ocrImpl = ppocr.NewOCR(&ppocr.Config{Client: client, URL: url})
 	default:
 		// accept ocr not configured
 	}
@@ -163,13 +166,30 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		return nil, err
 	}
 
+	var parserManagerImpl parser.Manager
+	parserType := os.Getenv("PARSER_TYPE")
+	switch parserType {
+	case "builtin":
+		parserManagerImpl = builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel)
+	case "paddleocr":
+		url := os.Getenv("PADDLEOCR_STRUCTURE_API_URL")
+		client := &netHTTP.Client{}
+		apiConfig := &ppstructure.APIConfig{
+			Client: client,
+			URL:    url,
+		}
+		parserManagerImpl = ppstructure.NewManager(apiConfig, ocrImpl, c.Storage)
+	default:
+		return nil, fmt.Errorf("unexpected document parser type, type=%s", parserType)
+	}
+
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
 		DB:                        c.DB,
 		IDGen:                     c.IDGenSVC,
 		RDB:                       c.RDB,
 		Producer:                  knowledgeProducer,
 		SearchStoreManagers:       sManagers,
-		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
+		ParseManager:              parserManagerImpl, // default builtin
 		Storage:                   c.Storage,
 		Rewriter:                  rewriter,
 		Reranker:                  rrf.NewRRFReranker(0), // default rrf

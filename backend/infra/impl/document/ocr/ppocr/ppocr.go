@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package veocr
+package ppocr
 
 import (
 	"bytes"
@@ -28,7 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-type PPOCRConfig struct {
+type Config struct {
 	Client *http.Client
 	URL    string
 
@@ -44,12 +44,12 @@ type PPOCRConfig struct {
 	TextRecScoreThresh        *float64
 }
 
-func NewPPOCR(config *PPOCRConfig) ocr.OCR {
+func NewOCR(config *Config) ocr.OCR {
 	return &ppocrImpl{config}
 }
 
 type ppocrImpl struct {
-	config *PPOCRConfig
+	config *Config
 }
 
 type ppocrResponse struct {
@@ -132,6 +132,10 @@ func (o *ppocrImpl) makeRequest(reqBody map[string]interface{}) ([]string, error
 		return nil, errorx.WrapByCode(err, errno.ErrKnowledgeNonRetryableCode)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errorx.WrapByCode(err, errno.ErrKnowledgeNonRetryableCode)
+	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
