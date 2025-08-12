@@ -3801,5 +3801,7 @@
   "workspace_develop": "Development",
   "workspace_develop_search_project": "Search for projects",
   "workspace_library_search": "Search resources",
-  "workspace_no_permission_access": "No permission to access this workspace."
+  "workspace_no_permission_access": "No permission to access this workspace.",
+  "workspace_mcp": "Mcp Management",
+  "workspace_card": "Card Management"
 }

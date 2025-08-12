@@ -3849,5 +3849,7 @@
   "workspace_develop": "项目开发",
   "workspace_develop_search_project": "搜索项目",
   "workspace_library_search": "搜索资源",
-  "workspace_no_permission_access": "无法查看空间"
+  "workspace_no_permission_access": "无法查看空间",
+  "workspace_mcp": "MCP管理",
+  "workspace_card": "卡片管理"
 }

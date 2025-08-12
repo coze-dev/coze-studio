@@ -86,7 +86,7 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       <Layout>
         <Header>
           <HeaderTitle>
-            <span>{I18n.t('workspace_develop')}</span>
+            <span>{I18n.t('workspace_mcp')}</span>
           </HeaderTitle>
           <HeaderActions>
             <Button icon={<IconCozPlus />}>
