@@ -595,12 +595,19 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 		if st == nil {
 			continue
 		}
+		if st.StateMessage != nil && st.StateMessage.Usage != nil {
+			usage = &msgEntity.UsageExt{
+				InputTokens:  st.StateMessage.Usage.InputTokens,
+				OutputTokens: st.StateMessage.Usage.OutputTokens,
+				TotalCount:   st.StateMessage.Usage.InputTokens + st.StateMessage.Usage.OutputTokens,
+			}
+			logs.CtxInfof(ctx, "pullWfStream usage:%v,err:%v", conv.DebugJsonToStr(usage), re)
+		}
 
 		if st.StateMessage != nil && st.StateMessage.InterruptEvent != nil { // interrupt
 			c.handlerWfInterruptMsg(ctx, sw, st.StateMessage, rtDependence)
 			continue
 		}
-
 		if st.DataMessage == nil {
 			continue
 		}
@@ -620,7 +627,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 				}
 				preMsgIsFinish = false
 			}
-
 			if st.DataMessage.Content != "" {
 				fullAnswerContent.WriteString(st.DataMessage.Content)
 
