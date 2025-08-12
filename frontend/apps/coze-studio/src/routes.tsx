@@ -116,6 +116,10 @@ const DocsRedirect = lazy(() => import('./pages/docs'));
 
 const SpaceModelConfig = lazy(() => import('./pages/space-model-config'));
 
+const FalconMcp = lazy(() => import('./pages/falconmcp'));
+
+const FalconCard = lazy(() => import('./pages/falconcard'));
+
 export const router: ReturnType<typeof createBrowserRouter> =
   createBrowserRouter([
     {
@@ -177,6 +181,20 @@ export const router: ReturnType<typeof createBrowserRouter> =
                   Component: Develop,
                   loader: () => ({
                     subMenuKey: SpaceSubModuleEnum.DEVELOP,
+                  }),
+                },
+                {
+                  path: 'mcp',
+                  Component: FalconMcp,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MCP,
+                  }),
+                },
+                {
+                  path: 'card',
+                  Component: FalconCard,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.CARD,
                   }),
                 },
                 {

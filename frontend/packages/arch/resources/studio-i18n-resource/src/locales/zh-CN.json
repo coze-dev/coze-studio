@@ -1943,6 +1943,8 @@
   "navigation_workspace_favourites_cancle": "取消收藏",
   "navigation_workspace_library": "资源库",
   "navigation_workspace_library_title": "资源库",
+  "navigation_workspace_library_mcp": "MCP",
+  "navigation_workspace_library_card": "卡片",
   "navigation_workspace_library_plugins": "插件",
   "navigation_workspace_library_workflow": "工作流",
   "navigation_workspace_library_knowledge": "知识库",

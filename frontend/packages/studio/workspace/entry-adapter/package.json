@@ -8,7 +8,9 @@
   "exports": {
     "./develop": "./src/pages/develop/index.tsx",
     "./library": "./src/pages/library/index.tsx",
-    "./members": "./src/pages/members/index.tsx"
+    "./members": "./src/pages/members/index.tsx",
+    "./mcp": "./src/pages/falcon/mcp.tsx",
+    "./card": "./src/pages/falcon/card.tsx"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -21,6 +23,12 @@
       ],
       "members": [
         "./src/pages/members/index.tsx"
+      ],
+      "mcp": [
+        "./src/pages/falcon/mcp.tsx"
+      ],
+      "card": [
+        "./src/pages/falcon/card.tsx"
       ]
     }
   },

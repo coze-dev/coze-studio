@@ -88,6 +88,22 @@ export const WorkspaceSubMenu = () => {
       title: () =>
         I18n.t('navigation_workspace_library_title', {}, 'Resource Library'),
     },
+    {
+      icon: <IconBotWorkflow />,
+      activeIcon: <IconBotWorkflowActive />,
+      title: () =>
+        I18n.t('navigation_workspace_library_mcp', {}, 'Mcp'),
+      path: `${SpaceSubModuleEnum.MCP}`,
+      dataTestId: 'navigation_workspace_library_mcp',
+    },
+    {
+      icon: <IconBotWorkflow />,
+      activeIcon: <IconBotWorkflowActive />,
+      title: () =>
+        I18n.t('navigation_workspace_library_card', {}, 'Card'),
+      path: `${SpaceSubModuleEnum.CARD}`,
+      dataTestId: 'navigation_workspace_library_card',
+    },
     // {
     //   icon: <IconCozKnowledge />,
     //   activeIcon: <IconCozKnowledgeFill />,

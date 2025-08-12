@@ -1916,6 +1916,8 @@
   "navigation_workspace_favourites_cancle": "Remove from favorites",
   "navigation_workspace_library": "Library",
   "navigation_workspace_library_title": "Resource Library",
+  "navigation_workspace_library_mcp": "Mcp",
+  "navigation_workspace_library_card": "Card",
   "navigation_workspace_library_plugins": "Plugins",
   "navigation_workspace_library_workflow": "Workflow",
   "navigation_workspace_library_knowledge": "Knowledge",
