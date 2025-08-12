@@ -22,7 +22,9 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/query"
@@ -144,6 +146,8 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 			BackgroundImageInfoList: po.BackgroundImageInfoList,
 			Database:                po.DatabaseConfig,
 			ShortcutCommand:         po.ShortcutCommand,
+			BotMode:                 bot_common.BotMode(po.BotMode),
+			LayoutInfo:              po.LayoutInfo,
 		},
 	}
 }
@@ -171,5 +175,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		DatabaseConfig:          do.Database,
 		ShortcutCommand:         do.ShortcutCommand,
+		BotMode:                 int32(do.BotMode),
+		LayoutInfo:              do.LayoutInfo,
 	}
 }
