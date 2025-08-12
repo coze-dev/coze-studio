@@ -38,6 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/intentdetector"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
@@ -56,6 +57,7 @@ type impl struct {
 	repo workflow.Repository
 	*asToolImpl
 	*executableImpl
+	*conversationImpl
 }
 
 func NewWorkflowService(repo workflow.Repository) workflow.Service {
@@ -67,6 +69,7 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 		executableImpl: &executableImpl{
 			repo: repo,
 		},
+		conversationImpl: &conversationImpl{repo: repo},
 	}
 }
 
@@ -522,6 +525,9 @@ func isEnableChatHistory(s *schema.NodeSchema) bool {
 	case entity.NodeTypeIntentDetector:
 		llmParam := s.Configs.(*intentdetector.Config).LLMParams
 		return llmParam.EnableChatHistory
+	case entity.NodeTypeKnowledgeRetriever:
+		chatParam := s.Configs.(*knowledge.RetrieveConfig).ChatHistorySetting
+		return chatParam != nil && chatParam.EnableChatHistory
 	default:
 		return false
 	}
@@ -539,6 +545,146 @@ func isRefGlobalVariable(s *schema.NodeSchema) bool {
 		}
 	}
 	return false
+}
+
+func (i *impl) CreateChatFlowRole(ctx context.Context, role *vo.ChatFlowRoleCreate) (int64, error) {
+	id, err := i.repo.CreateChatFlowRoleConfig(ctx, &entity.ChatFlowRole{
+		Name:                role.Name,
+		Description:         role.Description,
+		WorkflowID:          role.WorkflowID,
+		CreatorID:           role.CreatorID,
+		AudioConfig:         role.AudioConfig,
+		UserInputConfig:     role.UserInputConfig,
+		AvatarUri:           role.AvatarUri,
+		BackgroundImageInfo: role.BackgroundImageInfo,
+		OnboardingInfo:      role.OnboardingInfo,
+		SuggestReplyInfo:    role.SuggestReplyInfo,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (i *impl) UpdateChatFlowRole(ctx context.Context, workflowID int64, role *vo.ChatFlowRoleUpdate) error {
+	err := i.repo.UpdateChatFlowRoleConfig(ctx, workflowID, role)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *impl) GetChatFlowRole(ctx context.Context, workflowID int64, version string) (*entity.ChatFlowRole, error) {
+	role, err, isExist := i.repo.GetChatFlowRoleConfig(ctx, workflowID, version)
+	if !isExist {
+		logs.CtxWarnf(ctx, "chat flow role not exist, workflow id %v, version %v", workflowID, version)
+		// Return (nil, nil) on 'NotExist' to align with the production behavior,
+		// where the GET API may be called before the CREATE API during chatflow creation.
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return role, nil
+}
+
+func (i *impl) GetWorkflowVersionsByConnector(ctx context.Context, connectorID, workflowID int64, limit int) ([]string, error) {
+	return i.repo.GetVersionListByConnectorAndWorkflowID(ctx, connectorID, workflowID, limit)
+}
+
+func (i *impl) DeleteChatFlowRole(ctx context.Context, id int64, workflowID int64) error {
+	return i.repo.DeleteChatFlowRoleConfig(ctx, id, workflowID)
+}
+
+func (i *impl) CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error {
+	if policy.SourceID == 0 || policy.TargetID == 0 || policy.CreatorID == 0 {
+		logs.CtxErrorf(ctx, "invalid copy role policy, source id %v, target id %v, creator id %v should not be zero", policy.SourceID, policy.TargetID, policy.CreatorID)
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid copy role policy, source id %v, target id %v, creator id %v should not be zero", policy.SourceID, policy.TargetID, policy.CreatorID))
+	}
+	wf, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+		ID:       policy.SourceID,
+		MetaOnly: true,
+	})
+	if err != nil {
+		return err
+	}
+	if wf.Mode != cloudworkflow.WorkflowMode_ChatFlow {
+		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("workflow id %v, mode %v is not a chatflow", policy.SourceID, wf.Mode))
+	}
+	role, err, isExist := i.repo.GetChatFlowRoleConfig(ctx, policy.SourceID, "")
+	if !isExist {
+		logs.CtxErrorf(ctx, "get draft chat flow role nil, workflow id %v", policy.SourceID)
+		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("get draft chat flow role nil, workflow id %v", policy.SourceID))
+	}
+	if err != nil {
+		return vo.WrapIfNeeded(errno.ErrChatFlowRoleOperationFail, err)
+	}
+
+	_, err = i.repo.CreateChatFlowRoleConfig(ctx, &entity.ChatFlowRole{
+		Name:                role.Name,
+		Description:         role.Description,
+		WorkflowID:          policy.TargetID,
+		CreatorID:           policy.CreatorID,
+		AudioConfig:         role.AudioConfig,
+		UserInputConfig:     role.UserInputConfig,
+		AvatarUri:           role.AvatarUri,
+		BackgroundImageInfo: role.BackgroundImageInfo,
+		OnboardingInfo:      role.OnboardingInfo,
+		SuggestReplyInfo:    role.SuggestReplyInfo,
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *impl) PublishChatFlowRole(ctx context.Context, policy *vo.PublishRolePolicy) error {
+	if policy.WorkflowID == 0 || policy.CreatorID == 0 || policy.Version == "" {
+		logs.CtxErrorf(ctx, "invalid publish role policy, workflow id %v, creator id %v should not be zero, version %v should not be empty", policy.WorkflowID, policy.CreatorID, policy.Version)
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid publish role policy, workflow id %v, creator id %v should not be zero, version %v should not be empty", policy.WorkflowID, policy.CreatorID, policy.Version))
+	}
+	wf, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+		ID:       policy.WorkflowID,
+		MetaOnly: true,
+	})
+	if err != nil {
+		return err
+	}
+	if wf.Mode != cloudworkflow.WorkflowMode_ChatFlow {
+		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("workflow id %v, mode %v is not a chatflow", policy.WorkflowID, wf.Mode))
+	}
+	role, err, isExist := i.repo.GetChatFlowRoleConfig(ctx, policy.WorkflowID, "")
+	if !isExist {
+		logs.CtxErrorf(ctx, "get draft chat flow role nil, workflow id %v", policy.WorkflowID)
+		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("get draft chat flow role nil, workflow id %v", policy.WorkflowID))
+	}
+	if err != nil {
+		return vo.WrapIfNeeded(errno.ErrChatFlowRoleOperationFail, err)
+	}
+
+	_, err = i.repo.CreateChatFlowRoleConfig(ctx, &entity.ChatFlowRole{
+		Name:                role.Name,
+		Description:         role.Description,
+		WorkflowID:          policy.WorkflowID,
+		CreatorID:           policy.CreatorID,
+		AudioConfig:         role.AudioConfig,
+		UserInputConfig:     role.UserInputConfig,
+		AvatarUri:           role.AvatarUri,
+		BackgroundImageInfo: role.BackgroundImageInfo,
+		OnboardingInfo:      role.OnboardingInfo,
+		SuggestReplyInfo:    role.SuggestReplyInfo,
+		Version:             policy.Version,
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
@@ -657,6 +803,13 @@ func (i *impl) UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpda
 	err = i.repo.UpdateMeta(ctx, id, metaUpdate)
 	if err != nil {
 		return err
+	}
+
+	if metaUpdate.WorkflowMode != nil && *metaUpdate.WorkflowMode == cloudworkflow.WorkflowMode_ChatFlow {
+		err = i.adaptToChatFlow(ctx, id)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -784,6 +937,24 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		workflowIDs = append(workflowIDs, id)
 		if err = i.repo.CreateVersion(ctx, id, vInfo, wfRefs); err != nil {
 			return nil, err
+		}
+	}
+
+	err = i.ReleaseConversationTemplate(ctx, appID, config.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, wf := range wfs {
+		if wf.Mode == cloudworkflow.WorkflowMode_ChatFlow {
+			err = i.PublishChatFlowRole(ctx, &vo.PublishRolePolicy{
+				WorkflowID: wf.ID,
+				CreatorID:  wf.CreatorID,
+				Version:    config.Version,
+			})
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -1467,6 +1638,165 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 }
 
+func (i *impl) checkBotAgentNode(node *vo.Node) error {
+	if node.Type == entity.NodeTypeCreateConversation.IDStr() || node.Type == entity.NodeTypeConversationDelete.IDStr() || node.Type == entity.NodeTypeConversationUpdate.IDStr() || node.Type == entity.NodeTypeConversationList.IDStr() {
+		return errors.New("session-related nodes are not supported in conversation flow")
+	}
+	return nil
+}
+
+func (i *impl) validateNodesRecursively(ctx context.Context, nodes []*vo.Node, checkType cloudworkflow.CheckType, visited map[string]struct{}, repo workflow.Repository) error {
+	queue := make([]*vo.Node, 0, len(nodes))
+	queue = append(queue, nodes...)
+
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = queue[1:]
+
+		if node == nil {
+			continue
+		}
+
+		var checkErr error
+		switch checkType {
+		case cloudworkflow.CheckType_BotAgent:
+			checkErr = i.checkBotAgentNode(node)
+		default:
+			// For now, we only handle BotAgent check, so we can do nothing here.
+			// In the future, if there are other check types that need to be validated on every node, this logic will need to be adjusted.
+		}
+		if checkErr != nil {
+			return checkErr
+		}
+
+		// Enqueue nested nodes for BFS traversal. This handles Loop, Batch, and other nodes with nested blocks.
+		if len(node.Blocks) > 0 {
+			queue = append(queue, node.Blocks...)
+		}
+
+		if node.Type == entity.NodeTypeSubWorkflow.IDStr() && node.Data != nil && node.Data.Inputs != nil {
+			workflowIDStr := node.Data.Inputs.WorkflowID
+			if workflowIDStr == "" {
+				continue
+			}
+
+			workflowID, err := strconv.ParseInt(workflowIDStr, 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid workflow ID in sub-workflow node %s: %w", node.ID, err)
+			}
+
+			version := node.Data.Inputs.WorkflowVersion
+			qType := workflowModel.FromDraft
+			if version != "" {
+				qType = workflowModel.FromSpecificVersion
+			}
+
+			visitedKey := fmt.Sprintf("%d:%s", workflowID, version)
+			if _, ok := visited[visitedKey]; ok {
+				continue
+			}
+			visited[visitedKey] = struct{}{}
+
+			subWfEntity, err := repo.GetEntity(ctx, &vo.GetPolicy{
+				ID:      workflowID,
+				QType:   qType,
+				Version: version,
+			})
+			if err != nil {
+				delete(visited, visitedKey)
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					continue
+				}
+				return fmt.Errorf("failed to get sub-workflow entity %d: %w", workflowID, err)
+			}
+
+			var canvas vo.Canvas
+			if err := sonic.UnmarshalString(subWfEntity.Canvas, &canvas); err != nil {
+				return fmt.Errorf("failed to unmarshal canvas for workflow %d: %w", subWfEntity.ID, err)
+			}
+
+			queue = append(queue, canvas.Nodes...)
+		}
+
+		if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+			for _, subWfInfo := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+				if subWfInfo.WorkflowID == "" {
+					continue
+				}
+				workflowID, err := strconv.ParseInt(subWfInfo.WorkflowID, 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid workflow ID in large model node %s: %w", node.ID, err)
+				}
+
+				version := subWfInfo.WorkflowVersion
+				qType := workflowModel.FromDraft
+				if version != "" {
+					qType = workflowModel.FromSpecificVersion
+				}
+
+				visitedKey := fmt.Sprintf("%d:%s", workflowID, version)
+				if _, ok := visited[visitedKey]; ok {
+					continue
+				}
+				visited[visitedKey] = struct{}{}
+
+				subWfEntity, err := repo.GetEntity(ctx, &vo.GetPolicy{
+					ID:      workflowID,
+					QType:   qType,
+					Version: version,
+				})
+				if err != nil {
+					delete(visited, visitedKey)
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						continue
+					}
+					return fmt.Errorf("failed to get sub-workflow entity %d from large model node: %w", workflowID, err)
+				}
+
+				var canvas vo.Canvas
+				if err := sonic.UnmarshalString(subWfEntity.Canvas, &canvas); err != nil {
+					return fmt.Errorf("failed to unmarshal canvas for workflow %d from large model node: %w", subWfEntity.ID, err)
+				}
+
+				queue = append(queue, canvas.Nodes...)
+			}
+		}
+	}
+	return nil
+}
+
+func (i *impl) WorkflowSchemaCheck(ctx context.Context, wf *entity.Workflow, checks []cloudworkflow.CheckType) ([]*cloudworkflow.CheckResult, error) {
+	checkResults := make([]*cloudworkflow.CheckResult, 0, len(checks))
+
+	var canvas vo.Canvas
+	if err := sonic.UnmarshalString(wf.Canvas, &canvas); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal canvas for workflow %d: %w", wf.ID, err)
+	}
+
+	for _, checkType := range checks {
+		visited := make(map[string]struct{})
+		visitedKey := fmt.Sprintf("%d:%s", wf.ID, wf.GetVersion())
+		visited[visitedKey] = struct{}{}
+
+		err := i.validateNodesRecursively(ctx, canvas.Nodes, checkType, visited, i.repo)
+
+		if err != nil {
+			checkResults = append(checkResults, &cloudworkflow.CheckResult{
+				IsPass: false,
+				Reason: err.Error(),
+				Type:   checkType,
+			})
+		} else {
+			checkResults = append(checkResults, &cloudworkflow.CheckResult{
+				IsPass: true,
+				Type:   checkType,
+				Reason: "",
+			})
+		}
+	}
+	return checkResults, nil
+}
+
 func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	if policy.MetaOnly {
 		metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
@@ -1560,6 +1890,14 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 	default:
 		panic("not implemented")
 	}
+}
+
+func (i *impl) BindConvRelatedInfo(ctx context.Context, convID int64, info entity.ConvRelatedInfo) error {
+	return i.repo.BindConvRelatedInfo(ctx, convID, info)
+}
+
+func (i *impl) GetConvRelatedInfo(ctx context.Context, convID int64) (*entity.ConvRelatedInfo, bool, func() error, error) {
+	return i.repo.GetConvRelatedInfo(ctx, convID)
 }
 
 func (i *impl) calculateTestRunSuccess(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
@@ -1765,4 +2103,59 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 
 func RegisterAllNodeAdaptors() {
 	adaptor.RegisterAllNodeAdaptors()
+}
+func (i *impl) adaptToChatFlow(ctx context.Context, wID int64) error {
+	wfEntity, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+		ID:    wID,
+		QType: workflowModel.FromDraft,
+	})
+	if err != nil {
+		return err
+	}
+
+	canvas := &vo.Canvas{}
+	err = sonic.UnmarshalString(wfEntity.Canvas, canvas)
+	if err != nil {
+		return err
+	}
+
+	var startNode *vo.Node
+	for _, node := range canvas.Nodes {
+		if node.Type == entity.NodeTypeEntry.IDStr() {
+			startNode = node
+			break
+		}
+	}
+
+	if startNode == nil {
+		return fmt.Errorf("can not find start node")
+	}
+
+	vMap := make(map[string]bool)
+	for _, o := range startNode.Data.Outputs {
+		v, err := vo.ParseVariable(o)
+		if err != nil {
+			return err
+		}
+		vMap[v.Name] = true
+	}
+
+	if _, ok := vMap["USER_INPUT"]; !ok {
+		startNode.Data.Outputs = append(startNode.Data.Outputs, &vo.Variable{
+			Name: "USER_INPUT",
+			Type: vo.VariableTypeString,
+		})
+	}
+	if _, ok := vMap["CONVERSATION_NAME"]; !ok {
+		startNode.Data.Outputs = append(startNode.Data.Outputs, &vo.Variable{
+			Name:         "CONVERSATION_NAME",
+			Type:         vo.VariableTypeString,
+			DefaultValue: "Default",
+		})
+	}
+	canvasStr, err := sonic.MarshalString(canvas)
+	if err != nil {
+		return err
+	}
+	return i.Save(ctx, wID, canvasStr)
 }

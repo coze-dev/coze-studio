@@ -335,6 +335,122 @@ table "app_connector_release_ref" {
     columns = [column.record_id, column.connector_id]
   }
 }
+table "app_conversation_template_draft" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "app id"
+  }
+  column "space_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "space id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(256)
+    comment = "conversation name"
+  }
+  column "template_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "template id"
+  }
+  column "creator_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "creator id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  column "updated_at" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "update time in millisecond"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "delete time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_space_id_app_id_template_id" {
+    columns = [column.space_id, column.app_id, column.template_id]
+  }
+}
+table "app_conversation_template_online" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "app id"
+  }
+  column "space_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "space id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(256)
+    comment = "conversation name"
+  }
+  column "template_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "template id"
+  }
+  column "version" {
+    null    = false
+    type    = varchar(256)
+    comment = "version name"
+  }
+  column "creator_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "creator id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_space_id_app_id_template_id_version" {
+    columns = [column.space_id, column.app_id, column.template_id, column.version]
+  }
+}
 table "app_draft" {
   schema  = schema.opencoze
   comment = "Draft Application"
@@ -397,6 +513,122 @@ table "app_draft" {
   }
   primary_key {
     columns = [column.id]
+  }
+}
+table "app_dynamic_conversation_draft" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "app id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(256)
+    comment = "conversation name"
+  }
+  column "user_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "user id"
+  }
+  column "connector_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "conversation_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "conversation id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "delete time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_app_id_connector_id_user_id" {
+    columns = [column.app_id, column.connector_id, column.user_id]
+  }
+  index "idx_connector_id_user_id_name" {
+    columns = [column.connector_id, column.user_id, column.name]
+  }
+}
+table "app_dynamic_conversation_online" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "app id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(256)
+    comment = "conversation name"
+  }
+  column "user_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "user id"
+  }
+  column "connector_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "conversation_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "conversation id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "delete time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_app_id_connector_id_user_id" {
+    columns = [column.app_id, column.connector_id, column.user_id]
+  }
+  index "idx_connector_id_user_id_name" {
+    columns = [column.connector_id, column.user_id, column.name]
   }
 }
 table "app_release_record" {
@@ -504,6 +736,199 @@ table "app_release_record" {
   index "uniq_idx_app_version_connector" {
     unique  = true
     columns = [column.app_id, column.version]
+  }
+}
+table "app_static_conversation_draft" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "template_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "template id"
+  }
+  column "user_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "user id"
+  }
+  column "connector_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "conversation_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "conversation id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "delete time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_connector_id_user_id_template_id" {
+    columns = [column.connector_id, column.user_id, column.template_id]
+  }
+}
+table "app_static_conversation_online" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "template_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "template id"
+  }
+  column "user_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "user id"
+  }
+  column "connector_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "conversation_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "conversation id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_connector_id_user_id_template_id" {
+    columns = [column.connector_id, column.user_id, column.template_id]
+  }
+}
+table "chat_flow_role_config" {
+  schema = schema.opencoze
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "workflow_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "workflow id"
+  }
+  column "connector_id" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(256)
+    comment = "role name"
+  }
+  column "description" {
+    null    = false
+    type    = mediumtext
+    comment = "role description"
+  }
+  column "version" {
+    null    = false
+    type    = varchar(256)
+    comment = "version"
+  }
+  column "avatar" {
+    null    = false
+    type    = varchar(256)
+    comment = "avatar uri"
+  }
+  column "background_image_info" {
+    null    = false
+    type    = mediumtext
+    comment = "background image information, object structure"
+  }
+  column "onboarding_info" {
+    null    = false
+    type    = mediumtext
+    comment = "intro information, object structure"
+  }
+  column "suggest_reply_info" {
+    null    = false
+    type    = mediumtext
+    comment = "user suggestions, object structure"
+  }
+  column "audio_config" {
+    null    = false
+    type    = mediumtext
+    comment = "agent audio config, object structure"
+  }
+  column "user_input_config" {
+    null    = false
+    type    = varchar(256)
+    comment = "user input config, object structure"
+  }
+  column "creator_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "creator id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  column "updated_at" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "update time in millisecond"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "delete time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_connector_id_version" {
+    columns = [column.connector_id, column.version]
+  }
+  index "idx_workflow_id_version" {
+    columns = [column.workflow_id, column.version]
   }
 }
 table "connector_workflow_version" {

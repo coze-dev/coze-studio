@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -38,6 +39,7 @@ const (
 	interruptEventListKeyPattern   = "interrupt_event_list:%d"
 	interruptEventTTL              = 24 * time.Hour // Example: expire after 24 hours
 	previousResumedEventKeyPattern = "previous_resumed_event:%d"
+	ConvToEventExecFormat          = "conv_relate_info:%d"
 )
 
 // SaveInterruptEvents saves multiple interrupt events to the end of a Redis list.
@@ -245,4 +247,34 @@ func (i *interruptEventStoreImpl) ListInterruptEvents(ctx context.Context, wfExe
 	}
 
 	return events, nil
+}
+
+func (i *interruptEventStoreImpl) BindConvRelatedInfo(ctx context.Context, convID int64, info entity.ConvRelatedInfo) error {
+	data, err := sonic.Marshal(info)
+	if err != nil {
+		return err
+	}
+	result := i.redis.Set(ctx, fmt.Sprintf(ConvToEventExecFormat, convID), data, interruptEventTTL)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	return nil
+}
+
+func (i *interruptEventStoreImpl) GetConvRelatedInfo(ctx context.Context, convID int64) (*entity.ConvRelatedInfo, bool, func() error, error) {
+	data, err := i.redis.Get(ctx, fmt.Sprintf(ConvToEventExecFormat, convID)).Bytes()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, false, nil, nil
+		}
+		return nil, false, nil, err
+	}
+	rInfo := &entity.ConvRelatedInfo{}
+	err = sonic.UnmarshalString(string(data), rInfo)
+	if err != nil {
+		return nil, false, nil, err
+	}
+	return rInfo, true, func() error {
+		return i.redis.Del(ctx, fmt.Sprintf(ConvToEventExecFormat, convID)).Err()
+	}, nil
 }

@@ -14,33 +14,24 @@
  * limitations under the License.
  */
 
-package maps
+package entity
 
-func ToAnyValue[K comparable, V any](m map[K]V) map[K]any {
-	n := make(map[K]any, len(m))
-	for k, v := range m {
-		n[k] = v
-	}
+import "time"
 
-	return n
-}
-
-func TransformKey[K1, K2 comparable, V any](m map[K1]V, f func(K1) K2) map[K2]V {
-	n := make(map[K2]V, len(m))
-	for k1, v := range m {
-		n[f(k1)] = v
-	}
-	return n
-}
-
-func TransformKeyWithErrorCheck[K1, K2 comparable, V any](m map[K1]V, f func(K1) (K2, error)) (map[K2]V, error) {
-	n := make(map[K2]V, len(m))
-	for k1, v := range m {
-		k2, err := f(k1)
-		if err != nil {
-			return nil, err
-		}
-		n[k2] = v
-	}
-	return n, nil
+type ChatFlowRole struct {
+	ID                  int64
+	WorkflowID          int64
+	ConnectorID         int64
+	Name                string
+	Description         string
+	Version             string
+	AvatarUri           string
+	BackgroundImageInfo string
+	OnboardingInfo      string
+	SuggestReplyInfo    string
+	AudioConfig         string
+	UserInputConfig     string
+	CreatorID           int64
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }
