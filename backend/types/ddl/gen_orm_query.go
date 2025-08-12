@@ -204,6 +204,9 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"publish_config": appEntity.PublishConfig{},
 		},
 	},
+	"domain/upload/internal/dal/query": {
+		"files": {},
+	},
 }
 
 var fieldNullablePath = map[string]bool{
