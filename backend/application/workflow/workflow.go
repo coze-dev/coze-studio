@@ -3636,3 +3636,255 @@ func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
 
 	return nil
 }
+
+// ExportWorkflow exports workflows as a downloadable package
+func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.ExportWorkflowRequest) (*workflow.ExportWorkflowResponse, error) {
+	// Convert request to internal types
+	workflowIDs := make([]int64, len(req.WorkflowIDs))
+	for i, idStr := range req.WorkflowIDs {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow ID: %s", idStr))
+		}
+		workflowIDs[i] = id
+	}
+
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space ID: %s", req.SpaceID))
+	}
+
+	// Check user permission for space
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	if err := checkUserSpace(ctx, uid, spaceID); err != nil {
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, err)
+	}
+
+	// Create export policy
+	policy := vo.ExportWorkflowPolicy{
+		IncludeDependencies: safeDerefBool(req.IncludeDependencies, true),
+		ExportFormat:        safeDerefString(req.ExportFormat, "json"),
+		IncludeVersions:     safeDerefBool(req.IncludeVersions, false),
+	}
+
+	// Call domain service to export workflows
+	exportPackage, err := w.DomainSVC.ExportWorkflow(ctx, workflowIDs, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Serialize export package to JSON
+	exportJSON, err := sonic.Marshal(exportPackage)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	// Generate filename
+	timestamp := time.Now().Format("20060102_150405")
+	filename := fmt.Sprintf("workflow_export_%s.json", timestamp)
+	if len(workflowIDs) == 1 {
+		// For single workflow, try to use workflow name
+		if len(exportPackage.Workflows) > 0 {
+			workflowName := exportPackage.Workflows[0].Meta.Name
+			// Sanitize filename
+			workflowName = strings.ReplaceAll(workflowName, " ", "_")
+			workflowName = strings.ReplaceAll(workflowName, "/", "_")
+			filename = fmt.Sprintf("%s_%s.json", workflowName, timestamp)
+		}
+	}
+
+	// Create response
+	return &workflow.ExportWorkflowResponse{
+		Data: &workflow.ExportWorkflowData{
+			ExportPackage: string(exportJSON),
+			FileName:      filename,
+			ContentType:   "application/json",
+			Size:          int64(len(exportJSON)),
+		},
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// ImportWorkflow imports workflows from an upload package
+func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.ImportWorkflowRequest) (*workflow.ImportWorkflowResponse, error) {
+	// Parse space ID
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space ID: %s", req.SpaceID))
+	}
+
+	// Check user permission for space
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	if err := checkUserSpace(ctx, uid, spaceID); err != nil {
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, err)
+	}
+
+	// Parse import package
+	var importPackage vo.WorkflowExportPackage
+	if err := sonic.UnmarshalString(req.ImportPackage, &importPackage); err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to parse import package: %w", err))
+	}
+
+	// Create import policy
+	policy := vo.ImportWorkflowPolicy{
+		TargetSpaceID:            &spaceID,
+		ConflictResolution:       parseConflictStrategy(req.ConflictResolution),
+		ShouldModifyWorkflowName: safeDerefBool(req.ShouldModifyWorkflowName, true),
+		PreserveOriginalIDs:      safeDerefBool(req.PreserveOriginalIDs, false),
+	}
+
+	// Parse target app ID if provided
+	if req.TargetAppID != nil {
+		appID, err := strconv.ParseInt(*req.TargetAppID, 10, 64)
+		if err != nil {
+			return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid app ID: %s", *req.TargetAppID))
+		}
+		policy.TargetAppID = &appID
+	}
+
+	// Check if this is a validation-only request
+	if safeDerefBool(req.ValidateOnly, false) {
+		validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert validation result to import result format
+		summary := fmt.Sprintf("Validation completed. Found %d workflows. Valid: %t",
+			validationResult.WorkflowCount, validationResult.IsValid)
+
+		resultJSON, err := sonic.Marshal(validationResult)
+		if err != nil {
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+		}
+
+		return &workflow.ImportWorkflowResponse{
+			Data: &workflow.ImportWorkflowData{
+				ImportResult: string(resultJSON),
+				Summary:      summary,
+			},
+			Code: 0,
+			Msg:  "validation completed",
+		}, nil
+	}
+
+	// Perform actual import
+	importResult, err := w.DomainSVC.ImportWorkflow(ctx, &importPackage, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create summary
+	summary := fmt.Sprintf("Import completed. Successfully imported %d workflows, skipped %d, failed %d",
+		len(importResult.ImportedWorkflows), len(importResult.SkippedWorkflows), len(importResult.FailedWorkflows))
+
+	// Serialize import result to JSON
+	resultJSON, err := sonic.Marshal(importResult)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	return &workflow.ImportWorkflowResponse{
+		Data: &workflow.ImportWorkflowData{
+			ImportResult: string(resultJSON),
+			Summary:      summary,
+		},
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// ValidateImport validates an import package without actually importing
+func (w *ApplicationService) ValidateImport(ctx context.Context, req *workflow.ValidateImportRequest) (*workflow.ValidateImportResponse, error) {
+	// Parse target space ID
+	spaceID, err := strconv.ParseInt(req.TargetSpaceID, 10, 64)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid target space ID: %s", req.TargetSpaceID))
+	}
+
+	// Check user permission for space
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	if err := checkUserSpace(ctx, uid, spaceID); err != nil {
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, err)
+	}
+
+	// Parse import package
+	var importPackage vo.WorkflowExportPackage
+	if err := sonic.UnmarshalString(req.ImportPackage, &importPackage); err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to parse import package: %w", err))
+	}
+
+	// Create import policy for validation
+	policy := vo.ImportWorkflowPolicy{
+		TargetSpaceID: &spaceID,
+	}
+
+	// Validate the import package
+	validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create summary
+	summary := fmt.Sprintf("Validation result: %t. Found %d workflows from %s",
+		validationResult.IsValid, validationResult.WorkflowCount, validationResult.SourceSystem)
+	if len(validationResult.Errors) > 0 {
+		summary += fmt.Sprintf(", %d errors", len(validationResult.Errors))
+	}
+	if len(validationResult.Warnings) > 0 {
+		summary += fmt.Sprintf(", %d warnings", len(validationResult.Warnings))
+	}
+
+	// Serialize validation result to JSON
+	resultJSON, err := sonic.Marshal(validationResult)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	return &workflow.ValidateImportResponse{
+		Data: &workflow.ValidateImportData{
+			ValidationResult: string(resultJSON),
+			IsValid:          validationResult.IsValid,
+			Summary:          summary,
+		},
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// parseConflictStrategy converts string to ConflictStrategy enum
+func parseConflictStrategy(strategy *string) vo.ConflictStrategy {
+	if strategy == nil {
+		return vo.ConflictStrategy_Rename // Default strategy
+	}
+
+	switch *strategy {
+	case "skip":
+		return vo.ConflictStrategy_Skip
+	case "overwrite":
+		return vo.ConflictStrategy_Overwrite
+	case "rename":
+		return vo.ConflictStrategy_Rename
+	default:
+		return vo.ConflictStrategy_Rename // Default fallback
+	}
+}
+
+// safeDerefBool safely dereferences a bool pointer with a default value
+func safeDerefBool(p *bool, defaultValue bool) bool {
+	if p == nil {
+		return defaultValue
+	}
+	return *p
+}
+
+// safeDerefString safely dereferences a string pointer with a default value
+func safeDerefString(p *string, defaultValue string) string {
+	if p == nil {
+		return defaultValue
+	}
+	return *p
+}

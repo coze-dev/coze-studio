@@ -65,7 +65,7 @@ export const BaseLibraryPage = forwardRef<
   { reloadList: () => void },
   BaseLibraryPageProps
 >(
-  // eslint-disable-next-line @coze-arch/max-line-per-function
+  // eslint-disable-next-line @coze-arch/max-line-per-function -- Complex library page component
   ({ spaceId, isPersonalSpace = true, entityConfigs }, ref) => {
     const { params, setParams, resetParams, hasFilter, ready } =
       useCachedQueryParams({
@@ -128,7 +128,11 @@ export const BaseLibraryPage = forwardRef<
       >
         <Layout.Header className={classNames(s['layout-header'], 'pb-0')}>
           <div className="w-full">
-            <LibraryHeader entityConfigs={entityConfigs} />
+            <LibraryHeader
+              entityConfigs={entityConfigs}
+              spaceId={spaceId}
+              onRefresh={listResp.reload}
+            />
             <div className="flex items-center justify-between">
               <Space>
                 <Cascader

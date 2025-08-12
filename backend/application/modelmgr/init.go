@@ -17,11 +17,18 @@
 package modelmgr
 
 import (
+	"github.com/coze-dev/coze-studio/backend/domain/model/repository"
+	"github.com/coze-dev/coze-studio/backend/domain/model/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 )
 
-func InitService(mgr modelmgr.Manager, tosClient storage.Storage) *ModelmgrApplicationService {
-	ModelmgrApplicationSVC = &ModelmgrApplicationService{mgr, tosClient}
+func InitService(mgr modelmgr.Manager, tosClient storage.Storage, modelService service.ModelService, modelRepo repository.ModelRepository) *ModelmgrApplicationService {
+	ModelmgrApplicationSVC = &ModelmgrApplicationService{
+		Mgr:          mgr,
+		TosClient:    tosClient,
+		ModelService: modelService,
+		ModelRepo:    modelRepo,
+	}
 	return ModelmgrApplicationSVC
 }

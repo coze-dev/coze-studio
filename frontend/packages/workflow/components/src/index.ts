@@ -64,3 +64,7 @@ export { useWorkflowAction } from './workflow-modal/hooks/use-workflow-action';
 export { WorkflowModalContext, WorkflowModalContextValue };
 export { useOpenWorkflowDetail } from './hooks/use-open-workflow-detail';
 export { VoiceSelect } from './voice-select';
+export {
+  useWorkflowImportExport,
+  extractWorkflowIdFromResource,
+} from './hooks/use-workflow-import-export';
