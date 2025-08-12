@@ -43,11 +43,13 @@ import (
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -58,6 +60,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
+
+type contextKey string
+
+const chatHistoryKey contextKey = "chatHistory"
 
 type Format int
 
@@ -166,12 +172,14 @@ type KnowledgeRecallConfig struct {
 }
 
 type Config struct {
-	SystemPrompt    string
-	UserPrompt      string
-	OutputFormat    Format
-	LLMParams       *crossmodel.LLMParams
-	FCParam         *vo.FCParam
-	BackupLLMParams *crossmodel.LLMParams
+	SystemPrompt                      string
+	UserPrompt                        string
+	OutputFormat                      Format
+	LLMParams                         *crossmodel.LLMParams
+	FCParam                           *vo.FCParam
+	BackupLLMParams                   *crossmodel.LLMParams
+	ChatHistorySetting                *vo.ChatHistorySetting
+	AssociateStartNodeUserInputFields map[string]struct{}
 }
 
 func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema2.NodeSchema, error) {
@@ -200,6 +208,13 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	c.LLMParams = convertedLLMParam
 	c.SystemPrompt = convertedLLMParam.SystemPrompt
 	c.UserPrompt = convertedLLMParam.Prompt
+
+	if convertedLLMParam.EnableChatHistory {
+		c.ChatHistorySetting = &vo.ChatHistorySetting{
+			EnableChatHistory: true,
+			ChatHistoryRound:  convertedLLMParam.ChatHistoryRound,
+		}
+	}
 
 	var resFormat Format
 	switch convertedLLMParam.ResponseFormat {
@@ -272,6 +287,15 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 		}
 	}
 
+	c.AssociateStartNodeUserInputFields = make(map[string]struct{})
+	for _, info := range ns.InputSources {
+		if len(info.Path) == 1 && info.Source.Ref != nil && info.Source.Ref.FromNodeKey == entity.EntryNodeKey {
+			if compose.FromFieldPath(info.Source.Ref.FromPath).Equals(compose.FromField("USER_INPUT")) {
+				c.AssociateStartNodeUserInputFields[info.Path[0]] = struct{}{}
+			}
+		}
+	}
+
 	return ns, nil
 }
 
@@ -319,7 +343,14 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 		case "systemPrompt":
 			strVal := param.Input.Value.Content.(string)
 			p.SystemPrompt = strVal
-		case "chatHistoryRound", "generationDiversity", "frequencyPenalty", "presencePenalty":
+		case "chatHistoryRound":
+			strVal := param.Input.Value.Content.(string)
+			int64Val, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			p.ChatHistoryRound = int64Val
+		case "generationDiversity", "frequencyPenalty", "presencePenalty":
 		// do nothing
 		case "topP":
 			strVal := param.Input.Value.Content.(string)
@@ -589,11 +620,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		inputs[knowledgeUserPromptTemplateKey] = &vo.TypeInfo{
 			Type: vo.DataTypeString,
 		}
-		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs, nil)
-		up := newPromptTpl(schema.User, userPrompt, inputs, []string{knowledgeUserPromptTemplateKey})
+		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs)
+		up := newPromptTpl(schema.User, userPrompt, inputs, withReservedKeys([]string{knowledgeUserPromptTemplateKey}), withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
 
-		_ = g.AddChatTemplateNode(templateNodeKey, template,
+		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory,
 			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
 				for k, v := range state {
 					in[k] = v
@@ -603,10 +635,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		_ = g.AddEdge(knowledgeLambdaKey, templateNodeKey)
 
 	} else {
-		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes, nil)
-		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, nil)
+		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes)
+		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		_ = g.AddChatTemplateNode(templateNodeKey, template)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+
+		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory)
 
 		_ = g.AddEdge(compose.START, templateNodeKey)
 	}
@@ -745,10 +779,11 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	}
 
 	llm := &LLM{
-		r:                 r,
-		outputFormat:      format,
-		requireCheckpoint: requireCheckpoint,
-		fullSources:       ns.FullSources,
+		r:                  r,
+		outputFormat:       format,
+		requireCheckpoint:  requireCheckpoint,
+		fullSources:        ns.FullSources,
+		chatHistorySetting: c.ChatHistorySetting,
 	}
 
 	return llm, nil
@@ -823,10 +858,11 @@ func toRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 }
 
 type LLM struct {
-	r                 compose.Runnable[map[string]any, map[string]any]
-	outputFormat      Format
-	requireCheckpoint bool
-	fullSources       map[string]*schema2.SourceInfo
+	r                  compose.Runnable[map[string]any, map[string]any]
+	outputFormat       Format
+	requireCheckpoint  bool
+	fullSources        map[string]*schema2.SourceInfo
+	chatHistorySetting *vo.ChatHistorySetting
 }
 
 const (
@@ -1203,6 +1239,52 @@ type ToolInterruptEventStore interface {
 	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
 	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
 	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
+}
+
+func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
+	if l.chatHistorySetting == nil || !l.chatHistorySetting.EnableChatHistory {
+		return input, nil
+	}
+
+	var messages []*conversation.Message
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx != nil {
+		messages = execCtx.ExeCfg.ConversationHistory
+	}
+	if len(messages) == 0 {
+		return input, nil
+	}
+
+	count := 0
+	endIdx := 0
+	var historyMessages []any
+	for _, msg := range messages {
+		if count > int(l.chatHistorySetting.ChatHistoryRound) {
+			break
+		}
+		if msg.Role == schema.User {
+			count++
+		}
+		endIdx++
+		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, map[string]any{
+			"role":    string(msg.Role),
+			"content": content,
+		})
+	}
+	ctxcache.Store(ctx, chatHistoryKey, messages[:endIdx])
+
+	ret := map[string]any{
+		"chatHistory": historyMessages,
+	}
+	for k, v := range input {
+		ret[k] = v
+	}
+	return ret, nil
 }
 
 func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
