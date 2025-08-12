@@ -22,25 +22,31 @@ import (
 )
 
 const (
-	ErrWorkflowNotPublished             = 720702011
-	ErrMissingRequiredParam             = 720702002
-	ErrInterruptNotSupported            = 720702078
-	ErrInvalidParameter                 = 720702001
-	ErrArrIndexOutOfRange               = 720712014
-	ErrWorkflowExecuteFail              = 720701013
-	ErrCodeExecuteFail                  = 305000002
-	ErrQuestionOptionsEmpty             = 720712049
-	ErrNodeOutputParseFail              = 720712023
-	ErrWorkflowTimeout                  = 720702085
-	ErrWorkflowNotFound                 = 720702004
-	ErrSerializationDeserializationFail = 720701011
-	ErrInternalBadRequest               = 720701007
-	ErrSchemaConversionFail             = 720702089
-	ErrWorkflowCompileFail              = 720701003
-	ErrPluginAPIErr                     = 720701004
+	ErrWorkflowNotPublished                        = 720702011
+	ErrMissingRequiredParam                        = 720702002
+	ErrInterruptNotSupported                       = 720702078
+	ErrInvalidParameter                            = 720702001
+	ErrArrIndexOutOfRange                          = 720712014
+	ErrWorkflowExecuteFail                         = 720701013
+	ErrCodeExecuteFail                             = 305000002
+	ErrQuestionOptionsEmpty                        = 720712049
+	ErrNodeOutputParseFail                         = 720712023
+	ErrWorkflowTimeout                             = 720702085
+	ErrWorkflowNotFound                            = 720702004
+	ErrSerializationDeserializationFail            = 720701011
+	ErrInternalBadRequest                          = 720701007
+	ErrSchemaConversionFail                        = 720702089
+	ErrWorkflowCompileFail                         = 720701003
+	ErrPluginAPIErr                                = 720701004
+	ErrConversationNameIsDuplicated                = 720702200
+	ErrConversationOfAppNotFound                   = 720702201
+	ErrConversationNodeInvalidOperation            = 720702250
+	ErrOnlyDefaultConversationAllowInAgentScenario = 720712033
 )
 
 const (
+	ErrChatFlowRoleOperationFail        = 777777780
+	ErrConversationOfAppOperationFail   = 777777779
 	ErrWorkflowSpecifiedVersionNotFound = 777777778
 	ErrWorkflowCanceledByUser           = 777777777
 	ErrNodeTimeout                      = 777777776
@@ -57,6 +63,7 @@ const (
 	ErrAuthorizationRequired            = 777777765
 	ErrVariablesAPIFail                 = 777777764
 	ErrInputFieldMissing                = 777777763
+	ErrConversationNodesNotAvailable    = 702093204
 )
 
 // stability problems
@@ -123,6 +130,12 @@ func init() {
 	)
 
 	code.Register(
+		ErrChatFlowRoleOperationFail,
+		"ChatFlowRole operation failure: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
 		ErrCodeExecuteFail,
 		"Function execution failed, please check the code of the function. Detail: {detail}",
 		code.WithAffectStability(false),
@@ -143,6 +156,12 @@ func init() {
 	code.Register(
 		ErrWorkflowCanceledByUser,
 		"workflow cancel by user",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrConversationOfAppOperationFail,
+		"Conversation management operation failure: {cause}",
 		code.WithAffectStability(false),
 	)
 
@@ -189,6 +208,12 @@ func init() {
 	code.Register(
 		ErrWorkflowNotFound,
 		"workflow {id} not found, please check if the workflow exists and not deleted",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrConversationOfAppNotFound,
+		"conversation not found, please check if the application conversation exists",
 		code.WithAffectStability(false),
 	)
 
@@ -241,6 +266,12 @@ func init() {
 	)
 
 	code.Register(
+		ErrConversationNameIsDuplicated,
+		"conversation name {name} is duplicated",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
 		ErrPluginIDNotFound,
 		"plugin {id} not found",
 		code.WithAffectStability(false),
@@ -275,6 +306,25 @@ func init() {
 		"input field {name} not found",
 		code.WithAffectStability(false),
 	)
+
+	code.Register(
+		ErrConversationNodesNotAvailable,
+		"Conversation nodes are unavailable in agent scenarios and require an app binding.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrConversationNodeInvalidOperation,
+		"Only conversation created through nodes are allowed to be modified or deleted.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrOnlyDefaultConversationAllowInAgentScenario,
+		"Only default conversation allow in agent scenario",
+		code.WithAffectStability(false),
+	)
+
 }
 
 var errnoMap = map[int]int{
