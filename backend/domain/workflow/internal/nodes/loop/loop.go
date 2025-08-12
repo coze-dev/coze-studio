@@ -431,17 +431,13 @@ func (l *Loop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Node
 		}
 
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
-			if e := setter.SaveNestedWorkflowState(l.nodeKey, compState); e != nil {
-				return e
-			}
-
-			return setter.SetInterruptEvent(l.nodeKey, iEvent)
+			return setter.SaveNestedWorkflowState(l.nodeKey, compState)
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		return nil, compose.InterruptAndRerun
+		return nil, compose.NewInterruptAndRerunErr(iEvent)
 	} else {
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
 			return setter.SaveNestedWorkflowState(l.nodeKey, compState)

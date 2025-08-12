@@ -36,14 +36,12 @@ import (
 )
 
 type State struct {
-	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
-	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
-	WorkflowExeContext   *execute.Context                          `json:"-"`
-	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
-	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
-
-	ExecutedNodes map[vo.NodeKey]bool                           `json:"executed_nodes,omitempty"`
-	SourceInfos   map[vo.NodeKey]map[string]*schema2.SourceInfo `json:"source_infos,omitempty"`
+	NodeExeContexts      map[vo.NodeKey]*execute.Context               `json:"-"`
+	WorkflowExeContext   *execute.Context                              `json:"-"`
+	ExecutedNodes        map[vo.NodeKey]bool                           `json:"executed_nodes,omitempty"`
+	SourceInfos          map[vo.NodeKey]map[string]*schema2.SourceInfo `json:"source_infos,omitempty"`
+	Inputs               map[vo.NodeKey]map[string]any                 `json:"inputs,omitempty"`
+	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState     `json:"nested_workflow_states,omitempty"`
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 
@@ -114,24 +112,6 @@ func (s *State) GetWorkflowCtx() (*execute.Context, bool, error) {
 
 func (s *State) SetWorkflowCtx(value *execute.Context) error {
 	s.WorkflowExeContext = value
-	return nil
-}
-
-func (s *State) GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, bool, error) {
-	if v, ok := s.InterruptEvents[nodeKey]; ok {
-		return v, true, nil
-	}
-
-	return nil, false, nil
-}
-
-func (s *State) SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEvent) error {
-	s.InterruptEvents[nodeKey] = value
-	return nil
-}
-
-func (s *State) DeleteInterruptEvent(nodeKey vo.NodeKey) error {
-	delete(s.InterruptEvents, nodeKey)
 	return nil
 }
 
@@ -295,7 +275,6 @@ func GenState() compose.GenLocalState[*State] {
 		return &State{
 			Inputs:               make(map[vo.NodeKey]map[string]any),
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
-			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 			ExecutedNodes:        make(map[vo.NodeKey]bool),
 			SourceInfos:          make(map[vo.NodeKey]map[string]*schema2.SourceInfo),

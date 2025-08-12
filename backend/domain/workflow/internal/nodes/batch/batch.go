@@ -436,35 +436,16 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 		}
 
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
-			if e := setter.SaveNestedWorkflowState(b.key, compState); e != nil {
-				return e
-			}
-
-			return setter.SetInterruptEvent(b.key, iEvent)
+			return setter.SaveNestedWorkflowState(b.key, compState)
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		return nil, compose.InterruptAndRerun
+		return nil, compose.NewInterruptAndRerunErr(iEvent)
 	} else {
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
-			if e := setter.SaveNestedWorkflowState(b.key, compState); e != nil {
-				return e
-			}
-
-			if existingCState == nil {
-				return nil
-			}
-
-			// although this invocation does not have new interruptions,
-			// this batch node previously have interrupts yet to be resumed.
-			// we overwrite the interrupt events, keeping only the interrupts yet to be resumed.
-			return setter.SetInterruptEvent(b.key, &entity.InterruptEvent{
-				NodeKey:             b.key,
-				NodeType:            entity.NodeTypeBatch,
-				NestedInterruptInfo: existingCState.Index2InterruptInfo,
-			})
+			return setter.SaveNestedWorkflowState(b.key, compState)
 		})
 		if err != nil {
 			return nil, err

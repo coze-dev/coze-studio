@@ -286,28 +286,16 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 const InterruptEventIndexPrefix = "interrupt_event_index_"
 
 func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...string) (interruptEvents []*entity.InterruptEvent, err error) {
-	ieStore, ok := interruptInfo.State.(nodes.InterruptEventStore)
-	if !ok {
-		return nil, errors.New("failed to extract interrupt event store from interrupt info")
-	}
-
 	for _, nodeKey := range interruptInfo.RerunNodes {
-		interruptE, ok, err := ieStore.GetInterruptEvent(vo.NodeKey(nodeKey))
-		if err != nil {
-			logs.Errorf("failed to extract interrupt event from node key: %v", err)
+
+		extra := interruptInfo.RerunNodesExtra[nodeKey]
+		if extra == nil {
 			continue
 		}
-
+		interruptE, ok := extra.(*entity.InterruptEvent)
 		if !ok {
-			extra := interruptInfo.RerunNodesExtra[nodeKey]
-			if extra == nil {
-				continue
-			}
-			interruptE, ok = extra.(*entity.InterruptEvent)
-			if !ok {
-				logs.Errorf("failed to extract tool interrupt event from node key: %v", err)
-				continue
-			}
+			logs.Errorf("failed to extract tool interrupt event from node key: %v", err)
+			continue
 		}
 
 		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil {

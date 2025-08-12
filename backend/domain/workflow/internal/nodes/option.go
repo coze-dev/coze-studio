@@ -166,5 +166,4 @@ func (c *NestedWorkflowState) String() string {
 type NestedWorkflowAware interface {
 	SaveNestedWorkflowState(key vo.NodeKey, state *NestedWorkflowState) error
 	GetNestedWorkflowState(key vo.NodeKey) (*NestedWorkflowState, bool, error)
-	InterruptEventStore
 }

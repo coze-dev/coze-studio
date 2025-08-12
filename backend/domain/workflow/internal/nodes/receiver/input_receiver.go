@@ -96,7 +96,7 @@ type InputReceiver struct {
 }
 
 const (
-	ReceivedDataKey    = "$received_data"
+	interruptedKey     = "&interrupted"
 	receiverWarningKey = "receiver_warning_%d_%s"
 )
 
@@ -113,34 +113,35 @@ func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[strin
 	})
 
 	if !resumed {
-		err = compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
-			_, found, e := ieStore.GetInterruptEvent(i.nodeKey) // TODO: try not use InterruptEventStore or state in general
-			if e != nil {
-				return e
-			}
-
-			if !found { // only generate a new event if it doesn't exist
-				eventID, err := workflow.GetRepository().GenID(ctx)
-				if err != nil {
-					return err
+		var previouslyInterrupted bool
+		_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.IntermediateResultStore) error {
+			irs := state.GetIntermediateResult(i.nodeKey)
+			if len(irs) > 0 {
+				_, previouslyInterrupted = irs[interruptedKey]
+				if !previouslyInterrupted {
+					state.SetIntermediateResult(i.nodeKey, map[string]any{interruptedKey: true})
 				}
-				return ieStore.SetInterruptEvent(i.nodeKey, &entity.InterruptEvent{
-					ID:            eventID,
-					NodeKey:       i.nodeKey,
-					NodeType:      entity.NodeTypeInputReceiver,
-					NodeTitle:     i.nodeMeta.Name,
-					NodeIcon:      i.nodeMeta.IconURL,
-					InterruptData: i.interruptData,
-					EventType:     entity.InterruptEventInput,
-				})
 			}
-
 			return nil
 		})
-		if err != nil {
-			return nil, err
+
+		if previouslyInterrupted {
+			return nil, compose.InterruptAndRerun
 		}
-		return nil, compose.InterruptAndRerun
+
+		eventID, err := workflow.GetRepository().GenID(ctx)
+		if err != nil {
+			return nil, vo.WrapError(errno.ErrIDGenError, err)
+		}
+		return nil, compose.NewInterruptAndRerunErr(&entity.InterruptEvent{
+			ID:            eventID,
+			NodeKey:       i.nodeKey,
+			NodeType:      entity.NodeTypeInputReceiver,
+			NodeTitle:     i.nodeMeta.Name,
+			NodeIcon:      i.nodeMeta.IconURL,
+			InterruptData: i.interruptData,
+			EventType:     entity.InterruptEventInput,
+		})
 	}
 
 	exeCfg := execute.GetExeCtx(ctx).ExeCfg
