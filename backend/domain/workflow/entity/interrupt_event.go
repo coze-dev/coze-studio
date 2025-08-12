@@ -72,3 +72,9 @@ type ToolInterruptEvent struct {
 	ExecuteID  int64
 	*InterruptEvent
 }
+
+type ConvRelatedInfo struct {
+	EventID  int64
+	ExecID   int64
+	NodeType NodeType
+}

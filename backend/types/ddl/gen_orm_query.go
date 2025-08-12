@@ -57,6 +57,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database_config":            []*bot_common.Database{},
 			"shortcut_command":           []string{},
+			"layout_info":                &bot_common.LayoutInfo{},
 		},
 		"single_agent_version": {
 			// "variable":        []*bot_common.Variable{},
@@ -71,6 +72,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database_config":            []*bot_common.Database{},
 			"shortcut_command":           []string{},
+			"layout_info":                &bot_common.LayoutInfo{},
 		},
 		"single_agent_publish": {
 			"connector_ids": []int64{},
@@ -154,6 +156,17 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"node_execution":             {},
 		"workflow_snapshot":          {},
 		"connector_workflow_version": {},
+
+		"chat_flow_role_config": {},
+
+		"app_conversation_template_draft":  {},
+		"app_conversation_template_online": {},
+
+		"app_static_conversation_draft":  {},
+		"app_static_conversation_online": {},
+
+		"app_dynamic_conversation_draft":  {},
+		"app_dynamic_conversation_online": {},
 	},
 
 	"domain/openauth/openapiauth/internal/dal/query": {
