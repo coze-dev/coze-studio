@@ -19,6 +19,7 @@ package dal
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,6 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -106,20 +108,40 @@ func (dao *RunRecordDAO) Delete(ctx context.Context, id []int64) error {
 	return err
 }
 
-func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, sectionID int64, limit int32) ([]*model.RunRecord, error) {
-	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
+func (dao *RunRecordDAO) List(ctx context.Context, meta *entity.ListRunRecordMeta) ([]*entity.RunRecordMeta, error) {
+	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", meta.ConversationID, meta.SectionID, meta.Limit)
 	m := dao.query.RunRecord
-	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug().Where(m.Status.NotIn(string(entity.RunStatusDeleted)))
-
-	if sectionID > 0 {
-		do = do.Where(m.SectionID.Eq(sectionID))
+	do := m.WithContext(ctx).Where(m.ConversationID.Eq(meta.ConversationID)).Debug().Where(m.Status.NotIn(string(entity.RunStatusDeleted)))
+	if meta.BeforeID > 0 {
+		runRecord, err := m.Where(m.ID.Eq(meta.BeforeID)).First()
+		if err != nil {
+			return nil, err
+		}
+		do = do.Where(m.CreatedAt.Lt(runRecord.CreatedAt))
 	}
-	if limit > 0 {
-		do = do.Limit(int(limit))
+	if meta.AfterID > 0 {
+		runRecord, err := m.Where(m.ID.Eq(meta.AfterID)).First()
+		if err != nil {
+			return nil, err
+		}
+		do = do.Where(m.CreatedAt.Gt(runRecord.CreatedAt))
+	}
+	if meta.SectionID > 0 {
+		do = do.Where(m.SectionID.Eq(meta.SectionID))
+	}
+	if meta.Limit > 0 {
+		do = do.Limit(int(meta.Limit))
+	}
+	if strings.ToLower(meta.OrderBy) == "asc" {
+		do = do.Order(m.CreatedAt.Asc())
+	} else {
+		do = do.Order(m.CreatedAt.Desc())
 	}
 
-	runRecords, err := do.Order(m.CreatedAt.Desc()).Find()
-	return runRecords, err
+	runRecords, err := do.Find()
+	return slices.Transform(runRecords, func(item *model.RunRecord) *entity.RunRecordMeta {
+		return dao.buildPo2Do(item)
+	}), err
 }
 
 func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.AgentRunMeta) (*model.RunRecord, error) {

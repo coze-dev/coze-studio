@@ -158,3 +158,13 @@ type ModelAnswerEvent struct {
 	Message *schema.Message
 	Err     error
 }
+
+type ListRunRecordMeta struct {
+	ConversationID int64  `json:"conversation_id"`
+	AgentID        int64  `json:"agent_id"`
+	SectionID      int64  `json:"section_id"`
+	Limit          int32  `json:"limit"`
+	OrderBy        string `json:"order_by"` //desc asc
+	BeforeID       int64  `json:"before_id"`
+	AfterID        int64  `json:"after_id"`
+}
