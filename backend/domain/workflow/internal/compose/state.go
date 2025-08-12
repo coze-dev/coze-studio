@@ -87,6 +87,9 @@ func init() {
 	_ = compose.RegisterSerializableType[workflowModel.Locator]("wf_locator")
 	_ = compose.RegisterSerializableType[workflowModel.BizType]("biz_type")
 	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
+	_ = compose.RegisterSerializableType[workflow2.WorkflowMode]("workflow_mode")
+	_ = compose.RegisterSerializableType[*schema.Message]("schema_message")
+
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {

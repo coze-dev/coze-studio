@@ -22,17 +22,28 @@ import (
 
 	"github.com/spf13/cast"
 
+	einoSchema "github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 const outputList = "outputList"
+
+type contextKey string
+
+const chatHistoryKey contextKey = "chatHistory"
 
 type RetrieveConfig struct {
 	KnowledgeIDs       []int64
@@ -60,6 +71,10 @@ func (r *RetrieveConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOp
 		knowledgeIDs = append(knowledgeIDs, k)
 	}
 	r.KnowledgeIDs = knowledgeIDs
+
+	if inputs.ChatHistorySetting != nil {
+		r.ChatHistorySetting = inputs.ChatHistorySetting
+	}
 
 	retrievalStrategy := &knowledge.RetrievalStrategy{}
 
@@ -155,14 +170,16 @@ func (r *RetrieveConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...sch
 	}
 
 	return &Retrieve{
-		knowledgeIDs:      r.KnowledgeIDs,
-		retrievalStrategy: r.RetrievalStrategy,
+		knowledgeIDs:       r.KnowledgeIDs,
+		retrievalStrategy:  r.RetrievalStrategy,
+		ChatHistorySetting: r.ChatHistorySetting,
 	}, nil
 }
 
 type Retrieve struct {
-	knowledgeIDs      []int64
-	retrievalStrategy *knowledge.RetrievalStrategy
+	knowledgeIDs       []int64
+	retrievalStrategy  *knowledge.RetrievalStrategy
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -174,6 +191,7 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 	req := &knowledge.RetrieveRequest{
 		Query:        query,
 		KnowledgeIDs: kr.knowledgeIDs,
+		ChatHistory:  kr.GetChatHistoryOrNil(ctx, kr.ChatHistorySetting),
 		Strategy:     kr.retrievalStrategy,
 	}
 
@@ -190,4 +208,85 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 	})
 
 	return result, nil
+}
+
+func (kr *Retrieve) GetChatHistoryOrNil(ctx context.Context, ChatHistorySetting *vo.ChatHistorySetting) []*einoSchema.Message {
+	if ChatHistorySetting == nil || !ChatHistorySetting.EnableChatHistory {
+		return nil
+	}
+
+	exeCtx := execute.GetExeCtx(ctx)
+	if exeCtx == nil {
+		logs.CtxWarnf(ctx, "execute context is nil, skipping chat history")
+		return nil
+	}
+	if exeCtx.ExeCfg.WorkflowMode != workflow.WorkflowMode_ChatFlow {
+		return nil
+	}
+
+	historyFromCtx, ok := ctxcache.Get[[]*conversation.Message](ctx, chatHistoryKey)
+	var messages []*conversation.Message
+	if ok {
+		messages = historyFromCtx
+	}
+
+	if len(messages) == 0 {
+		logs.CtxWarnf(ctx, "conversation history is empty")
+		return nil
+	}
+
+	historyMessages := make([]*einoSchema.Message, 0, len(messages))
+	for _, msg := range messages {
+		schemaMsg, err := nodesconversation.ConvertMessageToSchema(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert history message, skipping: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, schemaMsg)
+	}
+	return historyMessages
+}
+
+func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error) {
+	if kr.ChatHistorySetting == nil || !kr.ChatHistorySetting.EnableChatHistory {
+		return in, nil
+	}
+
+	var messages []*conversation.Message
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx != nil {
+		messages = execCtx.ExeCfg.ConversationHistory
+	}
+	if len(messages) == 0 {
+		return in, nil
+	}
+
+	count := 0
+	endIdx := 0
+	var historyMessages []any
+	for _, msg := range messages {
+		if count > int(kr.ChatHistorySetting.ChatHistoryRound) {
+			break
+		}
+		if msg.Role == einoSchema.User {
+			count++
+		}
+		endIdx++
+		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, map[string]any{
+			"role":    string(msg.Role),
+			"content": content,
+		})
+	}
+	ctxcache.Store(ctx, chatHistoryKey, messages[:endIdx])
+
+	ret := map[string]any{
+		"chatHistory": historyMessages,
+		"Query":       in["Query"],
+	}
+	return ret, nil
 }

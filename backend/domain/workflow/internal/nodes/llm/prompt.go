@@ -23,12 +23,16 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -38,12 +42,30 @@ type prompts struct {
 	mwi ModelWithInfo
 }
 
+type promptsWithChatHistory struct {
+	prompts *prompts
+	cfg     *vo.ChatHistorySetting
+}
+
+func withReservedKeys(keys []string) func(tpl *promptTpl) {
+	return func(tpl *promptTpl) {
+		tpl.reservedKeys = keys
+	}
+}
+
+func withAssociateUserInputFields(fs map[string]struct{}) func(tpl *promptTpl) {
+	return func(tpl *promptTpl) {
+		tpl.associateUserInputFields = fs
+	}
+}
+
 type promptTpl struct {
-	role          schema.RoleType
-	tpl           string
-	parts         []promptPart
-	hasMultiModal bool
-	reservedKeys  []string
+	role                     schema.RoleType
+	tpl                      string
+	parts                    []promptPart
+	hasMultiModal            bool
+	reservedKeys             []string
+	associateUserInputFields map[string]struct{}
 }
 
 type promptPart struct {
@@ -54,10 +76,18 @@ type promptPart struct {
 func newPromptTpl(role schema.RoleType,
 	tpl string,
 	inputTypes map[string]*vo.TypeInfo,
-	reservedKeys []string,
+	opts ...func(*promptTpl),
 ) *promptTpl {
 	if len(tpl) == 0 {
 		return nil
+	}
+
+	pTpl := &promptTpl{
+		role: role,
+		tpl:  tpl,
+	}
+	for _, opt := range opts {
+		opt(pTpl)
 	}
 
 	parts := nodes.ParseTemplate(tpl)
@@ -87,14 +117,10 @@ func newPromptTpl(role schema.RoleType,
 
 		hasMultiModal = true
 	}
+	pTpl.parts = promptParts
+	pTpl.hasMultiModal = hasMultiModal
 
-	return &promptTpl{
-		role:          role,
-		tpl:           tpl,
-		parts:         promptParts,
-		hasMultiModal: hasMultiModal,
-		reservedKeys:  reservedKeys,
-	}
+	return pTpl
 }
 
 const sourceKey = "sources_%s"
@@ -107,23 +133,53 @@ func newPrompts(sp, up *promptTpl, model ModelWithInfo) *prompts {
 	}
 }
 
+func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting) *promptsWithChatHistory {
+	return &promptsWithChatHistory{
+		prompts: prompts,
+		cfg:     cfg,
+	}
+}
+
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	sources map[string]*schema2.SourceInfo,
 	supportedModals map[modelmgr.Modal]bool,
 ) (*schema.Message, error) {
-	if !pl.hasMultiModal || len(supportedModals) == 0 {
-		var opts []nodes.RenderOption
-		if len(pl.reservedKeys) > 0 {
-			opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
+	isChatFlow := execute.GetExeCtx(ctx).ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
+	userMessage := execute.GetExeCtx(ctx).ExeCfg.UserMessage
+
+	if !isChatFlow {
+		if !pl.hasMultiModal || len(supportedModals) == 0 {
+			var opts []nodes.RenderOption
+			if len(pl.reservedKeys) > 0 {
+				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
+			}
+			r, err := nodes.Render(ctx, pl.tpl, vs, sources, opts...)
+			if err != nil {
+				return nil, err
+			}
+			return &schema.Message{
+				Role:    pl.role,
+				Content: r,
+			}, nil
 		}
-		r, err := nodes.Render(ctx, pl.tpl, vs, sources, opts...)
-		if err != nil {
-			return nil, err
+	} else {
+		if (!pl.hasMultiModal || len(supportedModals) == 0) &&
+			(len(pl.associateUserInputFields) == 0 ||
+				(len(pl.associateUserInputFields) > 0 && userMessage.MultiContent == nil)) {
+			var opts []nodes.RenderOption
+			if len(pl.reservedKeys) > 0 {
+				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
+			}
+			r, err := nodes.Render(ctx, pl.tpl, vs, sources, opts...)
+			if err != nil {
+				return nil, err
+			}
+			return &schema.Message{
+				Role:    pl.role,
+				Content: r,
+			}, nil
 		}
-		return &schema.Message{
-			Role:    pl.role,
-			Content: r,
-		}, nil
+
 	}
 
 	multiParts := make([]schema.ChatMessagePart, 0, len(pl.parts))
@@ -138,6 +194,13 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.part.Value,
 			})
+			continue
+		}
+
+		if _, ok := pl.associateUserInputFields[part.part.Value]; ok && userMessage != nil && isChatFlow {
+			for _, p := range userMessage.MultiContent {
+				multiParts = append(multiParts, p)
+			}
 			continue
 		}
 
@@ -287,4 +350,60 @@ func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Opt
 	}
 
 	return []*schema.Message{systemMsg, userMsg}, nil
+}
+
+func (p *promptsWithChatHistory) Format(ctx context.Context, vs map[string]any, _ ...prompt.Option) (
+	[]*schema.Message, error) {
+	baseMessages, err := p.prompts.Format(ctx, vs)
+	if err != nil {
+		return nil, err
+	}
+	if p.cfg == nil || !p.cfg.EnableChatHistory {
+		return baseMessages, nil
+	}
+
+	exeCtx := execute.GetExeCtx(ctx)
+	if exeCtx == nil {
+		logs.CtxWarnf(ctx, "execute context is nil, skipping chat history")
+		return baseMessages, nil
+	}
+
+	if exeCtx.ExeCfg.WorkflowMode != workflow.WorkflowMode_ChatFlow {
+		return baseMessages, nil
+	}
+
+	historyFromCtx, ok := ctxcache.Get[[]*conversation.Message](ctx, chatHistoryKey)
+	var messages []*conversation.Message
+	if ok {
+		messages = historyFromCtx
+	}
+
+	if len(messages) == 0 {
+		logs.CtxWarnf(ctx, "conversation history is empty")
+		return baseMessages, nil
+	}
+
+	historyMessages := make([]*schema.Message, 0, len(messages))
+	for _, msg := range messages {
+		schemaMsg, err := nodesconversation.ConvertMessageToSchema(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert history message, skipping: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, schemaMsg)
+	}
+
+	if len(historyMessages) == 0 {
+		return baseMessages, nil
+	}
+
+	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))
+	if len(baseMessages) > 0 && baseMessages[0].Role == schema.System {
+		finalMessages = append(finalMessages, baseMessages[0])
+		baseMessages = baseMessages[1:]
+	}
+	finalMessages = append(finalMessages, historyMessages...)
+	finalMessages = append(finalMessages, baseMessages...)
+
+	return finalMessages, nil
 }

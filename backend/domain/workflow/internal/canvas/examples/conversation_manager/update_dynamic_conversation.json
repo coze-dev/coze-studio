@@ -1,0 +1,262 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 13.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "new_name",
+            "required": true
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1560,
+          "y": 0.7000000000000028
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "obj",
+              "input": {
+                "value": {
+                  "type": "object_ref"
+                },
+                "type": "object",
+                "schema": [
+                  {
+                    "name": "isSuccess",
+                    "input": {
+                      "type": "boolean",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "193175",
+                          "name": "isSuccess"
+                        },
+                        "rawMeta": {
+                          "type": 3
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "name": "isExisted",
+                    "input": {
+                      "type": "boolean",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "193175",
+                          "name": "isExisted"
+                        },
+                        "rawMeta": {
+                          "type": 3
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "name": "conversationId",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "193175",
+                          "name": "conversationId"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "139551",
+      "type": "39",
+      "meta": {
+        "position": {
+          "x": 627.929589270746,
+          "y": -36.21123218776195
+        }
+      },
+      "data": {
+        "outputs": [
+          {
+            "type": "boolean",
+            "name": "isSuccess"
+          },
+          {
+            "type": "boolean",
+            "name": "isExisted"
+          },
+          {
+            "type": "string",
+            "name": "conversationId"
+          }
+        ],
+        "nodeMeta": {
+          "title": "创建会话",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+          "description": "用于创建会话",
+          "mainColor": "#F2B600",
+          "subTitle": "创建会话"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "conversationName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "193175",
+      "type": "51",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 0
+        }
+      },
+      "data": {
+        "outputs": [
+          {
+            "type": "boolean",
+            "name": "isSuccess"
+          },
+          {
+            "type": "boolean",
+            "name": "isExisted"
+          },
+          {
+            "type": "string",
+            "name": "conversationId"
+          }
+        ],
+        "nodeMeta": {
+          "title": "修改会话",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-编辑会话.jpg",
+          "description": "用于修改会话的名字",
+          "mainColor": "#F2B600",
+          "subTitle": "修改会话"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "conversationName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "newConversationName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "new_name"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "139551"
+    },
+    {
+      "sourceNodeID": "193175",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "139551",
+      "targetNodeID": "193175"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}
