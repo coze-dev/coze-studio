@@ -356,6 +356,8 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*schema.NodeSchem
 		return nil, err
 	}
 
+	subWorkflowSC.Init()
+
 	cfg := &subworkflow.Config{}
 
 	ns := &schema.NodeSchema{
@@ -365,6 +367,10 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*schema.NodeSchem
 		SubWorkflowBasic:  subWF.GetBasic(),
 		SubWorkflowSchema: subWorkflowSC,
 		Configs:           cfg,
+	}
+
+	ns.StreamConfigs = &schema.StreamConfig{
+		CanGeneratesStream: subWorkflowSC.RequireStreaming(),
 	}
 
 	workflowIDStr := n.Data.Inputs.WorkflowID

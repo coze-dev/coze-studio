@@ -567,9 +567,10 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		}
 	}
 
-	g := compose.NewGraph[map[string]any, map[string]any](compose.WithGenLocalState(func(ctx context.Context) (state llmState) {
-		return llmState{}
-	}))
+	g := compose.NewGraph[map[string]any, map[string]any](
+		compose.WithGenLocalState(func(ctx context.Context) (state llmState) {
+			return llmState{}
+		}))
 
 	var hasReasoning bool
 
@@ -864,6 +865,7 @@ type LLM struct {
 	requireCheckpoint  bool
 	fullSources        map[string]*schema2.SourceInfo
 	chatHistorySetting *vo.ChatHistorySetting
+	nodeKey           vo.NodeKey
 }
 
 const (
@@ -1030,7 +1032,11 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...nodes.NodeO
 			execute.WithParentStreamContainer(container))))
 	}
 
-	resolvedSources, err := nodes.ResolveStreamSources(ctx, l.fullSources)
+	var resolvedSources map[string]*schema2.SourceInfo
+	err = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(l.nodeKey)
+		return nil
+	})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -242,7 +242,6 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 }
 
 const (
-	resolvedSourcesCacheKey = "resolved_sources"
 	groupChoiceTypeCacheKey = "group_choice_type"
 	groupChoiceCacheKey     = "group_choice"
 )
@@ -252,9 +251,13 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 	_ *schema.StreamReader[map[string]any], err error) {
 	inStream := streamInputConverter(input)
 
-	resolvedSources, ok := ctxcache.Get[map[string]*schema2.SourceInfo](ctx, resolvedSourcesCacheKey)
-	if !ok {
-		panic("unable to get resolvesSources from ctx cache.")
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(v.nodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("variable aggregator can't get resolved sources")
 	}
 
 	groupToItems := make(map[string][]any)
@@ -548,9 +551,13 @@ type streamMarkerType string
 const streamMarker streamMarkerType = "<Stream Data...>"
 
 func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
-	resolvedSources, ok := ctxcache.Get[map[string]*schema2.SourceInfo](ctx, resolvedSourcesCacheKey)
-	if !ok {
-		panic("unable to get resolved_sources from ctx cache")
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(v.nodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("variable aggregator can't get resolved sources")
 	}
 
 	in, err := inputConverter(input)
@@ -713,16 +720,4 @@ func concatStreamMarkers(_ []streamMarkerType) (streamMarkerType, error) {
 func init() {
 	nodes.RegisterStreamChunkConcatFunc(concatVACallbackInputs)
 	nodes.RegisterStreamChunkConcatFunc(concatStreamMarkers)
-}
-
-func (v *VariableAggregator) Init(ctx context.Context) (context.Context, error) {
-	resolvedSources, err := nodes.ResolveStreamSources(ctx, v.fullSources)
-	if err != nil {
-		return nil, err
-	}
-
-	// need this info for callbacks.OnStart, so we put it in cache within Init()
-	ctxcache.Store(ctx, resolvedSourcesCacheKey, resolvedSources)
-
-	return ctx, nil
 }

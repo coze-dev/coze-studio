@@ -100,6 +100,7 @@ func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.Bui
 	return &emitter.OutputEmitter{
 		Template:    c.Template,
 		FullSources: ns.FullSources,
+		NodeKey:     ns.Key,
 	}, nil
 }
 

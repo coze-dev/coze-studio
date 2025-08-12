@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/cloudwego/eino/compose"
+
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -44,7 +46,7 @@ type Config struct {
 	Separators []string `json:"separator"`
 }
 
-func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
 		Key:     vo.NodeKey(n.ID),
 		Type:    entity.NodeTypeTextProcessor,
@@ -102,6 +104,7 @@ func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.Bui
 		concatChar:  c.ConcatChar,
 		separators:  c.Separators,
 		fullSources: ns.FullSources,
+		nodeKey:     ns.Key,
 	}, nil
 }
 
@@ -111,6 +114,7 @@ type TextProcessor struct {
 	concatChar  string
 	separators  []string
 	fullSources map[string]*schema.SourceInfo
+	nodeKey     vo.NodeKey
 }
 
 const OutputKey = "output"
@@ -123,7 +127,16 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 			return join(vs, t.concatChar)
 		}
 
-		result, err := nodes.Render(ctx, t.tpl, input, t.fullSources,
+		var resolvedSources map[string]*schema.SourceInfo
+		_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+			resolvedSources = state.GetFullSources(t.nodeKey)
+			return nil
+		})
+		if resolvedSources == nil {
+			return nil, fmt.Errorf("text processor can't get resolved sources")
+		}
+
+		result, err := nodes.Render(ctx, t.tpl, input, resolvedSources,
 			nodes.WithCustomRender(reflect.TypeOf([]any{}), arrayRenderer))
 		if err != nil {
 			return nil, err

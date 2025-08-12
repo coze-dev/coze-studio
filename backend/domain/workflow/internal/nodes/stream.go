@@ -32,10 +32,14 @@ type DynamicStreamContainer interface {
 	GetDynamicChoice(nodeKey vo.NodeKey) map[string]int
 	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema.FieldStreamType, error)
 	GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema.FieldStreamType, error)
+	GetSourceForPath(nodeKey vo.NodeKey, path compose.FieldPath) *schema.SourceInfo
+	GetFullSources(nodeKey vo.NodeKey) map[string]*schema.SourceInfo
 }
 
 // ResolveStreamSources resolves incoming field sources for a node, deciding their stream type.
-func ResolveStreamSources(ctx context.Context, sources map[string]*schema.SourceInfo) (map[string]*schema.SourceInfo, error) {
+func ResolveStreamSources(_ context.Context, sources map[string]*schema.SourceInfo,
+	streamContainer DynamicStreamContainer, nodeExecuted NodeExecuteStatusAware) (
+	map[string]*schema.SourceInfo, error) {
 	resolved := make(map[string]*schema.SourceInfo, len(sources))
 
 	nodeKey2Skipped := make(map[vo.NodeKey]bool)
@@ -71,10 +75,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*schema.Source
 
 		var skipped, ok bool
 		if skipped, ok = nodeKey2Skipped[sInfo.FromNodeKey]; !ok {
-			_ = compose.ProcessState(ctx, func(ctx context.Context, state NodeExecuteStatusAware) error {
-				skipped = !state.NodeExecuted(sInfo.FromNodeKey)
-				return nil
-			})
+			skipped = !nodeExecuted.NodeExecuted(sInfo.FromNodeKey)
 			nodeKey2Skipped[sInfo.FromNodeKey] = skipped
 		}
 
@@ -88,12 +89,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*schema.Source
 				panic("a maybe stream field should not have sub sources")
 			}
 
-			var streamType schema.FieldStreamType
-			err := compose.ProcessState(ctx, func(ctx context.Context, state DynamicStreamContainer) error {
-				var e error
-				streamType, e = state.GetDynamicStreamType(sInfo.FromNodeKey, sInfo.FromPath[0])
-				return e
-			})
+			streamType, err := streamContainer.GetDynamicStreamType(sInfo.FromNodeKey, sInfo.FromPath[0])
 			if err != nil {
 				return nil, err
 			}

@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -37,6 +38,7 @@ import (
 type OutputEmitter struct {
 	Template    string
 	FullSources map[string]*schema2.SourceInfo
+	NodeKey     vo.NodeKey
 }
 
 type Config struct {
@@ -96,6 +98,7 @@ func (c *Config) Build(_ context.Context, ns *schema2.NodeSchema, _ ...schema2.B
 	return &OutputEmitter{
 		Template:    c.Template,
 		FullSources: ns.FullSources,
+		NodeKey:     ns.Key,
 	}, nil
 }
 
@@ -364,9 +367,13 @@ func merge(a, b any) any {
 const outputKey = "output"
 
 func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[map[string]any], err error) {
-	resolvedSources, err := nodes.ResolveStreamSources(ctx, e.FullSources)
-	if err != nil {
-		return nil, err
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(e.NodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("output emitter can't get resolved sources")
 	}
 
 	sr, sw := schema.Pipe[map[string]any](0)
@@ -567,7 +574,16 @@ func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[m
 }
 
 func (e *OutputEmitter) Invoke(ctx context.Context, in map[string]any) (output map[string]any, err error) {
-	s, err := nodes.Render(ctx, e.Template, in, e.FullSources)
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(e.NodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("output emitter can't get resolved sources")
+	}
+
+	s, err := nodes.Render(ctx, e.Template, in, resolvedSources)
 	if err != nil {
 		return nil, err
 	}
