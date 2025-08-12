@@ -1281,6 +1281,100 @@ table "draft_database_info" {
     columns = [column.space_id, column.app_id, column.creator_id, column.deleted_at]
   }
 }
+table "files" {
+  schema  = schema.opencoze
+  comment = "file resource table"
+  collate = "utf8mb4_general_ci"
+  column "id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "id"
+  }
+  column "name" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "file name"
+  }
+  column "file_size" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "file size"
+  }
+  column "tos_uri" {
+    null    = false
+    type    = varchar(1024)
+    default = ""
+    comment = "TOS URI"
+  }
+  column "status" {
+    null     = false
+    type     = tinyint
+    default  = 0
+    unsigned = true
+    comment  = "status，0invalid，1valid"
+  }
+  column "comment" {
+    null    = false
+    type    = varchar(1024)
+    default = ""
+    comment = "file comment"
+  }
+  column "source" {
+    null     = false
+    type     = tinyint
+    default  = 0
+    unsigned = true
+    comment  = "source：1 from API,"
+  }
+  column "creator_id" {
+    null    = false
+    type    = varchar(512)
+    default = ""
+    comment = "creator id"
+  }
+  column "content_type" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "content type"
+  }
+  column "coze_account_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "coze account id"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
+  column "updated_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Update Time in Milliseconds"
+  }
+  column "deleted_at" {
+    null    = true
+    type    = datetime(3)
+    comment = "Delete Time"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_creator_id" {
+    columns = [column.creator_id]
+  }
+}
 table "knowledge" {
   schema  = schema.opencoze
   comment = "knowledge tabke"
