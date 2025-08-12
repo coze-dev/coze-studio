@@ -925,24 +925,21 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...nodes.NodeO
 	if c != nil {
 		resumingEvent = c.NodeCtx.ResumingEvent
 	}
-	var previousToolES map[string]*entity.ToolInterruptEvent
 
 	if c != nil && c.RootCtx.ResumeEvent != nil {
 		// check if we are not resuming, but previously interrupted. Interrupt immediately.
 		if resumingEvent == nil {
-			err = compose.ProcessState(ctx, func(ctx context.Context, state ToolInterruptEventStore) error {
-				var e error
-				previousToolES, e = state.GetToolInterruptEvents(c.NodeKey)
-				if e != nil {
-					return e
-				}
+			var previouslyInterrupted bool
+			err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
+				previousToolES := state.GetIntermediateResult(c.NodeKey)
+				previouslyInterrupted = len(previousToolES) > 0
 				return nil
 			})
 			if err != nil {
 				return
 			}
 
-			if len(previousToolES) > 0 {
+			if previouslyInterrupted {
 				err = compose.InterruptAndRerun
 				return
 			}
@@ -961,24 +958,24 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...nodes.NodeO
 	if resumingEvent != nil {
 		var (
 			resumeData string
-			e          error
-			allIEs     = make(map[string]*entity.ToolInterruptEvent)
+			allIEs     map[string]int64
 		)
-		err = compose.ProcessState(ctx, func(ctx context.Context, state ToolInterruptEventStore) error {
-			allIEs, e = state.GetToolInterruptEvents(c.NodeKey)
-			if e != nil {
-				return e
+
+		_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.IntermediateResultStore) error {
+			existingIEs := state.GetIntermediateResult(l.nodeKey)
+			allIEs = make(map[string]int64, len(existingIEs))
+			for toolCallID, exeID := range existingIEs {
+				allIEs[toolCallID] = exeID.(int64)
 			}
-
-			allIEs = maps.Clone(allIEs)
-
-			resumeData, e = state.ResumeToolInterruptEvent(c.NodeKey, resumingEvent.ToolInterruptEvent.ToolCallID)
-
-			return e
+			delete(existingIEs, resumingEvent.ToolInterruptEvent.ToolCallID)
+			state.SetIntermediateResult(l.nodeKey, existingIEs)
+			return nil
 		})
-		if err != nil {
-			return
-		}
+		_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
+			resumeData, _ = state.GetAndClearResumeData(c.NodeKey)
+			return nil
+		})
+
 		composeOpts = append(composeOpts, compose.WithToolsNodeOption(
 			compose.WithToolOption(
 				execute.WithResume(&entity.ResumeRequest{
@@ -1050,7 +1047,7 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...nodes.NodeO
 	return composeOpts, resumingEvent, nil
 }
 
-func handleInterrupt(ctx context.Context, err error, resumingEvent *entity.InterruptEvent) error {
+func (l *LLM) handleInterrupt(ctx context.Context, err error, resumingEvent *entity.InterruptEvent) error {
 	info, ok := compose.ExtractInterruptInfo(err)
 	if !ok {
 		return err
@@ -1114,18 +1111,20 @@ func handleInterrupt(ctx context.Context, err error, resumingEvent *entity.Inter
 		ie.ToolInterruptEvent = toolIEs[0]
 	}
 
-	err = compose.ProcessState(ctx, func(ctx context.Context, ieStore ToolInterruptEventStore) error {
-		for i := range toolIEs {
-			e := ieStore.SetToolInterruptEvent(c.NodeKey, toolIEs[i].ToolCallID, toolIEs[i])
-			if e != nil {
-				return e
+	callID2ExeID := make(map[string]any, len(toolIEs))
+	for i := range toolIEs {
+		callID2ExeID[toolIEs[i].ToolCallID] = toolIEs[i].ExecuteID
+	}
+	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
+		previous := state.GetIntermediateResult(l.nodeKey)
+		for k, v := range previous {
+			if _, ok := callID2ExeID[k]; !ok {
+				callID2ExeID[k] = v
 			}
 		}
+		state.SetIntermediateResult(l.nodeKey, callID2ExeID)
 		return nil
 	})
-	if err != nil {
-		return err
-	}
 
 	return compose.NewInterruptAndRerunErr(ie)
 }
@@ -1138,7 +1137,7 @@ func (l *LLM) Invoke(ctx context.Context, in map[string]any, opts ...nodes.NodeO
 
 	out, err = l.r.Invoke(ctx, in, composeOpts...)
 	if err != nil {
-		err = handleInterrupt(ctx, err, resumingEvent)
+		err = l.handleInterrupt(ctx, err, resumingEvent)
 		return nil, err
 	}
 
@@ -1153,7 +1152,7 @@ func (l *LLM) Stream(ctx context.Context, in map[string]any, opts ...nodes.NodeO
 
 	out, err = l.r.Stream(ctx, in, composeOpts...)
 	if err != nil {
-		err = handleInterrupt(ctx, err, resumingEvent)
+		err = l.handleInterrupt(ctx, err, resumingEvent)
 		return nil, err
 	}
 
@@ -1226,12 +1225,6 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 	_ = g.AddEdge(knowledgeTemplateKey, knowledgeChatModelKey)
 	_ = g.AddEdge(knowledgeChatModelKey, knowledgeLambdaKey)
 	return nil
-}
-
-type ToolInterruptEventStore interface {
-	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
-	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
-	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
 }
 
 func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {

@@ -43,8 +43,6 @@ type State struct {
 	Inputs               map[vo.NodeKey]map[string]any                 `json:"inputs,omitempty"`
 	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState     `json:"nested_workflow_states,omitempty"`
 
-	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
-
 	ResumeData         map[vo.NodeKey]string         `json:"resume_data,omitempty"`
 	IntermediateResult map[vo.NodeKey]map[string]any `json:"intermediate_result,omitempty"`
 }
@@ -222,28 +220,6 @@ func (s *State) GetFullSources(nodeKey vo.NodeKey) map[string]*schema2.SourceInf
 	return s.SourceInfos[nodeKey]
 }
 
-func (s *State) SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error {
-	if _, ok := s.ToolInterruptEvents[llmNodeKey]; !ok {
-		s.ToolInterruptEvents[llmNodeKey] = make(map[string]*entity.ToolInterruptEvent)
-	}
-	s.ToolInterruptEvents[llmNodeKey][toolCallID] = ie
-	return nil
-}
-
-func (s *State) GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error) {
-	return s.ToolInterruptEvents[llmNodeKey], nil
-}
-
-func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error) {
-	resumeData, ok := s.ResumeData[llmNodeKey]
-	if !ok {
-		return "", fmt.Errorf("resume data not found for llm node %s", llmNodeKey)
-	}
-	delete(s.ToolInterruptEvents[llmNodeKey], toolCallID)
-	delete(s.ResumeData, llmNodeKey)
-	return resumeData, nil
-}
-
 func (s *State) NodeExecuted(key vo.NodeKey) bool {
 	if key == compose.START {
 		return true
@@ -278,7 +254,6 @@ func GenState() compose.GenLocalState[*State] {
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 			ExecutedNodes:        make(map[vo.NodeKey]bool),
 			SourceInfos:          make(map[vo.NodeKey]map[string]*schema2.SourceInfo),
-			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			ResumeData:           make(map[vo.NodeKey]string),
 			IntermediateResult:   make(map[vo.NodeKey]map[string]any),
 		}

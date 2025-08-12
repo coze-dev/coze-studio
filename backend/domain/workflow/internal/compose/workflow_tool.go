@@ -144,7 +144,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	for interruptedCallID := range allIEs {
 		if callID == interruptedCallID {
 			previouslyInterrupted = true
-			previousExecuteID = allIEs[interruptedCallID].ExecuteID
+			previousExecuteID = allIEs[interruptedCallID]
 			break
 		}
 	}
@@ -286,7 +286,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	for interruptedCallID := range allIEs {
 		if callID == interruptedCallID {
 			previouslyInterrupted = true
-			previousExecuteID = allIEs[interruptedCallID].ExecuteID
+			previousExecuteID = allIEs[interruptedCallID]
 			break
 		}
 	}

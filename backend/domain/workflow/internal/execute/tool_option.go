@@ -26,16 +26,16 @@ import (
 )
 
 type workflowToolOption struct {
-	resumeReq          *entity.ResumeRequest
-	streamContainer    *StreamContainer
-	exeCfg             workflowModel.ExecuteConfig
-	allInterruptEvents map[string]*entity.ToolInterruptEvent
+	resumeReq            *entity.ResumeRequest
+	streamContainer      *StreamContainer
+	exeCfg               workflowModel.ExecuteConfig
+	toolCallID2ExecuteID map[string]int64
 }
 
-func WithResume(req *entity.ResumeRequest, all map[string]*entity.ToolInterruptEvent) tool.Option {
+func WithResume(req *entity.ResumeRequest, all map[string]int64) tool.Option {
 	return tool.WrapImplSpecificOptFn(func(opts *workflowToolOption) {
 		opts.resumeReq = req
-		opts.allInterruptEvents = all
+		opts.toolCallID2ExecuteID = all
 	})
 }
 
@@ -51,9 +51,9 @@ func WithExecuteConfig(cfg workflowModel.ExecuteConfig) tool.Option {
 	})
 }
 
-func GetResumeRequest(opts ...tool.Option) (*entity.ResumeRequest, map[string]*entity.ToolInterruptEvent) {
+func GetResumeRequest(opts ...tool.Option) (*entity.ResumeRequest, map[string]int64) {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
-	return opt.resumeReq, opt.allInterruptEvents
+	return opt.resumeReq, opt.toolCallID2ExecuteID
 }
 
 func GetParentStreamContainer(opts ...tool.Option) *StreamContainer {

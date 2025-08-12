@@ -43,13 +43,17 @@ func (a *asToolImpl) WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoComp
 
 func (a *asToolImpl) WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
 	allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option {
+	toolCallID2ExeID := make(map[string]int64, len(allInterruptEvents))
+	for callID, event := range allInterruptEvents {
+		toolCallID2ExeID[callID] = event.ExecuteID
+	}
 	return einoCompose.WithToolsNodeOption(
 		einoCompose.WithToolOption(
 			execute.WithResume(&entity.ResumeRequest{
 				ExecuteID:  resumingEvent.ExecuteID,
 				EventID:    resumingEvent.ID,
 				ResumeData: resumeData,
-			}, allInterruptEvents)))
+			}, toolCallID2ExeID)))
 }
 
 func (a *asToolImpl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) (tools []workflow.ToolFromWorkflow, err error) {
