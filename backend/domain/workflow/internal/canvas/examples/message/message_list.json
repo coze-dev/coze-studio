@@ -1,0 +1,310 @@
+{
+	"nodes": [{
+		"blocks": [],
+		"data": {
+			"nodeMeta": {
+				"description": "工作流的起始节点，用于设定启动工作流需要的信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+				"subTitle": "",
+				"title": "开始"
+			},
+			"outputs": [{
+				"name": "USER_INPUT",
+				"required": false,
+				"type": "string"
+			}, {
+				"defaultValue": "Default",
+				"description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+				"name": "CONVERSATION_NAME",
+				"required": false,
+				"type": "string"
+			}],
+			"trigger_parameters": []
+		},
+		"edges": null,
+		"id": "100001",
+		"meta": {
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		"type": "1"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"schema": {
+							"schema": [{
+								"name": "messageId",
+								"type": "string"
+							}, {
+								"name": "role",
+								"type": "string"
+							}, {
+								"name": "contentType",
+								"type": "string"
+							}, {
+								"name": "content",
+								"type": "string"
+							}],
+							"type": "object"
+						},
+						"type": "list",
+						"value": {
+							"content": {
+								"blockID": "132703",
+								"name": "messageList",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 103
+							},
+							"type": "ref"
+						}
+					},
+					"name": "output"
+				}],
+				"terminatePlan": "returnVariables"
+			},
+			"nodeMeta": {
+				"description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+				"subTitle": "",
+				"title": "结束"
+			}
+		},
+		"edges": null,
+		"id": "900001",
+		"meta": {
+			"position": {
+				"x": 1000,
+				"y": 0
+			}
+		},
+		"type": "2"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "CONVERSATION_NAME",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "conversationName"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于查询消息列表",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
+				"mainColor": "#F2B600",
+				"subTitle": "查询消息列表",
+				"title": "查询消息列表"
+			},
+			"outputs": [{
+				"name": "messageList",
+				"schema": {
+					"schema": [{
+						"name": "messageId",
+						"type": "string"
+					}, {
+						"name": "role",
+						"type": "string"
+					}, {
+						"name": "contentType",
+						"type": "string"
+					}, {
+						"name": "content",
+						"type": "string"
+					}],
+					"type": "object"
+				},
+				"type": "list"
+			}, {
+				"name": "firstId",
+				"type": "string"
+			}, {
+				"name": "lastId",
+				"type": "string"
+			}, {
+				"name": "hasMore",
+				"type": "boolean"
+			}]
+		},
+		"edges": null,
+		"id": "132703",
+		"meta": {
+			"position": {
+				"x": 514,
+				"y": 96
+			}
+		},
+		"type": "37"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "CONVERSATION_NAME",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "conversationName"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于创建会话",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+				"mainColor": "#F2B600",
+				"subTitle": "创建会话",
+				"title": "创建会话"
+			},
+			"outputs": [{
+				"name": "isSuccess",
+				"type": "boolean"
+			}, {
+				"name": "isExisted",
+				"type": "boolean"
+			}, {
+				"name": "conversationId",
+				"type": "string"
+			}]
+		},
+		"edges": null,
+		"id": "166724",
+		"meta": {
+			"position": {
+				"x": 323,
+				"y": -332
+			}
+		},
+		"type": "39"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "CONVERSATION_NAME",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "conversationName"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": "user",
+							"type": "literal"
+						}
+					},
+					"name": "role"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "USER_INPUT",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "content"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于创建消息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-创建消息.jpg",
+				"mainColor": "#F2B600",
+				"subTitle": "创建消息",
+				"title": "创建消息"
+			},
+			"outputs": [{
+				"name": "isSuccess",
+				"type": "boolean"
+			}, {
+				"name": "message",
+				"schema": [{
+					"name": "messageId",
+					"type": "string"
+				}, {
+					"name": "role",
+					"type": "string"
+				}, {
+					"name": "contentType",
+					"type": "string"
+				}, {
+					"name": "content",
+					"type": "string"
+				}],
+				"type": "object"
+			}]
+		},
+		"edges": null,
+		"id": "157061",
+		"meta": {
+			"position": {
+				"x": 479,
+				"y": -127
+			}
+		},
+		"type": "55"
+	}],
+	"edges": [{
+		"sourceNodeID": "100001",
+		"targetNodeID": "166724",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "132703",
+		"targetNodeID": "900001",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "157061",
+		"targetNodeID": "132703",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "166724",
+		"targetNodeID": "157061",
+		"sourcePortID": ""
+	}],
+	"versions": {
+		"loop": "v2"
+	}
+}
