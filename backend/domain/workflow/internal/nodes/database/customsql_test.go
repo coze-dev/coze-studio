@@ -24,8 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database/databasemock"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
@@ -78,10 +79,9 @@ func TestCustomSQL_Execute(t *testing.T) {
 		},
 	}).Build().UnPatch()
 
-	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+	mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 	mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).DoAndReturn(mockSQLer.Execute()).AnyTimes()
-
-	defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+	crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 	cfg := &CustomSQLConfig{
 		DatabaseInfoID: 111,

@@ -25,9 +25,8 @@ import (
 	"strings"
 	"time"
 
-	xmaps "golang.org/x/exp/maps"
-
 	"github.com/cloudwego/eino/schema"
+	xmaps "golang.org/x/exp/maps"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"

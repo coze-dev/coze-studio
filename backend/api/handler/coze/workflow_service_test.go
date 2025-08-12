@@ -59,7 +59,10 @@ import (
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	plugin3 "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/plugin"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
@@ -67,9 +70,6 @@ import (
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database/databasemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
@@ -122,7 +122,7 @@ type wfTestRunner struct {
 	plugin        *mockPlugin.MockPluginService
 	tos           *storageMock.MockStorage
 	knowledge     *knowledgemock.MockKnowledgeOperator
-	database      *databasemock.MockDatabaseOperator
+	database      *databasemock.MockDatabase
 	pluginSrv     *pluginmock.MockService
 	internalModel *testutil.UTChatModel
 	ctx           context.Context
@@ -291,8 +291,8 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	m4 := mockey.Mock(ctxutil.MustGetUIDFromCtx).Return(int64(1)).Build()
 	m5 := mockey.Mock(ctxutil.GetUIDFromCtx).Return(ptr.Of(int64(1))).Build()
 
-	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
-	database.SetDatabaseOperator(mockDatabaseOperator)
+	mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
+	crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 	mockPluginSrv := pluginmock.NewMockService(ctrl)
 	plugin.SetPluginService(mockPluginSrv)

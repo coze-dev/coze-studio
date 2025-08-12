@@ -24,7 +24,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -85,18 +86,16 @@ func (c *CustomSQLConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...s
 	}
 
 	return &CustomSQL{
-		databaseInfoID:    c.DatabaseInfoID,
-		sqlTemplate:       c.SQLTemplate,
-		outputTypes:       ns.OutputTypes,
-		customSQLExecutor: database.GetDatabaseOperator(),
+		databaseInfoID: c.DatabaseInfoID,
+		sqlTemplate:    c.SQLTemplate,
+		outputTypes:    ns.OutputTypes,
 	}, nil
 }
 
 type CustomSQL struct {
-	databaseInfoID    int64
-	sqlTemplate       string
-	outputTypes       map[string]*vo.TypeInfo
-	customSQLExecutor database.DatabaseOperator
+	databaseInfoID int64
+	sqlTemplate    string
+	outputTypes    map[string]*vo.TypeInfo
 }
 
 func (c *CustomSQL) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -155,7 +154,7 @@ func (c *CustomSQL) Invoke(ctx context.Context, input map[string]any) (map[strin
 	templateSQL = strings.Replace(templateSQL, "`?`", "?", -1)
 	req.SQL = templateSQL
 	req.Params = sqlParams
-	response, err := c.customSQLExecutor.Execute(ctx, req)
+	response, err := crossdatabase.DefaultSVC().Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}

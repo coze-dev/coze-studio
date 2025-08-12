@@ -126,7 +126,6 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
-
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))

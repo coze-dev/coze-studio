@@ -22,7 +22,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -89,7 +90,6 @@ func (u *UpdateConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...sche
 		databaseInfoID: u.DatabaseInfoID,
 		clauseGroup:    u.ClauseGroup,
 		outputTypes:    ns.OutputTypes,
-		updater:        database.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -97,7 +97,6 @@ type Update struct {
 	databaseInfoID int64
 	clauseGroup    *database.ClauseGroup
 	outputTypes    map[string]*vo.TypeInfo
-	updater        database.DatabaseOperator
 }
 
 type updateInventory struct {
@@ -126,7 +125,7 @@ func (u *Update) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 		ConnectorID:    getConnectorID(ctx),
 	}
 
-	response, err := u.updater.Update(ctx, req)
+	response, err := crossdatabase.DefaultSVC().Update(ctx, req)
 
 	if err != nil {
 		return nil, err
