@@ -202,7 +202,7 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 	}
 
 	result := make(map[string]any)
-	groupToChoice := make(map[string]int)
+	groupToChoice := make(map[string]any)
 	for group, length := range v.groupLen {
 		for i := 0; i < length; i++ {
 			if value, ok := in[group][i]; ok {
@@ -215,12 +215,12 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 		}
 
 		if _, ok := result[group]; !ok {
-			groupToChoice[group] = -1
+			groupToChoice[group] = int64(-1)
 		}
 	}
 
-	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-		state.SaveDynamicChoice(v.nodeKey, groupToChoice)
+	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
+		state.SetIntermediateResult(v.nodeKey, groupToChoice)
 		return nil
 	})
 
@@ -261,7 +261,7 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 	}
 
 	groupToItems := make(map[string][]any)
-	groupToChoice := make(map[string]int)
+	groupToChoice := make(map[string]any)
 	type skipped struct{}
 	type null struct{}
 	type stream struct{}
@@ -270,8 +270,8 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 		if err == nil {
 			groupChoiceToStreamType := map[string]schema2.FieldStreamType{}
 			for group, choice := range groupToChoice {
-				if choice != -1 {
-					item := groupToItems[group][choice]
+				if choice != int64(-1) {
+					item := groupToItems[group][choice.(int64)]
 					if _, ok := item.(stream); ok {
 						groupChoiceToStreamType[group] = schema2.FieldIsStream
 					}
@@ -281,7 +281,7 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 			groupChoices := make([]any, 0, len(v.groupOrder))
 			for _, group := range v.groupOrder {
 				choice := groupToChoice[group]
-				if choice == -1 {
+				if choice == int64(-1) {
 					groupChoices = append(groupChoices, nil)
 				} else {
 					groupChoices = append(groupChoices, choice)
@@ -330,13 +330,13 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 
 			_, ok := groupToItems[group][i].(stream)
 			if ok { // if none of the elements before this one is none-stream, pick this first stream
-				groupToChoice[group] = i
+				groupToChoice[group] = int64(i)
 				break
 			}
 		}
 
 		if _, ok := groupToChoice[group]; !ok && !hasUndecided {
-			groupToChoice[group] = -1 // all of this group's elements are skipped, won't have any non-nil ones
+			groupToChoice[group] = int64(-1) // all of this group's elements are skipped, won't have any non-nil ones
 		}
 	}
 
@@ -357,7 +357,7 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 		allSkip := true
 		for group := range groupToChoice {
 			choice := groupToChoice[group]
-			if choice == -1 {
+			if choice == int64(-1) {
 				result[group] = nil // all elements of this group are skipped
 			} else {
 				result[group] = choice
@@ -366,8 +366,8 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 		}
 
 		if allSkip { // no need to convert input streams for the output, because all groups are skipped
-			_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-				state.SaveDynamicChoice(v.nodeKey, groupToChoice)
+			_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
+				state.SetIntermediateResult(v.nodeKey, groupToChoice)
 				return nil
 			})
 			return schema.StreamReaderFromArray([]map[string]any{result}), nil
@@ -442,7 +442,7 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 										continue
 									}
 
-									groupToChoice[group] = j
+									groupToChoice[group] = int64(j)
 									foundNonNil = true
 									break
 								} else {
@@ -451,10 +451,10 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 								}
 							}
 							if !foundNonNil && !hasUndecided {
-								groupToChoice[group] = -1 // this group does not have any non-nil value
+								groupToChoice[group] = int64(-1) // this group does not have any non-nil value
 							}
 						} else {
-							groupToChoice[group] = i
+							groupToChoice[group] = int64(i)
 						}
 						if allDone() {
 							break recvLoop
@@ -465,8 +465,8 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 		}
 	}
 
-	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-		state.SaveDynamicChoice(v.nodeKey, groupToChoice)
+	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
+		state.SetIntermediateResult(v.nodeKey, groupToChoice)
 		return nil
 	})
 
@@ -478,12 +478,12 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 				panic(fmt.Sprintf("group %s does not have choice", group))
 			}
 
-			if choice < 0 {
+			if choice.(int64) < 0 {
 				panic(fmt.Sprintf("group %s choice = %d, less than zero, but found actual item in stream", group, choice))
 			}
 
-			if _, ok := items[choice]; ok {
-				out[group] = items[choice]
+			if _, ok := items[int(choice.(int64))]; ok {
+				out[group] = items[int(choice.(int64))]
 			}
 		}
 
@@ -496,7 +496,7 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 
 	nullGroups := make(map[string]any)
 	for group, choice := range groupToChoice {
-		if choice < 0 {
+		if choice.(int64) < 0 {
 			nullGroups[group] = nil
 		}
 	}

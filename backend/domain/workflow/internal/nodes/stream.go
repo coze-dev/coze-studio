@@ -28,8 +28,6 @@ import (
 var KeyIsFinished = "\x1FKey is finished\x1F"
 
 type DynamicStreamContainer interface {
-	SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int)
-	GetDynamicChoice(nodeKey vo.NodeKey) map[string]int
 	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema.FieldStreamType, error)
 	GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema.FieldStreamType, error)
 	GetSourceForPath(nodeKey vo.NodeKey, path compose.FieldPath) *schema.SourceInfo

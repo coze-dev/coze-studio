@@ -19,7 +19,6 @@ package compose
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/components/model"
@@ -45,7 +44,6 @@ type State struct {
 
 	ExecutedNodes map[vo.NodeKey]bool                           `json:"executed_nodes,omitempty"`
 	SourceInfos   map[vo.NodeKey]map[string]*schema2.SourceInfo `json:"source_infos,omitempty"`
-	GroupChoices  map[vo.NodeKey]map[string]int                 `json:"group_choices,omitempty"`
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 
@@ -148,16 +146,8 @@ func (s *State) SaveNestedWorkflowState(key vo.NodeKey, value *nodes.NestedWorkf
 	return nil
 }
 
-func (s *State) SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int) {
-	s.GroupChoices[nodeKey] = groupToChoice
-}
-
-func (s *State) GetDynamicChoice(nodeKey vo.NodeKey) map[string]int {
-	return s.GroupChoices[nodeKey]
-}
-
 func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.FieldStreamType, error) {
-	choices, ok := s.GroupChoices[nodeKey]
+	choices, ok := s.IntermediateResult[nodeKey]
 	if !ok {
 		return schema2.FieldMaybeStream, fmt.Errorf("choice not found for node %s", nodeKey)
 	}
@@ -167,7 +157,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 		return schema2.FieldMaybeStream, fmt.Errorf("choice not found for node %s and group %s", nodeKey, group)
 	}
 
-	if choice == -1 { // this group picks none of the elements
+	if choice == int64(-1) { // this group picks none of the elements
 		return schema2.FieldNotStream, nil
 	}
 
@@ -185,7 +175,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 		return schema2.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain any sub sources", group, nodeKey)
 	}
 
-	subInfo, ok := groupInfo.SubSources[strconv.Itoa(choice)]
+	subInfo, ok := groupInfo.SubSources[fmt.Sprintf("%v", choice)]
 	if !ok {
 		return schema2.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain sub source for choice %d", group, nodeKey, choice)
 	}
@@ -207,7 +197,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 
 func (s *State) GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema2.FieldStreamType, error) {
 	result := make(map[string]schema2.FieldStreamType)
-	choices, ok := s.GroupChoices[nodeKey]
+	choices, ok := s.IntermediateResult[nodeKey]
 	if !ok {
 		return result, nil
 	}
@@ -309,7 +299,6 @@ func GenState() compose.GenLocalState[*State] {
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 			ExecutedNodes:        make(map[vo.NodeKey]bool),
 			SourceInfos:          make(map[vo.NodeKey]map[string]*schema2.SourceInfo),
-			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			ResumeData:           make(map[vo.NodeKey]string),
 			IntermediateResult:   make(map[vo.NodeKey]map[string]any),
@@ -783,7 +772,7 @@ func streamStatePostHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePos
 	}
 }
 
-func GenStateModifierByEventType(e entity.InterruptEventType,
+func GenStateModifierByEventType(_ entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string,
 	_ workflowModel.ExecuteConfig) (stateModifier compose.StateModifier) {

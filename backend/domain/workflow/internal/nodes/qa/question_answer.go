@@ -620,8 +620,11 @@ func (q *QuestionAnswer) extractCurrentState(ctx context.Context) (
 		resumeData         string
 		resumed            bool
 	)
-	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.InterruptEventStore) error {
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.IntermediateResultStore) error {
 		intermediateResult = state.GetIntermediateResult(q.nodeKey)
+		return nil
+	})
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.InterruptEventStore) error {
 		resumeData, resumed = state.GetAndClearResumeData(q.nodeKey)
 		return nil
 	})
@@ -640,7 +643,7 @@ func (q *QuestionAnswer) extractCurrentState(ctx context.Context) (
 		aResult = answers.([]string)
 		if resumed {
 			newAnswers := append(slices.Clone(aResult), resumeData)
-			_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.InterruptEventStore) error {
+			_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.IntermediateResultStore) error {
 				state.SetIntermediateResult(q.nodeKey, map[string]any{
 					QuestionsKey: questions,
 					AnswersKey:   newAnswers,
@@ -740,7 +743,7 @@ func (q *QuestionAnswer) interrupt(ctx context.Context, newQuestion string, choi
 			ChoicesKey:  choices,
 		})
 
-	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
+	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.IntermediateResultStore) error {
 		state.SetIntermediateResult(q.nodeKey, intermediateResult)
 		return nil
 	})
