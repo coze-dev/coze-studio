@@ -19,7 +19,7 @@ package knowledge
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 )
 
 func convertParsingType(p string) (knowledge.ParseMode, error) {
@@ -52,6 +52,6 @@ func convertRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 	case 20:
 		return knowledge.SearchTypeFullText, nil
 	default:
-		return "", fmt.Errorf("invalid RetrievalSearchType %v", s)
+		return 0, fmt.Errorf("invalid RetrievalSearchType %v", s)
 	}
 }

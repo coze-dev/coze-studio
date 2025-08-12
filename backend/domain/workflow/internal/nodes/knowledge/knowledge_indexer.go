@@ -26,7 +26,8 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -109,7 +110,6 @@ func (i *IndexerConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...sche
 		knowledgeID:      i.KnowledgeID,
 		parsingStrategy:  i.ParsingStrategy,
 		chunkingStrategy: i.ChunkingStrategy,
-		knowledgeIndexer: knowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
@@ -117,7 +117,6 @@ type Indexer struct {
 	knowledgeID      int64
 	parsingStrategy  *knowledge.ParsingStrategy
 	chunkingStrategy *knowledge.ChunkingStrategy
-	knowledgeIndexer knowledge.KnowledgeOperator
 }
 
 func (k *Indexer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -141,7 +140,7 @@ func (k *Indexer) Invoke(ctx context.Context, input map[string]any) (map[string]
 		FileExtension:    ext,
 	}
 
-	response, err := k.knowledgeIndexer.Store(ctx, req)
+	response, err := crossknowledge.DefaultSVC().Store(ctx, req)
 	if err != nil {
 		return nil, err
 	}

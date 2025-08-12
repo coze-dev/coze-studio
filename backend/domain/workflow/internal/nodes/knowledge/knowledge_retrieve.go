@@ -22,7 +22,8 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -155,14 +156,12 @@ func (r *RetrieveConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...sch
 	return &Retrieve{
 		knowledgeIDs:      r.KnowledgeIDs,
 		retrievalStrategy: r.RetrievalStrategy,
-		retriever:         knowledge.GetKnowledgeOperator(),
 	}, nil
 }
 
 type Retrieve struct {
 	knowledgeIDs      []int64
 	retrievalStrategy *knowledge.RetrievalStrategy
-	retriever         knowledge.KnowledgeOperator
 }
 
 func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -172,20 +171,20 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 	}
 
 	req := &knowledge.RetrieveRequest{
-		Query:             query,
-		KnowledgeIDs:      kr.knowledgeIDs,
-		RetrievalStrategy: kr.retrievalStrategy,
+		Query:        query,
+		KnowledgeIDs: kr.knowledgeIDs,
+		Strategy:     kr.retrievalStrategy,
 	}
 
-	response, err := kr.retriever.Retrieve(ctx, req)
+	response, err := crossknowledge.DefaultSVC().Retrieve(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	result := make(map[string]any)
-	result[outputList] = slices.Transform(response.Slices, func(m *knowledge.Slice) any {
+	result[outputList] = slices.Transform(response.RetrieveSlices, func(m *knowledge.RetrieveSlice) any {
 		return map[string]any{
-			"documentId": m.DocumentID,
-			"output":     m.Output,
+			"documentId": m.Slice.DocumentID,
+			"output":     m.Slice.GetSliceContent(),
 		}
 	})
 
