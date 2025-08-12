@@ -32,13 +32,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
-
+	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database/databasemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
@@ -50,6 +49,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	mockWorkflow "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow"
 	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
 	"github.com/coze-dev/coze-studio/backend/internal/testutil"
@@ -105,10 +105,10 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		}
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
-		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+		mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 		n := int64(2)
-		resp := &crossdatabase.Response{
-			Objects: []crossdatabase.Object{
+		resp := &crossmodel.Response{
+			Objects: []crossmodel.Object{
 				{
 					"v2": "123",
 				},
@@ -119,7 +119,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			RowNumber: &n,
 		}
 		mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(resp, nil).AnyTimes()
-		mockey.Mock(crossdatabase.GetDatabaseOperator).Return(mockDatabaseOperator).Build()
+		crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
@@ -144,44 +144,44 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 	})
 }
 
-func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
-	return func(ctx context.Context, req *crossdatabase.UpdateRequest) (*crossdatabase.Response, error) {
-		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+func mockUpdate(t *testing.T) func(context.Context, *crossmodel.UpdateRequest) (*crossmodel.Response, error) {
+	return func(ctx context.Context, req *crossmodel.UpdateRequest) (*crossmodel.Response, error) {
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossmodel.ConditionStr{
 			Left:     "v2",
 			Operator: "=",
 			Right:    int64(1),
 		})
 
-		assert.Equal(t, req.ConditionGroup.Conditions[1], &crossdatabase.Condition{
+		assert.Equal(t, req.ConditionGroup.Conditions[1], &crossmodel.ConditionStr{
 			Left:     "v1",
 			Operator: "=",
 			Right:    "abc",
 		})
-		assert.Equal(t, req.ConditionGroup.Relation, crossdatabase.ClauseRelationAND)
+		assert.Equal(t, req.ConditionGroup.Relation, crossmodel.ClauseRelationAND)
 		assert.Equal(t, req.Fields, map[string]interface{}{
 			"1783392627713": int64(123),
 		})
 
-		return &crossdatabase.Response{}, nil
+		return &crossmodel.Response{}, nil
 	}
 }
 
-func mockInsert(t *testing.T) func(ctx context.Context, request *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
-	return func(ctx context.Context, req *crossdatabase.InsertRequest) (*crossdatabase.Response, error) {
+func mockInsert(t *testing.T) func(ctx context.Context, request *crossmodel.InsertRequest) (*crossmodel.Response, error) {
+	return func(ctx context.Context, req *crossmodel.InsertRequest) (*crossmodel.Response, error) {
 		v := req.Fields["1785960530945"]
 		assert.Equal(t, v, int64(123))
 		vs := req.Fields["1783122026497"]
 		assert.Equal(t, vs, "input for database curd")
 		n := int64(10)
-		return &crossdatabase.Response{
+		return &crossmodel.Response{
 			RowNumber: &n,
 		}, nil
 	}
 }
 
-func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
-	return func(ctx context.Context, req *crossdatabase.QueryRequest) (*crossdatabase.Response, error) {
-		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+func mockQuery(t *testing.T) func(ctx context.Context, request *crossmodel.QueryRequest) (*crossmodel.Response, error) {
+	return func(ctx context.Context, req *crossmodel.QueryRequest) (*crossmodel.Response, error) {
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossmodel.ConditionStr{
 			Left:     "v1",
 			Operator: "=",
 			Right:    "abc",
@@ -191,26 +191,26 @@ func mockQuery(t *testing.T) func(ctx context.Context, request *crossdatabase.Qu
 			"1783122026497", "1784288924673", "1783392627713",
 		})
 		n := int64(10)
-		return &crossdatabase.Response{
+		return &crossmodel.Response{
 			RowNumber: &n,
-			Objects: []crossdatabase.Object{
+			Objects: []crossmodel.Object{
 				{"v1": "vv"},
 			},
 		}, nil
 	}
 }
 
-func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
-	return func(ctx context.Context, req *crossdatabase.DeleteRequest) (*crossdatabase.Response, error) {
+func mockDelete(t *testing.T) func(context.Context, *crossmodel.DeleteRequest) (*crossmodel.Response, error) {
+	return func(ctx context.Context, req *crossmodel.DeleteRequest) (*crossmodel.Response, error) {
 		nn := int64(10)
-		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
+		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossmodel.ConditionStr{
 			Left:     "v2",
 			Operator: "=",
 			Right:    nn,
 		})
 
 		n := int64(1)
-		return &crossdatabase.Response{
+		return &crossmodel.Response{
 			RowNumber: &n,
 		}, nil
 	}
@@ -228,8 +228,8 @@ func TestDatabaseCURD(t *testing.T) {
 		_ = ctx
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
-		mockey.Mock(crossdatabase.GetDatabaseOperator).Return(mockDatabaseOperator).Build()
+		mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
+		mockey.Mock(crossdatabase.DefaultSVC).Return(mockDatabaseOperator).Build()
 		mockDatabaseOperator.EXPECT().Query(gomock.Any(), gomock.Any()).DoAndReturn(mockQuery(t))
 		mockDatabaseOperator.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(mockUpdate(t))
 		mockDatabaseOperator.EXPECT().Insert(gomock.Any(), gomock.Any()).DoAndReturn(mockInsert(t))

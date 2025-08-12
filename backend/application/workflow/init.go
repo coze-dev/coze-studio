@@ -19,14 +19,12 @@ package workflow
 import (
 	"context"
 
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
-	"github.com/cloudwego/eino/callbacks"
-
 	"github.com/coze-dev/coze-studio/backend/application/internal"
-
-	wfdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	wfknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/knowledge"
 	wfmodel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	wfplugin "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/plugin"
@@ -38,8 +36,6 @@ import (
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	crosscode "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
 	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	crossplugin "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
@@ -88,13 +84,12 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
-	crossdatabase.SetDatabaseOperator(wfdatabase.NewDatabaseRepository(components.DatabaseDomainSVC))
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
 	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
 	crossplugin.SetPluginService(wfplugin.NewPluginService(components.PluginDomainSVC, components.Tos))
 	crossknowledge.SetKnowledgeOperator(wfknowledge.NewKnowledgeRepository(components.KnowledgeDomainSVC, components.IDGen))
 	crossmodel.SetManager(wfmodel.NewModelManager(components.ModelManager, nil))
-	crosscode.SetCodeRunner(components.CodeRunner)
+	code.SetCodeRunner(components.CodeRunner)
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
 

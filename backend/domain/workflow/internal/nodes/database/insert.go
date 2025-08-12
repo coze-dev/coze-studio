@@ -22,7 +22,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -73,14 +74,12 @@ func (i *InsertConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...sche
 	return &Insert{
 		databaseInfoID: i.DatabaseInfoID,
 		outputTypes:    ns.OutputTypes,
-		inserter:       database.GetDatabaseOperator(),
 	}, nil
 }
 
 type Insert struct {
 	databaseInfoID int64
 	outputTypes    map[string]*vo.TypeInfo
-	inserter       database.DatabaseOperator
 }
 
 func (is *Insert) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -93,7 +92,7 @@ func (is *Insert) Invoke(ctx context.Context, input map[string]any) (map[string]
 		ConnectorID:    getConnectorID(ctx),
 	}
 
-	response, err := is.inserter.Insert(ctx, req)
+	response, err := crossdatabase.DefaultSVC().Insert(ctx, req)
 	if err != nil {
 		return nil, err
 	}
