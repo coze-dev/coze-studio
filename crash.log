@@ -1,0 +1,5 @@
+panic: loadEnv failed, err=load env file(.env) failed, err=open .env: no such file or directory
+
+goroutine 1 [running]:
+main.main()
+	/Users/luzhipeng/projects/coze-studio-dev-tmp/backend/main.go:54 +0xdc

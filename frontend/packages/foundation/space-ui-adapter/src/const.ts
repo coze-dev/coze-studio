@@ -17,4 +17,6 @@
 export enum SpaceSubModuleEnum {
   DEVELOP = 'develop',
   LIBRARY = 'library',
+  MEMBERS = 'members',
+  MANAGEMENT = 'management',
 }

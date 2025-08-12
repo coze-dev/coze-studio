@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {
+import React, {
   type FC,
   isValidElement,
   type ReactNode,
@@ -84,9 +84,11 @@ export const GlobalLayoutAccountDropdown: FC<
             className={classNames(style.menu, 'w-[250px]')}
             mode="menu"
           >
-            {menus?.map(item =>
+            {menus?.map((item, index) =>
               isReactNode(item) ? (
-                item
+                <React.Fragment key={`react-node-${index}`}>
+                  {item}
+                </React.Fragment>
               ) : (
                 <Dropdown.Item
                   key={item.title}

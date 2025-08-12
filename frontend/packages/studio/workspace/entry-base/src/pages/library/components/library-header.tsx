@@ -34,7 +34,11 @@ export const LibraryHeader: React.FC<{
       className="w-120px mt-4px mb-4px"
       render={
         <Menu.SubMenu mode="menu">
-          {entityConfigs.map(config => config.renderCreateMenu?.() ?? null)}
+          {entityConfigs.map((config, index) => (
+            <React.Fragment key={config.type || index}>
+              {config.renderCreateMenu?.() ?? null}
+            </React.Fragment>
+          ))}
         </Menu.SubMenu>
       }
     >

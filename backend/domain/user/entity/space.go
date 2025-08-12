@@ -34,3 +34,47 @@ type Space struct {
 	CreatedAt   int64
 	UpdatedAt   int64
 }
+
+// RoleType 空间成员角色类型
+type RoleType int32
+
+const (
+	RoleTypeOwner  RoleType = 1 // 所有者
+	RoleTypeAdmin  RoleType = 2 // 管理员
+	RoleTypeMember RoleType = 3 // 普通成员
+)
+
+// SpaceMember 空间成员
+type SpaceMember struct {
+	ID        int64
+	SpaceID   int64
+	UserID    int64
+	User      *User
+	RoleType  RoleType
+	CreatedAt int64
+	UpdatedAt int64
+}
+
+// GetRoleName 获取角色名称
+func (r RoleType) GetRoleName() string {
+	switch r {
+	case RoleTypeOwner:
+		return "所有者"
+	case RoleTypeAdmin:
+		return "管理员"
+	case RoleTypeMember:
+		return "成员"
+	default:
+		return "未知"
+	}
+}
+
+// CanInvite 是否可以邀请成员
+func (r RoleType) CanInvite() bool {
+	return r == RoleTypeOwner || r == RoleTypeAdmin
+}
+
+// CanManage 是否可以管理成员
+func (r RoleType) CanManage() bool {
+	return r == RoleTypeOwner
+}

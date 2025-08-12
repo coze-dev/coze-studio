@@ -44,6 +44,8 @@ import {
   DatabaseDetail,
   ExplorePluginPage,
   ExploreTemplatePage,
+  SpaceManagementPage,
+  SpaceMembersPage,
 } from './async-components';
 
 export const router: ReturnType<typeof createBrowserRouter> =
@@ -177,6 +179,24 @@ export const router: ReturnType<typeof createBrowserRouter> =
                   Component: Library,
                   loader: () => ({
                     subMenuKey: SpaceSubModuleEnum.LIBRARY,
+                  }),
+                },
+
+                // 空间管理
+                {
+                  path: 'management',
+                  Component: SpaceManagementPage,
+                  loader: () => ({
+                    subMenuKey: 'SPACE_MANAGEMENT',
+                  }),
+                },
+
+                // 空间成员管理
+                {
+                  path: 'members',
+                  Component: SpaceMembersPage,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MEMBERS,
                   }),
                 },
 

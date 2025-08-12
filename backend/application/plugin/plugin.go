@@ -1701,10 +1701,26 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pluginID)
 	}
 
-	if plugin.DeveloperID != *uid {
-		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "you are not the plugin owner"))
+	// 首先检查是否是插件开发者
+	if plugin.DeveloperID == *uid {
+		return plugin, nil
 	}
 
+	// 如果不是开发者，检查是否是空间成员
+	// 检查用户是否是空间成员
+	isMember, _, _, _, err := p.userSVC.CheckMemberPermission(ctx, plugin.SpaceID, *uid)
+	if err != nil {
+		logs.CtxErrorf(ctx, "failed to check member permission for user(%d) in space(%d): %v", *uid, plugin.SpaceID, err)
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "failed to check space member permission"))
+	}
+
+	if !isMember {
+		logs.CtxErrorf(ctx, "user(%d) is not a member of space(%d) for plugin(%d)", *uid, plugin.SpaceID, pluginID)
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "you are not a member of this space"))
+	}
+
+	// 是空间成员，允许访问
+	logs.CtxInfof(ctx, "user(%d) is a member of space(%d), allowing access to plugin(%d)", *uid, plugin.SpaceID, pluginID)
 	return plugin, nil
 }
 

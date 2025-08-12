@@ -24,6 +24,8 @@ const config = [
     entries: {
       passport: './idl/passport/passport.thrift', // Entry service name and path
       explore: './idl/marketplace/public_api.thrift',
+      space_management: './idl/space/space_management.thrift', // 空间管理接口
+      space_member: './idl/space_member/space_member.thrift', // 空间成员管理接口
     },
     commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
     output: './src', // Product location

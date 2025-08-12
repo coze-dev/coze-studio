@@ -14,7 +14,5 @@
  * limitations under the License.
  */
 
-export * as passport from './idl/passport/passport';
-export * as explore from './idl/marketplace/public_api';
-export * as space_management from './idl/space/space_management';
-export * as space_member from './idl/space_member/space_member';
+export { SpaceSelector } from './space-selector';
+export { CreateSpaceModal } from './create-space-modal';

@@ -541,12 +541,26 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 		return do, nil
 	}
 
-	if do.CreatorID != *uid {
-		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
-
-		return do, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not the agent owner"))
+	// 首先检查是否是创建者
+	if do.CreatorID == *uid {
+		return do, nil
 	}
 
+	// 如果不是创建者，检查是否是空间成员
+	// 检查用户是否是空间成员
+	isMember, _, _, _, err := s.appContext.UserDomainSVC.CheckMemberPermission(ctx, do.SpaceID, *uid)
+	if err != nil {
+		logs.CtxErrorf(ctx, "failed to check member permission for user(%d) in space(%d): %v", *uid, do.SpaceID, err)
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "failed to check space member permission"))
+	}
+
+	if !isMember {
+		logs.CtxErrorf(ctx, "user(%d) is not a member of space(%d) for agent draft(%d)", *uid, do.SpaceID, agentID)
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not a member of this space"))
+	}
+
+	// 是空间成员，允许访问
+	logs.CtxInfof(ctx, "user(%d) is a member of space(%d), allowing access to agent draft(%d)", *uid, do.SpaceID, agentID)
 	return do, nil
 }
 

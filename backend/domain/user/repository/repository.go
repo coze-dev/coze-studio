@@ -53,4 +53,9 @@ type SpaceRepository interface {
 	GetSpaceByIDs(ctx context.Context, spaceIDs []int64) ([]*model.Space, error)
 	AddSpaceUser(ctx context.Context, spaceUser *model.SpaceUser) error
 	GetSpaceList(ctx context.Context, userID int64) ([]*model.SpaceUser, error)
+	GetSpaceMembers(ctx context.Context, spaceID int64, page, pageSize int32, roleType *int32) ([]*model.SpaceUser, int64, error)
+	GetSpaceUserBySpaceIDAndUserID(ctx context.Context, spaceID, userID int64) (*model.SpaceUser, bool, error)
+	UpdateSpaceUserRole(ctx context.Context, spaceID, userID int64, roleType int32) error
+	RemoveSpaceUser(ctx context.Context, spaceID, userID int64) error
+	SearchUsersByKeyword(ctx context.Context, keyword string, excludeSpaceID int64, limit int32) ([]*model.User, error)
 }

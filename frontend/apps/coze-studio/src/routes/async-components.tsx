@@ -26,6 +26,12 @@ export const LoginPage = lazy(() =>
 // documentation page
 export const Redirect = lazy(() => import('../pages/redirect'));
 
+// 空间管理页面
+export const SpaceManagementPage = lazy(() => import('../pages/space-management'));
+
+// 空间成员管理页面
+export const SpaceMembersPage = lazy(() => import('../pages/space-members'));
+
 // Workspace Sidebar Component
 export const spaceSubMenu = lazy(() =>
   import('@coze-foundation/space-ui-adapter').then(exps => ({

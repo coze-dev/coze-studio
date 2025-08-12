@@ -27,6 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/passport"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/space"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -328,6 +329,44 @@ func userDo2PassportTo(userDo *entity.User) *passport.User {
 
 		UserCreateTime: userDo.CreatedAt / 1000,
 	}
+}
+
+// CreateSpace 创建新的工作空间
+func (u *UserApplicationService) CreateSpace(ctx context.Context, req *space.CreateSpaceRequest) (
+	resp *space.CreateSpaceResponse, err error,
+) {
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// 调用Domain Service创建空间
+	description := ""
+	if req.Description != nil {
+		description = *req.Description
+	}
+	spaceEntity, err := u.DomainSVC.CreateSpace(ctx, uid, req.Name, description)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "create space failed"))
+	}
+
+	// 构建响应
+	spaceInfo := &space.SpaceInfo{
+		SpaceID:         spaceEntity.ID,
+		Name:            spaceEntity.Name,
+		Description:     ptr.Of(spaceEntity.Description),
+		IconURL:         ptr.Of(spaceEntity.IconURL),
+		SpaceType:       req.SpaceType,
+		Status:          space.SpaceStatus_Active,
+		OwnerID:         uid,
+		CreatorID:       uid,
+		CreatedAt:       spaceEntity.CreatedAt,
+		UpdatedAt:       &spaceEntity.UpdatedAt,
+		CurrentUserRole: ptr.Of(space.MemberRoleType_Owner),
+	}
+
+	return &space.CreateSpaceResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: spaceInfo,
+	}, nil
 }
 
 func userDo2PlaygroundTo(userDo *entity.User) *playground.UserBasicInfo {
