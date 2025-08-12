@@ -100,6 +100,8 @@ type InterruptInfo struct {
 	ToolCallID           string
 	InterruptType        InterruptEventType
 	InterruptID          string
+
+	ChatflowInterrupt *crossworkflow.StateMessage
 }
 
 type ExecuteRequest struct {

@@ -63,8 +63,11 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, config workflowModel.Exe
 }
 
 func (i *impl) WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option {
-
 	return i.DomainSVC.WithExecuteConfig(cfg)
+}
+
+func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (*schema.StreamReader[*entity.Message], error) {
+	return i.DomainSVC.StreamResume(ctx, req, config)
 }
 func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error) {
 	return i.DomainSVC.StreamExecute(ctx, config, input)

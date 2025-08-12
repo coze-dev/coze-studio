@@ -150,7 +150,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	rtDependence.questionMsgID = input.ID
 
 	if rtDependence.agentInfo.BotMode == bot_common.BotMode_WorkflowMode {
-		err = c.handlerWfAsAgentStreamExecute(ctx, sw, rtDependence)
+		err = c.handlerWfAsAgentStreamExecute(ctx, sw, history, rtDependence)
 	} else {
 		err = c.handlerAgentStreamExecute(ctx, sw, history, input, rtDependence)
 	}
@@ -169,9 +169,14 @@ func (c *runImpl) handlerAgent(ctx context.Context, rtDependence *runtimeDepende
 	return agentInfo, nil
 }
 
-func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (err error) {
+func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, rtDependence *runtimeDependence) (err error) {
+
+	resumeInfo := internal.ParseResumeInfo(ctx, historyMsg)
 	wfID, _ := strconv.ParseInt(rtDependence.agentInfo.LayoutInfo.WorkflowId, 10, 64)
-	wfStreamer, err := crossworkflow.DefaultSVC().StreamExecute(ctx, crossworkflow.ExecuteConfig{
+
+	var wfStreamer *schema.StreamReader[*crossworkflow.WorkflowMessage]
+
+	executeConfig := crossworkflow.ExecuteConfig{
 		ID:           wfID,
 		ConnectorID:  rtDependence.runMeta.ConnectorID,
 		ConnectorUID: rtDependence.runMeta.UserID,
@@ -179,9 +184,23 @@ func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.
 		Mode:         crossworkflow.ExecuteModeRelease,
 		BizType:      crossworkflow.BizTypeAgent,
 		SyncPattern:  crossworkflow.SyncPatternStream,
-	}, map[string]any{
-		"input": concatWfInput(rtDependence),
-	})
+	}
+
+	if resumeInfo != nil {
+		wfStreamer, err = crossworkflow.DefaultSVC().StreamResume(ctx, &crossworkflow.ResumeRequest{
+			ResumeData: concatWfInput(rtDependence),
+			EventID:    0,
+			ExecuteID:  resumeInfo.ChatflowInterrupt.ExecuteID,
+		}, executeConfig)
+	} else {
+		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, map[string]any{
+			"input": concatWfInput(rtDependence),
+		})
+	}
+	if err != nil {
+		return err
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	safego.Go(ctx, func() {
@@ -499,22 +518,21 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 
 	for {
 		st, re := events.Recv()
-		logs.CtxInfof(ctx, "pullWfStream Recv:%v,err:%v", conv.DebugJsonToStr(st), re)
 		if re != nil {
 			if errors.Is(re, io.EOF) {
 				return
 			}
 			logs.CtxErrorf(ctx, "pullWfStream Recv error: %v", re)
-
 			c.handlerErr(ctx, re, sw)
 			return
 		}
+
 		if st == nil {
 			continue
 		}
 
 		if st.StateMessage != nil && st.StateMessage.InterruptEvent != nil { // interrupt
-			c.handlerWfInterruptMsg(ctx, sw, st.StateMessage.InterruptEvent, rtDependence)
+			c.handlerWfInterruptMsg(ctx, sw, st.StateMessage, rtDependence)
 			continue
 		}
 
@@ -526,7 +544,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 		case crossworkflow.Answer:
 
 			// input node & question node skip
-
 			if st.DataMessage != nil && (st.DataMessage.NodeType == crossworkflow.NodeTypeInputReceiver || st.DataMessage.NodeType == crossworkflow.NodeTypeQuestion) {
 				break
 			}
@@ -563,8 +580,8 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 	}
 }
 
-func (c *runImpl) handlerWfInterruptMsg(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], interruptEventData *crossworkflow.InterruptEvent, rtDependence *runtimeDependence) {
-	interruptData, cType, err := c.handlerWfInterruptEvent(ctx, interruptEventData)
+func (c *runImpl) handlerWfInterruptMsg(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], stateMsg *crossworkflow.StateMessage, rtDependence *runtimeDependence) {
+	interruptData, cType, err := c.handlerWfInterruptEvent(ctx, stateMsg.InterruptEvent)
 	if err != nil {
 		return
 	}
@@ -595,10 +612,25 @@ func (c *runImpl) handlerWfInterruptMsg(ctx context.Context, sw *schema.StreamWr
 		return
 	}
 
-	// err = c.handlerInterruptVerbose(ctx, chunk, sw, rtDependence)
-	// if err != nil {
-	// 	return
-	// }
+	err = c.handlerInterruptVerbose(ctx, &entity.AgentRespEvent{
+		EventType: message.MessageTypeInterrupt,
+		Interrupt: &singleagent.InterruptInfo{
+
+			InterruptType:     singleagent.InterruptEventType(stateMsg.InterruptEvent.EventType),
+			InterruptID:       strconv.FormatInt(stateMsg.InterruptEvent.ID, 10),
+			ChatflowInterrupt: stateMsg,
+		},
+	}, sw, rtDependence)
+	if err != nil {
+		return
+	}
+
+	finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
+	if finishErr != nil {
+		logs.CtxErrorf(ctx, "handlerFinalAnswerFinish error: %v", finishErr)
+		return
+	}
+
 }
 func (c *runImpl) handlerWfInterruptEvent(_ context.Context, interruptEventData *crossworkflow.InterruptEvent) (string, message.ContentType, error) {
 
