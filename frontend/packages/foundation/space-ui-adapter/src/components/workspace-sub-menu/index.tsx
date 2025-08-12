@@ -49,6 +49,10 @@ import {
   IconBotWorkflowActive,
   IconBotMember,
   IconBotMemberActive,
+  IconMcp,
+  IconMcpActive,
+  IconCard,
+  IconCardActive
 } from '../../../../../components/bot-icons';
 import { useRouteConfig } from '@coze-arch/bot-hooks';
 import { ResType } from '@coze-arch/idl/plugin_develop';
@@ -89,16 +93,16 @@ export const WorkspaceSubMenu = () => {
         I18n.t('navigation_workspace_library_title', {}, 'Resource Library'),
     },
     {
-      icon: <IconBotWorkflow />,
-      activeIcon: <IconBotWorkflowActive />,
+      icon: <IconMcp />,
+      activeIcon: <IconMcpActive />,
       title: () =>
         I18n.t('navigation_workspace_library_mcp', {}, 'Mcp'),
       path: `${SpaceSubModuleEnum.MCP}`,
       dataTestId: 'navigation_workspace_library_mcp',
     },
     {
-      icon: <IconBotWorkflow />,
-      activeIcon: <IconBotWorkflowActive />,
+      icon: <IconCard />,
+      activeIcon: <IconCardActive />,
       title: () =>
         I18n.t('navigation_workspace_library_card', {}, 'Card'),
       path: `${SpaceSubModuleEnum.CARD}`,

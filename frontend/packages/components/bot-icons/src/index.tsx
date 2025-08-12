@@ -567,6 +567,15 @@ import { ReactComponent as SvgBrandCnWhiteColumn } from './assets/brand-cn-white
 import { ReactComponent as SvgBrandCnBlackRow } from './assets/brand-cn-black-row.svg';
 import { ReactComponent as SvgBrandCnBlackColumn } from './assets/brand-cn-black-column.svg';
 import { ReactComponent as SvgBotIcon } from './assets/bot-icon.svg';
+import { ReactComponent as SvgIconMcp } from './assets/icons/falcon/icon-mcp.svg';
+import { ReactComponent as SvgIconMcpActive } from './assets/icons/falcon/icon-mcp-active.svg';
+import { ReactComponent as SvgIconCard } from './assets/icons/falcon/icon-card.svg';
+import { ReactComponent as SvgIconCardActive } from './assets/icons/falcon/icon-card-active.svg';
+
+export const IconMcp = IconFactory(<SvgIconMcp />);
+export const IconMcpActive = IconFactory(<SvgIconMcpActive />);
+export const IconCard = IconFactory(<SvgIconCard />);
+export const IconCardActive = IconFactory(<SvgIconCardActive />);
 
 export const IconApiPlayground = IconFactory(<SvtPlaygroundIcon />);
 export const IconApiPlaygroundFill = IconFactory(<SvtPlaygroundIconFill />);
