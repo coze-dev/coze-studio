@@ -20,13 +20,16 @@ import (
 	"context"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 )
 
 type Message interface {
 	GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*message.Message, error)
 	PreCreate(ctx context.Context, msg *message.Message) (*message.Message, error)
 	Create(ctx context.Context, msg *message.Message) (*message.Message, error)
+	List(ctx context.Context, meta *entity.ListMeta) (*entity.ListResult, error)
 	Edit(ctx context.Context, msg *message.Message) (*message.Message, error)
+	Delete(ctx context.Context, req *entity.DeleteMeta) error
 }
 
 var defaultSVC Message
