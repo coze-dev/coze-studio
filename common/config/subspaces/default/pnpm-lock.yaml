@@ -60,9 +60,6 @@ importers:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
         version: link:../../packages/arch/bot-md-box-adapter
-      '@coze-arch/bot-space-api':
-        specifier: workspace:*
-        version: link:../../packages/arch/bot-space-api
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.101d0c
         version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
@@ -208,6 +205,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ~3.0.5
         version: 3.0.9(vitest@3.0.9)
+      cross-env:
+        specifier: ^10.0.0
+        version: 10.0.0
       sucrase:
         specifier: ^3.32.0
         version: 3.35.0
@@ -8056,9 +8056,6 @@ importers:
       '@coze-arch/web-context':
         specifier: workspace:*
         version: link:../web-context
-      '@coze-studio/api-schema':
-        specifier: workspace:*
-        version: link:../api-schema
       axios:
         specifier: ^1.4.0
         version: 1.10.0(debug@4.3.3)
@@ -16358,6 +16355,9 @@ importers:
       '@coze-arch/bot-hooks':
         specifier: workspace:*
         version: link:../../arch/bot-hooks
+      '@coze-arch/bot-icons':
+        specifier: workspace:*
+        version: link:../../components/bot-icons
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -16901,9 +16901,6 @@ importers:
 
   ../../../frontend/packages/foundation/space-ui-adapter:
     dependencies:
-      '@coze-arch/bot-api':
-        specifier: workspace:*
-        version: link:../../arch/bot-api
       '@coze-arch/bot-hooks':
         specifier: workspace:*
         version: link:../../arch/bot-hooks
@@ -16922,9 +16919,6 @@ importers:
       '@coze-foundation/space-ui-base':
         specifier: workspace:*
         version: link:../space-ui-base
-      '@coze-studio/api-schema':
-        specifier: workspace:*
-        version: link:../../arch/api-schema
       react-router-dom:
         specifier: ^6.22.0
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
@@ -26740,6 +26734,10 @@ packages:
 
   /@emotion/weak-memoize@0.4.0:
     resolution: {integrity: sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==}
+
+  /@epic-web/invariant@1.0.0:
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
+    dev: true
 
   /@esbuild/aix-ppc64@0.25.5:
     resolution: {integrity: sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==}
@@ -38868,6 +38866,15 @@ packages:
   /cropperjs@1.6.2:
     resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
     dev: false
+
+  /cross-env@10.0.0:
+    resolution: {integrity: sha512-aU8qlEK/nHYtVuN4p7UQgAwVljzMg8hB4YK5ThRqD2l/ziSnryncPNn7bMLt5cFYsKVKBh8HqLqyCoTupEUu7Q==}
+    engines: {node: '>=20'}
+    hasBin: true
+    dependencies:
+      '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
+    dev: true
 
   /cross-fetch@3.2.0:
     resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
