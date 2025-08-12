@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { RouterProvider } from 'react-router-dom';
 
 import { createRoot } from 'react-dom/client';
-import browserClient from '@slardar/web'; // 默认引入的是CN地区的
+import browserClient from '@slardar/web'; // The default introduction is the CN region
 import { reporter } from '@coze-arch/logger';
 
 import { router } from '@/router';
@@ -27,7 +27,7 @@ browserClient('init', {
   bid: '',
 });
 browserClient('start');
-reporter.init(browserClient)
+reporter.init(browserClient);
 
 const root = createRoot(document.getElementById('root'));
 root.render(<RouterProvider router={router} />);

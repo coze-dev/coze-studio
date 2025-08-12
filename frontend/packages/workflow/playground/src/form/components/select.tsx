@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import {
-  Select as BaseSelect,
-  type SelectProps,
-} from '@coze-arch/coze-design';
+
+import { Select as BaseSelect, type SelectProps } from '@coze-arch/coze-design';
 
 export { type SelectProps } from '@coze-arch/coze-design';
 

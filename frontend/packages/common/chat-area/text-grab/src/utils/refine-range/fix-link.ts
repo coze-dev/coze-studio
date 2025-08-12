@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { findNearestAnchor } from '../helper/find-nearest-link-node';
 
 export const fixLink = (range: Range, startNode: Node, endNode: Node) => {

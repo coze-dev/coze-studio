@@ -9,14 +9,14 @@ import { tryCatch } from '../utils/fp';
 
 
 /**
- * 检查字符串是否包含中文字符
+ * Check if string contains Chinese characters
  */
 const containsChinese = (text: string): boolean => {
   return /[\u4e00-\u9fff]/.test(text);
 };
 
 /**
- * 保持注释的原始格式，支持逐行翻译多行注释
+ * Maintain the original format of comments and support line-by-line translation of multi-line comments
  */
 export const preserveCommentFormat = (
   originalComment: string,
@@ -24,7 +24,7 @@ export const preserveCommentFormat = (
   commentType: 'single-line' | 'multi-line',
 ): string => {
   if (commentType === 'single-line') {
-    // 保持单行注释的前缀空格和注释符 - 支持多种语言
+    // Keep single-line comments prefixed with spaces and comment characters - supports multiple languages
     let match = originalComment.match(/^(\s*\/\/\s*)/); // JavaScript/TypeScript style
     if (match) {
       return match[1] + translatedComment.trim();
@@ -40,13 +40,13 @@ export const preserveCommentFormat = (
       return match[1] + translatedComment.trim();
     }
     
-    // 如果无法识别，尝试从原始内容推断
+    // If not recognized, try to infer from the original content
     if (originalComment.includes('#')) {
       const hashMatch = originalComment.match(/^(\s*#\s*)/);
       return (hashMatch ? hashMatch[1] : '# ') + translatedComment.trim();
     }
     
-    // 默认使用 JavaScript 风格
+    // JavaScript style is used by default
     return '// ' + translatedComment.trim();
   }
 
@@ -54,7 +54,7 @@ export const preserveCommentFormat = (
     const lines = originalComment.split('\n');
     
     if (lines.length === 1) {
-      // 单行多行注释 /* ... */ 或 /** ... */
+      // Single-line multi-line comment/*... */or/**... */
       const startMatch = originalComment.match(/^(\s*\/\*\*?\s*)/);
       const endMatch = originalComment.match(/(\s*\*\/\s*)$/);
       
@@ -71,7 +71,7 @@ export const preserveCommentFormat = (
       
       return prefix + translatedComment.trim() + suffix;
     } else {
-      // 多行注释 - 需要逐行处理
+      // Multi-line comments - requires line-by-line processing
       return processMultiLineComment(originalComment, translatedComment);
     }
   }
@@ -80,7 +80,7 @@ export const preserveCommentFormat = (
 };
 
 /**
- * 处理多行注释，逐行翻译含中文的行，保持其他行原样
+ * Process multi-line comments, translate lines containing Chinese line by line, and keep other lines as they are
  */
 export const processMultiLineComment = (
   originalComment: string,
@@ -88,54 +88,54 @@ export const processMultiLineComment = (
 ): string => {
   const originalLines = originalComment.split('\n');
   
-  // 提取每行的注释内容（去除 /** * 等前缀）
+  // Extract comments for each line (remove prefixes such as /** * )other prefixes)
   const extractedLines = originalLines.map(line => {
-    // 匹配不同类型的注释行
+    Match different types of comment linesifferent types of comment lines
     if (line.match(/^\s*\/\*\*?\s*/)) {
-      // 开始行: /** 或 /*
+      // Start line:/** or/*
       return { prefix: line.match(/^\s*\/\*\*?\s*/)![0], content: line.replace(/^\s*\/\*\*?\s*/, '') };
     } else if (line.match(/^\s*\*\/\s*$/)) {
-      // 结束行: */
+      // End line: */
       return { prefix: line.match(/^\s*\*\/\s*$/)![0], content: '' };
     } else if (line.match(/^\s*\*\s*/)) {
-      // 中间行: * content
+      // Middle line: * content
       const match = line.match(/^(\s*\*\s*)(.*)/);
       return { prefix: match![1], content: match![2] };
     } else {
-      // 其他情况
+      // Other situations
       return { prefix: '', content: line };
     }
   });
   
-  // 收集需要翻译的行
+  // Collect lines that need to be translated
   const linesToTranslate = extractedLines
     .map((line, index) => ({ index, content: line.content }))
     .filter(item => containsChinese(item.content));
   
-  // 如果没有中文内容，返回原始注释
+  // If there is no Chinese content, return the original comment
   if (linesToTranslate.length === 0) {
     return originalComment;
   }
   
-  // 解析翻译结果 - 假设翻译服务按顺序返回翻译后的行
+  // Parse translation results - assuming the translation service returns translated rows in order
   const translatedLines = translatedContent.split('\n');
   const translations = new Map<number, string>();
   
-  // 将翻译结果映射到对应的行
+  // Map the translation result to the corresponding line
   linesToTranslate.forEach((item, transIndex) => {
     if (transIndex < translatedLines.length) {
       translations.set(item.index, translatedLines[transIndex].trim());
     }
   });
   
-  // 重建注释，保持原始结构
+  // Rebuild the annotation, maintaining the original structure
   return extractedLines
     .map((line, index) => {
       if (translations.has(index)) {
-        // 使用翻译内容，保持原始前缀
+        // Use translated content, keeping the original prefix
         return line.prefix + translations.get(index);
       } else {
-        // 保持原样
+        // Leave it as it is
         return originalLines[index];
       }
     })
@@ -143,7 +143,7 @@ export const processMultiLineComment = (
 };
 
 /**
- * 创建替换操作
+ * Create replacement operation
  */
 export const createReplacements = (
   file: SourceFile,
@@ -157,13 +157,13 @@ export const createReplacements = (
     if (!translation) return;
 
     if (comment.multiLineContext?.isPartOfMultiLine) {
-      // 处理多行注释中的单行
+      // Handling single lines in multi-line comments
       const replacement = createMultiLineReplacement(file, comment, translation);
       if (replacement) {
         replacements.push(replacement);
       }
     } else {
-      // 处理普通注释（单行注释或整个多行注释）
+      // Processing normal comments (single-line comments or entire multi-line comments)
       const replacement = createRegularReplacement(file, comment, translation);
       if (replacement) {
         replacements.push(replacement);
@@ -175,7 +175,7 @@ export const createReplacements = (
 };
 
 /**
- * 为多行注释中的单行创建替换操作
+ * Create a replacement operation for a single line in a multi-line comment
  */
 const createMultiLineReplacement = (
   file: SourceFile,
@@ -189,10 +189,10 @@ const createMultiLineReplacement = (
   
   const originalLine = lines[lineIndex];
   
-  // 查找这一行中中文内容的位置
+  // Find the location of Chinese content in this line
   const cleanedContent = comment.content;
   
-  // 更精确地查找中文内容在原始行中的位置
+  // Find the position of Chinese content in the original line more accurately
   const commentContentRegex = new RegExp(cleanedContent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const contentMatch = originalLine.match(commentContentRegex);
   
@@ -203,7 +203,7 @@ const createMultiLineReplacement = (
   const chineseStart = contentMatch.index!;
   const chineseEnd = chineseStart + contentMatch[0].length;
   
-  // 计算在整个文件中的位置
+  // Calculate the position in the entire file
   let start = 0;
   for (let i = 0; i < lineIndex; i++) {
     start += lines[i].length + 1; // +1 for newline
@@ -221,7 +221,7 @@ const createMultiLineReplacement = (
 };
 
 /**
- * 为普通注释创建替换操作
+ * Create a replacement operation for a normal comment
  */
 const createRegularReplacement = (
   file: SourceFile,
@@ -232,7 +232,7 @@ const createRegularReplacement = (
   const startLineIndex = comment.startLine - 1;
   const endLineIndex = comment.endLine - 1;
 
-  // 计算原始注释在文件中的精确位置
+  // Calculate the exact location of the original comment in the file
   let start = 0;
   for (let i = 0; i < startLineIndex; i++) {
     start += lines[i].length + 1; // +1 for newline
@@ -241,10 +241,10 @@ const createRegularReplacement = (
 
   let end = start;
   if (comment.startLine === comment.endLine) {
-    // 同一行
+    // same line
     end = start + (comment.endColumn - comment.startColumn);
   } else {
-    // 跨行 - 重新计算end位置
+    // Interline recalculation of end position
     end = 0;
     for (let i = 0; i < endLineIndex; i++) {
       end += lines[i].length + 1; // +1 for newline
@@ -252,10 +252,10 @@ const createRegularReplacement = (
     end += comment.endColumn;
   }
 
-  // 获取原始注释文本
+  // Get original comment text
   const originalText = file.content.substring(start, end);
 
-  // 应用格式保持
+  // application format retention
   const formattedTranslation = preserveCommentFormat(
     originalText,
     translation.translated,
@@ -271,13 +271,13 @@ const createRegularReplacement = (
 };
 
 /**
- * 应用替换操作到文本内容
+ * Apply a replacement operation to text content
  */
 export const applyReplacements = (
   content: string,
   replacements: Replacement[],
 ): string => {
-  // 按位置倒序排列，避免替换后位置偏移
+  // Arrange in reverse order to avoid position shift after replacement
   const sortedReplacements = [...replacements].sort(
     (a, b) => b.start - a.start,
   );
@@ -294,7 +294,7 @@ export const applyReplacements = (
 };
 
 /**
- * 替换文件中的注释
+ * Replace comments in the file
  */
 export const replaceCommentsInFile = async (
   file: SourceFile,
@@ -303,13 +303,13 @@ export const replaceCommentsInFile = async (
   return tryCatch(async () => {
     const fs = await import('fs/promises');
 
-    // 应用替换
+    // Application Replacement
     const newContent = applyReplacements(
       file.content,
       operation.replacements,
     );
 
-    // 写入文件
+    // Write file
     await fs.writeFile(file.path, newContent, 'utf-8');
 
     return { success: true };
@@ -329,7 +329,7 @@ export const replaceCommentsInFile = async (
 };
 
 /**
- * 批量替换多个文件
+ * Batch replacement of multiple files
  */
 export const batchReplaceFiles = async (
   operations: ReplacementOperation[],
@@ -347,7 +347,7 @@ export const batchReplaceFiles = async (
       const sourceFile: SourceFile = {
         path: operation.file,
         content,
-        language: 'other', // 临时值，实际应该检测
+        language: 'other', // Temporary value, which should actually be checked
       };
 
       const result = await replaceCommentsInFile(
@@ -375,7 +375,7 @@ export const batchReplaceFiles = async (
 };
 
 /**
- * 验证替换操作
+ * Verify replacement operation
  */
 export const validateReplacements = (
   content: string,
@@ -383,7 +383,7 @@ export const validateReplacements = (
 ): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
-  // 检查位置是否有效
+  // Check if the location is valid
   replacements.forEach((replacement, index) => {
     if (replacement.start < 0 || replacement.end > content.length) {
       errors.push(`Replacement ${index}: Invalid position range`);
@@ -395,14 +395,14 @@ export const validateReplacements = (
       );
     }
 
-    // 检查原文是否匹配
+    // Check if the original text matches
     const actualText = content.substring(replacement.start, replacement.end);
     if (actualText !== replacement.original) {
       errors.push(`Replacement ${index}: Original text mismatch`);
     }
   });
 
-  // 检查是否有重叠
+  // Check for overlap
   const sortedReplacements = [...replacements].sort(
     (a, b) => a.start - b.start,
   );

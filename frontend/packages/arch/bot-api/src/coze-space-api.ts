@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import CozeSpaceApiService from '@coze-arch/idl/stone_coze_space';
 
 import { axiosInstance, type BotAPIRequestConfig } from './axios';

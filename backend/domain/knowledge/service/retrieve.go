@@ -69,17 +69,17 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 	}
 	chain := compose.NewChain[*RetrieveContext, []*knowledgeModel.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
-	// 向量化召回
+	// vectorized recall
 	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
-	// ES召回
+	// ES recall
 	EsRetrieveNode := compose.InvokableLambda(k.esRetrieveNode)
-	// Nl2Sql召回
+	// Nl2Sql recall
 	Nl2SqlRetrieveNode := compose.InvokableLambda(k.nl2SqlRetrieveNode)
 	// pass user query Node
 	passRequestContextNode := compose.InvokableLambda(k.passRequestContext)
 	// reRank Node
 	reRankNode := compose.InvokableLambda(k.reRankNode)
-	// pack Result接口
+	// Pack Result Interface
 	packResult := compose.InvokableLambda(k.packResults)
 	parallelNode := compose.NewParallel().
 		AddLambda("vectorRetrieveNode", vectorRetrieveNode).
@@ -190,11 +190,11 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 
 func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContext) (newRetrieveContext *RetrieveContext, err error) {
 	if len(req.ChatHistory) == 0 {
-		// 没有上下文不需要改写
+		// No context, no rewriting.
 		return req, nil
 	}
 	if !req.Strategy.EnableQueryRewrite || k.rewriter == nil {
-		// 未开启rewrite功能，不需要上下文改写
+		// Rewrite function is not enabled, no context rewrite is required
 		return req, nil
 	}
 	var opts []messages2query.Option
@@ -206,7 +206,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContex
 		logs.CtxErrorf(ctx, "rewrite query failed: %v", err)
 		return req, nil
 	}
-	// 改写完成
+	// Rewrite completed
 	req.RewrittenQuery = &rewrittenQuery
 	return req, nil
 }
@@ -373,7 +373,7 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		return nil, err
 	}
 	sql = addSliceIdColumn(sql)
-	// 执行sql
+	// Execute sql
 	replaceMap := map[string]sqlparsercontract.TableColumn{}
 	replaceMap[doc.Name] = sqlparsercontract.TableColumn{
 		NewTableName: ptr.Of(doc.TableInfo.PhysicalTableName),
@@ -395,7 +395,7 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		logs.CtxErrorf(ctx, "parse sql failed: %v", err)
 		return nil, err
 	}
-	// 执行sql
+	// Execute sql
 	resp, err := k.rdb.ExecuteSQL(ctx, &rdb.ExecuteSQLRequest{
 		SQL: parsedSQL,
 	})
@@ -428,7 +428,7 @@ func addSliceIdColumn(originalSql string) string {
 	if selectIndex == -1 {
 		return originalSql
 	}
-	result := originalSql[:selectIndex+len("select ")] // 保留 select 部分
+	result := originalSql[:selectIndex+len("select ")] // Keep selected part
 	remainder := originalSql[selectIndex+len("select "):]
 
 	lowerRemainder := strings.ToLower(remainder)
@@ -474,25 +474,25 @@ func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *RetrieveCont
 }
 
 func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any) (retrieveResult []*schema.Document, err error) {
-	// 首先获取下retrieve上下文
+	// First retrieve the context
 	retrieveCtx, ok := resultMap["passRequestContext"].(*RetrieveContext)
 	if !ok {
 		logs.CtxErrorf(ctx, "retrieve context is not found")
 		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "retrieve context is not found"))
 	}
-	// 获取下向量化召回的接口
+	// Get the interface for the downvectorized recall
 	vectorRetrieveResult, ok := resultMap["vectorRetrieveNode"].([]*schema.Document)
 	if !ok {
 		logs.CtxErrorf(ctx, "vector retrieve result is not found")
 		vectorRetrieveResult = []*schema.Document{}
 	}
-	// 获取下es召回的接口
+	// Get the interface of the es recall.
 	esRetrieveResult, ok := resultMap["esRetrieveNode"].([]*schema.Document)
 	if !ok {
 		logs.CtxErrorf(ctx, "es retrieve result is not found")
 		esRetrieveResult = []*schema.Document{}
 	}
-	// 获取下nl2sql召回的接口
+	// Get the interface recalled under nl2sql
 	nl2SqlRetrieveResult, ok := resultMap["nl2SqlRetrieveNode"].([]*schema.Document)
 	if !ok {
 		logs.CtxErrorf(ctx, "nl2sql retrieve result is not found")
@@ -508,10 +508,10 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 		return data
 	}
 
-	// 根据召回策略从不同渠道获取召回结果
+	// Obtain recall results from different channels according to the recall strategy
 	var retrieveResultArr [][]*rerank.Data
 	if retrieveCtx.Strategy.EnableNL2SQL {
-		// nl2sql结果
+		// Nl2sql results
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(nl2SqlRetrieveResult))
 	}
 	switch retrieveCtx.Strategy.SearchType {
@@ -739,18 +739,18 @@ func (i *ImageContent) SetKV(k string, v string) {
 func (k *knowledgeSVC) ParseFrontEndImageContent(ctx context.Context, s string) []*ImageContent {
 	res := make([]*ImageContent, 0)
 	imgRe := regexp.MustCompile(`<img\s+[^>]*>`)
-	// 查找所有匹配项
+	// Find all matches
 	matches := imgRe.FindAllSubmatchIndex([]byte(s), -1)
-	// 遍历匹配项并输出src和data-tos-key字段
-	// 遍历每个匹配项的索引
+	// Traverse matches and output the src and data-tos-key fields
+	// Iterate the index of each match
 	for _, match := range matches {
-		// 输出每个匹配项整个正则在文本中的开始和结束位置
+		// Outputs the beginning and end positions of the entire regular for each match in the text
 		matchStart := match[0]
 		matchEnd := match[1]
 		all := s[match[0]:match[1]]
 
 		re := regexp.MustCompile(`<img\s+([^>]+)>`)
-		// 初始化map存储kv信息，把多余信息去掉
+		// Initialize map to store kv information and remove redundant information
 		m := make(map[string]string)
 		l := make([]string, 0)
 		match := re.FindStringSubmatch(all)
@@ -758,13 +758,13 @@ func (k *knowledgeSVC) ParseFrontEndImageContent(ctx context.Context, s string) 
 			continue
 		}
 		attributes := match[1]
-		// 定义正则表达式模式，用于提取属性键值对
+		// Defines a regular expression pattern for extracting attribute key-value pairs
 		attrRe := regexp.MustCompile(`(\S+)=(?:"([^"]*)"|'([^']*)')`)
 
-		// 查找所有属性键值对
+		// Find all attribute key-value pairs
 		attrMatches := attrRe.FindAllStringSubmatch(attributes, -1)
 
-		// 提取并存储kv信息
+		// Extract and store kv information
 		for _, attrMatch := range attrMatches {
 			key := attrMatch[1]
 			value := attrMatch[2]

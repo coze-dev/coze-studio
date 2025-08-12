@@ -50,8 +50,8 @@ type workflowSnapshot struct {
 	Canvas       field.String // frontend schema for this snapshot
 	InputParams  field.String // input parameter info
 	OutputParams field.String // output parameter info
-	CreatedAt    field.Int64
-	ID           field.Int64 // ID
+	CreatedAt    field.Int64  // Create Time in Milliseconds
+	ID           field.Int64  // ID
 
 	fieldMap map[string]field.Expr
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Mock } from 'vitest';
 import { renderHook } from '@testing-library/react-hooks';
 import { useSpaceStore } from '@coze-foundation/space-store-adapter';

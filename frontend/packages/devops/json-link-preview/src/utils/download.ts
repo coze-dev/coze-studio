@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const fetchResource = async (url: string) => {
   const response = await fetch(url);
   const blob = await response.blob();

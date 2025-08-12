@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Responsible for token verification, automatically refresh the token
  * Exposed to the service party, the service party decides whether to single-case or multiple-case authentication

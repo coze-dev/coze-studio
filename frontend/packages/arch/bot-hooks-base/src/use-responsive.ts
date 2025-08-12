@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMediaQuery, ScreenRange } from '@coze-arch/responsive-kit';
 
 import { useRouteConfig } from './use-route-config';

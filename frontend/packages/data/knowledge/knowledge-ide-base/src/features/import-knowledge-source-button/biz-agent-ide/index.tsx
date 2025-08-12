@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
-import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useKnowledgeParams,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 import { type UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { useKnowledgeNavigate } from '@coze-data/knowledge-common-hooks/use-case';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';

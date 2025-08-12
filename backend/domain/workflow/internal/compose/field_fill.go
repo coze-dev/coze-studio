@@ -25,12 +25,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 // outputValueFiller will fill the output value with nil if the key is not present in the output map.
 // if a node emits stream as output, the node needs to handle these absent keys in stream themselves.
-func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[string]any) (map[string]any, error) {
+func outputValueFiller(s *schema2.NodeSchema) func(ctx context.Context, output map[string]any) (map[string]any, error) {
 	if len(s.OutputTypes) == 0 {
 		return func(ctx context.Context, output map[string]any) (map[string]any, error) {
 			return output, nil
@@ -55,7 +56,7 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 
 // inputValueFiller will fill the input value with default value(zero or nil) if the input value is not present in map.
 // if a node accepts stream as input, the node needs to handle these absent keys in stream themselves.
-func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[string]any) (map[string]any, error) {
+func inputValueFiller(s *schema2.NodeSchema) func(ctx context.Context, input map[string]any) (map[string]any, error) {
 	if len(s.InputTypes) == 0 {
 		return func(ctx context.Context, input map[string]any) (map[string]any, error) {
 			return input, nil
@@ -78,7 +79,7 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 	}
 }
 
-func (s *NodeSchema) streamInputValueFiller() func(ctx context.Context,
+func streamInputValueFiller(s *schema2.NodeSchema) func(ctx context.Context,
 	input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any] {
 	fn := func(ctx context.Context, i map[string]any) (map[string]any, error) {
 		newI := make(map[string]any)

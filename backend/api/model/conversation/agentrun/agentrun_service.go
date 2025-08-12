@@ -3,10 +3,10 @@
 package agentrun
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 )
 
 type AgentRunService interface {

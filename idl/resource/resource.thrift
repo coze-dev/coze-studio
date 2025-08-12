@@ -4,15 +4,15 @@ include "../base.thrift"
 include "resource_common.thrift"
 
 struct LibraryResourceListRequest {
-    1  : optional i32          user_filter          , // 是否由当前用户创建，0-不筛选，1-当前用户
-    2  : optional list<resource_common.ResType>    res_type_filter      , // [4,1]   0代表不筛选
-    3  : optional string       name                 , // 名称
-    4  : optional resource_common.PublishStatus          publish_status_filter, // 发布状态，0-不筛选，1-未发布，2-已发布
-    5  : required i64          space_id (agw.js_conv="str", api.js_conv="true"), // 用户所在空间ID
-    7  : optional i32          size                 , // 一次读取的数据条数，默认10，最大100.
-    9  : optional string       cursor               , // 游标，用于分页，默认0，第一次请求可以不传，后续请求需要带上上次返回的cursor
-    10 : optional list<string> search_keys          , // 用来指定自定义搜索的字段 不填默认只name匹配，eg []string{name,自定} 匹配name和自定义字段full_text
-    11 : optional bool         is_get_imageflow     , // 当res_type_filter为[2 workflow]时，是否需要返回图片流
+    1  : optional i32          user_filter          , // Whether created by the current user, 0 - unfiltered, 1 - current user
+    2  : optional list<resource_common.ResType>    res_type_filter      , // [4,1] 0 means do not filter
+    3  : optional string       name                 , // name
+    4  : optional resource_common.PublishStatus          publish_status_filter, // Published status, 0 - unfiltered, 1 - unpublished, 2 - published
+    5  : required i64          space_id (agw.js_conv="str", api.js_conv="true"), // User's space ID
+    7  : optional i32          size                 , // The number of data bars read at one time, the default is 10, and the maximum is 100.
+    9  : optional string       cursor               , // Cursor, used for paging, default 0, the first request can not be passed, subsequent requests need to bring the last returned cursor
+    10 : optional list<string> search_keys          , // The field used to specify the custom search, do not fill in the default only name matches, eg [] string {name, custom} matches the name and custom fields full_text
+    11 : optional bool         is_get_imageflow     , // Do you need to return image review when the res_type_filter is [2 workflow]
     255:          base.Base    Base                 ,
 }
 
@@ -20,15 +20,15 @@ struct LibraryResourceListResponse {
     1  :          i64                                code         ,
     2  :          string                             msg          ,
     3  :          list<resource_common.ResourceInfo> resource_list,
-    5  : optional string                             cursor       , // 游标，用于下次请求的cursor
-    6  :          bool                               has_more     , // 是否还有数据待拉取
+    5  : optional string                             cursor       , // Cursor, the cursor for the next request
+    6  :          bool                               has_more     , // Is there still data to be pulled?
     255: required base.BaseResp                      BaseResp     ,
 }
 
 struct ProjectResourceListRequest {
-    1 : required i64 project_id (agw.js_conv="str", api.js_conv="true"), // 项目ID
-    2 : i64 space_id (agw.js_conv="str", api.js_conv="true"), // 用户所在space id
-    3 : optional string project_version, // 指定获取某个版本的project的资源
+    1 : required i64 project_id (agw.js_conv="str", api.js_conv="true"), // Project ID
+    2 : i64 space_id (agw.js_conv="str", api.js_conv="true"), // User space id
+    3 : optional string project_version, // Specify the resources to obtain a version of the project
     255: base.Base Base  ,
 }
 
@@ -40,30 +40,30 @@ struct ProjectResourceListResponse {
 }
 
 struct ResourceCopyDispatchRequest {
-    // 场景，只支持单资源的操作
+    // Scenario, only supports the operation of a single resource
     1 : resource_common.ResourceCopyScene scene,
-    // 被用户选择复制/移动的资源ID
+    // The resource ID selected by the user to copy/move
     2 : i64 res_id (api.js_conv="true", api.body="res_id")
     3 : resource_common.ResType res_type
-    // 所在项目ID
+    // Project ID
     4 : optional i64 project_id (api.js_conv="true", api.body="project_id")
     5 : optional string res_name
-    6 : optional i64 target_space_id (api.js_conv="true", api.body="target_space_id") // 跨空间复制的目标space id
+    6 : optional i64 target_space_id (api.js_conv="true", api.body="target_space_id") // Target space id for cross-space copy
     255: base.Base Base,
 }
 
 struct ResourceCopyDispatchResponse {
     1  : i64 code,
     2  : string msg,
-    3  : optional string task_id, // 复制任务id, 用于查询任务状态或取消、重试任务
-    // 不可以进行操作的原因，返回多语言文本
+    3  : optional string task_id, // Copy task ID, used to query task status or cancel or retry tasks
+    // The reason why the operation cannot be performed is to return multilingual text
     4  : optional list<resource_common.ResourceCopyFailedReason> failed_reasons,
     255: required base.BaseResp BaseResp,
 }
 
 
 struct ResourceCopyDetailRequest {
-    1  : string task_id, // 复制任务id, 用于查询任务状态或取消、重试任务
+    1  : string task_id, // Copy task ID, used to query task status or cancel or retry tasks
     255: base.Base Base,
 }
 
@@ -76,20 +76,20 @@ struct ResourceCopyDetailResponse {
 
 
 struct ResourceCopyRetryRequest {
-    1  : string task_id, // 复制任务id, 用于查询任务状态或取消、重试任务
+    1  : string task_id, // Copy task ID, used to query task status or cancel or retry tasks
     255: base.Base Base,
 }
 
 struct ResourceCopyRetryResponse {
     1  : i64 code,
     2  : string msg,
-    // 不可以进行操作的原因，返回多语言文本
+    // The reason why the operation cannot be performed is to return multilingual text
     4  : optional list<resource_common.ResourceCopyFailedReason> failed_reasons,
     255: required base.BaseResp BaseResp,
 }
 
 struct ResourceCopyCancelRequest {
-    1  : string task_id, // 复制任务id, 用于查询任务状态或取消、重试任务
+    1  : string task_id, // Copy task ID, used to query task status or cancel or retry tasks
     255: base.Base Base,
 }
 
@@ -102,7 +102,7 @@ struct ResourceCopyCancelResponse {
 service ResourceService {
     LibraryResourceListResponse LibraryResourceList(1: LibraryResourceListRequest request)(api.post='/api/plugin_api/library_resource_list', api.category="resource", api.gen_path="resource", agw.preserve_base="true")
     ProjectResourceListResponse ProjectResourceList(1: ProjectResourceListRequest request)(api.post='/api/plugin_api/project_resource_list', api.category="resource", api.gen_path="resource", agw.preserve_base="true")
-    // 复制Library资源到项目、复制项目资源到Library、移动项目资源到Library、项目内单复制资源
+    // Copy Library resources to projects, copy project resources to libraries, move project resources to libraries, and copy resources within projects
     ResourceCopyDispatchResponse ResourceCopyDispatch (1: ResourceCopyDispatchRequest req) (api.post='/api/plugin_api/resource_copy_dispatch', api.category="resource", api.gen_path="resource", agw.preserve_base="true")
     ResourceCopyDetailResponse ResourceCopyDetail (1: ResourceCopyDetailRequest req) (api.post='/api/plugin_api/resource_copy_detail', api.category="resource", api.gen_path="resource", agw.preserve_base="true")
     ResourceCopyRetryResponse ResourceCopyRetry (1: ResourceCopyRetryRequest req) (api.post='/api/plugin_api/resource_copy_retry', api.category="resource", api.gen_path="resource", agw.preserve_base="true")

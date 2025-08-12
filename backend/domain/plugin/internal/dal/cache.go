@@ -21,16 +21,15 @@ import (
 	"errors"
 	"time"
 
-	redisV9 "github.com/redis/go-redis/v9"
-
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type OAuthCache struct {
-	cacheCli *redisV9.Client
+	cacheCli cache.Cmdable
 }
 
-func NewOAuthCache(cacheCli *redisV9.Client) *OAuthCache {
+func NewOAuthCache(cacheCli cache.Cmdable) *OAuthCache {
 	return &OAuthCache{
 		cacheCli: cacheCli,
 	}
@@ -39,7 +38,7 @@ func NewOAuthCache(cacheCli *redisV9.Client) *OAuthCache {
 func (o *OAuthCache) Get(ctx context.Context, key string) (value string, exist bool, err error) {
 	cmd := o.cacheCli.Get(ctx, key)
 	if cmd.Err() != nil {
-		if errors.Is(cmd.Err(), redisV9.Nil) {
+		if errors.Is(cmd.Err(), cache.Nil) {
 			return "", false, nil
 		}
 		return "", false, cmd.Err()

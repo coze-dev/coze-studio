@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export type SecondEnvironment = 'cn-coze-pro' | 'cn-coze-basic';
 
 export interface TeamInviteParams {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ViewVariableType } from '@/store/variable-groups/types';
 import { type TreeNodeCustomData } from '@/components/variable-tree/type';
 import { formatJson } from '@/components/variable-tree/components/json-editor/utils/format-json';
@@ -100,21 +100,18 @@ export const getEditorViewVariableJson = (treeData: TreeNodeCustomData) => {
       return [result];
     }
 
-    return nodes.reduce(
-      (acc, node) => {
-        if (!node.name) {
-          return acc;
-        }
-        if (node.children && node.children.length > 0) {
-          const value = processChildren(node.children, node.type);
-          acc[node.name] = isArrayType(node.type) ? [value] : value;
-        } else {
-          acc[node.name] = getDefaultValueByType(node.type);
-        }
+    return nodes.reduce((acc, node) => {
+      if (!node.name) {
         return acc;
-      },
-      {} satisfies Record<string, unknown>,
-    );
+      }
+      if (node.children && node.children.length > 0) {
+        const value = processChildren(node.children, node.type);
+        acc[node.name] = isArrayType(node.type) ? [value] : value;
+      } else {
+        acc[node.name] = getDefaultValueByType(node.type);
+      }
+      return acc;
+    }, {} satisfies Record<string, unknown>);
   };
 
   // Generate the final JSON structure

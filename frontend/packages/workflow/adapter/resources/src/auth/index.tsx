@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * @file The open source version does not currently provide multi-person collaboration capabilities
  */

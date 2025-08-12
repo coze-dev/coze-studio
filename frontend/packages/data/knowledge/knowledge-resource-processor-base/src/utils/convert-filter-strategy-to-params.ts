@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ResegmentRequest } from '@coze-arch/idl/knowledge';
 
 import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text/interface';

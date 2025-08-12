@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ILevelSegment } from '@coze-data/knowledge-stores';
 
 import { type Chunk } from '@coze-data/knowledge-common-components/text-knowledge-editor';

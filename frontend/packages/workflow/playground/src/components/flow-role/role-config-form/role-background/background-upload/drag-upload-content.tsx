@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useState } from 'react';
 
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import {
-  IconCozUpload,
-  IconCozInfoCircle,
-} from '@coze-arch/coze-design/icons';
+import { IconCozUpload, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import { Typography, Tooltip, Button } from '@coze-arch/coze-design';
 
 import img from './image.png';

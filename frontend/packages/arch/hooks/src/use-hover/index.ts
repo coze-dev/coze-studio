@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import {type DependencyList} from 'react';
+
+import { type DependencyList } from 'react';
 import type React from 'react';
 import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 
 interface Options {
-  onEnter?: () => void
-  onLeave?: () => void
+  onEnter?: () => void;
+  onLeave?: () => void;
 }
 
 const useHover = <T extends HTMLElement = any>(
@@ -28,25 +28,31 @@ const useHover = <T extends HTMLElement = any>(
   options: Options = {},
   deps: DependencyList = [],
 ): [React.MutableRefObject<T>, boolean] => {
-  const {  onEnter, onLeave } = options
+  const { onEnter, onLeave } = options;
   const ref = useRef<T>();
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
-    if (onEnter) {onEnter()}
-    setIsHovered(true)
-  }, [typeof onEnter  === 'function']);
+    if (onEnter) {
+      onEnter();
+    }
+    setIsHovered(true);
+  }, [typeof onEnter === 'function']);
   const handleMouseLeave = useCallback(() => {
-    if (onLeave) {onLeave()}
-    setIsHovered(false)
-  }, [typeof onLeave  === 'function']);
+    if (onLeave) {
+      onLeave();
+    }
+    setIsHovered(false);
+  }, [typeof onLeave === 'function']);
 
   useLayoutEffect(() => {
-    let target = ref.current
+    let target = ref.current;
     if (el) {
       target = typeof el === 'function' ? el() : el;
     }
-    if (!target) {return}
+    if (!target) {
+      return;
+    }
     target.addEventListener('mouseenter', handleMouseEnter);
     target.addEventListener('mouseleave', handleMouseLeave);
     return () => {

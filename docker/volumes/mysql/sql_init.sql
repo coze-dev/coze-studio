@@ -50,12 +50,12 @@ INSERT INTO template (agent_id, space_id, product_entity_type, meta_info) VALUES
     ON DUPLICATE KEY UPDATE agent_id = VALUES(agent_id), meta_info = VALUES(meta_info);
 
 
-INSERT INTO opencoze.workflow_meta(id,space_id, name, description, icon_uri, created_at,status, content_type, mode, creator_id, tag, author_id) VALUES
+INSERT INTO workflow_meta(id,space_id, name, description, icon_uri, created_at,status, content_type, mode, creator_id, tag, author_id) VALUES
     (1, 999999,'split_messages', '示例：把较长的文本消息拆分多个，适合拟人发消息场景', 'default_icon/default_workflow_icon.png', 1750254785913,3, 0, 0,  0, 0, 0)
     ON DUPLICATE KEY UPDATE
     id = VALUES(id);
 
-INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, test_run_success, modified, updated_at, deleted_at, commit_id) VALUES (1, '{
+INSERT INTO workflow_draft (id, canvas, input_params, output_params, test_run_success, modified, updated_at, deleted_at, commit_id) VALUES (1, '{
  "nodes": [
   {
    "id": "100001",

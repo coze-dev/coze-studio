@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { PromptEditorRender } from './editor/render';
 export { PromptEditorProvider } from './editor/context';
 export type { PromptEditorRenderProps } from './editor/render';

@@ -25,7 +25,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagent"
+	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
@@ -165,6 +165,10 @@ func (c *impl) buildSchemaMessage(ctx context.Context, msgs []*message.Message) 
 		if err != nil {
 			continue
 		}
+		if len(sm.ReasoningContent) > 0 {
+			sm.ReasoningContent = ""
+		}
+
 		schemaMessage = append(schemaMessage, c.parseMessageURI(ctx, sm))
 	}
 

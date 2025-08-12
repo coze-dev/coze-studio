@@ -29,8 +29,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	plugin "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	schema "github.com/cloudwego/eino/schema"
+	plugin "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -102,6 +102,7 @@ func (mr *MockServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockService)(nil).GetPluginToolsInfo), ctx, req)
 }
+
 
 // MockInvokableTool is a mock of InvokableTool interface.
 type MockInvokableTool struct {

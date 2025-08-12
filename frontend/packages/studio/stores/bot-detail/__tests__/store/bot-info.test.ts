@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { BotMarketStatus, BotMode } from '@coze-arch/idl/developer_api';
 
 import { useBotDetailStoreSet } from '../../src/store/index';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type IPoint, Rectangle } from '@flowgram-adapter/fixed-layout-editor';
 
 export enum BezierControlType {

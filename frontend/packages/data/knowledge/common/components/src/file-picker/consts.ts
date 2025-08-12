@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Indent related data
 export const DEFAULT_FILENODE_LEVEL_INDENT = 24;
 

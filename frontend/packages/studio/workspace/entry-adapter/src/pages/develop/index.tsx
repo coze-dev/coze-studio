@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
 /* eslint @coze-arch/max-line-per-function: ["error", {"max": 500}] */
 /* eslint-disable complexity */
@@ -357,8 +357,8 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                       filterParams.recentlyOpen
                         ? 'recentOpen'
                         : filterParams.isPublish
-                          ? 'publish'
-                          : 'edit'
+                        ? 'publish'
+                        : 'edit'
                     }
                   />
                 ))}

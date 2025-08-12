@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // import ReactJson from 'react-json-view';
 
 import { type CSSProperties } from 'react';
@@ -62,8 +62,8 @@ export const MessagePanel = (props: MessagePanelProps) => {
           encrypted
             ? ''
             : typeof inputValue === 'string'
-              ? inputValue
-              : JSON.stringify(inputValue)
+            ? inputValue
+            : JSON.stringify(inputValue)
         }
         onCopyClick={onCopyClick}
       />

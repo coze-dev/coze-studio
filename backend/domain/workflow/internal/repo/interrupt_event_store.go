@@ -22,16 +22,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type interruptEventStoreImpl struct {
-	redis *redis.Client
+	redis cache.Cmdable
 }
 
 const (
@@ -81,7 +80,7 @@ func (i *interruptEventStoreImpl) SaveInterruptEvents(ctx context.Context, wfExe
 
 	previousEventStr, err := i.redis.Get(ctx, previousResumedEventKey).Result()
 	if err != nil {
-		if !errors.Is(err, redis.Nil) {
+		if !errors.Is(err, cache.Nil) {
 			return fmt.Errorf("failed to get previous resumed event for wfExeID %d: %w", wfExeID, err)
 		}
 	}
@@ -154,7 +153,7 @@ func (i *interruptEventStoreImpl) GetFirstInterruptEvent(ctx context.Context, wf
 
 	eventJSON, err := i.redis.LIndex(ctx, listKey, 0).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return nil, false, nil // List is empty or key does not exist
 		}
 		return nil, false, fmt.Errorf("failed to get first interrupt event from Redis list for wfExeID %d: %w", wfExeID, err)
@@ -203,7 +202,7 @@ func (i *interruptEventStoreImpl) PopFirstInterruptEvent(ctx context.Context, wf
 
 	eventJSON, err := i.redis.LPop(ctx, listKey).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return nil, false, nil // List is empty or key does not exist
 		}
 		return nil, false, vo.WrapError(errno.ErrRedisError,
@@ -227,7 +226,7 @@ func (i *interruptEventStoreImpl) ListInterruptEvents(ctx context.Context, wfExe
 
 	eventJSONs, err := i.redis.LRange(ctx, listKey, 0, -1).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return nil, nil // List is empty or key does not exist
 		}
 		return nil, vo.WrapError(errno.ErrRedisError,

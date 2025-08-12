@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import EvaluationApiService from '@coze-arch/idl/evaluation_api';
 
 import { axiosInstance, type BotAPIRequestConfig } from './axios';

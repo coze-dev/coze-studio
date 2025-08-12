@@ -40,7 +40,6 @@
     "react-dom": "~18.2.0",
     "storybook": "^7.6.7",
     "stylelint": "^15.11.0",
-
     "vite-plugin-svgr": "~3.3.0",
     "vitest": "~3.0.5"
   },
@@ -49,3 +48,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

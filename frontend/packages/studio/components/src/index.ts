@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { AvatarBackgroundNoticeDot } from './avatar-background-notice-dot';
 
 export { ImageList, type ImageItem, type ImageListProps } from './image-list';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { defaultConfig } from '@coze-studio/studio-i18n-resource-adapter';
 
 export default defaultConfig;

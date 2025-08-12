@@ -1,4 +1,4 @@
-id: 2004
+id: 66010
 name: DeepSeek-V3
 icon_uri: default_icon/deepseek_v2.png
 icon_url: ""
@@ -69,7 +69,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: DeepSeek-V3
     protocol: deepseek
     capability:
         function_call: false
@@ -85,7 +84,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://api.deepseek.com"
         api_key: ""
         timeout: 0s
         model: ""
@@ -96,12 +95,7 @@ meta:
         top_p: 1
         top_k: 0
         stop: []
-        openai: null
-        claude: null
-        ark: null
         deepseek:
             response_format_type: text
-        qwen: null
-        gemini: null
         custom: {}
     status: 0

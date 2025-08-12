@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCursorInInputSlot } from '@coze-common/editor-plugins/input-slot';
 import {
   PromptConfiguratorModal as BasePromptConfiguratorModal,

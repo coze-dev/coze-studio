@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ContentType, type Message } from '@coze-common/chat-area';
 
 export const getReferFromMessage = (message: Message<ContentType>) => {

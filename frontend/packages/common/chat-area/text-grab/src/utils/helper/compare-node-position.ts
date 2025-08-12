@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Determine the node inclusion relationship
  * Reference document "https://developer.mozilla.org/zh-CN/docs/Web/API/Node/compareDocumentPosition"

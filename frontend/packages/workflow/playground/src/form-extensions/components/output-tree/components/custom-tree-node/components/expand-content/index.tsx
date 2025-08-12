@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC } from 'react';
 
 import classNames from 'classnames';
@@ -76,7 +76,9 @@ export const ExpandContent: FC<ExpandContentProps> = props => {
           </div>
           <div className={styles['field-content']}>
             <ValidationErrorWrapper
-              path={`${data.field?.slice(data.field.indexOf('['))}.defaultValue`}
+              path={`${data.field?.slice(
+                data.field.indexOf('['),
+              )}.defaultValue`}
               className={styles.container}
               errorCompClassName={'output-default-value-error-text'}
             >

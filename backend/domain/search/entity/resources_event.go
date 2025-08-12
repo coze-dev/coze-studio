@@ -16,7 +16,7 @@
 
 package entity
 
-// 复用AppDomainEvent中的DomainName和OpType
+// Reuse DomainName and OpType in AppDomainEvent
 
 type ResourceDomainEvent struct {
 	OpType   OpType            `json:"op_type"`

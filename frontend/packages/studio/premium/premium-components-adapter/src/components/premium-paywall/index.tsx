@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum PremiumPaywallScene {
   // Create a new space
   AddSpace,

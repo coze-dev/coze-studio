@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type WorkflowDatabase } from '@coze-workflow/base';
 
 import { useCurrentDatabaseQuery } from '@/hooks';

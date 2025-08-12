@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { NavLink, useLocation } from 'react-router-dom';
 import { type FC } from 'react';
 
@@ -53,7 +53,9 @@ export const GLobalLayoutMenuItem: FC<LayoutMenuItem> = ({
   // cp-disable-next-line
   const isLink = newPath.startsWith('https://');
 
-  const navId = `primary-menu-${newPath.startsWith('/') ? newPath.slice(1) : newPath}`;
+  const navId = `primary-menu-${
+    newPath.startsWith('/') ? newPath.slice(1) : newPath
+  }`;
   return (
     <NavLink
       to={newPath}

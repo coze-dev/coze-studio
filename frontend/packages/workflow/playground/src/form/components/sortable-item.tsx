@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Draggable } from 'react-beautiful-dnd';
 
 import classNames from 'classnames';

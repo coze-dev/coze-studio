@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { isFallbackErrorMessage } from '../../src/utils/message';
 
 vi.mock('@coze-common/chat-core', () => ({

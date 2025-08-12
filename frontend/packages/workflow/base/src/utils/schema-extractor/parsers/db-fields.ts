@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { parseExpression } from '../utils';
 import { type SchemaExtractorDbFieldsParser } from '../type';
 export const dbFieldsParser: SchemaExtractorDbFieldsParser = dbFields =>

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useShallow } from 'zustand/react/shallow';
 import { Divider } from '@coze-arch/bot-semi';
 import { DuplicateBot } from '@coze-studio/components';

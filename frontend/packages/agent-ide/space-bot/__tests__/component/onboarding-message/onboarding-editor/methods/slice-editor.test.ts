@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { sliceEditor } from '@/component/onboarding-message/onboarding-editor/method/slice-editor';
 
 // Vi.mock needs to be at the top because it will be promoted

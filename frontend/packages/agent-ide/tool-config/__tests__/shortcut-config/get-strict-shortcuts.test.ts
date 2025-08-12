@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, expect, it } from 'vitest';
 import { ToolType } from '@coze-arch/bot-api/playground_api';
 import type { ShortcutCommand } from '@coze-arch/bot-api/playground_api';

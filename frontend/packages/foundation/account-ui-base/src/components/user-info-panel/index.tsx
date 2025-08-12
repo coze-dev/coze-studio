@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   type PropsWithChildren,
   type ReactNode,
@@ -135,10 +135,10 @@ const updateProfileCheckEvent = createReportEvent({
 
 const getUserName = (userInfo?: DataItem.UserInfo | null): string =>
   userInfo?.bui_audit_info?.audit_status === 1
-    ? (userInfo?.bui_audit_info?.audit_info.user_unique_name ??
+    ? userInfo?.bui_audit_info?.audit_info.user_unique_name ??
       userInfo?.app_user_info.user_unique_name ??
-      '')
-    : (userInfo?.app_user_info.user_unique_name ?? '');
+      ''
+    : userInfo?.app_user_info.user_unique_name ?? '';
 
 // eslint-disable-next-line @coze-arch/max-line-per-function
 export const UserInfoPanel = () => {

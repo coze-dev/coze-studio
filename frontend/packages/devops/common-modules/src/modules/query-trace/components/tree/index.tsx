@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-magic-numbers -- there will be many numbers calculated in this component, no need to deal with them*/
 import { type FC, useCallback, useMemo, useState } from 'react';
 

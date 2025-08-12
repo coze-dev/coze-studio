@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get, isString, omit } from 'lodash-es';
 import JSONBig from 'json-bigint';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';

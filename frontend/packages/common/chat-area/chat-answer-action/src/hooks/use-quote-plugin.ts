@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GrabPluginBizContext } from '@coze-common/chat-area-plugin-message-grab';
 import { PluginName, useWriteablePlugin } from '@coze-common/chat-area';
 

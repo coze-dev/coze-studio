@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type WriteableLifeCycleServiceGenerator } from '@coze-common/chat-area';
 
 import { type PluginBizContext } from '../../types/biz-context';

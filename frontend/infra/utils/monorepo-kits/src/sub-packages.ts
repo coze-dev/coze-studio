@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type RushConfigurationProject } from '@rushstack/rush-sdk';
 
 import { getRushConfiguration } from './rush-config';

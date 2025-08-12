@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export * from './convert-bytes';
 export * from './default-enable';
 export * from './is-file';

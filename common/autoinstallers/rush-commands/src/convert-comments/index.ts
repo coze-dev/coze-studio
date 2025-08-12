@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #!/usr/bin/env node
 
 import { createProgram, parseOptions, showHelp } from './cli/command';
@@ -18,7 +34,7 @@ import {
 import { FileScanConfig } from './types/index';
 
 /**
- * 主处理函数
+ * main processing function
  */
 async function processRepository(
   rootPath: string,
@@ -36,7 +52,7 @@ async function processRepository(
       printConfigInfo(config, true);
     }
 
-    // 1. 扫描源文件
+    // 1. Scan source files
     console.log('\n📁 扫描源文件...');
     const scanConfig: FileScanConfig = {
       root: rootPath,
@@ -58,7 +74,7 @@ async function processRepository(
       return;
     }
 
-    // 2. 检测中文注释
+    // 2. Detect Chinese annotations
     console.log('\n🔍 检测中文注释...');
     const filesWithComments = detectChineseInFiles(sourceFiles);
 
@@ -76,11 +92,11 @@ async function processRepository(
       return;
     }
 
-    // 3. 初始化翻译服务
+    // 3. Initialize the translation service
     console.log('\n🤖 初始化翻译服务...');
     const translationService = new TranslationService(config.translation);
 
-    // 4. 处理文件
+    // 4. Processing documents
     console.log('\n🔄 开始翻译处理...');
     const progressDisplay = new ProgressDisplay(filesWithComments.length);
 
@@ -92,7 +108,7 @@ async function processRepository(
       reportCollector.recordFileStart(file.path);
 
       try {
-        // 翻译注释
+        // Translation annotations
         const translations = await translationService.batchTranslate(
           chineseComments,
           config.translation.concurrency,
@@ -102,12 +118,14 @@ async function processRepository(
           console.log(`\n📝 ${file.path}:`);
           translations.forEach((translation, index) => {
             console.log(
-              `  ${index + 1}. "${translation.original}" → "${translation.translated}"`,
+              `  ${index + 1}. "${translation.original}" → "${
+                translation.translated
+              }"`,
             );
           });
         }
 
-        // 如果不是干运行模式，则替换文件内容
+        // If not in dry running mode, replace the file content
         if (!dryRun) {
           const replacements = createReplacements(
             file,
@@ -116,10 +134,7 @@ async function processRepository(
           );
           const operation = { file: file.path, replacements };
 
-          const result = await replaceCommentsInFile(
-            file,
-            operation,
-          );
+          const result = await replaceCommentsInFile(file, operation);
 
           if (!result.success) {
             throw new Error(result.error || '文件替换失败');
@@ -140,7 +155,7 @@ async function processRepository(
 
     progressDisplay.complete();
 
-    // 5. 生成报告
+    // 5. Generate reports
     console.log('\n📊 生成处理报告...');
     const report = reportCollector.generateReport();
 
@@ -148,11 +163,11 @@ async function processRepository(
       console.log('\n🔍 预览模式 - 未实际修改文件');
     }
 
-    // 显示报告
+    // Show report
     const reportText = generateReport(report, 'console');
     console.log(reportText);
 
-    // 保存报告到文件（如果指定了输出路径）
+    // Save the report to a file (if output path is specified)
     if (config.outputFile) {
       await saveReportToFile(
         report,
@@ -168,20 +183,20 @@ async function processRepository(
 }
 
 /**
- * 主函数
+ * main function
  */
 async function main(): Promise<void> {
   try {
     const program = createProgram();
 
-    // 解析命令行参数
+    // Parsing command line arguments
     program.parse();
     const options = parseOptions(program);
 
-    // 加载配置
+    // load configuration
     const config = await loadConfig(options);
 
-    // 验证配置
+    // verify configuration
     const validation = validateConfig(config);
     if (!validation.valid) {
       console.error('❌ 配置验证失败:');
@@ -190,18 +205,18 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    // 解析文件扩展名
+    // Parse file extension
     const extensions = options.exts
       ? options.exts.split(',').map(ext => ext.trim())
       : config.processing.defaultExtensions;
 
-    // 添加输出文件配置
+    // Add output file configuration
     const fullConfig = {
       ...config,
       outputFile: options.output,
     };
 
-    // 执行处理
+    // execution processing
     await processRepository(
       options.root,
       extensions,
@@ -215,7 +230,7 @@ async function main(): Promise<void> {
   }
 }
 
-// 处理未捕获的异常
+// Handling uncaught exceptions
 process.on('unhandledRejection', (reason, promise) => {
   console.error('未处理的Promise拒绝:', reason);
   process.exit(1);
@@ -226,7 +241,7 @@ process.on('uncaughtException', error => {
   process.exit(1);
 });
 
-// 运行主函数
+// Run the main function
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }

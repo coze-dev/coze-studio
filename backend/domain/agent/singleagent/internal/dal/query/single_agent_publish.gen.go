@@ -45,23 +45,23 @@ func newSingleAgentPublish(db *gorm.DB, opts ...gen.DOOption) singleAgentPublish
 	return _singleAgentPublish
 }
 
-// singleAgentPublish bot 渠道和发布版本流水表
+// singleAgentPublish Bot connector and release version info
 type singleAgentPublish struct {
 	singleAgentPublishDo
 
 	ALL          field.Asterisk
-	ID           field.Int64  // 主键id
+	ID           field.Int64  // id
 	AgentID      field.Int64  // agent_id
-	PublishID    field.String // 发布 id
-	ConnectorIds field.Field  // 发布的 connector_ids
+	PublishID    field.String // publish id
+	ConnectorIds field.Field  // connector_ids
 	Version      field.String // Agent Version
-	PublishInfo  field.String // 发布信息
-	PublishTime  field.Int64  // 发布时间
+	PublishInfo  field.String // publish info
+	PublishTime  field.Int64  // publish time
 	CreatedAt    field.Int64  // Create Time in Milliseconds
 	UpdatedAt    field.Int64  // Update Time in Milliseconds
-	CreatorID    field.Int64  // 发布人 user_id
-	Status       field.Int32  // 状态 0:使用中 1:删除 3:禁用
-	Extra        field.String // 扩展字段
+	CreatorID    field.Int64  // creator id
+	Status       field.Int32  // Status 0: In use 1: Delete 3: Disabled
+	Extra        field.String // extra
 
 	fieldMap map[string]field.Expr
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ReactMarkdown from 'react-markdown';
 import {
   forwardRef,
@@ -28,10 +28,7 @@ import { nanoid } from 'nanoid';
 import { cloneDeep, omit } from 'lodash-es';
 import { useRequest } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import {
-  IconCozCross,
-  IconCozLongArrowUp,
-} from '@coze-arch/coze-design/icons';
+import { IconCozCross, IconCozLongArrowUp } from '@coze-arch/coze-design/icons';
 import {
   Button,
   IconButton,

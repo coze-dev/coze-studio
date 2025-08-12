@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import StoneFornaxEvaluationService from '@coze-arch/idl/stone_fornax_evaluation';
 
 import { axiosInstance, type BotAPIRequestConfig } from './axios';

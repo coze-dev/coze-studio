@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { BREAK_NODE_REGISTRY } from './node-registry';
 export { BreakContent } from './node-content';

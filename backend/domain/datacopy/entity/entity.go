@@ -17,7 +17,7 @@
 package entity
 
 type CopyDataTask struct {
-	TaskUniqKey   string // 复制任务的唯一标志
+	TaskUniqKey   string // Unique sign of a replication task
 	OriginDataID  int64
 	TargetDataID  int64
 	OriginSpaceID int64
@@ -28,10 +28,10 @@ type CopyDataTask struct {
 	TargetAppID   int64
 	Status        DataCopyTaskStatus
 	DataType      DataType
-	StartTime     int64 // 任务开始时间ms
-	FinishTime    int64 // 任务结束时间ms
+	StartTime     int64 // Task start time ms
+	FinishTime    int64 // Task end time ms
 	ExtInfo       string
-	ErrorMsg      string // 复制失败的错误信息
+	ErrorMsg      string // Copy failed error message
 }
 type DataCopyTaskStatus int
 

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src';
 import { filterKeys } from './common';
 
 describe('unify-parser', () => {
   describe('thrift service', () => {
-    it('should convert service extenstions', () => {
+    it('should convert service extensions', () => {
       const fileContent = `
       service Foo {
       } (api.uri_prefix = 'https://example.com')
@@ -41,7 +41,7 @@ describe('unify-parser', () => {
   });
 
   describe('proto service', () => {
-    it('should convert service extenstions', () => {
+    it('should convert service extensions', () => {
       const fileContent = `
       syntax = "proto3";
       service Foo {

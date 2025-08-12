@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect } from 'vitest';
 import type { PluginApi } from '@coze-arch/bot-api/playground_api';
 

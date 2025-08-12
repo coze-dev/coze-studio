@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MIN_WIDTH = 360;
 export const MAX_WIDTH = 546;

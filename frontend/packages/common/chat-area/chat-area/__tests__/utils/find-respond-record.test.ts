@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { findRespondRecord, type Responding } from '../../src/store/waiting';
 
 vi.mock('@coze-common/chat-core', () => ({

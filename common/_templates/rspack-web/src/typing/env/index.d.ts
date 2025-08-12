@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-// 基于env/index.ts自动生成，请勿手动修改
+
+// Automatically generated based on env/index.ts, do not modify manually
 declare const IS_CI: boolean;
 declare const IS_DEV_MODE: boolean;
 declare const IS_PRODUCT_MODE: boolean;

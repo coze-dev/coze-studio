@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { isEqual } from 'lodash-es';
@@ -27,7 +27,13 @@ import {
 } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
-import { Tag, Avatar, Popover, Typography, Toast } from '@coze-arch/coze-design';
+import {
+  Tag,
+  Avatar,
+  Popover,
+  Typography,
+  Toast,
+} from '@coze-arch/coze-design';
 
 import { type NodeError } from '@/entities/workflow-exec-state-entity';
 

@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { DATABASE_UPDATE_NODE_REGISTRY } from './database-update-node-registry';

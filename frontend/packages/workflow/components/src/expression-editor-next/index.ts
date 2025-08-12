@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { EditorProvider } from '@coze-editor/editor/react';
 
 import { Renderer } from './renderer';

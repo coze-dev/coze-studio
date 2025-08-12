@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TextRender } from './text-render';
 export { EditHeaderRender } from './edit-header-render';
 export { TagRender } from './tag-render';

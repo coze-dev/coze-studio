@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { type ComponentProps, Suspense, forwardRef, lazy } from 'react';
 
 import classNames from 'classnames';
@@ -144,7 +144,7 @@ export const AgentInfoForm = forwardRef<
           initValue={
             hideOperation
               ? spacesList?.[0]?.id
-              : (currentSpaceId ?? spacesList?.[0]?.id)
+              : currentSpaceId ?? spacesList?.[0]?.id
           }
           placeholder={I18n.t('select_team')}
           noErrorMessage

@@ -77,6 +77,7 @@ type InvalidResponseProcessStrategy int8
 const (
 	InvalidResponseProcessStrategyOfReturnRaw     InvalidResponseProcessStrategy = 0 // If the value of a field is invalid, the raw response value of the field is returned.
 	InvalidResponseProcessStrategyOfReturnDefault InvalidResponseProcessStrategy = 1 // If the value of a field is invalid, the default value of the field is returned.
+	InvalidResponseProcessStrategyOfReturnErr     InvalidResponseProcessStrategy = 2 // If the value of a field is invalid, error is returned.
 )
 
 const (

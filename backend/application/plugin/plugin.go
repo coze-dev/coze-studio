@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -32,22 +33,22 @@ import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"gopkg.in/yaml.v3"
 
+	botOpenAPI "github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
-	productCommon "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_common"
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	botOpenAPI "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_open_api"
-	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/plugin_develop"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	productCommon "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
+	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
+	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -217,7 +218,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		UpdateTime:     strconv.FormatInt(pl.UpdatedAt/1000, 10),
 		ProjectID:      strconv.FormatInt(pl.GetAPPID(), 10),
 		VersionName:    pl.GetVersion(),
-		VersionTs:      pl.GetVersion(), // 兼容前端逻辑，理论上应该使用 VersionName
+		VersionTs:      pl.GetVersion(), // Compatible with front-end logic, in theory VersionName should be used
 		PluginApis:     pluginAPIs,
 	}
 
@@ -1151,6 +1152,16 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		Resp:    "{}",
 	}
 
+	opts := []model.ExecuteToolOpt{}
+	switch req.Operation {
+	case common.DebugOperation_Debug:
+		opts = append(opts, model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnErr))
+	case common.DebugOperation_Parse:
+		opts = append(opts, model.WithAutoGenRespSchema(),
+			model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnRaw),
+		)
+	}
+
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
 		UserID:          conv.Int64ToStr(*userID),
 		PluginID:        req.PluginID,
@@ -1158,7 +1169,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		ExecScene:       model.ExecSceneOfToolDebug,
 		ExecDraftTool:   true,
 		ArgumentsInJson: req.Parameters,
-	}, model.WithAutoGenRespSchema())
+	}, opts...)
 	if err != nil {
 		var e errorx.StatusError
 		if errors.As(err, &e) {
@@ -1237,7 +1248,7 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 	resp = &productAPI.GetProductListResponse{
 		Data: &productAPI.GetProductListData{
 			Products: products,
-			HasMore:  false, // 一次性拉完
+			HasMore:  false, // Finish at one time
 			Total:    int32(res.Total),
 		},
 	}
@@ -1703,7 +1714,12 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
 
-	stateBytes, err := utils.DecryptByAES(stateStr, utils.StateSecretKey)
+	secret := os.Getenv(encrypt.StateSecretEnv)
+	if secret == "" {
+		secret = encrypt.DefaultStateSecret
+	}
+
+	stateBytes, err := encrypt.DecryptByAES(stateStr, secret)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}

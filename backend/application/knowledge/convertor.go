@@ -25,10 +25,10 @@ import (
 	"strings"
 	"time"
 
-	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/common"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
+	dataset "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
@@ -64,7 +64,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 		}, nil
 
 	case document.TableColumnTypeTime:
-		// 支持时间戳和时间字符串
+		// Supports timestamp and time string
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			t := time.Unix(i, 0)

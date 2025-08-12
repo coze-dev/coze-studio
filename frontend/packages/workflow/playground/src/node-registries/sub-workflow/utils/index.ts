@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { syncToLatestReleaseState } from './sync-to-latest-release';
 export { getInputDefaultValue } from './get-input-default-value';
 export { getIdentifier } from './get-identifier';

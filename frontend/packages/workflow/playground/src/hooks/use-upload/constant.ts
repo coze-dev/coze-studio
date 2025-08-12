@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Image types that support preview
 export const PREVIEW_IMAGE_TYPE = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
 

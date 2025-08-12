@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Cut a section of the size of the left and right sides of the center position from the list to reduce the amount of search calculation
  */

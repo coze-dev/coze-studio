@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const REGION_MAP = {
   'cn-north-1': 'cn-north-1',
   'ap-singapore-1': 'ap-singapore-1',

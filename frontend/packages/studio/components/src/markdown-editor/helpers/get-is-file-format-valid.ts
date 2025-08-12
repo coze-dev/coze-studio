@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const getIsFileFormatValid = (file: File) =>
   file.type.startsWith('image/') && file.type !== 'image/svg+xml';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type BasicTarget } from 'ahooks/lib/utils/domTarget';
 import { useInfiniteScroll, useRequest } from 'ahooks';
 import { DataNamespace, dataReporter } from '@coze-data/reporter';

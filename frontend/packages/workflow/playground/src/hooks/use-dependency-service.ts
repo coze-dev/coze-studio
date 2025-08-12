@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { useConfigEntity, useService } from '@flowgram-adapter/free-layout-editor';
+
+import {
+  useConfigEntity,
+  useService,
+} from '@flowgram-adapter/free-layout-editor';
 
 import { WorkflowDependencyService } from '@/services/workflow-dependency-service';
 import { WorkflowDependencyStateEntity } from '@/entities';

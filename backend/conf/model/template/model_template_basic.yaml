@@ -1,4 +1,4 @@
-id: 100
+id: 63010
 name: test_model
 icon_uri: default_icon/test_icon_uri.png
 icon_url: test_icon_url
@@ -128,7 +128,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: test_model
     protocol: test_protocol
     capability:
         function_call: true
@@ -150,7 +149,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: https://localhost:1234/chat/completion
+        base_url: https://localhost:1234/v1
         api_key: qweasdzxc
         timeout: 10s
         model: model_name
@@ -164,7 +163,7 @@ meta:
             - bye
         enable_thinking: false
         openai:
-            by_azure: true
+            by_azure: false
             api_version: "2024-10-21"
             response_format:
                 type: text

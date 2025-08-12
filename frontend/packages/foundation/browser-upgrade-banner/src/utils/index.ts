@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { detect, type Browser } from 'detect-browser';
 
 import { compareVersion } from './compare-version';
@@ -98,8 +98,7 @@ const testPCVersion = () => {
 
   return {
     downloadUrl: IS_OVERSEA
-      ? (INTERNATIONAL_BROWSER_DOWNLOAD_CONFIG[name] ??
-        INTERNATIONAL_CHROME_URL)
-      : (CN_BROWSER_DOWNLOAD_CONFIG[name] ?? CN_CHROME_URL),
+      ? INTERNATIONAL_BROWSER_DOWNLOAD_CONFIG[name] ?? INTERNATIONAL_CHROME_URL
+      : CN_BROWSER_DOWNLOAD_CONFIG[name] ?? CN_CHROME_URL,
   };
 };

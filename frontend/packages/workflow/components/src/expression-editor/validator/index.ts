@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable no-cond-assign */
 import { Node } from 'slate';

@@ -28,14 +28,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/query"
@@ -64,10 +65,10 @@ type databaseService struct {
 	onlineDAO          repository.OnlineDAO
 	agentToDatabaseDAO repository.AgentToDatabaseDAO
 	storage            storage.Storage
-	cache              *redis.Client
+	cache              cache.Cmdable
 }
 
-func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, cacheCli *redis.Client) Database {
+func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage storage.Storage, cacheCli cache.Cmdable) Database {
 	return &databaseService{
 		rdb:                rdb,
 		db:                 db,
@@ -641,7 +642,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			cond := &rdb.Condition{
 				Field:    database.DefaultUidColName,
 				Operator: entity3.OperatorEqual,
-				Value:    req.UserID,
+				Value:    strconv.FormatInt(req.UserID, 10),
 			}
 
 			condition.Conditions = append(condition.Conditions, cond)
@@ -711,7 +712,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 		cond := &rdb.Condition{
 			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
+			Value:    strconv.FormatInt(req.UserID, 10),
 		}
 
 		condition.Conditions = append(condition.Conditions, cond)
@@ -773,20 +774,21 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 			Conditions: []*rdb.Condition{cond},
 		}
 	}
-
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
-		cond := &rdb.Condition{
-			Field:    database.DefaultUidColName,
-			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
-		}
-
-		if complexCondition == nil {
-			complexCondition = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
+	if req.TableType == table.TableType_DraftTable {
+		if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
+			cond := &rdb.Condition{
+				Field:    database.DefaultUidColName,
+				Operator: entity3.OperatorEqual,
+				Value:    strconv.FormatInt(req.UserID, 10),
 			}
-		} else {
-			complexCondition.Conditions = append(complexCondition.Conditions, cond)
+
+			if complexCondition == nil {
+				complexCondition = &rdb.ComplexCondition{
+					Conditions: []*rdb.Condition{cond},
+				}
+			} else {
+				complexCondition.Conditions = append(complexCondition.Conditions, cond)
+			}
 		}
 	}
 
@@ -804,7 +806,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	selectResp, err := d.rdb.SelectData(ctx, &rdb.SelectDataRequest{
 		TableName: physicalTableName,
-		Fields:    []string{}, // 空表示查询所有字段
+		Fields:    []string{}, // Null means query all fields
 		Where:     complexCondition,
 		OrderBy:   orderBy,
 		Limit:     &limit,
@@ -1073,7 +1075,16 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if err != nil {
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
-
+	// add rw mode
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && len(req.UserID) != 0 {
+		switch operation {
+		case sqlparsercontract.OperationTypeSelect, sqlparsercontract.OperationTypeUpdate, sqlparsercontract.OperationTypeDelete:
+			parsedSQL, err = sqlparser.NewSQLParser().AppendSQLFilter(parsedSQL, sqlparsercontract.SQLFilterOpAnd, fmt.Sprintf("%s = '%s'", database.DefaultUidColName, req.UserID))
+			if err != nil {
+				return nil, fmt.Errorf("append sql filter failed: %v", err)
+			}
+		}
+	}
 	insertResult := make([]map[string]interface{}, 0)
 	if operation == sqlparsercontract.OperationTypeInsert {
 		cid := consts.CozeConnectorID
@@ -1918,22 +1929,22 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 		currentFileName = draftCurrentFileName
 	}
 	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	progressNum, err := d.cache.Get(ctx, fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	failReason, err := d.cache.Get(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 
 	fileName, err := d.cache.Get(ctx, fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, cache.Nil) {
 		return nil, err
 	}
 

@@ -21,8 +21,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -126,7 +126,7 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 		} else if v.ID == consts.APIConnectorID {
 			c.BindType = developer_api.BindType_ApiBind
 			// c.BindInfo = map[string]string{
-			// 	"sdk_version": "1.2.0-beta.6", // TODO（@fanlv）: 确认版本在哪读取？
+			// 	"sdk_version": "1.2.0 -beta.6",//TODO (@fanlv): Where to check the version?
 			// }
 			c.AuthLoginInfo = &developer_api.AuthLoginInfo{}
 		}

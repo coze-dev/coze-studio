@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FC, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -176,8 +176,8 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
           pageFromFromStore === BotPageFromEnum.Store
             ? 'store_workspace'
             : getPersonalSpaceID() === targetSpaceId
-              ? 'personal_workspace'
-              : 'team_workspace',
+            ? 'personal_workspace'
+            : 'team_workspace',
         bot_name: botName ?? botNameFromStore ?? '',
       };
       if (resp.code === 0) {

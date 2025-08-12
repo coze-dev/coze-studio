@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { avatarBackgroundWebSocket } from './utils/avatar-background-socket';
 
 export { useBotDetailIsReadonly } from './hooks/use-bot-detail-readonly';

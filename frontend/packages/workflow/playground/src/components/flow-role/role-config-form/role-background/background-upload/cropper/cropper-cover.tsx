@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import classNames from 'classnames';
@@ -133,8 +133,8 @@ export const CropperCover: React.FC<CropperCoverProps> = ({
                   ? '#4E40E5'
                   : '#F4F4F6'
                 : index === 1
-                  ? 'rgba(6, 7, 9, 0.24)'
-                  : 'rgba(255, 255, 255, 0.60)';
+                ? 'rgba(6, 7, 9, 0.24)'
+                : 'rgba(255, 255, 255, 0.60)';
               return (
                 <div className="flex gap-1 mb-2" key={index}>
                   <AvaterContent

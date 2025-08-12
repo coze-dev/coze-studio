@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",
-    "@coze-arch/stylelint-config": "workspace:*",
     "@rsbuild/core": "^0.2.18",
     "@rsbuild/plugin-react": "^0.2.18",
     "@slardar/web": "1.7.0",
@@ -39,7 +39,7 @@
     "postcss": "^8.4.32",
     "postcss-loader": "^7.3.3",
     "tailwindcss": "~3.3.3",
-
     "vitest": "~3.0.5"
   }
 }
+

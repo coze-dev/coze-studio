@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useNavigate } from 'react-router-dom';
@@ -170,7 +170,9 @@ export const PublishButton = ({
                 onClick={() => open()}
               >
                 <span className="flex-grow mr-[8px]">
-                  {`${I18n.t('app_ide_publish_modal_recent_publication')} ${latestVersion?.version_number}`}
+                  {`${I18n.t('app_ide_publish_modal_recent_publication')} ${
+                    latestVersion?.version_number
+                  }`}
                 </span>
                 {tag}
                 <IconButton

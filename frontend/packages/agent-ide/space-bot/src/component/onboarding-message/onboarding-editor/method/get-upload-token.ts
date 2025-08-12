@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GetUploadTokenResponse } from '@coze-arch/bot-api/market_interaction_api';
 import { DeveloperApi } from '@coze-arch/bot-api';
 

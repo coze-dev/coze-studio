@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ImportKnowledgeSourceSelectModuleProps } from '../module';
 import { TableLocal } from '../../import-knowledge-source/table-local';
 import { TableCustom } from '../../import-knowledge-source/table-custom';

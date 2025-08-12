@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const MAX_HISTORY_COUNT = 2;
 export const hasHistory = (): boolean =>
   Boolean(

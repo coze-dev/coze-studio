@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /*
  Table cell width adaptation
  ColumnSize. Default should be returned when width is less than WidthThresholds. Small.

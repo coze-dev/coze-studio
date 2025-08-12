@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const generateError = (message: string) =>
   new Error(`[Bot Platform Tool Hooks]: ${message}`);

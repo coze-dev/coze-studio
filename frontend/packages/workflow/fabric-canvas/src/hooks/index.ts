@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useFabricPreview } from './use-fabric-preview';
 export { useFabricEditor } from './use-fabric-editor';

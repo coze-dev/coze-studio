@@ -23,7 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "codezombiech.gitignore",
+    "aaron-bond.better-comments",
+    "mikestead.dotenv",
+    "stylelint.vscode-stylelint"
+  ],
+  "unwantedRecommendations": [
+    "nucllear.vscode-extension-auto-import",
+    "steoates.autoimport"
+  ]
+}

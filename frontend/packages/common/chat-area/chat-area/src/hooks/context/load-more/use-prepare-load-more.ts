@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useEffect, useMemo, useRef } from 'react';
 
 import type { Reporter } from '@coze-arch/logger';

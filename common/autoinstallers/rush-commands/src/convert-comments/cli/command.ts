@@ -1,8 +1,24 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { Command } from 'commander';
 import { CliOptions } from '../types/config';
 
 /**
- * 创建命令行程序
+ * Create a command line program
  */
 export const createProgram = (): Command => {
   const program = new Command();
@@ -14,7 +30,11 @@ export const createProgram = (): Command => {
 
   program
     .requiredOption('-r, --root <directory>', '需要处理的根目录')
-    .option('-e, --exts <extensions>', '文件扩展名，用逗号分隔 (例: ts,js,go)', '')
+    .option(
+      '-e, --exts <extensions>',
+      '文件扩展名，用逗号分隔 (例: ts,js,go)',
+      '',
+    )
     .option('--access-key-id <key>', '火山引擎 Access Key ID')
     .option('--secret-access-key <key>', '火山引擎 Secret Access Key')
     .option('--region <region>', '火山引擎服务区域', 'cn-beijing')
@@ -32,7 +52,7 @@ export const createProgram = (): Command => {
 };
 
 /**
- * 解析命令行选项
+ * Parse command line options
  */
 export const parseOptions = (program: Command): CliOptions => {
   const options = program.opts();
@@ -48,12 +68,12 @@ export const parseOptions = (program: Command): CliOptions => {
     dryRun: options.dryRun,
     verbose: options.verbose,
     output: options.output,
-    config: options.config
+    config: options.config,
   };
 };
 
 /**
- * 显示帮助信息
+ * Display help information
  */
 export const showHelp = (): void => {
   console.log(`
@@ -101,7 +121,7 @@ export const showHelp = (): void => {
 };
 
 /**
- * 显示版本信息
+ * Show version information
  */
 export const showVersion = (): void => {
   console.log('ai-translate version 1.0.0');

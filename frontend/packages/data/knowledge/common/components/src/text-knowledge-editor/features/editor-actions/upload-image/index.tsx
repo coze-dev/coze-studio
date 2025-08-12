@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { UploadImageIcon } from './icon-action';
 export { UploadImageButton } from './button-action';
 export { UploadImageMenu } from './menu-action';

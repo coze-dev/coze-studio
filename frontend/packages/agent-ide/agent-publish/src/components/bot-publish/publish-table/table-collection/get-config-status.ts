@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { type TagColor } from '@coze-arch/bot-semi';

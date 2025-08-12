@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { DataViewerProvider } from './provider';
 export { DataViewerContext } from './context';
 export { type DataViewerState } from './create-store';

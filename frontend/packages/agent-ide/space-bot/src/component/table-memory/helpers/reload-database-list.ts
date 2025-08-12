@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { nanoid } from 'nanoid';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';

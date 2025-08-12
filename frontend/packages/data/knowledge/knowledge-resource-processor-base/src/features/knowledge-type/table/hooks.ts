@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * pure network request & common services
  */
@@ -22,7 +22,10 @@
 import { type StoreApi, type UseBoundStore } from 'zustand';
 import { debounce, get } from 'lodash-es';
 import { useRequest } from 'ahooks';
-import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeParams,
+} from '@coze-data/knowledge-stores';
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
 import {
   type ProgressItem,

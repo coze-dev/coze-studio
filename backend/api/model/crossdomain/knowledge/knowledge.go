@@ -23,6 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -30,10 +31,10 @@ type ListKnowledgeRequest struct {
 	IDs        []int64
 	SpaceID    *int64
 	AppID      *int64
-	Name       *string // 完全匹配
+	Name       *string // Exact match
 	Status     []int32
 	UserID     *int64
-	Query      *string // 模糊匹配
+	Query      *string // fuzzy match
 	Page       *int
 	PageSize   *int
 	Order      *Order
@@ -58,10 +59,10 @@ const (
 type DocumentType int64
 
 const (
-	DocumentTypeText    DocumentType = 0 // 文本
-	DocumentTypeTable   DocumentType = 1 // 表格
-	DocumentTypeImage   DocumentType = 2 // 图片
-	DocumentTypeUnknown DocumentType = 9 // 未知
+	DocumentTypeText    DocumentType = 0 // Text
+	DocumentTypeTable   DocumentType = 1 // table
+	DocumentTypeImage   DocumentType = 2 // image
+	DocumentTypeUnknown DocumentType = 9 // unknown
 )
 
 type ListKnowledgeResponse struct {
@@ -102,14 +103,14 @@ type RetrieveRequest struct {
 	Query       string
 	ChatHistory []*schema.Message
 
-	// 从指定的知识库和文档中召回
+	// Recall from the specified knowledge base and documentation
 	KnowledgeIDs []int64
-	DocumentIDs  []int64 // todo: 确认下这个场景
+	DocumentIDs  []int64 // TODO: Confirm the scene
 
-	// 召回策略
+	// recall strategy
 	Strategy *RetrievalStrategy
 
-	// 用于 nl2sql 和 message to query 的 chat model config
+	// Chat model config for nl2sql and message to query
 	ChatModelProtocol *chatmodel.Protocol
 	ChatModelConfig   *chatmodel.Config
 }
@@ -119,26 +120,27 @@ type RetrievalStrategy struct {
 	MinScore  *float64 // 0.01-0.99 default 0.5
 	MaxTokens *int64
 
-	SelectType         SelectType // 调用方式
-	SearchType         SearchType // 搜索策略
+	SelectType         SelectType // call method
+	SearchType         SearchType // search strategy
 	EnableQueryRewrite bool
 	EnableRerank       bool
 	EnableNL2SQL       bool
+	IsPersonalOnly     bool
 }
 
 type SelectType int64
 
 const (
-	SelectTypeAuto     = 0 // 自动调用
-	SelectTypeOnDemand = 1 // 按需调用
+	SelectTypeAuto     = 0 // automatic call
+	SelectTypeOnDemand = 1 // call on demand
 )
 
 type SearchType int64
 
 const (
-	SearchTypeSemantic SearchType = 0 // 语义
-	SearchTypeFullText SearchType = 1 // 全文
-	SearchTypeHybrid   SearchType = 2 // 混合
+	SearchTypeSemantic SearchType = 0 // semantics
+	SearchTypeFullText SearchType = 1 // full text
+	SearchTypeHybrid   SearchType = 2 // mix
 )
 
 type RetrieveResponse struct {
@@ -158,10 +160,10 @@ type Slice struct {
 	DocumentName string
 	RawContent   []*SliceContent
 	SliceStatus  SliceStatus
-	ByteCount    int64 // 切片 bytes
-	CharCount    int64 // 切片字符数
-	Sequence     int64 // 切片位置序号
-	Hit          int64 // 命中次数
+	ByteCount    int64 // Sliced bytes
+	CharCount    int64 // number of sliced characters
+	Sequence     int64 // Slicing position serial number
+	Hit          int64 // hit count
 	Extra        map[string]string
 }
 
@@ -187,7 +189,7 @@ func (s *Slice) GetSliceContent() string {
 			continue
 		}
 		if item.Type == SliceContentTypeTable {
-			var contentMap map[string]string
+			contentMap := make(map[string]string)
 			for _, column := range s.RawContent[0].Table.Columns {
 				contentMap[column.ColumnName] = column.GetStringValue()
 			}
@@ -215,9 +217,9 @@ type SliceContent struct {
 type SliceStatus int64
 
 const (
-	SliceStatusInit        SliceStatus = 0 // 初始化
-	SliceStatusFinishStore SliceStatus = 1 // searchStore存储完成
-	SliceStatusFailed      SliceStatus = 9 // 失败
+	SliceStatusInit        SliceStatus = 0 // initialization
+	SliceStatusFinishStore SliceStatus = 1 // searchStore storage complete
+	SliceStatusFailed      SliceStatus = 9 // fail
 )
 
 type SliceContentType int64
@@ -231,11 +233,11 @@ const (
 type SliceImage struct {
 	Base64  []byte
 	URI     string
-	OCR     bool // 是否使用 ocr 提取了文本
+	OCR     bool // Is the text extracted using OCR?
 	OCRText *string
 }
 
-type SliceTable struct { // table slice 为一行数据
+type SliceTable struct { // Table sliced into one row
 	Columns []*document.ColumnData
 }
 
@@ -282,4 +284,70 @@ type CopyKnowledgeResponse struct {
 }
 type MoveKnowledgeToLibraryRequest struct {
 	KnowledgeID int64
+}
+
+type ParseMode string
+
+const (
+	FastParseMode     = "fast_mode"
+	AccurateParseMode = "accurate_mode"
+)
+
+type ChunkType string
+
+const (
+	ChunkTypeDefault ChunkType = "default"
+	ChunkTypeCustom  ChunkType = "custom"
+	ChunkTypeLeveled ChunkType = "leveled"
+)
+
+type ParsingStrategy struct {
+	ParseMode    ParseMode
+	ExtractImage bool
+	ExtractTable bool
+	ImageOCR     bool
+}
+type ChunkingStrategy struct {
+	ChunkType ChunkType
+	ChunkSize int64
+	Separator string
+	Overlap   int64
+}
+
+type CreateDocumentRequest struct {
+	KnowledgeID      int64
+	ParsingStrategy  *ParsingStrategy
+	ChunkingStrategy *ChunkingStrategy
+	FileURL          string
+	FileName         string
+	FileExtension    parser.FileExtension
+}
+type CreateDocumentResponse struct {
+	DocumentID int64
+	FileName   string
+	FileURL    string
+}
+
+type DeleteDocumentRequest struct {
+	DocumentID string
+}
+
+type DeleteDocumentResponse struct {
+	IsSuccess bool
+}
+
+type KnowledgeDetail struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IconURL     string `json:"-"`
+	FormatType  int64  `json:"-"`
+}
+
+type ListKnowledgeDetailRequest struct {
+	KnowledgeIDs []int64
+}
+
+type ListKnowledgeDetailResponse struct {
+	KnowledgeDetails []*KnowledgeDetail
 }

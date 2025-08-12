@@ -33,7 +33,8 @@ output/*
 *.swp
 
 # Vscode files
-.vscode
+.vscode/settings.json
+.vscode/launch.json
 
 /patches
 /oldimpl

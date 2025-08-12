@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { GlobalLayout, useAppInit } from '@coze-foundation/global-adapter';
 
 export const Layout = () => {

@@ -1,4 +1,4 @@
-id: 2003
+id: 68010
 name: Gemma-3
 icon_uri: default_icon/ollama.png
 icon_url: ""
@@ -47,7 +47,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: Gemma-3
     protocol: ollama
     capability:
         function_call: true
@@ -63,7 +62,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "http://host.docker.internal:11434"
         api_key: ""
         timeout: 0s
         model: ""
@@ -74,11 +73,5 @@ meta:
         top_p: 0.95
         top_k: 20
         stop: []
-        openai: null
-        claude: null
-        ark: null
-        deepseek: null
-        qwen: null
-        gemini: null
         custom: {}
     status: 0

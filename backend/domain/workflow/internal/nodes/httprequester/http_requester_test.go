@@ -28,6 +28,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
 )
 
@@ -68,7 +69,7 @@ func TestInvoke(t *testing.T) {
 				},
 			},
 		}
-		hg, err := NewHTTPRequester(context.Background(), cfg)
+		hg, err := cfg.Build(context.Background(), &schema.NodeSchema{})
 		assert.NoError(t, err)
 		m := map[string]any{
 			"__apiInfo_url_" + crypto.MD5HexValue("url_v1"): "v1",
@@ -78,7 +79,7 @@ func TestInvoke(t *testing.T) {
 			"__params_" + crypto.MD5HexValue("p2"):          "v2",
 		}
 
-		result, err := hg.Invoke(context.Background(), m)
+		result, err := hg.(*HTTPRequester).Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])
@@ -156,8 +157,8 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
-		hg, err := NewHTTPRequester(context.Background(), cfg)
+		// Create an HTTPRequest instance
+		hg, err := cfg.Build(context.Background(), &schema.NodeSchema{})
 		assert.NoError(t, err)
 
 		m := map[string]any{
@@ -171,7 +172,7 @@ func TestInvoke(t *testing.T) {
 			"__body_bodyData_formData_" + crypto.MD5HexValue("fileURL"): fileServer.URL,
 		}
 
-		result, err := hg.Invoke(context.Background(), m)
+		result, err := hg.(*HTTPRequester).Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])
@@ -228,7 +229,7 @@ func TestInvoke(t *testing.T) {
 				},
 			},
 		}
-		hg, err := NewHTTPRequester(context.Background(), cfg)
+		hg, err := cfg.Build(context.Background(), &schema.NodeSchema{})
 		assert.NoError(t, err)
 
 		m := map[string]any{
@@ -241,7 +242,7 @@ func TestInvoke(t *testing.T) {
 			"__body_bodyData_rawText_" + crypto.MD5HexValue("v2"):    "v2",
 		}
 
-		result, err := hg.Invoke(context.Background(), m)
+		result, err := hg.(*HTTPRequester).Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])
@@ -302,8 +303,8 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
-		hg, err := NewHTTPRequester(context.Background(), cfg)
+		// Create an HTTPRequest instance
+		hg, err := cfg.Build(context.Background(), &schema.NodeSchema{})
 		assert.NoError(t, err)
 
 		m := map[string]any{
@@ -316,7 +317,7 @@ func TestInvoke(t *testing.T) {
 			"__body_bodyData_json_" + crypto.MD5HexValue("v2"):        "v2",
 		}
 
-		result, err := hg.Invoke(context.Background(), m)
+		result, err := hg.(*HTTPRequester).Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])
@@ -375,8 +376,8 @@ func TestInvoke(t *testing.T) {
 			},
 		}
 
-		// 创建 HTTPRequest 实例
-		hg, err := NewHTTPRequester(context.Background(), cfg)
+		// Create an HTTPRequest instance
+		hg, err := cfg.Build(context.Background(), &schema.NodeSchema{})
 		assert.NoError(t, err)
 
 		m := map[string]any{
@@ -388,7 +389,7 @@ func TestInvoke(t *testing.T) {
 			"__body_bodyData_binary_fileURL" + crypto.MD5HexValue("v1"): fileServer.URL,
 		}
 
-		result, err := hg.Invoke(context.Background(), m)
+		result, err := hg.(*HTTPRequester).Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])

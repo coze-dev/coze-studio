@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
@@ -33,15 +33,15 @@ const (
 
 type IDGenerator = idgen.IDGenerator
 
-func New(client *redis.Client) (idgen.IDGenerator, error) {
-	// 初始化代码。
+func New(client cache.Cmdable) (idgen.IDGenerator, error) {
+	// Initialization code.
 	return &idGenImpl{
 		cli: client,
 	}, nil
 }
 
 type idGenImpl struct {
-	cli       *redis.Client
+	cli       cache.Cmdable
 	namespace string
 }
 
@@ -60,7 +60,7 @@ func (i *idGenImpl) GenMultiIDs(ctx context.Context, counts int) ([]int64, error
 	leftNum := int64(counts)
 	lastMs := int64(0)
 	ids := make([]int64, 0, counts)
-	svrID := int64(0) // 一个 server id 全部是 0
+	svrID := int64(0) // A server id is all 0.
 
 	for idx := int64(0); leftNum > 0 && idx < maxTimeAddrTimes; idx++ {
 		ms := maxInt64(i.GetIDTimeMs(), lastMs)
@@ -131,12 +131,12 @@ func (i *idGenImpl) GetIDTimeMs() int64 {
 }
 
 func (i *idGenImpl) Expire(ctx context.Context, key string) {
-	// 暂时忽略错误
+	// Temporarily ignore errors
 	_, _ = i.cli.Expire(ctx, key, counterKeyExpirationTime).Result()
 }
 
 func genIDKey(space string, svrID int64, ms int64) string {
-	// 此 Key 的格式一旦确定，便不能再变化
+	// Once the format of this key is determined, it cannot be changed
 	return fmt.Sprintf("id_generator:%v:%v:%v", space, svrID, ms)
 }
 

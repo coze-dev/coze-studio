@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type AssistParameterType } from '@coze-arch/bot-api/plugin_develop';
 import {
   FILE_TYPE_CONFIG,

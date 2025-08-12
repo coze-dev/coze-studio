@@ -1,4 +1,4 @@
-id: 65536
+id: 60020
 name: Doubao-1.5-Pro-32k
 icon_uri: default_icon/doubao_v2.png
 icon_url: ""
@@ -66,7 +66,6 @@ default_parameters:
             zh: 生成多样性
             en: Generation diversity
 meta:
-    name: doubao-1.5-pro-32k
     protocol: ark
     capability:
         function_call: true
@@ -82,10 +81,10 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://ark.cn-beijing.volces.com/api/v3/"
         api_key: ""
         timeout: 0s
-        model: ""
+        model: "" # model_id / endpoint_id
         temperature: 0.1
         frequency_penalty: 0
         presence_penalty: 0
@@ -93,16 +92,11 @@ meta:
         top_p: 0.7
         top_k: 0
         stop: []
-        openai: null
-        claude: null
         ark:
             region: ""
             access_key: ""
             secret_key: ""
             retry_times: null
             custom_header: {}
-        deepseek: null
-        qwen: null
-        gemini: null
         custom: {}
     status: 0

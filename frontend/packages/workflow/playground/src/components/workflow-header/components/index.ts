@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { SubmitButton } from './submit-button';
 export { HistoryButton } from './history-button';
 export { DuplicateButton } from './duplicate-button';

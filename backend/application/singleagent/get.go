@@ -22,12 +22,13 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -259,7 +260,7 @@ func toModelDetail(m *modelmgr.Model) *playground.ModelDetail {
 
 	return &playground.ModelDetail{
 		Name:         ptr.Of(m.Name),
-		ModelName:    ptr.Of(m.Meta.Name),
+		ModelName:    ptr.Of(m.Name),
 		ModelID:      ptr.Of(m.ID),
 		ModelFamily:  ptr.Of(int64(mm.Protocol.TOModelClass())),
 		ModelIconURL: ptr.Of(m.IconURL),
@@ -318,7 +319,7 @@ func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, plu
 			Description:  ptr.Of(e.GetDesc()),
 			PluginType:   (*int64)(&e.PluginType),
 			IconURL:      &iconURL,
-			PluginStatus: (*int64)(ptr.Of(plugin_develop_common.PluginStatus_PUBLISHED)),
+			PluginStatus: (*int64)(ptr.Of(common.PluginStatus_PUBLISHED)),
 			IsOfficial: func() *bool {
 				if e.SpaceID == 0 {
 					return ptr.Of(true)
@@ -444,7 +445,7 @@ func parametersDo2Vo(op *plugin.Openapi3Operation) []*playground.PluginParameter
 			}
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params

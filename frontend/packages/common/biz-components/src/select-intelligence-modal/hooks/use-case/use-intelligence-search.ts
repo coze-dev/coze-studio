@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useInfiniteScroll } from 'ahooks';
 
 import { type IntelligenceList } from '../../services/use-case-services/intelligence-search.service';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { createBatchFunctionJSON } from './create-batch-function-json';
 export { createBatchFunctionLines } from './create-batch-function-lines';
 export { createBatchFunctionTemplateData } from './create-batch-function-template-data';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type StateCreator } from 'zustand';
 
 export interface UserInfoSlice {
@@ -29,6 +29,6 @@ export const createUserInfoSlice: StateCreator<
 > = set => ({
   userInfo: '',
   iniUserInfo: () => {
-    // TODO: 用户信息相关方法获取
+    // TODO: User information related methods
   },
 });

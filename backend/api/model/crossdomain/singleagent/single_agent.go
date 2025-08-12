@@ -20,10 +20,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 )
 
 type AgentRuntime struct {
@@ -37,16 +37,21 @@ type AgentRuntime struct {
 type EventType string
 
 const (
-	EventTypeOfChatModelAnswer EventType = "chatmodel_answer"
-	EventTypeOfToolsMessage    EventType = "tools_message"
-	EventTypeOfFuncCall        EventType = "func_call"
-	EventTypeOfSuggest         EventType = "suggest"
-	EventTypeOfKnowledge       EventType = "knowledge"
-	EventTypeOfInterrupt       EventType = "interrupt"
+	EventTypeOfChatModelAnswer        EventType = "chatmodel_answer"
+	EventTypeOfToolsAsChatModelStream EventType = "tools_as_chatmodel_answer"
+	EventTypeOfToolMidAnswer          EventType = "tool_mid_answer"
+	EventTypeOfToolsMessage           EventType = "tools_message"
+	EventTypeOfFuncCall               EventType = "func_call"
+	EventTypeOfSuggest                EventType = "suggest"
+	EventTypeOfKnowledge              EventType = "knowledge"
+	EventTypeOfInterrupt              EventType = "interrupt"
 )
 
 type AgentEvent struct {
 	EventType EventType
+
+	ToolMidAnswer         *schema.StreamReader[*schema.Message]
+	ToolAsChatModelAnswer *schema.StreamReader[*schema.Message]
 
 	ChatModelAnswer *schema.StreamReader[*schema.Message]
 	ToolsMessage    []*schema.Message

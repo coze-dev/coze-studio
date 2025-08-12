@@ -1,4 +1,4 @@
-id: 2002
+id: 60000
 name: Doubao Model
 icon_uri: default_icon/doubao_v2.png
 icon_url: ""
@@ -90,7 +90,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: Doubao
     protocol: ark
     capability:
         function_call: true
@@ -107,10 +106,10 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://ark.cn-beijing.volces.com/api/v3/"
         api_key: ""
         timeout: 0s
-        model: ""
+        model: "" # model_id / endpoint_id
         temperature: 0.1
         frequency_penalty: 0
         presence_penalty: 0
@@ -118,16 +117,10 @@ meta:
         top_p: 0.7
         top_k: 0
         stop: []
-        openai: null
-        claude: null
         ark:
             region: ""
             access_key: ""
             secret_key: ""
             retry_times: null
             custom_header: {}
-        deepseek: null
-        qwen: null
-        gemini: null
-        custom: {}
     status: 0

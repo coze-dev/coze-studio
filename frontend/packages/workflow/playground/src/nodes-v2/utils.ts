@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { type WorkflowNodeRegistry } from '@coze-workflow/nodes';
 import { type StandardNodeType } from '@coze-workflow/base';

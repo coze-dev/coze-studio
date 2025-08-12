@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const ACTION_ITEM = 'action-label';
 
 export function codicon(name: string, actionItem = false): string {

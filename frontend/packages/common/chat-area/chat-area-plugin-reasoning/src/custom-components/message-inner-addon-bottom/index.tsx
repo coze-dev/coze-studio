@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { memo, useEffect, useRef, useState, type FC } from 'react';
 
 import { type Message, type ContentType } from '@coze-common/chat-core';

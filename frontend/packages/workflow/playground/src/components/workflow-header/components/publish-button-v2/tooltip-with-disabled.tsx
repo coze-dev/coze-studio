@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 
 type TooltipWithDisabledProps = TooltipProps & {

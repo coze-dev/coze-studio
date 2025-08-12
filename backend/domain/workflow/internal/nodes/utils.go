@@ -87,15 +87,13 @@ func TemplateRender(template string, vals map[string]interface{}) (string, error
 }
 
 func ExtractJSONString(content string) string {
+	content = strings.TrimSpace(content)
+
 	if strings.HasPrefix(content, "```") && strings.HasSuffix(content, "```") {
 		content = content[3 : len(content)-3]
 	}
 
-	if strings.HasPrefix(content, "json") {
-		content = content[4:]
-	}
-
-	return content
+	return strings.TrimPrefix(content, "json")
 }
 
 func ConcatTwoMaps(m1, m2 map[string]any) (map[string]any, error) {

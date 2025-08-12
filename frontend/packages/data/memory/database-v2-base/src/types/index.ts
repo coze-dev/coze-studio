@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { DatabaseTabs } from './database-tabs';
 export { CreateType } from './database-field';
 export { type NL2DBInfo } from './database-field';

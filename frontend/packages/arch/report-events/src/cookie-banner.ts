@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum CookieBannerEvents {
   ParseStorageValueError = 'parse_storage_value_error',
   GetLoginInfoError = 'get_login_info_error',

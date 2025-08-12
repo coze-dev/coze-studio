@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ShortCutStruct } from '@coze-agent-ide/tool-config/src/shortcut-config/type';
 import {
   type PluginStatus,
@@ -29,10 +29,7 @@ import {
   type RecallStrategy,
   type DefaultUserInputType,
 } from '@coze-arch/bot-api/playground_api';
-import {
-  type BotTableRWMode,
-  type FieldItem,
-} from '@coze-arch/bot-api/memory';
+import { type BotTableRWMode, type FieldItem } from '@coze-arch/bot-api/memory';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
 import type {
   FileboxInfo,

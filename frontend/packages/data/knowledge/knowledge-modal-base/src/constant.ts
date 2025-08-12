@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const KNOWLEDGE_UNIT_NAME_MAX_LEN = 100;
 export const KNOWLEDGE_MAX_DOC_SIZE = 300;
 export const KNOWLEDGE_MAX_SLICE_COUNT = 10000;

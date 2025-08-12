@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type BotTable, BotTableRWMode } from '@coze-arch/bot-api/memory';
 
 import { transformBotInfo, useBotInfo } from './use-bot-info';

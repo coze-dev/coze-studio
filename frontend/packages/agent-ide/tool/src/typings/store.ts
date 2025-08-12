@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type AbilityScope } from '@coze-agent-ide/tool-config';
 import { type BotDetailSkill } from '@coze-studio/bot-detail-store';
 

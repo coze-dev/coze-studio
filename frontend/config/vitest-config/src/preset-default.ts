@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { coverageConfigDefaults, type UserConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   useCallback,
   useEffect,
@@ -220,7 +220,7 @@ export const TestsetSelect = forwardRef<TestsetSelectAPI, TestsetSelectProps>(
         onSearch={handleSearch}
         emptyContent={I18n.t('workflow_testset_search_empty')}
         renderSelectedItem={() =>
-          testset ? (testset.caseBase?.name ?? '-') : null
+          testset ? testset.caseBase?.name ?? '-' : null
         }
         disabled={disabled}
         outerBottomSlot={

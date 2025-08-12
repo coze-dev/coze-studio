@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum MultiAgentEvents {
   BotLastPublishInfoError = 'bot_last_publish_info_error',
 }

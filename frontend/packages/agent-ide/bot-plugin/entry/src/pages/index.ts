@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { PluginDetailPage } from './plugin-id';
 export { MockSetDetail } from './mock-set-detail';
 export { MockSetList } from './mock-set';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { InputSlotWidget } from './input-slot-widget';
 export { insertInputSlot } from './action/insert-input-slot-action';
 export {

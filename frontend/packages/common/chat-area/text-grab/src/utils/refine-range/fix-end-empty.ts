@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { getAllChildNodesInNode } from '../helper/get-all-child-nodes-in-node';
 import { findNotContainsPreviousSibling } from '../helper/find-not-contains-previous-sibling';
 

@@ -37,13 +37,13 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/fetch-stream": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
     "@coze-common/chat-area-utils": "workspace:*",
     "@coze-studio/file-kit": "workspace:*",
     "@coze-studio/slardar-adapter": "workspace:*",
     "@coze-studio/uploader-adapter": "workspace:*",
-    "@coze-arch/bot-flags": "workspace:*",
-    "@coze-arch/fetch-stream": "workspace:*",
-    "@coze-arch/logger": "workspace:*",
     "@mattiasbuelens/web-streams-adapter": "~0.1.0",
     "axios": "^1.4.0",
     "eventemitter3": "^5.0.1",

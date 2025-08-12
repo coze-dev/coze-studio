@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createRenderer, option } from '@coze-editor/editor/react';
 import preset, { languages, themes } from '@coze-editor/editor/preset-code';
 import { shell } from '@coze-editor/editor/language-shell';
@@ -46,16 +46,16 @@ const minHeightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
     '&.cm-editor': {
       minHeight:
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -66,8 +66,8 @@ const maxHeightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -78,8 +78,8 @@ const heightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -90,8 +90,8 @@ const paddingOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -102,8 +102,8 @@ const borderRadiusOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 
@@ -114,8 +114,8 @@ const lineHeightOption = (value?: string | number) =>
         typeof value === 'number'
           ? `${value}px`
           : typeof value === 'string'
-            ? value
-            : 'unset',
+          ? value
+          : 'unset',
     },
   });
 

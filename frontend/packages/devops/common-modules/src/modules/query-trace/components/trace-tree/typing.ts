@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type TreeProps } from '../tree';
 import { type DataSource } from '../../typings/graph';
 import { type SpanTypeConfigMap } from '../../typings/config';

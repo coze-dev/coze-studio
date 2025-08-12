@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // eslint-disable-next-line @coze-arch/no-pkg-dir-import
 import { type GetHistoryMessageProps } from '@coze-common/chat-core/src/message/types/message-manager';
 import {

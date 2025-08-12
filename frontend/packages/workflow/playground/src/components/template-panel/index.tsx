@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { TemplateSlideButton } from './template-slide-button';
 import { TemplatePreview } from './template-preview';
 import { TemplatePanel } from './template-panel';

@@ -190,7 +190,7 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 	//			IconURI:     "icon.png",
 	//		},
 	//		KnowledgeID:   666,
-	//		RawContent:    "测试测试测试测试",
+	//		RawContent: "Test Test Test",
 	//		Source:        entity.DocumentSourceCustom,
 	//		FileExtension: "txt",
 	//	}
@@ -274,25 +274,25 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 	// 			VirtualTableName: "test",
 	// 			Columns: []*entity.TableColumn{
 	// 				{
-	// 					Name:     "第一列",
+	// 					Name: "First Column",
 	// 					Type:     entity.TableColumnTypeBoolean,
 	// 					Indexing: true,
 	// 					Sequence: 0,
 	// 				},
 	// 				{
-	// 					Name:     "第二列",
+	// 					Name: "Second column",
 	// 					Type:     entity.TableColumnTypeTime,
 	// 					Indexing: false,
 	// 					Sequence: 1,
 	// 				},
 	// 				{
-	// 					Name:     "第三列",
+	// 					Name: "Third Column",
 	// 					Type:     entity.TableColumnTypeString,
 	// 					Indexing: false,
 	// 					Sequence: 2,
 	// 				},
 	// 				{
-	// 					Name:     "第四列",
+	// 					Name: "Fourth column",
 	// 					Type:     entity.TableColumnTypeNumber,
 	// 					Indexing: true,
 	// 					Sequence: 3,
@@ -384,25 +384,25 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 // 			VirtualTableName: "test",
 // 			Columns: []*entity.TableColumn{
 // 				{
-// 					Name:     "第一列",
+// 					Name: "First Column",
 // 					Type:     entity.TableColumnTypeBoolean,
 // 					Indexing: true,
 // 					Sequence: 0,
 // 				},
 // 				{
-// 					Name:     "第二列",
+// 					Name: "Second column",
 // 					Type:     entity.TableColumnTypeTime,
 // 					Indexing: false,
 // 					Sequence: 1,
 // 				},
 // 				{
-// 					Name:     "第三列",
+// 					Name: "Third Column",
 // 					Type:     entity.TableColumnTypeString,
 // 					Indexing: false,
 // 					Sequence: 2,
 // 				},
 // 				{
-// 					Name:     "第四列",
+// 					Name: "Fourth column",
 // 					Type:     entity.TableColumnTypeNumber,
 // 					Indexing: true,
 // 					Sequence: 3,
@@ -415,14 +415,14 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 // 	assert.Equal(t, 1, len(doc))
 // 	time.Sleep(time.Second * 5)
 // 	doc[0].Name = "new_name"
-// 	doc[0].TableInfo.Columns[0].Name = "第一列_changeName"
-// 	doc[0].TableInfo.Columns[1].Name = "第二列_changeSeq"
+// 	Doc [0]. TableInfo. Columns [0]. Name = "First column _changeName"
+// 	Doc [0]. TableInfo. Columns [1]. Name = "Second column _changeSeq"
 // 	doc[0].TableInfo.Columns[1].Sequence = 2
-// 	doc[0].TableInfo.Columns[2].Name = "第三列_changeType"
+// 	Doc [0]. TableInfo. Columns [2]. Name = "Third column _changeType"
 // 	doc[0].TableInfo.Columns[2].Type = entity.TableColumnTypeInteger
 // 	doc[0].TableInfo.Columns[2].Sequence = 1
-// 	// 删除原来的第四列并新建第四列
-// 	doc[0].TableInfo.Columns[3].Name = "第五列_create"
+// 	Delete the original fourth column and create a new fourth column
+// 	Doc [0]. TableInfo. Columns [3]. Name = "Fifth column _create"
 // 	doc[0].TableInfo.Columns[3].Type = entity.TableColumnTypeNumber
 // 	doc[0].TableInfo.Columns[3].Sequence = 3
 // 	doc[0].TableInfo.Columns[3].ID = 0
@@ -479,25 +479,25 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 // 				VirtualTableName: "test",
 // 				Columns: []*entity.TableColumn{
 // 					{
-// 						Name:     "第一列",
+// 						Name: "First Column",
 // 						Type:     entity.TableColumnTypeBoolean,
 // 						Indexing: true,
 // 						Sequence: 0,
 // 					},
 // 					{
-// 						Name:     "第二列",
+// 						Name: "Second column",
 // 						Type:     entity.TableColumnTypeTime,
 // 						Indexing: false,
 // 						Sequence: 1,
 // 					},
 // 					{
-// 						Name:     "第三列",
+// 						Name: "Third Column",
 // 						Type:     entity.TableColumnTypeString,
 // 						Indexing: false,
 // 						Sequence: 2,
 // 					},
 // 					{
-// 						Name:     "第四列",
+// 						Name: "Fourth column",
 // 						Type:     entity.TableColumnTypeNumber,
 // 						Indexing: true,
 // 						Sequence: 3,
@@ -781,25 +781,25 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 // 			VirtualTableName: "test",
 // 			Columns: []*entity.TableColumn{
 // 				{
-// 					Name:     "第一列",
+// 					Name: "First Column",
 // 					Type:     entity.TableColumnTypeBoolean,
 // 					Indexing: true,
 // 					Sequence: 0,
 // 				},
 // 				{
-// 					Name:     "第二列",
+// 					Name: "Second column",
 // 					Type:     entity.TableColumnTypeTime,
 // 					Indexing: false,
 // 					Sequence: 1,
 // 				},
 // 				{
-// 					Name:     "第三列",
+// 					Name: "Third Column",
 // 					Type:     entity.TableColumnTypeString,
 // 					Indexing: false,
 // 					Sequence: 2,
 // 				},
 // 				{
-// 					Name:     "第四列",
+// 					Name: "Fourth column",
 // 					Type:     entity.TableColumnTypeNumber,
 // 					Indexing: true,
 // 					Sequence: 3,
@@ -979,7 +979,7 @@ func TestKnowledgeSVC_Retrieve(t *testing.T) {
 	//svc := MockKnowledgeSVC(t)
 	//mockey.PatchConvey("test retrieve", t, func() {
 	//	res, err := svc.Retrieve(ctx, &knowledge.RetrieveRequest{
-	//		Query:        "查找第三列为gogogo的数据",
+	//		Query: "Find the data of the third column gogogo",
 	//		KnowledgeIDs: []int64{1745810102455734000, 1745810094197395000},
 	//		Strategy: &entity.RetrievalStrategy{
 	//			TopK:               ptr.Of(int64(2)),

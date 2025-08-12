@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
 import ReactDOM from 'react-dom';
 import React, { useEffect } from 'react';

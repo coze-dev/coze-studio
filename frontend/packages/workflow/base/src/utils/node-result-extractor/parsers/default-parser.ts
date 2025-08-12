@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable complexity */
 import { isString } from 'lodash-es';
@@ -95,8 +95,8 @@ const parseData = (
   const rawOutputData = textHasRawout
     ? rawOutput?.toString?.()
     : rawOutput
-      ? typeSafeJSONParse(rawOutput) || rawOutput?.toString?.()
-      : undefined;
+    ? typeSafeJSONParse(rawOutput) || rawOutput?.toString?.()
+    : undefined;
 
   /** Code, Llm nodes need to display raw */
   const hasRawOutput =
@@ -121,8 +121,8 @@ const parseData = (
     const outputTitle = inputAsOutput
       ? '输出变量'
       : rawOutputData
-        ? '最终输出'
-        : '输出';
+      ? '最终输出'
+      : '输出';
     outputData &&
       dataList.push({
         title: outputTitle,

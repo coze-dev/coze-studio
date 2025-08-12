@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines-per-function */
 import md5 from 'md5';
 import { get, pick } from 'lodash-es';
@@ -331,7 +331,9 @@ export const useGenerateTestFormFieldsMap = () => {
         ).map(i => ({
           ...i,
           name: `__${dataPath.replaceAll('.', '_')}_fileURL`,
-          title: `${I18n.t('node_http_body')}-${I18n.t('node_http_body_binary')}`,
+          title: `${I18n.t('node_http_body')}-${I18n.t(
+            'node_http_body_binary',
+          )}`,
         }));
       }
 

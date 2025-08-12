@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { BotConfigArea } from './bot-config-area';
 
 export { SingleAgentModelView } from './model-config-view/single-agent-model-view';

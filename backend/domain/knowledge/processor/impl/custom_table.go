@@ -24,7 +24,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-// 用户自定义表格创建文档
+// User-defined form creation document
 type customTableProcessor struct {
 	baseDocProcessor
 }
@@ -46,7 +46,7 @@ func (c *customTableProcessor) BeforeCreate() error {
 			return errorx.New(errno.ErrKnowledgeTableInfoNotExistCode, errorx.KVf("msg", "table info not found, doc_id: %d", tableDoc[0].ID))
 		}
 		c.Documents[0].TableInfo = *tableDoc[0].TableInfo
-		// 追加场景
+		// append scene
 		if c.Documents[0].RawContent != "" {
 			c.Documents[0].FileExtension = getFormatType(c.Documents[0].Type)
 			uri := getTosUri(c.UserID, string(c.Documents[0].FileExtension))
@@ -65,14 +65,14 @@ func (c *customTableProcessor) BuildDBModel() error {
 	if len(c.Documents) > 0 &&
 		c.Documents[0].Type == knowledge.DocumentTypeTable {
 		if c.Documents[0].IsAppend {
-			// 追加场景，不需要创建表了
-			// 一是用户自定义一些数据、二是再上传一个表格，把表格里的数据追加到表格中
+			// Append the scene, no need to create a table
+			// First, the user customizes some data, and second, uploads another form and appends the data in the form to the form
 		} else {
 			err := c.baseDocProcessor.BuildDBModel()
 			if err != nil {
 				return err
 			}
-			// 因为这种创建方式不带数据，所以直接设置状态为可用
+			// Since this method of creation does not carry any data, the state is set to available directly
 			for i := range c.docModels {
 				c.docModels[i].DocumentType = 1
 				c.docModels[i].Status = int32(entity.DocumentStatusInit)
@@ -84,7 +84,7 @@ func (c *customTableProcessor) BuildDBModel() error {
 
 func (c *customTableProcessor) InsertDBModel() error {
 	if isTableAppend(c.Documents) {
-		// 追加场景，设置文档为处理中状态
+		// Append the scene and set the document to the processing state
 		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "document set status err:%v", err)

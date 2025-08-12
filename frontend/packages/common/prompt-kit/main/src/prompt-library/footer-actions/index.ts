@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { CopyPrompt } from './copy-prompt';
 export { InsertToEditor } from './insert-to-editor';
 export { PromptDiff } from './prompt-diff';

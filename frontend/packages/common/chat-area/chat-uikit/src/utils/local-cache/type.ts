@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export interface StoreStruct {
   coze_home_mention_tip_showed: boolean;
   coze_home_favorite_list_display: boolean;

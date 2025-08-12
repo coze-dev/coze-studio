@@ -101,4 +101,7 @@ const (
 	MessageTypeFlowUp       MessageType = "follow_up"
 	MessageTypeInterrupt    MessageType = "interrupt"
 	MessageTypeVerbose      MessageType = "verbose"
+
+	MessageTypeToolAsAnswer  MessageType = "tool_as_answer"
+	MessageTypeToolMidAnswer MessageType = "tool_mid_answer"
 )

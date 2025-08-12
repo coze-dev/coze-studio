@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import ruleComposer from 'eslint-rule-composer';
 import { AST_NODE_TYPES } from '@typescript-eslint/utils';
 import reactPlugin from 'eslint-plugin-react';

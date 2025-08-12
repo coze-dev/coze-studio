@@ -89,9 +89,9 @@ func (p *ResType) Value() (driver.Value, error) {
 type PublishStatus int64
 
 const (
-	// 未发布
+	// unpublished
 	PublishStatus_UnPublished PublishStatus = 1
-	// 已发布
+	// Published
 	PublishStatus_Published PublishStatus = 2
 )
 
@@ -133,19 +133,19 @@ func (p *PublishStatus) Value() (driver.Value, error) {
 type ActionKey int64
 
 const (
-	// 复制
+	// copy
 	ActionKey_Copy ActionKey = 1
-	// 删除
+	// delete
 	ActionKey_Delete ActionKey = 2
-	// 启用/禁用
+	// enable/disable
 	ActionKey_EnableSwitch ActionKey = 3
-	// 编辑
+	// edit
 	ActionKey_Edit ActionKey = 4
-	// 切换成funcflow
+	// Switch to funcflow
 	ActionKey_SwitchToFuncflow ActionKey = 8
-	// 切换成chatflow
+	// Switch to chatflow
 	ActionKey_SwitchToChatflow ActionKey = 9
-	// 跨空间复制
+	// Cross-space copy
 	ActionKey_CrossSpaceCopy ActionKey = 10
 )
 
@@ -207,25 +207,25 @@ func (p *ActionKey) Value() (driver.Value, error) {
 type ProjectResourceActionKey int64
 
 const (
-	//重命名
+	//rename
 	ProjectResourceActionKey_Rename ProjectResourceActionKey = 1
-	//创建副本/复制到当前项目
+	//Create a copy/copy to the current project
 	ProjectResourceActionKey_Copy ProjectResourceActionKey = 2
-	//复制到资源库
+	//Copy to Library
 	ProjectResourceActionKey_CopyToLibrary ProjectResourceActionKey = 3
-	//移动到资源库
+	//Move to Library
 	ProjectResourceActionKey_MoveToLibrary ProjectResourceActionKey = 4
-	//删除
+	//delete
 	ProjectResourceActionKey_Delete ProjectResourceActionKey = 5
-	//启用
+	//enable
 	ProjectResourceActionKey_Enable ProjectResourceActionKey = 6
-	//禁用
+	//disable
 	ProjectResourceActionKey_Disable ProjectResourceActionKey = 7
-	// 切换成funcflow
+	// Switch to funcflow
 	ProjectResourceActionKey_SwitchToFuncflow ProjectResourceActionKey = 8
-	// 切换成chatflow
+	// Switch to chatflow
 	ProjectResourceActionKey_SwitchToChatflow ProjectResourceActionKey = 9
-	// 修改描述
+	// Modify description
 	ProjectResourceActionKey_UpdateDesc ProjectResourceActionKey = 10
 )
 
@@ -346,31 +346,31 @@ func (p *ProjectResourceGroupType) Value() (driver.Value, error) {
 type ResourceCopyScene int64
 
 const (
-	//复制项目内的资源，浅拷贝
+	//Copy resources within the project, shallow copy
 	ResourceCopyScene_CopyProjectResource ResourceCopyScene = 1
-	//复制项目资源到Library，复制后要发布
+	//Copy the project resources to the Library, and publish after copying
 	ResourceCopyScene_CopyResourceToLibrary ResourceCopyScene = 2
-	//移动项目资源到Library，复制后要发布，后置要删除项目资源
+	//Move project resources to Library, copy to publish, and delete project resources later
 	ResourceCopyScene_MoveResourceToLibrary ResourceCopyScene = 3
-	//复制Library资源到项目
+	//Copy Library Resources to Project
 	ResourceCopyScene_CopyResourceFromLibrary ResourceCopyScene = 4
-	//复制项目，连带资源要复制。复制当前草稿。
+	//Copy the project, along with the resources. Copy the current draft.
 	ResourceCopyScene_CopyProject ResourceCopyScene = 5
-	//项目发布到渠道，连带资源需要发布（含商店）。以当前草稿发布。
+	//The project is published to the channel, and the associated resources need to be published (including the store). Publish with the current draft.
 	ResourceCopyScene_PublishProject ResourceCopyScene = 6
-	// 复制项目模板。
+	// Copy the project template.
 	ResourceCopyScene_CopyProjectTemplate ResourceCopyScene = 7
-	// 项目发布到模板，以项目的指定版本发布成临时模板。
+	// The project is published to a template, and the specified version of the project is published as a temporary template.
 	ResourceCopyScene_PublishProjectTemplate ResourceCopyScene = 8
-	// 模板审核通过，上架，根据临时模板复制正式模板。
+	// The template is approved, put on the shelves, and the official template is copied according to the temporary template.
 	ResourceCopyScene_LaunchTemplate ResourceCopyScene = 9
-	//    草稿版本存档
+	//    Draft version archive
 	ResourceCopyScene_ArchiveProject ResourceCopyScene = 10
-	// 线上版本加载到草稿，草稿版本加载到草稿
+	// Online version loaded into draft, draft version loaded into draft
 	ResourceCopyScene_RollbackProject ResourceCopyScene = 11
-	// 单个资源跨空间复制
+	// Cross-space copy of a single resource
 	ResourceCopyScene_CrossSpaceCopy ResourceCopyScene = 12
-	// 项目跨空间复制
+	// item cross-space copy
 	ResourceCopyScene_CrossSpaceCopyProject ResourceCopyScene = 13
 )
 
@@ -505,11 +505,11 @@ func (p *TaskStatus) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-// Library资源操作
+// Library Resource Operations
 type ResourceAction struct {
-	// 一个操作对应一个唯一的key，key由资源侧约束
+	// An operation corresponds to a unique key, and the key is constrained by the resource side
 	Key ActionKey `thrift:"Key,1,required" json:"key" form:"Key,required" query:"Key,required"`
-	//ture=可以操作该Action，false=置灰
+	//ture = can operate this Action, false = grey out
 	Enable bool `thrift:"Enable,2,required" json:"enable" form:"Enable,required" query:"Enable,required"`
 }
 
@@ -707,46 +707,46 @@ func (p *ResourceAction) String() string {
 
 }
 
-// 前端用
+// front end
 type ResourceInfo struct {
-	// 资源id
+	// Resource ID
 	ResID *int64 `thrift:"ResID,1,optional" form:"res_id" json:"res_id,string,omitempty"`
-	// 资源类型
+	// resource type
 	ResType *ResType `thrift:"ResType,2,optional" json:"res_type" form:"ResType" query:"ResType"`
-	// 资源子类型，由资源实现方定义。
+	// Resource subtype, defined by the resource implementer.
 	// Plugin：1-Http; 2-App; 6-Local；Knowledge：0-text; 1-table; 2-image；UI：1-Card
 	ResSubType *int32 `thrift:"ResSubType,3,optional" json:"res_sub_type" form:"ResSubType" query:"ResSubType"`
-	// 资源名称
+	// resource name
 	Name *string `thrift:"Name,4,optional" json:"name" form:"Name" query:"Name"`
-	// 资源描述
+	// resource description
 	Desc *string `thrift:"Desc,5,optional" json:"desc" form:"Desc" query:"Desc"`
-	// 资源Icon，完整url
+	// Resource Icon, full url
 	Icon *string `thrift:"Icon,6,optional" json:"icon" form:"Icon" query:"Icon"`
-	// 资源创建者
+	// Resource creator
 	CreatorID *int64 `thrift:"CreatorID,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
-	// 资源创建者
+	// Resource creator
 	CreatorAvatar *string `thrift:"CreatorAvatar,8,optional" json:"creator_avatar" form:"CreatorAvatar" query:"CreatorAvatar"`
-	// 资源创建者
+	// Resource creator
 	CreatorName *string `thrift:"CreatorName,9,optional" json:"creator_name" form:"CreatorName" query:"CreatorName"`
-	// 资源创建者
+	// Resource creator
 	UserName *string `thrift:"UserName,10,optional" json:"user_name" form:"UserName" query:"UserName"`
-	// 资源发布状态，1-未发布，2-已发布
+	// Resource release status, 1 - unpublished, 2 - published
 	PublishStatus *PublishStatus `thrift:"PublishStatus,11,optional" json:"publish_status" form:"PublishStatus" query:"PublishStatus"`
-	// 资源状态，各类型资源自身定义
+	// Resource status, each type of resource defines itself
 	BizResStatus *int32 `thrift:"BizResStatus,12,optional" json:"biz_res_status" form:"BizResStatus" query:"BizResStatus"`
-	// 是否开启多人编辑
+	// Whether to enable multi-person editing
 	CollaborationEnable *bool `thrift:"CollaborationEnable,13,optional" json:"collaboration_enable" form:"CollaborationEnable" query:"CollaborationEnable"`
-	// 最近编辑时间, unix秒级时间戳
+	// Last edited, unix timestamp
 	EditTime *int64 `thrift:"EditTime,14,optional" form:"edit_time" json:"edit_time,string,omitempty"`
-	// 资源所属空间ID
+	// Resource Ownership Space ID
 	SpaceID *int64 `thrift:"SpaceID,15,optional" form:"space_id" json:"space_id,string,omitempty"`
-	// 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
+	// Business carry extended information to res_type distinguish, each res_type defined schema and meaning is not the same, need to judge before use res_type
 	BizExtend map[string]string `thrift:"BizExtend,16,optional" json:"biz_extend" form:"BizExtend" query:"BizExtend"`
-	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
+	// Different types of different operation buttons are agreed upon by the resource implementer and the front end. Return is displayed, if you want to hide a button, do not return;
 	Actions []*ResourceAction `thrift:"Actions,17,optional" json:"actions" form:"Actions" query:"Actions"`
-	// 是否禁止进详情页
+	// Whether to ban entering the details page
 	DetailDisable *bool `thrift:"DetailDisable,18,optional" json:"detail_disable" form:"DetailDisable" query:"DetailDisable"`
-	// [数据延迟优化]删除标识符，true-已删除-前端隐藏该item，false-正常
+	// [Data delay optimization] Delete identifier, true-deleted-frontend hides the item, false-normal
 	DelFlag *bool `thrift:"DelFlag,19,optional" json:"del_flag" form:"DelFlag" query:"DelFlag"`
 }
 
@@ -1938,11 +1938,11 @@ func (p *ResourceInfo) String() string {
 }
 
 type ProjectResourceAction struct {
-	// 一个操作对应一个唯一的key，key由资源侧约束
+	// An operation corresponds to a unique key, and the key is constrained by the resource side
 	Key ProjectResourceActionKey `thrift:"Key,1,required" json:"key" form:"Key,required" query:"Key,required"`
-	//ture=可以操作该Action，false=置灰
+	//ture = can operate this Action, false = grey out
 	Enable bool `thrift:"Enable,2,required" json:"enable" form:"Enable,required" query:"Enable,required"`
-	// enable=false时，提示文案。后端返回Starling Key，注意放在同一个space下。
+	// When enable = false, prompt the copywriter. The backend returns the Starling Key, be careful to put it under the same space.
 	Hint *string `thrift:"Hint,3,optional" json:"hint" form:"Hint" query:"Hint"`
 }
 
@@ -2195,25 +2195,25 @@ func (p *ProjectResourceAction) String() string {
 
 }
 
-// 实现方提供展示信息
+// The implementer provides display information
 type ProjectResourceInfo struct {
-	// 资源id
+	// Resource ID
 	ResID int64 `thrift:"ResID,1" form:"res_id" json:"res_id,string"`
-	// 资源名称
+	// resource name
 	Name string `thrift:"Name,2" json:"name" form:"Name" query:"Name"`
-	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
+	// Different types of different operation buttons are agreed upon by the resource implementer and the front end. Return is displayed, if you want to hide a button, do not return;
 	Actions []*ProjectResourceAction `thrift:"Actions,3" json:"actions" form:"Actions" query:"Actions"`
-	// 该用户是否对资源只读
+	// Is the user read-only to the resource?
 	//    4: bool ReadOnly (go.tag = "json:\"read_only\"", agw.key = "read_only")
-	// 资源类型
+	// resource type
 	ResType ResType `thrift:"ResType,5" json:"res_type" form:"ResType" query:"ResType"`
-	// 资源子类型，由资源实现方定义。Plugin：1-Http; 2-App; 6-Local；Knowledge：0-text; 1-table; 2-image；UI：1-Card
+	// Resource subtype, defined by the resource implementer. Plugin: 1-Http; 2-App; 6-Local; Knowledge: 0-text; 1-table; 2-image; UI: 1-Card
 	ResSubType *int32 `thrift:"ResSubType,6,optional" json:"res_sub_type" form:"ResSubType" query:"ResSubType"`
-	// 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
+	// Business carry extended information to res_type distinguish, each res_type defined schema and meaning is not the same, need to judge before use res_type
 	BizExtend map[string]string `thrift:"BizExtend,7,optional" json:"biz_extend" form:"BizExtend" query:"BizExtend"`
-	// 资源状态，各类型资源自身定义。前端与各资源方约定。
+	// Resource status, each type of resource defines itself. The front end agrees with each resource party.
 	BizResStatus *int32 `thrift:"BizResStatus,8,optional" json:"biz_res_status" form:"BizResStatus" query:"BizResStatus"`
-	// 当前资源的编辑态版本
+	// The edited version of the current resource
 	VersionStr *string `thrift:"VersionStr,9,optional" json:"version_str" form:"VersionStr" query:"VersionStr"`
 }
 
@@ -2754,7 +2754,7 @@ func (p *ProjectResourceInfo) String() string {
 }
 
 type ProjectResourceGroup struct {
-	// 资源分组
+	// resource grouping
 	GroupType    ProjectResourceGroupType `thrift:"GroupType,1" json:"group_type" form:"GroupType" query:"GroupType"`
 	ResourceList []*ProjectResourceInfo   `thrift:"ResourceList,2,optional" json:"resource_list" form:"ResourceList" query:"ResourceList"`
 }
@@ -2974,9 +2974,9 @@ type ResourceCopyFailedReason struct {
 	ResType ResType `thrift:"ResType,2" json:"res_type" form:"ResType" query:"ResType"`
 	ResName string  `thrift:"ResName,3" json:"res_name" form:"ResName" query:"ResName"`
 	Reason  string  `thrift:"Reason,4" json:"reason" form:"Reason" query:"Reason"`
-	// 废弃
+	// abandoned
 	PublishVersion *int64 `thrift:"PublishVersion,5,optional" json:"publish_version" form:"PublishVersion" query:"PublishVersion"`
-	// 资源的当前版本，为nil或空字符串都看作是最新版本。项目发布版本或Library发布版本。
+	// The current version of the resource, either nil or empty string, is considered the latest version. Project release or Library release.
 	PublishVersionStr *string `thrift:"PublishVersionStr,6,optional" json:"publish_version_str" form:"PublishVersionStr" query:"PublishVersionStr"`
 }
 
@@ -3359,13 +3359,13 @@ func (p *ResourceCopyFailedReason) String() string {
 
 type ResourceCopyTaskDetail struct {
 	TaskID string `thrift:"task_id,1" form:"task_id" json:"task_id" query:"task_id"`
-	// 任务状态
+	// task status
 	Status TaskStatus `thrift:"status,2" form:"status" json:"status" query:"status"`
-	// 复制后的资源id
+	// Replicated resource id
 	ResID   int64             `thrift:"res_id,3" form:"res_id" json:"res_id,string" query:"res_id"`
 	ResType ResType           `thrift:"res_type,4" form:"res_type" json:"res_type" query:"res_type"`
 	Scene   ResourceCopyScene `thrift:"scene,5" form:"scene" json:"scene" query:"scene"`
-	// 复制前的资源名称
+	// Resource name before copy
 	ResName *string `thrift:"res_name,6,optional" form:"res_name" json:"res_name,omitempty" query:"res_name"`
 }
 

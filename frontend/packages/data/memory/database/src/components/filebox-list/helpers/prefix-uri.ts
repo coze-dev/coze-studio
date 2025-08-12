@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const prefixUri = (uri: string, url: string) => {
   const [filePrefix] = uri.split('/');
   const urlArray = url.split('/');

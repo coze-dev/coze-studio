@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	netHTTP "net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -113,6 +114,10 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		inst.Client.SetAccessKey(ocrAK)
 		inst.Client.SetSecretKey(ocrSK)
 		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
+	case "paddleocr":
+		ppocrURL := os.Getenv("PADDLEOCR_OCR_API_URL")
+		client := &netHTTP.Client{}
+		ocrImpl = veocr.NewPPOCR(&veocr.PPOCRConfig{Client: client, URL: ppocrURL})
 	default:
 		// accept ocr not configured
 	}
@@ -175,7 +180,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
 	})
 
-	if err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
+	if err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
 		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
 	}
 
@@ -335,8 +340,12 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		var (
 			arkEmbeddingBaseURL = os.Getenv("ARK_EMBEDDING_BASE_URL")
 			arkEmbeddingModel   = os.Getenv("ARK_EMBEDDING_MODEL")
+			arkEmbeddingApiKey  = os.Getenv("ARK_EMBEDDING_API_KEY")
+			// deprecated: use ARK_EMBEDDING_API_KEY instead
+			// ARK_EMBEDDING_AK will be removed in the future
 			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
 			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingAPIType = os.Getenv("ARK_EMBEDDING_API_TYPE")
 		)
 
 		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
@@ -344,10 +353,25 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
 		}
 
+		apiType := ark.APITypeText
+		if arkEmbeddingAPIType != "" {
+			if t := ark.APIType(arkEmbeddingAPIType); t != ark.APITypeText && t != ark.APITypeMultiModal {
+				return nil, fmt.Errorf("init ark embedding api_type failed, invalid api_type=%s", t)
+			} else {
+				apiType = t
+			}
+		}
+
 		emb, err = arkemb.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey:  arkEmbeddingAK,
+			APIKey: func() string {
+				if arkEmbeddingApiKey != "" {
+					return arkEmbeddingApiKey
+				}
+				return arkEmbeddingAK
+			}(),
 			Model:   arkEmbeddingModel,
 			BaseURL: arkEmbeddingBaseURL,
+			APIType: &apiType,
 		}, dims, batchSize)
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)

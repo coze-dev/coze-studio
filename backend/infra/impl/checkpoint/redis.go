@@ -23,11 +23,12 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 )
 
 type redisStore struct {
-	client *redis.Client
+	client cache.Cmdable
 }
 
 const (
@@ -38,7 +39,7 @@ const (
 func (r *redisStore) Get(ctx context.Context, checkPointID string) ([]byte, bool, error) {
 	v, err := r.client.Get(ctx, fmt.Sprintf(checkpointKeyTpl, checkPointID)).Bytes()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, cache.Nil) {
 			return nil, false, nil
 		}
 		return nil, false, err
@@ -50,6 +51,6 @@ func (r *redisStore) Set(ctx context.Context, checkPointID string, checkPoint []
 	return r.client.Set(ctx, fmt.Sprintf(checkpointKeyTpl, checkPointID), checkPoint, checkpointExpire).Err()
 }
 
-func NewRedisStore(client *redis.Client) compose.CheckPointStore {
+func NewRedisStore(client cache.Cmdable) compose.CheckPointStore {
 	return &redisStore{client: client}
 }

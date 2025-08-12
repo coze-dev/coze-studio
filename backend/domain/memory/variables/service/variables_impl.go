@@ -22,8 +22,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -133,7 +133,7 @@ func (*variablesImpl) mergeVariableList(_ context.Context, sysVarsList, variable
 		mergedMap[sysVar.Keyword] = sysVar
 	}
 
-	// 可以覆盖 sysVar
+	// Can overwrite sysVar
 	for _, variable := range variablesList {
 		mergedMap[variable.Keyword] = variable
 	}
@@ -420,7 +420,7 @@ func (v *variablesImpl) sortKVItem(items []*kvmemory.KVItem, meta *entity.Variab
 		i := items[ii]
 		j := items[jj]
 
-		// 如果都是系统变量，这里不需要变换位置
+		// If they are all system variables, there is no need to change positions here
 		if i.IsSystem && !j.IsSystem {
 			return false
 		}

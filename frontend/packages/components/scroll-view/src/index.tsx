@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ScrollView } from './scroll-view';
 export { type ScrollViewController } from './scroll-view/type';

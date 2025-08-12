@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src/proto';
 
 describe('ferry-parser', () => {
   describe('proto field', () => {
-    it('should convert message field extenstions', () => {
+    it('should convert message field extensions', () => {
       const idl = `
       syntax = "proto3";
       enum Numbers {
@@ -83,7 +83,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert message field extenstions using old rules', () => {
+    it('should convert message field extensions using old rules', () => {
       const idl = `
       syntax = "proto3";
       message Foo {

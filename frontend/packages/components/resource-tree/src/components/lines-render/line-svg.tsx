@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect } from 'react';
 
 import {
@@ -92,9 +92,9 @@ export const LineSVG = (props: {
       />
       <polygon
         className={LINE_CLASS_NAME}
-        points={`${toPos.x},${toPos.y} ${toPos.x - 4.5},${toPos.y - ARROW_HEIGHT} ${
-          toPos.x + 4.5
-        },${toPos.y - ARROW_HEIGHT}`}
+        points={`${toPos.x},${toPos.y} ${toPos.x - 4.5},${
+          toPos.y - ARROW_HEIGHT
+        } ${toPos.x + 4.5},${toPos.y - ARROW_HEIGHT}`}
         fill={activated || hovered ? activateColor : defaultColor}
       />
     </>

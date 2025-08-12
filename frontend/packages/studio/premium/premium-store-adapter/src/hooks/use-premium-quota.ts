@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const quota = {
   /** The current consumption amount corresponds to the daily refresh in the package. */
   remain: 0,

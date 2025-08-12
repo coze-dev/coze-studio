@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ConditionValue } from '@/form-extensions/setters/condition/multi-condition/types';
 
 export interface FormData {

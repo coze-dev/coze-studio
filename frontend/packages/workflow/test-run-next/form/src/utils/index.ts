@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { generateField } from './generate-field';
 export { generateFieldValidator } from './generate-field-validator';
 export { isFormSchemaPropertyEmpty } from './is-property-empty';

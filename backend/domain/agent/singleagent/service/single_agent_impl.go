@@ -26,8 +26,8 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/agentflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
@@ -288,7 +288,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 		maxCount          = pageSize * pageIndex
 	)
 
-	// 全量拉取符合条件的记录
+	// Pull all eligible records
 	for {
 		pageData, err := s.AgentVersionRepo.List(ctx, agentID, currentPage, 50)
 		if err != nil {
@@ -298,7 +298,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 			break
 		}
 
-		// 过滤当前页数据
+		// Filter current page data
 		for _, item := range pageData {
 			for _, cID := range item.ConnectorIds {
 				if cID == *connectorID {

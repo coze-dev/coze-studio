@@ -67,12 +67,16 @@ export const KnowledgeUploadPage = () => {
         // eslint-disable-next-line max-params
         toResource: (resource, resourceID, query, opts) =>
           navigate(
-            `/space/${params.spaceID}/${resource}/${resourceID}?${qs.stringify(query)}`,
+            `/space/${params.spaceID}/${resource}/${resourceID}?${qs.stringify(
+              query,
+            )}`,
             opts,
           ),
         upload: (query, opts) =>
           navigate(
-            `/space/${params.spaceID}/knowledge/${params.datasetID}/upload?${qs.stringify(query)}`,
+            `/space/${params.spaceID}/knowledge/${
+              params.datasetID
+            }/upload?${qs.stringify(query)}`,
             opts,
           ),
       }}

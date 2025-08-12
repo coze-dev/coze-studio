@@ -28,7 +28,7 @@ fe:
 	@echo "Building frontend..."
 	@bash $(BUILD_FE_SCRIPT)
 
-server: env setup_es_index
+server: env
 	@if [ ! -d "$(STATIC_DIR)" ]; then \
 		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
 		$(MAKE) fe; \
@@ -40,13 +40,14 @@ build_server:
 	@echo "Building server..."
 	@bash $(BUILD_SERVER_SCRIPT)
 
-sync_db:
+sync_db: env
 	@echo "Syncing database..."
 	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile mysql-setup up -d
 
-dump_db: dump_sql_schema
+dump_db: env dump_sql_schema
 	@echo "Dumping database..."
-	@bash $(DUMP_DB_SCRIPT)
+	@. $(ENV_FILE); \
+	bash $(DUMP_DB_SCRIPT)
 
 sql_init:
 	@echo "Init sql data..."
@@ -56,10 +57,17 @@ middleware:
 	@echo "Start middleware docker environment for opencoze app"
 	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware up -d --wait
 
+build_docker:
+	@echo "Build docker image"
+	@docker compose -f $(COMPOSE_FILE) --profile build-server build
 
 web:
 	@echo "Start web server in docker"
 	@docker compose -f docker/docker-compose.yml  up -d
+
+down_web:
+	@echo "Stop web server in docker"
+	@docker compose -f docker/docker-compose.yml  down
 
 down: env
 	@echo "Stop all docker containers"
@@ -78,6 +86,7 @@ dump_sql_schema:
 	@. $(ENV_FILE); \
 	{ echo "SET NAMES utf8mb4;\nCREATE DATABASE IF NOT EXISTS opencoze COLLATE utf8mb4_unicode_ci;"; atlas schema inspect -u $$ATLAS_URL --format "{{ sql . }}" --exclude "atlas_schema_revisions,table_*" | sed 's/CREATE TABLE/CREATE TABLE IF NOT EXISTS/g'; } > $(MYSQL_SCHEMA)
 		@sed -i.bak -E 's/(\))[[:space:]]+CHARSET utf8mb4/\1 ENGINE=InnoDB CHARSET utf8mb4/' $(MYSQL_SCHEMA) && rm -f $(MYSQL_SCHEMA).bak
+		@sed -i.bak "s/\"/'/g" $(MYSQL_SCHEMA) && rm -f $(MYSQL_SCHEMA).bak
 	@cat $(MYSQL_INIT_SQL) >> $(MYSQL_SCHEMA)
 	@echo "Dumping mysql schema to helm/charts/opencoze/files/mysql ..."
 	@cp $(MYSQL_SCHEMA) ./helm/charts/opencoze/files/mysql/

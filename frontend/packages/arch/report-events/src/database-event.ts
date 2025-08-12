@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum DatabaseEvents {
   DatabaseUploadExcelFile = 'database_upload_excel_file',
   DatabaseAddTable = 'database_add_table',

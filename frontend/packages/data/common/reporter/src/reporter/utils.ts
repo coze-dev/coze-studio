@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import {
-  reporter,
-  type CustomEvent,
-  type ErrorEvent,
-} from '@coze-arch/logger';
+
+import { reporter, type CustomEvent, type ErrorEvent } from '@coze-arch/logger';
 
 import { type DataNamespace } from '../constants';
 export const reporterFun = <EventEnum extends string>(

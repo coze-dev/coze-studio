@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ReactNode, useCallback } from 'react';
 
 import {
@@ -70,7 +70,9 @@ const useKnowledgeResource = (): UseKnowledgeResourceReturn => {
       refetch();
       close();
       IDENav(
-        `/knowledge/${datasetID}?type=${unitType}${shouldUpload ? '&module=upload' : ''}`,
+        `/knowledge/${datasetID}?type=${unitType}${
+          shouldUpload ? '&module=upload' : ''
+        }`,
       );
     },
   });

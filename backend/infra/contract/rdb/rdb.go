@@ -38,17 +38,17 @@ type RDB interface {
 	ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest) (*ExecuteSQLResponse, error)
 }
 
-// CreateTableRequest 创建表请求
+// CreateTableRequest Create table request
 type CreateTableRequest struct {
 	Table *entity.Table
 }
 
-// CreateTableResponse 创建表响应
+// CreateTableResponse Create table response
 type CreateTableResponse struct {
 	Table *entity.Table
 }
 
-// AlterTableOperation 修改表操作
+// AlterTableOperation Modify table operation
 type AlterTableOperation struct {
 	Action       entity.AlterTableAction
 	Column       *entity.Column
@@ -58,64 +58,64 @@ type AlterTableOperation struct {
 	NewTableName *string
 }
 
-// AlterTableRequest 修改表请求
+// AlterTableRequest Modify table request
 type AlterTableRequest struct {
 	TableName  string
 	Operations []*AlterTableOperation
 }
 
-// AlterTableResponse 修改表响应
+// AlterTableResponse Modify table response
 type AlterTableResponse struct {
 	Table *entity.Table
 }
 
-// DropTableRequest 删除表请求
+// DropTableRequest drop table request
 type DropTableRequest struct {
 	TableName string
 	IfExists  bool
 }
 
-// DropTableResponse 删除表响应
+// DropTableResponse Delete table response
 type DropTableResponse struct {
 	Success bool
 }
 
-// GetTableRequest 获取表信息请求
+// GetTableRequest Get table information request
 type GetTableRequest struct {
 	TableName string
 }
 
-// GetTableResponse 获取表信息响应
+// GetTableResponse Get table information response
 type GetTableResponse struct {
 	Table *entity.Table
 }
 
-// InsertDataRequest 插入数据请求
+// InsertDataRequest insert data request
 type InsertDataRequest struct {
 	TableName string
 	Data      []map[string]interface{}
 }
 
-// InsertDataResponse 插入数据响应
+// InsertDataResponse
 type InsertDataResponse struct {
 	AffectedRows int64
 }
 
-// Condition 定义查询条件
+// Condition defines query conditions
 type Condition struct {
 	Field    string
 	Operator entity.Operator
 	Value    interface{}
 }
 
-// ComplexCondition 复杂条件
+// ComplexCondition
 type ComplexCondition struct {
 	Conditions       []*Condition
-	NestedConditions []*ComplexCondition // 与 Conditions互斥 example: WHERE (age >= 18 AND status = 'active') OR (age >= 21 AND status = 'pending')
+	NestedConditions []*ComplexCondition // Conditions mutual exclusion example: WHERE (age > = 18 AND status = 'active') OR (age > = 21 AND status = 'pending')
 	Operator         entity.LogicalOperator
 }
 
-// UpdateDataRequest 更新数据请求
+// UpdateDataRequest
 type UpdateDataRequest struct {
 	TableName string
 	Data      map[string]interface{}
@@ -123,67 +123,67 @@ type UpdateDataRequest struct {
 	Limit     *int
 }
 
-// UpdateDataResponse 更新数据响应
+// UpdateDataResponse
 type UpdateDataResponse struct {
 	AffectedRows int64
 }
 
-// DeleteDataRequest 删除数据请求
+// DeleteDataRequest Delete data request
 type DeleteDataRequest struct {
 	TableName string
 	Where     *ComplexCondition
 	Limit     *int
 }
 
-// DeleteDataResponse 删除数据响应
+// DeleteDataResponse
 type DeleteDataResponse struct {
 	AffectedRows int64
 }
 
 type OrderBy struct {
-	Field     string               // 排序字段
-	Direction entity.SortDirection // 排序方向
+	Field     string               // sort field
+	Direction entity.SortDirection // sort direction
 }
 
-// SelectDataRequest 查询数据请求
+// SelectDataRequest query data request
 type SelectDataRequest struct {
 	TableName string
-	Fields    []string // 要查询的字段，如果为空则查询所有字段
+	Fields    []string // The field to query, if empty, query all fields
 	Where     *ComplexCondition
-	OrderBy   []*OrderBy // 排序条件
-	Limit     *int       // 限制返回行数
-	Offset    *int       // 偏移量
+	OrderBy   []*OrderBy // sort condition
+	Limit     *int       // Limit the number of rows returned
+	Offset    *int       // Offset
 }
 
-// SelectDataResponse 查询数据响应
+// SelectDataResponse
 type SelectDataResponse struct {
 	ResultSet *entity.ResultSet
-	Total     int64 // 符合条件的总记录数（不考虑分页）
+	Total     int64 // Total number of eligible records (excluding paging)
 }
 
 type UpsertDataRequest struct {
 	TableName string
-	Data      []map[string]interface{} // 要更新或插入的数据
-	Keys      []string                 // 用于标识唯一记录的列名，为空的话默认使用主键
+	Data      []map[string]interface{} // Data to be updated or inserted
+	Keys      []string                 // The column name used to identify a unique record, if empty, the primary key is used by default
 }
 
 type UpsertDataResponse struct {
-	AffectedRows  int64 // 受影响的行数
-	InsertedRows  int64 // 新插入的行数
-	UpdatedRows   int64 // 更新的行数
-	UnchangedRows int64 // 不变的行数（没有插入或更新的行数）
+	AffectedRows  int64 // Number of rows affected
+	InsertedRows  int64 // Number of newly inserted rows
+	UpdatedRows   int64 // updated rows
+	UnchangedRows int64 // Constant number of rows (no rows inserted or updated)
 }
 
-// ExecuteSQLRequest 执行SQL请求
+// ExecuteSQLRequest Execute SQL request
 type ExecuteSQLRequest struct {
 	SQL    string
-	Params []interface{} // 用于参数化查询
+	Params []interface{} // For parameterized queries
 
 	// SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
 	SQLType entity.SQLType
 }
 
-// ExecuteSQLResponse 执行SQL响应
+// ExecuteSQLResponse
 type ExecuteSQLResponse struct {
 	ResultSet *entity.ResultSet
 }

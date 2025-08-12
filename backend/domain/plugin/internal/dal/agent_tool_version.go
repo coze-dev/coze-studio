@@ -56,7 +56,7 @@ func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
 	}
 }
 
-// TODO(@maronghong): 简化查询代码，封装查询条件
+// TODO (@maronghong): Simplify query code and encapsulate query conditions
 func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int64, toolName string, agentVersion *string) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
 

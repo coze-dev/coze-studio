@@ -22,14 +22,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	gonanoid "github.com/matoous/go-nanoid"
-
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
 )
 
 type ToolInfo struct {
@@ -40,7 +38,7 @@ type ToolInfo struct {
 	Version   *string
 
 	ActivatedStatus *ActivatedStatus
-	DebugStatus     *plugin_develop_common.APIDebugStatus
+	DebugStatus     *common.APIDebugStatus
 
 	Method    *string
 	SubURL    *string
@@ -232,7 +230,7 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			params = append(params, apiParam)
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params, nil
@@ -257,7 +255,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 		Name:          paramMeta.name,
 		Desc:          paramMeta.desc,
 		Type:          apiType,
-		Location:      location, // 使用父节点的值
+		Location:      location, // Using the value of the parent node
 		IsRequired:    paramMeta.required,
 		SubParameters: []*common.APIParameter{},
 	}
@@ -453,7 +451,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			}
 		}
 
-		break // 只取一种 MIME
+		break // Take only one MIME.
 	}
 
 	return params, nil

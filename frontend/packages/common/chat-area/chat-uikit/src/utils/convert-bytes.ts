@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const convertBytes = (bytes: number, decimals = 2) => {
   if (!bytes) {
     return '0 Byte';

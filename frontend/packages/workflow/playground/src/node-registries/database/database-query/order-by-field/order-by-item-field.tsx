@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCurrentDatabaseField } from '@/node-registries/database/common/hooks';
 import { DataTypeTag } from '@/node-registries/common/components';
 import { Label, withField, useField } from '@/form';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type getMessageIndexStoreWriteableMethods } from '../../plugin-context/store-writeable-methods/message-index-store';
 import { type MixInitResponse } from '../../../context/chat-area-context/type';
 

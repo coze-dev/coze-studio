@@ -23,44 +23,34 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 func TestNewJsonSerialize(t *testing.T) {
 	ctx := context.Background()
 
-	// Test with nil config
-	_, err := NewJsonSerializer(ctx, nil)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "config required")
-
 	// Test with missing InputTypes config
-	_, err = NewJsonSerializer(ctx, &SerializationConfig{})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "InputTypes is required")
-
-	// Test with valid config
-	validConfig := &SerializationConfig{
+	s, err := (&SerializationConfig{}).Build(ctx, &schema.NodeSchema{
 		InputTypes: map[string]*vo.TypeInfo{
 			"testKey": {Type: "string"},
 		},
-	}
-	processor, err := NewJsonSerializer(ctx, validConfig)
+	})
+
 	assert.NoError(t, err)
-	assert.NotNil(t, processor)
+	assert.NotNil(t, s)
 }
 
 func TestJsonSerialize_Invoke(t *testing.T) {
 	ctx := context.Background()
-	config := &SerializationConfig{
+
+	processor, err := (&SerializationConfig{}).Build(ctx, &schema.NodeSchema{
 		InputTypes: map[string]*vo.TypeInfo{
 			"stringKey": {Type: "string"},
 			"intKey":    {Type: "integer"},
 			"boolKey":   {Type: "boolean"},
 			"objKey":    {Type: "object"},
 		},
-	}
-
-	processor, err := NewJsonSerializer(ctx, config)
+	})
 	assert.NoError(t, err)
 
 	// Test cases
@@ -115,7 +105,7 @@ func TestJsonSerialize_Invoke(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := processor.Invoke(ctx, tt.input)
+			result, err := processor.(*Serializer).Invoke(ctx, tt.input)
 
 			if tt.expectErr {
 				assert.Error(t, err)

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const incrementVersionNumber = (input: string) => {
   // Define regular expressions that match the pattern of "number. number. number"
   const regex = /(\d+)\.(\d+)\.(\d+)/g;

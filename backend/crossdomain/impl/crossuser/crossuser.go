@@ -19,7 +19,7 @@ package crossuser
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/user/service"
 )

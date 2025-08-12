@@ -28,12 +28,12 @@ func TestCtxCache(t *testing.T) {
 	g := NewGomegaWithT(t)
 	ctx := context.Background()
 
-	// 测试没有 initCtxCacheData 场景
+	// Test without initCtxCacheData scenario
 	Store(ctx, "test1", "1")
 	_, ok := Get[string](ctx, "test1")
 	g.Expect(ok).Should(BeFalse())
 
-	// 有 initCtxCacheData 场景
+	// There is initCtxCacheData scene
 	ctx = Init(ctx)
 
 	_, ok = Get[string](ctx, "test")

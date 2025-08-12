@@ -83,24 +83,24 @@ struct AdditionalContent {
 
 struct AgentRunRequest  {
     1 :          i64             bot_id    (api.js_conv='true') , //agent id
-    2 : required i64             conversation_id  (api.js_conv='true')         , // 会话id
+    2 : required i64             conversation_id  (api.js_conv='true')         , // session id
     5 : required string             query                      ,
-    7 :          map<string,string> extra                      , // ext 透传字段
+    7 :          map<string,string> extra                      , // ext pass-through field
     9 :          map<string,string> custom_variables           ,
-    10: optional bool               draft_mode                 , // 草稿bot or 线上bot
-    11: optional common.Scene              scene               , // explore场景
-    12: optional string             content_type               , // 文件 file 图片 image 等
-    13: optional i64             regen_message_id   (api.js_conv='true')          , // 重试消息id
-    14: optional string             local_message_id           , // 前端本地的message_id 在extra_info 里面透传返回
-    15: optional string             preset_bot                 , // 使用的bot模版 代替bot_id bot_version draft_mode参数， coze home使用 preset_bot="coze_home"
+    10: optional bool               draft_mode                 , // Draft bot or online bot
+    11: optional common.Scene              scene               , // Explore the scene
+    12: optional string             content_type               , // Files files pictures images etc
+    13: optional i64             regen_message_id   (api.js_conv='true')          , // Retry message id
+    14: optional string             local_message_id           , // The local message_id on the front end is passed back in the extra_info
+    15: optional string             preset_bot                 , // The bot template used, instead of bot_id bot_version draft_mode parameters, coze home uses preset_bot = "coze_home"
     16: optional list<string>       insert_history_message_list,
     17: optional string             device_id,
     18: optional i64             space_id (api.js_conv='true'),
     19: optional list<message.MsgParticipantInfo>  mention_list,
     20: optional list<Tool> toolList
     21: optional string     commit_version
-    22: optional string     sub_scene // scene粒度下进一步区分场景，目前仅给bot模版使用 = bot_template
-    23: optional DiffModeIdentifier diff_mode_identifier // diff模式下的聊天配置，仅草稿single bot
+    22: optional string     sub_scene // Scene granularity further distinguish scenes, currently only used for bot templates = bot_template
+    23: optional DiffModeIdentifier diff_mode_identifier // Chat configuration in diff mode, draft only single bot
     24: optional i64 shortcut_cmd_id  (api.js_conv='true')
 }
 
@@ -140,22 +140,22 @@ struct BotConfig{
 }
 struct ShortcutCommandDetail {
     1: required i64 command_id (api.js_conv='true')
-    2: map<string,string> parameters  // key=参数名 value=值  object_string object 数组序列化之后的 JSON String
+    2: map<string,string> parameters  // Key = parameter name value = value object_string JSON String after object array serialization
 }
 
 
 struct ChatV3Request {
     1: required i64 BotID (api.body = "bot_id",api.js_conv='true'), //agent_id
     2: optional i64 ConversationID (api.query = "conversation_id", api.js_conv='true'), //conversation_id
-    3: required string User (api.body = "user_id"), //user_id，数据隔离标识，需要保证唯一
-    4: optional bool Stream (api.body = "stream"), //是否流式，当前仅支持流失
-    5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"), //本次对话消息，当前仅支持role=user
-    6: optional map<string,string> CustomVariables (api.body = "custom_variables"), //用户自定义变量
+    3: required string User (api.body = "user_id"), //user_id, data isolation identification, need to ensure unique
+    4: optional bool Stream (api.body = "stream"), //Whether to stream, currently only supports churn.
+    5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"), //In this conversation message, only role = user is currently supported.
+    6: optional map<string,string> CustomVariables (api.body = "custom_variables"), //user-defined variables
     8: optional map<string, string> MetaData (api.body = "meta_data")
     10:optional CustomConfig CustomConfig (api.body = "custom_config")
-    11:optional map<string, string> ExtraParams (api.body = "extra_params") // 透传参数到 plugin/workflow 等下游
-    12:optional i64 ConnectorID (api.body="connector_id", api.js_conv='true') // 手动指定渠道 id 聊天。目前仅支持 websdk(=999)
-    13:optional ShortcutCommandDetail ShortcutCommand (api.body="shortcut_command") // 指定快捷指令
+    11:optional map<string, string> ExtraParams (api.body = "extra_params") // Pass parameters to plugin/workflow etc downstream
+    12:optional i64 ConnectorID (api.body="connector_id", api.js_conv='true') // Manually specify channel id chat. Currently only supports websdk (= 999)
+    13:optional ShortcutCommandDetail ShortcutCommand (api.body="shortcut_command") // Specify shortcut instructions
 }
 
 struct ChatV3MessageDetail {
@@ -177,7 +177,7 @@ struct ChatV3MessageDetail {
 
 struct EnterMessage  {
     1: string Role (api.body = "role"), // user / assistant
-    2: string Content (api.body = "content"), // 如果是非 text，需要解析 JSON
+    2: string Content (api.body = "content"), // If it is not text, you need to parse JSON.
     3: map<string,string> MetaData (api.body = "meta_data"),
     4: string ContentType (api.body = "content_type"), // text, card, object_string
     5: optional string Type (api.body = "type")

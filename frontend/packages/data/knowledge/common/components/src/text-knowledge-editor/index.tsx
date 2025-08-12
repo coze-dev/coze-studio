@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { type Chunk } from './types/chunk';
 export { DocumentEditor } from './features/editor';
 export { DocumentPreview } from './features/preview';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RushConfiguration } from '@rushstack/rush-sdk';
 import OriginPkgRootWebpackPlugin from '@coze-arch/pkg-root-webpack-plugin-origin';

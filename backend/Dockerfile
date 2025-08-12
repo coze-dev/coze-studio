@@ -33,9 +33,8 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # Activate venv and install packages
     . /app/.venv/bin/activate && \
     # If you want to use other third-party libraries, you can install them here.
-    pip install git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
     pip install urllib3==1.26.16 && \
-    pip install --no-cache-dir pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
+    pip install --no-cache-dir h11==0.16.0 httpx==0.28.1 pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
@@ -52,7 +51,7 @@ COPY backend/infra/impl/coderunner/script/sandbox.py /app/sandbox.py
 
 
 # Copy static resources
-COPY backend/static /app/resources/static/
+# COPY backend/static /app/resources/static/
 COPY backend/conf /app/resources/conf/
 COPY docker/.env.example /app/.env
 # COPY docker/.env.ve /app/.env
@@ -70,11 +69,4 @@ RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
 
 EXPOSE 8888
 
-# Use a script to start both applications
-COPY backend/script/bootstrap.sh /app/bootstrap.sh
-COPY docker/volumes/elasticsearch/setup_es.sh /app/setup_es.sh
-COPY docker/volumes/elasticsearch/es_index_schema /app/es_index_schemas
-
-RUN chmod +x /app/bootstrap.sh /app/setup_es.sh
-
-CMD ["/app/bootstrap.sh"]
+CMD ["/app/opencoze"]

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { workflowApi } from '@coze-workflow/base/api';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { ResourceType } from '@coze-arch/bot-api/permission_authz';

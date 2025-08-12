@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Imported parameter path, practice running and other functions rely on this path to extract parameters
 export const INPUT_PATH = 'inputs.inputParameters';
 

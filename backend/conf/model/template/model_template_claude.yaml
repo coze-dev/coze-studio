@@ -1,4 +1,4 @@
-id: 2006
+id: 65010
 name: Claude-3.5-Sonnet
 icon_uri: default_icon/claude_v2.png
 icon_url: ""
@@ -47,7 +47,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: Claude-3.5-Sonnet
     protocol: claude
     capability:
         function_call: true
@@ -64,7 +63,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://api.anthropic.com/v1/"
         api_key: ""
         timeout: 0s
         model: ""
@@ -75,16 +74,12 @@ meta:
         top_p: 1
         top_k: 0
         stop: []
-        openai: null
         claude:
             by_bedrock: false
             access_key: ""
             secret_access_key: ""
             session_token: ""
             region: ""
-        ark: null
-        deepseek: null
-        qwen: null
-        gemini: null
+            budget_tokens: 0
         custom: {}
     status: 0

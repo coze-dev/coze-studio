@@ -48,7 +48,7 @@ On developer machine（I want add/update table for my business）
 	atlas migrate hash  # step 2 if need
 	atlas migrate status --url $ATLAS_URL --dir "file://migrations" # check status 
 	
-	# Last, dump the lastest database schema for other developer
+	# Last, dump the latest database schema for other developer
 	atlas schema inspect -u $ATLAS_URL --exclude "atlas_schema_revisions,table_*"  > opencoze_latest_schema.hcl # step 3 
 
 ## 4. apply migration

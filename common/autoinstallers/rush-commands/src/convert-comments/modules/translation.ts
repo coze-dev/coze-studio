@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   TranslationResult,
   TranslationContext,
@@ -7,10 +23,13 @@ import {
 import { TranslationConfig } from '../types/config';
 import { retry, chunk } from '../utils/fp';
 import { isValidTranslation } from '../utils/chinese';
-import { translate as volcTranslate, TranslateConfig as VolcTranslateConfig } from '../volc/translate';
+import {
+  translate as volcTranslate,
+  TranslateConfig as VolcTranslateConfig,
+} from '../volc/translate';
 
 /**
- * 翻译服务类
+ * Translation services
  */
 export class TranslationService {
   private config: TranslationConfig;
@@ -21,7 +40,7 @@ export class TranslationService {
   }
 
   /**
-   * 转换为火山引擎翻译配置
+   * Convert to Volcano Engine Translation Configuration
    */
   private toVolcConfig(): VolcTranslateConfig {
     return {
@@ -34,17 +53,17 @@ export class TranslationService {
   }
 
   /**
-   * 计算翻译置信度（简单实现）
+   * Calculate translation confidence level (simple implementation)
    */
   private calculateConfidence(translated: string, original: string): number {
-    // 基于长度比例和有效性的简单置信度计算
+    // Simple confidence level calculation based on length ratio and validity
     const lengthRatio = translated.length / original.length;
 
     if (!isValidTranslation(original, translated)) {
       return 0;
     }
 
-    // 理想的长度比例在0.8-2.0之间
+    // The ideal length ratio is between 0.8-2
     let confidence = 0.8;
     if (lengthRatio >= 0.8 && lengthRatio <= 2.0) {
       confidence = 0.9;
@@ -54,23 +73,23 @@ export class TranslationService {
   }
 
   /**
-   * 调用火山引擎API进行翻译
+   * Call Volcano Engine API for translation
    */
   private async callVolcTranslate(texts: string[]): Promise<string[]> {
     const volcConfig = this.toVolcConfig();
     const response = await volcTranslate(texts, volcConfig);
-    
+
     return response.TranslationList.map(item => item.Translation);
   }
 
   /**
-   * 翻译单个注释
+   * Translate a single comment
    */
   async translateComment(
     comment: string,
     context?: TranslationContext,
   ): Promise<TranslationResult> {
-    // 检查缓存
+    // Check cache
     const cacheKey = this.getCacheKey(comment, context);
     const cached = this.cache.get(cacheKey);
     if (cached) {
@@ -95,20 +114,22 @@ export class TranslationService {
         confidence: this.calculateConfidence(translated, comment),
       };
 
-      // 缓存结果
+      // cache results
       this.cache.set(cacheKey, result);
 
       return result;
     } catch (error) {
       throw new TranslationError(
-        `Translation failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Translation failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         comment,
       );
     }
   }
 
   /**
-   * 生成缓存键
+   * generate cache key
    */
   private getCacheKey(comment: string, context?: TranslationContext): string {
     const contextStr = context
@@ -118,17 +139,17 @@ export class TranslationService {
   }
 
   /**
-   * 批量翻译注释
+   * batch translation annotations
    */
   async batchTranslate(
     comments: ChineseComment[],
     concurrency: number = this.config.concurrency,
   ): Promise<TranslationResult[]> {
-    // 提取未缓存的注释
+    // Extract uncached comments
     const uncachedComments: { comment: ChineseComment; index: number }[] = [];
     const results: TranslationResult[] = new Array(comments.length);
 
-    // 检查缓存
+    // Check cache
     comments.forEach((comment, index) => {
       const cacheKey = this.getCacheKey(comment.content);
       const cached = this.cache.get(cacheKey);
@@ -139,14 +160,14 @@ export class TranslationService {
       }
     });
 
-    // 如果所有注释都已缓存，直接返回
+    // If all comments are cached, return directly
     if (uncachedComments.length === 0) {
       return results;
     }
 
-    // 分批翻译未缓存的注释
+    // Batch translation of uncached comments
     const chunks = chunk(uncachedComments, concurrency);
-    
+
     for (const chunkItems of chunks) {
       try {
         const textsToTranslate = chunkItems.map(item => item.comment.content);
@@ -156,41 +177,48 @@ export class TranslationService {
           1000,
         );
 
-        // 处理翻译结果
+        // Processing translation results
         chunkItems.forEach((item, chunkIndex) => {
           const translated = translations[chunkIndex];
           if (translated) {
             const result: TranslationResult = {
               original: item.comment.content,
               translated,
-              confidence: this.calculateConfidence(translated, item.comment.content),
+              confidence: this.calculateConfidence(
+                translated,
+                item.comment.content,
+              ),
             };
 
-            // 缓存结果
+            // cache results
             const cacheKey = this.getCacheKey(item.comment.content);
             this.cache.set(cacheKey, result);
-            
+
             results[item.index] = result;
           } else {
-            // 如果翻译失败，创建一个错误结果
+            // If the translation fails, an error result is created
             results[item.index] = {
               original: item.comment.content,
-              translated: item.comment.content, // 翻译失败时保持原文
+              translated: item.comment.content, // Keep the original text when translation fails
               confidence: 0,
             };
           }
         });
       } catch (error) {
-        // 如果整个批次翻译失败，为这个批次的所有注释创建错误结果
+        // If the entire batch translation fails, an error result is created for all comments in that batch
         chunkItems.forEach(item => {
           results[item.index] = {
             original: item.comment.content,
-            translated: item.comment.content, // 翻译失败时保持原文
+            translated: item.comment.content, // Keep the original text when translation fails
             confidence: 0,
           };
         });
-        
-        console.warn(`批量翻译失败: ${error instanceof Error ? error.message : String(error)}`);
+
+        console.warn(
+          `批量翻译失败: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
     }
 
@@ -198,7 +226,7 @@ export class TranslationService {
   }
 
   /**
-   * 保存翻译缓存到文件
+   * Save translation cache to file
    */
   async saveCache(filePath: string): Promise<void> {
     const cacheData = Object.fromEntries(this.cache);
@@ -207,7 +235,7 @@ export class TranslationService {
   }
 
   /**
-   * 从文件加载翻译缓存
+   * Load translation cache from file
    */
   async loadCache(filePath: string): Promise<void> {
     try {
@@ -216,24 +244,24 @@ export class TranslationService {
       const cacheData = JSON.parse(data);
       this.cache = new Map(Object.entries(cacheData));
     } catch {
-      // 缓存文件不存在或损坏，忽略
+      // The cache file does not exist or is corrupted, ignore it
     }
   }
 
   /**
-   * 清空缓存
+   * clear cache
    */
   clearCache(): void {
     this.cache.clear();
   }
 
   /**
-   * 获取缓存统计
+   * Get cache statistics
    */
   getCacheStats(): { size: number; hitRate: number } {
     return {
       size: this.cache.size,
-      hitRate: 0, // 需要实际统计命中率
+      hitRate: 0, // Actual statistical hit rate is required
     };
   }
 }

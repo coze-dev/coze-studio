@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import IncentiveService from './idl/incentive';
 import { axiosInstance, type BotAPIRequestConfig } from './axios';
 

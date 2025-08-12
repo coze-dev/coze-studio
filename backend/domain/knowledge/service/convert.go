@@ -247,7 +247,7 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		return slice, nil
 	},
 	knowledge.DocumentTypeTable: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
-		// NOTICE: table 类型的原始数据需要去 rdb 里查
+		// NOTICE: The original data source of table type needs to be checked in rdb
 		slice := &entity.Slice{
 			Info:        knowledge.Info{},
 			KnowledgeID: knowledgeID,

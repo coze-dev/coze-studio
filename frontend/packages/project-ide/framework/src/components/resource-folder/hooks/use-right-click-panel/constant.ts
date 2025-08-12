@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum BaseResourceContextMenuBtnType {
   CreateFolder = 'resource-folder-create-folder',
   CreateResource = 'resource-folder-create-resource',

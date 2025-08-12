@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type JSXComponent } from '@formily/react';
 import { InputSlider, type InputSliderProps } from '@coze-studio/components';
 import {

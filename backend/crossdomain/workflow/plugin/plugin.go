@@ -29,8 +29,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
@@ -201,7 +201,7 @@ func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin
 		)
 		if toolExample != nil {
 			requestExample = toolExample.RequestExample
-			responseExample = toolExample.RequestExample
+			responseExample = toolExample.ResponseExample
 		}
 
 		response.ToolInfoList[tf.ID] = crossplugin.ToolInfo{
@@ -275,8 +275,15 @@ func (t *pluginService) ExecutePlugin(ctx context.Context, input map[string]any,
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
+	var uID string
+	if cfg.AgentID != nil {
+		uID = cfg.ConnectorUID
+	} else {
+		uID = conv.Int64ToStr(cfg.Operator)
+	}
+
 	req := &service.ExecuteToolRequest{
-		UserID:          conv.Int64ToStr(cfg.Operator),
+		UserID:          uID,
 		PluginID:        pe.PluginID,
 		ToolID:          toolID,
 		ExecScene:       plugin.ExecSceneOfWorkflow,
@@ -327,7 +334,7 @@ func (t *pluginService) ExecutePlugin(ctx context.Context, input map[string]any,
 	}
 
 	var output map[string]any
-	err = sonic.UnmarshalString(r.RawResp, &output)
+	err = sonic.UnmarshalString(r.TrimmedResp, &output)
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
@@ -499,7 +506,23 @@ func toWorkflowAPIParameter(parameter *common.APIParameter) *workflow3.APIParame
 		p.AssistType = ptr.Of(workflow3.AssistParameterType(*parameter.AssistType))
 	}
 
-	if len(parameter.SubParameters) > 0 {
+	// Check if it's an array that needs unwrapping.
+	if parameter.Type == common.ParameterType_Array && len(parameter.SubParameters) == 1 && parameter.SubParameters[0].Name == "[Array Item]" {
+		arrayItem := parameter.SubParameters[0]
+		p.SubType = ptr.Of(workflow3.ParameterType(arrayItem.Type))
+		// If the "[Array Item]" is an object, its sub-parameters become the array's sub-parameters.
+		if arrayItem.Type == common.ParameterType_Object {
+			p.SubParameters = make([]*workflow3.APIParameter, 0, len(arrayItem.SubParameters))
+			for _, subParam := range arrayItem.SubParameters {
+				p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
+			}
+		} else {
+			// The array's SubType is the Type of the "[Array Item]".
+			p.SubParameters = make([]*workflow3.APIParameter, 0, 1)
+			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(arrayItem))
+			p.SubParameters[0].Name = "" // Remove the "[Array Item]" name.
+		}
+	} else if len(parameter.SubParameters) > 0 { // A simple object or a non-wrapped array.
 		p.SubParameters = make([]*workflow3.APIParameter, 0, len(parameter.SubParameters))
 		for _, subParam := range parameter.SubParameters {
 			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))

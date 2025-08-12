@@ -25,7 +25,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
@@ -342,14 +342,14 @@ func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.
 	return ret, nil
 }
 
-func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*database.ConditionGroup, error) {
+func convertClauseGroupToConditionGroup(_ context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*database.ConditionGroup, error) {
 	var (
 		rightValue any
 		ok         bool
 	)
 
 	conditionGroup := &database.ConditionGroup{
-		Conditions: make([]*database.Condition, 0),
+		Conditions: make([]*database.ConditionStr, 0),
 		Relation:   database.ClauseRelationAND,
 	}
 
@@ -362,7 +362,7 @@ func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 			}
 		}
 
-		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.Condition{
+		conditionGroup.Conditions = append(conditionGroup.Conditions, &database.ConditionStr{
 			Left:     clause.Left,
 			Operator: clause.Operator,
 			Right:    rightValue,
@@ -373,7 +373,7 @@ func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	if clauseGroup.Multi != nil {
 		conditionGroup.Relation = clauseGroup.Multi.Relation
 
-		conditionGroup.Conditions = make([]*database.Condition, len(clauseGroup.Multi.Clauses))
+		conditionGroup.Conditions = make([]*database.ConditionStr, len(clauseGroup.Multi.Clauses))
 		multiSelect := clauseGroup.Multi
 		for idx, clause := range multiSelect.Clauses {
 			if !notNeedTakeMapValue(clause.Operator) {
@@ -382,7 +382,7 @@ func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 					return nil, fmt.Errorf("cannot take multi clause from input")
 				}
 			}
-			conditionGroup.Conditions[idx] = &database.Condition{
+			conditionGroup.Conditions[idx] = &database.ConditionStr{
 				Left:     clause.Left,
 				Operator: clause.Operator,
 				Right:    rightValue,
@@ -394,13 +394,13 @@ func convertClauseGroupToConditionGroup(ctx context.Context, clauseGroup *databa
 	return conditionGroup, nil
 }
 
-func convertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*UpdateInventory, error) {
+func convertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *database.ClauseGroup, input map[string]any) (*updateInventory, error) {
 	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, clauseGroup, input)
 	if err != nil {
 		return nil, err
 	}
 	fields := parseToInput(input)
-	inventory := &UpdateInventory{
+	inventory := &updateInventory{
 		ConditionGroup: conditionGroup,
 		Fields:         fields,
 	}
@@ -415,12 +415,24 @@ func isDebugExecute(ctx context.Context) bool {
 	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeNodeDebug
 }
 
-func getExecUserID(ctx context.Context) int64 {
+func getExecUserID(ctx context.Context) string {
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	return execCtx.RootCtx.ExeCfg.Operator
+	if execCtx.RootCtx.ExeCfg.AgentID != nil {
+		return execCtx.RootCtx.ExeCfg.ConnectorUID
+	}
+	uIDStr := strconv.FormatInt(execCtx.RootCtx.ExeCfg.Operator, 10)
+	return uIDStr
+}
+
+func getConnectorID(ctx context.Context) int64 {
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx == nil {
+		panic(fmt.Errorf("unable to get exe context"))
+	}
+	return execCtx.RootCtx.ExeCfg.ConnectorID
 }
 
 func parseToInput(input map[string]any) map[string]any {

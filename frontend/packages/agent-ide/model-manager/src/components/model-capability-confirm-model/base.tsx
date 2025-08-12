@@ -51,7 +51,7 @@ const getToolGroupText = (key: ToolGroupKey): string =>
     [ToolGroupKey.DIALOG]: I18n.t('bot_edit_type_dialog'),
     [ToolGroupKey.CHARACTER]: I18n.t('bot_edit_type_character'),
     [ToolGroupKey.HOOKS]: 'Hooks',
-  })[key];
+  }[key]);
 
 const getToolText = (toolKey: ToolKey) =>
   ({
@@ -75,7 +75,7 @@ const getToolText = (toolKey: ToolKey) =>
     [ToolKey.SHORTCUT]: I18n.t('bot_ide_shortcut'),
     [ToolKey.DEV_HOOKS]: 'Hooks',
     [ToolKey.USER_INPUT]: I18n.t('chat_setting_user_input_default_mode'),
-  })[toolKey];
+  }[toolKey]);
 
 const AlertGroups: FC<{ items: AlertItem[] }> = ({ items }) => {
   const grouped = groupBy(items, 'groupTitle');
@@ -296,7 +296,7 @@ const getGroupTittleByConfigType = (type: ModelFuncConfigType): string =>
       'agentflow_transfer_ conversation_settings_title',
     ),
     [ModelFuncConfigType.HookInfo]: 'Hooks',
-  })[type];
+  }[type]);
 
 const getTitleByConfigType = (type: ModelFuncConfigType): string =>
   // @ts-expect-error fix me late
@@ -325,7 +325,7 @@ const getTitleByConfigType = (type: ModelFuncConfigType): string =>
       'agentflow_transfer_ conversation_settings_mode_node_title',
     ),
     [ModelFuncConfigType.HookInfo]: 'Hooks',
-  })[type];
+  }[type]);
 
 export const mapConfigTypeToAlertItem = (
   type: ModelFuncConfigType,

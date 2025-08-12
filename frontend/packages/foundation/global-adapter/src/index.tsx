@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { GlobalLayout } from './components/global-layout';
 export { useAppInit } from './hooks/use-app-init';
 export { useHasSider } from './components/global-layout-composed/hooks/use-has-sider';

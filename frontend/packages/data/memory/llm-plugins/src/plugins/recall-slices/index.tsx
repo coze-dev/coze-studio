@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
@@ -64,14 +64,14 @@ const getSourceTypeDescription = (sourceType: number): string | undefined =>
     ),
     [DocumentSource.Notion]: I18n.t('chat-area-knowledge-notion-data-source'),
     [DocumentSource.LarkWeb]: I18n.t('Lark_00002'),
-  })[sourceType];
+  }[sourceType]);
 
 const getFormatTypeDescription = (formatType: number): string | undefined =>
   ({
     [FormatType.Table]: I18n.t('knowledge-dataset-type-table'),
     [FormatType.Text]: I18n.t('knowledge-dataset-type-text'),
     [FormatType.Image]: I18n.t('knowledge_photo_025'),
-  })[formatType];
+  }[formatType]);
 
 function RecallSlice(props: { llmOutput: LLMOutput; index: number }) {
   const { llmOutput, index } = props;

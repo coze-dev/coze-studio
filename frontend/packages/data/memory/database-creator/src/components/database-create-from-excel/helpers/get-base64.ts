@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export function getBase64(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();

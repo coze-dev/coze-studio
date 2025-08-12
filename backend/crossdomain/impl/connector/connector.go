@@ -20,7 +20,7 @@ import (
 	"context"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
+	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
 	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
 )
 

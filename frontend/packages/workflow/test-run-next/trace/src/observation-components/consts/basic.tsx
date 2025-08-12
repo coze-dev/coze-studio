@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Value, TagType } from '../typings/idl';
 
 export enum StatusCode {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ChatAreaPlugin } from '../plugin';
 import { type PluginMode } from '../../constants/plugin';
 

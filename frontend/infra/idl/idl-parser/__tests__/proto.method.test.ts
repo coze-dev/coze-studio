@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src/proto';
 
 describe('ferry-parser', () => {
   describe('proto method', () => {
-    it('should convert method extenstions', () => {
+    it('should convert method extensions', () => {
       const idl = `
       syntax = 'proto3';
       message BizRequest {}
@@ -74,7 +74,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert method extenstions using old rules', () => {
+    it('should convert method extensions using old rules', () => {
       const idl = `
       syntax = 'proto3';
       message BizRequest {}

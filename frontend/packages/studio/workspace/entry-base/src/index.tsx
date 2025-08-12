@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { default as Plugin } from './pages/plugin';
 export { default as Tool } from './pages/tool';
 export { default as MocksetDetail } from './pages/mockset';

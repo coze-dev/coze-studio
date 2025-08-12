@@ -24,10 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
-
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 )
@@ -75,30 +74,29 @@ async def main(args:Args)->Output:
 
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
 		ctx := t.Context()
-		c := &CodeRunner{
-			config: &Config{
-				Language: coderunner.Python,
-				Code:     codeTpl,
-				OutputConfig: map[string]*vo.TypeInfo{
-					"key0": {Type: vo.DataTypeInteger},
-					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
-					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
-						}},
-					},
-					},
-					"key4": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject}},
+		c := &Runner{
+			language: coderunner.Python,
+			code:     codeTpl,
+			outputConfig: map[string]*vo.TypeInfo{
+				"key0": {Type: vo.DataTypeInteger},
+				"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
+				"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+				"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+					"key31": {Type: vo.DataTypeString},
+					"key32": {Type: vo.DataTypeString},
+					"key33": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key34": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key341": {Type: vo.DataTypeString},
+						"key342": {Type: vo.DataTypeString},
+					}},
 				},
-				Runner: mockRunner,
+				},
+				"key4": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeObject}},
 			},
+			runner: mockRunner,
 		}
-		ret, err := c.RunCode(ctx, map[string]any{
+
+		ret, err := c.Invoke(ctx, map[string]any{
 			"input": "1123",
 		})
 
@@ -145,38 +143,36 @@ async def main(args:Args)->Output:
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
 
 		ctx := t.Context()
-		c := &CodeRunner{
-			config: &Config{
-				Code:     codeTpl,
-				Language: coderunner.Python,
-				OutputConfig: map[string]*vo.TypeInfo{
-					"key0": {Type: vo.DataTypeInteger},
-					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
-					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
-						}},
+		c := &Runner{
+			code:     codeTpl,
+			language: coderunner.Python,
+			outputConfig: map[string]*vo.TypeInfo{
+				"key0": {Type: vo.DataTypeInteger},
+				"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
+				"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+				"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+					"key31": {Type: vo.DataTypeString},
+					"key32": {Type: vo.DataTypeString},
+					"key33": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key34": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key341": {Type: vo.DataTypeString},
+						"key342": {Type: vo.DataTypeString},
 					}},
-					"key4": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
-						},
-						}},
+				}},
+				"key4": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+					"key31": {Type: vo.DataTypeString},
+					"key32": {Type: vo.DataTypeString},
+					"key33": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key34": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key341": {Type: vo.DataTypeString},
+						"key342": {Type: vo.DataTypeString},
 					},
+					}},
 				},
-				Runner: mockRunner,
 			},
+			runner: mockRunner,
 		}
-		ret, err := c.RunCode(ctx, map[string]any{
+		ret, err := c.Invoke(ctx, map[string]any{
 			"input": "1123",
 		})
 
@@ -219,30 +215,28 @@ async def main(args:Args)->Output:
 		}
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
 
-		c := &CodeRunner{
-			config: &Config{
-				Code:     codeTpl,
-				Language: coderunner.Python,
-				OutputConfig: map[string]*vo.TypeInfo{
-					"key0": {Type: vo.DataTypeInteger},
-					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key343": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						}},
-					},
-					},
+		c := &Runner{
+			code:     codeTpl,
+			language: coderunner.Python,
+			outputConfig: map[string]*vo.TypeInfo{
+				"key0": {Type: vo.DataTypeInteger},
+				"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+				"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+				"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+					"key31": {Type: vo.DataTypeString},
+					"key32": {Type: vo.DataTypeString},
+					"key33": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					"key34": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
+						"key341": {Type: vo.DataTypeString},
+						"key342": {Type: vo.DataTypeString},
+						"key343": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
+					}},
 				},
-				Runner: mockRunner,
+				},
 			},
+			runner: mockRunner,
 		}
-		ret, err := c.RunCode(ctx, map[string]any{
+		ret, err := c.Invoke(ctx, map[string]any{
 			"input": "1123",
 		})
 

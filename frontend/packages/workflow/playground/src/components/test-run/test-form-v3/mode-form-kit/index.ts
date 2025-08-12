@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { toJsonModeSchema } from './to-json-mode-schema';
 export { setDefaultValues } from './set-cache-values';
 export { formatValues } from './format-values';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type IKnowledgeParams } from '@coze-data/knowledge-stores';
 import { useKnowledgeIDEFullScreenModal as useKnowledgeIDEFullScreenModalBase } from '@coze-data/knowledge-ide-base/layout/base/modal';
 import { type KnowledgeIDENavBarProps } from '@coze-data/knowledge-ide-base/components/knowledge-nav-bar';

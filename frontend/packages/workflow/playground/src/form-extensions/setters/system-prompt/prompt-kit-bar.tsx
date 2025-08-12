@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { PublicScopeProvider } from '@coze-workflow/variable';
 import { NLPromptButton } from '@coze-workflow/resources-adapter';
 import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';

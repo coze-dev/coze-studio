@@ -20,13 +20,17 @@ package coze
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/coze-dev/coze-studio/backend/application/plugin"
+	"github.com/coze-dev/coze-studio/backend/application/singleagent"
+	"github.com/coze-dev/coze-studio/backend/application/upload"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/application/plugin"
-
-	bot_open_api "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_open_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
 )
 
 // OauthAuthorizationCode .
@@ -41,7 +45,7 @@ func OauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
 	}
 
 	if req.Code == "" {
-		invalidParamRequestResponse(c, "code is required")
+		invalidParamRequestResponse(c, "authorization failed, code is required")
 		return
 	}
 	if req.State == "" {
@@ -49,11 +53,55 @@ func OauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginApplicationSVC.OauthAuthorizationCode(ctx, &req)
+	_, err = plugin.PluginApplicationSVC.OauthAuthorizationCode(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
+	redirectURL := fmt.Sprintf("%s/information/auth/success", conf.GetServerHost())
+	c.Redirect(consts.StatusFound, []byte(redirectURL))
+	c.Abort()
+
+	return
+}
+
+// UploadFileOpen .
+// @router /v1/files/upload [POST]
+func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.UploadFileOpenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(bot_open_api.UploadFileOpenResponse)
+	resp, err = upload.SVC.UploadFileOpen(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetBotOnlineInfo .
+// @router /v1/bot/get_online_info [GET]
+func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.GetBotOnlineInfoReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetAgentOnlineInfo(ctx, &req)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }

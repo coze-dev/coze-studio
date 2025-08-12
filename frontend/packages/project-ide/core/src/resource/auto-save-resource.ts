@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable, inject } from 'inversify';
 import {
   type CancellationToken,
@@ -38,10 +38,9 @@ export interface AutoSaveResourceOptions {
  */
 @injectable()
 export abstract class AutoSaveResource<
-    CHANGE_SET = string,
-    INFO extends ResourceInfo = ResourceInfo,
-  >
-  implements Disposable, Resource<CHANGE_SET, INFO>
+  CHANGE_SET = string,
+  INFO extends ResourceInfo = ResourceInfo,
+> implements Disposable, Resource<CHANGE_SET, INFO>
 {
   readonly autoSave: 'on' | 'off' = 'on';
 

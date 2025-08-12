@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type PublisherBotInfo } from '@coze-agent-ide/space-bot';
 import {
   BotConnectorStatus,

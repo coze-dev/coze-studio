@@ -97,7 +97,7 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 }
 
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
-	// 删除知识库在各个存储里的数据
+	// Delete the data in each store of the knowledge base
 	for _, manager := range k.searchStoreManagers {
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
@@ -145,8 +145,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[indexDocument] document not provided"))
 	}
 
-	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
-	// 2. rebalance 重复消费同一条消息
+	// 1. The index operations on the same document in the retry queue and the ordinary queue are concurrent, and the same document data is written twice (generated when the backend bugfix is online)
+	// 2. rebalance repeated consumption of the same message
 
 	// check knowledge and document status
 	if valid, err := k.isWritableKnowledgeAndDocument(ctx, doc.KnowledgeID, doc.ID); err != nil {
@@ -281,7 +281,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 	// save slices
 	if doc.Type == knowledge.DocumentTypeTable {
-		// 表格类型，将数据插入到数据库中
+		// Table type to insert data into a database
 		err = k.upsertDataToTable(ctx, &doc.TableInfo, sliceEntities)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
@@ -360,7 +360,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}); err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("create search store failed, err: %v", err)))
 		}
-		// 图片型知识库kn:doc:slice = 1:n:n，可能content为空，不需要写入
+		// Picture knowledge base kn: doc: slice = 1: n: n, maybe the content is empty, no need to write
 		if doc.Type == knowledge.DocumentTypeImage && len(ssDocs) == 1 && len(ssDocs[0].Content) == 0 {
 			continue
 		}

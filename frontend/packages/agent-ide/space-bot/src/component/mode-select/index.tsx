@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -27,10 +27,7 @@ import {
   updateHeaderStatus,
   useBotDetailIsReadonly,
 } from '@coze-studio/bot-detail-store';
-import {
-  AgentVersionCompat,
-  BotMode,
-} from '@coze-arch/bot-api/playground_api';
+import { AgentVersionCompat, BotMode } from '@coze-arch/bot-api/playground_api';
 
 import { useBotPageStore } from '../../store/bot-page/store';
 import { ModeChangeView, type ModeChangeViewProps } from './mode-change-view';

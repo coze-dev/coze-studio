@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type ConnectorPublishConfig } from '@coze-arch/idl/intelligence_api';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 

@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { KvBindButton } from './kv-bind-button';
 export { DiffViewButton } from './diff-view-button';

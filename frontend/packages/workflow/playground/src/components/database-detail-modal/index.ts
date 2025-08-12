@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { DatabaseDetailModal } from './database-detail-model';
 export { useOpenDatabaseDetail } from './use-open-database-detail';

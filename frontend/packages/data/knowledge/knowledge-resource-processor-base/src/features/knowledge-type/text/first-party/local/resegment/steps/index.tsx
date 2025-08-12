@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TextSegment } from './segment';
 export { TextProcessing } from './processing';
 export { SegmentPreviewStep } from './preview';

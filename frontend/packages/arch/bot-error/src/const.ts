@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export enum ReportEventNames {
   /**
    * generic exception error
@@ -27,7 +27,7 @@ export enum ReportEventNames {
 
 /**
  *  Get the error that has been identified
- * 
+ *
  * 1. CustomError: The business party throws new CustomError (ReportEventNames.xxx, 'xxx')
  * 2. AxiosError: The status code is not 2xx;
  * 3, ApiError: status code 2xx & business code! == 0

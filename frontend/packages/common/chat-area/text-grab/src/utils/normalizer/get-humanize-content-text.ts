@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type GrabNode } from '../../types/node';
 import { isGrabTextNode } from './is-grab-text-node';
 import { isGrabLink } from './is-grab-link';

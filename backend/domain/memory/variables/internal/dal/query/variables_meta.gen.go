@@ -46,14 +46,14 @@ type variablesMeta struct {
 	variablesMetaDo
 
 	ALL          field.Asterisk
-	ID           field.Int64  // 主键ID
-	CreatorID    field.Int64  // 创建者ID
+	ID           field.Int64  // id
+	CreatorID    field.Int64  // creator id
 	BizType      field.Int32  // 1 for agent，2 for app
 	BizID        field.String // 1 for agent_id，2 for app_id
-	VariableList field.Field  // 变量配置的json数据
-	CreatedAt    field.Int64  // create time
-	UpdatedAt    field.Int64  // update time
-	Version      field.String // project版本,为空代表草稿态
+	VariableList field.Field  // JSON data for variable configuration
+	CreatedAt    field.Int64  // Create Time in Milliseconds
+	UpdatedAt    field.Int64  // Update Time in Milliseconds
+	Version      field.String // Project version, empty represents draft status
 
 	fieldMap map[string]field.Expr
 }

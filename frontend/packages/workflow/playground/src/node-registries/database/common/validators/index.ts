@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { createConditionValidator } from './create-condition-validator';
 export { createDatabaseValidator } from './create-database-validator';
 export { createSelectAndSetFieldsValidator } from './create-select-and-set-fields-validator';

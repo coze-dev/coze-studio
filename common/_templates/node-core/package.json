@@ -19,8 +19,8 @@
     "@coze-arch/vitest-config": "workspace:*",
     "@types/node": "^18",
     "@vitest/coverage-v8": "~3.0.5",
-
-    "vitest": "~3.0.5",
-    "sucrase": "^3.32.0"
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
   }
 }
+

@@ -30,10 +30,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
+	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -112,22 +112,21 @@ func newDatabaseTools(ctx context.Context, conf *databaseConfig) ([]tool.Invokab
 
 	dbInfos := conf.databaseConf
 
-	d := &databaseTool{
-		spaceID:       conf.spaceID,
-		connectorUID:  conf.userID,
-		agentIdentity: conf.agentIdentity,
-	}
-
 	tools := make([]tool.InvokableTool, 0, len(dbInfos))
 	for _, dbInfo := range dbInfos {
 		tID, err := strconv.ParseInt(dbInfo.GetTableId(), 10, 64)
 		if err != nil {
 			return nil, err
 		}
+		d := &databaseTool{
+			spaceID:        conf.spaceID,
+			connectorUID:   conf.userID,
+			agentIdentity:  conf.agentIdentity,
+			promptDisabled: dbInfo.GetPromptDisabled(),
+			name:           dbInfo.GetTableName(),
+			databaseID:     tID,
+		}
 
-		d.databaseID = tID
-		d.promptDisabled = dbInfo.GetPromptDisabled()
-		d.name = dbInfo.GetTableName()
 		dbTool, err := utils.InferTool(dbInfo.GetTableName(), buildDatabaseToolDescription(dbInfo), d.Invoke)
 		if err != nil {
 			return nil, err

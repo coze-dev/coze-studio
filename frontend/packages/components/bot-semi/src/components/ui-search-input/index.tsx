@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 
 import { InputProps } from '@douyinfe/semi-ui/lib/es/input';

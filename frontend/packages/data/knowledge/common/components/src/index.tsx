@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { PreviewMd } from './doc-preview/preview-md';
 export { PreviewTxt } from './doc-preview/preview-txt';
 export { usePreviewPdf } from './doc-preview/use-preview-pdf';

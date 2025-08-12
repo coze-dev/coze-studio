@@ -21,13 +21,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
@@ -42,14 +43,19 @@ func NewPluginOAuthAuthDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginOAuthAut
 type pluginOAuthAuthPO model.PluginOauthAuth
 
 func (p pluginOAuthAuthPO) ToDO() *entity.AuthorizationCodeInfo {
+	secret := os.Getenv(encrypt.OAuthTokenSecretEnv)
+	if secret == "" {
+		secret = encrypt.DefaultOAuthTokenSecret
+	}
+
 	if p.RefreshToken != "" {
-		refreshToken, err := utils.DecryptByAES(p.RefreshToken, utils.OAuthTokenSecretKey)
+		refreshToken, err := encrypt.DecryptByAES(p.RefreshToken, secret)
 		if err == nil {
 			p.RefreshToken = string(refreshToken)
 		}
 	}
 	if p.AccessToken != "" {
-		accessToken, err := utils.DecryptByAES(p.AccessToken, utils.OAuthTokenSecretKey)
+		accessToken, err := encrypt.DecryptByAES(p.AccessToken, secret)
 		if err == nil {
 			p.AccessToken = string(accessToken)
 		}
@@ -103,16 +109,20 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 	}
 
 	meta := info.Meta
+	secret := os.Getenv(encrypt.OAuthTokenSecretEnv)
+	if secret == "" {
+		secret = encrypt.DefaultOAuthTokenSecret
+	}
 
 	var accessToken, refreshToken string
 	if info.AccessToken != "" {
-		accessToken, err = utils.EncryptByAES([]byte(info.AccessToken), utils.OAuthTokenSecretKey)
+		accessToken, err = encrypt.EncryptByAES([]byte(info.AccessToken), secret)
 		if err != nil {
 			return err
 		}
 	}
 	if info.RefreshToken != "" {
-		refreshToken, err = utils.EncryptByAES([]byte(info.RefreshToken), utils.OAuthTokenSecretKey)
+		refreshToken, err = encrypt.EncryptByAES([]byte(info.RefreshToken), secret)
 		if err != nil {
 			return err
 		}

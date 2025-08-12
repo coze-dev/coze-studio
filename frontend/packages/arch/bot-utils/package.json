@@ -37,10 +37,8 @@
   },
   "dependencies": {
     "@coze-agent-ide/tool-config": "workspace:*",
-    "@coze-arch/bot-error": "workspace:*",
-    "@coze-studio/uploader-adapter": "workspace:*",
-    "@coze-studio/user-store": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
@@ -48,6 +46,8 @@
     "@coze-arch/report-events": "workspace:*",
     "@coze-arch/tea": "workspace:*",
     "@coze-arch/web-context": "workspace:*",
+    "@coze-studio/uploader-adapter": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
     "bowser": "2.11.0",
     "dayjs": "^1.11.7",
     "eventemitter3": "^5.0.1",
@@ -56,11 +56,11 @@
     "query-string": "^8.1.0"
   },
   "devDependencies": {
-    "@coze-common/chat-core": "workspace:*",
     "@coze-arch/bot-typings": "workspace:*",
     "@coze-arch/eslint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",
+    "@coze-common/chat-core": "workspace:*",
     "@types/lodash-es": "^4.17.10",
     "@types/md5": "^2.3.2",
     "@types/node": "^18",

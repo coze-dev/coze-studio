@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo } from 'react';
 
 import { clsx } from 'clsx';
@@ -135,8 +135,8 @@ export const CustomTreeNode = ({
           Number(duration) > 60000
             ? 'red'
             : Number(duration) > 10000
-              ? 'yellow'
-              : 'green'
+            ? 'yellow'
+            : 'green'
         }
         type="light"
         className={styles['node-tag']}
@@ -169,9 +169,10 @@ export const CustomTreeNode = ({
 
 export const renderCustomTreeNode =
   ({ renderGraphNodeConfig }: SpanNodeRenderOptions) =>
-  (nodeData: TreeNodeExtra) => (
-    <CustomTreeNode
-      nodeData={nodeData}
-      renderGraphNodeConfig={renderGraphNodeConfig}
-    />
-  );
+  (nodeData: TreeNodeExtra) =>
+    (
+      <CustomTreeNode
+        nodeData={nodeData}
+        renderGraphNodeConfig={renderGraphNodeConfig}
+      />
+    );

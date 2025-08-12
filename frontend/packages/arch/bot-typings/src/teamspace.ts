@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // copy from packages/arch/bot-typings/src/teamspace.ts
 export interface DynamicParams extends Record<string, string | undefined> {
   space_id?: string;

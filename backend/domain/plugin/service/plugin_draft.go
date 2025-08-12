@@ -30,10 +30,10 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/openapi"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
@@ -274,7 +274,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		}, e
 	})
 
-	// 1. 删除 tool -> 关闭启用
+	// 1. Delete tool - > Turn off Enable
 	for api, oldTool := range oldDraftToolsMap {
 		_, ok := apiSchemas[api]
 		if !ok {
@@ -286,7 +286,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 	newDraftTools := make([]*entity.ToolInfo, 0, len(apis))
 	for api, newOp := range apiSchemas {
 		oldTool, ok := oldDraftToolsMap[api]
-		if ok { // 2. 更新 tool -> 覆盖
+		if ok { // 2. Update tool - > Overlay
 			oldTool.ActivatedStatus = ptr.Of(model.ActivateTool)
 			oldTool.Operation = newOp
 			if needResetDebugStatusTool(ctx, newOp, oldTool.Operation) {
@@ -295,7 +295,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 			continue
 		}
 
-		// 3. 新增 tool
+		// 3. New tools
 		newDraftTools = append(newDraftTools, &entity.ToolInfo{
 			PluginID:        req.PluginID,
 			ActivatedStatus: ptr.Of(model.ActivateTool),
@@ -321,7 +321,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 }
 
 func needResetDebugStatusTool(_ context.Context, nt, ot *model.Openapi3Operation) bool {
-	if len(ot.Parameters) != len(ot.Parameters) {
+	if len(nt.Parameters) != len(ot.Parameters) {
 		return true
 	}
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { jsonParser } from './processors/json';
 import { disallowDepRule } from './rules/package-disallow-deps';
 import { noDeepRelativeImportRule } from './rules/no-deep-relative-import';

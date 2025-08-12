@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Mock } from 'vitest';
 import { I18n } from '@coze-arch/i18n';
 import { Toast } from '@coze-arch/bot-semi';

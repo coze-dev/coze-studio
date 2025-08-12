@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { String } from './string';
 export type { StringOptions } from './string';
 export { Number } from './number';

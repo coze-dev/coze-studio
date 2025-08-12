@@ -386,8 +386,9 @@ export class WorkflowSaveService {
       !this.globalState.playgroundProps?.disableGetTestCase;
 
     if (useNewGlobalVariableCache) {
-      const relatedBot =
-        await this.relatedBotService.getAsyncRelatedBotValue(workflowJSON);
+      const relatedBot = await this.relatedBotService.getAsyncRelatedBotValue(
+        workflowJSON,
+      );
 
       if (!relatedBot?.id || !relatedBot?.type) {
         return;

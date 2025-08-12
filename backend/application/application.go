@@ -22,7 +22,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/template"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 
 	"github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
@@ -39,18 +39,19 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagentrun"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconversation"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmessage"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
+	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
+	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	agentrunImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/agentrun"
 	connectorImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/connector"
 	conversationImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/conversation"
@@ -59,12 +60,15 @@ import (
 	dataCopyImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/datacopy"
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/knowledge"
 	messageImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/message"
+	modelmgrImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/modelmgr"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
 	searchImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/search"
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
 	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
+	implEventbus "github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 )
 
 type eventbusImpl struct {
@@ -124,7 +128,6 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
-
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
@@ -138,12 +141,13 @@ func Init(ctx context.Context) (err error) {
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
-
+	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(infra.ModelMgr, nil))
 	return nil
 }
 
 func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 	e := &eventbusImpl{}
+	eventbus.SetDefaultSVC(implEventbus.NewConsumerService())
 	e.resourceEventBus = search.NewResourceEventBus(infra.ResourceEventProducer)
 	e.projectEventBus = search.NewProjectEventBus(infra.AppEventProducer)
 
@@ -282,7 +286,6 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,
 		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
-		ModelManager:       b.infra.ModelMgr,
 		DomainNotifier:     b.eventbus.resourceEventBus,
 		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
 		CodeRunner:         b.infra.CodeRunner,

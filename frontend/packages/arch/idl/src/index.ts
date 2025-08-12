@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Temporary files, later deleted
 
 export { SuggestReplyMode } from './auto-generated/developer_api/namespaces/developer_api';

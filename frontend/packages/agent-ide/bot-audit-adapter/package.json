@@ -13,12 +13,12 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-studio/bot-audit-base": "workspace:*",
-    "@coze-studio/bot-detail-store": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-space-api": "workspace:*",
-    "@coze-arch/i18n": "workspace:*"
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-studio/bot-audit-base": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*"
   },
   "devDependencies": {
     "@coze-arch/bot-typings": "workspace:*",

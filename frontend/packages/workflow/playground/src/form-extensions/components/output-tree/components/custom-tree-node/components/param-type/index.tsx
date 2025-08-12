@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import React, { useState } from 'react';
 
@@ -120,7 +120,9 @@ export default function ParamType({
                     'param-type-select',
                   )}
                   className={classNames(
-                    `flex items-center justify-between gap-0.5 pl-[3px] pr-[3px] rounded-[6px] ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`,
+                    `flex items-center justify-between gap-0.5 pl-[3px] pr-[3px] rounded-[6px] ${
+                      disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+                    }`,
                     'border border-solid bg-transparent',
                     {
                       'semi-input-wrapper-error': options.showError,

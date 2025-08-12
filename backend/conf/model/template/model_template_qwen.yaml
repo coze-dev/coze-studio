@@ -1,4 +1,4 @@
-id: 2005
+id: 71010
 name: Qwen3-32B
 icon_uri: default_icon/qwen_v2.png
 icon_url: ""
@@ -66,7 +66,6 @@ default_parameters:
             zh: 生成多样性
             en: Generation diversity
 meta:
-    name: Qwen3-32B
     protocol: qwen
     capability:
         function_call: true
@@ -82,7 +81,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
         api_key: ""
         timeout: 0s
         model: ""
@@ -93,14 +92,9 @@ meta:
         top_p: 1
         top_k: 0
         stop: []
-        openai: null
-        claude: null
-        ark: null
-        deepseek: null
         qwen:
             response_format:
                 type: text
                 jsonschema: null
-        gemini: null
         custom: {}
     status: 0

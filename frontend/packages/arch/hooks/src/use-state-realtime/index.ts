@@ -13,24 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { useState, useRef, type Dispatch, type SetStateAction, useCallback } from 'react';
+
+import {
+  useState,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+} from 'react';
 
 const isFunction = (val: any): val is Function => typeof val === 'function';
 
 // Get a new state value, compatible with passing values and functions
-function getStateVal<T>(preState: T, initVal?: SetStateAction<T>): T | undefined {
+function getStateVal<T>(
+  preState: T,
+  initVal?: SetStateAction<T>,
+): T | undefined {
   if (isFunction(initVal)) {
     return initVal(preState);
   }
   return initVal;
 }
 
-function useStateRealtime<T>(initialState: T | (() => T)): [T, Dispatch<SetStateAction<T>>, () => T]
-function useStateRealtime<T = undefined>(): [T | undefined, Dispatch<SetStateAction<T | undefined>>, () => T | undefined]
+function useStateRealtime<T>(
+  initialState: T | (() => T),
+): [T, Dispatch<SetStateAction<T>>, () => T];
+function useStateRealtime<T = undefined>(): [
+  T | undefined,
+  Dispatch<SetStateAction<T | undefined>>,
+  () => T | undefined,
+];
 function useStateRealtime<T>(
   initVal?: T | (() => T),
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, () => T | undefined] {
+): [
+  T | undefined,
+  Dispatch<SetStateAction<T | undefined>>,
+  () => T | undefined,
+] {
   const initState = getStateVal(undefined, initVal);
   const [val, setVal] = useState(initState);
   const valRef = useRef(initState);
@@ -38,8 +57,8 @@ function useStateRealtime<T>(
     const newState = getStateVal(valRef.current, newVal);
     valRef.current = newState;
     setVal(newState);
-  }, [])
-  const getRealState = useCallback(() => valRef.current, [])
+  }, []);
+  const getRealState = useCallback(() => valRef.current, []);
   return [val, setState, getRealState];
 }
 

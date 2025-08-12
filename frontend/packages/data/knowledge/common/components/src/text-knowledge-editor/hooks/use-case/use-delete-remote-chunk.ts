@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
 import { deleteRemoteChunk as deleteRemoteChunkService } from '@/text-knowledge-editor/services/inner/chunk-op.service';
 import { useDeleteChunk } from '@/text-knowledge-editor/hooks/inner/use-delete-chunk';

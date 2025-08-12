@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
@@ -186,7 +186,9 @@ describe('useMediaQuery', () => {
     );
 
     expect(window.matchMedia).toHaveBeenCalledWith(
-      `(min-width: ${SCREENS_TOKENS[ScreenRange.MD]}) and (max-width: ${SCREENS_TOKENS[ScreenRange.LG]})`,
+      `(min-width: ${SCREENS_TOKENS[ScreenRange.MD]}) and (max-width: ${
+        SCREENS_TOKENS[ScreenRange.LG]
+      })`,
     );
   });
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { type Message } from '../types';
 import { getIsTriggerMessage } from '../../utils/message';
 import { type MemberSetType } from '../../plugin/types/plugin-class/message-life-cycle';

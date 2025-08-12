@@ -1,5 +1,5 @@
 include "../base.thrift"
-include "../bot_common/bot_common.thrift"
+include "../app/bot_common.thrift"
 namespace go file.upload
 struct CommonUploadRequest {
     1: optional binary ByteData (api.raw_body = "")

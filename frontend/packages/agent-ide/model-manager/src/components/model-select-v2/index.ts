@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { ModelOption, ModelOptionProps } from './model-option';
 export { ModelOptionGroup, ModelOptionGroupProps } from './model-option-group';
 export { ModelOptionThumb } from './model-option-thumb';

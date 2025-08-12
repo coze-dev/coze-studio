@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { TableCustom } from './table-custom';
 export { TableLocal } from './table-local';
 export { TextCustom } from './text-custom';

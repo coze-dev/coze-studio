@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { InputComponentType } from '@coze-arch/bot-api/connector_api';
 
 import { type BaseOutputStructLineType } from '../types';

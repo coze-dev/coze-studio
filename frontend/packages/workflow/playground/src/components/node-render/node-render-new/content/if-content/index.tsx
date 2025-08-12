@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { Conditions } from '../../fields';
 
 export function IfContent() {

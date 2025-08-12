@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useIDEGlobalStore } from '@coze-project-ide/base-interface';
 
 export const useCommitVersion = () => {

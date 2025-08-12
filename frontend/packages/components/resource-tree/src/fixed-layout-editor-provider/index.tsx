@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useMemo, useCallback, forwardRef } from 'react';
 
 import { type interfaces } from 'inversify';
@@ -42,7 +42,7 @@ export const FixedLayoutEditorProvider = forwardRef<
         get document(): FlowDocument {
           return container.get<FlowDocument>(FlowDocument);
         },
-      }) as FixedLayoutPluginContext,
+      } as FixedLayoutPluginContext),
     [],
   );
   return (

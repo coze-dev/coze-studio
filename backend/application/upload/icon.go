@@ -43,10 +43,11 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	dataset "github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/file/upload"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -356,7 +357,7 @@ func (u *UploadService) GetShortcutIcons(ctx context.Context) ([]*playground.Fil
 	return fileList, nil
 }
 
-func parseMultipartFormData(ctx context.Context, req *playground.UploadFileOpenRequest) (*multipart.Form, error) {
+func parseMultipartFormData(ctx context.Context, req *bot_open_api.UploadFileOpenRequest) (*multipart.Form, error) {
 	_, params, err := mime.ParseMediaType(req.ContentType)
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadInvalidContentTypeCode, errorx.KV("content-type", req.ContentType))
@@ -382,9 +383,9 @@ func genObjName(name string, id string) string {
 	)
 }
 
-func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.UploadFileOpenRequest) (*playground.UploadFileOpenResponse, error) {
-	resp := playground.UploadFileOpenResponse{}
-	resp.File = new(playground.File)
+func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.UploadFileOpenRequest) (*bot_open_api.UploadFileOpenResponse, error) {
+	resp := bot_open_api.UploadFileOpenResponse{}
+	resp.File = new(bot_open_api.File)
 	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
 	if uid == 0 {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
@@ -486,7 +487,7 @@ func isImageUri(uri string) bool {
 		"ico":  true,
 	}
 
-	// 检查扩展名是否在图片扩展名列表中
+	// Check if the extension is in the picture extension list
 	return imageExtensions[ext]
 }
 func (u *UploadService) GetObjInfoBySessionKey(ctx context.Context, sessionKey string) (*GetObjInfoBySessionKey, error) {
@@ -534,7 +535,7 @@ type SVG struct {
 	ViewBox string `xml:"viewBox,attr"`
 }
 
-// 获取 SVG 尺寸
+// Get SVG size
 func getSVGDimensions(content []byte) (width, height int32, err error) {
 	decoder := xml.NewDecoder(bytes.NewReader(content))
 
@@ -543,7 +544,7 @@ func getSVGDimensions(content []byte) (width, height int32, err error) {
 		return 100, 100, nil
 	}
 
-	// 尝试从width属性获取
+	// Try to get from the width property
 	if svg.Width != "" {
 		w, err := parseDimension(svg.Width)
 		if err == nil {
@@ -551,7 +552,7 @@ func getSVGDimensions(content []byte) (width, height int32, err error) {
 		}
 	}
 
-	// 尝试从height属性获取
+	// Try to get from the height property
 	if svg.Height != "" {
 		h, err := parseDimension(svg.Height)
 		if err == nil {
@@ -559,7 +560,7 @@ func getSVGDimensions(content []byte) (width, height int32, err error) {
 		}
 	}
 
-	// 如果width或height未设置，尝试从viewBox获取
+	// If width or height is not set, try getting it from the viewBox
 	if width == 0 || height == 0 {
 		if svg.ViewBox != "" {
 			parts := strings.Fields(svg.ViewBox)
@@ -587,19 +588,19 @@ func getSVGDimensions(content []byte) (width, height int32, err error) {
 	return width, height, nil
 }
 func parseDimension(dim string) (int32, error) {
-	// 去除单位(px, pt, em, %等)和空格
+	// Remove units (px, pt, em,%, etc.) and spaces
 	dim = strings.TrimSpace(dim)
 	dim = strings.TrimRightFunc(dim, func(r rune) bool {
 		return (r < '0' || r > '9') && r != '.' && r != '-' && r != '+'
 	})
 
-	// 解析为float64
+	// Resolve to float64
 	value, err := strconv.ParseFloat(dim, 64)
 	if err != nil {
 		return 0, err
 	}
 
-	// 四舍五入转换为int32
+	// Rounding converts to int32
 	if value > math.MaxInt32 {
 		return math.MaxInt32, nil
 	}

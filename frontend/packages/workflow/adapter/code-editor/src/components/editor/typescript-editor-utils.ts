@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { ViewVariableType } from '@coze-workflow/base';
 import { languages } from '@coze-editor/editor/preset-code';
 import { typescript } from '@coze-editor/editor/language-typescript';
@@ -101,7 +101,10 @@ export function generateTypeDefinition(output: Output, indent = '  '): string {
     definition += `${indent}${output.name}: {\n`;
     if (output.children && output.children.length > 0) {
       output.children.forEach(child => {
-        definition += `${indent}  ${generateTypeDefinition(child, `${indent}  `)}`;
+        definition += `${indent}  ${generateTypeDefinition(
+          child,
+          `${indent}  `,
+        )}`;
       });
     }
 
@@ -114,7 +117,10 @@ export function generateTypeDefinition(output: Output, indent = '  '): string {
     definition += `${indent}${output.name}: {\n`;
     if (output.children && output.children.length > 0) {
       output.children.forEach(child => {
-        definition += `${indent}  ${generateTypeDefinition(child, `${indent}  `)}`;
+        definition += `${indent}  ${generateTypeDefinition(
+          child,
+          `${indent}  `,
+        )}`;
       });
       definition += `${indent}}[]\n`;
     }
@@ -148,7 +154,9 @@ export const initInputAndOutput = async (
       }
 
       interface Output {
-        ${outputs.map(output => generateTypeDefinition(output, '    ')).join('\n')}
+        ${outputs
+          .map(output => generateTypeDefinition(output, '    '))
+          .join('\n')}
       }
     }
 

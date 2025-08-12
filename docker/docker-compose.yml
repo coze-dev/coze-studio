@@ -89,11 +89,13 @@ services:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
       - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schemas
     healthcheck:
       test:
         [
           'CMD-SHELL',
-          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]',
+          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ] && [ -f /tmp/es_init_complete ]',
         ]
       interval: 5s
       timeout: 10s
@@ -101,7 +103,7 @@ services:
       start_period: 10s
     networks:
       - coze-network
-    # Install smartcn analyzer plugin
+    # Install smartcn analyzer plugin and initialize ES
     command: >
       bash -c "
         /opt/bitnami/scripts/elasticsearch/setup.sh
@@ -133,9 +135,27 @@ services:
         touch /tmp/es_plugins_ready;
         echo 'Plugin installation successful, marker file created';
 
+        # Start initialization script in background
+        (
+          echo 'Waiting for Elasticsearch to be ready...'
+          until curl -s -f http://localhost:9200/_cat/health >/dev/null 2>&1; do
+            echo 'Elasticsearch not ready, waiting...'
+            sleep 2
+          done
+          echo 'Elasticsearch is ready!'
+
+          # Run ES initialization script
+          echo 'Running Elasticsearch initialization...'
+          sed 's/\r$$//' /setup_es.sh > /setup_es_fixed.sh
+          chmod +x /setup_es_fixed.sh
+          /setup_es_fixed.sh --index-dir /es_index_schemas
+          # Create marker file indicating initialization completion
+          touch /tmp/es_init_complete
+          echo 'Elasticsearch initialization completed successfully!'
+        ) &
+
         # Start Elasticsearch
         exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
-
         echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
       "
 
@@ -153,12 +173,32 @@ services:
       - ./data/minio:/data
       - ./volumes/minio/default_icon/:/default_icon
       - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
-      - ./volumes/minio/initialize.sh:/initialize.sh
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
-    entrypoint: ['/bin/sh', '/initialize.sh']
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # Run initialization in background
+        (
+          # Wait for MinIO to be ready
+          until (/usr/bin/mc alias set localminio http://localhost:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}) do
+            echo "Waiting for MinIO to be ready..."
+            sleep 1
+          done
+
+          # Create bucket and copy files
+          /usr/bin/mc mb --ignore-existing localminio/$${STORAGE_BUCKET}
+          /usr/bin/mc cp --recursive /default_icon/ localminio/$${STORAGE_BUCKET}/default_icon/
+          /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/$${STORAGE_BUCKET}/official_plugin_icon/
+
+          echo "MinIO initialization complete."
+        ) &
+
+        # Start minio server in foreground
+        exec minio server /data --console-address ":9001"
     healthcheck:
       test:
         [
@@ -226,8 +266,8 @@ services:
     security_opt:
       - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: coze-etcd:2379
-      MINIO_ADDRESS: coze-minio:9000
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
       MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
       MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
@@ -271,7 +311,7 @@ services:
   nsqd:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqd
-    command: /nsqd --lookupd-tcp-address=coze-nsqlookupd:4160 --broadcast-address=coze-nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
     restart: always
     ports:
       - '4150'
@@ -291,7 +331,7 @@ services:
   nsqadmin:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqadmin
-    command: /nsqadmin --lookupd-http-address=coze-nsqlookupd:4161
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     restart: always
     ports:
       - '4171'
@@ -309,12 +349,12 @@ services:
     restart: always
     container_name: coze-server
     env_file: *env_file
-    environment:
-      LISTEN_ADDR: 0.0.0.0:8888
+    # environment:
+    #   LISTEN_ADDR: 0.0.0.0:8888
     networks:
       - coze-network
     ports:
-      - '8888:8888'
+      - '8888'
       - '8889:8889'
     volumes:
       - .env:/app/.env
@@ -331,7 +371,26 @@ services:
         condition: service_healthy
       milvus:
         condition: service_healthy
-    command: ['/app/bootstrap.sh']
+    command: ['/app/opencoze']
+
+  coze-web:
+    # build:
+    #   context: ..
+    #   dockerfile: frontend/Dockerfile
+    image: opencoze/web:latest
+    container_name: coze-web
+    restart: always
+    ports:
+      - "8888:80"
+      # - "443:443"  # SSL port (uncomment if using SSL)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Main nginx config
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro  # Proxy config
+      # - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates (uncomment if using SSL)
+    depends_on:
+      - coze-server
+    networks:
+      - coze-network
 
 networks:
   coze-network:

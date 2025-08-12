@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable complexity */
 import { type ConfigType, type IdType, type ResourceType } from '../../type';
 import { MAX_DEEP, ROOT_KEY, ROOT_NODE } from '../../constant';

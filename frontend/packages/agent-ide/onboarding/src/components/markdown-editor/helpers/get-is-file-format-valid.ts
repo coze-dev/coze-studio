@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { FILE_EXTENSION_LIST } from '../constant/file';
 
 export const getIsFileFormatValid = (file: File) =>

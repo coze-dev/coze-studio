@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import type { FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import type { StandardNodeType } from '@coze-workflow/base/types';

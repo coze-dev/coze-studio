@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, {
   type Dispatch,
   type FC,
@@ -62,37 +62,40 @@ export const SuggestionList: FC<SuggestionListProps> = props => {
 
   const itemRender = useMemo<TItemRender<SuggestQuestionMessage>>(
     () =>
-      ({ data, connect, isDragging, isHovered }) => (
-        <SuggestQuestionItemContent
-          key={data.id}
-          message={data}
-          isDragging={Boolean(isDragging)}
-          isHovered={Boolean(isHovered)}
-          connect={connect}
-          value={suggested_questions}
-          handleOnBlur={onBlur}
-          disabled={!data.content}
-          onMessageChange={value => {
-            onChange?.(prev => {
-              const _suggestions = [...prev.suggested_questions];
-              const index = _suggestions.findIndex(item => item.id === data.id);
-              _suggestions.splice(index, 1, value);
-              return {
+      ({ data, connect, isDragging, isHovered }) =>
+        (
+          <SuggestQuestionItemContent
+            key={data.id}
+            message={data}
+            isDragging={Boolean(isDragging)}
+            isHovered={Boolean(isHovered)}
+            connect={connect}
+            value={suggested_questions}
+            handleOnBlur={onBlur}
+            disabled={!data.content}
+            onMessageChange={value => {
+              onChange?.(prev => {
+                const _suggestions = [...prev.suggested_questions];
+                const index = _suggestions.findIndex(
+                  item => item.id === data.id,
+                );
+                _suggestions.splice(index, 1, value);
+                return {
+                  ...prev,
+                  suggested_questions: _suggestions,
+                };
+              });
+            }}
+            handleRemoveSuggestion={id => {
+              onChange?.(prev => ({
                 ...prev,
-                suggested_questions: _suggestions,
-              };
-            });
-          }}
-          handleRemoveSuggestion={id => {
-            onChange?.(prev => ({
-              ...prev,
-              suggested_questions: prev.suggested_questions.filter(
-                sug => sug.id !== id,
-              ),
-            }));
-          }}
-        />
-      ),
+                suggested_questions: prev.suggested_questions.filter(
+                  sug => sug.id !== id,
+                ),
+              }));
+            }}
+          />
+        ),
     [isReadonly],
   );
 

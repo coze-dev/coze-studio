@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useNavigate } from 'react-router-dom';
 
 import { useRequest } from 'ahooks';
@@ -166,7 +166,9 @@ export const useKnowledgeConfig: UseEntityConfigHook = ({
   } = useCreateKnowledgeModalV2({
     onFinish: (datasetID, unitType, shouldUpload) => {
       navigate(
-        `/space/${spaceId}/knowledge/${datasetID}${shouldUpload ? '/upload' : ''}?type=${unitType}&from=create`,
+        `/space/${spaceId}/knowledge/${datasetID}${
+          shouldUpload ? '/upload' : ''
+        }?type=${unitType}&from=create`,
       );
       closeCreateKnowledgeModal();
     },

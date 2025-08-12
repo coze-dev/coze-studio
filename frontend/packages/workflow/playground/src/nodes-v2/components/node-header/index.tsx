@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /**
  * Components migrated from packages/workflow/playground/src/form-extensions/setters/node-header
  * Only the interface adaptation of the new version of the node engine has been done.

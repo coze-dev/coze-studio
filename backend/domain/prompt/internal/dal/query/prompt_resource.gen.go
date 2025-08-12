@@ -47,15 +47,15 @@ type promptResource struct {
 	promptResourceDo
 
 	ALL         field.Asterisk
-	ID          field.Int64  // 主键ID
-	SpaceID     field.Int64  // 空间ID
-	Name        field.String // 名称
-	Description field.String // 描述
-	PromptText  field.String // prompt正文
-	Status      field.Int32  // 状态,0无效,1有效
-	CreatorID   field.Int64  // 创建者ID
-	CreatedAt   field.Int64  // 创建时间
-	UpdatedAt   field.Int64  // 更新时间
+	ID          field.Int64  // id
+	SpaceID     field.Int64  // space id
+	Name        field.String // name
+	Description field.String // description
+	PromptText  field.String // prompt text
+	Status      field.Int32  // status, 0 is invalid, 1 is valid
+	CreatorID   field.Int64  // creator id
+	CreatedAt   field.Int64  // Create Time in Milliseconds
+	UpdatedAt   field.Int64  // Update Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }

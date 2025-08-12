@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const MARKDOWN_TOOLTIP_WIDTH = 340;
 export const MARKDOWN_TOOLTIP_CONTENT_MAX_WIDTH = 300;
 

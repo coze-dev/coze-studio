@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src';
 import { filterKeys } from './common';
 
 describe('unify-parser', () => {
   describe('thrift function', () => {
-    it('should convert function extenstions', () => {
+    it('should convert function extensions', () => {
       const content = `
       service Foo {
         BizResponse Biz1(1: BizRequest req) (api.uri = '/api/biz1')
@@ -62,7 +62,7 @@ describe('unify-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert function extenstions using agw specification', () => {
+    it('should convert function extensions using agw specification', () => {
       const content = `
       service Foo {
         BizResponse Biz1(1: BizRequest req) (agw.uri = '/api/biz1')
@@ -178,7 +178,7 @@ describe('unify-parser', () => {
   });
 
   describe('proto method', () => {
-    it('should convert method extenstions', () => {
+    it('should convert method extensions', () => {
       const content = `
       syntax = 'proto3';
       message BizRequest {}

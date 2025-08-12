@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src/thrift';
 
 describe('ferry-parser', () => {
   describe('thrift function', () => {
-    it('should convert function extenstions', () => {
+    it('should convert function extensions', () => {
       const idl = `
       service Foo {
         BizResponse Biz1(1: BizRequest req) (api.uri = '/api/biz1')
@@ -57,7 +57,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert function extenstions using agw specification', () => {
+    it('should convert function extensions using agw specification', () => {
       const idl = `
       service Foo {
         BizResponse Biz1(1: BizRequest req) (agw.uri = '/api/biz1')

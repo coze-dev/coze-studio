@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // The length of the diff table indent
 // Diff table sub-node indented length
 export const DIFF_TABLE_INDENT_LENGTH = 20;

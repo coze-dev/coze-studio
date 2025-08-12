@@ -1,4 +1,4 @@
-id: 2001
+id: 69010
 name: GPT-4o
 icon_uri: default_icon/openai_v2.png
 icon_url: ""
@@ -128,7 +128,6 @@ default_parameters:
             zh: 输入及输出设置
             en: Input and output settings
 meta:
-    name: GPT-4o
     protocol: openai
     capability:
         function_call: true
@@ -145,7 +144,7 @@ meta:
         reasoning: false
         prefill_response: false
     conn_config:
-        base_url: ""
+        base_url: "https://api.openai.com/v1"
         api_key: ""
         timeout: 0s
         model: ""
@@ -162,10 +161,5 @@ meta:
             response_format:
                 type: text
                 jsonschema: null
-        claude: null
-        ark: null
-        deepseek: null
-        qwen: null
-        gemini: null
         custom: {}
     status: 0

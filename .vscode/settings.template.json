@@ -1,0 +1,198 @@
+{
+  "eslint.nodePath": "frontend/config/eslint-config/node_modules/eslint",
+  "prettier.prettierPath": "frontend/config/eslint-config/node_modules/prettier",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never",
+    "source.fixAll.eslint": "never",
+    "source.removeUnused": "never",
+    "source.organizeImports": "never"
+    // "source.sortImports": "always"
+  },
+  "editor.formatOnSaveMode": "modificationsIfAvailable",
+  "search.followSymlinks": false,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.nyc_output": true,
+    "**/.rush": true,
+    "**/pnpm-lock.yaml": true,
+    "**/CHANGELOG.json": true,
+    "**/CHANGELOG.md": true,
+    "common/changes": true,
+    "**/output": true,
+    "**/lib": true,
+    "**/rush-logs": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "common/temp": true
+  },
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.defaultLanguage": "plaintext",
+  "files.associations": {
+    ".code-workspace": "jsonc",
+    ".babelrc": "json",
+    ".eslintrc": "jsonc",
+    ".eslintrc*.json": "jsonc",
+    ".stylelintrc": "javascript",
+    "stylelintrc": "jsonc",
+    "*.json": "jsonc",
+    "package.json": "json",
+    ".htmlhintrc": "jsonc",
+    "htmlhintrc": "jsonc",
+    "Procfile*": "shellscript",
+    "README": "markdown",
+    "**/coverage/**/*.*": "plaintext",
+    "OWNERS": "yaml",
+    // Set the pnpm-lock file to plaintext to avoid parsing; otherwise, VSCode may freeze when opening the file
+    "**/pnpm-lock.yaml": "plaintext",
+    "**/dist/**": "plaintext",
+    "**/dist_*/**": "plaintext",
+    "*.map": "plaintext",
+    "*.log": "plaintext"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.rush": true,
+    "**/.swc": true,
+    "**/rush-logs": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true
+  },
+  "search.useIgnoreFiles": true,
+  //
+  "editor.rulers": [80, 120],
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "cSpell.diagnosticLevel": "Warning",
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.semanticHighlighting.enabled": false,
+  "eslint.format.enable": false,
+  "eslint.enable": true,
+  "eslint.useFlatConfig": true,
+  "eslint.codeActionsOnSave.mode": "problems",
+  "eslint.lintTask.enable": false,
+  "javascript.validate.enable": false,
+  "typescript.tsdk": "frontend/config/ts-config/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.format.enable": false,
+  "typescript.referencesCodeLens.enabled": false,
+  "typescript.preferGoToSourceDefinition": true,
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  // tsserver log 不会自动删除，日积月累，导致磁盘空间不足，因此默认关闭
+  "typescript.tsserver.log": "off",
+  // "typescript.tsserver.useSeparateSyntaxServer": true,
+  "typescript.tsserver.forceConsistentCasingInFileNames": true,
+  "typescript.workspaceSymbols.excludeLibrarySymbols": true,
+  "editor.minimap.enabled": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": true,
+  "typescript.tsserver.maxTsServerMemory": 16384,
+  "typescript.tsserver.enableRegionDiagnostics": false,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.tsserver.watchOptions": {
+    "fallbackPolling": "dynamicPriorityPolling",
+    "synchronousWatchDirectory": false,
+    "watchDirectory": "useFsEvents",
+    "watchFile": "useFsEventsOnParentDirectory",
+    "excludeDirectories": [
+      "/**/node_modules",
+      "/**/dist",
+      "/**/lib",
+      "/**/coverage",
+      "**/temp"
+    ],
+    "excludeLibrarySymbols": true,
+    "excludeFiles": [
+      "/**/node_modules/**",
+      "/**/dist/**",
+      "/**/lib/**",
+      "/**/coverage/**",
+      "**/temp/**"
+    ]
+  },
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "stylelint.enable": true,
+  "stylelint.validate": ["css", "scss", "less"],
+  "stylelint.stylelintPath": "frontend/config/stylelint-config/node_modules/stylelint",
+  "emmet.triggerExpansionOnTab": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[less]": {
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
+  },
+  "svg.preview.background": "white",
+  "[xml]": {
+    "editor.defaultFormatter": "mblode.pretty-formatter"
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
+  },
+  "git.openRepositoryInParentFolders": "always",
+  "references.preferredLocation": "view"
+}

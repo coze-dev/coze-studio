@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
@@ -27,7 +27,13 @@ import {
   IconCozRefresh,
   IconCozCrossCircleFill,
 } from '@coze-arch/coze-design/icons';
-import { Table, Select, IconButton, Tooltip, Empty } from '@coze-arch/coze-design';
+import {
+  Table,
+  Select,
+  IconButton,
+  Tooltip,
+  Empty,
+} from '@coze-arch/coze-design';
 
 export interface VariablesValueProps {
   projectID: string;

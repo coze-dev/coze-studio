@@ -33,9 +33,9 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
@@ -43,7 +43,7 @@ import (
 
 type ServiceComponents struct {
 	DB                   *gorm.DB
-	Cache                *redis.Client
+	Cache                cache.Cmdable
 	TOS                  storage.Storage
 	ESClient             es.Client
 	ProjectEventBus      ProjectEventBus
@@ -71,14 +71,14 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.MQServer)
 
-	err := eventbus.RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
+	err := eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
 	if err != nil {
 		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
 	}
 
 	searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
 
-	err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
+	err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
 	if err != nil {
 		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
 	}

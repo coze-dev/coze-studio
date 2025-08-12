@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import * as t from '../src/thrift';
 
 describe('ferry-parser', () => {
   describe('thrift field', () => {
-    it('should convert struct field extenstions', () => {
+    it('should convert struct field extensions', () => {
       const idl = `
       enum Numbers {
         ONE = 1
@@ -82,7 +82,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert union field extenstions', () => {
+    it('should convert union field extensions', () => {
       const idl = `
       union Foo {
         1: string k1 (api.position = "query")
@@ -97,7 +97,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert struct field extenstions using agw specification', () => {
+    it('should convert struct field extensions using agw specification', () => {
       const idl = `
       struct Foo {
         1: string k1 (agw.source = 'query')
@@ -130,7 +130,7 @@ describe('ferry-parser', () => {
       return expect(extensionConfigs).to.eql(expected);
     });
 
-    it('should convert struct field extenstions using golang tag', () => {
+    it('should convert struct field extensions using golang tag', () => {
       const idl = `
       struct Foo {
         1: string k1 (go.tag = "json:\\"key1\\"")

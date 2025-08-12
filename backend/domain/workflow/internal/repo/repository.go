@@ -25,13 +25,12 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/maps"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
+	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -41,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	cm "github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -61,7 +61,7 @@ const (
 type RepositoryImpl struct {
 	idgen.IDGenerator
 	query *query.Query
-	redis *redis.Client
+	redis cache.Cmdable
 	tos   storage.Storage
 	einoCompose.CheckPointStore
 	workflow.InterruptEventStore
@@ -70,7 +70,7 @@ type RepositoryImpl struct {
 	builtinModel cm.BaseChatModel
 }
 
-func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
 	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel) workflow.Repository {
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
@@ -932,13 +932,13 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 
 	type combinedVersion struct {
 		model.WorkflowMeta
-		Version            string `gorm:"column:version"`             // 发布版本
-		VersionDescription string `gorm:"column:version_description"` // 版本描述
-		Canvas             string `gorm:"column:canvas"`              // 前端 schema
+		Version            string `gorm:"column:version"`             // release version
+		VersionDescription string `gorm:"column:version_description"` // version description
+		Canvas             string `gorm:"column:canvas"`              // Front-end schema
 		InputParams        string `gorm:"column:input_params"`
 		OutputParams       string `gorm:"column:output_params"`
-		VersionCreatorID   int64  `gorm:"column:version_creator_id"` // 发布用户 ID
-		VersionCreatedAt   int64  `gorm:"column:version_created_at"` // 创建时间毫秒时间戳
+		VersionCreatorID   int64  `gorm:"column:version_creator_id"` // Publish user ID
+		VersionCreatedAt   int64  `gorm:"column:version_created_at"` // Creation time millisecond timestamp
 		CommitID           string `gorm:"column:commit_id"`          // the commit id corresponding to this version
 	}
 

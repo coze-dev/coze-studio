@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /** Exporting directly from yargs-parser will cause an error because the browser environment is not supported */
 import yargsParser from 'yargs-parser/browser';
 import multipart from 'parse-multipart';

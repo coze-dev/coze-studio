@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { useFetchKnowledgeBenefit } from './use-fetch-knowledge-benefit';
 export enum PremiumPaywallBannerScene {
   Knowledge, // Knowledge base scenario

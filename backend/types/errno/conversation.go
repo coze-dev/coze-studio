@@ -33,9 +33,16 @@ const (
 	ErrInterruptDataEmpty   = 103100005
 
 	ErrConversationMessageNotFound = 103200001
+
+	ErrAgentRun = 103200002
 )
 
 func init() {
+	code.Register(
+		ErrAgentRun,
+		"Interal Server Error",
+		code.WithAffectStability(true),
+	)
 	code.Register(
 		ErrConversationJsonMarshal,
 		"json marshal failed",

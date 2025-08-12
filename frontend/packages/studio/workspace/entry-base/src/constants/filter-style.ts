@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export const highlightFilterStyle = {
   border: '1px solid var(--semi-color-focus-border)',
 };

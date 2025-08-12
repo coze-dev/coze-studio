@@ -51,7 +51,7 @@ func parseJSON(config *contract.Config) parseFn {
 			}
 		} else {
 			for k := range rawSlices[0] {
-				// init 取首个 json item 中 key 的随机顺序
+				// Init takes the random order of keys in the first json item
 				header = append(header, k)
 			}
 		}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { reporter } from '@coze-arch/logger';
 
 const timerMap: Record<string, { timer?: NodeJS.Timeout; start: number }> = {};

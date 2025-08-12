@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { useCallback, useEffect } from 'react';
 
 import { debounce } from 'lodash-es';
@@ -149,7 +149,7 @@ export const useWorkflowPublishedModel = ({
               flow_mode:
                 plugin.plugin_type === PluginType.IMAGEFLOW
                   ? WorkflowMode.Imageflow
-                  : (jumpResponse?.flowMode ?? WorkflowMode.Workflow),
+                  : jumpResponse?.flowMode ?? WorkflowMode.Workflow,
             };
             const onOkResult = onOk(workflow);
             const res = await Promise.resolve(onOkResult);

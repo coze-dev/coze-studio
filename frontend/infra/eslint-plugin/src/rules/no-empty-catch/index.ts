@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import type { Rule } from 'eslint';
 
 export const noEmptyCatch: Rule.RuleModule = {

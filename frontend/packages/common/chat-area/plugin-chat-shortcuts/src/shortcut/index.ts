@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 export { QueryShortcut } from './query-shortcut';
 export { TemplateShortcut } from './template-shortcut';
 export { LoadMore } from './load-more';
