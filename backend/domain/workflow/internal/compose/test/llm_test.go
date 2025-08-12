@@ -34,8 +34,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
@@ -63,7 +64,7 @@ func TestLLM(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockModelManager := mockmodel.NewMockManager(ctrl)
-		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+		mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManager).Build()
 
 		if len(accessKey) > 0 && len(baseURL) > 0 && len(modelName) > 0 {
 			openaiModel, err = openai.NewChatModel(context.Background(), &openai.ChatModelConfig{

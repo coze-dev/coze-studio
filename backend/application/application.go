@@ -47,6 +47,7 @@ import (
 	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
@@ -59,6 +60,7 @@ import (
 	dataCopyImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/datacopy"
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/knowledge"
 	messageImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/message"
+	modelmgrImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/modelmgr"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
 	searchImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/search"
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
@@ -139,7 +141,7 @@ func Init(ctx context.Context) (err error) {
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
-
+	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(infra.ModelMgr, nil))
 	return nil
 }
 
@@ -284,7 +286,6 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,
 		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
-		ModelManager:       b.infra.ModelMgr,
 		DomainNotifier:     b.eventbus.resourceEventBus,
 		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
 		CodeRunner:         b.infra.CodeRunner,
