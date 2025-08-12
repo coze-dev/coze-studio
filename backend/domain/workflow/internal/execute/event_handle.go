@@ -37,6 +37,21 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
+// safeSend safely sends a message through StreamWriter, recovering from any send-on-closed-channel panics
+func safeSend(ctx context.Context, sw *schema.StreamWriter[*entity.Message], msg *entity.Message, err error) {
+	if sw == nil {
+		return
+	}
+	
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			logs.CtxDebugf(ctx, "failed to send message via stream writer (likely closed channel): %v", panicErr)
+		}
+	}()
+	
+	sw.Send(msg, err)
+}
+
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message]) (err error) {
 	exeID := event.RootCtx.RootExecuteID
@@ -70,7 +85,7 @@ func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Rep
 	}
 
 	if sw != nil {
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			StateMessage: &entity.StateMessage{
 				ExecuteID: event.RootExecuteID,
 				EventID:   event.GetResumedEventID(),
@@ -144,7 +159,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				return noTerminate, fmt.Errorf("failed to update subworkflow node execution with subExecuteID: %v", err)
 			}
 		} else if sw != nil {
-			sw.Send(&entity.Message{
+			safeSend(ctx, sw, &entity.Message{
 				StateMessage: &entity.StateMessage{
 					ExecuteID: event.RootExecuteID,
 					EventID:   event.GetResumedEventID(),
@@ -246,7 +261,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.SubWorkflowCtx == nil {
 			if sw != nil {
-				sw.Send(&entity.Message{
+				safeSend(ctx, sw, &entity.Message{
 					StateMessage: &entity.StateMessage{
 						ExecuteID: event.RootExecuteID,
 						EventID:   event.GetResumedEventID(),
@@ -330,7 +345,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 			nodeKey := firstIE.NodeKey
 
-			sw.Send(&entity.Message{
+			safeSend(ctx, sw, &entity.Message{
 				DataMessage: &entity.DataMessage{
 					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
@@ -343,7 +358,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				},
 			}, nil)
 
-			sw.Send(&entity.Message{
+			safeSend(ctx, sw, &entity.Message{
 				StateMessage: &entity.StateMessage{
 					ExecuteID:      event.RootExecuteID,
 					EventID:        event.GetResumedEventID(),
@@ -387,7 +402,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.SubWorkflowCtx == nil {
 			if sw != nil {
-				sw.Send(&entity.Message{
+				safeSend(ctx, sw, &entity.Message{
 					StateMessage: &entity.StateMessage{
 						ExecuteID: event.RootExecuteID,
 						EventID:   event.GetResumedEventID(),
@@ -404,7 +419,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, nil
 		}
 
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			StateMessage: &entity.StateMessage{
 				ExecuteID: event.RootExecuteID,
 				EventID:   event.GetResumedEventID(),
@@ -549,7 +564,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				return noTerminate, nil
 			}
 
-			sw.Send(&entity.Message{
+			safeSend(ctx, sw, &entity.Message{
 				DataMessage: &entity.DataMessage{
 					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
@@ -598,7 +613,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, nil
 		}
 
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID: event.RootExecuteID,
 				Role:      schema.Assistant,
@@ -666,7 +681,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Assistant,
@@ -679,7 +694,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Tool,
@@ -693,7 +708,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		sw.Send(&entity.Message{
+		safeSend(ctx, sw, &entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Tool,
@@ -785,8 +800,12 @@ func HandleExecuteEvent(ctx context.Context,
 		// Add cancellation check timer
 		cancelTicker := time.NewTicker(cancelCheckInterval)
 		defer func() {
-			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
-				event.Type, event.Context.RootWorkflowBasic.ID)
+			if event != nil && event.Context != nil && event.Context.RootWorkflowBasic != nil {
+				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+					event.Type, event.Context.RootWorkflowBasic.ID)
+			} else {
+				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, no event or workflow context available, workflow id: %d", wfExeID)
+			}
 			cancelTicker.Stop() // Clean up timer
 			if timeoutFn != nil {
 				timeoutFn()
@@ -821,8 +840,12 @@ func HandleExecuteEvent(ctx context.Context,
 		}
 	} else {
 		defer func() {
-			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
-				event.Type, event.Context.RootWorkflowBasic.ID)
+			if event != nil && event.Context != nil && event.Context.RootWorkflowBasic != nil {
+				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+					event.Type, event.Context.RootWorkflowBasic.ID)
+			} else {
+				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, no event or workflow context available, workflow id: %d", wfExeID)
+			}
 			if timeoutFn != nil {
 				timeoutFn()
 			}
@@ -830,6 +853,7 @@ func HandleExecuteEvent(ctx context.Context,
 		}()
 
 		for e := range eventChan {
+			event = e // Assign to function-scoped variable so defer can access it
 			if terminalE := handler(e); terminalE != nil {
 				return terminalE
 			}

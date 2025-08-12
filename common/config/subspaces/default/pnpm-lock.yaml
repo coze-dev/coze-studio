@@ -16895,6 +16895,9 @@ importers:
 
   ../../../frontend/packages/foundation/space-ui-adapter:
     dependencies:
+      '@coze-arch/bot-api':
+        specifier: workspace:*
+        version: link:../../arch/bot-api
       '@coze-arch/bot-hooks':
         specifier: workspace:*
         version: link:../../arch/bot-hooks
@@ -16913,6 +16916,9 @@ importers:
       '@coze-foundation/space-ui-base':
         specifier: workspace:*
         version: link:../space-ui-base
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../../arch/api-schema
       react-router-dom:
         specifier: ^6.22.0
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)

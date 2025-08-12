@@ -277,7 +277,16 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 		}()
 		defer func() {
 			if sw != nil {
-				sw.Close()
+				// Safely close the stream writer by recovering from any potential panic
+				// This prevents "close of closed channel" panics in concurrent scenarios
+				func() {
+					defer func() {
+						if closeErr := recover(); closeErr != nil {
+							logs.CtxDebugf(ctx, "stream writer already closed: %v", closeErr)
+						}
+					}()
+					sw.Close()
+				}()
 			}
 		}()
 

@@ -16,7 +16,12 @@
 
 import { type FC } from 'react';
 
-import { ContentBox as UIKitContentBox } from '@coze-common/chat-uikit';
+import { 
+  ContentBox as UIKitContentBox,
+  SpecialAnswerContent,
+  isSpecialAnswerMessage,
+  extractContentList 
+} from '@coze-common/chat-uikit';
 
 import { type ContentBoxProps } from '../types';
 import {
@@ -67,6 +72,33 @@ export const BuildInContentBox: FC<ContentBoxProps> = props => {
     fileMessageContent: FileMessageContentBox,
     cardMessageContent: CardMessageContentBox,
   } = componentTypes;
+
+  // 添加调试信息
+  console.log('🔍 BuildInContentBox处理消息:', {
+    messageId: message.message_id,
+    type: message.type,
+    contentType: message.content_type,
+    contentPreview: typeof message.content === 'string' ? message.content.substring(0, 100) : message.content
+  });
+
+  // 优先检查是否为特殊answer消息
+  if (isSpecialAnswerMessage(message)) {
+    console.log('✅ 使用SpecialAnswerContent渲染消息:', message.message_id);
+    const contentList = extractContentList(message);
+    return (
+      <SpecialAnswerContent
+        message={message}
+        meta={meta}
+        contentList={contentList}
+        readonly={readonly}
+        eventCallbacks={eventCallbacks}
+        getBotInfo={getBotInfo}
+        layout={layout}
+        showBackground={showBackground}
+        enableImageAutoSize={enableImageAutoSize}
+      />
+    );
+  }
 
   if (getIsTextMessage(message) && TextMessageContentBox) {
     return <TextMessageContentBox message={message} meta={meta} />;

@@ -87,18 +87,24 @@ type Entry struct {
 func (e *Entry) Invoke(_ context.Context, in map[string]any) (out map[string]any, err error) {
 	for k, v := range e.defaultValues {
 		if val, ok := in[k]; ok {
+			// Check if val is nil and use default value
+			if val == nil {
+				in[k] = v
+				continue
+			}
+			
 			tInfo := e.outputTypes[k]
 			switch tInfo.Type {
 			case vo.DataTypeString:
-				if len(val.(string)) == 0 {
+				if strVal, isString := val.(string); isString && len(strVal) == 0 {
 					in[k] = v
 				}
 			case vo.DataTypeArray:
-				if len(val.([]any)) == 0 {
+				if arrVal, isArray := val.([]any); isArray && len(arrVal) == 0 {
 					in[k] = v
 				}
 			case vo.DataTypeObject:
-				if len(val.(map[string]any)) == 0 {
+				if objVal, isObject := val.(map[string]any); isObject && len(objVal) == 0 {
 					in[k] = v
 				}
 			}

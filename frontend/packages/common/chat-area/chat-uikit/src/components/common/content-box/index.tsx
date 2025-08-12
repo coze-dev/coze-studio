@@ -35,8 +35,10 @@ import { PlainTextContent } from '../../contents/plain-text-content';
 import { MultimodalContent } from '../../contents/multimodal-content';
 import { ImageContent } from '../../contents/image-content';
 import { FileContent } from '../../contents/file-content';
+import { SpecialAnswerContent } from '../../contents/special-answer-content';
 import { isImage } from '../../../utils/is-image';
 import { defaultEnable } from '../../../utils/default-enable';
+import { isSpecialAnswerMessage, extractContentList } from '../../../utils/special-answer';
 import { MESSAGE_TYPE_VALID_IN_TEXT_LIST } from '../../../constants/content-box';
 
 export interface EnhancedContentConfig {
@@ -142,6 +144,35 @@ export const ContentBox: FC<IContentBoxProps> = props => {
       options: { isCardDisabled, isContentLoading, showBackground, readonly },
     });
   }
+
+  // 添加调试信息
+  console.log('🔍 ContentBox处理消息:', {
+    messageId: message.message_id,
+    type: message.type,
+    contentType: message.content_type,
+    contentPreview: typeof message.content === 'string' ? message.content.substring(0, 100) : message.content
+  });
+
+  // 优先检查是否为特殊answer消息
+  if (isSpecialAnswerMessage(message)) {
+    console.log('✅ 使用SpecialAnswerContent渲染消息:', message.message_id);
+    const contentList = extractContentList(message);
+    const { eventCallbacks } = props;
+    const { onImageClick, onLinkClick } = eventCallbacks ?? {};
+    
+    return (
+      <SpecialAnswerContent
+        message={message}
+        contentList={contentList}
+        readonly={readonly}
+        onImageClick={onImageClick}
+        onLinkClick={onLinkClick}
+        enableAutoSizeImage={enableAutoSizeImage}
+        mdBoxProps={props.mdBoxProps}
+      />
+    );
+  }
+
   /**
    * Handling of text types
    * There are currently two cases here, the first is message.type = 'follow_up' means suggestion, the second is plain text message

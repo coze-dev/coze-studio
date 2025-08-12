@@ -1,0 +1,145 @@
+.special-answer-content {
+  position: relative;
+  width: 600px; // 固定宽度，不允许变化
+  flex-shrink: 0; // 防止被压缩
+  
+  .answer-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    
+    .view-mode-toggle {
+      display: flex;
+      align-items: center;
+      max-width: 200px; // 限制切换器宽度
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      background-color: #fff;
+      
+      .toggle-option {
+        flex: 1; // 左右均分
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px; // 缩小padding
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+        font-size: 12px; // 缩小字体
+        font-weight: 500;
+        color: #666;
+        background-color: #fff;
+        
+        &.left {
+          border-radius: 0;
+        }
+        
+        &.right {
+          border-radius: 0;
+        }
+        
+        &:hover {
+          background-color: #f8f9fa;
+          color: #1890ff;
+        }
+        
+        &.active {
+          background-color: #1890ff;
+          color: white;
+          
+          &:hover {
+            background-color: #096dd9;
+          }
+        }
+      }
+      
+      .toggle-divider {
+        width: 1px;
+        height: 24px; // 缩小分割线高度
+        background-color: #e0e0e0;
+        flex-shrink: 0;
+      }
+    }
+  }
+  
+  .answer-content {
+    position: relative;
+    width: 100%; // 确保容器宽度一致
+  }
+
+  .special-answer-native {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #fff;
+    min-height: 400px; // 与 iframe 保持一致的高度
+    width: 568px; // 固定宽度（600px - 32px padding）
+    box-sizing: border-box; // 包含padding在宽度内
+    overflow: hidden; // 防止内容溢出
+    word-wrap: break-word; // 强制换行
+    display: block; // 确保是block元素
+    
+    // 严格限制所有内部元素
+    * {
+      max-width: 100% !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    
+    .special-answer-data {
+      margin-top: 16px;
+      
+      details {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+        background-color: #f9f9f9;
+        max-width: 100%; // 限制details宽度
+        
+        summary {
+          cursor: pointer;
+          font-weight: 500;
+          padding: 4px 0;
+          
+          &:hover {
+            color: #1890ff;
+          }
+        }
+        
+        pre {
+          margin: 8px 0 0 0;
+          padding: 8px;
+          background-color: #fff;
+          border-radius: 4px;
+          font-size: 12px;
+          line-height: 1.4;
+          overflow-x: auto;
+          border: 1px solid #d9d9d9;
+          max-width: 100%; // 限制pre宽度
+          word-break: break-all; // 强制换行
+          white-space: pre-wrap; // 保持格式同时允许换行
+        }
+      }
+    }
+  }
+
+  .special-answer-iframe {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    width: 600px; // 与最外层容器保持一致
+    box-sizing: border-box;
+    
+    iframe {
+      display: block;
+      border: none;
+      min-height: 400px;
+      width: 100%;
+      background-color: #fff;
+    }
+  }
+}

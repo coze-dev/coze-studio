@@ -23,3 +23,4 @@ export * from './is-suggestion';
 export * from './is-text';
 export * from './platform';
 export * from './safe-json-parse';
+export * from './special-answer';
