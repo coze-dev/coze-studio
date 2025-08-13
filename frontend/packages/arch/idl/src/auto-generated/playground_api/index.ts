@@ -132,13 +132,13 @@ export default class PlaygroundApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
-  /** POST /api/playground_api/space/save */
+  /** POST /api/space/create */
   SaveSpaceV2(
     req: playground.SaveSpaceV2Request,
     options?: T,
   ): Promise<playground.SaveSpaceV2Response> {
     const _req = req;
-    const url = this.genBaseURL('/api/playground_api/space/save');
+    const url = this.genBaseURL('/api/space/create');
     const method = 'POST';
     const data = {
       space_id: _req['space_id'],
@@ -154,13 +154,13 @@ export default class PlaygroundApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
-  /** POST /api/playground_api/space/list */
+  /** GET /api/space/list */
   GetSpaceListV2(
     req?: playground.GetSpaceListV2Request,
     options?: T,
   ): Promise<playground.GetSpaceListV2Response> {
     const _req = req || {};
-    const url = this.genBaseURL('/api/playground_api/space/list');
+    const url = this.genBaseURL('/api/space/list');
     const method = 'POST';
     const data = {
       search_word: _req['search_word'],
