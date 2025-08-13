@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+
 import cls from 'classnames';
 
 import styles from './index.module.less';
@@ -32,12 +33,18 @@ export const GridList = ({ children, averageItemWidth = 300, className }) => {
   );
 };
 
-export const GridItem = ({ children, disabled = false, className }) => {
+export const GridItem = ({
+  children,
+  disabled = false,
+  className,
+  onClick,
+}) => {
   return (
     <div
       className={cls(styles.gridItem, className, {
         [styles.disabled]: disabled,
       })}
+      onClick={onClick}
     >
       {children}
     </div>

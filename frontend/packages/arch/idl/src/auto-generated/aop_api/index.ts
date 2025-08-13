@@ -123,5 +123,14 @@ export default class ApoApiService<T> {
     const data = _req;
     return this.request({ url, method, data }, options);
   }
+
+  // 获取MCP类型枚举
+  GetMCPTypeEnum(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0004.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
 }
 /* eslint-enable */

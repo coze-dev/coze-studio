@@ -10,6 +10,7 @@
     "./library": "./src/pages/library/index.tsx",
     "./members": "./src/pages/members/index.tsx",
     "./mcp": "./src/pages/falcon/mcp.tsx",
+    "./mcpDetail": "./src/pages/falcon/mcpDetail.tsx",
     "./card": "./src/pages/falcon/card.tsx"
   },
   "main": "src/index.ts",
@@ -27,6 +28,9 @@
       "mcp": [
         "./src/pages/falcon/mcp.tsx"
       ],
+      "mcpDetail": [
+        "./src/pages/falcon/mcpDetail.tsx"
+      ],
       "card": [
         "./src/pages/falcon/card.tsx"
       ]
@@ -42,6 +46,7 @@
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
     "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
@@ -73,4 +78,3 @@
     "react-dom": ">=18.2.0"
   }
 }
-

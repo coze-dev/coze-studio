@@ -1,6 +1,7 @@
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable prettier/prettier */
 import { type FC, useEffect, useCallback, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { I18n } from '@coze-arch/i18n';
 import cls from 'classnames';
 
@@ -39,6 +40,11 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
   const [filterQueryText, setFilterQueryText] = useState('');
   const [mcpList, setMcpList] = useState([]);
   const [spinId, setSpinId] = useState('');
+
+  const navigate = useNavigate();
+  const goPage = path => {
+    navigate(`/space/${spaceId}${path}`);
+  };
 
   const getMcpListData = useCallback(() => {
     aopApi
@@ -152,7 +158,12 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
               }, delay);
             }}
           />
-          <Button icon={<IconCozPlus />}>
+          <Button
+            icon={<IconCozPlus />}
+            onClick={() => {
+              goPage('/mcp-detail/create');
+            }}
+          >
             {I18n.t('workspace_create_mcp')}
           </Button>
         </HeaderActions>
@@ -166,7 +177,13 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                   'px-[16px] h-full flex flex-col justify-between',
                 )}
               >
-                <div className="py-[20px]">
+                <div
+                  className="py-[20px]"
+                  onClick={e => {
+                    goPage(`/mcp-detail/view?mcp_id=${item.mcpId}`);
+                    e?.stopPropagation();
+                  }}
+                >
                   <div className="flex gap-[8px] mb-[16px]">
                     <div className="w-[48px] h-[48px] mx-[4px]">
                       <img
@@ -205,7 +222,10 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                     {item.mcpStatus == '1' && item.mcpShelf == '0' && (
                       <div
                         className={cls(styles.action, styles.stop)}
-                        onClick={() => stopService(item.mcpId)}
+                        onClick={e => {
+                          stopService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
                       >
                         停止服务
                       </div>
@@ -215,7 +235,10 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                       item.mcpStatus == '2') && (
                       <div
                         className={cls(styles.action, styles.start)}
-                        onClick={() => startService(item.mcpId)}
+                        onClick={e => {
+                          startService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
                       >
                         {item.mcpStatus == '2' ? '重启服务' : '启动服务'}
                       </div>
@@ -224,8 +247,8 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                       <Popconfirm
                         title={`确定要将 ${item.mcpName} 服务下架吗？`}
                         onConfirm={e => {
-                          e?.stopPropagation();
                           unApplyService(item.mcpId);
+                          e?.stopPropagation();
                         }}
                         okText="确定"
                         cancelText="取消"
@@ -239,8 +262,8 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                       <Popconfirm
                         title={`确定要将 ${item.mcpName} 服务上架吗？`}
                         onConfirm={e => {
-                          e?.stopPropagation();
                           applyService(item.mcpId);
+                          e?.stopPropagation();
                         }}
                         okText="确定"
                         cancelText="取消"
@@ -255,12 +278,19 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
                       className="w-120px mt-4px mb-4px"
                       render={
                         <Menu.SubMenu mode="menu">
-                          <MenuItem>编辑服务</MenuItem>
+                          <MenuItem
+                            onClick={e => {
+                              goPage(`/mcp-detail/edit?mcp_id=${item.mcpId}`);
+                              e?.stopPropagation();
+                            }}
+                          >
+                            编辑服务
+                          </MenuItem>
                           <Popconfirm
                             title={`确定要将 ${item.mcpName} 服务删除吗？`}
                             onConfirm={e => {
-                              e?.stopPropagation();
                               delService(item.mcpId);
+                              e?.stopPropagation();
                             }}
                             okText="确定"
                             cancelText="取消"
