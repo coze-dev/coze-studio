@@ -79,12 +79,14 @@ func (rd *runtimeDependence) SetRunID(runID int64) {
 func (rd *runtimeDependence) GetRunID() int64 {
 	return rd.runID
 }
+
 func (rd *runtimeDependence) SetUsage(usage *agentrun.Usage) {
 	rd.usage = usage
 }
 func (rd *runtimeDependence) GetUsage() *agentrun.Usage {
 	return rd.usage
 }
+
 func (rd *runtimeDependence) SetRunMeta(arm *entity.AgentRunMeta) {
 	rd.runMeta = arm
 }
@@ -153,7 +155,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		return
 	}
 
-	rtDependence.agentInfo = agentInfo
+	rtDependence.SetAgentInfo(agentInfo)
 
 	history, err := c.handlerHistory(ctx, rtDependence)
 	if err != nil {
@@ -165,7 +167,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	if err != nil {
 		return
 	}
-	rtDependence.runID = runRecord.ID
+	rtDependence.SetRunID(runRecord.ID)
 	defer func() {
 		srRecord := c.buildSendRunRecord(ctx, runRecord, entity.RunStatusCompleted)
 		if err != nil {
@@ -184,7 +186,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		return
 	}
 
-	rtDependence.questionMsgID = input.ID
+	rtDependence.SetQuestionMsgID(input.ID)
 
 	if rtDependence.GetAgentInfo().BotMode == bot_common.BotMode_WorkflowMode {
 		err = c.handlerWfAsAgentStreamExecute(ctx, sw, history, input, rtDependence)
@@ -226,7 +228,7 @@ func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.
 	if resumeInfo != nil {
 		wfStreamer, err = crossworkflow.DefaultSVC().StreamResume(ctx, &crossworkflow.ResumeRequest{
 			ResumeData: concatWfInput(rtDependence),
-			EventID:    0,
+			EventID:    resumeInfo.ChatflowInterrupt.InterruptEvent.ID,
 			ExecuteID:  resumeInfo.ChatflowInterrupt.ExecuteID,
 		}, executeConfig)
 	} else {
@@ -570,6 +572,7 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 		if re != nil {
 			if errors.Is(re, io.EOF) {
 				// update usage
+
 				if lastAnswerMsg != nil && usage != nil {
 					rtDependence.SetUsage(&agentrun.Usage{
 						LlmPromptTokens:     usage.InputTokens,
@@ -591,7 +594,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 			c.handlerErr(ctx, re, sw)
 			return
 		}
-
 		if st == nil {
 			continue
 		}
@@ -601,7 +603,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 				OutputTokens: st.StateMessage.Usage.OutputTokens,
 				TotalCount:   st.StateMessage.Usage.InputTokens + st.StateMessage.Usage.OutputTokens,
 			}
-			logs.CtxInfof(ctx, "pullWfStream usage:%v,err:%v", conv.DebugJsonToStr(usage), re)
 		}
 
 		if st.StateMessage != nil && st.StateMessage.InterruptEvent != nil { // interrupt
@@ -720,13 +721,6 @@ func (c *runImpl) handlerWfInterruptMsg(ctx context.Context, sw *schema.StreamWr
 	if err != nil {
 		return
 	}
-
-	finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
-	if finishErr != nil {
-		logs.CtxErrorf(ctx, "handlerFinalAnswerFinish error: %v", finishErr)
-		return
-	}
-
 }
 func (c *runImpl) handlerWfInterruptEvent(_ context.Context, interruptEventData *crossworkflow.InterruptEvent) (string, message.ContentType, error) {
 
