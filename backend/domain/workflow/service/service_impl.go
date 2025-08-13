@@ -1649,7 +1649,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 	for _, node := range nodes {
 		switch entity.IDStrToNodeType(node.Type) {
 		case entity.NodeTypeSubWorkflow:
-			if !hasWorkflowRelated {
+			if !hasWorkflowRelated || node.Data.Inputs.SubWorkflow == nil {
 				continue
 			}
 			workflowID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
@@ -1661,7 +1661,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				node.Data.Inputs.WorkflowVersion = wf.Version
 			}
 		case entity.NodeTypePlugin:
-			if !hasPluginRelated {
+			if !hasPluginRelated || node.Data.Inputs.PluginAPIParam == nil {
 				continue
 			}
 			apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
@@ -1704,6 +1704,9 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			}
 
 		case entity.NodeTypeLLM:
+			if node.Data.Inputs.LLM == nil {
+				continue
+			}
 			if hasWorkflowRelated && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 				for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 					wf := node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
@@ -1750,7 +1753,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			}
 
 		case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
-			if !hasKnowledgeRelated {
+			if !hasKnowledgeRelated || node.Data.Inputs.Knowledge == nil {
 				continue
 			}
 			datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
@@ -1766,7 +1769,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			}
 
 		case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
-			if !hasDatabaseRelated {
+			if !hasDatabaseRelated || node.Data.Inputs.DatabaseNode == nil {
 				continue
 			}
 			dsList := node.Data.Inputs.DatabaseInfoList
