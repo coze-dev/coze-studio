@@ -280,6 +280,14 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiChatMessage(chunk)))
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			// 🔥 过滤输出节点的中间消息：如果是MessageDelta且包含message_title，则跳过
+			if chunk.Event == entity.RunEventMessageDelta && chunk.ChunkMessageItem != nil {
+				if messageTitle, exists := chunk.ChunkMessageItem.Ext["message_title"]; exists && messageTitle != "" {
+					// 跳过输出节点的delta消息，只保留completed消息
+					logs.CtxInfof(ctx, "跳过输出节点的delta消息: message_title=%s", messageTitle)
+					continue
+				}
+			}
 			// 🔥 修复：确保处理所有消息事件，包括工具调用后的回复
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 
