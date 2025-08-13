@@ -501,7 +501,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		locator        workflowModel.Locator
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
 		userID         = apiKeyInfo.UserID
-		connectorID    = apiKeyInfo.ConnectorID
+		connectorID    = ternary.IFElse(isDebug, consts.CozeConnectorID, apiKeyInfo.ConnectorID)
 	)
 	if req.IsSetAppID() {
 		appID = ptr.Of(mustParseInt64(req.GetAppID()))
