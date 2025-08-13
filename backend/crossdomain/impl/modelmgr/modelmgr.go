@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	eino "github.com/cloudwego/eino/components/model"
+
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"

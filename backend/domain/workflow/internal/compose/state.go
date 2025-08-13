@@ -26,6 +26,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -79,12 +80,12 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
-	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
-	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
-	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
-	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
-	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
-	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
+	_ = compose.RegisterSerializableType[plugin.ExecuteConfig]("execute_config")
+	_ = compose.RegisterSerializableType[plugin.ExecuteMode]("execute_mode")
+	_ = compose.RegisterSerializableType[plugin.TaskType]("task_type")
+	_ = compose.RegisterSerializableType[plugin.SyncPattern]("sync_pattern")
+	_ = compose.RegisterSerializableType[plugin.Locator]("wf_locator")
+	_ = compose.RegisterSerializableType[plugin.BizType]("biz_type")
 	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
 }
 
@@ -905,12 +906,12 @@ func streamStatePostHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePos
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string,
-	exeCfg vo.ExecuteConfig) (stateModifier compose.StateModifier) {
+	exeCfg plugin.ExecuteConfig) (stateModifier compose.StateModifier) {
 	// TODO: can we unify them all to a map[NodeKey]resumeData?
 	switch e {
 	case entity.InterruptEventInput:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
-			if exeCfg.BizType == vo.BizTypeAgent {
+			if exeCfg.BizType == plugin.BizTypeAgent {
 				m := make(map[string]any)
 				sList := strings.Split(resumeData, "\n")
 				for _, s := range sList {

@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -36,7 +37,7 @@ func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.Too
 		id := info.GetWorkflowId()
 		policies = append(policies, &vo.GetPolicy{
 			ID:    id,
-			QType: vo.FromLatestVersion,
+			QType: plugin.FromLatestVersion,
 		})
 	}
 

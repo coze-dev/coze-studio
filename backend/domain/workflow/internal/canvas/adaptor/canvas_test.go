@@ -34,17 +34,18 @@ import (
 
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
@@ -76,10 +77,10 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
 			RootCtx: execute.RootCtx{
-				ExeCfg: vo.ExecuteConfig{
-					Mode:     vo.ExecuteModeDebug,
+				ExeCfg: plugin.ExecuteConfig{
+					Mode:     plugin.ExecuteModeDebug,
 					Operator: 123,
-					BizType:  vo.BizTypeWorkflow,
+					BizType:  plugin.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -236,10 +237,10 @@ func TestDatabaseCURD(t *testing.T) {
 
 		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
 			RootCtx: execute.RootCtx{
-				ExeCfg: vo.ExecuteConfig{
-					Mode:     vo.ExecuteModeDebug,
+				ExeCfg: plugin.ExecuteConfig{
+					Mode:     plugin.ExecuteModeDebug,
 					Operator: 123,
-					BizType:  vo.BizTypeWorkflow,
+					BizType:  plugin.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -759,8 +760,8 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			},
 		}, nil)
 
-		mockToolService := pluginmock.NewMockService(ctrl)
-		mockey.Mock(plugin.GetPluginService).Return(mockToolService).Build()
+		mockToolService := pluginmock.NewMockPluginService(ctrl)
+		mockey.Mock(crossplugin.DefaultSVC).Return(mockToolService).Build()
 		mockToolService.EXPECT().ExecutePlugin(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(map[string]any{
 			"log_id": "20240617191637796DF3F4453E16AF3615",

@@ -30,6 +30,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -536,7 +537,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		commitID                          string
 	)
 	switch policy.QType {
-	case vo.FromDraft:
+	case plugin.FromDraft:
 		draft, err := r.DraftV2(ctx, policy.ID, policy.CommitID)
 		if err != nil {
 			return nil, err
@@ -547,7 +548,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = draft.OutputParamsStr
 		draftMeta = draft.DraftMeta
 		commitID = draft.CommitID
-	case vo.FromSpecificVersion:
+	case plugin.FromSpecificVersion:
 		v, err := r.GetVersion(ctx, policy.ID, policy.Version)
 		if err != nil {
 			return nil, err
@@ -557,7 +558,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = v.OutputParamsStr
 		versionMeta = v.VersionMeta
 		commitID = v.CommitID
-	case vo.FromLatestVersion:
+	case plugin.FromLatestVersion:
 		v, err := r.GetLatestVersion(ctx, policy.ID)
 		if err != nil {
 			return nil, err
@@ -1410,7 +1411,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	), nil
 }
 
-func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (
+func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (
 	_ *entity.Workflow, err error) {
 	const (
 		copyWorkflowRedisKeyPrefix         = "copy_workflow_redis_key_prefix"

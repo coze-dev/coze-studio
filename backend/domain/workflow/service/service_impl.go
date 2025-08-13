@@ -30,6 +30,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	cloudworkflow "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -386,7 +387,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			MetaQuery: vo.MetaQuery{
 				IDs: ids,
 			},
-			QType: vo.FromDraft,
+			QType: plugin.FromDraft,
 		})
 		if err != nil {
 			return nil, err
@@ -719,7 +720,7 @@ func (i *impl) UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpda
 	return nil
 }
 
-func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
+func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	wf, err := i.repo.CopyWorkflow(ctx, workflowID, policy)
 	if err != nil {
 		return nil, err
@@ -754,13 +755,13 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
 		},
-		QType: vo.FromDraft,
+		QType: plugin.FromDraft,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	relatedPlugins := make(map[int64]*vo.PluginEntity, len(config.PluginIDs))
+	relatedPlugins := make(map[int64]*plugin.PluginEntity, len(config.PluginIDs))
 	relatedWorkflow := make(map[int64]entity.IDVersionPair, len(wfs))
 
 	for _, wf := range wfs {
@@ -770,7 +771,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		}
 	}
 	for _, id := range config.PluginIDs {
-		relatedPlugins[id] = &vo.PluginEntity{
+		relatedPlugins[id] = &plugin.PluginEntity{
 			PluginID:      id,
 			PluginVersion: &config.Version,
 		}
@@ -803,7 +804,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 			return nil, err
 		}
 
-		err = replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(c.Nodes, relatedWorkflow, vo.ExternalResourceRelated{
+		err = replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(c.Nodes, relatedWorkflow, plugin.ExternalResourceRelated{
 			PluginMap: relatedPlugins,
 		})
 
@@ -870,7 +871,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	return nil, nil
 }
 
-func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, related vo.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error) {
+func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, related plugin.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error) {
 
 	type copiedWorkflow struct {
 		id        int64
@@ -1084,7 +1085,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 				return err
 			}
 
-			cwf, err := i.repo.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+			cwf, err := i.repo.CopyWorkflow(ctx, wf.id, plugin.CopyWorkflowPolicy{
 				TargetAppID:          ptr.Of(int64(0)),
 				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
 			})
@@ -1144,7 +1145,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 }
 
-func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, related vo.ExternalResourceRelated) error {
+func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, related plugin.ExternalResourceRelated) error {
 
 	type copiedWorkflow struct {
 		id           int64
@@ -1276,7 +1277,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 				return err
 			}
 
-			cwf, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+			cwf, err := i.CopyWorkflow(ctx, wf.id, plugin.CopyWorkflowPolicy{
 				TargetAppID:          ptr.Of(targetAppID),
 				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
 			})
@@ -1331,7 +1332,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 
 }
 
-func (i *impl) SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error {
+func (i *impl) SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related plugin.ExternalResourceRelated) error {
 	draftVersions, _, err := i.repo.GetDraftWorkflowsByAppID(ctx, appID)
 	if err != nil {
 		return err
@@ -1380,10 +1381,10 @@ func (i *impl) SyncRelatedWorkflowResources(ctx context.Context, appID int64, re
 
 }
 
-func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error) {
+func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*plugin.DependenceResource, error) {
 	wf, err := i.Get(ctx, &vo.GetPolicy{
 		ID:    workflowID,
-		QType: vo.FromDraft,
+		QType: plugin.FromDraft,
 	})
 	if err != nil {
 		return nil, err
@@ -1394,7 +1395,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 		return nil, err
 	}
 
-	ds := &vo.DependenceResource{
+	ds := &plugin.DependenceResource{
 		PluginIDs:    make([]int64, 0),
 		KnowledgeIDs: make([]int64, 0),
 		DatabaseIDs:  make([]int64, 0),
@@ -1483,7 +1484,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 				subWorkflow, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
 					ID:    wfID,
-					QType: vo.FromDraft,
+					QType: plugin.FromDraft,
 				})
 				if err != nil {
 					return err
@@ -1558,9 +1559,9 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 	}
 
 	switch policy.QType {
-	case vo.FromDraft:
+	case plugin.FromDraft:
 		return i.repo.MGetDrafts(ctx, policy)
-	case vo.FromSpecificVersion:
+	case plugin.FromSpecificVersion:
 		if len(policy.IDs) == 0 || len(policy.Versions) != len(policy.IDs) {
 			return nil, 0, fmt.Errorf("ids and versions are required when MGet from specific versions")
 		}
@@ -1602,7 +1603,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		}
 
 		return result, total, nil
-	case vo.FromLatestVersion:
+	case plugin.FromLatestVersion:
 		return i.repo.MGetLatestVersion(ctx, policy)
 	default:
 		panic("not implemented")
@@ -1637,7 +1638,7 @@ func (i *impl) calculateTestRunSuccess(ctx context.Context, c *vo.Canvas, wid in
 	return existedDraft.TestRunSuccess, nil // inherit previous draft snapshot's test run success flag
 }
 
-func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error {
+func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, relatedWorkflows map[int64]entity.IDVersionPair, related plugin.ExternalResourceRelated) error {
 	var (
 		hasWorkflowRelated  = len(relatedWorkflows) > 0
 		hasPluginRelated    = len(related.PluginMap) > 0

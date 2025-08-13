@@ -26,6 +26,7 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -337,7 +338,7 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*schema.NodeSchem
 
 	subWF, err := workflow.GetRepository().GetEntity(ctx, &vo.GetPolicy{
 		ID:      id,
-		QType:   ternary.IFElse(len(version) == 0, vo.FromDraft, vo.FromSpecificVersion),
+		QType:   ternary.IFElse(len(version) == 0, model.FromDraft, model.FromSpecificVersion),
 		Version: version,
 	})
 	if err != nil {
