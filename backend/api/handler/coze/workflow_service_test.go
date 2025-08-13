@@ -1374,6 +1374,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			result := r.getNodeExeHistory(id, exeID, "154951", nil)
 			assert.Equal(t, mustUnmarshalToMap(t, e2.output), mustUnmarshalToMap(t, result.Output))
+			assert.Equal(t, mustUnmarshalToMap(t, e2.output), mustUnmarshalToMap(t, result.Input))
 		})
 
 		mockey.PatchConvey("sync run does not support interrupt", func() {

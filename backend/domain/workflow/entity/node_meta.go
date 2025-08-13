@@ -94,7 +94,16 @@ type ExecutableMeta struct {
 	// UseCtxCache indicates that the node would require a newly initialized ctx cache for each invocation.
 	// example use cases:
 	// - write warnings to the ctx cache during Invoke, and read from the ctx within Callback output converter
-	UseCtxCache bool `json:"use_ctx_cache"`
+	UseCtxCache bool `json:"use_ctx_cache,omitempty"`
+
+	// PersistInputOnInterrupt indicates that the workflow execution should persist this node's input
+	// on interrupt, and restore the input on resume.
+	// example use cases:
+	// - NodeTypeQuestionAnswer stores input in checkpoint,
+	//   so during resume it could access info such as user-defined extra prompt.
+	// - NodeTypeBatch stores input in checkpoint,
+	//   so during resume it could access the input arrays.
+	PersistInputOnInterrupt bool `json:"persist_input_on_interrupt,omitempty"`
 }
 
 type PluginNodeMeta struct {
@@ -426,9 +435,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:     true,
-			PostFillNil:     true,
-			MayUseChatModel: true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			MayUseChatModel:         true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Question",
 		EnUSDescription: "Support asking questions to the user in the middle of the conversation, with both preset options and open-ended questions",
@@ -472,9 +482,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite: true,
-			PreFillZero: true,
-			PostFillNil: true,
+			IsComposite:             true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Loop",
 		EnUSDescription: "Used to repeatedly execute a series of tasks by setting the number of iterations and logic",
@@ -526,9 +537,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite: true,
-			PreFillZero: true,
-			PostFillNil: true,
+			IsComposite:             true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Batch",
 		EnUSDescription: "By setting the number of batch runs and logic, run the tasks in the batch body.",

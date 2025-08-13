@@ -654,9 +654,9 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 	}
 
 	var (
-		outputMap, rawOutputMap, customExtra map[string]any
-		errInfo                              vo.WorkflowError
-		ok                                   bool
+		outputMap, rawOutputMap, customExtra, input map[string]any
+		errInfo                                     vo.WorkflowError
+		ok                                          bool
 	)
 
 	outputMap, ok = output.(map[string]any)
@@ -671,6 +671,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		rawOutputMap = structuredOutput.RawOutput
 		customExtra = structuredOutput.Extra
 		errInfo = structuredOutput.Error
+		input = structuredOutput.Input
 	}
 
 	c := GetExeCtx(ctx)
@@ -718,6 +719,10 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		e.extra.CurrentSubExecuteID = c.SubExecuteID
 	}
 
+	if input != nil {
+		e.Input = input
+	}
+
 	switch t := entity.NodeType(info.Type); t {
 	case entity.NodeTypeExit:
 		terminatePlan := n.terminatePlan
@@ -746,8 +751,6 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			}
 			return fmt.Sprint(o["output"])
 		}
-	case entity.NodeTypeInputReceiver:
-		e.Input = outputMap
 	default:
 	}
 

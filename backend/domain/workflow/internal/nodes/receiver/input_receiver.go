@@ -25,6 +25,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -145,7 +146,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[strin
 	}
 
 	exeCfg := execute.GetExeCtx(ctx).ExeCfg
-	if exeCfg.BizType == vo.BizTypeAgent {
+	if exeCfg.BizType == plugin.BizTypeAgent {
 		m := make(map[string]any)
 		sList := strings.Split(resumeData, "\n")
 		for _, s := range sList {
@@ -219,5 +220,6 @@ func (i *InputReceiver) ToCallbackOutput(ctx context.Context, output map[string]
 		Output:    output,
 		RawOutput: output,
 		Error:     wfe,
+		Input:     output, // set input to be the same as output
 	}, nil
 }

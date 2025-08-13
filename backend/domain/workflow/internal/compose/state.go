@@ -266,7 +266,7 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 		streamHandlers []compose.StreamStatePreHandler[map[string]any, *State]
 	)
 
-	if s.Type == entity.NodeTypeQuestionAnswer {
+	if entity.NodeMetaByNodeType(s.Type).PersistInputOnInterrupt {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 			if _, ok := state.Inputs[s.Key]; !ok {
 				state.Inputs[s.Key] = in
@@ -278,18 +278,6 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 				out[k] = v
 			}
 
-			return out, nil
-		})
-	} else if entity.NodeMetaByNodeType(s.Type).IsComposite {
-		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if _, ok := state.Inputs[s.Key]; !ok { // first execution, store input for potential resume later
-				state.Inputs[s.Key] = in
-				return in, nil
-			}
-			out := make(map[string]any)
-			for k, v := range state.Inputs[s.Key] {
-				out[k] = v
-			}
 			return out, nil
 		})
 	}

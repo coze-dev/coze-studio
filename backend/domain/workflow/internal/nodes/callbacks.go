@@ -23,4 +23,5 @@ type StructuredCallbackOutput struct {
 	RawOutput map[string]any
 	Extra     map[string]any // node specific extra info, will go into node execution's extra.ResponseExtra
 	Error     vo.WorkflowError
+	Input     map[string]any // if you want to override Input on node end, set this field
 }
