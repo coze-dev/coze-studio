@@ -63,3 +63,7 @@ func (c *impl) List(ctx context.Context, lm *entity.ListMeta) (*entity.ListResul
 func (c *impl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
 	return c.DomainSVC.Delete(ctx, req)
 }
+
+func (c *impl) GetMessageByID(ctx context.Context, id int64) (*entity.Message, error) {
+	return c.DomainSVC.GetByID(ctx, id)
+}

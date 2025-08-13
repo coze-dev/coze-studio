@@ -20,8 +20,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
+
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
@@ -109,7 +111,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 
 		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		return successMap, nil
@@ -121,13 +123,13 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		Version: ptr.Of(version),
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	if existed {
 		sts, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		if !existed {
@@ -136,7 +138,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 
 		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		return successMap, nil
@@ -144,7 +146,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	} else {
 		dyConversation, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		if !existed {
@@ -153,7 +155,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 
 		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		return successMap, nil
