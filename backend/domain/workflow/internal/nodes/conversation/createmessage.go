@@ -21,11 +21,11 @@ import (
 	"errors"
 	"fmt"
 
-	"strconv"
-	"sync/atomic"
-
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"strconv"
+	"sync/atomic"
 
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -79,7 +79,7 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 		Version: ptr.Of(version),
 	})
 	if err != nil {
-		return 0, vo.WrapError(errno.ErrConversationNodeInvalidOperation, err)
+		return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
@@ -99,13 +99,13 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 			ConnectorID: connectorID,
 		})
 		if err != nil {
-			return 0, err
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		conversationID = cID
 	} else {
 		dc, _, err := workflow.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return 0, err
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if dc != nil {
 			conversationID = dc.ConversationID
@@ -140,7 +140,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 
 	content, ok := input["content"].(string)
 	if !ok {
-		return nil, vo.WrapError(errno.ErrConversationNodeInvalidOperation, errors.New("content is required"))
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("content is required"))
 	}
 
 	var conversationID int64
@@ -256,7 +256,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 				SectionID:      sectionID,
 			})
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 			}
 			runID = runRecord.ID
 		}
