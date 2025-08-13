@@ -39,6 +39,7 @@ import { usePreference } from '../../../context/preference';
 import s from './index.module.less';
 
 import './index.less';
+import { usePluginCustomComponents } from '../../../plugin/hooks/use-plugin-custom-components';
 
 const BuiltinMessageGroupWrapper: ComponentTypesMap['messageGroupWrapper'] = ({
   children,
@@ -135,6 +136,18 @@ export const MessageGroupWrapper: React.FC<
 
     const showContextDividerWithOnboarding =
       showClearContextDividerByPreference && showContextDivider;
+    const customMessageGroupFooterPlugin =
+      usePluginCustomComponents('MessageGroupFooter').at(0);
+    const renderFooter = () => {
+      const usedFooter = customMessageGroupFooterPlugin;
+
+      if (!usedFooter) {
+        return null;
+      }
+
+      const { Component } = usedFooter;
+      return <Component messageGroup={messageGroup} />;
+    };
 
     return (
       <>
@@ -152,6 +165,7 @@ export const MessageGroupWrapper: React.FC<
           isSendingMessage={isSendingMessage}
           messageGroup={messageGroup}
         >
+          {renderFooter?.()}
           {isLatest ? (
             <>
               {!showContextDividerWithOnboarding && <SuggestionInChat />}

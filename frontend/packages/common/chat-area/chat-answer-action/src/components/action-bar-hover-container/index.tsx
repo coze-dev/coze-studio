@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type PropsWithChildren } from 'react';
+import { forwardRef, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 
@@ -25,14 +25,16 @@ interface ActionBarHoverContainerProps {
   style?: React.CSSProperties;
 }
 
-export const ActionBarHoverContainer: React.FC<
+export const ActionBarHoverContainer = forwardRef<
+  HTMLDivElement,
   PropsWithChildren<ActionBarHoverContainerProps>
-> = ({ children, style }) => (
+>(({ children, style }, ref) => (
   <div
     data-testid="chat-area.answer-action.hover-action-bar"
     className={classNames(s.container, ['coz-stroke-primary', 'coz-bg-max'])}
     style={style}
+    ref={ref}
   >
     {children}
   </div>
-);
+));

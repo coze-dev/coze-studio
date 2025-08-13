@@ -127,9 +127,14 @@ export interface IChatInputProps {
   leftActions?: ReactNode;
 
   /**
-   * Right Slot
+   * Right Actions
    */
   rightActions?: ReactNode;
+
+  /**
+   * right slot
+   */
+  rightSlot?: ReactNode;
 
   /**
    * Custom send button

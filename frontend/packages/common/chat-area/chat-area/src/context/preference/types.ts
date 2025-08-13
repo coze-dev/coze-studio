@@ -97,6 +97,10 @@ export interface PreferenceContextInterface {
    */
   messageWidth: string;
   /**
+   * message list max width
+   */
+  messageMaxWidth: string;
+  /**
    * Is it read-only?
    */
   readonly: boolean;
@@ -155,6 +159,11 @@ export interface PreferenceContextInterface {
    * layout
    */
   layout: Layout;
+
+  /**
+   * Whether to enable mini screen mode
+   */
+  isMiniScreen: boolean;
 
   /**
    * Whether to force the stop reply button to be displayed

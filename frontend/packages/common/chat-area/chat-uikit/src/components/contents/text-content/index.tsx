@@ -54,7 +54,6 @@ export const TextContent: FC<IMessageContentProps> = props => {
   } = props;
   const MdBoxLazy = LazyCozeMdBox;
   const contentRef = useRef<HTMLDivElement | null>(null);
-
   const { content } = message;
 
   if (!isText(content)) {
@@ -63,7 +62,6 @@ export const TextContent: FC<IMessageContentProps> = props => {
 
   const isStreaming = !message.is_finish;
   const text = content.slice(0, message.broken_pos ?? Infinity);
-
   return (
     <div
       className="chat-uikit-text-content"

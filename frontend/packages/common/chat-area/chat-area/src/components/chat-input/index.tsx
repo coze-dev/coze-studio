@@ -29,19 +29,19 @@ import {
 import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import {
-  useUIKitCustomComponent,
-  ChatInput as UIKitChatInput,
-  type InputRefObject,
-} from '@coze-common/chat-uikit';
-import { safeAsyncThrow } from '@coze-common/chat-area-utils';
-import { I18n } from '@coze-arch/i18n';
-import {
   type IChatInputProps,
   UploadType,
   type SendFileMessagePayload,
   MAX_FILE_MBYTE,
   Layout,
 } from '@coze-common/chat-uikit-shared';
+import {
+  useUIKitCustomComponent,
+  ChatInput as UIKitChatInput,
+  type InputRefObject,
+} from '@coze-common/chat-uikit';
+import { safeAsyncThrow } from '@coze-common/chat-area-utils';
+import { I18n } from '@coze-arch/i18n';
 
 import { BatchUploadFileList } from '../batch-upload-file-list';
 import { getSendMultimodalMessageStrategy } from '../../utils/message';
@@ -158,6 +158,7 @@ export const ChatInput: <T extends OverrideProps>(
     wrapperClassName,
     inputNativeCallbacks,
     safeAreaClassName,
+    ...restInputProps
   } = useChatInputProps();
 
   const showBackground = useShowBackGround();
@@ -395,6 +396,7 @@ export const ChatInput: <T extends OverrideProps>(
         showBackground={showBackground}
         limitFileCount={fileLimit}
         onPaste={handlePaste}
+        {...restInputProps}
         {...componentProps}
       />
       <div

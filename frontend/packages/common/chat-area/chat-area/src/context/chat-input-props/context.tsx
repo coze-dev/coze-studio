@@ -23,7 +23,8 @@ import {
 
 type OnBeforeSubmit = IChatInputProps['onBeforeSubmit'];
 
-export interface ChatInputProps {
+export interface ChatInputProps
+  extends Pick<IChatInputProps, 'leftActions' | 'rightSlot'> {
   /**
    * {@link OnBeforeSubmit}
    */

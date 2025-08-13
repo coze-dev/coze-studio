@@ -72,8 +72,8 @@ export const ChatHistory = ({
 
   const chatUserInfo = {
     id: userInfo?.user_id_str || '',
-    name: userInfo?.name || '',
-    avatar: userInfo?.avatar_url || '',
+    nickname: userInfo?.name || '',
+    url: userInfo?.avatar_url || '',
   };
 
   if (
@@ -123,6 +123,7 @@ export const ChatHistory = ({
         }}
         areaUi={{
           isNeedClearContext: false,
+          isNeedClearMessage: true,
           input: {
             isShow: showInputArea,
             defaultText,

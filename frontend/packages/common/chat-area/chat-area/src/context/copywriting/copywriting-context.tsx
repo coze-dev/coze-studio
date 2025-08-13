@@ -26,6 +26,7 @@ const getDefaultCopywriting = (): CopywritingContextInterface => ({
   textareaBottomTips: '',
   clearContextDividerText: '',
   clearContextTooltipContent: '',
+  audioButtonTooltipContent: '',
 });
 
 export const CopywritingContext = createContext<CopywritingContextInterface>(

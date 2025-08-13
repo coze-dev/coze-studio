@@ -117,7 +117,9 @@ export const useSendUseToolMessage = () => {
     componentsFormValues: Record<string, TValue>;
     options?: SendMessageOptions;
     onBeforeSendTemplateShortcut?: (
-      params: OnBeforeSendTemplateShortcutParams,
+      params: OnBeforeSendTemplateShortcutParams & {
+        shortcut: ShortCutCommand;
+      },
     ) => OnBeforeSendTemplateShortcutParams;
     withoutComponentsList?: boolean;
   }) => {
@@ -170,6 +172,7 @@ export const useSendUseToolMessage = () => {
     const handledParams = onBeforeSendTemplateShortcut?.({
       message: cloneDeep(message),
       options: cloneDeep(options),
+      shortcut,
     }) || {
       message,
       options,

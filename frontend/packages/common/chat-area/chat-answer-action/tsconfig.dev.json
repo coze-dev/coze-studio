@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": null,
+    "tsBuildInfoFile": null
+  },
+  "exclude": ["dist", "node_modules", "__tests__"]
+}

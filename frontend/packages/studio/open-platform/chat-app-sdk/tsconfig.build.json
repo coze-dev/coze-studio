@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "preserveSymlinks": false,
+    "skipLibCheck": true,
+    "outDir": "./dist_ignore",
+    "types": [],
+    "tsBuildInfoFile": "dist_ignore/tsconfig.build.tsbuildinfo",
+    "sourceMap": false
+  },
+  "include": ["src", "src/**/*.json"],
+  "exclude": ["./src/**/*.test.ts", "src/**/__tests__/**", "src/test/setup.ts"],
+  "references": [
+    {
+      "path": "../../../arch/bot-env-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../common/assets/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/postcss-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/tailwind-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../infra/plugins/pkg-root-webpack-plugin/tsconfig.build.json"
+    },
+    {
+      "path": "../open-chat/tsconfig.build.json"
+    }
+  ]
+}
