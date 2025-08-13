@@ -160,7 +160,7 @@ export default class PlaygroundApiService<T> {
     options?: T,
   ): Promise<playground.GetSpaceListV2Response> {
     const _req = req || {};
-    const url = this.genBaseURL('/api/space/list');
+    const url = this.genBaseURL('/api/playground_api/space/list');
     const method = 'POST';
     const data = {
       search_word: _req['search_word'],
