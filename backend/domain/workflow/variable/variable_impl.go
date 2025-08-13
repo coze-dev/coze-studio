@@ -23,60 +23,53 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic"
-
 	"github.com/cloudwego/eino/compose"
 
 	variablesModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
-
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type varStore struct {
 	variableChannel project_memory.VariableChannel
-	vs              variables.Variables
 }
 
-func NewVariableHandler(vs variables.Variables) *variable.Handler {
-	return &variable.Handler{
-		UserVarStore:   newUserVarStore(vs),
-		AppVarStore:    newAppVarStore(vs),
-		SystemVarStore: newSystemVarStore(vs),
+func NewVariableHandler() *Handler {
+	return &Handler{
+		UserVarStore:   newUserVarStore(),
+		AppVarStore:    newAppVarStore(),
+		SystemVarStore: newSystemVarStore(),
 	}
 }
 
-func newUserVarStore(vs variables.Variables) variable.Store {
+func newUserVarStore() Store {
 	return &varStore{
 		variableChannel: project_memory.VariableChannel_Custom,
-		vs:              vs,
 	}
 }
 
-func newAppVarStore(vs variables.Variables) variable.Store {
+func newAppVarStore() Store {
 	return &varStore{
 		variableChannel: project_memory.VariableChannel_APP,
-		vs:              vs,
 	}
 }
 
-func newSystemVarStore(vs variables.Variables) variable.Store {
+func newSystemVarStore() Store {
 	return &varStore{
 		variableChannel: project_memory.VariableChannel_System,
-		vs:              vs,
 	}
 }
 
 func (v *varStore) Init(ctx context.Context) {
 }
 
-func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...variable.OptionFn) (any, error) {
-	opt := &variable.StoreConfig{}
+func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...OptionFn) (any, error) {
+	opt := &StoreConfig{}
 	for _, o := range opts {
 		o(opt)
 	}
@@ -96,17 +89,17 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...vari
 		return nil, fmt.Errorf("there must be one of the App ID or Agent ID")
 	}
 
-	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
+	meta := &variablesModel.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		ConnectorID:  opt.StoreInfo.ConnectorID,
 		ConnectorUID: opt.StoreInfo.ConnectorUID,
-	})
+	}
 	if len(path) == 0 {
 		return nil, errors.New("field path is required")
 	}
 	key := path[0]
-	kvItems, err := v.vs.GetVariableChannelInstance(ctx, meta, []string{key}, project_memory.VariableChannelPtr(v.variableChannel))
+	kvItems, err := crossvariables.DefaultSVC().GetVariableChannelInstance(ctx, meta, []string{key}, project_memory.VariableChannelPtr(v.variableChannel))
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +187,8 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...vari
 	return value, nil
 }
 
-func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, opts ...variable.OptionFn) (err error) {
-	opt := &variable.StoreConfig{}
+func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, opts ...OptionFn) (err error) {
+	opt := &StoreConfig{}
 	for _, o := range opts {
 		o(opt)
 	}
@@ -215,12 +208,12 @@ func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, o
 		return fmt.Errorf("there must be one of the App ID or Agent ID")
 	}
 
-	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
+	meta := &variablesModel.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		ConnectorID:  opt.StoreInfo.ConnectorID,
 		ConnectorUID: opt.StoreInfo.ConnectorUID,
-	})
+	}
 
 	if len(path) == 0 {
 		return errors.New("field path is required")
@@ -246,7 +239,7 @@ func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, o
 		IsSystem: isSystem,
 	})
 
-	_, err = v.vs.SetVariableInstance(ctx, meta, kvItems)
+	_, err = crossvariables.DefaultSVC().SetVariableInstance(ctx, meta, kvItems)
 	if err != nil {
 		return err
 	}
@@ -255,18 +248,15 @@ func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, o
 }
 
 type variablesMetaGetter struct {
-	vs variables.Variables
 }
 
-func NewVariablesMetaGetter(vs variables.Variables) variable.VariablesMetaGetter {
-	return &variablesMetaGetter{
-		vs: vs,
-	}
+func NewVariablesMetaGetter() VariablesMetaGetter {
+	return &variablesMetaGetter{}
 }
 
 func (v variablesMetaGetter) GetAppVariablesMeta(ctx context.Context, id, version string) (m map[string]*vo.TypeInfo, err error) {
 	var varMetas *entity.VariablesMeta
-	varMetas, err = v.vs.GetProjectVariablesMeta(ctx, id, version)
+	varMetas, err = crossvariables.DefaultSVC().GetProjectVariablesMeta(ctx, id, version)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +281,7 @@ func (v variablesMetaGetter) GetAppVariablesMeta(ctx context.Context, id, versio
 
 func (v variablesMetaGetter) GetAgentVariablesMeta(ctx context.Context, id int64, version string) (m map[string]*vo.TypeInfo, err error) {
 	var varMetas *entity.VariablesMeta
-	varMetas, err = v.vs.GetAgentVariableMeta(ctx, id, version)
+	varMetas, err = crossvariables.DefaultSVC().GetAgentVariableMeta(ctx, id, version)
 	if err != nil {
 		return nil, err
 	}
