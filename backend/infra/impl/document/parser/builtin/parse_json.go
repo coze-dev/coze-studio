@@ -28,7 +28,7 @@ import (
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
-func parseJSON(config *contract.Config) parseFn {
+func ParseJSON(config *contract.Config) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		b, err := io.ReadAll(reader)
 		if err != nil {
@@ -41,7 +41,7 @@ func parseJSON(config *contract.Config) parseFn {
 		}
 
 		if len(rawSlices) == 0 {
-			return nil, fmt.Errorf("[parseJSON] json data is empty")
+			return nil, fmt.Errorf("[ParseJSON] json data is empty")
 		}
 
 		var header []string

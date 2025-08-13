@@ -19,25 +19,37 @@ package appinfra
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
 	"gorm.io/gorm"
 
+	"github.com/volcengine/volc-sdk-golang/service/visual"
+
+	"github.com/coze-dev/coze-studio/backend/application/internal"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/direct"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/sandbox"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/ppocr"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
+	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/ppstructure"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/es"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/imagex/veimagex"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/mysql"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
@@ -52,6 +64,8 @@ type AppDependencies struct {
 	AppEventProducer      eventbus.Producer
 	ModelMgr              modelmgr.Manager
 	CodeRunner            coderunner.Runner
+	OCR                   ocr.OCR
+	ParserManager         parser.Manager
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -101,6 +115,14 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	}
 
 	deps.CodeRunner = initCodeRunner()
+
+	deps.OCR = initOCR()
+
+	imageAnnotationModel, _, err := internal.GetBuiltinChatModel(ctx, "IA_")
+	if err != nil {
+		return nil, err
+	}
+	deps.ParserManager, err = initParserManager(deps.TOSClient, deps.OCR, imageAnnotationModel)
 
 	return deps, nil
 }
@@ -182,4 +204,49 @@ func initCodeRunner() coderunner.Runner {
 	default:
 		return direct.NewRunner()
 	}
+}
+
+func initOCR() ocr.OCR {
+	var ocr ocr.OCR
+	switch os.Getenv(consts.OCRType) {
+	case "ve":
+		ocrAK := os.Getenv(consts.VeOCRAK)
+		ocrSK := os.Getenv(consts.VeOCRSK)
+		if ocrAK == "" || ocrSK == "" {
+			logs.Warnf("[ve_ocr] ak / sk not configured, ocr might not work well")
+		}
+		inst := visual.NewInstance()
+		inst.Client.SetAccessKey(ocrAK)
+		inst.Client.SetSecretKey(ocrSK)
+		ocr = veocr.NewOCR(&veocr.Config{Client: inst})
+	case "paddleocr":
+		url := os.Getenv(consts.PPOCRAPIURL)
+		client := &http.Client{}
+		ocr = ppocr.NewOCR(&ppocr.Config{Client: client, URL: url})
+	default:
+		// accept ocr not configured
+	}
+
+	return ocr
+}
+
+func initParserManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) (parser.Manager, error) {
+	var parserManager parser.Manager
+	parserType := os.Getenv(consts.ParserType)
+	switch parserType {
+	case "builtin":
+		parserManager = builtinParser.NewManager(storage, ocr, imageAnnotationModel)
+	case "paddleocr":
+		url := os.Getenv(consts.PPStructureAPIURL)
+		client := &http.Client{}
+		apiConfig := &ppstructure.APIConfig{
+			Client: client,
+			URL:    url,
+		}
+		parserManager = ppstructure.NewManager(apiConfig, ocr, storage, imageAnnotationModel)
+	default:
+		return nil, fmt.Errorf("unexpected document parser type, type=%s", parserType)
+	}
+
+	return parserManager, nil
 }

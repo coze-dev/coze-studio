@@ -29,7 +29,7 @@ import (
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
-func parseCSV(config *contract.Config) parseFn {
+func ParseCSV(config *contract.Config) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		iter := &csvIterator{csv.NewReader(utfbom.SkipOnly(reader))}
 		return parseByRowIterator(iter, config, opts...)

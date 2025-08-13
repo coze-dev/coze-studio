@@ -38,7 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
-func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {
+func ParseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		options := parser.GetCommonOptions(&parser.Options{}, opts...)
 		mdParser := goldmark.DefaultParser()
@@ -52,7 +52,7 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 		ps := config.ParsingStrategy
 
 		if cs.ChunkType != contract.ChunkTypeCustom && cs.ChunkType != contract.ChunkTypeDefault {
-			return nil, fmt.Errorf("[parseMarkdown] chunk type not support, chunk type=%d", cs.ChunkType)
+			return nil, fmt.Errorf("[ParseMarkdown] chunk type not support, chunk type=%d", cs.ChunkType)
 		}
 
 		var (
@@ -173,7 +173,7 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 							return ast.WalkStop, fmt.Errorf("failed to download image: %w", err)
 						}
 
-						imgSrc, err := putImageObject(ctx, storage, ext, getCreatorIDFromExtraMeta(options.ExtraMeta), img)
+						imgSrc, err := PutImageObject(ctx, storage, ext, GetCreatorIDFromExtraMeta(options.ExtraMeta), img)
 						if err != nil {
 							return ast.WalkStop, err
 						}
@@ -198,7 +198,7 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 							pushSlice()
 						}
 					} else {
-						logs.CtxInfof(ctx, "[parseMarkdown] not a valid image url, skip, got=%s", imageURL)
+						logs.CtxInfof(ctx, "[ParseMarkdown] not a valid image url, skip, got=%s", imageURL)
 					}
 				}
 			}

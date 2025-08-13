@@ -55,7 +55,7 @@ func TestParseJSON(t *testing.T) {
 		},
 		ChunkingStrategy: nil,
 	}
-	pfn := parseJSON(config)
+	pfn := ParseJSON(config)
 	docs, err := pfn(context.Background(), reader, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),
@@ -121,7 +121,7 @@ func TestParseJSONWithSchema(t *testing.T) {
 			},
 		},
 	}
-	pfn := parseJSON(config)
+	pfn := ParseJSON(config)
 	docs, err := pfn(context.Background(), reader, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),

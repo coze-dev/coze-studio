@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	netHTTP "net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -33,7 +32,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
-	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/application/internal"
@@ -42,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
@@ -52,8 +51,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
-	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
@@ -70,14 +67,16 @@ import (
 )
 
 type ServiceComponents struct {
-	DB       *gorm.DB
-	IDGenSVC idgen.IDGenerator
-	Storage  storage.Storage
-	RDB      rdb.RDB
-	ImageX   imagex.ImageX
-	ES       es.Client
-	EventBus search.ResourceEventBus
-	CacheCli cache.Cmdable
+	DB            *gorm.DB
+	IDGenSVC      idgen.IDGenerator
+	Storage       storage.Storage
+	RDB           rdb.RDB
+	ImageX        imagex.ImageX
+	ES            es.Client
+	EventBus      search.ResourceEventBus
+	CacheCli      cache.Cmdable
+	OCR           ocr.OCR
+	ParserManager parser.Manager
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
@@ -101,26 +100,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		return nil, fmt.Errorf("init vector store failed, err=%w", err)
 	}
 	sManagers = append(sManagers, mgr)
-
-	var ocrImpl ocr.OCR
-	switch os.Getenv("OCR_TYPE") {
-	case "ve":
-		ocrAK := os.Getenv("VE_OCR_AK")
-		ocrSK := os.Getenv("VE_OCR_SK")
-		if ocrAK == "" || ocrSK == "" {
-			logs.Warnf("[ve_ocr] ak / sk not configured, ocr might not work well")
-		}
-		inst := visual.NewInstance()
-		inst.Client.SetAccessKey(ocrAK)
-		inst.Client.SetSecretKey(ocrSK)
-		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
-	case "paddleocr":
-		ppocrURL := os.Getenv("PADDLEOCR_OCR_API_URL")
-		client := &netHTTP.Client{}
-		ocrImpl = veocr.NewPPOCR(&veocr.PPOCRConfig{Client: client, URL: ppocrURL})
-	default:
-		// accept ocr not configured
-	}
 
 	root, err := os.Getwd()
 	if err != nil {
@@ -158,26 +137,20 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		}
 	}
 
-	imageAnnoChatModel, configured, err := internal.GetBuiltinChatModel(ctx, "IA_")
-	if err != nil {
-		return nil, err
-	}
-
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:                        c.DB,
-		IDGen:                     c.IDGenSVC,
-		RDB:                       c.RDB,
-		Producer:                  knowledgeProducer,
-		SearchStoreManagers:       sManagers,
-		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
-		Storage:                   c.Storage,
-		Rewriter:                  rewriter,
-		Reranker:                  rrf.NewRRFReranker(0), // default rrf
-		NL2Sql:                    n2s,
-		OCR:                       ocrImpl,
-		CacheCli:                  c.CacheCli,
-		IsAutoAnnotationSupported: configured,
-		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
+		DB:                  c.DB,
+		IDGen:               c.IDGenSVC,
+		RDB:                 c.RDB,
+		Producer:            knowledgeProducer,
+		SearchStoreManagers: sManagers,
+		ParseManager:        c.ParserManager,
+		Storage:             c.Storage,
+		Rewriter:            rewriter,
+		Reranker:            rrf.NewRRFReranker(0), // default rrf
+		NL2Sql:              n2s,
+		OCR:                 c.OCR,
+		CacheCli:            c.CacheCli,
+		ModelFactory:        chatmodelImpl.NewDefaultFactory(),
 	})
 
 	if err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {

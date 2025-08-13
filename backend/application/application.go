@@ -254,14 +254,16 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 
 func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.MemoryApplicationServices) *knowledge.ServiceComponents {
 	return &knowledge.ServiceComponents{
-		DB:       b.infra.DB,
-		IDGenSVC: b.infra.IDGenSVC,
-		Storage:  b.infra.TOSClient,
-		RDB:      memoryService.RDBDomainSVC,
-		ImageX:   b.infra.ImageXClient,
-		ES:       b.infra.ESClient,
-		EventBus: b.eventbus.resourceEventBus,
-		CacheCli: b.infra.CacheCli,
+		DB:            b.infra.DB,
+		IDGenSVC:      b.infra.IDGenSVC,
+		Storage:       b.infra.TOSClient,
+		RDB:           memoryService.RDBDomainSVC,
+		ImageX:        b.infra.ImageXClient,
+		ES:            b.infra.ESClient,
+		EventBus:      b.eventbus.resourceEventBus,
+		CacheCli:      b.infra.CacheCli,
+		OCR:           b.infra.OCR,
+		ParserManager: b.infra.ParserManager,
 	}
 }
 
