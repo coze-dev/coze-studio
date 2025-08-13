@@ -30,7 +30,6 @@ import (
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -89,7 +88,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 				logs.CtxErrorf(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
 				return nil, err
 			}
-			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, vo.ExecuteConfig{
+			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, plugin.ExecuteConfig{
 				ID:           item.PluginID,
 				ConnectorID:  ar.Identity.ConnectorID,
 				ConnectorUID: ar.UserID,

@@ -23,6 +23,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -67,11 +68,11 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option {
 	return i.DomainSVC.WithResumeToolWorkflow(resumingEvent, resumeData, allInterruptEvents)
 }
-func (i *impl) SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
+func (i *impl) SyncExecuteWorkflow(ctx context.Context, config model.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
 	return i.DomainSVC.SyncExecute(ctx, config, input)
 }
 
-func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
+func (i *impl) WithExecuteConfig(cfg model.ExecuteConfig) einoCompose.Option {
 	return i.DomainSVC.WithExecuteConfig(cfg)
 }
 

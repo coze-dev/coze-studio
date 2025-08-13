@@ -25,6 +25,8 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -44,7 +46,7 @@ type executableImpl struct {
 	repo workflow.Repository
 }
 
-func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
+func (i *impl) SyncExecute(ctx context.Context, config model.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -62,7 +64,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	}
 
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == model.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return nil, "", err
@@ -189,7 +191,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 // AsyncExecute executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (int64, error) {
+func (i *impl) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -207,7 +209,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 	}
 
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return 0, err
@@ -264,7 +266,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 		return 0, err
 	}
 
-	if config.Mode == vo.ExecuteModeDebug {
+	if config.Mode == plugin.ExecuteModeDebug {
 		if err = i.repo.SetTestRunLatestExeID(ctx, wfEntity.ID, config.Operator, executeID); err != nil {
 			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
 		}
@@ -275,7 +277,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 	return executeID, nil
 }
 
-func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.ExecuteConfig, input map[string]any) (int64, error) {
+func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -292,7 +294,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 	}
 
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return 0, err
@@ -343,7 +345,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, err
 	}
 
-	if config.Mode == vo.ExecuteModeNodeDebug {
+	if config.Mode == plugin.ExecuteModeNodeDebug {
 		if err = i.repo.SetNodeDebugLatestExeID(ctx, wfEntity.ID, nodeID, config.Operator, executeID); err != nil {
 			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
 		}
@@ -356,7 +358,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 // StreamExecute executes the specified workflow, returning a stream of execution events.
 // The caller is expected to receive from the returned stream immediately.
-func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
+func (i *impl) StreamExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -375,7 +377,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	}
 
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return nil, err
@@ -545,7 +547,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 		return nil, nil, fmt.Errorf("try getting workflow exe for exeID : %d, but not found", exeID)
 	}
 
-	if wfExe.Mode != vo.ExecuteModeNodeDebug {
+	if wfExe.Mode != plugin.ExecuteModeNodeDebug {
 		return nodeExe, nil, nil
 	}
 
@@ -671,7 +673,7 @@ func mergeCompositeInnerNodes(nodeExes map[int]*entity.NodeExecution, maxIndex i
 // AsyncResume resumes a workflow execution asynchronously, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are not emitted on the fly.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error {
+func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) error {
 	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, req.ExecuteID)
 	if err != nil {
 		return err
@@ -689,11 +691,11 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		return fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", req.ExecuteID, wfExe.Status)
 	}
 
-	var from vo.Locator
+	var from plugin.Locator
 	if wfExe.Version == "" {
-		from = vo.FromDraft
+		from = plugin.FromDraft
 	} else {
-		from = vo.FromSpecificVersion
+		from = plugin.FromSpecificVersion
 	}
 
 	wfEntity, err := i.Get(ctx, &vo.GetPolicy{
@@ -722,7 +724,7 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		config.ConnectorID = wfExe.ConnectorID
 	}
 
-	if wfExe.Mode == vo.ExecuteModeNodeDebug {
+	if wfExe.Mode == plugin.ExecuteModeNodeDebug {
 		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
 		if err != nil {
 			return err
@@ -751,7 +753,7 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 			return fmt.Errorf("failed to create workflow: %w", err)
 		}
 
-		config.Mode = vo.ExecuteModeNodeDebug
+		config.Mode = plugin.ExecuteModeNodeDebug
 
 		cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(
 			wfEntity.GetBasic(), workflowSC, config, compose.WithResumeReq(req)).Prepare(ctx)
@@ -793,7 +795,7 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 // StreamResume resumes a workflow execution, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are emitted using the returned StreamReader.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) (
+func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	// must get the interrupt event
 	// generate the state modifier
@@ -814,11 +816,11 @@ func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, conf
 		return nil, fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", req.ExecuteID, wfExe.Status)
 	}
 
-	var from vo.Locator
+	var from plugin.Locator
 	if wfExe.Version == "" {
-		from = vo.FromDraft
+		from = plugin.FromDraft
 	} else {
-		from = vo.FromSpecificVersion
+		from = plugin.FromSpecificVersion
 	}
 
 	wfEntity, err := i.Get(ctx, &vo.GetPolicy{

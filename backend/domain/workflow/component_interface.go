@@ -23,17 +23,18 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
 type Executable interface {
-	SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error)
-	AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (int64, error)
-	AsyncExecuteNode(ctx context.Context, nodeID string, config vo.ExecuteConfig, input map[string]any) (int64, error)
-	AsyncResume(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error
-	StreamExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error)
-	StreamResume(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) (
+	SyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error)
+	AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (int64, error)
+	AsyncExecuteNode(ctx context.Context, nodeID string, config plugin.ExecuteConfig, input map[string]any) (int64, error)
+	AsyncResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) error
+	StreamExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error)
+	StreamResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) (
 		*schema.StreamReader[*entity.Message], error)
 
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution, includeNodes bool) (*entity.WorkflowExecution, error)
@@ -48,7 +49,7 @@ type Executable interface {
 type AsTool interface {
 	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]ToolFromWorkflow, error)
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
-	WithExecuteConfig(cfg vo.ExecuteConfig) compose.Option
+	WithExecuteConfig(cfg plugin.ExecuteConfig) compose.Option
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) compose.Option
 }
