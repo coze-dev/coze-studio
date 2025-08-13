@@ -1719,7 +1719,7 @@ func (i *impl) validateNodesRecursively(ctx context.Context, nodes []*vo.Node, c
 			queue = append(queue, canvas.Nodes...)
 		}
 
-		if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+		if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 			for _, subWfInfo := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 				if subWfInfo.WorkflowID == "" {
 					continue
