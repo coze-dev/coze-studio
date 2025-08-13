@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { Button, Empty, Modal, Spin } from '@coze-arch/coze-design';
 
 import { type McpService, type McpTool } from '@/types/mcp';
 import { McpApiService } from '@/services/mcp-service';
+
+import { McpToolPreview } from './mcp-tool-preview';
 
 export interface McpModalProps {
   visible: boolean;
@@ -45,6 +47,7 @@ export const McpModal: React.FC<McpModalProps> = ({
   onSelectMcpTool,
   onCancel,
 }) => {
+  const [previewTool, setPreviewTool] = useState<McpTool | null>(null);
   const renderServiceCard = (service: McpService) => (
     <div
       key={service.mcpId}
@@ -102,7 +105,7 @@ export const McpModal: React.FC<McpModalProps> = ({
     <div
       key={tool.name}
       className="mcp-tool-card"
-      onClick={() => onSelectMcpTool(tool)}
+      onClick={() => setPreviewTool(tool)}
       style={{
         border: '1px solid var(--semi-color-border)',
         borderRadius: '8px',
@@ -221,15 +224,49 @@ export const McpModal: React.FC<McpModalProps> = ({
   };
 
   return (
-    <Modal
-      title={I18n.t('选择MCP工具')}
-      visible={visible}
-      onCancel={onCancel}
-      footer={null}
-      width={600}
-      style={{ maxHeight: '80vh' }}
-    >
-      {renderContent()}
-    </Modal>
+    <>
+      <Modal
+        title={I18n.t('选择MCP工具')}
+        visible={visible}
+        onCancel={onCancel}
+        footer={null}
+        width={600}
+        style={{ maxHeight: '80vh' }}
+      >
+        {renderContent()}
+      </Modal>
+      
+      {/* 工具参数预览浮窗 */}
+      {previewTool && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1001,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPreviewTool(null);
+            }
+          }}
+        >
+          <McpToolPreview
+            tool={previewTool}
+            onConfirm={() => {
+              onSelectMcpTool(previewTool);
+              setPreviewTool(null);
+            }}
+            onCancel={() => setPreviewTool(null)}
+          />
+        </div>
+      )}
+    </>
   );
 };

@@ -20,6 +20,7 @@ import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
 import { BlockInput } from '@coze-workflow/base';
 
 import { type McpService, type McpTool } from '@/types/mcp';
+import { McpSchemaParser } from '@/utils/mcp-schema-parser';
 
 interface PluginApi {
   name: string;
@@ -101,6 +102,28 @@ export const createMcpNodeInfo = (
   toolRuntimeParams?: Record<string, any>, // 运行时的实际参数值
   templateIcon?: string,
 ) => {
+  // 解析工具的schema以生成动态输入参数
+  const parsedSchema = McpSchemaParser.parseToolSchema(tool.schema);
+  
+  // 根据schema生成工具参数输入 - 直接使用工具参数作为inputParameters
+  const inputParameters = parsedSchema.inputParams.map(param => {
+    const defaultValue = toolRuntimeParams?.[param.name] !== undefined 
+      ? toolRuntimeParams[param.name] 
+      : McpSchemaParser.generateDefaultValue(param);
+    
+    return {
+      name: param.name,
+      value: defaultValue,
+      // 保留参数元信息用于表单渲染
+      _mcpParamMeta: {
+        type: param.type,
+        description: param.description,
+        required: param.required,
+        schema: param,
+      },
+    };
+  });
+
   return {
     data: {
       nodeMeta: {
@@ -109,14 +132,17 @@ export const createMcpNodeInfo = (
         icon: templateIcon,
       },
       inputs: {
-        mcpParam: [
-          BlockInput.create('mcpId', mcpService.mcpId),
-          BlockInput.create('mcpName', mcpService.mcpName),
-          BlockInput.create('toolName', tool.name),
-          BlockInput.create('toolSchema', tool.schema),
-          BlockInput.create('toolDescription', tool.description),
-          BlockInput.create('toolRuntimeParams', toolRuntimeParams || {}),
-        ],
+        // 工具的动态参数作为标准inputParameters
+        inputParameters,
+        // MCP元信息用于运行时调用
+        mcpMeta: {
+          mcpId: mcpService.mcpId,
+          mcpName: mcpService.mcpName,
+          toolName: tool.name,
+          toolSchema: tool.schema,
+          toolDescription: tool.description,
+          parsedSchema,
+        },
       },
     },
   };

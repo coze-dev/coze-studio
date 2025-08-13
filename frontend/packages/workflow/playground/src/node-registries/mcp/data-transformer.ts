@@ -23,9 +23,13 @@ import { OUTPUTS, DEFAULT_INPUTS } from './constants';
  * 节点后端数据 -> 前端表单数据转换
  */
 export function transformOnInit(data: NodeData): FormData {
+  // 如果已经有inputParameters，直接使用（来自MCP工具schema）
+  // 否则使用默认值
+  const inputParameters = data?.inputs?.inputParameters || data?.inputParameters || DEFAULT_INPUTS;
+  
   return {
     inputs: {
-      inputParameters: data?.inputParameters || DEFAULT_INPUTS,
+      inputParameters,
     },
     outputs: data?.outputs || OUTPUTS,
   };
