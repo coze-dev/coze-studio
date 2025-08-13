@@ -81,6 +81,7 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 		Name:   req.Name,
 		Expire: req.ExpireAt,
 		UserID: *userID,
+		AkType: entity.AkTypeCustomer,
 	}
 
 	if req.DurationDay == "customize" {
@@ -116,9 +117,13 @@ func (s *OpenAuthApplicationService) ImpersonateCozeUserAccessToken(ctx context.
 	resp := new(bot_open_api.ImpersonateCozeUserResponse)
 	userID := ctxutil.GetUIDFromCtx(ctx)
 
-	expiredSecond := time.Second * 60 * 15
+	expiredSecond := time.Now().Add(time.Duration(time.Second * 60 * 15)).Unix()
+
 	appReq := &entity.CreateApiKey{
 		UserID: *userID,
+		AkType: entity.AkTypeTemporary,
+		Expire: expiredSecond,
+		Name:   "temporary access token",
 	}
 
 	apiKeyResp, err := openapiAuthDomainSVC.Create(ctx, appReq)
@@ -128,7 +133,7 @@ func (s *OpenAuthApplicationService) ImpersonateCozeUserAccessToken(ctx context.
 	}
 	resp.Data = &bot_open_api.ImpersonateCozeUserResponseData{
 		AccessToken: apiKeyResp.ApiKey,
-		ExpiresIn:   time.Now().Add(time.Duration(expiredSecond)).Unix(),
+		ExpiresIn:   expiredSecond,
 		TokenType:   "Bearer",
 	}
 	return resp, nil

@@ -32,6 +32,7 @@ type CreateApiKey struct {
 	Name   string `json:"name"`
 	Expire int64  `json:"expire"`
 	UserID int64  `json:"user_id"`
+	AkType AkType `json:"ak_type"`
 }
 
 type DeleteApiKey struct {
