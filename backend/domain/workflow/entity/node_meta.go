@@ -154,6 +154,7 @@ const (
 	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
 	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
 	NodeTypeComment                    NodeType = "Comment"
+	NodeTypeMcp                        NodeType = "Mcp"
 )
 
 const (
@@ -815,6 +816,24 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Key:      NodeTypeLambda,
 		Name:     "Lambda",
 		EnUSName: "Comment",
+	},
+	NodeTypeMcp: {
+		ID:           60,
+		Key:          NodeTypeMcp,
+		DisplayKey:   "Mcp",
+		Name:         "MCP工具",
+		Category:     "",
+		Desc:         "调用MCP (Model Context Protocol) 工具",
+		Color:        "#6366F1",
+		IconURL:      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBzdHJva2U9IiM2MzY2RjEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjkiIHI9IjIiIGZpbGw9IiM2MzY2RjEiLz4KPC9zdmc+",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			DefaultTimeoutMS: 30 * 1000,
+			PreFillZero:      true,
+			PostFillNil:      true,
+		},
+		EnUSName:        "MCP Tool",
+		EnUSDescription: "Call MCP (Model Context Protocol) tools",
 	},
 }
 

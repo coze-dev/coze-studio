@@ -41,8 +41,9 @@ import { WorkflowEditService } from '@/services';
 import { useSpaceId } from '@/hooks/use-space-id';
 import { useGlobalState } from '@/hooks/use-global-state';
 import { useNodeVersionService } from '@/hooks';
+import { useMcpApisModal } from '@/hooks/use-mcp-apis-modal';
 
-import { createApiNodeInfo, createSubWorkflowNodeInfo } from './helper';
+import { createApiNodeInfo, createMcpNodeInfo, createSubWorkflowNodeInfo } from './helper';
 
 const { Text } = Typography;
 
@@ -292,6 +293,43 @@ export const useAddNodeModal = (prevAddNodeRef: {
           }
         : undefined,
   });
+
+  // MCP弹窗
+  const {
+    node: mcpModal,
+    open: openMcp,
+    close: closeMcp,
+  } = useMcpApisModal({
+    closeCallback: onCloseModal,
+    onAdd: async (mcpService, tool) => {
+      const templateIcon = playgroundContext.getNodeTemplateInfoByType(
+        StandardNodeType.Mcp,
+      )?.icon;
+      const nodeJSON = createMcpNodeInfo(mcpService, tool, {}, templateIcon);
+      const position = {
+        clientX: prevAddNodeRef.current.x,
+        clientY: prevAddNodeRef.current.y,
+      };
+      const { isDrag } = prevAddNodeRef.current;
+
+      if (addNodeCallbackRef.current) {
+        addNodeCallbackRef.current({
+          nodeType: StandardNodeType.Mcp,
+          nodeJSON,
+        });
+      } else {
+        editService.addNode(StandardNodeType.Mcp, nodeJSON, position, isDrag);
+      }
+
+      Toast.success(
+        I18n.t('MCP工具已添加: {toolName}', {
+          toolName: tool.name,
+        }) as string,
+      );
+      return true;
+    },
+  });
+
   const wrapOpenFunc = function <T>(
     openFunc: (modalProps?: T) => void,
     closeFunc?: () => void,
@@ -339,5 +377,8 @@ export const useAddNodeModal = (prevAddNodeRef: {
 
     pluginModal,
     openPlugin: wrapOpenFunc(openPlugin, closePlugin),
+
+    mcpModal,
+    openMcp: wrapOpenFunc(openMcp, closeMcp),
   };
 };

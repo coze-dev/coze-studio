@@ -47,9 +47,11 @@ export const useAddNode = () => {
     openPlugin,
     openWorkflow,
     openImageflow,
+    openMcp,
     pluginModal,
     workflowModal,
     imageFlowModal,
+    mcpModal,
   } = useAddNodeModal(prevAddNodeRef);
 
   const editService = useService<WorkflowEditService>(WorkflowEditService);
@@ -121,8 +123,38 @@ export const useAddNode = () => {
     };
 
     // Open the plug-in pop-up window to add a node
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- plugin modal requires any type for modalProps
     openPlugin({ modalProps: modalProps as any });
+  };
+
+  const handleAddMcp: HandleAddNode = (
+    item,
+    coord = { x: 0, y: 0 },
+    isDrag = false,
+  ) => {
+    const { nodeType, nodeJson, modalProps } = item;
+
+    if (nodeJson) {
+      // Node add panel, drag and drop to add specific MCP node logic
+      editService.addNode(
+        nodeType,
+        nodeJson,
+        { clientX: coord?.x || 0, clientY: coord?.y || 0 },
+        isDrag,
+      );
+      return;
+    }
+
+    // Record the historical location and open the MCP pop-up window
+    prevAddNodeRef.current = {
+      x: coord.x,
+      y: coord.y,
+      isDrag,
+    };
+
+    // Open the MCP pop-up window to add a node
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- MCP modal requires any type for modalProps
+    openMcp({ modalProps: modalProps as any });
   };
 
   const handleAddNode: HandleAddNode = (
@@ -142,6 +174,11 @@ export const useAddNode = () => {
       return handleAddSubWorkflow(item, coord, isDrag);
     }
 
+    if (nodeType === StandardNodeType.Mcp) {
+      // Node add panel, drag and drop to add specific MCP nodes
+      return handleAddMcp(item, coord, isDrag);
+    }
+
     // Node add panel, drag and drop to add ordinary nodes
     editService.addNode(
       item.nodeType,
@@ -156,7 +193,8 @@ export const useAddNode = () => {
     openPlugin,
     openWorkflow,
     openImageflow,
+    openMcp,
     updateAddNodePosition,
-    modals: [workflowModal, pluginModal, imageFlowModal],
+    modals: [workflowModal, pluginModal, imageFlowModal, mcpModal],
   };
 };

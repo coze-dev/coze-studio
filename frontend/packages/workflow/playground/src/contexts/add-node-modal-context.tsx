@@ -28,7 +28,7 @@ import { useAddNode } from '@/hooks/use-add-node';
 export type AddNodeModalContextType = Partial<
   Pick<
     ReturnType<typeof useAddNode>,
-    'openImageflow' | 'openWorkflow' | 'openPlugin' | 'updateAddNodePosition'
+    'openImageflow' | 'openWorkflow' | 'openPlugin' | 'openMcp' | 'updateAddNodePosition'
   >
 >;
 export type AddNodeModalProviderRefType = AddNodeRef;
@@ -48,6 +48,7 @@ export const AddNodeModalProvider = forwardRef<
     openPlugin,
     openWorkflow,
     openImageflow,
+    openMcp,
   } = useAddNode();
   useImperativeHandle(
     ref,
@@ -63,7 +64,7 @@ export const AddNodeModalProvider = forwardRef<
   );
   return (
     <AddNodeModalContext.Provider
-      value={{ openPlugin, openWorkflow, openImageflow, updateAddNodePosition }}
+      value={{ openPlugin, openWorkflow, openImageflow, openMcp, updateAddNodePosition }}
     >
       {children}
       {modals}

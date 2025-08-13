@@ -161,6 +161,26 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
         });
       }
     });
+
+    // 为MCP节点添加默认模板配置（在后端支持之前的临时方案）
+    // 注意：不包含nodeJSON，以便触发选择弹窗
+    if (!this.nodeTemplateMap.has(StandardNodeType.Mcp)) {
+      const mcpTemplate = {
+        type: StandardNodeType.Mcp,
+        name: 'MCP工具',
+        desc: '调用MCP (Model Context Protocol) 工具',
+        icon_url:
+          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBzdHJva2U9IiM2MzY2RjEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjkiIHI9IjIiIGZpbGw9IiM2MzY2RjEiLz4KPC9zdmc+', // MCP工具图标（星形工具图标）
+        node_type: StandardNodeType.Mcp,
+        // 移除nodeJSON字段，让系统识别为需要弹窗选择的节点类型
+      };
+      this.nodeTemplateMap.set(StandardNodeType.Mcp, mcpTemplate);
+      console.log('🔧 MCP节点模板已添加（弹窗模式）:', mcpTemplate);
+      console.log('🔧 模板映射检查 - 当前所有模板类型:', Array.from(this.nodeTemplateMap.keys()));
+      console.log('🔧 MCP模板验证:', this.nodeTemplateMap.get(StandardNodeType.Mcp));
+    } else {
+      console.log('✅ MCP节点模板已存在于后端数据中');
+    }
   }
 
   getImageFlowNode(pluginId: string, apiName: string) {
@@ -262,6 +282,9 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     enabledNodeTypes: StandardNodeType[] = [],
     isSupportImageflowNodes = false,
   ): NodeCategory[] {
+    console.log('🔧 getTemplateCategoryList 被调用, enabledNodeTypes:', enabledNodeTypes);
+    console.log('🔧 MCP是否在启用列表中:', enabledNodeTypes.includes(StandardNodeType.Mcp));
+    
     const isBindDouyin = Boolean(this.globalState?.isBindDouyin);
     const nodeCategoryList =
       this.nodeCategoryList.length !== 0
@@ -273,6 +296,8 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
               node_type_list: enabledNodeTypes,
             },
           ];
+    
+    console.log('🔧 使用的分类列表:', nodeCategoryList);
     return nodeCategoryList
       .map(category => {
         const nodeList =

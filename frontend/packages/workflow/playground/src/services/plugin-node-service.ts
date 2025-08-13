@@ -141,7 +141,7 @@ export class PluginNodeService {
     this.state.clearError(identifier);
   }
 
-  async fetchData(identifier: ApiNodeIdentifier) {
+  fetchData(identifier: ApiNodeIdentifier) {
     const { spaceId, projectId } = this.globalState;
     return workflowQueryClient.fetchQuery({
       queryKey: [
@@ -156,8 +156,8 @@ export class PluginNodeService {
       // 1. Set up a 5s cache to ensure that the same request is only sent once in a process, and there will be no excessive performance degradation.
       // 2. api detail contains the input and output, version information of the plug-in, the data has real-time sensitivity, and there is no data lag.
       staleTime: STALE_TIME,
-      queryFn: async () =>
-        await workflowApi.GetApiDetail(
+      queryFn: () =>
+        workflowApi.GetApiDetail(
           {
             ...identifier,
             space_id: spaceId,

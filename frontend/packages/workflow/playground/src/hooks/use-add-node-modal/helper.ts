@@ -19,6 +19,8 @@ import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
 import { BlockInput } from '@coze-workflow/base';
 
+import { type McpService, type McpTool } from '@/types/mcp';
+
 interface PluginApi {
   name: string;
   plugin_name: string;
@@ -91,4 +93,31 @@ export const createSubWorkflowNodeInfo = ({
   };
 
   return nodeJson;
+};
+
+export const createMcpNodeInfo = (
+  mcpService: McpService,
+  tool: McpTool,
+  toolRuntimeParams?: Record<string, any>, // 运行时的实际参数值
+  templateIcon?: string,
+) => {
+  return {
+    data: {
+      nodeMeta: {
+        title: `${mcpService.mcpName} - ${tool.name}`,
+        description: tool.description,
+        icon: templateIcon,
+      },
+      inputs: {
+        mcpParam: [
+          BlockInput.create('mcpId', mcpService.mcpId),
+          BlockInput.create('mcpName', mcpService.mcpName),
+          BlockInput.create('toolName', tool.name),
+          BlockInput.create('toolSchema', tool.schema),
+          BlockInput.create('toolDescription', tool.description),
+          BlockInput.create('toolRuntimeParams', toolRuntimeParams || {}),
+        ],
+      },
+    },
+  };
 };
