@@ -143,3 +143,10 @@ export const ExplorePluginPage = lazy(() =>
     default: exps.PluginPage,
   })),
 );
+
+export const ExploreProjectPage = lazy(() =>
+  import('@coze-community/explore').then(exps => ({
+    default: exps.ProjectPage,
+  })),
+);
+

@@ -34,6 +34,12 @@ const mergedConfig = defineConfig({
         secure: false,
         changeOrigin: true,
       },
+      {
+        context: ['/aop-web'],
+        target: 'https://agent.finmall.com/',
+        secure: false,
+        changeOrigin: true,
+      },
     ],
   },
   html: {

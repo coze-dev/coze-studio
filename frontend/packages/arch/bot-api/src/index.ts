@@ -69,6 +69,8 @@ export { AgentInstanceInfo, AgentInfo } from './idl/card';
 
 export { permissionOAuth2Api } from './permission-oauth2-api';
 export { basicApi } from './basic-api';
+export { aopApi } from './aop-api';
+
 export { Resource } from './resource';
 export { intelligenceApi } from './intelligence-api';
 

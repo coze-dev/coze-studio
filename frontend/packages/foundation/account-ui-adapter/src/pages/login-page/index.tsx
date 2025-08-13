@@ -113,6 +113,12 @@ export const LoginPage: FC = () => {
                 type="password"
                 onChange={setPassword}
                 placeholder={I18n.t('open_source_login_placeholder_password')}
+                onKeyPress={e => {
+                  // 检查是否按下回车键且登录按钮可用
+                  if (e.key === 'Enter' && !submitDisabled) {
+                    login();
+                  }
+                }}
               />
             </Form>
             <Button
