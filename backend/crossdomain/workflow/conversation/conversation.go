@@ -39,7 +39,7 @@ func NewConversationRepository() *ConversationRepository {
 	return &ConversationRepository{}
 }
 
-func (c *ConversationRepository) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (int64, error) {
+func (c *ConversationRepository) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (int64, int64, error) {
 	ret, err := crossconversation.DefaultSVC().Create(ctx, &entity.CreateMeta{
 		AgentID:     req.AppID,
 		UserID:      req.UserID,
@@ -47,10 +47,14 @@ func (c *ConversationRepository) CreateConversation(ctx context.Context, req *co
 		Scene:       common.Scene_SceneWorkflow,
 	})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return ret.ID, nil
+	return ret.ID, ret.SectionID, nil
+}
+
+func (c *ConversationRepository) GetByID(ctx context.Context, id int64) (*entity.Conversation, error) {
+	return crossconversation.DefaultSVC().GetByID(ctx, id)
 }
 
 func (c *ConversationRepository) CreateMessage(ctx context.Context, req *conversation.CreateMessageRequest) (int64, error) {
@@ -62,8 +66,9 @@ func (c *ConversationRepository) CreateMessage(ctx context.Context, req *convers
 		UserID:         strconv.FormatInt(req.UserID, 10),
 		AgentID:        req.AppID,
 		RunID:          req.RunID,
+		SectionID:      req.SectionID,
 	}
-	if msg.Role == "user" {
+	if msg.Role == schema.User {
 		msg.MessageType = message.MessageTypeQuestion
 	} else {
 		msg.MessageType = message.MessageTypeAnswer
@@ -86,13 +91,12 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 	}
 	if req.BeforeID != nil {
 		lm.Cursor, _ = strconv.ParseInt(*req.BeforeID, 10, 64)
-		lm.Direction = msgentity.ScrollPageDirectionPrev
+		lm.Direction = msgentity.ScrollPageDirectionNext
 	}
 	if req.AfterID != nil {
 		lm.Cursor, _ = strconv.ParseInt(*req.AfterID, 10, 64)
-		lm.Direction = msgentity.ScrollPageDirectionNext
+		lm.Direction = msgentity.ScrollPageDirectionPrev
 	}
-	lm.Direction = msgentity.ScrollPageDirectionNext
 	lr, err := crossmessage.DefaultSVC().List(ctx, lm)
 	if err != nil {
 		return nil, err
@@ -117,14 +121,14 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 	return response, nil
 }
 
-func (c *ConversationRepository) ClearConversationHistory(ctx context.Context, req *conversation.ClearConversationHistoryReq) error {
-	_, err := crossconversation.DefaultSVC().NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+func (c *ConversationRepository) ClearConversationHistory(ctx context.Context, req *conversation.ClearConversationHistoryReq) (int64, error) {
+	resp, err := crossconversation.DefaultSVC().NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: req.ConversationID,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return resp.SectionID, nil
 
 }
 

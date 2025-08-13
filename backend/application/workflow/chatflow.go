@@ -20,11 +20,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"runtime/debug"
 	"strconv"
 	"strings"
+
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 
 	"github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
@@ -496,6 +497,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		appID, agentID *int64
 		resolveAppID   int64
 		conversationID int64
+		sectionID      int64
 		version        string
 		locator        vo.Locator
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
@@ -540,16 +542,22 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	if req.IsSetConversationID() {
 		conversationID = mustParseInt64(req.GetConversationID())
+		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
+		if err != nil {
+			return nil, err
+		}
+		sectionID = cInfo.SectionID
 	} else {
 		conversationName, ok := parameters["CONVERSATION_NAME"].(string)
 		if !ok {
 			return nil, fmt.Errorf("conversation name is requried")
 		}
-		cID, err := GetWorkflowDomainSVC().GetOrCreateConversation(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, userID, conversationName)
+		cID, sID, err := GetWorkflowDomainSVC().GetOrCreateConversation(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, userID, conversationName)
 		if err != nil {
 			return nil, err
 		}
 		conversationID = cID
+		sectionID = sID
 	}
 
 	roundID, err := w.IDGenerator.GenID(ctx)
@@ -557,7 +565,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		return nil, vo.WrapError(errno.ErrIDGenError, err)
 	}
 
-	userMessage, err := toConversationMessage(ctx, resolveAppID, conversationID, userID, roundID, message.MessageTypeQuestion, lastUserMessage)
+	userMessage, err := toConversationMessage(ctx, resolveAppID, conversationID, userID, roundID, sectionID, message.MessageTypeQuestion, lastUserMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -592,6 +600,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			AgentID:        agentID,
 			ConversationID: ptr.Of(conversationID),
 			RoundID:        ptr.Of(roundID),
+			SectionID:      ptr.Of(sectionID),
 		})
 		if err != nil {
 			uErr := unbinding()
@@ -611,7 +620,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	}
 
-	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, messages[:len(req.GetAdditionalMessages())-1])
+	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, messages[:len(req.GetAdditionalMessages())-1])
 	if err != nil {
 		return nil, err
 	}
@@ -655,8 +664,9 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		BizType:        vo.BizTypeWorkflow,
 		ConversationID: ptr.Of(conversationID),
 		RoundID:        ptr.Of(roundID),
+		SectionID:      ptr.Of(sectionID),
 		UserMessage:    userSchemaMessage,
-		Cancellable:    isDebug == true,
+		Cancellable:    isDebug,
 	}
 
 	parameters["USER_INPUT"], err = w.makeChatFlowUserInput(ctx, lastUserMessage)
@@ -715,7 +725,7 @@ func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message 
 	}
 
 }
-func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID int64, userID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
+func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
 
 	var (
 		rID int64
@@ -736,7 +746,7 @@ func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, ap
 			return nil, fmt.Errorf("invalid role type %v", msg.Role)
 		}
 
-		m, err := toConversationMessage(ctx, appID, conversationID, userID, rID, ternary.IFElse(msg.Role == userRole, message.MessageTypeQuestion, message.MessageTypeAnswer), msg)
+		m, err := toConversationMessage(ctx, appID, conversationID, userID, rID, sectionID, ternary.IFElse(msg.Role == userRole, message.MessageTypeQuestion, message.MessageTypeAnswer), msg)
 		if err != nil {
 			return nil, err
 		}
@@ -773,7 +783,7 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	if !req.GetGetOrCreate() {
 		cID, err = GetWorkflowDomainSVC().UpdateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	} else {
-		cID, err = GetWorkflowDomainSVC().GetOrCreateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
+		cID, _, err = GetWorkflowDomainSVC().GetOrCreateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	}
 	if err != nil {
 		return nil, err
@@ -792,7 +802,7 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	}, nil
 }
 
-func toConversationMessage(_ context.Context, appID int64, cid int64, userID int64, roundID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
+func toConversationMessage(_ context.Context, appID, cid, userID, roundID, sectionID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
 	type content struct {
 		Type   string  `json:"type"`
 		FileID *string `json:"file_id"`
@@ -808,6 +818,7 @@ func toConversationMessage(_ context.Context, appID int64, cid int64, userID int
 			ContentType:    message.ContentTypeText,
 			MessageType:    messageType,
 			UserID:         strconv.FormatInt(userID, 10),
+			SectionID:      sectionID,
 		}, nil
 
 	} else if msg.ContentType == "object_string" {
@@ -826,6 +837,7 @@ func toConversationMessage(_ context.Context, appID int64, cid int64, userID int
 			Content:        msg.Content,
 			ContentType:    message.ContentTypeMix,
 			MultiContent:   make([]*message.InputMetaData, 0, len(contents)),
+			SectionID:      sectionID,
 		}
 
 		for _, ct := range contents {

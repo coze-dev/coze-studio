@@ -43,6 +43,7 @@ type ExecuteConfig struct {
 	ConversationID      *int64 // if workflow is chat flow, conversation id is required
 	UserMessage         *schema.Message
 	ConversationHistory []*conversation.Message
+	SectionID           *int64
 }
 
 type ExecuteMode string

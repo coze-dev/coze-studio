@@ -75,7 +75,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 		version                 = execCtx.ExeCfg.Version
 		connectorID             = execCtx.ExeCfg.ConnectorID
 		userID                  = execCtx.ExeCfg.Operator
-		conversationIDGenerator = workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, error) {
+		conversationIDGenerator = workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
 			return c.Manager.CreateConversation(ctx, &conversation.CreateConversationRequest{
 				AppID:       appID,
 				UserID:      userID,
@@ -106,7 +106,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 	}
 
 	if existed {
-		cID, existed, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
+		cID, _, existed, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
 			AppID:       ptr.From(appID),
 			TemplateID:  template.TemplateID,
 			UserID:      userID,
@@ -122,7 +122,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 		}, nil
 	}
 
-	cID, existed, err := workflow.GetRepository().GetOrCreateDynamicConversation(ctx, env, conversationIDGenerator, &vo.CreateDynamicConversation{
+	cID, _, existed, err := workflow.GetRepository().GetOrCreateDynamicConversation(ctx, env, conversationIDGenerator, &vo.CreateDynamicConversation{
 		AppID:       ptr.From(appID),
 		UserID:      userID,
 		ConnectorID: connectorID,

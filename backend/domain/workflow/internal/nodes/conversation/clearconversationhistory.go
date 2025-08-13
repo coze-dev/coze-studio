@@ -123,12 +123,13 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 		}, nil
 	}
 
-	err = c.Manager.ClearConversationHistory(ctx, &conversation.ClearConversationHistoryReq{
+	sectionID, err := c.Manager.ClearConversationHistory(ctx, &conversation.ClearConversationHistoryReq{
 		ConversationID: conversationID,
 	})
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 	}
+	execCtx.ExeCfg.SectionID = ptr.Of(sectionID)
 	return map[string]any{
 		"isSuccess": true,
 	}, nil

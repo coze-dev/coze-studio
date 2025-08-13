@@ -76,7 +76,7 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 		return 0, vo.WrapError(errno.ErrConversationNodeInvalidOperation, err)
 	}
 
-	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, error) {
+	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
 		return c.Creator.CreateConversation(ctx, &conversation.CreateConversationRequest{
 			AppID:       appID,
 			UserID:      userID,
@@ -86,7 +86,7 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 
 	var conversationID int64
 	if isExist {
-		cID, _, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
+		cID, _, _, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
 			AppID:       ptr.From(appID),
 			TemplateID:  template.TemplateID,
 			UserID:      userID,
@@ -229,6 +229,21 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		}
 	}
 
+	var sectionID int64
+	if isCurrentConversation {
+		if execCtx.ExeCfg.SectionID != nil {
+			sectionID = *execCtx.ExeCfg.SectionID
+		} else {
+			return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("section id is required"))
+		}
+	} else {
+		cInfo, err := c.Creator.GetByID(ctx, conversationID)
+		if err != nil {
+			return nil, err
+		}
+		sectionID = cInfo.SectionID
+	}
+
 	mID, err := c.Creator.CreateMessage(ctx, &conversation.CreateMessageRequest{
 		ConversationID: conversationID,
 		Role:           role,
@@ -237,6 +252,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		UserID:         userID,
 		AppID:          resolvedAppID,
 		RunID:          runID,
+		SectionID:      sectionID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create message: %w", err)
