@@ -2025,7 +2025,7 @@
   "permission_manage_modal_title_hover_tip": "OAuth plugins allows third-party applications to access specific resources of a user's account without sharing the user's password. ",
   "photo-size-limit": "{fileName} size over 20MB",
   "pic_not_supported": "Currently, picture parsing of DOC type documents is not supported.",
-  "platform_name": "Coze",
+  "platform_name": "Falcon",
   "platfrom_trigger_creat_name": "Name",
   "platfrom_trigger_dialog_trigge_icon": "Triggers",
   "platfrom_triggers_title": "Triggers",
