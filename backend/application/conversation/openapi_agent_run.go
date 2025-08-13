@@ -22,6 +22,7 @@ import (
 	"errors"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -289,6 +290,7 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 				}
 			}
 			// 🔥 修复：确保处理所有消息事件，包括工具调用后的回复
+			// 对包含message_title的MessageCompleted消息添加ynet_type字段处理
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 
 		default:
@@ -311,6 +313,21 @@ func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
 		ChatID:           strconv.FormatInt(chunkMessageItem.RunID, 10),
 		ReasoningContent: chunkMessageItem.ReasoningContent,
 		CreatedAt:        ptr.Of(chunkMessageItem.CreatedAt / 1000),
+	}
+
+	// 🔥 添加ynet_type字段逻辑：根据message_title的存在和内容判断类型
+	if chunkMessage.MetaData != nil {
+		if messageTitle, exists := chunkMessage.MetaData["message_title"]; exists && messageTitle != "" {
+			// 如果存在message_title，根据content内容判断类型
+			if strings.HasPrefix(chunkMessage.Content, "THINKING-") {
+				// 如果content以"THINKING-"开头，设置为action类型，并去掉THINKING-前缀
+				chunkMessage.MetaData["ynet_type"] = "action"
+				chunkMessage.Content = strings.TrimPrefix(chunkMessage.Content, "THINKING-")
+			} else {
+				// 否则设置为tool_message类型
+				chunkMessage.MetaData["ynet_type"] = "tool_message"
+			}
+		}
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)
