@@ -53,8 +53,15 @@ export const BaseUploadImage = ({
       options: {
         onFinish: (result: { url?: string; tosKey?: string }) => {
           if (result.url && editor) {
-            // Insert pictures into the editor
-            editor.chain().focus().setImage({ src: result.url }).run();
+            // Insert pictures into the editor and set the tosKey
+            editor
+              .chain()
+              .focus()
+              .setImageWithTosKey({
+                src: result.url,
+                dataTosKey: result.tosKey ?? null,
+              })
+              .run();
           }
         },
       },
