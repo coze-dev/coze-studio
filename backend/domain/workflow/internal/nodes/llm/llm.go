@@ -328,7 +328,8 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 			}
 			p.TopP = &floatVar
 		default:
-			return nil, fmt.Errorf("invalid LLMParam name: %s", param.Name)
+			logs.Warnf("encountered unknown param when converting LLM Params, name= %s, "+
+				"value= %v", param.Name, param.Input.Value.Content)
 		}
 	}
 
