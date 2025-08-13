@@ -1452,14 +1452,14 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 			case entity.NodeTypeLLM:
 				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
 					for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
-						pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
-						pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
-						if err != nil {
-							return err
-						}
-
-						if pl.PluginVersion == "0" {
+						if node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx].IsDraft {
+							pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+							pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
+							if err != nil {
+								return err
+							}
 							ds.PluginIDs = append(ds.PluginIDs, pluginID)
+
 						}
 
 					}
@@ -1476,29 +1476,63 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 				}
 
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						if node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].IsDraft {
+							wID, err := strconv.ParseInt(node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].WorkflowID, 10, 64)
+							if err != nil {
+								return err
+							}
+
+							wfe, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+								ID:    wID,
+								QType: plugin.FromDraft,
+							})
+							if err != nil {
+								return err
+							}
+
+							workflowToolCanvas := &vo.Canvas{}
+							err = sonic.UnmarshalString(wfe.Canvas, workflowToolCanvas)
+							if err != nil {
+								return err
+							}
+
+							err = collectDependence(workflowToolCanvas.Nodes)
+							if err != nil {
+								return err
+							}
+						}
+
+					}
+
+				}
+
 			case entity.NodeTypeSubWorkflow:
-				wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
-				if err != nil {
-					return err
-				}
+				if node.Data.Inputs.WorkflowVersion == "" {
+					wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+					if err != nil {
+						return err
+					}
 
-				subWorkflow, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
-					ID:    wfID,
-					QType: plugin.FromDraft,
-				})
-				if err != nil {
-					return err
-				}
+					subWorkflow, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+						ID:    wfID,
+						QType: plugin.FromDraft,
+					})
+					if err != nil {
+						return err
+					}
 
-				subCanvas := &vo.Canvas{}
-				err = sonic.UnmarshalString(subWorkflow.Canvas, subCanvas)
-				if err != nil {
-					return err
-				}
+					subCanvas := &vo.Canvas{}
+					err = sonic.UnmarshalString(subWorkflow.Canvas, subCanvas)
+					if err != nil {
+						return err
+					}
 
-				err = collectDependence(subCanvas.Nodes)
-				if err != nil {
-					return err
+					err = collectDependence(subCanvas.Nodes)
+					if err != nil {
+						return err
+					}
 				}
 
 			}
@@ -1718,6 +1752,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 						wf.WorkflowID = strconv.FormatInt(refWf.ID, 10)
 						wf.WorkflowVersion = refWf.Version
 					}
+					node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx] = wf
 				}
 
 			}
@@ -1728,13 +1763,26 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 					if err != nil {
 						return err
 					}
+
+					toolID, err := strconv.ParseInt(pl.ApiId, 10, 64)
+					if err != nil {
+						return err
+					}
+
 					if refPlugin, ok := related.PluginMap[pluginID]; ok {
+						tID, ok := related.PluginToolMap[toolID]
+						if ok {
+							pl.ApiId = strconv.FormatInt(tID, 10)
+						}
 						pl.PluginID = strconv.FormatInt(refPlugin.PluginID, 10)
 						if refPlugin.PluginVersion != nil {
 							pl.PluginVersion = *refPlugin.PluginVersion
+
+							pl.IsDraft = false
 						}
 
 					}
+					node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx] = pl
 
 				}
 			}

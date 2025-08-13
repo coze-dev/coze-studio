@@ -253,7 +253,7 @@ type FCParam struct {
 				RequestParameters  []*workflow.APIParameter `json:"request_params"`
 				ResponseParameters []*workflow.APIParameter `json:"response_params"`
 			} `json:"fc_setting,omitempty"`
-		}
+		} `json:"pluginList,omitempty"`
 	} `json:"pluginFCParam,omitempty"`
 
 	KnowledgeFCParam *struct {
