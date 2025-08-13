@@ -35,9 +35,17 @@ const (
 	ErrConversationMessageNotFound = 103200001
 
 	ErrAgentRun = 103200002
+
+	ErrRecordNotFound = 103200003
 )
 
 func init() {
+	code.Register(
+		ErrRecordNotFound,
+		"record not found or nothing to update",
+		code.WithAffectStability(false),
+	)
+
 	code.Register(
 		ErrAgentRun,
 		"Interal Server Error",
