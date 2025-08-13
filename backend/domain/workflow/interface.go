@@ -22,7 +22,6 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -36,10 +35,10 @@ type Service interface {
 	Save(ctx context.Context, id int64, schema string) error
 	Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
 	MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error)
-	Delete(ctx context.Context, policy *vo.DeletePolicy) (err error)
+	Delete(ctx context.Context, policy *vo.DeletePolicy) (ids []int64, err error)
 	Publish(ctx context.Context, policy *vo.PublishPolicy) (err error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) (err error)
-	CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (*entity.Workflow, error)
+	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
 
 	QueryNodeProperties(ctx context.Context, id int64) (map[string]*vo.NodeProperty, error) // only draft
 	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)
@@ -50,10 +49,10 @@ type Service interface {
 	AsTool
 
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
-	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, related plugin.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error)
-	DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related plugin.ExternalResourceRelated) error
-	GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*plugin.DependenceResource, error)
-	SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related plugin.ExternalResourceRelated) error
+	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, related vo.ExternalResourceRelated) (*entity.CopyWorkflowFromAppToLibraryResult, error)
+	DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related vo.ExternalResourceRelated) ([]*entity.Workflow, error)
+	GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error)
+	SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error
 }
 
 type Repository interface {
@@ -88,7 +87,7 @@ type Repository interface {
 
 	WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
 
-	CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (*entity.Workflow, error)
+	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
 
 	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
 

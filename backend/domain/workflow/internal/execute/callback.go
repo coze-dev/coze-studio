@@ -35,7 +35,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -65,7 +65,7 @@ type WorkflowHandler struct {
 	nodeCount          int32
 	requireCheckpoint  bool
 	resumeEvent        *entity.InterruptEvent
-	exeCfg             plugin.ExecuteConfig
+	exeCfg             workflowModel.ExecuteConfig
 	rootTokenCollector *TokenCollector
 }
 
@@ -75,7 +75,7 @@ type ToolHandler struct {
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
-	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg plugin.ExecuteConfig, nodeCount int32,
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg workflowModel.ExecuteConfig, nodeCount int32,
 ) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,

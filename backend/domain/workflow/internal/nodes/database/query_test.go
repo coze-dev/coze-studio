@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -57,10 +57,10 @@ func (m *mockDsSelect) Query() func(ctx context.Context, request *database.Query
 func TestDataset_Query(t *testing.T) {
 	defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
 		RootCtx: execute.RootCtx{
-			ExeCfg: plugin.ExecuteConfig{
-				Mode:     plugin.ExecuteModeDebug,
+			ExeCfg: workflowModel.ExecuteConfig{
+				Mode:     workflowModel.ExecuteModeDebug,
 				Operator: 123,
-				BizType:  plugin.BizTypeWorkflow,
+				BizType:  workflowModel.BizTypeWorkflow,
 			},
 		},
 	}).Build().UnPatch()

@@ -225,8 +225,8 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ALLOW_NONE_AUTHENTICATION=yes
     ports:
-      - 2379:2379
-      - 2380:2380
+      - '2379'
+      - '2380'
     volumes:
       - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
       - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z

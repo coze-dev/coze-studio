@@ -19,7 +19,7 @@ package entity
 import (
 	"time"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 )
 
@@ -31,7 +31,7 @@ type WorkflowExecution struct {
 	WorkflowID int64
 	Version    string
 	SpaceID    int64
-	model.ExecuteConfig
+	workflowModel.ExecuteConfig
 	CreatedAt time.Time
 	LogID     string
 	NodeCount int32

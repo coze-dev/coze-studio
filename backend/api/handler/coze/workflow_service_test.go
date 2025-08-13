@@ -52,6 +52,7 @@ import (
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -76,10 +77,9 @@ import (
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search/searchmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	mockvar "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable/varmock"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -116,7 +116,6 @@ type wfTestRunner struct {
 	h             *server.Hertz
 	ctrl          *gomock.Controller
 	idGen         *mock.MockIDGenerator
-	search        *searchmock.MockNotifier
 	appVarS       *mockvar.MockStore
 	userVarS      *mockvar.MockStore
 	varGetter     *mockvar.MockVariablesMetaGetter
@@ -252,10 +251,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, utChatModel)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-
-	mockSearchNotify := searchmock.NewMockNotifier(ctrl)
-	mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
-	mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
 
 	mockCU := mockCrossUser.NewMockUser(ctrl)
 	mockCU.EXPECT().GetUserSpaceList(gomock.Any(), gomock.Any()).Return([]*crossuser.EntitySpace{
@@ -320,7 +316,6 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		h:             h,
 		ctrl:          ctrl,
 		idGen:         mockIDGen,
-		search:        mockSearchNotify,
 		appVarS:       mockGlobalAppVarStore,
 		userVarS:      mockGlobalUserVarStore,
 		varGetter:     mockVarGetter,
@@ -3697,7 +3692,7 @@ func TestCopyWorkflow(t *testing.T) {
 
 		_, err := appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
 			ID:       wid,
-			QType:    plugin2.FromDraft,
+			QType:    workflowModel.FromDraft,
 			CommitID: "",
 		})
 		assert.NotNil(t, err)
@@ -3759,7 +3754,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 
 		wf, err = appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
 			ID:      100100100100,
-			QType:   plugin2.FromSpecificVersion,
+			QType:   workflowModel.FromSpecificVersion,
 			Version: version,
 		})
 		assert.NoError(t, err)
@@ -4039,7 +4034,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 	mockey.PatchConvey("copy with subworkflow, subworkflow with external resource ", t, func() {
 		var copiedIDs = make([]int64, 0)
-		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var mockPublishWorkflowResource func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error
 		var ignoreIDs = map[int64]bool{
 			7515027325977624576: true,
 			7515027249628708864: true,
@@ -4047,15 +4042,15 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			7515027150387281920: true,
 			7515027091302121472: true,
 		}
-		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
-			if ignoreIDs[event.WorkflowID] {
+		mockPublishWorkflowResource = func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error {
+			if ignoreIDs[workflowID] {
 				return nil
 			}
 			wf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
-				ID:    event.WorkflowID,
-				QType: plugin2.FromLatestVersion,
+				ID:    workflowID,
+				QType: workflowModel.FromLatestVersion,
 			})
-			copiedIDs = append(copiedIDs, event.WorkflowID)
+			copiedIDs = append(copiedIDs, workflowID)
 			assert.NoError(t, err)
 			assert.Equal(t, "v0.0.1", wf.Version)
 			canvas := &vo.Canvas{}
@@ -4095,7 +4090,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 						subWf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 							ID:    wfId,
-							QType: plugin2.FromLatestVersion,
+							QType: workflowModel.FromLatestVersion,
 						})
 						assert.NoError(t, err)
 						subworkflowCanvas := &vo.Canvas{}
@@ -4144,7 +4139,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 		}
 
-		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+		mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
 
 		appID := "7513788954458456064"
 		appIDInt64, _ := strconv.ParseInt(appID, 10, 64)
@@ -4187,21 +4182,21 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 	mockey.PatchConvey("copy only with external resource", t, func() {
 		var copiedIDs = make([]int64, 0)
-		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var mockPublishWorkflowResource func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error
 		var ignoreIDs = map[int64]bool{
 			7516518409656336384: true,
 			7516516198096306176: true,
 		}
-		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
-			if ignoreIDs[event.WorkflowID] {
+		mockPublishWorkflowResource = func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error {
+			if ignoreIDs[workflowID] {
 				return nil
 			}
 			wf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
-				ID:    event.WorkflowID,
-				QType: plugin2.FromLatestVersion,
+				ID:    workflowID,
+				QType: workflowModel.FromLatestVersion,
 			})
 
-			copiedIDs = append(copiedIDs, event.WorkflowID)
+			copiedIDs = append(copiedIDs, workflowID)
 			assert.NoError(t, err)
 			assert.Equal(t, "v0.0.1", wf.Version)
 			canvas := &vo.Canvas{}
@@ -4255,8 +4250,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			return nil
 
 		}
-
-		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+		mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
 
 		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
 			TargetKnowledgeID: 100100,
@@ -4316,21 +4310,21 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 		t.Run("move workflow", func(t *testing.T) {
 
-			var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+			var mockPublishWorkflowResource func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error
 
 			named2Idx := []string{"c1", "c2", "cc1", "main"}
 			callCount := 0
 			initialWf2ID := map[string]int64{}
 			old2newID := map[int64]int64{}
-			mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+			mockPublishWorkflowResource = func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error {
 				if callCount <= 3 {
-					initialWf2ID[named2Idx[callCount]] = event.WorkflowID
+					initialWf2ID[named2Idx[callCount]] = workflowID
 					callCount++
 					return nil
 				}
-				if OpType == crosssearch.Created {
-					if oldID, ok := initialWf2ID[*event.Name]; ok {
-						old2newID[oldID] = event.WorkflowID
+				if op == search.Created {
+					if oldID, ok := initialWf2ID[*r.Name]; ok {
+						old2newID[oldID] = workflowID
 					}
 				}
 
@@ -4338,7 +4332,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 			}
 
-			r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+			mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
 
 			defer mockey.Mock((*appknowledge.KnowledgeApplicationService).MoveKnowledgeToLibrary).Return(nil).Build().UnPatch()
 			defer mockey.Mock((*appmemory.DatabaseApplicationService).MoveDatabaseToLibrary).Return(&appmemory.MoveDatabaseToLibraryResponse{}, nil).Build().UnPatch()
@@ -4475,7 +4469,7 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 
 		r.varGetter.EXPECT().GetAppVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 		var copiedIDs = make([]int64, 0)
-		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var mockPublishWorkflowResource func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error
 		var ignoreIDs = map[int64]bool{
 			7515027325977624576: true,
 			7515027249628708864: true,
@@ -4484,16 +4478,16 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 			7515027091302121472: true,
 			7515027325977624579: true,
 		}
-		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
-			if ignoreIDs[event.WorkflowID] {
+		mockPublishWorkflowResource = func(ctx context.Context, workflowID int64, mode *int32, op search.OpType, r *search.ResourceDocument) error {
+			if ignoreIDs[workflowID] {
 				return nil
 			}
-			copiedIDs = append(copiedIDs, event.WorkflowID)
+			copiedIDs = append(copiedIDs, workflowID)
 			return nil
 
 		}
 
-		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+		mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
 
 		appIDInt64 := int64(7513788954458456064)
 

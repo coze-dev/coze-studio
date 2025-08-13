@@ -15,6 +15,7 @@ import (
 
 	schema "github.com/cloudwego/eino/schema"
 	plugin "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	plugin0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -86,7 +87,7 @@ func (mr *MockPluginServiceMockRecorder) DuplicateDraftAgentTools(ctx, fromAgent
 }
 
 // ExecutePlugin mocks base method.
-func (m *MockPluginService) ExecutePlugin(ctx context.Context, input map[string]any, pe *plugin.PluginEntity, toolID int64, cfg plugin.ExecuteConfig) (map[string]any, error) {
+func (m *MockPluginService) ExecutePlugin(ctx context.Context, input map[string]any, pe *plugin.PluginEntity, toolID int64, cfg workflow.ExecuteConfig) (map[string]any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExecutePlugin", ctx, input, pe, toolID, cfg)
 	ret0, _ := ret[0].(map[string]any)
@@ -308,7 +309,7 @@ func (mr *MockInvokableToolMockRecorder) Info(ctx any) *gomock.Call {
 }
 
 // PluginInvoke mocks base method.
-func (m *MockInvokableTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg plugin.ExecuteConfig) (string, error) {
+func (m *MockInvokableTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg workflow.ExecuteConfig) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PluginInvoke", ctx, argumentsInJSON, cfg)
 	ret0, _ := ret[0].(string)

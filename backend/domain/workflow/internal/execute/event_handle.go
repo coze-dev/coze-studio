@@ -27,7 +27,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -64,7 +64,7 @@ func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Rep
 
 	rootWkID := event.RootWorkflowBasic.ID
 	exeCfg := event.ExeCfg
-	if exeCfg.Mode == plugin.ExecuteModeDebug {
+	if exeCfg.Mode == workflowModel.ExecuteModeDebug {
 		if err := repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
 			return fmt.Errorf("failed to save workflow draft test run success: %v", err)
 		}
@@ -726,7 +726,7 @@ func HandleExecuteEvent(ctx context.Context,
 	timeoutFn context.CancelFunc,
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message],
-	exeCfg plugin.ExecuteConfig,
+	exeCfg workflowModel.ExecuteConfig,
 ) (event *Event) {
 	var (
 		wfSuccessEvent *Event
@@ -761,7 +761,7 @@ func HandleExecuteEvent(ctx context.Context,
 			return event
 		case workflowSuccess: // workflow success, wait for exit node to be done
 			wfSuccessEvent = event
-			if lastNodeIsDone || exeCfg.Mode == plugin.ExecuteModeNodeDebug {
+			if lastNodeIsDone || exeCfg.Mode == workflowModel.ExecuteModeNodeDebug {
 				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 					logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
 						wfSuccessEvent.RootWorkflowBasic.ID, err)

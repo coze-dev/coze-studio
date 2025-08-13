@@ -25,7 +25,8 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -291,8 +292,8 @@ func llmToolCallbackOptions(ctx context.Context, ns *schema2.NodeSchema, eventCh
 					return nil, err
 				}
 
-				toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &model.ToolsInfoRequest{
-					PluginEntity: model.PluginEntity{
+				toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
+					PluginEntity: plugin.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: ptr.Of(p.PluginVersion),
 					},
