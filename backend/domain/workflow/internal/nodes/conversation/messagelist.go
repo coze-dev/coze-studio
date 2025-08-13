@@ -20,9 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -31,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -75,14 +76,14 @@ func (m *MessageList) getConversationIDByName(ctx context.Context, env vo.Env, a
 	})
 
 	if err != nil {
-		return 0, vo.WrapError(errno.ErrConversationNodeInvalidOperation, err)
+		return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	var conversationID int64
 	if isExist {
 		sc, _, err := workflow.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
 		if err != nil {
-			return 0, vo.WrapError(errno.ErrConversationNodeInvalidOperation, err)
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if sc != nil {
 			conversationID = sc.ConversationID
@@ -90,7 +91,7 @@ func (m *MessageList) getConversationIDByName(ctx context.Context, env vo.Env, a
 	} else {
 		dc, _, err := workflow.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return 0, vo.WrapError(errno.ErrConversationNodeInvalidOperation, err)
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if dc != nil {
 			conversationID = dc.ConversationID

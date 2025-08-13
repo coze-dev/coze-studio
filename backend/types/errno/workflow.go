@@ -42,9 +42,11 @@ const (
 	ErrConversationOfAppNotFound                   = 720702201
 	ErrConversationNodeInvalidOperation            = 720702250
 	ErrOnlyDefaultConversationAllowInAgentScenario = 720712033
+	ErrConversationNodesNotAvailable               = 702093204
 )
 
 const (
+	ErrMessageNodeOperationFail         = 777777781
 	ErrChatFlowRoleOperationFail        = 777777780
 	ErrConversationOfAppOperationFail   = 777777779
 	ErrWorkflowSpecifiedVersionNotFound = 777777778
@@ -63,7 +65,6 @@ const (
 	ErrAuthorizationRequired            = 777777765
 	ErrVariablesAPIFail                 = 777777764
 	ErrInputFieldMissing                = 777777763
-	ErrConversationNodesNotAvailable    = 702093204
 )
 
 // stability problems
@@ -132,6 +133,12 @@ func init() {
 	code.Register(
 		ErrChatFlowRoleOperationFail,
 		"ChatFlowRole operation failure: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMessageNodeOperationFail,
+		"Message node operation failure: {cause}",
 		code.WithAffectStability(false),
 	)
 
