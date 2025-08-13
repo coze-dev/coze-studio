@@ -145,6 +145,10 @@ func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Messa
 	if err != nil {
 		return 0, err
 	}
+	if do.RowsAffected == 0 {
+		return 0, errorx.New(errno.ErrRecordNotFound)
+	}
+
 	return do.RowsAffected, nil
 }
 
