@@ -3847,9 +3847,11 @@
   "worklfow_trigger_bind_delete": "绑定的工作流已失效",
   "worklfow_without_run": "工作流未运行",
   "workspace_create": "创建",
+  "workspace_create_mcp": "创建MCP服务",
   "workspace_develop": "项目开发",
   "workspace_mcp": "MCP资源库",
   "workspace_develop_search_project": "搜索项目",
+  "workspace_mcp_search_service": "搜索MCP服务",
   "workspace_library_search": "搜索资源",
   "workspace_no_permission_access": "无法查看空间"
 }

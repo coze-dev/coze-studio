@@ -3799,9 +3799,11 @@
   "worklfow_trigger_bind_delete": "The bound workflow is invalid",
   "worklfow_without_run": "Workflow is not running",
   "workspace_create": "Create",
+  "workspace_create_mcp": "Create MCP Service",
   "workspace_develop": "Development",
   "workspace_mcp": "MCP Resource Library",
   "workspace_develop_search_project": "Search for projects",
+  "workspace_mcp_search_service": "Search for MCP services",
   "workspace_library_search": "Search resources",
   "workspace_no_permission_access": "No permission to access this workspace."
 }

@@ -39,7 +39,7 @@ export default class ApoApiService<T> {
     ): Promise<R>;
   }) {
     this.request = options?.request || this.request;
-    this.baseURL = options?.baseURL || '';
+    this.baseURL = options?.baseURL || '/aop-web/';
   }
 
   private genBaseURL(path: string) {
@@ -48,9 +48,9 @@ export default class ApoApiService<T> {
       : this.baseURL(path);
   }
 
-  GetMCPCount(req?: any, options?: T): Promise<any> {
+  GetMCPTypes(req?: any, options?: T): Promise<any> {
     const _req = req || {};
-    const url = this.genBaseURL('/aop-web/MCP0016.do');
+    const url = this.genBaseURL('MCP0016.do');
     const method = 'POST';
     const data = _req;
     return this.request({ url, method, data }, options);
@@ -58,7 +58,67 @@ export default class ApoApiService<T> {
 
   GetMCPList(req?: any, options?: T): Promise<any> {
     const _req = req || {};
-    const url = this.genBaseURL('/aop-web/MCP0010.do');
+    const url = this.genBaseURL('MCP0010.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  GetMCPResourceList(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0003.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  StopMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0012.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  StartMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0011.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 上架服务
+  ApplyMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0005.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 下架服务
+  UnApplyMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0006.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 删除服务
+  DeleteMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0002.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 添加&编辑服务
+  AddEditMCPResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0001.do');
     const method = 'POST';
     const data = _req;
     return this.request({ url, method, data }, options);

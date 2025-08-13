@@ -1,0 +1,55 @@
+.panel {
+  border-top: 1px solid #e8e8e8;
+}
+
+.action {
+  cursor: pointer;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  & + .action {
+    border-left: 1px solid #e8e8e8;
+  }
+
+  &:before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: url('./assets/stop.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.start {
+  &:before {
+    background: url('./assets/start.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.apply {
+  &:before {
+    background: url('./assets/apply.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.unshelve {
+  &:before {
+    background: url('./assets/unshelve.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.more {
+  &:before {
+    background: url('./assets/more.svg') no-repeat 0 0 / cover;
+  }
+}
+
+
+.statusRunning {
+  width: 14px;
+  height: 14px;
+  background: url('./assets/done.svg') no-repeat 0 0 / cover;
+}
