@@ -30,6 +30,7 @@ type Message interface {
 	List(ctx context.Context, meta *entity.ListMeta) (*entity.ListResult, error)
 	Edit(ctx context.Context, msg *message.Message) (*message.Message, error)
 	Delete(ctx context.Context, req *entity.DeleteMeta) error
+	GetMessageByID(ctx context.Context, id int64) (*entity.Message, error)
 }
 
 var defaultSVC Message

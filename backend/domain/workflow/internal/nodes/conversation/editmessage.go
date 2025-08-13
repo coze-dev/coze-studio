@@ -20,9 +20,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -31,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -97,7 +99,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 
 	messageID, err := strconv.ParseInt(messageStr, 10, 64)
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	newContent, ok := input["newContent"].(string)
@@ -116,9 +118,22 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 
 		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		return successMap, err
+	}
+
+	msg, err := message.DefaultSVC().GetMessageByID(ctx, messageID)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg == nil {
+		return nil, vo.NewError(errno.ErrMessageNodeOperationFail, errorx.KV("cause", "message not found"))
+	}
+
+	if msg.Content == newContent {
+		return successMap, nil
 	}
 
 	t, existed, err := workflow.GetRepository().GetConversationTemplate(ctx, env, vo.GetConversationTemplatePolicy{
@@ -127,13 +142,13 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 		Version: ptr.Of(version),
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	if existed {
 		sts, existed, err := workflow.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		if !existed {
@@ -142,7 +157,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 
 		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		return successMap, nil
@@ -150,7 +165,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 	} else {
 		dyConversation, existed, err := workflow.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		if !existed {
@@ -159,7 +174,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 
 		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 
 		return successMap, nil
