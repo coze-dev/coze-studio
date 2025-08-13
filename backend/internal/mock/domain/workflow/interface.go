@@ -16,9 +16,9 @@ import (
 	model "github.com/cloudwego/eino/components/model"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
-	plugin "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	workflow "github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	workflow0 "github.com/coze-dev/coze-studio/backend/domain/workflow"
+	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflow0 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	workflow1 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	entity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	vo "github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	gomock "go.uber.org/mock/gomock"
@@ -49,7 +49,7 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // AsyncExecute mocks base method.
-func (m *MockService) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
+func (m *MockService) AsyncExecute(ctx context.Context, config workflow.ExecuteConfig, input map[string]any) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncExecute", ctx, config, input)
 	ret0, _ := ret[0].(int64)
@@ -64,7 +64,7 @@ func (mr *MockServiceMockRecorder) AsyncExecute(ctx, config, input any) *gomock.
 }
 
 // AsyncExecuteNode mocks base method.
-func (m *MockService) AsyncExecuteNode(ctx context.Context, nodeID string, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
+func (m *MockService) AsyncExecuteNode(ctx context.Context, nodeID string, config workflow.ExecuteConfig, input map[string]any) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncExecuteNode", ctx, nodeID, config, input)
 	ret0, _ := ret[0].(int64)
@@ -79,7 +79,7 @@ func (mr *MockServiceMockRecorder) AsyncExecuteNode(ctx, nodeID, config, input a
 }
 
 // AsyncResume mocks base method.
-func (m *MockService) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) error {
+func (m *MockService) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config workflow.ExecuteConfig) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncResume", ctx, req, config)
 	ret0, _ := ret[0].(error)
@@ -107,7 +107,7 @@ func (mr *MockServiceMockRecorder) Cancel(ctx, wfExeID, wfID, spaceID any) *gomo
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (*entity.Workflow, error) {
+func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, policy)
 	ret0, _ := ret[0].(*entity.Workflow)
@@ -122,13 +122,12 @@ func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, workflowID, policy any) *go
 }
 
 // CopyWorkflowFromAppToLibrary mocks base method.
-func (m *MockService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID, appID int64, related plugin.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error) {
+func (m *MockService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID, appID int64, related vo.ExternalResourceRelated) (*entity.CopyWorkflowFromAppToLibraryResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, appID, related)
-	ret0, _ := ret[0].(map[int64]entity.IDVersionPair)
-	ret1, _ := ret[1].([]*vo.ValidateIssue)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(*entity.CopyWorkflowFromAppToLibraryResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CopyWorkflowFromAppToLibrary indicates an expected call of CopyWorkflowFromAppToLibrary.
@@ -153,11 +152,12 @@ func (mr *MockServiceMockRecorder) Create(ctx, meta any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockService) Delete(ctx context.Context, policy *vo.DeletePolicy) error {
+func (m *MockService) Delete(ctx context.Context, policy *vo.DeletePolicy) ([]int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, policy)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
@@ -167,11 +167,12 @@ func (mr *MockServiceMockRecorder) Delete(ctx, policy any) *gomock.Call {
 }
 
 // DuplicateWorkflowsByAppID mocks base method.
-func (m *MockService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related plugin.ExternalResourceRelated) error {
+func (m *MockService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related vo.ExternalResourceRelated) ([]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DuplicateWorkflowsByAppID", ctx, sourceAPPID, targetAppID, related)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DuplicateWorkflowsByAppID indicates an expected call of DuplicateWorkflowsByAppID.
@@ -260,10 +261,10 @@ func (mr *MockServiceMockRecorder) GetNodeExecution(ctx, exeID, nodeID any) *gom
 }
 
 // GetWorkflowDependenceResource mocks base method.
-func (m *MockService) GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*plugin.DependenceResource, error) {
+func (m *MockService) GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWorkflowDependenceResource", ctx, workflowID)
-	ret0, _ := ret[0].(*plugin.DependenceResource)
+	ret0, _ := ret[0].(*vo.DependenceResource)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -380,7 +381,7 @@ func (mr *MockServiceMockRecorder) Save(ctx, id, arg2 any) *gomock.Call {
 }
 
 // StreamExecute mocks base method.
-func (m *MockService) StreamExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
+func (m *MockService) StreamExecute(ctx context.Context, config workflow.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StreamExecute", ctx, config, input)
 	ret0, _ := ret[0].(*schema.StreamReader[*entity.Message])
@@ -395,7 +396,7 @@ func (mr *MockServiceMockRecorder) StreamExecute(ctx, config, input any) *gomock
 }
 
 // StreamResume mocks base method.
-func (m *MockService) StreamResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) (*schema.StreamReader[*entity.Message], error) {
+func (m *MockService) StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflow.ExecuteConfig) (*schema.StreamReader[*entity.Message], error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StreamResume", ctx, req, config)
 	ret0, _ := ret[0].(*schema.StreamReader[*entity.Message])
@@ -410,7 +411,7 @@ func (mr *MockServiceMockRecorder) StreamResume(ctx, req, config any) *gomock.Ca
 }
 
 // SyncExecute mocks base method.
-func (m *MockService) SyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
+func (m *MockService) SyncExecute(ctx context.Context, config workflow.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncExecute", ctx, config, input)
 	ret0, _ := ret[0].(*entity.WorkflowExecution)
@@ -426,7 +427,7 @@ func (mr *MockServiceMockRecorder) SyncExecute(ctx, config, input any) *gomock.C
 }
 
 // SyncRelatedWorkflowResources mocks base method.
-func (m *MockService) SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related plugin.ExternalResourceRelated) error {
+func (m *MockService) SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncRelatedWorkflowResources", ctx, appID, relatedWorkflows, related)
 	ret0, _ := ret[0].(error)
@@ -454,10 +455,10 @@ func (mr *MockServiceMockRecorder) UpdateMeta(ctx, id, metaUpdate any) *gomock.C
 }
 
 // ValidateTree mocks base method.
-func (m *MockService) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error) {
+func (m *MockService) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow0.ValidateTreeInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateTree", ctx, id, validateConfig)
-	ret0, _ := ret[0].([]*workflow.ValidateTreeInfo)
+	ret0, _ := ret[0].([]*workflow0.ValidateTreeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -469,7 +470,7 @@ func (mr *MockServiceMockRecorder) ValidateTree(ctx, id, validateConfig any) *go
 }
 
 // WithExecuteConfig mocks base method.
-func (m *MockService) WithExecuteConfig(cfg plugin.ExecuteConfig) compose.Option {
+func (m *MockService) WithExecuteConfig(cfg workflow.ExecuteConfig) compose.Option {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WithExecuteConfig", cfg)
 	ret0, _ := ret[0].(compose.Option)
@@ -512,10 +513,10 @@ func (mr *MockServiceMockRecorder) WithResumeToolWorkflow(resumingEvent, resumeD
 }
 
 // WorkflowAsModelTool mocks base method.
-func (m *MockService) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow0.ToolFromWorkflow, error) {
+func (m *MockService) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow1.ToolFromWorkflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WorkflowAsModelTool", ctx, policies)
-	ret0, _ := ret[0].([]workflow0.ToolFromWorkflow)
+	ret0, _ := ret[0].([]workflow1.ToolFromWorkflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -579,7 +580,7 @@ func (mr *MockRepositoryMockRecorder) CancelAllRunningNodes(ctx, wfExeID any) *g
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockRepository) CopyWorkflow(ctx context.Context, workflowID int64, policy plugin.CopyWorkflowPolicy) (*entity.Workflow, error) {
+func (m *MockRepository) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, policy)
 	ret0, _ := ret[0].(*entity.Workflow)
@@ -1262,10 +1263,10 @@ func (mr *MockRepositoryMockRecorder) UpdateWorkflowExecution(ctx, execution, al
 }
 
 // WorkflowAsTool mocks base method.
-func (m *MockRepository) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (workflow0.ToolFromWorkflow, error) {
+func (m *MockRepository) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (workflow1.ToolFromWorkflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WorkflowAsTool", ctx, policy, wfToolConfig)
-	ret0, _ := ret[0].(workflow0.ToolFromWorkflow)
+	ret0, _ := ret[0].(workflow1.ToolFromWorkflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

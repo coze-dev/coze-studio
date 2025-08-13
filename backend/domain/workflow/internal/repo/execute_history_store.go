@@ -25,7 +25,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
@@ -52,21 +52,21 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 	}()
 
 	var mode int32
-	if execution.Mode == plugin.ExecuteModeDebug {
+	if execution.Mode == workflowModel.ExecuteModeDebug {
 		mode = 1
-	} else if execution.Mode == plugin.ExecuteModeRelease {
+	} else if execution.Mode == workflowModel.ExecuteModeRelease {
 		mode = 2
-	} else if execution.Mode == plugin.ExecuteModeNodeDebug {
+	} else if execution.Mode == workflowModel.ExecuteModeNodeDebug {
 		mode = 3
 	}
 
 	var syncPattern int32
 	switch execution.SyncPattern {
-	case plugin.SyncPatternSync:
+	case workflowModel.SyncPatternSync:
 		syncPattern = 1
-	case plugin.SyncPatternAsync:
+	case workflowModel.SyncPatternAsync:
 		syncPattern = 2
-	case plugin.SyncPatternStream:
+	case workflowModel.SyncPatternStream:
 		syncPattern = 3
 	default:
 	}
@@ -212,23 +212,23 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 	}
 
 	rootExe := rootExes[0]
-	var exeMode plugin.ExecuteMode
+	var exeMode workflowModel.ExecuteMode
 	if rootExe.Mode == 1 {
-		exeMode = plugin.ExecuteModeDebug
+		exeMode = workflowModel.ExecuteModeDebug
 	} else if rootExe.Mode == 2 {
-		exeMode = plugin.ExecuteModeRelease
+		exeMode = workflowModel.ExecuteModeRelease
 	} else {
-		exeMode = plugin.ExecuteModeNodeDebug
+		exeMode = workflowModel.ExecuteModeNodeDebug
 	}
 
-	var syncPattern plugin.SyncPattern
+	var syncPattern workflowModel.SyncPattern
 	switch rootExe.SyncPattern {
 	case 1:
-		syncPattern = plugin.SyncPatternSync
+		syncPattern = workflowModel.SyncPatternSync
 	case 2:
-		syncPattern = plugin.SyncPatternAsync
+		syncPattern = workflowModel.SyncPatternAsync
 	case 3:
-		syncPattern = plugin.SyncPatternStream
+		syncPattern = workflowModel.SyncPatternStream
 	default:
 	}
 
@@ -237,7 +237,7 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		WorkflowID: rootExe.WorkflowID,
 		Version:    rootExe.Version,
 		SpaceID:    rootExe.SpaceID,
-		ExecuteConfig: plugin.ExecuteConfig{
+		ExecuteConfig: workflowModel.ExecuteConfig{
 			Operator:     rootExe.OperatorID,
 			Mode:         exeMode,
 			AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),

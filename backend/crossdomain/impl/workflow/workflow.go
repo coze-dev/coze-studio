@@ -23,7 +23,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -51,16 +51,6 @@ func (i *impl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy
 	return i.DomainSVC.WorkflowAsModelTool(ctx, policies)
 }
 
-func (i *impl) PublishWorkflow(ctx context.Context, info *vo.PublishPolicy) (err error) {
-	return i.DomainSVC.Publish(ctx, info)
-}
-
-func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
-	return i.DomainSVC.Delete(ctx, &vo.DeletePolicy{
-		ID: ptr.Of(id),
-	})
-}
-
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
 	return i.DomainSVC.ReleaseApplicationWorkflows(ctx, appID, config)
 }
@@ -68,11 +58,11 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option {
 	return i.DomainSVC.WithResumeToolWorkflow(resumingEvent, resumeData, allInterruptEvents)
 }
-func (i *impl) SyncExecuteWorkflow(ctx context.Context, config model.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
+func (i *impl) SyncExecuteWorkflow(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
 	return i.DomainSVC.SyncExecute(ctx, config, input)
 }
 
-func (i *impl) WithExecuteConfig(cfg model.ExecuteConfig) einoCompose.Option {
+func (i *impl) WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option {
 	return i.DomainSVC.WithExecuteConfig(cfg)
 }
 

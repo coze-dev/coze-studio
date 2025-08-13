@@ -27,6 +27,7 @@ import (
 	"golang.org/x/exp/maps"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
@@ -341,7 +342,7 @@ func (s *impl) GetPluginInvokableTools(ctx context.Context, req *model.ToolsInvo
 }
 
 func (s *impl) ExecutePlugin(ctx context.Context, input map[string]any, pe *model.PluginEntity,
-	toolID int64, cfg model.ExecuteConfig) (map[string]any, error) {
+	toolID int64, cfg workflowModel.ExecuteConfig) (map[string]any, error) {
 	args, err := sonic.MarshalString(input)
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
@@ -447,7 +448,7 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (_ *schema.ToolInfo, err er
 	}, nil
 }
 
-func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg model.ExecuteConfig) (string, error) {
+func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg workflowModel.ExecuteConfig) (string, error) {
 	req := &service.ExecuteToolRequest{
 		UserID:          conv.Int64ToStr(cfg.Operator),
 		PluginID:        p.pluginEntity.PluginID,

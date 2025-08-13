@@ -37,6 +37,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
@@ -401,9 +402,9 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 					workflowToolConfig.OutputParametersConfig = wf.FCSetting.ResponseParameters
 				}
 
-				locator := plugin.FromDraft
+				locator := workflowModel.FromDraft
 				if wf.WorkflowVersion != "" {
-					locator = plugin.FromSpecificVersion
+					locator = workflowModel.FromSpecificVersion
 				}
 
 				wfTool, err := workflow.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{

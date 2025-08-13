@@ -25,7 +25,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/application/internal"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
-	wfsearch "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/search"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/workflow/variable"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
@@ -34,7 +33,6 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 
-	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
 	crossvariable "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
@@ -80,8 +78,8 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	crossvariable.SetVariableHandler(variable.NewVariableHandler(components.VariablesDomainSVC))
 	crossvariable.SetVariablesMetaGetter(variable.NewVariablesMetaGetter(components.VariablesDomainSVC))
 	code.SetCodeRunner(components.CodeRunner)
-	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
+	setEventBus(components.DomainNotifier)
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX

@@ -34,7 +34,7 @@ import (
 
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
@@ -77,10 +77,10 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
 			RootCtx: execute.RootCtx{
-				ExeCfg: plugin.ExecuteConfig{
-					Mode:     plugin.ExecuteModeDebug,
+				ExeCfg: workflowModel.ExecuteConfig{
+					Mode:     workflowModel.ExecuteModeDebug,
 					Operator: 123,
-					BizType:  plugin.BizTypeWorkflow,
+					BizType:  workflowModel.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -237,10 +237,10 @@ func TestDatabaseCURD(t *testing.T) {
 
 		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
 			RootCtx: execute.RootCtx{
-				ExeCfg: plugin.ExecuteConfig{
-					Mode:     plugin.ExecuteModeDebug,
+				ExeCfg: workflowModel.ExecuteConfig{
+					Mode:     workflowModel.ExecuteModeDebug,
 					Operator: 123,
-					BizType:  plugin.BizTypeWorkflow,
+					BizType:  workflowModel.BizTypeWorkflow,
 				},
 			},
 		}).Build()

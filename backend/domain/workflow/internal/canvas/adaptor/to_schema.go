@@ -26,7 +26,7 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
