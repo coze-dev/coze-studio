@@ -19,6 +19,7 @@ package ppstructure
 import (
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -26,18 +27,20 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 )
 
-func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage) parser.Manager {
+func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
 	return &manager{
-		apiConfig: apiConfig,
-		ocr:       ocr,
-		storage:   storage,
+		apiConfig:            apiConfig,
+		ocr:                  ocr,
+		storage:              storage,
+		imageAnnotationModel: imageAnnotationModel,
 	}
 }
 
 type manager struct {
-	apiConfig *APIConfig
-	ocr       ocr.OCR
-	storage   storage.Storage
+	apiConfig            *APIConfig
+	ocr                  ocr.OCR
+	storage              storage.Storage
+	imageAnnotationModel chatmodel.BaseChatModel
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
@@ -51,13 +54,8 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	var pFn builtin.ParseFn
 	switch config.FileExtension {
-	case parser.FileExtensionPDF, parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
-		var fileType int
-		if config.FileExtension == parser.FileExtensionPDF {
-			fileType = 0
-		} else {
-			fileType = 1
-		}
+	case parser.FileExtensionPDF:
+		fileType := 0
 		return &ppstructureParser{config, m.apiConfig, fileType, m.ocr, m.storage}, nil
 	case parser.FileExtensionTXT:
 		pFn = builtin.ParseText(config)
@@ -80,7 +78,14 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 	case parser.FileExtensionJsonMaps:
 		pFn = builtin.ParseJSONMaps(config)
 		return &builtin.Parser{ParseFn: pFn}, nil
+	case parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
+		pFn = builtin.ParseImage(config, m.imageAnnotationModel)
+		return &builtin.Parser{ParseFn: pFn}, nil
 	default:
 		return nil, fmt.Errorf("[Parse] document type not support, type=%s", config.FileExtension)
 	}
+}
+
+func (m *manager) IsAutoAnnotationSupported() bool {
+	return m.imageAnnotationModel != nil
 }

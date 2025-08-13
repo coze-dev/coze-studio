@@ -75,3 +75,7 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	return &Parser{ParseFn: pFn}, nil
 }
+
+func (m *manager) IsAutoAnnotationSupported() bool {
+	return m.model != nil
+}
