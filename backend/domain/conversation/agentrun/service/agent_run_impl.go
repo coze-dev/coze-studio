@@ -584,6 +584,10 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 
 				if streamMsg.Extra != nil {
 					if val, ok := streamMsg.Extra["workflow_node_name"]; ok && val != nil {
+						// 🔥 修复：确保Ext map已初始化，避免nil map赋值panic
+						if toolMidAnswerMsg.Ext == nil {
+							toolMidAnswerMsg.Ext = make(map[string]string)
+						}
 						toolMidAnswerMsg.Ext["message_title"] = val.(string)
 					}
 				}
@@ -930,6 +934,10 @@ func (c *runImpl) PreCreateAnswer(ctx context.Context, rtDependence *runtimeDepe
 		return nil, err
 	}
 
+	// 🔥 修复：确保Ext map已初始化，避免nil map panic
+	if msgMeta.Ext == nil {
+		msgMeta.Ext = make(map[string]string)
+	}
 	if _, ok := msgMeta.Ext[string(msgEntity.MessageExtKeyBotState)]; !ok {
 		msgMeta.Ext[string(msgEntity.MessageExtKeyBotState)] = string(bseString)
 	}

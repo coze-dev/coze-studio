@@ -275,9 +275,12 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 		case entity.RunEventStreamDone:
 			sseSender.Send(ctx, buildDoneEvent(string(entity.RunEventStreamDone)))
 		case entity.RunEventAck:
+			// 🔥 修复：添加对Ack事件的处理
+			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiChatMessage(chunk)))
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			// 🔥 修复：确保处理所有消息事件，包括工具调用后的回复
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 
 		default:
