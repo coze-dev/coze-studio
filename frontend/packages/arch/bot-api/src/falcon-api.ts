@@ -5,7 +5,7 @@ import { logger } from '@coze-arch/logger';
 
 const serverPath = '/aop-web/'
 
-export const axiosInstance = axios.create({
+const axiosInstance = axios.create({
     baseURL: serverPath,
     timeout: 5000,
     headers: {
