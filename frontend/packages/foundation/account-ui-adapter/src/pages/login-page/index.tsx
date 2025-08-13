@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type FC, useState } from 'react';
+import { type FC, useState, useEffect } from 'react';
 
 // import { CozeBrand } from '@coze-studio/components/coze-brand';
 import { I18n } from '@coze-arch/i18n';
@@ -41,6 +41,8 @@ const IconPassword: FC = () => (
   </div>
 );
 
+const TITLE_CHECK_INTERVAL = 100; // 标题检查间隔（毫秒）
+
 export const LoginPage: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,6 +54,27 @@ export const LoginPage: FC = () => {
   });
 
   const submitDisabled = !email || !password || hasError;
+
+  // 强制设置页面标题
+  useEffect(() => {
+    const setTitle = () => {
+      document.title = '猎鹰 - 登录';
+    };
+
+    // 立即设置
+    setTitle();
+
+    // 定期检查并重新设置标题，防止被其他代码覆盖
+    const interval = setInterval(() => {
+      if (document.title !== '猎鹰 - 登录') {
+        setTitle();
+      }
+    }, TITLE_CHECK_INTERVAL);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <SignFrame>
