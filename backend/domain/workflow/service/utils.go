@@ -23,10 +23,10 @@ import (
 	"strings"
 
 	cloudworkflow "github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/validate"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )

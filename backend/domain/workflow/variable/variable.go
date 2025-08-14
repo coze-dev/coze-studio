@@ -28,10 +28,7 @@ import (
 var variableHandlerSingleton *Handler
 
 func GetVariableHandler() *Handler {
-	return variableHandlerSingleton
-}
-func SetVariableHandler(handler *Handler) {
-	variableHandlerSingleton = handler
+	return NewVariableHandler()
 }
 
 type Handler struct {
@@ -111,11 +108,7 @@ type Store interface {
 var variablesMetaGetterImpl VariablesMetaGetter
 
 func GetVariablesMetaGetter() VariablesMetaGetter {
-	return variablesMetaGetterImpl
-}
-
-func SetVariablesMetaGetter(v VariablesMetaGetter) {
-	variablesMetaGetterImpl = v
+	return NewVariablesMetaGetter()
 }
 
 type VariablesMetaGetter interface {
