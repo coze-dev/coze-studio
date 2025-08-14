@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect, type FC } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { TemplateApi, type StoreTemplateInfo } from '@coze-arch/bot-api';
+import { templateApi, type StoreTemplateInfo } from '@coze-arch/bot-api';
 import { Button, Toast } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
 
@@ -296,7 +296,7 @@ export const TemplateStorePage: FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await TemplateApi.getStoreTemplateList({
+      const response = await templateApi.getStoreTemplateList({
         page_num: 0,
         page_size: 1000,
       });

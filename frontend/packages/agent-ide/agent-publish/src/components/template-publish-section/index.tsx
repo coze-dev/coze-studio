@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { TemplateApi } from '@coze-arch/bot-api';
+import { templateApi } from '@coze-arch/bot-api';
 import { TextArea, Button, Upload, Toast } from '@coze-arch/bot-semi';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 
@@ -72,8 +72,8 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
       
       // 并行检查个人模板和商店模板状态
       const [personalResponse, storeResponse] = await Promise.all([
-        TemplateApi.checkPublishStatus({ agent_id: bot_id }),
-        TemplateApi.checkStorePublishStatus({ agent_id: bot_id })
+        templateApi.checkPublishStatus({ agent_id: bot_id }),
+        templateApi.checkStorePublishStatus({ agent_id: bot_id })
       ]);
 
       // 处理个人模板状态
@@ -143,7 +143,7 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
     try {
       setPersonalPublishing(true);
       
-      const response = await TemplateApi.publishAsTemplate({
+      const response = await templateApi.publishAsTemplate({
         agent_id: bot_id,
         title: templateTitle.trim(),
         description: templateDescription.trim() || undefined,
@@ -173,7 +173,7 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
     try {
       setPersonalUnpublishing(true);
       
-      const response = await TemplateApi.unpublishTemplate({
+      const response = await templateApi.unpublishTemplate({
         agent_id: bot_id,
       });
 
@@ -203,7 +203,7 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
     try {
       setStorePublishing(true);
       
-      const response = await TemplateApi.publishToStore({
+      const response = await templateApi.publishToStore({
         agent_id: bot_id,
         title: templateTitle.trim(),
         description: templateDescription.trim() || undefined,
@@ -245,7 +245,7 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
     try {
       setStoreUnpublishing(true);
       
-      const response = await TemplateApi.unpublishFromStore({
+      const response = await templateApi.unpublishFromStore({
         agent_id: bot_id,
       });
 
@@ -315,7 +315,7 @@ export const TemplatePublishSection: React.FC<TemplatePublishSectionProps> = ({
         reader.readAsDataURL(fileInstance);
 
         // 上传图片
-        const response = await TemplateApi.uploadTemplateIcon({
+        const response = await templateApi.uploadTemplateIcon({
           file_head: {
             file_type: fileExtension,
             biz_type: 11,
