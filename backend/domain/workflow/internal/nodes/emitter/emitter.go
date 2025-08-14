@@ -573,7 +573,6 @@ func (e *OutputEmitter) ToCallbackOutput(ctx context.Context, out map[string]any
 
 	sco := &nodes.StructuredCallbackOutput{
 		Output:    out,
-		RawOutput: out,
 		Answer:    ptr.Of(out[outputKey].(string)),
 		OutputStr: ptr.Of(out[outputKey].(string)),
 	}

@@ -815,15 +815,13 @@ func (hg *HTTPRequester) parserToRequest(input map[string]any) (*Request, error)
 func (hg *HTTPRequester) ToCallbackOutput(_ context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
 	if body, ok := out["body"]; !ok {
 		return &nodes.StructuredCallbackOutput{
-			RawOutput: out,
-			Output:    out,
+			Output: out,
 		}, nil
 	} else {
 		output := maps.Clone(out)
 		output["body"] = decodeUnicode(body.(string))
 		return &nodes.StructuredCallbackOutput{
-			RawOutput: out,
-			Output:    output,
+			Output: output,
 		}, nil
 	}
 

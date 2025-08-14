@@ -619,8 +619,7 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 
 	if len(dynamicStreamType) == 0 {
 		sco := &nodes.StructuredCallbackOutput{
-			Output:    output,
-			RawOutput: output,
+			Output: output,
 		}
 		if !firstChunkDone {
 			sco.Extra = map[string]any{
@@ -638,8 +637,7 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 	}
 
 	sco := &nodes.StructuredCallbackOutput{
-		Output:    newOut,
-		RawOutput: newOut,
+		Output: newOut,
 	}
 	if !firstChunkDone {
 		sco.Extra = map[string]any{

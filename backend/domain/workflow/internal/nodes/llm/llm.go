@@ -1297,30 +1297,35 @@ func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nod
 	if c == nil {
 		return &nodes.StructuredCallbackOutput{
 			Output:    output,
-			RawOutput: output,
+			RawOutput: ptr.Of(output[l.outputKey].(string)),
 		}, nil
 	}
 	rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeKey)
 	warningK := fmt.Sprintf(warningKey, c.NodeKey)
 	rawOutput, found := ctxcache.Get[string](ctx, rawOutputK)
 	if !found {
-		return &nodes.StructuredCallbackOutput{
-			Output:    output,
-			RawOutput: output,
-		}, nil
+		structuredOut := &nodes.StructuredCallbackOutput{
+			Output: output,
+		}
+
+		if _, ok := output[l.outputKey]; ok {
+			structuredOut.RawOutput = ptr.Of(output[l.outputKey].(string))
+		}
+
+		return structuredOut, nil
 	}
 
 	warning, found := ctxcache.Get[vo.WorkflowError](ctx, warningK)
 	if !found {
 		return &nodes.StructuredCallbackOutput{
 			Output:    output,
-			RawOutput: map[string]any{"output": rawOutput},
+			RawOutput: ptr.Of(rawOutput),
 		}, nil
 	}
 
 	structuredOut := &nodes.StructuredCallbackOutput{
 		Output:    output,
-		RawOutput: map[string]any{"output": rawOutput},
+		RawOutput: ptr.Of(rawOutput),
 		Error:     warning,
 	}
 
@@ -1328,13 +1333,6 @@ func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nod
 	if ok {
 		structuredOut.Extra = map[string]any{
 			ReasoningOutputKey: reasoning,
-		}
-	}
-
-	if l.outputFormat != FormatJSON {
-		outputStr, ok := output[l.outputKey]
-		if ok {
-			structuredOut.OutputStr = ptr.Of(outputStr.(string))
 		}
 	}
 

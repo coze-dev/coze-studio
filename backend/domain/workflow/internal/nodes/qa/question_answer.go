@@ -37,6 +37,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
@@ -852,15 +853,22 @@ func (q *QuestionAnswer) ToCallbackOutput(_ context.Context, out map[string]any)
 	delete(out, QuestionsKey)
 	delete(out, AnswersKey)
 
-	sOut := &nodes.StructuredCallbackOutput{
-		Output: out,
-		RawOutput: map[string]any{
-			"messages": history,
-		},
+	rawOutput := map[string]any{
+		"messages": history,
 	}
 
 	if hasSelected {
-		sOut.RawOutput["selected"] = selected
+		rawOutput["selected"] = selected
+	}
+
+	rawOutputStr, err := sonic.MarshalString(rawOutput)
+	if err != nil {
+		return nil, err
+	}
+
+	sOut := &nodes.StructuredCallbackOutput{
+		Output:    out,
+		RawOutput: ptr.Of(rawOutputStr),
 	}
 
 	return sOut, nil

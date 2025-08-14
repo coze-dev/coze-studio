@@ -104,6 +104,11 @@ type ExecutableMeta struct {
 	// - NodeTypeBatch stores input in checkpoint,
 	//   so during resume it could access the input arrays.
 	PersistInputOnInterrupt bool `json:"persist_input_on_interrupt,omitempty"`
+
+	// BlockEndStream indicates the node will block end stream until all stream chunks are received.
+	// If not set and the node's output is stream, control will transfer to successor as
+	// soon as the end stream itself is created.
+	BlockEndStream bool `json:"block_end_stream,omitempty"`
 }
 
 type PluginNodeMeta struct {
@@ -359,16 +364,18 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSDescription: "Connect multiple downstream branches. Only the corresponding branch will be executed if the set conditions are met. If none are met, only the 'else' branch will be executed.",
 	},
 	NodeTypeSubWorkflow: {
-		ID:              9,
-		Key:             NodeTypeSubWorkflow,
-		DisplayKey:      "SubWorkflow",
-		Name:            "工作流",
-		Category:        "",
-		Desc:            "集成已发布工作流，可以执行嵌套子任务",
-		Color:           "#00B83E",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
-		SupportBatch:    true,
-		ExecutableMeta:  ExecutableMeta{},
+		ID:           9,
+		Key:          NodeTypeSubWorkflow,
+		DisplayKey:   "SubWorkflow",
+		Name:         "工作流",
+		Category:     "",
+		Desc:         "集成已发布工作流，可以执行嵌套子任务",
+		Color:        "#00B83E",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+		SupportBatch: true,
+		ExecutableMeta: ExecutableMeta{
+			BlockEndStream: true,
+		},
 		EnUSName:        "Workflow",
 		EnUSDescription: "Add published workflows to execute subtasks",
 	},
@@ -403,6 +410,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 			PreFillZero:       true,
 			InputSourceAware:  true,
 			IncrementalOutput: true,
+			BlockEndStream:    true,
 		},
 		EnUSName:        "Output",
 		EnUSDescription: "The node is renamed from \"message\" to \"output\", Supports message output in the intermediate process and streaming and non-streaming methods",
@@ -596,9 +604,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PostFillNil:      true,
-			InputSourceAware: true,
-			UseCtxCache:      true,
+			PostFillNil:       true,
+			InputSourceAware:  true,
+			UseCtxCache:       true,
+			IncrementalOutput: true,
 		},
 		EnUSName:        "Variable Merge",
 		EnUSDescription: "Aggregate the outputs of multiple branches.",

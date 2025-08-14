@@ -262,8 +262,28 @@ func toSliceValue(vs []any) (reflect.Value, error) {
 }
 
 var (
-	concatFunctions = map[reflect.Type]any{}
+	concatFunctions = map[reflect.Type]any{
+		reflect.TypeOf(""): concatStrings,
+	}
 )
+
+func concatStrings(ss []string) (string, error) {
+	var n int
+	for _, s := range ss {
+		n += len(s)
+	}
+
+	var b strings.Builder
+	b.Grow(n)
+	for _, s := range ss {
+		_, err := b.WriteString(s)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return TrimKeyFinishedMarker(b.String()), nil
+}
 
 func RegisterStreamChunkConcatFunc[T any](fn func([]T) (T, error)) {
 	concatFunctions[reflect.TypeOf((*T)(nil)).Elem()] = fn

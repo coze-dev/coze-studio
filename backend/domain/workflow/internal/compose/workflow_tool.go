@@ -75,7 +75,7 @@ func (i *invokableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return i.info, nil
 }
 
-func resumeOnce(rInfo *entity.ResumeRequest, callID string, allIEs map[string]*entity.ToolInterruptEvent) {
+func resumeOnce(rInfo *entity.ResumeRequest, callID string, allIEs map[string]int64) {
 	if rInfo != nil {
 		rInfo.Resumed = true
 	}

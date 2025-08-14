@@ -469,12 +469,15 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			nodeExec.ErrorLevel = ptr.Of(string(wfe.Level()))
 		}
 
-		if event.outputExtractor != nil {
-			nodeExec.Output = ptr.Of(event.outputExtractor(event.Output))
-			nodeExec.RawOutput = ptr.Of(event.outputExtractor(event.RawOutput))
+		if event.outputStr != nil {
+			nodeExec.Output = event.outputStr
+			nodeExec.RawOutput = event.outputStr
 		} else {
 			nodeExec.Output = ptr.Of(mustMarshalToString(event.Output))
-			nodeExec.RawOutput = ptr.Of(mustMarshalToString(event.RawOutput))
+			nodeExec.RawOutput = event.RawOutput
+			if nodeExec.RawOutput == nil {
+				nodeExec.RawOutput = nodeExec.Output
+			}
 		}
 
 		fcInfos := getFCInfos(ctx, event.NodeKey)
@@ -530,32 +533,13 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
-		if sw != nil && event.Type == NodeEnd {
-			var content string
-			switch event.NodeType {
-			case entity.NodeTypeOutputEmitter:
-				content = event.Answer
-			case entity.NodeTypeExit:
-				if event.Context.SubWorkflowCtx != nil {
-					// if the exit node belongs to a sub workflow, do not send data message
-					return noTerminate, nil
-				}
-
-				if *event.Context.NodeCtx.TerminatePlan == vo.ReturnVariables {
-					content = mustMarshalToString(event.Output)
-				} else {
-					content = event.Answer
-				}
-			default:
-				return noTerminate, nil
-			}
-
+		if sw != nil && event.Type == NodeEnd && len(event.Answer) > 0 {
 			sw.Send(&entity.Message{
 				DataMessage: &entity.DataMessage{
 					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
 					Type:      entity.Answer,
-					Content:   content,
+					Content:   event.Answer,
 					NodeID:    string(event.NodeKey),
 					NodeType:  event.NodeType,
 					NodeTitle: event.NodeName,
@@ -572,13 +556,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return lastNodeDone, nil
 		}
 	case NodeStreamingOutput:
+		if sw != nil && len(event.Answer) > 0 {
+			sw.Send(&entity.Message{
+				DataMessage: &entity.DataMessage{
+					ExecuteID: event.RootExecuteID,
+					Role:      schema.Assistant,
+					Type:      entity.Answer,
+					Content:   event.Answer,
+					NodeID:    string(event.NodeKey),
+					NodeType:  event.NodeType,
+					NodeTitle: event.NodeName,
+					Last:      event.StreamEnd,
+				},
+			}, nil)
+		}
+
 		nodeExec := &entity.NodeExecution{
 			ID:    event.NodeExecuteID,
 			Extra: event.extra,
 		}
 
-		if event.outputExtractor != nil {
-			nodeExec.Output = ptr.Of(event.outputExtractor(event.Output))
+		if event.outputStr != nil {
+			nodeExec.Output = event.outputStr
 		} else {
 			nodeExec.Output = ptr.Of(mustMarshalToString(event.Output))
 		}
@@ -586,31 +585,6 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if err = repo.UpdateNodeExecutionStreaming(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
-
-		if sw == nil {
-			return noTerminate, nil
-		}
-
-		if event.NodeType == entity.NodeTypeExit {
-			if event.Context.SubWorkflowCtx != nil {
-				return noTerminate, nil
-			}
-		} else if event.NodeType == entity.NodeTypeVariableAggregator {
-			return noTerminate, nil
-		}
-
-		sw.Send(&entity.Message{
-			DataMessage: &entity.DataMessage{
-				ExecuteID: event.RootExecuteID,
-				Role:      schema.Assistant,
-				Type:      entity.Answer,
-				Content:   event.Answer,
-				NodeID:    string(event.NodeKey),
-				NodeType:  event.NodeType,
-				NodeTitle: event.NodeName,
-				Last:      event.StreamEnd,
-			},
-		}, nil)
 	case NodeStreamingInput:
 		nodeExec := &entity.NodeExecution{
 			ID:    event.NodeExecuteID,

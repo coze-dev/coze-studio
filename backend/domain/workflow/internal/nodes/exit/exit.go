@@ -20,14 +20,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bytedance/sonic"
+
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -118,14 +120,20 @@ func (e *Exit) Invoke(_ context.Context, in map[string]any) (map[string]any, err
 
 func (e *Exit) ToCallbackOutput(ctx context.Context, out map[string]any) (
 	*nodes.StructuredCallbackOutput, error) {
-	m, err := sonic.MarshalString(out)
+	c := execute.GetExeCtx(ctx)
+	if c.SubWorkflowCtx != nil {
+		return &nodes.StructuredCallbackOutput{
+			Output: out,
+		}, nil
+	}
+
+	m, err := sonic.ConfigStd.MarshalToString(out)
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	return &nodes.StructuredCallbackOutput{
-		Output:    out,
-		RawOutput: out,
-		Answer:    ptr.Of(m),
+		Output: out,
+		Answer: ptr.Of(m),
 	}, nil
 }

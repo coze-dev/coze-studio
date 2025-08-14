@@ -847,9 +847,8 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		d["isSuccess"] = false
 		sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 		sOutput := &nodes.StructuredCallbackOutput{
-			Output:    d,
-			RawOutput: d,
-			Error:     sErr,
+			Output: d,
+			Error:  sErr,
 		}
 		_ = callbacks.OnEnd(ctx, sOutput)
 		return d, true
@@ -862,9 +861,8 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		s["isSuccess"] = false
 		sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 		sOutput := &nodes.StructuredCallbackOutput{
-			Output:    s,
-			RawOutput: s,
-			Error:     sErr,
+			Output: s,
+			Error:  sErr,
 		}
 		_ = callbacks.OnEnd(ctx, sOutput)
 		return s, true

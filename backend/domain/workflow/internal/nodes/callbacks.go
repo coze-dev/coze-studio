@@ -20,11 +20,12 @@ import (
 	"reflect"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type StructuredCallbackOutput struct {
 	Output    map[string]any
-	RawOutput map[string]any
+	RawOutput *string
 	Extra     map[string]any // node specific extra info, will go into node execution's extra.ResponseExtra
 	Error     vo.WorkflowError
 	Input     map[string]any // if you want to override Input on node end, set this field
@@ -47,7 +48,7 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 
 	var (
 		fullOutput    map[string]any
-		fullRawOutput map[string]any
+		fullRawOutput *string
 		extra         map[string]any
 		input         map[string]any
 		wfErr         vo.WorkflowError
@@ -57,7 +58,7 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 
 	outputLists := make([]map[string]any, len(outputs))
 	var (
-		rawOutputList []map[string]any
+		rawOutputList []string
 		inputList     []map[string]any
 		extraList     []map[string]any
 		answerList    []string
@@ -66,7 +67,7 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 	for i, o := range outputs {
 		outputLists[i] = o.Output
 		if o.RawOutput != nil {
-			rawOutputList = append(rawOutputList, o.RawOutput)
+			rawOutputList = append(rawOutputList, *o.RawOutput)
 		}
 		if o.Error != nil { // just overwrite
 			wfErr = o.Error
@@ -92,16 +93,14 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 
 	fullOutput = m.Interface().(map[string]any)
 
-	if len(rawOutputList) == 0 {
-		fullRawOutput = fullOutput
-	} else if len(rawOutputList) == 1 {
-		fullRawOutput = rawOutputList[0]
+	if len(rawOutputList) == 1 {
+		fullRawOutput = ptr.Of(rawOutputList[0])
 	} else {
-		if m, err = ConcatMaps(reflect.ValueOf(rawOutputList)); err != nil {
+		if s, err := concatStrings(rawOutputList); err != nil {
 			return nil, err
+		} else {
+			fullRawOutput = &s
 		}
-
-		fullRawOutput = m.Interface().(map[string]any)
 	}
 
 	if len(inputList) > 0 {

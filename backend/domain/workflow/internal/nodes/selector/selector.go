@@ -225,16 +225,14 @@ func (s *Selector) ToCallbackOutput(_ context.Context, output map[string]any) (*
 	if out == count {
 		cOutput := map[string]any{"result": "pass to else branch"}
 		return &nodes.StructuredCallbackOutput{
-			Output:    cOutput,
-			RawOutput: cOutput,
+			Output: cOutput,
 		}, nil
 	}
 
 	if out >= 0 && out < count {
 		cOutput := map[string]any{"result": fmt.Sprintf("pass to condition %d branch", out+1)}
 		return &nodes.StructuredCallbackOutput{
-			Output:    cOutput,
-			RawOutput: cOutput,
+			Output: cOutput,
 		}, nil
 	}
 

@@ -18,6 +18,7 @@ package nodes
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -26,6 +27,10 @@ import (
 )
 
 var KeyIsFinished = "\x1FKey is finished\x1F"
+
+func TrimKeyFinishedMarker(s string) string {
+	return strings.TrimSuffix(s, KeyIsFinished)
+}
 
 type DynamicStreamContainer interface {
 	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema.FieldStreamType, error)

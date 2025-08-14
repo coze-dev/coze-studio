@@ -57,7 +57,7 @@ type Event struct {
 	Answer    string
 	StreamEnd bool
 
-	RawOutput map[string]any
+	RawOutput *string
 
 	Err   error
 	Token *TokenInfo
@@ -67,9 +67,8 @@ type Event struct {
 	functionCall *FunctionCallInfo
 	toolResponse *entity.ToolResponseInfo
 
-	outputExtractor func(o map[string]any) string
-	extra           *entity.NodeExtra
-	outputStr       *string
+	extra     *entity.NodeExtra
+	outputStr *string
 
 	done chan struct{}
 
