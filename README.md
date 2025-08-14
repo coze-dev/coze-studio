@@ -37,7 +37,6 @@ The backend of Coze Studio is developed using Golang, the frontend uses React + 
 
 ## Quickstart
 Learn how to obtain and deploy the open-source version of Coze Studio, quickly build projects, and experience Coze Studio's open-source version.
-> For detailed steps, deployment requirements and security risks in public networks, refer to [Quickstart](https://github.com/coze-dev/coze-studio/wiki/2.-Quickstart).
 
 Environment requirements:
 
@@ -78,6 +77,8 @@ Deployment steps:
    For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
 4. After starting the service, you can open Coze Studio by accessing `http://localhost:8888/` through your browser.
 
+> [!WARNING]
+> If you want to deploy Coze Studio in a public network environment, it is recommended to assess security risks before you begin, and take corresponding protection measures. Possible security risks include account registration functions, Python execution environments in workflow code nodes, Coze Server listening address configurations, SSRF (Server - Side Request Forgery), and some horizontal privilege escalations in APIs.  For more details, refer to [Quickstart](https://github.com/coze-dev/coze-studio/wiki/2.-Quickstart#security-risks-in-public-networks).
 
 ## Developer Guide
 
