@@ -26,6 +26,7 @@ import {
   Menu,
   MenuItem,
   Popconfirm,
+  Spin,
 } from '@coze-arch/coze-design';
 import { GridList, GridItem } from './components/gridList';
 import { aopApi } from '@coze-arch/bot-api';
@@ -37,6 +38,7 @@ let timer: NodeJS.Timeout | null = null;
 const delay = 300;
 
 export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
+  const [loading, setLoading] = useState(false);
   const [filterQueryText, setFilterQueryText] = useState('');
   const [mcpList, setMcpList] = useState([]);
   const [spinId, setSpinId] = useState('');
@@ -47,6 +49,7 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
   };
 
   const getMcpListData = useCallback(() => {
+    setLoading(true);
     aopApi
       .GetMCPResourceList({
         createdBy: true,
@@ -55,6 +58,9 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       })
       .then(res => {
         setMcpList(res.body.serviceInfoList || []);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [filterQueryText, spaceId]);
 
@@ -310,6 +316,11 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
             </GridItem>
           ))}
         </GridList>
+        {loading ? (
+          <Spin>
+            <div className="w-full h-[100px] flex items-center justify-center" />
+          </Spin>
+        ) : null}
       </Content>
     </Layout>
   );

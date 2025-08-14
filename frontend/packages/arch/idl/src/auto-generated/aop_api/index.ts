@@ -19,7 +19,7 @@
 /* tslint:disable */
 // @ts-nocheck
 
-export default class ApoApiService<T> {
+export default class AopApiService<T> {
   private request: any = () => {
     throw new Error('AopApiService.request is undefined');
   };
@@ -40,6 +40,7 @@ export default class ApoApiService<T> {
   }) {
     this.request = options?.request || this.request;
     this.baseURL = options?.baseURL || '/aop-web/';
+    this.genBaseURL = this.genBaseURL.bind(this);
   }
 
   genBaseURL(path: string) {

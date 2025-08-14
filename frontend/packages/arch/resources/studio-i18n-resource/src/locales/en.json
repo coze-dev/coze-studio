@@ -3804,6 +3804,7 @@
   "workspace_create_card": "Create Card",
   "workspace_develop": "Development",
   "workspace_mcp_detail": "MCP Service",
+  "workspace_card_detail": "Card Information",
   "coze_workspace_mcp_detail_service_name": "Service Name",
   "coze_workspace_mcp_detail_service_name_collect": "Input the service name",
   "coze_workspace_mcp_detail_service_type": "Service Type",

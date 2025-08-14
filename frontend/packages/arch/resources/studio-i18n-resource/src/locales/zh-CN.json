@@ -3852,6 +3852,7 @@
   "workspace_create_card": "创建卡片",
   "workspace_develop": "项目开发",
   "workspace_mcp_detail": "MCP服务",
+  "workspace_card_detail": "卡片详情",
   "coze_workspace_mcp_detail_service_name": "服务名称",
   "coze_workspace_mcp_detail_service_name_collect": "请输入服务名称",
   "coze_workspace_mcp_detail_service_type": "服务类型",

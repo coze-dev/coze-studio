@@ -68,14 +68,16 @@ export const FalconMcpDetail = ({ spaceId }) => {
       aopApi
         .AddEditMCPResource(subParams)
         .then(() => {
-          Toast.success(I18n.t('datasets_url_saveSuccess'));
+          page_type === 'edit'
+            ? Toast.success(I18n.t('Edit_success'))
+            : Toast.success(I18n.t('Save_success'));
           navigate(-1);
         })
         .finally(() => {
           setLoading(false);
         });
     },
-    [navigate, mcpId],
+    [mcpId, page_type, navigate],
   );
 
   useEffect(() => {

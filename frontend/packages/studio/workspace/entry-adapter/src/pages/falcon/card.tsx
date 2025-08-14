@@ -30,8 +30,10 @@ import {
   Popconfirm,
   RadioGroup,
   Radio,
+  SideSheet,
 } from '@coze-arch/coze-design';
 import { GridList, GridItem } from './components/gridList';
+import { FalconCardDetail } from './cardDetail';
 import { aopApi } from '@coze-arch/bot-api';
 import { replaceUrl } from './utils';
 import placeholderImg from './assets/placeholder.png';
@@ -55,13 +57,25 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
   const [filterQueryText, setFilterQueryText] = useState('');
   const [cardList, setCardList] = useState([]);
   const [spinId, setSpinId] = useState('');
+  const [actionType, setActionType] = useState('');
+  const [detailInfo, setDetailInfo] = useState({});
+  const [detailVisible, setDetailVisible] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pageNoRef = useRef(1);
   const allPageCountRef = useRef(1);
 
-  const navigate = useNavigate();
-  const goPage = path => {
-    navigate(`/space/${spaceId}${path}`);
+  const actionName = I18n.t(
+    actionType === 'create'
+      ? 'workspace_create'
+      : actionType === 'edit'
+        ? 'Edit'
+        : 'View',
+  );
+
+  const goDetail = (type, params = {}) => {
+    setActionType(type);
+    setDetailVisible(true);
+    setDetailInfo(params);
   };
 
   const getCardListData = useCallback(
@@ -230,7 +244,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
           <Button
             icon={<IconCozPlus />}
             onClick={() => {
-              goPage('/mcp-detail/create');
+              goDetail('create');
             }}
           >
             {I18n.t('workspace_create_card')}
@@ -269,7 +283,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                 <div
                   className="py-[12px]"
                   onClick={e => {
-                    goPage(`/mcp-detail/view?mcp_id=${item.cardId}`);
+                    goDetail('view', item);
                     e?.stopPropagation();
                   }}
                 >
@@ -356,9 +370,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                           <Menu.SubMenu mode="menu">
                             <MenuItem
                               onClick={e => {
-                                goPage(
-                                  `/mcp-detail/edit?mcp_id=${item.cardId}`,
-                                );
+                                goDetail('edit', item);
                                 e?.stopPropagation();
                               }}
                             >
@@ -395,6 +407,23 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
           </Spin>
         ) : null}
       </Content>
+      <SideSheet
+        title={actionName + I18n.t('workspace_card_detail')}
+        visible={detailVisible}
+        width="640px"
+        onCancel={() => setDetailVisible(false)}
+      >
+        <FalconCardDetail
+          spaceId={spaceId}
+          type={actionType}
+          info={detailInfo}
+          onSuccess={() => {
+            setDetailVisible(false);
+            setDetailInfo({});
+            getCardListData();
+          }}
+        />
+      </SideSheet>
     </Layout>
   );
 };
