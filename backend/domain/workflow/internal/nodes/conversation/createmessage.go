@@ -20,9 +20,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+
+	"strconv"
 	"sync/atomic"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
+
+	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -181,13 +186,34 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	currentConversationID := execCtx.ExeCfg.ConversationID
 	isCurrentConversation := currentConversationID != nil && *currentConversationID == conversationID
 	var runID int64
-
-	if role == "user" {
-		// For user messages, always create a new run and store the ID in the context.
-		newRunID, err := workflow.GetRepository().GenID(ctx)
+	var sectionID int64
+	if isCurrentConversation {
+		if execCtx.ExeCfg.SectionID != nil {
+			sectionID = *execCtx.ExeCfg.SectionID
+		} else {
+			return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("section id is required"))
+		}
+	} else {
+		cInfo, err := c.Creator.GetByID(ctx, conversationID)
 		if err != nil {
 			return nil, err
 		}
+		sectionID = cInfo.SectionID
+	}
+
+	if role == "user" {
+		// For user messages, always create a new run and store the ID in the context.
+		runRecord, err := crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
+			AgentID:        resolvedAppID,
+			ConversationID: conversationID,
+			UserID:         strconv.FormatInt(userID, 10),
+			ConnectorID:    connectorID,
+			SectionID:      sectionID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		newRunID := runRecord.ID
 		if execCtx.ExeCfg.RoundID != nil {
 			atomic.StoreInt64(execCtx.ExeCfg.RoundID, newRunID)
 		}
@@ -222,27 +248,18 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		if len(runIDs) > 0 && runIDs[0] != 0 {
 			runID = runIDs[0]
 		} else {
-			newRunID, err := workflow.GetRepository().GenID(ctx)
+			runRecord, err := crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
+				AgentID:        resolvedAppID,
+				ConversationID: conversationID,
+				UserID:         strconv.FormatInt(userID, 10),
+				ConnectorID:    connectorID,
+				SectionID:      sectionID,
+			})
 			if err != nil {
 				return nil, err
 			}
-			runID = newRunID
+			runID = runRecord.ID
 		}
-	}
-
-	var sectionID int64
-	if isCurrentConversation {
-		if execCtx.ExeCfg.SectionID != nil {
-			sectionID = *execCtx.ExeCfg.SectionID
-		} else {
-			return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("section id is required"))
-		}
-	} else {
-		cInfo, err := c.Creator.GetByID(ctx, conversationID)
-		if err != nil {
-			return nil, err
-		}
-		sectionID = cInfo.SectionID
 	}
 
 	mID, err := c.Creator.CreateMessage(ctx, &conversation.CreateMessageRequest{
