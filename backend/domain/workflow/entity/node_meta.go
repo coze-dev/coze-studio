@@ -359,7 +359,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 	NodeTypeDatabaseCustomSQL: {
 		ID:           12,
 		Key:          NodeTypeDatabaseCustomSQL,
-		DisplayKey:   "End",
+		DisplayKey:   "Database",
 		Name:         "SQL自定义",
 		Category:     "database",
 		Desc:         "基于用户自定义的 SQL 完成对数据库的增删改查操作",
