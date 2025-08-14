@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -146,7 +147,7 @@ func (c *conversationImpl) DeleteDraftConversationTemplate(ctx context.Context, 
 		MetaQuery: vo.MetaQuery{
 			IDs: workflowIDs,
 		},
-		QType: vo.FromDraft,
+		QType: workflowModel.FromDraft,
 	})
 	if err != nil {
 		return 0, err
@@ -217,7 +218,7 @@ func (c *conversationImpl) InitApplicationDefaultConversationTemplate(ctx contex
 func (c *conversationImpl) findReplaceWorkflowByConversationName(ctx context.Context, appID int64, name string) ([]*entity.Workflow, error) {
 
 	wfs, _, err := c.repo.MGetDrafts(ctx, &vo.MGetPolicy{
-		QType: vo.FromDraft,
+		QType: workflowModel.FromDraft,
 		MetaQuery: vo.MetaQuery{
 			AppID: ptr.Of(appID),
 			Mode:  ptr.Of(workflow2.WorkflowMode_ChatFlow),

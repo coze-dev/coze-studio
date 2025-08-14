@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -65,7 +66,7 @@ func (c *UpdateConversation) Invoke(ctx context.Context, in map[string]any) (map
 
 	var (
 		execCtx     = execute.GetExeCtx(ctx)
-		env         = ternary.IFElse(execCtx.ExeCfg.Mode == vo.ExecuteModeRelease, vo.Online, vo.Draft)
+		env         = ternary.IFElse(execCtx.ExeCfg.Mode == workflowModel.ExecuteModeRelease, vo.Online, vo.Draft)
 		appID       = execCtx.ExeCfg.AppID
 		agentID     = execCtx.ExeCfg.AgentID
 		version     = execCtx.ExeCfg.Version

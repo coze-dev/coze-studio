@@ -1663,7 +1663,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			IconURI:   wfMeta.IconURI,
 			Desc:      wfMeta.Description,
 			AppID:     ternary.IFElse(wfMeta.AppID == 0, (*int64)(nil), ptr.Of(wfMeta.AppID)),
-			Mode:      vo.WorkflowMode(wfMeta.Mode),
+			Mode:      workflowModel.WorkflowMode(wfMeta.Mode),
 		},
 		CanvasInfo: &vo.CanvasInfo{
 			Canvas:          wfDraft.Canvas,
