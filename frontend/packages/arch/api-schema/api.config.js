@@ -23,8 +23,8 @@ const config = [
     idlRoot: path.resolve(__dirname, '../../../../'), // IDL root directory
     entries: {
       passport: './idl/passport/passport.thrift', // Entry service name and path
-      explore:
-        './idl/flow/marketplace/flow_marketplace_product/public_api.thrift',
+      explore: './idl/marketplace/public_api.thrift',
+      template_publish: './idl/template/template_publish.thrift', // Template publish service
     },
     commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
     output: './src', // Product location

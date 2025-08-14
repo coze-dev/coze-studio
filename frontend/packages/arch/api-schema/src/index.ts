@@ -15,4 +15,5 @@
  */
 
 export * as passport from './idl/passport/passport';
-export * as explore from './idl/flow/marketplace/flow_marketplace_product/public_api';
+export * as explore from './idl/marketplace/public_api';
+export * as template_publish from './idl/template/template_publish';

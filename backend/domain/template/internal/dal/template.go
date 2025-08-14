@@ -18,6 +18,7 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -51,21 +52,47 @@ func NewTemplateDAO(db *gorm.DB, idGen idgen.IDGenerator) *TemplateImpl {
 }
 
 // Create implements TemplateRepository.Create
-func (t *TemplateImpl) Create(ctx context.Context, template *model.Template) (int64, error) {
-	if template.ID == 0 {
+func (t *TemplateImpl) Create(ctx context.Context, template *entity.Template) (int64, error) {
+	// Convert entity.Template to model.Template
+	modelTemplate := &model.Template{
+		ID:                template.ID,
+		AgentID:           template.AgentID,
+		SpaceID:           template.SpaceID,
+		CreatedAt:         template.CreatedAt,
+		Heat:              template.Heat,
+		ProductEntityType: template.ProductEntityType,
+	}
+
+	if modelTemplate.ID == 0 {
 		id, err := t.IDGen.GenID(ctx)
 		if err != nil {
 			return 0, err
 		}
-		template.ID = id
+		modelTemplate.ID = id
 	}
 
-	err := t.query.Template.WithContext(ctx).Create(template)
+	// 先创建基础template
+	err := t.query.Template.WithContext(ctx).Create(modelTemplate)
 	if err != nil {
 		return 0, err
 	}
 
-	return template.ID, nil
+	// 然后单独更新MetaInfo字段（使用JSON序列化）
+	if template.MetaInfo != nil {
+		metaInfoJSON, err := json.Marshal(template.MetaInfo)
+		if err != nil {
+			return 0, fmt.Errorf("failed to marshal meta_info: %v", err)
+		}
+		
+		_, err = t.query.Template.WithContext(ctx).
+			Where(t.query.Template.ID.Eq(modelTemplate.ID)).
+			Update(t.query.Template.MetaInfo, string(metaInfoJSON))
+		if err != nil {
+			return 0, fmt.Errorf("failed to update meta_info: %v", err)
+		}
+	}
+
+	return modelTemplate.ID, nil
 }
 
 // List lists templates with filters
@@ -87,6 +114,10 @@ func (t *TemplateImpl) List(ctx context.Context, filter *entity.TemplateFilter, 
 		if filter.ProductEntityType != nil {
 			q = q.Where(res.ProductEntityType.Eq(*filter.ProductEntityType))
 		}
+
+		// Note: CreatorID is not available in the template table model
+		// This would need to be implemented by joining with related tables or
+		// storing creator information in the meta_info field
 	}
 
 	// Get total count
@@ -126,4 +157,52 @@ func (t *TemplateImpl) List(ctx context.Context, filter *entity.TemplateFilter, 
 	}
 
 	return records, count, nil
+}
+
+// GetByID implements TemplateRepository.GetByID
+func (t *TemplateImpl) GetByID(ctx context.Context, templateID int64) (*model.Template, error) {
+	tmpl, err := t.query.Template.WithContext(ctx).Where(t.query.Template.ID.Eq(templateID)).First()
+	if err != nil {
+		return nil, err
+	}
+	return tmpl, nil
+}
+
+// Delete implements TemplateRepository.Delete
+func (t *TemplateImpl) Delete(ctx context.Context, templateID int64) error {
+	_, err := t.query.Template.WithContext(ctx).Where(t.query.Template.ID.Eq(templateID)).Delete()
+	return err
+}
+
+// Update implements TemplateRepository.Update
+func (t *TemplateImpl) Update(ctx context.Context, template *entity.Template) error {
+	// 更新基础字段
+	_, err := t.query.Template.WithContext(ctx).
+		Where(t.query.Template.ID.Eq(template.ID)).
+		Updates(map[string]interface{}{
+			"agent_id":            template.AgentID,
+			"space_id":            template.SpaceID,
+			"product_entity_type": template.ProductEntityType,
+			"heat":                template.Heat,
+		})
+	if err != nil {
+		return err
+	}
+
+	// 单独更新MetaInfo（使用JSON序列化）
+	if template.MetaInfo != nil {
+		metaInfoJSON, err := json.Marshal(template.MetaInfo)
+		if err != nil {
+			return fmt.Errorf("failed to marshal meta_info: %v", err)
+		}
+		
+		_, err = t.query.Template.WithContext(ctx).
+			Where(t.query.Template.ID.Eq(template.ID)).
+			Update(t.query.Template.MetaInfo, string(metaInfoJSON))
+		if err != nil {
+			return fmt.Errorf("failed to update meta_info: %v", err)
+		}
+	}
+	
+	return nil
 }

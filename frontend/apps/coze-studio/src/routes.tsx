@@ -60,7 +60,6 @@ const DatabaseDetail = lazy(() =>
   })),
 );
 
-const AgentIDELayout = lazy(() => import('@coze-agent-ide/layout-adapter'));
 
 const AgentIDE = lazy(() =>
   import('@coze-agent-ide/entry-adapter').then(res => ({
@@ -119,6 +118,10 @@ const SpaceModelConfig = lazy(() => import('./pages/space-model-config'));
 const FalconMcp = lazy(() => import('./pages/falconmcp'));
 
 const FalconCard = lazy(() => import('./pages/falconcard'));
+
+const ConditionalAgentLayout = lazy(() => import('./components/conditional-agent-layout').then(exps => ({
+  default: exps.ConditionalAgentLayout,
+})));
 
 export const router: ReturnType<typeof createBrowserRouter> =
   createBrowserRouter([
@@ -272,7 +275,7 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 },
                 {
                   path: 'bot/:bot_id',
-                  Component: AgentIDELayout,
+                  Component: ConditionalAgentLayout,
                   children: [
                     {
                       index: true,
@@ -293,12 +296,24 @@ export const router: ReturnType<typeof createBrowserRouter> =
                       ],
                     },
                   ],
-                  loader: () => ({
-                    hasSider: false,
-                    showMobileTips: true,
-                    requireBotEditorInit: true,
-                    pageName: 'bot',
-                  }),
+                  loader: (request) => {
+                    // 商店空间使用完整初始化但隐藏某些UI
+                    if (request.params.space_id === '888888') {
+                      return {
+                        hasSider: false,
+                        showMobileTips: false,
+                        requireBotEditorInit: true, // 改为true来提供完整的Context
+                        pageName: 'store-bot-chat',
+                      };
+                    }
+                    // 其他空间使用原配置
+                    return {
+                      hasSider: false,
+                      showMobileTips: true,
+                      requireBotEditorInit: true,
+                      pageName: 'bot',
+                    };
+                  },
                 },
                 {
                   path: 'plugin/:plugin_id',

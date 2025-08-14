@@ -45,7 +45,7 @@ export const TemplateCard: FC<TemplateCardProps> = props => {
             description: props.meta_info?.description,
             userInfo: props.meta_info?.user_info,
             entityType: props.meta_info.entity_type,
-            imgSrc: props.meta_info.covers?.[0].url,
+            imgSrc: props.meta_info.covers?.[0]?.url || props.meta_info.icon_url,
           }}
         />
         <Space className={styles['btn-container']}>

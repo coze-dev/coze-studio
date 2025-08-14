@@ -111,7 +111,8 @@ const (
 )
 
 const (
-	TemplateSpaceID = int64(999999) // special space id for template
+	TemplateSpaceID      = int64(999999) // special space id for template  
+	TemplateStoreSpaceID = int64(888888) // special space id for template store (global store for all users)
 )
 
 const (

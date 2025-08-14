@@ -25,6 +25,12 @@ const TemplatePage = lazy(() =>
   })),
 );
 
+const TemplateStorePage = lazy(() =>
+  import('@coze-agent-ide/agent-publish').then(exps => ({
+    default: exps.TemplateStorePage,
+  })),
+);
+
 export const templateRouter: RouteObject = {
   path: 'template',
   Component: null,
@@ -44,6 +50,13 @@ export const templateRouter: RouteObject = {
       element: <TemplatePage />,
       loader: () => ({
         type: 'template',
+      }),
+    },
+    {
+      path: 'store',
+      element: <TemplateStorePage />,
+      loader: () => ({
+        type: 'template-store',
       }),
     },
   ],

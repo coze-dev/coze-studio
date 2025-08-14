@@ -82,3 +82,13 @@ export { fornaxObApi } from './fornax-ob-api';
 export { fornaxApi } from './fornax-api';
 export { evaluationApi } from './fornax-evaluation-api';
 export { cozeSpaceApi } from './coze-space-api';
+export { TemplateApi } from './template-api';
+export type {
+  PublishAsTemplateRequest,
+  PublishAsTemplateResponse,
+  GetMyTemplateListRequest,
+  GetMyTemplateListResponse,
+  TemplateInfo,
+  DeleteTemplateRequest,
+  DeleteTemplateResponse,
+} from './template-api';

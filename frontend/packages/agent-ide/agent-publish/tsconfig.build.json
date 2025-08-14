@@ -37,6 +37,9 @@
       "path": "../../arch/bot-typings/tsconfig.build.json"
     },
     {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
       "path": "../../arch/i18n/tsconfig.build.json"
     },
     {
@@ -50,6 +53,15 @@
     },
     {
       "path": "../../arch/report-tti/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-editor-context-store/tsconfig.build.json"
+    },
+    {
+      "path": "../chat-debug-area/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/prompt-kit/base/tsconfig.build.json"
     },
     {
       "path": "../commons/tsconfig.build.json"
@@ -76,6 +88,9 @@
       "path": "../../foundation/layout/tsconfig.build.json"
     },
     {
+      "path": "../model-manager/tsconfig.build.json"
+    },
+    {
       "path": "../space-bot/tsconfig.build.json"
     },
     {
@@ -95,6 +110,9 @@
     },
     {
       "path": "../../studio/user-store/tsconfig.build.json"
+    },
+    {
+      "path": "../tool/tsconfig.build.json"
     }
   ]
 }

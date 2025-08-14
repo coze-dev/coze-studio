@@ -3851,5 +3851,17 @@
   "workspace_library_search": "搜索资源",
   "workspace_no_permission_access": "无法查看空间",
   "workspace_mcp": "MCP管理",
-  "workspace_card": "卡片管理"
+  "workspace_card": "卡片管理",
+  "template_publish_as_community_template": "发布为社区模板",
+  "template_publish_share_agent_description": "将您的智能体作为模板分享，供其他用户发现和使用",
+  "template_publish_enable_option": "将此智能体发布为社区模板",
+  "template_publish_title": "模板标题",
+  "template_publish_title_placeholder": "为您的模板输入一个描述性标题",
+  "template_publish_description": "模板描述",
+  "template_publish_description_placeholder": "描述此模板的功能和使用方法（可选）",
+  "template_publish_button": "发布模板",
+  "template_publish_helper_text": "您的模板将在社区模板库中可用",
+  "template_publish_required_fields_error": "请填写必填字段",
+  "template_publish_success": "模板发布成功",
+  "template_publish_error": "模板发布失败"
 }

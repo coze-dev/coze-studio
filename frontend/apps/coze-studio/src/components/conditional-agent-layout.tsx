@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-export { AgentPublishPage } from './components/bot-publish';
-export { TemplatePublishSection } from './components/template-publish-section';
-export { TemplateStorePage } from './components/template-store-page';
-export { StoreAgentChat } from './components/store-agent-chat';
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import AgentIDELayout from '@coze-agent-ide/layout-adapter';
+import { StoreChatPage } from './store-chat-page';
+
+export const ConditionalAgentLayout: React.FC = () => {
+  const { space_id } = useParams<{ space_id: string }>();
+
+  // 如果是商店空间，使用简化的聊天页面
+  if (space_id === '888888') {
+    return <StoreChatPage />;
+  }
+
+  // 其他空间使用正常的AgentIDELayout
+  return <AgentIDELayout />;
+};

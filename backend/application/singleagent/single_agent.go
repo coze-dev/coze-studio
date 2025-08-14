@@ -540,6 +540,9 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	if do.SpaceID == consts.TemplateSpaceID { // duplicate template, not need check uid permission
 		return do, nil
 	}
+	if do.SpaceID == consts.TemplateStoreSpaceID { // store template, accessible by all users
+		return do, nil
+	}
 
 	// 首先检查是否是创建者
 	if do.CreatorID == *uid {

@@ -30,7 +30,7 @@ const mergedConfig = defineConfig({
     proxy: [
       {
         context: ['/api', '/v1'],
-        target: 'http://10.10.10.224:9888/' || API_PROXY_TARGET,
+        target: API_PROXY_TARGET,
         secure: false,
         changeOrigin: true,
       },

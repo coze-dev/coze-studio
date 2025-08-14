@@ -230,18 +230,20 @@ export const PublishTable = forwardRef(
             }))}
         />
         {dataSource.length ? (
-          <TableCollection
-            dataSource={dataSource}
-            connectorBrandInfoMap={connectorBrandInfoMap ?? {}}
-            setSelectedPlatforms={setSelectedPlatforms}
-            selectedPlatforms={selectedPlatforms}
-            setDataSource={setDataSource}
-            canOpenSource={canOpenSource}
-            setHasCategoryList={setHasCategoryList}
-            botInfo={botInfo}
-            monetizeConfig={monetizeConfig}
-            disabled={publishLoading}
-          />
+          <>
+            <TableCollection
+              dataSource={dataSource}
+              connectorBrandInfoMap={connectorBrandInfoMap ?? {}}
+              setSelectedPlatforms={setSelectedPlatforms}
+              selectedPlatforms={selectedPlatforms}
+              setDataSource={setDataSource}
+              canOpenSource={canOpenSource}
+              setHasCategoryList={setHasCategoryList}
+              botInfo={botInfo}
+              monetizeConfig={monetizeConfig}
+              disabled={publishLoading}
+            />
+          </>
         ) : (
           <div className="flex flex-col justify-center items-center w-full h-full gap-[4px] mt-[80px]">
             <IconCozEmpty className="w-[32px] h-[32px] coz-fg-dim" />

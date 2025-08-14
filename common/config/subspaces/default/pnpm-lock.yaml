@@ -1116,9 +1116,21 @@ importers:
       '@coze-agent-ide/agent-ide-commons':
         specifier: workspace:*
         version: link:../commons
+      '@coze-agent-ide/bot-editor-context-store':
+        specifier: workspace:*
+        version: link:../bot-editor-context-store
+      '@coze-agent-ide/chat-debug-area':
+        specifier: workspace:*
+        version: link:../chat-debug-area
+      '@coze-agent-ide/model-manager':
+        specifier: workspace:*
+        version: link:../model-manager
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
         version: link:../space-bot
+      '@coze-agent-ide/tool':
+        specifier: workspace:*
+        version: link:../tool
       '@coze-arch/bot-api':
         specifier: workspace:*
         version: link:../../arch/bot-api
@@ -1146,6 +1158,9 @@ importers:
       '@coze-arch/bot-tea':
         specifier: workspace:*
         version: link:../../arch/bot-tea
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.101d0c
         version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
@@ -1164,6 +1179,9 @@ importers:
       '@coze-arch/report-tti':
         specifier: workspace:*
         version: link:../../arch/report-tti
+      '@coze-common/prompt-kit-base':
+        specifier: workspace:*
+        version: link:../../common/prompt-kit/base
       '@coze-foundation/layout':
         specifier: workspace:*
         version: link:../../foundation/layout
@@ -1209,6 +1227,9 @@ importers:
       react-router-dom:
         specifier: ^6.22.0
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
+      zustand:
+        specifier: ^4.4.7
+        version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     devDependencies:
       '@coze-arch/bot-typings':
         specifier: workspace:*

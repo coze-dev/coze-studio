@@ -34,6 +34,12 @@ const PluginPage = lazy(() =>
     default: exps.PluginPage,
   })),
 );
+
+const ProjectStorePage = lazy(() =>
+  import('@coze-agent-ide/agent-publish').then(exps => ({
+    default: exps.TemplateStorePage,
+  })),
+);
 export const exploreRouter: RouteObject = {
   path: 'explore',
   Component: null,
@@ -54,6 +60,19 @@ export const exploreRouter: RouteObject = {
       loader: () => ({
         type: 'plugin',
       }),
+    },
+    {
+      path: 'project',
+      children: [
+        {
+          path: 'latest',
+          element: <ProjectStorePage />,
+          loader: () => ({
+            type: 'project-latest',
+            showCopyButton: false, // 显示"立即体验"而不是"复制"
+          }),
+        },
+      ],
     },
     // {
     //   path: 'template',
