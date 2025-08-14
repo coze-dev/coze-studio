@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -69,7 +70,7 @@ func (ch *ConversationHistoryConfig) Build(_ context.Context, ns *schema.NodeSch
 func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	var (
 		execCtx     = execute.GetExeCtx(ctx)
-		env         = ternary.IFElse(execCtx.ExeCfg.Mode == vo.ExecuteModeRelease, vo.Online, vo.Draft)
+		env         = ternary.IFElse(execCtx.ExeCfg.Mode == workflowModel.ExecuteModeRelease, vo.Online, vo.Draft)
 		appID       = execCtx.ExeCfg.AppID
 		agentID     = execCtx.ExeCfg.AgentID
 		connectorID = execCtx.ExeCfg.ConnectorID

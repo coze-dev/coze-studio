@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -102,7 +103,7 @@ func (m *MessageList) getConversationIDByName(ctx context.Context, env vo.Env, a
 func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	var (
 		execCtx     = execute.GetExeCtx(ctx)
-		env         = ternary.IFElse(execCtx.ExeCfg.Mode == vo.ExecuteModeRelease, vo.Online, vo.Draft)
+		env         = ternary.IFElse(execCtx.ExeCfg.Mode == workflowModel.ExecuteModeRelease, vo.Online, vo.Draft)
 		appID       = execCtx.ExeCfg.AppID
 		agentID     = execCtx.ExeCfg.AgentID
 		version     = execCtx.ExeCfg.Version

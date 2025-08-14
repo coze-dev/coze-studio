@@ -16,18 +16,18 @@
 
 package workflow
 
+import (
+	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+)
+
 type Locator uint8
 
 const (
 	FromDraft Locator = iota
 	FromSpecificVersion
 	FromLatestVersion
-)
-
-import (
-	"github.com/cloudwego/eino/schema"
-	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 )
 
 type ExecuteConfig struct {

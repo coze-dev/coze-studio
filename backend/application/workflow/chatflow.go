@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"runtime/debug"
@@ -497,7 +498,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		resolveAppID   int64
 		conversationID int64
 		version        string
-		locator        vo.Locator
+		locator        workflowModel.Locator
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
 		userID         = apiKeyInfo.UserID
 		connectorID    = apiKeyInfo.ConnectorID
@@ -516,7 +517,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	if isDebug {
-		locator = vo.FromDraft
+		locator = workflowModel.FromDraft
 	} else {
 		meta, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 			ID:       mustParseInt64(req.GetWorkflowID()),
@@ -531,10 +532,10 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		}
 		if req.IsSetVersion() {
 			version = req.GetVersion()
-			locator = vo.FromSpecificVersion
+			locator = workflowModel.FromSpecificVersion
 		} else {
 			version = meta.GetLatestVersion()
-			locator = vo.FromLatestVersion
+			locator = workflowModel.FromLatestVersion
 		}
 	}
 
@@ -582,12 +583,12 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			EventID:    info.EventID,
 			ExecuteID:  info.ExecID,
 			ResumeData: data,
-		}, vo.ExecuteConfig{
+		}, workflowModel.ExecuteConfig{
 			Operator:       userID,
-			Mode:           ternary.IFElse(isDebug, vo.ExecuteModeDebug, vo.ExecuteModeRelease),
+			Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
 			ConnectorID:    connectorID,
 			ConnectorUID:   strconv.FormatInt(userID, 10),
-			BizType:        vo.BizTypeWorkflow,
+			BizType:        workflowModel.BizTypeWorkflow,
 			AppID:          appID,
 			AgentID:        agentID,
 			ConversationID: ptr.Of(conversationID),
@@ -639,20 +640,20 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		return nil, err
 	}
 
-	exeCfg := vo.ExecuteConfig{
+	exeCfg := workflowModel.ExecuteConfig{
 		ID:             mustParseInt64(req.GetWorkflowID()),
 		From:           locator,
 		Version:        version,
 		Operator:       userID,
-		Mode:           ternary.IFElse(isDebug, vo.ExecuteModeDebug, vo.ExecuteModeRelease),
+		Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
 		AppID:          appID,
 		AgentID:        agentID,
 		ConnectorID:    connectorID,
 		ConnectorUID:   strconv.FormatInt(userID, 10),
-		TaskType:       vo.TaskTypeForeground,
-		SyncPattern:    vo.SyncPatternStream,
+		TaskType:       workflowModel.TaskTypeForeground,
+		SyncPattern:    workflowModel.SyncPatternStream,
 		InputFailFast:  true,
-		BizType:        vo.BizTypeWorkflow,
+		BizType:        workflowModel.BizTypeWorkflow,
 		ConversationID: ptr.Of(conversationID),
 		RoundID:        ptr.Of(roundID),
 		UserMessage:    userSchemaMessage,
@@ -1021,7 +1022,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}
 
 				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
 				})
 				if err != nil {
 					return nil, err
@@ -1093,7 +1094,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}
 
 				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
 				})
 				if err != nil {
 					return nil, err
