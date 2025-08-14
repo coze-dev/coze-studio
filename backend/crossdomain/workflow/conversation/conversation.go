@@ -24,8 +24,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
@@ -39,7 +41,7 @@ func NewConversationRepository() *ConversationRepository {
 	return &ConversationRepository{}
 }
 
-func (c *ConversationRepository) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (int64, error) {
+func (c *ConversationRepository) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (int64, int64, error) {
 	ret, err := crossconversation.DefaultSVC().Create(ctx, &entity.CreateMeta{
 		AgentID:     req.AppID,
 		UserID:      req.UserID,
@@ -47,10 +49,14 @@ func (c *ConversationRepository) CreateConversation(ctx context.Context, req *co
 		Scene:       common.Scene_SceneWorkflow,
 	})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return ret.ID, nil
+	return ret.ID, ret.SectionID, nil
+}
+
+func (c *ConversationRepository) GetByID(ctx context.Context, id int64) (*entity.Conversation, error) {
+	return crossconversation.DefaultSVC().GetByID(ctx, id)
 }
 
 func (c *ConversationRepository) CreateMessage(ctx context.Context, req *conversation.CreateMessageRequest) (int64, error) {
@@ -62,8 +68,9 @@ func (c *ConversationRepository) CreateMessage(ctx context.Context, req *convers
 		UserID:         strconv.FormatInt(req.UserID, 10),
 		AgentID:        req.AppID,
 		RunID:          req.RunID,
+		SectionID:      req.SectionID,
 	}
-	if msg.Role == "user" {
+	if msg.Role == schema.User {
 		msg.MessageType = message.MessageTypeQuestion
 	} else {
 		msg.MessageType = message.MessageTypeAnswer
@@ -86,13 +93,12 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 	}
 	if req.BeforeID != nil {
 		lm.Cursor, _ = strconv.ParseInt(*req.BeforeID, 10, 64)
-		lm.Direction = msgentity.ScrollPageDirectionPrev
+		lm.Direction = msgentity.ScrollPageDirectionNext
 	}
 	if req.AfterID != nil {
 		lm.Cursor, _ = strconv.ParseInt(*req.AfterID, 10, 64)
-		lm.Direction = msgentity.ScrollPageDirectionNext
+		lm.Direction = msgentity.ScrollPageDirectionPrev
 	}
-	lm.Direction = msgentity.ScrollPageDirectionNext
 	lr, err := crossmessage.DefaultSVC().List(ctx, lm)
 	if err != nil {
 		return nil, err
@@ -117,14 +123,14 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 	return response, nil
 }
 
-func (c *ConversationRepository) ClearConversationHistory(ctx context.Context, req *conversation.ClearConversationHistoryReq) error {
-	_, err := crossconversation.DefaultSVC().NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+func (c *ConversationRepository) ClearConversationHistory(ctx context.Context, req *conversation.ClearConversationHistoryReq) (int64, error) {
+	resp, err := crossconversation.DefaultSVC().NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: req.ConversationID,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return resp.SectionID, nil
 
 }
 
@@ -147,7 +153,26 @@ func (c *ConversationRepository) EditMessage(ctx context.Context, req *conversat
 }
 
 func (c *ConversationRepository) GetLatestRunIDs(ctx context.Context, req *conversation.GetLatestRunIDsRequest) ([]int64, error) {
-	return []int64{0}, nil
+	listMeta := &agententity.ListRunRecordMeta{
+		ConversationID: req.ConversationID,
+		AgentID:        req.AppID,
+		Limit:          int32(req.Rounds),
+		SectionID:      req.SectionID,
+	}
+
+	if req.InitRunID != nil {
+		listMeta.BeforeID = *req.InitRunID
+	}
+
+	runRecords, err := crossagentrun.DefaultSVC().List(ctx, listMeta)
+	if err != nil {
+		return nil, err
+	}
+	runIDs := make([]int64, 0, len(runRecords))
+	for _, record := range runRecords {
+		runIDs = append(runIDs, record.ID)
+	}
+	return runIDs, nil
 }
 
 func (c *ConversationRepository) GetMessagesByRunIDs(ctx context.Context, req *conversation.GetMessagesByRunIDsRequest) (*conversation.GetMessagesByRunIDsResponse, error) {
