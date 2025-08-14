@@ -275,6 +275,12 @@ table "api_key" {
     default = 0
     comment = "Used Time in Milliseconds"
   }
+  column "ak_type" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "api key type "
+  }
   primary_key {
     columns = [column.id]
   }
@@ -3033,6 +3039,17 @@ table "single_agent_draft" {
     type    = json
     comment = "Agent Database Base Configuration"
   }
+  column "bot_mode" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "bot mode,0:single mode 2:chatflow mode"
+  }
+  column "layout_info" {
+    null    = true
+    type    = text
+    comment = "chatflow layout info"
+  }
   column "shortcut_command" {
     null    = true
     type    = json
@@ -3193,6 +3210,17 @@ table "single_agent_version" {
     default  = 0
     unsigned = true
     comment  = "Create Time in Milliseconds"
+  }
+  column "bot_mode" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "bot mode,0:single mode 2:chatflow mode"
+  }
+  column "layout_info" {
+    null    = true
+    type    = text
+    comment = "chatflow layout info"
   }
   column "updated_at" {
     null     = false

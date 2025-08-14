@@ -76,6 +76,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		connectorID = execCtx.ExeCfg.ConnectorID
 		userID      = execCtx.ExeCfg.Operator
 		version     = execCtx.ExeCfg.Version
+		initRunID   = execCtx.ExeCfg.InitRoundID
 	)
 	if agentID != nil {
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, fmt.Errorf("in the agent scenario, query conversation list is not available"))
@@ -138,6 +139,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		UserID:         userID,
 		AppID:          *appID,
 		Rounds:         rounds,
+		InitRunID:      initRunID,
 	})
 
 	if err != nil {

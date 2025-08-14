@@ -67,7 +67,7 @@ type ConversationService interface {
 	ListDynamicConversation(ctx context.Context, env vo.Env, policy *vo.ListConversationPolicy) ([]*entity.DynamicConversation, error)
 	ReleaseConversationTemplate(ctx context.Context, appID int64, version string) error
 	InitApplicationDefaultConversationTemplate(ctx context.Context, spaceID int64, appID int64, userID int64) error
-	GetOrCreateConversation(ctx context.Context, env vo.Env, appID, connectorID, userID int64, conversationName string) (int64, error)
+	GetOrCreateConversation(ctx context.Context, env vo.Env, appID, connectorID, userID int64, conversationName string) (int64, int64, error)
 	UpdateConversation(ctx context.Context, env vo.Env, appID, connectorID, userID int64, conversationName string) (int64, error)
 }
 
@@ -112,7 +112,7 @@ type ToolFromWorkflow interface {
 	GetWorkflow() *entity.Workflow
 }
 
-type ConversationIDGenerator func(ctx context.Context, appID int64, userID, connectorID int64) (int64, error)
+type ConversationIDGenerator func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error)
 
 type ConversationRepository interface {
 	CreateDraftConversationTemplate(ctx context.Context, template *vo.CreateConversationTemplateMeta) (int64, error)
@@ -122,8 +122,8 @@ type ConversationRepository interface {
 	DeleteDynamicConversation(ctx context.Context, env vo.Env, id int64) (int64, error)
 	ListConversationTemplate(ctx context.Context, env vo.Env, policy *vo.ListConversationTemplatePolicy) ([]*entity.ConversationTemplate, error)
 	MGetStaticConversation(ctx context.Context, env vo.Env, userID, connectorID int64, templateIDs []int64) ([]*entity.StaticConversation, error)
-	GetOrCreateStaticConversation(ctx context.Context, env vo.Env, idGen ConversationIDGenerator, meta *vo.CreateStaticConversation) (int64, bool, error)
-	GetOrCreateDynamicConversation(ctx context.Context, env vo.Env, idGen ConversationIDGenerator, meta *vo.CreateDynamicConversation) (int64, bool, error)
+	GetOrCreateStaticConversation(ctx context.Context, env vo.Env, idGen ConversationIDGenerator, meta *vo.CreateStaticConversation) (int64, int64, bool, error)
+	GetOrCreateDynamicConversation(ctx context.Context, env vo.Env, idGen ConversationIDGenerator, meta *vo.CreateDynamicConversation) (int64, int64, bool, error)
 	GetDynamicConversationByName(ctx context.Context, env vo.Env, appID, connectorID, userID int64, name string) (*entity.DynamicConversation, bool, error)
 	GetStaticConversationByTemplateID(ctx context.Context, env vo.Env, userID, connectorID, templateID int64) (*entity.StaticConversation, bool, error)
 	ListDynamicConversation(ctx context.Context, env vo.Env, policy *vo.ListConversationPolicy) ([]*entity.DynamicConversation, error)
