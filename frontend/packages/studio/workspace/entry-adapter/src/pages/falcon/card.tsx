@@ -34,6 +34,7 @@ import {
 import { GridList, GridItem } from './components/gridList';
 import { aopApi } from '@coze-arch/bot-api';
 import { replaceUrl } from './utils';
+import placeholderImg from './assets/placeholder.png';
 
 import styles from './index.module.less';
 
@@ -273,7 +274,12 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                   }}
                 >
                   <div className="flex flex-col gap-[8px]">
-                    <div className="w-full h-[180px] px-[12px] py-[12px] bg-[#EFF0F4] rounded-[6px]">
+                    <div
+                      className="w-full h-[180px] px-[12px] py-[12px] bg-[#EFF0F4] rounded-[6px]"
+                      style={{
+                        background: `#EFF0F4 url("${placeholderImg}") no-repeat center center / 108px auto`,
+                      }}
+                    >
                       <div
                         className="w-full h-full"
                         style={{
