@@ -349,20 +349,30 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 	}
 
 	if len(messages) == 0 {
+		if id.ChatHistorySetting.EnableChatHistory {
+			ret := map[string]any{
+				"chatHistory": []any{},
+				"query":       in["query"],
+			}
+			return ret, nil
+		}
 		return in, nil
 	}
 
 	count := 0
-	endIdx := 0
-	var historyMessages []any
-	for _, msg := range messages {
-		if count > int(id.ChatHistorySetting.ChatHistoryRound) {
-			break
-		}
-		if msg.Role == schema.User {
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == schema.User {
 			count++
 		}
-		endIdx++
+		if count >= int(id.ChatHistorySetting.ChatHistoryRound) {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
 		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
@@ -373,7 +383,7 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[:endIdx])
+	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
 
 	ret := map[string]any{
 		"chatHistory": historyMessages,

@@ -258,20 +258,30 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 		messages = execCtx.ExeCfg.ConversationHistory
 	}
 	if len(messages) == 0 {
+		if kr.ChatHistorySetting.EnableChatHistory {
+			ret := map[string]any{
+				"chatHistory": []any{},
+				"Query":       in["Query"],
+			}
+			return ret, nil
+		}
 		return in, nil
 	}
 
 	count := 0
-	endIdx := 0
-	var historyMessages []any
-	for _, msg := range messages {
-		if count > int(kr.ChatHistorySetting.ChatHistoryRound) {
-			break
-		}
-		if msg.Role == einoSchema.User {
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == einoSchema.User {
 			count++
 		}
-		endIdx++
+		if count >= int(kr.ChatHistorySetting.ChatHistoryRound) {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
 		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
@@ -282,7 +292,7 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[:endIdx])
+	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
 
 	ret := map[string]any{
 		"chatHistory": historyMessages,

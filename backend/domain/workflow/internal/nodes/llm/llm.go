@@ -1252,20 +1252,36 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 		messages = execCtx.ExeCfg.ConversationHistory
 	}
 	if len(messages) == 0 {
+		if l.chatHistorySetting.EnableChatHistory {
+			ret := map[string]any{
+				"chatHistory": []any{},
+			}
+			for k, v := range input {
+				ret[k] = v
+			}
+			return ret, nil
+		}
 		return input, nil
 	}
 
+	maxRounds := int(l.chatHistorySetting.ChatHistoryRound)
+	if execCtx != nil && execCtx.ExeCfg.MaxHistoryRounds != nil {
+		maxRounds = min(int(*execCtx.ExeCfg.MaxHistoryRounds), maxRounds)
+	}
 	count := 0
-	endIdx := 0
-	var historyMessages []any
-	for _, msg := range messages {
-		if count > int(l.chatHistorySetting.ChatHistoryRound) {
-			break
-		}
-		if msg.Role == schema.User {
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == schema.User {
 			count++
 		}
-		endIdx++
+		if count >= maxRounds {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
 		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
@@ -1276,7 +1292,7 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[:endIdx])
+	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
 
 	ret := map[string]any{
 		"chatHistory": historyMessages,
