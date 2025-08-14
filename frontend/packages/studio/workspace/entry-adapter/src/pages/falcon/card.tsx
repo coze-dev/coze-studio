@@ -2,7 +2,7 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable prettier/prettier */
-import { type FC, useEffect, useCallback, useState } from 'react';
+import { type FC, useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { I18n } from '@coze-arch/i18n';
 import cls from 'classnames';
@@ -41,6 +41,7 @@ let timer: NodeJS.Timeout | null = null;
 const delay = 300;
 
 export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
+  const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('');
   const [typeList, setTypeList] = useState([
     {
@@ -51,28 +52,53 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
   ]);
   const [groupType, setGroupType] = useState(1);
   const [filterQueryText, setFilterQueryText] = useState('');
-  const [mcpList, setMcpList] = useState([]);
+  const [cardList, setCardList] = useState([]);
   const [spinId, setSpinId] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pageNoRef = useRef(1);
+  const allPageCountRef = useRef(1);
 
   const navigate = useNavigate();
   const goPage = path => {
     navigate(`/space/${spaceId}${path}`);
   };
 
-  const getCardListData = useCallback(() => {
-    aopApi
-      .GetCardResourceList({
-        createdBy: groupType === 1,
-        searchValue: filterQueryText,
-        sassWorkspaceId: spaceId,
-        cardClassId: filterType,
-        pageNo: 1,
-        pageSize: 30,
-      })
-      .then(res => {
-        setMcpList(res.body.cardList || []);
-      });
-  }, [filterQueryText, filterType, groupType, spaceId]);
+  const getCardListData = useCallback(
+    (isAppend = false) => {
+      if (isAppend) {
+        if (pageNoRef.current > allPageCountRef.current) {
+          return;
+        }
+        pageNoRef.current++;
+      } else {
+        pageNoRef.current = 1;
+      }
+
+      setLoading(true);
+      aopApi
+        .GetCardResourceList({
+          createdBy: groupType === 1,
+          searchValue: filterQueryText,
+          sassWorkspaceId: spaceId,
+          cardClassId: filterType,
+          pageNo: pageNoRef.current,
+          pageSize: 30,
+        })
+        .then(res => {
+          const newList = res.body.cardList || [];
+          if (isAppend) {
+            setCardList(prev => [...prev, ...newList]);
+            allPageCountRef.current = Number(res.body.totalPages);
+          } else {
+            setCardList(newList);
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [filterQueryText, filterType, groupType, spaceId],
+  );
 
   const stopService = useCallback(
     (cardId: string) => {
@@ -148,6 +174,16 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
     },
     [getCardListData],
   );
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current && !loading) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const threshold = 100;
+      if (scrollTop + clientHeight >= scrollHeight - threshold) {
+        getCardListData(true);
+      }
+    }
+  }, [getCardListData, loading]);
 
   useEffect(() => {
     getCardListData();
@@ -242,9 +278,9 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
           </Select>
         </SubHeaderFilters>
       </SubHeader>
-      <Content>
+      <Content ref={scrollRef} onScroll={handleScroll}>
         <GridList>
-          {mcpList.map(item => (
+          {cardList.map(item => (
             <GridItem key={item.cardId}>
               <div
                 className={cls(
@@ -387,6 +423,11 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
             </GridItem>
           ))}
         </GridList>
+        {loading ? (
+          <Spin>
+            <div className="w-full h-[100px] flex items-center justify-center" />
+          </Spin>
+        ) : null}
       </Content>
     </Layout>
   );

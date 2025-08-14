@@ -4,7 +4,12 @@ import cls from 'classnames';
 
 import styles from './index.module.less';
 
-export const GridList = ({ children, averageItemWidth = 300, className }) => {
+export const GridList = ({
+  children,
+  averageItemWidth = 300,
+  className,
+  ...resetProps
+}) => {
   const gridListRef = useRef<HTMLDivElement>(null);
   const [repeatCount, setRepeatCount] = useState(3);
 
@@ -20,10 +25,11 @@ export const GridList = ({ children, averageItemWidth = 300, className }) => {
       });
       resizeObserver.observe(gridListRef.current);
     }
-  }, []);
+  }, [averageItemWidth]);
 
   return (
     <div
+      {...resetProps}
       ref={gridListRef}
       className={cls(styles.gridList, className)}
       style={{ gridTemplateColumns: `repeat(${repeatCount}, 1fr)` }}
@@ -37,16 +43,14 @@ export const GridItem = ({
   children,
   disabled = false,
   className,
-  onClick,
-}) => {
-  return (
-    <div
-      className={cls(styles.gridItem, className, {
-        [styles.disabled]: disabled,
-      })}
-      onClick={onClick}
-    >
-      {children}
-    </div>
-  );
-};
+  ...restProps
+}) => (
+  <div
+    {...restProps}
+    className={cls(styles.gridItem, className, {
+      [styles.disabled]: disabled,
+    })}
+  >
+    {children}
+  </div>
+);
