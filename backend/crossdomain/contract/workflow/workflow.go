@@ -71,7 +71,7 @@ const (
 const (
 	NodeTypeOutputEmitter NodeType = "OutputEmitter"
 	NodeTypeInputReceiver NodeType = "InputReceiver"
-	NodeTypeQuestion      NodeType = "Question"
+	NodeTypeQuestion      NodeType = "QuestionAnswer"
 )
 
 const (
