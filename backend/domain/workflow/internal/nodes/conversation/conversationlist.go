@@ -19,6 +19,7 @@ package conversation
 import (
 	"context"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -69,7 +70,7 @@ type conversationInfo struct {
 func (c *ConversationList) Invoke(ctx context.Context, _ map[string]any) (map[string]any, error) {
 	var (
 		execCtx     = execute.GetExeCtx(ctx)
-		env         = ternary.IFElse(execCtx.ExeCfg.Mode == vo.ExecuteModeRelease, vo.Online, vo.Draft)
+		env         = ternary.IFElse(execCtx.ExeCfg.Mode == workflowModel.ExecuteModeRelease, vo.Online, vo.Draft)
 		appID       = execCtx.ExeCfg.AppID
 		agentID     = execCtx.ExeCfg.AgentID
 		connectorID = execCtx.ExeCfg.ConnectorID
