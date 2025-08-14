@@ -21,6 +21,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 )
 
 type CreateConversationRequest struct {
@@ -37,6 +38,7 @@ type CreateMessageRequest struct {
 	UserID         int64
 	AppID          int64
 	RunID          int64
+	SectionID      int64
 }
 
 type MessageListRequest struct {
@@ -96,6 +98,8 @@ type GetLatestRunIDsRequest struct {
 	UserID         int64
 	AppID          int64
 	Rounds         int64
+	SectionID      int64
+	InitRunID      *int64
 }
 type ClearConversationHistoryReq struct {
 	ConversationID int64
@@ -123,12 +127,13 @@ type GetMessagesByRunIDsResponse struct {
 
 //go:generate  mockgen -destination conversationmock/conversation_mock.go --package conversationmock -source conversation.go
 type ConversationManager interface {
-	CreateConversation(ctx context.Context, req *CreateConversationRequest) (int64, error)
+	CreateConversation(ctx context.Context, req *CreateConversationRequest) (int64, int64, error)
 	CreateMessage(ctx context.Context, req *CreateMessageRequest) (int64, error)
 	MessageList(ctx context.Context, req *MessageListRequest) (*MessageListResponse, error)
 	GetLatestRunIDs(ctx context.Context, req *GetLatestRunIDsRequest) ([]int64, error)
 	GetMessagesByRunIDs(ctx context.Context, req *GetMessagesByRunIDsRequest) (*GetMessagesByRunIDsResponse, error)
-	ClearConversationHistory(ctx context.Context, req *ClearConversationHistoryReq) error
+	ClearConversationHistory(ctx context.Context, req *ClearConversationHistoryReq) (int64, error)
 	DeleteMessage(ctx context.Context, req *DeleteMessageRequest) error
 	EditMessage(ctx context.Context, req *EditMessageRequest) error
+	GetByID(ctx context.Context, id int64) (*entity.Conversation, error)
 }

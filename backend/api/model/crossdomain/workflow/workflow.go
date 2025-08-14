@@ -48,9 +48,11 @@ type ExecuteConfig struct {
 	Cancellable         bool
 	WorkflowMode        WorkflowMode
 	RoundID             *int64 // if workflow is chat flow, conversation round id is required
+	InitRoundID         *int64 // if workflow is chat flow, init conversation round id is required
 	ConversationID      *int64 // if workflow is chat flow, conversation id is required
 	UserMessage         *schema.Message
 	ConversationHistory []*conversation.Message
+	SectionID           *int64
 }
 
 type ExecuteMode string
