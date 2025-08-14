@@ -49,3 +49,7 @@ func (c *impl) Delete(ctx context.Context, runID []int64) error {
 func (c *impl) List(ctx context.Context, meta *entity.ListRunRecordMeta) ([]*entity.RunRecordMeta, error) {
 	return c.DomainSVC.List(ctx, meta)
 }
+
+func (c *impl) Create(ctx context.Context, meta *entity.AgentRunMeta) (*entity.RunRecordMeta, error) {
+	return c.DomainSVC.Create(ctx, meta)
+}

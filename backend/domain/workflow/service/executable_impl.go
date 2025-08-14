@@ -25,6 +25,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflowapimodel "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -300,6 +301,23 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 		}
 	}
 
+	historyRounds := int64(0)
+	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
+
+		historyRounds, err = getHistoryRoundsFromNode(ctx, wfEntity, nodeID, i.repo)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if historyRounds > 0 {
+		messages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
+		} else if len(messages) > 0 || messages != nil {
+			config.ConversationHistory = messages
+		}
+	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -383,6 +401,22 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		}
 	}
 
+	historyRounds := int64(0)
+	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
+		historyRounds, err = i.calculateMaxChatHistoryRounds(ctx, wfEntity, i.repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if historyRounds > 0 {
+		messages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
+		} else if len(messages) > 0 || messages != nil {
+			config.ConversationHistory = messages
+		}
+	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -984,7 +1018,7 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 		ConversationID: *convID,
 		AppID:          resolvedAppID,
 		UserID:         userID,
-		Rounds:         historyRounds,
+		Rounds:         historyRounds + 1,
 		SectionID:      *sectionID,
 	}
 
