@@ -51,12 +51,12 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       .GetMCPResourceList({
         createdBy: true,
         mcpName: filterQueryText,
-        sassWorkspaceId: '7533521629687578624',
+        sassWorkspaceId: spaceId,
       })
       .then(res => {
         setMcpList(res.body.serviceInfoList || []);
       });
-  }, [filterQueryText]);
+  }, [filterQueryText, spaceId]);
 
   const stopService = useCallback(
     (mcpId: string) => {

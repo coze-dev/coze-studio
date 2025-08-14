@@ -106,7 +106,6 @@ export const FalconMcpDetail = ({ spaceId }) => {
                 url: replaceUrl(data.mcpIcon),
                 status: 'done',
                 response: {
-                  // 添加模拟响应结构
                   header: { errorCode: '0' },
                   body: { path: data.mcpIcon },
                 },
@@ -270,7 +269,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
               ]}
               trigger="blur"
               field="install_type"
-              style={{ width: valueWidth }}
+              type="card"
               label={{
                 text: I18n.t('coze_workspace_mcp_detail_install_type'),
               }}
