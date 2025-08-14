@@ -238,7 +238,7 @@ func collectMaxHistoryRounds(ctx context.Context, nodes []*vo.Node, repo wf.Repo
 			if node.Data.Inputs.ChatHistorySetting.ChatHistoryRound > *maxRounds {
 				*maxRounds = node.Data.Inputs.ChatHistorySetting.ChatHistoryRound
 			}
-		} else if node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.LLMParam != nil {
+		} else if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.LLMParam != nil {
 			param := node.Data.Inputs.LLMParam
 			bs, _ := sonic.Marshal(param)
 			llmParam := make(vo.LLMParam, 0)
