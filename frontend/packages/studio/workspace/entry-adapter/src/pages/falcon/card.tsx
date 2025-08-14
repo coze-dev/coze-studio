@@ -100,26 +100,19 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
     [filterQueryText, filterType, groupType, spaceId],
   );
 
-  const stopService = useCallback(
-    (cardId: string) => {
-      setSpinId(cardId);
-      aopApi
-        .StopMCPResource({
-          cardId,
-        })
-        .finally(() => {
-          setSpinId('');
-          getCardListData();
-        });
-    },
-    [getCardListData],
-  );
+  const goEditor = cardId => {
+    window.open(
+      `${window.location.origin}/agent-h5/?app=simple#/m_cardEditor/editor/design?id=${
+        cardId
+      }&from=${encodeURIComponent(window.location.href)}`,
+    );
+  };
 
   const unApplyService = useCallback(
     (cardId: string) => {
       setSpinId(cardId);
       aopApi
-        .UnApplyMCPResource({
+        .UnApplyCardResource({
           cardId,
         })
         .finally(() => {
@@ -134,22 +127,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
     (cardId: string) => {
       setSpinId(cardId);
       aopApi
-        .ApplyMCPResource({
-          cardId,
-        })
-        .finally(() => {
-          setSpinId('');
-          getCardListData();
-        });
-    },
-    [getCardListData],
-  );
-
-  const startService = useCallback(
-    (cardId: string) => {
-      setSpinId(cardId);
-      aopApi
-        .StartMCPResource({
+        .ApplyCardResource({
           cardId,
         })
         .finally(() => {
@@ -164,7 +142,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
     (cardId: string) => {
       setSpinId(cardId);
       aopApi
-        .DeleteMCPResource({
+        .DeleteCardResource({
           cardId,
         })
         .finally(() => {
@@ -323,50 +301,17 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                     )}
                   >
                     {[
-                      item.cardShelfStatus == '1' && item.mcpShelf == '0' && (
-                        <div
-                          key="stop"
-                          className={cls(styles.action, styles.stop)}
-                          onClick={e => {
-                            stopService(item.cardId);
-                            e?.stopPropagation();
-                          }}
-                        >
-                          停止服务
-                        </div>
-                      ),
-                      (item.cardShelfStatus == '0' ||
-                        item.cardShelfStatus == '-1' ||
-                        item.cardShelfStatus == '2') && (
-                        <div
-                          key="start"
-                          className={cls(styles.action, styles.start)}
-                          onClick={e => {
-                            startService(item.cardId);
-                            e?.stopPropagation();
-                          }}
-                        >
-                          {item.cardShelfStatus == '2'
-                            ? '重启服务'
-                            : '启动服务'}
-                        </div>
-                      ),
-                      item.cardShelfStatus == '1' && item.mcpShelf == '1' && (
-                        <Popconfirm
-                          title={`确定要将 ${item.cardName} 服务下架吗？`}
-                          onConfirm={e => {
-                            unApplyService(item.cardId);
-                            e?.stopPropagation();
-                          }}
-                          okText="确定"
-                          cancelText="取消"
-                        >
-                          <div className={cls(styles.action, styles.unshelve)}>
-                            服务下架
-                          </div>
-                        </Popconfirm>
-                      ),
-                      item.cardShelfStatus == '1' && item.mcpShelf == '0' && (
+                      <div
+                        key="editor"
+                        className={cls(styles.action, styles.editor)}
+                        onClick={e => {
+                          goEditor(item.cardId);
+                          e?.stopPropagation();
+                        }}
+                      >
+                        进入编辑器
+                      </div>,
+                      item.cardShelfStatus === '0' && (
                         <Popconfirm
                           key="apply"
                           title={`确定要将 ${item.cardName} 服务上架吗？`}
@@ -379,6 +324,21 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                         >
                           <div className={cls(styles.action, styles.apply)}>
                             申请上架
+                          </div>
+                        </Popconfirm>
+                      ),
+                      item.cardShelfStatus === '1' && (
+                        <Popconfirm
+                          title={`确定要将 ${item.cardName} 服务下架吗？`}
+                          onConfirm={e => {
+                            unApplyService(item.cardId);
+                            e?.stopPropagation();
+                          }}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <div className={cls(styles.action, styles.unshelve)}>
+                            服务下架
                           </div>
                         </Popconfirm>
                       ),
