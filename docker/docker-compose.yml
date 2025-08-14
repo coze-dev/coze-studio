@@ -345,7 +345,7 @@ services:
     # build:
     #   context: ../
     #   dockerfile: backend/Dockerfile
-    image: opencoze/opencoze:latest
+    image: cozedev/coze-studio-server:latest
     restart: always
     container_name: coze-server
     env_file: *env_file
@@ -355,7 +355,7 @@ services:
       - coze-network
     ports:
       - '8888'
-      - '8889:8889'
+      - '8889'
     volumes:
       - .env:/app/.env
       - ../backend/conf:/app/resources/conf
@@ -377,11 +377,11 @@ services:
     # build:
     #   context: ..
     #   dockerfile: frontend/Dockerfile
-    image: opencoze/web:latest
+    image: cozedev/coze-studio-web:latest
     container_name: coze-web
     restart: always
     ports:
-      - "8888:80"
+      - "${WEB_LISTEN_ADDR:-8888}:80"
       # - "443:443"  # SSL port (uncomment if using SSL)
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Main nginx config
