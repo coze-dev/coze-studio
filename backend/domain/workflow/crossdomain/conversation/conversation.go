@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/schema"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 )

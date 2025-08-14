@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/cloudwego/eino/schema"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
