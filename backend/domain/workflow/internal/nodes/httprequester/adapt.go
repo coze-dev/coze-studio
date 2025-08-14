@@ -220,7 +220,7 @@ var globalVariableRegex = regexp.MustCompile(`global_variable_\w+\s*\["(.*?)"]`)
 func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, implicitNodeDependencies []*ImplicitNodeDependency) (err error) {
 	inputs := n.Data.Inputs
 	implicitPathVars := make(map[string]bool)
-	addImplicitVarsSources := func(prefix string, vars []string) error {
+	addImplicitVarsSources := func(prefix string, vars []string, parent *vo.Node) error {
 		for _, v := range vars {
 			if strings.HasPrefix(v, "block_output_") {
 				paths := strings.Split(strings.TrimPrefix(v, "block_output_"), ".")
@@ -246,7 +246,7 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 							},
 						}
 
-						if dep.IsIntermediateVar {
+						if dep.IsIntermediateVar && parent != nil {
 							filedInfo.Source.Ref.VariableType = ptr.Of(vo.ParentIntermediate)
 						}
 						ns.AddInputSource(filedInfo)
@@ -289,7 +289,7 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 	}
 
 	urlVars := extractBracesContent(inputs.APIInfo.URL)
-	err = addImplicitVarsSources("__apiInfo_url_", urlVars)
+	err = addImplicitVarsSources("__apiInfo_url_", urlVars, n.Parent())
 	if err != nil {
 		return err
 	}
@@ -378,13 +378,13 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 		ns.AddInputSource(sources...)
 	case BodyTypeJSON:
 		jsonVars := extractBracesContent(inputs.Body.BodyData.Json)
-		err = addImplicitVarsSources("__body_bodyData_json_", jsonVars)
+		err = addImplicitVarsSources("__body_bodyData_json_", jsonVars, n.Parent())
 		if err != nil {
 			return err
 		}
 	case BodyTypeRawText:
 		rawTextVars := extractBracesContent(inputs.Body.BodyData.RawText)
-		err = addImplicitVarsSources("__body_bodyData_rawText_", rawTextVars)
+		err = addImplicitVarsSources("__body_bodyData_rawText_", rawTextVars, n.Parent())
 		if err != nil {
 			return err
 		}
