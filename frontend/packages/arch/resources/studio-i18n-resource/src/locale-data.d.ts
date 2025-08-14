@@ -6477,6 +6477,8 @@ export type I18nKeysNoOptionsType =
   | 'coze_workspace_mcp_detail_service_config'
   | 'coze_workspace_mcp_detail_service_config_collect'
   | 'coze_workspace_mcp_detail_service_config_help'
+  | 'coze_workspace_mcp_detail_service_cover'
+  | 'coze_workspace_mcp_detail_service_cover_collect'
   | 'cozedev_bothistory_commit_id'
   | 'cozedev_bothistory_debug_preview'
   | 'cozedev_bothistory_release_result'

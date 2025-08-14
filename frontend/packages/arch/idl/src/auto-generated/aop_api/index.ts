@@ -42,7 +42,7 @@ export default class ApoApiService<T> {
     this.baseURL = options?.baseURL || '/aop-web/';
   }
 
-  private genBaseURL(path: string) {
+  genBaseURL(path: string) {
     return typeof this.baseURL === 'string'
       ? this.baseURL + path
       : this.baseURL(path);

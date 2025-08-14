@@ -34,6 +34,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
   const mcpId = getParamsFromQuery({ key: 'mcp_id' });
   const [loading, setLoading] = useState(false);
   const [serviceTypeOptions, setServiceTypeOptions] = useState([]);
+  const [fileName, setFileName] = useState('service_icon');
   const formApi = useRef();
   const navigate = useNavigate();
   const goBack = () => {
@@ -142,8 +143,15 @@ export const FalconMcpDetail = ({ spaceId }) => {
               accept=".jpeg,.jpg,.png,.webp"
               limit={1}
               maxSize={5 * 1024}
-              action=""
-              customRequest={uploadRequest(ProductApi.PublicUploadImage)}
+              action={aopApi.genBaseURL('common/uploadFile')}
+              data={{
+                fileType: 'image',
+                fileName,
+              }}
+              onFileChange={e => {
+                setFileName(e[0].name);
+              }}
+              // customRequest={uploadRequest(ProductApi.PublicUploadImage)}
               picWidth={80}
               picHeight={80}
               rules={[
@@ -155,10 +163,9 @@ export const FalconMcpDetail = ({ spaceId }) => {
                 },
                 {
                   validator: (_rule, value) =>
-                    value?.every(
-                      item => !item._sizeInvalid && item.status === 'success',
-                    ) === true,
-                  message: '',
+                    value[0]?.response?.header?.errorCode === '0',
+                  message:
+                    I18n.t('card_builder_image') + I18n.t('Upload_failed'),
                 },
               ]}
             >
