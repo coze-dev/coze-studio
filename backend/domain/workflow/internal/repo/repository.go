@@ -1314,7 +1314,8 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	}
 
 	var opts []compose.WorkflowOption
-	opts = append(opts, compose.WithIDAsName(policy.ID))
+	opts = append(opts, compose.WithIDAsName(policy.ID),
+		compose.WithParentRequireCheckpoint()) // always assumes the 'parent' may pass a checkpoint ID
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
 		opts = append(opts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
 	}
