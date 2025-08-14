@@ -26,6 +26,8 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/spf13/cast"
+
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
@@ -40,7 +42,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/spf13/cast"
 )
 
 type Config struct {

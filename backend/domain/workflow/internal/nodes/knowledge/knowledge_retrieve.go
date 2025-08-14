@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cast"
 
 	einoSchema "github.com/cloudwego/eino/schema"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"

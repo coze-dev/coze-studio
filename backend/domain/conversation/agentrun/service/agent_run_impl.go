@@ -620,16 +620,17 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 				}
 				preMsgIsFinish = false
 			}
-			if st.DataMessage.Usage != nil {
-				usage = &msgEntity.UsageExt{
-					InputTokens:  st.DataMessage.Usage.InputTokens,
-					OutputTokens: st.DataMessage.Usage.OutputTokens,
-					TotalCount:   st.DataMessage.Usage.InputTokens + st.DataMessage.Usage.OutputTokens,
-				}
+
+			if st.DataMessage.Content != "" {
+				fullAnswerContent.WriteString(st.DataMessage.Content)
+
 			}
 			if st.DataMessage.Last {
 				preMsgIsFinish = true
 				sendAnswerMsg := c.buildSendMsg(ctx, preAnswerMsg, false, rtDependence)
+				if len(fullAnswerContent.String()) == 0 && st.DataMessage.Content != "" {
+					fullAnswerContent.WriteString(st.DataMessage.Content)
+				}
 				sendAnswerMsg.Content = fullAnswerContent.String()
 				fullAnswerContent.Reset()
 				hfErr := c.handlerAnswer(ctx, sendAnswerMsg, sw, usage, rtDependence, preAnswerMsg)
@@ -640,7 +641,7 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 			}
 			sendAnswerMsg := c.buildSendMsg(ctx, preAnswerMsg, false, rtDependence)
 			sendAnswerMsg.Content = st.DataMessage.Content
-			fullAnswerContent.WriteString(st.DataMessage.Content)
+
 			c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendAnswerMsg, sw)
 		}
 	}
