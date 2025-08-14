@@ -374,7 +374,7 @@ func (tp TemplatePart) TypeInfo(types map[string]*vo.TypeInfo) *vo.TypeInfo {
 	return currentType
 }
 
-func Render(ctx context.Context, tpl string, input map[string]any,
+func Render(_ context.Context, tpl string, input map[string]any,
 	sources map[string]*schema.SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
 	if err != nil {

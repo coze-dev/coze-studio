@@ -69,6 +69,7 @@ type Event struct {
 
 	outputExtractor func(o map[string]any) string
 	extra           *entity.NodeExtra
+	outputStr       *string
 
 	done chan struct{}
 

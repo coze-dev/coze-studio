@@ -45,10 +45,6 @@ func GetStaticConfig() *StaticConfig {
 	}
 }
 
-const (
-	executedNodeCountKey = "executed_node_count"
-)
-
 func IncrementAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
 	exeCtx := GetExeCtx(ctx)
 	if exeCtx == nil {

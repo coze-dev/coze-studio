@@ -26,11 +26,14 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 )
@@ -555,4 +558,31 @@ func renderAndSend(tp nodes.TemplatePart, k string, v any, sw *schema.StreamWrit
 
 	sw.Send(map[string]any{outputKey: r}, nil)
 	return false
+}
+
+func (e *OutputEmitter) ToCallbackOutput(ctx context.Context, out map[string]any) (
+	*nodes.StructuredCallbackOutput, error) {
+	type streamExtraChunkDone struct{}
+	var extraChunkDone bool
+	extraChunkDone = ctxcache.HasKey(ctx, streamExtraChunkDone{})
+	defer func() {
+		if !extraChunkDone {
+			ctxcache.Store(ctx, streamExtraChunkDone{}, true)
+		}
+	}()
+
+	sco := &nodes.StructuredCallbackOutput{
+		Output:    out,
+		RawOutput: out,
+		Answer:    ptr.Of(out[outputKey].(string)),
+		OutputStr: ptr.Of(out[outputKey].(string)),
+	}
+
+	if !extraChunkDone {
+		sco.Extra = map[string]any{
+			"terminal_plan": workflow2.TerminatePlanType_USESETTING,
+		}
+	}
+
+	return sco, nil
 }

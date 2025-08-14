@@ -497,10 +497,6 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 					break
 				}
 
-				if _, ok := schema.GetSourceName(e); ok {
-					continue
-				}
-
 				logs.Errorf("workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
 				_ = w.OnError(ctx, info, e)
 				return
@@ -657,6 +653,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		outputMap, rawOutputMap, customExtra, input map[string]any
 		errInfo                                     vo.WorkflowError
 		ok                                          bool
+		answer                                      *string
 	)
 
 	outputMap, ok = output.(map[string]any)
@@ -672,6 +669,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		customExtra = structuredOutput.Extra
 		errInfo = structuredOutput.Error
 		input = structuredOutput.Input
+		answer = structuredOutput.Answer
 	}
 
 	c := GetExeCtx(ctx)
@@ -697,10 +695,8 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		}
 	}
 
-	if c.NodeType == entity.NodeTypeOutputEmitter {
-		e.Answer = output.(map[string]any)["output"].(string)
-	} else if c.NodeType == entity.NodeTypeExit && *c.TerminatePlan == vo.UseAnswerContent {
-		e.Answer = output.(map[string]any)["output"].(string)
+	if answer != nil {
+		e.Answer = *answer
 	}
 
 	if len(customExtra) > 0 {
@@ -883,10 +879,6 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 					break
 				}
 
-				if _, ok := schema.GetSourceName(e); ok {
-					continue
-				}
-
 				logs.Errorf("node OnStartWithStreamInput failed to receive stream output: %v", e)
 				_ = n.OnError(newCtx, info, e)
 				return
@@ -918,6 +910,116 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	return newCtx
 }
 
+func buildStreamEndEvent(c *Context, mapChunks []map[string]any,
+	structuredChunks []*nodes.StructuredCallbackOutput) (*Event, error) {
+	var (
+		tokenInfo *TokenInfo
+		extra     = &entity.NodeExtra{}
+	)
+
+	if c.TokenCollector != nil && entity.NodeMetaByNodeType(c.NodeType).MayUseChatModel {
+		usage := c.TokenCollector.wait()
+		tokenInfo = &TokenInfo{
+			InputToken:  int64(usage.PromptTokens),
+			OutputToken: int64(usage.CompletionTokens),
+			TotalToken:  int64(usage.TotalTokens),
+		}
+	}
+
+	if c.SubWorkflowCtx == nil {
+		extra.CurrentSubExecuteID = c.RootExecuteID
+	} else {
+		extra.CurrentSubExecuteID = c.SubExecuteID
+	}
+
+	if len(mapChunks) > 0 {
+		m, err := nodes.ConcatMaps(reflect.ValueOf(mapChunks))
+		if err != nil {
+			return nil, err
+		}
+
+		e := &Event{
+			Type:      NodeEndStreaming,
+			Context:   c,
+			Output:    m.Interface().(map[string]any),
+			RawOutput: m.Interface().(map[string]any),
+			Duration:  time.Since(time.UnixMilli(c.StartTime)),
+			Token:     tokenInfo,
+			extra:     extra,
+		}
+
+		return e, nil
+	}
+
+	fullStructuredOutput, err := nodes.ConcatStructuredCallbackOutputs(structuredChunks)
+	if err != nil {
+		return nil, err
+	}
+
+	e := &Event{
+		Type:      NodeEndStreaming,
+		Context:   c,
+		Output:    fullStructuredOutput.Output,
+		RawOutput: fullStructuredOutput.RawOutput,
+		Duration:  time.Since(time.UnixMilli(c.StartTime)),
+		Err:       fullStructuredOutput.Error,
+	}
+
+	extra.ResponseExtra = fullStructuredOutput.Extra
+	e.extra = extra
+
+	return e, nil
+}
+
+func buildStreamDeltaEvent(c *Context, chunk any, accumulated *nodes.StructuredCallbackOutput) (
+	delta *Event, newAccumulated *nodes.StructuredCallbackOutput, err error) {
+	mapChunk, ok := chunk.(map[string]any)
+	if ok {
+		fullOutput := mapChunk
+		if accumulated != nil {
+			if fullOutput, err = nodes.ConcatTwoMaps(fullOutput, accumulated.Output); err != nil {
+				return nil, nil, err
+			}
+		}
+
+		return &Event{
+				Type:    NodeStreamingOutput,
+				Context: c,
+				Output:  fullOutput,
+			}, &nodes.StructuredCallbackOutput{
+				Output: fullOutput,
+			}, nil
+	}
+
+	structuredChunk, ok := chunk.(*nodes.StructuredCallbackOutput)
+	if !ok {
+		return nil, nil, fmt.Errorf("expect map[string]any or "+
+			"StructuredCallbackOutput, got %T", chunk)
+	}
+
+	// the streaming delta event should only merge the Output / OutputStr,
+	// discard the raw output, and user the answer of the current chunk
+	newAccumulated, err = nodes.ConcatStructuredCallbackOutputs([]*nodes.StructuredCallbackOutput{
+		accumulated, structuredChunk,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	delta = &Event{
+		Type:      NodeStreamingOutput,
+		Context:   c,
+		Output:    newAccumulated.Output,
+		outputStr: newAccumulated.OutputStr,
+	}
+
+	if structuredChunk.Answer != nil {
+		delta.Answer = *structuredChunk.Answer
+	}
+
+	return delta, newAccumulated, nil1
+}
+
 func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
 	if info.Component != compose.ComponentOfLambda || info.Name != string(n.nodeKey) {
 		output.Close()
@@ -925,6 +1027,166 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	}
 
 	c := GetExeCtx(ctx)
+
+	nonIncrementalProcessor := func(ctx context.Context) error {
+		defer output.Close()
+
+		var (
+			mapChunks        []map[string]any
+			structuredChunks []*nodes.StructuredCallbackOutput
+		)
+		for {
+			chunk, e := output.Recv()
+			if e != nil {
+				if e == io.EOF {
+					break
+				}
+
+				return e
+			}
+
+			if m, ok := chunk.(map[string]any); ok {
+				mapChunks = append(mapChunks, m)
+			} else if s, ok := chunk.(*nodes.StructuredCallbackOutput); ok {
+				structuredChunks = append(structuredChunks, s)
+			}
+		}
+
+		e, err := buildStreamEndEvent(c, mapChunks, structuredChunks)
+		if err != nil {
+			return err
+		}
+
+		n.ch <- e
+		return nil
+	}
+
+	incrementalProcessor := func(ctx context.Context) error {
+		defer output.Close()
+		fullOutput := make(map[string]any)
+		var firstEvent, previousEvent, secondPreviousEvent *Event
+		for {
+			chunk, err := output.Recv()
+			if err != nil {
+				if err == io.EOF {
+					if previousEvent != nil {
+						previousEmpty := len(previousEvent.Answer) == 0
+						if previousEmpty { // concat the empty previous chunk with the second previous chunk
+							if secondPreviousEvent != nil {
+								secondPreviousEvent.StreamEnd = true
+								n.ch <- secondPreviousEvent
+							} else {
+								previousEvent.StreamEnd = true
+								n.ch <- previousEvent
+							}
+						} else {
+							if secondPreviousEvent != nil {
+								n.ch <- secondPreviousEvent
+							}
+
+							previousEvent.StreamEnd = true
+							n.ch <- previousEvent
+						}
+					} else { // only sent first event, or no event at all
+						n.ch <- &Event{
+							Type:      NodeStreamingOutput,
+							Context:   c,
+							Output:    fullOutput,
+							StreamEnd: true,
+						}
+					}
+					break
+				}
+				return err
+			}
+
+			if secondPreviousEvent != nil {
+				n.ch <- secondPreviousEvent
+			}
+
+			fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+			if err != nil {
+				return fmt.Errorf("failed to concat two maps: %w", err)
+			}
+
+			deltaEvent := &Event{
+				Type:    NodeStreamingOutput,
+				Context: c,
+				Output:  fullOutput,
+			}
+
+			if delta, ok := chunk.(map[string]any)["output"]; ok {
+				if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+					deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+					deltaEvent.outputExtractor = func(o map[string]any) string {
+						str, ok := o["output"].(string)
+						if ok {
+							return str
+						}
+						return fmt.Sprint(o["output"])
+					}
+				} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
+					deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+					deltaEvent.outputExtractor = func(o map[string]any) string {
+						str, ok := o["output"].(string)
+						if ok {
+							return str
+						}
+						return fmt.Sprint(o["output"])
+					}
+				}
+			}
+
+			if firstEvent == nil { // prioritize sending the first event asap.
+				firstEvent = deltaEvent
+				n.ch <- firstEvent
+			} else {
+				secondPreviousEvent = previousEvent
+				previousEvent = deltaEvent
+			}
+		}
+
+		e := &Event{
+			Type:      NodeEndStreaming,
+			Context:   c,
+			Output:    fullOutput,
+			RawOutput: fullOutput,
+			Duration:  time.Since(time.UnixMilli(c.StartTime)),
+			extra:     &entity.NodeExtra{},
+		}
+
+		if answer, ok := fullOutput["output"]; ok {
+			if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+				e.Answer = answer.(string)
+				e.outputExtractor = func(o map[string]any) string {
+					str, ok := o["output"].(string)
+					if ok {
+						return str
+					}
+					return fmt.Sprint(o["output"])
+				}
+			} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
+				e.Answer = answer.(string)
+				e.outputExtractor = func(o map[string]any) string {
+					str, ok := o["output"].(string)
+					if ok {
+						return str
+					}
+					return fmt.Sprint(o["output"])
+				}
+			}
+		}
+
+		if c.SubWorkflowCtx == nil {
+			e.extra.CurrentSubExecuteID = c.RootExecuteID
+		} else {
+			e.extra.CurrentSubExecuteID = c.SubExecuteID
+		}
+
+		n.ch <- e
+
+		return ctx
+	}
 
 	switch t := entity.NodeType(info.Type); t {
 	case entity.NodeTypeLLM:
@@ -1052,7 +1314,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				}
 				previous = fullOutput
 
-				fullOutputMap, e := nodes.ConcatTwoMaps(fullOutput.Output, chunk.(*nodes.StructuredCallbackOutput).Output)
+				fullOutputMap, e := nodes.ConcatTwoMaps(fullOutput.Output,
+					chunk.(*nodes.StructuredCallbackOutput).Output)
 				if e != nil {
 					logs.Errorf("failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
@@ -1136,9 +1399,6 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 							}
 						}
 						break
-					}
-					if _, ok := schema.GetSourceName(err); ok {
-						continue
 					}
 					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", err)
 					return n.OnError(ctx, info, err)

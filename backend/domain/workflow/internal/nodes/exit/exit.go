@@ -26,6 +26,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type Config struct {
@@ -111,4 +114,18 @@ func (e *Exit) Invoke(_ context.Context, in map[string]any) (map[string]any, err
 		return map[string]any{}, nil
 	}
 	return in, nil
+}
+
+func (e *Exit) ToCallbackOutput(ctx context.Context, out map[string]any) (
+	*nodes.StructuredCallbackOutput, error) {
+	m, err := sonic.MarshalString(out)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	return &nodes.StructuredCallbackOutput{
+		Output:    out,
+		RawOutput: out,
+		Answer:    ptr.Of(m),
+	}, nil
 }

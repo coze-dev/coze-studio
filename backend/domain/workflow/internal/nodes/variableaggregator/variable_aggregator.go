@@ -244,6 +244,7 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 const (
 	groupChoiceTypeCacheKey = "group_choice_type"
 	groupChoiceCacheKey     = "group_choice"
+	firstOutputChunkKey     = "first_chunk_done"
 )
 
 // Transform picks the first non-nil value from each group from a stream of map[group]items.
@@ -609,14 +610,24 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 		panic("unable to get group choices from ctx cache")
 	}
 
+	firstChunkDone, ok := ctxcache.Get[bool](ctx, firstOutputChunkKey)
+	defer func() {
+		if !firstChunkDone {
+			ctxcache.Store(ctx, firstOutputChunkKey, true)
+		}
+	}()
+
 	if len(dynamicStreamType) == 0 {
-		return &nodes.StructuredCallbackOutput{
+		sco := &nodes.StructuredCallbackOutput{
 			Output:    output,
 			RawOutput: output,
-			Extra: map[string]any{
+		}
+		if !firstChunkDone {
+			sco.Extra = map[string]any{
 				"variable_select": groupChoices,
-			},
-		}, nil
+			}
+		}
+		return sco, nil
 	}
 
 	newOut := maps.Clone(output)
@@ -626,13 +637,16 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 		}
 	}
 
-	return &nodes.StructuredCallbackOutput{
+	sco := &nodes.StructuredCallbackOutput{
 		Output:    newOut,
 		RawOutput: newOut,
-		Extra: map[string]any{
+	}
+	if !firstChunkDone {
+		sco.Extra = map[string]any{
 			"variable_select": groupChoices,
-		},
-	}, nil
+		}
+	}
+	return sco, nil
 }
 
 func concatVACallbackInputs(vs [][]vaCallbackInput) ([]vaCallbackInput, error) {

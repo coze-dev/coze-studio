@@ -679,6 +679,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 
 	_ = g.AddEdge(templateNodeKey, llmNodeKey)
 
+	var outputKey string
 	if format == FormatJSON {
 		iConvert := func(ctx context.Context, msg *schema.Message) (map[string]any, error) {
 			return jsonParse(ctx, msg.Content, ns.OutputTypes)
@@ -688,7 +689,6 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 
 		_ = g.AddLambdaNode(outputConvertNodeKey, convertNode)
 	} else {
-		var outputKey string
 		if len(ns.OutputTypes) != 1 && len(ns.OutputTypes) != 2 {
 			panic("impossible")
 		}
@@ -786,6 +786,8 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		requireCheckpoint:  requireCheckpoint,
 		fullSources:        ns.FullSources,
 		chatHistorySetting: c.ChatHistorySetting,
+		nodeKey:           ns.Key,
+		outputKey:         outputKey,
 	}
 
 	return llm, nil
@@ -866,6 +868,7 @@ type LLM struct {
 	fullSources        map[string]*schema2.SourceInfo
 	chatHistorySetting *vo.ChatHistorySetting
 	nodeKey           vo.NodeKey
+	outputKey         string
 }
 
 const (
@@ -1315,9 +1318,25 @@ func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nod
 		}, nil
 	}
 
-	return &nodes.StructuredCallbackOutput{
+	structuredOut := &nodes.StructuredCallbackOutput{
 		Output:    output,
 		RawOutput: map[string]any{"output": rawOutput},
 		Error:     warning,
-	}, nil
+	}
+
+	reasoning, ok := output[ReasoningOutputKey]
+	if ok {
+		structuredOut.Extra = map[string]any{
+			ReasoningOutputKey: reasoning,
+		}
+	}
+
+	if l.outputFormat != FormatJSON {
+		outputStr, ok := output[l.outputKey]
+		if ok {
+			structuredOut.OutputStr = ptr.Of(outputStr.(string))
+		}
+	}
+
+	return structuredOut, nil
 }

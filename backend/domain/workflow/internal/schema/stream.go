@@ -31,8 +31,6 @@ const (
 	FieldSkipped     FieldStreamType = "skipped" // the field source's node is skipped
 )
 
-type FieldSkipStatus string
-
 // SourceInfo contains stream type for a input field source of a node.
 type SourceInfo struct {
 	// IsIntermediate means this field is itself not a field source, but a map containing one or more field sources.
@@ -60,18 +58,4 @@ func (s *SourceInfo) Skipped() bool {
 	}
 
 	return true
-}
-
-func (s *SourceInfo) FromNode(nodeKey vo.NodeKey) bool {
-	if !s.IsIntermediate {
-		return s.FromNodeKey == nodeKey
-	}
-
-	for _, sub := range s.SubSources {
-		if sub.FromNode(nodeKey) {
-			return true
-		}
-	}
-
-	return false
 }
