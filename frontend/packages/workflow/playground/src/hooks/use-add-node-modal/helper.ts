@@ -15,12 +15,12 @@
  */
 
 import semver from 'semver';
-import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
+import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { BlockInput } from '@coze-workflow/base';
 
-import { type McpService, type McpTool } from '@/types/mcp';
 import { McpSchemaParser } from '@/utils/mcp-schema-parser';
+import { type McpService, type McpTool } from '@/types/mcp';
 
 interface PluginApi {
   name: string;
@@ -99,51 +99,60 @@ export const createSubWorkflowNodeInfo = ({
 export const createMcpNodeInfo = (
   mcpService: McpService,
   tool: McpTool,
-  toolRuntimeParams?: Record<string, any>, // 运行时的实际参数值
-  templateIcon?: string,
+  options?: {
+    toolRuntimeParams?: Record<string, unknown>; // 运行时的实际参数值
+    currentWorkspaceId?: string; // 动态传入当前工作空间ID
+  },
 ) => {
+  const { toolRuntimeParams, currentWorkspaceId } = options || {};
+  const templateIcon = undefined; // 使用默认图标
   // 解析工具的schema以生成动态输入参数
   const parsedSchema = McpSchemaParser.parseToolSchema(tool.schema);
-  
-  // 根据schema生成工具参数输入 - 直接使用工具参数作为inputParameters
-  const inputParameters = parsedSchema.inputParams.map(param => {
-    const defaultValue = toolRuntimeParams?.[param.name] !== undefined 
-      ? toolRuntimeParams[param.name] 
-      : McpSchemaParser.generateDefaultValue(param);
-    
-    return {
-      name: param.name,
-      value: defaultValue,
-      // 保留参数元信息用于表单渲染
-      _mcpParamMeta: {
-        type: param.type,
-        description: param.description,
-        required: param.required,
-        schema: param,
-      },
-    };
+
+  // 只添加工具的实际参数到inputParameters（用户可见）
+  const inputParameters: ReturnType<typeof BlockInput.create>[] = [];
+  parsedSchema.inputParams.forEach(param => {
+    const defaultValue =
+      toolRuntimeParams?.[param.name] !== undefined
+        ? toolRuntimeParams[param.name]
+        : McpSchemaParser.generateDefaultValue(param);
+
+    inputParameters.push(BlockInput.create(param.name, String(defaultValue)));
   });
 
-  return {
+  console.log('🔧 创建MCP节点，参数:', {
+    mcpService: mcpService.mcpName,
+    tool: tool.name,
+    inputParameters: inputParameters.length,
+    parsedParams: parsedSchema.inputParams.length,
+    currentWorkspaceId,
+    mcpServiceId: mcpService.mcpId,
+  });
+
+  console.log('🔧 生成的inputParameters:', inputParameters);
+
+  const nodeData = {
     data: {
       nodeMeta: {
-        title: `${mcpService.mcpName} - ${tool.name}`,
-        description: tool.description,
+        title: tool.name, // 直接使用工具名称
+        description: tool.description, // 直接使用工具描述
         icon: templateIcon,
       },
       inputs: {
-        // 工具的动态参数作为标准inputParameters
+        // 使用标准的inputParameters格式（只包含工具参数）
         inputParameters,
-        // MCP元信息用于运行时调用
-        mcpMeta: {
-          mcpId: mcpService.mcpId,
-          mcpName: mcpService.mcpName,
-          toolName: tool.name,
-          toolSchema: tool.schema,
-          toolDescription: tool.description,
-          parsedSchema,
-        },
+      },
+      // MCP配置参数（隐藏，不显示在UI中）
+      mcpConfig: {
+        sassWorkspaceId: currentWorkspaceId || '7533521629687578624',
+        mcpId: mcpService.mcpId,
+        toolName: tool.name,
+        mcpName: mcpService.mcpName, // 保存服务名称用于显示
       },
     },
   };
+
+  console.log('🔧 完整的节点数据:', nodeData);
+
+  return nodeData;
 };

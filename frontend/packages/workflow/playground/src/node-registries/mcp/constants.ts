@@ -15,32 +15,22 @@
  */
 
 import { nanoid } from 'nanoid';
-// 定义变量类型
-const VIEW_VARIABLE_TYPE = {
-  Object: 'object',
-  Boolean: 'boolean',
-  String: 'string',
-} as const;
+import { ViewVariableType } from '@coze-workflow/variable';
 
 // 输入参数路径，试运行等功能依赖此路径提取参数
 export const INPUT_PATH = 'inputs.inputParameters';
 
-// 定义固定输出参数
+// 定义固定输出参数 - 符合MCP0014.do接口返回格式
 export const OUTPUTS = [
   {
     key: nanoid(),
-    name: 'result',
-    type: VIEW_VARIABLE_TYPE.Object,
+    name: 'body',
+    type: ViewVariableType.Object,
   },
   {
     key: nanoid(),
-    name: 'success',
-    type: VIEW_VARIABLE_TYPE.Boolean,
-  },
-  {
-    key: nanoid(),
-    name: 'error',
-    type: VIEW_VARIABLE_TYPE.String,
+    name: 'header',
+    type: ViewVariableType.Object,
   },
 ];
 

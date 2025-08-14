@@ -39,11 +39,15 @@ import { usePluginApisModal } from '@coze-agent-ide/bot-plugin/components/plugin
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { WorkflowEditService } from '@/services';
 import { useSpaceId } from '@/hooks/use-space-id';
+import { useMcpApisModal } from '@/hooks/use-mcp-apis-modal';
 import { useGlobalState } from '@/hooks/use-global-state';
 import { useNodeVersionService } from '@/hooks';
-import { useMcpApisModal } from '@/hooks/use-mcp-apis-modal';
 
-import { createApiNodeInfo, createMcpNodeInfo, createSubWorkflowNodeInfo } from './helper';
+import {
+  createApiNodeInfo,
+  createMcpNodeInfo,
+  createSubWorkflowNodeInfo,
+} from './helper';
 
 const { Text } = Typography;
 
@@ -182,8 +186,8 @@ export const useAddNodeModal = (prevAddNodeRef: {
     from: workflowModalFrom,
     flowMode: WorkflowMode.Workflow,
     onAdd: openWorkflowModalCallback,
-    bindBizId: globalState.config?.bindBizID,
-    bindBizType: globalState.config?.bindBizType,
+    bindBizId: globalState.bindBizID,
+    bindBizType: globalState.bindBizType,
     excludedWorkflowIds: [globalState.workflowId],
     projectId: globalState.projectId,
     onDupSuccess: () => null,
@@ -271,7 +275,8 @@ export const useAddNodeModal = (prevAddNodeRef: {
           nodeJSON,
         });
       } else {
-        // Dragging the "plug-in", or the "subprocess" node itself, will follow the logic here, at which point isDrag is true
+        // Dragging the "plug-in", or the "subprocess" node itself,
+        // will follow the logic here, at which point isDrag is true
         editService.addNode(StandardNodeType.Api, nodeJSON, position, isDrag);
       }
       Toast.success(
@@ -301,11 +306,12 @@ export const useAddNodeModal = (prevAddNodeRef: {
     close: closeMcp,
   } = useMcpApisModal({
     closeCallback: onCloseModal,
-    onAdd: async (mcpService, tool) => {
-      const templateIcon = playgroundContext.getNodeTemplateInfoByType(
-        StandardNodeType.Mcp,
-      )?.icon;
-      const nodeJSON = createMcpNodeInfo(mcpService, tool, {}, templateIcon);
+    workspaceId: spaceId,
+    onAdd: (mcpService, tool) => {
+      // 传入当前工作空间ID，确保MCP节点不与固定空间绑定
+      const nodeJSON = createMcpNodeInfo(mcpService, tool, {
+        currentWorkspaceId: spaceId,
+      });
       const position = {
         clientX: prevAddNodeRef.current.x,
         clientY: prevAddNodeRef.current.y,
@@ -348,7 +354,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
       if (onAdd) {
         addNodeCallbackRef.current = (...args) => {
           const nodeJSON = args?.[0]?.nodeJSON as WorkflowNodeJSON<
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Flexible node data type
             Record<string, any>
           >;
           if (nodeJSON?.data?.nodeMeta?.title) {

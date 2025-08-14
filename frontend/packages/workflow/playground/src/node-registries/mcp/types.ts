@@ -20,6 +20,11 @@ import type { InputValueVO } from '@coze-workflow/base';
  * MCP工具配置表单数据类型
  */
 export interface FormData {
+  nodeMeta?: {
+    title?: string;
+    description?: string;
+    icon?: string;
+  };
   inputs: { inputParameters: InputValueVO[] };
   outputs: Array<{
     key: string;

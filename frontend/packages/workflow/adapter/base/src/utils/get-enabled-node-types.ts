@@ -57,7 +57,6 @@ export const getEnabledNodeTypes = (_params: {
     [StandardNodeType.DatabaseCreate]: true,
     // [StandardNodeType.JsonParser]: true,
     [StandardNodeType.JsonStringify]: true,
-    [StandardNodeType.Mcp]: true,
     // [StandardNodeType.UpdateConversation]: true,
     // [StandardNodeType.DeleteConversation]: true,
     // [StandardNodeType.QueryConversationList]: true,
@@ -65,6 +64,7 @@ export const getEnabledNodeTypes = (_params: {
     // [StandardNodeType.CreateMessage]: true,
     // [StandardNodeType.UpdateMessage]: true,
     // [StandardNodeType.DeleteMessage]: true,
+    [StandardNodeType.Mcp]: true,
   };
   const enabledNodeTypes: StandardNodeType[] = Object.keys(nodesMap)
     .filter(key => nodesMap[key])

@@ -147,11 +147,23 @@ export const McpModal: React.FC<McpModalProps> = ({
           >
             MCP服务暂时不可用
           </div>
-          <div style={{ fontSize: '14px', color: 'var(--semi-color-text-2)', marginBottom: '20px' }}>
+          <div
+            style={{
+              fontSize: '14px',
+              color: 'var(--semi-color-text-2)',
+              marginBottom: '20px',
+            }}
+          >
             请检查网络连接或稍后重试
           </div>
           <Button onClick={() => window.location.reload()}>重试</Button>
-          <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--semi-color-text-3)' }}>
+          <div
+            style={{
+              marginTop: '20px',
+              fontSize: '12px',
+              color: 'var(--semi-color-text-3)',
+            }}
+          >
             技术详情: {error}
           </div>
         </div>
@@ -235,9 +247,9 @@ export const McpModal: React.FC<McpModalProps> = ({
       >
         {renderContent()}
       </Modal>
-      
+
       {/* 工具参数预览浮窗 */}
-      {previewTool && (
+      {previewTool ? (
         <div
           style={{
             position: 'fixed',
@@ -251,7 +263,7 @@ export const McpModal: React.FC<McpModalProps> = ({
             justifyContent: 'center',
             zIndex: 1001,
           }}
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) {
               setPreviewTool(null);
             }
@@ -266,7 +278,7 @@ export const McpModal: React.FC<McpModalProps> = ({
             onCancel={() => setPreviewTool(null)}
           />
         </div>
-      )}
+      ) : null}
     </>
   );
 };

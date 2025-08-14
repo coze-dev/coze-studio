@@ -25,9 +25,11 @@ import { OUTPUTS, DEFAULT_INPUTS } from './constants';
 export function transformOnInit(data: NodeData): FormData {
   // 如果已经有inputParameters，直接使用（来自MCP工具schema）
   // 否则使用默认值
-  const inputParameters = data?.inputs?.inputParameters || data?.inputParameters || DEFAULT_INPUTS;
-  
+  const inputParameters =
+    data?.inputs?.inputParameters || data?.inputParameters || DEFAULT_INPUTS;
+
   return {
+    nodeMeta: data?.nodeMeta, // 保留nodeMeta以支持标题和描述
     inputs: {
       inputParameters,
     },
@@ -40,6 +42,7 @@ export function transformOnInit(data: NodeData): FormData {
  */
 export function transformOnSubmit(data: FormData): NodeData {
   return {
+    nodeMeta: data.nodeMeta, // 保存nodeMeta信息
     inputParameters: data.inputs.inputParameters,
     outputs: data.outputs?.length > 0 ? data.outputs : OUTPUTS,
   };

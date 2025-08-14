@@ -18,7 +18,6 @@ import {
   type McpService,
   type McpServiceListResponse,
   type McpToolsListResponse,
-  MCP_SHELF_ENUM,
   MCP_STATUS_ENUM,
 } from '@/types/mcp';
 
@@ -35,14 +34,14 @@ export class McpApiService {
     try {
       const response = await fetch(`${this.BASE_URL}/MCP0017.do`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           body: {
             mcpName: options?.mcpName || '',
             mcpType: options?.mcpType || '',
-            sassWorkspaceId: options?.sassWorkspaceId || '7533521629687578624', // 默认工作空间ID
+            sassWorkspaceId: options?.sassWorkspaceId, // 使用动态传入的工作空间ID，不再硬编码
           },
         }),
       });
@@ -70,18 +69,18 @@ export class McpApiService {
   // 获取MCP工具列表
   static async getMcpToolsList(
     mcpId: string,
-    options?: { sassWorkspaceId?: string }
+    options?: { sassWorkspaceId?: string },
   ): Promise<McpToolsListResponse> {
     try {
       const response = await fetch(`${this.BASE_URL}/MCP0013.do`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          body: { 
+          body: {
             mcpId,
-            sassWorkspaceId: options?.sassWorkspaceId || '7533521629687578624', // 默认工作空间ID
+            sassWorkspaceId: options?.sassWorkspaceId, // 使用动态传入的工作空间ID
           },
         }),
       });
@@ -108,7 +107,7 @@ export class McpApiService {
   // 服务过滤函数 - 只展示激活的MCP服务（放宽上架条件）
   static filterAvailableMcpServices(services: McpService[]): McpService[] {
     return services.filter(
-      service => service.mcpStatus === MCP_STATUS_ENUM.ACTIVE
+      service => service.mcpStatus === MCP_STATUS_ENUM.ACTIVE,
       // 移除上架状态过滤，因为很多服务状态为"0"但仍可用
     );
   }

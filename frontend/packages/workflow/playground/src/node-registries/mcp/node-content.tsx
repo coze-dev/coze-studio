@@ -18,20 +18,26 @@ import React from 'react';
 
 import { InputParameters, Outputs } from '../common/components';
 
+import styles from './node-content.module.less';
+
 export function McpContent() {
   return (
-    <div className="space-y-2">
+    <div className={styles.mcpContainer}>
       {/* 工具信息显示 */}
-      <div className="flex items-center space-x-2 text-sm">
-        <span className="text-blue-500">🔧</span>
-        <span className="font-medium">MCP工具</span>
+      <div className={styles.mcpHeader}>
+        <span className={styles.mcpIcon}>🔧</span>
+        <span>MCP工具</span>
       </div>
 
       {/* 输入参数 */}
-      <InputParameters />
+      <div className={styles.mcpParametersSection}>
+        <InputParameters />
+      </div>
 
       {/* 输出变量 */}
-      <Outputs />
+      <div className={styles.mcpOutputsSection}>
+        <Outputs />
+      </div>
     </div>
   );
 }

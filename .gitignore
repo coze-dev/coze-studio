@@ -58,3 +58,4 @@ values-dev.yaml
 
 *.tsbuildinfo
 
+backend/test-server

@@ -16,11 +16,14 @@
 
 import React from 'react';
 
-import { Button, Divider, Tag, Typography } from '@coze-arch/coze-design';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Divider, Tag, Typography } from '@coze-arch/coze-design';
 
+import {
+  McpSchemaParser,
+  type McpSchemaProperty,
+} from '@/utils/mcp-schema-parser';
 import { type McpTool } from '@/types/mcp';
-import { McpSchemaParser, type McpSchemaProperty } from '@/utils/mcp-schema-parser';
 
 const { Text, Title } = Typography;
 
@@ -45,24 +48,26 @@ export const McpToolPreview: React.FC<McpToolPreviewProps> = ({
         borderBottom: '1px solid var(--semi-color-border-light)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}
+      >
         <Text strong style={{ marginRight: '8px' }}>
           {param.name}
         </Text>
         <Tag size="small" color={param.required ? 'red' : 'blue'}>
           {McpSchemaParser.getTypeLabel(param)}
         </Tag>
-        {param.required && (
+        {param.required ? (
           <Tag size="small" color="red" style={{ marginLeft: '4px' }}>
             必需
           </Tag>
-        )}
+        ) : null}
       </div>
-      {param.description && (
+      {param.description ? (
         <Text type="secondary" style={{ fontSize: '12px' }}>
           {param.description}
         </Text>
-      )}
+      ) : null}
     </div>
   );
 
