@@ -37,7 +37,6 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 | API 与 SDK | * 创建会话、发起对话等 OpenAPI <br> * 通过 Chat SDK 将智能体或应用集成到自己的应用 |
 ## 快速开始
 了解如何获取并部署 Coze Studio 开源版，快速构建项目、体验 Coze Studio 开源版。
-> 详细步骤、部署要求、公网部署的安全风险等信息可参考[快速开始](https://github.com/coze-dev/coze-studio/wiki/2.-快速开始)。
 
 环境要求：
 
@@ -79,6 +78,8 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 
 4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
 
+> [!WARNING]
+> 如果要将 Coze Studio 部署到公网环境，建议在部署前评估整体评估安全风险，例如账号注册功能、工作流代码节点 Python执行环境、Coze Server 监听地址配置、SSRF 和部分 API 水平越权的风险，并采取相应防护措施。详细信息可参考[快速开始](https://github.com/coze-dev/coze-studio/wiki/2.-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B#%E5%85%AC%E7%BD%91%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9)。
 ## 开发指南
 
 * **项目配置**：
