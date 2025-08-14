@@ -21,11 +21,12 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/stretchr/testify/assert"
+
 	apimessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_convertMessage(t *testing.T) {
