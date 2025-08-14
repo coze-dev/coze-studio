@@ -172,7 +172,13 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		defer cancel()
 
 		milvusAddr := os.Getenv("MILVUS_ADDR")
-		mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{Address: milvusAddr})
+		user := os.Getenv("MILVUS_USER")
+		password := os.Getenv("MILVUS_PASSWORD")
+		mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{
+			Address:  milvusAddr,
+			Username: user,
+			Password: password,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}
