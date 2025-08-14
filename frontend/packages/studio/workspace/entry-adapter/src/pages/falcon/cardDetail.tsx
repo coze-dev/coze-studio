@@ -12,7 +12,13 @@ import cls from 'classnames';
 import { replaceUrl, parseUrl, installTypeOptions } from './utils';
 import { aopApi } from '@coze-arch/bot-api';
 
-export const FalconCardDetail = ({ spaceId, type, info, onClose }) => {
+export const FalconCardDetail = ({
+  spaceId,
+  type,
+  info,
+  onClose,
+  onSuccess,
+}) => {
   const valueWidth = '100%';
   const [loading, setLoading] = useState(false);
   const [cardTypeOptions, setCardTypeOptions] = useState([]);
@@ -42,7 +48,7 @@ export const FalconCardDetail = ({ spaceId, type, info, onClose }) => {
           .EditCardResource(subParams)
           .then(() => {
             Toast.success(I18n.t('Edit_success'));
-            onClose?.();
+            onSuccess?.();
           })
           .finally(() => {
             setLoading(false);
@@ -52,14 +58,14 @@ export const FalconCardDetail = ({ spaceId, type, info, onClose }) => {
           .AddCardResource(subParams)
           .then(() => {
             Toast.success(I18n.t('Save_success'));
-            onClose?.();
+            onSuccess?.();
           })
           .finally(() => {
             setLoading(false);
           });
       }
     },
-    [info?.cardId, isEdit, onClose],
+    [info?.cardId, isEdit, onSuccess],
   );
 
   useEffect(() => {
@@ -111,36 +117,51 @@ export const FalconCardDetail = ({ spaceId, type, info, onClose }) => {
       >
         <Form.Input
           field="card_code"
-          label={I18n.t('coze_workspace_mcp_detail_service_name')}
+          label={I18n.t('coze_workspace_card_detail_card_code')}
           style={{ width: valueWidth }}
           trigger="blur"
           maxLength={50}
           disabled={loading || readonly || isEdit}
-          placeholder={I18n.t('coze_workspace_mcp_detail_service_name_collect')}
+          placeholder={I18n.t('coze_workspace_card_detail_card_code_collect')}
           rules={[
             {
               required: true,
-              message: I18n.t('coze_workspace_mcp_detail_service_name_collect'),
+              message: I18n.t('coze_workspace_card_detail_card_code_collect'),
             },
           ]}
         />
         <Form.Input
           field="card_name"
-          label={I18n.t('coze_workspace_mcp_detail_service_name')}
+          label={I18n.t('coze_workspace_card_detail_card_name')}
           style={{ width: valueWidth }}
           trigger="blur"
           maxLength={50}
-          placeholder={I18n.t('coze_workspace_mcp_detail_service_name_collect')}
+          placeholder={I18n.t('coze_workspace_card_detail_card_name_collect')}
           rules={[
             {
               required: true,
-              message: I18n.t('coze_workspace_mcp_detail_service_name_collect'),
+              message: I18n.t('coze_workspace_card_detail_card_name_collect'),
+            },
+          ]}
+        />
+        <Form.Select
+          field="card_type"
+          label={{
+            text: I18n.t('coze_workspace_card_detail_card_type'),
+          }}
+          optionList={cardTypeOptions}
+          style={{ width: valueWidth }}
+          placeholder={I18n.t('coze_workspace_card_detail_card_type_collect')}
+          rules={[
+            {
+              required: true,
+              message: I18n.t('coze_workspace_card_detail_card_type_collect'),
             },
           ]}
         />
         <Form.Upload
           field="card_cover"
-          label={I18n.t('coze_workspace_mcp_detail_service_cover')}
+          label={I18n.t('coze_workspace_card_detail_card_cover')}
           listType="picture"
           accept=".jpeg,.jpg,.png,.webp"
           limit={1}
@@ -184,21 +205,6 @@ export const FalconCardDetail = ({ spaceId, type, info, onClose }) => {
         >
           <IconCozPlus className="w-[24px] h-[24px] coz-fg-primary" />
         </Form.Upload>
-        <Form.Select
-          field="card_type"
-          label={{
-            text: I18n.t('coze_workspace_mcp_detail_service_type'),
-          }}
-          optionList={cardTypeOptions}
-          style={{ width: valueWidth }}
-          placeholder={I18n.t('coze_workspace_mcp_detail_service_type_collect')}
-          rules={[
-            {
-              required: true,
-              message: I18n.t('coze_workspace_mcp_detail_service_type_collect'),
-            },
-          ]}
-        />
         {!readonly && (
           <div className="w-[540px] py-[24px] flex justify-center gap-[12px]">
             <Button size="large" type="primary" htmlType="submit">
