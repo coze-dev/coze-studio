@@ -1640,7 +1640,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 func (i *impl) checkBotAgentNode(node *vo.Node) error {
 	if node.Type == entity.NodeTypeCreateConversation.IDStr() || node.Type == entity.NodeTypeConversationDelete.IDStr() || node.Type == entity.NodeTypeConversationUpdate.IDStr() || node.Type == entity.NodeTypeConversationList.IDStr() {
-		return errors.New("session-related nodes are not supported in conversation flow")
+		return errors.New("conversation-related nodes are not supported in chatflow")
 	}
 	return nil
 }
