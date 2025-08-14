@@ -1,5 +1,7 @@
 export const replaceUrl = (url: string) =>
-  url.replace('@minio/public-cbbiz', '/filestore/dev-public-cbbiz');
+  url
+    .replace('@minio/public-cbbiz', '/filestore/dev-public-cbbiz')
+    .replace('@filestore', '/filestore');
 
 export const parseUrl = (url: string) =>
   url.replace('/filestore/dev-public-cbbiz', '@minio/public-cbbiz');

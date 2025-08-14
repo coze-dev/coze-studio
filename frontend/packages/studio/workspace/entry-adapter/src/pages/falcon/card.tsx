@@ -49,7 +49,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       count: -1,
     },
   ]);
-  const [groupType, setGroupType] = useState(0);
+  const [groupType, setGroupType] = useState(1);
   const [filterQueryText, setFilterQueryText] = useState('');
   const [mcpList, setMcpList] = useState([]);
   const [spinId, setSpinId] = useState('');
@@ -59,96 +59,99 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
     navigate(`/space/${spaceId}${path}`);
   };
 
-  const getMcpListData = useCallback(() => {
+  const getCardListData = useCallback(() => {
     aopApi
-      .GetMCPResourceList({
-        createdBy: true,
-        mcpName: filterQueryText,
+      .GetCardResourceList({
+        createdBy: groupType === 1,
+        searchValue: filterQueryText,
         sassWorkspaceId: spaceId,
+        cardClassId: filterType,
+        pageNo: 1,
+        pageSize: 30,
       })
       .then(res => {
-        setMcpList(res.body.serviceInfoList || []);
+        setMcpList(res.body.cardList || []);
       });
-  }, [filterQueryText, spaceId]);
+  }, [filterQueryText, filterType, groupType, spaceId]);
 
   const stopService = useCallback(
-    (mcpId: string) => {
-      setSpinId(mcpId);
+    (cardId: string) => {
+      setSpinId(cardId);
       aopApi
         .StopMCPResource({
-          mcpId,
+          cardId,
         })
         .finally(() => {
           setSpinId('');
-          getMcpListData();
+          getCardListData();
         });
     },
-    [getMcpListData],
+    [getCardListData],
   );
 
   const unApplyService = useCallback(
-    (mcpId: string) => {
-      setSpinId(mcpId);
+    (cardId: string) => {
+      setSpinId(cardId);
       aopApi
         .UnApplyMCPResource({
-          mcpId,
+          cardId,
         })
         .finally(() => {
           setSpinId('');
-          getMcpListData();
+          getCardListData();
         });
     },
-    [getMcpListData],
+    [getCardListData],
   );
 
   const applyService = useCallback(
-    (mcpId: string) => {
-      setSpinId(mcpId);
+    (cardId: string) => {
+      setSpinId(cardId);
       aopApi
         .ApplyMCPResource({
-          mcpId,
+          cardId,
         })
         .finally(() => {
           setSpinId('');
-          getMcpListData();
+          getCardListData();
         });
     },
-    [getMcpListData],
+    [getCardListData],
   );
 
   const startService = useCallback(
-    (mcpId: string) => {
-      setSpinId(mcpId);
+    (cardId: string) => {
+      setSpinId(cardId);
       aopApi
         .StartMCPResource({
-          mcpId,
+          cardId,
         })
         .finally(() => {
           setSpinId('');
-          getMcpListData();
+          getCardListData();
         });
     },
-    [getMcpListData],
+    [getCardListData],
   );
 
   const delService = useCallback(
-    (mcpId: string) => {
-      setSpinId(mcpId);
+    (cardId: string) => {
+      setSpinId(cardId);
       aopApi
         .DeleteMCPResource({
-          mcpId,
+          cardId,
         })
         .finally(() => {
           setSpinId('');
-          getMcpListData();
+          getCardListData();
         });
     },
-    [getMcpListData],
+    [getCardListData],
   );
 
   useEffect(() => {
-    getMcpListData();
-  }, [getMcpListData]);
+    getCardListData();
+  }, [getCardListData]);
 
   useEffect(() => {
     aopApi.GetCardTypeCount({}).then(res => {
@@ -191,8 +194,8 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
             setGroupType(e.target.value);
           }}
         >
-          <Radio value={0}>我创建的</Radio>
-          <Radio value={1}>我添加的</Radio>
+          <Radio value={1}>我创建的</Radio>
+          <Radio value={0}>我添加的</Radio>
         </RadioGroup>
         <HeaderActions>
           <Search
@@ -242,139 +245,142 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       <Content>
         <GridList>
           {mcpList.map(item => (
-            <GridItem key={item.mcpId}>
+            <GridItem key={item.cardId}>
               <div
                 className={cls(
                   'px-[16px] h-full flex flex-col justify-between',
                 )}
               >
                 <div
-                  className="py-[20px]"
+                  className="py-[12px]"
                   onClick={e => {
-                    goPage(`/mcp-detail/view?mcp_id=${item.mcpId}`);
+                    goPage(`/mcp-detail/view?mcp_id=${item.cardId}`);
                     e?.stopPropagation();
                   }}
                 >
-                  <div className="flex gap-[8px] mb-[16px]">
-                    <div className="w-[48px] h-[48px] mx-[4px]">
-                      <img
-                        src={replaceUrl(item.mcpIcon)}
+                  <div className="flex flex-col gap-[8px]">
+                    <div className="w-full h-[180px] px-[12px] py-[12px] bg-[#EFF0F4] rounded-[6px]">
+                      <div
                         className="w-full h-full"
-                        width="48px"
-                        height="48px"
-                        alt=""
+                        style={{
+                          background: `url("${replaceUrl(item.picUrl)}") no-repeat center center / cover`,
+                        }}
                       />
                     </div>
                     <div>
                       <div className="flex gap-[6px] mb-[4px] items-center">
                         <div className="text-[18px] font-medium">
-                          {item.mcpName}
+                          {item.cardName}
                         </div>
-                        {item.mcpStatus === '1' && (
-                          <div className={styles.statusRunning} />
-                        )}
                       </div>
-                      <div className="text-[12px] coz-fg-secondary">
-                        {item.mcpId}
+                      <div className="text-[14px] coz-fg-secondary">
+                        {item.code}
                       </div>
                     </div>
                   </div>
-                  <div className="text-[14px] coz-fg-secondary">
-                    {item.mcpDesc}
-                  </div>
                 </div>
-                <Spin spinning={spinId === item.mcpId}>
+                <Spin spinning={spinId === item.cardId}>
                   <div
                     className={cls(
                       'flex justify-between py-[12px] text-[14px] text-[#666]',
                       styles.panel,
                     )}
                   >
-                    {item.mcpStatus == '1' && item.mcpShelf == '0' && (
-                      <div
-                        className={cls(styles.action, styles.stop)}
-                        onClick={e => {
-                          stopService(item.mcpId);
-                          e?.stopPropagation();
-                        }}
-                      >
-                        停止服务
-                      </div>
-                    )}
-                    {(item.mcpStatus == '0' ||
-                      item.mcpStatus == '-1' ||
-                      item.mcpStatus == '2') && (
-                      <div
-                        className={cls(styles.action, styles.start)}
-                        onClick={e => {
-                          startService(item.mcpId);
-                          e?.stopPropagation();
-                        }}
-                      >
-                        {item.mcpStatus == '2' ? '重启服务' : '启动服务'}
-                      </div>
-                    )}
-                    {item.mcpStatus == '1' && item.mcpShelf == '1' && (
-                      <Popconfirm
-                        title={`确定要将 ${item.mcpName} 服务下架吗？`}
-                        onConfirm={e => {
-                          unApplyService(item.mcpId);
-                          e?.stopPropagation();
-                        }}
-                        okText="确定"
-                        cancelText="取消"
-                      >
-                        <div className={cls(styles.action, styles.unshelve)}>
-                          服务下架
+                    {[
+                      item.cardShelfStatus == '1' && item.mcpShelf == '0' && (
+                        <div
+                          key="stop"
+                          className={cls(styles.action, styles.stop)}
+                          onClick={e => {
+                            stopService(item.cardId);
+                            e?.stopPropagation();
+                          }}
+                        >
+                          停止服务
                         </div>
-                      </Popconfirm>
-                    )}
-                    {item.mcpStatus == '1' && item.mcpShelf == '0' && (
-                      <Popconfirm
-                        title={`确定要将 ${item.mcpName} 服务上架吗？`}
-                        onConfirm={e => {
-                          applyService(item.mcpId);
-                          e?.stopPropagation();
-                        }}
-                        okText="确定"
-                        cancelText="取消"
-                      >
-                        <div className={cls(styles.action, styles.apply)}>
-                          申请上架
+                      ),
+                      (item.cardShelfStatus == '0' ||
+                        item.cardShelfStatus == '-1' ||
+                        item.cardShelfStatus == '2') && (
+                        <div
+                          key="start"
+                          className={cls(styles.action, styles.start)}
+                          onClick={e => {
+                            startService(item.cardId);
+                            e?.stopPropagation();
+                          }}
+                        >
+                          {item.cardShelfStatus == '2'
+                            ? '重启服务'
+                            : '启动服务'}
                         </div>
-                      </Popconfirm>
-                    )}
-                    <Menu
-                      position="bottomRight"
-                      className="w-120px mt-4px mb-4px"
-                      render={
-                        <Menu.SubMenu mode="menu">
-                          <MenuItem
-                            onClick={e => {
-                              goPage(`/mcp-detail/edit?mcp_id=${item.mcpId}`);
-                              e?.stopPropagation();
-                            }}
-                          >
-                            编辑服务
-                          </MenuItem>
-                          <Popconfirm
-                            title={`确定要将 ${item.mcpName} 服务删除吗？`}
-                            onConfirm={e => {
-                              delService(item.mcpId);
-                              e?.stopPropagation();
-                            }}
-                            okText="确定"
-                            cancelText="取消"
-                          >
-                            <MenuItem>删除服务</MenuItem>
-                          </Popconfirm>
-                        </Menu.SubMenu>
-                      }
-                    >
-                      <div className={cls(styles.action, styles.more)}>
-                        更多
-                      </div>
-                    </Menu>
+                      ),
+                      item.cardShelfStatus == '1' && item.mcpShelf == '1' && (
+                        <Popconfirm
+                          title={`确定要将 ${item.cardName} 服务下架吗？`}
+                          onConfirm={e => {
+                            unApplyService(item.cardId);
+                            e?.stopPropagation();
+                          }}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <div className={cls(styles.action, styles.unshelve)}>
+                            服务下架
+                          </div>
+                        </Popconfirm>
+                      ),
+                      item.cardShelfStatus == '1' && item.mcpShelf == '0' && (
+                        <Popconfirm
+                          key="apply"
+                          title={`确定要将 ${item.cardName} 服务上架吗？`}
+                          onConfirm={e => {
+                            applyService(item.cardId);
+                            e?.stopPropagation();
+                          }}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <div className={cls(styles.action, styles.apply)}>
+                            申请上架
+                          </div>
+                        </Popconfirm>
+                      ),
+                      <Menu
+                        key="more"
+                        position="bottomRight"
+                        className="w-120px mt-4px mb-4px"
+                        render={
+                          <Menu.SubMenu mode="menu">
+                            <MenuItem
+                              onClick={e => {
+                                goPage(
+                                  `/mcp-detail/edit?mcp_id=${item.cardId}`,
+                                );
+                                e?.stopPropagation();
+                              }}
+                            >
+                              编辑服务
+                            </MenuItem>
+                            <Popconfirm
+                              title={`确定要将 ${item.cardName} 服务删除吗？`}
+                              onConfirm={e => {
+                                delService(item.cardId);
+                                e?.stopPropagation();
+                              }}
+                              okText="确定"
+                              cancelText="取消"
+                            >
+                              <MenuItem>删除服务</MenuItem>
+                            </Popconfirm>
+                          </Menu.SubMenu>
+                        }
+                      >
+                        <div className={cls(styles.action, styles.more)}>
+                          更多
+                        </div>
+                      </Menu>,
+                    ]}
                   </div>
                 </Spin>
               </div>
