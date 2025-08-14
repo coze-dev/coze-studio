@@ -55,6 +55,10 @@ axiosInstance.interceptors.response.use(
     });
     const { data = {} } = response;
 
+    if (typeof data.code !== 'number') {
+      data.code = Number(data.header.errorCode);
+      data.msg = data.header.errorMsg;
+    }
     // Added interface return message field
     const { code, msg, message } = data;
 

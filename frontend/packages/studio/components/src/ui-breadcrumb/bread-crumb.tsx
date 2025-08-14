@@ -72,7 +72,8 @@ export const UIBreadcrumb: React.FC<BreadCrumbProps> = ({
     if (base === BaseEnum.Explore) {
       navigate('/explore');
     } else {
-      navigate(`/space/${id}/library`);
+      // navigate(`/space/${id}/library`);
+      navigate(-1);
     }
   };
   const goBackToDoc = () => {

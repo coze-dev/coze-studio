@@ -19,33 +19,41 @@ import { useState } from 'react';
 
 import { SubMenuItem, SubMenu } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
+// import {
+//   // IconCozTemplate,
+//   // IconCozTemplateFill,
+//   IconCozPlugin,
+//   IconCozPluginFill,
+// } from '@coze-arch/coze-design/icons';
 import {
-  // IconCozTemplate,
-  // IconCozTemplateFill,
-  IconCozPlugin,
-  IconCozPluginFill,
-} from '@coze-arch/coze-design/icons';
+  IconBotDevelop,
+  IconBotDevelopActive,
+  IconBotPlugin,
+  IconBotPluginActive,
+} from '../../../../../components/bot-icons';
 import { Space } from '@coze-arch/coze-design';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
+import cls from 'classnames';
+import styles from './index.module.less';
 
 const getMenuConfig = () => [
   {
     type: 'project',
-    icon: <IconCozPlugin />,
-    activeIcon: <IconCozPluginFill />,
+    icon: <IconBotDevelop />,
+    activeIcon: <IconBotDevelop />,
     title: I18n.t('Project'),
     // isActive: true,
     // path: '/explore/project',
     children: [
       {
-        type: 'project-latest',
+        type: 'latest',
         title: I18n.t('Project_latest'),
         isActive: true,
         path: '/explore/project/latest',
       },
       {
-        type: 'project-tools',
+        type: 'tools',
         title: I18n.t('Project_tools'),
         isActive: true,
         path: '/explore/project/tools',
@@ -54,8 +62,8 @@ const getMenuConfig = () => [
   },
   {
     type: 'plugin',
-    icon: <IconCozPlugin />,
-    activeIcon: <IconCozPluginFill />,
+    icon: <IconBotPlugin />,
+    activeIcon: <IconBotPlugin />,
     title: I18n.t('Plugins'),
     isActive: true,
     path: '/explore/plugin',
@@ -73,8 +81,8 @@ const getMenuConfig = () => [
 export const ExploreSubMenu = () => {
   const navigate = useNavigate();
   const { type } = useExploreRoute();
+  const { project_type } = useParams();
   const [active, setActive] = useState(true);
-  console.log('🚀 ~ ExploreSubMenu ~ type:', type);
   const menuConfig = getMenuConfig();
   return (
     <Space spacing={4} vertical>
@@ -82,8 +90,16 @@ export const ExploreSubMenu = () => {
         <SubMenuItem
           key={item.type}
           {...item}
-          isActive={item.type === type}
-          suffix={item?.children?.length ? '>' : ''}
+          isActive={item?.children?.length ? false : item.type === type}
+          suffix={
+            item?.children?.length ? (
+              <div
+                className={cls(styles.groupSubMenuArrow, {
+                  [styles.groupSubMenuArrowActive]: active,
+                })}
+              />
+            ) : null
+          }
           onClick={() => {
             item.path ? navigate(item.path) : setActive(!active);
           }}
@@ -94,7 +110,7 @@ export const ExploreSubMenu = () => {
               key={child.type}
               {...child}
               className="sub-menu-item"
-              isActive={child.type === type}
+              isActive={child.type === project_type}
               onClick={() => {
                 navigate(child.path);
               }}

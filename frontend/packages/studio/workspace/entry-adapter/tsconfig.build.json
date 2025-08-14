@@ -24,6 +24,9 @@
       "path": "../../../arch/bot-typings/tsconfig.build.json"
     },
     {
+      "path": "../../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
       "path": "../../../arch/i18n/tsconfig.build.json"
     },
     {

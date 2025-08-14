@@ -24,11 +24,11 @@ const subMenu = lazy(() =>
     default: exps.ExploreSubMenu,
   })),
 );
-// const TemplatePage = lazy(() =>
-//   import('@coze-community/explore').then(exps => ({
-//     default: exps.TemplatePage,
-//   })),
-// );
+const ProjectPage = lazy(() =>
+  import('@coze-community/explore').then(exps => ({
+    default: exps.ProjectPage,
+  })),
+);
 const PluginPage = lazy(() =>
   import('@coze-community/explore').then(exps => ({
     default: exps.PluginPage,
@@ -72,14 +72,14 @@ export const exploreRouter: RouteObject = {
             showCopyButton: false, // 显示"立即体验"而不是"复制"
           }),
         },
+        {
+          path: ':project_type',
+          element: <ProjectPage />,
+          loader: () => ({
+            type: 'project',
+          }),
+        },
       ],
     },
-    // {
-    //   path: 'template',
-    //   element: <TemplatePage />,
-    //   loader: () => ({
-    //     type: 'template',
-    //   }),
-    // },
   ],
 };

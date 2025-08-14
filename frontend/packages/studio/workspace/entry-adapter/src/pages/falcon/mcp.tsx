@@ -1,39 +1,36 @@
-import { type FC, useEffect } from 'react';
-import { useSpaceStore } from '@coze-foundation/space-store-adapter';
-import { SpaceType } from '@coze-arch/bot-api/developer_api';
-import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import classNames from 'classnames';
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* eslint-disable @coze-arch/max-line-per-function */
+/* eslint-disable prettier/prettier */
+import { type FC, useEffect, useCallback, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { I18n } from '@coze-arch/i18n';
+import cls from 'classnames';
+
 import {
-  highlightFilterStyle,
-  WorkspaceEmpty,
-  DevelopCustomPublishStatus,
-  isPublishStatus,
-  isRecentOpen,
-  isSearchScopeEnum,
-  getPublishRequestParam,
-  getTypeRequestParams,
-  isEqualDefaultFilterParams,
-  isFilterHighlight,
-  CREATOR_FILTER_OPTIONS,
-  FILTER_PARAMS_DEFAULT,
-  STATUS_FILTER_OPTIONS,
-  TYPE_FILTER_OPTIONS,
-  BotCard,
   Content,
   Header,
-  HeaderActions,
+  SubHeaderSearch,
   HeaderTitle,
+  SubHeaderFilters,
   Layout,
   SubHeader,
-  SubHeaderFilters,
-  SubHeaderSearch,
-  useIntelligenceList,
-  useIntelligenceActions,
-  useCachedQueryParams,
-  useGlobalEventListeners,
+  HeaderActions,
   type DevelopProps,
-  useProjectCopyPolling,
-  useCardActions,
 } from '@coze-studio/workspace-base/develop';
 import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
@@ -42,95 +39,294 @@ import {
   Search,
   Select,
   Spin,
+  Menu,
+  MenuItem,
+  Popconfirm,
 } from '@coze-arch/coze-design';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { rpc, rpcurl } from '@coze-arch/bot-api/falcon-api'
+import { GridList, GridItem } from './components/gridList';
+import { aopApi } from '@coze-arch/bot-api';
+import { replaceUrl } from './utils';
 
+import styles from './index.module.less';
 
-const CardItem = ({item}) => {
-  return (
-    <div className="bg-white flex flex-direction">
-      <div className="flex ">
-        {/* <Image src={'sdsd'}/> */}
-        <div>
-          <div>TextInOCR</div>
-          <div>mcp-N2QzN2YyZGRiZDM3</div>
-        </div>
-      </div>
-      <div>
-        {item.xx}
-      </div>
-      <div>
-        <Button>停止服务</Button>
-        <Button>申请上架</Button>
-        <Button>...</Button>
-      </div>
-    </div>
-  )
-}
+let timer: NodeJS.Timeout | null = null;
+const delay = 300;
 
 export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
+  const [filterQueryText, setFilterQueryText] = useState('');
+  const [mcpList, setMcpList] = useState([]);
+  const [spinId, setSpinId] = useState('');
 
-    // const isPersonal = useSpaceStore(
-    //     state => state.space.space_type === SpaceType.Personal,
-    // );
+  const navigate = useNavigate();
+  const goPage = path => {
+    navigate(`/space/${spaceId}${path}`);
+  };
 
-  //   useGlobalEventListeners({ reload: true, spaceId });
+  const getMcpListData = useCallback(() => {
+    aopApi
+      .GetMCPResourceList({
+        createdBy: true,
+        mcpName: filterQueryText,
+        sassWorkspaceId: '7533521629687578624',
+      })
+      .then(res => {
+        setMcpList(res.body.serviceInfoList || []);
+      });
+  }, [filterQueryText]);
 
-  //   /**
-  //    * report tea event
-  //    */
-  //   useEffect(() => {
-  //     sendTeaEvent(EVENT_NAMES.view_bot, { tab: 'my_bots' });
-  //   }, []);
+  const stopService = useCallback(
+    (mcpId: string) => {
+      setSpinId(mcpId);
+      aopApi
+        .StopMCPResource({
+          mcpId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getMcpListData();
+        });
+    },
+    [getMcpListData],
+  );
 
-  //   useProjectCopyPolling({
-  //     listData: [],
-  //     spaceId,
-  //     mutate: [],
-  //   });
+  const unApplyService = useCallback(
+    (mcpId: string) => {
+      setSpinId(mcpId);
+      aopApi
+        .UnApplyMCPResource({
+          mcpId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getMcpListData();
+        });
+    },
+    [getMcpListData],
+  );
 
-  //   /**
-  //  * Create project
-  //  */
-  // const { contextHolder, actions } = useIntelligenceActions({
-  //   spaceId,
-  //   mutateList: [],
-  //   reloadList: [],
-  // });
+  const applyService = useCallback(
+    (mcpId: string) => {
+      setSpinId(mcpId);
+      aopApi
+        .ApplyMCPResource({
+          mcpId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getMcpListData();
+        });
+    },
+    [getMcpListData],
+  );
 
-  // return (
-  //   <div>
-  //     ================================mcp===
-  //   </div>
-  // )
+  const startService = useCallback(
+    (mcpId: string) => {
+      setSpinId(mcpId);
+      aopApi
+        .StartMCPResource({
+          mcpId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getMcpListData();
+        });
+    },
+    [getMcpListData],
+  );
 
-  rpc('xxxxx')
+  const delService = useCallback(
+    (mcpId: string) => {
+      setSpinId(mcpId);
+      aopApi
+        .DeleteMCPResource({
+          mcpId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getMcpListData();
+        });
+    },
+    [getMcpListData],
+  );
 
-    return (
-        <>
-      <Layout>
-        <Header>
-          <HeaderTitle>
-            <span>{I18n.t('workspace_mcp')}</span>
-          </HeaderTitle>
-          <HeaderActions>
-            <Button icon={<IconCozPlus />}>
-              {I18n.t('workspace_create')}
-            </Button>
-          </HeaderActions>
-        </Header>
-        <SubHeader>
-  
-        </SubHeader>
-        <Content>
-          =============mcp==
-          <CardItem item="{}"></CardItem>
-          <CardItem item="{}"></CardItem>
-          <CardItem item="{}"></CardItem>
-          <CardItem item="{}"></CardItem>
-        </Content>
-      </Layout>
-    </>
-    )
-}
+  useEffect(() => {
+    getMcpListData();
+  }, [getMcpListData]);
+
+  return (
+    <Layout>
+      <Header>
+        <HeaderTitle>
+          <span>{I18n.t('workspace_mcp')}</span>
+        </HeaderTitle>
+        <HeaderActions>
+          <Search
+            showClear={true}
+            className="w-[200px]"
+            placeholder={I18n.t('workspace_mcp_search_service')}
+            value={filterQueryText}
+            onChange={val => {
+              if (timer) {
+                clearTimeout(timer);
+              }
+              timer = setTimeout(() => {
+                setFilterQueryText(val);
+              }, delay);
+            }}
+          />
+          <Button
+            icon={<IconCozPlus />}
+            onClick={() => {
+              goPage('/mcp-detail/create');
+            }}
+          >
+            {I18n.t('workspace_create_mcp')}
+          </Button>
+        </HeaderActions>
+      </Header>
+      <Content>
+        <GridList>
+          {mcpList.map(item => (
+            <GridItem key={item.mcpId}>
+              <div
+                className={cls(
+                  'px-[16px] h-full flex flex-col justify-between',
+                )}
+              >
+                <div
+                  className="py-[20px]"
+                  onClick={e => {
+                    goPage(`/mcp-detail/view?mcp_id=${item.mcpId}`);
+                    e?.stopPropagation();
+                  }}
+                >
+                  <div className="flex gap-[8px] mb-[16px]">
+                    <div className="w-[48px] h-[48px] mx-[4px]">
+                      <img
+                        src={replaceUrl(item.mcpIcon)}
+                        className="w-full h-full"
+                        width="48px"
+                        height="48px"
+                        alt=""
+                      />
+                    </div>
+                    <div>
+                      <div className="flex gap-[6px] mb-[4px] items-center">
+                        <div className="text-[18px] font-medium">
+                          {item.mcpName}
+                        </div>
+                        {item.mcpStatus === '1' && (
+                          <div className={styles.statusRunning} />
+                        )}
+                      </div>
+                      <div className="text-[12px] coz-fg-secondary">
+                        {item.mcpId}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-[14px] coz-fg-secondary">
+                    {item.mcpDesc}
+                  </div>
+                </div>
+                <Spin spinning={spinId === item.mcpId}>
+                  <div
+                    className={cls(
+                      'flex justify-between py-[12px] text-[14px] text-[#666]',
+                      styles.panel,
+                    )}
+                  >
+                    {item.mcpStatus == '1' && item.mcpShelf == '0' && (
+                      <div
+                        className={cls(styles.action, styles.stop)}
+                        onClick={e => {
+                          stopService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
+                      >
+                        停止服务
+                      </div>
+                    )}
+                    {(item.mcpStatus == '0' ||
+                      item.mcpStatus == '-1' ||
+                      item.mcpStatus == '2') && (
+                      <div
+                        className={cls(styles.action, styles.start)}
+                        onClick={e => {
+                          startService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
+                      >
+                        {item.mcpStatus == '2' ? '重启服务' : '启动服务'}
+                      </div>
+                    )}
+                    {item.mcpStatus == '1' && item.mcpShelf == '1' && (
+                      <Popconfirm
+                        title={`确定要将 ${item.mcpName} 服务下架吗？`}
+                        onConfirm={e => {
+                          unApplyService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <div className={cls(styles.action, styles.unshelve)}>
+                          服务下架
+                        </div>
+                      </Popconfirm>
+                    )}
+                    {item.mcpStatus == '1' && item.mcpShelf == '0' && (
+                      <Popconfirm
+                        title={`确定要将 ${item.mcpName} 服务上架吗？`}
+                        onConfirm={e => {
+                          applyService(item.mcpId);
+                          e?.stopPropagation();
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <div className={cls(styles.action, styles.apply)}>
+                          申请上架
+                        </div>
+                      </Popconfirm>
+                    )}
+                    <Menu
+                      position="bottomRight"
+                      className="w-120px mt-4px mb-4px"
+                      render={
+                        <Menu.SubMenu mode="menu">
+                          <MenuItem
+                            onClick={e => {
+                              goPage(`/mcp-detail/edit?mcp_id=${item.mcpId}`);
+                              e?.stopPropagation();
+                            }}
+                          >
+                            编辑服务
+                          </MenuItem>
+                          <Popconfirm
+                            title={`确定要将 ${item.mcpName} 服务删除吗？`}
+                            onConfirm={e => {
+                              delService(item.mcpId);
+                              e?.stopPropagation();
+                            }}
+                            okText="确定"
+                            cancelText="取消"
+                          >
+                            <MenuItem>删除服务</MenuItem>
+                          </Popconfirm>
+                        </Menu.SubMenu>
+                      }
+                    >
+                      <div className={cls(styles.action, styles.more)}>
+                        更多
+                      </div>
+                    </Menu>
+                  </div>
+                </Spin>
+              </div>
+            </GridItem>
+          ))}
+        </GridList>
+      </Content>
+    </Layout>
+  );
+};
