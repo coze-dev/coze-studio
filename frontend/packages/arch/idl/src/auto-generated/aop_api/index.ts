@@ -132,5 +132,14 @@ export default class ApoApiService<T> {
     const data = _req;
     return this.request({ url, method, data }, options);
   }
+
+  // 获取MCP服务详情
+  GetMCPResourceDetail(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0009.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
 }
 /* eslint-enable */
