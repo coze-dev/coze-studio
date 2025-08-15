@@ -2143,6 +2143,10 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		option.IDs = ids
 	}
 
+	if req.IsSetFlowMode() && req.GetFlowMode() != workflow.WorkflowMode_All {
+		option.Mode = ptr.Of(workflowModel.WorkflowMode(req.GetFlowMode()))
+	}
+
 	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("space id is invalid, parse to int64 failed, err: %w", err)
