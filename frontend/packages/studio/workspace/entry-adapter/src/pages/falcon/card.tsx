@@ -314,7 +314,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                 <div
                   className="py-[12px]"
                   onClick={e => {
-                    goDetail('view', item);
+                    goEditor(item.cardId);
                     e?.stopPropagation();
                   }}
                 >
@@ -355,13 +355,13 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                       ? [
                           <div
                             key="editor"
-                            className={cls(styles.action, styles.editor)}
+                            className={cls(styles.action, styles.view)}
                             onClick={e => {
-                              goEditor(item.cardId);
+                              goDetail('view', item);
                               e?.stopPropagation();
                             }}
                           >
-                            编辑器
+                            查看详情
                           </div>,
                           item.cardShelfStatus === '0' && (
                             <Popconfirm
