@@ -104,11 +104,11 @@ func (sa *SingleAgentDraftDAO) MGet(ctx context.Context, agentIDs []int64) ([]*e
 	return dos, nil
 }
 
-func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
+func (sa *SingleAgentDraftDAO) Save(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	po := sa.singleAgentDraftDo2Po(agentInfo)
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 
-	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)
+	err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Save(po)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrAgentUpdateCode)
 	}

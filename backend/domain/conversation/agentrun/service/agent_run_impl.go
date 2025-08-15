@@ -213,6 +213,10 @@ func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.
 	resumeInfo := internal.ParseResumeInfo(ctx, historyMsg)
 	wfID, _ := strconv.ParseInt(rtDependence.agentInfo.LayoutInfo.WorkflowId, 10, 64)
 
+	if wfID == 0 {
+		c.handlerErr(ctx, errorx.New(errno.ErrAgentRunWorkflowNotFound), sw)
+		return
+	}
 	var wfStreamer *schema.StreamReader[*crossworkflow.WorkflowMessage]
 
 	executeConfig := crossworkflow.ExecuteConfig{
@@ -615,7 +619,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 			}
 
 		}
-
 
 		if st.DataMessage == nil {
 			continue
