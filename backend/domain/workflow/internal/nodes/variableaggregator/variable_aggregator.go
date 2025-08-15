@@ -31,6 +31,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/mohae/deepcopy"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -632,7 +633,14 @@ func concatVACallbackInputs(vs [][]vaCallbackInput) ([]vaCallbackInput, error) {
 		return nil, nil
 	}
 
-	init := slices.Clone(vs[0])
+	init := make([]vaCallbackInput, len(vs[0]))
+	for i, v := range vs[0] {
+		init[i] = vaCallbackInput{
+			Name:      v.Name,
+			Variables: deepcopy.Copy(v.Variables).([]any),
+		}
+	}
+
 	for i := 1; i < len(vs); i++ {
 		next := vs[i]
 		for j := 0; j < len(next); j++ {

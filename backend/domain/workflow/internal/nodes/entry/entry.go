@@ -84,7 +84,11 @@ type Entry struct {
 	outputTypes   map[string]*vo.TypeInfo
 }
 
-func (e *Entry) Invoke(_ context.Context, in map[string]any) (out map[string]any, err error) {
+func (e *Entry) Invoke(_ context.Context, input map[string]any) (out map[string]any, err error) {
+	in := make(map[string]any, len(input))
+	for k, v := range input {
+		in[k] = v
+	}
 	for k, v := range e.defaultValues {
 		if val, ok := in[k]; ok {
 			tInfo := e.outputTypes[k]
