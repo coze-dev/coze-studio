@@ -11,7 +11,7 @@ require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.3-0.20250427084711-67ec50b93040
 	github.com/apache/thrift v0.21.0
 	github.com/bytedance/mockey v1.2.14
-	github.com/bytedance/sonic v1.13.2
+	github.com/bytedance/sonic v1.14.0
 	github.com/cloudwego/eino v0.3.55
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.15
 	github.com/cloudwego/eino-ext/components/model/claude v0.1.1
@@ -128,7 +128,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/bytedance/gopkg v0.1.1
-	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cilium/ebpf v0.11.0 // indirect

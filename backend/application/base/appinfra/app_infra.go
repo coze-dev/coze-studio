@@ -89,44 +89,44 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 
 	deps.DB, err = mysql.New()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init db failed, err=%w", err)
 	}
 
 	deps.CacheCli = redis.New()
 
 	deps.IDGenSVC, err = idgen.New(deps.CacheCli)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init id gen svc failed, err=%w", err)
 	}
 
 	deps.ESClient, err = es.New()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init es client failed, err=%w", err)
 	}
 
 	deps.ImageXClient, err = initImageX(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init imagex client failed, err=%w", err)
 	}
 
 	deps.TOSClient, err = initTOS(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init tos client failed, err=%w", err)
 	}
 
 	deps.ResourceEventProducer, err = initResourceEventBusProducer()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init resource event bus producer failed, err=%w", err)
 	}
 
 	deps.AppEventProducer, err = initAppEventProducer()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init app event producer failed, err=%w", err)
 	}
 
 	deps.ModelMgr, err = initModelMgr()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init model manager failed, err=%w", err)
 	}
 
 	deps.CodeRunner = initCodeRunner()
@@ -135,19 +135,17 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 
 	imageAnnotationModel, _, err := internal.GetBuiltinChatModel(ctx, "IA_")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get builtin chat model failed, err=%w", err)
 	}
 
-	deps.ParserManager = initParserManager(deps.TOSClient, deps.OCR, imageAnnotationModel)
+	deps.ParserManager, err = initParserManager(deps.TOSClient, deps.OCR, imageAnnotationModel)
+	if err != nil {
+		return nil, fmt.Errorf("init parser manager failed, err=%w", err)
+	}
 
 	deps.SearchStoreManagers, err = initSearchStoreManagers(ctx, deps.ESClient)
 	if err != nil {
-		return nil, err
-	}
-
-	deps.SearchStoreManagers, err = initSearchStoreManagers(ctx, deps.ESClient)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init search store managers failed, err=%w", err)
 	}
 
 	return deps, nil
@@ -267,10 +265,12 @@ func initOCR() ocr.OCR {
 	return ocr
 }
 
-func initParserManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
+func initParserManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) (parser.Manager, error) {
 	var parserManager parser.Manager
 	parserType := os.Getenv(consts.ParserType)
 	switch parserType {
+	case "builtin", "":
+		parserManager = builtin.NewManager(storage, ocr, imageAnnotationModel)
 	case "paddleocr":
 		url := os.Getenv(consts.PPStructureAPIURL)
 		client := &http.Client{}
@@ -280,10 +280,10 @@ func initParserManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationMode
 		}
 		parserManager = ppstructure.NewManager(apiConfig, ocr, storage, imageAnnotationModel)
 	default:
-		parserManager = builtin.NewManager(storage, ocr, imageAnnotationModel)
+		return nil, fmt.Errorf("parser type %s not supported", parserType)
 	}
 
-	return parserManager
+	return parserManager, nil
 }
 
 func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
