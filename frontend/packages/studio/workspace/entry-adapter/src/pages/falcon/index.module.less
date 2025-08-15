@@ -29,6 +29,18 @@
   }
 }
 
+.editor {
+  &:before {
+    background: url('./assets/editor.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.view {
+  &:before {
+    background: url('./assets/view.svg') no-repeat 0 0 / cover;
+  }
+}
+
 .apply {
   &:before {
     background: url('./assets/apply.svg') no-repeat 0 0 / cover;
@@ -38,6 +50,12 @@
 .unshelve {
   &:before {
     background: url('./assets/unshelve.svg') no-repeat 0 0 / cover;
+  }
+}
+
+.delete {
+  &:before {
+    background: url('./assets/delete.svg') no-repeat 0 0 / cover;
   }
 }
 
@@ -63,9 +81,8 @@
 .mcpDetailContent {
   padding: 24px 42px;
   background: #fff;
-  min-height: calc(100vh - 100px);
   border: 1px solid rgba(var(--coze-stroke-5), var(--coze-stroke-5-alpha));
-  border-radius: 6px;
+  border-radius: 6px 6px 0 0;
 }
 
 .help-text {

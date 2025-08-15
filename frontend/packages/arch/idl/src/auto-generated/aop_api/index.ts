@@ -19,7 +19,7 @@
 /* tslint:disable */
 // @ts-nocheck
 
-export default class ApoApiService<T> {
+export default class AopApiService<T> {
   private request: any = () => {
     throw new Error('AopApiService.request is undefined');
   };
@@ -40,6 +40,7 @@ export default class ApoApiService<T> {
   }) {
     this.request = options?.request || this.request;
     this.baseURL = options?.baseURL || '/aop-web/';
+    this.genBaseURL = this.genBaseURL.bind(this);
   }
 
   genBaseURL(path: string) {
@@ -128,6 +129,105 @@ export default class ApoApiService<T> {
   GetMCPTypeEnum(req?: any, options?: T): Promise<any> {
     const _req = req || {};
     const url = this.genBaseURL('MCP0004.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取MCP服务详情
+  GetMCPResourceDetail(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('MCP0009.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取卡片类型列表
+  GetCardTypes(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10009.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取不同类型卡片统计列表
+  GetCardTypeCount(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10031.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 卡片资源列表
+  GetCardResourceList(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10001.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 卡片上架
+  ApplyCardResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10026.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 卡片下架
+  UnApplyCardResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10027.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 卡片删除
+  DeleteCardResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10003.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 卡片绑定删除
+  DeleteCardResourceFromMe(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10029.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 添加卡片
+  AddCardResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10002.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 编辑卡片
+  EditCardResource(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10008.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取卡片详情
+  GetCardResourceDetail(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10007.do');
     const method = 'POST';
     const data = _req;
     return this.request({ url, method, data }, options);

@@ -19,7 +19,7 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Breadcrumb, Form, Button } from '@coze-arch/coze-design';
+import { Button, Breadcrumb, Form, Spin, Toast } from '@coze-arch/coze-design';
 import { getParamsFromQuery } from '../../../../../../arch/bot-utils';
 import { useParams } from 'react-router-dom';
 import {
@@ -40,12 +40,13 @@ import {
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
 
 import cls from 'classnames';
-import { uploadRequest } from './utils';
-import { aopApi, ProductApi } from '@coze-arch/bot-api';
+import { replaceUrl, parseUrl, installTypeOptions } from './utils';
+import { aopApi } from '@coze-arch/bot-api';
 
 import styles from './index.module.less';
 
 export const FalconMcpDetail = ({ spaceId }) => {
+  const valueWidth = '560px';
   const { page_type } = useParams();
   const mcpId = getParamsFromQuery({ key: 'mcp_id' });
   const [loading, setLoading] = useState(false);
@@ -53,9 +54,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
   const [fileName, setFileName] = useState('service_icon');
   const formApi = useRef();
   const navigate = useNavigate();
-  const goBack = () => {
-    navigate(-1);
-  };
+
   const actionName = I18n.t(
     page_type === 'create'
       ? 'workspace_create'
@@ -63,39 +62,92 @@ export const FalconMcpDetail = ({ spaceId }) => {
         ? 'Edit'
         : 'View',
   );
-  const installTypeOptions = [
-    {
-      label: 'npx',
-      value: 'npx',
-    },
-    {
-      label: 'uvx',
-      value: 'uvx',
-    },
-    {
-      label: 'sse',
-      value: 'sse',
-    },
-  ];
+  const readonly = page_type === 'view';
   console.log(page_type, mcpId);
 
-  const handleSubmit = () => {
-    formApi.current.validate().then(values => {
-      console.log('🚀 ~ handleSubmit ~ values:', values);
-    });
-  };
+  const handleSubmit = useCallback(
+    values => {
+      const subParams = {
+        mcpId,
+        mcpName: values.service_name,
+        mcpIcon:
+          values.service_cover[0].response.body.path ||
+          parseUrl(values.service_cover[0].url),
+        mcpDesc: values.service_desc,
+        mcpType: values.service_type,
+        mcpInstallMethod: values.install_type,
+        mcpConfig: values.service_config,
+        sassWorkspaceId: spaceId,
+      };
+      console.log('🚀 ~ handleSubmit ~ values:', subParams, values);
+
+      setLoading(true);
+      aopApi
+        .AddEditMCPResource(subParams)
+        .then(() => {
+          page_type === 'edit'
+            ? Toast.success(I18n.t('Edit_success'))
+            : Toast.success(I18n.t('Save_success'));
+          navigate(-1);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [mcpId, spaceId, page_type, navigate],
+  );
 
   useEffect(() => {
-    aopApi.GetMCPTypeEnum().then(res => {
-      const list =
-        res.body.serviceInfoList.map(item => ({
-          label: item.typeName,
-          value: item.typeId,
-        })) || [];
-      console.log('🚀 ~ FalconMcpDetail ~ list:', list);
-      setServiceTypeOptions(list);
-    });
+    aopApi
+      .GetMCPTypeEnum({
+        sassWorkspaceId: spaceId,
+      })
+      .then(res => {
+        const list =
+          res.body.serviceInfoList.map(item => ({
+            label: item.typeName,
+            value: item.typeId,
+          })) || [];
+        setServiceTypeOptions(list);
+      });
   }, []);
+
+  useEffect(() => {
+    if (mcpId) {
+      aopApi
+        .GetMCPResourceDetail({
+          mcpId,
+          sassWorkspaceId: spaceId,
+        })
+        .then(res => {
+          const data = res.body;
+          const initParams = {
+            service_name: data.mcpName,
+            service_cover: [
+              {
+                uid: '1',
+                name: 'cover',
+                url: replaceUrl(data.mcpIcon),
+                status: 'done',
+                response: {
+                  header: { errorCode: '0' },
+                  body: { path: data.mcpIcon },
+                },
+              },
+            ],
+            service_type: data.mcpType,
+            service_desc: data.mcpDesc,
+            install_type: data.mcpInstallMethod,
+            service_config: data.mcpConfig,
+          };
+          if (formApi.current) {
+            formApi.current.setValues(initParams);
+            formApi.current.validate();
+          }
+        });
+    }
+  }, [mcpId]);
+
   return (
     <Layout>
       <Header>
@@ -105,7 +157,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
               <Button
                 color="secondary"
                 icon={<IconCozArrowLeft />}
-                onClick={goBack}
+                onClick={() => navigate(-1)}
               >
                 {I18n.t('back')}
               </Button>
@@ -117,27 +169,21 @@ export const FalconMcpDetail = ({ spaceId }) => {
             </Breadcrumb.Item>
           </Breadcrumb>
         </HeaderTitle>
-        <HeaderActions></HeaderActions>
       </Header>
-      <Content>
-        <div className={styles.mcpDetailContent}>
+      <Content className={styles.mcpDetailContent}>
+        <Spin spinning={loading}>
           <Form
             getFormApi={api => (formApi.current = api)}
             labelPosition="top"
             showValidateIcon={false}
-            className={styles['form-wrap']}
-            // onValueChange={values =>
-            //   // onFormValueChange(
-            //   //   values,
-            //   // )
-            // }
             autoComplete="off"
-            disabled={loading}
+            disabled={loading || readonly}
+            onSubmit={handleSubmit}
           >
             <Form.Input
               field="service_name"
               label={I18n.t('coze_workspace_mcp_detail_service_name')}
-              style={{ width: '540px' }}
+              style={{ width: valueWidth }}
               trigger="blur"
               maxLength={50}
               placeholder={I18n.t(
@@ -167,7 +213,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
               onFileChange={e => {
                 setFileName(e[0].name);
               }}
-              // customRequest={uploadRequest(ProductApi.PublicUploadImage)}
+              name="uploadFile"
               picWidth={80}
               picHeight={80}
               rules={[
@@ -178,10 +224,22 @@ export const FalconMcpDetail = ({ spaceId }) => {
                   ),
                 },
                 {
-                  validator: (_rule, value) =>
-                    value[0]?.response?.header?.errorCode === '0',
-                  message:
-                    I18n.t('card_builder_image') + I18n.t('Upload_failed'),
+                  validator: (_rule, value) => {
+                    const code = value?.[0]?.response?.header?.errorCode;
+
+                    if (code) {
+                      return (
+                        code === '0' ||
+                        new Error(I18n.t('imageflow_upload_error'))
+                      );
+                    } else {
+                      return (
+                        value?.[0]?.url ||
+                        new Error(I18n.t('plugin_file_upload_mention_image'))
+                      );
+                    }
+                  },
+                  message: '',
                 },
               ]}
             >
@@ -193,8 +251,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
                 text: I18n.t('coze_workspace_mcp_detail_service_type'),
               }}
               optionList={serviceTypeOptions}
-              // initValue={defaultServiceTypeOptionsValue}
-              style={{ width: '540px' }}
+              style={{ width: valueWidth }}
               placeholder={I18n.t(
                 'coze_workspace_mcp_detail_service_type_collect',
               )}
@@ -210,7 +267,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
             <Form.TextArea
               field="service_desc"
               label={I18n.t('coze_workspace_mcp_detail_service_desc')}
-              style={{ width: '540px' }}
+              style={{ width: valueWidth }}
               trigger="blur"
               maxLength={50}
               placeholder={I18n.t(
@@ -236,7 +293,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
               ]}
               trigger="blur"
               field="install_type"
-              style={{ width: '540px' }}
+              type="card"
               label={{
                 text: I18n.t('coze_workspace_mcp_detail_install_type'),
               }}
@@ -254,9 +311,9 @@ export const FalconMcpDetail = ({ spaceId }) => {
                   </span>
                 ),
               }}
-              style={{ width: '540px', height: '320px' }}
+              style={{ width: valueWidth }}
+              rows={20}
               trigger="blur"
-              // maxLength={50}
               placeholder={I18n.t(
                 'coze_workspace_mcp_detail_service_config_collect',
               )}
@@ -269,13 +326,20 @@ export const FalconMcpDetail = ({ spaceId }) => {
                 },
               ]}
             />
-            <div className="w-[540px] mt-[24px] flex justify-center gap-[12px]">
-              <Button size="large" type="primary" onClick={handleSubmit}>
-                {I18n.t('SaveDeploy')}
-              </Button>
-            </div>
+            {!readonly && (
+              <div className="w-[540px] mt-[24px] flex justify-center gap-[12px]">
+                <Button
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  // onClick={() => formApi.current?.submitForm()}
+                >
+                  {I18n.t('SaveDeploy')}
+                </Button>
+              </div>
+            )}
           </Form>
-        </div>
+        </Spin>
       </Content>
     </Layout>
   );

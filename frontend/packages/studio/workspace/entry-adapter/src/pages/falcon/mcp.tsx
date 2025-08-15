@@ -31,6 +31,7 @@ import {
   SubHeader,
   HeaderActions,
   type DevelopProps,
+  WorkspaceEmpty,
 } from '@coze-studio/workspace-base/develop';
 import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
@@ -42,6 +43,7 @@ import {
   Menu,
   MenuItem,
   Popconfirm,
+  Spin,
 } from '@coze-arch/coze-design';
 import { GridList, GridItem } from './components/gridList';
 import { aopApi } from '@coze-arch/bot-api';
@@ -53,6 +55,7 @@ let timer: NodeJS.Timeout | null = null;
 const delay = 300;
 
 export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
+  const [loading, setLoading] = useState(false);
   const [filterQueryText, setFilterQueryText] = useState('');
   const [mcpList, setMcpList] = useState([]);
   const [spinId, setSpinId] = useState('');
@@ -63,16 +66,20 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
   };
 
   const getMcpListData = useCallback(() => {
+    setLoading(true);
     aopApi
       .GetMCPResourceList({
         createdBy: true,
         mcpName: filterQueryText,
-        sassWorkspaceId: '7533521629687578624',
+        sassWorkspaceId: spaceId,
       })
       .then(res => {
         setMcpList(res.body.serviceInfoList || []);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }, [filterQueryText]);
+  }, [filterQueryText, spaceId]);
 
   const stopService = useCallback(
     (mcpId: string) => {
@@ -80,13 +87,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .StopMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const unApplyService = useCallback(
@@ -95,13 +103,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .UnApplyMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const applyService = useCallback(
@@ -110,13 +119,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .ApplyMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const startService = useCallback(
@@ -125,13 +135,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .StartMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const delService = useCallback(
@@ -140,13 +151,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .DeleteMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   useEffect(() => {
@@ -326,6 +338,12 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
             </GridItem>
           ))}
         </GridList>
+        {!mcpList?.length && !loading ? <WorkspaceEmpty /> : null}
+        {loading ? (
+          <Spin>
+            <div className="w-full h-[100px] flex items-center justify-center" />
+          </Spin>
+        ) : null}
       </Content>
     </Layout>
   );
