@@ -20,10 +20,13 @@ package modelmgr
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	modelmgr "github.com/coze-dev/coze-studio/backend/api/model/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	modelmgrApp "github.com/coze-dev/coze-studio/backend/application/modelmgr"
 )
 
@@ -166,8 +169,21 @@ func AddModelToSpace(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// 调用业务逻辑 (暂时使用固定用户ID，待后续从上下文获取)
-	err = modelmgrApp.ModelmgrApplicationSVC.AddModelToSpace(ctx, req.SpaceID, req.ModelID, 1)
+	// 从上下文获取用户ID
+	session := ctxutil.GetUserSessionFromCtx(ctx)
+	var userID uint64
+	if session != nil {
+		userID = uint64(session.UserID)
+	} else {
+		c.JSON(consts.StatusOK, &modelmgr.AddModelToSpaceResponse{
+			Code: 401,
+			Msg:  "User not authenticated",
+		})
+		return
+	}
+
+	// 调用业务逻辑
+	err = modelmgrApp.ModelmgrApplicationSVC.AddModelToSpace(ctx, req.SpaceID, req.ModelID, userID)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -254,6 +270,438 @@ func GetSpaceModelConfig(ctx context.Context, c *app.RequestContext) {
 		Code: 0,
 		Msg:  "success",
 		Data: nil,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetModelTemplates .
+// @router /api/model/templates [GET]
+func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req modelmgr.GetModelTemplatesRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用应用服务层获取模板列表
+	templates, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx)
+	if err != nil {
+		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplatesResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Failed to get templates: %v", err),
+		})
+		return
+	}
+
+	resp := &modelmgr.GetModelTemplatesResponse{
+		Code:      0,
+		Msg:       "success",
+		Templates: templates,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetModelTemplateContent .
+// @router /api/model/template/content [GET]
+func GetModelTemplateContent(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req modelmgr.GetModelTemplateContentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用应用服务层获取模板内容
+	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, req.TemplateID)
+	if err != nil {
+		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplateContentResponse{
+			Code: 404,
+			Msg:  "Template not found",
+		})
+		return
+	}
+
+	// Return JSON content directly
+	resp := &modelmgr.GetModelTemplateContentResponse{
+		Code:    0,
+		Msg:     "success",
+		Content: &content,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ImportModelFromTemplate .
+// @router /api/model/import [POST]
+func ImportModelFromTemplate(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req modelmgr.ImportModelFromTemplateRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse JSON content
+	var config map[string]interface{}
+	if err := json.Unmarshal([]byte(req.JSONContent), &config); err != nil {
+		c.JSON(consts.StatusOK, &modelmgr.ImportModelFromTemplateResponse{
+			Code: 400,
+			Msg:  fmt.Sprintf("Invalid JSON format: %v", err),
+		})
+		return
+	}
+
+	// Extract basic info
+	name := ""
+	if n, ok := config["name"].(string); ok {
+		name = n
+	}
+
+	// Extract description
+	descriptionMap := make(map[string]string)
+	if desc, ok := config["description"].(map[string]interface{}); ok {
+		for k, v := range desc {
+			if vs, ok := v.(string); ok {
+				descriptionMap[k] = vs
+			}
+		}
+	} else if desc, ok := config["description"].(map[interface{}]interface{}); ok {
+		// Handle YAML-style parsing
+		for k, v := range desc {
+			if ks, ok := k.(string); ok {
+				if vs, ok := v.(string); ok {
+					descriptionMap[ks] = vs
+				}
+			}
+		}
+	}
+
+	// Extract default parameters
+	var defaultParams []*modelmgr.ModelParameterInput
+	if params, ok := config["default_parameters"].([]interface{}); ok {
+		for _, param := range params {
+			modelParam := &modelmgr.ModelParameterInput{}
+
+			// Try JSON-style parsing first
+			if paramMap, ok := param.(map[string]interface{}); ok {
+
+				// Extract required fields
+				if name, ok := paramMap["name"].(string); ok {
+					modelParam.Name = name
+				}
+
+				// Extract label
+				if label, ok := paramMap["label"].(map[string]interface{}); ok {
+					labelMap := make(map[string]string)
+					for k, v := range label {
+						if vs, ok := v.(string); ok {
+							labelMap[k] = vs
+						}
+					}
+					modelParam.Label = labelMap
+				}
+
+				// Extract desc
+				if desc, ok := paramMap["desc"].(map[string]interface{}); ok {
+					descMap := make(map[string]string)
+					for k, v := range desc {
+						if vs, ok := v.(string); ok {
+							descMap[k] = vs
+						}
+					}
+					modelParam.Desc = descMap
+				}
+
+				// Extract type
+				if paramType, ok := paramMap["type"].(string); ok {
+					modelParam.Type = paramType
+				}
+
+				// Extract min
+				if min, ok := paramMap["min"].(string); ok {
+					modelParam.Min = &min
+				} else if min, ok := paramMap["min"].(float64); ok {
+					minStr := fmt.Sprintf("%v", min)
+					modelParam.Min = &minStr
+				}
+
+				// Extract max
+				if max, ok := paramMap["max"].(string); ok {
+					modelParam.Max = &max
+				} else if max, ok := paramMap["max"].(float64); ok {
+					maxStr := fmt.Sprintf("%v", max)
+					modelParam.Max = &maxStr
+				}
+
+				// Extract precision
+				if precision, ok := paramMap["precision"].(float64); ok {
+					precisionInt := int32(precision)
+					modelParam.Precision = &precisionInt
+				}
+
+				// Extract options
+				if options, ok := paramMap["options"].([]interface{}); ok {
+					paramOptions := make([]*modelmgr.ModelParamOption, 0, len(options))
+					for _, opt := range options {
+						if optMap, ok := opt.(map[string]interface{}); ok {
+							paramOption := &modelmgr.ModelParamOption{}
+							if label, ok := optMap["label"].(string); ok {
+								paramOption.Label = &label
+							}
+							if value, ok := optMap["value"].(string); ok {
+								paramOption.Value = &value
+							}
+							paramOptions = append(paramOptions, paramOption)
+						}
+					}
+					modelParam.Options = paramOptions
+				}
+
+				// Extract default_val
+				if defaultVal, ok := paramMap["default_val"].(map[string]interface{}); ok {
+					defaultValMap := make(map[string]string)
+					for k, v := range defaultVal {
+						switch val := v.(type) {
+						case string:
+							defaultValMap[k] = val
+						case float64:
+							defaultValMap[k] = fmt.Sprintf("%v", val)
+						case int:
+							defaultValMap[k] = fmt.Sprintf("%v", val)
+						case bool:
+							defaultValMap[k] = fmt.Sprintf("%v", val)
+						}
+					}
+					modelParam.DefaultVal = defaultValMap
+				}
+
+				// Extract style
+				if style, ok := paramMap["style"].(map[string]interface{}); ok {
+					paramStyle := &modelmgr.ParamDisplayStyle{}
+					if widget, ok := style["widget"].(string); ok {
+						paramStyle.Widget = widget
+					}
+					if label, ok := style["label"].(map[string]interface{}); ok {
+						labelMap := make(map[string]string)
+						for k, v := range label {
+							if vs, ok := v.(string); ok {
+								labelMap[k] = vs
+							}
+						}
+						paramStyle.Label = labelMap
+					}
+					modelParam.Style = paramStyle
+				}
+
+				defaultParams = append(defaultParams, modelParam)
+			}
+		}
+	}
+
+	// Extract meta info
+	meta := &modelmgr.ModelMetaInput{
+		Name:     name,
+		Protocol: "openai", // 默认协议
+	}
+
+	if metaData, ok := config["meta"].(map[string]interface{}); ok {
+		// Protocol
+		if protocol, ok := metaData["protocol"].(string); ok {
+			meta.Protocol = protocol
+		}
+
+		// 处理ConnConfig
+		if connConfig, ok := metaData["conn_config"].(map[string]interface{}); ok {
+			// 将整个conn_config作为JSON字符串放入ExtraParams
+			connConfigJSON, err := json.Marshal(connConfig)
+			if err == nil {
+				meta.ConnConfig = &modelmgr.ConnConfig{
+					ExtraParams: map[string]string{
+						"__raw_conn_config__": string(connConfigJSON),
+					},
+				}
+			}
+		}
+
+		// Capability
+		if capability, ok := metaData["capability"].(map[string]interface{}); ok {
+			cap := &modelmgr.ModelCapability{}
+
+			// Boolean fields
+			if functionCall, ok := capability["function_call"].(bool); ok {
+				cap.FunctionCall = &functionCall
+			}
+			if jsonMode, ok := capability["json_mode"].(bool); ok {
+				cap.JSONMode = &jsonMode
+			}
+			if prefixCaching, ok := capability["prefix_caching"].(bool); ok {
+				cap.PrefixCaching = &prefixCaching
+			}
+			if reasoning, ok := capability["reasoning"].(bool); ok {
+				cap.Reasoning = &reasoning
+			}
+			if prefillResponse, ok := capability["prefill_response"].(bool); ok {
+				cap.PrefillResponse = &prefillResponse
+			}
+
+			// Numeric fields
+			if inputTokens, ok := capability["input_tokens"].(float64); ok {
+				inputTokensInt32 := int32(inputTokens)
+				cap.InputTokens = &inputTokensInt32
+			}
+			if outputTokens, ok := capability["output_tokens"].(float64); ok {
+				outputTokensInt32 := int32(outputTokens)
+				cap.OutputTokens = &outputTokensInt32
+			}
+			if maxTokens, ok := capability["max_tokens"].(float64); ok {
+				maxTokensInt32 := int32(maxTokens)
+				cap.MaxTokens = &maxTokensInt32
+			}
+
+			// Array fields for input_modal
+			if inputModal, ok := capability["input_modal"].([]interface{}); ok {
+				modalList := make([]string, 0, len(inputModal))
+				for _, modal := range inputModal {
+					if modalStr, ok := modal.(string); ok {
+						modalList = append(modalList, modalStr)
+					}
+				}
+				cap.InputModal = modalList
+			}
+
+			// Array fields for output_modal
+			if outputModal, ok := capability["output_modal"].([]interface{}); ok {
+				modalList := make([]string, 0, len(outputModal))
+				for _, modal := range outputModal {
+					if modalStr, ok := modal.(string); ok {
+						modalList = append(modalList, modalStr)
+					}
+				}
+				cap.OutputModal = modalList
+			}
+
+			meta.Capability = cap
+		} else {
+			// 提供默认的Capability
+			meta.Capability = &modelmgr.ModelCapability{}
+		}
+	} else {
+		// 如果没有meta字段，提供完整的默认值
+		meta.ConnConfig = &modelmgr.ConnConfig{}
+		meta.Capability = &modelmgr.ModelCapability{}
+	}
+
+	// Extract icon info
+	var iconURI *string
+	if uri, ok := config["icon_uri"].(string); ok {
+		iconURI = &uri
+	}
+	var iconURL *string
+	if url, ok := config["icon_url"].(string); ok {
+		iconURL = &url
+	}
+
+	// Create the model creation request
+	createReq := &modelmgr.CreateModelRequest{
+		Name:              name,
+		Description:       descriptionMap,
+		IconURI:           iconURI,
+		IconURL:           iconURL,
+		DefaultParameters: defaultParams,
+		Meta:              meta,
+	}
+
+	// Call the CreateModel service
+	detail, err := modelmgrApp.ModelmgrApplicationSVC.CreateModel(ctx, createReq)
+	if err != nil {
+		c.JSON(consts.StatusOK, &modelmgr.ImportModelFromTemplateResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Failed to create model: %v", err),
+		})
+		return
+	}
+
+	// Add the model to the specified space
+	if req.SpaceID != "" {
+		// Get userID from context
+		session := ctxutil.GetUserSessionFromCtx(ctx)
+		var userID uint64
+		if session != nil {
+			userID = uint64(session.UserID)
+		} else {
+			// Fallback to 0 if no session found
+			userID = 0
+		}
+
+		err = modelmgrApp.ModelmgrApplicationSVC.AddModelToSpace(ctx, req.SpaceID, detail.ID, userID)
+		if err != nil {
+			// Log error but don't fail the whole operation
+			fmt.Printf("Warning: Failed to add model to space: %v\n", err)
+		}
+	}
+
+	resp := &modelmgr.ImportModelFromTemplateResponse{
+		Code:    0,
+		Msg:     "success",
+		ModelID: &detail.ID,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// EnableSpaceModel .
+// @router /api/model/space/enable [POST]
+func EnableSpaceModel(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req modelmgr.EnableSpaceModelRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用业务逻辑
+	err = modelmgrApp.ModelmgrApplicationSVC.EnableSpaceModel(ctx, req.SpaceID, req.ModelID)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp := &modelmgr.EnableSpaceModelResponse{
+		Code: 0,
+		Msg:  "success",
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DisableSpaceModel .
+// @router /api/model/space/disable [POST]
+func DisableSpaceModel(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req modelmgr.DisableSpaceModelRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用业务逻辑
+	err = modelmgrApp.ModelmgrApplicationSVC.DisableSpaceModel(ctx, req.SpaceID, req.ModelID)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp := &modelmgr.DisableSpaceModelResponse{
+		Code: 0,
+		Msg:  "success",
 	}
 
 	c.JSON(consts.StatusOK, resp)

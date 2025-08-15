@@ -44,6 +44,8 @@ type ModelService interface {
 	AddModelToSpace(ctx context.Context, spaceID, modelID, userID uint64) error
 	RemoveModelFromSpace(ctx context.Context, spaceID, modelID uint64) error
 	UpdateSpaceModelConfig(ctx context.Context, spaceID, modelID uint64, config map[string]interface{}) error
+	EnableSpaceModel(ctx context.Context, spaceID, modelID uint64) error
+	DisableSpaceModel(ctx context.Context, spaceID, modelID uint64) error
 }
 
 type modelService struct {
@@ -203,4 +205,14 @@ func (s *modelService) ListSpaceModels(ctx context.Context, spaceID uint64) ([]*
 	}
 
 	return models, nil
+}
+
+// EnableSpaceModel 启用空间模型
+func (s *modelService) EnableSpaceModel(ctx context.Context, spaceID, modelID uint64) error {
+	return s.repo.UpdateSpaceModelStatus(ctx, spaceID, modelID, 1)
+}
+
+// DisableSpaceModel 禁用空间模型
+func (s *modelService) DisableSpaceModel(ctx context.Context, spaceID, modelID uint64) error {
+	return s.repo.UpdateSpaceModelStatus(ctx, spaceID, modelID, 2)
 }

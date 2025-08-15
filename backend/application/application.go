@@ -169,8 +169,9 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	// Initialize model repository and service
 	modelRepo := modelrepository.NewModelRepository(infra.DB)
+	modelTemplateRepo := modelrepository.NewModelTemplateRepository(infra.DB)
 	modelService := modelservice.NewModelService(modelRepo, infra.TOSClient)
-	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient, modelService, modelRepo)
+	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient, modelService, modelRepo, modelTemplateRepo)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{

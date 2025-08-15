@@ -50,6 +50,7 @@ type ModelRepository interface {
 	AddModelToSpace(ctx context.Context, spaceModel *entity.SpaceModel) error
 	RemoveModelFromSpace(ctx context.Context, spaceID, modelID uint64) error
 	UpdateSpaceModelConfig(ctx context.Context, spaceID, modelID uint64, config map[string]interface{}) error
+	UpdateSpaceModelStatus(ctx context.Context, spaceID, modelID uint64, status int) error
 }
 
 type modelRepository struct {
@@ -230,6 +231,23 @@ func (r *modelRepository) UpdateSpaceModelConfig(ctx context.Context, spaceID, m
 	return nil
 }
 
+// UpdateSpaceModelStatus 更新空间模型状态
+func (r *modelRepository) UpdateSpaceModelStatus(ctx context.Context, spaceID, modelID uint64, status int) error {
+	now := uint64(time.Now().UnixMilli())
+
+	err := r.db.WithContext(ctx).
+		Model(&entity.SpaceModel{}).
+		Where("space_id = ? AND model_entity_id = ? AND deleted_at IS NULL", spaceID, modelID).
+		Updates(map[string]interface{}{
+			"status":     status,
+			"updated_at": now,
+		}).Error
+	if err != nil {
+		return fmt.Errorf("failed to update space model status: %w", err)
+	}
+	return nil
+}
+
 func (r *modelRepository) GetSpaceModels(ctx context.Context, spaceID uint64) ([]*entity.SpaceModelView, error) {
 	type queryResult struct {
 		EntityID     uint64  `json:"entity_id"`
@@ -239,6 +257,7 @@ func (r *modelRepository) GetSpaceModels(ctx context.Context, spaceID uint64) ([
 		IconURI      string  `json:"icon_uri"`
 		Protocol     string  `json:"protocol"`
 		CustomConfig *string `json:"custom_config"`
+		Status       int     `json:"status"`
 	}
 
 	var results []queryResult
@@ -252,16 +271,14 @@ func (r *modelRepository) GetSpaceModels(ctx context.Context, spaceID uint64) ([
 			mm.capability,
 			mm.icon_uri,
 			mm.protocol,
-			sm.custom_config
+			sm.custom_config,
+			sm.status
 		`).
 		Joins("JOIN model_entity me ON sm.model_entity_id = me.id").
 		Joins("JOIN model_meta mm ON me.meta_id = mm.id").
 		Where("sm.space_id = ?", spaceID).
-		Where("sm.status = ?", 1).
 		Where("sm.deleted_at IS NULL").
-		Where("me.status = ?", 1).
 		Where("me.deleted_at IS NULL").
-		Where("mm.status = ?", 1).
 		Where("mm.deleted_at IS NULL").
 		Order("sm.created_at DESC")
 
@@ -284,6 +301,7 @@ func (r *modelRepository) GetSpaceModels(ctx context.Context, spaceID uint64) ([
 			Name:     result.Name,
 			IconURI:  result.IconURI,
 			Protocol: result.Protocol,
+			Status:   result.Status,
 		}
 
 		// 处理描述信息，提取中文描述

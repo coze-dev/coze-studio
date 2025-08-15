@@ -107,7 +107,7 @@ struct ModelDetailOutput {
     9: required i64                          updated_at,
 }
 
-// ==================== 请求和响应结构 ====================
+//  请求和响应结构 
 
 struct CreateModelRequest {
     1: required string                       name,
@@ -190,7 +190,7 @@ struct DeleteModelResponse {
     255: required base.BaseResp BaseResp (api.none="true"),
 }
 
-// ==================== 空间模型配置相关 ====================
+//  空间模型配置相关 
 
 struct AddModelToSpaceRequest {
     1: required string space_id,
@@ -246,7 +246,84 @@ struct GetSpaceModelConfigResponse {
     255: required base.BaseResp BaseResp (api.none="true"),
 }
 
-// ==================== 服务定义 ====================
+//  模型模板相关结构 
+
+struct ModelTemplate {
+    1: required string id,
+    2: required string name,
+    3: required string provider,
+    4: required string description,
+    5: optional string model_name,
+    6: optional string model_type,
+}
+
+struct GetModelTemplatesRequest {
+    255: optional base.Base Base (api.none="true"),
+}
+
+struct GetModelTemplatesResponse {
+    1: optional list<ModelTemplate> templates,
+    2: required i64                 code,
+    3: required string              msg,
+    255: required base.BaseResp     BaseResp (api.none="true"),
+}
+
+struct GetModelTemplateContentRequest {
+    1: required string template_id (api.query="template_id"),
+    
+    255: optional base.Base Base (api.none="true"),
+}
+
+struct GetModelTemplateContentResponse {
+    1: optional string          content,
+    2: required i64             code,
+    3: required string          msg,
+    255: required base.BaseResp BaseResp (api.none="true"),
+}
+
+struct ImportModelFromTemplateRequest {
+    1: required string space_id,
+    2: required string json_content,
+    
+    255: optional base.Base Base (api.none="true"),
+}
+
+struct ImportModelFromTemplateResponse {
+    1: optional string          model_id,
+    2: required i64             code,
+    3: required string          msg,
+    255: required base.BaseResp BaseResp (api.none="true"),
+}
+
+//  空间模型启用/禁用相关 
+
+struct EnableSpaceModelRequest {
+    1: required string space_id,
+    2: required string model_id,
+    
+    255: optional base.Base Base (api.none="true"),
+}
+
+struct EnableSpaceModelResponse {
+    1: required i64             code,
+    2: required string          msg,
+    255: required base.BaseResp BaseResp (api.none="true"),
+}
+
+struct DisableSpaceModelRequest {
+    1: required string space_id,
+    2: required string model_id,
+    
+    255: optional base.Base Base (api.none="true"),
+}
+
+struct DisableSpaceModelResponse {
+    1: required i64             code,
+    2: required string          msg,
+    255: required base.BaseResp BaseResp (api.none="true"),
+}
+
+//  服务定义 
 
 service ModelManagementService {
     // 模型管理 - 统一使用 /api/model/* 路径
@@ -261,5 +338,12 @@ service ModelManagementService {
     RemoveModelFromSpaceResponse   RemoveModelFromSpace(1: RemoveModelFromSpaceRequest request)     (api.post='/api/model/space/remove', api.category="model", api.gen_path="model", agw.preserve_base = "true")
     UpdateSpaceModelConfigResponse UpdateSpaceModelConfig(1: UpdateSpaceModelConfigRequest request) (api.post='/api/model/space/config/update', api.category="model", api.gen_path="model", agw.preserve_base = "true")
     GetSpaceModelConfigResponse    GetSpaceModelConfig(1: GetSpaceModelConfigRequest request)       (api.post='/api/model/space/config/get', api.category="model", api.gen_path="model", agw.preserve_base = "true")
+    EnableSpaceModelResponse       EnableSpaceModel(1: EnableSpaceModelRequest request)             (api.post='/api/model/space/enable', api.category="model", api.gen_path="model", agw.preserve_base = "true")
+    DisableSpaceModelResponse      DisableSpaceModel(1: DisableSpaceModelRequest request)           (api.post='/api/model/space/disable', api.category="model", api.gen_path="model", agw.preserve_base = "true")
+    
+    // 模型模板管理 - 使用 /api/model/template/* 路径
+    GetModelTemplatesResponse        GetModelTemplates(1: GetModelTemplatesRequest request)               (api.get='/api/model/templates', api.category="model", api.gen_path="model", agw.preserve_base = "true")
+    GetModelTemplateContentResponse  GetModelTemplateContent(1: GetModelTemplateContentRequest request)   (api.get='/api/model/template/content', api.category="model", api.gen_path="model", agw.preserve_base = "true")
+    ImportModelFromTemplateResponse  ImportModelFromTemplate(1: ImportModelFromTemplateRequest request)   (api.post='/api/model/import', api.category="model", api.gen_path="model", agw.preserve_base = "true")
 }
 

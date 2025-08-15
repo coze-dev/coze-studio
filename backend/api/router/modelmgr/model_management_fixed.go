@@ -40,17 +40,25 @@ func Register(r *server.Hertz) {
 			_model.POST("/create", append(_createmodelMw(), modelmgr.CreateModel)...)
 			_model.POST("/delete", append(_deletemodelMw(), modelmgr.DeleteModel)...)
 			_model.POST("/detail", append(_getmodelMw(), modelmgr.GetModel)...)
+			_model.POST("/import", append(_importmodelfromtemplateMw(), modelmgr.ImportModelFromTemplate)...)
 			_model.POST("/list", append(_listmodelsMw(), modelmgr.ListModels)...)
+			_model.GET("/templates", append(_getmodeltemplatesMw(), modelmgr.GetModelTemplates)...)
 			_model.POST("/update", append(_updatemodelMw(), modelmgr.UpdateModel)...)
 			{
 				_space := _model.Group("/space", _spaceMw()...)
 				_space.POST("/add", append(_addmodeltospaceMw(), modelmgr.AddModelToSpace)...)
+				_space.POST("/disable", append(_disablespacemodelMw(), modelmgr.DisableSpaceModel)...)
+				_space.POST("/enable", append(_enablespacemodelMw(), modelmgr.EnableSpaceModel)...)
 				_space.POST("/remove", append(_removemodelfromspaceMw(), modelmgr.RemoveModelFromSpace)...)
 				{
 					_config := _space.Group("/config", _configMw()...)
 					_config.POST("/get", append(_getspacemodelconfigMw(), modelmgr.GetSpaceModelConfig)...)
 					_config.POST("/update", append(_updatespacemodelconfigMw(), modelmgr.UpdateSpaceModelConfig)...)
 				}
+			}
+			{
+				_template := _model.Group("/template", _templateMw()...)
+				_template.GET("/content", append(_getmodeltemplatecontentMw(), modelmgr.GetModelTemplateContent)...)
 			}
 		}
 	}

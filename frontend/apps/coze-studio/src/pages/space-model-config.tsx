@@ -14,17 +14,32 @@
  * limitations under the License.
  */
 
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Button, Avatar, IconButton, Dropdown, Select, Search } from '@coze-arch/coze-design';
-import { IconCozPlus, IconCozStarFill, IconCozMore } from '@coze-arch/coze-design/icons';
 
+import {
+  IconCozPlus,
+  IconCozStarFill,
+  IconCozMore,
+} from '@coze-arch/coze-design/icons';
+import {
+  Button,
+  Avatar,
+  IconButton,
+  Dropdown,
+  Select,
+  Search,
+} from '@coze-arch/coze-design';
+import { modelmgr } from '@coze-studio/api-schema';
+
+// 基于新的API定义的模型类型，但保持数字ID兼容现有组件逻辑
 interface SpaceModel {
   id: number;
   name: string;
   description: string;
-  context_length?: number;
+  context_length: number;
   protocol: string;
+  status: number;
   icon_uri?: string;
   icon_url?: string;
 }
@@ -37,6 +52,7 @@ interface ModelCardProps {
   onHover: (id: number | null) => void;
   onToggleFavorite: (id: number) => void;
   onToggleEnabled: (id: number, enabled: boolean) => void;
+  onDelete: (id: number) => void;
 }
 
 interface ModelFiltersProps {
@@ -50,13 +66,22 @@ interface ModelFiltersProps {
 
 const CONTEXT_LENGTH_DIVISOR = 1000;
 
-function ModelDropdownMenu({ modelId, isEnabled, onToggleEnabled }: { modelId: number; isEnabled: boolean; onToggleEnabled: (id: number, enabled: boolean) => void }) {
+function ModelDropdownMenu({
+  modelId,
+  isEnabled,
+  onToggleEnabled,
+  onDelete,
+}: {
+  modelId: number;
+  isEnabled: boolean;
+  onToggleEnabled: (id: number, enabled: boolean) => void;
+  onDelete: (id: number) => void;
+}) {
   return (
     <Dropdown.Menu>
       <Dropdown.Item
         onClick={() => {
           onToggleEnabled(modelId, true);
-          console.log('启用模型', modelId);
         }}
         disabled={isEnabled}
       >
@@ -65,21 +90,15 @@ function ModelDropdownMenu({ modelId, isEnabled, onToggleEnabled }: { modelId: n
       <Dropdown.Item
         onClick={() => {
           onToggleEnabled(modelId, false);
-          console.log('停用模型', modelId);
         }}
         disabled={!isEnabled}
       >
         停用
       </Dropdown.Item>
-      <Dropdown.Item
-        onClick={() => console.log('编辑模型', modelId)}
-      >
+      <Dropdown.Item onClick={() => console.log('编辑模型', modelId)}>
         编辑
       </Dropdown.Item>
-      <Dropdown.Item
-        type="danger"
-        onClick={() => console.log('删除模型', modelId)}
-      >
+      <Dropdown.Item type="danger" onClick={() => onDelete(modelId)}>
         删除
       </Dropdown.Item>
     </Dropdown.Menu>
@@ -94,6 +113,7 @@ function ModelCard({
   onHover,
   onToggleFavorite,
   onToggleEnabled,
+  onDelete,
 }: ModelCardProps) {
   return (
     <div
@@ -170,7 +190,7 @@ function ModelCard({
           <span className="coz-fg-secondary">{model.protocol}</span>
         </div>
 
-        {isHovered && (
+        {isHovered ? (
           <>
             <div
               className="absolute bottom-[16px] right-[16px] w-[100px] h-[16px]"
@@ -200,6 +220,7 @@ function ModelCard({
                     modelId={model.id}
                     isEnabled={isEnabled}
                     onToggleEnabled={onToggleEnabled}
+                    onDelete={onDelete}
                   />
                 }
               >
@@ -207,7 +228,7 @@ function ModelCard({
               </Dropdown>
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -226,7 +247,7 @@ function ModelFilters({
       <div className="flex items-center gap-[8px]">
         <Select
           className="min-w-[128px]"
-          // size="small"
+          size="small"
           value={typeFilter}
           onChange={val => onTypeFilterChange(val as string)}
         >
@@ -239,7 +260,7 @@ function ModelFilters({
 
         <Select
           className="min-w-[128px]"
-          // size="small"
+          size="small"
           value={providerFilter}
           onChange={val => onProviderFilterChange(val as string)}
         >
@@ -272,30 +293,35 @@ function useModelData(spaceId: string) {
     const fetchModels = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/playground_api/space/model/list', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            space_id: spaceId,
-          }),
-        });
+        // 直接使用新的模型管理API
+        const resp = await modelmgr.ListModels({ space_id: spaceId });
+        const modelsData = resp.data || [];
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
+        if (modelsData && Array.isArray(modelsData)) {
+          // 将ModelDetailOutput转换为SpaceModel
+          const convertedModels: SpaceModel[] = modelsData.map(
+            (model: modelmgr.ModelDetailOutput) => ({
+              id: parseInt(model.id) || 0, // 将string id转换为number
+              name: model.name || '',
+              description:
+                (model.description || {}).zh ||
+                (model.description || {}).en ||
+                '',
+              context_length: model.meta?.capability?.max_tokens || 0,
+              protocol: model.meta?.protocol || '',
+              status: model.meta?.status || 1, // 从meta中获取status，默认为1（启用）
+              icon_uri: model.icon_uri,
+              icon_url: model.icon_url,
+            }),
+          );
 
-        const data = await response.json();
-        if (data.data && data.data.models) {
-          setModels(data.data.models);
+          setModels(convertedModels);
+
           const initialStates: Record<number, boolean> = {};
-          data.data.models.forEach((model: SpaceModel) => {
-            initialStates[model.id] = true;
+          convertedModels.forEach((model: SpaceModel) => {
+            initialStates[model.id] = model.status === 1; // 根据status设置启用状态
           });
           setModelStates(initialStates);
-        } else {
-          setModels([]);
         }
         setError(null);
       } catch (err) {
@@ -340,9 +366,64 @@ function filterModels(models: SpaceModel[], filters: FilterCriteria) {
   });
 }
 
+function ModelListContent({
+  filteredModels,
+  modelStates,
+  favoriteModels,
+  hoveredModelId,
+  setHoveredModelId,
+  handleToggleFavorite,
+  handleToggleEnabled,
+  handleDelete,
+  searchValue,
+  typeFilter,
+  providerFilter,
+}: {
+  filteredModels: SpaceModel[];
+  modelStates: Record<number, boolean>;
+  favoriteModels: Set<number>;
+  hoveredModelId: number | null;
+  setHoveredModelId: (id: number | null) => void;
+  handleToggleFavorite: (id: number) => void;
+  handleToggleEnabled: (id: number, enabled: boolean) => Promise<void>;
+  handleDelete: (id: number) => Promise<void>;
+  searchValue: string;
+  typeFilter: string;
+  providerFilter: string;
+}) {
+  if (filteredModels.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        {searchValue || typeFilter !== 'all' || providerFilter !== 'all'
+          ? '没有找到匹配的模型'
+          : '当前空间暂无可用模型'}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 auto-rows-min gap-[20px] [@media(min-width:1600px)]:grid-cols-4">
+      {filteredModels.map(model => (
+        <ModelCard
+          key={model.id}
+          model={model}
+          isEnabled={modelStates[model.id]}
+          isFavorite={favoriteModels.has(model.id)}
+          isHovered={hoveredModelId === model.id}
+          onHover={setHoveredModelId}
+          onToggleFavorite={handleToggleFavorite}
+          onToggleEnabled={handleToggleEnabled}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function SpaceModelConfigPage() {
   const { space_id } = useParams<{ space_id: string }>();
   const spaceId = space_id || '0';
+  const navigate = useNavigate();
 
   const { models, loading, error, modelStates, setModelStates } =
     useModelData(spaceId);
@@ -364,11 +445,69 @@ export default function SpaceModelConfigPage() {
     });
   };
 
-  const handleToggleEnabled = (modelId: number, enabled: boolean) => {
-    setModelStates(prev => ({
-      ...prev,
-      [modelId]: enabled,
-    }));
+  const handleToggleEnabled = async (modelId: number, enabled: boolean) => {
+    const api = enabled
+      ? '/api/model/space/enable'
+      : '/api/model/space/disable';
+    try {
+      const response = await fetch(api, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          space_id: spaceId,
+          model_id: String(modelId),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.code === 0) {
+          setModelStates(prev => ({
+            ...prev,
+            [modelId]: enabled,
+          }));
+        } else {
+          alert(`操作失败: ${data.msg || '未知错误'}`);
+        }
+      } else {
+        alert('网络请求失败');
+      }
+    } catch (err) {
+      console.error('Error toggling model status:', err);
+      alert('操作失败，请重试');
+    }
+  };
+
+  const handleDelete = async (modelId: number) => {
+    if (!confirm('确定要从此空间移除该模型吗？')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/model/space/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          space_id: spaceId,
+          model_id: String(modelId),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.code === 0) {
+          // 刷新列表
+          window.location.reload();
+        } else {
+          alert(`删除失败: ${data.msg || '未知错误'}`);
+        }
+      } else {
+        alert('网络请求失败');
+      }
+    } catch (err) {
+      console.error('Error deleting model:', err);
+      alert('删除失败，请重试');
+    }
   };
 
   const filteredModels = filterModels(models, {
@@ -387,7 +526,7 @@ export default function SpaceModelConfigPage() {
             theme="solid"
             icon={<IconCozPlus />}
             onClick={() => {
-              console.log('添加模型按钮被点击');
+              navigate(`/space/${spaceId}/models/add`);
             }}
           >
             添加模型
@@ -405,45 +544,34 @@ export default function SpaceModelConfigPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-[24px] py-[20px]">
-        {loading && (
+        {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">加载中...</div>
           </div>
-        )}
+        ) : null}
 
-        {error && (
+        {error ? (
           <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
             <div className="text-red-800">
               <strong>错误:</strong> {error}
             </div>
           </div>
-        )}
+        ) : null}
 
         {!loading && !error && (
-          <div>
-            {filteredModels.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchValue || typeFilter !== 'all' || providerFilter !== 'all'
-                  ? '没有找到匹配的模型'
-                  : '当前空间暂无可用模型'}
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 auto-rows-min gap-[20px] [@media(min-width:1600px)]:grid-cols-4">
-                {filteredModels.map(model => (
-                  <ModelCard
-                    key={model.id}
-                    model={model}
-                    isEnabled={modelStates[model.id]}
-                    isFavorite={favoriteModels.has(model.id)}
-                    isHovered={hoveredModelId === model.id}
-                    onHover={setHoveredModelId}
-                    onToggleFavorite={handleToggleFavorite}
-                    onToggleEnabled={handleToggleEnabled}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <ModelListContent
+            filteredModels={filteredModels}
+            modelStates={modelStates}
+            favoriteModels={favoriteModels}
+            hoveredModelId={hoveredModelId}
+            setHoveredModelId={setHoveredModelId}
+            handleToggleFavorite={handleToggleFavorite}
+            handleToggleEnabled={handleToggleEnabled}
+            handleDelete={handleDelete}
+            searchValue={searchValue}
+            typeFilter={typeFilter}
+            providerFilter={providerFilter}
+          />
         )}
       </div>
     </div>

@@ -114,6 +114,7 @@ const AgentPublishPage = lazy(() =>
 const DocsRedirect = lazy(() => import('./pages/docs'));
 
 const SpaceModelConfig = lazy(() => import('./pages/space-model-config'));
+const AddModelPage = lazy(() => import('./pages/space-model-config/AddModelPage'));
 
 const FalconMcp = lazy(() => import('./pages/falconmcp'));
 const FalconMcpDetail = lazy(() => import('./pages/falconmcpDetail'));
@@ -240,7 +241,16 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 },
                 {
                   path: 'models',
-                  Component: SpaceModelConfig,
+                  children: [
+                    {
+                      index: true,
+                      Component: SpaceModelConfig,
+                    },
+                    {
+                      path: 'add',
+                      Component: AddModelPage,
+                    },
+                  ],
                   loader: () => ({
                     subMenuKey: SpaceSubModuleEnum.MODELS,
                   }),

@@ -22,6 +22,7 @@
     "@coze-agent-ide/layout-adapter": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-space-api": "workspace:*",
     "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/foundation-sdk": "workspace:*",
     "@coze-arch/i18n": "workspace:*",

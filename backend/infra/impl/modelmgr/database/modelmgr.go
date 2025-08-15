@@ -177,12 +177,13 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 
 // listModelsBySpace 根据空间ID查询模型列表
 func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
+	logs.Infof("listModelsBySpace called with spaceID: %d", *req.SpaceID)
+	
 	// 首先查询空间中的模型实体
 	spaceModelQuery := m.db.WithContext(ctx).
 		Table("space_model sm").
 		Select("sm.model_entity_id").
 		Where("sm.space_id = ?", *req.SpaceID).
-		Where("sm.status = ?", 1).
 		Where("sm.deleted_at IS NULL")
 
 	// 处理游标 - 使用space_model的ID作为游标
@@ -205,10 +206,11 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 	type spaceModelResult struct {
 		ModelEntityID uint64 `json:"model_entity_id"`
 		SpaceModelID  uint64 `json:"space_model_id"`
+		Status        int    `json:"status"`
 	}
 
 	var spaceModels []spaceModelResult
-	if err := spaceModelQuery.Select("sm.model_entity_id, sm.id as space_model_id").Scan(&spaceModels).Error; err != nil {
+	if err := spaceModelQuery.Select("sm.model_entity_id, sm.id as space_model_id, sm.status").Scan(&spaceModels).Error; err != nil {
 		return nil, fmt.Errorf("failed to query space models: %w", err)
 	}
 
@@ -223,9 +225,11 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 	// 提取模型实体ID列表
 	entityIDs := make([]uint64, 0, len(spaceModels))
 	spaceModelIDMap := make(map[uint64]uint64) // modelEntityID -> spaceModelID
+	spaceModelStatusMap := make(map[uint64]int) // modelEntityID -> space status
 	for _, sm := range spaceModels {
 		entityIDs = append(entityIDs, sm.ModelEntityID)
 		spaceModelIDMap[sm.ModelEntityID] = sm.SpaceModelID
+		spaceModelStatusMap[sm.ModelEntityID] = sm.Status
 	}
 
 	// 查询 model_entity
@@ -310,6 +314,11 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 		if err != nil {
 			logs.Warnf("failed to convert model, id=%d, err=%v", entity.ID, err)
 			continue
+		}
+
+		// 使用空间模型的状态覆盖元数据的状态
+		if spaceStatus, ok := spaceModelStatusMap[entity.ID]; ok {
+			model.Meta.Status = modelmgr.ModelStatus(spaceStatus)
 		}
 
 		models = append(models, model)
@@ -466,11 +475,16 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 
 	// 解析默认参数
 	if entity.DefaultParams != "" {
+		logs.Infof("Parsing DefaultParams for model %d: %s", entity.ID, entity.DefaultParams)
 		var params []*modelmgr.Parameter
 		if err := json.Unmarshal([]byte(entity.DefaultParams), &params); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal default params: %w", err)
 		}
 		model.DefaultParameters = params
+		logs.Infof("Parsed %d parameters for model %d", len(params), entity.ID)
+	} else {
+		logs.Warnf("Model %d has empty DefaultParams", entity.ID)
+		model.DefaultParameters = []*modelmgr.Parameter{}
 	}
 
 	// 解析能力

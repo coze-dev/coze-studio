@@ -91,3 +91,33 @@ func _updatespacemodelconfigMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _importmodelfromtemplateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmodeltemplatesMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _templateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmodeltemplatecontentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _disablespacemodelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _enablespacemodelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

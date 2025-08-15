@@ -23,12 +23,13 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 )
 
-func InitService(mgr modelmgr.Manager, tosClient storage.Storage, modelService service.ModelService, modelRepo repository.ModelRepository) *ModelmgrApplicationService {
+func InitService(mgr modelmgr.Manager, tosClient storage.Storage, modelService service.ModelService, modelRepo repository.ModelRepository, modelTemplateRepo repository.ModelTemplateRepository) *ModelmgrApplicationService {
 	ModelmgrApplicationSVC = &ModelmgrApplicationService{
-		Mgr:          mgr,
-		TosClient:    tosClient,
-		ModelService: modelService,
-		ModelRepo:    modelRepo,
+		Mgr:               mgr,
+		TosClient:         tosClient,
+		ModelService:      modelService,
+		ModelRepo:         modelRepo,
+		ModelTemplateRepo: modelTemplateRepo,
 	}
 	return ModelmgrApplicationSVC
 }

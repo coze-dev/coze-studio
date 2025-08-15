@@ -37,15 +37,16 @@ import (
 )
 
 type ModelmgrApplicationService struct {
-	Mgr          inframodelmgr.Manager
-	TosClient    storage.Storage
-	ModelService service.ModelService
-	ModelRepo    repository.ModelRepository
+	Mgr                     inframodelmgr.Manager
+	TosClient               storage.Storage
+	ModelService            service.ModelService
+	ModelRepo               repository.ModelRepository
+	ModelTemplateRepo       repository.ModelTemplateRepository
 }
 
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
 
-func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *developer_api.GetTypeListRequest) (
+func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *developer_api.GetTypeListRequest) (
 	resp *developer_api.GetTypeListResponse, err error,
 ) {
 	// It is generally not possible to configure so many models simultaneously
@@ -60,18 +61,29 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	}
 
 	locale := i18n.GetLocale(ctx)
-	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *inframodelmgr.Model) (*developer_api.Model, error) {
+	var modelList []*developer_api.Model
+	for _, mm := range modelResp.ModelList {
+		// 如果指定了空间ID，且模型状态为2（禁用），则跳过
+		if req.SpaceID != nil && *req.SpaceID != "" && mm.Meta.Status == 2 {
+			continue
+		}
+
 		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", mm.DefaultParameters)
+		logs.CtxInfof(ctx, "ChatModel ID: %d, Name: %s, Status: %d", mm.ID, mm.Name, mm.Meta.Status)
+		logs.CtxInfof(ctx, "ChatModel DefaultParameters count: %d", len(mm.DefaultParameters))
 		if mm.IconURI != "" {
 			iconUrl, err := m.TosClient.GetObjectUrl(ctx, mm.IconURI)
 			if err == nil {
 				mm.IconURL = iconUrl
 			}
 		}
-		return modelDo2To(mm, locale)
-	})
-	if err != nil {
-		return nil, err
+
+		apiModel, err := modelDo2To(mm, locale)
+		if err != nil {
+			return nil, err
+		}
+		logs.CtxInfof(ctx, "Converted Model - Name: %s, ModelParams count: %d", apiModel.Name, len(apiModel.ModelParams))
+		modelList = append(modelList, apiModel)
 	}
 
 	return &developer_api.GetTypeListResponse{
@@ -189,12 +201,21 @@ func (m *ModelmgrApplicationService) CreateModel(ctx context.Context, req *model
 	metaEntity.Capability = &capabilityStr
 
 	// 处理 ConnConfig
-	connConfigJSON, err := json.Marshal(req.Meta.ConnConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal conn_config: %w", err)
+	if req.Meta.ConnConfig != nil {
+		// 检查是否有特殊的原始conn_config数据（用于ImportModelFromTemplate）
+		if rawConfig, ok := req.Meta.ConnConfig.ExtraParams["__raw_conn_config__"]; ok {
+			// 使用原始的conn_config JSON
+			metaEntity.ConnConfig = &rawConfig
+		} else {
+			// 正常序列化ConnConfig
+			connConfigJSON, err := json.Marshal(req.Meta.ConnConfig)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal conn_config: %w", err)
+			}
+			connConfigStr := string(connConfigJSON)
+			metaEntity.ConnConfig = &connConfigStr
+		}
 	}
-	connConfigStr := string(connConfigJSON)
-	metaEntity.ConnConfig = &connConfigStr
 
 	// 处理 Description
 	if len(req.Description) > 0 {
@@ -576,6 +597,122 @@ func (m *ModelmgrApplicationService) convertToModelParameterOutput(param *infram
 	return apiParam, nil
 }
 
+// EnableSpaceModel 启用空间模型
+func (m *ModelmgrApplicationService) EnableSpaceModel(ctx context.Context, spaceID, modelID string) error {
+	sid, err := strconv.ParseUint(spaceID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid space id: %w", err)
+	}
+
+	mid, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	if err := m.ModelService.EnableSpaceModel(ctx, sid, mid); err != nil {
+		return err
+	}
+
+	// 刷新缓存
+	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh model cache after enable, id=%d, err=%v", mid, err)
+		// 不中断流程，只记录警告
+	}
+
+	return nil
+}
+
+// DisableSpaceModel 禁用空间模型
+func (m *ModelmgrApplicationService) DisableSpaceModel(ctx context.Context, spaceID, modelID string) error {
+	sid, err := strconv.ParseUint(spaceID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid space id: %w", err)
+	}
+
+	mid, err := strconv.ParseUint(modelID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid model id: %w", err)
+	}
+
+	if err := m.ModelService.DisableSpaceModel(ctx, sid, mid); err != nil {
+		return err
+	}
+
+	// 刷新缓存
+	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh model cache after disable, id=%d, err=%v", mid, err)
+		// 不中断流程，只记录警告
+	}
+
+	return nil
+}
+
+// GetModelTemplates 获取模型模板列表
+func (m *ModelmgrApplicationService) GetModelTemplates(ctx context.Context) ([]*modelmgrapi.ModelTemplate, error) {
+	// 从数据库获取所有模板
+	templates, err := m.ModelTemplateRepo.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get templates: %w", err)
+	}
+
+	// 转换为API格式
+	apiTemplates := make([]*modelmgrapi.ModelTemplate, 0, len(templates))
+	for _, template := range templates {
+		// 解析模板JSON以提取名称和描述
+		var templateData map[string]interface{}
+		if err := json.Unmarshal([]byte(template.Template), &templateData); err != nil {
+			logs.CtxWarnf(ctx, "failed to parse template %d: %v", template.ID, err)
+			continue
+		}
+
+		description := ""
+		if desc, ok := templateData["description"].(map[string]interface{}); ok {
+			// 优先使用英文描述
+			if enDesc, ok := desc["en"].(string); ok {
+				description = enDesc
+			} else if zhDesc, ok := desc["zh"].(string); ok {
+				description = zhDesc
+			}
+		}
+
+		apiTemplates = append(apiTemplates, &modelmgrapi.ModelTemplate{
+			ID:          strconv.FormatUint(template.ID, 10),
+			Name:        template.ModelName,  // 使用数据库中的model_name字段
+			Provider:    template.Provider,
+			Description: description,
+			ModelName:   &template.ModelName,  // 添加model_name字段
+			ModelType:   &template.ModelType,  // 添加model_type字段
+		})
+	}
+
+	return apiTemplates, nil
+}
+
+// GetModelTemplateContent 获取模型模板内容
+func (m *ModelmgrApplicationService) GetModelTemplateContent(ctx context.Context, templateID string) (string, error) {
+	var template *entity.ModelTemplate
+	var err error
+
+	// 尝试将templateID解析为数字ID
+	id, parseErr := strconv.ParseUint(templateID, 10, 64)
+	if parseErr == nil {
+		// 如果成功解析为数字，按ID查询
+		template, err = m.ModelTemplateRepo.GetByID(ctx, id)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		// 如果不是数字，按provider查询
+		template, err = m.ModelTemplateRepo.GetByProvider(ctx, templateID)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// 返回模板JSON内容
+	return template.Template, nil
+}
+
 // convertToModelMetaOutput 转换模型元数据
 func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmgr.ModelMeta) (*modelmgrapi.ModelMetaOutput, error) {
 	apiMeta := &modelmgrapi.ModelMetaOutput{
@@ -634,6 +771,7 @@ func (m *ModelmgrApplicationService) convertToModelMetaOutput(meta *inframodelmg
 
 	return apiMeta, nil
 }
+
 
 func modelDo2To(model *inframodelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
 	mm := model.Meta
