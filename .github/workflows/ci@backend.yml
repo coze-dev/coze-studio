@@ -6,7 +6,6 @@ on:
       - 'backend/**'
       - 'docker/atlas/**'
       - '.github/workflows/ci@backend.yml'
-      - '.github/.testcoverage.yml'
   push:
     branches:
       - main
@@ -14,7 +13,6 @@ on:
       - 'backend/**'
       - 'docker/atlas/**'
       - '.github/workflows/ci@backend.yml'
-      - '.github/.testcoverage.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
