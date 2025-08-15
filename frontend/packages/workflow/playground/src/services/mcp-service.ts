@@ -52,6 +52,14 @@ export class McpApiService {
 
       const data = await response.json();
 
+      // 🚨 关键调试：确认API返回的数据结构
+      console.log('🔧 MCP0017.do API原始响应:', data);
+      console.log('🔧 服务列表长度:', data.body?.serviceInfoList?.length || 0);
+      if (data.body?.serviceInfoList?.length > 0) {
+        console.log('🔧 第一个服务示例:', data.body.serviceInfoList[0]);
+        console.log('🔧 第一个服务mcpId:', data.body.serviceInfoList[0].mcpId);
+      }
+
       // 检查业务错误
       if (data.header?.errorCode !== '0') {
         throw new Error(
@@ -106,10 +114,18 @@ export class McpApiService {
 
   // 服务过滤函数 - 只展示激活的MCP服务（放宽上架条件）
   static filterAvailableMcpServices(services: McpService[]): McpService[] {
-    return services.filter(
+    console.log('🔧 过滤前服务数量:', services.length);
+    console.log('🔧 过滤前所有服务mcpId:', services.map(s => ({ name: s.mcpName, mcpId: s.mcpId, status: s.mcpStatus })));
+    
+    const filtered = services.filter(
       service => service.mcpStatus === MCP_STATUS_ENUM.ACTIVE,
       // 移除上架状态过滤，因为很多服务状态为"0"但仍可用
     );
+    
+    console.log('🔧 过滤后服务数量:', filtered.length);
+    console.log('🔧 过滤后服务mcpId:', filtered.map(s => ({ name: s.mcpName, mcpId: s.mcpId })));
+    
+    return filtered;
   }
 
   // 图标URL转换函数

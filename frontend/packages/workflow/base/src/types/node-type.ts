@@ -106,7 +106,7 @@ export enum StandardNodeType {
   JsonParser = '59',
 
   /** MCP工具调用节点 */
-  Mcp = '60',
+  Mcp = '61',
 }
 
 /**

@@ -818,7 +818,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSName: "Comment",
 	},
 	NodeTypeMcp: {
-		ID:           60,
+		ID:           61,
 		Key:          NodeTypeMcp,
 		DisplayKey:   "Mcp",
 		Name:         "MCP工具",

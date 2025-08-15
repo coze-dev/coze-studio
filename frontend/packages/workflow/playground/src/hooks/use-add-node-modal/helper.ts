@@ -21,6 +21,7 @@ import { BlockInput } from '@coze-workflow/base';
 
 import { McpSchemaParser } from '@/utils/mcp-schema-parser';
 import { type McpService, type McpTool } from '@/types/mcp';
+import { OUTPUTS } from '@/node-registries/mcp/constants';
 
 interface PluginApi {
   name: string;
@@ -109,8 +110,24 @@ export const createMcpNodeInfo = (
   // 解析工具的schema以生成动态输入参数
   const parsedSchema = McpSchemaParser.parseToolSchema(tool.schema);
 
-  // 只添加工具的实际参数到inputParameters（用户可见）
+  // 创建完整的inputParameters（包含隐藏的MCP配置参数和用户可见的工具参数）
   const inputParameters: ReturnType<typeof BlockInput.create>[] = [];
+  
+  // 添加隐藏的MCP配置参数（使用特殊前缀，UI会过滤掉）
+  inputParameters.push(
+    BlockInput.create('__mcp_sassWorkspaceId', currentWorkspaceId || '7533521629687578624'),
+    BlockInput.create('__mcp_mcpId', mcpService.mcpId),
+    BlockInput.create('__mcp_toolName', tool.name),
+  );
+
+  // 🔧 临时添加可见的配置参数用于调试（后续可删除）
+  inputParameters.push(
+    BlockInput.create('sassWorkspaceId', currentWorkspaceId || '7533521629687578624'),
+    BlockInput.create('mcpId', mcpService.mcpId),
+    BlockInput.create('toolName', tool.name),
+  );
+
+  // 添加工具的实际参数（用户可见可编辑）
   parsedSchema.inputParams.forEach(param => {
     const defaultValue =
       toolRuntimeParams?.[param.name] !== undefined
@@ -120,6 +137,10 @@ export const createMcpNodeInfo = (
     inputParameters.push(BlockInput.create(param.name, String(defaultValue)));
   });
 
+  // 🚨 关键调试：确认mcpService数据结构和mcpId值
+  console.log('🔧 创建MCP节点 - 完整mcpService对象:', mcpService);
+  console.log('🔧 创建MCP节点 - mcpId值:', mcpService.mcpId);
+  console.log('🔧 创建MCP节点 - mcpId类型:', typeof mcpService.mcpId);
   console.log('🔧 创建MCP节点，参数:', {
     mcpService: mcpService.mcpName,
     tool: tool.name,
@@ -138,16 +159,13 @@ export const createMcpNodeInfo = (
         description: tool.description, // 直接使用工具描述
         icon: templateIcon,
       },
+      // 修复：直接在data级别保存inputParameters，而不是嵌套在inputs中
+      inputParameters,
+      // 添加标准的输出参数定义
+      outputs: OUTPUTS,
+      // 同时保持inputs结构以确保兼容性
       inputs: {
-        // 使用标准的inputParameters格式（只包含工具参数）
         inputParameters,
-      },
-      // MCP配置参数（隐藏，不显示在UI中）
-      mcpConfig: {
-        sassWorkspaceId: currentWorkspaceId || '7533521629687578624',
-        mcpId: mcpService.mcpId,
-        toolName: tool.name,
-        mcpName: mcpService.mcpName, // 保存服务名称用于显示
       },
     },
   };
