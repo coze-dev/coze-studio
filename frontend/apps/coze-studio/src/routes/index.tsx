@@ -21,6 +21,7 @@ import { GlobalError } from '@coze-foundation/layout';
 import { BaseEnum } from '@coze-arch/web-context';
 
 import { Layout } from '../layout';
+import { ProjectRouter } from '../components/project-router';
 import {
   LoginPage,
   SpaceLayout,
@@ -45,6 +46,7 @@ import {
   ExplorePluginPage,
   ExploreProjectPage,
   ExploreTemplatePage,
+  ExternalAppPage,
 } from './async-components';
 
 export const router: ReturnType<typeof createBrowserRouter> =

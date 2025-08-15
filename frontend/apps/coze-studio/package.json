@@ -9,8 +9,8 @@
   "maintainers": [],
   "sideEffects": false,
   "scripts": {
-    "build": "cross-env IS_OPEN_SOURCE=false rsbuild build",
-    "dev": "cross-env IS_OPEN_SOURCE=false CUSTOM_VERSION=release rsbuild dev",
+    "build": "cross-env IS_OPEN_SOURCE=true rsbuild build",
+    "dev": "cross-env IS_OPEN_SOURCE=true CUSTOM_VERSION=release rsbuild dev",
     "lint": "eslint ./ --cache --quiet",
     "preview": "rsbuild preview",
     "test": "vitest --run --passWithNoTests",
@@ -80,4 +80,3 @@
     "webpack": "~5.91.0"
   }
 }
-

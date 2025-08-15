@@ -15,9 +15,7 @@
  */
 
 import { type FC } from 'react';
-import { Image, Space } from '@coze-arch/coze-design';
-import { I18n } from '@coze-arch/i18n';
-import { CardContainer, CardButton } from '@coze-community/components';
+import { Image, Space, Button } from '@coze-arch/coze-design';
 
 export interface ExternalAppCardProps {
   id: string;
@@ -27,11 +25,11 @@ export interface ExternalAppCardProps {
   icon?: string;
 }
 
-export const ExternalAppCard: FC<ExternalAppCardProps> = ({ 
-  title, 
-  description, 
-  url, 
-  icon 
+export const ExternalAppCard: FC<ExternalAppCardProps> = ({
+  title,
+  description,
+  url,
+  icon,
 }) => {
   const handleAccessClick = () => {
     // 在新窗口打开外部应用链接
@@ -39,18 +37,18 @@ export const ExternalAppCard: FC<ExternalAppCardProps> = ({
   };
 
   return (
-    <CardContainer className="h-[278px]" shadowMode="default">
+    <div className="h-[278px] bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-200">
       <div className="h-full flex flex-col">
         {/* 图片区域 */}
-        <div className="relative w-full h-[140px] rounded-[8px] overflow-hidden mb-3">
+        <div className="relative w-full h-[140px] rounded-[8px] overflow-hidden mb-3 bg-gray-100">
           <Image
             preview={false}
-            src={icon || './assets/images/default-app-icon.png'} // 默认图标
+            src={icon || '/assets/images/external-app-2.png'} // 使用external-app-2作为默认图标
             className="w-full h-full"
             imgCls="w-full h-full object-cover object-center"
           />
         </div>
-        
+
         {/* 信息区域 */}
         <div className="flex-1 flex flex-col justify-between">
           <div>
@@ -58,25 +56,25 @@ export const ExternalAppCard: FC<ExternalAppCardProps> = ({
             <h3 className="text-[16px] font-medium leading-[24px] text-[#1f2329] mb-2 line-clamp-1">
               {title}
             </h3>
-            
+
             {/* 描述 */}
             <p className="text-[14px] leading-[20px] text-[#4e5969] line-clamp-3 mb-4">
               {description}
             </p>
           </div>
-          
+
           {/* 按钮区域 */}
           <Space className="w-full">
-            <CardButton
+            <Button
               onClick={handleAccessClick}
               className="w-full"
-              title="立即访问"
+              type="primary"
             >
               立即访问
-            </CardButton>
+            </Button>
           </Space>
         </div>
       </div>
-    </CardContainer>
+    </div>
   );
 };
