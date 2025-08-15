@@ -85,69 +85,15 @@ jobs:
           go work sync
           go test -race -v -coverprofile=${{ env.COVERAGE_FILE }} -gcflags="all=-l -N" -coverpkg=$coverpkg $list
           
-      - name: Download Artifact (main.breakdown)
-        id: download-main-breakdown
-        uses: actions/download-artifact@v4
-        continue-on-error: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          name: ${{ env.BREAKDOWN_FILE }}
-          
-      - name: Create main.breakdown If Not Exist
-        run: |
-          if [ ! -f ${{ env.BREAKDOWN_FILE }} ]; then
-            echo "${{ env.BREAKDOWN_FILE }} not found. Creating an empty file."
-            touch ${{ env.BREAKDOWN_FILE }}
-          else
-            echo "${{ env.BREAKDOWN_FILE }} found."
-          fi
-          
-      - name: Calculate Coverage
-        id: coverage
-        uses: vladopajic/go-test-coverage@v2
-        with:
-          config: .github/.testcoverage.yml
-          profile: ${{ env.COVERAGE_FILE}}
-          breakdown-file-name: ${{ github.ref_name == 'main' && env.BREAKDOWN_FILE || '' }}
-          diff-base-breakdown-file-name: ${{ env.BREAKDOWN_FILE }}
+          name: coze-studio-backend
+          env_vars: GOLANG,Coze-Studio,BACKEND
+          fail_ci_if_error: 'false'
+          files: ${{ env.COVERAGE_FILE }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-          # to generate and embed coverage badges in markdown files
-          git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
-          git-branch: badges
-          
-      - name: Upload Artifact (main.breakdown)
-        uses: actions/upload-artifact@v4
-        if: github.ref_name == 'main'
-        with:
-          name: ${{ env.BREAKDOWN_FILE }}
-          path: ${{ env.BREAKDOWN_FILE }}
-          if-no-files-found: error
-      - name: Find If coverage Report Exist
-        if: ${{ github.event.pull_request.number != null }}
-        uses: peter-evans/find-comment@v3
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '📊 Coverage Report'
-      - name: Send Coverage Report
-        if: ${{ github.event.pull_request.number != null }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.fc.outputs.comment-id || '' }}
-          edit-mode: replace
-          body: |
-            ## 📊 Coverage Report:
-            
-            ```
-            ${{ steps.coverage.outputs.report && fromJSON(steps.coverage.outputs.report) || 'No coverage report available' }}
-            ```
-
-      - name: Check Coverage
-        if: steps.coverage.outcome == 'failure'
-        shell: bash
-        run: echo "coverage check failed" && exit 1
       - name: Shutdown MySQL
         if: always()
         continue-on-error: true
