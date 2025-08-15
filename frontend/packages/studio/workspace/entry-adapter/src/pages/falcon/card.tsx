@@ -17,6 +17,7 @@ import {
   SubHeader,
   HeaderActions,
   type DevelopProps,
+  WorkspaceEmpty,
 } from '@coze-studio/workspace-base/develop';
 import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
@@ -158,6 +159,21 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       setSpinId(cardId);
       aopApi
         .DeleteCardResource({
+          cardId,
+        })
+        .finally(() => {
+          setSpinId('');
+          getCardListData();
+        });
+    },
+    [getCardListData],
+  );
+
+  const delServiceFromMe = useCallback(
+    (cardId: string) => {
+      setSpinId(cardId);
+      aopApi
+        .DeleteCardResourceFromMe({
           cardId,
         })
         .finally(() => {
@@ -320,87 +336,107 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                       styles.panel,
                     )}
                   >
-                    {[
-                      <div
-                        key="editor"
-                        className={cls(styles.action, styles.editor)}
-                        onClick={e => {
-                          goEditor(item.cardId);
-                          e?.stopPropagation();
-                        }}
-                      >
-                        进入编辑器
-                      </div>,
-                      item.cardShelfStatus === '0' && (
-                        <Popconfirm
-                          key="apply"
-                          title={`确定要将 ${item.cardName} 服务上架吗？`}
-                          onConfirm={e => {
-                            applyService(item.cardId);
-                            e?.stopPropagation();
-                          }}
-                          okText="确定"
-                          cancelText="取消"
-                        >
-                          <div className={cls(styles.action, styles.apply)}>
-                            申请上架
-                          </div>
-                        </Popconfirm>
-                      ),
-                      item.cardShelfStatus === '1' && (
-                        <Popconfirm
-                          title={`确定要将 ${item.cardName} 服务下架吗？`}
-                          onConfirm={e => {
-                            unApplyService(item.cardId);
-                            e?.stopPropagation();
-                          }}
-                          okText="确定"
-                          cancelText="取消"
-                        >
-                          <div className={cls(styles.action, styles.unshelve)}>
-                            服务下架
-                          </div>
-                        </Popconfirm>
-                      ),
-                      <Menu
-                        key="more"
-                        position="bottomRight"
-                        className="w-120px mt-4px mb-4px"
-                        render={
-                          <Menu.SubMenu mode="menu">
-                            <MenuItem
-                              onClick={e => {
-                                goDetail('edit', item);
-                                e?.stopPropagation();
-                              }}
-                            >
-                              编辑服务
-                            </MenuItem>
+                    {groupType === 1
+                      ? [
+                          <div
+                            key="editor"
+                            className={cls(styles.action, styles.editor)}
+                            onClick={e => {
+                              goEditor(item.cardId);
+                              e?.stopPropagation();
+                            }}
+                          >
+                            进入编辑器
+                          </div>,
+                          item.cardShelfStatus === '0' && (
                             <Popconfirm
-                              title={`确定要将 ${item.cardName} 服务删除吗？`}
+                              key="apply"
+                              title={`确定要将 ${item.cardName} 服务上架吗？`}
                               onConfirm={e => {
-                                delService(item.cardId);
+                                applyService(item.cardId);
                                 e?.stopPropagation();
                               }}
                               okText="确定"
                               cancelText="取消"
                             >
-                              <MenuItem>删除服务</MenuItem>
+                              <div className={cls(styles.action, styles.apply)}>
+                                申请上架
+                              </div>
                             </Popconfirm>
-                          </Menu.SubMenu>
-                        }
-                      >
-                        <div className={cls(styles.action, styles.more)}>
-                          更多
-                        </div>
-                      </Menu>,
-                    ]}
+                          ),
+                          item.cardShelfStatus === '1' && (
+                            <Popconfirm
+                              title={`确定要将 ${item.cardName} 服务下架吗？`}
+                              onConfirm={e => {
+                                unApplyService(item.cardId);
+                                e?.stopPropagation();
+                              }}
+                              okText="确定"
+                              cancelText="取消"
+                            >
+                              <div
+                                className={cls(styles.action, styles.unshelve)}
+                              >
+                                服务下架
+                              </div>
+                            </Popconfirm>
+                          ),
+                          <Menu
+                            key="more"
+                            position="bottomRight"
+                            className="w-120px mt-4px mb-4px"
+                            render={
+                              <Menu.SubMenu mode="menu">
+                                <MenuItem
+                                  onClick={e => {
+                                    goDetail('edit', item);
+                                    e?.stopPropagation();
+                                  }}
+                                >
+                                  编辑服务
+                                </MenuItem>
+                                <Popconfirm
+                                  title={`确定要将 ${item.cardName} 服务删除吗？`}
+                                  onConfirm={e => {
+                                    delService(item.cardId);
+                                    e?.stopPropagation();
+                                  }}
+                                  okText="确定"
+                                  cancelText="取消"
+                                >
+                                  <MenuItem>删除服务</MenuItem>
+                                </Popconfirm>
+                              </Menu.SubMenu>
+                            }
+                          >
+                            <div className={cls(styles.action, styles.more)}>
+                              更多
+                            </div>
+                          </Menu>,
+                        ]
+                      : [
+                          <Popconfirm
+                            key="delete"
+                            title={`确定要删除卡片 ${item.cardName} 绑定吗？`}
+                            onConfirm={e => {
+                              delServiceFromMe(item.cardId);
+                              e?.stopPropagation();
+                            }}
+                            okText="确定"
+                            cancelText="取消"
+                          >
+                            <div className={cls(styles.action, styles.delete)}>
+                              删除服务
+                            </div>
+                          </Popconfirm>,
+                        ]}
                   </div>
                 </Spin>
               </div>
             </GridItem>
           ))}
         </GridList>
+        {!cardList?.length && !loading ? <WorkspaceEmpty /> : null}
         {loading ? (
           <Spin>
             <div className="w-full h-[100px] flex items-center justify-center" />

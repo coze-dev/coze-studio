@@ -15,6 +15,7 @@ import {
   SubHeader,
   HeaderActions,
   type DevelopProps,
+  WorkspaceEmpty,
 } from '@coze-studio/workspace-base/develop';
 import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
@@ -316,6 +317,7 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
             </GridItem>
           ))}
         </GridList>
+        {!mcpList?.length && !loading ? <WorkspaceEmpty /> : null}
         {loading ? (
           <Spin>
             <div className="w-full h-[100px] flex items-center justify-center" />

@@ -197,7 +197,7 @@ export default class AopApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
-  // 卡片真实删除
+  // 卡片绑定删除
   DeleteCardResourceFromMe(req?: any, options?: T): Promise<any> {
     const _req = req || {};
     const url = this.genBaseURL('IDC10029.do');
