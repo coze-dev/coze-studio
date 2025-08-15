@@ -24,11 +24,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -372,25 +370,11 @@ func (p *promptsWithChatHistory) Format(ctx context.Context, vs map[string]any, 
 		return baseMessages, nil
 	}
 
-	historyFromCtx, ok := ctxcache.Get[[]*conversation.Message](ctx, chatHistoryKey)
-	var messages []*conversation.Message
-	if ok {
-		messages = historyFromCtx
-	}
+	historyMessages, ok := ctxcache.Get[[]*schema.Message](ctx, chatHistoryKey)
 
-	if len(messages) == 0 {
+	if !ok || len(historyMessages) == 0 {
 		logs.CtxWarnf(ctx, "conversation history is empty")
 		return baseMessages, nil
-	}
-
-	historyMessages := make([]*schema.Message, 0, len(messages))
-	for _, msg := range messages {
-		schemaMsg, err := nodesconversation.ConvertMessageToSchema(ctx, msg)
-		if err != nil {
-			logs.CtxWarnf(ctx, "failed to convert history message, skipping: %v", err)
-			continue
-		}
-		historyMessages = append(historyMessages, schemaMsg)
 	}
 
 	if len(historyMessages) == 0 {

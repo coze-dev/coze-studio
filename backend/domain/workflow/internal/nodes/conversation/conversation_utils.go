@@ -41,11 +41,7 @@ func ConvertMessageToString(ctx context.Context, msg *conversation.Message) (str
 			if m.Text != nil {
 				textContents = append(textContents, ptr.From(m.Text))
 			} else if m.Uri != nil {
-				url, err := workflow.GetRepository().GetObjectUrl(ctx, ptr.From(m.Uri))
-				if err != nil {
-					return "", err
-				}
-				otherContents = append(otherContents, url)
+				otherContents = append(otherContents, ptr.From(m.Url))
 			}
 		}
 
