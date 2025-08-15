@@ -6837,7 +6837,7 @@ type OpenMessageApi struct {
 	//message content
 	Content string `thrift:"content,4" form:"content" json:"content" query:"content"`
 	//session id
-	ConversationID int64 `thrift:"conversation_id,5" form:"conversation_id" json:"conversation_id" query:"conversation_id"`
+	ConversationID int64 `thrift:"conversation_id,5" form:"conversation_id" json:"conversation_id,string" query:"conversation_id"`
 	// custom field
 	MetaData map[string]string `thrift:"meta_data,6" form:"meta_data" json:"meta_data" query:"meta_data"`
 	//creation time
@@ -6845,7 +6845,7 @@ type OpenMessageApi struct {
 	//update time
 	UpdatedAt int64 `thrift:"updated_at,8" form:"updated_at" json:"updated_at" query:"updated_at"`
 	// ID of a conversation
-	ChatID int64 `thrift:"chat_id,9" form:"chat_id" json:"chat_id" query:"chat_id"`
+	ChatID int64 `thrift:"chat_id,9" form:"chat_id" json:"chat_id,string" query:"chat_id"`
 	// Content type, text/mix
 	ContentType string `thrift:"content_type,10" form:"content_type" json:"content_type" query:"content_type"`
 	//Message Type answer/question/function_call/tool_response
