@@ -524,8 +524,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		uid = ptr.Of(int64(888))
-		// return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := s.DomainSVC.GetSingleAgentDraft(ctx, agentID)
