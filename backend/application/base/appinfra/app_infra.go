@@ -25,8 +25,10 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/genai"
 	"gorm.io/gorm"
 
+	"github.com/cloudwego/eino-ext/components/embedding/gemini"
 	"github.com/cloudwego/eino-ext/components/embedding/ollama"
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
@@ -499,7 +501,33 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		if err != nil {
 			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
 		}
+	case "gemini":
+		var (
+			geminiEmbeddingModel  = os.Getenv("GEMINI_EMBEDDING_MODEL")
+			geminiEmbeddingApiKey = os.Getenv("GEMINI_EMBEDDING_API_KEY")
+			geminiEmbeddingDims   = os.Getenv("GEMINI_EMBEDDING_DIMS")
+		)
 
+		dims, err := strconv.ParseInt(geminiEmbeddingDims, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("init gemini embedding dims failed, err=%w", err)
+		}
+
+		geminiCli, err := genai.NewClient(ctx, &genai.ClientConfig{
+			APIKey: geminiEmbeddingApiKey,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("init gemini client failed, err=%w", err)
+		}
+
+		emb, err = wrap.NewGeminiEmbedder(ctx, &gemini.EmbeddingConfig{
+			Client:               geminiCli,
+			Model:                geminiEmbeddingModel,
+			OutputDimensionality: ptr.Of(int32(dims)),
+		}, dims, batchSize)
+		if err != nil {
+			return nil, fmt.Errorf("init gemini embedding failed, err=%w", err)
+		}
 	case "http":
 		var (
 			httpEmbeddingBaseURL = os.Getenv("HTTP_EMBEDDING_ADDR")
