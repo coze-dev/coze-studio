@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 
+	openapiauthApp "github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
@@ -83,6 +84,7 @@ func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -103,5 +105,26 @@ func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ImpersonateCozeUser .
+// @router /api/permission_api/coze_web_app/impersonate_coze_user [POST]
+func ImpersonateCozeUser(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.ImpersonateCozeUserRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := openapiauthApp.OpenAuthApplication.ImpersonateCozeUserAccessToken(ctx, &req)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }

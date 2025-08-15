@@ -21,15 +21,29 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 )
 
 // Requests and responses must not reference domain entities and can only use models under api/model/crossdomain.
 type SingleAgent interface {
-	StreamExecute(ctx context.Context, historyMsg []*message.Message, query *message.Message,
-		agentRuntime *singleagent.AgentRuntime) (*schema.StreamReader[*singleagent.AgentEvent], error)
+	StreamExecute(ctx context.Context,
+		agentRuntime *AgentRuntime) (*schema.StreamReader[*singleagent.AgentEvent], error)
 	ObtainAgentByIdentity(ctx context.Context, identity *singleagent.AgentIdentity) (*singleagent.SingleAgent, error)
+}
+
+type AgentRuntime struct {
+	AgentVersion     string
+	UserID           string
+	AgentID          int64
+	IsDraft          bool
+	SpaceID          int64
+	ConnectorID      int64
+	PreRetrieveTools []*agentrun.Tool
+
+	HistoryMsg []*schema.Message
+	Input      *schema.Message
+	ResumeInfo *ResumeInfo
 }
 
 type ResumeInfo = singleagent.InterruptInfo

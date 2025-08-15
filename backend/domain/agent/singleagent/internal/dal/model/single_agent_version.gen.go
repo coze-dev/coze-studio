@@ -52,7 +52,9 @@ type SingleAgentVersion struct {
 	Version                 string                            `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                                 // Agent Version
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
 	DatabaseConfig          []*bot_common.Database            `gorm:"column:database_config;comment:Agent Database Base Configuration;serializer:json" json:"database_config"`      // Agent Database Base Configuration
+	BotMode                 int32                             `gorm:"column:bot_mode;not null;comment:mod,0:single mode 2:chatflow mode" json:"bot_mode"`                           // mod,0:single mode 2:chatflow mode
 	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
+	LayoutInfo              *bot_common.LayoutInfo            `gorm:"column:layout_info;comment:chatflow layout info;serializer:json" json:"layout_info"`                           // chatflow layout info
 }
 
 // TableName SingleAgentVersion's table name

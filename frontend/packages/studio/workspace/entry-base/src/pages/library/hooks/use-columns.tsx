@@ -26,8 +26,9 @@ import {
 } from '@coze-arch/coze-design';
 import { responsiveTableColumn, formatDate } from '@coze-arch/bot-utils';
 import {
+  ResType,
+  WorkflowMode,
   type ResourceInfo,
-  type ResType,
 } from '@coze-arch/bot-api/plugin_develop';
 
 import { type LibraryEntityConfig } from '../types';
@@ -53,6 +54,16 @@ const getResTypeLabelFromConfigMap = (
   if (item.res_type === undefined) {
     return '-';
   }
+
+  // 单独判断一下 Chatflow 类型
+  if (
+    item.res_type === ResType.Workflow &&
+    item.res_sub_type === WorkflowMode.ChatFlow
+  ) {
+    const label = I18n.t('wf_chatflow_76');
+    return label;
+  }
+
   const target = entityConfigs.find(config =>
     config.target.includes(item.res_type as ResType),
   )?.typeFilter;

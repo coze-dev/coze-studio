@@ -16,20 +16,34 @@ import (
 )
 
 var (
-	Q                        = new(Query)
-	ConnectorWorkflowVersion *connectorWorkflowVersion
-	NodeExecution            *nodeExecution
-	WorkflowDraft            *workflowDraft
-	WorkflowExecution        *workflowExecution
-	WorkflowMeta             *workflowMeta
-	WorkflowReference        *workflowReference
-	WorkflowSnapshot         *workflowSnapshot
-	WorkflowVersion          *workflowVersion
+	Q                             = new(Query)
+	ConnectorWorkflowVersion      *connectorWorkflowVersion
+	AppConversationTemplateDraft  *appConversationTemplateDraft
+	AppConversationTemplateOnline *appConversationTemplateOnline
+	AppDynamicConversationDraft   *appDynamicConversationDraft
+	AppDynamicConversationOnline  *appDynamicConversationOnline
+	AppStaticConversationDraft    *appStaticConversationDraft
+	AppStaticConversationOnline   *appStaticConversationOnline
+	ChatFlowRoleConfig            *chatFlowRoleConfig
+	NodeExecution                 *nodeExecution
+	WorkflowDraft                 *workflowDraft
+	WorkflowExecution             *workflowExecution
+	WorkflowMeta                  *workflowMeta
+	WorkflowReference             *workflowReference
+	WorkflowSnapshot              *workflowSnapshot
+	WorkflowVersion               *workflowVersion
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	ConnectorWorkflowVersion = &Q.ConnectorWorkflowVersion
+	AppConversationTemplateDraft = &Q.AppConversationTemplateDraft
+	AppConversationTemplateOnline = &Q.AppConversationTemplateOnline
+	AppDynamicConversationDraft = &Q.AppDynamicConversationDraft
+	AppDynamicConversationOnline = &Q.AppDynamicConversationOnline
+	AppStaticConversationDraft = &Q.AppStaticConversationDraft
+	AppStaticConversationOnline = &Q.AppStaticConversationOnline
+	ChatFlowRoleConfig = &Q.ChatFlowRoleConfig
 	NodeExecution = &Q.NodeExecution
 	WorkflowDraft = &Q.WorkflowDraft
 	WorkflowExecution = &Q.WorkflowExecution
@@ -41,44 +55,65 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                       db,
-		ConnectorWorkflowVersion: newConnectorWorkflowVersion(db, opts...),
-		NodeExecution:            newNodeExecution(db, opts...),
-		WorkflowDraft:            newWorkflowDraft(db, opts...),
-		WorkflowExecution:        newWorkflowExecution(db, opts...),
-		WorkflowMeta:             newWorkflowMeta(db, opts...),
-		WorkflowReference:        newWorkflowReference(db, opts...),
-		WorkflowSnapshot:         newWorkflowSnapshot(db, opts...),
-		WorkflowVersion:          newWorkflowVersion(db, opts...),
+		db:                            db,
+		ConnectorWorkflowVersion:      newConnectorWorkflowVersion(db, opts...),
+		AppConversationTemplateDraft:  newAppConversationTemplateDraft(db, opts...),
+		AppConversationTemplateOnline: newAppConversationTemplateOnline(db, opts...),
+		AppDynamicConversationDraft:   newAppDynamicConversationDraft(db, opts...),
+		AppDynamicConversationOnline:  newAppDynamicConversationOnline(db, opts...),
+		AppStaticConversationDraft:    newAppStaticConversationDraft(db, opts...),
+		AppStaticConversationOnline:   newAppStaticConversationOnline(db, opts...),
+		ChatFlowRoleConfig:            newChatFlowRoleConfig(db, opts...),
+		NodeExecution:                 newNodeExecution(db, opts...),
+		WorkflowDraft:                 newWorkflowDraft(db, opts...),
+		WorkflowExecution:             newWorkflowExecution(db, opts...),
+		WorkflowMeta:                  newWorkflowMeta(db, opts...),
+		WorkflowReference:             newWorkflowReference(db, opts...),
+		WorkflowSnapshot:              newWorkflowSnapshot(db, opts...),
+		WorkflowVersion:               newWorkflowVersion(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	ConnectorWorkflowVersion connectorWorkflowVersion
-	NodeExecution            nodeExecution
-	WorkflowDraft            workflowDraft
-	WorkflowExecution        workflowExecution
-	WorkflowMeta             workflowMeta
-	WorkflowReference        workflowReference
-	WorkflowSnapshot         workflowSnapshot
-	WorkflowVersion          workflowVersion
+	ConnectorWorkflowVersion      connectorWorkflowVersion
+	AppConversationTemplateDraft  appConversationTemplateDraft
+	AppConversationTemplateOnline appConversationTemplateOnline
+	AppDynamicConversationDraft   appDynamicConversationDraft
+	AppDynamicConversationOnline  appDynamicConversationOnline
+	AppStaticConversationDraft    appStaticConversationDraft
+	AppStaticConversationOnline   appStaticConversationOnline
+	ChatFlowRoleConfig            chatFlowRoleConfig
+	NodeExecution                 nodeExecution
+	WorkflowDraft                 workflowDraft
+	WorkflowExecution             workflowExecution
+	WorkflowMeta                  workflowMeta
+	WorkflowReference             workflowReference
+	WorkflowSnapshot              workflowSnapshot
+	WorkflowVersion               workflowVersion
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                       db,
-		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.clone(db),
-		NodeExecution:            q.NodeExecution.clone(db),
-		WorkflowDraft:            q.WorkflowDraft.clone(db),
-		WorkflowExecution:        q.WorkflowExecution.clone(db),
-		WorkflowMeta:             q.WorkflowMeta.clone(db),
-		WorkflowReference:        q.WorkflowReference.clone(db),
-		WorkflowSnapshot:         q.WorkflowSnapshot.clone(db),
-		WorkflowVersion:          q.WorkflowVersion.clone(db),
+		db:                            db,
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.clone(db),
+		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.clone(db),
+		AppConversationTemplateOnline: q.AppConversationTemplateOnline.clone(db),
+		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.clone(db),
+		AppDynamicConversationOnline:  q.AppDynamicConversationOnline.clone(db),
+		AppStaticConversationDraft:    q.AppStaticConversationDraft.clone(db),
+		AppStaticConversationOnline:   q.AppStaticConversationOnline.clone(db),
+		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.clone(db),
+		NodeExecution:                 q.NodeExecution.clone(db),
+		WorkflowDraft:                 q.WorkflowDraft.clone(db),
+		WorkflowExecution:             q.WorkflowExecution.clone(db),
+		WorkflowMeta:                  q.WorkflowMeta.clone(db),
+		WorkflowReference:             q.WorkflowReference.clone(db),
+		WorkflowSnapshot:              q.WorkflowSnapshot.clone(db),
+		WorkflowVersion:               q.WorkflowVersion.clone(db),
 	}
 }
 
@@ -92,39 +127,60 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                       db,
-		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.replaceDB(db),
-		NodeExecution:            q.NodeExecution.replaceDB(db),
-		WorkflowDraft:            q.WorkflowDraft.replaceDB(db),
-		WorkflowExecution:        q.WorkflowExecution.replaceDB(db),
-		WorkflowMeta:             q.WorkflowMeta.replaceDB(db),
-		WorkflowReference:        q.WorkflowReference.replaceDB(db),
-		WorkflowSnapshot:         q.WorkflowSnapshot.replaceDB(db),
-		WorkflowVersion:          q.WorkflowVersion.replaceDB(db),
+		db:                            db,
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.replaceDB(db),
+		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.replaceDB(db),
+		AppConversationTemplateOnline: q.AppConversationTemplateOnline.replaceDB(db),
+		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.replaceDB(db),
+		AppDynamicConversationOnline:  q.AppDynamicConversationOnline.replaceDB(db),
+		AppStaticConversationDraft:    q.AppStaticConversationDraft.replaceDB(db),
+		AppStaticConversationOnline:   q.AppStaticConversationOnline.replaceDB(db),
+		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.replaceDB(db),
+		NodeExecution:                 q.NodeExecution.replaceDB(db),
+		WorkflowDraft:                 q.WorkflowDraft.replaceDB(db),
+		WorkflowExecution:             q.WorkflowExecution.replaceDB(db),
+		WorkflowMeta:                  q.WorkflowMeta.replaceDB(db),
+		WorkflowReference:             q.WorkflowReference.replaceDB(db),
+		WorkflowSnapshot:              q.WorkflowSnapshot.replaceDB(db),
+		WorkflowVersion:               q.WorkflowVersion.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	ConnectorWorkflowVersion IConnectorWorkflowVersionDo
-	NodeExecution            INodeExecutionDo
-	WorkflowDraft            IWorkflowDraftDo
-	WorkflowExecution        IWorkflowExecutionDo
-	WorkflowMeta             IWorkflowMetaDo
-	WorkflowReference        IWorkflowReferenceDo
-	WorkflowSnapshot         IWorkflowSnapshotDo
-	WorkflowVersion          IWorkflowVersionDo
+	ConnectorWorkflowVersion      IConnectorWorkflowVersionDo
+	AppConversationTemplateDraft  IAppConversationTemplateDraftDo
+	AppConversationTemplateOnline IAppConversationTemplateOnlineDo
+	AppDynamicConversationDraft   IAppDynamicConversationDraftDo
+	AppDynamicConversationOnline  IAppDynamicConversationOnlineDo
+	AppStaticConversationDraft    IAppStaticConversationDraftDo
+	AppStaticConversationOnline   IAppStaticConversationOnlineDo
+	ChatFlowRoleConfig            IChatFlowRoleConfigDo
+	NodeExecution                 INodeExecutionDo
+	WorkflowDraft                 IWorkflowDraftDo
+	WorkflowExecution             IWorkflowExecutionDo
+	WorkflowMeta                  IWorkflowMetaDo
+	WorkflowReference             IWorkflowReferenceDo
+	WorkflowSnapshot              IWorkflowSnapshotDo
+	WorkflowVersion               IWorkflowVersionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		ConnectorWorkflowVersion: q.ConnectorWorkflowVersion.WithContext(ctx),
-		NodeExecution:            q.NodeExecution.WithContext(ctx),
-		WorkflowDraft:            q.WorkflowDraft.WithContext(ctx),
-		WorkflowExecution:        q.WorkflowExecution.WithContext(ctx),
-		WorkflowMeta:             q.WorkflowMeta.WithContext(ctx),
-		WorkflowReference:        q.WorkflowReference.WithContext(ctx),
-		WorkflowSnapshot:         q.WorkflowSnapshot.WithContext(ctx),
-		WorkflowVersion:          q.WorkflowVersion.WithContext(ctx),
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.WithContext(ctx),
+		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.WithContext(ctx),
+		AppConversationTemplateOnline: q.AppConversationTemplateOnline.WithContext(ctx),
+		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.WithContext(ctx),
+		AppDynamicConversationOnline:  q.AppDynamicConversationOnline.WithContext(ctx),
+		AppStaticConversationDraft:    q.AppStaticConversationDraft.WithContext(ctx),
+		AppStaticConversationOnline:   q.AppStaticConversationOnline.WithContext(ctx),
+		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.WithContext(ctx),
+		NodeExecution:                 q.NodeExecution.WithContext(ctx),
+		WorkflowDraft:                 q.WorkflowDraft.WithContext(ctx),
+		WorkflowExecution:             q.WorkflowExecution.WithContext(ctx),
+		WorkflowMeta:                  q.WorkflowMeta.WithContext(ctx),
+		WorkflowReference:             q.WorkflowReference.WithContext(ctx),
+		WorkflowSnapshot:              q.WorkflowSnapshot.WithContext(ctx),
+		WorkflowVersion:               q.WorkflowVersion.WithContext(ctx),
 	}
 }
 

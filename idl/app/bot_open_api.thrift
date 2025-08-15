@@ -32,11 +32,12 @@ struct UploadFileOpenResponse {
 }
 
 struct File{
-    1: string URI (api.body = "uri"),                  // 文件URI
-    2: i64 Bytes (api.body = "bytes"),               // 文件字节数
-    3: i64 CreatedAt (agw.key = "created_at"),        // 上传时间戳，单位s
-    4: string FileName (api.body = "file_name"),     // 文件名
+    1: string URI (api.body = "uri"),                  // URI
+    2: i64 Bytes (api.body = "bytes"),               // bytes
+    3: i64 CreatedAt (agw.key = "created_at"),        // create at
+    4: string FileName (api.body = "file_name"),     // file name
     5: string URL (api.body = "url")
+    6: string ID (api.body = "id")
 }
 
 // resp

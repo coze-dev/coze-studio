@@ -18,6 +18,7 @@ package message
 
 import (
 	"context"
+	"sort"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -62,8 +63,11 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	resp.HasMore = hasMore
 
 	if len(messageList) > 0 {
-		resp.PrevCursor = messageList[len(messageList)-1].CreatedAt
-		resp.NextCursor = messageList[0].CreatedAt
+		sort.Slice(messageList, func(i, j int) bool {
+			return messageList[i].CreatedAt > messageList[j].CreatedAt
+		})
+		resp.PrevCursor = messageList[len(messageList)-1].ID
+		resp.NextCursor = messageList[0].ID
 
 		var runIDs []int64
 		for _, m := range messageList {

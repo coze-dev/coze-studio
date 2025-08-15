@@ -13,6 +13,7 @@ type LLMParams struct {
 	EnableChatHistory bool           `json:"enableChatHistory"`
 	SystemPrompt      string         `json:"systemPrompt"`
 	ResponseFormat    ResponseFormat `json:"responseFormat"`
+	ChatHistoryRound  int64          `json:"chatHistoryRound"`
 }
 
 type ResponseFormat int64

@@ -56,6 +56,7 @@ func InitService(s *ServiceComponents) *ConversationApplicationService {
 
 	arDomainComponents := &agentrun.Components{
 		RunRecordRepo: repository.NewRunRecordRepo(s.DB, s.IDGen),
+		ImagexSVC:     s.ImageX,
 	}
 
 	agentRunDomainSVC := agentrun.NewService(arDomainComponents)

@@ -73,8 +73,7 @@ const ProjectIDE: React.FC<ProjectIDEProps> = memo(
       () => ({
         view: {
           widgetRegistries: [
-            // will support soon
-            ...(IS_OPEN_SOURCE ? [] : [ConversationRegistry]),
+            ConversationRegistry,
             WorkflowWidgetRegistry,
             DatabaseWidgetRegistry,
             KnowledgeWidgetRegistry,

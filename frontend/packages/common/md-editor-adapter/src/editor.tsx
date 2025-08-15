@@ -41,6 +41,7 @@ export const EditorFullInputInner = forwardRef<EditorHandle, EditorInputProps>(
       ...restProps
     } = props;
     const [value, setValue] = useState(propsValue);
+    const [isComposing, setIsComposing] = useState(false);
 
     // Create a mutable reference to store the latest value
     const valueRef = useRef(value);
@@ -104,7 +105,15 @@ export const EditorFullInputInner = forwardRef<EditorHandle, EditorInputProps>(
         value={value}
         onChange={v => {
           setValue(v);
+          if (isComposing) {
+            return;
+          }
           propsOnChange?.(v);
+        }}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={e => {
+          setIsComposing(false);
+          propsOnChange?.(e.currentTarget.value);
         }}
       />
     );

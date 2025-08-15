@@ -19030,8 +19030,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/i18n
       '@coze/chat-sdk':
-        specifier: 0.1.11-beta.19
-        version: 0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.1.11-alpha.36540a
+        version: 0.1.11-alpha.36540a(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -26107,8 +26107,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@coze/chat-sdk@0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-DRZ1yuWhYiiOZfbAiD9ifCVA7TiC8Wia4SfkJs5O8kCgbujF2nJrekEWUD6nzt9ivY8oT6Ve/eXfq/jK4CSq6g==}
+  /@coze/chat-sdk@0.1.11-alpha.36540a(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-uO4AnI7y5rRpQaCGdIbEkCscIkT6C2+AnsCS4nqMBXAg2VB3p+LLy6WJ4rjMiY6CkXoZzN2Jj0BeHO74tB7nPA==}
     requiresBuild: true
     peerDependencies:
       axios: ^1.7.1

@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -87,6 +89,11 @@ func init() {
 	_ = compose.RegisterSerializableType[workflowModel.Locator]("wf_locator")
 	_ = compose.RegisterSerializableType[workflowModel.BizType]("biz_type")
 	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
+	_ = compose.RegisterSerializableType[workflow2.WorkflowMode]("workflow_mode")
+	_ = compose.RegisterSerializableType[*schema.Message]("schema_message")
+	_ = compose.RegisterSerializableType[*conversation.Message]("history_messages")
+	_ = compose.RegisterSerializableType[*conversation.Content]("content")
+
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {

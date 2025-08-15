@@ -153,7 +153,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 		}
 	}
 
-	return s.AgentDraftRepo.Update(ctx, agentInfo)
+	return s.AgentDraftRepo.Save(ctx, agentInfo)
 }
 
 func (s *singleAgentImpl) CreateSingleAgentDraftWithID(ctx context.Context, creatorID, agentID int64, draft *entity.SingleAgent) (int64, error) {

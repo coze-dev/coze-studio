@@ -72,6 +72,7 @@ func (a *ApiKeyDAO) doToPo(ctx context.Context, do *entity.CreateApiKey) (*model
 		Name:      do.Name,
 		ExpiredAt: do.Expire,
 		UserID:    do.UserID,
+		AkType:    int32(do.AkType),
 		CreatedAt: time.Now().Unix(),
 	}
 	return po, nil
@@ -119,7 +120,7 @@ func (a *ApiKeyDAO) FindByKey(ctx context.Context, key string) (*model.APIKey, e
 
 func (a *ApiKeyDAO) List(ctx context.Context, userID int64, limit int, page int) ([]*model.APIKey, bool, error) {
 	do := a.dbQuery.APIKey.WithContext(ctx).Where(a.dbQuery.APIKey.UserID.Eq(userID))
-
+	do = do.Where(a.dbQuery.APIKey.AkType.Eq(int32(entity.AkTypeCustomer)))
 	do = do.Offset((page - 1) * limit).Limit(limit + 1)
 
 	list, err := do.Order(a.dbQuery.APIKey.CreatedAt.Desc()).Find()

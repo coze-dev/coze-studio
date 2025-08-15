@@ -80,8 +80,7 @@ export const CreateWorkflowBtn: FC<
 
   return (
     <>
-      {/* will support soon */}
-      {showSingleButton || IS_OPEN_SOURCE ? (
+      {showSingleButton ? (
         <Button
           className={className}
           color="hgltplus"

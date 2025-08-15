@@ -38,19 +38,49 @@ type Workflow interface {
 		allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
+
 	SyncExecuteWorkflow(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	StreamExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error)
 	WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option
+
+	StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (*schema.StreamReader[*entity.Message], error)
+
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
+	InitApplicationDefaultConversationTemplate(ctx context.Context, spaceID int64, appID int64, userID int64) error
 }
 
 type ExecuteConfig = workflowModel.ExecuteConfig
 type ExecuteMode = workflowModel.ExecuteMode
-type NodeType = entity.NodeType
 
-type WorkflowMessage = entity.Message
+type WorkflowMessage = workflowEntity.Message
+
+type StateMessage = workflowEntity.StateMessage
+
+type NodeType = entity.NodeType
+type MessageType = entity.MessageType
+type InterruptEvent = workflowEntity.InterruptEvent
+type EventType = workflowEntity.InterruptEventType
+type ResumeRequest = entity.ResumeRequest
+type WorkflowExecuteStatus = entity.WorkflowExecuteStatus
+
+const (
+	WorkflowRunning     = WorkflowExecuteStatus(entity.WorkflowRunning)
+	WorkflowSuccess     = WorkflowExecuteStatus(entity.WorkflowSuccess)
+	WorkflowFailed      = WorkflowExecuteStatus(entity.WorkflowFailed)
+	WorkflowCancel      = WorkflowExecuteStatus(entity.WorkflowCancel)
+	WorkflowInterrupted = WorkflowExecuteStatus(entity.WorkflowInterrupted)
+)
+
+const (
+	Answer       MessageType = "answer"
+	FunctionCall MessageType = "function_call"
+	ToolResponse MessageType = "tool_response"
+)
 
 const (
 	NodeTypeOutputEmitter NodeType = "OutputEmitter"
+	NodeTypeInputReceiver NodeType = "InputReceiver"
+	NodeTypeQuestion      NodeType = "QuestionAnswer"
 )
 
 const (
@@ -60,6 +90,14 @@ const (
 )
 
 type TaskType = workflowModel.TaskType
+
+type SyncPattern = workflowModel.SyncPattern
+
+const (
+	SyncPatternSync   SyncPattern = "sync"
+	SyncPatternAsync  SyncPattern = "async"
+	SyncPatternStream SyncPattern = "stream"
+)
 
 const (
 	TaskTypeForeground TaskType = "foreground"
