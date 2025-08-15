@@ -1074,6 +1074,10 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
+	if q.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*q.Mode)))
+	}
+
 	type combinedVersion struct {
 		model.WorkflowMeta
 		Version            string `gorm:"column:version"`             // release version
@@ -1296,6 +1300,10 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (
 
 	if query.LibOnly { // if AppID not specified, we can only query those within Library
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	if query.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*query.Mode)))
 	}
 
 	var result []*model.WorkflowMeta
