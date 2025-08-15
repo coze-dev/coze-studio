@@ -18,11 +18,10 @@ package conversation
 
 import (
 	"context"
-
+	"fmt"
 	"strconv"
 
 	"github.com/cloudwego/eino/schema"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
@@ -31,8 +30,10 @@ import (
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type ConversationRepository struct {
@@ -116,7 +117,7 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 	if len(lr.Messages) == 0 {
 		return response, nil
 	}
-	messages, err := convertMessage(lr.Messages)
+	messages, _, err := convertToConvAndSchemaMessage(ctx, lr.Messages)
 	if err != nil {
 		return nil, err
 	}
@@ -177,52 +178,119 @@ func (c *ConversationRepository) GetLatestRunIDs(ctx context.Context, req *conve
 }
 
 func (c *ConversationRepository) GetMessagesByRunIDs(ctx context.Context, req *conversation.GetMessagesByRunIDsRequest) (*conversation.GetMessagesByRunIDsResponse, error) {
-
-	messages, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, req.ConversationID, req.RunIDs)
+	responseMessages, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, req.ConversationID, req.RunIDs)
 	if err != nil {
 		return nil, err
 	}
+	// only returns messages of type user/assistant/system role type
+	messages := make([]*message.Message, 0, len(responseMessages))
+	for _, m := range responseMessages {
+		if m.Role == schema.User || m.Role == schema.System || m.Role == schema.Assistant {
+			messages = append(messages, m)
+		}
+	}
 
-	msgs, err := convertMessage(messages)
+	convMessages, scMessages, err := convertToConvAndSchemaMessage(ctx, messages)
 	if err != nil {
 		return nil, err
 	}
-
 	return &conversation.GetMessagesByRunIDsResponse{
-		Messages: msgs,
+		Messages:       convMessages,
+		SchemaMessages: scMessages,
 	}, nil
 }
 
-func convertMessage(msgs []*msgentity.Message) ([]*conversation.Message, error) {
-	messages := make([]*conversation.Message, 0, len(msgs))
+func convertToConvAndSchemaMessage(ctx context.Context, msgs []*msgentity.Message) ([]*conversation.Message, []*schema.Message, error) {
+	messages := make([]*schema.Message, 0)
+	convMessages := make([]*conversation.Message, 0)
 	for _, m := range msgs {
-		msg := &conversation.Message{
+		msg := &schema.Message{
+			Role: m.Role,
+		}
+		covMsg := &conversation.Message{
 			ID:          m.ID,
 			Role:        m.Role,
-			ContentType: string(m.ContentType)}
+			ContentType: string(m.ContentType),
+		}
+		err := sonic.UnmarshalString(m.ModelContent, msg)
+		if err != nil {
+			return nil, nil, err
+		}
 
-		if m.MultiContent != nil {
-			var mcs []*conversation.Content
-			for _, c := range m.MultiContent {
-				if c.FileData != nil {
-					for _, fd := range c.FileData {
-						mcs = append(mcs, &conversation.Content{
-							Type: c.Type,
-							Uri:  ptr.Of(fd.URI),
+		if len(msg.MultiContent) == 0 {
+			covMsg.Text = ptr.Of(msg.Content)
+		} else {
+			covMsg.MultiContent = make([]*conversation.Content, 0, len(msg.MultiContent))
+			for _, part := range msg.MultiContent {
+				switch part.Type {
+				case schema.ChatMessagePartTypeText:
+					covMsg.MultiContent = append(covMsg.MultiContent, &conversation.Content{
+						Type: message.InputTypeText,
+						Text: ptr.Of(part.Text),
+					})
+
+				case schema.ChatMessagePartTypeImageURL:
+					if part.ImageURL != nil {
+						part.ImageURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.ImageURL.URI)
+						if err != nil {
+							return nil, nil, err
+						}
+						covMsg.MultiContent = append(covMsg.MultiContent, &conversation.Content{
+							Uri:  ptr.Of(part.ImageURL.URI),
+							Type: message.InputTypeImage,
+							Url:  ptr.Of(part.ImageURL.URL),
 						})
 					}
-				} else {
-					mcs = append(mcs, &conversation.Content{
-						Type: c.Type,
-						Text: ptr.Of(c.Text),
-					})
+
+				case schema.ChatMessagePartTypeFileURL:
+
+					if part.FileURL != nil {
+						part.FileURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.FileURL.URI)
+						if err != nil {
+							return nil, nil, err
+						}
+
+						covMsg.MultiContent = append(covMsg.MultiContent, &conversation.Content{
+							Uri:  ptr.Of(part.FileURL.URI),
+							Type: message.InputTypeFile,
+							Url:  ptr.Of(part.FileURL.URL),
+						})
+
+					}
+
+				case schema.ChatMessagePartTypeAudioURL:
+					if part.AudioURL != nil {
+						part.AudioURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.AudioURL.URI)
+						if err != nil {
+							return nil, nil, err
+						}
+						covMsg.MultiContent = append(covMsg.MultiContent, &conversation.Content{
+							Uri:  ptr.Of(part.AudioURL.URI),
+							Type: message.InputTypeAudio,
+							Url:  ptr.Of(part.AudioURL.URL),
+						})
+
+					}
+				case schema.ChatMessagePartTypeVideoURL:
+					if part.VideoURL != nil {
+						part.VideoURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.VideoURL.URI)
+						if err != nil {
+							return nil, nil, err
+						}
+						covMsg.MultiContent = append(covMsg.MultiContent, &conversation.Content{
+							Uri:  ptr.Of(part.VideoURL.URI),
+							Type: message.InputTypeVideo,
+							Url:  ptr.Of(part.VideoURL.URL),
+						})
+					}
+				default:
+					return nil, nil, fmt.Errorf("unknown part type: %s", part.Type)
 				}
 			}
-			msg.MultiContent = mcs
-		} else {
-			msg.Text = ptr.Of(m.Content)
 		}
+
 		messages = append(messages, msg)
+		convMessages = append(convMessages, covMsg)
 	}
-	return messages, nil
+	return convMessages, messages, nil
 }

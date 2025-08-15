@@ -225,25 +225,11 @@ func (kr *Retrieve) GetChatHistoryOrNil(ctx context.Context, ChatHistorySetting 
 		return nil
 	}
 
-	historyFromCtx, ok := ctxcache.Get[[]*conversation.Message](ctx, chatHistoryKey)
-	var messages []*conversation.Message
-	if ok {
-		messages = historyFromCtx
-	}
+	historyMessages, ok := ctxcache.Get[[]*einoSchema.Message](ctx, chatHistoryKey)
 
-	if len(messages) == 0 {
+	if !ok || len(historyMessages) == 0 {
 		logs.CtxWarnf(ctx, "conversation history is empty")
 		return nil
-	}
-
-	historyMessages := make([]*einoSchema.Message, 0, len(messages))
-	for _, msg := range messages {
-		schemaMsg, err := nodesconversation.ConvertMessageToSchema(ctx, msg)
-		if err != nil {
-			logs.CtxWarnf(ctx, "failed to convert history message, skipping: %v", err)
-			continue
-		}
-		historyMessages = append(historyMessages, schemaMsg)
 	}
 	return historyMessages
 }
@@ -254,9 +240,11 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 	}
 
 	var messages []*conversation.Message
+	var scMessages []*einoSchema.Message
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx != nil {
 		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
 	}
 	if len(messages) == 0 {
 		if kr.ChatHistorySetting.EnableChatHistory {
@@ -293,7 +281,7 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
 	ret := map[string]any{
 		"chatHistory": historyMessages,
