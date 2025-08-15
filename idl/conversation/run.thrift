@@ -136,7 +136,7 @@ struct ModelConfig{
 
 struct BotConfig{
     1: optional string CharacterName (api.body="character_name")
-    2: optional string Prompt (api.body="propmt")
+    2: optional string Prompt (api.body="prompt")
 }
 struct ShortcutCommandDetail {
     1: required i64 command_id (api.js_conv='true')
