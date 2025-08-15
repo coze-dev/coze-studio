@@ -24,6 +24,7 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflowapimodel "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -62,6 +63,8 @@ func (i *impl) SyncExecute(ctx context.Context, config workflowModel.ExecuteConf
 	if err != nil {
 		return nil, "", err
 	}
+
+	config.WorkflowMode = wfEntity.Mode
 
 	isApplicationWorkflow := wfEntity.AppID != nil
 	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
@@ -208,6 +211,8 @@ func (i *impl) AsyncExecute(ctx context.Context, config workflowModel.ExecuteCon
 		return 0, err
 	}
 
+	config.WorkflowMode = wfEntity.Mode
+
 	isApplicationWorkflow := wfEntity.AppID != nil
 	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
@@ -292,6 +297,8 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 	if err != nil {
 		return 0, err
 	}
+
+	config.WorkflowMode = wfEntity.Mode
 
 	isApplicationWorkflow := wfEntity.AppID != nil
 	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
@@ -392,6 +399,8 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 	if err != nil {
 		return nil, err
 	}
+
+	config.WorkflowMode = wfEntity.Mode
 
 	isApplicationWorkflow := wfEntity.AppID != nil
 	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
