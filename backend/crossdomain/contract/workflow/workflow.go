@@ -61,6 +61,15 @@ type MessageType = entity.MessageType
 type InterruptEvent = workflowEntity.InterruptEvent
 type EventType = workflowEntity.InterruptEventType
 type ResumeRequest = entity.ResumeRequest
+type WorkflowExecuteStatus = entity.WorkflowExecuteStatus
+
+const (
+	WorkflowRunning     = WorkflowExecuteStatus(entity.WorkflowRunning)
+	WorkflowSuccess     = WorkflowExecuteStatus(entity.WorkflowSuccess)
+	WorkflowFailed      = WorkflowExecuteStatus(entity.WorkflowFailed)
+	WorkflowCancel      = WorkflowExecuteStatus(entity.WorkflowCancel)
+	WorkflowInterrupted = WorkflowExecuteStatus(entity.WorkflowInterrupted)
+)
 
 const (
 	Answer       MessageType = "answer"

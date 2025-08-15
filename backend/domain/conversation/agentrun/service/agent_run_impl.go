@@ -239,7 +239,7 @@ func (c *runImpl) handlerWfAsAgentStreamExecute(ctx context.Context, sw *schema.
 		executeConfig.UserMessage = internal.TransMessageToSchemaMessage(ctx, []*msgEntity.Message{input}, c.ImagexSVC)[0]
 		executeConfig.MaxHistoryRounds = ptr.Of(getAgentHistoryRounds(rtDependence.agentInfo))
 		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, map[string]any{
-			"input": concatWfInput(rtDependence),
+			"USER_INPUT": concatWfInput(rtDependence),
 		})
 	}
 	if err != nil {
@@ -587,7 +587,6 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 					logs.CtxErrorf(ctx, "handlerFinalAnswerFinish error: %v", finishErr)
 					return
 				}
-
 				return
 			}
 			logs.CtxErrorf(ctx, "pullWfStream Recv error: %v", re)
@@ -597,18 +596,27 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 		if st == nil {
 			continue
 		}
-		if st.StateMessage != nil && st.StateMessage.Usage != nil {
-			usage = &msgEntity.UsageExt{
-				InputTokens:  st.StateMessage.Usage.InputTokens,
-				OutputTokens: st.StateMessage.Usage.OutputTokens,
-				TotalCount:   st.StateMessage.Usage.InputTokens + st.StateMessage.Usage.OutputTokens,
+		if st.StateMessage != nil {
+			if st.StateMessage.Status == crossworkflow.WorkflowFailed {
+				c.handlerErr(ctx, st.StateMessage.LastError, sw)
+				continue
 			}
+			if st.StateMessage.Usage != nil {
+				usage = &msgEntity.UsageExt{
+					InputTokens:  st.StateMessage.Usage.InputTokens,
+					OutputTokens: st.StateMessage.Usage.OutputTokens,
+					TotalCount:   st.StateMessage.Usage.InputTokens + st.StateMessage.Usage.OutputTokens,
+				}
+			}
+
+			if st.StateMessage.InterruptEvent != nil { // interrupt
+				c.handlerWfInterruptMsg(ctx, sw, st.StateMessage, rtDependence)
+				continue
+			}
+
 		}
 
-		if st.StateMessage != nil && st.StateMessage.InterruptEvent != nil { // interrupt
-			c.handlerWfInterruptMsg(ctx, sw, st.StateMessage, rtDependence)
-			continue
-		}
+
 		if st.DataMessage == nil {
 			continue
 		}
@@ -630,14 +638,10 @@ func (c *runImpl) pullWfStream(ctx context.Context, events *schema.StreamReader[
 			}
 			if st.DataMessage.Content != "" {
 				fullAnswerContent.WriteString(st.DataMessage.Content)
-
 			}
 			if st.DataMessage.Last {
 				preMsgIsFinish = true
 				sendAnswerMsg := c.buildSendMsg(ctx, preAnswerMsg, false, rtDependence)
-				if len(fullAnswerContent.String()) == 0 && st.DataMessage.Content != "" {
-					fullAnswerContent.WriteString(st.DataMessage.Content)
-				}
 				sendAnswerMsg.Content = fullAnswerContent.String()
 				fullAnswerContent.Reset()
 				hfErr := c.handlerAnswer(ctx, sendAnswerMsg, sw, usage, rtDependence, preAnswerMsg)
