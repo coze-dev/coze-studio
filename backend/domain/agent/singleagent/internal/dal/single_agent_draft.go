@@ -120,7 +120,7 @@ func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.Sin
 	po := sa.singleAgentDraftDo2Po(agentInfo)
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 
-	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)
+	err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Save(po)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrAgentUpdateCode)
 	}
