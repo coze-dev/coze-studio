@@ -23,10 +23,12 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 var extractBracesRegexp = regexp.MustCompile(`\{\{(.*?)}}`)
@@ -43,9 +45,10 @@ func extractBracesContent(s string) []string {
 }
 
 type ImplicitNodeDependency struct {
-	NodeID    string
-	FieldPath compose.FieldPath
-	TypeInfo  *vo.TypeInfo
+	NodeID            string
+	FieldPath         compose.FieldPath
+	TypeInfo          *vo.TypeInfo
+	IsIntermediateVar bool
 }
 
 func extractImplicitDependency(node *vo.Node, canvas *vo.Canvas) ([]*ImplicitNodeDependency, error) {
@@ -84,11 +87,21 @@ func extractImplicitDependency(node *vo.Node, canvas *vo.Canvas) ([]*ImplicitNod
 			return nil, err
 		}
 	}
+
 	if node.Data.Inputs.Body.BodyType == string(BodyTypeRawText) {
-		rawTextVars := extractBracesContent(node.Data.Inputs.Body.BodyData.Json)
+		rawTextVars := extractBracesContent(node.Data.Inputs.Body.BodyData.RawText)
 		err = extractDependenciesFromVars(rawTextVars)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	nodeID2ParentID := make(map[string]string)
+	for _, n := range canvas.Nodes {
+		if len(n.Blocks) > 0 {
+			for _, block := range n.Blocks {
+				nodeID2ParentID[block.ID] = n.ID
+			}
 		}
 	}
 
@@ -111,23 +124,78 @@ func extractImplicitDependency(node *vo.Node, canvas *vo.Canvas) ([]*ImplicitNod
 		if fNode == nil {
 			continue
 		}
-		tInfoMap := make(map[string]*vo.TypeInfo, len(node.Data.Outputs))
-		for _, vAny := range fNode.Data.Outputs {
-			v, err := vo.ParseVariable(vAny)
-			if err != nil {
-				return nil, err
+		intermediateVars := map[string]bool{}
+		tInfoMap := make(map[string]*vo.TypeInfo)
+		parentID, ok := nodeID2ParentID[node.ID]
+		if ok && parentID == fNode.ID {
+			// when referencing a composite node, the index field type is available by default
+			tInfoMap["index"] = &vo.TypeInfo{
+				Type: vo.DataTypeInteger,
 			}
-			tInfo, err := convert.CanvasVariableToTypeInfo(v)
-			if err != nil {
-				return nil, err
+			for _, p := range fNode.Data.Inputs.InputParameters {
+				tInfo, err := convert.CanvasBlockInputToTypeInfo(p.Input)
+				if err != nil {
+					return nil, err
+				}
+
+				if tInfo.Type != vo.DataTypeArray {
+					return nil, fmt.Errorf("when referencing a composite node, the input parameter must be an array type")
+				}
+				tInfoMap[p.Name] = tInfo.ElemTypeInfo
 			}
-			tInfoMap[v.Name] = tInfo
+
+			if fNode.Data.Inputs.Loop != nil {
+				for _, vAny := range fNode.Data.Inputs.Loop.VariableParameters {
+					v, err := convert.ParseParam(vAny)
+					if err != nil {
+						return nil, err
+					}
+					tInfo, err := convert.CanvasBlockInputToTypeInfo(v.Input)
+					if err != nil {
+						return nil, err
+					}
+					tInfoMap[v.Name] = tInfo
+
+					intermediateVars[v.Name] = true
+				}
+			}
+
+		} else if entity.NodeTypeMetas[entity.IDStrToNodeType(fNode.Type)].IsComposite {
+			for _, vAny := range fNode.Data.Outputs {
+				v, err := convert.ParseParam(vAny)
+				if err != nil {
+					return nil, err
+				}
+				tInfo, err := convert.CanvasBlockInputToTypeInfo(v.Input)
+				if err != nil {
+					return nil, err
+				}
+				tInfoMap[v.Name] = tInfo
+			}
+		} else {
+			for _, vAny := range fNode.Data.Outputs {
+				v, err := vo.ParseVariable(vAny)
+				if err != nil {
+					return nil, err
+				}
+				tInfo, err := convert.CanvasVariableToTypeInfo(v)
+				if err != nil {
+					return nil, err
+				}
+				tInfoMap[v.Name] = tInfo
+			}
 		}
+
 		tInfo, ok := getTypeInfoByPath(ds.FieldPath[0], ds.FieldPath[1:], tInfoMap)
 		if !ok {
 			return nil, fmt.Errorf("cannot find type info for dependency: %s", ds.FieldPath)
 		}
+
 		ds.TypeInfo = tInfo
+		if len(intermediateVars) > 0 {
+			ds.IsIntermediateVar = intermediateVars[strings.Join(ds.FieldPath, ".")]
+		}
+
 	}
 
 	return dependencies, nil
@@ -152,7 +220,7 @@ var globalVariableRegex = regexp.MustCompile(`global_variable_\w+\s*\["(.*?)"]`)
 func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, implicitNodeDependencies []*ImplicitNodeDependency) (err error) {
 	inputs := n.Data.Inputs
 	implicitPathVars := make(map[string]bool)
-	addImplicitVarsSources := func(prefix string, vars []string) error {
+	addImplicitVarsSources := func(prefix string, vars []string, parent *vo.Node) error {
 		for _, v := range vars {
 			if strings.HasPrefix(v, "block_output_") {
 				paths := strings.Split(strings.TrimPrefix(v, "block_output_"), ".")
@@ -167,7 +235,8 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 						}
 						implicitPathVars[pathValue] = true
 						ns.SetInputType(pathValue, dep.TypeInfo)
-						ns.AddInputSource(&vo.FieldInfo{
+
+						filedInfo := &vo.FieldInfo{
 							Path: []string{pathValue},
 							Source: vo.FieldSource{
 								Ref: &vo.Reference{
@@ -175,7 +244,12 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 									FromPath:    dep.FieldPath,
 								},
 							},
-						})
+						}
+
+						if dep.IsIntermediateVar && parent != nil {
+							filedInfo.Source.Ref.VariableType = ptr.Of(vo.ParentIntermediate)
+						}
+						ns.AddInputSource(filedInfo)
 					}
 				}
 			}
@@ -215,7 +289,7 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 	}
 
 	urlVars := extractBracesContent(inputs.APIInfo.URL)
-	err = addImplicitVarsSources("__apiInfo_url_", urlVars)
+	err = addImplicitVarsSources("__apiInfo_url_", urlVars, n.Parent())
 	if err != nil {
 		return err
 	}
@@ -304,13 +378,13 @@ func setHttpRequesterInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema, impl
 		ns.AddInputSource(sources...)
 	case BodyTypeJSON:
 		jsonVars := extractBracesContent(inputs.Body.BodyData.Json)
-		err = addImplicitVarsSources("__body_bodyData_json_", jsonVars)
+		err = addImplicitVarsSources("__body_bodyData_json_", jsonVars, n.Parent())
 		if err != nil {
 			return err
 		}
 	case BodyTypeRawText:
 		rawTextVars := extractBracesContent(inputs.Body.BodyData.RawText)
-		err = addImplicitVarsSources("__body_bodyData_rawText_", rawTextVars)
+		err = addImplicitVarsSources("__body_bodyData_rawText_", rawTextVars, n.Parent())
 		if err != nil {
 			return err
 		}
