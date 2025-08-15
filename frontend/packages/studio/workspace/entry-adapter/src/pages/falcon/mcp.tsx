@@ -71,13 +71,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .StopMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const unApplyService = useCallback(
@@ -86,13 +87,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .UnApplyMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const applyService = useCallback(
@@ -101,13 +103,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .ApplyMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const startService = useCallback(
@@ -116,13 +119,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .StartMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   const delService = useCallback(
@@ -131,13 +135,14 @@ export const FalconMcp: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .DeleteMCPResource({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getMcpListData();
         });
     },
-    [getMcpListData],
+    [getMcpListData, spaceId],
   );
 
   useEffect(() => {

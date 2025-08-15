@@ -61,6 +61,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
         mcpType: values.service_type,
         mcpInstallMethod: values.install_type,
         mcpConfig: values.service_config,
+        sassWorkspaceId: spaceId,
       };
       console.log('🚀 ~ handleSubmit ~ values:', subParams, values);
 
@@ -77,18 +78,22 @@ export const FalconMcpDetail = ({ spaceId }) => {
           setLoading(false);
         });
     },
-    [mcpId, page_type, navigate],
+    [mcpId, spaceId, page_type, navigate],
   );
 
   useEffect(() => {
-    aopApi.GetMCPTypeEnum().then(res => {
-      const list =
-        res.body.serviceInfoList.map(item => ({
-          label: item.typeName,
-          value: item.typeId,
-        })) || [];
-      setServiceTypeOptions(list);
-    });
+    aopApi
+      .GetMCPTypeEnum({
+        sassWorkspaceId: spaceId,
+      })
+      .then(res => {
+        const list =
+          res.body.serviceInfoList.map(item => ({
+            label: item.typeName,
+            value: item.typeId,
+          })) || [];
+        setServiceTypeOptions(list);
+      });
   }, []);
 
   useEffect(() => {
@@ -96,6 +101,7 @@ export const FalconMcpDetail = ({ spaceId }) => {
       aopApi
         .GetMCPResourceDetail({
           mcpId,
+          sassWorkspaceId: spaceId,
         })
         .then(res => {
           const data = res.body;

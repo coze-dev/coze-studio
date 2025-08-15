@@ -65,6 +65,11 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
   const pageNoRef = useRef(1);
   const allPageCountRef = useRef(1);
 
+  const resetFilter = () => {
+    setFilterType('');
+    setFilterQueryText('');
+  };
+
   const actionName = I18n.t(
     actionType === 'create'
       ? 'workspace_create'
@@ -88,6 +93,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
         pageNoRef.current++;
       } else {
         pageNoRef.current = 1;
+        setCardList([]);
       }
 
       setLoading(true);
@@ -130,13 +136,14 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .UnApplyCardResource({
           cardId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getCardListData();
         });
     },
-    [getCardListData],
+    [getCardListData, spaceId],
   );
 
   const applyService = useCallback(
@@ -145,13 +152,14 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .ApplyCardResource({
           cardId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getCardListData();
         });
     },
-    [getCardListData],
+    [getCardListData, spaceId],
   );
 
   const delService = useCallback(
@@ -160,13 +168,14 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .DeleteCardResource({
           cardId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getCardListData();
         });
     },
-    [getCardListData],
+    [getCardListData, spaceId],
   );
 
   const delServiceFromMe = useCallback(
@@ -175,13 +184,14 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
       aopApi
         .DeleteCardResourceFromMe({
           cardId,
+          sassWorkspaceId: spaceId,
         })
         .finally(() => {
           setSpinId('');
           getCardListData();
         });
     },
-    [getCardListData],
+    [getCardListData, spaceId],
   );
 
   const handleScroll = useCallback(() => {
@@ -199,32 +209,36 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
   }, [getCardListData]);
 
   useEffect(() => {
-    aopApi.GetCardTypeCount({}).then(res => {
-      const listData = res.body.cardClassList;
-      const allCount = listData.reduce(
-        (prev, curr) => prev + Number(curr.count),
-        0,
-      );
-      const list = [
-        {
-          label: I18n.t('All'),
-          value: '',
-          count: allCount || -1,
-        },
-        // {
-        //   label: I18n.t('All') + '测试',
-        //   value: '123',
-        //   count: 12,
-        // },
-        ...listData.map(item => ({
-          label: item.name,
-          value: item.id,
-          count: Number(item.count),
-        })),
-      ];
-      setTypeList(list);
-    });
-  }, []);
+    aopApi
+      .GetCardTypeCount({
+        sassWorkspaceId: spaceId,
+      })
+      .then(res => {
+        const listData = res.body.cardClassList;
+        const allCount = listData.reduce(
+          (prev, curr) => prev + Number(curr.count),
+          0,
+        );
+        const list = [
+          {
+            label: I18n.t('All'),
+            value: '',
+            count: allCount || -1,
+          },
+          // {
+          //   label: I18n.t('All') + '测试',
+          //   value: '123',
+          //   count: 12,
+          // },
+          ...listData.map(item => ({
+            label: item.name,
+            value: item.id,
+            count: Number(item.count),
+          })),
+        ];
+        setTypeList(list);
+      });
+  }, [spaceId]);
 
   return (
     <Layout>
@@ -236,6 +250,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
           type="button"
           value={groupType}
           onChange={e => {
+            resetFilter();
             setGroupType(e.target.value);
           }}
         >
@@ -346,7 +361,7 @@ export const FalconCard: FC<DevelopProps> = ({ spaceId }) => {
                               e?.stopPropagation();
                             }}
                           >
-                            进入编辑器
+                            编辑器
                           </div>,
                           item.cardShelfStatus === '0' && (
                             <Popconfirm

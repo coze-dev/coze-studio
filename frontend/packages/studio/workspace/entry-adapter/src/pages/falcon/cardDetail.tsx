@@ -4,7 +4,6 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { I18n } from '@coze-arch/i18n';
 import { Button, Breadcrumb, Form, Spin, Toast } from '@coze-arch/coze-design';
-import { getParamsFromQuery } from '../../../../../../arch/bot-utils';
 import { useParams } from 'react-router-dom';
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
 
@@ -32,12 +31,13 @@ export const FalconCardDetail = ({
     values => {
       const subParams = {
         cardId: info?.cardId,
-        cardCode: values.card_code,
+        code: values.card_code,
         cardName: values.card_name,
         picUrl:
           values.card_cover[0].response.body.path ||
           parseUrl(values.card_cover[0].url),
         cardClassId: values.card_type,
+        sassWorkspaceId: spaceId,
       };
 
       console.log('🚀 ~ handleSubmit ~ values:', subParams);
@@ -65,19 +65,23 @@ export const FalconCardDetail = ({
           });
       }
     },
-    [info?.cardId, isEdit, onSuccess],
+    [info?.cardId, isEdit, onSuccess, spaceId],
   );
 
   useEffect(() => {
-    aopApi.GetCardTypes().then(res => {
-      const list =
-        res.body.cardClassList.map(item => ({
-          label: item.name,
-          value: item.id,
-        })) || [];
-      setCardTypeOptions(list);
-    });
-  }, []);
+    aopApi
+      .GetCardTypes({
+        sassWorkspaceId: spaceId,
+      })
+      .then(res => {
+        const list =
+          res.body.cardClassList.map(item => ({
+            label: item.name,
+            value: item.id,
+          })) || [];
+        setCardTypeOptions(list);
+      });
+  }, [spaceId]);
 
   useEffect(() => {
     if (info?.cardId) {
