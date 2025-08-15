@@ -72,6 +72,8 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    # 启动服务
    cd docker
    cp .env.example .env
+
+   # 如果希望使用私有镜像仓库，取消`REGISTRY`行注释，同时把`REGISTRY`设置成私有镜像仓库地址，注意私有镜像仓库地址结尾不带`/`
    docker compose up -d
    ```
    **启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。

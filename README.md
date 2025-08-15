@@ -72,6 +72,10 @@ Deployment steps:
    # Start the service
    cd docker
    cp .env.example .env
+
+   # if you want to deploy with private docker registry, uncomment the line with `REGISTRY`,
+   # and set `REGISTRY` with your private docker registry without trailing slash.
+
    docker compose up -d
    ```
    For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
