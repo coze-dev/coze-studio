@@ -33,6 +33,15 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
+type EmbeddingConfig = ark.EmbeddingConfig
+
+type APIType = ark.APIType
+
+const (
+	APITypeText               = ark.APITypeText
+	APITypeMultiModal APIType = ark.APITypeMultiModal
+)
+
 func NewArkEmbedder(ctx context.Context, config *ark.EmbeddingConfig, dimensions int64, batchSize int) (contract.Embedder, error) {
 	emb, err := ark.NewEmbedder(ctx, config)
 	if err != nil {
