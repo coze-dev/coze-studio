@@ -3618,13 +3618,13 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 		v.Type = vo.VariableTypeBoolean
 	case workflow.ParameterType_Array:
 		v.Type = vo.VariableTypeList
-		if len(p.SubParameters) == 1 {
+		if len(p.SubParameters) == 1 && p.SubType != nil && *p.SubType != workflow.ParameterType_Object {
 			av, err := toVariable(p.SubParameters[0])
 			if err != nil {
 				return nil, err
 			}
 			v.Schema = &av
-		} else if len(p.SubParameters) > 1 {
+		} else {
 			subVs := make([]any, 0)
 			for _, ap := range p.SubParameters {
 				av, err := toVariable(ap)
