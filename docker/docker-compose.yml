@@ -246,8 +246,9 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - coze-network
-
+     coze-network:
+       aliases:
+         - etcd
   milvus:
     container_name: coze-milvus
     image: milvusdb/milvus:v2.5.10
@@ -257,6 +258,13 @@ services:
     env_file: *env_file
     command: >
       bash -c "
+        # 禁用代理环境变量
+        unset http_proxy
+        unset https_proxy
+        unset HTTP_PROXY
+        unset HTTPS_PROXY
+        unset no_proxy
+        unset NO_PROXY
         # Set proper permissions for data directories
         chown -R root:root /var/lib/milvus
         chmod g+s /var/lib/milvus
@@ -291,6 +299,7 @@ services:
         condition: service_healthy
     networks:
       - coze-network
+    
   nsqlookupd:
     image: nsqio/nsq:v1.2.1
     container_name: coze-nsqlookupd
@@ -349,6 +358,13 @@ services:
     restart: always
     container_name: coze-server
     env_file: *env_file
+    environment:
+      - http_proxy=
+      - https_proxy=
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - no_proxy=localhost,127.0.0.1,minio,mysql,redis,elasticsearch,etcd
+      - NO_PROXY=localhost,127.0.0.1,minio,mysql,redis,elasticsearch,etcd
     # environment:
     #   LISTEN_ADDR: 0.0.0.0:8888
     networks:

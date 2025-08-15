@@ -1,0 +1,29 @@
+{
+    "test_config": {
+        "base_url": "http://172.31.114.205:8888",
+        "workflow_id": "7538347491373088768",
+        "min_concurrent": 20,
+        "max_concurrent": 1000,
+        "concurrent_step": 50,
+        "step_duration": 60,
+        "step_interval": 15
+    },
+    "overall_metrics": {
+        "total_requests": 20831,
+        "successful_requests": 20029,
+        "failed_requests": 802,
+        "success_rate": 96.14,
+        "throughput_rpm": 347.18,
+        "response_time": {
+            "min": .009246364,
+            "max": 5.014151113,
+            "average": 3.272,
+            "p50": 3.361859600,
+            "p90": 3.556897276,
+            "p95": 3.654738409,
+            "p99": 3.986400013
+        }
+    },
+    "step_details": [{"step":1,"concurrent":20,"success":355,"failure":10,"success_rate":97.26,"throughput":5.79,"duration":63},{"step":2,"concurrent":70,"success":1153,"failure":48,"success_rate":96.00,"throughput":19.06,"duration":63},{"step":3,"concurrent":120,"success":1442,"failure":41,"success_rate":97.23,"throughput":23.53,"duration":63},{"step":4,"concurrent":170,"success":1365,"failure":56,"success_rate":96.05,"throughput":22.55,"duration":63},{"step":5,"concurrent":220,"success":1301,"failure":48,"success_rate":96.44,"throughput":21.41,"duration":63},{"step":6,"concurrent":270,"success":1210,"failure":59,"success_rate":95.35,"throughput":20.14,"duration":63},{"step":7,"concurrent":320,"success":1186,"failure":36,"success_rate":97.05,"throughput":19.39,"duration":63},{"step":8,"concurrent":370,"success":1121,"failure":49,"success_rate":95.81,"throughput":18.57,"duration":63},{"step":9,"concurrent":420,"success":1042,"failure":42,"success_rate":96.12,"throughput":17.20,"duration":63},{"step":10,"concurrent":470,"success":1052,"failure":37,"success_rate":96.60,"throughput":17.28,"duration":63},{"step":11,"concurrent":520,"success":1012,"failure":50,"success_rate":95.29,"throughput":16.85,"duration":63},{"step":12,"concurrent":570,"success":984,"failure":44,"success_rate":95.71,"throughput":16.31,"duration":63},{"step":13,"concurrent":620,"success":925,"failure":43,"success_rate":95.55,"throughput":15.36,"duration":63},{"step":14,"concurrent":670,"success":885,"failure":37,"success_rate":95.98,"throughput":14.63,"duration":63},{"step":15,"concurrent":720,"success":865,"failure":36,"success_rate":96.00,"throughput":14.30,"duration":63},{"step":16,"concurrent":770,"success":852,"failure":31,"success_rate":96.48,"throughput":14.01,"duration":63},{"step":17,"concurrent":820,"success":830,"failure":42,"success_rate":95.18,"throughput":13.84,"duration":63},{"step":18,"concurrent":870,"success":821,"failure":36,"success_rate":95.79,"throughput":13.60,"duration":63},{"step":19,"concurrent":920,"success":822,"failure":27,"success_rate":96.81,"throughput":13.47,"duration":63},{"step":20,"concurrent":970,"success":806,"failure":30,"success_rate":96.41,"throughput":13.26,"duration":63}],
+    "test_timestamp": "2025-08-14T18:24:21+0800"
+}

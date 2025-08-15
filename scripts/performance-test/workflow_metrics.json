@@ -1,0 +1,26 @@
+{
+    "test_config": {
+        "base_url": "http://172.31.114.205:8888",
+        "workflow_id": "7538251939654402048",
+        "concurrent_users": 10,
+        "total_requests": 100,
+        "test_duration": 300
+    },
+    "performance_metrics": {
+        "total_requests": 10,
+        "successful_requests": 10,
+        "failed_requests": 0,
+        "success_rate": 100.00,
+        "throughput_rpm": .16,
+        "response_time": {
+            "min": 1.131326049,
+            "max": 1.237098691,
+            "average": 1.152,
+            "p50": 1.139878514,
+            "p90": 1.237098691,
+            "p95": 1.237098691,
+            "p99": 1.237098691
+        }
+    },
+    "test_timestamp": "2025-08-14T14:10:21+0800"
+}

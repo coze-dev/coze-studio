@@ -1,0 +1,87 @@
+=== 系统资源快速检查 ===
+时间: Wed Aug 13 15:07:57 CST 2025
+
+CPU 信息:
+CPU(s):                8
+On-line CPU(s) list:   0-7
+Thread(s) per core:    2
+Core(s) per socket:    4
+Model name:            Intel Core Processor (Skylake)
+NUMA node0 CPU(s):     0-7
+
+内存信息:
+              total        used        free      shared  buff/cache   available
+Mem:            15G        3.5G        6.5G        768M        5.5G         10G
+Swap:            0B          0B          0B
+
+磁盘信息:
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        7.8G     0  7.8G   0% /dev
+tmpfs           7.8G     0  7.8G   0% /dev/shm
+tmpfs           7.8G  769M  7.1G  10% /run
+tmpfs           7.8G     0  7.8G   0% /sys/fs/cgroup
+/dev/vda2        49G  6.6G   43G  14% /
+/dev/vda1      1014M  171M  844M  17% /boot
+/dev/vdb1       200G  6.2G  194G   4% /data
+tmpfs           1.6G     0  1.6G   0% /run/user/0
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/f980afc42038dda6a416ae75f6322c25f2adba00d0051299e217452bc44ecefe/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/415ff12a6a45b8f7472745740520475a36d01c18a878ad6c010af1d5c6556f44/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/1a7c51768f00fdb35d5b147408ed5df27745766689f8c87a6ee2a509024c8904/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/c03921145ae96e3e031b2c5593689ffb09ec34d018e46ecf5d1ce9d4944f035c/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/b97094657fa4c0d1f46b95bc152f15be137d7e12d1d094328f9d7e1ee1248383/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/d9c8eb16ded1e8b24429cc96c996d6a9f6436a3b675297d71f467561c468b8fd/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/3092e5c4ffc7793d28b529b89880a6d83a6118368ab9a9a2316a63399c3d64c4/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/8c4277409e2d24a47a4ada7aff64cf6703c485a4682b91eab0fa703e4a6c63d8/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/c67b572211beeb8e3386435f34a1cdff188a4168f87ca27700fff2fd80564de3/merged
+overlay         200G  6.2G  194G   4% /data/docker/data/overlay2/907cfdf34eff95b90d8c7acc98a4f3a80e54d8bef0decc9ec13704faad9997be/merged
+
+负载信息:
+ 15:07:57 up 8 days,  1:06,  0 users,  load average: 0.36, 1.36, 0.96
+
+网络接口:
+4865: veth9a6d7a2@if4864: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::28de:89ff:fe93:9ef2/64 scope link 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    inet 172.31.114.205/24 brd 172.31.114.255 scope global noprefixroute dynamic eth0
+    inet6 fe80::f816:3eff:fe2b:1c86/64 scope link 
+4867: vethc6d2339@if4866: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::44de:49ff:fe6d:b8a7/64 scope link 
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+4869: veth679dc88@if4868: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::a4ca:dff:feb4:93be/64 scope link 
+4871: veth59b8e96@if4870: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::3cea:86ff:fe8b:2639/64 scope link 
+4663: br-abd1b47bd842: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    inet 172.23.0.1/16 brd 172.23.255.255 scope global br-abd1b47bd842
+    inet6 fe80::42:b7ff:fe0d:9469/64 scope link 
+4853: veth00e8957@if4852: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::d482:37ff:fe5f:245c/64 scope link 
+4855: veth0390209@if4854: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::bcfe:4cff:fee3:5e51/64 scope link 
+4857: veth65471b2@if4856: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::dc22:34ff:fed8:5271/64 scope link 
+4859: veth7696b44@if4858: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::60:33ff:fe41:12a9/64 scope link 
+4861: veth1b600ea@if4860: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::e89b:f0ff:fe70:8cd6/64 scope link 
+4863: veth4089644@if4862: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-abd1b47bd842 state UP group default 
+    inet6 fe80::9887:85ff:fe64:a364/64 scope link 
+
+Docker 容器状态:
+NAMES                STATUS                         PORTS
+coze-web             Up 5 minutes                   8888/tcp, 0.0.0.0:8888->80/tcp, :::8888->80/tcp
+coze-server          Restarting (2) 3 seconds ago   
+coze-milvus          Up 5 minutes (healthy)         0.0.0.0:32780->9091/tcp, :::32780->9091/tcp, 0.0.0.0:32778->19530/tcp, :::32778->19530/tcp
+coze-nsqadmin        Up 5 minutes                   4150-4151/tcp, 4160-4161/tcp, 4170/tcp, 0.0.0.0:32773->4171/tcp, :::32773->4171/tcp
+coze-nsqd            Up 5 minutes (healthy)         4160-4161/tcp, 4170-4171/tcp, 0.0.0.0:32779->4150/tcp, :::32779->4150/tcp, 0.0.0.0:32776->4151/tcp, :::32776->4151/tcp
+coze-minio           Up 5 minutes (healthy)         0.0.0.0:32775->9000/tcp, :::32775->9000/tcp, 0.0.0.0:32774->9001/tcp, :::32774->9001/tcp
+coze-mysql           Up 5 minutes (healthy)         33060/tcp, 0.0.0.0:32777->3306/tcp, :::32777->3306/tcp
+coze-nsqlookupd      Up 5 minutes (healthy)         4150-4151/tcp, 4170-4171/tcp, 0.0.0.0:32772->4160/tcp, :::32772->4160/tcp, 0.0.0.0:32771->4161/tcp, :::32771->4161/tcp
+coze-elasticsearch   Up 5 minutes (healthy)         9300/tcp, 0.0.0.0:32769->9200/tcp, :::32769->9200/tcp
+coze-redis           Up 5 minutes (healthy)         0.0.0.0:32770->6379/tcp, :::32770->6379/tcp
+coze-etcd            Up 5 minutes (healthy)         0.0.0.0:2379-2380->2379-2380/tcp, :::2379-2380->2379-2380/tcp
+
