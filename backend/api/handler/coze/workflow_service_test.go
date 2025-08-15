@@ -4655,7 +4655,7 @@ func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
 	})
 }
 
-func TestSetAppVariablesFOrSubProcesses(t *testing.T) {
+func TestSetAppVariablesForSubProcesses(t *testing.T) {
 	mockey.PatchConvey("app variables for sub_process", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
@@ -4668,6 +4668,82 @@ func TestSetAppVariablesFOrSubProcesses(t *testing.T) {
 
 		assert.Equal(t, result, map[string]any{
 			"output": "ax",
+		})
+
+	})
+}
+
+func TestHttpImplicitDependencies(t *testing.T) {
+	mockey.PatchConvey("test http implicit dependencies", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return("1.0", nil).AnyTimes()
+
+		idStr := r.load("httprequester/http_implicit_dependencies.json")
+
+		r.publish(idStr, "v0.0.1", true)
+
+		runner := mockcode.NewMockRunner(r.ctrl)
+		runner.EXPECT().Run(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, request *coderunner.RunRequest) (*coderunner.RunResponse, error) {
+			in := request.Params["input"]
+			_ = in
+			result := make(map[string]any)
+			err := sonic.UnmarshalString(in.(string), &result)
+			if err != nil {
+				return nil, err
+			}
+
+			return &coderunner.RunResponse{
+				Result: result,
+			}, nil
+		}).AnyTimes()
+
+		code.SetCodeRunner(runner)
+
+		mockey.PatchConvey("test http node implicit dependencies", func() {
+			input := map[string]string{
+				"input": "a",
+			}
+			result, _ := r.openapiSyncRun(idStr, input)
+
+			batchRets := result["batch"].([]any)
+			loopRets := result["loop"].([]any)
+
+			for _, r := range batchRets {
+				assert.Contains(t, []any{
+					"http://echo.apifox.com/anything?aa=1.0&cc=1",
+					"http://echo.apifox.com/anything?aa=1.0&cc=2",
+				}, r)
+			}
+			for _, r := range loopRets {
+				assert.Contains(t, []any{
+					"http://echo.apifox.com/anything?a=1&m=123",
+					"http://echo.apifox.com/anything?a=2&m=123",
+				}, r)
+			}
+
+		})
+
+		mockey.PatchConvey("node debug http node implicit dependencies", func() {
+			exeID := r.nodeDebug(idStr, "109387",
+				withNDInput(map[string]string{
+					"__apiInfo_url_87fc7c69536cae843fa7f5113cf0067b":        "m",
+					"__apiInfo_url_ac86361e3cd503952e71986dc091fa6f":        "a",
+					"__body_bodyData_json_ac86361e3cd503952e71986dc091fa6f": "b",
+					"__body_bodyData_json_f77817a7cf8441279e1cfd8af4eeb1da": "1",
+				}))
+
+			e := r.getProcess(idStr, exeID, withSpecificNodeID("109387"))
+			e.assertSuccess()
+
+			ret := make(map[string]any)
+			err := sonic.UnmarshalString(e.output, &ret)
+			assert.Nil(t, err)
+			err = sonic.UnmarshalString(ret["body"].(string), &ret)
+			assert.Nil(t, err)
+			assert.Equal(t, ret["url"].(string), "http://echo.apifox.com/anything?a=a&m=m")
+
 		})
 
 	})
