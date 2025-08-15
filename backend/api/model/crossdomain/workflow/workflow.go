@@ -32,29 +32,30 @@ const (
 )
 
 type ExecuteConfig struct {
-	ID                  int64
-	From                Locator
-	Version             string
-	CommitID            string
-	Operator            int64
-	Mode                ExecuteMode
-	AppID               *int64
-	AgentID             *int64
-	ConnectorID         int64
-	ConnectorUID        string
-	TaskType            TaskType
-	SyncPattern         SyncPattern
-	InputFailFast       bool // whether to fail fast if input conversion has warnings
-	BizType             BizType
-	Cancellable         bool
-	WorkflowMode        WorkflowMode
-	RoundID             *int64 // if workflow is chat flow, conversation round id is required
-	InitRoundID         *int64 // if workflow is chat flow, init conversation round id is required
-	ConversationID      *int64 // if workflow is chat flow, conversation id is required
-	UserMessage         *schema.Message
-	ConversationHistory []*conversation.Message
-	SectionID           *int64
-	MaxHistoryRounds    *int32
+	ID                                int64
+	From                              Locator
+	Version                           string
+	CommitID                          string
+	Operator                          int64
+	Mode                              ExecuteMode
+	AppID                             *int64
+	AgentID                           *int64
+	ConnectorID                       int64
+	ConnectorUID                      string
+	TaskType                          TaskType
+	SyncPattern                       SyncPattern
+	InputFailFast                     bool // whether to fail fast if input conversion has warnings
+	BizType                           BizType
+	Cancellable                       bool
+	WorkflowMode                      WorkflowMode
+	RoundID                           *int64 // if workflow is chat flow, conversation round id is required
+	InitRoundID                       *int64 // if workflow is chat flow, init conversation round id is required
+	ConversationID                    *int64 // if workflow is chat flow, conversation id is required
+	UserMessage                       *schema.Message
+	ConversationHistory               []*conversation.Message
+	ConversationHistorySchemaMessages []*schema.Message
+	SectionID                         *int64
+	MaxHistoryRounds                  *int32
 }
 
 type ExecuteMode string

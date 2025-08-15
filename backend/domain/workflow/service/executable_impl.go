@@ -318,12 +318,19 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 	}
 
 	if historyRounds > 0 {
-		messages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		messages, scMessages, err := i.prefetchChatHistory(ctx, config, historyRounds)
 		if err != nil {
 			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
-		} else if len(messages) > 0 || messages != nil {
+		}
+
+		if len(messages) > 0 {
 			config.ConversationHistory = messages
 		}
+
+		if len(scMessages) > 0 {
+			config.ConversationHistorySchemaMessages = scMessages
+		}
+
 	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
@@ -419,12 +426,19 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 	}
 
 	if historyRounds > 0 {
-		messages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		messages, scMessages, err := i.prefetchChatHistory(ctx, config, historyRounds)
 		if err != nil {
 			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
-		} else if len(messages) > 0 || messages != nil {
+		}
+
+		if len(messages) > 0 {
 			config.ConversationHistory = messages
 		}
+
+		if len(scMessages) > 0 {
+			config.ConversationHistorySchemaMessages = scMessages
+		}
+
 	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
@@ -997,7 +1011,7 @@ func (i *impl) calculateMaxChatHistoryRounds(ctx context.Context, wfEntity *enti
 	return min(maxRounds, maxHistoryRounds), nil
 }
 
-func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*conversation.Message, error) {
+func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*conversation.Message, []*schema.Message, error) {
 	convID := config.ConversationID
 	agentID := config.AgentID
 	appID := config.AppID
@@ -1005,12 +1019,12 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 	sectionID := config.SectionID
 	if sectionID == nil {
 		logs.CtxWarnf(ctx, "SectionID is nil, skipping chat history")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if convID == nil || *convID == 0 {
 		logs.CtxWarnf(ctx, "ConversationID is 0 or nil, skipping chat history")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	var resolvedAppID int64
@@ -1020,7 +1034,7 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 		resolvedAppID = *agentID
 	} else {
 		logs.CtxWarnf(ctx, "AppID and AgentID are both nil, skipping chat history")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	runIdsReq := &conversation.GetLatestRunIDsRequest{
@@ -1034,16 +1048,16 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 	manager := conversation.GetConversationManager()
 	if manager == nil {
 		logs.CtxWarnf(ctx, "ConversationManager is nil, skipping chat history")
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	runIds, err := manager.GetLatestRunIDs(ctx, runIdsReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to get latest run ids: %v", err)
-		return nil, nil
+		return nil, nil, nil
 	}
 	if len(runIds) <= 1 {
-		return []*conversation.Message{}, nil
+		return []*conversation.Message{}, []*schema.Message{}, nil
 	}
 	runIds = runIds[1:]
 
@@ -1053,7 +1067,8 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to get messages by run ids: %v", err)
-		return nil, nil
+		return nil, nil, nil
 	}
-	return response.Messages, nil
+
+	return response.Messages, response.SchemaMessages, nil
 }
