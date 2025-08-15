@@ -80,6 +80,7 @@ type Content struct {
 	Type message.InputType `json:"type"`
 	Text *string           `json:"text,omitempty"`
 	Uri  *string           `json:"uri,omitempty"`
+	Url  *string           `json:"url,omitempty"`
 }
 
 type Message struct {
@@ -123,7 +124,8 @@ type GetMessagesByRunIDsRequest struct {
 }
 
 type GetMessagesByRunIDsResponse struct {
-	Messages []*Message
+	Messages       []*Message
+	SchemaMessages []*schema.Message
 }
 
 //go:generate  mockgen -destination conversationmock/conversation_mock.go --package conversationmock -source conversation.go

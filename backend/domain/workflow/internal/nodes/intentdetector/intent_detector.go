@@ -344,9 +344,11 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 	}
 
 	var messages []*conversation.Message
+	var scMessages []*schema.Message
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx != nil {
 		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
 	}
 
 	if len(messages) == 0 {
@@ -384,7 +386,8 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
+
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
 	ret := map[string]any{
 		"chatHistory": historyMessages,
