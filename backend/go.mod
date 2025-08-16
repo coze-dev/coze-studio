@@ -74,7 +74,7 @@ require (
 	github.com/yuin/goldmark v1.4.13
 	golang.org/x/image v0.22.0
 	golang.org/x/oauth2 v0.23.0
-	google.golang.org/genai v1.13.0
+	google.golang.org/genai v1.18.0
 )
 
 require (
@@ -85,6 +85,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.18 // indirect
+	github.com/cloudwego/eino-ext/components/embedding/gemini v0.0.0-20250814083140-54b99ff82f8e // indirect
 	github.com/cloudwego/gopkg v0.1.4 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
