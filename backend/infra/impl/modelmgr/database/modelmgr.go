@@ -178,7 +178,7 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 // listModelsBySpace 根据空间ID查询模型列表
 func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	logs.Infof("listModelsBySpace called with spaceID: %d", *req.SpaceID)
-	
+
 	// 首先查询空间中的模型实体
 	spaceModelQuery := m.db.WithContext(ctx).
 		Table("space_model sm").
@@ -509,14 +509,24 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 				case string:
 					// 如果是字符串，尝试解析为 duration
 					if d, err := time.ParseDuration(v); err == nil {
-						configMap["timeout"] = int64(d)
+						// 如果超时小于30秒，设置为300秒
+						if d < 30*time.Second {
+							configMap["timeout"] = int64(300 * time.Second)
+						} else {
+							configMap["timeout"] = int64(d)
+						}
 					} else {
 						// 如果解析失败，删除该字段
 						delete(configMap, "timeout")
 					}
 				case float64:
 					// 如果是数字，假设是秒数，转换为纳秒
-					configMap["timeout"] = int64(v * float64(time.Second))
+					// 如果超时小于30秒，设置为300秒
+					if v < 30 {
+						configMap["timeout"] = int64(300 * time.Second)
+					} else {
+						configMap["timeout"] = int64(v * float64(time.Second))
+					}
 				}
 			}
 
