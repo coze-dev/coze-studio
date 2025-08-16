@@ -516,8 +516,11 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			geminiEmbeddingModel = "gemini-embedding-001"
 		}
 
-		if len(geminiEmbeddingBackend) == 0 || geminiEmbeddingBackend == "0" {
+		if len(geminiEmbeddingBackend) == 0 {
 			geminiEmbeddingBackend = "1"
+		}
+		if geminiEmbeddingBackend != "1" && geminiEmbeddingBackend != "2" {
+			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_BACKEND value: %s (must be \"1\" or \"2\")", geminiEmbeddingBackend)
 		}
 		backend, convErr := strconv.ParseInt(geminiEmbeddingBackend, 10, 64)
 		if convErr != nil {
