@@ -503,18 +503,40 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		}
 	case "gemini":
 		var (
-			geminiEmbeddingModel  = os.Getenv("GEMINI_EMBEDDING_MODEL")
-			geminiEmbeddingApiKey = os.Getenv("GEMINI_EMBEDDING_API_KEY")
-			geminiEmbeddingDims   = os.Getenv("GEMINI_EMBEDDING_DIMS")
+			geminiEmbeddingBaseURL  = os.Getenv("GEMINI_EMBEDDING_BASE_URL")
+			geminiEmbeddingModel    = os.Getenv("GEMINI_EMBEDDING_MODEL")
+			geminiEmbeddingApiKey   = os.Getenv("GEMINI_EMBEDDING_API_KEY")
+			geminiEmbeddingDims     = os.Getenv("GEMINI_EMBEDDING_DIMS")
+			geminiEmbeddingBackend  = os.Getenv("GEMINI_EMBEDDING_BACKEND")
+			geminiEmbeddingProject  = os.Getenv("GEMINI_EMBEDDING_PROJECT")
+			geminiEmbeddingLocation = os.Getenv("GEMINI_EMBEDDING_LOCATION")
 		)
 
-		dims, err := strconv.ParseInt(geminiEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init gemini embedding dims failed, err=%w", err)
+		if len(geminiEmbeddingModel) == 0 {
+			geminiEmbeddingModel = "gemini-embedding-001"
+		}
+
+		if len(geminiEmbeddingBackend) == 0 || geminiEmbeddingBackend == "0" {
+			geminiEmbeddingBackend = "1"
+		}
+		backend, convErr := strconv.ParseInt(geminiEmbeddingBackend, 10, 64)
+		if convErr != nil {
+			return nil, convErr
+		}
+
+		dims, convErr := strconv.ParseInt(geminiEmbeddingDims, 10, 64)
+		if convErr != nil {
+			return nil, fmt.Errorf("init gemini embedding dims failed, err=%w", convErr)
 		}
 
 		geminiCli, err := genai.NewClient(ctx, &genai.ClientConfig{
-			APIKey: geminiEmbeddingApiKey,
+			APIKey:   geminiEmbeddingApiKey,
+			Backend:  genai.Backend(backend),
+			Project:  geminiEmbeddingProject,
+			Location: geminiEmbeddingLocation,
+			HTTPOptions: genai.HTTPOptions{
+				BaseURL: geminiEmbeddingBaseURL,
+			},
 		})
 		if err != nil {
 			return nil, fmt.Errorf("init gemini client failed, err=%w", err)
