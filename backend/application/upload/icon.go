@@ -67,7 +67,7 @@ import (
 func InitService(components *UploadComponents) {
 	SVC.cache = components.Cache
 	SVC.oss = components.Oss
-	SVC.svc = service.NewUploadSVC(components.DB, components.Idgen)
+	SVC.svc = service.NewUploadSVC(components.DB, components.Idgen, components.Oss)
 }
 
 type UploadComponents struct {
