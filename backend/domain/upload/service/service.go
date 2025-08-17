@@ -23,6 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/upload/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -30,10 +31,11 @@ import (
 type uploadSVC struct {
 	fileRepo repository.FilesRepo
 	idgen    idgen.IDGenerator
+	oss      storage.Storage
 }
 
-func NewUploadSVC(db *gorm.DB, idgen idgen.IDGenerator) UploadService {
-	return &uploadSVC{fileRepo: repository.NewFilesRepo(db), idgen: idgen}
+func NewUploadSVC(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) UploadService {
+	return &uploadSVC{fileRepo: repository.NewFilesRepo(db), idgen: idgen, oss: oss}
 }
 
 func (u *uploadSVC) UploadFile(ctx context.Context, req *UploadFileRequest) (resp *UploadFileResponse, err error) {
@@ -84,6 +86,12 @@ func (u *uploadSVC) GetFile(ctx context.Context, req *GetFileRequest) (resp *Get
 	resp.File, err = u.fileRepo.GetByID(ctx, req.ID)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrUploadSystemErrorCode)
+	}
+	if resp.File != nil {
+		url, err := u.oss.GetObjectUrl(ctx, resp.File.TosURI)
+		if err == nil {
+			resp.File.Url = url
+		}
 	}
 	return
 }
