@@ -71,24 +71,26 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	return dao.messagePO2DO(poData), nil
 }
 
-func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error) {
+func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
+	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(listMeta.ConversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
 
-	if messageType != nil {
-		do = do.Where(m.MessageType.Eq(string(*messageType)))
+	if len(listMeta.MessageType) > 0 {
+		do = do.Where(m.MessageType.In(slices.Transform(listMeta.MessageType, func(t *message.MessageType) string {
+			return string(*t)
+		})...))
 	}
 
-	if limit > 0 {
-		do = do.Limit(int(limit) + 1)
+	if listMeta.Limit > 0 {
+		do = do.Limit(int(listMeta.Limit) + 1)
 	}
 
-	if cursor > 0 {
-		msg, err := m.Where(m.ID.Eq(cursor)).First()
+	if listMeta.Cursor > 0 {
+		msg, err := m.Where(m.ID.Eq(listMeta.Cursor)).First()
 		if err != nil {
 			return nil, false, err
 		}
-		if direction == entity.ScrollPageDirectionPrev {
+		if listMeta.Direction == entity.ScrollPageDirectionPrev {
 			do = do.Where(m.CreatedAt.Lt(msg.CreatedAt))
 			do = do.Order(m.CreatedAt.Desc())
 		} else {
@@ -110,9 +112,9 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int
 		return nil, false, err
 	}
 
-	if len(messageList) > limit {
+	if len(messageList) > int(listMeta.Limit) {
 		hasMore = true
-		messageList = messageList[:limit]
+		messageList = messageList[:int(listMeta.Limit)]
 	}
 
 	return dao.batchMessagePO2DO(messageList), hasMore, nil
