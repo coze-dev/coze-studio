@@ -52,9 +52,9 @@ func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.
 
 func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
 	resp := &entity.ListResult{}
-
+	req.MessageType = []*message.MessageType{ptr.Of(message.MessageTypeQuestion)}
 	// get message with query
-	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req)
 	if err != nil {
 		return resp, err
 	}
@@ -83,6 +83,18 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 		}
 		resp.Messages = allMessageList
 	}
+	return resp, nil
+}
+
+func (m *messageImpl) ListWithoutPair(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
+	resp := &entity.ListResult{}
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req)
+	if err != nil {
+		return resp, err
+	}
+	resp.Direction = req.Direction
+	resp.HasMore = hasMore
+	resp.Messages = messageList
 	return resp, nil
 }
 
