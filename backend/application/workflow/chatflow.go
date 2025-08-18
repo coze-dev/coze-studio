@@ -859,7 +859,6 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 			AgentID:        appID,
 			UserID:         strconv.FormatInt(userID, 10),
 			RunID:          roundID,
-			Content:        msg.Content,
 			ContentType:    message.ContentTypeMix,
 			MultiContent:   make([]*message.InputMetaData, 0, len(contents)),
 			SectionID:      sectionID,
@@ -1020,34 +1019,34 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 		outputCount     int32
 		inputCount      int32
 	)
-	var createOrUpdateMessage = func(msg string, role schema.RoleType, contentType message.ContentType) error {
-		entityMessage := &message.Message{
-			AgentID:        appID,
-			RunID:          roundID,
-			SectionID:      sectionID,
-			Content:        msg,
-			ConversationID: conversationID,
-			ContentType:    contentType,
-			Role:           role,
-			MessageType:    message.MessageTypeAnswer,
-		}
-		if hasFirstMessage {
-			entityMessage.ID = messageID
-			_, err := crossmessage.DefaultSVC().Edit(ctx, entityMessage)
-			if err != nil {
-				return err
-			}
-		} else {
-			m, err := crossmessage.DefaultSVC().Create(ctx, entityMessage)
-			if err != nil {
-				return err
-			}
-			messageID = m.ID
-			hasFirstMessage = true
-		}
-		return nil
-
-	}
+	//var createOrUpdateMessage = func(msg string, role schema.RoleType, contentType message.ContentType) error {
+	//	entityMessage := &message.Message{
+	//		AgentID:        appID,
+	//		RunID:          roundID,
+	//		SectionID:      sectionID,
+	//		Content:        msg,
+	//		ConversationID: conversationID,
+	//		ContentType:    contentType,
+	//		Role:           role,
+	//		MessageType:    message.MessageTypeAnswer,
+	//	}
+	//	if hasFirstMessage {
+	//		entityMessage.ID = messageID
+	//		_, err := crossmessage.DefaultSVC().Edit(ctx, entityMessage)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	} else {
+	//		m, err := crossmessage.DefaultSVC().Create(ctx, entityMessage)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		messageID = m.ID
+	//		hasFirstMessage = true
+	//	}
+	//	return nil
+	//
+	//}
 
 	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
 		if msg.StateMessage != nil {
@@ -1255,7 +1254,42 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			}
 
 			messageOutput += msg.Content
-			err = createOrUpdateMessage(messageOutput, dataMessage.Role, contentType)
+			if !hasFirstMessage {
+				entityMessage := &message.Message{
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					Content:        messageOutput,
+					ConversationID: conversationID,
+					ContentType:    contentType,
+					Role:           dataMessage.Role,
+					MessageType:    message.MessageTypeAnswer,
+				}
+				m, err := crossmessage.DefaultSVC().PreCreate(ctx, entityMessage)
+				if err != nil {
+					return nil, err
+				}
+				messageID = m.ID
+				hasFirstMessage = true
+			}
+			if msg.Last {
+				entityMessage := &message.Message{
+					ID:             messageID,
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					Content:        messageOutput,
+					ConversationID: conversationID,
+					ContentType:    contentType,
+					Role:           dataMessage.Role,
+					MessageType:    message.MessageTypeAnswer,
+				}
+				_, err := crossmessage.DefaultSVC().Create(ctx, entityMessage)
+				if err != nil {
+					return nil, err
+				}
+			}
+			//err = createOrUpdateMessage(messageOutput, dataMessage.Role, contentType)
 			if err != nil {
 				return nil, err
 			}
