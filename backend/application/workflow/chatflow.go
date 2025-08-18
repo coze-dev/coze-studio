@@ -34,6 +34,7 @@ import (
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -633,7 +634,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	}
 
-	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, messages[:len(req.GetAdditionalMessages())-1])
+	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
 	if err != nil {
 		return nil, err
 	}
@@ -740,21 +741,29 @@ func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message 
 	}
 
 }
-func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
+func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID, connectorID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
 
 	var (
-		rID int64
-		err error
+		rID       int64
+		err       error
+		runRecord *agententity.RunRecordMeta
 	)
 
 	historyMessages := make([]*message.Message, 0, len(messages))
 
 	for _, msg := range messages {
 		if msg.Role == userRole {
-			rID, err = w.IDGenerator.GenID(ctx)
+			runRecord, err = crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
+				AgentID:        appID,
+				ConversationID: conversationID,
+				UserID:         strconv.FormatInt(userID, 10),
+				ConnectorID:    connectorID,
+				SectionID:      sectionID,
+			})
 			if err != nil {
 				return nil, err
 			}
+			rID = runRecord.ID
 		} else if msg.Role == assistantRole && rID == 0 {
 			continue
 		} else {
@@ -817,7 +826,7 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	}, nil
 }
 
-func toConversationMessage(_ context.Context, appID, cid, userID, roundID, sectionID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
+func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sectionID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
 	type content struct {
 		Type   string  `json:"type"`
 		FileID *string `json:"file_id"`
@@ -847,6 +856,7 @@ func toConversationMessage(_ context.Context, appID, cid, userID, roundID, secti
 			Role:           schema.User,
 			MessageType:    messageType,
 			ConversationID: cid,
+			AgentID:        appID,
 			UserID:         strconv.FormatInt(userID, 10),
 			RunID:          roundID,
 			Content:        msg.Content,
@@ -862,10 +872,23 @@ func toConversationMessage(_ context.Context, appID, cid, userID, roundID, secti
 					Text: *ct.Text,
 				})
 			} else if ct.FileID != nil {
+				fileID := mustParseInt64(*ct.FileID)
+				file, err := SVC.UploadService.GetFile(ctx, &service.GetFileRequest{ID: fileID})
+				if err != nil {
+					return nil, err
+				}
+				if file.File == nil {
+					return nil, fmt.Errorf("file not found")
+				}
+
 				m.MultiContent = append(m.MultiContent, &message.InputMetaData{
 					Type: message.InputType(ct.Type),
 					FileData: []*message.FileData{
-						{Url: *ct.FileID},
+						{
+							Url:  file.File.Url,
+							URI:  file.File.TosURI,
+							Name: file.File.Name,
+						},
 					},
 				})
 			} else {
