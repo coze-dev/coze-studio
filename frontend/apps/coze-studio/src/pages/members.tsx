@@ -565,7 +565,7 @@ const Page: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <Layout title="猎鹰">
       <Layout.Header className="pb-0">
         <div className="w-full">
           {/* 页面标题和操作 */}
