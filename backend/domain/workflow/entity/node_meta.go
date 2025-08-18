@@ -139,6 +139,7 @@ const (
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
 	NodeTypeKnowledgeDeleter           NodeType = "KnowledgeDeleter"
+	NodeTypeCardSelector               NodeType = "CardSelector"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
@@ -809,6 +810,23 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		},
 		EnUSName:        "Knowledge delete",
 		EnUSDescription: "The delete node can delete a document in knowledge base.",
+	},
+	NodeTypeCardSelector: {
+		ID:           99,
+		Key:          NodeTypeCardSelector,
+		DisplayKey:   "CardSelector",
+		Name:         "卡片选择",
+		Category:     "input&output",
+		Desc:         "根据筛选条件选择和过滤卡片内容，支持文本、图片、视频、链接等类型的卡片筛选",
+		Color:        "#5C62FF",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-CardSelector-v2.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Card Selector",
+		EnUSDescription: "Filter and select card content based on criteria, supports filtering text, image, video, link and other types of cards",
 	},
 	NodeTypeLambda: {
 		ID:       1000,

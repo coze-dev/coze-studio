@@ -333,7 +333,11 @@ func NodePanelSearch(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.NodePanelSearchResponse)
+	resp, err := appworkflow.SVC.NodePanelSearch(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -147,6 +147,71 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 	return resp, nil
 }
 
+func (w *ApplicationService) NodePanelSearch(ctx context.Context, req *workflow.NodePanelSearchRequest) (
+	_ *workflow.NodePanelSearchResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	resp := &workflow.NodePanelSearchResponse{
+		Data: &workflow.NodePanelSearchData{},
+	}
+
+	// 获取搜索关键词
+	keyword := strings.TrimSpace(req.SearchKey)
+	if keyword == "" {
+		return resp, nil
+	}
+
+	// 根据搜索类型决定搜索范围，这里简单处理，主要搜索工作流节点
+	// 获取所有节点元数据
+	category2NodeMetaList, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var foundTemplates []*workflow.NodeTemplate
+
+	// 搜索节点模板
+	for _, nodeMetaList := range category2NodeMetaList {
+		for _, nodeMeta := range nodeMetaList {
+			// 获取节点名称和描述（支持国际化）
+			nodeName := ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSName, nodeMeta.Name)
+			nodeDesc := ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSDescription, nodeMeta.Desc)
+			
+			// 搜索关键词匹配（名称、描述）
+			if strings.Contains(strings.ToLower(nodeName), strings.ToLower(keyword)) ||
+				strings.Contains(strings.ToLower(nodeDesc), strings.ToLower(keyword)) {
+				
+				// 创建节点模板
+				tpl := &workflow.NodeTemplate{
+					ID:           fmt.Sprintf("%d", nodeMeta.ID),
+					Type:         workflow.NodeTemplateType(nodeMeta.ID),
+					Name:         nodeName,
+					Desc:         nodeDesc,
+					IconURL:      nodeMeta.IconURL,
+					SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
+					NodeType:     fmt.Sprintf("%d", nodeMeta.ID),
+					Color:        nodeMeta.Color,
+				}
+
+				foundTemplates = append(foundTemplates, tpl)
+			}
+		}
+	}
+
+	// 这里暂时简化处理，只返回空响应
+	// 后续可以根据前端实际需求完善搜索逻辑和返回结构
+	return resp, nil
+}
+
 func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (
 	_ *workflow.CreateWorkflowResponse, err error,
 ) {

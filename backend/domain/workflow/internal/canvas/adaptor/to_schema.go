@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/batch"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/cardselector"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
@@ -672,6 +673,9 @@ func RegisterAllNodeAdaptors() {
 	})
 	nodes.RegisterNodeAdaptor(entity.NodeTypeLLM, func() nodes.NodeAdaptor {
 		return &llm.Config{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeCardSelector, func() nodes.NodeAdaptor {
+		return &cardselector.Config{}
 	})
 
 	// register branch adaptors
