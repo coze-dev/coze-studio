@@ -31,8 +31,8 @@ import (
 // Each Node Type should have its own designated Config type,
 // which should implement NodeAdaptor and NodeBuilder.
 type Config struct {
-	FilterType string `json:"filter_type"` // 筛选类型：all, text, image, video, link
-	Content    string `json:"content"`     // 输出内容模板
+	Template string `json:"template"` // 输出模板字符串
+	Content  string `json:"content"`  // 输出内容模板（向后兼容）
 }
 
 // NewConfig creates a new CardSelector config
@@ -60,21 +60,16 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 		ns.Name = n.Data.Meta.Title
 	}
 
-	// 提取筛选配置 - 从标准的CardSelector字段读取
-	if n.Data != nil && n.Data.Inputs != nil && n.Data.Inputs.CardSelector != nil {
-		c.FilterType = n.Data.Inputs.CardSelector.FilterType
-		if c.FilterType == "" {
-			c.FilterType = "all" // 默认值
-		}
-	} else {
-		c.FilterType = "all" // 默认值
-	}
-
-	// 从Content字段读取内容模板
+	// 从Content字段读取模板内容，效仿Message节点
 	if n.Data != nil && n.Data.Inputs != nil && n.Data.Inputs.Content != nil {
+		if n.Data.Inputs.Content.Type != vo.VariableTypeString {
+			return nil, fmt.Errorf("card selector node's content type must be %s, got %s", vo.VariableTypeString, n.Data.Inputs.Content.Type)
+		}
+
 		if n.Data.Inputs.Content.Value != nil && n.Data.Inputs.Content.Value.Type == vo.BlockInputValueTypeLiteral {
 			if content, ok := n.Data.Inputs.Content.Value.Content.(string); ok {
-				c.Content = content
+				c.Template = content
+				c.Content = content // 向后兼容
 			}
 		}
 	}
@@ -102,9 +97,12 @@ func (c *Config) Build(ctx context.Context, ns *schema.NodeSchema, opts ...schem
 
 	// 创建CardSelector实例
 	cardSelector := NewCardSelector(&CardSelectorConfig{
-		FilterType: c.FilterType,
-		Content:    c.Content,
+		Content: c.Content,
 	})
+	
+	// 设置FullSources以支持模板渲染
+	cardSelector.SetFullSources(ns.FullSources)
+	cardSelector.SetTemplate(c.Template)
 
 	return cardSelector, nil
 }

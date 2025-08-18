@@ -14,31 +14,35 @@
  * limitations under the License.
  */
 
-import { get } from 'lodash-es';
+import { get, set } from 'lodash-es';
 import { type NodeDataDTO, VariableTypeDTO } from '@coze-workflow/base';
 
 import { type FormData } from './types';
-import { OUTPUTS } from './constants';
 
 /**
  * 节点后端数据 -> 前端表单数据
  */
-export const transformOnInit = (value: NodeDataDTO) => ({
-  ...(value ?? {}),
-  outputs: value?.outputs ?? OUTPUTS,
-  inputs: {
-    inputParameters: value?.inputs?.inputParameters ?? [],
-    filterSelector: value?.inputs?.filterSelector ?? 'all',
-    // 从BlockInput结构中提取简单字符串
-    content:
-      (get(value, 'inputs.content.value.content') as string | undefined) || '',
-    streamingOutput: value?.inputs?.streamingOutput ?? false,
-  },
-});
+export const transformOnInit = (value: NodeDataDTO) => {
+  const finalValue = {
+    ...(value ?? {}),
+    inputs: {
+      ...value?.inputs,
+      // 从BlockInput结构中提取简单字符串
+      content:
+        (get(value, 'inputs.content.value.content') as string | undefined) ||
+        '',
+      streamingOutput: value?.inputs?.streamingOutput ?? false,
+    },
+  };
+  // 设置默认的输出参数，效仿Output节点
+  if (typeof finalValue.inputs.inputParameters === 'undefined') {
+    set(finalValue, 'inputs.inputParameters', [{ name: 'output' }]);
+  }
+  return finalValue;
+};
 
 /**
  * 前端表单数据 -> 节点后端数据
- * 处理筛选逻辑和卡片选择数据转换
  */
 export const transformOnSubmit = (value: FormData): NodeDataDTO =>
   ({
@@ -55,35 +59,3 @@ export const transformOnSubmit = (value: FormData): NodeDataDTO =>
       },
     },
   }) as unknown as NodeDataDTO;
-
-/**
- * 根据筛选类型处理卡片数据的辅助函数
- */
-interface CardData {
-  type: string;
-  content: unknown;
-}
-
-export const processCardsByFilter = (
-  cards: CardData[],
-  filterType: string,
-): CardData[] => {
-  if (filterType === 'all') {
-    return cards;
-  }
-
-  return cards.filter(card => {
-    switch (filterType) {
-      case 'text':
-        return card.type === 'text';
-      case 'image':
-        return card.type === 'image';
-      case 'video':
-        return card.type === 'video';
-      case 'link':
-        return card.type === 'link';
-      default:
-        return true;
-    }
-  });
-};

@@ -19,20 +19,21 @@ package cardselector
 import (
 	"context"
 	"fmt"
-	"time"
 	
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
 
 // CardSelector 卡片选择节点实现
 type CardSelector struct {
-	config *CardSelectorConfig
+	config      *CardSelectorConfig
+	template    string
+	fullSources map[string]*schema.SourceInfo
 }
 
 // CardSelectorConfig 卡片选择节点配置
 type CardSelectorConfig struct {
-	FilterType string `json:"filter_type"` // 筛选类型：all, text, image, video, link
-	Content    string `json:"content"`     // 输出内容模板
+	Content string `json:"content"` // 输出内容模板
 }
 
 // CardItem 卡片项目结构
@@ -51,38 +52,76 @@ func NewCardSelector(config *CardSelectorConfig) *CardSelector {
 	}
 }
 
+// SetTemplate 设置输出模板
+func (c *CardSelector) SetTemplate(template string) {
+	c.template = template
+}
+
+// SetFullSources 设置数据源信息，用于模板渲染
+func (c *CardSelector) SetFullSources(sources map[string]*schema.SourceInfo) {
+	c.fullSources = sources
+}
+
 // Invoke 实现InvokableNode接口
 func (c *CardSelector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	// 提取输入参数
-	inputListRaw, ok := input["inputList"]
-	if !ok {
-		return nil, fmt.Errorf("missing inputList field")
+	// 使用模板渲染系统，效仿Message节点
+	if c.template != "" {
+		// 使用模板渲染输出
+		rendered, err := nodes.Render(ctx, c.template, input, c.fullSources)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render template: %w", err)
+		}
+
+		return map[string]any{
+			"output": rendered,
+		}, nil
+	}
+
+	// 向后兼容：如果没有模板，执行原有的卡片处理逻辑
+	// 尝试从任意输入参数中找到卡片数据
+	var inputListRaw interface{}
+	var found bool
+
+	// 优先查找"input"字段
+	if inputListRaw, found = input["input"]; !found {
+		// 如果没有input字段，查找其他可能的数据源
+		for key, value := range input {
+			if key != "output" { // 避免循环引用
+				inputListRaw = value
+				found = true
+				break
+			}
+		}
+	}
+
+	if !found {
+		return map[string]any{
+			"output": "No input data found",
+		}, nil
 	}
 
 	// 将输入转换为卡片列表
 	cards, err := c.parseInputCards(inputListRaw)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse input cards: %w", err)
+		return map[string]any{
+			"output": fmt.Sprintf("Failed to parse input: %v", err),
+		}, nil
 	}
 
-	// 根据筛选条件过滤卡片
-	filteredCards := c.filterCards(cards, c.config.FilterType)
-
 	// 构造输出结果
-	outputList := make([]map[string]interface{}, len(filteredCards))
-	for i, card := range filteredCards {
+	outputList := make([]map[string]interface{}, len(cards))
+	for i, card := range cards {
 		outputList[i] = map[string]interface{}{
 			"id":      card.ID,
+			"type":    card.Type,
 			"content": card.Content,
+			"url":     card.URL,
+			"title":   card.Title,
 		}
 	}
 
 	return map[string]any{
-		"outputList":    outputList,
-		"filteredCount": len(filteredCards),
-		"totalCount":    len(cards),
-		"filterType":    c.config.FilterType,
-		"processedAt":   time.Now().Format(time.RFC3339),
+		"output": outputList,
 	}, nil
 }
 
@@ -176,21 +215,6 @@ func (c *CardSelector) isVideoURL(url string) bool {
 	return false
 }
 
-// filterCards 根据筛选类型过滤卡片
-func (c *CardSelector) filterCards(cards []*CardItem, filterType string) []*CardItem {
-	if filterType == "all" || filterType == "" {
-		return cards
-	}
-
-	var filtered []*CardItem
-	for _, card := range cards {
-		if card.Type == filterType {
-			filtered = append(filtered, card)
-		}
-	}
-
-	return filtered
-}
 
 // ToCallbackOutput 实现CallbackOutputConverted接口
 func (c *CardSelector) ToCallbackOutput(ctx context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {

@@ -14,36 +14,9 @@
  * limitations under the License.
  */
 
-import { nanoid } from 'nanoid';
-import { ViewVariableType } from '@coze-workflow/variable';
-
 // 入参路径，试运行等功能依赖该路径提取参数
 export const INPUT_PATH = 'inputs.inputParameters';
-
-// 筛选下拉框字段路径
-export const FILTER_SELECTOR_PATH = 'inputs.filterSelector';
 
 // Message相关字段路径
 export const ANSWER_CONTENT_PATH = 'inputs.content';
 export const STREAMING_OUTPUT_PATH = 'inputs.streamingOutput';
-
-// 定义固定出参
-export const OUTPUTS = [
-  {
-    key: nanoid(),
-    name: 'outputList',
-    type: ViewVariableType.ArrayObject,
-    children: [
-      {
-        key: nanoid(),
-        name: 'id',
-        type: ViewVariableType.String,
-      },
-      {
-        key: nanoid(),
-        name: 'content',
-        type: ViewVariableType.String,
-      },
-    ],
-  },
-];

@@ -23,25 +23,15 @@ import { useWatch } from '@/form';
 import { InputsParametersField, AnswerContentField } from '../common/fields';
 import {
   INPUT_PATH,
-  FILTER_SELECTOR_PATH,
   ANSWER_CONTENT_PATH,
   STREAMING_OUTPUT_PATH,
 } from './constants';
-import { FilterSelectorField } from './components';
 
 export const FormRender = withNodeConfigForm(() => {
   const inputParameters = useWatch<InputValueVO[]>(INPUT_PATH);
   return (
     <>
-      {/* 顶部筛选框 */}
-      <FilterSelectorField
-        key={FILTER_SELECTOR_PATH}
-        name={FILTER_SELECTOR_PATH}
-        title={I18n.t('卡片筛选')}
-        tooltip={I18n.t('选择要筛选的卡片类型')}
-      />
-
-      {/* 基于Message节点的输入参数字段 */}
+      {/* 输入参数字段 */}
       <InputsParametersField
         key={INPUT_PATH}
         name={INPUT_PATH}
@@ -50,7 +40,7 @@ export const FormRender = withNodeConfigForm(() => {
         isTree={true}
       />
 
-      {/* 基于Message节点的答案内容字段 */}
+      {/* 答案内容字段 */}
       <AnswerContentField
         key={ANSWER_CONTENT_PATH}
         editorFieldName={ANSWER_CONTENT_PATH}
