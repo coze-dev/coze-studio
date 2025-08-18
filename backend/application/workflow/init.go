@@ -34,6 +34,7 @@ import (
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
+	upservice "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	crossconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
@@ -101,10 +102,13 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 
 	crossconversation.SetConversationManager(wfconversation.NewConversationRepository())
 
+	uploadSVC := upservice.NewUploadSVC(components.DB, components.IDGen, components.Tos)
+
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX
 	SVC.TosClient = components.Tos
 	SVC.IDGenerator = components.IDGen
+	SVC.UploadService = uploadSVC
 
 	return SVC, nil
 }
