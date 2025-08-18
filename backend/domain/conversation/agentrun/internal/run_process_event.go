@@ -30,8 +30,8 @@ import (
 )
 
 type RunProcess struct {
-	event *Event
-
+	event         *Event
+	SW            *schema.StreamWriter[*entity.AgentRunResponse]
 	RunRecordRepo repository.RunRecordRepo
 }
 
@@ -115,7 +115,6 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 		Code: srRecord.Error.Code,
 		Msg:  srRecord.Error.Msg,
 	})
-	return
 }
 
 func (r *RunProcess) StepToDone(sw *schema.StreamWriter[*entity.AgentRunResponse]) {
