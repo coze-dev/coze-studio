@@ -17,27 +17,20 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-import { SubMenuItem, SubMenu } from '@coze-community/components';
+import cls from 'classnames';
+import { SubMenuItem } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
-// import {
-//   // IconCozTemplate,
-//   // IconCozTemplateFill,
-//   IconCozPlugin,
-//   IconCozPluginFill,
-// } from '@coze-arch/coze-design/icons';
+import { Space } from '@coze-arch/coze-design';
 import {
   IconBotDevelop,
-  IconBotDevelopActive,
   IconBotPlugin,
-  IconBotPluginActive,
   IconCard,
   IconCardActive,
-} from '../../../../../components/bot-icons';
-import { Space } from '@coze-arch/coze-design';
+} from '@coze-arch/bot-icons/src';
+import { aopApi } from '@coze-arch/bot-api';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
-import cls from 'classnames';
-import { aopApi } from '@coze-arch/bot-api';
+
 import styles from './index.module.less';
 
 const getExploreMenuConfig = () => [
