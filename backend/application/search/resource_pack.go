@@ -159,6 +159,37 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
+func (w *workflowPacker) GetActions(ctx context.Context) []*common.ResourceAction {
+	actions := []*common.ResourceAction{
+		{
+			Key:    common.ActionKey_Edit,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Copy,
+			Enable: true,
+		},
+	}
+	meta, err := w.appContext.WorkflowDomainSVC.Get(ctx, &vo.GetPolicy{
+		ID:       w.resID,
+		MetaOnly: true,
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "get policy failed with '%s', err=%v", w.resID, err)
+		return actions
+	}
+	key := ternary.IFElse(meta.Mode == workflow.WorkflowMode_Workflow, common.ActionKey_SwitchToChatflow, common.ActionKey_SwitchToFuncflow)
+	action := &common.ResourceAction{
+		Key:    key,
+		Enable: true,
+	}
+	return append(actions, action)
+}
+
 func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	actions := []*common.ProjectResourceAction{
 		{
