@@ -101,12 +101,16 @@ func (c *ConversationRepository) MessageList(ctx context.Context, req *conversat
 		lm.Cursor, _ = strconv.ParseInt(*req.AfterID, 10, 64)
 		lm.Direction = msgentity.ScrollPageDirectionPrev
 	}
-	lr, err := crossmessage.DefaultSVC().List(ctx, lm)
+	lm.MessageType = []*message.MessageType{ptr.Of(message.MessageTypeQuestion), ptr.Of(message.MessageTypeAnswer)}
+
+	lr, err := crossmessage.DefaultSVC().ListWithoutPair(ctx, lm)
 	if err != nil {
 		return nil, err
 	}
 
-	response := &conversation.MessageListResponse{}
+	response := &conversation.MessageListResponse{
+		HasMore: lr.HasMore,
+	}
 
 	if lr.PrevCursor > 0 {
 		response.FirstID = strconv.FormatInt(lr.PrevCursor, 10)
