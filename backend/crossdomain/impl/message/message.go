@@ -67,3 +67,7 @@ func (c *impl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
 func (c *impl) GetMessageByID(ctx context.Context, id int64) (*entity.Message, error) {
 	return c.DomainSVC.GetByID(ctx, id)
 }
+
+func (c *impl) ListWithoutPair(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
+	return c.DomainSVC.ListWithoutPair(ctx, req)
+}

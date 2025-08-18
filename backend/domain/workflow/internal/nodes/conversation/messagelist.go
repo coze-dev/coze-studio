@@ -201,21 +201,10 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 		})
 	}
 
-	// TODO: After the List interface is updated, the firstId and lastId from the response can be returned directly without extra processing
-	var firstId, lastId any = "0", "0"
-	if len(messageList) > 0 {
-		if firstMsg, ok := messageList[0].(map[string]any); ok {
-			firstId = firstMsg["messageId"]
-		}
-		if lastMsg, ok := messageList[len(messageList)-1].(map[string]any); ok {
-			lastId = lastMsg["messageId"]
-		}
-	}
-
 	return map[string]any{
 		"messageList": messageList,
-		"firstId":     firstId,
-		"lastId":      lastId,
+		"firstId":     ml.FirstID,
+		"lastId":      ml.LastID,
 		"hasMore":     ml.HasMore,
 	}, nil
 
