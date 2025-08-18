@@ -232,5 +232,23 @@ export default class AopApiService<T> {
     const data = _req;
     return this.request({ url, method, data }, options);
   }
+
+  // 获取卡片市场类型
+  GetCardTypeCount(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10032.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取卡片市场列表
+  GetCardMarketList(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10030.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
 }
 /* eslint-enable */

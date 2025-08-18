@@ -90,3 +90,88 @@
   color: rgba(var(--coze-fg-3), var(--coze-fg-3-alpha));
   font-weight: normal;
 }
+
+// CardTemplate 样式
+.cardTemplate {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+
+  .banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+
+    .bannerContent {
+      display: flex;
+      align-items: center;
+      padding: 32px;
+      color: white;
+
+      .bannerImage {
+        width: 80px;
+        height: 80px;
+        margin-right: 24px;
+        border-radius: 8px;
+      }
+
+      .bannerText {
+        h2 {
+          color: white !important;
+          margin-bottom: 8px;
+        }
+
+        span {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  .filterSection {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .templateGrid {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .templateCard {
+      height: 100%;
+      transition: all 0.3s ease;
+      border: 1px solid #f0f0f0;
+
+      &:hover {
+        border-color: #1890ff;
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .cardCover {
+        height: 160px;
+        overflow: hidden;
+        background: #fafafa;
+
+        .cardImage {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .cardFooter {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+      }
+    }
+  }
+}

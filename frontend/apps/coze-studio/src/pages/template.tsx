@@ -19,16 +19,20 @@ import { lazy } from 'react';
 
 import { BaseEnum } from '@coze-arch/web-context';
 
-const TemplatePage = lazy(() =>
+const subMenu = lazy(() =>
   import('@coze-community/explore').then(exps => ({
-    default: exps.TemplatePage,
+    default: exps.TemplateSubMenu,
   })),
 );
 
-const TemplateStorePage = lazy(() =>
-  import('@coze-agent-ide/agent-publish').then(exps => ({
-    default: exps.TemplateStorePage,
+const TemplateProjectPage = lazy(() =>
+  import('@coze-community/explore').then(exps => ({
+    default: exps.TemplateProjectPage,
   })),
+);
+
+const TemplateCardPage = lazy(
+  () => import('@coze-studio/workspace-adapter/cardTemplate')
 );
 
 export const templateRouter: RouteObject = {
@@ -37,26 +41,30 @@ export const templateRouter: RouteObject = {
   loader: () => ({
     hasSider: true,
     requireAuth: true,
-    subMenu: null,
+    subMenu,
     menuKey: BaseEnum.Template,
   }),
   children: [
     {
       index: true,
-      element: <Navigate to="list" replace />,
+      element: <Navigate to="project" replace />,
     },
     {
       path: 'list',
-      element: <TemplatePage />,
+      element: <Navigate to="../project" replace />,
+    },
+    {
+      path: 'project',
+      element: <TemplateProjectPage />,
       loader: () => ({
-        type: 'template',
+        type: 'project',
       }),
     },
     {
-      path: 'store',
-      element: <TemplateStorePage />,
+      path: 'card/:sub_route_id',
+      element: <TemplateCardPage />,
       loader: () => ({
-        type: 'template-store',
+        type: 'card',
       }),
     },
   ],

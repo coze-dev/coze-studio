@@ -11,7 +11,8 @@
     "./members": "./src/pages/members/index.tsx",
     "./mcp": "./src/pages/falcon/mcp.tsx",
     "./mcpDetail": "./src/pages/falcon/mcpDetail.tsx",
-    "./card": "./src/pages/falcon/card.tsx"
+    "./card": "./src/pages/falcon/card.tsx",
+    "./cardTemplate": "./src/pages/falcon/cardTemplate.tsx"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -33,6 +34,9 @@
       ],
       "card": [
         "./src/pages/falcon/card.tsx"
+      ],
+      "cardTemplate": [
+        "./src/pages/falcon/cardTemplate.tsx"
       ]
     }
   },
