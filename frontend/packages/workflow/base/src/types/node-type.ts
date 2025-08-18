@@ -104,6 +104,7 @@ export enum StandardNodeType {
 
   JsonStringify = '58',
   JsonParser = '59',
+  CardSelector = '99',
 }
 
 /**
@@ -146,6 +147,7 @@ export const NODE_ORDER = {
   [StandardNodeType.TriggerUpsert]: 26,
   [StandardNodeType.TriggerRead]: 27,
   [StandardNodeType.TriggerDelete]: 28,
+  [StandardNodeType.CardSelector]: 29,
 };
 
 /** session class node */

@@ -35,6 +35,7 @@ import { IfContent } from '@/node-registries/if';
 import { EndContent } from '@/node-registries/end';
 import { ContinueContent } from '@/node-registries/continue';
 import { CodeContent } from '@/node-registries/code';
+import { CardSelectorContent } from '@/node-registries/card-selector';
 import { BreakContent } from '@/node-registries/break';
 import { BatchContent } from '@/node-registries/batch';
 
@@ -91,6 +92,7 @@ const ContentMap = {
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
   [StandardNodeType.JsonStringify]: JsonStringifyContent,
+  [StandardNodeType.CardSelector]: CardSelectorContent,
   // The cli script inserts the identifier (registry), do not modify/delete this line comment
 };
 
