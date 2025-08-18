@@ -53,6 +53,10 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
+	if mr.Limit == nil {
+		mr.Limit = ptr.Of(int64(50))
+	}
+
 	msgListMeta := &entity.ListMeta{
 		ConversationID: currentConversation.ID,
 		AgentID:        currentConversation.AgentID,
