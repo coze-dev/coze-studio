@@ -41,6 +41,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
 	hembed "github.com/coze-dev/coze-studio/backend/infra/impl/embedding/http"
@@ -169,10 +171,10 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		RDB:                 rdbService,
 		Producer:            knowledgeProducer,
 		SearchStoreManagers: mgrs,
-		ParseManager:        nil, // default builtin
+		ParseManager:        builtin.NewManager(tosClient, nil, nil), // default builtin
 		Storage:             tosClient,
 		Rewriter:            nil,
-		Reranker:            nil, // default rrf
+		Reranker:            rrf.NewRRFReranker(0), // default rrf
 		EnableCompactTable:  ptr.Of(true),
 	})
 

@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/alicebob/miniredis/v2"
 	"net/http"
 	"os"
 	"reflect"
@@ -30,6 +29,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/alicebob/miniredis/v2"
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/callbacks"

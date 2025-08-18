@@ -67,6 +67,7 @@ import (
 	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
 	implEventbus "github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 )
@@ -191,7 +192,9 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 
 	memorySVC := memory.InitService(basicServices.toMemoryServiceComponents())
 
-	knowledgeSVC, err := knowledge.InitService(basicServices.toKnowledgeServiceComponents(memorySVC))
+	knowledgeSVC, err := knowledge.InitService(ctx,
+		basicServices.toKnowledgeServiceComponents(memorySVC),
+		basicServices.eventbus.resourceEventBus)
 	if err != nil {
 		return nil, err
 	}
@@ -256,14 +259,18 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.MemoryApplicationServices) *knowledge.ServiceComponents {
 	return &knowledge.ServiceComponents{
 		DB:                  b.infra.DB,
-		IDGenSVC:            b.infra.IDGenSVC,
-		Storage:             b.infra.TOSClient,
+		IDGen:               b.infra.IDGenSVC,
 		RDB:                 memoryService.RDBDomainSVC,
+		Producer:            b.infra.KnowledgeEventProducer,
 		SearchStoreManagers: b.infra.SearchStoreManagers,
-		EventBus:            b.eventbus.resourceEventBus,
-		CacheCli:            b.infra.CacheCli,
+		ParseManager:        b.infra.ParserManager,
+		Storage:             b.infra.TOSClient,
+		Rewriter:            b.infra.Rewriter,
+		Reranker:            b.infra.Reranker,
+		NL2Sql:              b.infra.NL2SQL,
 		OCR:                 b.infra.OCR,
-		ParserManager:       b.infra.ParserManager,
+		CacheCli:            b.infra.CacheCli,
+		ModelFactory:        chatmodel.NewDefaultFactory(),
 	}
 }
 
@@ -280,18 +287,19 @@ func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 
 func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginApplicationService, memorySVC *memory.MemoryApplicationServices, knowledgeSVC *knowledge.KnowledgeApplicationService) *workflow.ServiceComponents {
 	return &workflow.ServiceComponents{
-		IDGen:              b.infra.IDGenSVC,
-		DB:                 b.infra.DB,
-		Cache:              b.infra.CacheCli,
-		Tos:                b.infra.TOSClient,
-		ImageX:             b.infra.ImageXClient,
-		DatabaseDomainSVC:  memorySVC.DatabaseDomainSVC,
-		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
-		PluginDomainSVC:    pluginSVC.DomainSVC,
-		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
-		DomainNotifier:     b.eventbus.resourceEventBus,
-		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
-		CodeRunner:         b.infra.CodeRunner,
+		IDGen:                    b.infra.IDGenSVC,
+		DB:                       b.infra.DB,
+		Cache:                    b.infra.CacheCli,
+		Tos:                      b.infra.TOSClient,
+		ImageX:                   b.infra.ImageXClient,
+		DatabaseDomainSVC:        memorySVC.DatabaseDomainSVC,
+		VariablesDomainSVC:       memorySVC.VariablesDomainSVC,
+		PluginDomainSVC:          pluginSVC.DomainSVC,
+		KnowledgeDomainSVC:       knowledgeSVC.DomainSVC,
+		DomainNotifier:           b.eventbus.resourceEventBus,
+		CPStore:                  checkpoint.NewRedisStore(b.infra.CacheCli),
+		CodeRunner:               b.infra.CodeRunner,
+		WorkflowBuildInChatModel: b.infra.WorkflowBuildInChatModel,
 	}
 }
 

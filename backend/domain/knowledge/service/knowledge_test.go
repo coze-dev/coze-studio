@@ -32,6 +32,8 @@ import (
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/rdb"
 	producerMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/eventbus"
 	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
@@ -98,11 +100,14 @@ func MockKnowledgeSVC(t *testing.T) Knowledge {
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	rdb := rdb.NewService(db, mockIDGen)
 	svc, _ := NewKnowledgeSVC(&KnowledgeSVCConfig{
-		DB:       db,
-		IDGen:    mockIDGen,
-		Storage:  mockStorage,
-		Producer: producer,
-		RDB:      rdb,
+		DB:           db,
+		IDGen:        mockIDGen,
+		Storage:      mockStorage,
+		Producer:     producer,
+		RDB:          rdb,
+		Reranker:     rrf.NewRRFReranker(0),
+		ParseManager: builtin.NewManager(mockStorage, nil, nil), // default builtin
+
 	})
 	return svc
 }

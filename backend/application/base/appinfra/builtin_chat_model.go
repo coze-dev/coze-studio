@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package internal
+package appinfra
 
 import (
 	"context"
@@ -33,7 +33,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 )
 
-func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
+func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
 	getEnv := func(key string) string {
 		if val := os.Getenv(envPrefix + key); val != "" {
 			return val
@@ -99,7 +99,7 @@ func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 	}
 
 	if err != nil {
-		return nil, false, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
+		return nil, false, fmt.Errorf("builtin %s chat model init failed, %w", envPrefix, err)
 	}
 	if bcm != nil {
 		configured = true

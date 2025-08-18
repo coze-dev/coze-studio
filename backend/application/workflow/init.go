@@ -23,7 +23,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/internal"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
@@ -35,41 +34,34 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type ServiceComponents struct {
-	IDGen              idgen.IDGenerator
-	DB                 *gorm.DB
-	Cache              cache.Cmdable
-	DatabaseDomainSVC  dbservice.Database
-	VariablesDomainSVC variables.Variables
-	PluginDomainSVC    plugin.PluginService
-	KnowledgeDomainSVC knowledge.Knowledge
-	DomainNotifier     search.ResourceEventBus
-	Tos                storage.Storage
-	ImageX             imagex.ImageX
-	CPStore            compose.CheckPointStore
-	CodeRunner         coderunner.Runner
+	IDGen                    idgen.IDGenerator
+	DB                       *gorm.DB
+	Cache                    cache.Cmdable
+	DatabaseDomainSVC        dbservice.Database
+	VariablesDomainSVC       variables.Variables
+	PluginDomainSVC          plugin.PluginService
+	KnowledgeDomainSVC       knowledge.Knowledge
+	DomainNotifier           search.ResourceEventBus
+	Tos                      storage.Storage
+	ImageX                   imagex.ImageX
+	CPStore                  compose.CheckPointStore
+	CodeRunner               coderunner.Runner
+	WorkflowBuildInChatModel chatmodel.BaseChatModel
 }
 
 func InitService(ctx context.Context, components *ServiceComponents) (*ApplicationService, error) {
-	bcm, ok, err := internal.GetBuiltinChatModel(ctx, "WKR_")
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
-	}
-
 	service.RegisterAllNodeAdaptors()
 
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
-		components.Tos, components.CPStore, bcm)
+		components.Tos, components.CPStore, components.WorkflowBuildInChatModel)
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
@@ -83,5 +75,5 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	SVC.TosClient = components.Tos
 	SVC.IDGenerator = components.IDGen
 
-	return SVC, err
+	return SVC, nil
 }

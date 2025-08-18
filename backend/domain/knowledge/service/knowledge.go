@@ -58,9 +58,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
 	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -86,12 +84,6 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
 		cacheCli:            config.CacheCli,
 		modelFactory:        config.ModelFactory,
-	}
-	if svc.reranker == nil {
-		svc.reranker = rrf.NewRRFReranker(0)
-	}
-	if svc.parseManager == nil {
-		svc.parseManager = builtin.NewManager(config.Storage, config.OCR, nil)
 	}
 
 	return svc, svc
