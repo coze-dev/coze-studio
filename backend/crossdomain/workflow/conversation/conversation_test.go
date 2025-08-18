@@ -17,58 +17,94 @@
 package conversation
 
 import (
+	"context"
 	"testing"
 
 	"github.com/cloudwego/eino/schema"
-
-	"github.com/stretchr/testify/assert"
-
-	apimessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func Test_convertMessage(t *testing.T) {
+type mockWorkflowRepo struct {
+	workflow.Repository
+}
+
+func (m *mockWorkflowRepo) GetObjectUrl(ctx context.Context, uri string, opts ...storage.GetOptFn) (string, error) {
+	return uri, nil
+}
+
+func Test_convertToConvAndSchemaMessage(t *testing.T) {
+	workflow.SetRepository(&mockWorkflowRepo{})
+
+	sm1, err := sonic.MarshalString(&schema.Message{Content: "hello"})
+	require.NoError(t, err)
+
+	sm2, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_1"}}}})
+	require.NoError(t, err)
+
+	sm3, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeText, Text: "hello"}, {Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_2"}}}})
+	require.NoError(t, err)
+
+	sm4, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_3"}}, {Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_4"}}}})
+	require.NoError(t, err)
+
+	sm5, err := sonic.MarshalString(&schema.Message{Content: ""})
+	require.NoError(t, err)
+
+	sm6, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "image_uri_5"}}}})
+	require.NoError(t, err)
+
+	sm7, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_6"}}, {Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_7"}}}})
+	require.NoError(t, err)
+
+	sm8, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeText, Text: "hello"}, {Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_8"}}, {Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "file_id_9"}}}})
+	require.NoError(t, err)
+
 	type args struct {
-		lr *entity.ListResult
+		msgs []*entity.Message
+	}
+	type want struct {
+		convMsgs   []*conversation.Message
+		schemaMsgs []*schema.Message
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *conversation.MessageListResponse
+		want    want
 		wantErr bool
 	}{
 		{
 			name: "pure text",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   1,
-							Role: schema.User,
-
-							ContentType: "text",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "text",
-									Text: "hello",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           1,
+						Role:         schema.User,
+						ContentType:  "text",
+						ModelContent: sm1,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
-						ID:   1,
-						Role: schema.User,
-
+						ID:          1,
+						Role:        schema.User,
 						ContentType: "text",
-						MultiContent: []*conversation.Content{
-							{Type: "text", Text: ptr.Of("hello")},
-						},
+						Text:        ptr.Of("hello"),
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role:    schema.User,
+						Content: "hello",
 					},
 				},
 			},
@@ -76,40 +112,31 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "pure file",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   2,
-							Role: schema.User,
-
-							ContentType: "file",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "file",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "f_uri_1",
-										},
-									},
-								},
-								{
-									Type: "text",
-									Text: "",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           2,
+						Role:         schema.User,
+						ContentType:  "file",
+						ModelContent: sm2,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
 						ID:          2,
 						Role:        schema.User,
 						ContentType: "file",
 						MultiContent: []*conversation.Content{
-							{Type: "file", Uri: ptr.Of("f_uri_1")},
-							{Type: "text", Text: ptr.Of("")},
+							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_1"), Url: ptr.Of("f_uri_1")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_1", URL: "f_uri_1"}},
 						},
 					},
 				},
@@ -118,40 +145,33 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "text and file",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   3,
-							Role: schema.User,
-
-							ContentType: "text_file",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "text",
-									Text: "hello",
-								},
-								{
-									Type: "file",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "f_uri_2",
-										},
-									},
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           3,
+						Role:         schema.User,
+						ContentType:  "text_file",
+						ModelContent: sm3,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
 						ID:          3,
 						Role:        schema.User,
 						ContentType: "text_file",
 						MultiContent: []*conversation.Content{
-							{Type: "text", Text: ptr.Of("hello")},
-							{Type: "file", Uri: ptr.Of("f_uri_2")},
+							{Type: message.InputTypeText, Text: ptr.Of("hello")},
+							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_2"), Url: ptr.Of("f_uri_2")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeText, Text: "hello"},
+							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_2", URL: "f_uri_2"}},
 						},
 					},
 				},
@@ -160,45 +180,33 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "multiple files",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID: 4,
-
-							Role: schema.User,
-
-							ContentType: "file",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "file",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "f_uri_3",
-										},
-										{
-											URI: "f_uri_4",
-										},
-									},
-								},
-								{
-									Type: "text",
-									Text: "",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           4,
+						Role:         schema.User,
+						ContentType:  "file",
+						ModelContent: sm4,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
 						ID:          4,
 						Role:        schema.User,
 						ContentType: "file",
 						MultiContent: []*conversation.Content{
-							{Type: "file", Uri: ptr.Of("f_uri_3")},
-							{Type: "file", Uri: ptr.Of("f_uri_4")},
-							{Type: "text", Text: ptr.Of("")},
+							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_3"), Url: ptr.Of("f_uri_3")},
+							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_4"), Url: ptr.Of("f_uri_4")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_3", URL: "f_uri_3"}},
+							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "f_uri_4", URL: "f_uri_4"}},
 						},
 					},
 				},
@@ -207,33 +215,28 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "empty text",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   5,
-							Role: schema.User,
-
-							ContentType: "text",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "text",
-									Text: "",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           5,
+						Role:         schema.User,
+						ContentType:  "text",
+						ModelContent: sm5,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
-						ID:   5,
-						Role: schema.User,
-
+						ID:          5,
+						Role:        schema.User,
 						ContentType: "text",
-						MultiContent: []*conversation.Content{
-							{Type: "text", Text: ptr.Of("")},
-						},
+						Text:        ptr.Of(""),
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role:    schema.User,
+						Content: "",
 					},
 				},
 			},
@@ -241,41 +244,31 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "pure image",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   6,
-							Role: schema.User,
-
-							ContentType: "image",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "image",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "image_uri_5",
-										},
-									},
-								},
-								{
-									Type: "text",
-									Text: "",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           6,
+						Role:         schema.User,
+						ContentType:  "image",
+						ModelContent: sm6,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
-						ID:   6,
-						Role: schema.User,
-
+						ID:          6,
+						Role:        schema.User,
 						ContentType: "image",
 						MultiContent: []*conversation.Content{
-							{Type: "image", Uri: ptr.Of("image_uri_5")},
-							{Type: "text", Text: ptr.Of("")},
+							{Type: message.InputTypeImage, Uri: ptr.Of("image_uri_5"), Url: ptr.Of("image_uri_5")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "image_uri_5", URL: "image_uri_5"}},
 						},
 					},
 				},
@@ -284,45 +277,33 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "multiple images",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   7,
-							Role: schema.User,
-
-							ContentType: "image",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "image",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "file_id_6",
-										},
-										{
-											URI: "file_id_7",
-										},
-									},
-								},
-								{
-									Type: "text",
-									Text: "",
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           7,
+						Role:         schema.User,
+						ContentType:  "image",
+						ModelContent: sm7,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
-						ID:   7,
-						Role: schema.User,
-
+						ID:          7,
+						Role:        schema.User,
 						ContentType: "image",
 						MultiContent: []*conversation.Content{
-							{Type: "image", Uri: ptr.Of("file_id_6")},
-							{Type: "image", Uri: ptr.Of("file_id_7")},
-							{Type: "text", Text: ptr.Of("")},
+							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_6"), Url: ptr.Of("file_id_6")},
+							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_7"), Url: ptr.Of("file_id_7")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_6", URL: "file_id_6"}},
+							{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_7", URL: "file_id_7"}},
 						},
 					},
 				},
@@ -331,50 +312,35 @@ func Test_convertMessage(t *testing.T) {
 		{
 			name: "mixed content",
 			args: args{
-				lr: &entity.ListResult{
-					Messages: []*entity.Message{
-						{
-							ID:   8,
-							Role: schema.User,
-
-							ContentType: "mix",
-							MultiContent: []*apimessage.InputMetaData{
-								{
-									Type: "text",
-									Text: "hello",
-								},
-								{
-									Type: "image",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "file_id_8",
-										},
-									},
-								},
-								{
-									Type: "file",
-									FileData: []*apimessage.FileData{
-										{
-											URI: "file_id_9",
-										},
-									},
-								},
-							},
-						},
+				msgs: []*entity.Message{
+					{
+						ID:           8,
+						Role:         schema.User,
+						ContentType:  "mix",
+						ModelContent: sm8,
 					},
 				},
 			},
-			want: &conversation.MessageListResponse{
-				Messages: []*conversation.Message{
+			want: want{
+				convMsgs: []*conversation.Message{
 					{
-						ID:   8,
-						Role: schema.User,
-
+						ID:          8,
+						Role:        schema.User,
 						ContentType: "mix",
 						MultiContent: []*conversation.Content{
-							{Type: "text", Text: ptr.Of("hello")},
-							{Type: "image", Uri: ptr.Of("file_id_8")},
-							{Type: "file", Uri: ptr.Of("file_id_9")},
+							{Type: message.InputTypeText, Text: ptr.Of("hello")},
+							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_8"), Url: ptr.Of("file_id_8")},
+							{Type: message.InputTypeFile, Uri: ptr.Of("file_id_9"), Url: ptr.Of("file_id_9")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeText, Text: "hello"},
+							{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_8", URL: "file_id_8"}},
+							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "file_id_9", URL: "file_id_9"}},
 						},
 					},
 				},
@@ -383,15 +349,14 @@ func Test_convertMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msgs, err := convertMessage(tt.args.lr.Messages)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("convertMessage() error = %v, wantErr %v", err, tt.wantErr)
+			convMsgs, schemaMsgs, err := convertToConvAndSchemaMessage(context.Background(), tt.args.msgs)
+			if tt.wantErr {
+				assert.Error(t, err)
 				return
 			}
-			for i, msg := range msgs {
-				assert.Equal(t, msg.MultiContent, tt.want.Messages[i].MultiContent)
-			}
-
+			require.NoError(t, err)
+			assert.Equal(t, tt.want.convMsgs, convMsgs)
+			assert.Equal(t, tt.want.schemaMsgs, schemaMsgs)
 		})
 	}
 }

@@ -204,17 +204,17 @@ func convertToConvAndSchemaMessage(ctx context.Context, msgs []*msgentity.Messag
 	messages := make([]*schema.Message, 0)
 	convMessages := make([]*conversation.Message, 0)
 	for _, m := range msgs {
-		msg := &schema.Message{
-			Role: m.Role,
+		msg := &schema.Message{}
+		err := sonic.UnmarshalString(m.ModelContent, msg)
+		if err != nil {
+			return nil, nil, err
 		}
+		msg.Role = m.Role
+
 		covMsg := &conversation.Message{
 			ID:          m.ID,
 			Role:        m.Role,
 			ContentType: string(m.ContentType),
-		}
-		err := sonic.UnmarshalString(m.ModelContent, msg)
-		if err != nil {
-			return nil, nil, err
 		}
 
 		if len(msg.MultiContent) == 0 {
