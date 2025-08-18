@@ -26,7 +26,7 @@ import {
   IconBotPlugin,
   IconCard,
   IconCardActive,
-} from '@coze-arch/bot-icons/src';
+} from '../../../../../components/bot-icons';
 import { aopApi } from '@coze-arch/bot-api';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
