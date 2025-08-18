@@ -124,6 +124,7 @@ type Inputs struct {
 	*OutputEmitter      // exclusive configurations for NodeTypeEmitter and NodeTypeExit in Answer mode
 	*Exit               // exclusive configurations for NodeTypeExit
 	*LLM                // exclusive configurations for NodeTypeLLM
+	*CardSelector       // exclusive configurations for NodeTypeCardSelector
 	*Loop               // exclusive configurations for NodeTypeLoop
 	*Selector           // exclusive configurations for NodeTypeSelector
 	*TextProcessor      // exclusive configurations for NodeTypeTextProcessor
@@ -153,6 +154,10 @@ type Exit struct {
 
 type LLM struct {
 	FCParam *FCParam `json:"fcParam,omitempty"`
+}
+
+type CardSelector struct {
+	FilterType string `json:"filterType,omitempty"` // 筛选类型：all, text, image, video, link
 }
 
 type Loop struct {

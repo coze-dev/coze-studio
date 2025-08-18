@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { type NodeDataDTO } from '@coze-workflow/base';
+import { get } from 'lodash-es';
+import { type NodeDataDTO, VariableTypeDTO } from '@coze-workflow/base';
 
 import { type FormData } from './types';
 import { OUTPUTS } from './constants';
@@ -28,7 +29,9 @@ export const transformOnInit = (value: NodeDataDTO) => ({
   inputs: {
     inputParameters: value?.inputs?.inputParameters ?? [],
     filterSelector: value?.inputs?.filterSelector ?? 'all',
-    content: value?.inputs?.content ?? '',
+    // 从BlockInput结构中提取简单字符串
+    content:
+      (get(value, 'inputs.content.value.content') as string | undefined) || '',
     streamingOutput: value?.inputs?.streamingOutput ?? false,
   },
 });
@@ -37,22 +40,21 @@ export const transformOnInit = (value: NodeDataDTO) => ({
  * 前端表单数据 -> 节点后端数据
  * 处理筛选逻辑和卡片选择数据转换
  */
-export const transformOnSubmit = (value: FormData): NodeDataDTO => {
-  const { inputs } = value;
-
-  // 根据筛选器类型处理输入参数
-  const processedInputs = {
-    ...inputs,
-    // 在这里可以添加基于filterSelector的预处理逻辑
-    // 例如：根据筛选类型添加特定的过滤条件
-    _filterType: inputs.filterSelector, // 保存筛选类型供后端使用
-  };
-
-  return {
+export const transformOnSubmit = (value: FormData): NodeDataDTO =>
+  ({
     ...value,
-    inputs: processedInputs,
-  } as unknown as NodeDataDTO;
-};
+    inputs: {
+      ...value.inputs,
+      // 将简单字符串转换为BlockInput结构
+      content: {
+        type: VariableTypeDTO.string,
+        value: {
+          type: 'literal',
+          content: value.inputs.content || '',
+        },
+      },
+    },
+  }) as unknown as NodeDataDTO;
 
 /**
  * 根据筛选类型处理卡片数据的辅助函数

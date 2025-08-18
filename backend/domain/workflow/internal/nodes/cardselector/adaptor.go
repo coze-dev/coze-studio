@@ -60,11 +60,23 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 		ns.Name = n.Data.Meta.Title
 	}
 
-	// 提取筛选配置 - 根据前端表单结构
-	if n.Data != nil && n.Data.Inputs != nil {
-		// TODO: 解析具体的输入参数，这里先使用默认值
-		c.FilterType = "all"
-		c.Content = ""
+	// 提取筛选配置 - 从标准的CardSelector字段读取
+	if n.Data != nil && n.Data.Inputs != nil && n.Data.Inputs.CardSelector != nil {
+		c.FilterType = n.Data.Inputs.CardSelector.FilterType
+		if c.FilterType == "" {
+			c.FilterType = "all" // 默认值
+		}
+	} else {
+		c.FilterType = "all" // 默认值
+	}
+
+	// 从Content字段读取内容模板
+	if n.Data != nil && n.Data.Inputs != nil && n.Data.Inputs.Content != nil {
+		if n.Data.Inputs.Content.Value != nil && n.Data.Inputs.Content.Value.Type == vo.BlockInputValueTypeLiteral {
+			if content, ok := n.Data.Inputs.Content.Value.Content.(string); ok {
+				c.Content = content
+			}
+		}
 	}
 
 	// 使用convert包设置输入输出映射（仅当Data不为nil时）
