@@ -507,29 +507,32 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			geminiEmbeddingModel    = os.Getenv("GEMINI_EMBEDDING_MODEL")
 			geminiEmbeddingApiKey   = os.Getenv("GEMINI_EMBEDDING_API_KEY")
 			geminiEmbeddingDims     = os.Getenv("GEMINI_EMBEDDING_DIMS")
-			geminiEmbeddingBackend  = os.Getenv("GEMINI_EMBEDDING_BACKEND")
+			geminiEmbeddingBackend  = os.Getenv("GEMINI_EMBEDDING_BACKEND") // "1" for BackendGeminiAPI / "2" for BackendVertexAI
 			geminiEmbeddingProject  = os.Getenv("GEMINI_EMBEDDING_PROJECT")
 			geminiEmbeddingLocation = os.Getenv("GEMINI_EMBEDDING_LOCATION")
 		)
 
 		if len(geminiEmbeddingModel) == 0 {
-			geminiEmbeddingModel = "gemini-embedding-001"
+			return nil, fmt.Errorf("GEMINI_EMBEDDING_MODEL environment variable is required")
 		}
-
+		if len(geminiEmbeddingApiKey) == 0 {
+			return nil, fmt.Errorf("GEMINI_EMBEDDING_API_KEY environment variable is required")
+		}
+		if len(geminiEmbeddingDims) == 0 {
+			return nil, fmt.Errorf("GEMINI_EMBEDDING_DIMS environment variable is required")
+		}
 		if len(geminiEmbeddingBackend) == 0 {
-			geminiEmbeddingBackend = "1"
-		}
-		if geminiEmbeddingBackend != "1" && geminiEmbeddingBackend != "2" {
-			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_BACKEND value: %s (must be \"1\" or \"2\")", geminiEmbeddingBackend)
-		}
-		backend, convErr := strconv.ParseInt(geminiEmbeddingBackend, 10, 64)
-		if convErr != nil {
-			return nil, convErr
+			return nil, fmt.Errorf("GEMINI_EMBEDDING_BACKEND environment variable is required")
 		}
 
 		dims, convErr := strconv.ParseInt(geminiEmbeddingDims, 10, 64)
 		if convErr != nil {
-			return nil, fmt.Errorf("init gemini embedding dims failed, err=%w", convErr)
+			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_DIMS value: %s, err=%w", geminiEmbeddingDims, convErr)
+		}
+
+		backend, convErr := strconv.ParseInt(geminiEmbeddingBackend, 10, 64)
+		if convErr != nil {
+			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_BACKEND value: %s, err=%w", geminiEmbeddingBackend, convErr)
 		}
 
 		geminiCli, err := genai.NewClient(ctx, &genai.ClientConfig{
