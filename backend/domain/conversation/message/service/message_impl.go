@@ -95,6 +95,8 @@ func (m *messageImpl) ListWithoutPair(ctx context.Context, req *entity.ListMeta)
 	resp.Direction = req.Direction
 	resp.HasMore = hasMore
 	resp.Messages = messageList
+	resp.PrevCursor = messageList[0].ID
+	resp.NextCursor = messageList[len(messageList)-1].ID
 	return resp, nil
 }
 
