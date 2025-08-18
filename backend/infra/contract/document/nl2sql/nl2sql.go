@@ -24,6 +24,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
 )
 
+//go:generate  mockgen -destination ../../../internal/mock/infra/contract/nl2sql_mock/nl2sql_mock.go -package mock -source nl2sql.go Factory
 type NL2SQL interface {
 	NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema, opts ...Option) (sql string, err error)
 }

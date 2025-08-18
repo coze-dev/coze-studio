@@ -751,3 +751,71 @@ func TestAppendSQLFilter(t *testing.T) {
 	}
 
 }
+
+func TestAddSliceIdColumn(t *testing.T) {
+	parser := NewSQLParser().(*Impl)
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+		wantErr  bool
+	}{
+		{
+			name:     "simple select",
+			input:    "SELECT name, age FROM users",
+			expected: "SELECT `name`,`age`,`pk_id` FROM `users`",
+		},
+		{
+			name:     "select star",
+			input:    "SELECT * FROM users",
+			expected: "SELECT * FROM users",
+		},
+		{
+			name:     "count function",
+			input:    "SELECT COUNT(*) FROM users",
+			expected: "SELECT COUNT(*) FROM users",
+		},
+		{
+			name:     "complex aggregate",
+			input:    "SELECT AVG(age), MAX(score) FROM users",
+			expected: "SELECT AVG(age), MAX(score) FROM users",
+		},
+		{
+			name:     "with alias",
+			input:    "SELECT u.name, u.age FROM users u",
+			expected: "SELECT `u`.`name`,`u`.`age`,`pk_id` FROM `users` AS `u`",
+		},
+		{
+			name:     "sql is empty",
+			input:    "",
+			expected: "",
+			wantErr:  true,
+		},
+		{
+			name:     "sql is not select",
+			input:    "INSERT INTO users (name, age) VALUES ('Alice', 30)",
+			expected: "",
+			wantErr:  true,
+		},
+		{
+			name:     "sql is wrong",
+			input:    "SELECT * users WHERE name = 'Alice'",
+			expected: "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parser.AddSelectFieldsToSelectSQL(tt.input, []string{"pk_id"})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("addSliceIdColumn() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !strings.EqualFold(strings.TrimSpace(got), strings.TrimSpace(tt.expected)) {
+				t.Errorf("addSliceIdColumn() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}

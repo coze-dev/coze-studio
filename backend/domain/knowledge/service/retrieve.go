@@ -18,11 +18,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"unicode/utf8"
 
@@ -50,6 +48,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -127,6 +126,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 			knowledgeInfoMap[kn.ID] = &KnowledgeInfo{}
 			knowledgeInfoMap[kn.ID].DocumentType = knowledgeModel.DocumentType(kn.FormatType)
 			knowledgeInfoMap[kn.ID].DocumentIDs = []int64{}
+			knowledgeInfoMap[kn.ID].KnowledgeName = kn.Name
 		}
 	}
 	for _, doc := range enableDocs {
@@ -404,15 +404,26 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		return nil, err
 	}
 	for i := range resp.ResultSet.Rows {
+		d := &schema.Document{
+			Content: "",
+			MetaData: map[string]any{
+				"document_id":    doc.ID,
+				"document_name":  doc.Name,
+				"knowledge_id":   doc.KnowledgeID,
+				"knowledge_name": retrieveCtx.KnowledgeInfoMap[doc.KnowledgeID].KnowledgeName,
+			},
+		}
 		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
 		if !ok {
-			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
-			return nil, errors.New("convert id failed")
-		}
-		d := &schema.Document{
-			ID:       strconv.FormatInt(id, 10),
-			Content:  "",
-			MetaData: map[string]any{},
+			byteData, err := sonic.Marshal(resp.ResultSet.Rows)
+			if err != nil {
+				logs.CtxErrorf(ctx, "marshal sql resp failed: %v", err)
+				return nil, err
+			}
+			prefix := "sql:" + sql + ";result:"
+			d.Content = prefix + string(byteData)
+		} else {
+			d.ID = strconv.FormatInt(id, 10)
 		}
 		d.WithScore(1)
 		retrieveResult = append(retrieveResult, d)
@@ -423,29 +434,13 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 const pkID = "_knowledge_slice_id"
 
 func addSliceIdColumn(originalSql string) string {
-	lowerSql := strings.ToLower(originalSql)
-	selectIndex := strings.Index(lowerSql, "select ")
-	if selectIndex == -1 {
+	sql, err := sqlparser.NewSQLParser().AddSelectFieldsToSelectSQL(originalSql, []string{pkID})
+	if err != nil {
+		logs.Errorf("add slice id column failed: %v", err)
 		return originalSql
 	}
-	result := originalSql[:selectIndex+len("select ")] // Keep selected part
-	remainder := originalSql[selectIndex+len("select "):]
-
-	lowerRemainder := strings.ToLower(remainder)
-	fromIndex := strings.Index(lowerRemainder, " from")
-	if fromIndex == -1 {
-		return originalSql
-	}
-
-	columns := strings.TrimSpace(remainder[:fromIndex])
-	if columns != "*" {
-		columns += ", " + pkID
-	}
-
-	result += columns + remainder[fromIndex:]
-	return result
+	return sql
 }
-
 func packNL2SqlRequest(doc *model.KnowledgeDocument) *document.TableSchema {
 	res := &document.TableSchema{}
 	if doc.TableInfo == nil {
@@ -561,18 +556,39 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	sliceIDs := make(sets.Set[int64])
 	docIDs := make(sets.Set[int64])
 	knowledgeIDs := make(sets.Set[int64])
-
+	results = []*knowledgeModel.RetrieveSlice{}
 	documentMap := map[int64]*model.KnowledgeDocument{}
 	knowledgeMap := map[int64]*model.Knowledge{}
 	sliceScoreMap := map[int64]float64{}
 	for _, doc := range retrieveResult {
-		id, err := strconv.ParseInt(doc.ID, 10, 64)
-		if err != nil {
-			logs.CtxErrorf(ctx, "convert id failed: %v", err)
-			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "convert id failed"))
+		if len(doc.ID) == 0 {
+			results = append(results, &knowledgeModel.RetrieveSlice{
+				Slice: &knowledgeModel.Slice{
+					KnowledgeID:  doc.MetaData["knowledge_id"].(int64),
+					DocumentID:   doc.MetaData["document_id"].(int64),
+					DocumentName: doc.MetaData["document_name"].(string),
+					RawContent: []*knowledgeModel.SliceContent{
+						{
+							Type: knowledgeModel.SliceContentTypeText,
+							Text: ptr.Of(doc.Content),
+						},
+					},
+					Extra: map[string]string{
+						consts.KnowledgeName: doc.MetaData["knowledge_name"].(string),
+						consts.DocumentURL:   "",
+					},
+				},
+				Score: 1,
+			})
+		} else {
+			id, err := strconv.ParseInt(doc.ID, 10, 64)
+			if err != nil {
+				logs.CtxErrorf(ctx, "convert id failed: %v", err)
+				return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "convert id failed"))
+			}
+			sliceIDs[id] = struct{}{}
+			sliceScoreMap[id] = doc.Score()
 		}
-		sliceIDs[id] = struct{}{}
-		sliceScoreMap[id] = doc.Score()
 	}
 	slices, err := k.sliceRepo.MGetSlices(ctx, sliceIDs.ToSlice())
 	if err != nil {
@@ -625,7 +641,6 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			return nil, err
 		}
 	}
-	results = []*knowledgeModel.RetrieveSlice{}
 	for i := range slices {
 		doc := documentMap[slices[i].DocumentID]
 		kn := knowledgeMap[slices[i].KnowledgeID]
