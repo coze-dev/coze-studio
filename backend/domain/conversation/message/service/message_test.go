@@ -250,3 +250,230 @@ func TestGetByRunIDs(t *testing.T) {
 
 	assert.Len(t, resp, 2)
 }
+
+func TestListWithoutPair(t *testing.T) {
+	ctx := context.Background()
+	t.Run("success_with_messages", func(t *testing.T) {
+		mockDBGen := orm.NewMockDB()
+
+		mockDBGen.AddTable(&model.Message{}).
+			AddRows(
+				&model.Message{
+					ID:             1,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          200,
+					Content:        "Hello",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1, // MessageStatusAvailable
+					CreatedAt:      time.Now().UnixMilli(),
+				},
+				&model.Message{
+					ID:             2,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          201,
+					Content:        "World",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1, // MessageStatusAvailable
+					CreatedAt:      time.Now().UnixMilli(),
+				},
+			)
+
+		mockDB, err := mockDBGen.DB()
+		assert.NoError(t, err)
+
+		components := &Components{
+			MessageRepo: repository.NewMessageRepo(mockDB, nil),
+		}
+
+		req := &entity.ListMeta{
+			ConversationID: 100,
+			UserID:         "user123",
+			Limit:          10,
+			Direction:      entity.ScrollPageDirectionNext,
+		}
+
+		resp, err := NewService(components).ListWithoutPair(ctx, req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, entity.ScrollPageDirectionNext, resp.Direction)
+		assert.False(t, resp.HasMore)
+		assert.Len(t, resp.Messages, 2)
+		assert.Equal(t, "Hello", resp.Messages[0].Content)
+		assert.Equal(t, "World", resp.Messages[1].Content)
+	})
+
+	t.Run("empty_result", func(t *testing.T) {
+		mockDBGen := orm.NewMockDB()
+		mockDBGen.AddTable(&model.Message{})
+
+		mockDB, err := mockDBGen.DB()
+		assert.NoError(t, err)
+
+		components := &Components{
+			MessageRepo: repository.NewMessageRepo(mockDB, nil),
+		}
+
+		req := &entity.ListMeta{
+			ConversationID: 999,
+			UserID:         "user123",
+			Limit:          10,
+			Direction:      entity.ScrollPageDirectionNext,
+		}
+
+		resp, err := NewService(components).ListWithoutPair(ctx, req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, entity.ScrollPageDirectionNext, resp.Direction)
+		assert.False(t, resp.HasMore)
+		assert.Len(t, resp.Messages, 0)
+	})
+
+	t.Run("pagination_has_more", func(t *testing.T) {
+		mockDBGen := orm.NewMockDB()
+
+		mockDBGen.AddTable(&model.Message{}).
+			AddRows(
+				&model.Message{
+					ID:             1,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          200,
+					Content:        "Message 1",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli() - 3000,
+				},
+				&model.Message{
+					ID:             2,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          201,
+					Content:        "Message 2",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli() - 2000,
+				},
+				&model.Message{
+					ID:             3,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          202,
+					Content:        "Message 3",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli() - 1000,
+				},
+			)
+
+		mockDB, err := mockDBGen.DB()
+		assert.NoError(t, err)
+
+		components := &Components{
+			MessageRepo: repository.NewMessageRepo(mockDB, nil),
+		}
+
+		req := &entity.ListMeta{
+			ConversationID: 100,
+			UserID:         "user123",
+			Limit:          2,
+			Direction:      entity.ScrollPageDirectionNext,
+		}
+
+		resp, err := NewService(components).ListWithoutPair(ctx, req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, entity.ScrollPageDirectionNext, resp.Direction)
+		assert.True(t, resp.HasMore)
+		assert.Len(t, resp.Messages, 2)
+	})
+
+	t.Run("direction_prev", func(t *testing.T) {
+		mockDBGen := orm.NewMockDB()
+
+		mockDBGen.AddTable(&model.Message{}).
+			AddRows(
+				&model.Message{
+					ID:             1,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          200,
+					Content:        "Test message",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli(),
+				},
+			)
+
+		mockDB, err := mockDBGen.DB()
+		assert.NoError(t, err)
+
+		components := &Components{
+			MessageRepo: repository.NewMessageRepo(mockDB, nil),
+		}
+
+		req := &entity.ListMeta{
+			ConversationID: 100,
+			UserID:         "user123",
+			Limit:          10,
+			Direction:      entity.ScrollPageDirectionPrev,
+		}
+
+		resp, err := NewService(components).ListWithoutPair(ctx, req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, entity.ScrollPageDirectionPrev, resp.Direction)
+		assert.False(t, resp.HasMore)
+		assert.Len(t, resp.Messages, 1)
+	})
+
+	t.Run("with_message_type_filter", func(t *testing.T) {
+		mockDBGen := orm.NewMockDB()
+
+		mockDBGen.AddTable(&model.Message{}).
+			AddRows(
+				&model.Message{
+					ID:             1,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          200,
+					Content:        "Answer message",
+					MessageType:    string(message.MessageTypeAnswer),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli(),
+				},
+				&model.Message{
+					ID:             2,
+					ConversationID: 100,
+					UserID:         "user123",
+					RunID:          201,
+					Content:        "Question message",
+					MessageType:    string(message.MessageTypeQuestion),
+					Status:         1,
+					CreatedAt:      time.Now().UnixMilli(),
+				},
+			)
+
+		mockDB, err := mockDBGen.DB()
+		assert.NoError(t, err)
+
+		components := &Components{
+			MessageRepo: repository.NewMessageRepo(mockDB, nil),
+		}
+
+		req := &entity.ListMeta{
+			ConversationID: 100,
+			UserID:         "user123",
+			Limit:          10,
+			Direction:      entity.ScrollPageDirectionNext,
+			MessageType:    []*message.MessageType{&[]message.MessageType{message.MessageTypeAnswer}[0]},
+		}
+
+		resp, err := NewService(components).ListWithoutPair(ctx, req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Len(t, resp.Messages, 1)
+		assert.Equal(t, "Answer message", resp.Messages[0].Content)
+	})
+}
