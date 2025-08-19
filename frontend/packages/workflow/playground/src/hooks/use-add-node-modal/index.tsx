@@ -308,31 +308,56 @@ export const useAddNodeModal = (prevAddNodeRef: {
     closeCallback: onCloseModal,
     workspaceId: spaceId,
     onAdd: (mcpService, tool) => {
-      // 传入当前工作空间ID，确保MCP节点不与固定空间绑定
-      const nodeJSON = createMcpNodeInfo(mcpService, tool, {
-        currentWorkspaceId: spaceId,
-      });
-      const position = {
-        clientX: prevAddNodeRef.current.x,
-        clientY: prevAddNodeRef.current.y,
-      };
-      const { isDrag } = prevAddNodeRef.current;
-
-      if (addNodeCallbackRef.current) {
-        addNodeCallbackRef.current({
-          nodeType: StandardNodeType.Mcp,
-          nodeJSON,
-        });
-      } else {
-        editService.addNode(StandardNodeType.Mcp, nodeJSON, position, isDrag);
-      }
-
-      Toast.success(
-        I18n.t('MCP工具已添加: {toolName}', {
+      try {
+        // 🚨 验证必要参数
+        if (!mcpService?.mcpId) {
+          Toast.error('MCP服务数据异常：缺少服务ID');
+          return false;
+        }
+        
+        if (!tool?.name) {
+          Toast.error('MCP工具数据异常：缺少工具名称');
+          return false;
+        }
+        
+        console.log('🔧 MCP添加节点 - 服务信息:', {
+          serviceName: mcpService.mcpName,
+          serviceId: mcpService.mcpId,
           toolName: tool.name,
-        }) as string,
-      );
-      return true;
+          workspaceId: spaceId,
+        });
+        
+        // 传入当前工作空间ID，确保MCP节点不与固定空间绑定
+        const nodeJSON = createMcpNodeInfo(mcpService, tool, {
+          currentWorkspaceId: spaceId,
+        });
+        
+        const position = {
+          clientX: prevAddNodeRef.current.x,
+          clientY: prevAddNodeRef.current.y,
+        };
+        const { isDrag } = prevAddNodeRef.current;
+
+        if (addNodeCallbackRef.current) {
+          addNodeCallbackRef.current({
+            nodeType: StandardNodeType.Mcp,
+            nodeJSON,
+          });
+        } else {
+          editService.addNode(StandardNodeType.Mcp, nodeJSON, position, isDrag);
+        }
+
+        Toast.success(
+          I18n.t('MCP工具已添加: {toolName}', {
+            toolName: tool.name,
+          }) as string,
+        );
+        return true;
+      } catch (error) {
+        console.error('🚨 MCP节点创建失败:', error);
+        Toast.error(`创建MCP节点失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        return false;
+      }
     },
   });
 

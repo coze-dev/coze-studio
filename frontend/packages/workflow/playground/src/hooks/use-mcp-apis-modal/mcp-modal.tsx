@@ -96,7 +96,8 @@ export const McpModal: React.FC<McpModalProps> = ({
           color: 'var(--semi-color-text-2)',
         }}
       >
-        类型: {service.typeName} | 创建者: {service.createUserName}
+        <div>ID: {service.mcpId}</div>
+        <div>类型: {service.typeName} | 创建者: {service.createUserName}</div>
       </div>
     </div>
   );

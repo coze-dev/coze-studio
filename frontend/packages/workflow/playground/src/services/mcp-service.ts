@@ -41,7 +41,7 @@ export class McpApiService {
           body: {
             mcpName: options?.mcpName || '',
             mcpType: options?.mcpType || '',
-            sassWorkspaceId: options?.sassWorkspaceId, // 使用动态传入的工作空间ID，不再硬编码
+            sassWorkspaceId: options?.sassWorkspaceId || '7533521629687578624', // 确保始终有有效的工作空间ID
           },
         }),
       });
@@ -88,7 +88,7 @@ export class McpApiService {
         body: JSON.stringify({
           body: {
             mcpId,
-            sassWorkspaceId: options?.sassWorkspaceId, // 使用动态传入的工作空间ID
+            sassWorkspaceId: options?.sassWorkspaceId || '7533521629687578624', // 确保始终有有效的工作空间ID
           },
         }),
       });
@@ -115,16 +115,26 @@ export class McpApiService {
   // 服务过滤函数 - 只展示激活的MCP服务（放宽上架条件）
   static filterAvailableMcpServices(services: McpService[]): McpService[] {
     console.log('🔧 过滤前服务数量:', services.length);
-    console.log('🔧 过滤前所有服务mcpId:', services.map(s => ({ name: s.mcpName, mcpId: s.mcpId, status: s.mcpStatus })));
-    
+    console.log(
+      '🔧 过滤前所有服务mcpId:',
+      services.map(s => ({
+        name: s.mcpName,
+        mcpId: s.mcpId,
+        status: s.mcpStatus,
+      })),
+    );
+
     const filtered = services.filter(
       service => service.mcpStatus === MCP_STATUS_ENUM.ACTIVE,
       // 移除上架状态过滤，因为很多服务状态为"0"但仍可用
     );
-    
+
     console.log('🔧 过滤后服务数量:', filtered.length);
-    console.log('🔧 过滤后服务mcpId:', filtered.map(s => ({ name: s.mcpName, mcpId: s.mcpId })));
-    
+    console.log(
+      '🔧 过滤后服务mcpId:',
+      filtered.map(s => ({ name: s.mcpName, mcpId: s.mcpId })),
+    );
+
     return filtered;
   }
 

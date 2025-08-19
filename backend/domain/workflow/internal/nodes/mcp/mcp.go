@@ -82,20 +82,31 @@ func (c *McpConfig) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOp
 
 		// Look for MCP configuration in input parameters (both hidden and visible)
 		for _, param := range inputParameters {
+			// 🔧 增强调试：记录每个参数的查找过程
+			if strings.Contains(param.Name, "sassWorkspaceId") || strings.Contains(param.Name, "mcpId") || strings.Contains(param.Name, "toolName") {
+				fmt.Printf("🔧 MCP检查关键参数: %s = %v (type: %T)\n", param.Name, param.Input.Value.Content, param.Input.Value.Content)
+			}
+			
 			if param.Name == "__mcp_sassWorkspaceId" || param.Name == "sassWorkspaceId" {
 				if workspaceID, ok := param.Input.Value.Content.(string); ok && workspaceID != "" {
 					c.SassWorkspaceID = workspaceID
 					fmt.Printf("🔧 MCP Found sassWorkspaceId: %s\n", workspaceID)
+				} else {
+					fmt.Printf("🚨 MCP sassWorkspaceId参数类型转换失败或为空: %v (type: %T)\n", param.Input.Value.Content, param.Input.Value.Content)
 				}
 			} else if param.Name == "__mcp_mcpId" || param.Name == "mcpId" {
 				if mcpID, ok := param.Input.Value.Content.(string); ok && mcpID != "" {
 					c.McpID = mcpID
 					fmt.Printf("🔧 MCP Found mcpId: %s\n", mcpID)
+				} else {
+					fmt.Printf("🚨 MCP mcpId参数类型转换失败或为空: %v (type: %T)\n", param.Input.Value.Content, param.Input.Value.Content)
 				}
 			} else if param.Name == "__mcp_toolName" || param.Name == "toolName" {
 				if toolName, ok := param.Input.Value.Content.(string); ok && toolName != "" {
 					c.ToolName = toolName
 					fmt.Printf("🔧 MCP Found toolName: %s\n", toolName)
+				} else {
+					fmt.Printf("🚨 MCP toolName参数类型转换失败或为空: %v (type: %T)\n", param.Input.Value.Content, param.Input.Value.Content)
 				}
 			}
 		}

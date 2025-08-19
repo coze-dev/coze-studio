@@ -112,19 +112,25 @@ export const createMcpNodeInfo = (
 
   // 创建完整的inputParameters（包含隐藏的MCP配置参数和用户可见的工具参数）
   const inputParameters: ReturnType<typeof BlockInput.create>[] = [];
-  
-  // 添加隐藏的MCP配置参数（使用特殊前缀，UI会过滤掉）
-  inputParameters.push(
-    BlockInput.create('__mcp_sassWorkspaceId', currentWorkspaceId || '7533521629687578624'),
-    BlockInput.create('__mcp_mcpId', mcpService.mcpId),
-    BlockInput.create('__mcp_toolName', tool.name),
-  );
 
-  // 🔧 临时添加可见的配置参数用于调试（后续可删除）
+  // 🔧 MCP配置参数 - 正确的参数名称
   inputParameters.push(
-    BlockInput.create('sassWorkspaceId', currentWorkspaceId || '7533521629687578624'),
+    BlockInput.create(
+      'sassWorkspaceId',
+      currentWorkspaceId || '7533521629687578624',
+    ),
     BlockInput.create('mcpId', mcpService.mcpId),
     BlockInput.create('toolName', tool.name),
+  );
+
+  // 添加隐藏的MCP配置参数供后端使用
+  inputParameters.push(
+    BlockInput.create(
+      '__mcp_sassWorkspaceId',
+      currentWorkspaceId || '7533521629687578624',
+    ),
+    BlockInput.create('__mcp_mcpId', mcpService.mcpId),
+    BlockInput.create('__mcp_toolName', tool.name),
   );
 
   // 添加工具的实际参数（用户可见可编辑）
@@ -137,7 +143,22 @@ export const createMcpNodeInfo = (
     inputParameters.push(BlockInput.create(param.name, String(defaultValue)));
   });
 
-  // 🚨 关键调试：确认mcpService数据结构和mcpId值
+  // 🚨 关键验证：确保必要参数不为空
+  if (!mcpService?.mcpId) {
+    console.error('🚨 MCP服务缺少mcpId:', mcpService);
+    throw new Error(
+      `MCP服务缺少必要的mcpId字段: ${mcpService?.mcpName || 'Unknown service'}`,
+    );
+  }
+
+  if (!tool?.name) {
+    console.error('🚨 MCP工具缺少name:', tool);
+    throw new Error(
+      `MCP工具缺少必要的name字段: ${tool?.description || 'Unknown tool'}`,
+    );
+  }
+
+  // 🔧 调试日志：确认数据完整性
   console.log('🔧 创建MCP节点 - 完整mcpService对象:', mcpService);
   console.log('🔧 创建MCP节点 - mcpId值:', mcpService.mcpId);
   console.log('🔧 创建MCP节点 - mcpId类型:', typeof mcpService.mcpId);
@@ -155,8 +176,9 @@ export const createMcpNodeInfo = (
   const nodeData = {
     data: {
       nodeMeta: {
-        title: tool.name, // 直接使用工具名称
-        description: tool.description, // 直接使用工具描述
+        title: `${mcpService.mcpName} - ${tool.name}`, // 显示服务名和工具名
+        subtitle: `MCP服务: ${mcpService.mcpName}`, // 显示服务信息
+        description: `1.sassWorkspaceId: ${currentWorkspaceId || '7533521629687578624'}\n2.mcpId: ${mcpService.mcpId}\n3.toolName: ${tool.name}\n4.description: ${tool.description}`, // 在描述开头显示关键参数
         icon: templateIcon,
       },
       // 修复：直接在data级别保存inputParameters，而不是嵌套在inputs中
