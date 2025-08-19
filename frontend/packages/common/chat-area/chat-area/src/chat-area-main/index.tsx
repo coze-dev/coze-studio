@@ -222,6 +222,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>((props, ref) => {
     selectable,
     showClearContextDivider,
     messageWidth,
+    messageMaxWidth,
     readonly,
     uiKitChatInputButtonConfig,
     uikitChatInputButtonStatus,
@@ -237,6 +238,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>((props, ref) => {
     isOnboardingCentered,
     fileLimit,
     stopRespondOverrideWaiting,
+    isMiniScreen,
   } = props;
   const getScrollViewRef = useRef<() => ScrollViewController>(null);
   const {
@@ -278,6 +280,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>((props, ref) => {
         enableSelectOnboarding,
         showClearContextDivider,
         messageWidth,
+        messageMaxWidth,
         readonly: readonly || isClearMessageHistoryLock,
         uiKitChatInputButtonConfig,
         theme,
@@ -304,6 +307,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>((props, ref) => {
         onboardingSuggestionsShowMode,
         showBackground,
         stopRespondOverrideWaiting,
+        isMiniScreen,
       }}
     >
       <ChatAreaMain

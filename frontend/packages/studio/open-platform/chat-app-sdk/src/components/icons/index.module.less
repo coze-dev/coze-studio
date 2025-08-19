@@ -1,0 +1,38 @@
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+  color: rgba(28,31,35, 80%);
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: #EEE;
+  }
+
+  &.light {
+    color: #FFF;
+
+    &:hover{
+      background: none;
+    }
+  }
+}
+
+@keyframes animation-rotate {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+      transform: rotate(1turn);
+  }
+}
+
+.spin {
+  animation: animation-rotate .6s linear infinite;
+  animation-fill-mode: forwards;
+}

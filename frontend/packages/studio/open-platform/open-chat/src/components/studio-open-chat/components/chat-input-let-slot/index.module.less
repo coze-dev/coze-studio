@@ -1,0 +1,37 @@
+/* stylelint-disable declaration-no-important */
+.container {
+  padding: 4px;
+  border-radius: 4px;
+
+  @apply coz-bg-max;
+
+  .button {
+    justify-content: flex-start;
+
+    width: 100%;
+    padding-right: 8px;
+    padding-left: 8px;
+
+    font-weight: 400;
+    text-align: left;
+
+    border-radius: 4px;
+
+    @apply coz-fg-primary;
+
+    &:global(.coz-btn-secondary) {
+      @apply coz-fg-primary;
+    }
+  }
+}
+
+.popover {
+  border-radius: 4px;
+}
+
+.chat-input-left-slot {
+  .disabled {
+    background-color: rgba(249, 249, 249, 80%)!important;
+    color: rgba(55, 67 , 106, 38%)!important;
+  }
+}

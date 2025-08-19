@@ -1,0 +1,19 @@
+.coze-chat-app {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  &.bordered {
+    border-radius: 8px;
+    box-shadow: 0 6px 8px 0 rgb(29 28 35 / 6%), 0 0 2px 0 rgb(29 28 35 / 18%);
+  }
+
+  .content {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

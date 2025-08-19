@@ -1,0 +1,44 @@
+/* stylelint-disable declaration-no-important */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid #1d1c2314;
+
+  .conversation-list-btn {
+    margin-right: 8px;
+  }
+
+  .avatar {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+
+  .title {
+    flex: 1 1 auto;
+    margin-right: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c1d23;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  &.bg-theme {
+    .icon-btn,
+    .title {
+      color: #fff;
+    }
+
+    .icon-btn:disabled,
+    .icon-btn:hover {
+      color: rgba(255, 255, 255, 80%)!important;
+    }
+  }
+}

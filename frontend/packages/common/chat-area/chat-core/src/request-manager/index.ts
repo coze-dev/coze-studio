@@ -137,7 +137,7 @@ export class RequestManager {
     // Execute incoming unified hooks
     const onCommonAfterResponse = async (
       response: AxiosResponse,
-      hooksName: 'onAfterResponse' | 'onErrrorResponse' = 'onAfterResponse',
+      hooksName: 'onAfterResponse' | 'onErrorResponse' = 'onAfterResponse',
     ): Promise<AxiosResponse> => {
       // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
       let _response: AxiosResponse | Promise<AxiosResponse> = response;
@@ -154,7 +154,7 @@ export class RequestManager {
     // Execute hooks for each scene
     const onSceneAfterResponse = async (
       response: AxiosResponse,
-      hooksName: 'onAfterResponse' | 'onErrrorResponse' = 'onAfterResponse',
+      hooksName: 'onAfterResponse' | 'onErrorResponse' = 'onAfterResponse',
     ): Promise<AxiosResponse> => {
       const { scenes } = this.mergedBaseOptions;
       // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
@@ -188,9 +188,9 @@ export class RequestManager {
         // eslint-disable-next-line @typescript-eslint/naming-convention -- temporary variable, quite normal
         const _response = await onCommonAfterResponse(
           response,
-          'onErrrorResponse',
+          'onErrorResponse',
         );
-        return await onSceneAfterResponse(_response, 'onErrrorResponse');
+        return await onSceneAfterResponse(_response, 'onErrorResponse');
       },
     );
   }

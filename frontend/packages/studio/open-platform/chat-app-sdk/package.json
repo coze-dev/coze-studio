@@ -1,0 +1,126 @@
+{
+  "name": "@coze-studio/chat-app-sdk",
+  "version": "1.2.0-beta.17",
+  "description": "Coze Web ChatApp SDK",
+  "license": "Apache-2.0",
+  "author": "yangyu.1@bytedance.com",
+  "maintainers": [
+    "liuyuhang.0@bytedance.com",
+    "yangyu.1@bytedance.com"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "**/*.less",
+    "**/*.scss"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./rspack": "./rspack-config/export.ts"
+  },
+  "main": "src/index.ts",
+  "unpkg": true,
+  "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "rspack": [
+        "./rspack-config/export.ts"
+      ]
+    }
+  },
+  "files": [
+    "inhouse",
+    "libs",
+    "README.md"
+  ],
+  "scripts": {
+    "analyze": "ANALYZE_MODE=true pnpm build:inhouse:cn --analyze",
+    "analyze:perf": "PERFSEE=true npm run build:release:cn",
+    "bam": "bam update",
+    "build": "IS_OPEN_SOURCE=true rm -rf dist_ignore inhouse libs && concurrently \"npm:build:*\"",
+    "build:inhouse:boe": "CUSTOM_VERSION=inhouse BUILD_TYPE=offline REGION=cn npm run rsbuild",
+    "build:inhouse:cn": "CUSTOM_VERSION=inhouse BUILD_TYPE=online REGION=cn npm run rsbuild",
+    "build:inhouse:sg": "CUSTOM_VERSION=inhouse BUILD_TYPE=online REGION=sg npm run rsbuild",
+    "build:release:cn": "CUSTOM_VERSION=release BUILD_TYPE=online REGION=cn npm run rsbuild",
+    "build:release:oversea": "CUSTOM_VERSION=release BUILD_TYPE=online REGION=sg npm run rsbuild",
+    "build:ts": "tsc -b tsconfig.build.json",
+    "dev": "IS_OPEN_SOURCE=true npm run dev:cn:rl",
+    "dev:boe": "CUSTOM_VERSION=inhouse REGION=cn BUILD_TYPE=offline pnpm rsdev",
+    "dev:cn": "CUSTOM_VERSION=inhouse REGION=cn BUILD_TYPE=online pnpm rsdev",
+    "dev:cn:rl": "CUSTOM_VERSION=release REGION=cn BUILD_TYPE=online pnpm rsdev",
+    "dev:sg": "CUSTOM_VERSION=inhouse REGION=sg BUILD_TYPE=online pnpm rsdev",
+    "dev:sg:rl": "CUSTOM_VERSION=release REGION=sg BUILD_TYPE=online pnpm rsdev",
+    "lint": "eslint ./ --cache",
+    "rsbuild": "NODE_ENV=production rspack build -c ./rspack-config/build.config.ts",
+    "rsdev": "NODE_ENV=development rspack serve -c ./rspack-config/dev.config.ts",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@coze-common/assets": "workspace:*",
+    "classnames": "^2.3.2",
+    "core-js": "^3.37.1",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react": "~18.2.0",
+    "react-device-detect": "2.2.3",
+    "react-dom": "~18.2.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-env": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/pkg-root-webpack-plugin": "workspace:*",
+    "@coze-arch/postcss-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/tailwind-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@coze-studio/bot-env-adapter": "workspace:*",
+    "@coze-studio/open-chat": "workspace:*",
+    "@douyinfe/semi-rspack-plugin": "2.61.0",
+    "@rspack/cli": "0.6.0",
+    "@rspack/core": "0.6.0",
+    "@rspack/plugin-react-refresh": "0.6.0",
+    "@svgr/webpack": "^8.1.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "^18",
+    "@types/postcss-js": "^4.0.2",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "~8.2.2",
+    "css-loader": "^6.10.0",
+    "debug": "^4.3.4",
+    "file-loader": "^6.2.0",
+    "less": "^4.2.0",
+    "less-loader": "~11.1.3",
+    "postcss": "^8.4.32",
+    "postcss-loader": "^7.3.3",
+    "react-refresh": "0.14.0",
+    "react-router-dom": "^6.11.1",
+    "rspack-plugin-dotenv": "^0.0.3",
+    "sass": "^1.69.5",
+    "sass-loader": "^14.1.0",
+    "style-loader": "^3.3.4",
+    "tailwindcss": "~3.3.3",
+    "ts-node": "^10.9.1",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  },
+  "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动",
+  "botPublishConfig": {
+    "main": "dist/index.js"
+  }
+}
+

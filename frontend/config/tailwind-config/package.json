@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.js",
     "./coze": "./src/coze.js",
+    "./util": "./src/util.js",
     "./design-token": "./src/design-token.ts"
   },
   "main": "src/index.js",

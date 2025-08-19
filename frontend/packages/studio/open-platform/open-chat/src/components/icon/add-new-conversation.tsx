@@ -1,0 +1,46 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { type FC } from 'react';
+
+import Icon from '@douyinfe/semi-icons';
+export const IconAddNewConversation: FC<{
+  className?: string;
+  width?: string;
+  height?: string;
+}> = ({ width, height, className }) => (
+  <Icon
+    svg={
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="currentColor"
+      >
+        <path
+          d="M13.4997 16.5H4.49881C2.84338 16.5 1.5 15.1574 1.5 13.5013V4.50088C1.5 2.84333 2.84338 1.5 4.49881 1.5H13.4997C15.158 1.5 16.5 2.84331 16.5 4.50088V13.5013C16.5 15.1574 15.158 16.5 13.4997 16.5ZM15.0013 5.25092C15.0013 4.00792 13.9919 3.00008 12.7496 3.00008H5.24889C4.00657 3.00008 2.99864 4.00792 2.99864 5.25092V12.7498C2.99864 13.9943 4.00657 15.0007 5.24889 15.0007H12.7496C13.9919 15.0007 15.0013 13.9943 15.0013 12.7498V5.25092ZM9.74933 11.9997C9.74933 12.414 9.41351 12.7498 8.99925 12.7498C8.585 12.7498 8.24918 12.414 8.24918 11.9997V9.75115H5.99967C5.58503 9.75115 5.24889 9.41502 5.24889 9.00037C5.24889 8.58572 5.58503 8.24958 5.99967 8.24958H8.24918V6.00099C8.24918 5.58674 8.585 5.25092 8.99925 5.25092C9.41351 5.25092 9.74933 5.58674 9.74933 6.001V8.24958H11.9988C12.4135 8.24958 12.7496 8.58572 12.7496 9.00037C12.7496 9.41502 12.4135 9.75115 11.9988 9.75115H9.74933V11.9997Z"
+          fill="currentColor"
+        />
+      </svg>
+    }
+    className={className}
+    style={{
+      width,
+      height,
+    }}
+  />
+);

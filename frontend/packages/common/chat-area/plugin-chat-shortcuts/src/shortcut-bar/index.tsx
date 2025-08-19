@@ -18,10 +18,10 @@
 import { type CSSProperties, type FC, useRef, useState } from 'react';
 
 import cls from 'classnames';
-import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 import { useMessageWidth } from '@coze-common/chat-area';
 import { OverflowList, Popover } from '@coze-arch/bot-semi';
 import { SendType } from '@coze-arch/bot-api/playground_api';
+import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 
 import {
   enableSendTypePanelHideTemplate,
@@ -53,7 +53,9 @@ interface ChatShortCutBarProps {
   wrapperStyle?: CSSProperties;
   toolTipFooterSlot?: React.ReactNode;
   onBeforeSendTemplateShortcut?: (
-    params: OnBeforeSendTemplateShortcutParams,
+    params: OnBeforeSendTemplateShortcutParams & {
+      shortcut: ShortCutCommand;
+    },
   ) => OnBeforeSendTemplateShortcutParams;
   onBeforeSendTextMessage?: (
     params: OnBeforeSendQueryShortcutParams,

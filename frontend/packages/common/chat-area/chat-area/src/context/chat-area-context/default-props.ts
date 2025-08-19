@@ -22,4 +22,5 @@ export const defaultConfigs: ChatAreaConfigs = {
   ignoreMessageConfigList: [],
   groupUserMessage: false,
   uploadPlugin: UploadPlugin,
+  isShowFunctionCallBox: true,
 };
