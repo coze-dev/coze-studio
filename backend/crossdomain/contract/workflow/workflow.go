@@ -51,6 +51,7 @@ type WorkflowMessage = entity.Message
 
 const (
 	NodeTypeOutputEmitter NodeType = "OutputEmitter"
+	NodeTypeCardSelector  NodeType = "CardSelector"
 )
 
 const (

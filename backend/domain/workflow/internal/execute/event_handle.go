@@ -534,6 +534,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			switch event.NodeType {
 			case entity.NodeTypeOutputEmitter:
 				content = event.Answer
+			case entity.NodeTypeCardSelector:
+				content = extractCardSelectorContent(event.Output)
 			case entity.NodeTypeExit:
 				if event.Context.SubWorkflowCtx != nil {
 					// if the exit node belongs to a sub workflow, do not send data message
@@ -905,4 +907,24 @@ func (f *fcInfo) outputString() string {
 	}
 
 	return f.output.Response
+}
+
+// extractCardSelectorContent extracts displayable content from CardSelector node output
+func extractCardSelectorContent(output map[string]any) string {
+	if output == nil {
+		return ""
+	}
+	
+	// 从CardSelector的输出中提取可显示的内容
+	if outputValue, exists := output["output"]; exists {
+		if outputStr, ok := outputValue.(string); ok {
+			return outputStr
+		}
+		// 如果output是复杂结构，转换为JSON字符串
+		if jsonBytes, err := sonic.MarshalString(outputValue); err == nil {
+			return jsonBytes
+		}
+	}
+	
+	return ""
 }
