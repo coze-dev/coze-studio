@@ -60,7 +60,7 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 		StartTime:     time.Now(),
 		RunMeta:       arm,
 		SW:            sw,
-		MessageEvent:  internal.NewEvent(),
+		MessageEvent:  internal.NewMessageEvent(),
 		RunProcess:    internal.NewRunProcess(c.RunRecordRepo),
 		RunRecordRepo: c.RunRecordRepo,
 		ImagexClient:  c.ImagexSVC,

@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  coze-studio-backend:
+    image: luzhipeng728/coze-studio-backend:v1.2.ynet
+    container_name: coze-server-new
+    ports:
+      - "9888:8888"
+      - "9889:9889"
+    volumes:
+      - /home/dev/dev/coze-studio/backend/conf:/app/resources/conf
+      - /home/dev/dev/coze-studio/backend/static:/app/resources/static
+      - /root/coze-test/ssl:/root/coze-test/ssl
+    environment:
+      - LISTEN_ADDR=:8888
+      - LOG_LEVEL=debug
+      - MAX_REQUEST_BODY_SIZE=1073741824
+      - SERVER_HOST=10.10.10.220:8888
+      # - USE_SSL=1
+      # - SSL_CERT_FILE=/root/coze-test/ssl/server.crt
+      # - SSL_KEY_FILE=/root/coze-test/ssl/server.key
+      - MINIO_PROXY_ENDPOINT=:9889
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=opencoze
+      - MYSQL_USER=coze
+      - MYSQL_PASSWORD=coze123
+      - MYSQL_HOST=10.10.10.220
+      - MYSQL_PORT=3306
+      - MYSQL_DSN=coze:coze123@tcp(10.10.10.220:3306)/opencoze?charset=utf8mb4&parseTime=True
+      - ATLAS_URL=mysql://coze:coze123@10.10.10.220:3306/opencoze?charset=utf8mb4&parseTime=True
+      - REDIS_AOF_ENABLED=no
+      - REDIS_IO_THREADS=4
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_ADDR=10.10.10.220:6379
+      - FILE_UPLOAD_COMPONENT_TYPE=storage
+      - VE_IMAGEX_AK=
+      - VE_IMAGEX_SK=
+      - VE_IMAGEX_SERVER_ID=
+      - VE_IMAGEX_DOMAIN=
+      - VE_IMAGEX_TEMPLATE=
+      - VE_IMAGEX_UPLOAD_HOST=https://imagex.volcengineapi.com
+      - STORAGE_TYPE=minio
+      - STORAGE_BUCKET=opencoze
+      - STORAGE_UPLOAD_HTTP_SCHEME=https
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+      - MINIO_DEFAULT_BUCKETS=milvus
+      - MINIO_AK=minioadmin
+      - MINIO_SK=minioadmin123
+      - MINIO_ENDPOINT=10.10.10.220:9000
+      - MINIO_API_HOST=http://10.10.10.220:9000
+      - TOS_ACCESS_KEY=
+      - TOS_SECRET_KEY=
+      - TOS_ENDPOINT=https://tos-cn-beijing.volces.com
+      - TOS_BUCKET_ENDPOINT=https://opencoze.tos-cn-beijing.volces.com
+      - TOS_REGION=cn-beijing
+      - ES_ADDR=http://10.10.10.220:9200
+      - ES_VERSION=v8
+      - ES_USERNAME=
+      - ES_PASSWORD=
+      - COZE_MQ_TYPE=nsq
+      - MQ_NAME_SERVER=10.10.10.220:4150
+      - RMQ_ACCESS_KEY=
+      - RMQ_SECRET_KEY=
+      - VECTOR_STORE_TYPE=milvus
+      - MILVUS_ADDR=10.10.10.220:19530
+      - VIKING_DB_HOST=
+      - VIKING_DB_REGION=
+      - VIKING_DB_AK=
+      - VIKING_DB_SK=
+      - VIKING_DB_SCHEME=
+      - VIKING_DB_MODEL_NAME=
+      - EMBEDDING_TYPE=ark
+      - OPENAI_EMBEDDING_BASE_URL=
+      - OPENAI_EMBEDDING_MODEL=
+      - OPENAI_EMBEDDING_API_KEY=
+      - OPENAI_EMBEDDING_BY_AZURE=true
+      - OPENAI_EMBEDDING_API_VERSION=
+      - OPENAI_EMBEDDING_DIMS=1024
+      - OPENAI_EMBEDDING_REQUEST_DIMS=1024
+      - ARK_EMBEDDING_MODEL=
+      - ARK_EMBEDDING_AK=
+      - ARK_EMBEDDING_DIMS=2048
+      - ARK_EMBEDDING_BASE_URL=
+      - HTTP_EMBEDDING_ADDR=http://127.0.0.1:6543
+      - OCR_TYPE=ve
+      - VE_OCR_AK=
+      - VE_OCR_SK=
+      - MODEL_PROTOCOL_0=ark
+      - MODEL_OPENCOZE_ID_0=100001
+      - MODEL_NAME_0=
+      - MODEL_ID_0=
+      - MODEL_API_KEY_0=
+      - MODEL_BASE_URL_0=
+      - BUILTIN_CM_TYPE=ark
+      - BUILTIN_CM_OPENAI_BASE_URL=
+      - BUILTIN_CM_OPENAI_API_KEY=
+      - BUILTIN_CM_OPENAI_BY_AZURE=true
+      - BUILTIN_CM_OPENAI_MODEL=
+      - BUILTIN_CM_ARK_API_KEY=
+      - BUILTIN_CM_ARK_MODEL=
+      - BUILTIN_CM_ARK_BASE_URL=
+      - BUILTIN_CM_DEEPSEEK_BASE_URL=
+      - BUILTIN_CM_DEEPSEEK_API_KEY=
+      - BUILTIN_CM_DEEPSEEK_MODEL=
+      - BUILTIN_CM_OLLAMA_BASE_URL=
+      - BUILTIN_CM_OLLAMA_MODEL=
+      - BUILTIN_CM_QWEN_BASE_URL=
+      - BUILTIN_CM_QWEN_API_KEY=
+      - BUILTIN_CM_QWEN_MODEL=
+      - BUILTIN_CM_GEMINI_BACKEND=
+      - BUILTIN_CM_GEMINI_API_KEY=
+      - BUILTIN_CM_GEMINI_PROJECT=
+      - BUILTIN_CM_GEMINI_LOCATION=
+      - BUILTIN_CM_GEMINI_BASE_URL=
+      - BUILTIN_CM_GEMINI_MODEL=
+      - CODE_RUNNER_TYPE=local
+      - CODE_RUNNER_ALLOW_ENV=
+      - CODE_RUNNER_ALLOW_READ=
+      - CODE_RUNNER_ALLOW_WRITE=
+      - CODE_RUNNER_ALLOW_RUN=
+      - CODE_RUNNER_ALLOW_NET=cdn.jsdelivr.net
+      - CODE_RUNNER_ALLOW_FFI=
+      - CODE_RUNNER_NODE_MODULES_DIR=
+      - CODE_RUNNER_TIMEOUT_SECONDS=
+      - CODE_RUNNER_MEMORY_LIMIT_MB=
+    networks:
+      - coze-network
+    restart: unless-stopped
+
+networks:
+  coze-network:
+    driver: bridge
+

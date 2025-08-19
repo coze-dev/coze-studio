@@ -36,7 +36,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 // CreateWorkflow .
@@ -1244,19 +1243,13 @@ func ExportWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// TODO: ExportWorkflow needs to be implemented in domain service
-	// resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
-	// if err != nil {
-	// 	internalServerErrorResponse(ctx, c, err)
-	// 	return
-	// }
-	// c.JSON(consts.StatusOK, resp)
-	
-	// Temporary response
-	c.JSON(consts.StatusOK, &workflow.ExportWorkflowResponse{
-		Code: errno.ErrWorkflowOperationFail,
-		Msg:  "ExportWorkflow not implemented yet",
-	})
+	resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }
 
 // ImportWorkflow imports workflows from an upload package
@@ -1270,19 +1263,13 @@ func ImportWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// TODO: ImportWorkflow needs to be implemented in domain service
-	// resp, err := appworkflow.SVC.ImportWorkflow(ctx, &req)
-	// if err != nil {
-	// 	internalServerErrorResponse(ctx, c, err)
-	// 	return
-	// }
-	// c.JSON(consts.StatusOK, resp)
-	
-	// Temporary response
-	c.JSON(consts.StatusOK, &workflow.ImportWorkflowResponse{
-		Code: errno.ErrWorkflowOperationFail,
-		Msg:  "ImportWorkflow not implemented yet",
-	})
+	resp, err := appworkflow.SVC.ImportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }
 
 // ValidateImport validates an import package without actually importing
@@ -1296,17 +1283,11 @@ func ValidateImport(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// TODO: ValidateImport needs to be implemented in domain service
-	// resp, err := appworkflow.SVC.ValidateImport(ctx, &req)
-	// if err != nil {
-	// 	internalServerErrorResponse(ctx, c, err)
-	// 	return
-	// }
-	// c.JSON(consts.StatusOK, resp)
-	
-	// Temporary response
-	c.JSON(consts.StatusOK, &workflow.ValidateImportResponse{
-		Code: errno.ErrWorkflowOperationFail,
-		Msg:  "ValidateImport not implemented yet",
-	})
+	resp, err := appworkflow.SVC.ValidateImport(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }

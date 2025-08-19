@@ -18,13 +18,9 @@ package vo
 
 import (
 	"time"
-)
 
-// PluginEntity represents a plugin entity with version information
-type PluginEntity struct {
-	PluginID      int64   `json:"plugin_id"`
-	PluginVersion *string `json:"plugin_version,omitempty"` // nil or "0" means draft, "" means latest/online version
-}
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+)
 
 // WorkflowReferenceKey represents a workflow reference key
 type WorkflowReferenceKey struct {
@@ -99,10 +95,10 @@ type WorkflowExportPackage struct {
 
 // GlobalDependencyInfo represents dependencies shared across multiple workflows
 type GlobalDependencyInfo struct {
-	Plugins   map[int64]*PluginEntity `json:"plugins,omitempty"`   // Plugin dependencies
-	Knowledge map[int64]string        `json:"knowledge,omitempty"` // Knowledge base dependencies (ID -> name mapping)
-	Databases map[int64]string        `json:"databases,omitempty"` // Database dependencies (ID -> name mapping)
-	Workflows map[int64]string        `json:"workflows,omitempty"` // Referenced workflows (ID -> name mapping)
+	Plugins   map[int64]*plugin.PluginEntity `json:"plugins,omitempty"`   // Plugin dependencies
+	Knowledge map[int64]string               `json:"knowledge,omitempty"` // Knowledge base dependencies (ID -> name mapping)
+	Databases map[int64]string               `json:"databases,omitempty"` // Database dependencies (ID -> name mapping)
+	Workflows map[int64]string               `json:"workflows,omitempty"` // Referenced workflows (ID -> name mapping)
 }
 
 // ImportResult represents the result of importing workflows

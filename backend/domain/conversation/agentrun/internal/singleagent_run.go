@@ -366,7 +366,7 @@ func (art *AgentRuntime) push(ctx context.Context, mainChan chan *entity.AgentRe
 			}
 
 		case message.MessageTypeInterrupt:
-			err = mh.handlerInterrupt(ctx, chunk, art)
+			err = mh.handlerInterrupt(ctx, chunk, art, firstAnswerMsg, reasoningContent.String())
 			if err != nil {
 				return
 			}
