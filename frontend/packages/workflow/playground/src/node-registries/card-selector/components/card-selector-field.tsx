@@ -47,53 +47,16 @@ function CardSelectorComp({
   const [searchValue, setSearchValue] = useState('');
   const form = useForm();
 
-  // 参数类型映射：从卡片参数类型映射到InputValueVO类型
-  const INPUT_TYPE_STRING = 1;
-  const INPUT_TYPE_INTEGER = 2;
-  const INPUT_TYPE_BOOLEAN = 3;
-  const INPUT_TYPE_ARRAY = 5;
-  const INPUT_TYPE_OBJECT = 6;
-
-  const mapParamTypeToInputType = (paramType: string) => {
-    switch (paramType.toLowerCase()) {
-      case 'string':
-        return INPUT_TYPE_STRING;
-      case 'number':
-      case 'integer':
-        return INPUT_TYPE_INTEGER;
-      case 'boolean':
-        return INPUT_TYPE_BOOLEAN;
-      case 'array':
-        return INPUT_TYPE_ARRAY;
-      case 'object':
-        return INPUT_TYPE_OBJECT;
-      default:
-        return INPUT_TYPE_STRING; // 默认为String
-    }
-  };
+  const JSON_INDENT = 2;
 
   // 将卡片参数转换为InputValueVO结构
   const convertParamsToInputValues = useCallback(
     (paramList: CardParam[]): InputValueVO[] => {
-      const REQUIREMENT_CAN_CHANGE = 3;
+      if (!paramList || paramList.length === 0) {
+        return [];
+      }
       return paramList.map(param => ({
-        key: [param.paramName],
-        desc: param.desc || '',
-        type: mapParamTypeToInputType(param.paramType),
-        required: param.required,
-        value: '',
-        requirement: REQUIREMENT_CAN_CHANGE,
-        subParameters: param.children
-          ? param.children.map((child: CardParam) => ({
-              key: [child.paramName],
-              desc: child.desc || '',
-              type: mapParamTypeToInputType(child.paramType),
-              required: child.required,
-              value: '',
-              requirement: REQUIREMENT_CAN_CHANGE,
-              subParameters: [],
-            }))
-          : [],
+        name: param.paramName,
       }));
     },
     [],
@@ -124,7 +87,6 @@ function CardSelectorComp({
         ],
       };
 
-      const JSON_INDENT = 2;
       return JSON.stringify(template, null, JSON_INDENT);
     },
     [],
@@ -194,7 +156,6 @@ function CardSelectorComp({
             sassWorkspaceId,
           });
 
-          // 如果有参数列表，自动生成输入变量
           if (cardDetail.paramList && cardDetail.paramList.length > 0) {
             const inputParameters = convertParamsToInputValues(
               cardDetail.paramList,
@@ -206,6 +167,28 @@ function CardSelectorComp({
             form.setFieldValue(ANSWER_CONTENT_PATH, answerContent);
 
             message.success('已根据卡片自动生成输入变量和输出模板');
+          } else {
+            // paramList为空时，设置空的输入变量和默认输出模板
+            form.setFieldValue(INPUT_PATH, []);
+            const defaultTemplate = JSON.stringify(
+              {
+                contentList: [
+                  {
+                    displayResponseType: 'TEMPLATE',
+                    rawContent: {},
+                    templateId: 'annuityDepositeSuccess',
+                    templateName: '养老金缴存成功',
+                    kvMap: {},
+                    dataResponse: {},
+                  },
+                ],
+              },
+              null,
+              JSON_INDENT,
+            );
+            form.setFieldValue(ANSWER_CONTENT_PATH, defaultTemplate);
+
+            message.success('已清空输入变量并设置默认输出模板');
           }
         } catch (error) {
           console.error('获取卡片详情失败:', error);
@@ -218,7 +201,6 @@ function CardSelectorComp({
       onChange,
       sassWorkspaceId,
       form,
-      fetchCardDetail,
       convertParamsToInputValues,
       generateAnswerContent,
     ],
