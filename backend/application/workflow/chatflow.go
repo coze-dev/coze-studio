@@ -32,6 +32,7 @@ import (
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -831,6 +832,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 		FileID *string `json:"file_id"`
 		Text   *string `json:"text"`
 	}
+	var uploadSVC = crossupload.DefaultSVC()
 	if msg.ContentType == "text" {
 		return &message.Message{
 			Role:           schema.User,
@@ -871,7 +873,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 				})
 			} else if ct.FileID != nil {
 				fileID := mustParseInt64(*ct.FileID)
-				file, err := SVC.UploadService.GetFile(ctx, &service.GetFileRequest{ID: fileID})
+				file, err := uploadSVC.GetFile(ctx, &service.GetFileRequest{ID: fileID})
 				if err != nil {
 					return nil, err
 				}
