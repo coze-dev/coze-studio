@@ -89,6 +89,7 @@ type Message struct {
 	MultiContent []*Content      `json:"multi_content"`
 	Text         *string         `json:"text,omitempty"`
 	ContentType  string          `json:"content_type"`
+	SectionID    int64           `json:"section_id"`
 }
 
 type ConversationHistoryResponse struct {
