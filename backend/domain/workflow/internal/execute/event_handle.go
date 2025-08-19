@@ -380,7 +380,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
-			entity.WorkflowInterrupted}); err != nil {
+			entity.WorkflowInterrupted, entity.WorkflowCancel}); err != nil {
 			return noTerminate, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
 		} else if updatedRows == 0 {
 			return noTerminate, fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
