@@ -241,20 +241,25 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 
 	var messages []*conversation.Message
 	var scMessages []*einoSchema.Message
+	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx != nil {
 		messages = execCtx.ExeCfg.ConversationHistory
 		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
 	}
+
+	ret := map[string]any{
+		"chatHistory": []any{},
+		"Query":       in["Query"],
+	}
+
 	if len(messages) == 0 {
-		if kr.ChatHistorySetting.EnableChatHistory {
-			ret := map[string]any{
-				"chatHistory": []any{},
-				"Query":       in["Query"],
-			}
-			return ret, nil
-		}
-		return in, nil
+		return ret, nil
+	}
+
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return ret, nil
 	}
 
 	count := 0
@@ -283,9 +288,6 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 	}
 	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
-	ret := map[string]any{
-		"chatHistory": historyMessages,
-		"Query":       in["Query"],
-	}
+	ret["chatHistory"] = historyMessages
 	return ret, nil
 }
