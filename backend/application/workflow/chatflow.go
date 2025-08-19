@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -1013,42 +1012,24 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 		spaceID   int64
 		executeID int64
 
-		hasFirstMessage = false
-		messageOutput   string
-		messageID       int64
-		outputCount     int32
-		inputCount      int32
+		hasFirstMessage     bool
+		incrMessage         string
+		messageID           int64
+		outputCount         int32
+		inputCount          int32
+		intermediateMessage *message.Message
 	)
-	//var createOrUpdateMessage = func(msg string, role schema.RoleType, contentType message.ContentType) error {
-	//	entityMessage := &message.Message{
-	//		AgentID:        appID,
-	//		RunID:          roundID,
-	//		SectionID:      sectionID,
-	//		Content:        msg,
-	//		ConversationID: conversationID,
-	//		ContentType:    contentType,
-	//		Role:           role,
-	//		MessageType:    message.MessageTypeAnswer,
-	//	}
-	//	if hasFirstMessage {
-	//		entityMessage.ID = messageID
-	//		_, err := crossmessage.DefaultSVC().Edit(ctx, entityMessage)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	} else {
-	//		m, err := crossmessage.DefaultSVC().Create(ctx, entityMessage)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		messageID = m.ID
-	//		hasFirstMessage = true
-	//	}
-	//	return nil
-	//
-	//}
 
 	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
+		defer func() {
+			if err != nil && intermediateMessage != nil {
+				_, mErr := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+				if mErr != nil {
+					logs.CtxWarnf(ctx, "create message faield, err: %v", err)
+				}
+			}
+		}()
+
 		if msg.StateMessage != nil {
 			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
 				return nil, schema.ErrNoValue
@@ -1079,9 +1060,9 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					return nil, err
 				}
 				if unbinding != nil {
-					uErr := unbinding()
-					if uErr != nil {
-						return nil, uErr
+					err = unbinding()
+					if err != nil {
+						return nil, err
 					}
 				}
 				return []*workflow.ChatFlowRunResponse{
@@ -1109,6 +1090,12 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				if err != nil {
 					return nil, err
 				}
+				if intermediateMessage != nil {
+					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+					if err != nil {
+						return nil, err
+					}
+				}
 
 				if unbinding() != nil {
 					uErr := unbinding()
@@ -1125,10 +1112,17 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}, err
 
 			case entity.WorkflowCancel:
+
+				if intermediateMessage != nil {
+					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+					if err != nil {
+						return nil, err
+					}
+				}
 				if unbinding() != nil {
-					uErr := unbinding()
-					if uErr != nil {
-						return nil, uErr
+					err = unbinding()
+					if err != nil {
+						return nil, err
 					}
 				}
 
@@ -1160,6 +1154,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					Event: string(vo.ChatFlowDone),
 					Data:  doneData,
 				})
+
 				err = GetWorkflowDomainSVC().BindConvRelatedInfo(ctx, conversationID, entity.ConvRelatedInfo{
 					EventID: msg.StateMessage.InterruptEvent.ID, ExecID: executeID, NodeType: msg.StateMessage.InterruptEvent.NodeType,
 				})
@@ -1209,7 +1204,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			if msg.Type != entity.Answer {
 				return nil, schema.ErrNoValue
 			}
-			// stream run will skip all messages from workflow tools
+
 			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
 				return nil, schema.ErrNoValue
 			}
@@ -1253,43 +1248,50 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				messageEvent.ContentType = string(message.ContentTypeText)
 			}
 
-			messageOutput += msg.Content
+			incrMessage += msg.Content
 			if !hasFirstMessage {
-				entityMessage := &message.Message{
-					AgentID:        appID,
-					RunID:          roundID,
-					SectionID:      sectionID,
-					Content:        messageOutput,
-					ConversationID: conversationID,
-					ContentType:    contentType,
-					Role:           dataMessage.Role,
-					MessageType:    message.MessageTypeAnswer,
+				preMessage := &message.Message{
+					AgentID:   appID,
+					RunID:     roundID,
+					SectionID: sectionID,
 				}
-				m, err := crossmessage.DefaultSVC().PreCreate(ctx, entityMessage)
+				response, err := crossmessage.DefaultSVC().PreCreate(ctx, preMessage)
 				if err != nil {
 					return nil, err
 				}
-				messageID = m.ID
+				messageID = response.ID
 				hasFirstMessage = true
 			}
+
+			intermediateMessage = &message.Message{
+				ID:             messageID,
+				AgentID:        appID,
+				RunID:          roundID,
+				SectionID:      sectionID,
+				Content:        incrMessage,
+				ConversationID: conversationID,
+				ContentType:    contentType,
+				Role:           dataMessage.Role,
+				MessageType:    message.MessageTypeAnswer,
+			}
+
 			if msg.Last {
-				entityMessage := &message.Message{
+				_, err := crossmessage.DefaultSVC().Create(ctx, &message.Message{
 					ID:             messageID,
 					AgentID:        appID,
 					RunID:          roundID,
 					SectionID:      sectionID,
-					Content:        messageOutput,
+					Content:        incrMessage,
 					ConversationID: conversationID,
 					ContentType:    contentType,
 					Role:           dataMessage.Role,
 					MessageType:    message.MessageTypeAnswer,
-				}
-				_, err := crossmessage.DefaultSVC().Create(ctx, entityMessage)
+				})
 				if err != nil {
 					return nil, err
 				}
 			}
-			//err = createOrUpdateMessage(messageOutput, dataMessage.Role, contentType)
+
 			if err != nil {
 				return nil, err
 			}
@@ -1300,10 +1302,29 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				return nil, err
 			}
 
+			if !msg.Last {
+				return []*workflow.ChatFlowRunResponse{
+					{
+						Event: string(vo.ChatFlowMessageDelta),
+						Data:  data,
+					},
+				}, nil
+			}
+
+			messageEvent.Content = incrMessage
+			completeData, err := sonic.MarshalString(messageEvent)
+			if err != nil {
+				return nil, err
+			}
+
 			return []*workflow.ChatFlowRunResponse{
 				{
-					Event: ternary.IFElse(msg.Last, string(vo.ChatFlowMessageCompleted), string(vo.ChatFlowMessageDelta)),
+					Event: string(vo.ChatFlowMessageDelta),
 					Data:  data,
+				},
+				{
+					Event: string(vo.ChatFlowMessageCompleted),
+					Data:  completeData,
 				},
 			}, nil
 
