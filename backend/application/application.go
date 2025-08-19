@@ -49,6 +49,7 @@ import (
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
@@ -64,6 +65,7 @@ import (
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
 	searchImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/search"
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
+	uploadImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/upload"
 	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
@@ -85,6 +87,7 @@ type basicServices struct {
 	promptSVC    *prompt.PromptApplicationService
 	templateSVC  *template.ApplicationService
 	openAuthSVC  *openauth.OpenAuthApplicationService
+	uploadSVC    *upload.UploadService
 }
 
 type primaryServices struct {
@@ -143,6 +146,7 @@ func Init(ctx context.Context) (err error) {
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(infra.ModelMgr, nil))
+	crossupload.SetDefaultSVC(uploadImpl.InitDomainService(basicServices.uploadSVC.UploadSVC))
 
 	return nil
 }
@@ -158,7 +162,7 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	upload.InitService(&upload.UploadComponents{Cache: infra.CacheCli, Oss: infra.TOSClient, DB: infra.DB, Idgen: infra.IDGenSVC})
+	uploadSVC := upload.InitService(&upload.UploadComponents{Cache: infra.CacheCli, Oss: infra.TOSClient, DB: infra.DB, Idgen: infra.IDGenSVC})
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
@@ -179,6 +183,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		promptSVC:    promptSVC,
 		templateSVC:  templateSVC,
 		openAuthSVC:  openAuthSVC,
+		uploadSVC:    uploadSVC,
 	}, nil
 }
 

@@ -48,7 +48,6 @@ import (
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	workflowDomain "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -71,11 +70,10 @@ import (
 )
 
 type ApplicationService struct {
-	DomainSVC     workflowDomain.Service
-	UploadService service.UploadService
-	ImageX        imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
-	TosClient     storage.Storage
-	IDGenerator   idgen.IDGenerator
+	DomainSVC   workflowDomain.Service
+	ImageX      imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
+	TosClient   storage.Storage
+	IDGenerator idgen.IDGenerator
 }
 
 var SVC = &ApplicationService{}

@@ -64,10 +64,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func InitService(components *UploadComponents) {
+func InitService(components *UploadComponents) *UploadService {
 	SVC.cache = components.Cache
 	SVC.oss = components.Oss
-	SVC.svc = service.NewUploadSVC(components.DB, components.Idgen, components.Oss)
+	SVC.UploadSVC = service.NewUploadSVC(components.DB, components.Idgen, components.Oss)
+	return SVC
 }
 
 type UploadComponents struct {
@@ -80,9 +81,9 @@ type UploadComponents struct {
 var SVC = &UploadService{}
 
 type UploadService struct {
-	oss   storage.Storage
-	cache cache.Cmdable
-	svc   service.UploadService
+	oss       storage.Storage
+	cache     cache.Cmdable
+	UploadSVC service.UploadService
 }
 
 const (
@@ -451,7 +452,7 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 		CreatedAt:     time.Now().UnixMilli(),
 		UpdatedAt:     time.Now().UnixMilli(),
 	}
-	domainResp, err := u.svc.UploadFile(ctx, &service.UploadFileRequest{File: &fileEntity})
+	domainResp, err := u.UploadSVC.UploadFile(ctx, &service.UploadFileRequest{File: &fileEntity})
 	if err != nil {
 		return &resp, err
 	}
