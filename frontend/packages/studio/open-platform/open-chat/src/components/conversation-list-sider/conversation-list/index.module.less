@@ -1,0 +1,40 @@
+.conversations {
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  height: 100%;
+}
+
+.conversations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.conversations-header-title {
+  color: var(--coz-fg-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.conversations-create-button {
+  margin: 0 16px;
+  width: calc(100% - 32px);
+}
+
+.conversations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+  margin-bottom: 10px;
+}
+
+.conversations-list-group {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+}

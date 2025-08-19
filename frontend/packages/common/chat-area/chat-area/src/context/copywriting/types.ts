@@ -19,4 +19,5 @@ export interface CopywritingContextInterface {
   textareaBottomTips: string;
   clearContextDividerText: string;
   clearContextTooltipContent: string;
+  audioButtonTooltipContent: string;
 }

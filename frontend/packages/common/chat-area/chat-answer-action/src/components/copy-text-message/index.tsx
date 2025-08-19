@@ -34,15 +34,27 @@ import { useTooltipTrigger } from '../../hooks/use-tooltip-trigger';
 type CopyTextMessageProps = Omit<
   ComponentProps<typeof IconButton>,
   'icon' | 'iconSize' | 'onClick'
->;
+> & {
+  isMustGroupLastAnswerMessage?: boolean;
+  isUseExternalContent?: boolean;
+  externalContent?: string;
+};
 
 export const CopyTextMessage: React.FC<
   PropsWithChildren<CopyTextMessageProps>
-> = ({ className, ...props }) => {
+> = ({
+  className,
+  isMustGroupLastAnswerMessage = true,
+  isUseExternalContent = false,
+  externalContent,
+  ...props
+}) => {
   const { reporter } = useChatArea();
   const { message, meta } = useMessageBoxContext();
 
-  const { content } = message;
+  const content = isUseExternalContent
+    ? externalContent || ''
+    : message.content;
 
   const [isCopySuccessful, setIsCopySuccessful] = useState<boolean>(false);
   const trigger = useTooltipTrigger('hover');
@@ -87,7 +99,7 @@ export const CopyTextMessage: React.FC<
     return null;
   }
 
-  if (!meta.isGroupLastAnswerMessage) {
+  if (!meta.isGroupLastAnswerMessage && isMustGroupLastAnswerMessage) {
     return null;
   }
 

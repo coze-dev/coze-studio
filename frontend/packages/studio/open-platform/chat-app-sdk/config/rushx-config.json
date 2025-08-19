@@ -1,0 +1,6 @@
+{
+  "codecov": {
+    "coverage": 30,
+    "incrementCoverage": 60
+  }
+}

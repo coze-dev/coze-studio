@@ -48,5 +48,6 @@ export const createChatBackgroundPlugin = () => {
     };
   return {
     ChatBackgroundPlugin,
+    chatBackgroundEvent,
   };
 };

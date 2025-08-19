@@ -17,9 +17,9 @@
 import { createContext, type PropsWithChildren, useContext } from 'react';
 
 import { isUndefined, merge, omitBy } from 'lodash-es';
+import { Layout } from '@coze-common/chat-uikit-shared';
 import { type MakeValueUndefinable } from '@coze-common/chat-area-utils';
 import { SuggestedQuestionsShowMode } from '@coze-arch/bot-api/developer_api';
-import { Layout } from '@coze-common/chat-uikit-shared';
 
 import {
   type PreferenceContextInterface,
@@ -49,6 +49,7 @@ const getDefaultPreference = (): Required<PreferenceContextInterface> => ({
   selectable: false,
   showClearContextDivider: true,
   messageWidth: '100%',
+  messageMaxWidth: '',
   readonly: false,
   uiKitChatInputButtonConfig: {
     isSendButtonVisible: true,
@@ -68,6 +69,7 @@ const getDefaultPreference = (): Required<PreferenceContextInterface> => ({
   forceShowOnboardingMessage: false,
   showStopRespond: true,
   layout: Layout.PC,
+  isMiniScreen: false,
   isOnboardingCentered: false,
   stopRespondOverrideWaiting: undefined,
 });
