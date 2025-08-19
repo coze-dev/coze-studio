@@ -345,21 +345,23 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 
 	var messages []*conversation.Message
 	var scMessages []*schema.Message
+	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx != nil {
 		messages = execCtx.ExeCfg.ConversationHistory
 		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
 	}
 
+	ret := map[string]any{
+		"chatHistory": []any{},
+		"query":       in["query"],
+	}
 	if len(messages) == 0 {
-		if id.ChatHistorySetting.EnableChatHistory {
-			ret := map[string]any{
-				"chatHistory": []any{},
-				"query":       in["query"],
-			}
-			return ret, nil
-		}
-		return in, nil
+		return ret, nil
+	}
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return ret, nil
 	}
 
 	count := 0
@@ -389,9 +391,6 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 
 	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
-	ret := map[string]any{
-		"chatHistory": historyMessages,
-		"query":       in["query"],
-	}
+	ret["chatHistory"] = historyMessages
 	return ret, nil
 }

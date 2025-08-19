@@ -219,6 +219,7 @@ func convertToConvAndSchemaMessage(ctx context.Context, msgs []*msgentity.Messag
 			ID:          m.ID,
 			Role:        m.Role,
 			ContentType: string(m.ContentType),
+			SectionID:   m.SectionID,
 		}
 
 		if len(msg.MultiContent) == 0 {
