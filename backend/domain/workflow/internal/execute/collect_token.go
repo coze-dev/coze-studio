@@ -57,15 +57,23 @@ func (t *TokenCollector) addTokenUsage(usage *model.TokenUsage) {
 }
 
 func (t *TokenCollector) wait() *model.TokenUsage {
-	t.wg.Wait()
 	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.wg.Wait()
 	usage := &model.TokenUsage{
 		PromptTokens:     t.Usage.PromptTokens,
 		CompletionTokens: t.Usage.CompletionTokens,
 		TotalTokens:      t.Usage.TotalTokens,
 	}
-	t.mu.Unlock()
+
 	return usage
+}
+
+func (t *TokenCollector) add(i int) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.wg.Add(i)
+	return
 }
 
 func getTokenCollector(ctx context.Context) *TokenCollector {
@@ -83,7 +91,8 @@ func GetTokenCallbackHandler() callbacks.Handler {
 			if c == nil {
 				return ctx
 			}
-			c.wg.Add(1)
+			c.add(1)
+			//c.wg.Add(1)
 			return ctx
 		},
 		OnEnd: func(ctx context.Context, runInfo *callbacks.RunInfo, output *model.CallbackOutput) context.Context {
@@ -122,12 +131,16 @@ func GetTokenCallbackHandler() callbacks.Handler {
 					if chunk.TokenUsage == nil {
 						continue
 					}
+					// 在goroutine内部累加，避免并发访问
 					newC.PromptTokens += chunk.TokenUsage.PromptTokens
 					newC.CompletionTokens += chunk.TokenUsage.CompletionTokens
 					newC.TotalTokens += chunk.TokenUsage.TotalTokens
 				}
 
-				c.addTokenUsage(newC)
+				// 只在最后调用一次addTokenUsage，减少锁竞争
+				if newC.TotalTokens > 0 {
+					c.addTokenUsage(newC)
+				}
 			})
 			return ctx
 		},

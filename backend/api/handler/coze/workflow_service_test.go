@@ -106,10 +106,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-var (
-	publishPatcher *mockey.Mocker
-)
-
 func TestMain(m *testing.M) {
 	callbacks.AppendGlobalHandlers(service.GetTokenCallbackHandler())
 	service.RegisterAllNodeAdaptors()
@@ -117,22 +113,23 @@ func TestMain(m *testing.M) {
 }
 
 type wfTestRunner struct {
-	t             *testing.T
-	h             *server.Hertz
-	ctrl          *gomock.Controller
-	idGen         *mock.MockIDGenerator
-	appVarS       *mockvar.MockStore
-	userVarS      *mockvar.MockStore
-	varGetter     *mockvar.MockVariablesMetaGetter
-	modelManage   *mockmodel.MockManager
-	plugin        *mockPlugin.MockPluginService
-	tos           *storageMock.MockStorage
-	knowledge     *knowledgemock.MockKnowledge
-	database      *databasemock.MockDatabase
-	pluginSrv     *pluginmock.MockPluginService
-	internalModel *testutil.UTChatModel
-	ctx           context.Context
-	closeFn       func()
+	t              *testing.T
+	h              *server.Hertz
+	ctrl           *gomock.Controller
+	idGen          *mock.MockIDGenerator
+	appVarS        *mockvar.MockStore
+	userVarS       *mockvar.MockStore
+	varGetter      *mockvar.MockVariablesMetaGetter
+	modelManage    *mockmodel.MockManager
+	plugin         *mockPlugin.MockPluginService
+	tos            *storageMock.MockStorage
+	knowledge      *knowledgemock.MockKnowledge
+	database       *databasemock.MockDatabase
+	pluginSrv      *pluginmock.MockPluginService
+	internalModel  *testutil.UTChatModel
+	publishPatcher *mockey.Mocker
+	ctx            context.Context
+	closeFn        func()
 }
 
 var req2URL = map[reflect.Type]string{
@@ -256,7 +253,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, utChatModel)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-	publishPatcher = mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
+	publishPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
 
 	mockCU := mockCrossUser.NewMockUser(ctrl)
 	mockCU.EXPECT().GetUserSpaceList(gomock.Any(), gomock.Any()).Return([]*crossuser.EntitySpace{
@@ -305,9 +302,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	}, nil).Build()
 
 	f := func() {
-		if publishPatcher != nil {
-			publishPatcher.UnPatch()
-		}
+		publishPatcher.UnPatch()
 		m.UnPatch()
 		m1.UnPatch()
 		m2.UnPatch()
@@ -320,22 +315,23 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	}
 
 	return &wfTestRunner{
-		t:             t,
-		h:             h,
-		ctrl:          ctrl,
-		idGen:         mockIDGen,
-		appVarS:       mockGlobalAppVarStore,
-		userVarS:      mockGlobalUserVarStore,
-		varGetter:     mockVarGetter,
-		modelManage:   mockModelManage,
-		plugin:        mPlugin,
-		tos:           mockTos,
-		knowledge:     mockKwOperator,
-		database:      mockDatabaseOperator,
-		internalModel: utChatModel,
-		ctx:           context.Background(),
-		closeFn:       f,
-		pluginSrv:     mockPluginSrv,
+		t:              t,
+		h:              h,
+		ctrl:           ctrl,
+		idGen:          mockIDGen,
+		appVarS:        mockGlobalAppVarStore,
+		userVarS:       mockGlobalUserVarStore,
+		varGetter:      mockVarGetter,
+		modelManage:    mockModelManage,
+		plugin:         mPlugin,
+		tos:            mockTos,
+		knowledge:      mockKwOperator,
+		database:       mockDatabaseOperator,
+		internalModel:  utChatModel,
+		ctx:            context.Background(),
+		closeFn:        f,
+		pluginSrv:      mockPluginSrv,
+		publishPatcher: publishPatcher,
 	}
 }
 
@@ -4147,14 +4143,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 		}
 
-		if publishPatcher != nil {
-			publishPatcher.UnPatch()
-		}
-		localPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
-		defer func() {
-			localPatcher.UnPatch()
-			publishPatcher = mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
-		}()
+		defer mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build().UnPatch()
 
 		appID := "7513788954458456064"
 		appIDInt64, _ := strconv.ParseInt(appID, 10, 64)
@@ -4265,14 +4254,8 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			return nil
 
 		}
-		if publishPatcher != nil {
-			publishPatcher.UnPatch()
-		}
-		localPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
-		defer func() {
-			localPatcher.UnPatch()
-			publishPatcher = mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
-		}()
+
+		defer mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build().UnPatch()
 
 		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
 			TargetKnowledgeID: 100100,
@@ -4313,6 +4296,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 func TestMoveWorkflowAppToLibrary(t *testing.T) {
 	mockey.PatchConvey("test move workflow", t, func() {
 		r := newWfTestRunner(t)
+		r.publishPatcher.UnPatch()
 		defer r.closeFn()
 		vars := map[string]*vo.TypeInfo{
 			"app_v1": {
@@ -4354,14 +4338,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 			}
 
-			if publishPatcher != nil {
-				publishPatcher.UnPatch()
-			}
-			localPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
-			defer func() {
-				localPatcher.UnPatch()
-				publishPatcher = mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
-			}()
+			defer mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build().UnPatch()
 
 			defer mockey.Mock((*appknowledge.KnowledgeApplicationService).MoveKnowledgeToLibrary).Return(nil).Build().UnPatch()
 			defer mockey.Mock((*appmemory.DatabaseApplicationService).MoveDatabaseToLibrary).Return(&appmemory.MoveDatabaseToLibraryResponse{}, nil).Build().UnPatch()
@@ -4479,6 +4456,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 func TestDuplicateWorkflowsByAppID(t *testing.T) {
 	mockey.PatchConvey("test duplicate work", t, func() {
 		r := newWfTestRunner(t)
+		r.publishPatcher.UnPatch()
 		defer r.closeFn()
 
 		vars := map[string]*vo.TypeInfo{
@@ -4516,14 +4494,7 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 
 		}
 
-		if publishPatcher != nil {
-			publishPatcher.UnPatch()
-		}
-		localPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build()
-		defer func() {
-			localPatcher.UnPatch()
-			publishPatcher = mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
-		}()
+		defer mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build().UnPatch()
 
 		appIDInt64 := int64(7513788954458456064)
 
