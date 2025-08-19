@@ -20,3 +20,7 @@ export const INPUT_PATH = 'inputs.inputParameters';
 // Message相关字段路径
 export const ANSWER_CONTENT_PATH = 'inputs.content';
 export const STREAMING_OUTPUT_PATH = 'inputs.streamingOutput';
+
+// 卡片选择相关字段路径
+export const SELECTED_CARD_PATH = 'inputs.selectedCard';
+export const FILTER_SELECTOR_PATH = 'inputs.filterSelector';

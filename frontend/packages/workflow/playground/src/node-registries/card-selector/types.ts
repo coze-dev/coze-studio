@@ -16,10 +16,28 @@
 
 import { type InputValueVO } from '@coze-workflow/base';
 
+// 卡片项接口 - 使用简化的本地类型，从API响应转换而来
+export interface CardItem {
+  cardId: string;
+  cardName: string;
+  code: string;
+  cardPicUrl?: string;
+  picUrl?: string;
+  cardShelfStatus?: string;
+  cardShelfTime?: string;
+  createUserId?: string;
+  createUserName?: string;
+  sassAppId?: string;
+  sassWorkspaceId?: string;
+  bizChannel?: string;
+  cardClassId?: string;
+}
+
 export interface FormData {
   inputs: {
     inputParameters: InputValueVO[];
     filterSelector: string;
+    selectedCard?: CardItem; // 新增：选中的卡片
     content: string;
     streamingOutput: boolean;
   };

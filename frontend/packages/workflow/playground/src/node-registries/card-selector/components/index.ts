@@ -16,3 +16,4 @@
 
 export { FilterSelectorField } from './filter-selector-field';
 export { FilterStatusDisplay } from './filter-status-display';
+export { CardSelectorField } from './card-selector-field';

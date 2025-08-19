@@ -18,18 +18,10 @@
 
 package workflow
 
-import (
-	"github.com/cloudwego/hertz/pkg/app/server"
-	workflow "github.com/coze-dev/coze-studio/backend/api/handler/workflow"
-)
-
 /*
  This file will register all the routes of the services in the master idl.
  And it will update automatically when you use the "update" command for the idl.
  So don't modify the contents of the file, or your code will be deleted when it is updated.
 */
 
-// Register register routes based on the IDL 'api.${HTTP Method}' annotation.
-func Register(r *server.Hertz) {
-
-}
+// 旧的Register函数已移动到workflow_svc.go，这里保留空文件以避免冲突

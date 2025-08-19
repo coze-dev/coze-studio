@@ -2193,3 +2193,52 @@ struct OpenAPIGetWorkflowInfoResponse{
 
     255: required base.BaseResp BaseResp
 }
+
+// ===== Card Selector Related Structures =====
+
+// 卡片项信息
+struct CardItem {
+    1 : string cardId         (go.tag = "json:\"cardId\""),
+    2 : string cardName       (go.tag = "json:\"cardName\""),
+    3 : string code           (go.tag = "json:\"code\""),
+    4 : optional string cardPicUrl      (go.tag = "json:\"cardPicUrl\""),
+    5 : optional string picUrl          (go.tag = "json:\"picUrl\""),
+    6 : optional string cardShelfStatus (go.tag = "json:\"cardShelfStatus\""),
+    7 : optional string cardShelfTime   (go.tag = "json:\"cardShelfTime\""),
+    8 : optional string createUserId    (go.tag = "json:\"createUserId\""),
+    9 : optional string createUserName  (go.tag = "json:\"createUserName\""),
+    10: optional string sassAppId       (go.tag = "json:\"sassAppId\""),
+    11: optional string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+    12: optional string bizChannel      (go.tag = "json:\"bizChannel\""),
+    13: optional string cardClassId     (go.tag = "json:\"cardClassId\""),
+}
+
+// 获取卡片列表请求
+struct GetCardListRequest {
+    1 : required string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+    2 : optional i32    pageNo          (go.tag = "json:\"pageNo\""),
+    3 : optional i32    pageSize        (go.tag = "json:\"pageSize\""),
+    4 : optional string searchValue     (go.tag = "json:\"searchValue\""),
+    5 : optional string cardName        (go.tag = "json:\"cardName\""),
+    6 : optional string cardCode        (go.tag = "json:\"cardCode\""),
+
+    255: optional base.Base Base,
+}
+
+// 获取卡片列表响应数据
+struct GetCardListData {
+    1 : list<CardItem> cardList    (go.tag = "json:\"cardList\""),
+    2 : string         pageNo      (go.tag = "json:\"pageNo\""),
+    3 : string         pageSize    (go.tag = "json:\"pageSize\""),
+    4 : string         totalNums   (go.tag = "json:\"totalNums\""),
+    5 : string         totalPages  (go.tag = "json:\"totalPages\""),
+}
+
+// 获取卡片列表响应
+struct GetCardListResponse {
+    1 : required GetCardListData data,
+
+    253: required i64                code,
+    254: required string             msg,
+    255: required base.BaseResp      BaseResp,
+}

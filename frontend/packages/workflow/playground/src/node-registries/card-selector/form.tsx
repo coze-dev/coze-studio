@@ -25,12 +25,22 @@ import {
   INPUT_PATH,
   ANSWER_CONTENT_PATH,
   STREAMING_OUTPUT_PATH,
+  SELECTED_CARD_PATH,
 } from './constants';
+import { CardSelectorField } from './components';
 
 export const FormRender = withNodeConfigForm(() => {
   const inputParameters = useWatch<InputValueVO[]>(INPUT_PATH);
   return (
     <>
+      {/* 卡片选择字段 - 放在顶部 */}
+      <CardSelectorField
+        key={SELECTED_CARD_PATH}
+        name={SELECTED_CARD_PATH}
+        title={I18n.t('选择卡片')}
+        tooltip={I18n.t('从卡片库中选择一张卡片')}
+      />
+
       {/* 输入参数字段 */}
       <InputsParametersField
         key={INPUT_PATH}

@@ -75,4 +75,7 @@ service WorkflowService {
     workflow.GetWorkflowRunHistoryResponse OpenAPIGetWorkflowRunHistory(1:workflow.GetWorkflowRunHistoryRequest request)(api.get='/v1/workflow/get_run_history', api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_api", agw.preserve_base = "false")
     workflow.ChatFlowRunResponse OpenAPIChatFlowRun(1: workflow.ChatFlowRunRequest request)(api.post = "/v1/workflows/chat", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
     workflow.OpenAPIGetWorkflowInfoResponse OpenAPIGetWorkflowInfo(1: workflow.OpenAPIGetWorkflowInfoRequest request)(api.get = "/v1/workflows/:workflow_id", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
+    
+    // Card Selector APIs
+    workflow.GetCardListResponse GetCardList(1: workflow.GetCardListRequest request) (api.post='/api/workflow_api/card/list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 }

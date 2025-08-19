@@ -54,6 +54,9 @@
       "path": "../../agent-ide/space-bot/tsconfig.build.json"
     },
     {
+      "path": "../../arch/api-schema/tsconfig.build.json"
+    },
+    {
       "path": "../../arch/bot-api/tsconfig.build.json"
     },
     {

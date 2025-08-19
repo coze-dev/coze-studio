@@ -92,6 +92,7 @@
     "@coze-foundation/layout": "workspace:*",
     "@coze-foundation/local-storage": "workspace:*",
     "@coze-project-ide/framework": "workspace:*",
+    "@coze-studio/api-schema": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
     "@coze-studio/components": "workspace:*",
     "@coze-studio/open-chat": "workspace:*",
