@@ -18,6 +18,7 @@ package message
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -145,20 +146,26 @@ func TestCreateMessage(t *testing.T) {
 func TestEditMessage(t *testing.T) {
 	ctx := context.Background()
 	mockDBGen := orm.NewMockDB()
-
+	extData := map[string]string{
+		"test": "test",
+	}
+	ext, _ := json.Marshal(extData)
 	mockDBGen.AddTable(&model.Message{}).
 		AddRows(
 			&model.Message{
 				ID:             1,
 				ConversationID: 1,
 				UserID:         "1",
+				Role:           string(schema.User),
 				RunID:          123,
 			},
 			&model.Message{
 				ID:             2,
 				ConversationID: 1,
 				UserID:         "1",
+				Role:           string(schema.User),
 				RunID:          124,
+				Ext:            string(ext),
 			},
 		)
 
@@ -177,7 +184,7 @@ func TestEditMessage(t *testing.T) {
 		Url:  "https://xxxxx.xxxx/file",
 		Name: "test_file",
 	}
-	content := []*message.InputMetaData{
+	_ = []*message.InputMetaData{
 		{
 			Type: message.InputTypeText,
 			Text: "解析图片中的内容",
@@ -197,16 +204,26 @@ func TestEditMessage(t *testing.T) {
 	}
 
 	resp, err := NewService(components).Edit(ctx, &entity.Message{
-		ID:           2,
-		Content:      "test edit message",
-		MultiContent: content,
+		ID:      2,
+		Content: "test edit message",
+		Ext:     map[string]string{"newext": "true"},
+
+		// MultiContent: content,
 	})
 	_ = resp
 
-	msOne, err := NewService(components).GetByRunIDs(ctx, 1, []int64{124})
+	msg, err := NewService(components).GetByID(ctx, 2)
 	assert.NoError(t, err)
 
-	assert.Equal(t, int64(124), msOne[0].RunID)
+	assert.Equal(t, int64(2), msg.ID)
+	assert.Equal(t, "test edit message", msg.Content)
+	var modelContent *schema.Message
+	err = json.Unmarshal([]byte(msg.ModelContent), &modelContent)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "test edit message", modelContent.Content)
+
+	assert.Equal(t, "true", msg.Ext["newext"])
 }
 
 func TestGetByRunIDs(t *testing.T) {

@@ -142,7 +142,16 @@ func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy 
 
 func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Message) (int64, error) {
 	m := dao.query.Message
-	columns := dao.buildEditColumns(msg)
+
+	originMsg, err := dao.GetByID(ctx, msgID)
+	if originMsg == nil {
+		return 0, errorx.New(errno.ErrRecordNotFound)
+	}
+	if err != nil {
+		return 0, err
+	}
+
+	columns := dao.buildEditColumns(msg, originMsg)
 	do, err := m.WithContext(ctx).Where(m.ID.Eq(msgID)).UpdateColumns(columns)
 	if err != nil {
 		return 0, err
@@ -154,11 +163,16 @@ func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Messa
 	return do.RowsAffected, nil
 }
 
-func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interface{} {
+func (dao *MessageDAO) buildEditColumns(msg *message.Message, originMsg *entity.Message) map[string]interface{} {
 	columns := make(map[string]interface{})
 	table := dao.query.Message
 	if msg.Content != "" {
+		msg.Role = originMsg.Role
 		columns[table.Content.ColumnName().String()] = msg.Content
+		modelContent, err := dao.buildModelContent(msg)
+		if err == nil {
+			columns[table.ModelContent.ColumnName().String()] = modelContent
+		}
 	}
 	if msg.MessageType != "" {
 		columns[table.MessageType.ColumnName().String()] = msg.MessageType
@@ -183,6 +197,11 @@ func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interfa
 
 	columns[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	if msg.Ext != nil {
+		if originMsg.Ext != nil {
+			for k, v := range originMsg.Ext {
+				msg.Ext[k] = v
+			}
+		}
 		ext, err := sonic.MarshalString(msg.Ext)
 		if err == nil {
 			columns[table.Ext.ColumnName().String()] = ext
