@@ -124,6 +124,8 @@ type WorkflowService interface {
 	OpenAPIGetWorkflowInfo(ctx context.Context, request *OpenAPIGetWorkflowInfoRequest) (r *OpenAPIGetWorkflowInfoResponse, err error)
 	// Card Selector APIs
 	GetCardList(ctx context.Context, request *GetCardListRequest) (r *GetCardListResponse, err error)
+
+	GetCardDetail(ctx context.Context, request *GetCardDetailRequest) (r *GetCardDetailResponse, err error)
 }
 
 type WorkflowServiceClient struct {
@@ -593,6 +595,15 @@ func (p *WorkflowServiceClient) GetCardList(ctx context.Context, request *GetCar
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *WorkflowServiceClient) GetCardDetail(ctx context.Context, request *GetCardDetailRequest) (r *GetCardDetailResponse, err error) {
+	var _args WorkflowServiceGetCardDetailArgs
+	_args.Request = request
+	var _result WorkflowServiceGetCardDetailResult
+	if err = p.Client_().Call(ctx, "GetCardDetail", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type WorkflowServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -663,6 +674,7 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self.AddToProcessorMap("OpenAPIChatFlowRun", &workflowServiceProcessorOpenAPIChatFlowRun{handler: handler})
 	self.AddToProcessorMap("OpenAPIGetWorkflowInfo", &workflowServiceProcessorOpenAPIGetWorkflowInfo{handler: handler})
 	self.AddToProcessorMap("GetCardList", &workflowServiceProcessorGetCardList{handler: handler})
+	self.AddToProcessorMap("GetCardDetail", &workflowServiceProcessorGetCardDetail{handler: handler})
 	return self
 }
 func (p *WorkflowServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -3018,6 +3030,54 @@ func (p *workflowServiceProcessorGetCardList) Process(ctx context.Context, seqId
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetCardList", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorGetCardDetail struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorGetCardDetail) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceGetCardDetailArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetCardDetail", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceGetCardDetailResult{}
+	var retval *GetCardDetailResponse
+	if retval, err2 = p.handler.GetCardDetail(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetCardDetail: "+err2.Error())
+		oprot.WriteMessageBegin("GetCardDetail", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetCardDetail", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -17340,5 +17400,297 @@ func (p *WorkflowServiceGetCardListResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("WorkflowServiceGetCardListResult(%+v)", *p)
+
+}
+
+type WorkflowServiceGetCardDetailArgs struct {
+	Request *GetCardDetailRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceGetCardDetailArgs() *WorkflowServiceGetCardDetailArgs {
+	return &WorkflowServiceGetCardDetailArgs{}
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) InitDefault() {
+}
+
+var WorkflowServiceGetCardDetailArgs_Request_DEFAULT *GetCardDetailRequest
+
+func (p *WorkflowServiceGetCardDetailArgs) GetRequest() (v *GetCardDetailRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceGetCardDetailArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceGetCardDetailArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetCardDetailArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetCardDetailRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetCardDetail_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetCardDetailArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceGetCardDetailResult struct {
+	Success *GetCardDetailResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceGetCardDetailResult() *WorkflowServiceGetCardDetailResult {
+	return &WorkflowServiceGetCardDetailResult{}
+}
+
+func (p *WorkflowServiceGetCardDetailResult) InitDefault() {
+}
+
+var WorkflowServiceGetCardDetailResult_Success_DEFAULT *GetCardDetailResponse
+
+func (p *WorkflowServiceGetCardDetailResult) GetSuccess() (v *GetCardDetailResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceGetCardDetailResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceGetCardDetailResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceGetCardDetailResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceGetCardDetailResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetCardDetailResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetCardDetailResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetCardDetailResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetCardDetail_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetCardDetailResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetCardDetailResult(%+v)", *p)
 
 }

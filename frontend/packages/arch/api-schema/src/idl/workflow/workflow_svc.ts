@@ -634,3 +634,15 @@ export const GetCardList = /*#__PURE__*/createAPI<workflow.GetCardListRequest, w
   "schemaRoot": "api://schemas/idl_workflow_workflow_svc",
   "service": "workflow"
 });
+export const GetCardDetail = /*#__PURE__*/createAPI<workflow.GetCardDetailRequest, workflow.GetCardDetailResponse>({
+  "url": "/api/workflow_api/card/detail",
+  "method": "POST",
+  "name": "GetCardDetail",
+  "reqType": "workflow.GetCardDetailRequest",
+  "reqMapping": {
+    "body": ["cardId", "sassWorkspaceId"]
+  },
+  "resType": "workflow.GetCardDetailResponse",
+  "schemaRoot": "api://schemas/idl_workflow_workflow_svc",
+  "service": "workflow"
+});

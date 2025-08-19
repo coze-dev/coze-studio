@@ -838,109 +838,109 @@ func GetCardList(ctx context.Context, c *app.RequestContext) {
 // 外部API请求结构
 type ExternalCardRequest struct {
 	Body struct {
-		PageNo           string `json:"pageNo"`
-		PageSize         string `json:"pageSize"`
-		SassWorkspaceId  string `json:"sassWorkspaceId"`
-		SearchValue      string `json:"searchValue"`
-		CardName         string `json:"cardName"`
-		CardCode         string `json:"cardCode"`
-		AgentId          string `json:"agentId"`
-		ApplyScene       string `json:"applyScene"`
-		CardClassId      string `json:"cardClassId"`
-		CardId           string `json:"cardId"`
-		CardPicUrl       string `json:"cardPicUrl"`
-		Channel          string `json:"channel"`
-		Code             string `json:"code"`
-		CreateTime       string `json:"createTime"`
-		CreatedBy        bool   `json:"createdBy"`
-		GreyConfigInfo   string `json:"greyConfigInfo"`
-		GreyNum          string `json:"greyNum"`
-		Id               string `json:"id"`
-		IsAdd            string `json:"isAdd"`
-		JsFileUrl        string `json:"jsFileUrl"`
-		MainUrl          string `json:"mainUrl"`
-		Memo             string `json:"memo"`
-		ModuleName       string `json:"moduleName"`
-		PicUrl           string `json:"picUrl"`
-		Platform         string `json:"platform"`
-		PlatformStatus   string `json:"platformStatus"`
-		PlatformValue    string `json:"platformValue"`
-		PreviewSchema    string `json:"previewSchema"`
-		PublishMode      string `json:"publishMode"`
-		PublishStatus    string `json:"publishStatus"`
-		PublishType      string `json:"publishType"`
-		RealGreyEndtime  string `json:"realGreyEndtime"`
-		ResourceType     string `json:"resourceType"`
-		SassAppId        string `json:"sassAppId"`
-		SchemaValue      string `json:"schemaValue"`
-		ServiceModuleId  string `json:"serviceModuleId"`
-		ServiceName      string `json:"serviceName"`
-		SkeletonScreen   string `json:"skeletonScreen"`
-		SoLib            string `json:"soLib"`
-		StaticMemo       string `json:"staticMemo"`
-		StaticType       string `json:"staticType"`
-		StaticVersion    string `json:"staticVersion"`
-		TaskId           string `json:"taskId"`
-		TaskStatus       string `json:"taskStatus"`
-		TemplateId       string `json:"templateId"`
-		TemplateName     string `json:"templateName"`
+		PageNo              string `json:"pageNo"`
+		PageSize            string `json:"pageSize"`
+		SassWorkspaceId     string `json:"sassWorkspaceId"`
+		SearchValue         string `json:"searchValue"`
+		CardName            string `json:"cardName"`
+		CardCode            string `json:"cardCode"`
+		AgentId             string `json:"agentId"`
+		ApplyScene          string `json:"applyScene"`
+		CardClassId         string `json:"cardClassId"`
+		CardId              string `json:"cardId"`
+		CardPicUrl          string `json:"cardPicUrl"`
+		Channel             string `json:"channel"`
+		Code                string `json:"code"`
+		CreateTime          string `json:"createTime"`
+		CreatedBy           bool   `json:"createdBy"`
+		GreyConfigInfo      string `json:"greyConfigInfo"`
+		GreyNum             string `json:"greyNum"`
+		Id                  string `json:"id"`
+		IsAdd               string `json:"isAdd"`
+		JsFileUrl           string `json:"jsFileUrl"`
+		MainUrl             string `json:"mainUrl"`
+		Memo                string `json:"memo"`
+		ModuleName          string `json:"moduleName"`
+		PicUrl              string `json:"picUrl"`
+		Platform            string `json:"platform"`
+		PlatformStatus      string `json:"platformStatus"`
+		PlatformValue       string `json:"platformValue"`
+		PreviewSchema       string `json:"previewSchema"`
+		PublishMode         string `json:"publishMode"`
+		PublishStatus       string `json:"publishStatus"`
+		PublishType         string `json:"publishType"`
+		RealGreyEndtime     string `json:"realGreyEndtime"`
+		ResourceType        string `json:"resourceType"`
+		SassAppId           string `json:"sassAppId"`
+		SchemaValue         string `json:"schemaValue"`
+		ServiceModuleId     string `json:"serviceModuleId"`
+		ServiceName         string `json:"serviceName"`
+		SkeletonScreen      string `json:"skeletonScreen"`
+		SoLib               string `json:"soLib"`
+		StaticMemo          string `json:"staticMemo"`
+		StaticType          string `json:"staticType"`
+		StaticVersion       string `json:"staticVersion"`
+		TaskId              string `json:"taskId"`
+		TaskStatus          string `json:"taskStatus"`
+		TemplateId          string `json:"templateId"`
+		TemplateName        string `json:"templateName"`
 		TemplateSchemaValue string `json:"templateSchemaValue"`
-		UnzipPath        string `json:"unzipPath"`
-		UserId           string `json:"userId"`
-		VariableValueList []struct {
-			BizChannel               string `json:"bizChannel"`
-			VariableDefaultValue     string `json:"variableDefaultValue"`
-			VariableDescribe         string `json:"variableDescribe"`
-			VariableKey              string `json:"variableKey"`
-			VariableName             string `json:"variableName"`
-			VariableStructure        string `json:"variableStructure"`
-			VariableType             string `json:"variableType"`
+		UnzipPath           string `json:"unzipPath"`
+		UserId              string `json:"userId"`
+		VariableValueList   []struct {
+			BizChannel           string `json:"bizChannel"`
+			VariableDefaultValue string `json:"variableDefaultValue"`
+			VariableDescribe     string `json:"variableDescribe"`
+			VariableKey          string `json:"variableKey"`
+			VariableName         string `json:"variableName"`
+			VariableStructure    string `json:"variableStructure"`
+			VariableType         string `json:"variableType"`
 		} `json:"variableValueList"`
-		Version         string `json:"version"`
-		VersionId       string `json:"versionId"`
-		WhitelistIds    string `json:"whitelistIds"`
-		WhlBusiness     string `json:"whlBusiness"`
+		Version      string `json:"version"`
+		VersionId    string `json:"versionId"`
+		WhitelistIds string `json:"whitelistIds"`
+		WhlBusiness  string `json:"whlBusiness"`
 	} `json:"body"`
 }
 
 // 外部API响应结构
 type ExternalCardResponse struct {
 	Header struct {
-		IcifId       *string `json:"iCIFID"`
-		EcifId       *string `json:"eCIFID"`
-		ErrorCode    string  `json:"errorCode"`
-		ErrorMsg     string  `json:"errorMsg"`
-		Encry        *string `json:"encry"`
-		TransCode    *string `json:"transCode"`
-		Channel      *string `json:"channel"`
-		ChannelDate  *string `json:"channelDate"`
-		ChannelTime  *string `json:"channelTime"`
-		ChannelFlow  *string `json:"channelFlow"`
-		Type         *string `json:"type"`
-		TransId      *string `json:"transId"`
+		IcifId      *string `json:"iCIFID"`
+		EcifId      *string `json:"eCIFID"`
+		ErrorCode   string  `json:"errorCode"`
+		ErrorMsg    string  `json:"errorMsg"`
+		Encry       *string `json:"encry"`
+		TransCode   *string `json:"transCode"`
+		Channel     *string `json:"channel"`
+		ChannelDate *string `json:"channelDate"`
+		ChannelTime *string `json:"channelTime"`
+		ChannelFlow *string `json:"channelFlow"`
+		Type        *string `json:"type"`
+		TransId     *string `json:"transId"`
 	} `json:"header"`
 	Body struct {
 		CardList []struct {
-			BizChannel       string `json:"bizChannel"`
-			CardClassId      string `json:"cardClassId"`
-			CardId           string `json:"cardId"`
-			CardName         string `json:"cardName"`
-			CardPicUrl       string `json:"cardPicUrl"`
-			CardShelfStatus  string `json:"cardShelfStatus"`
-			CardShelfTime    string `json:"cardShelfTime"`
-			Code             string `json:"code"`
-			CreateUserId     string `json:"createUserId"`
-			CreateUserName   string `json:"createUserName"`
-			PicUrl           string `json:"picUrl"`
-			SassAppId        string `json:"sassAppId"`
-			SassWorkspaceId  string `json:"sassWorkspaceId"`
+			BizChannel      string `json:"bizChannel"`
+			CardClassId     string `json:"cardClassId"`
+			CardId          string `json:"cardId"`
+			CardName        string `json:"cardName"`
+			CardPicUrl      string `json:"cardPicUrl"`
+			CardShelfStatus string `json:"cardShelfStatus"`
+			CardShelfTime   string `json:"cardShelfTime"`
+			Code            string `json:"code"`
+			CreateUserId    string `json:"createUserId"`
+			CreateUserName  string `json:"createUserName"`
+			PicUrl          string `json:"picUrl"`
+			SassAppId       string `json:"sassAppId"`
+			SassWorkspaceId string `json:"sassWorkspaceId"`
 		} `json:"cardList"`
-		ErrorCode   string `json:"errorCode"`
-		ErrorMsg    string `json:"errorMsg"`
-		PageNo      string `json:"pageNo"`
-		PageSize    string `json:"pageSize"`
-		TotalNums   string `json:"totalNums"`
-		TotalPages  string `json:"totalPages"`
+		ErrorCode  string `json:"errorCode"`
+		ErrorMsg   string `json:"errorMsg"`
+		PageNo     string `json:"pageNo"`
+		PageSize   string `json:"pageSize"`
+		TotalNums  string `json:"totalNums"`
+		TotalPages string `json:"totalPages"`
 	} `json:"body"`
 }
 
@@ -970,13 +970,13 @@ func callExternalCardAPI(ctx context.Context, req *workflow.GetCardListRequest) 
 	// 设置其他默认值
 	externalReq.Body.CreatedBy = true
 	externalReq.Body.VariableValueList = []struct {
-		BizChannel               string `json:"bizChannel"`
-		VariableDefaultValue     string `json:"variableDefaultValue"`
-		VariableDescribe         string `json:"variableDescribe"`
-		VariableKey              string `json:"variableKey"`
-		VariableName             string `json:"variableName"`
-		VariableStructure        string `json:"variableStructure"`
-		VariableType             string `json:"variableType"`
+		BizChannel           string `json:"bizChannel"`
+		VariableDefaultValue string `json:"variableDefaultValue"`
+		VariableDescribe     string `json:"variableDescribe"`
+		VariableKey          string `json:"variableKey"`
+		VariableName         string `json:"variableName"`
+		VariableStructure    string `json:"variableStructure"`
+		VariableType         string `json:"variableType"`
 	}{{}}
 
 	// 序列化请求
@@ -1042,4 +1042,185 @@ func callExternalCardAPI(ctx context.Context, req *workflow.GetCardListRequest) 
 		TotalNums:  externalResp.Body.TotalNums,
 		TotalPages: externalResp.Body.TotalPages,
 	}, nil
+}
+
+// GetCardDetail .
+// @router /api/workflow_api/card/detail [POST]
+func GetCardDetail(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.GetCardDetailRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用外部API获取卡片详情
+	cardDetail, err := callExternalCardDetailAPI(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &workflow.GetCardDetailResponse{
+			Code:     500,
+			Msg:      fmt.Sprintf("Failed to fetch card detail: %v", err),
+			BaseResp: &base.BaseResp{StatusMessage: "Internal Server Error"},
+		})
+		return
+	}
+
+	resp := &workflow.GetCardDetailResponse{
+		Code: 0,
+		Msg:  "Success",
+		Data: cardDetail,
+		BaseResp: &base.BaseResp{
+			StatusCode:    0,
+			StatusMessage: "Success",
+		},
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// 外部卡片详情API请求结构
+type ExternalCardDetailRequest struct {
+	Body struct {
+		CardId          string `json:"cardId"`
+		SassWorkspaceId string `json:"sassWorkspaceId"`
+	} `json:"body"`
+}
+
+// 外部卡片详情API响应结构
+type ExternalCardDetailResponse struct {
+	Header struct {
+		IcifId      *string `json:"iCIFID"`
+		EcifId      *string `json:"eCIFID"`
+		ErrorCode   string  `json:"errorCode"`
+		ErrorMsg    string  `json:"errorMsg"`
+		Encry       *string `json:"encry"`
+		TransCode   *string `json:"transCode"`
+		Channel     *string `json:"channel"`
+		ChannelDate *string `json:"channelDate"`
+		ChannelTime *string `json:"channelTime"`
+		ChannelFlow *string `json:"channelFlow"`
+		Type        *string `json:"type"`
+		TransId     *string `json:"transId"`
+	} `json:"header"`
+	Body struct {
+		CardId          string `json:"cardId"`
+		CardName        string `json:"cardName"`
+		Code            string `json:"code"`
+		CardPicUrl      string `json:"cardPicUrl"`
+		CardShelfStatus string `json:"cardShelfStatus"`
+		CardShelfTime   string `json:"cardShelfTime"`
+		CreateUserId    string `json:"createUserId"`
+		CreateUserName  string `json:"createUserName"`
+		PicUrl          string `json:"picUrl"`
+		SassAppId       string `json:"sassAppId"`
+		SassWorkspaceId string `json:"sassWorkspaceId"`
+		BizChannel      string `json:"bizChannel"`
+		CardClassId     string `json:"cardClassId"`
+		ParamList       []struct {
+			ParamName   string `json:"paramName"`
+			ParamType   string `json:"paramType"`
+			IsRequired  string `json:"isRequired"`  // "0" 或 "1"
+			ParamDesc   string `json:"paramDesc"`
+			Children    []struct {
+				ParamName   string `json:"paramName"`
+				ParamType   string `json:"paramType"`
+				IsRequired  string `json:"isRequired"`  // "0" 或 "1"
+				ParamDesc   string `json:"paramDesc"`
+			} `json:"children"`
+		} `json:"paramList"`
+		ErrorCode string `json:"errorCode"`
+		ErrorMsg  string `json:"errorMsg"`
+	} `json:"body"`
+}
+
+// callExternalCardDetailAPI 调用外部卡片详情API
+func callExternalCardDetailAPI(ctx context.Context, req *workflow.GetCardDetailRequest) (*workflow.CardDetail, error) {
+	// 构造外部API请求
+	externalReq := ExternalCardDetailRequest{}
+	externalReq.Body.CardId = req.CardId
+	externalReq.Body.SassWorkspaceId = req.SassWorkspaceId
+
+	// 序列化请求
+	jsonData, err := json.Marshal(externalReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// 创建HTTP请求 - 使用正确的卡片详情API地址
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", "http://10.10.10.208:8500/aop-web/IDC10025.do", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Request-Origion", "SwaggerBootstrapUi")
+	httpReq.Header.Set("Accept", "*/*")
+
+	// 发送请求
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call external API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// 解析响应
+	var externalResp ExternalCardDetailResponse
+	if err := json.NewDecoder(resp.Body).Decode(&externalResp); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// 检查外部API响应
+	if externalResp.Header.ErrorCode != "0" {
+		return nil, fmt.Errorf("external API error: %s", externalResp.Header.ErrorMsg)
+	}
+
+	// 转换参数列表
+	var paramList []*workflow.CardParam
+	for _, param := range externalResp.Body.ParamList {
+		cardParam := &workflow.CardParam{
+			ParamName: param.ParamName,
+			ParamType: param.ParamType,
+			Required:  param.IsRequired == "1",  // "1" 表示必需，"0" 表示非必需
+			Desc:      &param.ParamDesc,
+		}
+
+		// 处理子参数
+		if len(param.Children) > 0 {
+			var children []*workflow.CardParam
+			for _, child := range param.Children {
+				childParam := &workflow.CardParam{
+					ParamName: child.ParamName,
+					ParamType: child.ParamType,
+					Required:  child.IsRequired == "1",  // "1" 表示必需，"0" 表示非必需
+					Desc:      &child.ParamDesc,
+				}
+				children = append(children, childParam)
+			}
+			cardParam.Children = children
+		}
+
+		paramList = append(paramList, cardParam)
+	}
+
+	// 转换为内部数据结构
+	cardDetail := &workflow.CardDetail{
+		CardId:          externalResp.Body.CardId,
+		CardName:        externalResp.Body.CardName,
+		Code:            externalResp.Body.Code,
+		CardPicUrl:      &externalResp.Body.CardPicUrl,
+		PicUrl:          &externalResp.Body.PicUrl,
+		CardShelfStatus: &externalResp.Body.CardShelfStatus,
+		CardShelfTime:   &externalResp.Body.CardShelfTime,
+		CreateUserId:    &externalResp.Body.CreateUserId,
+		CreateUserName:  &externalResp.Body.CreateUserName,
+		SassAppId:       &externalResp.Body.SassAppId,
+		SassWorkspaceId: &externalResp.Body.SassWorkspaceId,
+		BizChannel:      &externalResp.Body.BizChannel,
+		CardClassId:     &externalResp.Body.CardClassId,
+		ParamList:       paramList,
+	}
+
+	return cardDetail, nil
 }

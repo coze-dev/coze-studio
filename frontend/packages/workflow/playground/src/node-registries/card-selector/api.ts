@@ -70,3 +70,75 @@ export async function fetchCardList(params: {
     throw error;
   }
 }
+
+/**
+ * 获取卡片详情
+ * @param params 请求参数
+ * @returns 卡片详情响应
+ */
+export async function fetchCardDetail(params: {
+  cardId: string;
+  sassWorkspaceId: string;
+}): Promise<{
+  cardDetail: CardItem & {
+    paramList?: Array<{
+      paramName: string;
+      paramType: string;
+      required: boolean;
+      desc?: string;
+      children?: Array<{
+        paramName: string;
+        paramType: string;
+        required: boolean;
+        desc?: string;
+      }>;
+    }>;
+  };
+}> {
+  const { cardId, sassWorkspaceId } = params;
+
+  try {
+    const response = await workflow.GetCardDetail({
+      cardId,
+      sassWorkspaceId,
+    });
+
+    if (response.code !== 0) {
+      throw new Error(`API Error: ${response.msg}`);
+    }
+
+    // 转换为本地类型格式
+    const cardDetail = {
+      cardId: response.data.cardId,
+      cardName: response.data.cardName,
+      code: response.data.code,
+      cardPicUrl: response.data.cardPicUrl,
+      picUrl: response.data.picUrl,
+      cardShelfStatus: response.data.cardShelfStatus,
+      cardShelfTime: response.data.cardShelfTime,
+      createUserId: response.data.createUserId,
+      createUserName: response.data.createUserName,
+      sassAppId: response.data.sassAppId,
+      sassWorkspaceId: response.data.sassWorkspaceId,
+      bizChannel: response.data.bizChannel,
+      cardClassId: response.data.cardClassId,
+      paramList: response.data.paramList?.map(param => ({
+        paramName: param.paramName,
+        paramType: param.paramType,
+        required: param.required,
+        desc: param.desc,
+        children: param.children?.map(child => ({
+          paramName: child.paramName,
+          paramType: child.paramType,
+          required: child.required,
+          desc: child.desc,
+        })),
+      })),
+    };
+
+    return { cardDetail };
+  } catch (error) {
+    console.error('Failed to fetch card detail:', error);
+    throw error;
+  }
+}

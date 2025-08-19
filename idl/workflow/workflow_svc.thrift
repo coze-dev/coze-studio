@@ -78,4 +78,5 @@ service WorkflowService {
     
     // Card Selector APIs
     workflow.GetCardListResponse GetCardList(1: workflow.GetCardListRequest request) (api.post='/api/workflow_api/card/list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    workflow.GetCardDetailResponse GetCardDetail(1: workflow.GetCardDetailRequest request) (api.post='/api/workflow_api/card/detail', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 }

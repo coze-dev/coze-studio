@@ -376,6 +376,7 @@ func Register(r *server.Hertz) {
 			_workflow_api.POST("/cancel", append(_cancelworkflowMw(), coze.CancelWorkFlow)...)
 			_workflow_api.POST("/canvas", append(_getcanvasinfoMw(), coze.GetCanvasInfo)...)
 			_workflow_api.POST("/card/list", append(_getcardlistMw(), workflow.GetCardList)...)
+			_workflow_api.POST("/card/detail", append(_getcarddetailMw(), workflow.GetCardDetail)...)
 			_workflow_api.POST("/copy", append(_copyworkflowMw(), coze.CopyWorkflow)...)
 			_workflow_api.POST("/copy_wk_template", append(_copywktemplateapiMw(), coze.CopyWkTemplateApi)...)
 			_workflow_api.POST("/create", append(_createworkflowMw(), coze.CreateWorkflow)...)
@@ -472,5 +473,10 @@ func Register(r *server.Hertz) {
 
 // 新增的GetCardList中间件函数
 func _getcardlistMw() []app.HandlerFunc {
+	return nil
+}
+
+// 新增的GetCardDetail中间件函数
+func _getcarddetailMw() []app.HandlerFunc {
 	return nil
 }

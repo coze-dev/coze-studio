@@ -16,13 +16,19 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 
+import { type InputValueVO } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { AutoComplete, Spin, message } from '@coze-arch/bot-semi';
+import type {
+  CardParam,
+  CardDetail,
+} from '@coze-arch/api-schema/idl/workflow/workflow';
 
-import { Section, useField, withField } from '@/form';
+import { Section, useField, withField, useForm } from '@/form';
 
 import type { CardItem } from '../types';
-import { fetchCardList } from '../api';
+import { INPUT_PATH, ANSWER_CONTENT_PATH } from '../constants';
+import { fetchCardList, fetchCardDetail } from '../api';
 
 interface CardSelectorCompProps {
   title?: string;
@@ -39,6 +45,90 @@ function CardSelectorComp({
   const [loading, setLoading] = useState(false);
   const [cardList, setCardList] = useState<CardItem[]>([]);
   const [searchValue, setSearchValue] = useState('');
+  const form = useForm();
+
+  // 参数类型映射：从卡片参数类型映射到InputValueVO类型
+  const INPUT_TYPE_STRING = 1;
+  const INPUT_TYPE_INTEGER = 2;
+  const INPUT_TYPE_BOOLEAN = 3;
+  const INPUT_TYPE_ARRAY = 5;
+  const INPUT_TYPE_OBJECT = 6;
+
+  const mapParamTypeToInputType = (paramType: string) => {
+    switch (paramType.toLowerCase()) {
+      case 'string':
+        return INPUT_TYPE_STRING;
+      case 'number':
+      case 'integer':
+        return INPUT_TYPE_INTEGER;
+      case 'boolean':
+        return INPUT_TYPE_BOOLEAN;
+      case 'array':
+        return INPUT_TYPE_ARRAY;
+      case 'object':
+        return INPUT_TYPE_OBJECT;
+      default:
+        return INPUT_TYPE_STRING; // 默认为String
+    }
+  };
+
+  // 将卡片参数转换为InputValueVO结构
+  const convertParamsToInputValues = useCallback(
+    (paramList: CardParam[]): InputValueVO[] => {
+      const REQUIREMENT_CAN_CHANGE = 3;
+      return paramList.map(param => ({
+        key: [param.paramName],
+        desc: param.desc || '',
+        type: mapParamTypeToInputType(param.paramType),
+        required: param.required,
+        value: '',
+        requirement: REQUIREMENT_CAN_CHANGE,
+        subParameters: param.children
+          ? param.children.map((child: CardParam) => ({
+              key: [child.paramName],
+              desc: child.desc || '',
+              type: mapParamTypeToInputType(child.paramType),
+              required: child.required,
+              value: '',
+              requirement: REQUIREMENT_CAN_CHANGE,
+              subParameters: [],
+            }))
+          : [],
+      }));
+    },
+    [],
+  );
+
+  // 生成输出模板
+  const generateAnswerContent = useCallback(
+    (cardDetail: CardDetail): string => {
+      const dataResponse: Record<string, string> = {};
+
+      // 从paramList中提取参数名
+      if (cardDetail.paramList) {
+        cardDetail.paramList.forEach((param: CardParam) => {
+          dataResponse[param.paramName] = `{{${param.paramName}}}`;
+        });
+      }
+
+      const template = {
+        contentList: [
+          {
+            displayResponseType: 'TEMPLATE',
+            rawContent: {},
+            templateId: cardDetail.code,
+            templateName: cardDetail.cardName,
+            kvMap: {},
+            dataResponse,
+          },
+        ],
+      };
+
+      const JSON_INDENT = 2;
+      return JSON.stringify(template, null, JSON_INDENT);
+    },
+    [],
+  );
 
   // 获取卡片列表
   const fetchCards = useCallback(
@@ -91,14 +181,47 @@ function CardSelectorComp({
 
   // 处理选择
   const handleSelect = useCallback(
-    (selectedValue: string, option: { value: string; label: string }) => {
+    async (selectedValue: string) => {
       const selectedCard = cardList.find(card => card.cardId === selectedValue);
       if (selectedCard) {
         onChange(selectedCard);
         setSearchValue(`${selectedCard.cardName} (${selectedCard.code})`);
+
+        try {
+          // 获取卡片详情
+          const { cardDetail } = await fetchCardDetail({
+            cardId: selectedCard.cardId,
+            sassWorkspaceId,
+          });
+
+          // 如果有参数列表，自动生成输入变量
+          if (cardDetail.paramList && cardDetail.paramList.length > 0) {
+            const inputParameters = convertParamsToInputValues(
+              cardDetail.paramList,
+            );
+            form.setFieldValue(INPUT_PATH, inputParameters);
+
+            // 自动生成输出模板
+            const answerContent = generateAnswerContent(cardDetail);
+            form.setFieldValue(ANSWER_CONTENT_PATH, answerContent);
+
+            message.success('已根据卡片自动生成输入变量和输出模板');
+          }
+        } catch (error) {
+          console.error('获取卡片详情失败:', error);
+          message.error('获取卡片详情失败，请稍后重试');
+        }
       }
     },
-    [cardList, onChange],
+    [
+      cardList,
+      onChange,
+      sassWorkspaceId,
+      form,
+      fetchCardDetail,
+      convertParamsToInputValues,
+      generateAnswerContent,
+    ],
   );
 
   // 处理输入变化

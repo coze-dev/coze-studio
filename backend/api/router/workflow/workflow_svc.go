@@ -73,6 +73,7 @@ func Register(r *server.Hertz) {
 			_workflow_api.POST("/workflow_references", append(_getworkflowreferencesMw(), workflow.GetWorkflowReferences)...)
 			{
 				_card := _workflow_api.Group("/card", _cardMw()...)
+				_card.POST("/detail", append(_getcarddetailMw(), workflow.GetCardDetail)...)
 				_card.POST("/list", append(_getcardlistMw(), workflow.GetCardList)...)
 			}
 			{

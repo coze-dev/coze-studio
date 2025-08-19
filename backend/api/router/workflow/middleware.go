@@ -217,6 +217,11 @@ func _getcardlistMw() []app.HandlerFunc {
 	return nil
 }
 
+func _getcarddetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _chat_flow_roleMw() []app.HandlerFunc {
 	// your code...
 	return nil

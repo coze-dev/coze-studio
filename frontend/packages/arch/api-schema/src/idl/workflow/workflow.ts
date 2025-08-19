@@ -2115,8 +2115,18 @@ export interface OpenAPIGetWorkflowInfoResponse {
 }
 /**
  * ===== Card Selector Related Structures =====
- * 卡片项信息
+ * 卡片参数定义
 */
+export interface CardParam {
+  paramName: string,
+  /** string, number, boolean, array, object */
+  paramType: string,
+  required: boolean,
+  desc?: string,
+  /** for array and object types */
+  children?: CardParam[],
+}
+/** 卡片项信息 */
 export interface CardItem {
   cardId: string,
   cardName: string,
@@ -2131,6 +2141,24 @@ export interface CardItem {
   sassWorkspaceId?: string,
   bizChannel?: string,
   cardClassId?: string,
+}
+/** 卡片详情 */
+export interface CardDetail {
+  cardId: string,
+  cardName: string,
+  code: string,
+  cardPicUrl?: string,
+  picUrl?: string,
+  cardShelfStatus?: string,
+  cardShelfTime?: string,
+  createUserId?: string,
+  createUserName?: string,
+  sassAppId?: string,
+  sassWorkspaceId?: string,
+  bizChannel?: string,
+  cardClassId?: string,
+  /** 卡片参数列表 */
+  paramList?: CardParam[],
 }
 /** 获取卡片列表请求 */
 export interface GetCardListRequest {
@@ -2152,6 +2180,17 @@ export interface GetCardListData {
 /** 获取卡片列表响应 */
 export interface GetCardListResponse {
   data: GetCardListData,
+  code: number,
+  msg: string,
+}
+/** 获取卡片详情请求 */
+export interface GetCardDetailRequest {
+  cardId: string,
+  sassWorkspaceId: string,
+}
+/** 获取卡片详情响应 */
+export interface GetCardDetailResponse {
+  data: CardDetail,
   code: number,
   msg: string,
 }
