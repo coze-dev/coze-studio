@@ -91,7 +91,8 @@ interface MessageBoxBasicProps {
   classname?: string;
 
   messageBubbleWrapperClassname?: string;
-  messageBoxWraperClassname?: string; // Direct father style of message box
+  messageBoxWrapperClassname?: string; // Direct father style of message box
+  messageHoverWrapperClassName?: string; // Direct hover style of message box
   messageBubbleClassname?: string; // Message The style of the message bubble
   messageErrorWrapperClassname?: string; // Message wrong father style
   isHoverShowUserInfo?: boolean; // Whether to display user details when hovering
@@ -160,7 +161,9 @@ export interface MessageBoxWrapProps {
   contentTime: number | undefined;
   classname?: string;
 
-  messageBoxWraperClassname?: string; // Direct father style of message box
+  messageBoxWrapperClassname?: string; // Direct father style of message box
+  messageHoverWrapperClassName?: string; // Direct hover style of message box
+
   messageBubbleClassname?: string; // Message The style of the message bubble
   messageBubbleWrapperClassname?: string; // Message message bubble father style
   messageErrorWrapperClassname?: string; // Message wrong father style

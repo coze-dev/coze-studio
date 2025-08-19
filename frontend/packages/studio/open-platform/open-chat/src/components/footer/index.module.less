@@ -1,0 +1,34 @@
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-size: 12px;
+  font-weight: 400;
+
+  background: none;
+  position: absolute;
+  width: 100%;
+  bottom: 2px;
+  z-index: 50;
+
+  > .text {
+    color: rgba(48, 59, 94, 47%);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+
+    > .link {
+      color: #4d53e8;
+      text-decoration: none;
+    }
+  }
+
+  &.bg-theme {
+    > .text {
+      color: rgba(255, 255, 255, 60%);
+    }
+  }
+}

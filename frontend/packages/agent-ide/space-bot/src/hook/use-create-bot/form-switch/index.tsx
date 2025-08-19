@@ -45,4 +45,6 @@ function SwitchWithDesc({
   );
 }
 
-export const FormSwitch = withField(SwitchWithDesc);
+export const FormSwitch = withField(SwitchWithDesc) as ReturnType<
+  typeof withField
+>;

@@ -66,7 +66,7 @@ interface Hooks {
   onGetMessageStreamParser?: (
     requestMessageRawBody: Record<string, unknown>,
   ) => FetchSteamConfig<ParsedEvent>['streamParser'];
-  onErrrorResponse?: Array<(response: AxiosResponse) => Promise<AxiosResponse>>;
+  onErrorResponse?: Array<(response: AxiosResponse) => Promise<AxiosResponse>>;
 }
 
 export enum RequestScene {
