@@ -201,7 +201,7 @@ services:
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
       - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
-      - ./volumes/elasticsearch/es_index_schema:/es_index_schemas
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
     healthcheck:
       test:
         [
@@ -259,7 +259,7 @@ services:
           echo 'Running Elasticsearch initialization...'
           sed 's/\r$$//' /setup_es.sh > /setup_es_fixed.sh
           chmod +x /setup_es_fixed.sh
-          /setup_es_fixed.sh --index-dir /es_index_schemas
+          /setup_es_fixed.sh --index-dir /es_index_schema
           # Create marker file indicating initialization completion
           touch /tmp/es_init_complete
           echo 'Elasticsearch initialization completed successfully!'
