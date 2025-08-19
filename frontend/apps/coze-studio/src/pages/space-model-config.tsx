@@ -30,7 +30,7 @@ import {
   Select,
   Search,
 } from '@coze-arch/coze-design';
-import { modelmgr } from '@coze-studio/api-schema';
+import { listModels, type ModelDetailOutput } from '@coze-arch/bot-space-api';
 
 // 基于新的API定义的模型类型，但保持数字ID兼容现有组件逻辑
 interface SpaceModel {
@@ -49,10 +49,12 @@ interface ModelCardProps {
   isEnabled: boolean;
   isFavorite: boolean;
   isHovered: boolean;
+  spaceId: string;
   onHover: (id: number | null) => void;
   onToggleFavorite: (id: number) => void;
   onToggleEnabled: (id: number, enabled: boolean) => void;
   onDelete: (id: number) => void;
+  onEdit: (modelId: number) => void;
 }
 
 interface ModelFiltersProps {
@@ -69,13 +71,17 @@ const CONTEXT_LENGTH_DIVISOR = 1000;
 function ModelDropdownMenu({
   modelId,
   isEnabled,
+  spaceId,
   onToggleEnabled,
   onDelete,
+  onEdit,
 }: {
   modelId: number;
   isEnabled: boolean;
+  spaceId: string;
   onToggleEnabled: (id: number, enabled: boolean) => void;
   onDelete: (id: number) => void;
+  onEdit: (modelId: number) => void;
 }) {
   return (
     <Dropdown.Menu>
@@ -95,7 +101,7 @@ function ModelDropdownMenu({
       >
         停用
       </Dropdown.Item>
-      <Dropdown.Item onClick={() => console.log('编辑模型', modelId)}>
+      <Dropdown.Item onClick={() => onEdit(modelId)}>
         编辑
       </Dropdown.Item>
       <Dropdown.Item type="danger" onClick={() => onDelete(modelId)}>
@@ -110,10 +116,12 @@ function ModelCard({
   isEnabled,
   isFavorite,
   isHovered,
+  spaceId,
   onHover,
   onToggleFavorite,
   onToggleEnabled,
   onDelete,
+  onEdit,
 }: ModelCardProps) {
   return (
     <div
@@ -219,8 +227,10 @@ function ModelCard({
                   <ModelDropdownMenu
                     modelId={model.id}
                     isEnabled={isEnabled}
+                    spaceId={spaceId}
                     onToggleEnabled={onToggleEnabled}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                   />
                 }
               >
@@ -294,13 +304,12 @@ function useModelData(spaceId: string) {
       try {
         setLoading(true);
         // 直接使用新的模型管理API
-        const resp = await modelmgr.ListModels({ space_id: spaceId });
-        const modelsData = resp.data || [];
+        const modelsData = await listModels({ space_id: spaceId });
 
-        if (modelsData && Array.isArray(modelsData)) {
+        if (modelsData) {
           // 将ModelDetailOutput转换为SpaceModel
           const convertedModels: SpaceModel[] = modelsData.map(
-            (model: modelmgr.ModelDetailOutput) => ({
+            (model: ModelDetailOutput) => ({
               id: parseInt(model.id) || 0, // 将string id转换为number
               name: model.name || '',
               description:
@@ -371,10 +380,12 @@ function ModelListContent({
   modelStates,
   favoriteModels,
   hoveredModelId,
+  spaceId,
   setHoveredModelId,
   handleToggleFavorite,
   handleToggleEnabled,
   handleDelete,
+  handleEdit,
   searchValue,
   typeFilter,
   providerFilter,
@@ -383,10 +394,12 @@ function ModelListContent({
   modelStates: Record<number, boolean>;
   favoriteModels: Set<number>;
   hoveredModelId: number | null;
+  spaceId: string;
   setHoveredModelId: (id: number | null) => void;
   handleToggleFavorite: (id: number) => void;
   handleToggleEnabled: (id: number, enabled: boolean) => Promise<void>;
   handleDelete: (id: number) => Promise<void>;
+  handleEdit: (modelId: number) => void;
   searchValue: string;
   typeFilter: string;
   providerFilter: string;
@@ -410,10 +423,12 @@ function ModelListContent({
           isEnabled={modelStates[model.id]}
           isFavorite={favoriteModels.has(model.id)}
           isHovered={hoveredModelId === model.id}
+          spaceId={spaceId}
           onHover={setHoveredModelId}
           onToggleFavorite={handleToggleFavorite}
           onToggleEnabled={handleToggleEnabled}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
       ))}
     </div>
@@ -510,6 +525,10 @@ export default function SpaceModelConfigPage() {
     }
   };
 
+  const handleEdit = (modelId: number) => {
+    navigate(`/space/${spaceId}/models/edit/${modelId}`);
+  };
+
   const filteredModels = filterModels(models, {
     searchValue,
     typeFilter,
@@ -564,10 +583,12 @@ export default function SpaceModelConfigPage() {
             modelStates={modelStates}
             favoriteModels={favoriteModels}
             hoveredModelId={hoveredModelId}
+            spaceId={spaceId}
             setHoveredModelId={setHoveredModelId}
             handleToggleFavorite={handleToggleFavorite}
             handleToggleEnabled={handleToggleEnabled}
             handleDelete={handleDelete}
+            handleEdit={handleEdit}
             searchValue={searchValue}
             typeFilter={typeFilter}
             providerFilter={providerFilter}

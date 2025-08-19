@@ -1525,3 +1525,13 @@ func _impersonatecozeuserMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _modelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getspacemodellistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

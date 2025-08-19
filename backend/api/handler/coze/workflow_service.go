@@ -36,6 +36,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 // CreateWorkflow .
@@ -1230,4 +1231,82 @@ func OpenAPICreateConversation(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+// ExportWorkflow exports workflows as a downloadable package
+// @router /api/workflow_api/export [POST]
+func ExportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ExportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// TODO: ExportWorkflow needs to be implemented in domain service
+	// resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
+	// if err != nil {
+	// 	internalServerErrorResponse(ctx, c, err)
+	// 	return
+	// }
+	// c.JSON(consts.StatusOK, resp)
+	
+	// Temporary response
+	c.JSON(consts.StatusOK, &workflow.ExportWorkflowResponse{
+		Code: errno.ErrWorkflowOperationFail,
+		Msg:  "ExportWorkflow not implemented yet",
+	})
+}
+
+// ImportWorkflow imports workflows from an upload package
+// @router /api/workflow_api/import [POST]
+func ImportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ImportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// TODO: ImportWorkflow needs to be implemented in domain service
+	// resp, err := appworkflow.SVC.ImportWorkflow(ctx, &req)
+	// if err != nil {
+	// 	internalServerErrorResponse(ctx, c, err)
+	// 	return
+	// }
+	// c.JSON(consts.StatusOK, resp)
+	
+	// Temporary response
+	c.JSON(consts.StatusOK, &workflow.ImportWorkflowResponse{
+		Code: errno.ErrWorkflowOperationFail,
+		Msg:  "ImportWorkflow not implemented yet",
+	})
+}
+
+// ValidateImport validates an import package without actually importing
+// @router /api/workflow_api/validate_import [POST]
+func ValidateImport(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ValidateImportRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// TODO: ValidateImport needs to be implemented in domain service
+	// resp, err := appworkflow.SVC.ValidateImport(ctx, &req)
+	// if err != nil {
+	// 	internalServerErrorResponse(ctx, c, err)
+	// 	return
+	// }
+	// c.JSON(consts.StatusOK, resp)
+	
+	// Temporary response
+	c.JSON(consts.StatusOK, &workflow.ValidateImportResponse{
+		Code: errno.ErrWorkflowOperationFail,
+		Msg:  "ValidateImport not implemented yet",
+	})
 }

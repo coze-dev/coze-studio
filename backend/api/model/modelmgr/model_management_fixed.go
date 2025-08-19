@@ -2645,11 +2645,11 @@ func (p *ModelCapability) String() string {
 
 // 新增：连接配置结构体，替代JSON字符串
 type ConnConfig struct {
-	Endpoint    *string           `thrift:"endpoint,1,optional" form:"endpoint" json:"endpoint,omitempty" query:"endpoint"`
-	AuthType    *string           `thrift:"auth_type,2,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
-	APIKey      *string           `thrift:"api_key,3,optional" form:"api_key" json:"api_key,omitempty" query:"api_key"`
-	Headers     map[string]string `thrift:"headers,4,optional" form:"headers" json:"headers,omitempty" query:"headers"`
-	ExtraParams map[string]string `thrift:"extra_params,5,optional" form:"extra_params" json:"extra_params,omitempty" query:"extra_params"`
+	BaseURL        string  `thrift:"base_url,1,required" form:"base_url,required" json:"base_url,required" query:"base_url,required"`
+	APIKey         *string `thrift:"api_key,2,optional" form:"api_key" json:"api_key,omitempty" query:"api_key"`
+	Timeout        *string `thrift:"timeout,3,optional" form:"timeout" json:"timeout,omitempty" query:"timeout"`
+	Model          string  `thrift:"model,4,required" form:"model,required" json:"model,required" query:"model,required"`
+	EnableThinking *bool   `thrift:"enable_thinking,5,optional" form:"enable_thinking" json:"enable_thinking,omitempty" query:"enable_thinking"`
 }
 
 func NewConnConfig() *ConnConfig {
@@ -2659,22 +2659,8 @@ func NewConnConfig() *ConnConfig {
 func (p *ConnConfig) InitDefault() {
 }
 
-var ConnConfig_Endpoint_DEFAULT string
-
-func (p *ConnConfig) GetEndpoint() (v string) {
-	if !p.IsSetEndpoint() {
-		return ConnConfig_Endpoint_DEFAULT
-	}
-	return *p.Endpoint
-}
-
-var ConnConfig_AuthType_DEFAULT string
-
-func (p *ConnConfig) GetAuthType() (v string) {
-	if !p.IsSetAuthType() {
-		return ConnConfig_AuthType_DEFAULT
-	}
-	return *p.AuthType
+func (p *ConnConfig) GetBaseURL() (v string) {
+	return p.BaseURL
 }
 
 var ConnConfig_APIKey_DEFAULT string
@@ -2686,55 +2672,53 @@ func (p *ConnConfig) GetAPIKey() (v string) {
 	return *p.APIKey
 }
 
-var ConnConfig_Headers_DEFAULT map[string]string
+var ConnConfig_Timeout_DEFAULT string
 
-func (p *ConnConfig) GetHeaders() (v map[string]string) {
-	if !p.IsSetHeaders() {
-		return ConnConfig_Headers_DEFAULT
+func (p *ConnConfig) GetTimeout() (v string) {
+	if !p.IsSetTimeout() {
+		return ConnConfig_Timeout_DEFAULT
 	}
-	return p.Headers
+	return *p.Timeout
 }
 
-var ConnConfig_ExtraParams_DEFAULT map[string]string
+func (p *ConnConfig) GetModel() (v string) {
+	return p.Model
+}
 
-func (p *ConnConfig) GetExtraParams() (v map[string]string) {
-	if !p.IsSetExtraParams() {
-		return ConnConfig_ExtraParams_DEFAULT
+var ConnConfig_EnableThinking_DEFAULT bool
+
+func (p *ConnConfig) GetEnableThinking() (v bool) {
+	if !p.IsSetEnableThinking() {
+		return ConnConfig_EnableThinking_DEFAULT
 	}
-	return p.ExtraParams
+	return *p.EnableThinking
 }
 
 var fieldIDToName_ConnConfig = map[int16]string{
-	1: "endpoint",
-	2: "auth_type",
-	3: "api_key",
-	4: "headers",
-	5: "extra_params",
-}
-
-func (p *ConnConfig) IsSetEndpoint() bool {
-	return p.Endpoint != nil
-}
-
-func (p *ConnConfig) IsSetAuthType() bool {
-	return p.AuthType != nil
+	1: "base_url",
+	2: "api_key",
+	3: "timeout",
+	4: "model",
+	5: "enable_thinking",
 }
 
 func (p *ConnConfig) IsSetAPIKey() bool {
 	return p.APIKey != nil
 }
 
-func (p *ConnConfig) IsSetHeaders() bool {
-	return p.Headers != nil
+func (p *ConnConfig) IsSetTimeout() bool {
+	return p.Timeout != nil
 }
 
-func (p *ConnConfig) IsSetExtraParams() bool {
-	return p.ExtraParams != nil
+func (p *ConnConfig) IsSetEnableThinking() bool {
+	return p.EnableThinking != nil
 }
 
 func (p *ConnConfig) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetBaseURL bool = false
+	var issetModel bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2755,6 +2739,7 @@ func (p *ConnConfig) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetBaseURL = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2775,15 +2760,16 @@ func (p *ConnConfig) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.MAP {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetModel = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.MAP {
+			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2803,6 +2789,15 @@ func (p *ConnConfig) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetBaseURL {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetModel {
+		fieldId = 4
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
@@ -2817,17 +2812,19 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_ConnConfig[fieldId]))
 }
 
 func (p *ConnConfig) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field *string
+	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
-	p.Endpoint = _field
+	p.BaseURL = _field
 	return nil
 }
 func (p *ConnConfig) ReadField2(iprot thrift.TProtocol) error {
@@ -2838,7 +2835,7 @@ func (p *ConnConfig) ReadField2(iprot thrift.TProtocol) error {
 	} else {
 		_field = &v
 	}
-	p.AuthType = _field
+	p.APIKey = _field
 	return nil
 }
 func (p *ConnConfig) ReadField3(iprot thrift.TProtocol) error {
@@ -2849,65 +2846,29 @@ func (p *ConnConfig) ReadField3(iprot thrift.TProtocol) error {
 	} else {
 		_field = &v
 	}
-	p.APIKey = _field
+	p.Timeout = _field
 	return nil
 }
 func (p *ConnConfig) ReadField4(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return err
-	}
-	_field := make(map[string]string, size)
-	for i := 0; i < size; i++ {
-		var _key string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_key = v
-		}
 
-		var _val string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_val = v
-		}
-
-		_field[_key] = _val
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
+	} else {
+		_field = v
 	}
-	p.Headers = _field
+	p.Model = _field
 	return nil
 }
 func (p *ConnConfig) ReadField5(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return err
-	}
-	_field := make(map[string]string, size)
-	for i := 0; i < size; i++ {
-		var _key string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_key = v
-		}
 
-		var _val string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_val = v
-		}
-
-		_field[_key] = _val
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
 		return err
+	} else {
+		_field = &v
 	}
-	p.ExtraParams = _field
+	p.EnableThinking = _field
 	return nil
 }
 
@@ -2956,16 +2917,14 @@ WriteStructEndError:
 }
 
 func (p *ConnConfig) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEndpoint() {
-		if err = oprot.WriteFieldBegin("endpoint", thrift.STRING, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Endpoint); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("base_url", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.BaseURL); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -2974,11 +2933,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ConnConfig) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetAuthType() {
-		if err = oprot.WriteFieldBegin("auth_type", thrift.STRING, 2); err != nil {
+	if p.IsSetAPIKey() {
+		if err = oprot.WriteFieldBegin("api_key", thrift.STRING, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.AuthType); err != nil {
+		if err := oprot.WriteString(*p.APIKey); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2992,11 +2951,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ConnConfig) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetAPIKey() {
-		if err = oprot.WriteFieldBegin("api_key", thrift.STRING, 3); err != nil {
+	if p.IsSetTimeout() {
+		if err = oprot.WriteFieldBegin("timeout", thrift.STRING, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.APIKey); err != nil {
+		if err := oprot.WriteString(*p.Timeout); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -3010,27 +2969,14 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *ConnConfig) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetHeaders() {
-		if err = oprot.WriteFieldBegin("headers", thrift.MAP, 4); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.Headers)); err != nil {
-			return err
-		}
-		for k, v := range p.Headers {
-			if err := oprot.WriteString(k); err != nil {
-				return err
-			}
-			if err := oprot.WriteString(v); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("model", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Model); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -3039,22 +2985,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *ConnConfig) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetExtraParams() {
-		if err = oprot.WriteFieldBegin("extra_params", thrift.MAP, 5); err != nil {
+	if p.IsSetEnableThinking() {
+		if err = oprot.WriteFieldBegin("enable_thinking", thrift.BOOL, 5); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.ExtraParams)); err != nil {
-			return err
-		}
-		for k, v := range p.ExtraParams {
-			if err := oprot.WriteString(k); err != nil {
-				return err
-			}
-			if err := oprot.WriteString(v); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
+		if err := oprot.WriteBool(*p.EnableThinking); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -5317,7 +5252,7 @@ func (p *ModelDetailOutput) String() string {
 
 }
 
-//  请求和响应结构 
+// 请求和响应结构
 type CreateModelRequest struct {
 	Name              string                 `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
 	Description       map[string]string      `thrift:"description,2,optional" form:"description" json:"description,omitempty" query:"description"`
@@ -7549,6 +7484,7 @@ type UpdateModelRequest struct {
 	IconURL           *string                `thrift:"icon_url,5,optional" form:"icon_url" json:"icon_url,omitempty" query:"icon_url"`
 	DefaultParameters []*ModelParameterInput `thrift:"default_parameters,6,optional" form:"default_parameters" json:"default_parameters,omitempty" query:"default_parameters"`
 	Status            *int32                 `thrift:"status,7,optional" form:"status" json:"status,omitempty" query:"status"`
+	ConnConfig        *ConnConfig            `thrift:"conn_config,8,optional" form:"conn_config" json:"conn_config,omitempty" query:"conn_config"`
 	Base              *base.Base             `thrift:"Base,255,optional" form:"-" json:"-" query:"-"`
 }
 
@@ -7617,6 +7553,15 @@ func (p *UpdateModelRequest) GetStatus() (v int32) {
 	return *p.Status
 }
 
+var UpdateModelRequest_ConnConfig_DEFAULT *ConnConfig
+
+func (p *UpdateModelRequest) GetConnConfig() (v *ConnConfig) {
+	if !p.IsSetConnConfig() {
+		return UpdateModelRequest_ConnConfig_DEFAULT
+	}
+	return p.ConnConfig
+}
+
 var UpdateModelRequest_Base_DEFAULT *base.Base
 
 func (p *UpdateModelRequest) GetBase() (v *base.Base) {
@@ -7634,6 +7579,7 @@ var fieldIDToName_UpdateModelRequest = map[int16]string{
 	5:   "icon_url",
 	6:   "default_parameters",
 	7:   "status",
+	8:   "conn_config",
 	255: "Base",
 }
 
@@ -7659,6 +7605,10 @@ func (p *UpdateModelRequest) IsSetDefaultParameters() bool {
 
 func (p *UpdateModelRequest) IsSetStatus() bool {
 	return p.Status != nil
+}
+
+func (p *UpdateModelRequest) IsSetConnConfig() bool {
+	return p.ConnConfig != nil
 }
 
 func (p *UpdateModelRequest) IsSetBase() bool {
@@ -7736,6 +7686,14 @@ func (p *UpdateModelRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 7:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -7891,6 +7849,14 @@ func (p *UpdateModelRequest) ReadField7(iprot thrift.TProtocol) error {
 	p.Status = _field
 	return nil
 }
+func (p *UpdateModelRequest) ReadField8(iprot thrift.TProtocol) error {
+	_field := NewConnConfig()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.ConnConfig = _field
+	return nil
+}
 func (p *UpdateModelRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -7932,6 +7898,10 @@ func (p *UpdateModelRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -8098,6 +8068,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+func (p *UpdateModelRequest) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConnConfig() {
+		if err = oprot.WriteFieldBegin("conn_config", thrift.STRUCT, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.ConnConfig.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *UpdateModelRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -8893,7 +8881,7 @@ func (p *DeleteModelResponse) String() string {
 
 }
 
-//  空间模型配置相关 
+// 空间模型配置相关
 type AddModelToSpaceRequest struct {
 	SpaceID string     `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	ModelID string     `thrift:"model_id,2,required" form:"model_id,required" json:"model_id,required" query:"model_id,required"`
@@ -11042,7 +11030,7 @@ func (p *GetSpaceModelConfigResponse) String() string {
 
 }
 
-//  模型模板相关结构 
+// 模型模板相关结构
 type ModelTemplate struct {
 	ID          string  `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
 	Name        string  `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
@@ -13016,7 +13004,7 @@ func (p *ImportModelFromTemplateResponse) String() string {
 
 }
 
-//  空间模型启用/禁用相关 
+// 空间模型启用/禁用相关
 type EnableSpaceModelRequest struct {
 	SpaceID string     `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	ModelID string     `thrift:"model_id,2,required" form:"model_id,required" json:"model_id,required" query:"model_id,required"`
@@ -14035,7 +14023,7 @@ func (p *DisableSpaceModelResponse) String() string {
 
 }
 
-//  服务定义 
+// 服务定义
 type ModelManagementService interface {
 	// 模型管理 - 统一使用 /api/model/* 路径
 	CreateModel(ctx context.Context, request *CreateModelRequest) (r *CreateModelResponse, err error)

@@ -1372,6 +1372,13 @@ Before deployment, configure AI models in `backend/conf/model/`:
 2. Set `id`, `meta.conn_config.api_key`, and `meta.conn_config.model`
 3. Supported providers: OpenAI, Volcengine Ark, Claude, Gemini, Qwen, DeepSeek, Ollama
 
+For batch model import, use the Python model importer:
+```bash
+# Import models from YAML configs to database
+cd scripts
+python model_importer.py --config importer_config.yaml --model-dir ../backend/conf/model/
+```
+
 ## Testing Strategy
 
 ### Coverage Requirements by Package Level
@@ -1421,3 +1428,77 @@ For custom plugin development:
 - Run linting with `rush lint-staged` (pre-commit hook)
 - Ensure tests pass before submitting PRs
 - Follow team-based package organization and tagging conventions
+
+## System Requirements
+
+### Minimum Hardware Requirements
+- 2 Core CPU
+- 4 GB RAM
+- Docker and Docker Compose pre-installed
+
+### Required Software
+- Go >= 1.23.4
+- Node.js >= 21 (as specified in rush.json)
+- pnpm 8.15.8
+- Docker and Docker Compose
+
+## Team Organization and Package Tags
+
+The frontend monorepo uses a team-based organization system with specific tags:
+
+### Team Tags
+- `team-arch`: Core architecture and infrastructure
+- `team-automation`: Build and automation tools
+- `team-builder`: Build system components
+- `team-community`: Community-facing features
+- `team-data`: Data management and analytics
+- `team-devops`: DevOps and deployment tools
+- `team-studio`: Studio UI and user-facing features
+- `team-qa`: Quality assurance tools
+- `team-fullcode-app`: Full-code application components
+
+### Dependency Level Tags
+- `level-1`: Core infrastructure packages (highest priority)
+- `level-2`: Shared components and utilities
+- `level-3`: Feature domain packages
+- `level-4`: Application layer packages
+
+### Additional Tags
+- `enabled-bundle-diff`: Packages with bundle size monitoring
+- `phase-prebuild`: Packages that must be built before others
+- `channel-coze`: Coze-specific channel packages
+- `rush-tools`: Rush.js tooling packages
+- `core`: Core system packages
+
+## Environment Files
+
+The project uses different environment configurations:
+- `.env.debug`: Debug environment configuration
+- `.env.debug.example`: Example debug environment template
+- `.env.example`: Production environment template
+
+Always copy the appropriate example file before starting development.
+
+## Additional Makefile Commands
+
+Beyond the core commands, the Makefile includes:
+- `make setup_es_index`: Setup Elasticsearch indices
+- `make build_docker`: Build Docker images
+- `make down_web`: Stop web server containers
+- `make clean`: Reset Docker volumes and clean state
+- `make help`: Display all available commands
+
+## Model Management
+
+The project includes a comprehensive model management system (`modelmgr`):
+- Database-backed model configuration and storage
+- Support for space-specific model configurations
+- Model lifecycle management through application services
+- Integration with various AI model providers through standardized interfaces
+
+## Acknowledgments
+
+Key dependencies and frameworks:
+- **Eino**: Agent and workflow runtime engines, model abstractions
+- **FlowGram**: Workflow building engine for frontend canvas editor
+- **Hertz**: High-performance Go HTTP framework for microservices

@@ -61,10 +61,10 @@ func NewModelMgr(db *gorm.DB, redis cache.Cmdable) (modelmgr.Manager, error) {
 
 // ListModel 查询模型列表
 func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
-	// SpaceID filtering temporarily disabled as field is not available in ListModelRequest
-	// if req.SpaceID != nil {
-	//	return m.listModelsBySpace(ctx, req)
-	// }
+	// Check if SpaceID is provided for filtering
+	if req.SpaceID != nil {
+		return m.listModelsBySpace(ctx, req)
+	}
 
 	// 先查询 model_entity
 	query := m.db.WithContext(ctx).Model(&entity.ModelEntity{}).
@@ -176,8 +176,6 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 }
 
 // listModelsBySpace 根据空间ID查询模型列表
-// This function is temporarily disabled as SpaceID field is not available in ListModelRequest
-/*
 func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	logs.Infof("listModelsBySpace called with spaceID: %d", *req.SpaceID)
 
@@ -337,7 +335,6 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 		NextCursor: nextCursor,
 	}, nil
 }
-*/
 
 // ListInUseModel 查询使用中的模型
 func (m *ModelMgr) ListInUseModel(ctx context.Context, limit int, cursor *string) (*modelmgr.ListModelResponse, error) {

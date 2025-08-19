@@ -8080,6 +8080,9 @@ importers:
       '@coze-arch/web-context':
         specifier: workspace:*
         version: link:../web-context
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       axios:
         specifier: ^1.4.0
         version: 1.10.0(debug@4.3.3)

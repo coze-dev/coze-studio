@@ -18,9 +18,11 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	
 	"github.com/cloudwego/eino/schema"
 
+	crossDomainMessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 )
@@ -40,11 +42,38 @@ type MessageEventHandler struct {
 
 // HandlerInput processes the input for the agent runtime
 func (m *MessageEventHandler) HandlerInput(ctx context.Context, art *AgentRuntime) (*msgEntity.Message, error) {
-	// This is a placeholder implementation
-	// The actual implementation should be based on the chatflow requirements
-	// Convert from schema.Message to msgEntity.Message
+	// Create input message from AgentRunMeta
+	runMeta := art.GetRunMeta()
+	
+	// Build the message content from input metadata
+	var content string
+	if runMeta.Content != nil && len(runMeta.Content) > 0 {
+		// For text content, get the first text item
+		for _, item := range runMeta.Content {
+			if item.Type == crossDomainMessage.InputTypeText {
+				content = item.Text
+				break
+			}
+		}
+	}
+	
+	// Create schema message for model content
+	schemaMsg := &schema.Message{
+		Role:    schema.User,
+		Content: content,
+	}
+	
+	// Convert to JSON for ModelContent field
+	modelContentBytes, err := json.Marshal(schemaMsg)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &msgEntity.Message{
-		ID: 0, // Default ID
+		ID:           0, // Will be assigned by message service
+		ModelContent: string(modelContentBytes),
+		MessageType:  1, // Question type
+		UserID:       runMeta.UserID,
 	}, nil
 }
 

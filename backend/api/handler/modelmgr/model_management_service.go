@@ -287,8 +287,7 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板列表
-	// ModelID field doesn't exist in GetModelTemplatesRequest, using placeholder value
-	_, err = modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx, "")
+	modelTemplates, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx)
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplatesResponse{
 			Code: 500,
@@ -297,8 +296,6 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// Convert templates to the expected type (placeholder)
-	var modelTemplates []*modelmgr.ModelTemplate
 	resp := &modelmgr.GetModelTemplatesResponse{
 		Code:      0,
 		Msg:       "success",
@@ -320,8 +317,8 @@ func GetModelTemplateContent(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板内容
-	// ModelID field doesn't exist in GetModelTemplateContentRequest, using placeholder value
-	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, "", req.TemplateID)
+	// GetModelTemplateContent only takes templateID as parameter
+	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, req.TemplateID)
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplateContentResponse{
 			Code: 404,
@@ -522,15 +519,30 @@ func ImportModelFromTemplate(ctx context.Context, c *app.RequestContext) {
 
 		// 处理ConnConfig
 		if connConfig, ok := metaData["conn_config"].(map[string]interface{}); ok {
-			// 将整个conn_config作为JSON字符串放入ExtraParams
-			connConfigJSON, err := json.Marshal(connConfig)
-			if err == nil {
-				meta.ConnConfig = &modelmgr.ConnConfig{
-					ExtraParams: map[string]string{
-						"__raw_conn_config__": string(connConfigJSON),
-					},
-				}
+			// 尝试提取基本字段，如果无法识别则创建空配置
+			apiConnConfig := &modelmgr.ConnConfig{
+				BaseURL: "",  // Default empty
+				Model:   "",  // Default empty
 			}
+			
+			// Try to extract known fields
+			if baseURL, ok := connConfig["base_url"].(string); ok {
+				apiConnConfig.BaseURL = baseURL
+			}
+			if apiKey, ok := connConfig["api_key"].(string); ok {
+				apiConnConfig.APIKey = &apiKey
+			}
+			if timeout, ok := connConfig["timeout"].(string); ok {
+				apiConnConfig.Timeout = &timeout
+			}
+			if model, ok := connConfig["model"].(string); ok {
+				apiConnConfig.Model = model
+			}
+			if enableThinking, ok := connConfig["enable_thinking"].(bool); ok {
+				apiConnConfig.EnableThinking = &enableThinking
+			}
+			
+			meta.ConnConfig = apiConnConfig
 		}
 
 		// Capability

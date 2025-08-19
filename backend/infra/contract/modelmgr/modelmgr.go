@@ -24,11 +24,13 @@ type Manager interface {
 	ListModel(ctx context.Context, req *ListModelRequest) (*ListModelResponse, error)
 	ListInUseModel(ctx context.Context, limit int, Cursor *string) (*ListModelResponse, error)
 	MGetModelByID(ctx context.Context, req *MGetModelRequest) ([]*Model, error)
+	RefreshCache(ctx context.Context, modelID int64) error
 }
 
 type ListModelRequest struct {
 	FuzzyModelName *string
 	Status         []ModelStatus // default is default and in_use status
+	SpaceID        *uint64       // 可选的空间ID，用于按空间过滤模型
 	Limit          int
 	Cursor         *string
 }
