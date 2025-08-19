@@ -72,7 +72,7 @@ func (m *MessageEventHandler) HandlerInput(ctx context.Context, art *AgentRuntim
 	return &msgEntity.Message{
 		ID:           0, // Will be assigned by message service
 		ModelContent: string(modelContentBytes),
-		MessageType:  1, // Question type
+		MessageType:  crossDomainMessage.MessageTypeQuestion,
 		UserID:       runMeta.UserID,
 	}, nil
 }
