@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -134,29 +135,45 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		rounds += 1
 	}
 
+	currentConversationID := execCtx.ExeCfg.ConversationID
+	isCurrentConversation := currentConversationID != nil && *currentConversationID == conversationID
+	var sectionID int64
+	if isCurrentConversation {
+		if execCtx.ExeCfg.SectionID == nil {
+			return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("section id is required"))
+		}
+		sectionID = *execCtx.ExeCfg.SectionID
+	} else {
+		cInfo, err := ch.Manager.GetByID(ctx, conversationID)
+		if err != nil {
+			return nil, err
+		}
+		sectionID = cInfo.SectionID
+	}
+
 	runIDs, err := ch.Manager.GetLatestRunIDs(ctx, &conversation.GetLatestRunIDsRequest{
 		ConversationID: conversationID,
 		UserID:         userID,
 		AppID:          *appID,
 		Rounds:         rounds,
 		InitRunID:      initRunID,
+		SectionID:      sectionID,
 	})
 
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 	}
 
-	var messageList []any
 	if len(runIDs) == 0 {
 		return map[string]any{
-			"messageList": messageList,
+			"messageList": []any{},
 		}, nil
 	}
 
 	if isChatFlow {
 		if len(runIDs) == 1 {
 			return map[string]any{
-				"messageList": messageList,
+				"messageList": []any{},
 			}, nil
 		}
 		runIDs = runIDs[1:] // chatflow needs to filter out this session
@@ -170,6 +187,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 	}
 
+	var messageList []any
 	for _, msg := range response.Messages {
 		content, err := ConvertMessageToString(ctx, msg)
 		if err != nil {

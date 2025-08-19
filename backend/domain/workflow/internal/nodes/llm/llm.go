@@ -1247,21 +1247,27 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 	}
 
 	var messages []*conversation.Message
+	var scMessages []*schema.Message
+	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)
 	if execCtx != nil {
 		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
+	}
+
+	ret := map[string]any{
+		"chatHistory": []any{},
+	}
+	for k, v := range input {
+		ret[k] = v
 	}
 	if len(messages) == 0 {
-		if l.chatHistorySetting.EnableChatHistory {
-			ret := map[string]any{
-				"chatHistory": []any{},
-			}
-			for k, v := range input {
-				ret[k] = v
-			}
-			return ret, nil
-		}
-		return input, nil
+		return ret, nil
+	}
+
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return ret, nil
 	}
 
 	maxRounds := int(l.chatHistorySetting.ChatHistoryRound)
@@ -1292,14 +1298,9 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 			"content": content,
 		})
 	}
-	ctxcache.Store(ctx, chatHistoryKey, messages[startIdx:])
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
-	ret := map[string]any{
-		"chatHistory": historyMessages,
-	}
-	for k, v := range input {
-		ret[k] = v
-	}
+	ret["chatHistory"] = historyMessages
 	return ret, nil
 }
 
