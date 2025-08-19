@@ -11981,6 +11981,9 @@ importers:
       '@coze-studio/api-schema':
         specifier: workspace:*
         version: link:../../arch/api-schema
+      '@coze-studio/workspace-adapter':
+        specifier: workspace:*
+        version: link:../../studio/workspace/entry-adapter
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)

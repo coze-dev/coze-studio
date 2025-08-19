@@ -144,7 +144,7 @@ func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (tInfo *vo.TypeInfo, err error
 					}
 					tInfo.Properties[subV.Name] = subTInfo
 				} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
-					subV, err := parseParam(subVAny)
+					subV, err := ParseParam(subVAny)
 					if err != nil {
 						return nil, err
 					}
@@ -195,7 +195,7 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 
 		for i := range paramList {
 			paramAny := paramList[i]
-			param, err := parseParam(paramAny)
+			param, err := ParseParam(paramAny)
 			if err != nil {
 				return nil, err
 			}
@@ -343,7 +343,7 @@ func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 	return p, nil
 }
 
-func parseParam(v any) (*vo.Param, error) {
+func ParseParam(v any) (*vo.Param, error) {
 	if pa, ok := v.(*vo.Param); ok {
 		return pa, nil
 	}
@@ -497,7 +497,7 @@ func SetOutputTypesForNodeSchema(n *vo.Node, ns *schema.NodeSchema) error {
 
 func SetOutputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema) error {
 	for _, vAny := range n.Data.Outputs {
-		param, err := parseParam(vAny)
+		param, err := ParseParam(vAny)
 		if err != nil {
 			return err
 		}
@@ -565,7 +565,7 @@ func BlockInputToNamedTypeInfo(name string, b *vo.BlockInput) (*vo.NamedTypeInfo
 					}
 					tInfo.Properties = append(tInfo.Properties, subNInfo)
 				} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
-					subV, err := parseParam(subVAny)
+					subV, err := ParseParam(subVAny)
 					if err != nil {
 						return nil, err
 					}

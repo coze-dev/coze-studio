@@ -40,7 +40,7 @@ func Register(r *server.Hertz) {
 			_template.GET("/check-status", append(_checkpublishstatusMw(), template_publish.CheckPublishStatus)...)
 			_template.GET("/my-list", append(_getmytemplatelistMw(), template_publish.GetMyTemplateList)...)
 			_template.POST("/publish", append(_publishastemplateMw(), template_publish.PublishAsTemplate)...)
-			_template.DELETE("/{template_id}", append(_deletetemplateMw(), template_publish.DeleteTemplate)...)
+			_template.DELETE("/:template_id", append(_deletetemplateMw(), template_publish.DeleteTemplate)...)
 			_template.POST("/unpublish", append(_unpublishtemplateMw(), template_publish.UnpublishTemplate)...)
 			_template.POST("/upload_icon", append(_uploadtemplateiconMw(), template_publish.UploadTemplateIcon)...)
 			{

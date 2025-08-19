@@ -20,7 +20,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -50,14 +51,10 @@ func (d *DeleterConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOpt
 }
 
 func (d *DeleterConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &Deleter{
-		knowledgeDeleter: knowledge.GetKnowledgeOperator(),
-	}, nil
+	return &Deleter{}, nil
 }
 
-type Deleter struct {
-	knowledgeDeleter knowledge.KnowledgeOperator
-}
+type Deleter struct{}
 
 func (k *Deleter) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	documentID, ok := input["documentID"].(string)
@@ -69,7 +66,7 @@ func (k *Deleter) Invoke(ctx context.Context, input map[string]any) (map[string]
 		DocumentID: documentID,
 	}
 
-	response, err := k.knowledgeDeleter.Delete(ctx, req)
+	response, err := crossknowledge.DefaultSVC().Delete(ctx, req)
 	if err != nil {
 		return nil, err
 	}

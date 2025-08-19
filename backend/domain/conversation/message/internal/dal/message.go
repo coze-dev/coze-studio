@@ -63,7 +63,7 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	}
 
 	do := dao.query.Message.WithContext(ctx).Debug()
-	cErr := do.Create(poData)
+	cErr := do.Save(poData)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -71,27 +71,36 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	return dao.messagePO2DO(poData), nil
 }
 
-func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error) {
+func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
+	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(listMeta.ConversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
 
-	if messageType != nil {
-		do = do.Where(m.MessageType.Eq(string(*messageType)))
+	if len(listMeta.MessageType) > 0 {
+		do = do.Where(m.MessageType.In(slices.Transform(listMeta.MessageType, func(t *message.MessageType) string {
+			return string(*t)
+		})...))
 	}
 
-	if limit > 0 {
-		do = do.Limit(int(limit) + 1)
+	if listMeta.Limit > 0 {
+		do = do.Limit(int(listMeta.Limit) + 1)
 	}
 
-	if cursor > 0 {
-		if direction == entity.ScrollPageDirectionPrev {
-			do = do.Where(m.CreatedAt.Lt(cursor))
-		} else {
-			do = do.Where(m.CreatedAt.Gt(cursor))
+	if listMeta.Cursor > 0 {
+		msg, err := m.Where(m.ID.Eq(listMeta.Cursor)).First()
+		if err != nil {
+			return nil, false, err
 		}
+		if listMeta.Direction == entity.ScrollPageDirectionPrev {
+			do = do.Where(m.CreatedAt.Lt(msg.CreatedAt))
+			do = do.Order(m.CreatedAt.Desc())
+		} else {
+			do = do.Where(m.CreatedAt.Gt(msg.CreatedAt))
+			do = do.Order(m.CreatedAt.Asc())
+		}
+	} else {
+		do = do.Order(m.CreatedAt.Desc())
 	}
 
-	do = do.Order(m.CreatedAt.Desc())
 	messageList, err := do.Find()
 
 	var hasMore bool
@@ -103,9 +112,9 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int
 		return nil, false, err
 	}
 
-	if len(messageList) > limit {
+	if len(messageList) > int(listMeta.Limit) {
 		hasMore = true
-		messageList = messageList[:limit]
+		messageList = messageList[:int(listMeta.Limit)]
 	}
 
 	return dao.batchMessagePO2DO(messageList), hasMore, nil
@@ -133,19 +142,37 @@ func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy 
 
 func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Message) (int64, error) {
 	m := dao.query.Message
-	columns := dao.buildEditColumns(msg)
+
+	originMsg, err := dao.GetByID(ctx, msgID)
+	if originMsg == nil {
+		return 0, errorx.New(errno.ErrRecordNotFound)
+	}
+	if err != nil {
+		return 0, err
+	}
+
+	columns := dao.buildEditColumns(msg, originMsg)
 	do, err := m.WithContext(ctx).Where(m.ID.Eq(msgID)).UpdateColumns(columns)
 	if err != nil {
 		return 0, err
 	}
+	if do.RowsAffected == 0 {
+		return 0, errorx.New(errno.ErrRecordNotFound)
+	}
+
 	return do.RowsAffected, nil
 }
 
-func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interface{} {
+func (dao *MessageDAO) buildEditColumns(msg *message.Message, originMsg *entity.Message) map[string]interface{} {
 	columns := make(map[string]interface{})
 	table := dao.query.Message
 	if msg.Content != "" {
+		msg.Role = originMsg.Role
 		columns[table.Content.ColumnName().String()] = msg.Content
+		modelContent, err := dao.buildModelContent(msg)
+		if err == nil {
+			columns[table.ModelContent.ColumnName().String()] = modelContent
+		}
 	}
 	if msg.MessageType != "" {
 		columns[table.MessageType.ColumnName().String()] = msg.MessageType
@@ -170,6 +197,11 @@ func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interfa
 
 	columns[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	if msg.Ext != nil {
+		if originMsg.Ext != nil {
+			for k, v := range originMsg.Ext {
+				msg.Ext[k] = v
+			}
+		}
 		ext, err := sonic.MarshalString(msg.Ext)
 		if err == nil {
 			columns[table.Ext.ColumnName().String()] = ext

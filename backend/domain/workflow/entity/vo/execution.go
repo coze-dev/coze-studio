@@ -16,6 +16,15 @@
 
 package vo
 
+// Locator represents the source of workflow execution
+type Locator uint8
+
+const (
+	FromDraft Locator = iota
+	FromSpecificVersion
+	FromLatestVersion
+)
+
 type ExecuteConfig struct {
 	ID            int64
 	From          Locator

@@ -30,6 +30,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -317,13 +318,16 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 
 func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, draft *vo.DraftInfo) error {
 	d := &model.WorkflowDraft{
-		ID:             id,
-		Canvas:         draft.Canvas,
-		InputParams:    draft.InputParamsStr,
-		OutputParams:   draft.OutputParamsStr,
-		Modified:       draft.Modified,
-		TestRunSuccess: draft.TestRunSuccess,
-		CommitID:       draft.CommitID,
+		ID:           id,
+		Canvas:       draft.Canvas,
+		InputParams:  draft.InputParamsStr,
+		OutputParams: draft.OutputParamsStr,
+		CommitID:     draft.CommitID,
+	}
+
+	if draft.DraftMeta != nil {
+		d.Modified = draft.DraftMeta.Modified
+		d.TestRunSuccess = draft.DraftMeta.TestRunSuccess
 	}
 
 	if err := r.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
@@ -497,6 +501,10 @@ func (r *RepositoryImpl) UpdateMeta(ctx context.Context, id int64, metaUpdate *v
 		expressions = append(expressions, r.query.WorkflowMeta.LatestVersion.Value(*metaUpdate.LatestPublishedVersion))
 	}
 
+	if metaUpdate.WorkflowMode != nil {
+		expressions = append(expressions, r.query.WorkflowMeta.Mode.Value(int32(*metaUpdate.WorkflowMode)))
+	}
+
 	if len(expressions) == 0 {
 		return nil
 	}
@@ -536,7 +544,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		commitID                          string
 	)
 	switch policy.QType {
-	case vo.FromDraft:
+	case workflowModel.FromDraft:
 		draft, err := r.DraftV2(ctx, policy.ID, policy.CommitID)
 		if err != nil {
 			return nil, err
@@ -547,7 +555,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = draft.OutputParamsStr
 		draftMeta = draft.DraftMeta
 		commitID = draft.CommitID
-	case vo.FromSpecificVersion:
+	case workflowModel.FromSpecificVersion:
 		v, err := r.GetVersion(ctx, policy.ID, policy.Version)
 		if err != nil {
 			return nil, err
@@ -557,7 +565,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = v.OutputParamsStr
 		versionMeta = v.VersionMeta
 		commitID = v.CommitID
-	case vo.FromLatestVersion:
+	case workflowModel.FromLatestVersion:
 		v, err := r.GetLatestVersion(ctx, policy.ID)
 		if err != nil {
 			return nil, err
@@ -601,6 +609,116 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 	}, nil
 }
 
+func (r *RepositoryImpl) CreateChatFlowRoleConfig(ctx context.Context, chatFlowRole *entity.ChatFlowRole) (int64, error) {
+	id, err := r.GenID(ctx)
+	if err != nil {
+		return 0, vo.WrapError(errno.ErrIDGenError, err)
+	}
+	chatFlowRoleConfig := &model.ChatFlowRoleConfig{
+		ID:                  id,
+		WorkflowID:          chatFlowRole.WorkflowID,
+		Name:                chatFlowRole.Name,
+		Description:         chatFlowRole.Description,
+		Avatar:              chatFlowRole.AvatarUri,
+		AudioConfig:         chatFlowRole.AudioConfig,
+		BackgroundImageInfo: chatFlowRole.BackgroundImageInfo,
+		OnboardingInfo:      chatFlowRole.OnboardingInfo,
+		SuggestReplyInfo:    chatFlowRole.SuggestReplyInfo,
+		UserInputConfig:     chatFlowRole.UserInputConfig,
+		CreatorID:           chatFlowRole.CreatorID,
+		Version:             chatFlowRole.Version,
+	}
+
+	if err := r.query.ChatFlowRoleConfig.WithContext(ctx).Create(chatFlowRoleConfig); err != nil {
+		return 0, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("create chat flow role: %w", err))
+	}
+
+	return id, nil
+}
+
+func (r *RepositoryImpl) UpdateChatFlowRoleConfig(ctx context.Context, workflowID int64, chatFlowRole *vo.ChatFlowRoleUpdate) error {
+	var expressions []field.AssignExpr
+	if chatFlowRole.Name != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Name.Value(*chatFlowRole.Name))
+	}
+	if chatFlowRole.Description != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Description.Value(*chatFlowRole.Description))
+	}
+	if chatFlowRole.AvatarUri != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Avatar.Value(*chatFlowRole.AvatarUri))
+	}
+	if chatFlowRole.AudioConfig != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.AudioConfig.Value(*chatFlowRole.AudioConfig))
+	}
+	if chatFlowRole.BackgroundImageInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.BackgroundImageInfo.Value(*chatFlowRole.BackgroundImageInfo))
+	}
+	if chatFlowRole.OnboardingInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.OnboardingInfo.Value(*chatFlowRole.OnboardingInfo))
+	}
+	if chatFlowRole.SuggestReplyInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.SuggestReplyInfo.Value(*chatFlowRole.SuggestReplyInfo))
+	}
+	if chatFlowRole.UserInputConfig != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.UserInputConfig.Value(*chatFlowRole.UserInputConfig))
+	}
+
+	if len(expressions) == 0 {
+		return nil
+	}
+
+	_, err := r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).
+		UpdateColumnSimple(expressions...)
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("update chat flow role: %w", err))
+	}
+
+	return nil
+}
+
+func (r *RepositoryImpl) GetChatFlowRoleConfig(ctx context.Context, workflowID int64, version string) (_ *entity.ChatFlowRole, err error, isExist bool) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+	role := &model.ChatFlowRoleConfig{}
+	if version != "" {
+		role, err = r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID), r.query.ChatFlowRoleConfig.Version.Eq(version)).First()
+	} else {
+		role, err = r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).First()
+	}
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err, false
+		}
+		return nil, fmt.Errorf("failed to get chat flow role for chatflowID %d: %w", workflowID, err), true
+	}
+	res := &entity.ChatFlowRole{
+		ID:                  role.ID,
+		WorkflowID:          role.WorkflowID,
+		Name:                role.Name,
+		Description:         role.Description,
+		AvatarUri:           role.Avatar,
+		AudioConfig:         role.AudioConfig,
+		BackgroundImageInfo: role.BackgroundImageInfo,
+		OnboardingInfo:      role.OnboardingInfo,
+		SuggestReplyInfo:    role.SuggestReplyInfo,
+		UserInputConfig:     role.UserInputConfig,
+		CreatorID:           role.CreatorID,
+		CreatedAt:           time.UnixMilli(role.CreatedAt),
+	}
+	if role.UpdatedAt > 0 {
+		res.UpdatedAt = time.UnixMilli(role.UpdatedAt)
+	}
+	return res, err, true
+}
+
+func (r *RepositoryImpl) DeleteChatFlowRoleConfig(ctx context.Context, id int64, workflowID int64) error {
+	_, err := r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.ID.Eq(id), r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).Delete()
+	return err
+}
+
 func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (_ *vo.VersionInfo, err error) {
 	defer func() {
 		if err != nil {
@@ -632,6 +750,28 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 		},
 		CommitID: wfVersion.CommitID,
 	}, nil
+}
+
+func (r *RepositoryImpl) GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) (_ []string, err error) {
+	if limit <= 0 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("limit must be greater than 0"))
+	}
+
+	connectorWorkflowVersion := r.query.ConnectorWorkflowVersion
+	vl, err := connectorWorkflowVersion.WithContext(ctx).
+		Where(connectorWorkflowVersion.ConnectorID.Eq(connectorID),
+			connectorWorkflowVersion.WorkflowID.Eq(workflowID)).
+		Order(connectorWorkflowVersion.CreatedAt.Desc()).
+		Limit(limit).
+		Find()
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrDatabaseError, err)
+	}
+	var versionList []string
+	for _, v := range vl {
+		versionList = append(versionList, v.Version)
+	}
+	return versionList, nil
 }
 
 func (r *RepositoryImpl) IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (b bool, err error) {
@@ -762,6 +902,10 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 
 	if q.LibOnly {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	if q.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*q.Mode)))
 	}
 
 	type combinedDraft struct {
@@ -928,6 +1072,10 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 
 	if q.LibOnly {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	if q.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*q.Mode)))
 	}
 
 	type combinedVersion struct {
@@ -1154,6 +1302,10 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
+	if query.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*query.Mode)))
+	}
+
 	var result []*model.WorkflowMeta
 
 	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...)
@@ -1313,7 +1465,8 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	}
 
 	var opts []compose.WorkflowOption
-	opts = append(opts, compose.WithIDAsName(policy.ID))
+	opts = append(opts, compose.WithIDAsName(policy.ID),
+		compose.WithParentRequireCheckpoint()) // always assumes the 'parent' may pass a checkpoint ID
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
 		opts = append(opts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
 	}
@@ -1516,6 +1669,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			IconURI:   wfMeta.IconURI,
 			Desc:      wfMeta.Description,
 			AppID:     ternary.IFElse(wfMeta.AppID == 0, (*int64)(nil), ptr.Of(wfMeta.AppID)),
+			Mode:      workflowModel.WorkflowMode(wfMeta.Mode),
 		},
 		CanvasInfo: &vo.CanvasInfo{
 			Canvas:          wfDraft.Canvas,
@@ -1525,261 +1679,6 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 	}
 
 	return copiedWorkflow, nil
-}
-
-// ExportWorkflowData exports a single workflow's data for packaging
-func (r *RepositoryImpl) ExportWorkflowData(ctx context.Context, workflowID int64) (*vo.WorkflowExportData, error) {
-	// Get workflow entity with draft data
-	policy := &vo.GetPolicy{
-		ID:    workflowID,
-		QType: vo.FromDraft,
-	}
-
-	wfEntity, err := r.GetEntity(ctx, policy)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get dependencies
-	dependencies, err := r.getWorkflowDependencies(ctx, workflowID)
-	if err != nil {
-		logs.Warnf("Failed to get dependencies for workflow %d: %v", workflowID, err)
-		// Don't fail the export for dependency analysis issues
-		dependencies = &vo.DependenceResource{
-			PluginIDs:    []int64{},
-			KnowledgeIDs: []int64{},
-			DatabaseIDs:  []int64{},
-		}
-	}
-
-	// Get workflow references
-	references, err := r.getWorkflowReferences(ctx, workflowID)
-	if err != nil {
-		logs.Warnf("Failed to get references for workflow %d: %v", workflowID, err)
-		references = []vo.WorkflowReferenceKey{}
-	}
-
-	// Create export data
-	exportData := &vo.WorkflowExportData{
-		OriginalID:   workflowID,
-		Meta:         wfEntity.Meta,
-		CanvasInfo:   wfEntity.CanvasInfo,
-		DraftMeta:    wfEntity.DraftMeta,
-		VersionMeta:  wfEntity.VersionMeta,
-		Dependencies: dependencies,
-		References:   references,
-		ExportedFrom: "coze-studio",
-		ExportedAt:   time.Now(),
-	}
-
-	return exportData, nil
-}
-
-// ImportWorkflowData imports a single workflow from export data
-func (r *RepositoryImpl) ImportWorkflowData(ctx context.Context, importData *vo.WorkflowExportData, policy vo.ImportWorkflowPolicy) (*entity.Workflow, error) {
-	// Generate new workflow ID
-	newID, err := r.IDGenerator.GenID(ctx)
-	if err != nil {
-		return nil, vo.WrapError(errno.ErrIDGenError, err)
-	}
-
-	// Generate new commit ID
-	commitID, err := r.IDGenerator.GenID(ctx)
-	if err != nil {
-		return nil, vo.WrapError(errno.ErrIDGenError, err)
-	}
-
-	// Handle name conflicts
-	workflowName := importData.Meta.Name
-	if policy.ShouldModifyWorkflowName && policy.ConflictResolution == vo.ConflictStrategy_Rename {
-		workflowName, err = r.resolveNameConflict(ctx, importData.Meta.Name, policy.TargetSpaceID)
-		if err != nil {
-			logs.Warnf("Failed to resolve name conflict for workflow %s: %v", importData.Meta.Name, err)
-			// Continue with original name
-			workflowName = importData.Meta.Name
-		}
-	}
-
-	// Perform import in transaction
-	var importedWorkflow *entity.Workflow
-	err = r.query.Transaction(func(tx *query.Query) error {
-		return r.importWorkflowInTransaction(ctx, tx, importData, policy, newID, commitID, workflowName)
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Create result entity
-	importedWorkflow = &entity.Workflow{
-		ID:       newID,
-		CommitID: strconv.FormatInt(commitID, 10),
-		Meta: &vo.Meta{
-			Name:      workflowName,
-			Desc:      importData.Meta.Desc,
-			IconURI:   importData.Meta.IconURI,
-			SpaceID:   *policy.TargetSpaceID,
-			CreatorID: ctxutil.MustGetUIDFromCtx(ctx),
-			AppID:     policy.TargetAppID,
-		},
-		CanvasInfo: importData.CanvasInfo,
-	}
-
-	return importedWorkflow, nil
-}
-
-// importWorkflowInTransaction performs the actual import within a database transaction
-func (r *RepositoryImpl) importWorkflowInTransaction(ctx context.Context, tx *query.Query, importData *vo.WorkflowExportData, policy vo.ImportWorkflowPolicy, newID int64, commitID int64, workflowName string) error {
-	// Create workflow meta
-	wfMeta := &model.WorkflowMeta{
-		ID:          newID,
-		Name:        workflowName,
-		Description: importData.Meta.Desc,
-		IconURI:     importData.Meta.IconURI,
-		ContentType: int32(importData.Meta.ContentType),
-		Mode:        int32(importData.Meta.Mode),
-		CreatorID:   ctxutil.MustGetUIDFromCtx(ctx),
-		AuthorID:    ctxutil.MustGetUIDFromCtx(ctx),
-		SpaceID:     *policy.TargetSpaceID,
-		Status:      0, // Unpublished
-		DeletedAt:   gorm.DeletedAt{Valid: false},
-	}
-
-	if importData.Meta.Tag != nil {
-		wfMeta.Tag = int32(*importData.Meta.Tag)
-	}
-
-	if policy.TargetAppID != nil {
-		wfMeta.AppID = *policy.TargetAppID
-	}
-
-	if err := tx.WorkflowMeta.WithContext(ctx).Create(wfMeta); err != nil {
-		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("create workflow meta: %w", err))
-	}
-
-	// Create workflow draft
-	wfDraft := &model.WorkflowDraft{
-		ID:             newID,
-		Canvas:         importData.CanvasInfo.Canvas,
-		InputParams:    importData.CanvasInfo.InputParamsStr,
-		OutputParams:   importData.CanvasInfo.OutputParamsStr,
-		Modified:       true,  // Mark as modified since it's imported
-		TestRunSuccess: false, // Not tested yet
-		CommitID:       strconv.FormatInt(commitID, 10),
-	}
-
-	if err := tx.WorkflowDraft.WithContext(ctx).Create(wfDraft); err != nil {
-		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("create workflow draft: %w", err))
-	}
-
-	return nil
-}
-
-// resolveNameConflict resolves naming conflicts using Redis counter (similar to CopyWorkflow)
-func (r *RepositoryImpl) resolveNameConflict(ctx context.Context, originalName string, targetSpaceID *int64) (string, error) {
-	if targetSpaceID == nil {
-		return originalName, nil
-	}
-
-	const (
-		importWorkflowRedisKeyPrefix         = "import_workflow_redis_key_prefix"
-		importWorkflowRedisKeyExpireInterval = time.Hour * 24 * 7
-	)
-
-	importWorkflowRedisKey := fmt.Sprintf("%s:%d:%d:%s", importWorkflowRedisKeyPrefix, *targetSpaceID, ctxutil.MustGetUIDFromCtx(ctx), originalName)
-	copiedNameSuffix, err := r.redis.Incr(ctx, importWorkflowRedisKey).Result()
-	if err != nil {
-		return "", vo.WrapError(errno.ErrRedisError, err)
-	}
-
-	err = r.redis.Expire(ctx, importWorkflowRedisKey, importWorkflowRedisKeyExpireInterval).Err()
-	if err != nil {
-		logs.Warnf("failed to set the rediskey %v expiration time, err=%v", importWorkflowRedisKey, err)
-	}
-
-	return fmt.Sprintf("%s_%d", originalName, copiedNameSuffix), nil
-}
-
-// getWorkflowDependencies analyzes workflow dependencies (plugins, knowledge, databases)
-func (r *RepositoryImpl) getWorkflowDependencies(ctx context.Context, workflowID int64) (*vo.DependenceResource, error) {
-	// Get workflow canvas to analyze dependencies
-	draft, err := r.DraftV2(ctx, workflowID, "")
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse canvas to extract dependencies
-	var canvas vo.Canvas
-	if err := sonic.UnmarshalString(draft.Canvas, &canvas); err != nil {
-		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
-	}
-
-	// Analyze dependencies from canvas nodes
-	dependencies := &vo.DependenceResource{
-		PluginIDs:    []int64{},
-		KnowledgeIDs: []int64{},
-		DatabaseIDs:  []int64{},
-	}
-
-	// Simple dependency extraction (this could be made more sophisticated)
-	r.extractDependenciesFromNodes(canvas.Nodes, dependencies)
-
-	return dependencies, nil
-}
-
-// extractDependenciesFromNodes extracts dependencies from workflow nodes
-func (r *RepositoryImpl) extractDependenciesFromNodes(nodes []*vo.Node, dependencies *vo.DependenceResource) {
-	for _, node := range nodes {
-		// Extract plugin dependencies (simplified - would need more sophisticated parsing)
-		if node.Data != nil {
-			// Check for plugin-related blocks
-			// Note: vo.BlockTypePlugin might not exist, this is a simplified implementation
-			// In practice, you'd need to check the actual node types defined in vo package
-		}
-
-		// Extract knowledge dependencies (simplified)
-		if node.Type == vo.BlockTypeBotDataset || node.Type == vo.BlockTypeBotDatasetWrite {
-			// This would need more sophisticated parsing based on node structure
-			// For now, just mark that knowledge dependencies exist
-		}
-
-		// Extract database dependencies (simplified)
-		if node.Type == vo.BlockTypeDatabase || node.Type == vo.BlockTypeDatabaseSelect ||
-			node.Type == vo.BlockTypeDatabaseInsert || node.Type == vo.BlockTypeDatabaseDelete ||
-			node.Type == vo.BlockTypeDatabaseUpdate {
-			// This would need more sophisticated parsing based on node structure
-			// For now, just mark that database dependencies exist
-		}
-
-		// Recursively check child nodes
-		if len(node.Blocks) > 0 {
-			r.extractDependenciesFromNodes(node.Blocks, dependencies)
-		}
-	}
-}
-
-// getWorkflowReferences gets workflow reference relationships
-func (r *RepositoryImpl) getWorkflowReferences(ctx context.Context, workflowID int64) ([]vo.WorkflowReferenceKey, error) {
-	policy := &vo.MGetReferencePolicy{
-		ReferredIDs: []int64{workflowID},
-	}
-
-	references, err := r.MGetReferences(ctx, policy)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert to reference keys
-	referenceKeys := make([]vo.WorkflowReferenceKey, len(references))
-	for i, ref := range references {
-		referenceKeys[i] = vo.WorkflowReferenceKey{
-			ReferredID:       ref.WorkflowReferenceKey.ReferredID,
-			ReferringID:      ref.WorkflowReferenceKey.ReferringID,
-			ReferType:        ref.WorkflowReferenceKey.ReferType,
-			ReferringBizType: ref.WorkflowReferenceKey.ReferringBizType,
-		}
-	}
-
-	return referenceKeys, nil
 }
 
 func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (
@@ -1843,6 +1742,10 @@ func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context
 
 func (r *RepositoryImpl) GetKnowledgeRecallChatModel() cm.BaseChatModel {
 	return r.builtinModel
+}
+
+func (r *RepositoryImpl) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
+	return r.tos.GetObjectUrl(ctx, objectKey, opts...)
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

@@ -16,19 +16,12 @@
 
 package vo
 
-type PluginEntity struct {
-	PluginID      int64
-	PluginVersion *string // nil or "0" means draft, "" means latest/online version, otherwise is specific version
-}
-
-type DependenceResource struct {
-	PluginIDs    []int64
-	KnowledgeIDs []int64
-	DatabaseIDs  []int64
-}
+import (
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+)
 
 type ExternalResourceRelated struct {
-	PluginMap     map[int64]*PluginEntity
+	PluginMap     map[int64]*plugin.PluginEntity
 	PluginToolMap map[int64]int64
 
 	KnowledgeMap map[int64]int64
@@ -40,4 +33,10 @@ type CopyWorkflowPolicy struct {
 	TargetAppID              *int64
 	ModifiedCanvasSchema     *string
 	ShouldModifyWorkflowName bool
+}
+
+type DependenceResource struct {
+	PluginIDs    []int64
+	KnowledgeIDs []int64
+	DatabaseIDs  []int64
 }

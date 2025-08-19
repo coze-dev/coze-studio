@@ -160,3 +160,33 @@ func (dao *UserDAO) GetUsersByIDs(ctx context.Context, userIDs []int64) ([]*mode
 		dao.query.User.ID.In(userIDs...),
 	).Find()
 }
+
+// GetUserByUserID is an alias for GetUserByID for interface compatibility
+func (dao *UserDAO) GetUserByUserID(ctx context.Context, userID int64) (*model.User, error) {
+	return dao.GetUserByID(ctx, userID)
+}
+
+// MGetUserByUserIDs is an alias for GetUsersByIDs for interface compatibility
+func (dao *UserDAO) MGetUserByUserIDs(ctx context.Context, userIDs []int64) ([]*model.User, error) {
+	return dao.GetUsersByIDs(ctx, userIDs)
+}
+
+// SearchUsers searches for users by keyword
+func (dao *UserDAO) SearchUsers(ctx context.Context, keyword string, limit int32) ([]*model.User, error) {
+	q := dao.query.User.WithContext(ctx)
+	if keyword != "" {
+		// Search across multiple fields using OR conditions
+		pattern := "%" + keyword + "%"
+		q = q.Where(
+			dao.query.User.Name.Like(pattern),
+		).Or(
+			dao.query.User.Email.Like(pattern),
+		).Or(
+			dao.query.User.UniqueName.Like(pattern),
+		)
+	}
+	if limit > 0 {
+		q = q.Limit(int(limit))
+	}
+	return q.Find()
+}

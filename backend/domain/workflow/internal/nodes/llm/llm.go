@@ -34,16 +34,22 @@ import (
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 	"golang.org/x/exp/maps"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
-	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -54,6 +60,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
+
+type contextKey string
+
+const chatHistoryKey contextKey = "chatHistory"
 
 type Format int
 
@@ -157,18 +167,19 @@ type RetrievalStrategy struct {
 
 type KnowledgeRecallConfig struct {
 	ChatModel                model.BaseChatModel
-	Retriever                knowledge.KnowledgeOperator
 	RetrievalStrategy        *RetrievalStrategy
 	SelectedKnowledgeDetails []*knowledge.KnowledgeDetail
 }
 
 type Config struct {
-	SystemPrompt    string
-	UserPrompt      string
-	OutputFormat    Format
-	LLMParams       *crossmodel.LLMParams
-	FCParam         *vo.FCParam
-	BackupLLMParams *crossmodel.LLMParams
+	SystemPrompt                      string
+	UserPrompt                        string
+	OutputFormat                      Format
+	LLMParams                         *crossmodel.LLMParams
+	FCParam                           *vo.FCParam
+	BackupLLMParams                   *crossmodel.LLMParams
+	ChatHistorySetting                *vo.ChatHistorySetting
+	AssociateStartNodeUserInputFields map[string]struct{}
 }
 
 func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema2.NodeSchema, error) {
@@ -197,6 +208,13 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	c.LLMParams = convertedLLMParam
 	c.SystemPrompt = convertedLLMParam.SystemPrompt
 	c.UserPrompt = convertedLLMParam.Prompt
+
+	if convertedLLMParam.EnableChatHistory {
+		c.ChatHistorySetting = &vo.ChatHistorySetting{
+			EnableChatHistory: true,
+			ChatHistoryRound:  convertedLLMParam.ChatHistoryRound,
+		}
+	}
 
 	var resFormat Format
 	switch convertedLLMParam.ResponseFormat {
@@ -269,6 +287,15 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 		}
 	}
 
+	c.AssociateStartNodeUserInputFields = make(map[string]struct{})
+	for _, info := range ns.InputSources {
+		if len(info.Path) == 1 && info.Source.Ref != nil && info.Source.Ref.FromNodeKey == entity.EntryNodeKey {
+			if compose.FromFieldPath(info.Source.Ref.FromPath).Equals(compose.FromField("USER_INPUT")) {
+				c.AssociateStartNodeUserInputFields[info.Path[0]] = struct{}{}
+			}
+		}
+	}
+
 	return ns, nil
 }
 
@@ -316,7 +343,14 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 		case "systemPrompt":
 			strVal := param.Input.Value.Content.(string)
 			p.SystemPrompt = strVal
-		case "chatHistoryRound", "generationDiversity", "frequencyPenalty", "presencePenalty":
+		case "chatHistoryRound":
+			strVal := param.Input.Value.Content.(string)
+			int64Val, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			p.ChatHistoryRound = int64Val
+		case "generationDiversity", "frequencyPenalty", "presencePenalty":
 		// do nothing
 		case "topP":
 			strVal := param.Input.Value.Content.(string)
@@ -326,7 +360,8 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 			}
 			p.TopP = &floatVar
 		default:
-			return nil, fmt.Errorf("invalid LLMParam name: %s", param.Name)
+			logs.Warnf("encountered unknown param when converting LLM Params, name= %s, "+
+				"value= %v", param.Name, param.Input.Value.Content)
 		}
 	}
 
@@ -360,7 +395,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		knowledgeRecallConfig *KnowledgeRecallConfig
 	)
 
-	chatModel, info, err = crossmodel.GetManager().GetModel(ctx, c.LLMParams)
+	chatModel, info, err = crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +404,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	if exceptionConf != nil && exceptionConf.MaxRetry > 0 {
 		backupModelParams := c.BackupLLMParams
 		if backupModelParams != nil {
-			fallbackM, fallbackI, err = crossmodel.GetManager().GetModel(ctx, backupModelParams)
+			fallbackM, fallbackI, err = crossmodelmgr.DefaultSVC().GetModel(ctx, backupModelParams)
 			if err != nil {
 				return nil, err
 			}
@@ -398,9 +433,9 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 					workflowToolConfig.OutputParametersConfig = wf.FCSetting.ResponseParameters
 				}
 
-				locator := vo.FromDraft
+				locator := workflowModel.FromDraft
 				if wf.WorkflowVersion != "" {
-					locator = vo.FromSpecificVersion
+					locator = workflowModel.FromSpecificVersion
 				}
 
 				wfTool, err := workflow.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{
@@ -454,7 +489,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 					}
 				} else {
 					pluginToolsInfoRequest := &plugin.ToolsInvokableRequest{
-						PluginEntity: plugin.Entity{
+						PluginEntity: plugin.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
 						},
@@ -472,12 +507,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
 			for _, req := range pluginToolsInvokableReq {
-				toolMap, err := plugin.GetPluginService().GetPluginInvokableTools(ctx, req)
+				toolMap, err := crossplugin.DefaultSVC().GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
 				}
 				for _, t := range toolMap {
-					inInvokableTools = append(inInvokableTools, plugin.NewInvokableTool(t))
+					inInvokableTools = append(inInvokableTools, newInvokableTool(t))
 				}
 			}
 			if len(inInvokableTools) > 0 {
@@ -491,11 +526,9 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				return nil, fmt.Errorf("workflow builtin chat model for knowledge recall not configured")
 			}
 
-			knowledgeOperator := knowledge.GetKnowledgeOperator()
 			setting := fcParams.KnowledgeFCParam.GlobalSetting
 			knowledgeRecallConfig = &KnowledgeRecallConfig{
 				ChatModel: kwChatModel,
-				Retriever: knowledgeOperator,
 			}
 			searchType, err := toRetrievalSearchType(setting.SearchMode)
 			if err != nil {
@@ -523,7 +556,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				knowledgeIDs = append(knowledgeIDs, kid)
 			}
 
-			detailResp, err := knowledgeOperator.ListKnowledgeDetail(ctx,
+			detailResp, err := crossknowledge.DefaultSVC().ListKnowledgeDetail(ctx,
 				&knowledge.ListKnowledgeDetailRequest{
 					KnowledgeIDs: knowledgeIDs,
 				})
@@ -587,11 +620,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		inputs[knowledgeUserPromptTemplateKey] = &vo.TypeInfo{
 			Type: vo.DataTypeString,
 		}
-		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs, nil)
-		up := newPromptTpl(schema.User, userPrompt, inputs, []string{knowledgeUserPromptTemplateKey})
+		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs)
+		up := newPromptTpl(schema.User, userPrompt, inputs, withReservedKeys([]string{knowledgeUserPromptTemplateKey}), withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
 
-		_ = g.AddChatTemplateNode(templateNodeKey, template,
+		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory,
 			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
 				for k, v := range state {
 					in[k] = v
@@ -601,10 +635,12 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		_ = g.AddEdge(knowledgeLambdaKey, templateNodeKey)
 
 	} else {
-		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes, nil)
-		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, nil)
+		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes)
+		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		_ = g.AddChatTemplateNode(templateNodeKey, template)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+
+		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory)
 
 		_ = g.AddEdge(compose.START, templateNodeKey)
 	}
@@ -729,10 +765,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	_ = g.AddEdge(llmNodeKey, outputConvertNodeKey)
 	_ = g.AddEdge(outputConvertNodeKey, compose.END)
 
-	requireCheckpoint := false
-	if len(tools) > 0 {
-		requireCheckpoint = true
-	}
+	requireCheckpoint := c.RequireCheckpoint()
 
 	var compileOpts []compose.GraphCompileOption
 	if requireCheckpoint {
@@ -746,10 +779,11 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	}
 
 	llm := &LLM{
-		r:                 r,
-		outputFormat:      format,
-		requireCheckpoint: requireCheckpoint,
-		fullSources:       ns.FullSources,
+		r:                  r,
+		outputFormat:       format,
+		requireCheckpoint:  requireCheckpoint,
+		fullSources:        ns.FullSources,
+		chatHistorySetting: c.ChatHistorySetting,
 	}
 
 	return llm, nil
@@ -757,8 +791,16 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 
 func (c *Config) RequireCheckpoint() bool {
 	if c.FCParam != nil {
-		if c.FCParam.WorkflowFCParam != nil || c.FCParam.PluginFCParam != nil {
-			return true
+		if c.FCParam.WorkflowFCParam != nil {
+			if len(c.FCParam.WorkflowFCParam.WorkflowList) > 0 {
+				return true
+			}
+		}
+
+		if c.FCParam.PluginFCParam != nil {
+			if len(c.FCParam.PluginFCParam.PluginList) > 0 {
+				return true
+			}
 		}
 	}
 
@@ -811,15 +853,16 @@ func toRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 	case 20:
 		return knowledge.SearchTypeFullText, nil
 	default:
-		return "", fmt.Errorf("invalid retrieval search type %v", s)
+		return 0, fmt.Errorf("invalid retrieval search type %v", s)
 	}
 }
 
 type LLM struct {
-	r                 compose.Runnable[map[string]any, map[string]any]
-	outputFormat      Format
-	requireCheckpoint bool
-	fullSources       map[string]*schema2.SourceInfo
+	r                  compose.Runnable[map[string]any, map[string]any]
+	outputFormat       Format
+	requireCheckpoint  bool
+	fullSources        map[string]*schema2.SourceInfo
+	chatHistorySetting *vo.ChatHistorySetting
 }
 
 const (
@@ -1156,28 +1199,28 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 			return make(map[string]any), nil
 		}
 
-		docs, err := cfg.Retriever.Retrieve(ctx, &knowledge.RetrieveRequest{
-			Query:             userPrompt,
-			KnowledgeIDs:      recallKnowledgeIDs,
-			RetrievalStrategy: cfg.RetrievalStrategy.RetrievalStrategy,
+		docs, err := crossknowledge.DefaultSVC().Retrieve(ctx, &knowledge.RetrieveRequest{
+			Query:        userPrompt,
+			KnowledgeIDs: recallKnowledgeIDs,
+			Strategy:     cfg.RetrievalStrategy.RetrievalStrategy,
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		if len(docs.Slices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfDefault {
+		if len(docs.RetrieveSlices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfDefault {
 			return make(map[string]any), nil
 		}
 
 		sb := strings.Builder{}
-		if len(docs.Slices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfCustomize {
+		if len(docs.RetrieveSlices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfCustomize {
 			sb.WriteString("recall slice 1: \n")
 			sb.WriteString(cfg.RetrievalStrategy.NoReCallReplyCustomizePrompt + "\n")
 		}
 
-		for idx, msg := range docs.Slices {
+		for idx, msg := range docs.RetrieveSlices {
 			sb.WriteString(fmt.Sprintf("recall slice %d:\n", idx+1))
-			sb.WriteString(fmt.Sprintf("%s\n", msg.Output))
+			sb.WriteString(fmt.Sprintf("%s\n", msg.Slice.GetSliceContent()))
 		}
 
 		output = map[string]any{
@@ -1196,6 +1239,69 @@ type ToolInterruptEventStore interface {
 	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
 	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
 	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
+}
+
+func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
+	if l.chatHistorySetting == nil || !l.chatHistorySetting.EnableChatHistory {
+		return input, nil
+	}
+
+	var messages []*conversation.Message
+	var scMessages []*schema.Message
+	var sectionID *int64
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx != nil {
+		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
+	}
+
+	ret := map[string]any{
+		"chatHistory": []any{},
+	}
+	for k, v := range input {
+		ret[k] = v
+	}
+	if len(messages) == 0 {
+		return ret, nil
+	}
+
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return ret, nil
+	}
+
+	maxRounds := int(l.chatHistorySetting.ChatHistoryRound)
+	if execCtx != nil && execCtx.ExeCfg.MaxHistoryRounds != nil {
+		maxRounds = min(int(*execCtx.ExeCfg.MaxHistoryRounds), maxRounds)
+	}
+	count := 0
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == schema.User {
+			count++
+		}
+		if count >= maxRounds {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
+		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, map[string]any{
+			"role":    string(msg.Role),
+			"content": content,
+		})
+	}
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
+
+	ret["chatHistory"] = historyMessages
+	return ret, nil
 }
 
 func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {

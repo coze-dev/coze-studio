@@ -23,6 +23,7 @@ import (
 
 type Manager interface {
 	GetParser(config *Config) (Parser, error)
+	IsAutoAnnotationSupported() bool
 }
 
 type Config struct {

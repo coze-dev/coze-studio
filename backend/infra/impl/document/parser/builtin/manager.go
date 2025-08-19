@@ -41,7 +41,7 @@ type manager struct {
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
-	var pFn parseFn
+	var pFn ParseFn
 
 	if config.ParsingStrategy.HeaderLine == 0 && config.ParsingStrategy.DataStartLine == 0 {
 		config.ParsingStrategy.DataStartLine = 1
@@ -52,26 +52,30 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = parseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_pdf.py"))
+		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_pdf.py"))
 	case parser.FileExtensionTXT:
-		pFn = parseText(config)
+		pFn = ParseText(config)
 	case parser.FileExtensionMarkdown:
-		pFn = parseMarkdown(config, m.storage, m.ocr)
+		pFn = ParseMarkdown(config, m.storage, m.ocr)
 	case parser.FileExtensionDocx:
-		pFn = parseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
+		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
 	case parser.FileExtensionCSV:
-		pFn = parseCSV(config)
+		pFn = ParseCSV(config)
 	case parser.FileExtensionXLSX:
-		pFn = parseXLSX(config)
+		pFn = ParseXLSX(config)
 	case parser.FileExtensionJSON:
-		pFn = parseJSON(config)
+		pFn = ParseJSON(config)
 	case parser.FileExtensionJsonMaps:
-		pFn = parseJSONMaps(config)
+		pFn = ParseJSONMaps(config)
 	case parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
-		pFn = parseImage(config, m.model)
+		pFn = ParseImage(config, m.model)
 	default:
 		return nil, fmt.Errorf("[Parse] document type not support, type=%s", config.FileExtension)
 	}
 
-	return &p{parseFn: pFn}, nil
+	return &Parser{ParseFn: pFn}, nil
+}
+
+func (m *manager) IsAutoAnnotationSupported() bool {
+	return m.model != nil
 }

@@ -32,3 +32,34 @@ type User struct {
 	CreatedAt int64 // creation time
 	UpdatedAt int64 // update time
 }
+
+// SpaceMember represents a member of a space
+type SpaceMember struct {
+	UserID      int64
+	Name        string
+	UniqueName  string
+	Email       string
+	Description string
+	IconURL     string
+	RoleType    int32
+	JoinedAt    int64
+}
+
+// RoleType represents the role type of a space member
+type RoleType int32
+
+const (
+	RoleTypeViewer RoleType = 1
+	RoleTypeMember RoleType = 2
+	RoleTypeAdmin  RoleType = 3
+)
+
+// CanInvite returns whether the role can invite new members
+func (r RoleType) CanInvite() bool {
+	return r >= RoleTypeMember
+}
+
+// CanManage returns whether the role can manage members
+func (r RoleType) CanManage() bool {
+	return r == RoleTypeAdmin
+}

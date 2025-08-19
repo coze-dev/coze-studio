@@ -17,9 +17,12 @@
 package internal
 
 import (
+	"context"
+	
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 )
 
 type Event struct {
@@ -27,6 +30,84 @@ type Event struct {
 
 func NewEvent() *Event {
 	return &Event{}
+}
+
+// MessageEventHandler handles message events during agent runtime
+type MessageEventHandler struct {
+	messageEvent *Event
+	sw           *schema.StreamWriter[*entity.AgentRunResponse]
+}
+
+// HandlerInput processes the input for the agent runtime
+func (m *MessageEventHandler) HandlerInput(ctx context.Context, art *AgentRuntime) (*msgEntity.Message, error) {
+	// This is a placeholder implementation
+	// The actual implementation should be based on the chatflow requirements
+	// Convert from schema.Message to msgEntity.Message
+	return &msgEntity.Message{
+		ID: 0, // Default ID
+	}, nil
+}
+
+// handlerErr handles error events
+func (m *MessageEventHandler) handlerErr(ctx context.Context, err error) {
+	if m.messageEvent != nil && m.sw != nil {
+		m.messageEvent.SendErrEvent(entity.RunEventRunError, m.sw, &entity.RunError{
+			Msg: err.Error(),
+		})
+	}
+}
+
+// handlerWfUsage handles workflow usage events
+func (m *MessageEventHandler) handlerWfUsage(ctx context.Context, lastAnswerMsg *entity.ChunkMessageItem, usage interface{}) interface{} {
+	// Placeholder implementation - return usage as is
+	return usage
+}
+
+// handlerFinalAnswerFinish handles final answer finish events
+func (m *MessageEventHandler) handlerFinalAnswerFinish(ctx context.Context, art *AgentRuntime) interface{} {
+	// Placeholder implementation - return nil
+	return nil
+}
+
+// handlerWfInterruptMsg handles workflow interrupt messages
+func (m *MessageEventHandler) handlerWfInterruptMsg(ctx context.Context, msg interface{}, art *AgentRuntime) {
+	// Placeholder implementation
+}
+
+// handlerAnswer handles answer events
+func (m *MessageEventHandler) handlerAnswer(ctx context.Context, sendAnswerMsg, usage, art, preAnswerMsg interface{}) interface{} {
+	// Placeholder implementation - return usage
+	return usage
+}
+
+// handlerFunctionCall handles function call events
+func (m *MessageEventHandler) handlerFunctionCall(ctx context.Context, chunk interface{}, art *AgentRuntime) error {
+	// Placeholder implementation
+	return nil
+}
+
+// handlerTooResponse handles tool response events  
+func (m *MessageEventHandler) handlerTooResponse(ctx context.Context, chunk interface{}, art *AgentRuntime, preToolResponseMsg interface{}, content string) error {
+	// Placeholder implementation
+	return nil
+}
+
+// handlerKnowledge handles knowledge events
+func (m *MessageEventHandler) handlerKnowledge(ctx context.Context, chunk interface{}, art *AgentRuntime) error {
+	// Placeholder implementation
+	return nil
+}
+
+// handlerSuggest handles suggest events
+func (m *MessageEventHandler) handlerSuggest(ctx context.Context, chunk interface{}, art *AgentRuntime) error {
+	// Placeholder implementation
+	return nil
+}
+
+// handlerInterrupt handles interrupt events
+func (m *MessageEventHandler) handlerInterrupt(ctx context.Context, chunk interface{}, art *AgentRuntime) error {
+	// Placeholder implementation
+	return nil
 }
 
 func (e *Event) buildMessageEvent(runEvent entity.RunEvent, chunkMsgItem *entity.ChunkMessageItem) *entity.AgentRunResponse {

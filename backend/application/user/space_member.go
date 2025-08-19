@@ -27,6 +27,20 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
+// getRoleName returns the role name for a given role type
+func getRoleName(roleType int32) string {
+	switch roleType {
+	case 1:
+		return "Viewer"
+	case 2:
+		return "Member"
+	case 3:
+		return "Admin"
+	default:
+		return "Unknown"
+	}
+}
+
 // GetSpaceMembers 获取空间成员列表
 func (u *UserApplicationService) GetSpaceMembers(ctx context.Context, req *space_member.GetSpaceMembersRequest) (
 	resp *space_member.GetSpaceMembersResponse, err error,
@@ -62,21 +76,18 @@ func (u *UserApplicationService) GetSpaceMembers(ctx context.Context, req *space
 	spaceMemberList := make([]*space_member.SpaceMember, len(members))
 	for i, member := range members {
 		spaceMemberList[i] = &space_member.SpaceMember{
-			ID:      member.ID,
-			SpaceID: member.SpaceID,
 			UserID:  member.UserID,
 			UserInfo: &space_member.UserInfo{
-				UserID:     member.User.UserID,
-				Name:       member.User.Name,
-				UniqueName: member.User.UniqueName,
-				Email:      member.User.Email,
-				AvatarURL:  &member.User.IconURL,
-				CreatedAt:  member.User.CreatedAt,
+				UserID:     member.UserID,
+				Name:       member.Name,
+				UniqueName: member.UniqueName,
+				Email:      member.Email,
+				AvatarURL:  &member.IconURL,
+				CreatedAt:  member.JoinedAt,
 			},
-			RoleType:  int32(member.RoleType),
-			RoleName:  member.RoleType.GetRoleName(),
-			CreatedAt: member.CreatedAt,
-			UpdatedAt: member.UpdatedAt,
+			RoleType:  member.RoleType,
+			RoleName:  getRoleName(member.RoleType),
+			CreatedAt: member.JoinedAt,
 		}
 	}
 
@@ -159,21 +170,18 @@ func (u *UserApplicationService) InviteMember(ctx context.Context, req *space_me
 		Code: 0,
 		Msg:  "success",
 		Data: &space_member.SpaceMember{
-			ID:      member.ID,
-			SpaceID: member.SpaceID,
 			UserID:  member.UserID,
 			UserInfo: &space_member.UserInfo{
-				UserID:     member.User.UserID,
-				Name:       member.User.Name,
-				UniqueName: member.User.UniqueName,
-				Email:      member.User.Email,
-				AvatarURL:  &member.User.IconURL,
-				CreatedAt:  member.User.CreatedAt,
+				UserID:     member.UserID,
+				Name:       member.Name,
+				UniqueName: member.UniqueName,
+				Email:      member.Email,
+				AvatarURL:  &member.IconURL,
+				CreatedAt:  member.JoinedAt,
 			},
-			RoleType:  int32(member.RoleType),
-			RoleName:  member.RoleType.GetRoleName(),
-			CreatedAt: member.CreatedAt,
-			UpdatedAt: member.UpdatedAt,
+			RoleType:  member.RoleType,
+			RoleName:  getRoleName(member.RoleType),
+			CreatedAt: member.JoinedAt,
 		},
 	}, nil
 }
@@ -194,21 +202,18 @@ func (u *UserApplicationService) UpdateMemberRole(ctx context.Context, req *spac
 		Code: 0,
 		Msg:  "success",
 		Data: &space_member.SpaceMember{
-			ID:      member.ID,
-			SpaceID: member.SpaceID,
 			UserID:  member.UserID,
 			UserInfo: &space_member.UserInfo{
-				UserID:     member.User.UserID,
-				Name:       member.User.Name,
-				UniqueName: member.User.UniqueName,
-				Email:      member.User.Email,
-				AvatarURL:  &member.User.IconURL,
-				CreatedAt:  member.User.CreatedAt,
+				UserID:     member.UserID,
+				Name:       member.Name,
+				UniqueName: member.UniqueName,
+				Email:      member.Email,
+				AvatarURL:  &member.IconURL,
+				CreatedAt:  member.JoinedAt,
 			},
-			RoleType:  int32(member.RoleType),
-			RoleName:  member.RoleType.GetRoleName(),
-			CreatedAt: member.CreatedAt,
-			UpdatedAt: member.UpdatedAt,
+			RoleType:  member.RoleType,
+			RoleName:  getRoleName(member.RoleType),
+			CreatedAt: member.JoinedAt,
 		},
 	}, nil
 }
@@ -300,12 +305,12 @@ func (u *UserApplicationService) GetSpaceMembersForSpace(ctx context.Context, re
 	for _, member := range members {
 		memberInfos = append(memberInfos, &space.SpaceMemberInfo{
 			UserID:       member.UserID,
-			Username:     member.User.Name,
-			Nickname:     &member.User.UniqueName,
-			AvatarURL:    &member.User.IconURL,
+			Username:     member.Name,
+			Nickname:     &member.UniqueName,
+			AvatarURL:    &member.IconURL,
 			Role:         space.MemberRoleType(member.RoleType),
-			JoinedAt:     member.CreatedAt,
-			LastActiveAt: &member.UpdatedAt,
+			JoinedAt:     member.JoinedAt,
+			LastActiveAt: &member.JoinedAt,
 		})
 	}
 
@@ -345,12 +350,12 @@ func (u *UserApplicationService) InviteMemberForSpace(ctx context.Context, req *
 
 		memberInfos = append(memberInfos, &space.SpaceMemberInfo{
 			UserID:       member.UserID,
-			Username:     member.User.Name,
-			Nickname:     &member.User.UniqueName,
-			AvatarURL:    &member.User.IconURL,
+			Username:     member.Name,
+			Nickname:     &member.UniqueName,
+			AvatarURL:    &member.IconURL,
 			Role:         space.MemberRoleType(member.RoleType),
-			JoinedAt:     member.CreatedAt,
-			LastActiveAt: &member.UpdatedAt,
+			JoinedAt:     member.JoinedAt,
+			LastActiveAt: &member.JoinedAt,
 		})
 	}
 
@@ -378,12 +383,12 @@ func (u *UserApplicationService) UpdateMemberRoleForSpace(ctx context.Context, r
 		Msg:  "success",
 		Data: &space.SpaceMemberInfo{
 			UserID:       member.UserID,
-			Username:     member.User.Name,
-			Nickname:     &member.User.UniqueName,
-			AvatarURL:    &member.User.IconURL,
+			Username:     member.Name,
+			Nickname:     &member.UniqueName,
+			AvatarURL:    &member.IconURL,
 			Role:         space.MemberRoleType(member.RoleType),
-			JoinedAt:     member.CreatedAt,
-			LastActiveAt: &member.UpdatedAt,
+			JoinedAt:     member.JoinedAt,
+			LastActiveAt: &member.JoinedAt,
 		},
 	}, nil
 }

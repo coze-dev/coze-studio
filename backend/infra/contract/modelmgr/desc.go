@@ -58,7 +58,7 @@ type Parameter struct {
 	DefaultVal DefaultValue      `json:"default_val" yaml:"default_val"`
 	Precision  int               `json:"precision,omitempty" yaml:"precision,omitempty"` // float precision, default 2
 	Options    []*ParamOption    `json:"options" yaml:"options"`                         // enum options
-	Style      DisplayStyle      `json:"style" yaml:"style"`
+	Style      DisplayStyle      `json:"param_class" yaml:"style"`
 }
 
 func (p *Parameter) GetFloat(tp DefaultType) (float64, error) {
@@ -123,7 +123,6 @@ func (p *Parameter) GetString(tp DefaultType) (string, error) {
 }
 
 type ModelMeta struct {
-	Name       string             `yaml:"name"`        // Model name
 	Protocol   chatmodel.Protocol `yaml:"protocol"`    // Model Communication Protocol
 	Capability *Capability        `yaml:"capability"`  // model capability
 	ConnConfig *chatmodel.Config  `yaml:"conn_config"` // model connection configuration
@@ -133,7 +132,7 @@ type ModelMeta struct {
 type DefaultValue map[DefaultType]string
 
 type DisplayStyle struct {
-	Widget Widget            `json:"widget" yaml:"widget"`
+	Widget Widget            `json:"class_id" yaml:"widget"`
 	Label  *MultilingualText `json:"label" yaml:"label"`
 }
 

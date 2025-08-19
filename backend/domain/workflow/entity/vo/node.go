@@ -23,6 +23,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -92,7 +93,7 @@ type wfErr struct {
 
 func (w *wfErr) DebugURL() string {
 	if w.StatusError.Extra() == nil {
-		return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
+		return fmt.Sprintf(workflowModel.DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
 	}
 
 	debugURL, ok := w.StatusError.Extra()["debug_url"]
@@ -100,7 +101,7 @@ func (w *wfErr) DebugURL() string {
 		return debugURL
 	}
 
-	return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
+	return fmt.Sprintf(workflowModel.DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
 }
 
 func (w *wfErr) Level() ErrorLevel {
@@ -169,7 +170,7 @@ func WrapError(code int, err error, opts ...errorx.Option) WorkflowError {
 }
 
 func WrapWithDebug(code int, err error, exeID, spaceID, workflowID int64, opts ...errorx.Option) WorkflowError {
-	debugURL := fmt.Sprintf(DebugURLTpl, exeID, spaceID, workflowID)
+	debugURL := fmt.Sprintf(workflowModel.DebugURLTpl, exeID, spaceID, workflowID)
 	opts = append(opts, errorx.Extra("debug_url", debugURL))
 	return WrapError(code, err, opts...)
 }

@@ -35,8 +35,9 @@ type ServiceComponents struct {
 func InitService(ctx context.Context, components *ServiceComponents) *ApplicationService {
 
 	tRepo := repository.NewTemplateDAO(components.DB, components.IDGen)
+	tRepoAdapter := repository.NewTemplateRepositoryAdapter(tRepo)
 
-	ApplicationSVC.templateRepo = tRepo
+	ApplicationSVC.templateRepo = tRepoAdapter
 	ApplicationSVC.storage = components.Storage
 
 	return ApplicationSVC

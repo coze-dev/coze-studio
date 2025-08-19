@@ -190,27 +190,8 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		// For templates, we need to get the original agent ID from the template
-		// Query the template directly by ID from database
-		templateData, err := template.ApplicationSVC.GetTemplateByID(ctx, req.GetProductID())
-		if err != nil {
-			internalServerErrorResponse(ctx, c, err)
-			return
-		}
-		
-		if templateData == nil {
-			invalidParamRequestResponse(c, "template not found or invalid")
-			return
-		}
-		
-		originalAgentID := templateData.EntityID
-		if originalAgentID == 0 {
-			invalidParamRequestResponse(c, "template has no valid agent ID")
-			return
-		}
-
 		bot, err := singleagent.SingleAgentSVC.DuplicateDraftBot(ctx, &developer_api.DuplicateDraftBotRequest{
-			BotID:   originalAgentID,
+			BotID:   req.GetProductID(),
 			SpaceID: req.GetSpaceID(),
 		})
 		if err != nil {

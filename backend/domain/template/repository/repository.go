@@ -36,17 +36,17 @@ func NewTemplateDAO(db *gorm.DB, idGen idgen.IDGenerator) TemplateRepository {
 // TemplateRepository defines the interface for template operations
 type TemplateRepository interface {
 	// Create creates a new template
-	Create(ctx context.Context, template *entity.Template) (int64, error)
+	Create(ctx context.Context, template *model.Template) (int64, error)
 
 	// List lists templates with filters
 	List(ctx context.Context, filter *entity.TemplateFilter, page *entity.Pagination, orderByField string) ([]*model.Template, int64, error)
-
-	// GetByID gets a template by ID
-	GetByID(ctx context.Context, templateID int64) (*model.Template, error)
-
-	// Delete deletes a template by ID
-	Delete(ctx context.Context, templateID int64) error
-
+	
 	// Update updates an existing template
-	Update(ctx context.Context, template *entity.Template) error
+	Update(ctx context.Context, template *model.Template) error
+	
+	// GetByID gets a template by ID
+	GetByID(ctx context.Context, id int64) (*model.Template, error)
+	
+	// Delete deletes a template by ID
+	Delete(ctx context.Context, id int64) error
 }

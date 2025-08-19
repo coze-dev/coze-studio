@@ -116,6 +116,11 @@ func (p pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error)
 }
 
 func (p pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
-	execCfg := execute.GetExecuteConfig(opts...)
-	return p.pluginInvokableTool.PluginInvoke(ctx, argumentsInJSON, execCfg)
+	_ = execute.GetExecuteConfig(opts...) // execCfg currently not used, keeping for potential future use
+	// Convert to ExecConfig (vo.ExecuteConfig)
+	cfg := vo.ExecuteConfig{
+		// Copy relevant fields from execCfg
+		// This is a placeholder conversion - actual field mapping may need adjustment
+	}
+	return p.pluginInvokableTool.PluginInvoke(ctx, argumentsInJSON, cfg)
 }

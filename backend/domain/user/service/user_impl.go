@@ -661,276 +661,6 @@ func userPo2Do(model *model.User, iconURL string) *userEntity.User {
 		UpdatedAt:    model.UpdatedAt,
 	}
 }
-
-// GetSpaceMembers 获取空间成员列表
-func (u *userImpl) GetSpaceMembers(ctx context.Context, spaceID int64, page, pageSize int32, roleType *int32) (members []*userEntity.SpaceMember, total int64, err error) {
-	spaceUsers, total, err := u.SpaceRepo.GetSpaceMembers(ctx, spaceID, page, pageSize, roleType)
-	if err != nil {
-		return nil, 0, fmt.Errorf("get space members failed: %w", err)
-	}
-
-	if len(spaceUsers) == 0 {
-		return make([]*userEntity.SpaceMember, 0), total, nil
-	}
-
-	// 获取用户信息
-	userIDs := make([]int64, len(spaceUsers))
-	for i, su := range spaceUsers {
-		userIDs[i] = su.UserID
-	}
-
-	userModels, err := u.UserRepo.GetUsersByIDs(ctx, userIDs)
-	if err != nil {
-		return nil, 0, fmt.Errorf("get users by IDs failed: %w", err)
-	}
-
-	// 创建用户ID到用户信息的映射
-	userMap := make(map[int64]*model.User)
-	for _, user := range userModels {
-		userMap[user.ID] = user
-	}
-
-	// 构建成员列表
-	members = make([]*userEntity.SpaceMember, len(spaceUsers))
-	for i, su := range spaceUsers {
-		user := userMap[su.UserID]
-		if user == nil {
-			continue
-		}
-
-		iconURL := ""
-		if u.IconOSS != nil {
-			iconURL, _ = u.IconOSS.GetObjectUrl(ctx, user.IconURI)
-		}
-
-		userInfo := &userEntity.User{
-			UserID:      user.ID,
-			Name:        user.Name,
-			UniqueName:  user.UniqueName,
-			Email:       user.Email,
-			IconURL:     iconURL,
-			CreatedAt:   user.CreatedAt,
-		}
-
-		members[i] = &userEntity.SpaceMember{
-			ID:        su.ID,
-			SpaceID:   su.SpaceID,
-			UserID:    su.UserID,
-			User:      userInfo,
-			RoleType:  userEntity.RoleType(su.RoleType),
-			CreatedAt: su.CreatedAt,
-			UpdatedAt: su.UpdatedAt,
-		}
-	}
-
-	return members, total, nil
-}
-
-// SearchUsers 搜索用户
-func (u *userImpl) SearchUsers(ctx context.Context, keyword string, excludeSpaceID int64, limit int32) (users []*userEntity.User, err error) {
-	userModels, err := u.SpaceRepo.SearchUsersByKeyword(ctx, keyword, excludeSpaceID, limit)
-	if err != nil {
-		return nil, fmt.Errorf("search users by keyword failed: %w", err)
-	}
-
-	users = make([]*userEntity.User, len(userModels))
-	for i, user := range userModels {
-		iconURL := ""
-		if u.IconOSS != nil {
-			iconURL, _ = u.IconOSS.GetObjectUrl(ctx, user.IconURI)
-		}
-
-		users[i] = &userEntity.User{
-			UserID:     user.ID,
-			Name:       user.Name,
-			UniqueName: user.UniqueName,
-			Email:      user.Email,
-			IconURL:    iconURL,
-			CreatedAt:  user.CreatedAt,
-		}
-	}
-
-	return users, nil
-}
-
-// InviteMember 邀请成员
-func (u *userImpl) InviteMember(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *userEntity.SpaceMember, err error) {
-	// 检查操作者权限
-	operatorSU, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, operatorID)
-	if err != nil {
-		return nil, fmt.Errorf("get operator space user failed: %w", err)
-	}
-	if !exist {
-		return nil, fmt.Errorf("operator is not a member of this space")
-	}
-	if operatorSU.RoleType != int32(userEntity.RoleTypeOwner) && operatorSU.RoleType != int32(userEntity.RoleTypeAdmin) {
-		return nil, fmt.Errorf("operator has no permission to invite members")
-	}
-
-	// 检查用户是否已在空间中
-	_, exist, err = u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("check user space membership failed: %w", err)
-	}
-	if exist {
-		return nil, fmt.Errorf("user is already a member of this space")
-	}
-
-	// 检查用户是否存在
-	userModel, err := u.UserRepo.GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("get user by ID failed: %w", err)
-	}
-
-	now := time.Now().UnixMilli()
-
-	// 添加用户到空间
-	spaceUser := &model.SpaceUser{
-		SpaceID:   spaceID,
-		UserID:    userID,
-		RoleType:  roleType,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-
-	err = u.SpaceRepo.AddSpaceUser(ctx, spaceUser)
-	if err != nil {
-		return nil, fmt.Errorf("add space user failed: %w", err)
-	}
-
-	// 构建返回结果
-	iconURL := ""
-	if u.IconOSS != nil {
-		iconURL, _ = u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	}
-
-	userInfo := &userEntity.User{
-		UserID:     userModel.ID,
-		Name:       userModel.Name,
-		UniqueName: userModel.UniqueName,
-		Email:      userModel.Email,
-		IconURL:    iconURL,
-		CreatedAt:  userModel.CreatedAt,
-	}
-
-	return &userEntity.SpaceMember{
-		ID:        spaceUser.ID,
-		SpaceID:   spaceID,
-		UserID:    userID,
-		User:      userInfo,
-		RoleType:  userEntity.RoleType(roleType),
-		CreatedAt: now,
-		UpdatedAt: now,
-	}, nil
-}
-
-// UpdateMemberRole 更新成员角色
-func (u *userImpl) UpdateMemberRole(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *userEntity.SpaceMember, err error) {
-	// 检查操作者权限(只有所有者可以更改角色)
-	operatorSU, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, operatorID)
-	if err != nil {
-		return nil, fmt.Errorf("get operator space user failed: %w", err)
-	}
-	if !exist {
-		return nil, fmt.Errorf("operator is not a member of this space")
-	}
-	if operatorSU.RoleType != int32(userEntity.RoleTypeOwner) {
-		return nil, fmt.Errorf("only owner can update member roles")
-	}
-
-	// 检查目标用户是否在空间中
-	targetSU, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("get target user space user failed: %w", err)
-	}
-	if !exist {
-		return nil, fmt.Errorf("target user is not a member of this space")
-	}
-
-	// 不允许修改所有者的角色
-	if targetSU.RoleType == int32(userEntity.RoleTypeOwner) {
-		return nil, fmt.Errorf("cannot change owner role")
-	}
-
-	// 更新角色
-	err = u.SpaceRepo.UpdateSpaceUserRole(ctx, spaceID, userID, roleType)
-	if err != nil {
-		return nil, fmt.Errorf("update space user role failed: %w", err)
-	}
-
-	// 获取用户信息并返回
-	userModel, err := u.UserRepo.GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("get user by ID failed: %w", err)
-	}
-
-	iconURL := ""
-	if u.IconOSS != nil {
-		iconURL, _ = u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	}
-
-	userInfo := &userEntity.User{
-		UserID:     userModel.ID,
-		Name:       userModel.Name,
-		UniqueName: userModel.UniqueName,
-		Email:      userModel.Email,
-		IconURL:    iconURL,
-		CreatedAt:  userModel.CreatedAt,
-	}
-
-	return &userEntity.SpaceMember{
-		ID:        targetSU.ID,
-		SpaceID:   spaceID,
-		UserID:    userID,
-		User:      userInfo,
-		RoleType:  userEntity.RoleType(roleType),
-		CreatedAt: targetSU.CreatedAt,
-		UpdatedAt: time.Now().UnixMilli(),
-	}, nil
-}
-
-// RemoveMember 移除成员
-func (u *userImpl) RemoveMember(ctx context.Context, operatorID, spaceID, userID int64) (err error) {
-	// 检查操作者权限
-	operatorSU, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, operatorID)
-	if err != nil {
-		return fmt.Errorf("get operator space user failed: %w", err)
-	}
-	if !exist {
-		return fmt.Errorf("operator is not a member of this space")
-	}
-	if operatorSU.RoleType != int32(userEntity.RoleTypeOwner) && operatorSU.RoleType != int32(userEntity.RoleTypeAdmin) {
-		return fmt.Errorf("operator has no permission to remove members")
-	}
-
-	// 检查目标用户是否在空间中
-	targetSU, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
-	if err != nil {
-		return fmt.Errorf("get target user space user failed: %w", err)
-	}
-	if !exist {
-		return fmt.Errorf("target user is not a member of this space")
-	}
-
-	// 不允许删除所有者
-	if targetSU.RoleType == int32(userEntity.RoleTypeOwner) {
-		return fmt.Errorf("cannot remove owner from space")
-	}
-
-	// 管理员不能删除管理员
-	if operatorSU.RoleType == int32(userEntity.RoleTypeAdmin) && targetSU.RoleType == int32(userEntity.RoleTypeAdmin) {
-		return fmt.Errorf("admin cannot remove another admin")
-	}
-
-	// 删除成员
-	err = u.SpaceRepo.RemoveSpaceUser(ctx, spaceID, userID)
-	if err != nil {
-		return fmt.Errorf("remove space user failed: %w", err)
-	}
-
-	return nil
-}
-
 // CheckMemberPermission 检查成员权限
 func (u *userImpl) CheckMemberPermission(ctx context.Context, spaceID, userID int64) (isMember bool, roleType int32, canInvite, canManage bool, err error) {
 	spaceUser, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
@@ -963,43 +693,278 @@ func (u *userImpl) CreateSpace(ctx context.Context, userID int64, name, descript
 		Description: description,
 		IconURI:     uploadEntity.EnterpriseIconURI,
 		OwnerID:     userID,
-		CreatorID:   userID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
 
-	err = u.SpaceRepo.CreateSpace(ctx, spaceModel)
-	if err != nil {
+	if err := u.SpaceRepo.CreateSpace(ctx, spaceModel); err != nil {
 		return nil, fmt.Errorf("create space failed: %w", err)
 	}
 
-	// 添加创建者为空间所有者
-	err = u.SpaceRepo.AddSpaceUser(ctx, &model.SpaceUser{
+	// 将创建者添加为空间管理员
+	spaceUser := &model.SpaceUser{
 		SpaceID:   spaceID,
 		UserID:    userID,
-		RoleType:  1, // 1 = Owner
+		RoleType:  int32(userEntity.RoleTypeAdmin),
 		CreatedAt: now,
 		UpdatedAt: now,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("add space user failed: %w", err)
 	}
 
-	// 构建并返回Space entity
-	iconURL := ""
-	if u.IconOSS != nil {
-		iconURL, _ = u.IconOSS.GetObjectUrl(ctx, spaceModel.IconURI)
+	if err := u.SpaceRepo.CreateSpaceUser(ctx, spaceUser); err != nil {
+		return nil, fmt.Errorf("create space user failed: %w", err)
 	}
-	
+
+	// 返回创建的空间信息
 	return &userEntity.Space{
-		ID:          spaceID,
-		Name:        name,
-		Description: description,
-		IconURL:     iconURL,
-		SpaceType:   1, // Personal space
-		OwnerID:     userID,
-		CreatorID:   userID,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+		SpaceID:     spaceModel.ID,
+		Name:        spaceModel.Name,
+		Description: spaceModel.Description,
+		IconURI:     spaceModel.IconURI,
+		OwnerID:     spaceModel.OwnerID,
+		CreatedAt:   spaceModel.CreatedAt,
+		UpdatedAt:   spaceModel.UpdatedAt,
 	}, nil
+}
+
+// GetSpaceMembers 获取空间成员列表
+func (u *userImpl) GetSpaceMembers(ctx context.Context, spaceID int64, page, pageSize int32, roleType *int32) (members []*userEntity.SpaceMember, total int64, err error) {
+	// 获取成员总数
+	total, err = u.SpaceRepo.CountSpaceUsers(ctx, spaceID, roleType)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count space users failed: %w", err)
+	}
+
+	// 获取成员列表
+	offset := (page - 1) * pageSize
+	spaceUsers, err := u.SpaceRepo.GetSpaceUsers(ctx, spaceID, offset, pageSize, roleType)
+	if err != nil {
+		return nil, 0, fmt.Errorf("get space users failed: %w", err)
+	}
+
+	// 获取用户信息
+	userIDs := make([]int64, 0, len(spaceUsers))
+	for _, su := range spaceUsers {
+		userIDs = append(userIDs, su.UserID)
+	}
+
+	users, err := u.UserRepo.MGetUserByUserIDs(ctx, userIDs)
+	if err != nil {
+		return nil, 0, fmt.Errorf("get users failed: %w", err)
+	}
+
+	userMap := make(map[int64]*model.User)
+	for _, user := range users {
+		userMap[user.ID] = user
+	}
+
+	// 组装成员信息
+	members = make([]*userEntity.SpaceMember, 0, len(spaceUsers))
+	for _, su := range spaceUsers {
+		user, exists := userMap[su.UserID]
+		if !exists {
+			continue
+		}
+
+		iconURL := user.IconURI // Simplified - use IconURI directly as URL
+		members = append(members, &userEntity.SpaceMember{
+			UserID:      user.ID,
+			Name:        user.Name,
+			UniqueName:  user.UniqueName,
+			Email:       user.Email,
+			Description: user.Description,
+			IconURL:     iconURL,
+			RoleType:    su.RoleType,
+			JoinedAt:    su.CreatedAt,
+		})
+	}
+
+	return members, total, nil
+}
+
+// SearchUsers 搜索用户
+func (u *userImpl) SearchUsers(ctx context.Context, keyword string, excludeSpaceID int64, limit int32) (users []*userEntity.User, err error) {
+	// 搜索用户
+	userModels, err := u.UserRepo.SearchUsers(ctx, keyword, limit)
+	if err != nil {
+		return nil, fmt.Errorf("search users failed: %w", err)
+	}
+
+	// 如果需要排除某个空间的成员
+	var excludeUserIDs []int64
+	if excludeSpaceID > 0 {
+		spaceUsers, err := u.SpaceRepo.GetSpaceUsers(ctx, excludeSpaceID, 0, 1000, nil)
+		if err != nil {
+			return nil, fmt.Errorf("get space users failed: %w", err)
+		}
+		for _, su := range spaceUsers {
+			excludeUserIDs = append(excludeUserIDs, su.UserID)
+		}
+	}
+
+	excludeMap := make(map[int64]bool)
+	for _, id := range excludeUserIDs {
+		excludeMap[id] = true
+	}
+
+	// 转换为实体
+	users = make([]*userEntity.User, 0, len(userModels))
+	for _, model := range userModels {
+		if excludeMap[model.ID] {
+			continue
+		}
+		iconURL := model.IconURI // Simplified - use IconURI directly as URL
+		users = append(users, userPo2Do(model, iconURL))
+	}
+
+	return users, nil
+}
+
+// InviteMember 邀请成员
+func (u *userImpl) InviteMember(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *userEntity.SpaceMember, err error) {
+	// 检查操作者权限
+	isMember, _, canInvite, _, err := u.CheckMemberPermission(ctx, spaceID, operatorID)
+	if err != nil {
+		return nil, fmt.Errorf("check permission failed: %w", err)
+	}
+	if !isMember {
+		return nil, fmt.Errorf("not a member of this space")
+	}
+	if !canInvite {
+		return nil, fmt.Errorf("no permission to invite member")
+	}
+
+	// 检查用户是否已经是成员
+	_, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("check existing member failed: %w", err)
+	}
+	if exist {
+		return nil, fmt.Errorf("user is already a member of this space")
+	}
+
+	// 获取被邀请用户信息
+	user, err := u.UserRepo.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user failed: %w", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	// 创建成员记录
+	now := time.Now().UnixMilli()
+	spaceUser := &model.SpaceUser{
+		SpaceID:   spaceID,
+		UserID:    userID,
+		RoleType:  roleType,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if err := u.SpaceRepo.CreateSpaceUser(ctx, spaceUser); err != nil {
+		return nil, fmt.Errorf("create space user failed: %w", err)
+	}
+
+	// 返回成员信息
+	iconURL := user.IconURI // Simplified - use IconURI directly as URL
+	return &userEntity.SpaceMember{
+		UserID:      user.ID,
+		Name:        user.Name,
+		UniqueName:  user.UniqueName,
+		Email:       user.Email,
+		Description: user.Description,
+		IconURL:     iconURL,
+		RoleType:    roleType,
+		JoinedAt:    now,
+	}, nil
+}
+
+// UpdateMemberRole 更新成员角色
+func (u *userImpl) UpdateMemberRole(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *userEntity.SpaceMember, err error) {
+	// 检查操作者权限
+	isMember, _, _, canManage, err := u.CheckMemberPermission(ctx, spaceID, operatorID)
+	if err != nil {
+		return nil, fmt.Errorf("check permission failed: %w", err)
+	}
+	if !isMember {
+		return nil, fmt.Errorf("not a member of this space")
+	}
+	if !canManage {
+		return nil, fmt.Errorf("no permission to manage member")
+	}
+
+	// 检查目标用户是否是成员
+	spaceUser, exist, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get space user failed: %w", err)
+	}
+	if !exist {
+		return nil, fmt.Errorf("user is not a member of this space")
+	}
+
+	// 不能修改空间所有者的角色
+	space, err := u.SpaceRepo.GetSpaceByID(ctx, spaceID)
+	if err != nil {
+		return nil, fmt.Errorf("get space failed: %w", err)
+	}
+	if space.OwnerID == userID {
+		return nil, fmt.Errorf("cannot change owner's role")
+	}
+
+	// 更新角色
+	spaceUser.RoleType = roleType
+	spaceUser.UpdatedAt = time.Now().UnixMilli()
+	if err := u.SpaceRepo.UpdateSpaceUser(ctx, spaceUser); err != nil {
+		return nil, fmt.Errorf("update space user failed: %w", err)
+	}
+
+	// 获取用户信息
+	user, err := u.UserRepo.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user failed: %w", err)
+	}
+
+	// 返回更新后的成员信息
+	iconURL := user.IconURI // Simplified - use IconURI directly as URL
+	return &userEntity.SpaceMember{
+		UserID:      user.ID,
+		Name:        user.Name,
+		UniqueName:  user.UniqueName,
+		Email:       user.Email,
+		Description: user.Description,
+		IconURL:     iconURL,
+		RoleType:    roleType,
+		JoinedAt:    spaceUser.CreatedAt,
+	}, nil
+}
+
+// RemoveMember 移除成员
+func (u *userImpl) RemoveMember(ctx context.Context, operatorID, spaceID, userID int64) (err error) {
+	// 检查操作者权限
+	isMember, _, _, canManage, err := u.CheckMemberPermission(ctx, spaceID, operatorID)
+	if err != nil {
+		return fmt.Errorf("check permission failed: %w", err)
+	}
+	if !isMember {
+		return fmt.Errorf("not a member of this space")
+	}
+	if !canManage && operatorID != userID { // 成员可以自己退出，但管理其他成员需要权限
+		return fmt.Errorf("no permission to remove member")
+	}
+
+	// 不能移除空间所有者
+	space, err := u.SpaceRepo.GetSpaceByID(ctx, spaceID)
+	if err != nil {
+		return fmt.Errorf("get space failed: %w", err)
+	}
+	if space.OwnerID == userID {
+		return fmt.Errorf("cannot remove space owner")
+	}
+
+	// 删除成员记录
+	if err := u.SpaceRepo.DeleteSpaceUser(ctx, spaceID, userID); err != nil {
+		return fmt.Errorf("delete space user failed: %w", err)
+	}
+
+	return nil
 }

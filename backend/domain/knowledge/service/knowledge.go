@@ -70,23 +70,22 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:             repository.NewKnowledgeDAO(config.DB),
-		documentRepo:              repository.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:                 repository.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:                repository.NewKnowledgeDocumentReviewDAO(config.DB),
-		idgen:                     config.IDGen,
-		rdb:                       config.RDB,
-		producer:                  config.Producer,
-		searchStoreManagers:       config.SearchStoreManagers,
-		parseManager:              config.ParseManager,
-		storage:                   config.Storage,
-		reranker:                  config.Reranker,
-		rewriter:                  config.Rewriter,
-		nl2Sql:                    config.NL2Sql,
-		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
-		cacheCli:                  config.CacheCli,
-		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
-		modelFactory:              config.ModelFactory,
+		knowledgeRepo:       repository.NewKnowledgeDAO(config.DB),
+		documentRepo:        repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:           repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:          repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		idgen:               config.IDGen,
+		rdb:                 config.RDB,
+		producer:            config.Producer,
+		searchStoreManagers: config.SearchStoreManagers,
+		parseManager:        config.ParseManager,
+		storage:             config.Storage,
+		reranker:            config.Reranker,
+		rewriter:            config.Rewriter,
+		nl2Sql:              config.NL2Sql,
+		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
+		cacheCli:            config.CacheCli,
+		modelFactory:        config.ModelFactory,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -99,21 +98,20 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 }
 
 type KnowledgeSVCConfig struct {
-	DB                        *gorm.DB                       // required
-	IDGen                     idgen.IDGenerator              // required
-	RDB                       rdb.RDB                        // Required: Form storage
-	Producer                  eventbus.Producer              // Required: Document indexing process goes through mq asynchronous processing
-	SearchStoreManagers       []searchstore.Manager          // Required: Vector/Full Text
-	ParseManager              parser.Manager                 // Optional: document segmentation and processing capability, default builtin parser
-	Storage                   storage.Storage                // required: oss
-	ModelFactory              chatmodel.Factory              // Required: Model factory
-	Rewriter                  messages2query.MessagesToQuery // Optional: Do not overwrite when not configured
-	Reranker                  rerank.Reranker                // Optional: default rrf when not configured
-	NL2Sql                    nl2sql.NL2SQL                  // Optional: Not supported by default when not configured
-	EnableCompactTable        *bool                          // Optional: Table data compression, default true
-	OCR                       ocr.OCR                        // Optional: ocr, ocr function is not available when not provided
-	CacheCli                  cache.Cmdable                  // Optional: cache implementation
-	IsAutoAnnotationSupported bool                           // Does it support automatic image labeling?
+	DB                  *gorm.DB                       // required
+	IDGen               idgen.IDGenerator              // required
+	RDB                 rdb.RDB                        // Required: Form storage
+	Producer            eventbus.Producer              // Required: Document indexing process goes through mq asynchronous processing
+	SearchStoreManagers []searchstore.Manager          // Required: Vector/Full Text
+	ParseManager        parser.Manager                 // Optional: document segmentation and processing capability, default builtin parser
+	Storage             storage.Storage                // required: oss
+	ModelFactory        chatmodel.Factory              // Required: Model factory
+	Rewriter            messages2query.MessagesToQuery // Optional: Do not overwrite when not configured
+	Reranker            rerank.Reranker                // Optional: default rrf when not configured
+	NL2Sql              nl2sql.NL2SQL                  // Optional: Not supported by default when not configured
+	EnableCompactTable  *bool                          // Optional: Table data compression, default true
+	OCR                 ocr.OCR                        // Optional: ocr, ocr function is not available when not provided
+	CacheCli            cache.Cmdable                  // Optional: cache implementation
 }
 
 type knowledgeSVC struct {
@@ -123,18 +121,17 @@ type knowledgeSVC struct {
 	reviewRepo    repository.KnowledgeDocumentReviewRepo
 	modelFactory  chatmodel.Factory
 
-	idgen                     idgen.IDGenerator
-	rdb                       rdb.RDB
-	producer                  eventbus.Producer
-	searchStoreManagers       []searchstore.Manager
-	parseManager              parser.Manager
-	rewriter                  messages2query.MessagesToQuery
-	reranker                  rerank.Reranker
-	storage                   storage.Storage
-	nl2Sql                    nl2sql.NL2SQL
-	cacheCli                  cache.Cmdable
-	enableCompactTable        bool // Table data compression
-	isAutoAnnotationSupported bool // Does it support automatic image labeling?
+	idgen               idgen.IDGenerator
+	rdb                 rdb.RDB
+	producer            eventbus.Producer
+	searchStoreManagers []searchstore.Manager
+	parseManager        parser.Manager
+	rewriter            messages2query.MessagesToQuery
+	reranker            rerank.Reranker
+	storage             storage.Storage
+	nl2Sql              nl2sql.NL2SQL
+	cacheCli            cache.Cmdable
+	enableCompactTable  bool // Table data compression
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
@@ -318,7 +315,7 @@ func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
 	}
 	for i := range request.Documents {
 		if request.Documents[i].Type == knowledgeModel.DocumentTypeImage && ptr.From(request.Documents[i].ParsingStrategy.CaptionType) == parser.ImageAnnotationTypeModel {
-			if !k.isAutoAnnotationSupported {
+			if !k.parseManager.IsAutoAnnotationSupported() {
 				return errors.New("auto caption type is not supported")
 			}
 		}
@@ -1411,7 +1408,7 @@ func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *Extract
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
-	if !k.isAutoAnnotationSupported {
+	if !k.parseManager.IsAutoAnnotationSupported() {
 		return nil, errorx.New(errno.ErrKnowledgeAutoAnnotationNotSupportedCode, errorx.KV("msg", "auto annotation is not supported"))
 	}
 	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)

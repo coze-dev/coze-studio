@@ -28,6 +28,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -58,7 +59,7 @@ type RootCtx struct {
 	RootWorkflowBasic *entity.WorkflowBasic
 	RootExecuteID     int64
 	ResumeEvent       *entity.InterruptEvent
-	ExeCfg            vo.ExecuteConfig
+	ExeCfg            workflowModel.ExecuteConfig
 }
 
 type SubWorkflowCtx struct {

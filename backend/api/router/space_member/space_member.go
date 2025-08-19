@@ -39,12 +39,12 @@ func Register(r *server.Hertz) {
 			_space := _api.Group("/space", _spaceMw()...)
 			_space.GET("/search-users", append(_searchusersMw(), space_member.SearchUsers)...)
 			{
-				__7bspace_id_7d := _space.Group("/{space_id}", __7bspace_id_7dMw()...)
+				__7bspace_id_7d := _space.Group("/:space_id", __7bspace_id_7dMw()...)
 				__7bspace_id_7d.GET("/members", append(_getspacemembersMw(), space_member.GetSpaceMembers)...)
 				_members := __7bspace_id_7d.Group("/members", _membersMw()...)
-				_members.DELETE("/{user_id}", append(_removememberMw(), space_member.RemoveMember)...)
+				_members.DELETE("/:user_id", append(_removememberMw(), space_member.RemoveMember)...)
 				{
-					__7buser_id_7d := _members.Group("/{user_id}", __7buser_id_7dMw()...)
+					__7buser_id_7d := _members.Group("/:user_id", __7buser_id_7dMw()...)
 					__7buser_id_7d.PUT("/role", append(_updatememberroleMw(), space_member.UpdateMemberRole)...)
 				}
 				__7bspace_id_7d.POST("/members", append(_invitememberMw(), space_member.InviteMember)...)

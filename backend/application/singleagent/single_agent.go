@@ -370,6 +370,12 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		}
 		target.Database = patch.DatabaseList
 	}
+	if patch.BotMode != nil {
+		target.BotMode = ptr.From(patch.BotMode)
+	}
+	if patch.LayoutInfo != nil {
+		target.LayoutInfo = patch.LayoutInfo
+	}
 
 	return target, nil
 }
@@ -419,11 +425,12 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		TaskInfo:                &bot_common.TaskInfo{},
 		CreateTime:              do.CreatedAt / 1000,
 		UpdateTime:              do.UpdatedAt / 1000,
-		BotMode:                 bot_common.BotMode_SingleMode,
+		BotMode:                 do.BotMode,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Status:                  bot_common.BotStatus_Using,
 		DatabaseList:            do.Database,
 		ShortcutSort:            do.ShortcutCommand,
+		LayoutInfo:              do.LayoutInfo,
 	}
 
 	if do.VariablesMetaID != nil {
@@ -524,8 +531,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		uid = ptr.Of(int64(888))
-		// return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := s.DomainSVC.GetSingleAgentDraft(ctx, agentID)
@@ -540,30 +546,13 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	if do.SpaceID == consts.TemplateSpaceID { // duplicate template, not need check uid permission
 		return do, nil
 	}
-	if do.SpaceID == consts.TemplateStoreSpaceID { // store template, accessible by all users
-		return do, nil
+
+	if do.CreatorID != *uid {
+		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
+
+		return do, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not the agent owner"))
 	}
 
-	// 首先检查是否是创建者
-	if do.CreatorID == *uid {
-		return do, nil
-	}
-
-	// 如果不是创建者，检查是否是空间成员
-	// 检查用户是否是空间成员
-	isMember, _, _, _, err := s.appContext.UserDomainSVC.CheckMemberPermission(ctx, do.SpaceID, *uid)
-	if err != nil {
-		logs.CtxErrorf(ctx, "failed to check member permission for user(%d) in space(%d): %v", *uid, do.SpaceID, err)
-		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "failed to check space member permission"))
-	}
-
-	if !isMember {
-		logs.CtxErrorf(ctx, "user(%d) is not a member of space(%d) for agent draft(%d)", *uid, do.SpaceID, agentID)
-		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not a member of this space"))
-	}
-
-	// 是空间成员，允许访问
-	logs.CtxInfof(ctx, "user(%d) is a member of space(%d), allowing access to agent draft(%d)", *uid, do.SpaceID, agentID)
 	return do, nil
 }
 

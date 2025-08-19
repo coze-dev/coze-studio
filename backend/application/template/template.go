@@ -28,7 +28,7 @@ import (
 )
 
 type ApplicationService struct {
-	templateRepo repository.TemplateRepository
+	templateRepo repository.TemplateRepositoryAdapter
 	storage      storage.Storage
 }
 
@@ -52,37 +52,20 @@ func (t *ApplicationService) PublicGetProductList(ctx context.Context, req *prod
 	products := make([]*productAPI.ProductInfo, 0, len(listResp))
 	for _, item := range listResp {
 		meta := item.MetaInfo
-		// 添加完整的 nil 检查，防止空指针异常
-		if meta != nil {
-			// 重要：修正MetaInfo的ID字段，使用模板的实际数据库ID
-			meta.ID = item.ID
-			
-			// 处理封面图片URL转换
-			if meta.Covers != nil {
-				for _, cover := range meta.Covers {
-					objURL, uRrr := t.storage.GetObjectUrl(ctx, cover.URI)
-					if uRrr == nil {
-						cover.URL = objURL
-					}
-				}
-			}
-
-			// 🔧 新增：处理IconURL字段的URL转换
-			if meta.IconURL != "" {
-				iconObjURL, iconErr := t.storage.GetObjectUrl(ctx, meta.IconURL)
-				if iconErr == nil {
-					meta.IconURL = iconObjURL
-				}
-			}
-
-			avatarURL, uRrr := t.storage.GetObjectUrl(ctx, "default_icon/connector-coze.png")
+		for _, cover := range meta.Covers {
+			objURL, uRrr := t.storage.GetObjectUrl(ctx, cover.URI)
 			if uRrr == nil {
-				if meta.Seller != nil {
-					meta.Seller.AvatarURL = avatarURL
-				}
-				if meta.UserInfo != nil {
-					meta.UserInfo.AvatarURL = avatarURL
-				}
+				cover.URL = objURL
+			}
+		}
+
+		avatarURL, uRrr := t.storage.GetObjectUrl(ctx, "default_icon/connector-coze.png")
+		if uRrr == nil {
+			if meta.Seller != nil {
+				meta.Seller.AvatarURL = avatarURL
+			}
+			if meta.UserInfo != nil {
+				meta.UserInfo.AvatarURL = avatarURL
 			}
 		}
 
@@ -106,18 +89,4 @@ func (t *ApplicationService) PublicGetProductList(ctx context.Context, req *prod
 	}
 
 	return resp, nil
-}
-
-// GetTemplateByID 根据ID获取模板详情
-func (t *ApplicationService) GetTemplateByID(ctx context.Context, templateID int64) (*productAPI.ProductMetaInfo, error) {
-	template, err := t.templateRepo.GetByID(ctx, templateID)
-	if err != nil {
-		return nil, err
-	}
-	
-	if template == nil {
-		return nil, nil
-	}
-	
-	return template.MetaInfo, nil
 }

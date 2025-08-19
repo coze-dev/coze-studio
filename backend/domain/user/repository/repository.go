@@ -39,6 +39,7 @@ type UserRepository interface {
 	ClearSessionKey(ctx context.Context, userID int64) error
 	UpdatePassword(ctx context.Context, email, password string) error
 	GetUserByID(ctx context.Context, userID int64) (*model.User, error)
+	GetUserByUserID(ctx context.Context, userID int64) (*model.User, error) // alias for GetUserByID
 	UpdateAvatar(ctx context.Context, userID int64, iconURI string) error
 	CheckUniqueNameExist(ctx context.Context, uniqueName string) (bool, error)
 	UpdateProfile(ctx context.Context, userID int64, updates map[string]any) error
@@ -46,16 +47,20 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User) error
 	GetUserBySessionKey(ctx context.Context, sessionKey string) (*model.User, bool, error)
 	GetUsersByIDs(ctx context.Context, userIDs []int64) ([]*model.User, error)
+	MGetUserByUserIDs(ctx context.Context, userIDs []int64) ([]*model.User, error) // alias for GetUsersByIDs
+	SearchUsers(ctx context.Context, keyword string, limit int32) ([]*model.User, error)
 }
 
 type SpaceRepository interface {
 	CreateSpace(ctx context.Context, space *model.Space) error
 	GetSpaceByIDs(ctx context.Context, spaceIDs []int64) ([]*model.Space, error)
+	GetSpaceByID(ctx context.Context, spaceID int64) (*model.Space, error)
 	AddSpaceUser(ctx context.Context, spaceUser *model.SpaceUser) error
 	GetSpaceList(ctx context.Context, userID int64) ([]*model.SpaceUser, error)
-	GetSpaceMembers(ctx context.Context, spaceID int64, page, pageSize int32, roleType *int32) ([]*model.SpaceUser, int64, error)
 	GetSpaceUserBySpaceIDAndUserID(ctx context.Context, spaceID, userID int64) (*model.SpaceUser, bool, error)
-	UpdateSpaceUserRole(ctx context.Context, spaceID, userID int64, roleType int32) error
-	RemoveSpaceUser(ctx context.Context, spaceID, userID int64) error
-	SearchUsersByKeyword(ctx context.Context, keyword string, excludeSpaceID int64, limit int32) ([]*model.User, error)
+	CreateSpaceUser(ctx context.Context, spaceUser *model.SpaceUser) error
+	GetSpaceUsers(ctx context.Context, spaceID int64, offset, limit int32, roleType *int32) ([]*model.SpaceUser, error)
+	CountSpaceUsers(ctx context.Context, spaceID int64, roleType *int32) (int64, error)
+	UpdateSpaceUser(ctx context.Context, spaceUser *model.SpaceUser) error
+	DeleteSpaceUser(ctx context.Context, spaceID, userID int64) error
 }

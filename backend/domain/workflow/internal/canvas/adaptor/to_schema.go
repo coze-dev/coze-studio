@@ -26,6 +26,7 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -33,6 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/batch"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/code"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
@@ -337,7 +339,7 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*schema.NodeSchem
 
 	subWF, err := workflow.GetRepository().GetEntity(ctx, &vo.GetPolicy{
 		ID:      id,
-		QType:   ternary.IFElse(len(version) == 0, vo.FromDraft, vo.FromSpecificVersion),
+		QType:   ternary.IFElse(len(version) == 0, model.FromDraft, model.FromSpecificVersion),
 		Version: version,
 	})
 	if err != nil {
@@ -672,6 +674,36 @@ func RegisterAllNodeAdaptors() {
 	})
 	nodes.RegisterNodeAdaptor(entity.NodeTypeLLM, func() nodes.NodeAdaptor {
 		return &llm.Config{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeCreateConversation, func() nodes.NodeAdaptor {
+		return &conversation.CreateConversationConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeConversationUpdate, func() nodes.NodeAdaptor {
+		return &conversation.UpdateConversationConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeConversationDelete, func() nodes.NodeAdaptor {
+		return &conversation.DeleteConversationConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeConversationList, func() nodes.NodeAdaptor {
+		return &conversation.ConversationListConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeConversationHistory, func() nodes.NodeAdaptor {
+		return &conversation.ConversationHistoryConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeClearConversationHistory, func() nodes.NodeAdaptor {
+		return &conversation.ClearConversationHistoryConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeMessageList, func() nodes.NodeAdaptor {
+		return &conversation.MessageListConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeCreateMessage, func() nodes.NodeAdaptor {
+		return &conversation.CreateMessageConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeEditMessage, func() nodes.NodeAdaptor {
+		return &conversation.EditMessageConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeDeleteMessage, func() nodes.NodeAdaptor {
+		return &conversation.DeleteMessageConfig{}
 	})
 
 	// register branch adaptors

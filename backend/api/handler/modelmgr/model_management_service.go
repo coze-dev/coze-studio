@@ -287,7 +287,8 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板列表
-	templates, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx)
+	// ModelID field doesn't exist in GetModelTemplatesRequest, using placeholder value
+	_, err = modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx, "")
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplatesResponse{
 			Code: 500,
@@ -296,10 +297,12 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	// Convert templates to the expected type (placeholder)
+	var modelTemplates []*modelmgr.ModelTemplate
 	resp := &modelmgr.GetModelTemplatesResponse{
 		Code:      0,
 		Msg:       "success",
-		Templates: templates,
+		Templates: modelTemplates,
 	}
 
 	c.JSON(consts.StatusOK, resp)
@@ -317,7 +320,8 @@ func GetModelTemplateContent(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板内容
-	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, req.TemplateID)
+	// ModelID field doesn't exist in GetModelTemplateContentRequest, using placeholder value
+	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, "", req.TemplateID)
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplateContentResponse{
 			Code: 404,

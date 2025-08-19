@@ -279,3 +279,7 @@ func GetConcatFunc(typ reflect.Type) func(reflect.Value) (reflect.Value, error) 
 
 	return nil
 }
+
+// func ChatHistoryCallbackInput(ctx context.Context, input map[string]any, enableHistory bool) (map[string]any, error) {
+
+// }

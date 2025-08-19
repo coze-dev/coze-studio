@@ -23,34 +23,64 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
 // TODO (@fanlv): Parameter references need to be modified.
 type Workflow interface {
 	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow.ToolFromWorkflow, error)
-	DeleteWorkflow(ctx context.Context, id int64) error
-	PublishWorkflow(ctx context.Context, info *vo.PublishPolicy) (err error)
 	WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
-	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
-	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
+
+	SyncExecuteWorkflow(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	StreamExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error)
+	WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option
+
+	StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (*schema.StreamReader[*entity.Message], error)
+
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
+	InitApplicationDefaultConversationTemplate(ctx context.Context, spaceID int64, appID int64, userID int64) error
 }
 
-type ExecuteConfig = vo.ExecuteConfig
-type ExecuteMode = vo.ExecuteMode
-type NodeType = entity.NodeType
+type ExecuteConfig = workflowModel.ExecuteConfig
+type ExecuteMode = workflowModel.ExecuteMode
 
-type WorkflowMessage = entity.Message
+type WorkflowMessage = workflowEntity.Message
+
+type StateMessage = workflowEntity.StateMessage
+
+type NodeType = entity.NodeType
+type MessageType = entity.MessageType
+type InterruptEvent = workflowEntity.InterruptEvent
+type EventType = workflowEntity.InterruptEventType
+type ResumeRequest = entity.ResumeRequest
+type WorkflowExecuteStatus = entity.WorkflowExecuteStatus
+
+const (
+	WorkflowRunning     = WorkflowExecuteStatus(entity.WorkflowRunning)
+	WorkflowSuccess     = WorkflowExecuteStatus(entity.WorkflowSuccess)
+	WorkflowFailed      = WorkflowExecuteStatus(entity.WorkflowFailed)
+	WorkflowCancel      = WorkflowExecuteStatus(entity.WorkflowCancel)
+	WorkflowInterrupted = WorkflowExecuteStatus(entity.WorkflowInterrupted)
+)
+
+const (
+	Answer       MessageType = "answer"
+	FunctionCall MessageType = "function_call"
+	ToolResponse MessageType = "tool_response"
+)
 
 const (
 	NodeTypeOutputEmitter NodeType = "OutputEmitter"
+	NodeTypeInputReceiver NodeType = "InputReceiver"
+	NodeTypeQuestion      NodeType = "QuestionAnswer"
 )
 
 const (
@@ -59,14 +89,22 @@ const (
 	ExecuteModeNodeDebug ExecuteMode = "node_debug"
 )
 
-type TaskType = vo.TaskType
+type TaskType = workflowModel.TaskType
+
+type SyncPattern = workflowModel.SyncPattern
+
+const (
+	SyncPatternSync   SyncPattern = "sync"
+	SyncPatternAsync  SyncPattern = "async"
+	SyncPatternStream SyncPattern = "stream"
+)
 
 const (
 	TaskTypeForeground TaskType = "foreground"
 	TaskTypeBackground TaskType = "background"
 )
 
-type BizType = vo.BizType
+type BizType = workflowModel.BizType
 
 const (
 	BizTypeAgent    BizType = "agent"

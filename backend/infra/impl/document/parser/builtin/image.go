@@ -24,7 +24,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 )
 
-func putImageObject(ctx context.Context, st storage.Storage, imgExt string, uid int64, img []byte) (format string, err error) {
+func PutImageObject(ctx context.Context, st storage.Storage, imgExt string, uid int64, img []byte) (format string, err error) {
 	secret := createSecret(uid, imgExt)
 	fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, imgExt)
 	objectName := fmt.Sprintf("%s/%s", knowledgePrefix, fileName)

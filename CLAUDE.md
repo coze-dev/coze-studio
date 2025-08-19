@@ -53,13 +53,13 @@ struct CreateTestResponse {
 service TestManagementService {
     // POST请求
     CreateTestResponse CreateTest(1: CreateTestRequest req) (api.post="/api/test/create")
-    
+
     // GET请求
     GetTestListResponse GetTestList(1: GetTestListRequest req) (api.get="/api/test/list")
-    
+
     // PUT请求（带路径参数）
     UpdateTestStatusResponse UpdateTestStatus(1: UpdateTestStatusRequest req) (api.put="/api/test/{id}/status")
-    
+
     // DELETE请求（带路径参数）
     DeleteTestResponse DeleteTest(1: DeleteTestRequest req) (api.delete="/api/test/{id}")
 }
@@ -390,7 +390,7 @@ nvm use 21
 - [ ] API注解正确配置
 - [ ] 路径参数正确标记
 
-### 前端生成阶段  
+### 前端生成阶段
 - [ ] api.config.js配置更新
 - [ ] npm run update执行成功
 - [ ] TypeScript类型文件生成
@@ -438,7 +438,7 @@ nvm use 21
 **示例**：
 ```
 /new-api user_management CreateUser
-/new-api product_catalog GetProductList  
+/new-api product_catalog GetProductList
 /new-api order_system UpdateOrderStatus
 ```
 
@@ -469,7 +469,7 @@ nvm use 21
 **输出示例**：
 ```
 ✅ IDL文件已创建: /idl/user_management/user_management.thrift
-✅ 前端配置已更新: api.config.js 
+✅ 前端配置已更新: api.config.js
 ✅ 后端配置检查通过: INSERT_POINT格式正确
 ✅ 处理器模板已生成: backend/api/handler/user_management/
 ✅ 前端组件模板已生成: src/pages/user-management.tsx
@@ -478,7 +478,7 @@ nvm use 21
 📋 接下来的手动步骤:
 1. 完善IDL文件中的字段定义
 2. 执行: cd frontend/packages/arch/api-schema && npm run update
-3. 执行: cd backend && hz update -idl ../idl/user_management/user_management.thrift  
+3. 执行: cd backend && hz update -idl ../idl/user_management/user_management.thrift
 4. 实现业务逻辑到生成的处理器中
 5. 完善前端组件的UI和逻辑
 6. 测试API接口
@@ -579,7 +579,7 @@ const MembersPage: React.FC = () => {
 
 #### `/api-fix` - 快速问题诊断
 ```
-/api-fix 
+/api-fix
 # 自动检查常见问题：INSERT_POINT格式、导入错误、路由注册等
 ```
 
@@ -642,7 +642,7 @@ const spaceId = params.space_id;  // 保持为字符串
 // 转换字符串ID为int64
 userID, err := strconv.ParseInt(userIDStr, 10, 64)
 if err != nil {
-    return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, 
+    return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode,
         errorx.KV("msg", "invalid user ID format"))
 }
 ```
@@ -709,7 +709,7 @@ import { Layout } from '@coze-arch/coze-design';
 **Search组件**：
 ```typescript
 // 使用onSearch而不是onChange
-<Search 
+<Search
   onSearch={(value) => setSearchKeyword(value)}
   placeholder="搜索..."
 />
@@ -989,19 +989,19 @@ make server     # Start server
    ```thrift
    // 例：在 /idl/space/space_management.thrift 中
    namespace go space
-   
+
    struct CreateSpaceRequest {
        1: required string name
        2: optional string description
        3: optional string icon_url
    }
-   
+
    struct CreateSpaceResponse {
        1: required SpaceInfo data
        253: required i32 code
        254: required string msg
    }
-   
+
    struct SpaceInfo {
        1: required i64 space_id
        2: required string name
@@ -1009,7 +1009,7 @@ make server     # Start server
        4: optional string icon_url
        5: required i64 created_at
    }
-   
+
    service SpaceService {
        CreateSpaceResponse CreateSpace(1: CreateSpaceRequest req) (api.post="/api/space/create/")
    }
@@ -1021,7 +1021,7 @@ make server     # Start server
    ```bash
    cd frontend/packages/arch/api-schema
    ```
-   
+
    在`api.config.js`中添加新的IDL入口：
    ```javascript
    entries: {
@@ -1044,13 +1044,13 @@ make server     # Start server
        description?: string,
        icon_url?: string,
    }
-   
+
    export interface CreateSpaceResponse {
        data: SpaceInfo,
        code: number,
        msg: string,
    }
-   
+
    // API调用函数也会自动生成
    export const CreateSpace = createAPI<CreateSpaceRequest, CreateSpaceResponse>({
        url: '/api/space/create/',
@@ -1088,7 +1088,7 @@ make server     # Start server
        Description *string `json:"description,omitempty" form:"description" query:"description"`
        IconUrl     *string `json:"icon_url,omitempty" form:"icon_url" query:"icon_url"`
    }
-   
+
    type CreateSpaceResponse struct {
        Data SpaceInfo `json:"data" form:"data" query:"data"`
        Code int32     `json:"code" form:"code" query:"code"`
@@ -1107,10 +1107,10 @@ make server     # Start server
            // 错误处理
            return
        }
-       
+
        // 👈 在这里添加业务逻辑调用
        // resp, err := spaceApplication.CreateSpace(ctx, &req)
-       
+
        c.JSON(http.StatusOK, resp)
    }
    ```
@@ -1127,12 +1127,12 @@ make server     # Start server
            Description: req.Description,
            IconUrl:     req.IconUrl,
        }
-       
+
        createdSpace, err := s.spaceRepo.Create(ctx, spaceEntity)
        if err != nil {
            return nil, err
        }
-       
+
        return &space.CreateSpaceResponse{
            Data: space.SpaceInfo{
                SpaceId:     createdSpace.ID,
@@ -1156,13 +1156,13 @@ make server     # Start server
            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
            return
        }
-       
+
        resp, err := application.Space.CreateSpace(ctx, &req)
        if err != nil {
            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
            return
        }
-       
+
        c.JSON(http.StatusOK, resp)
    }
    ```
@@ -1179,7 +1179,7 @@ const createSpace = async () => {
             name: 'My New Space',
             description: 'A space for my projects'
         });
-        
+
         if (response.code === 0) {
             console.log('Space created:', response.data);
         }
@@ -1225,4 +1225,199 @@ rush build
 - **Rush commands** should be run from project root
 - **Make commands** should be run from project root
 - **Frontend dev server** runs on port 3000 by default
-- **Backend server** runs on port 8888 by default
+- **Backend server** runs on port 8888 by default# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Coze Studio is an all-in-one AI agent development platform with both frontend (React + TypeScript) and backend (Go) components. The project uses a sophisticated monorepo architecture managed by Rush.js with 135+ frontend packages organized in a hierarchical dependency system.
+
+## Development Commands
+
+### Environment Setup
+```bash
+# Clone and setup
+git clone https://github.com/coze-dev/coze-studio.git
+cd coze-studio
+
+# Install frontend dependencies
+rush update
+
+# For Docker-based development
+cd docker
+cp .env.example .env
+# Configure model settings in backend/conf/model/
+docker compose up -d
+# Access at http://localhost:8888
+```
+
+### Development Workflow
+```bash
+# Start middleware services (MySQL, Redis, Elasticsearch, etc.)
+make middleware
+
+# Start Go backend in development mode
+make server
+
+# Start frontend development server
+cd frontend/apps/coze-studio
+npm run dev
+
+# Full development environment
+make debug
+```
+
+### Build Commands
+```bash
+# Build frontend only
+make fe
+
+# Build Go server
+make build_server
+
+# Build everything with Docker
+make web
+
+# Rush monorepo commands
+rush build                    # Build all packages
+rush rebuild -o @coze-studio/app  # Build specific package
+rush test                     # Run all tests
+rush lint                     # Lint all packages
+```
+
+### Testing
+```bash
+# Run tests (Vitest-based)
+rush test
+npm run test                  # In specific package
+npm run test:cov             # With coverage
+
+# Backend tests
+cd backend && go test ./...
+```
+
+## Architecture Overview
+
+### Frontend Architecture
+- **Monorepo**: Rush.js with 135+ packages across 4 dependency levels
+- **Build System**: Rsbuild (Rspack-based) for fast builds
+- **UI Framework**: React 18 + TypeScript + Semi Design + Tailwind CSS
+- **State Management**: Zustand for global state
+- **Package Organization**:
+  - `arch/`: Core infrastructure (level-1)
+  - `common/`: Shared components and utilities (level-2)
+  - `agent-ide/`, `workflow/`, `studio/`: Feature domains (level-3)
+  - `apps/coze-studio`: Main application (level-4)
+
+### Backend Architecture (Go)
+- **Framework**: Hertz HTTP framework
+- **Architecture**: Domain-Driven Design (DDD) with microservices
+- **Structure**:
+  - `domain/`: Business logic and entities
+  - `application/`: Application services and use cases
+  - `api/`: HTTP handlers and routing
+  - `infra/`: Infrastructure implementations
+  - `crossdomain/`: Cross-cutting concerns
+
+### Key Architectural Patterns
+- **Adapter Pattern**: Extensive use for loose coupling between layers
+- **Interface Segregation**: Clear contracts between domains
+- **Event-Driven**: NSQ message queue for async communication
+- **API-First**: Comprehensive OpenAPI specifications
+
+## Database & Infrastructure
+
+### Docker Services Stack
+- **Database**: MySQL 8.4.5
+- **Cache**: Redis 8.0
+- **Search**: Elasticsearch 8.18.0 with SmartCN analyzer
+- **Vector DB**: Milvus v2.5.10 for embeddings
+- **Storage**: MinIO for object storage
+- **Message Queue**: NSQ (nsqlookupd, nsqd, nsqadmin)
+- **Configuration**: etcd 3.5
+
+### Database Management
+```bash
+# Sync database schema
+make sync_db
+
+# Dump database schema
+make dump_db
+
+# Initialize SQL data
+make sql_init
+
+# Atlas migration management
+make atlas-hash
+```
+
+## Key Development Patterns
+
+### Frontend Package Development
+- Each package follows consistent structure with `README.md`, `package.json`, `tsconfig.json`, `eslint.config.js`
+- Adapter pattern extensively used for decoupling (e.g., `-adapter` suffix packages)
+- Base/Core pattern for shared functionality (e.g., `-base` suffix packages)
+- Use workspace references (`workspace:*`) for internal dependencies
+
+### Backend Development
+- Follow DDD principles with clear domain boundaries
+- Use dependency injection via interfaces
+- Implement proper error handling with custom error types
+- Write comprehensive tests for domain logic
+
+### Model Configuration
+Before deployment, configure AI models in `backend/conf/model/`:
+1. Copy template from `backend/conf/model/template/`
+2. Set `id`, `meta.conn_config.api_key`, and `meta.conn_config.model`
+3. Supported providers: OpenAI, Volcengine Ark, Claude, Gemini, Qwen, DeepSeek, Ollama
+
+## Testing Strategy
+
+### Coverage Requirements by Package Level
+- **Level 1**: 80% coverage, 90% increment
+- **Level 2**: 30% coverage, 60% increment
+- **Level 3-4**: 0% coverage (flexible)
+
+### Testing Framework
+- **Frontend**: Vitest for unit/integration tests
+- **Backend**: Go's built-in testing framework
+- **E2E**: Separate e2e subspace configuration
+
+## Common Issues & Solutions
+
+### Frontend Development
+- Use `rush update` instead of `npm install` at root level
+- Build packages in dependency order using `rush build`
+- For hot reload issues, check Rsbuild configuration in specific package
+
+### Backend Development
+- Ensure middleware services are running (`make middleware`)
+- Check database connectivity and schema sync
+- Verify model configurations are properly set
+
+### Docker Issues
+- Ensure sufficient resources (minimum 2 Core, 4GB RAM)
+- Check port conflicts (8888 for frontend, various for services)
+- Use `make clean` to reset Docker volumes if needed
+
+## IDL and Code Generation
+
+The project uses Interface Definition Language (IDL) for API contract management:
+- IDL files in `idl/` directory (Thrift format)
+- Frontend code generation via `@coze-arch/idl2ts-*` packages
+- Backend uses generated Go structs
+
+## Plugin Development
+
+For custom plugin development:
+- Reference templates in `backend/conf/plugin/pluginproduct/`
+- Follow OAuth schema in `backend/conf/plugin/common/oauth_schema.json`
+- Configure authentication keys for third-party services
+
+## Contributing
+
+- Use conventional commits via `rush commit`
+- Run linting with `rush lint-staged` (pre-commit hook)
+- Ensure tests pass before submitting PRs
+- Follow team-based package organization and tagging conventions

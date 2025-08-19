@@ -185,7 +185,7 @@ func (e *esSearchStore) travDSL(query *es.Query, dsl *searchstore.DSL) error {
 		query.Bool.Must = append(query.Bool.Must, es.NewMatchQuery(dsl.Field, s))
 
 	case searchstore.OpIn:
-		query.Bool.Must = append(query.Bool.MustNot,
+		query.Bool.Must = append(query.Bool.Must,
 			es.NewInQuery(dsl.Field, stringifyValue(dsl.Value)))
 
 	case searchstore.OpAnd, searchstore.OpOr:

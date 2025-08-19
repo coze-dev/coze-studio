@@ -16,44 +16,28 @@
 
 package entity
 
-import (
-	product_public_api "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
-)
+// Template represents a template entity
+type Template struct {
+	ID                int64
+	Name              string
+	Description       string
+	AgentID           int64
+	SpaceID           int64
+	ProductEntityType int64
+	CreatorID         int64
+	CreatedAt         int64
+	UpdatedAt         int64
+	Data              string
+	Version           int32
+	Status            int32
+}
 
 // TemplateFilter defines filters for listing templates
 type TemplateFilter struct {
 	AgentID           *int64
 	SpaceID           *int64
 	ProductEntityType *int64
-	CreatorID         *int64
-}
-
-// Template defines a template entity
-type Template struct {
-	ID                int64
-	AgentID           int64
-	SpaceID           int64
-	ProductEntityType int64
-	MetaInfo          *product_public_api.ProductMetaInfo
-	Heat              int64
-	CreatedAt         int64
-	CreatorID         int64
-}
-
-// GetTitle extracts title from meta info
-func (t *Template) GetTitle() string {
-	if t.MetaInfo == nil {
-		return ""
-	}
-	return t.MetaInfo.Name
-}
-
-// GetDescription extracts description from meta info
-func (t *Template) GetDescription() string {
-	if t.MetaInfo == nil {
-		return ""
-	}
-	return t.MetaInfo.Description
+	CreatorID         *int64  // Added for compatibility
 }
 
 type Pagination struct {

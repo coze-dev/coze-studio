@@ -28,21 +28,28 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type Config struct {
-	Intents      []string
-	SystemPrompt string
-	IsFastMode   bool
-	LLMParams    *model.LLMParams
+	Intents            []string
+	SystemPrompt       string
+	IsFastMode         bool
+	LLMParams          *model.LLMParams
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema2.NodeSchema, error) {
@@ -56,6 +63,10 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	param := n.Data.Inputs.LLMParam
 	if param == nil {
 		return nil, fmt.Errorf("intent detector node's llmParam is nil")
+	}
+
+	if n.Data.Inputs.ChatHistorySetting != nil {
+		c.ChatHistorySetting = n.Data.Inputs.ChatHistorySetting
 	}
 
 	llmParam, ok := param.(vo.IntentDetectorLLMParam)
@@ -116,7 +127,7 @@ func (c *Config) Build(ctx context.Context, _ *schema2.NodeSchema, _ ...schema2.
 		return nil, errors.New("config intents is required")
 	}
 
-	m, _, err := model.GetManager().GetModel(ctx, c.LLMParams)
+	m, _, err := crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
 	if err != nil {
 		return nil, err
 	}
@@ -140,14 +151,16 @@ func (c *Config) Build(ctx context.Context, _ *schema2.NodeSchema, _ ...schema2.
 		&schema.Message{Content: sptTemplate, Role: schema.System},
 		&schema.Message{Content: "{{query}}", Role: schema.User})
 
-	r, err := chain.AppendChatTemplate(prompts).AppendChatModel(m).Compile(ctx)
+	r, err := chain.AppendChatTemplate(newHistoryChatTemplate(prompts, c.ChatHistorySetting)).AppendChatModel(m).Compile(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	return &IntentDetector{
-		isFastMode:   c.IsFastMode,
-		systemPrompt: c.SystemPrompt,
-		runner:       r,
+		isFastMode:         c.IsFastMode,
+		systemPrompt:       c.SystemPrompt,
+		runner:             r,
+		ChatHistorySetting: c.ChatHistorySetting,
 	}, nil
 }
 
@@ -180,6 +193,10 @@ func (c *Config) ExpectPorts(ctx context.Context, n *vo.Node) []string {
 	}
 	return expects
 }
+
+type contextKey string
+
+const chatHistoryKey contextKey = "chatHistory"
 
 const SystemIntentPrompt = `
 # Role
@@ -239,9 +256,10 @@ Note:
 const classificationID = "classificationId"
 
 type IntentDetector struct {
-	isFastMode   bool
-	systemPrompt string
-	runner       compose.Runnable[map[string]any, *schema.Message]
+	isFastMode         bool
+	systemPrompt       string
+	runner             compose.Runnable[map[string]any, *schema.Message]
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error) {
@@ -318,4 +336,61 @@ func toIntentString(its []string) (string, error) {
 	}
 
 	return sonic.MarshalString(vs)
+}
+
+func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error) {
+	if id.ChatHistorySetting == nil || !id.ChatHistorySetting.EnableChatHistory {
+		return in, nil
+	}
+
+	var messages []*conversation.Message
+	var scMessages []*schema.Message
+	var sectionID *int64
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx != nil {
+		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
+	}
+
+	ret := map[string]any{
+		"chatHistory": []any{},
+		"query":       in["query"],
+	}
+	if len(messages) == 0 {
+		return ret, nil
+	}
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return ret, nil
+	}
+
+	count := 0
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == schema.User {
+			count++
+		}
+		if count >= int(id.ChatHistorySetting.ChatHistoryRound) {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
+		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, map[string]any{
+			"role":    string(msg.Role),
+			"content": content,
+		})
+	}
+
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
+
+	ret["chatHistory"] = historyMessages
+	return ret, nil
 }

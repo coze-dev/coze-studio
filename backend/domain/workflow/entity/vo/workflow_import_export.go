@@ -20,6 +20,12 @@ import (
 	"time"
 )
 
+// PluginEntity represents a plugin entity with version information
+type PluginEntity struct {
+	PluginID      int64   `json:"plugin_id"`
+	PluginVersion *string `json:"plugin_version,omitempty"` // nil or "0" means draft, "" means latest/online version
+}
+
 // WorkflowReferenceKey represents a workflow reference key
 type WorkflowReferenceKey struct {
 	ReferredID       int64            `json:"referred_id"`

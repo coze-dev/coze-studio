@@ -42,6 +42,7 @@ func New(ctx context.Context, s *schema.NodeSchema,
 	inner compose.Runnable[map[string]any, map[string]any], // inner workflow for composite node
 	sc *schema.WorkflowSchema, // the workflow this NodeSchema is in
 	deps *dependencyInfo, // the dependency for this node pre-calculated by workflow engine
+	requireCheckpoint bool,
 ) (_ *Node, err error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
@@ -87,7 +88,7 @@ func New(ctx context.Context, s *schema.NodeSchema,
 
 		return &Node{Lambda: s.Lambda}, nil
 	case entity.NodeTypeSubWorkflow:
-		subWorkflow, err := buildSubWorkflow(ctx, s, sc.RequireCheckpoint())
+		subWorkflow, err := buildSubWorkflow(ctx, s, requireCheckpoint)
 		if err != nil {
 			return nil, err
 		}

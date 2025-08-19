@@ -34,6 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
+
 func (t *ApplicationService) PublishAsTemplate(ctx context.Context, req *template_publish.PublishAsTemplateRequest) (*template_publish.PublishAsTemplateResponse, error) {
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
 
@@ -123,22 +124,19 @@ func (t *ApplicationService) GetMyTemplateList(ctx context.Context, req *templat
 
 	templateInfos := make([]*template_publish.TemplateInfo, 0, len(templates))
 	for _, tmpl := range templates {
-		// Convert model.Template to entity.Template for method access
-		entityTemplate := &entity.Template{
-			ID:                tmpl.ID,
-			AgentID:           tmpl.AgentID,
-			SpaceID:           tmpl.SpaceID,
-			ProductEntityType: tmpl.ProductEntityType,
-			Heat:              tmpl.Heat,
-			CreatedAt:         tmpl.CreatedAt,
-			MetaInfo:          tmpl.MetaInfo, // 直接使用model的MetaInfo
+		// Extract title and description from MetaInfo
+		title := ""
+		description := ""
+		if tmpl.MetaInfo != nil {
+			title = tmpl.MetaInfo.Name
+			description = tmpl.MetaInfo.Description
 		}
 
 		info := &template_publish.TemplateInfo{
 			TemplateID:  tmpl.ID,
 			AgentID:     tmpl.AgentID,
-			Title:       entityTemplate.GetTitle(),
-			Description: ptr.Of(entityTemplate.GetDescription()),
+			Title:       title,
+			Description: ptr.Of(description),
 			Status:      "published",
 			CreatedAt:   tmpl.CreatedAt,
 			Heat:        ptr.Of(tmpl.Heat),
@@ -181,7 +179,7 @@ func (t *ApplicationService) DeleteTemplate(ctx context.Context, req *template_p
 	}, nil
 }
 
-func (t *ApplicationService) convertAgentToTemplate(ctx context.Context, agent *agent_entity.SingleAgent, req *template_publish.PublishAsTemplateRequest, userID int64) (*entity.Template, error) {
+func (t *ApplicationService) convertAgentToTemplate(ctx context.Context, agent *agent_entity.SingleAgent, req *template_publish.PublishAsTemplateRequest, userID int64) (*entity.TemplateModel, error) {
 	// Build meta info using ProductMetaInfo struct
 	description := ""
 	if req.Description != nil {
@@ -212,14 +210,13 @@ func (t *ApplicationService) convertAgentToTemplate(ctx context.Context, agent *
 		Readme:        "",
 	}
 
-	return &entity.Template{
+	return &entity.TemplateModel{
 		AgentID:           agent.AgentID,
 		SpaceID:           consts.TemplateSpaceID,
 		ProductEntityType: 21, // BotTemplate
 		MetaInfo:          metaInfo, // ✅ 直接使用结构体
 		Heat:              0,
 		CreatedAt:         currentTime,
-		CreatorID:         userID,
 	}, nil
 }
 
@@ -424,16 +421,8 @@ func (t *ApplicationService) GetStoreTemplateList(ctx context.Context, req *temp
 
 	storeTemplateInfos := make([]*template_publish.StoreTemplateInfo, 0, len(templates))
 	for _, tmpl := range templates {
-		// Convert model.Template to entity.Template for method access
-		entityTemplate := &entity.Template{
-			ID:                tmpl.ID,
-			AgentID:           tmpl.AgentID,
-			SpaceID:           tmpl.SpaceID,
-			ProductEntityType: tmpl.ProductEntityType,
-			Heat:              tmpl.Heat,
-			CreatedAt:         tmpl.CreatedAt,
-			MetaInfo:          tmpl.MetaInfo,
-		}
+		// Template is already a TemplateModel
+		entityTemplate := tmpl
 
 		// 提取作者信息
 		authorName := "Anonymous"
@@ -629,7 +618,7 @@ func (t *ApplicationService) CheckStorePublishStatus(ctx context.Context, req *t
 }
 
 // convertAgentToStoreTemplate 将智能体转换为商店模板格式
-func (t *ApplicationService) convertAgentToStoreTemplate(ctx context.Context, agent *agent_entity.SingleAgent, req *template_publish.PublishToStoreRequest, userID int64) (*entity.Template, error) {
+func (t *ApplicationService) convertAgentToStoreTemplate(ctx context.Context, agent *agent_entity.SingleAgent, req *template_publish.PublishToStoreRequest, userID int64) (*entity.TemplateModel, error) {
 	// Build meta info using ProductMetaInfo struct
 	description := ""
 	if req.Description != nil {
@@ -680,14 +669,13 @@ func (t *ApplicationService) convertAgentToStoreTemplate(ctx context.Context, ag
 		UserInfo:      userInfo,
 	}
 
-	return &entity.Template{
+	return &entity.TemplateModel{
 		AgentID:           agent.AgentID,
 		SpaceID:           consts.TemplateStoreSpaceID, // 使用商店专用的Space ID
 		ProductEntityType: 21,                          // BotTemplate
 		MetaInfo:          metaInfo,
 		Heat:              0,
 		CreatedAt:         currentTime,
-		CreatorID:         userID,
 	}, nil
 }
 

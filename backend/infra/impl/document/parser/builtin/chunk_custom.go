@@ -34,10 +34,10 @@ var (
 	emailRegex = regexp.MustCompile(`[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}`)
 )
 
-func chunkCustom(_ context.Context, text string, config *contract.Config, opts ...parser.Option) (docs []*schema.Document, err error) {
+func ChunkCustom(_ context.Context, text string, config *contract.Config, opts ...parser.Option) (docs []*schema.Document, err error) {
 	cs := config.ChunkingStrategy
 	if cs.Overlap >= cs.ChunkSize {
-		return nil, fmt.Errorf("[chunkCustom] invalid param, overlap >= chunk_size")
+		return nil, fmt.Errorf("[ChunkCustom] invalid param, overlap >= chunk_size")
 	}
 
 	var (

@@ -23,6 +23,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
 	openapimodel "github.com/coze-dev/coze-studio/backend/api/model/permission/openapiauth"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	openapi "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth"
@@ -80,6 +81,7 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 		Name:   req.Name,
 		Expire: req.ExpireAt,
 		UserID: *userID,
+		AkType: entity.AkTypeCustomer,
 	}
 
 	if req.DurationDay == "customize" {
@@ -107,6 +109,32 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 			UpdatedAt: apiKeyResp.UpdatedAt,
 		},
 		Token: apiKeyResp.ApiKey,
+	}
+	return resp, nil
+}
+
+func (s *OpenAuthApplicationService) ImpersonateCozeUserAccessToken(ctx context.Context, req *bot_open_api.ImpersonateCozeUserRequest) (*bot_open_api.ImpersonateCozeUserResponse, error) {
+	resp := new(bot_open_api.ImpersonateCozeUserResponse)
+	userID := ctxutil.GetUIDFromCtx(ctx)
+
+	expiredSecond := time.Now().Add(time.Duration(time.Second * 60 * 15)).Unix()
+
+	appReq := &entity.CreateApiKey{
+		UserID: *userID,
+		AkType: entity.AkTypeTemporary,
+		Expire: expiredSecond,
+		Name:   "temporary access token",
+	}
+
+	apiKeyResp, err := openapiAuthDomainSVC.Create(ctx, appReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
+		return resp, errors.New("CreatePersonalAccessToken failed")
+	}
+	resp.Data = &bot_open_api.ImpersonateCozeUserResponseData{
+		AccessToken: apiKeyResp.ApiKey,
+		ExpiresIn:   expiredSecond,
+		TokenType:   "Bearer",
 	}
 	return resp, nil
 }

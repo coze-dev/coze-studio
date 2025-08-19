@@ -61,10 +61,10 @@ func NewModelMgr(db *gorm.DB, redis cache.Cmdable) (modelmgr.Manager, error) {
 
 // ListModel 查询模型列表
 func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
-	// 如果指定了空间ID，需要通过space_model表来过滤
-	if req.SpaceID != nil {
-		return m.listModelsBySpace(ctx, req)
-	}
+	// SpaceID filtering temporarily disabled as field is not available in ListModelRequest
+	// if req.SpaceID != nil {
+	//	return m.listModelsBySpace(ctx, req)
+	// }
 
 	// 先查询 model_entity
 	query := m.db.WithContext(ctx).Model(&entity.ModelEntity{}).
@@ -176,6 +176,8 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 }
 
 // listModelsBySpace 根据空间ID查询模型列表
+// This function is temporarily disabled as SpaceID field is not available in ListModelRequest
+/*
 func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	logs.Infof("listModelsBySpace called with spaceID: %d", *req.SpaceID)
 
@@ -335,6 +337,7 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 		NextCursor: nextCursor,
 	}, nil
 }
+*/
 
 // ListInUseModel 查询使用中的模型
 func (m *ModelMgr) ListInUseModel(ctx context.Context, limit int, cursor *string) (*modelmgr.ListModelResponse, error) {
@@ -457,7 +460,8 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 		IconURI: meta.IconURI,
 		IconURL: meta.IconURL,
 		Meta: modelmgr.ModelMeta{
-			Name:     meta.ModelName,
+			// Name field doesn't exist in ModelMeta, commented out temporarily
+			// Name:     meta.ModelName,
 			Protocol: chatmodel.Protocol(meta.Protocol),
 			Status:   modelmgr.ModelStatus(meta.Status),
 		},

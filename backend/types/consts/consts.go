@@ -87,6 +87,14 @@ const (
 	UseSSL      = "USE_SSL"
 	SSLCertFile = "SSL_CERT_FILE"
 	SSLKeyFile  = "SSL_KEY_FILE"
+
+	OCRType     = "OCR_TYPE"
+	VeOCRAK     = "VE_OCR_AK"
+	VeOCRSK     = "VE_OCR_SK"
+	PPOCRAPIURL = "PADDLEOCR_OCR_API_URL"
+
+	ParserType        = "PARSER_TYPE"
+	PPStructureAPIURL = "PADDLEOCR_STRUCTURE_API_URL"
 )
 
 const (
@@ -111,8 +119,8 @@ const (
 )
 
 const (
-	TemplateSpaceID      = int64(999999) // special space id for template  
-	TemplateStoreSpaceID = int64(888888) // special space id for template store (global store for all users)
+	TemplateSpaceID      = int64(999999) // special space id for template
+	TemplateStoreSpaceID = int64(999999) // special space id for template store (same as TemplateSpaceID)
 )
 
 const (

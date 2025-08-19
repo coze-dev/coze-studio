@@ -47,7 +47,7 @@ func TestParseCSV(t *testing.T) {
 		},
 		ChunkingStrategy: nil,
 	}
-	p1 := parseCSV(c1)
+	p1 := ParseCSV(c1)
 	docs, err := p1(ctx, r1, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),
@@ -112,7 +112,7 @@ func TestParseCSV(t *testing.T) {
 		},
 		ChunkingStrategy: nil,
 	}
-	p2 := parseCSV(c2)
+	p2 := ParseCSV(c2)
 	docs, err = p2(ctx, r2, parser.WithExtraMeta(map[string]any{
 		"document_id":  int64(123),
 		"knowledge_id": int64(456),
@@ -131,7 +131,7 @@ func TestParseCSVBadCases(t *testing.T) {
 		b, err := io.ReadAll(f)
 		assert.NoError(t, err)
 
-		pfn := parseCSV(&contract.Config{
+		pfn := ParseCSV(&contract.Config{
 			FileExtension: "csv",
 			ParsingStrategy: &contract.ParsingStrategy{
 				ExtractImage:        true,
@@ -154,7 +154,7 @@ func TestParseCSVBadCases(t *testing.T) {
 		cols, err := document.GetDocumentColumns(resp[0])
 		assert.NoError(t, err)
 		cols[5].Nullable = false
-		npfn := parseCSV(&contract.Config{
+		npfn := ParseCSV(&contract.Config{
 			FileExtension: "csv",
 			ParsingStrategy: &contract.ParsingStrategy{
 				ExtractImage:        true,

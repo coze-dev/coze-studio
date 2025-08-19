@@ -27,6 +27,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -36,21 +37,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
-
-// safeSend safely sends a message through StreamWriter, recovering from any send-on-closed-channel panics
-func safeSend(ctx context.Context, sw *schema.StreamWriter[*entity.Message], msg *entity.Message, err error) {
-	if sw == nil {
-		return
-	}
-	
-	defer func() {
-		if panicErr := recover(); panicErr != nil {
-			logs.CtxDebugf(ctx, "failed to send message via stream writer (likely closed channel): %v", panicErr)
-		}
-	}()
-	
-	sw.Send(msg, err)
-}
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message]) (err error) {
@@ -78,14 +64,14 @@ func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Rep
 
 	rootWkID := event.RootWorkflowBasic.ID
 	exeCfg := event.ExeCfg
-	if exeCfg.Mode == vo.ExecuteModeDebug {
+	if exeCfg.Mode == workflowModel.ExecuteModeDebug {
 		if err := repo.UpdateWorkflowDraftTestRunSuccess(ctx, rootWkID); err != nil {
 			return fmt.Errorf("failed to save workflow draft test run success: %v", err)
 		}
 	}
 
 	if sw != nil {
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			StateMessage: &entity.StateMessage{
 				ExecuteID: event.RootExecuteID,
 				EventID:   event.GetResumedEventID(),
@@ -159,7 +145,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				return noTerminate, fmt.Errorf("failed to update subworkflow node execution with subExecuteID: %v", err)
 			}
 		} else if sw != nil {
-			safeSend(ctx, sw, &entity.Message{
+			sw.Send(&entity.Message{
 				StateMessage: &entity.StateMessage{
 					ExecuteID: event.RootExecuteID,
 					EventID:   event.GetResumedEventID(),
@@ -261,7 +247,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.SubWorkflowCtx == nil {
 			if sw != nil {
-				safeSend(ctx, sw, &entity.Message{
+				sw.Send(&entity.Message{
 					StateMessage: &entity.StateMessage{
 						ExecuteID: event.RootExecuteID,
 						EventID:   event.GetResumedEventID(),
@@ -345,7 +331,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 			nodeKey := firstIE.NodeKey
 
-			safeSend(ctx, sw, &entity.Message{
+			sw.Send(&entity.Message{
 				DataMessage: &entity.DataMessage{
 					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
@@ -358,7 +344,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				},
 			}, nil)
 
-			safeSend(ctx, sw, &entity.Message{
+			sw.Send(&entity.Message{
 				StateMessage: &entity.StateMessage{
 					ExecuteID:      event.RootExecuteID,
 					EventID:        event.GetResumedEventID(),
@@ -402,7 +388,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.SubWorkflowCtx == nil {
 			if sw != nil {
-				safeSend(ctx, sw, &entity.Message{
+				sw.Send(&entity.Message{
 					StateMessage: &entity.StateMessage{
 						ExecuteID: event.RootExecuteID,
 						EventID:   event.GetResumedEventID(),
@@ -419,7 +405,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, nil
 		}
 
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			StateMessage: &entity.StateMessage{
 				ExecuteID: event.RootExecuteID,
 				EventID:   event.GetResumedEventID(),
@@ -564,7 +550,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				return noTerminate, nil
 			}
 
-			safeSend(ctx, sw, &entity.Message{
+			sw.Send(&entity.Message{
 				DataMessage: &entity.DataMessage{
 					ExecuteID: event.RootExecuteID,
 					Role:      schema.Assistant,
@@ -613,7 +599,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, nil
 		}
 
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID: event.RootExecuteID,
 				Role:      schema.Assistant,
@@ -681,7 +667,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Assistant,
@@ -694,7 +680,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Tool,
@@ -708,7 +694,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil {
 			return noTerminate, nil
 		}
-		safeSend(ctx, sw, &entity.Message{
+		sw.Send(&entity.Message{
 			DataMessage: &entity.DataMessage{
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Tool,
@@ -740,7 +726,7 @@ func HandleExecuteEvent(ctx context.Context,
 	timeoutFn context.CancelFunc,
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message],
-	exeCfg vo.ExecuteConfig,
+	exeCfg workflowModel.ExecuteConfig,
 ) (event *Event) {
 	var (
 		wfSuccessEvent *Event
@@ -775,7 +761,7 @@ func HandleExecuteEvent(ctx context.Context,
 			return event
 		case workflowSuccess: // workflow success, wait for exit node to be done
 			wfSuccessEvent = event
-			if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
+			if lastNodeIsDone || exeCfg.Mode == workflowModel.ExecuteModeNodeDebug {
 				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 					logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
 						wfSuccessEvent.RootWorkflowBasic.ID, err)
@@ -800,12 +786,8 @@ func HandleExecuteEvent(ctx context.Context,
 		// Add cancellation check timer
 		cancelTicker := time.NewTicker(cancelCheckInterval)
 		defer func() {
-			if event != nil && event.Context != nil && event.Context.RootWorkflowBasic != nil {
-				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
-					event.Type, event.Context.RootWorkflowBasic.ID)
-			} else {
-				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, no event or workflow context available, workflow id: %d", wfExeID)
-			}
+			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+				event.Type, event.Context.RootWorkflowBasic.ID)
 			cancelTicker.Stop() // Clean up timer
 			if timeoutFn != nil {
 				timeoutFn()
@@ -840,12 +822,8 @@ func HandleExecuteEvent(ctx context.Context,
 		}
 	} else {
 		defer func() {
-			if event != nil && event.Context != nil && event.Context.RootWorkflowBasic != nil {
-				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
-					event.Type, event.Context.RootWorkflowBasic.ID)
-			} else {
-				logs.CtxInfof(ctx, "[handleExecuteEvent] finish, no event or workflow context available, workflow id: %d", wfExeID)
-			}
+			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+				event.Type, event.Context.RootWorkflowBasic.ID)
 			if timeoutFn != nil {
 				timeoutFn()
 			}
@@ -853,7 +831,6 @@ func HandleExecuteEvent(ctx context.Context,
 		}()
 
 		for e := range eventChan {
-			event = e // Assign to function-scoped variable so defer can access it
 			if terminalE := handler(e); terminalE != nil {
 				return terminalE
 			}
