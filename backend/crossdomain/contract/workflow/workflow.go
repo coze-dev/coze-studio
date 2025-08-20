@@ -109,6 +109,14 @@ const (
 	BizTypeWorkflow BizType = "workflow"
 )
 
+type Locator = workflowModel.Locator
+
+const (
+	FromDraft Locator = iota
+	FromSpecificVersion
+	FromLatestVersion
+)
+
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig
 
 type ToolInterruptEvent = workflowEntity.ToolInterruptEvent
