@@ -3665,94 +3665,77 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 		ID: workflowID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get workflow: %w", err)
+		return nil, fmt.Errorf("failed to get workflow: %v", err)
 	}
 
 	// 构建导出数据
-	exportData := &workflow.WorkflowExportData{
+	exportData := &workflow.ExportWorkflowData{
 		WorkflowID:  req.WorkflowID,
 		Name:        workflowInfo.Name,
-		Description: workflowInfo.Description,
-		Version:     workflowInfo.Version,
-		CreateTime:  workflowInfo.CreateTime,
-		UpdateTime:  workflowInfo.UpdateTime,
-		Schema:      make(map[string]interface{}),
-		Nodes:       make([]interface{}, 0),
-		Edges:       make([]interface{}, 0),
-		Metadata:    make(map[string]string),
-	}
-
-	// 解析schema JSON
-	if workflowInfo.Schema != "" {
-		var schemaData map[string]interface{}
-		if err := sonic.UnmarshalString(workflowInfo.Schema, &schemaData); err == nil {
-			exportData.Schema = schemaData
-			
-			// 提取节点和边信息
-			if nodes, ok := schemaData["nodes"].([]interface{}); ok {
-				exportData.Nodes = nodes
-			}
-			if edges, ok := schemaData["edges"].([]interface{}); ok {
-				exportData.Edges = edges
-			}
-		}
-	}
-
-	// 添加元数据
-	exportData.Metadata["space_id"] = strconv.FormatInt(workflowInfo.SpaceID, 10)
-	exportData.Metadata["creator_id"] = strconv.FormatInt(workflowInfo.CreatorID, 10)
-	exportData.Metadata["workflow_type"] = string(workflowInfo.Type)
-	exportData.Metadata["status"] = string(workflowInfo.Status)
-
-	// 如果需要包含依赖资源，获取相关资源信息
-	if req.IncludeDependencies {
-		dependencies, err := w.getWorkflowDependencies(ctx, workflowID)
-		if err != nil {
-			logs.CtxWarnf(ctx, "failed to get workflow dependencies: %v", err)
-		} else {
-			exportData.Dependencies = dependencies
-		}
-	}
-
-	// 构建响应
-	resp := &workflow.ExportWorkflowResponse{
-		Code: 200,
-		Msg:  "success",
-		Data: struct {
-			WorkflowExport *workflow.WorkflowExportData `json:"workflow_export,omitempty"`
-		}{
-			WorkflowExport: exportData,
+		Description: workflowInfo.Desc,
+		Version:     workflowInfo.GetVersion(),
+		CreateTime:  workflowInfo.CreatedAt.Unix(),
+		UpdateTime:  workflowInfo.UpdatedAt.Unix(),
+		Metadata: map[string]string{
+			"space_id":     strconv.FormatInt(workflowInfo.SpaceID, 10),
+			"creator_id":   strconv.FormatInt(workflowInfo.CreatorID, 10),
+			"content_type": strconv.FormatInt(int64(workflowInfo.ContentType), 10),
+			"mode":         strconv.FormatInt(int64(workflowInfo.Mode), 10),
 		},
 	}
 
-	return resp, nil
-}
-
-// getWorkflowDependencies 获取工作流依赖资源
-func (w *ApplicationService) getWorkflowDependencies(ctx context.Context, workflowID int64) ([]interface{}, error) {
-	dependencies := make([]interface{}, 0)
-
-	// 获取工作流引用信息
-	references, err := w.DomainSVC.GetWorkflowReference(ctx, workflowID)
-	if err != nil {
-		return dependencies, err
-	}
-
-	// 处理插件依赖
-	for _, ref := range references {
-		if ref.Type == entity.WorkflowType {
-			dependency := map[string]interface{}{
-				"resource_id":      strconv.FormatInt(ref.ID, 10),
-				"resource_type":    "workflow",
-				"resource_name":    ref.Name,
-				"resource_version": ref.Version,
-				"metadata": map[string]string{
-					"space_id": strconv.FormatInt(ref.SpaceID, 10),
-				},
+	// 添加工作流Schema
+	if workflowInfo.Canvas != "" {
+		var canvas vo.Canvas
+		if err := sonic.UnmarshalString(workflowInfo.Canvas, &canvas); err == nil {
+			exportData.SchemaJson = workflowInfo.Canvas
+			exportData.Nodes = canvas.Nodes
+			exportData.Connections = make([]*workflow.Connection, 0)
+			for _, edge := range canvas.Edges {
+				connection := &workflow.Connection{
+					FromNode: edge.SourceNodeID,
+					ToNode:   edge.TargetNodeID,
+					FromPort: edge.SourcePortID,
+					ToPort:   edge.TargetPortID,
+				}
+				exportData.Connections = append(exportData.Connections, connection)
 			}
-			dependencies = append(dependencies, dependency)
 		}
 	}
 
-	return dependencies, nil
+	// 添加依赖资源信息（如果启用）
+	if req.IncludeDependencies {
+		dependencies := make([]*workflow.DependencyResource, 0)
+		
+		// 获取工作流中引用的资源
+		if workflowInfo.Canvas != "" {
+			var canvas vo.Canvas
+			if err := sonic.UnmarshalString(workflowInfo.Canvas, &canvas); err == nil {
+				// 分析节点中的资源引用
+				for _, node := range canvas.Nodes {
+					if node.Data != nil && node.Data.Meta != nil {
+						// 这里可以添加更多资源类型的检测逻辑
+						// 目前先添加一个示例
+						if nodeMeta, ok := node.Data.Meta.(*vo.NodeMetaFE); ok {
+							dependency := &workflow.DependencyResource{
+								ResourceID:   fmt.Sprintf("node_%s", node.ID),
+								ResourceType: "node",
+								ResourceName: nodeMeta.Title,
+								Metadata: map[string]string{
+									"node_type": "workflow_node",
+								},
+							}
+							dependencies = append(dependencies, dependency)
+						}
+					}
+				}
+			}
+		}
+		
+		exportData.Dependencies = dependencies
+	}
+
+	return &workflow.ExportWorkflowResponse{
+		Data: exportData,
+	}, nil
 }
