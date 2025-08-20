@@ -27,8 +27,8 @@ import (
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflowapimodel "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
@@ -1011,7 +1011,7 @@ func (i *impl) calculateMaxChatHistoryRounds(ctx context.Context, wfEntity *enti
 	return min(maxRounds, maxHistoryRounds), nil
 }
 
-func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*conversation.Message, []*schema.Message, error) {
+func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*crossmessage.WfMessage, []*schema.Message, error) {
 	convID := config.ConversationID
 	agentID := config.AgentID
 	appID := config.AppID
@@ -1037,7 +1037,7 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 		return nil, nil, nil
 	}
 
-	runIdsReq := &conversation.GetLatestRunIDsRequest{
+	runIdsReq := &crossmessage.GetLatestRunIDsRequest{
 		ConversationID: *convID,
 		AppID:          resolvedAppID,
 		UserID:         userID,
@@ -1045,23 +1045,17 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 		SectionID:      *sectionID,
 	}
 
-	manager := conversation.GetConversationManager()
-	if manager == nil {
-		logs.CtxWarnf(ctx, "ConversationManager is nil, skipping chat history")
-		return nil, nil, nil
-	}
-
-	runIds, err := manager.GetLatestRunIDs(ctx, runIdsReq)
+	runIds, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, runIdsReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to get latest run ids: %v", err)
 		return nil, nil, nil
 	}
 	if len(runIds) <= 1 {
-		return []*conversation.Message{}, []*schema.Message{}, nil
+		return []*crossmessage.WfMessage{}, []*schema.Message{}, nil
 	}
 	runIds = runIds[1:]
 
-	response, err := manager.GetMessagesByRunIDs(ctx, &conversation.GetMessagesByRunIDsRequest{
+	response, err := crossmessage.DefaultSVC().GetMessagesByRunIDs(ctx, &crossmessage.GetMessagesByRunIDsRequest{
 		ConversationID: *convID,
 		RunIDs:         runIds,
 	})

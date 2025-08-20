@@ -27,7 +27,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
-	wfconversation "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/conversation"
+
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
@@ -35,7 +35,6 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
-	crossconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -93,8 +92,6 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
 
 	setEventBus(components.DomainNotifier)
-
-	crossconversation.SetConversationManager(wfconversation.NewConversationRepository())
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX

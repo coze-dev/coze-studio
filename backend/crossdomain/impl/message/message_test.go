@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package conversation
+package message
 
 import (
 	"context"
@@ -22,9 +22,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
@@ -71,7 +71,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 		msgs []*entity.Message
 	}
 	type want struct {
-		convMsgs   []*conversation.Message
+		convMsgs   []*crossmessage.WfMessage
 		schemaMsgs []*schema.Message
 	}
 	tests := []struct {
@@ -93,7 +93,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          1,
 						Role:        schema.User,
@@ -122,12 +122,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          2,
 						Role:        schema.User,
 						ContentType: "file",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_1"), Url: ptr.Of("f_uri_1")},
 						},
 					},
@@ -155,12 +155,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          3,
 						Role:        schema.User,
 						ContentType: "text_file",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeText, Text: ptr.Of("hello")},
 							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_2"), Url: ptr.Of("f_uri_2")},
 						},
@@ -190,12 +190,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          4,
 						Role:        schema.User,
 						ContentType: "file",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_3"), Url: ptr.Of("f_uri_3")},
 							{Type: message.InputTypeFile, Uri: ptr.Of("f_uri_4"), Url: ptr.Of("f_uri_4")},
 						},
@@ -225,7 +225,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          5,
 						Role:        schema.User,
@@ -254,12 +254,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          6,
 						Role:        schema.User,
 						ContentType: "image",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeImage, Uri: ptr.Of("image_uri_5"), Url: ptr.Of("image_uri_5")},
 						},
 					},
@@ -287,12 +287,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          7,
 						Role:        schema.User,
 						ContentType: "image",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_6"), Url: ptr.Of("file_id_6")},
 							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_7"), Url: ptr.Of("file_id_7")},
 						},
@@ -322,12 +322,12 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				},
 			},
 			want: want{
-				convMsgs: []*conversation.Message{
+				convMsgs: []*crossmessage.WfMessage{
 					{
 						ID:          8,
 						Role:        schema.User,
 						ContentType: "mix",
-						MultiContent: []*conversation.Content{
+						MultiContent: []*crossmessage.Content{
 							{Type: message.InputTypeText, Text: ptr.Of("hello")},
 							{Type: message.InputTypeImage, Uri: ptr.Of("file_id_8"), Url: ptr.Of("file_id_8")},
 							{Type: message.InputTypeFile, Uri: ptr.Of("file_id_9"), Url: ptr.Of("file_id_9")},

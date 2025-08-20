@@ -20,7 +20,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 )
 
 type Locator uint8
@@ -52,7 +52,7 @@ type ExecuteConfig struct {
 	InitRoundID                       *int64 // if workflow is chat flow, init conversation round id is required
 	ConversationID                    *int64 // if workflow is chat flow, conversation id is required
 	UserMessage                       *schema.Message
-	ConversationHistory               []*conversation.Message
+	ConversationHistory               []*crossmessage.WfMessage
 	ConversationHistorySchemaMessages []*schema.Message
 	SectionID                         *int64
 	MaxHistoryRounds                  *int32

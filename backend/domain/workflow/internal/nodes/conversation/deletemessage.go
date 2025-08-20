@@ -23,10 +23,10 @@ import (
 	"strconv"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -40,9 +40,7 @@ import (
 
 type DeleteMessageConfig struct{}
 
-type DeleteMessage struct {
-	Manager conversation.ConversationManager
-}
+type DeleteMessage struct{}
 
 func (d *DeleteMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -64,9 +62,7 @@ func (d *DeleteMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.Ad
 }
 
 func (d *DeleteMessageConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &DeleteMessage{
-		Manager: conversation.GetConversationManager(),
-	}, nil
+	return &DeleteMessage{}, nil
 }
 
 func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -109,7 +105,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -136,7 +132,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -153,7 +149,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = d.Manager.DeleteMessage(ctx, &conversation.DeleteMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
