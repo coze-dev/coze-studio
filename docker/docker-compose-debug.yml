@@ -5,7 +5,7 @@ x-env-file: &env_file
 
 services:
   mysql:
-    image: mysql:8.4.5
+    image: "${REGISTRY:-docker.io}/mysql:8.4.5"
     container_name: coze-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
@@ -40,7 +40,7 @@ services:
       - coze-network
 
   redis:
-    image: bitnami/redis:8.0
+    image: "${REGISTRY:-docker.io}/bitnami/redis:8.0"
     container_name: coze-redis
     user: root
     privileged: true
@@ -184,7 +184,7 @@ services:
   #     start_period: 10s
 
   elasticsearch:
-    image: bitnami/elasticsearch:8.18.0
+    image: "${REGISTRY:-docker.io}/bitnami/elasticsearch:8.18.0"
     container_name: coze-elasticsearch
     user: root
     privileged: true
@@ -271,7 +271,7 @@ services:
       "
 
   minio:
-    image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
+    image: "${REGISTRY:-docker.io}/minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1"
     container_name: coze-minio
     user: root
     privileged: true
@@ -301,7 +301,7 @@ services:
       - coze-network
 
   etcd:
-    image: bitnami/etcd:3.5
+    image: "${REGISTRY:-docker.io}/bitnami/etcd:3.5"
     container_name: coze-etcd
     user: root
     privileged: true
@@ -338,7 +338,7 @@ services:
 
   milvus:
     container_name: coze-milvus
-    image: milvusdb/milvus:v2.5.10
+    image: "${REGISTRY:-docker.io}/milvusdb/milvus:v2.5.10"
     user: root
     privileged: true
     profiles: ['middleware']
@@ -380,7 +380,7 @@ services:
     networks:
       - coze-network
   nsqlookupd:
-    image: nsqio/nsq:v1.2.1
+    image: "${REGISTRY:-docker.io}/nsqio/nsq:v1.2.1"
     container_name: coze-nsqlookupd
     command: /nsqlookupd
     profiles: ['middleware']
@@ -397,7 +397,7 @@ services:
       start_period: 10s
 
   nsqd:
-    image: nsqio/nsq:v1.2.1
+    image: "${REGISTRY:-docker.io}/nsqio/nsq:v1.2.1"
     container_name: coze-nsqd
     command: /nsqd --lookupd-tcp-address=coze-nsqlookupd:4160 --broadcast-address=coze-nsqd
     profiles: ['middleware']
@@ -417,7 +417,7 @@ services:
       start_period: 10s
 
   nsqadmin:
-    image: nsqio/nsq:v1.2.1
+    image: "${REGISTRY:-docker.io}/nsqio/nsq:v1.2.1"
     container_name: coze-nsqadmin
     command: /nsqadmin --lookupd-http-address=coze-nsqlookupd:4161
     profiles: ['middleware']
@@ -430,7 +430,7 @@ services:
       - coze-network
 
   minio-setup:
-    image: minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1
+    image: "${REGISTRY:-docker.io}/minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1"
     container_name: coze-minio-setup
     profiles: ['middleware']
     env_file: *env_file
@@ -453,7 +453,7 @@ services:
     restart: 'no'
 
   mysql-setup-schema:
-    image: arigaio/atlas:0.35.0-community-alpine
+    image: "${REGISTRY:-docker.io}/arigaio/atlas:0.35.0-community-alpine"
     container_name: coze-mysql-setup-schema
     profiles: ['middleware', 'mysql-setup', 'run-server']
     env_file: *env_file
@@ -491,7 +491,7 @@ services:
     networks:
       - coze-network
   mysql-setup-init-sql:
-    image: mysql:8.4.5
+    image: "${REGISTRY:-docker.io}/mysql:8.4.5"
     container_name: coze-mysql-setup-init-sql
     profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano-setup']
     env_file: *env_file
@@ -529,7 +529,7 @@ services:
     build:
       context: ../
       dockerfile: backend/Dockerfile
-    image: opencoze/opencoze:latest
+    image: "${REGISTRY:-docker.io}/opencoze/opencoze:latest"
     profiles: ['build-server']
 
 networks:
