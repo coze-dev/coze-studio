@@ -38,9 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -300,7 +298,7 @@ func (mh *MesssageEventHanlder) handlerWfUsage(ctx context.Context, msg *entity.
 		msg.Ext[string(msgEntity.MessageExtKeyInputTokens)] = strconv.FormatInt(usage.InputTokens, 10)
 		msg.Ext[string(msgEntity.MessageExtKeyOutputTokens)] = strconv.FormatInt(usage.OutputTokens, 10)
 	}
-	logs.CtxInfof(ctx, "handlerWfUsage msg.Ext: %v", conv.DebugJsonToStr(msg.Ext))
+
 	_, err := crossmessage.DefaultSVC().Edit(ctx, &msgEntity.Message{
 		ID:  msg.ID,
 		Ext: msg.Ext,
