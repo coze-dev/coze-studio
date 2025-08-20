@@ -36,13 +36,8 @@ export function FilterStatusDisplay() {
     FILTER_TYPE_CONFIG.all;
 
   return (
-    <div style={{ marginBottom: '8px' }}>
-      <span style={{ fontSize: '12px', color: '#666', marginRight: '8px' }}>
-        筛选类型:
-      </span>
-      <Tag color={config.color} size="small">
-        {config.label}
-      </Tag>
-    </div>
+    <Tag color={config.color} size="small">
+      {config.label}
+    </Tag>
   );
 }

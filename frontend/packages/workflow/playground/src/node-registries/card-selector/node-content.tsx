@@ -16,14 +16,18 @@
 
 import { I18n } from '@coze-arch/i18n';
 
+import { Field } from '@/components/node-render/node-render-new/fields';
+
 import { InputParameters } from '../common/components';
 import { FilterStatusDisplay } from './components';
 
 export function CardSelectorContent() {
   return (
     <>
-      {/* 显示当前筛选状态 */}
-      <FilterStatusDisplay />
+      {/* 显示当前筛选状态 - 使用Field组件遵循Grid布局 */}
+      <Field label="筛选类型">
+        <FilterStatusDisplay />
+      </Field>
 
       {/* 显示输入参数，类似Message节点 */}
       <InputParameters label={I18n.t('workflow_detail_end_output')} />
