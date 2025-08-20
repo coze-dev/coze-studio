@@ -426,3 +426,10 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 	return newConversationID, nil
 
 }
+
+func (c *conversationImpl) GetTemplateByName(ctx context.Context, env vo.Env, appID int64, templateName string) (*entity.ConversationTemplate, bool, error) {
+	return c.repo.GetConversationTemplate(ctx, env, vo.GetConversationTemplatePolicy{
+		AppID: ptr.Of(appID),
+		Name:  ptr.Of(templateName),
+	})
+}
