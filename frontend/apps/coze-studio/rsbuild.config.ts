@@ -28,6 +28,15 @@ const mergedConfig = defineConfig({
     strictPort: true,
     proxy: [
       {
+        context: ['/api/mcp'],
+        target: 'http://10.10.10.208:8500',
+        secure: false,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api/mcp': '/aop-web',
+        },
+      },
+      {
         context: ['/api'],
         target: API_PROXY_TARGET,
         secure: false,

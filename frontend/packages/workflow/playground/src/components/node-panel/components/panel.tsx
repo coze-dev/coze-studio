@@ -97,8 +97,13 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
   const playground = usePlayground();
   // Node is being added, when true, closing the node panel is not allowed
   const isAddingNodeRef = useRef(false);
-  const { openPlugin, openWorkflow, openImageflow, updateAddNodePosition } =
-    useAddNodeModalContext();
+  const {
+    openPlugin,
+    openWorkflow,
+    openImageflow,
+    openMcp,
+    updateAddNodePosition,
+  } = useAddNodeModalContext();
 
   const templateState = useTemplateService();
   const dependencyEntity = useDependencyEntity();
@@ -167,6 +172,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
         StandardNodeType.Api,
         StandardNodeType.SubWorkflow,
         StandardNodeType.Imageflow,
+        StandardNodeType.Mcp,
       ].includes(nodeType as StandardNodeType)
     ) {
       updateAddNodePosition?.({ ...position, isDrag: false });
@@ -211,6 +217,7 @@ export const NodePanel: FC<NodePanelRenderProps> = props => {
         ({
           [StandardNodeType.Imageflow]: openImageflow,
           [StandardNodeType.SubWorkflow]: openWorkflow,
+          [StandardNodeType.Mcp]: openMcp,
         })[nodeType]?.({
           onAdd,
           onClose: onCloseModal,

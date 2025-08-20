@@ -59,3 +59,29 @@ values-dev.yaml
 
 *.tsbuildinfo
 
+backend/test-server
+backend/backend
+
+# Python virtual environment
+backend/.venv/
+**/.venv/
+
+# Claude comments and temporary files
+.claude/
+*.md.backup
+
+# Test files and temporary directories
+backend/test-mcp/
+backend/parse_*.py
+backend/dumppdf.py
+backend/normalizer
+backend/pdf2txt.py
+backend/pdfplumber
+backend/pip
+backend/pip3
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+

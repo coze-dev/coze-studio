@@ -53,6 +53,7 @@ import {
   VARIABLE_NODE_REGISTRY,
   JSON_STRINGIFY_NODE_REGISTRY,
   CARD_SELECTOR_NODE_REGISTRY,
+  MCP_NODE_REGISTRY,
   // CLI script insert ID (import), do not modify/delete this line comment
 } from '@/node-registries';
 
@@ -73,6 +74,7 @@ export const NODES_V2 = [
   // The cli script inserts the identifier (registry), do not modify/delete this line comment
   CARD_SELECTOR_NODE_REGISTRY,
   JSON_STRINGIFY_NODE_REGISTRY,
+  MCP_NODE_REGISTRY,
   IF_NODE_REGISTRY,
   INTENT_NODE_REGISTRY,
   SUB_WORKFLOW_NODE_REGISTRY,

@@ -104,7 +104,12 @@ export enum StandardNodeType {
 
   JsonStringify = '58',
   JsonParser = '59',
+
+  // Card selector node
   CardSelector = '99',
+
+  /** MCP工具调用节点 */
+  Mcp = '61',
 }
 
 /**
@@ -148,6 +153,7 @@ export const NODE_ORDER = {
   [StandardNodeType.TriggerRead]: 27,
   [StandardNodeType.TriggerDelete]: 28,
   [StandardNodeType.CardSelector]: 29,
+  [StandardNodeType.Mcp]: 29,
 };
 
 /** session class node */
