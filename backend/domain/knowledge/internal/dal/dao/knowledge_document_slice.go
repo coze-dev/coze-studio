@@ -236,7 +236,7 @@ func (dao *KnowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 
 	if opts.PageSize != 0 {
 		do = do.Limit(int(opts.PageSize))
-		do = do.Offset(int(opts.Sequence)).Order(s.Sequence.Asc())
+		do = do.Offset(int(opts.Offset)).Order(s.Sequence.Asc())
 	}
 	if opts.NotEmpty != nil {
 		if ptr.From(opts.NotEmpty) {
