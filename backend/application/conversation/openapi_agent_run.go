@@ -35,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
+	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -237,11 +238,26 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 						Text: ptr.From(one.Text),
 					})
 				case message.InputTypeImage, message.InputTypeFile:
+
+					var fileUrl, fileURI string
+					if one.GetFileURL() != "" {
+						fileUrl = one.GetFileURL()
+					} else if one.GetFileID() != 0 {
+						fileInfo, err := a.UploaodDomainSVC.GetFile(ctx, &uploadService.GetFileRequest{
+							ID: one.GetFileID(),
+						})
+						if err != nil {
+							return nil, contentType, err
+						}
+						fileUrl = fileInfo.File.Url
+						fileURI = fileInfo.File.TosURI
+					}
 					multiContents = append(multiContents, &message.InputMetaData{
 						Type: message.InputType(one.Type),
 						FileData: []*message.FileData{
 							{
-								Url: one.GetFileURL(),
+								Url: fileUrl,
+								URI: fileURI,
 							},
 						},
 					})
