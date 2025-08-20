@@ -3814,8 +3814,8 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 	// 构建保存工作流请求
 	saveReq := &workflow.SaveWorkflowRequest{
 		WorkflowID: createResp.Data.WorkflowID,
-		SpaceID:    req.SpaceID,
-		Schema:     canvasData,
+		SpaceID:    ptr.Of(req.SpaceID),
+		Schema:     ptr.Of(canvasData),
 	}
 
 	// 调用保存工作流服务
