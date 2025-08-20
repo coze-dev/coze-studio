@@ -316,6 +316,9 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 	var multiContent []schema.ChatMessagePart
 	for _, contentData := range msgDO.MultiContent {
 		if contentData.Type == message.InputTypeText {
+			if len(msgDO.Content) == 0 && len(contentData.Text) > 0 {
+				msgDO.Content = contentData.Text
+			}
 			continue
 		}
 		one := schema.ChatMessagePart{}

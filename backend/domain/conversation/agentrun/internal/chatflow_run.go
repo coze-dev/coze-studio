@@ -193,6 +193,12 @@ func (art *AgentRuntime) pullWfStream(ctx context.Context, events *schema.Stream
 			if st.DataMessage.Content != "" {
 				fullAnswerContent.WriteString(st.DataMessage.Content)
 			}
+
+			sendAnswerMsg := buildSendMsg(ctx, preAnswerMsg, false, art)
+			sendAnswerMsg.Content = st.DataMessage.Content
+
+			mh.messageEvent.SendMsgEvent(entity.RunEventMessageDelta, sendAnswerMsg, mh.sw)
+
 			if st.DataMessage.Last {
 				preMsgIsFinish = true
 				sendAnswerMsg := buildSendMsg(ctx, preAnswerMsg, false, art)
@@ -204,10 +210,6 @@ func (art *AgentRuntime) pullWfStream(ctx context.Context, events *schema.Stream
 				}
 				lastAnswerMsg = sendAnswerMsg
 			}
-			sendAnswerMsg := buildSendMsg(ctx, preAnswerMsg, false, art)
-			sendAnswerMsg.Content = st.DataMessage.Content
-
-			mh.messageEvent.SendMsgEvent(entity.RunEventMessageDelta, sendAnswerMsg, mh.sw)
 		}
 	}
 }
