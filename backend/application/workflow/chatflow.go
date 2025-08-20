@@ -818,6 +818,16 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	if !req.GetGetOrCreate() {
 		cID, err = GetWorkflowDomainSVC().UpdateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	} else {
+		_, existed, err := GetWorkflowDomainSVC().GetTemplateByName(ctx, env, appID, req.GetConversationMame())
+		if err != nil {
+			return nil, err
+		}
+		if !existed {
+			return &workflow.CreateConversationResponse{
+				Code: 4200,
+				Msg:  "Conversation not found. Please create a conversation before attempting to perform any related operations.",
+			}, nil
+		}
 		cID, _, err = GetWorkflowDomainSVC().GetOrCreateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	}
 	if err != nil {
