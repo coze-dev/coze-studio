@@ -67,7 +67,7 @@ export const useImportAction = (props: WorkflowResourceActionProps) => {
       const result = await response.json();
       
       if (result.code === 200 && result.data?.workflow_id) {
-        Toast.success(I18n.t('workflow_import_success'));
+        Toast.success('工作流导入成功');
         
         // 刷新页面或跳转到新工作流
         if (props.refreshPage) {
@@ -79,11 +79,11 @@ export const useImportAction = (props: WorkflowResourceActionProps) => {
           props.goWorkflowDetail(result.data.workflow_id, props.spaceId);
         }
       } else {
-        throw new Error(result.msg || I18n.t('workflow_import_failed'));
+        throw new Error(result.msg || '工作流导入失败');
       }
     } catch (error) {
       console.error('导入工作流失败:', error);
-      Toast.error(error instanceof Error ? error.message : I18n.t('workflow_import_failed'));
+      Toast.error(error instanceof Error ? error.message : '工作流导入失败');
     } finally {
       setImporting(false);
     }
