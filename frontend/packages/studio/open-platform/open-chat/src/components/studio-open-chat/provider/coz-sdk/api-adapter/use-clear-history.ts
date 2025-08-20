@@ -49,7 +49,9 @@ export const useClearHistoryAdapter = ({
     ];
 
     const config = {
-      url: '/v1/conversation/create',
+      url: IS_OPEN_SOURCE
+        ? '/v1/workflow/conversation/create'
+        : '/v1/conversation/create',
       method: 'POST',
       hooks: {
         onBeforeRequest: [
