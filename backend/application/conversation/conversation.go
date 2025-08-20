@@ -27,6 +27,7 @@ import (
 	conversationService "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/service"
 	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
+	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -48,6 +49,7 @@ var ConversationSVC = new(ConversationApplicationService)
 
 type OpenapiAgentRunApplication struct {
 	ShortcutDomainSVC service.ShortcutCmd
+	UploaodDomainSVC  uploadService.UploadService
 }
 
 var ConversationOpenAPISVC = new(OpenapiAgentRunApplication)
