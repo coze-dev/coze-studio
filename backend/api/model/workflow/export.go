@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-package workflow
 
-type ExportWorkflowRequest struct {
-	WorkflowIDs []int64 `json:"workflow_ids" binding:"required"`
-}
-
-type ExportWorkflowResponse struct {
-	Workflows []any `json:"workflows"`
-}
