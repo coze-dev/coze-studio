@@ -1128,3 +1128,23 @@ func GetExampleWorkFlowList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ExportWorkflow 导出工作流
+// @router /api/workflow_api/export [POST]
+func ExportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ExportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

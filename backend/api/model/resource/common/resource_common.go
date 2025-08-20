@@ -141,6 +141,8 @@ const (
 	ActionKey_EnableSwitch ActionKey = 3
 	// edit
 	ActionKey_Edit ActionKey = 4
+	// export
+	ActionKey_Export ActionKey = 5
 	// Switch to funcflow
 	ActionKey_SwitchToFuncflow ActionKey = 8
 	// Switch to chatflow
@@ -159,6 +161,8 @@ func (p ActionKey) String() string {
 		return "EnableSwitch"
 	case ActionKey_Edit:
 		return "Edit"
+	case ActionKey_Export:
+		return "Export"
 	case ActionKey_SwitchToFuncflow:
 		return "SwitchToFuncflow"
 	case ActionKey_SwitchToChatflow:
@@ -179,6 +183,8 @@ func ActionKeyFromString(s string) (ActionKey, error) {
 		return ActionKey_EnableSwitch, nil
 	case "Edit":
 		return ActionKey_Edit, nil
+	case "Export":
+		return ActionKey_Export, nil
 	case "SwitchToFuncflow":
 		return ActionKey_SwitchToFuncflow, nil
 	case "SwitchToChatflow":

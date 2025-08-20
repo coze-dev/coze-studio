@@ -3637,3 +3637,122 @@ func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
 
 	return nil
 }
+
+// ExportWorkflow 导出工作流
+func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.ExportWorkflowRequest) (*workflow.ExportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			logs.CtxErrorf(ctx, "ExportWorkflow panic: %v", panicErr)
+		}
+	}()
+
+	// 验证请求参数
+	if req.WorkflowID == "" {
+		return nil, fmt.Errorf("workflow_id is required")
+	}
+	if req.ExportFormat != "json" {
+		return nil, fmt.Errorf("unsupported export format: %s", req.ExportFormat)
+	}
+
+	// 获取工作流信息
+	workflowID, err := strconv.ParseInt(req.WorkflowID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid workflow_id: %s", req.WorkflowID)
+	}
+
+	// 获取工作流详情
+	workflowInfo, err := w.DomainSVC.Get(ctx, &vo.GetPolicy{
+		ID: workflowID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflow: %w", err)
+	}
+
+	// 构建导出数据
+	exportData := &workflow.WorkflowExportData{
+		WorkflowID:  req.WorkflowID,
+		Name:        workflowInfo.Name,
+		Description: workflowInfo.Description,
+		Version:     workflowInfo.Version,
+		CreateTime:  workflowInfo.CreateTime,
+		UpdateTime:  workflowInfo.UpdateTime,
+		Schema:      make(map[string]interface{}),
+		Nodes:       make([]interface{}, 0),
+		Edges:       make([]interface{}, 0),
+		Metadata:    make(map[string]string),
+	}
+
+	// 解析schema JSON
+	if workflowInfo.Schema != "" {
+		var schemaData map[string]interface{}
+		if err := sonic.UnmarshalString(workflowInfo.Schema, &schemaData); err == nil {
+			exportData.Schema = schemaData
+			
+			// 提取节点和边信息
+			if nodes, ok := schemaData["nodes"].([]interface{}); ok {
+				exportData.Nodes = nodes
+			}
+			if edges, ok := schemaData["edges"].([]interface{}); ok {
+				exportData.Edges = edges
+			}
+		}
+	}
+
+	// 添加元数据
+	exportData.Metadata["space_id"] = strconv.FormatInt(workflowInfo.SpaceID, 10)
+	exportData.Metadata["creator_id"] = strconv.FormatInt(workflowInfo.CreatorID, 10)
+	exportData.Metadata["workflow_type"] = string(workflowInfo.Type)
+	exportData.Metadata["status"] = string(workflowInfo.Status)
+
+	// 如果需要包含依赖资源，获取相关资源信息
+	if req.IncludeDependencies {
+		dependencies, err := w.getWorkflowDependencies(ctx, workflowID)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to get workflow dependencies: %v", err)
+		} else {
+			exportData.Dependencies = dependencies
+		}
+	}
+
+	// 构建响应
+	resp := &workflow.ExportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: struct {
+			WorkflowExport *workflow.WorkflowExportData `json:"workflow_export,omitempty"`
+		}{
+			WorkflowExport: exportData,
+		},
+	}
+
+	return resp, nil
+}
+
+// getWorkflowDependencies 获取工作流依赖资源
+func (w *ApplicationService) getWorkflowDependencies(ctx context.Context, workflowID int64) ([]interface{}, error) {
+	dependencies := make([]interface{}, 0)
+
+	// 获取工作流引用信息
+	references, err := w.DomainSVC.GetWorkflowReference(ctx, workflowID)
+	if err != nil {
+		return dependencies, err
+	}
+
+	// 处理插件依赖
+	for _, ref := range references {
+		if ref.Type == entity.WorkflowType {
+			dependency := map[string]interface{}{
+				"resource_id":      strconv.FormatInt(ref.ID, 10),
+				"resource_type":    "workflow",
+				"resource_name":    ref.Name,
+				"resource_version": ref.Version,
+				"metadata": map[string]string{
+					"space_id": strconv.FormatInt(ref.SpaceID, 10),
+				},
+			}
+			dependencies = append(dependencies, dependency)
+		}
+	}
+
+	return dependencies, nil
+}

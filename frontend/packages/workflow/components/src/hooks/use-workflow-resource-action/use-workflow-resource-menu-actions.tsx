@@ -38,6 +38,7 @@ import { usePublishAction } from './use-publish-action';
 import { useDeleteAction } from './use-delete-action';
 import { useCopyAction } from './use-copy-action';
 import { useChatflowSwitch } from './use-chatflow-switch';
+import { useExportAction } from './use-export-action';
 import {
   type WorkflowResourceActionProps,
   type WorkflowResourceActionReturn,
@@ -61,6 +62,7 @@ export const useWorkflowResourceMenuActions = (
   const { actionHandler: copyAction } = useCopyAction(props);
   const { actionHandler: publishAction, publishModal } =
     usePublishAction(props);
+  const { actionHandler: exportAction, exporting } = useExportAction(props);
   const { switchToChatflow, switchToWorkflow } = useChatflowSwitch({
     spaceId: props.spaceId ?? '',
     refreshPage: props.refreshPage,
@@ -139,6 +141,16 @@ export const useWorkflowResourceMenuActions = (
         },
       },
     ];
+
+    // 添加导出操作
+    extraActions.push({
+      hide: false,
+      disabled: exporting,
+      actionKey: ActionKey.Export,
+      actionText: I18n.t('export'),
+      handler: () => exportAction(record),
+    });
+
     return (
       <Table.TableAction
         deleteProps={{
