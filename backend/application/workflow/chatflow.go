@@ -947,6 +947,9 @@ func (w *ApplicationService) toSchemaMessage(ctx context.Context, msg *workflow.
 
 		for _, ct := range contents {
 			if ct.Text != nil {
+				if len(*ct.Text) == 0 {
+					continue
+				}
 				m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: *ct.Text,
