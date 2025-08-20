@@ -1088,6 +1088,11 @@ func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
 // @router /v1/workflows/chat [POST]
 func OpenAPIChatFlowRun(ctx context.Context, c *app.RequestContext) {
 	var err error
+	if err = preprocessWorkflowRequestBody(ctx, c); err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
 	var req workflow.ChatFlowRunRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {

@@ -492,7 +492,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	var parameters = make(map[string]any)
 	if len(req.GetParameters()) > 0 {
-		err := sonic.UnmarshalString(req.GetParameters(), parameters)
+		err := sonic.UnmarshalString(req.GetParameters(), &parameters)
 		if err != nil {
 			return nil, err
 		}
