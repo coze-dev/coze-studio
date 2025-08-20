@@ -61,6 +61,7 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 		Mode:         crossworkflow.ExecuteModeRelease,
 		BizType:      crossworkflow.BizTypeAgent,
 		SyncPattern:  crossworkflow.SyncPatternStream,
+		From:         crossworkflow.FromLatestVersion,
 	}
 
 	if resumeInfo != nil {
