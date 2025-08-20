@@ -197,7 +197,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 
 		if _, ok := pl.associateUserInputFields[part.part.Value]; ok && userMessage != nil && isChatFlow {
 			for _, p := range userMessage.MultiContent {
-				multiParts = append(multiParts, p)
+				multiParts = append(multiParts, transformMessagePart(p, supportedModals))
 			}
 			continue
 		}
@@ -225,6 +225,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 		if err != nil {
 			return nil, err
 		}
+
 		if part.fileType == nil {
 			multiParts = append(multiParts, schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
@@ -233,70 +234,78 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 			continue
 		}
 
+		var originalPart schema.ChatMessagePart
 		switch *part.fileType {
 		case vo.FileTypeImage, vo.FileTypeSVG:
-			if _, ok := supportedModals[modelmgr.ModalImage]; !ok {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeText,
-					Text: r,
-				})
-			} else {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeImageURL,
-					ImageURL: &schema.ChatMessageImageURL{
-						URL: r,
-					},
-				})
+			originalPart = schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeImageURL,
+				ImageURL: &schema.ChatMessageImageURL{
+					URL: r,
+				},
 			}
 		case vo.FileTypeAudio, vo.FileTypeVoice:
-			if _, ok := supportedModals[modelmgr.ModalAudio]; !ok {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeText,
-					Text: r,
-				})
-			} else {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeAudioURL,
-					AudioURL: &schema.ChatMessageAudioURL{
-						URL: r,
-					},
-				})
+			originalPart = schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeAudioURL,
+				AudioURL: &schema.ChatMessageAudioURL{
+					URL: r,
+				},
 			}
 		case vo.FileTypeVideo:
-			if _, ok := supportedModals[modelmgr.ModalVideo]; !ok {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeText,
-					Text: r,
-				})
-			} else {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeVideoURL,
-					VideoURL: &schema.ChatMessageVideoURL{
-						URL: r,
-					},
-				})
+			originalPart = schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeVideoURL,
+				VideoURL: &schema.ChatMessageVideoURL{
+					URL: r,
+				},
 			}
 		default:
-			if _, ok := supportedModals[modelmgr.ModalFile]; !ok {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeText,
-					Text: r,
-				})
-			} else {
-				multiParts = append(multiParts, schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeFileURL,
-					FileURL: &schema.ChatMessageFileURL{
-						URL: r,
-					},
-				})
+			originalPart = schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeFileURL,
+				FileURL: &schema.ChatMessageFileURL{
+					URL: r,
+				},
 			}
 		}
+		multiParts = append(multiParts, transformMessagePart(originalPart, supportedModals))
 	}
 
 	return &schema.Message{
 		Role:         pl.role,
 		MultiContent: multiParts,
 	}, nil
+}
+
+func transformMessagePart(part schema.ChatMessagePart, supportedModals map[modelmgr.Modal]bool) schema.ChatMessagePart {
+	switch part.Type {
+	case schema.ChatMessagePartTypeImageURL:
+		if _, ok := supportedModals[modelmgr.ModalImage]; !ok {
+			return schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: part.ImageURL.URL,
+			}
+		}
+	case schema.ChatMessagePartTypeAudioURL:
+		if _, ok := supportedModals[modelmgr.ModalAudio]; !ok {
+			return schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: part.AudioURL.URL,
+			}
+		}
+	case schema.ChatMessagePartTypeVideoURL:
+		if _, ok := supportedModals[modelmgr.ModalVideo]; !ok {
+			return schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: part.VideoURL.URL,
+			}
+		}
+	case schema.ChatMessagePartTypeFileURL:
+		if _, ok := supportedModals[modelmgr.ModalFile]; !ok {
+			return schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: part.FileURL.URL,
+			}
+		}
+	}
+	return part
 }
 
 func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Option) (
