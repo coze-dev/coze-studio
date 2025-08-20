@@ -22,6 +22,7 @@ import {
   IconCozWorkflow,
   IconCozChat,
   IconCozArrowDown,
+  IconUpload,
 } from '@coze-arch/coze-design/icons';
 import { Menu, Button } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
@@ -32,6 +33,7 @@ import { useI18nText } from '../hooks/use-i18n-text';
 import { CreateWorkflowModal } from '../../workflow-edit';
 import { wait } from '../../utils';
 import { useOpenWorkflowDetail } from '../../hooks/use-open-workflow-detail';
+import { useImportWorkflowModal } from '../../hooks/use-workflow-resource-action/use-import-workflow-modal';
 export const CreateWorkflowBtn: FC<
   Pick<
     WorkFlowModalModeProps,
@@ -43,6 +45,12 @@ export const CreateWorkflowBtn: FC<
   const context = useContext(WorkflowModalContext);
   const { i18nText, ModalI18nKey } = useI18nText();
   const openWorkflowDetailPage = useOpenWorkflowDetail();
+  const { openImportModal, importModal } = useImportWorkflowModal({
+    spaceId: context?.spaceId,
+    userId: context?.userId,
+    refreshPage: onCreateSuccess ? () => onCreateSuccess({ spaceId: context?.spaceId, workflowId: '', flowMode: WorkflowMode.Workflow }) : undefined,
+    goWorkflowDetail: openWorkflowDetailPage,
+  });
 
   const [createFlowMode, setCreateFlowMode] = useState(
     context?.flowMode ?? WorkflowMode.Workflow,
@@ -75,6 +83,13 @@ export const CreateWorkflowBtn: FC<
         setCreateModalVisible(true);
       },
       icon: <IconCozChat />,
+    },
+    {
+      label: I18n.t('import_workflow'),
+      handler: () => {
+        openImportModal();
+      },
+      icon: <IconUpload />,
     },
   ];
 
@@ -166,6 +181,7 @@ export const CreateWorkflowBtn: FC<
         }}
         nameValidators={nameValidators}
       />
+      {importModal}
     </>
   );
 };

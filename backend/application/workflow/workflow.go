@@ -3755,3 +3755,84 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 		},
 	}, nil
 }
+
+// ImportWorkflow 导入工作流
+func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.ImportWorkflowRequest) (*workflow.ImportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			logs.CtxErrorf(ctx, "ImportWorkflow panic: %v", panicErr)
+		}
+	}()
+
+	// 验证请求参数
+	if req.WorkflowData == "" {
+		return nil, fmt.Errorf("workflow_data is required")
+	}
+	if req.WorkflowName == "" {
+		return nil, fmt.Errorf("workflow_name is required")
+	}
+	if req.SpaceID == "" {
+		return nil, fmt.Errorf("space_id is required")
+	}
+	if req.CreatorID == "" {
+		return nil, fmt.Errorf("creator_id is required")
+	}
+	if req.ImportFormat != "json" {
+		return nil, fmt.Errorf("unsupported import format: %s", req.ImportFormat)
+	}
+
+	// 解析工作流数据
+	var exportData workflow.WorkflowExportData
+	if err := sonic.UnmarshalString(req.WorkflowData, &exportData); err != nil {
+		return nil, fmt.Errorf("failed to parse workflow data: %v", err)
+	}
+
+	// 验证工作流数据结构
+	if exportData.Schema == nil {
+		return nil, fmt.Errorf("invalid workflow data: missing schema")
+	}
+
+	// 转换ID类型
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %s", req.SpaceID)
+	}
+	creatorID, err := strconv.ParseInt(req.CreatorID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid creator_id: %s", req.CreatorID)
+	}
+
+	// 创建新的工作流
+	canvasData, err := sonic.MarshalString(exportData.Schema)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal canvas data: %v", err)
+	}
+
+	// 构建工作流创建请求
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:        req.WorkflowName,
+		Desc:        exportData.Description,
+		SpaceID:     spaceID,
+		CreatorID:   creatorID,
+		ContentType: 1, // 默认工作流类型
+		Mode:        1, // 默认模式
+		Canvas:      canvasData,
+	}
+
+	// 调用创建工作流服务
+	createResp, err := w.CreateWorkflow(ctx, createReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create workflow: %v", err)
+	}
+
+	// 构建响应
+	return &workflow.ImportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: struct {
+			WorkflowID string `json:"workflow_id,omitempty"`
+		}{
+			WorkflowID: createResp.Data.WorkflowID,
+		},
+	}, nil
+}
