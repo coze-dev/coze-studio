@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -35,6 +36,7 @@ import (
 	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
+	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -594,43 +596,52 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	if existed {
-		var data = lastUserMessage.Content
-		if info.NodeType == entity.NodeTypeInputReceiver {
-			data = parserInput(lastUserMessage.Content)
-		}
-		sr, err := GetWorkflowDomainSVC().StreamResume(ctx, &entity.ResumeRequest{
-			EventID:    info.EventID,
-			ExecuteID:  info.ExecID,
-			ResumeData: data,
-		}, workflowModel.ExecuteConfig{
-			Operator:       userID,
-			Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-			ConnectorID:    connectorID,
-			ConnectorUID:   strconv.FormatInt(userID, 10),
-			BizType:        workflowModel.BizTypeWorkflow,
-			AppID:          appID,
-			AgentID:        agentID,
-			ConversationID: ptr.Of(conversationID),
-			RoundID:        ptr.Of(roundID),
-			InitRoundID:    ptr.Of(roundID),
-			SectionID:      ptr.Of(sectionID),
-		})
+		wfExecution, existed, err := domainWorkflow.GetRepository().GetWorkflowExecution(ctx, info.ExecID)
 		if err != nil {
-			uErr := unbinding()
-			if uErr != nil {
-				return nil, uErr
-			}
 			return nil, err
 		}
+		if !existed {
+			return nil, fmt.Errorf("workflow execution info not found, execution id: %d", info.ExecID)
+		}
 
-		return schema.StreamReaderWithConvert(sr, convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
-			appID:          resolveAppID,
-			conversationID: conversationID,
-			roundID:        roundID,
-			workflowID:     mustParseInt64(req.GetWorkflowID()),
-			sectionID:      sectionID,
-			unbinding:      unbinding,
-		})), nil
+		if wfExecution.Status == entity.WorkflowInterrupted {
+			var data = lastUserMessage.Content
+			if info.NodeType == entity.NodeTypeInputReceiver {
+				data = parserInput(lastUserMessage.Content)
+			}
+			sr, err := GetWorkflowDomainSVC().StreamResume(ctx, &entity.ResumeRequest{
+				EventID:    info.EventID,
+				ExecuteID:  info.ExecID,
+				ResumeData: data,
+			}, workflowModel.ExecuteConfig{
+				Operator:       userID,
+				Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+				ConnectorID:    connectorID,
+				ConnectorUID:   strconv.FormatInt(userID, 10),
+				BizType:        workflowModel.BizTypeWorkflow,
+				AppID:          appID,
+				AgentID:        agentID,
+				ConversationID: ptr.Of(conversationID),
+				RoundID:        ptr.Of(roundID),
+				InitRoundID:    ptr.Of(roundID),
+				SectionID:      ptr.Of(sectionID),
+			})
+			if err != nil {
+				uErr := unbinding()
+				if uErr != nil {
+					return nil, uErr
+				}
+				return nil, err
+			}
+			return schema.StreamReaderWithConvert(sr, convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
+				appID:          resolveAppID,
+				conversationID: conversationID,
+				roundID:        roundID,
+				workflowID:     mustParseInt64(req.GetWorkflowID()),
+				sectionID:      sectionID,
+				unbinding:      unbinding,
+			})), nil
+		}
 
 	}
 
@@ -1014,9 +1025,9 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 		spaceID   int64
 		executeID int64
 
-		hasFirstMessage     bool
-		incrMessage         string
-		messageID           int64
+		messageID   int64
+		incrMessage string
+
 		outputCount         int32
 		inputCount          int32
 		intermediateMessage *message.Message
@@ -1114,7 +1125,6 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}, err
 
 			case entity.WorkflowCancel:
-
 				if intermediateMessage != nil {
 					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
 					if err != nil {
@@ -1170,6 +1180,13 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				executeID = msg.StateMessage.ExecuteID
 				spaceID = msg.StateMessage.SpaceID
 
+				if messageID == 0 {
+					messageID, err = domainWorkflow.GetRepository().GenID(ctx)
+					if err != nil {
+						return nil, err
+					}
+				}
+
 				responses = make([]*workflow.ChatFlowRunResponse, 0)
 				chatEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
@@ -1206,18 +1223,12 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			if msg.Type != entity.Answer {
 				return nil, schema.ErrNoValue
 			}
-
 			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
 				return nil, schema.ErrNoValue
 			}
 
-			dataMessage := msg.DataMessage
-			if dataMessage.Usage != nil {
-				inputCount += int32(msg.DataMessage.Usage.InputTokens)
-				outputCount += int32(msg.DataMessage.Usage.OutputTokens)
-			}
-
 			var (
+				dataMessage  = msg.DataMessage
 				contentType  message.ContentType
 				messageEvent = &vo.MessageDetail{
 					ChatID:         strconv.FormatInt(roundID, 10),
@@ -1227,6 +1238,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					Type:           string(dataMessage.Type),
 				}
 			)
+
 			switch msg.DataMessage.NodeType {
 			case entity.NodeTypeInputReceiver:
 				msg.Content, err = renderInputCardDSL(msg.Content)
@@ -1251,20 +1263,6 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			}
 
 			incrMessage += msg.Content
-			if !hasFirstMessage {
-				preMessage := &message.Message{
-					AgentID:   appID,
-					RunID:     roundID,
-					SectionID: sectionID,
-				}
-				response, err := crossmessage.DefaultSVC().PreCreate(ctx, preMessage)
-				if err != nil {
-					return nil, err
-				}
-				messageID = response.ID
-				hasFirstMessage = true
-			}
-
 			intermediateMessage = &message.Message{
 				ID:             messageID,
 				AgentID:        appID,
@@ -1278,17 +1276,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			}
 
 			if msg.Last {
-				_, err := crossmessage.DefaultSVC().Create(ctx, &message.Message{
-					ID:             messageID,
-					AgentID:        appID,
-					RunID:          roundID,
-					SectionID:      sectionID,
-					Content:        incrMessage,
-					ConversationID: conversationID,
-					ContentType:    contentType,
-					Role:           dataMessage.Role,
-					MessageType:    message.MessageTypeAnswer,
-				})
+				_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
 				if err != nil {
 					return nil, err
 				}
@@ -1317,6 +1305,15 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			completeData, err := sonic.MarshalString(messageEvent)
 			if err != nil {
 				return nil, err
+			}
+
+			if msg.NodeType == entity.NodeTypeInputReceiver || msg.NodeType == entity.NodeTypeQuestionAnswer {
+				return []*workflow.ChatFlowRunResponse{
+					{
+						Event: string(vo.ChatFlowMessageCompleted),
+						Data:  completeData,
+					},
+				}, nil
 			}
 
 			return []*workflow.ChatFlowRunResponse{
