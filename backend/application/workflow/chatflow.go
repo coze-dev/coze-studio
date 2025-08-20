@@ -818,16 +818,6 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	if !req.GetGetOrCreate() {
 		cID, err = GetWorkflowDomainSVC().UpdateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	} else {
-		_, existed, err := GetWorkflowDomainSVC().GetTemplateByName(ctx, env, appID, req.GetConversationMame())
-		if err != nil {
-			return nil, err
-		}
-		if !existed {
-			return &workflow.CreateConversationResponse{
-				Code: 4200,
-				Msg:  "Conversation not found. Please create a conversation before attempting to perform any related operations.",
-			}, nil
-		}
 		cID, _, err = GetWorkflowDomainSVC().GetOrCreateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
 	}
 	if err != nil {
@@ -947,9 +937,6 @@ func (w *ApplicationService) toSchemaMessage(ctx context.Context, msg *workflow.
 
 		for _, ct := range contents {
 			if ct.Text != nil {
-				if len(*ct.Text) == 0 {
-					continue
-				}
 				m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: *ct.Text,
@@ -1043,7 +1030,16 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 
 		outputCount         int32
 		inputCount          int32
-		intermediateMessage *message.Message
+		intermediateMessage = &message.Message{
+			ID:             messageID,
+			AgentID:        appID,
+			RunID:          roundID,
+			SectionID:      sectionID,
+			Content:        incrMessage,
+			ConversationID: conversationID,
+			Role:           schema.Assistant,
+			MessageType:    message.MessageTypeAnswer,
+		}
 	)
 
 	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
@@ -1152,6 +1148,63 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}
 
 			case entity.WorkflowInterrupted:
+
+				var (
+					interruptEvent = msg.StateMessage.InterruptEvent
+					interruptData  = interruptEvent.InterruptData
+					msgContent     string
+					contentType    message.ContentType
+				)
+
+				if interruptEvent.EventType == entity.InterruptEventInput {
+					msgContent, contentType, err = renderInputCardDSL(interruptData)
+					if err != nil {
+						return nil, err
+					}
+				} else if interruptEvent.EventType == entity.InterruptEventQuestion {
+					msgContent, contentType, err = renderQACardDSL(interruptData)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, fmt.Errorf("unsupported interrupt event type: %s", interruptEvent.EventType)
+				}
+
+				messageEvent := &vo.MessageDetail{
+
+					ID:             strconv.FormatInt(messageID, 10),
+					ChatID:         strconv.FormatInt(roundID, 10),
+					ConversationID: strconv.FormatInt(conversationID, 10),
+					BotID:          strconv.FormatInt(appID, 10),
+					Role:           string(schema.Assistant),
+					Type:           string(entity.Answer),
+					ContentType:    string(contentType),
+					Content:        msgContent,
+				}
+
+				incrMessage += messageEvent.Content
+				intermediateMessage.Content = incrMessage
+				intermediateMessage.ContentType = contentType
+
+				// interrupted is last message
+				_, err = crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+				if err != nil {
+					return nil, err
+				}
+
+				completeData, err := sonic.MarshalString(messageEvent)
+
+				if contentType == message.ContentTypeText {
+					responses = append(responses, &workflow.ChatFlowRunResponse{
+						Event: string(vo.ChatFlowMessageDelta),
+						Data:  completeData,
+					})
+				}
+
+				responses = append(responses, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowMessageCompleted),
+					Data:  completeData,
+				})
 				chatEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
@@ -1240,64 +1293,26 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				return nil, schema.ErrNoValue
 			}
 
+			if msg.DataMessage.NodeType == entity.NodeTypeQuestionAnswer || msg.DataMessage.NodeType == entity.NodeTypeInputReceiver {
+				return nil, schema.ErrNoValue
+			}
+
 			var (
 				dataMessage  = msg.DataMessage
-				contentType  message.ContentType
 				messageEvent = &vo.MessageDetail{
 					ChatID:         strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
 					BotID:          strconv.FormatInt(appID, 10),
 					Role:           string(dataMessage.Role),
 					Type:           string(dataMessage.Type),
+					ContentType:    string(message.ContentTypeText),
+					Content:        msg.Content,
 				}
 			)
 
-			switch msg.DataMessage.NodeType {
-			case entity.NodeTypeInputReceiver:
-				msg.Content, err = renderInputCardDSL(msg.Content)
-				if err != nil {
-					return nil, err
-				}
-				messageEvent.Content = msg.Content
-				messageEvent.ContentType = string(message.ContentTypeCard)
-				contentType = message.ContentTypeCard
-			case entity.NodeTypeQuestionAnswer:
-				msg.Content, err = renderSelectOptionCardDSL(msg.Content)
-				if err != nil {
-					return nil, err
-				}
-				messageEvent.Content = msg.Content
-				messageEvent.ContentType = string(message.ContentTypeCard)
-				contentType = message.ContentTypeCard
-			default:
-				contentType = message.ContentTypeText
-				messageEvent.Content = msg.Content
-				messageEvent.ContentType = string(message.ContentTypeText)
-			}
-
 			incrMessage += msg.Content
-			intermediateMessage = &message.Message{
-				ID:             messageID,
-				AgentID:        appID,
-				RunID:          roundID,
-				SectionID:      sectionID,
-				Content:        incrMessage,
-				ConversationID: conversationID,
-				ContentType:    contentType,
-				Role:           dataMessage.Role,
-				MessageType:    message.MessageTypeAnswer,
-			}
-
-			if msg.Last {
-				_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			if err != nil {
-				return nil, err
-			}
+			intermediateMessage.Content = incrMessage
+			intermediateMessage.ContentType = message.ContentTypeText
 
 			messageEvent.ID = strconv.FormatInt(messageID, 10)
 			data, err := sonic.MarshalString(messageEvent)
@@ -1314,19 +1329,15 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}, nil
 			}
 
-			messageEvent.Content = incrMessage
-			completeData, err := sonic.MarshalString(messageEvent)
+			_, err = crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
 			if err != nil {
 				return nil, err
 			}
 
-			if msg.NodeType == entity.NodeTypeInputReceiver || msg.NodeType == entity.NodeTypeQuestionAnswer {
-				return []*workflow.ChatFlowRunResponse{
-					{
-						Event: string(vo.ChatFlowMessageCompleted),
-						Data:  completeData,
-					},
-				}, nil
+			messageEvent.Content = incrMessage
+			completeData, err := sonic.MarshalString(messageEvent)
+			if err != nil {
+				return nil, err
 			}
 
 			return []*workflow.ChatFlowRunResponse{
@@ -1346,7 +1357,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 	}
 }
 
-func renderInputCardDSL(c string) (string, error) {
+func renderInputCardDSL(c string) (string, message.ContentType, error) {
 	type contentInfo struct {
 		Content string `json:"content"`
 	}
@@ -1368,7 +1379,7 @@ func renderInputCardDSL(c string) (string, error) {
 	info := &contentInfo{}
 	err := sonic.UnmarshalString(c, info)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	fields := make([]*field, 0)
@@ -1401,20 +1412,31 @@ func renderInputCardDSL(c string) (string, error) {
 	}
 	rCardString, _ := sonic.MarshalString(rCard)
 
-	return rCardString, nil
+	return rCardString, message.ContentTypeCard, nil
 
 }
 
-func renderSelectOptionCardDSL(c string) (string, error) {
+func renderQACardDSL(c string) (string, message.ContentType, error) {
 	type contentInfo struct {
 		Messages []struct {
-			Content struct {
-				Options []struct {
-					Name string `json:"name"`
-				} `json:"options"`
-			} `json:"content"`
+			Type        string `json:"type"`
+			ContentType string `json:"content_type"`
+			Content     any    `json:"content"`
 		} `json:"messages"`
-		Question string `json:"question"`
+	}
+
+	info := &contentInfo{}
+	err := sonic.UnmarshalString(c, info)
+	if err != nil {
+		return "", "", err
+	}
+
+	if len(info.Messages) == 0 {
+		return "", "", fmt.Errorf("no input card data")
+	}
+
+	if info.Messages[0].ContentType == "text" {
+		return info.Messages[0].Content.(string), message.ContentTypeText, nil
 	}
 
 	type field struct {
@@ -1433,26 +1455,34 @@ func renderSelectOptionCardDSL(c string) (string, error) {
 		Data         string            `json:"data"`
 		XProperties  map[string]string `json:"x_properties"`
 	}
-
-	info := &contentInfo{}
-	err := sonic.UnmarshalString(c, info)
-	if err != nil {
-		return "", err
-	}
-
 	iCard := defaultCard()
-
 	keys := make([]*key, 0)
 	fields := make([]*field, 0)
-	for _, msg := range info.Messages {
-		for _, op := range msg.Content.Options {
-			keys = append(keys, &key{Key: op.Name})
-			fields = append(fields, &field{Name: op.Name})
-		}
+
+	content := info.Messages[0].Content
+	type contentOption struct {
+		Options  []*field `json:"options"`
+		Question string   `json:"question"`
+	}
+
+	contentString, err := sonic.MarshalString(content)
+	if err != nil {
+		return "", "", err
+	}
+
+	contentOptionInfo := &contentOption{}
+	err = sonic.UnmarshalString(contentString, contentOptionInfo)
+	if err != nil {
+		return "", "", err
+	}
+
+	for _, op := range contentOptionInfo.Options {
+		keys = append(keys, &key{Key: op.Name})
+		fields = append(fields, &field{Name: op.Name})
 	}
 
 	iCard.Variables["5fJt3qKpSz"].(map[string]any)["defaultValue"] = map[string]any{
-		"description": info.Question,
+		"description": contentOptionInfo.Question,
 		"list":        keys,
 	}
 	iCardString, _ := sonic.MarshalString(iCard)
@@ -1479,7 +1509,7 @@ func renderSelectOptionCardDSL(c string) (string, error) {
 		QuestionCardData: struct {
 			Title   string   `json:"Title"`
 			Options []*field `json:"Options"`
-		}{Title: info.Question, Options: fields},
+		}{Title: contentOptionInfo.Question, Options: fields},
 	})
 
 	rCard.XProperties = map[string]string{
@@ -1487,6 +1517,6 @@ func renderSelectOptionCardDSL(c string) (string, error) {
 	}
 	rCardString, _ := sonic.MarshalString(rCard)
 
-	return rCardString, nil
+	return rCardString, message.ContentTypeCard, nil
 
 }
