@@ -3727,17 +3727,15 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 					if node.Data != nil && node.Data.Meta != nil {
 						// 这里可以添加更多资源类型的检测逻辑
 						// 目前先添加一个示例
-						if nodeMeta, ok := node.Data.Meta.(*vo.NodeMetaFE); ok {
-							dependency := map[string]interface{}{
-								"resource_id":   fmt.Sprintf("node_%s", node.ID),
-								"resource_type": "node",
-								"resource_name": nodeMeta.Title,
-								"metadata": map[string]interface{}{
-									"node_type": "workflow_node",
-								},
-							}
-							dependencies = append(dependencies, dependency)
+						dependency := map[string]interface{}{
+							"resource_id":   fmt.Sprintf("node_%s", node.ID),
+							"resource_type": "node",
+							"resource_name": node.Data.Meta.Title,
+							"metadata": map[string]interface{}{
+								"node_type": "workflow_node",
+							},
 						}
+						dependencies = append(dependencies, dependency)
 					}
 				}
 			}
