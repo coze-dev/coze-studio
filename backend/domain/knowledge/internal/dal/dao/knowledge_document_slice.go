@@ -25,6 +25,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
@@ -52,7 +53,7 @@ func (dao *KnowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.K
 }
 
 func (dao *KnowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error {
-	return dao.Query.KnowledgeDocumentSlice.WithContext(ctx).CreateInBatches(slices, 100)
+	return dao.Query.KnowledgeDocumentSlice.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches(slices, 100)
 }
 
 func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {

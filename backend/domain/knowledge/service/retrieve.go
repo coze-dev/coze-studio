@@ -189,7 +189,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 }
 
 func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContext) (newRetrieveContext *RetrieveContext, err error) {
-	if len(req.ChatHistory) == 0 {
+	if len(req.ChatHistory) == 1 {
 		// No context, no rewriting.
 		return req, nil
 	}
