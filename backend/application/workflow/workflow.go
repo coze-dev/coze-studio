@@ -3792,37 +3792,36 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 		return nil, fmt.Errorf("invalid workflow data: missing schema")
 	}
 
-	// 转换ID类型
-	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("invalid space_id: %s", req.SpaceID)
-	}
-	creatorID, err := strconv.ParseInt(req.CreatorID, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("invalid creator_id: %s", req.CreatorID)
-	}
-
-	// 创建新的工作流
-	canvasData, err := sonic.MarshalString(exportData.Schema)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal canvas data: %v", err)
-	}
-
 	// 构建工作流创建请求
 	createReq := &workflow.CreateWorkflowRequest{
-		Name:        req.WorkflowName,
-		Desc:        exportData.Description,
-		SpaceID:     spaceID,
-		CreatorID:   creatorID,
-		ContentType: 1, // 默认工作流类型
-		Mode:        1, // 默认模式
-		Canvas:      canvasData,
+		Name:    req.WorkflowName,
+		Desc:    exportData.Description,
+		SpaceID: req.SpaceID, // SpaceID is string type
 	}
 
 	// 调用创建工作流服务
 	createResp, err := w.CreateWorkflow(ctx, createReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %v", err)
+	}
+
+	// 保存工作流架构数据
+	canvasData, err := sonic.MarshalString(exportData.Schema)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal canvas data: %v", err)
+	}
+
+	// 构建保存工作流请求
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: createResp.Data.WorkflowID,
+		SpaceID:    req.SpaceID,
+		Schema:     canvasData,
+	}
+
+	// 调用保存工作流服务
+	_, err = w.SaveWorkflow(ctx, saveReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save workflow schema: %v", err)
 	}
 
 	// 构建响应
