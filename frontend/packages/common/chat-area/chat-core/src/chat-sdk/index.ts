@@ -42,7 +42,6 @@ import { MessageManager } from '@/message/message-manager';
 import { ChunkProcessor, PreSendLocalMessageFactory } from '@/message';
 import { HttpChunk } from '@/channel/http-chunk';
 
-import { type TokenManager } from '../credential';
 import {
   type ChatASRParams,
   type BreakMessageParams,
@@ -70,6 +69,7 @@ import { MessageManagerService } from './services/message-manager-service';
 import { HttpChunkService } from './services/http-chunk-service';
 import { CreateMessageService } from './services/create-message-service';
 import { ReportEventsTracer, SlardarEvents } from './events/slardar-events';
+import { type TokenManager } from '../credential';
 
 export default class ChatSDK {
   private static instances: Map<string, ChatSDK> = new Map();
@@ -522,5 +522,11 @@ export default class ChatSDK {
       params.append('space_id', this.space_id);
     }
     return this.messageManagerService.chatASR(params);
+  }
+
+  updateConversationId(conversationId: string) {
+    this.conversation_id = conversationId;
+    this.messageManagerService.conversation_id = conversationId;
+    this.preSendLocalMessageFactory.conversation_id = conversationId;
   }
 }
