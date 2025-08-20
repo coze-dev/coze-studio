@@ -26,7 +26,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/internal"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 
-	wfconversation "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/conversation"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
@@ -41,8 +40,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-
-	crossconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 )
 
 type ServiceComponents struct {
@@ -81,8 +78,6 @@ func InitService(ctx context.Context, components *ServiceComponents) (*Applicati
 	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
 
 	setEventBus(components.DomainNotifier)
-
-	crossconversation.SetConversationManager(wfconversation.NewConversationRepository())
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX

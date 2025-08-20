@@ -29,8 +29,8 @@ import (
 	"github.com/spf13/cast"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -343,7 +343,7 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 		return in, nil
 	}
 
-	var messages []*conversation.Message
+	var messages []*crossmessage.WfMessage
 	var scMessages []*schema.Message
 	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)

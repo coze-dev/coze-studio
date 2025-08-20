@@ -24,8 +24,8 @@ import (
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -40,9 +40,7 @@ import (
 
 type EditMessageConfig struct{}
 
-type EditMessage struct {
-	Manager conversation.ConversationManager
-}
+type EditMessage struct{}
 
 func (e *EditMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -64,9 +62,7 @@ func (e *EditMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.Adap
 }
 
 func (e *EditMessageConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &EditMessage{
-		Manager: conversation.GetConversationManager(),
-	}, nil
+	return &EditMessage{}, nil
 }
 
 func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -116,7 +112,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID, Content: newContent})
+		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -155,7 +151,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID, Content: newContent})
+		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -172,7 +168,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = e.Manager.EditMessage(ctx, &conversation.EditMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID, Content: newContent})
+		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
