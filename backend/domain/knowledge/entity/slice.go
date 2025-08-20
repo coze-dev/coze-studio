@@ -27,8 +27,15 @@ type WhereSliceOpt struct {
 	DocumentID  int64
 	DocumentIDs []int64
 	Keyword     *string
-	Sequence    int64
 	PageSize    int64
 	Offset      int64
 	NotEmpty    *bool
+}
+
+type WherePhotoSliceOpt struct {
+	KnowledgeID int64
+	DocumentIDs []int64
+	Limit       *int
+	Offset      *int
+	HasCaption  *bool
 }

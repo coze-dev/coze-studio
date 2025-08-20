@@ -84,12 +84,12 @@ type KnowledgeDocumentSliceRepo interface {
 	Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 	Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
 	Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
-
+	BatchCreateWithTX(ctx context.Context, tx *gorm.DB, slices []*model.KnowledgeDocumentSlice) error
 	BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error
 	BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error
 	DeleteByDocument(ctx context.Context, documentID int64) error
 	MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error)
-
+	ListPhotoSlice(ctx context.Context, opts *entity.WherePhotoSliceOpt) ([]*model.KnowledgeDocumentSlice, int64, error)
 	FindSliceByCondition(ctx context.Context, opts *entity.WhereSliceOpt) (
 		[]*model.KnowledgeDocumentSlice, int64, error)
 	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)

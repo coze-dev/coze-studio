@@ -190,24 +190,26 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	collectionName := getCollectionName(doc.KnowledgeID)
 
 	if !doc.IsAppend {
-		ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
-		if err != nil {
-			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document slice ids failed, err: %v", err)))
-		}
-		if len(ids) > 0 {
-			if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
-				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("delete document slice failed, err: %v", err)))
+		if doc.Type != knowledge.DocumentTypeImage {
+			ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
+			if err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document slice ids failed, err: %v", err)))
 			}
-			for _, manager := range k.searchStoreManagers {
-				s, err := manager.GetSearchStore(ctx, collectionName)
-				if err != nil {
-					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
+			if len(ids) > 0 {
+				if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
+					return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("delete document slice failed, err: %v", err)))
 				}
-				if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
-					return strconv.FormatInt(id, 10)
-				})); err != nil {
-					logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
-					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
+				for _, manager := range k.searchStoreManagers {
+					s, err := manager.GetSearchStore(ctx, collectionName)
+					if err != nil {
+						return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
+					}
+					if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
+						return strconv.FormatInt(id, 10)
+					})); err != nil {
+						logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+						return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
+					}
 				}
 			}
 		}
@@ -298,34 +300,68 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		seqOffset += 1
 	}
 
-	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
-	for i, src := range parseResult {
-		now := time.Now().UnixMilli()
-		sliceModel := &model.KnowledgeDocumentSlice{
-			ID:          allIDs[i],
-			KnowledgeID: doc.KnowledgeID,
-			DocumentID:  doc.ID,
-			Content:     parseResult[i].Content,
-			Sequence:    seqOffset + float64(i),
-			CreatedAt:   now,
-			UpdatedAt:   now,
-			CreatorID:   doc.CreatorID,
-			SpaceID:     doc.SpaceID,
-			Status:      int32(model.SliceStatusProcessing),
-			FailReason:  "",
-		}
-		if doc.Type == knowledge.DocumentTypeTable {
-			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
+	if doc.Type == knowledge.DocumentTypeImage {
+		if len(parseResult) != 0 {
+			slices, _, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{DocumentID: doc.ID})
 			if err != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
-				return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("find slice failed, err: %v", err)))
 			}
-			sliceModel.Content = sliceEntity.GetSliceContent()
+			var slice *model.KnowledgeDocumentSlice
+			if len(slices) > 0 {
+				slice = slices[0]
+				slice.Content = parseResult[0].Content
+			} else {
+				id, err := k.idgen.GenID(ctx)
+				if err != nil {
+					return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenID failed, err: %v", err)))
+				}
+				slice = &model.KnowledgeDocumentSlice{
+					ID:          id,
+					KnowledgeID: doc.KnowledgeID,
+					DocumentID:  doc.ID,
+					Content:     parseResult[0].Content,
+					CreatedAt:   time.Now().UnixMilli(),
+					UpdatedAt:   time.Now().UnixMilli(),
+					CreatorID:   doc.CreatorID,
+					SpaceID:     doc.SpaceID,
+					Status:      int32(model.SliceStatusProcessing),
+					FailReason:  "",
+				}
+			}
+			if err = k.sliceRepo.Update(ctx, slice); err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update slice failed, err: %v", err)))
+			}
 		}
-		sliceModels = append(sliceModels, sliceModel)
-	}
-	if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("batch create slice failed, err: %v", err)))
+	} else {
+		sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
+		for i, src := range parseResult {
+			now := time.Now().UnixMilli()
+			sliceModel := &model.KnowledgeDocumentSlice{
+				ID:          allIDs[i],
+				KnowledgeID: doc.KnowledgeID,
+				DocumentID:  doc.ID,
+				Content:     parseResult[i].Content,
+				Sequence:    seqOffset + float64(i),
+				CreatedAt:   now,
+				UpdatedAt:   now,
+				CreatorID:   doc.CreatorID,
+				SpaceID:     doc.SpaceID,
+				Status:      int32(model.SliceStatusProcessing),
+				FailReason:  "",
+			}
+			if doc.Type == knowledge.DocumentTypeTable {
+				sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
+				if err != nil {
+					logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
+					return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
+				}
+				sliceModel.Content = sliceEntity.GetSliceContent()
+			}
+			sliceModels = append(sliceModels, sliceModel)
+		}
+		if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("batch create slice failed, err: %v", err)))
+		}
 	}
 
 	defer func() {

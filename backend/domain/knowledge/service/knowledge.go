@@ -876,9 +876,8 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest)
 		KnowledgeID: ptr.From(request.KnowledgeID),
 		DocumentID:  ptr.From(request.DocumentID),
 		Keyword:     request.Keyword,
-		Sequence:    request.Sequence,
+		Offset:      request.Sequence,
 		PageSize:    request.Limit,
-		Offset:      request.Offset,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
@@ -1375,12 +1374,12 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSli
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
-	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
+	sliceArr, total, err := k.sliceRepo.ListPhotoSlice(ctx, &entity.WherePhotoSliceOpt{
 		KnowledgeID: request.KnowledgeID,
 		DocumentIDs: request.DocumentIDs,
-		Offset:      int64(ptr.From(request.Offset)),
-		PageSize:    int64(ptr.From(request.Limit)),
-		NotEmpty:    request.HasCaption,
+		Offset:      request.Offset,
+		Limit:       request.Limit,
+		HasCaption:  request.HasCaption,
 	})
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
