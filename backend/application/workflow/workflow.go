@@ -49,7 +49,6 @@ import (
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	workflowDomain "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
@@ -70,7 +69,7 @@ import (
 )
 
 type ApplicationService struct {
-	DomainSVC   workflowDomain.Service
+	DomainSVC   domainWorkflow.Service
 	ImageX      imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
 	TosClient   storage.Storage
 	IDGenerator idgen.IDGenerator
