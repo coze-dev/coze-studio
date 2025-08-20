@@ -342,7 +342,18 @@ func (mh *MesssageEventHanlder) handlerInterrupt(ctx context.Context, chunk *ent
 	if len(reasoningContent) > 0 && firstAnswerMsg == nil {
 		finalAnswer.ReasoningContent = ptr.Of(reasoningContent)
 	}
-	err = mh.handlerAnswer(ctx, finalAnswer, nil, rtDependence, preMsg)
+	usage := func() *msgEntity.UsageExt {
+		if rtDependence.GetUsage() != nil {
+			return &msgEntity.UsageExt{
+				TotalCount:   rtDependence.GetUsage().LlmTotalTokens,
+				InputTokens:  rtDependence.GetUsage().LlmPromptTokens,
+				OutputTokens: rtDependence.GetUsage().LlmCompletionTokens,
+			}
+		}
+		return nil
+	}
+
+	err = mh.handlerAnswer(ctx, finalAnswer, usage(), rtDependence, preMsg)
 	if err != nil {
 		return err
 	}

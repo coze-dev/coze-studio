@@ -25,6 +25,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/mohae/deepcopy"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
@@ -128,6 +129,15 @@ func (art *AgentRuntime) push(ctx context.Context, mainChan chan *entity.AgentRe
 
 		switch chunk.EventType {
 		case message.MessageTypeFunctionCall:
+			if chunk.FuncCall != nil && chunk.FuncCall.ResponseMeta != nil {
+				if usage := handlerUsage(chunk.FuncCall.ResponseMeta); usage != nil {
+					art.SetUsage(&agentrun.Usage{
+						LlmPromptTokens:     usage.InputTokens,
+						LlmCompletionTokens: usage.OutputTokens,
+						LlmTotalTokens:      usage.TotalCount,
+					})
+				}
+			}
 			err = mh.handlerFunctionCall(ctx, chunk, art)
 			if err != nil {
 				return
