@@ -3669,14 +3669,14 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	}
 
 	// 构建导出数据
-	exportData := &workflow.ExportWorkflowData{
+	exportData := &workflow.WorkflowExportData{
 		WorkflowID:  req.WorkflowID,
 		Name:        workflowInfo.Name,
 		Description: workflowInfo.Desc,
 		Version:     workflowInfo.GetVersion(),
 		CreateTime:  workflowInfo.CreatedAt.Unix(),
 		UpdateTime:  workflowInfo.UpdatedAt.Unix(),
-		Metadata: map[string]string{
+		Metadata: map[string]interface{}{
 			"space_id":     strconv.FormatInt(workflowInfo.SpaceID, 10),
 			"creator_id":   strconv.FormatInt(workflowInfo.CreatorID, 10),
 			"content_type": strconv.FormatInt(int64(workflowInfo.ContentType), 10),
@@ -3688,24 +3688,35 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	if workflowInfo.Canvas != "" {
 		var canvas vo.Canvas
 		if err := sonic.UnmarshalString(workflowInfo.Canvas, &canvas); err == nil {
-			exportData.SchemaJson = workflowInfo.Canvas
-			exportData.Nodes = canvas.Nodes
-			exportData.Connections = make([]*workflow.Connection, 0)
-			for _, edge := range canvas.Edges {
-				connection := &workflow.Connection{
-					FromNode: edge.SourceNodeID,
-					ToNode:   edge.TargetNodeID,
-					FromPort: edge.SourcePortID,
-					ToPort:   edge.TargetPortID,
+			// 解析Schema
+			var schemaData map[string]interface{}
+			if err := sonic.UnmarshalString(workflowInfo.Canvas, &schemaData); err == nil {
+				exportData.Schema = schemaData
+			}
+			
+			// 设置节点
+			exportData.Nodes = make([]interface{}, len(canvas.Nodes))
+			for i, node := range canvas.Nodes {
+				exportData.Nodes[i] = node
+			}
+			
+			// 设置边
+			exportData.Edges = make([]interface{}, len(canvas.Edges))
+			for i, edge := range canvas.Edges {
+				edgeData := map[string]string{
+					"from_node": edge.SourceNodeID,
+					"to_node":   edge.TargetNodeID,
+					"from_port": edge.SourcePortID,
+					"to_port":   edge.TargetPortID,
 				}
-				exportData.Connections = append(exportData.Connections, connection)
+				exportData.Edges[i] = edgeData
 			}
 		}
 	}
 
 	// 添加依赖资源信息（如果启用）
 	if req.IncludeDependencies {
-		dependencies := make([]*workflow.DependencyResource, 0)
+		dependencies := make([]interface{}, 0)
 		
 		// 获取工作流中引用的资源
 		if workflowInfo.Canvas != "" {
@@ -3717,11 +3728,11 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 						// 这里可以添加更多资源类型的检测逻辑
 						// 目前先添加一个示例
 						if nodeMeta, ok := node.Data.Meta.(*vo.NodeMetaFE); ok {
-							dependency := &workflow.DependencyResource{
-								ResourceID:   fmt.Sprintf("node_%s", node.ID),
-								ResourceType: "node",
-								ResourceName: nodeMeta.Title,
-								Metadata: map[string]string{
+							dependency := map[string]interface{}{
+								"resource_id":   fmt.Sprintf("node_%s", node.ID),
+								"resource_type": "node",
+								"resource_name": nodeMeta.Title,
+								"metadata": map[string]interface{}{
 									"node_type": "workflow_node",
 								},
 							}
@@ -3735,7 +3746,14 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 		exportData.Dependencies = dependencies
 	}
 
+	// 构建响应
 	return &workflow.ExportWorkflowResponse{
-		Data: exportData,
+		Code: 200,
+		Msg:  "success",
+		Data: struct {
+			WorkflowExport *workflow.WorkflowExportData `json:"workflow_export,omitempty"`
+		}{
+			WorkflowExport: exportData,
+		},
 	}, nil
 }
