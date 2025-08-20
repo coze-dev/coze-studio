@@ -47,7 +47,6 @@ import { I18n } from '@coze-arch/i18n';
 import { UIToast } from '@coze-arch/bot-semi';
 import { type Conversation } from '@coze/api';
 
-
 import { type SDKInitError, isAuthError } from '@/util/error';
 import { ChatType } from '@/types/client';
 import { studioOpenClientReporter, createSDKUploadPluginClass } from '@/helper';
@@ -85,6 +84,7 @@ const ChatProviderFuncComp = forwardRef<
   );
   const conversationId = useGlobalInitStore(state => state.conversationId);
   const sectionId = useSectionIdStore(state => state.latestSectionId);
+  const chatCore = useGlobalInitStore(state => state.chatCore);
   const setConversationId = useMemoizedFn(
     (conversationIdNew: string, sectionIdNew: string) => {
       const isConversations =
@@ -106,6 +106,7 @@ const ChatProviderFuncComp = forwardRef<
         updateConversations([newConversation], 'add');
       } else {
         setConversationIdInArea(conversationIdNew);
+        chatCore?.updateConversationId(conversationIdNew);
       }
     },
   );
@@ -271,9 +272,7 @@ const ChatProviderImpl: FC<{
       showBackground={isShowBackground}
       enableDragUpload={false}
     >
-      <ChatProviderFuncComp ref={refChatFunc}>
-        {children}
-      </ChatProviderFuncComp>
+      <ChatProviderFuncComp ref={refChatFunc}>{children}</ChatProviderFuncComp>
     </ChatAreaProvider>
   );
 };
