@@ -255,6 +255,9 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 			if err != nil {
 				return nil, err
 			}
+			if paramInfo == nil {
+				continue
+			}
 
 			if _, ok := result[paramName]; ok {
 				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
