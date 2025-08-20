@@ -40,10 +40,10 @@ import (
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -1234,7 +1234,7 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 		return input, nil
 	}
 
-	var messages []*conversation.Message
+	var messages []*crossmessage.WfMessage
 	var scMessages []*schema.Message
 	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)

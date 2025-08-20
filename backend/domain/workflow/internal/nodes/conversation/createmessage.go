@@ -21,15 +21,17 @@ import (
 	"errors"
 	"fmt"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"strconv"
 	"sync/atomic"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -43,9 +45,7 @@ import (
 
 type CreateMessageConfig struct{}
 
-type CreateMessage struct {
-	Creator conversation.ConversationManager
-}
+type CreateMessage struct{}
 
 func (c *CreateMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -67,9 +67,7 @@ func (c *CreateMessageConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.Ad
 }
 
 func (c *CreateMessageConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &CreateMessage{
-		Creator: conversation.GetConversationManager(),
-	}, nil
+	return &CreateMessage{}, nil
 }
 
 func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env, appID *int64, version, conversationName string, userID, connectorID int64) (int64, error) {
@@ -83,7 +81,7 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 	}
 
 	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
-		return c.Creator.CreateConversation(ctx, &conversation.CreateConversationRequest{
+		return crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
 			AppID:       appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -194,7 +192,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("section id is required"))
 		}
 	} else {
-		cInfo, err := c.Creator.GetByID(ctx, conversationID)
+		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +234,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	} else {
 		// For assistant messages in a different conversation or a new workflow run,
 		// find the latest runID or create a new one as a fallback.
-		runIDs, err := c.Creator.GetLatestRunIDs(ctx, &conversation.GetLatestRunIDsRequest{
+		runIDs, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, &crossmessage.GetLatestRunIDsRequest{
 			ConversationID: conversationID,
 			UserID:         userID,
 			AppID:          resolvedAppID,
@@ -262,7 +260,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		}
 	}
 
-	mID, err := c.Creator.CreateMessage(ctx, &conversation.CreateMessageRequest{
+	mID, err := crossmessage.DefaultSVC().CreateMessage(ctx, &crossmessage.CreateMessageRequest{
 		ConversationID: conversationID,
 		Role:           role,
 		Content:        content,

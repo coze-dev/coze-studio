@@ -23,8 +23,8 @@ import (
 	"strconv"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -39,9 +39,7 @@ import (
 
 type MessageListConfig struct{}
 
-type MessageList struct {
-	Lister conversation.ConversationManager
-}
+type MessageList struct{}
 
 func (m *MessageListConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -63,9 +61,7 @@ func (m *MessageListConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.Adap
 }
 
 func (m *MessageListConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &MessageList{
-		Lister: conversation.GetConversationManager(),
-	}, nil
+	return &MessageList{}, nil
 }
 
 func (m *MessageList) getConversationIDByName(ctx context.Context, env vo.Env, appID *int64, version, conversationName string, userID, connectorID int64) (int64, error) {
@@ -142,7 +138,7 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 		resolvedAppID = *appID
 	}
 
-	req := &conversation.MessageListRequest{
+	req := &crossmessage.MessageListRequest{
 		UserID:         userID,
 		AppID:          resolvedAppID,
 		ConversationID: conversationID,
@@ -182,7 +178,7 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("BeforeID and AfterID cannot be set at the same time"))
 	}
 
-	ml, err := m.Lister.MessageList(ctx, req)
+	ml, err := crossmessage.DefaultSVC().MessageList(ctx, req)
 	if err != nil {
 		return nil, err
 	}

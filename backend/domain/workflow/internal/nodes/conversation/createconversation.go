@@ -20,10 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -37,9 +38,7 @@ import (
 
 type CreateConversationConfig struct{}
 
-type CreateConversation struct {
-	Manager conversation.ConversationManager
-}
+type CreateConversation struct{}
 
 func (c *CreateConversationConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -61,9 +60,7 @@ func (c *CreateConversationConfig) Adapt(_ context.Context, n *vo.Node, _ ...nod
 }
 
 func (c *CreateConversationConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &CreateConversation{
-		Manager: conversation.GetConversationManager(),
-	}, nil
+	return &CreateConversation{}, nil
 }
 
 func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -77,7 +74,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 		connectorID             = execCtx.ExeCfg.ConnectorID
 		userID                  = execCtx.ExeCfg.Operator
 		conversationIDGenerator = workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
-			return c.Manager.CreateConversation(ctx, &conversation.CreateConversationRequest{
+			return crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
 				AppID:       appID,
 				UserID:      userID,
 				ConnectorID: connectorID,

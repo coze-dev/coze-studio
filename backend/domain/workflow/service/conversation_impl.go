@@ -19,11 +19,12 @@ package service
 import (
 	"context"
 	"fmt"
+
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -348,7 +349,7 @@ func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.E
 	}
 
 	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
-		return conversation.GetConversationManager().CreateConversation(ctx, &conversation.CreateConversationRequest{
+		return crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
 			AppID:       appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -392,7 +393,7 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 	}
 
 	if existed {
-		newConversationID, _, err := conversation.GetConversationManager().CreateConversation(ctx, &conversation.CreateConversationRequest{
+		newConversationID, _, err := crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
 			AppID:       appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -413,7 +414,7 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 		return 0, fmt.Errorf("conversation name %v not found", conversationName)
 	}
 
-	newConversationID, _, err := conversation.GetConversationManager().CreateConversation(ctx, &conversation.CreateConversationRequest{
+	newConversationID, _, err := crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
 		AppID:       appID,
 		UserID:      userID,
 		ConnectorID: connectorID,

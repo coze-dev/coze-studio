@@ -27,7 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -239,7 +239,7 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 		return in, nil
 	}
 
-	var messages []*conversation.Message
+	var messages []*crossmessage.WfMessage
 	var scMessages []*einoSchema.Message
 	var sectionID *int64
 	execCtx := execute.GetExeCtx(ctx)

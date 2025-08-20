@@ -25,15 +25,15 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func ConvertMessageToString(ctx context.Context, msg *conversation.Message) (string, error) {
+func ConvertMessageToString(ctx context.Context, msg *crossmessage.WfMessage) (string, error) {
 	if msg.MultiContent != nil {
 		var textContents []string
 		var otherContents []string
@@ -60,7 +60,7 @@ func ConvertMessageToString(ctx context.Context, msg *conversation.Message) (str
 	}
 }
 
-func ConvertMessageToSchema(ctx context.Context, msg *conversation.Message) (*schema.Message, error) {
+func ConvertMessageToSchema(ctx context.Context, msg *crossmessage.WfMessage) (*schema.Message, error) {
 	schemaMsg := &schema.Message{}
 
 	switch msg.Role {
@@ -94,7 +94,7 @@ func ConvertMessageToSchema(ctx context.Context, msg *conversation.Message) (*sc
 	return nil, fmt.Errorf("message has no content")
 }
 
-func convertContentPart(ctx context.Context, part *conversation.Content) (schema.ChatMessagePart, error) {
+func convertContentPart(ctx context.Context, part *crossmessage.Content) (schema.ChatMessagePart, error) {
 	schemaPart := schema.ChatMessagePart{}
 	uri := ""
 	if part.Uri != nil {

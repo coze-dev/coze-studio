@@ -22,10 +22,11 @@ import (
 	"fmt"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -39,9 +40,7 @@ import (
 
 type ConversationHistoryConfig struct{}
 
-type ConversationHistory struct {
-	Manager conversation.ConversationManager
-}
+type ConversationHistory struct{}
 
 func (ch *ConversationHistoryConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -63,9 +62,7 @@ func (ch *ConversationHistoryConfig) Adapt(_ context.Context, n *vo.Node, _ ...n
 }
 
 func (ch *ConversationHistoryConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &ConversationHistory{
-		Manager: conversation.GetConversationManager(),
-	}, nil
+	return &ConversationHistory{}, nil
 }
 
 func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -144,14 +141,14 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		}
 		sectionID = *execCtx.ExeCfg.SectionID
 	} else {
-		cInfo, err := ch.Manager.GetByID(ctx, conversationID)
+		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
 		if err != nil {
 			return nil, err
 		}
 		sectionID = cInfo.SectionID
 	}
 
-	runIDs, err := ch.Manager.GetLatestRunIDs(ctx, &conversation.GetLatestRunIDsRequest{
+	runIDs, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, &crossmessage.GetLatestRunIDsRequest{
 		ConversationID: conversationID,
 		UserID:         userID,
 		AppID:          *appID,
@@ -179,7 +176,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		runIDs = runIDs[1:] // chatflow needs to filter out this session
 	}
 
-	response, err := ch.Manager.GetMessagesByRunIDs(ctx, &conversation.GetMessagesByRunIDsRequest{
+	response, err := crossmessage.DefaultSVC().GetMessagesByRunIDs(ctx, &crossmessage.GetMessagesByRunIDsRequest{
 		ConversationID: conversationID,
 		RunIDs:         runIDs,
 	})

@@ -23,8 +23,8 @@ import (
 	"sync/atomic"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -38,9 +38,7 @@ import (
 
 type ClearConversationHistoryConfig struct{}
 
-type ClearConversationHistory struct {
-	Manager conversation.ConversationManager
-}
+type ClearConversationHistory struct{}
 
 func (c *ClearConversationHistoryConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -62,9 +60,7 @@ func (c *ClearConversationHistoryConfig) Adapt(_ context.Context, n *vo.Node, _ 
 }
 
 func (c *ClearConversationHistoryConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &ClearConversationHistory{
-		Manager: conversation.GetConversationManager(),
-	}, nil
+	return &ClearConversationHistory{}, nil
 }
 
 func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
@@ -125,7 +121,7 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 		}, nil
 	}
 
-	sectionID, err := c.Manager.ClearConversationHistory(ctx, &conversation.ClearConversationHistoryReq{
+	sectionID, err := crossconversation.DefaultSVC().ClearConversationHistory(ctx, &crossconversation.ClearConversationHistoryReq{
 		ConversationID: conversationID,
 	})
 	if err != nil {
