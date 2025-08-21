@@ -36,12 +36,9 @@ import (
 
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
-	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	apiknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	apiplugin "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
@@ -163,7 +160,7 @@ const (
 )
 
 type RetrievalStrategy struct {
-	RetrievalStrategy            *knowledge.RetrievalStrategy
+	RetrievalStrategy            *apiknowledge.RetrievalStrategy
 	NoReCallReplyMode            NoReCallReplyMode
 	NoReCallReplyCustomizePrompt string
 }
@@ -171,7 +168,7 @@ type RetrievalStrategy struct {
 type KnowledgeRecallConfig struct {
 	ChatModel                model.BaseChatModel
 	RetrievalStrategy        *RetrievalStrategy
-	SelectedKnowledgeDetails []*knowledge.KnowledgeDetail
+	SelectedKnowledgeDetails []*apiknowledge.KnowledgeDetail
 }
 
 type Config struct {
@@ -464,7 +461,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		}
 
 		if fcParams.PluginFCParam != nil {
-			pluginToolsInvokableReq := make(map[int64]*plugin.ToolsInvokableRequest)
+			pluginToolsInvokableReq := make(map[int64]*apiplugin.ToolsInvokableRequest)
 			for _, p := range fcParams.PluginFCParam.PluginList {
 				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
 				if err != nil {
@@ -485,18 +482,18 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				}
 
 				if req, ok := pluginToolsInvokableReq[pid]; ok {
-					req.ToolsInvokableInfo[toolID] = &plugin.ToolsInvokableInfo{
+					req.ToolsInvokableInfo[toolID] = &apiplugin.ToolsInvokableInfo{
 						ToolID:                      toolID,
 						RequestAPIParametersConfig:  requestParameters,
 						ResponseAPIParametersConfig: responseParameters,
 					}
 				} else {
-					pluginToolsInfoRequest := &plugin.ToolsInvokableRequest{
-						PluginEntity: plugin.PluginEntity{
+					pluginToolsInfoRequest := &apiplugin.ToolsInvokableRequest{
+						PluginEntity: apiplugin.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
 						},
-						ToolsInvokableInfo: map[int64]*plugin.ToolsInvokableInfo{
+						ToolsInvokableInfo: map[int64]*apiplugin.ToolsInvokableInfo{
 							toolID: {
 								ToolID:                      toolID,
 								RequestAPIParametersConfig:  requestParameters,
@@ -538,7 +535,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				return nil, err
 			}
 			knowledgeRecallConfig.RetrievalStrategy = &RetrievalStrategy{
-				RetrievalStrategy: &knowledge.RetrievalStrategy{
+				RetrievalStrategy: &apiknowledge.RetrievalStrategy{
 					TopK:               ptr.Of(setting.TopK),
 					MinScore:           ptr.Of(setting.MinScore),
 					SearchType:         searchType,
@@ -560,7 +557,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 			}
 
 			detailResp, err := crossknowledge.DefaultSVC().ListKnowledgeDetail(ctx,
-				&knowledge.ListKnowledgeDetailRequest{
+				&apiknowledge.ListKnowledgeDetailRequest{
 					KnowledgeIDs: knowledgeIDs,
 				})
 			if err != nil {
@@ -847,14 +844,14 @@ func (c *Config) FieldStreamType(path compose.FieldPath, ns *schema2.NodeSchema,
 	return schema2.FieldNotStream, nil
 }
 
-func toRetrievalSearchType(s int64) (knowledge.SearchType, error) {
+func toRetrievalSearchType(s int64) (apiknowledge.SearchType, error) {
 	switch s {
 	case 0:
-		return knowledge.SearchTypeSemantic, nil
+		return apiknowledge.SearchTypeSemantic, nil
 	case 1:
-		return knowledge.SearchTypeHybrid, nil
+		return apiknowledge.SearchTypeHybrid, nil
 	case 20:
-		return knowledge.SearchTypeFullText, nil
+		return apiknowledge.SearchTypeFullText, nil
 	default:
 		return 0, fmt.Errorf("invalid retrieval search type %v", s)
 	}
@@ -1188,7 +1185,7 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 
 	_ = g.AddLambdaNode(knowledgeLambdaKey, compose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output map[string]any, err error) {
 		modelPredictionIDs := strings.Split(input.Content, ",")
-		selectKwIDs := slices.ToMap(cfg.SelectedKnowledgeDetails, func(e *knowledge.KnowledgeDetail) (string, int64) {
+		selectKwIDs := slices.ToMap(cfg.SelectedKnowledgeDetails, func(e *apiknowledge.KnowledgeDetail) (string, int64) {
 			return strconv.Itoa(int(e.ID)), e.ID
 		})
 		recallKnowledgeIDs := make([]int64, 0)
@@ -1202,7 +1199,7 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 			return make(map[string]any), nil
 		}
 
-		docs, err := crossknowledge.DefaultSVC().Retrieve(ctx, &knowledge.RetrieveRequest{
+		docs, err := crossknowledge.DefaultSVC().Retrieve(ctx, &apiknowledge.RetrieveRequest{
 			Query:        userPrompt,
 			KnowledgeIDs: recallKnowledgeIDs,
 			Strategy:     cfg.RetrievalStrategy.RetrievalStrategy,

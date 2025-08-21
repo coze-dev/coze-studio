@@ -28,8 +28,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 	xmaps "golang.org/x/exp/maps"
 
-	"github.com/cloudwego/eino/schema"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"

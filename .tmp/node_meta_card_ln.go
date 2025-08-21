@@ -145,11 +145,8 @@ const (
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
 	NodeTypePlugin                     NodeType = "Plugin"
 	NodeTypeCreateConversation         NodeType = "CreateConversation"
-	NodeTypeConversationList           NodeType = "ConversationList"
 	NodeTypeMessageList                NodeType = "MessageList"
-	NodeTypeCreateMessage              NodeType = "CreateMessage"
-	NodeTypeEditMessage                NodeType = "EditMessage"
-	NodeTypeDeleteMessage              NodeType = "DeleteMessage"
+	NodeTypeClearMessage               NodeType = "ClearMessage"
 	NodeTypeLambda                     NodeType = "Lambda"
 	NodeTypeLLM                        NodeType = "LLM"
 	NodeTypeSelector                   NodeType = "Selector"
@@ -157,10 +154,6 @@ const (
 	NodeTypeSubWorkflow                NodeType = "SubWorkflow"
 	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
 	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
-	NodeTypeConversationUpdate         NodeType = "ConversationUpdate"
-	NodeTypeConversationDelete         NodeType = "ConversationDelete"
-	NodeTypeClearConversationHistory   NodeType = "ClearConversationHistory"
-	NodeTypeConversationHistory        NodeType = "ConversationHistory"
 	NodeTypeComment                    NodeType = "Comment"
 	NodeTypeMcp                        NodeType = "Mcp"
 )
@@ -281,7 +274,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 			PostFillNil:      true,
 			InputSourceAware: true,
 			MayUseChatModel:  true,
-			UseCtxCache:      true,
 		},
 		EnUSName:        "LLM",
 		EnUSDescription: "Invoke the large language model, generate responses using variables and prompt words.",
@@ -334,7 +326,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
-			UseCtxCache: true,
 		},
 		EnUSName:        "Knowledge retrieval",
 		EnUSDescription: "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
@@ -370,7 +361,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 	NodeTypeDatabaseCustomSQL: {
 		ID:           12,
 		Key:          NodeTypeDatabaseCustomSQL,
-		DisplayKey:   "Database",
+		DisplayKey:   "End",
 		Name:         "SQL自定义",
 		Category:     "database",
 		Desc:         "基于用户自定义的 SQL 完成对数据库的增删改查操作",
@@ -498,7 +489,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 			PreFillZero:     true,
 			PostFillNil:     true,
 			MayUseChatModel: true,
-			UseCtxCache:     true,
 		},
 		EnUSName:        "Intent recognition",
 		EnUSDescription: "Used for recognizing the intent in user input and matching it with preset intent options.",
@@ -605,6 +595,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
 		SupportBatch: false,
+		Disabled:     true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -612,15 +603,16 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSName:        "Query message list",
 		EnUSDescription: "Used to query the message list",
 	},
-	NodeTypeClearConversationHistory: {
+	NodeTypeClearMessage: {
 		ID:           38,
-		Key:          NodeTypeClearConversationHistory,
-		Name:         "清空会话历史",
-		Category:     "conversation_history", // Mapped from cate_list
+		Key:          NodeTypeClearMessage,
+		Name:         "清除上下文",
+		Category:     "conversation_history",
 		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
-		SupportBatch: false, // supportBatch: 1
+		SupportBatch: false,
+		Disabled:     true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -637,6 +629,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
 		SupportBatch: false,
+		Disabled:     true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -738,118 +731,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		},
 		EnUSName:        "Add Data",
 		EnUSDescription: "Add new data records to the table, and insert them into the database after the user enters the data content",
-	},
-	NodeTypeConversationUpdate: {
-		ID:           51,
-		Name:         "修改会话",
-		Key:          NodeTypeConversationUpdate,
-		Category:     "conversation_management",
-		Desc:         "用于修改会话的名字",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-编辑会话.jpg",
-		SupportBatch: false,
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Edit Conversation",
-		EnUSDescription: "Used to modify the name of a conversation.",
-	},
-
-	NodeTypeConversationDelete: {
-		ID:           52,
-		Name:         "删除会话",
-		Key:          NodeTypeConversationDelete,
-		Category:     "conversation_management",
-		Desc:         "用于删除会话",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除会话.jpg",
-		SupportBatch: false,
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Delete Conversation",
-		EnUSDescription: "Used to delete a conversation.",
-	},
-	NodeTypeConversationList: {
-		ID:           53,
-		Name:         "查询会话列表",
-		Key:          NodeTypeConversationList,
-		Category:     "conversation_management",
-		Desc:         "用于查询所有会话，包含静态会话、动态会话",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话.jpg",
-		SupportBatch: false,
-		ExecutableMeta: ExecutableMeta{
-			PostFillNil: true,
-		},
-		EnUSName:        "Query Conversation List",
-		EnUSDescription: "Used to query all conversations, including static conversations and dynamic conversations",
-	},
-	NodeTypeConversationHistory: {
-		ID:           54,
-		Name:         "查询会话历史",
-		Key:          NodeTypeConversationHistory,
-		Category:     "conversation_history", // Mapped from cate_list
-		Desc:         "用于查询会话历史，返回LLM可见的会话消息",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话历史.jpg",
-		SupportBatch: false,
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Query Conversation History",
-		EnUSDescription: "Used to query conversation history, returns conversation messages visible to the LLM",
-	},
-	NodeTypeCreateMessage: {
-		ID:           55,
-		Name:         "创建消息",
-		Key:          NodeTypeCreateMessage,
-		Category:     "message",
-		Desc:         "用于创建消息",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-创建消息.jpg",
-		SupportBatch: false, // supportBatch: 1
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Create message",
-		EnUSDescription: "Used to create messages",
-	},
-	NodeTypeEditMessage: {
-		ID:           56,
-		Name:         "修改消息",
-		Key:          NodeTypeEditMessage,
-		Category:     "message",
-		Desc:         "用于修改消息",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-修改消息.jpg",
-		SupportBatch: false, // supportBatch: 1
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Edit message",
-		EnUSDescription: "Used to edit messages",
-	},
-	NodeTypeDeleteMessage: {
-		ID:           57,
-		Name:         "删除消息",
-		Key:          NodeTypeDeleteMessage,
-		Category:     "message",
-		Desc:         "用于删除消息",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除消息.jpg",
-		SupportBatch: false, // supportBatch: 1
-		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-		},
-		EnUSName:        "Delete message",
-		EnUSDescription: "Used to delete messages",
 	},
 	NodeTypeJsonSerialization: {
 		// ID is the unique identifier of this node type. Used in various front-end APIs.

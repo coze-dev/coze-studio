@@ -20,9 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	netHTTP "net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	ollamaEmb "github.com/cloudwego/eino-ext/components/embedding/ollama"
@@ -31,7 +32,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
-	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/application/internal"
@@ -49,7 +49,6 @@ import (
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
-	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
 	ssvikingdb "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/vikingdb"
 	arkemb "github.com/coze-dev/coze-studio/backend/infra/impl/embedding/ark"
@@ -57,8 +56,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/wrap"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	builtinM2Q "github.com/coze-dev/coze-studio/backend/infra/impl/messages2query/builtin"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 )
 
 type ServiceComponents struct {
@@ -85,8 +87,8 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 
 	var sManagers []searchstore.Manager
 
-	// es full text search
-	sManagers = append(sManagers, sses.NewManager(&sses.ManagerConfig{Client: c.ES}))
+	// Use the provided search store managers
+	sManagers = append(sManagers, c.SearchStoreManagers...)
 
 	// vector search
 	mgr, err := getVectorStore(ctx)
@@ -95,25 +97,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 	sManagers = append(sManagers, mgr)
 
-	var ocrImpl ocr.OCR
-	switch os.Getenv("OCR_TYPE") {
-	case "ve":
-		ocrAK := os.Getenv("VE_OCR_AK")
-		ocrSK := os.Getenv("VE_OCR_SK")
-		if ocrAK == "" || ocrSK == "" {
-			logs.Warnf("[ve_ocr] ak / sk not configured, ocr might not work well")
-		}
-		inst := visual.NewInstance()
-		inst.Client.SetAccessKey(ocrAK)
-		inst.Client.SetSecretKey(ocrSK)
-		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
-	case "paddleocr":
-		ppocrURL := os.Getenv("PADDLEOCR_OCR_API_URL")
-		client := &netHTTP.Client{}
-		ocrImpl = veocr.NewPPOCR(&veocr.PPOCRConfig{Client: client, URL: ppocrURL})
-	default:
-		// accept ocr not configured
-	}
+	// Use the provided OCR implementation from ServiceComponents
 
 	root, err := os.Getwd()
 	if err != nil {
@@ -151,17 +135,13 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		}
 	}
 
-	imageAnnoChatModel, configured, err := internal.GetBuiltinChatModel(ctx, "IA_")
-	if err != nil {
-		return nil, err
-	}
 
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
 		DB:                  c.DB,
 		IDGen:               c.IDGenSVC,
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
-		SearchStoreManagers: c.SearchStoreManagers,
+		SearchStoreManagers: sManagers,
 		ParseManager:        c.ParserManager,
 		Storage:             c.Storage,
 		Rewriter:            rewriter,

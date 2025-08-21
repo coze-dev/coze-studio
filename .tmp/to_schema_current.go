@@ -674,12 +674,11 @@ func RegisterAllNodeAdaptors() {
 	nodes.RegisterNodeAdaptor(entity.NodeTypeDatabaseCustomSQL, func() nodes.NodeAdaptor {
 		return &database.CustomSQLConfig{}
 	})
-	nodes.RegisterNodeAdaptor(entity.NodeTypeCardSelector, func() nodes.NodeAdaptor {
-		return &cardselector.Config{}
-	})
 	nodes.RegisterNodeAdaptor(entity.NodeTypeLLM, func() nodes.NodeAdaptor {
 		return &llm.Config{}
 	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeCardSelector, func() nodes.NodeAdaptor {
+		return &cardselector.Config{}
 	nodes.RegisterNodeAdaptor(entity.NodeTypeCreateConversation, func() nodes.NodeAdaptor {
 		return &conversation.CreateConversationConfig{}
 	})

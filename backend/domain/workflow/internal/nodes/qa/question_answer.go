@@ -31,7 +31,6 @@ import (
 	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
