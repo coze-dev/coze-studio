@@ -19,7 +19,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Upload, Input, Form, Toast } from '@coze-arch/coze-design';
 import { IconCozPlus, IconArrowLeft } from '@coze-arch/coze-design/icons';
 
-// 临时的工作流导入组件，遵循coze-studio的页面模式
+// 工作流导入组件，遵循coze-studio的标准模式
 const WorkflowImportComponent: React.FC<{ spaceId: string }> = ({ spaceId }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -230,7 +230,13 @@ const WorkflowImportComponent: React.FC<{ spaceId: string }> = ({ spaceId }) => 
 // 主页面组件，遵循coze-studio的标准模式
 const Page = () => {
   const { space_id } = useParams();
-  return space_id ? <WorkflowImportComponent spaceId={space_id} /> : null;
+  
+  // 如果没有space_id，返回null，让路由系统处理
+  if (!space_id) {
+    return null;
+  }
+  
+  return <WorkflowImportComponent spaceId={space_id} />;
 };
 
 export default Page;
