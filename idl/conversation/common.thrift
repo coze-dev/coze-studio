@@ -12,4 +12,5 @@ enum Scene{
     PromptOptimize = 7, //Prompt optimization
     GenerateAgentInfo = 8 // Createbot's nl2bot features
     SceneOpenApi = 9, //openapi
+    SceneWorkflow = 50 , // workflow
 }

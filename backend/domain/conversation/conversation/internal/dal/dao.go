@@ -107,6 +107,20 @@ func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error)
 	return updateRes.RowsAffected, err
 }
 
+func (dao *ConversationDAO) Update(ctx context.Context, req *entity.UpdateMeta) (*entity.Conversation, error) {
+	updateColumn := make(map[string]interface{})
+	updateColumn[dao.query.Conversation.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
+	if len(req.Name) > 0 {
+		updateColumn[dao.query.Conversation.Name.ColumnName().String()] = req.Name
+	}
+
+	_, err := dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(req.ID)).UpdateColumns(updateColumn)
+	if err != nil {
+		return nil, err
+	}
+	return dao.GetByID(ctx, req.ID)
+}
+
 func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64, scene int32, connectorID int64) (*entity.Conversation, error) {
 	po, err := dao.query.Conversation.WithContext(ctx).Debug().
 		Where(dao.query.Conversation.CreatorID.Eq(userID)).
@@ -133,7 +147,8 @@ func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int6
 	do = do.Where(dao.query.Conversation.CreatorID.Eq(userID)).
 		Where(dao.query.Conversation.AgentID.Eq(agentID)).
 		Where(dao.query.Conversation.Scene.Eq(scene)).
-		Where(dao.query.Conversation.ConnectorID.Eq(connectorID))
+		Where(dao.query.Conversation.ConnectorID.Eq(connectorID)).
+		Where(dao.query.Conversation.Status.Eq(int32(conversation.ConversationStatusNormal)))
 
 	do = do.Offset((page - 1) * limit)
 
@@ -188,6 +203,7 @@ func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, c *model.Conv
 		Ext:         c.Ext,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
+		Name:        c.Name,
 	}
 }
 
@@ -204,6 +220,7 @@ func (dao *ConversationDAO) conversationBatchPO2DO(ctx context.Context, conversa
 			Ext:         c.Ext,
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
+			Name:        c.Name,
 		}
 	})
 }

@@ -54,6 +54,8 @@ var needAuthPath = map[string]bool{
 
 var needAuthFunc = map[string]bool{
 	"^/v1/conversations/[0-9]+/clear$": true, // v1/conversations/:conversation_id/clear
+	"^/v1/bots/[0-9]+$":                true,
+	"^/v1/conversations/[0-9]+$":       true,
 }
 
 func parseBearerAuthToken(authHeader string) string {

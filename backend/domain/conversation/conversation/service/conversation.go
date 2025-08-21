@@ -29,4 +29,5 @@ type Conversation interface {
 	GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error)
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error)
+	Update(ctx context.Context, req *entity.UpdateMeta) (*entity.Conversation, error)
 }

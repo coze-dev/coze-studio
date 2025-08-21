@@ -1525,3 +1525,38 @@ func _impersonatecozeuserMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _botsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _opengetbotinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deleteconversationapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateconversationapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _conversations0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _chatMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _cancelchatapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

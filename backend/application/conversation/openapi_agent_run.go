@@ -344,3 +344,37 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
 }
+
+func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.CancelChatApiRequest) (*run.CancelChatApiResponse, error) {
+	resp := new(run.CancelChatApiResponse)
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	_ = apiKeyInfo.UserID
+
+	runMeta, err := ConversationSVC.AgentRunDomainSVC.Cancel(ctx, &entity.CancelRunMeta{
+		RunID:          req.ChatID,
+		ConversationID: req.ConversationID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	resp.ChatV3ChatDetail = &run.ChatV3ChatDetail{
+		ID:             runMeta.ID,
+		ConversationID: runMeta.ConversationID,
+		BotID:          runMeta.AgentID,
+		Status:         string(runMeta.Status),
+		SectionID:      ptr.Of(runMeta.SectionID),
+		CreatedAt:      ptr.Of(int32(runMeta.CreatedAt / 1000)),
+		CompletedAt:    ptr.Of(int32(runMeta.CompletedAt / 1000)),
+		FailedAt:       ptr.Of(int32(runMeta.FailedAt / 1000)),
+	}
+	if runMeta != nil && runMeta.Usage != nil {
+		resp.ChatV3ChatDetail.Usage = &run.Usage{
+			TokenCount:   ptr.Of(int32(runMeta.Usage.LlmTotalTokens)),
+			InputTokens:  ptr.Of(int32(runMeta.Usage.LlmPromptTokens)),
+			OutputTokens: ptr.Of(int32(runMeta.Usage.LlmCompletionTokens)),
+		}
+	}
+
+	return resp, nil
+}
