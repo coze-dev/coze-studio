@@ -16,9 +16,6 @@
 
 import { I18n } from '@coze-arch/i18n';
 
-// Default session unique_id
-export const DEFAULT_UNIQUE_ID = '0';
-
 export const DEFAULT_CONVERSATION_NAME = 'Default';
 
 export const MAX_LIMIT = 1000;
