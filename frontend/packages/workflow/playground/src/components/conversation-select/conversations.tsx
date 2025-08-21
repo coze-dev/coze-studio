@@ -17,11 +17,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 
 import { debounce } from 'lodash-es';
+import { useService } from '@flowgram-adapter/free-layout-editor';
 import { CONVERSATION_NAME, workflowApi } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { Typography, Select } from '@coze-arch/coze-design';
 import { CreateMethod, CreateEnv } from '@coze-arch/bot-api/workflow_api';
-import { useService } from '@flowgram-adapter/free-layout-editor';
 
 import { ChatflowService } from '@/services';
 
@@ -131,7 +131,7 @@ export const Conversations: React.FC<ConversationsProps> = ({
           ?.defaultValue || '';
       const findItem = list.find(item => item.label === defaultName);
       // The conversation_name of the start node is selected by default, if not, Default default session is selected by default
-      handleChange(findItem?.value || '0', findItem);
+      handleChange(findItem?.value || list[0]?.value, findItem || list[0]);
     }
   };
 
@@ -155,7 +155,6 @@ export const Conversations: React.FC<ConversationsProps> = ({
       findItem?.value !== chatflowService.selectConversationItem?.value
     ) {
       chatflowService.setSelectConversationItem(findItem);
-      handleChange(findItem?.value || '0');
     }
   }, [value, staticList, dynamicList]);
 
