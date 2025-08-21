@@ -1296,7 +1296,19 @@ func (a *APPApplicationService) ValidateDraftAPPAccess(ctx context.Context, appI
 		return nil, errorx.Wrapf(err, "GetDraftAPP failed, appID=%d", appID)
 	}
 
-	if app.OwnerID != *uid {
+	// 检查权限：应用所有者或空间所有者都可以访问
+	if app.OwnerID == *uid {
+		// 应用所有者直接通过
+		return app, nil
+	}
+
+	// 检查当前用户是否是空间所有者或管理员
+	isMember, _, canManage, _, err := a.userSVC.CheckMemberPermission(ctx, app.SpaceID, *uid)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "CheckMemberPermission failed, spaceID=%d, userID=%d", app.SpaceID, *uid)
+	}
+
+	if !isMember || !canManage {
 		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "you are not the application owner"))
 	}
 

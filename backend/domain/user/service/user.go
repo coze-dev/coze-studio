@@ -84,4 +84,8 @@ type User interface {
 	UpdateMemberRole(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *entity.SpaceMember, err error)
 	RemoveMember(ctx context.Context, operatorID, spaceID, userID int64) (err error)
 	CheckMemberPermission(ctx context.Context, spaceID, userID int64) (isMember bool, roleType int32, canInvite, canManage bool, err error)
+	GetSpaceByID(ctx context.Context, spaceID int64) (space *entity.Space, err error)
+	UpdateSpace(ctx context.Context, spaceID int64, updates map[string]any) (err error)
+	DeleteSpace(ctx context.Context, spaceID int64) (err error)
+	TransferSpace(ctx context.Context, spaceID, currentOwnerID, newOwnerID int64) (err error)
 }

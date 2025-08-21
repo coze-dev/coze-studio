@@ -27,6 +27,7 @@ import (
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
+	folderRepoImpl "github.com/coze-dev/coze-studio/backend/infra/impl/folder/repository"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
@@ -65,6 +66,8 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 		DB:    components.DB,
 	})
 
+	folderRepo := folderRepoImpl.NewFolderRepository(components.DB)
+
 	pluginSVC := service.NewService(&service.Components{
 		IDGen:      components.IDGen,
 		DB:         components.DB,
@@ -85,6 +88,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 	PluginApplicationSVC.userSVC = components.UserSVC
 	PluginApplicationSVC.pluginRepo = pluginRepo
 	PluginApplicationSVC.toolRepo = toolRepo
+	PluginApplicationSVC.folderRepo = folderRepo
 
 	return PluginApplicationSVC, nil
 }

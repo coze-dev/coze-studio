@@ -74,7 +74,11 @@ func GetSpaceDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(space.GetSpaceDetailResponse)
+	resp, err := user.UserApplicationSVC.GetSpaceDetailForSpace(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -90,7 +94,11 @@ func UpdateSpace(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(space.UpdateSpaceResponse)
+	resp, err := user.UserApplicationSVC.UpdateSpaceForSpace(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -106,7 +114,11 @@ func DeleteSpace(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(space.DeleteSpaceResponse)
+	resp, err := user.UserApplicationSVC.DeleteSpaceForSpace(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -231,6 +243,26 @@ func CheckMemberPermission(ctx context.Context, c *app.RequestContext) {
 	resp, err := user.UserApplicationSVC.CheckMemberPermissionForSpace(ctx, &req)
 	if err != nil {
 		println("Application error:", err.Error())
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// TransferSpace .
+// @router /api/space/{space_id}/transfer [POST]
+func TransferSpace(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req space.TransferSpaceRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := user.UserApplicationSVC.TransferSpaceForSpace(ctx, &req)
+	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}

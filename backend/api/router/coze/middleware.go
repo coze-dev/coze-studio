@@ -1535,3 +1535,18 @@ func _getspacemodellistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _createfolderMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getfolderlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _moveresourcestofolderMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

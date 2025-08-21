@@ -122,3 +122,4 @@ values-dev.yaml
 
 *.tsbuildinfo
 
+ynet-docker/docker-compose.yml

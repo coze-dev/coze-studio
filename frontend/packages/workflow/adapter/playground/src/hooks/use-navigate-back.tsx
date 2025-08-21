@@ -132,7 +132,16 @@ export const useNavigateBack = () => {
       }
     }
 
-    if (hasHistory()) {
+    // 检查是否有保存的返回路径
+    const savedPath = localStorage.getItem('library_return_path');
+    if (savedPath && savedPath.includes(`/space/${spaceId}/library/`)) {
+      reporter.event({
+        namespace: 'workflow',
+        eventName: 'workflow_navigate_back_to_saved_path',
+      });
+      localStorage.removeItem('library_return_path'); // 清除保存的路径
+      navigate(savedPath);
+    } else if (hasHistory()) {
       reporter.event({
         namespace: 'workflow',
         eventName: 'workflow_navigate_back_to_history',

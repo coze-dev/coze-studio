@@ -18,6 +18,7 @@ package dal
 
 import (
 	"context"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -42,12 +43,14 @@ func (dao *SpaceDAO) CreateSpace(ctx context.Context, space *model.Space) error 
 func (dao *SpaceDAO) GetSpaceByIDs(ctx context.Context, spaceIDs []int64) ([]*model.Space, error) {
 	return dao.query.Space.WithContext(ctx).Where(
 		dao.query.Space.ID.In(spaceIDs...),
+		dao.query.Space.DeletedAt.IsNull(), // 只查询未软删除的记录
 	).Find()
 }
 
 func (dao *SpaceDAO) GetSpaceByID(ctx context.Context, spaceID int64) (*model.Space, error) {
 	return dao.query.Space.WithContext(ctx).Where(
 		dao.query.Space.ID.Eq(spaceID),
+		dao.query.Space.DeletedAt.IsNull(), // 只查询未软删除的记录
 	).First()
 }
 
@@ -119,4 +122,22 @@ func (dao *SpaceDAO) GetSpaceList(ctx context.Context, userID int64) ([]*model.S
 	return dao.query.SpaceUser.WithContext(ctx).Where(
 		dao.query.SpaceUser.UserID.Eq(userID),
 	).Find()
+}
+
+// DeleteSpace 删除空间（软删除）
+func (dao *SpaceDAO) DeleteSpace(ctx context.Context, spaceID int64) error {
+	// 软删除：设置deleted_at为当前毫秒时间戳
+	now := time.Now().UnixMilli()
+	_, err := dao.query.Space.WithContext(ctx).Where(
+		dao.query.Space.ID.Eq(spaceID),
+	).Update(dao.query.Space.DeletedAt, now)
+	return err
+}
+
+// UpdateSpace 更新空间信息
+func (dao *SpaceDAO) UpdateSpace(ctx context.Context, spaceID int64, updates map[string]any) error {
+	_, err := dao.query.Space.WithContext(ctx).Where(
+		dao.query.Space.ID.Eq(spaceID),
+	).Updates(updates)
+	return err
 }

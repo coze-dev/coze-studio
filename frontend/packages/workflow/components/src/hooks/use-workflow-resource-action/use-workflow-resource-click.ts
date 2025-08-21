@@ -50,6 +50,11 @@ export const useWorkflowResourceClick = (spaceId?: string) => {
     reporter.info({
       message: 'workflow_list_click_row',
     });
+    
+    // 保存当前页面状态到localStorage，用于返回时保持状态
+    const currentPath = window.location.pathname;
+    localStorage.setItem('library_return_path', currentPath);
+    
     onEditWorkFlow(record?.res_id);
   };
 

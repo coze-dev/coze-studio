@@ -224,7 +224,12 @@ export const useKnowledgeConfig: UseEntityConfigHook = ({
       ),
       target: [ResType.Knowledge],
       onItemClick: (item: ResourceInfo) => {
-        navigate(`/space/${spaceId}/knowledge/${item.res_id}?from=library`);
+        // 获取当前页面的source_type
+        const currentPath = window.location.pathname;
+        const sourceTypeMatch = currentPath.match(/\/library\/(\d+)/);
+        const sourceType = sourceTypeMatch ? sourceTypeMatch[1] : '4'; // 默认知识库页面
+        
+        navigate(`/space/${spaceId}/knowledge/${item.res_id}?from=library&return_to=${sourceType}`);
       },
       renderItem: renderKnowledgeItem,
       renderActions: (item: ResourceInfo) => {

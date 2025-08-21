@@ -90,10 +90,17 @@ export const DatabaseInner = ({
   };
 
   const handleClose = () => {
-    if (window.history.length === 1) {
+    // 检查URL参数中的return_to
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('return_to');
+    
+    if (returnTo) {
+      navigate(`/space/${spaceId}/library/${returnTo}`);
+    } else if (window.history.length === 1) {
       navigate(`/space/${spaceId}/library`);
+    } else {
+      navigate(-1);
     }
-    navigate(-1);
   };
 
   const addRemoveButtonText = useMemo(() => {

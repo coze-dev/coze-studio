@@ -49,6 +49,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
+	folderEntity "github.com/coze-dev/coze-studio/backend/domain/folder/entity"
+	folderRepository "github.com/coze-dev/coze-studio/backend/domain/folder/repository"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -72,6 +74,7 @@ type PluginApplicationService struct {
 
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
+	folderRepo folderRepository.FolderRepository
 }
 
 func (p *PluginApplicationService) GetOAuthSchema(ctx context.Context, req *pluginAPI.GetOAuthSchemaRequest) (resp *pluginAPI.GetOAuthSchemaResponse, err error) {
@@ -1772,4 +1775,109 @@ func (p *PluginApplicationService) GetQueriedOAuthPluginList(ctx context.Context
 	}
 
 	return resp, nil
+}
+
+// CreateFolder 创建文件夹
+func (p *PluginApplicationService) CreateFolder(ctx context.Context, req *pluginAPI.CreateFolderRequest) (*pluginAPI.CreateFolderResponse, error) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+	userID := *userIDPtr
+
+	// 验证文件夹名称
+	if req.Name == "" {
+		return nil, errorx.New(errno.ErrPluginInvalidParamCode, errorx.KV(errno.PluginMsgKey, "folder name is required"))
+	}
+
+	folder := &folderEntity.Folder{
+		SpaceID:     req.SpaceID,
+		ParentID:    req.ParentID,
+		Name:        req.Name,
+		Description: req.Description,
+		CreatorID:   userID,
+	}
+
+	createdFolder, err := p.folderRepo.CreateFolder(ctx, folder)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "CreateFolder failed")
+	}
+
+	return &pluginAPI.CreateFolderResponse{
+		Data: &pluginAPI.FolderInfo{
+			ID:          createdFolder.ID,
+			SpaceID:     createdFolder.SpaceID,
+			ParentID:    createdFolder.ParentID,
+			Name:        createdFolder.Name,
+			Description: createdFolder.Description,
+			CreatorID:   createdFolder.CreatorID,
+			CreatedAt:   createdFolder.CreatedAt,
+			UpdatedAt:   createdFolder.UpdatedAt,
+		},
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// GetFolderList 获取文件夹列表
+func (p *PluginApplicationService) GetFolderList(ctx context.Context, req *pluginAPI.GetFolderListRequest) (*pluginAPI.GetFolderListResponse, error) {
+	folders, err := p.folderRepo.GetFoldersBySpaceID(ctx, req.SpaceID, req.ParentID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetFoldersBySpaceID failed")
+	}
+
+	folderList := make([]*pluginAPI.FolderInfo, 0, len(folders))
+	for _, folder := range folders {
+		folderList = append(folderList, &pluginAPI.FolderInfo{
+			ID:          folder.ID,
+			SpaceID:     folder.SpaceID,
+			ParentID:    folder.ParentID,
+			Name:        folder.Name,
+			Description: folder.Description,
+			CreatorID:   folder.CreatorID,
+			CreatedAt:   folder.CreatedAt,
+			UpdatedAt:   folder.UpdatedAt,
+		})
+	}
+
+	return &pluginAPI.GetFolderListResponse{
+		Data: folderList,
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// MoveResourcesToFolder 移动资源到文件夹
+func (p *PluginApplicationService) MoveResourcesToFolder(ctx context.Context, req *pluginAPI.MoveResourcesToFolderRequest) (*pluginAPI.MoveResourcesToFolderResponse, error) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	// 转换字符串数组为int64数组
+	resourceIDs := make([]int64, 0, len(req.ResourceIDStrs))
+	for _, idStr := range req.ResourceIDStrs {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode, errorx.KV(errno.PluginMsgKey, "invalid resource ID: "+idStr))
+		}
+		resourceIDs = append(resourceIDs, id)
+	}
+
+	// 验证文件夹是否存在
+	_, err := p.folderRepo.GetFolderByID(ctx, req.FolderID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "folder not found")
+	}
+
+	// 移动资源到文件夹
+	err = p.folderRepo.MoveResourcesToFolder(ctx, req.SpaceID, req.FolderID, resourceIDs, req.ResourceType)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "MoveResourcesToFolder failed")
+	}
+
+	return &pluginAPI.MoveResourcesToFolderResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
 }

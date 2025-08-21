@@ -68,6 +68,11 @@ type Service interface {
 
 	BindConvRelatedInfo(ctx context.Context, convID int64, info entity.ConvRelatedInfo) error
 	GetConvRelatedInfo(ctx context.Context, convID int64) (*entity.ConvRelatedInfo, bool, func() error, error)
+
+	// Workflow Import/Export methods
+	ExportWorkflow(ctx context.Context, workflowIDs []int64, policy vo.ExportWorkflowPolicy) (*vo.WorkflowExportPackage, error)
+	ImportWorkflow(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ImportResult, error)
+	ValidateImportPackage(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ValidationResult, error)
 }
 
 type Repository interface {

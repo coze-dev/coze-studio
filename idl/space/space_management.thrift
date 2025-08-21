@@ -245,6 +245,20 @@ struct CheckMemberPermissionResponse {
     255: required base.BaseResp BaseResp (api.none="true")
 }
 
+// 空间转让请求
+struct TransferSpaceRequest {
+    1: required i64 space_id (api.path="space_id", api.js_conv='true',agw.js_conv="str")
+    2: required string new_owner_id (api.body="new_owner_id") // 新所有者用户ID
+    
+    255: base.Base Base (api.none="true")
+}
+
+struct TransferSpaceResponse {
+    253: required i32 code
+    254: required string msg
+    255: required base.BaseResp BaseResp (api.none="true")
+}
+
 // 空间管理服务
 service SpaceManagementService {
     // 空间CRUD操作
@@ -263,4 +277,7 @@ service SpaceManagementService {
     // 用户搜索和权限
     SearchUsersResponse SearchUsers(1: SearchUsersRequest req) (api.get="/api/space/search-users")
     CheckMemberPermissionResponse CheckMemberPermission(1: CheckMemberPermissionRequest req) (api.get="/api/space/{space_id}/permission")
+    
+    // 空间转让
+    TransferSpaceResponse TransferSpace(1: TransferSpaceRequest req) (api.post="/api/space/{space_id}/transfer")
 }

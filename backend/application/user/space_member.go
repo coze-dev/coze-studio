@@ -31,11 +31,11 @@ import (
 func getRoleName(roleType int32) string {
 	switch roleType {
 	case 1:
-		return "Viewer"
+		return "Owner"
 	case 2:
-		return "Member"
-	case 3:
 		return "Admin"
+	case 3:
+		return "Member"
 	default:
 		return "Unknown"
 	}
@@ -484,6 +484,190 @@ func (u *UserApplicationService) CheckMemberPermissionForSpace(ctx context.Conte
 			CanInvite: canInvite,
 			CanManage: canManage,
 			RoleType:  space.MemberRoleType(roleType),
+		},
+	}, nil
+}
+
+// DeleteSpace 删除空间
+func (u *UserApplicationService) DeleteSpaceForSpace(ctx context.Context, req *space.DeleteSpaceRequest) (
+	resp *space.DeleteSpaceResponse, err error,
+) {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// 检查权限 - 只有空间所有者可以删除空间
+	isMember, roleType, _, _, err := u.DomainSVC.CheckMemberPermission(ctx, req.SpaceID, userID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "check member permission failed"))
+	}
+
+	if !isMember || roleType != 1 { // 只有Owner(1)可以删除空间
+		return nil, errorx.New(errno.ErrUserPermissionCode, errorx.KV("msg", "only space owner can delete space"))
+	}
+
+	// 获取空间信息，确认当前用户确实是空间的所有者
+	spaceInfo, err := u.DomainSVC.GetSpaceByID(ctx, req.SpaceID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "get space failed"))
+	}
+	
+	// 再次确认：只有空间的真正所有者才能删除空间
+	if spaceInfo.OwnerID != userID {
+		return nil, errorx.New(errno.ErrUserPermissionCode, errorx.KV("msg", "you can only delete spaces you own"))
+	}
+
+	// 删除空间相关的所有数据
+	err = u.DomainSVC.DeleteSpace(ctx, req.SpaceID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "delete space failed"))
+	}
+
+	return &space.DeleteSpaceResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// TransferSpace 转让空间
+func (u *UserApplicationService) TransferSpaceForSpace(ctx context.Context, req *space.TransferSpaceRequest) (
+	resp *space.TransferSpaceResponse, err error,
+) {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// 检查权限 - 只有空间所有者可以转让空间
+	isMember, roleType, _, _, err := u.DomainSVC.CheckMemberPermission(ctx, req.SpaceID, userID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "check member permission failed"))
+	}
+
+	if !isMember || roleType != 1 { // 只有Owner(1)可以转让空间
+		return nil, errorx.WrapByCode(err, errno.ErrUserPermissionCode, errorx.KV("msg", "only space owner can transfer space"))
+	}
+
+	// 转换字符串用户ID为int64
+	newOwnerID, err := strconv.ParseInt(req.NewOwnerID, 10, 64)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "invalid new owner ID format"))
+	}
+
+	// 不能转让给自己
+	if newOwnerID == userID {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "cannot transfer space to yourself"))
+	}
+
+	// 检查新所有者是否是空间成员
+	isMemberNew, _, _, _, err := u.DomainSVC.CheckMemberPermission(ctx, req.SpaceID, newOwnerID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "check new owner permission failed"))
+	}
+
+	if !isMemberNew {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "can only transfer space to existing space members"))
+	}
+
+	// 执行空间转让
+	err = u.DomainSVC.TransferSpace(ctx, req.SpaceID, userID, newOwnerID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "transfer space failed"))
+	}
+
+	return &space.TransferSpaceResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// UpdateSpace 更新空间信息
+func (u *UserApplicationService) UpdateSpaceForSpace(ctx context.Context, req *space.UpdateSpaceRequest) (
+	resp *space.UpdateSpaceResponse, err error,
+) {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// 检查权限 - 只有空间所有者可以更新空间信息
+	isMember, roleType, _, _, err := u.DomainSVC.CheckMemberPermission(ctx, req.SpaceID, userID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "check member permission failed"))
+	}
+
+	if !isMember || roleType != 1 { // 只有Owner(1)可以更新空间
+		return nil, errorx.New(errno.ErrUserPermissionCode, errorx.KV("msg", "only space owner can update space"))
+	}
+
+	// 获取空间信息，确认当前用户确实是空间的所有者
+	spaceInfo, err := u.DomainSVC.GetSpaceByID(ctx, req.SpaceID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "get space failed"))
+	}
+	
+	if spaceInfo.OwnerID != userID {
+		return nil, errorx.New(errno.ErrUserPermissionCode, errorx.KV("msg", "you can only update spaces you own"))
+	}
+
+	// 准备更新数据
+	updates := make(map[string]any)
+	if req.Name != nil && *req.Name != "" {
+		updates["name"] = *req.Name
+	}
+	if req.Description != nil {
+		updates["description"] = *req.Description
+	}
+	// 暂时注释icon_url更新，避免数据库字段长度限制问题
+	// if req.IconURL != nil {
+	// 	updates["icon_uri"] = *req.IconURL
+	// }
+
+	// 如果没有任何更新内容，直接返回成功
+	if len(updates) == 0 {
+		return &space.UpdateSpaceResponse{
+			Code: 0,
+			Msg:  "no changes to update",
+		}, nil
+	}
+
+	// 调用领域服务更新空间
+	err = u.DomainSVC.UpdateSpace(ctx, req.SpaceID, updates)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "update space failed"))
+	}
+
+	return &space.UpdateSpaceResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+// GetSpaceDetail 获取空间详情
+func (u *UserApplicationService) GetSpaceDetailForSpace(ctx context.Context, req *space.GetSpaceDetailRequest) (
+	resp *space.GetSpaceDetailResponse, err error,
+) {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// 检查权限 - 用户必须是空间成员
+	isMember, _, _, _, err := u.DomainSVC.CheckMemberPermission(ctx, req.SpaceID, userID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "check member permission failed"))
+	}
+
+	if !isMember {
+		return nil, errorx.WrapByCode(err, errno.ErrUserPermissionCode, errorx.KV("msg", "not a member of this space"))
+	}
+
+	// 获取空间信息
+	spaceInfo, err := u.DomainSVC.GetSpaceByID(ctx, req.SpaceID)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "get space failed"))
+	}
+
+	return &space.GetSpaceDetailResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: &space.SpaceInfo{
+			SpaceID:     spaceInfo.SpaceID,
+			Name:        spaceInfo.Name,
+			Description: &spaceInfo.Description,
+			IconURL:     &spaceInfo.IconURL,
+			Status:      space.SpaceStatus(1), // 默认活跃状态
+			CreatedAt:   spaceInfo.CreatedAt,
+			UpdatedAt:   &spaceInfo.UpdatedAt,
 		},
 	}, nil
 }

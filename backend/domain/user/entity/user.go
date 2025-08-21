@@ -49,17 +49,17 @@ type SpaceMember struct {
 type RoleType int32
 
 const (
-	RoleTypeViewer RoleType = 1
-	RoleTypeMember RoleType = 2
-	RoleTypeAdmin  RoleType = 3
+	RoleTypeOwner  RoleType = 1 // 拥有者
+	RoleTypeAdmin  RoleType = 2 // 管理员
+	RoleTypeMember RoleType = 3 // 普通成员
 )
 
 // CanInvite returns whether the role can invite new members
 func (r RoleType) CanInvite() bool {
-	return r >= RoleTypeMember
+	return r <= RoleTypeAdmin // Owner(1) 和 Admin(2) 都可以邀请
 }
 
 // CanManage returns whether the role can manage members
 func (r RoleType) CanManage() bool {
-	return r == RoleTypeAdmin
+	return r <= RoleTypeAdmin // Owner(1) 和 Admin(2) 都可以管理
 }

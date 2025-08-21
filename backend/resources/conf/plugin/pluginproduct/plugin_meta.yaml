@@ -1,1 +1,31 @@
-products: []
+- plugin_id: 2
+  product_id: 7376228190244618278
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: library_search.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: wenkusousuo
+    name_for_human: 文库搜索
+    description_for_model: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    description_for_human: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_library_search.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+        - name: X-Requested-With
+          value: XMLHttpRequest
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 20001
+      deprecated: false
+      method: get
+      sub_url: /document/coze

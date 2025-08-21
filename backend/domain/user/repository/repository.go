@@ -63,4 +63,6 @@ type SpaceRepository interface {
 	CountSpaceUsers(ctx context.Context, spaceID int64, roleType *int32) (int64, error)
 	UpdateSpaceUser(ctx context.Context, spaceUser *model.SpaceUser) error
 	DeleteSpaceUser(ctx context.Context, spaceID, userID int64) error
+	DeleteSpace(ctx context.Context, spaceID int64) error
+	UpdateSpace(ctx context.Context, spaceID int64, updates map[string]any) error
 }

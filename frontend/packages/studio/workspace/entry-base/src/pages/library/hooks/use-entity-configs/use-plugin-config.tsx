@@ -87,6 +87,11 @@ export const usePluginConfig: UseEntityConfigHook = ({
       ),
       target: [ResType.Plugin],
       onItemClick: (item: ResourceInfo) => {
+        // 获取当前页面的source_type
+        const currentPath = window.location.pathname;
+        const sourceTypeMatch = currentPath.match(/\/library\/(\d+)/);
+        const sourceType = sourceTypeMatch ? sourceTypeMatch[1] : '1'; // 默认插件页面
+        
         if (
           item.res_type === ResType.Plugin &&
           item.res_sub_type === 2 //Plugin：1-Http; 2-App; 6-Local；
@@ -96,7 +101,7 @@ export const usePluginConfig: UseEntityConfigHook = ({
           )?.enable;
           open(item.res_id || '', disable);
         } else {
-          navigate(`/space/${spaceId}/plugin/${item.res_id}`);
+          navigate(`/space/${spaceId}/plugin/${item.res_id}?return_to=${sourceType}`);
         }
       },
       renderItem: item => (

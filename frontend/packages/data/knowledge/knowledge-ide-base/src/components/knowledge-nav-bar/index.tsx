@@ -133,7 +133,16 @@ export const KnowledgeIDENavBar = ({
 
   const handleBack = () => {
     onBack?.();
-    navigate(`/space/${params.spaceID}/library`);
+    
+    // 检查URL参数中的return_to
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('return_to');
+    
+    if (returnTo) {
+      navigate(`/space/${params.spaceID}/library/${returnTo}`);
+    } else {
+      navigate(`/space/${params.spaceID}/library`);
+    }
   };
 
   const fromProject = params.biz === 'project';

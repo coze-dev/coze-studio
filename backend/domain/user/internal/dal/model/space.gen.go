@@ -4,9 +4,6 @@
 
 package model
 
-import (
-	"gorm.io/gorm"
-)
 
 const TableNameSpace = "space"
 
@@ -20,7 +17,7 @@ type Space struct {
 	CreatorID   int64          `gorm:"column:creator_id;not null;comment:Creator ID" json:"creator_id"`                                        // Creator ID
 	CreatedAt   int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Creation Time (Milliseconds)" json:"created_at"` // Creation Time (Milliseconds)
 	UpdatedAt   int64          `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time (Milliseconds)" json:"updated_at"`   // Update Time (Milliseconds)
-	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;comment:Deletion Time (Milliseconds)" json:"deleted_at"`                               // Deletion Time (Milliseconds)
+	DeletedAt   *int64         `gorm:"column:deleted_at;comment:Deletion Time (Milliseconds)" json:"deleted_at"`                               // Deletion Time (Milliseconds)
 }
 
 // TableName Space's table name

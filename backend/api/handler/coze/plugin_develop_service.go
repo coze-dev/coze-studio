@@ -913,3 +913,93 @@ func GetQueriedOAuthPluginList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// CreateFolder 创建文件夹
+// @router /api/plugin_api/create_folder [POST]
+func CreateFolder(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.CreateFolderRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+
+	if req.Name == "" {
+		invalidParamRequestResponse(c, "folder name is required")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.CreateFolder(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetFolderList 获取文件夹列表
+// @router /api/plugin_api/get_folder_list [POST]
+func GetFolderList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetFolderListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetFolderList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// MoveResourcesToFolder 移动资源到文件夹
+// @router /api/plugin_api/move_resources_to_folder [POST]
+func MoveResourcesToFolder(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.MoveResourcesToFolderRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+
+	if req.FolderID <= 0 {
+		invalidParamRequestResponse(c, "folderID is invalid")
+		return
+	}
+
+	if len(req.ResourceIDStrs) == 0 {
+		invalidParamRequestResponse(c, "resourceIDs is required")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.MoveResourcesToFolder(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -15,6 +15,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { space_management } from '@coze-studio/api-schema';
 
 // 空间类型枚举
@@ -63,6 +64,7 @@ interface SpaceMemberInfo {
 }
 
 const SpaceManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [spaceList, setSpaceList] = useState<SpaceInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentSpace, setCurrentSpace] = useState<SpaceInfo | null>(null);
@@ -112,20 +114,25 @@ const SpaceManagementPage: React.FC = () => {
         space_type: newSpaceType,
       });
       
-      if (response.code === 200) {
+      if (response.code === 200 && response.data) {
         setNewSpaceName('');
         setNewSpaceDescription('');
         setNewSpaceType(SpaceType.Personal);
         setShowCreateModal(false);
-        await fetchSpaceList();
+        // 跳转到新创建的空间
+        navigate(`/space/${response.data.space_id}/members`);
       }
     } catch (error: any) {
       console.error('Failed to create space:', error);
       if (error.code === '200' || error.code === 200) {
-        setNewSpaceName('');
-        setNewSpaceDescription('');
-        setShowCreateModal(false);
-        await fetchSpaceList();
+        const responseData = error.response?.data;
+        if (responseData && responseData.data) {
+          setNewSpaceName('');
+          setNewSpaceDescription('');
+          setShowCreateModal(false);
+          // 跳转到新创建的空间
+          navigate(`/space/${responseData.data.space_id}/members`);
+        }
       }
     }
   };

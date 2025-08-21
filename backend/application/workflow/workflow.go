@@ -4227,25 +4227,16 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	}
 
 	// Create export policy
-	// policy := vo.ExportWorkflowPolicy{
-	// 	IncludeDependencies: safeDerefBool(req.IncludeDependencies, true),
-	// 	ExportFormat:        safeDerefString(req.ExportFormat, "json"),
-	// 	IncludeVersions:     safeDerefBool(req.IncludeVersions, false),
-	// }
-	_ = req.IncludeDependencies // Suppress unused variable warning
-	_ = req.ExportFormat // Suppress unused variable warning
-	_ = req.IncludeVersions // Suppress unused variable warning
+	policy := vo.ExportWorkflowPolicy{
+		IncludeDependencies: safeDerefBool(req.IncludeDependencies, true),
+		ExportFormat:        safeDerefString(req.ExportFormat, "json"),
+		IncludeVersions:     safeDerefBool(req.IncludeVersions, false),
+	}
 
-	// TODO: ExportWorkflow needs to be implemented in domain service
-	// exportPackage, err := w.DomainSVC.ExportWorkflow(ctx, workflowIDs, policy)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	
-	// Temporary empty package
-	exportPackage := &vo.WorkflowExportPackage{
-		Version: "1.0.0",
-		Workflows: []vo.WorkflowExportData{},
+	// Export workflows using domain service
+	exportPackage, err := w.DomainSVC.ExportWorkflow(ctx, workflowIDs, policy)
+	if err != nil {
+		return nil, err
 	}
 
 	// Serialize export package to JSON
@@ -4321,18 +4312,10 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 
 	// Check if this is a validation-only request
 	if safeDerefBool(req.ValidateOnly, false) {
-		// TODO: ValidateImportPackage needs to be implemented in domain service
-		// validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		
-		// Temporary validation result
-		validationResult := &vo.ValidationResult{
-			IsValid: false,
-			WorkflowCount: 0,
-			SourceSystem: "unknown",
-			Errors: []vo.ValidationError{{Message: "ValidateImportPackage not implemented"}},
+		// Validate import package using domain service
+		validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
+		if err != nil {
+			return nil, err
 		}
 
 		// Convert validation result to import result format
@@ -4354,17 +4337,25 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 		}, nil
 	}
 
-	// TODO: ImportWorkflow needs to be implemented in domain service
-	// importResult, err := w.DomainSVC.ImportWorkflow(ctx, &importPackage, policy)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	
-	// Temporary import result
-	importResult := &vo.ImportResult{
-		ImportedWorkflows: []vo.ImportedWorkflowInfo{},
-		SkippedWorkflows: []vo.SkippedWorkflowInfo{},
-		FailedWorkflows: []vo.FailedWorkflowInfo{},
+	// Import workflows using domain service
+	importResult, err := w.DomainSVC.ImportWorkflow(ctx, &importPackage, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Trigger ES indexing for successfully imported workflows
+	for _, importedWorkflow := range importResult.ImportedWorkflows {
+		if err := PublishWorkflowResource(ctx, importedWorkflow.NewID, nil, search.Created, &search.ResourceDocument{
+			Name:          &importedWorkflow.Name,
+			SpaceID:       &spaceID,
+			OwnerID:       &uid,
+			PublishStatus: ptr.Of(resource.PublishStatus_UnPublished),
+			CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
+			UpdateTimeMS:  ptr.Of(time.Now().UnixMilli()),
+		}); err != nil {
+			logs.CtxErrorf(ctx, "Failed to publish imported workflow resource for ES indexing, workflowID: %d, err: %v", importedWorkflow.NewID, err)
+			// Don't fail the import operation for ES indexing errors - just log them
+		}
 	}
 
 	// Create summary
@@ -4409,23 +4400,14 @@ func (w *ApplicationService) ValidateImport(ctx context.Context, req *workflow.V
 	}
 
 	// Create import policy for validation
-	// policy := vo.ImportWorkflowPolicy{
-	// 	TargetSpaceID: &spaceID,
-	// }
-	_ = spaceID // Suppress unused variable warning
+	policy := vo.ImportWorkflowPolicy{
+		TargetSpaceID: &spaceID,
+	}
 
-	// TODO: ValidateImportPackage needs to be implemented in domain service
-	// validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	
-	// Temporary validation result
-	validationResult := &vo.ValidationResult{
-		IsValid: false,
-		WorkflowCount: 0,
-		SourceSystem: "unknown",
-		Errors: []vo.ValidationError{{Message: "ValidateImportPackage not implemented"}},
+	// Validate import package using domain service
+	validationResult, err := w.DomainSVC.ValidateImportPackage(ctx, &importPackage, policy)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create summary

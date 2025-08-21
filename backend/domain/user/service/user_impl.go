@@ -701,11 +701,11 @@ func (u *userImpl) CreateSpace(ctx context.Context, userID int64, name, descript
 		return nil, fmt.Errorf("create space failed: %w", err)
 	}
 
-	// 将创建者添加为空间管理员
+	// 将创建者添加为空间拥有者
 	spaceUser := &model.SpaceUser{
 		SpaceID:   spaceID,
 		UserID:    userID,
-		RoleType:  int32(userEntity.RoleTypeAdmin),
+		RoleType:  int32(userEntity.RoleTypeOwner),
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -964,6 +964,91 @@ func (u *userImpl) RemoveMember(ctx context.Context, operatorID, spaceID, userID
 	// 删除成员记录
 	if err := u.SpaceRepo.DeleteSpaceUser(ctx, spaceID, userID); err != nil {
 		return fmt.Errorf("delete space user failed: %w", err)
+	}
+
+	return nil
+}
+
+// GetSpaceByID 获取空间信息
+func (u *userImpl) GetSpaceByID(ctx context.Context, spaceID int64) (space *userEntity.Space, err error) {
+	spaceModel, err := u.SpaceRepo.GetSpaceByID(ctx, spaceID)
+	if err != nil {
+		return nil, fmt.Errorf("get space failed: %w", err)
+	}
+
+	// 获取图标URL
+	iconURL, err := u.IconOSS.GetObjectUrl(ctx, spaceModel.IconURI)
+	if err != nil {
+		iconURL = spaceModel.IconURI // 如果获取失败，使用原始URI
+	}
+
+	return &userEntity.Space{
+		SpaceID:     spaceModel.ID,
+		Name:        spaceModel.Name,
+		Description: spaceModel.Description,
+		IconURL:     iconURL,
+		OwnerID:     spaceModel.OwnerID,
+		CreatorID:   spaceModel.CreatorID,
+		CreatedAt:   spaceModel.CreatedAt,
+		UpdatedAt:   spaceModel.UpdatedAt,
+	}, nil
+}
+
+// UpdateSpace 更新空间信息
+func (u *userImpl) UpdateSpace(ctx context.Context, spaceID int64, updates map[string]any) (err error) {
+	return u.SpaceRepo.UpdateSpace(ctx, spaceID, updates)
+}
+
+// DeleteSpace 删除空间（软删除）
+func (u *userImpl) DeleteSpace(ctx context.Context, spaceID int64) (err error) {
+	// 只需要软删除空间记录，成员关系保留
+	err = u.SpaceRepo.DeleteSpace(ctx, spaceID)
+	if err != nil {
+		return fmt.Errorf("delete space failed: %w", err)
+	}
+
+	return nil
+}
+
+// TransferSpace 转让空间
+func (u *userImpl) TransferSpace(ctx context.Context, spaceID, currentOwnerID, newOwnerID int64) (err error) {
+	// 第一步：更新 space 表的 owner_id
+	err = u.SpaceRepo.UpdateSpace(ctx, spaceID, map[string]any{
+		"owner_id": newOwnerID,
+	})
+	if err != nil {
+		return fmt.Errorf("update space owner failed: %w", err)
+	}
+
+	// 第二步：更新 space_user 表中的角色变更
+	// 2.1. 将新所有者的角色更新为 Owner(1)
+	newOwnerMember, exists, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, newOwnerID)
+	if err != nil {
+		return fmt.Errorf("get new owner member failed: %w", err)
+	}
+	if !exists {
+		return fmt.Errorf("new owner is not a space member")
+	}
+
+	newOwnerMember.RoleType = 1 // Owner
+	err = u.SpaceRepo.UpdateSpaceUser(ctx, newOwnerMember)
+	if err != nil {
+		return fmt.Errorf("update new owner role failed: %w", err)
+	}
+
+	// 2.2. 将原所有者的角色更新为 Admin(2)
+	currentOwnerMember, exists, err := u.SpaceRepo.GetSpaceUserBySpaceIDAndUserID(ctx, spaceID, currentOwnerID)
+	if err != nil {
+		return fmt.Errorf("get current owner member failed: %w", err)
+	}
+	if !exists {
+		return fmt.Errorf("current owner is not a space member")
+	}
+
+	currentOwnerMember.RoleType = 2 // Admin
+	err = u.SpaceRepo.UpdateSpaceUser(ctx, currentOwnerMember)
+	if err != nil {
+		return fmt.Errorf("update current owner role failed: %w", err)
 	}
 
 	return nil

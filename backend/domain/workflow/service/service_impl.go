@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
@@ -1495,6 +1496,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 		for _, node := range nodes {
 			switch entity.IDStrToNodeType(node.Type) {
 			case entity.NodeTypePlugin:
+				if node.Data.Inputs == nil {
+					return fmt.Errorf("node data inputs is nil for plugin node")
+				}
 				apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
 					return e.Name, e
 				})
@@ -1518,6 +1522,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				}
 
 			case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
+				if node.Data.Inputs == nil {
+					return fmt.Errorf("node data inputs is nil for knowledge node")
+				}
 				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
 				for _, id := range datasetIDs {
@@ -1528,6 +1535,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					ds.KnowledgeIDs = append(ds.KnowledgeIDs, k)
 				}
 			case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
+				if node.Data.Inputs == nil {
+					return fmt.Errorf("node data inputs is nil for database node")
+				}
 				dsList := node.Data.Inputs.DatabaseInfoList
 				if len(dsList) == 0 {
 					return fmt.Errorf("database info is requird")
@@ -1540,7 +1550,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					ds.DatabaseIDs = append(ds.DatabaseIDs, dsID)
 				}
 			case entity.NodeTypeLLM:
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil && node.Data.Inputs.FCParam.PluginFCParam.PluginList != nil {
 					for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
 						if node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx].IsDraft {
 							pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
@@ -1554,7 +1564,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 					}
 				}
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList != nil {
 					for idx := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
 						kn := node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList[idx]
 						kid, err := strconv.ParseInt(kn.ID, 10, 64)
@@ -1566,7 +1576,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 				}
 
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList != nil {
 					for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 						if node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].IsDraft {
 							wID, err := strconv.ParseInt(node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].WorkflowID, 10, 64)
@@ -1599,6 +1609,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				}
 
 			case entity.NodeTypeSubWorkflow:
+				if node.Data.Inputs == nil {
+					return fmt.Errorf("node data inputs is nil for subworkflow node")
+				}
 				if node.Data.Inputs.WorkflowVersion == "" {
 					wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 					if err != nil {
@@ -2159,4 +2172,270 @@ func (i *impl) adaptToChatFlow(ctx context.Context, wID int64) error {
 		return err
 	}
 	return i.Save(ctx, wID, canvasStr)
+}
+
+// ExportWorkflow exports multiple workflows to a structured package
+func (i *impl) ExportWorkflow(ctx context.Context, workflowIDs []int64, policy vo.ExportWorkflowPolicy) (*vo.WorkflowExportPackage, error) {
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	// Initialize the export package
+	exportPackage := &vo.WorkflowExportPackage{
+		Version:     "1.0.0",
+		ExportedAt:  time.Now(),
+		ExportedBy:  uid,
+		Source:      "coze-studio",
+		Description: "",
+		Workflows:   make([]vo.WorkflowExportData, 0, len(workflowIDs)),
+		ExportPolicy: policy,
+	}
+
+	// Export each workflow
+	for _, workflowID := range workflowIDs {
+		workflowData, err := i.exportSingleWorkflow(ctx, workflowID, policy)
+		if err != nil {
+			return nil, fmt.Errorf("failed to export workflow %d: %w", workflowID, err)
+		}
+		exportPackage.Workflows = append(exportPackage.Workflows, *workflowData)
+	}
+
+	return exportPackage, nil
+}
+
+// exportSingleWorkflow exports a single workflow
+func (i *impl) exportSingleWorkflow(ctx context.Context, workflowID int64, policy vo.ExportWorkflowPolicy) (*vo.WorkflowExportData, error) {
+	// Get workflow data using existing Get method
+	getPolicy := &vo.GetPolicy{
+		ID:      workflowID,
+		Version: "", // Get latest version
+	}
+
+	workflow, err := i.Get(ctx, getPolicy)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflow %d: %w", workflowID, err)
+	}
+
+	// Create export data
+	exportData := &vo.WorkflowExportData{
+		OriginalID:   workflowID,
+		Meta:         workflow.Meta,
+		CanvasInfo:   workflow.CanvasInfo,
+		DraftMeta:    workflow.DraftMeta,
+		VersionMeta:  workflow.VersionMeta,
+		ExportedFrom: "coze-studio",
+		ExportedAt:   time.Now(),
+	}
+
+	// Get dependencies if requested
+	if policy.IncludeDependencies {
+		dependencies, err := i.GetWorkflowDependenceResource(ctx, workflowID)
+		if err != nil {
+			logs.CtxWarnf(ctx, "Failed to get dependencies for workflow %d: %v", workflowID, err)
+			// Continue without dependencies rather than failing the export
+		} else {
+			exportData.Dependencies = dependencies
+		}
+	}
+
+	return exportData, nil
+}
+
+// ImportWorkflow imports workflows from an export package
+func (i *impl) ImportWorkflow(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ImportResult, error) {
+	result := &vo.ImportResult{
+		ImportedWorkflows: make([]vo.ImportedWorkflowInfo, 0),
+		SkippedWorkflows:  make([]vo.SkippedWorkflowInfo, 0),
+		FailedWorkflows:   make([]vo.FailedWorkflowInfo, 0),
+		DependencyIssues:  make([]vo.DependencyIssue, 0),
+	}
+
+	// First validate the package
+	validationResult, err := i.ValidateImportPackage(ctx, importPackage, policy)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate import package: %w", err)
+	}
+
+	if !validationResult.IsValid {
+		return nil, fmt.Errorf("import package validation failed: %v", validationResult.Errors)
+	}
+
+	// Import each workflow
+	for _, workflowData := range importPackage.Workflows {
+		importedInfo, err := i.importSingleWorkflow(ctx, &workflowData, policy)
+		if err != nil {
+			result.FailedWorkflows = append(result.FailedWorkflows, vo.FailedWorkflowInfo{
+				OriginalID: workflowData.OriginalID,
+				Name:       workflowData.Meta.Name,
+				Error:      err.Error(),
+			})
+			continue
+		}
+		result.ImportedWorkflows = append(result.ImportedWorkflows, *importedInfo)
+	}
+
+	return result, nil
+}
+
+// importSingleWorkflow imports a single workflow
+func (i *impl) importSingleWorkflow(ctx context.Context, workflowData *vo.WorkflowExportData, policy vo.ImportWorkflowPolicy) (*vo.ImportedWorkflowInfo, error) {
+	// Get user ID from context
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	// Clean up canvas data before using it
+	var cleanedCanvasSchema string
+	if workflowData.CanvasInfo != nil && workflowData.CanvasInfo.Canvas != "" {
+		canvasData := workflowData.CanvasInfo.Canvas
+		
+		// Try to clean up the canvas JSON string
+		var canvasObj interface{}
+		
+		// Strategy 1: Direct unmarshal
+		if err := sonic.UnmarshalString(canvasData, &canvasObj); err == nil {
+			// Re-marshal to ensure clean JSON format
+			if cleanedCanvas, marshalErr := sonic.MarshalString(canvasObj); marshalErr == nil {
+				cleanedCanvasSchema = cleanedCanvas
+			} else {
+				logs.CtxWarnf(ctx, "Failed to re-marshal canvas: %v", marshalErr)
+				cleanedCanvasSchema = vo.GetDefaultInitCanvasJsonSchema("en")
+			}
+		} else {
+			logs.CtxWarnf(ctx, "Direct unmarshal failed: %v", err)
+			
+			// Strategy 2: Try unquoting first
+			if unquotedCanvas, unquoteErr := strconv.Unquote(`"` + canvasData + `"`); unquoteErr == nil {
+				if cleanErr := sonic.UnmarshalString(unquotedCanvas, &canvasObj); cleanErr == nil {
+					if cleanedCanvas, marshalErr := sonic.MarshalString(canvasObj); marshalErr == nil {
+						cleanedCanvasSchema = cleanedCanvas
+					} else {
+						logs.CtxWarnf(ctx, "Failed to re-marshal unquoted canvas: %v", marshalErr)
+						cleanedCanvasSchema = vo.GetDefaultInitCanvasJsonSchema("en")
+					}
+				} else {
+					logs.CtxWarnf(ctx, "Unquoted unmarshal failed: %v", cleanErr)
+					cleanedCanvasSchema = vo.GetDefaultInitCanvasJsonSchema("en")
+				}
+			} else {
+				logs.CtxWarnf(ctx, "Unquote failed: %v", unquoteErr)
+				cleanedCanvasSchema = vo.GetDefaultInitCanvasJsonSchema("en")
+			}
+		}
+	} else {
+		cleanedCanvasSchema = vo.GetDefaultInitCanvasJsonSchema("en")
+	}
+
+	// Prepare meta for creation
+	metaCreate := &vo.MetaCreate{
+		Name:             workflowData.Meta.Name,
+		Desc:             workflowData.Meta.Desc,
+		SpaceID:          *policy.TargetSpaceID,
+		ContentType:      workflowData.Meta.ContentType,
+		Mode:             workflowData.Meta.Mode,
+		CreatorID:        uid, // Use current user as creator
+		InitCanvasSchema: cleanedCanvasSchema,
+	}
+
+	// Handle name conflicts
+	if policy.ShouldModifyWorkflowName {
+		// For now, we use the original name as-is
+		// TODO: Implement proper name conflict resolution by checking existing workflows in target space
+	}
+
+	// Create the workflow
+	newWorkflowID, err := i.Create(ctx, metaCreate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	// Canvas data has already been saved during creation via InitCanvasSchema
+	// No additional canvas save needed
+	logs.CtxInfof(ctx, "Workflow %d created successfully with canvas data", newWorkflowID)
+
+	return &vo.ImportedWorkflowInfo{
+		OriginalID: workflowData.OriginalID,
+		NewID:      newWorkflowID,
+		Name:       metaCreate.Name,
+		WasRenamed: false,
+		NewName:    "",
+	}, nil
+}
+
+// ValidateImportPackage validates an import package without actually importing
+func (i *impl) ValidateImportPackage(ctx context.Context, importPackage *vo.WorkflowExportPackage, policy vo.ImportWorkflowPolicy) (*vo.ValidationResult, error) {
+	result := &vo.ValidationResult{
+		IsValid:       true,
+		Errors:        make([]vo.ValidationError, 0),
+		Warnings:      make([]vo.ValidationError, 0),
+		FormatVersion: "",
+		SourceSystem:  "",
+		WorkflowCount: 0,
+	}
+
+	// Check if package is nil
+	if importPackage == nil {
+		result.IsValid = false
+		result.Errors = append(result.Errors, vo.ValidationError{
+			Code:     "INVALID_PACKAGE",
+			Message:  "Import package is empty or null",
+			Severity: "error",
+		})
+		return result, nil
+	}
+
+	// Set basic info
+	result.FormatVersion = importPackage.Version
+	result.SourceSystem = importPackage.Source
+	result.WorkflowCount = len(importPackage.Workflows)
+
+	// Validate version compatibility
+	if importPackage.Version != "1.0.0" && importPackage.Version != "1.0" {
+		result.Warnings = append(result.Warnings, vo.ValidationError{
+			Code:     "VERSION_MISMATCH",
+			Message:  fmt.Sprintf("Package version %s may not be fully compatible with current version 1.0.0", importPackage.Version),
+			Severity: "warning",
+		})
+	}
+
+	// Validate each workflow
+	for i, workflowData := range importPackage.Workflows {
+		workflowID := workflowData.OriginalID
+
+		// Check if workflow has required meta information
+		if workflowData.Meta == nil {
+			result.IsValid = false
+			result.Errors = append(result.Errors, vo.ValidationError{
+				Code:       "MISSING_META",
+				Message:    "Workflow is missing metadata information",
+				WorkflowID: &workflowID,
+				Severity:   "error",
+			})
+			continue
+		}
+
+		// Validate canvas information
+		if workflowData.CanvasInfo != nil && workflowData.CanvasInfo.Canvas != "" {
+			var canvas interface{}
+			if err := sonic.UnmarshalString(workflowData.CanvasInfo.Canvas, &canvas); err != nil {
+				result.IsValid = false
+				result.Errors = append(result.Errors, vo.ValidationError{
+					Code:       "INVALID_CANVAS",
+					Message:    fmt.Sprintf("Workflow canvas contains invalid JSON: %v", err),
+					WorkflowID: &workflowID,
+					FieldPath:  fmt.Sprintf("workflows[%d].canvas_info.canvas", i),
+					Severity:   "error",
+				})
+			}
+		}
+
+		// Validate workflow name
+		if workflowData.Meta.Name == "" {
+			result.IsValid = false
+			result.Errors = append(result.Errors, vo.ValidationError{
+				Code:       "MISSING_NAME",
+				Message:    "Workflow name is required",
+				WorkflowID: &workflowID,
+				FieldPath:  fmt.Sprintf("workflows[%d].meta.name", i),
+				Severity:   "error",
+			})
+		}
+	}
+
+	return result, nil
 }

@@ -86,8 +86,13 @@ export const useDatabaseConfig: UseEntityConfigHook = ({
       ),
       target: [ResType.Database],
       onItemClick: (item: ResourceInfo) => {
+        // 获取当前页面的source_type
+        const currentPath = window.location.pathname;
+        const sourceTypeMatch = currentPath.match(/\/library\/(\d+)/);
+        const sourceType = sourceTypeMatch ? sourceTypeMatch[1] : '5'; // 默认数据库页面
+        
         navigate(
-          `/space/${spaceId}/database/${item.res_id}?page_mode=normal&from=library`,
+          `/space/${spaceId}/database/${item.res_id}?page_mode=normal&from=library&return_to=${sourceType}`,
         );
       },
       renderActions: (item: ResourceInfo) => {

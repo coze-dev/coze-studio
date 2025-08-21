@@ -343,22 +343,34 @@ func userDo2PlaygroundTo(userDo *entity.User) *playground.UserBasicInfo {
 
 // CreateSpace creates a new space
 func (u *UserApplicationService) CreateSpace(ctx context.Context, req *space.CreateSpaceRequest) (*space.CreateSpaceResponse, error) {
-	// Placeholder implementation for chatflow compatibility
-	iconURL := req.GetIconURL()
-	updatedAt := int64(0)
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+	
+	// 获取描述，如果为nil则使用空字符串
+	description := ""
+	if req.Description != nil {
+		description = *req.Description
+	}
+	
+	// 调用领域服务创建空间（会自动将创建者添加为空间所有者）
+	createdSpace, err := u.DomainSVC.CreateSpace(ctx, userID, req.Name, description)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "create space failed"))
+	}
+	
 	return &space.CreateSpaceResponse{
 		Code: 0,
 		Msg:  "success",
 		Data: &space.SpaceInfo{
-			SpaceID:     1,
-			Name:        req.Name,
-			IconURL:     &iconURL,
-			SpaceType:   space.SpaceType_Personal,
+			SpaceID:     createdSpace.SpaceID,
+			Name:        createdSpace.Name,
+			Description: &createdSpace.Description,
+			IconURL:     &createdSpace.IconURL,
+			SpaceType:   space.SpaceType(createdSpace.SpaceType),
 			Status:      space.SpaceStatus_Active,
-			OwnerID:     1,
-			CreatorID:   1,
-			CreatedAt:   0,
-			UpdatedAt:   &updatedAt,
+			OwnerID:     createdSpace.OwnerID,
+			CreatorID:   createdSpace.OwnerID, // 创建者就是拥有者
+			CreatedAt:   createdSpace.CreatedAt,
+			UpdatedAt:   &createdSpace.UpdatedAt,
 		},
 	}, nil
 }
