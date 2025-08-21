@@ -34,6 +34,10 @@ import { CreateWorkflowModal } from '../../workflow-edit';
 import { wait } from '../../utils';
 import { useOpenWorkflowDetail } from '../../hooks/use-open-workflow-detail';
 import { useImportWorkflowModal } from '../../hooks/use-workflow-resource-action/use-import-workflow-modal';
+
+// 临时定义，后续应该从配置文件中导入
+const IS_OPEN_SOURCE = false;
+
 export const CreateWorkflowBtn: FC<
   Pick<
     WorkFlowModalModeProps,
