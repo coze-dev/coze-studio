@@ -1444,6 +1444,11 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 		}
 	}
 
+	err = i.repo.CopyTemplateConversationByAppID(ctx, sourceAppID, targetAppID)
+	if err != nil {
+		return nil, err
+	}
+
 	return copiedWorkflowArray, nil
 
 }
