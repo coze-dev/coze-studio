@@ -42,7 +42,7 @@ const (
 	Scene_GenerateAgentInfo Scene = 8
 	//openapi
 	Scene_SceneOpenApi Scene = 9
-	// 工作流
+	// workflow
 	Scene_SceneWorkflow Scene = 50
 )
 

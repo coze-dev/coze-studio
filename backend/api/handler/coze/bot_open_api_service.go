@@ -128,3 +128,23 @@ func ImpersonateCozeUser(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// OpenGetBotInfo .
+// @router /v1/bots/:bot_id [GET]
+func OpenGetBotInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.OpenGetBotInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(bot_open_api.OpenGetBotInfoResponse)
+	resp.Data, err = singleagent.SingleAgentSVC.OpenGetBotInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}

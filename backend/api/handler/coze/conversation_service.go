@@ -170,3 +170,42 @@ func ListConversationsApi(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// UpdateConversationApi .
+// @router /v1/conversations/:conversation_id [PUT]
+func UpdateConversationApi(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation.UpdateConversationApiRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.ConversationSVC.UpdateConversation(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DeleteConversationApi .
+// @router /v1/conversations/:conversation_id [DELETE]
+func DeleteConversationApi(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req conversation.DeleteConversationApiRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := application.ConversationSVC.DeleteConversation(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

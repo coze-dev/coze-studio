@@ -123,7 +123,7 @@ type WorkflowService interface {
 
 	OpenAPIGetWorkflowInfo(ctx context.Context, request *OpenAPIGetWorkflowInfoRequest) (r *OpenAPIGetWorkflowInfoResponse, err error)
 
-	OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationRequest, err error)
+	OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationResponse, err error)
 }
 
 type WorkflowServiceClient struct {
@@ -584,7 +584,7 @@ func (p *WorkflowServiceClient) OpenAPIGetWorkflowInfo(ctx context.Context, requ
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *WorkflowServiceClient) OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationRequest, err error) {
+func (p *WorkflowServiceClient) OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationResponse, err error) {
 	var _args WorkflowServiceOpenAPICreateConversationArgs
 	_args.Request = request
 	var _result WorkflowServiceOpenAPICreateConversationResult
@@ -3006,7 +3006,7 @@ func (p *workflowServiceProcessorOpenAPICreateConversation) Process(ctx context.
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := WorkflowServiceOpenAPICreateConversationResult{}
-	var retval *CreateConversationRequest
+	var retval *CreateConversationResponse
 	if retval, err2 = p.handler.OpenAPICreateConversation(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPICreateConversation: "+err2.Error())
 		oprot.WriteMessageBegin("OpenAPICreateConversation", thrift.EXCEPTION, seqId)
@@ -17197,7 +17197,7 @@ func (p *WorkflowServiceOpenAPICreateConversationArgs) String() string {
 }
 
 type WorkflowServiceOpenAPICreateConversationResult struct {
-	Success *CreateConversationRequest `thrift:"success,0,optional"`
+	Success *CreateConversationResponse `thrift:"success,0,optional"`
 }
 
 func NewWorkflowServiceOpenAPICreateConversationResult() *WorkflowServiceOpenAPICreateConversationResult {
@@ -17207,9 +17207,9 @@ func NewWorkflowServiceOpenAPICreateConversationResult() *WorkflowServiceOpenAPI
 func (p *WorkflowServiceOpenAPICreateConversationResult) InitDefault() {
 }
 
-var WorkflowServiceOpenAPICreateConversationResult_Success_DEFAULT *CreateConversationRequest
+var WorkflowServiceOpenAPICreateConversationResult_Success_DEFAULT *CreateConversationResponse
 
-func (p *WorkflowServiceOpenAPICreateConversationResult) GetSuccess() (v *CreateConversationRequest) {
+func (p *WorkflowServiceOpenAPICreateConversationResult) GetSuccess() (v *CreateConversationResponse) {
 	if !p.IsSetSuccess() {
 		return WorkflowServiceOpenAPICreateConversationResult_Success_DEFAULT
 	}
@@ -17280,7 +17280,7 @@ ReadStructEndError:
 }
 
 func (p *WorkflowServiceOpenAPICreateConversationResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewCreateConversationRequest()
+	_field := NewCreateConversationResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}

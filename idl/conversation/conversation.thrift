@@ -36,6 +36,7 @@ struct ConversationData {
     5: optional i64 ConnectorID (api.body = "connector_id", agw.key="connector_id", api.js_conv="true")
     6: optional i64 LastSectionID (api.body="last_section_id", api.js_conv="true")
     7: optional i64    AccountID (api.body = "account_id")
+    8: optional string Name (api.body = "name")
 }
 
 struct CreateConversationRequest {
@@ -90,5 +91,30 @@ struct ListConversationsApiResponse {
 struct ListConversationData {
     1 : list<ConversationData> conversations (api.body = "conversations", agw.key = "conversations")
     2 : bool has_more (api.body = "has_more", agw.key = "has_more")
+}
+
+struct UpdateConversationApiRequest {
+    1:   optional  i64                ConversationID (api.path= "conversation_id", agw.js_conv="str", api.js_conv="true")
+    2:   optional  string             Name (api.body = "name")
+    255: base.Base Base
+}
+
+struct UpdateConversationApiResponse {
+    1:   optional ConversationData ConversationData (api.body = "data", agw.key = "data")
+    2 :  i32 Code (api.body = "code")
+    3 :  string Msg (api.body = "msg")
+    255: required base.BaseResp    BaseResp
+}
+
+struct DeleteConversationApiRequest {
+    1: optional i64 ConversationID (api.path="conversation_id", agw.js_conv="true")
+
+    255: base.Base Base
+}
+
+struct DeleteConversationApiResponse {
+    1 : i32 Code (api.body = "code")
+    2 : string Msg (api.body = "msg")
+    255: base.BaseResp BaseResp
 }
 

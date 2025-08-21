@@ -243,3 +243,14 @@ struct ChatV3Response {
     2: required i32 Code (api.body = "code"),
     3: required string Msg (api.body = "msg")
 }
+
+struct CancelChatApiRequest {
+    1:   required  i64 ChatID (api.body = "chat_id", agw.key = "chat_id",api.js_conv='true')
+    2:   required  i64 ConversationID (api.body = "conversation_id", agw.key = "conversation_id",api.js_conv='true')
+    255: base.Base Base
+}
+
+struct CancelChatApiResponse {
+    1:   ChatV3ChatDetail ChatV3ChatDetail (agw.key = "data")
+    255: base.BaseResp               BaseResp
+}

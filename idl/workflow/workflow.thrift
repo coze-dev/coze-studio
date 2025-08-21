@@ -137,7 +137,10 @@ enum NodeType{
     Input           = 30,
     Batch           = 28,
     Continue        = 29,
+    MessageList     = 37,
     AssignVariable  = 40,
+    ConversationList = 53,
+    CreateMessage   = 55,
     JsonSerialization   = 58,
     JsonDeserialization = 59,
     DatasetDelete       = 60,
@@ -172,11 +175,14 @@ enum NodeTemplateType{
     Input           = 30,
     Batch           = 28,
     Continue        = 29,
+    MessageList     = 37,
     AssignVariable  = 40,
     DatabaseInsert = 41,
     DatabaseUpdate = 42,
     DatabasesELECT = 43,
     DatabaseDelete = 44,
+    ConversationList = 53,
+    CreateMessage   = 55,
     JsonSerialization   = 58,
     JsonDeserialization = 59,
     DatasetDelete       = 60,
@@ -1786,7 +1792,7 @@ struct BackgroundImageInfo {
 
 struct AvatarConfig{
     1: string ImageUri (agw.key="image_uri", go.tag = "json:\"image_uri\"")
-    2: string ImageUrl (agw.key="image_url",go.tag = "json:\"image_url\"")
+    2: string ImageUrl (agw.key="image_url", go.tag = "json:\"image_url\"")
 }
 
 struct ChatFlowRole{
@@ -1805,20 +1811,21 @@ struct ChatFlowRole{
 }
 
 struct CreateChatFlowRoleRequest{
-	1: ChatFlowRole ChatFlowRole(agw.key= "chat_flow_role",go.tag="json:\"chat_flow_role\"")
+	1: ChatFlowRole ChatFlowRole(agw.key= "chat_flow_role", go.tag="json:\"chat_flow_role\"", api.query = "chat_flow_role")
     255: optional base.Base Base
 }
 
 struct CreateChatFlowRoleResponse{
-    1: string ID // ID in the database
-
+    1: string ID (agw.key = "id", go.tag = "json:\"id\"", api.query = "id") // ID in the database
+    253: required i64 code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 
 struct DeleteChatFlowRoleRequest{
-	1: string WorkflowID
-    2: string ConnectorID
-    4: string ID // ID in the database
+	1: string WorkflowID (agw.key = "workflow_id", go.tag = "json:\"workflow_id\"", api.query = "workflow_id")
+    2: string ConnectorID (agw.key = "connector_id", go.tag = "json:\"connector_id\"", api.query = "connector_id")
+    4: string ID (agw.key = "id", go.tag = "json:\"id\"", api.query = "id") // ID in the database
 
     255: optional base.Base Base
 }
@@ -1829,18 +1836,20 @@ struct DeleteChatFlowRoleResponse{
 }
 
 struct GetChatFlowRoleRequest{
-	1: string WorkflowID (agw.key = "workflow_id")
-    2: string ConnectorID (agw.key = "connector_id")
-    3: bool IsDebug (agw.key = "is_debug")
+	1: string WorkflowID (agw.key = "workflow_id", go.tag = "json:\"workflow_id\"", api.query = "workflow_id")
+    2: string ConnectorID (agw.key = "connector_id", go.tag = "json:\"connector_id\"", api.query = "connector_id")
+    3: bool IsDebug (agw.key = "is_debug", go.tag = "json:\"is_debug\"", api.query = "is_debug")
 //    4: optional string AppID (api.query = "app_id")
     5: optional map<string,string> Ext (api.query = "ext")
-    255: optional base.Base Base
+    255: optional base.Base Base (go.tag = "json:\"base\"", api.query = "base")
 }
 
 struct GetChatFlowRoleResponse{
-	1  : optional ChatFlowRole Role (agw.key = "role")
+    1: required i64 code
+    2: required string msg
+	3: optional ChatFlowRole Role (agw.key = "role", go.tag = "json:\"role\"", api.query = "role")
 
-    255: required base.BaseResp BaseResp
+    255: required base.BaseResp BaseResp (go.tag = "json:\"base_resp\"", api.query = "base_resp")
 }
 
 enum NodePanelSearchType {
@@ -2190,4 +2199,35 @@ struct OpenAPIGetWorkflowInfoResponse{
 	3  : optional WorkflowInfo WorkflowInfo (api.body = "data")
 
     255: required base.BaseResp BaseResp
+}
+
+struct CreateConversationRequest {
+        1:  optional  map<string,string> MetaData (api.body = "meta_data") //自定义透传字段
+        3:  optional  i64             BotId (api.body = "bot_id",  api.js_conv="true")
+        4:  optional  i64             ConnectorId (api.body= "connector_id",  api.js_conv="true")
+        5:  optional string           SpaceID   (api.body= "space_id",  api.js_conv="true")
+        9 : optional string           AppID      (go.tag="json:\"app_id\"")
+        10: optional string           WorkflowID      (go.tag="json:\"workflow_id\"")
+        11: optional string           ConversationMame      (go.tag="json:\"conversation_name\"")
+        12: optional bool GetOrCreate  (go.tag="json:\"get_or_create\"")
+        13: optional bool DraftMode  (go.tag="json:\"draft_mode\"")
+        255: optional base.Base Base
+}
+
+
+struct CreateConversationResponse {
+    1: i64    code
+    2: string msg
+    3: optional ConversationData ConversationData (api.body = "data")
+}
+
+
+struct ConversationData {
+    1: i64             Id (api.body = "id", agw.key = "id", api.js_conv="true")
+    2: i64                CreatedAt (api.body = "created_at", agw.key = "created_at")
+    3: map<string,string> MetaData (api.body = "meta_data", agw.key = "meta_data")
+    4: optional i64 CreatorID (api.body = "creator_d", agw.key = "creator_d", api.js_conv="true")
+    5: optional i64 ConnectorID (api.body = "connector_id", agw.key="connector_id", api.js_conv="true")
+    6: optional i64 LastSectionID (api.body="last_section_id", api.js_conv="true")
+    7: optional i64    AccountID (api.body = "account_id")
 }
