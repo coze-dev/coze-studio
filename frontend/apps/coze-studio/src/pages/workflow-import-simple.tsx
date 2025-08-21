@@ -24,6 +24,7 @@ const Page = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [workflowName, setWorkflowName] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [nameError, setNameError] = useState('');
   
   if (!space_id) {
     return <div>No space ID found</div>;
@@ -31,6 +32,43 @@ const Page = () => {
 
   const handleGoBack = () => {
     navigate(`/space/${space_id}/library`);
+  };
+
+  // 验证工作流名称格式
+  const validateWorkflowName = (name: string): string => {
+    if (!name.trim()) {
+      return '工作流名称不能为空';
+    }
+    
+    // 检查是否以字母开头
+    if (!/^[a-zA-Z]/.test(name)) {
+      return '工作流名称必须以字母开头';
+    }
+    
+    // 检查是否只包含字母、数字和下划线
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) {
+      return '工作流名称只能包含字母、数字和下划线';
+    }
+    
+    // 检查长度（建议2-50个字符）
+    if (name.length < 2) {
+      return '工作流名称至少需要2个字符';
+    }
+    
+    if (name.length > 50) {
+      return '工作流名称不能超过50个字符';
+    }
+    
+    return '';
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setWorkflowName(newName);
+    
+    // 实时验证名称
+    const error = validateWorkflowName(newName);
+    setNameError(error);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +123,10 @@ const Page = () => {
       return;
     }
 
-    if (!workflowName.trim()) {
-      alert('请输入工作流名称');
+    // 验证工作流名称
+    const nameValidationError = validateWorkflowName(workflowName);
+    if (nameValidationError) {
+      alert(nameValidationError);
       return;
     }
 
@@ -355,26 +395,63 @@ const Page = () => {
             <input
               type="text"
               value={workflowName}
-              onChange={(e) => setWorkflowName(e.target.value)}
-              placeholder="请输入工作流名称"
+              onChange={handleNameChange}
+              placeholder="请输入工作流名称（以字母开头，只能包含字母、数字、下划线）"
               style={{
                 padding: '16px 20px',
-                border: '2px solid #e1e8ed',
+                border: `2px solid ${nameError ? '#e74c3c' : '#e1e8ed'}`,
                 borderRadius: '12px',
                 width: '100%',
                 fontSize: '16px',
                 transition: 'all 0.3s ease',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                background: nameError ? '#fdf2f2' : 'white'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#667eea';
-                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                e.target.style.borderColor = nameError ? '#e74c3c' : '#667eea';
+                e.target.style.boxShadow = nameError 
+                  ? '0 0 0 3px rgba(231, 76, 60, 0.1)' 
+                  : '0 0 0 3px rgba(102, 126, 234, 0.1)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e1e8ed';
+                e.target.style.borderColor = nameError ? '#e74c3c' : '#e1e8ed';
                 e.target.style.boxShadow = 'none';
               }}
             />
+            {nameError && (
+              <div style={{
+                marginTop: '8px',
+                padding: '8px 12px',
+                background: '#fdf2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '6px',
+                color: '#e74c3c',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <span style={{ fontSize: '16px' }}>⚠️</span>
+                {nameError}
+              </div>
+            )}
+            {!nameError && workflowName.trim() && (
+              <div style={{
+                marginTop: '8px',
+                padding: '8px 12px',
+                background: '#f0f9ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '6px',
+                color: '#0369a1',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <span style={{ fontSize: '16px' }}>✅</span>
+                名称格式正确
+              </div>
+            )}
           </div>
 
           {/* 操作按钮 */}
@@ -410,33 +487,33 @@ const Page = () => {
             </button>
             <button
               onClick={handleImport}
-              disabled={!selectedFile || !workflowName.trim() || isImporting}
+              disabled={!selectedFile || !workflowName.trim() || isImporting || !!nameError}
               style={{
                 padding: '16px 32px',
                 border: 'none',
                 borderRadius: '12px',
-                background: !selectedFile || !workflowName.trim() || isImporting 
+                background: !selectedFile || !workflowName.trim() || isImporting || !!nameError
                   ? '#bdc3c7' 
                   : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
-                cursor: !selectedFile || !workflowName.trim() || isImporting 
+                cursor: !selectedFile || !workflowName.trim() || isImporting || !!nameError
                   ? 'not-allowed' 
                   : 'pointer',
                 fontSize: '16px',
                 fontWeight: '600',
                 transition: 'all 0.3s ease',
-                boxShadow: !selectedFile || !workflowName.trim() || isImporting 
+                boxShadow: !selectedFile || !workflowName.trim() || isImporting || !!nameError
                   ? 'none' 
                   : '0 8px 25px rgba(102, 126, 234, 0.3)'
               }}
               onMouseEnter={(e) => {
-                if (!(!selectedFile || !workflowName.trim() || isImporting)) {
+                if (!(!selectedFile || !workflowName.trim() || isImporting || !!nameError)) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!(!selectedFile || !workflowName.trim() || isImporting)) {
+                if (!(!selectedFile || !workflowName.trim() || isImporting || !!nameError)) {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
                 }
@@ -476,6 +553,9 @@ const Page = () => {
               </li>
               <li style={{ marginBottom: '8px' }}>
                 <strong>文件大小：</strong>限制为 10MB，确保上传速度
+              </li>
+              <li style={{ marginBottom: '8px' }}>
+                <strong>名称规则：</strong>工作流名称必须以字母开头，只能包含字母、数字和下划线
               </li>
               <li style={{ marginBottom: '8px' }}>
                 <strong>导入位置：</strong>导入后将在当前工作空间创建新的工作流
