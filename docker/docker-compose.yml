@@ -13,8 +13,8 @@ services:
       MYSQL_USER: ${MYSQL_USER:-coze}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
     env_file: *env_file
-    ports:
-      - '3306'
+    # ports:
+    #   - '3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
@@ -51,8 +51,8 @@ services:
       - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
       - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
       - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
-    ports:
-      - '6379'
+    # ports:
+    #   - '6379'
     volumes:
       - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
     command: >
@@ -83,8 +83,8 @@ services:
       - TEST=1
       # Add Java certificate trust configuration
       # - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
-    ports:
-      - '9200'
+    # ports:
+    #   - '9200'
     volumes:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
@@ -166,9 +166,9 @@ services:
     privileged: true
     restart: always
     env_file: *env_file
-    ports:
-      - '9000'
-      - '9001'
+    # ports:
+    #   - '9000'
+    #   - '9001'
     volumes:
       - ./data/minio:/data
       - ./volumes/minio/default_icon/:/default_icon
@@ -224,9 +224,9 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ALLOW_NONE_AUTHENTICATION=yes
-    ports:
-      - '2379'
-      - '2380'
+    # ports:
+    #   - '2379'
+    #   - '2380'
     volumes:
       - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
       - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
@@ -281,9 +281,9 @@ services:
       timeout: 10s
       retries: 10
       start_period: 10s
-    ports:
-      - '19530'
-      - '9091'
+    # ports:
+    #   - '19530'
+    #   - '9091'
     depends_on:
       etcd:
         condition: service_healthy
@@ -296,9 +296,9 @@ services:
     container_name: coze-nsqlookupd
     command: /nsqlookupd
     restart: always
-    ports:
-      - '4160'
-      - '4161'
+    # ports:
+    #   - '4160'
+    #   - '4161'
     networks:
       - coze-network
     healthcheck:
@@ -313,9 +313,9 @@ services:
     container_name: coze-nsqd
     command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
     restart: always
-    ports:
-      - '4150'
-      - '4151'
+    # ports:
+    #   - '4150'
+    #   - '4151'
     depends_on:
       nsqlookupd:
         condition: service_healthy
@@ -333,8 +333,8 @@ services:
     container_name: coze-nsqadmin
     command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     restart: always
-    ports:
-      - '4171'
+    # ports:
+    #   - '4171'
     depends_on:
       nsqlookupd:
         condition: service_healthy
@@ -353,9 +353,9 @@ services:
     #   LISTEN_ADDR: 0.0.0.0:8888
     networks:
       - coze-network
-    ports:
-      - '8888'
-      - '8889'
+    # ports:
+    #   - '8888'
+    #   - '8889'
     volumes:
       - .env:/app/.env
       - ../backend/conf:/app/resources/conf
