@@ -1040,21 +1040,12 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 		spaceID   int64
 		executeID int64
 
-		messageID   int64
-		incrMessage string
+		outputCount int32
+		inputCount  int32
 
-		outputCount         int32
-		inputCount          int32
-		intermediateMessage = &message.Message{
-			ID:             messageID,
-			AgentID:        appID,
-			RunID:          roundID,
-			SectionID:      sectionID,
-			Content:        incrMessage,
-			ConversationID: conversationID,
-			Role:           schema.Assistant,
-			MessageType:    message.MessageTypeAnswer,
-		}
+		intermediateMessage *message.Message
+
+		shouldNewMessage = true
 	)
 
 	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
@@ -1076,6 +1067,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				chatDoneEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
 					BotID:          strconv.FormatInt(appID, 10),
 					Status:         vo.Completed,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
@@ -1186,10 +1178,10 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}
 
 				messageEvent := &vo.MessageDetail{
-
-					ID:             strconv.FormatInt(messageID, 10),
+					ID:             strconv.FormatInt(interruptEvent.ID, 10),
 					ChatID:         strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
 					BotID:          strconv.FormatInt(appID, 10),
 					Role:           string(schema.Assistant),
 					Type:           string(entity.Answer),
@@ -1197,12 +1189,16 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					Content:        msgContent,
 				}
 
-				incrMessage += messageEvent.Content
-				intermediateMessage.Content = incrMessage
-				intermediateMessage.ContentType = contentType
-
-				// interrupted is last message
-				_, err = crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+				_, err = crossmessage.DefaultSVC().Create(ctx, &message.Message{
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					Content:        msgContent,
+					ConversationID: conversationID,
+					Role:           schema.Assistant,
+					MessageType:    message.MessageTypeAnswer,
+					ContentType:    contentType,
+				})
 				if err != nil {
 					return nil, err
 				}
@@ -1223,6 +1219,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				chatEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
 					Status:         vo.RequiresAction,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
 				}
@@ -1261,19 +1258,13 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				executeID = msg.StateMessage.ExecuteID
 				spaceID = msg.StateMessage.SpaceID
 
-				if messageID == 0 {
-					messageID, err = domainWorkflow.GetRepository().GenID(ctx)
-					if err != nil {
-						return nil, err
-					}
-				}
-
 				responses = make([]*workflow.ChatFlowRunResponse, 0)
 				chatEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
 					Status:         vo.Created,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
 				}
 				data, err := sonic.MarshalString(chatEvent)
 				if err != nil {
@@ -1307,39 +1298,43 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
 				return nil, schema.ErrNoValue
 			}
-
 			if msg.DataMessage.NodeType == entity.NodeTypeQuestionAnswer || msg.DataMessage.NodeType == entity.NodeTypeInputReceiver {
 				return nil, schema.ErrNoValue
 			}
-
-			var (
-				dataMessage  = msg.DataMessage
-				messageEvent = &vo.MessageDetail{
-					ChatID:         strconv.FormatInt(roundID, 10),
-					ConversationID: strconv.FormatInt(conversationID, 10),
-					BotID:          strconv.FormatInt(appID, 10),
-					Role:           string(dataMessage.Role),
-					Type:           string(dataMessage.Type),
-					ContentType:    string(message.ContentTypeText),
-					Content:        msg.Content,
+			dataMessage := msg.DataMessage
+			if shouldNewMessage {
+				intermediateMessage = &message.Message{
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					ConversationID: conversationID,
+					Role:           schema.Assistant,
+					MessageType:    message.MessageTypeAnswer,
 				}
-			)
+				shouldNewMessage = false
+			}
 
-			incrMessage += msg.Content
-			intermediateMessage.Content = incrMessage
-			intermediateMessage.ContentType = message.ContentTypeText
+			intermediateMessage.Content += msg.Content
 
-			messageEvent.ID = strconv.FormatInt(messageID, 10)
-			data, err := sonic.MarshalString(messageEvent)
+			deltaData, err := sonic.MarshalString(&vo.MessageDetail{
+				ID:             msg.NodeID,
+				ChatID:         strconv.FormatInt(roundID, 10),
+				ConversationID: strconv.FormatInt(conversationID, 10),
+				SectionID:      strconv.FormatInt(sectionID, 10),
+				BotID:          strconv.FormatInt(appID, 10),
+				Role:           string(dataMessage.Role),
+				Type:           string(dataMessage.Type),
+				ContentType:    string(message.ContentTypeText),
+				Content:        msg.Content,
+			})
 			if err != nil {
 				return nil, err
 			}
-
 			if !msg.Last {
 				return []*workflow.ChatFlowRunResponse{
 					{
 						Event: string(vo.ChatFlowMessageDelta),
-						Data:  data,
+						Data:  deltaData,
 					},
 				}, nil
 			}
@@ -1349,8 +1344,18 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				return nil, err
 			}
 
-			messageEvent.Content = incrMessage
-			completeData, err := sonic.MarshalString(messageEvent)
+			completeData, err := sonic.MarshalString(&vo.MessageDetail{
+				ID:             msg.NodeID,
+				ChatID:         strconv.FormatInt(roundID, 10),
+				ConversationID: strconv.FormatInt(conversationID, 10),
+				SectionID:      strconv.FormatInt(sectionID, 10),
+				BotID:          strconv.FormatInt(appID, 10),
+				Role:           string(dataMessage.Role),
+				Type:           string(dataMessage.Type),
+				ContentType:    string(message.ContentTypeText),
+				Content:        intermediateMessage.Content,
+			})
+			shouldNewMessage = true
 			if err != nil {
 				return nil, err
 			}
@@ -1358,7 +1363,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			return []*workflow.ChatFlowRunResponse{
 				{
 					Event: string(vo.ChatFlowMessageDelta),
-					Data:  data,
+					Data:  deltaData,
 				},
 				{
 					Event: string(vo.ChatFlowMessageCompleted),
