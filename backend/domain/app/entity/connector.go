@@ -22,6 +22,7 @@ import (
 )
 
 var ConnectorIDWhiteList = []int64{
+	consts.WebSDKConnectorID,
 	consts.APIConnectorID,
 }
 

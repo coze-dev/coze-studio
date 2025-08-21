@@ -18,6 +18,8 @@ package workflow
 
 import (
 	"context"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 
 	"github.com/cloudwego/eino/compose"
 	einoCompose "github.com/cloudwego/eino/compose"
@@ -53,6 +55,30 @@ func (i *impl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy
 
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
 	return i.DomainSVC.ReleaseApplicationWorkflows(ctx, appID, config)
+}
+
+func (i impl) ReleaseApplicationWorkflow(ctx context.Context, appID int64, connectorIDs []int64, workflowID int64, version string) ([]*vo.ValidateIssue, error) {
+	dependence, err := i.DomainSVC.GetWorkflowDependenceResource(ctx, workflowID)
+	if err != nil {
+		return nil, err
+	}
+	for _, pluginID := range dependence.PluginIDs {
+		err = crossplugin.DefaultSVC().PublishPlugin(ctx, &plugin.PublishPluginRequest{
+			PluginID: pluginID,
+			Version:  version,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return i.ReleaseApplicationWorkflows(ctx, appID, &vo.ReleaseWorkflowConfig{
+		PluginIDs:    dependence.PluginIDs,
+		ConnectorIDs: connectorIDs,
+		WorkflowIDs:  []int64{workflowID},
+		Version:      version,
+	})
+
 }
 
 func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option {
