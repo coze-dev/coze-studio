@@ -190,6 +190,7 @@ import (
 
 	 ar := &crossagent.AgentRuntime{
 		 AgentVersion:     rtDependence.runMeta.Version,
+		 UserID:           rtDependence.runMeta.UserID,
 		 AgentID:          rtDependence.runMeta.AgentID,
 		 SpaceID:          rtDependence.runMeta.SpaceID,
 		 IsDraft:          rtDependence.runMeta.IsDraft,
