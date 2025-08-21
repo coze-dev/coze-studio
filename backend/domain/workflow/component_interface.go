@@ -131,4 +131,5 @@ type ConversationRepository interface {
 	UpdateDynamicConversationNameByID(ctx context.Context, env vo.Env, templateID int64, name string) error
 	UpdateStaticConversation(ctx context.Context, env vo.Env, templateID int64, connectorID int64, userID int64, newConversationID int64) error
 	UpdateDynamicConversation(ctx context.Context, env vo.Env, conversationID, newConversationID int64) error
+	CopyTemplateConversationByAppID(ctx context.Context, appID int64, toAppID int64) error
 }
