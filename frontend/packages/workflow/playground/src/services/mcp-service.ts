@@ -32,7 +32,7 @@ export class McpApiService {
     sassWorkspaceId?: string;
   }): Promise<McpServiceListResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/MCP0017.do`, {
+      const response = await fetch(`/aop-web/MCP0017.do`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export class McpApiService {
     options?: { sassWorkspaceId?: string },
   ): Promise<McpToolsListResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/MCP0013.do`, {
+      const response = await fetch(`/aop-web/MCP0013.do`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
