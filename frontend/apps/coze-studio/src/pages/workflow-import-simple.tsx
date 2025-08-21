@@ -14,23 +14,48 @@
  * limitations under the License.
  */
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
-// 最简单的测试页面
+// 测试页面 - 逐步添加功能
 const Page = () => {
   const { space_id } = useParams();
+  const navigate = useNavigate();
   
   if (!space_id) {
     return <div>No space ID found</div>;
   }
+
+  const handleGoBack = () => {
+    navigate(`/space/${space_id}/library`);
+  };
   
   return (
     <div style={{ padding: '24px' }}>
-      <h1>工作流导入页面 - 测试版本</h1>
-      <p>空间ID: {space_id}</p>
-      <p>这是一个最简单的测试页面，用于验证路由是否正常工作。</p>
-      <p>如果你能看到这个页面，说明路由和权限验证都正常。</p>
-      <p>如果还是显示"无法查看智能体"，说明问题在其他地方。</p>
+      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button 
+          onClick={handleGoBack}
+          style={{ 
+            padding: '8px 16px', 
+            border: '1px solid #ddd', 
+            borderRadius: '4px',
+            background: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          ← 返回资源库
+        </button>
+        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 500 }}>
+          导入工作流
+        </h1>
+      </div>
+
+      <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', border: '1px solid #e5e5e5' }}>
+        <h3>功能测试</h3>
+        <p>空间ID: {space_id}</p>
+        <p>✅ 基础页面显示正常</p>
+        <p>✅ 返回按钮功能正常</p>
+        <p>下一步：添加文件上传功能</p>
+      </div>
     </div>
   );
 };
