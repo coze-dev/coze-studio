@@ -52,6 +52,8 @@ export {
   useCreateWorkflowModal,
   useWorkflowResourceClick,
   useWorkflowResourceMenuActions,
+  useImportAction,
+  useImportWorkflowModal,
 } from './hooks/use-workflow-resource-action';
 export {
   WorkflowResourceActionProps,
