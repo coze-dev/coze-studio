@@ -303,6 +303,11 @@ func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, 
 			if err != nil {
 				return nil, err
 			}
+		case consts.WebSDKConnectorID:
+			info, err = a.packChatSDKConnectorInfo(ctx, c)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			logs.CtxWarnf(ctx, "unsupported connector id '%v'", c.ID)
 			continue
@@ -334,6 +339,22 @@ func (a *APPApplicationService) packAPIConnectorInfo(ctx context.Context, c *con
 
 	info.AllowPublish = false
 	info.NotAllowPublishReason = ptr.Of(noWorkflowText)
+
+	return info, nil
+}
+
+func (a *APPApplicationService) packChatSDKConnectorInfo(ctx context.Context, c *connectorModel.Connector) (*publishAPI.PublishConnectorInfo, error) {
+
+	info := &publishAPI.PublishConnectorInfo{
+		ID:                      c.ID,
+		BindType:                publishAPI.ConnectorBindType_WebSDKBind,
+		ConnectorClassification: publishAPI.ConnectorClassification_APIOrSDK,
+		BindInfo:                map[string]string{},
+		Name:                    c.Name,
+		IconURL:                 c.URL,
+		Description:             c.Desc,
+		AllowPublish:            true,
+	}
 
 	return info, nil
 }

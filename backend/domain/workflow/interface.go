@@ -82,7 +82,7 @@ type Repository interface {
 	MDelete(ctx context.Context, ids []int64) error
 	GetMeta(ctx context.Context, id int64) (*vo.Meta, error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) error
-	GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
+	GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, bool, error)
 	GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) ([]string, error)
 
 	GetEntity(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)

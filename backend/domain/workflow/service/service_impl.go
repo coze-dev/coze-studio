@@ -20,10 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+
 	"strconv"
 
 	einoCompose "github.com/cloudwego/eino/compose"
-
 	"github.com/spf13/cast"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
@@ -444,9 +445,12 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 
 			var canvasSchema string
 			if n.Data.Inputs.WorkflowVersion != "" {
-				versionInfo, err := i.repo.GetVersion(ctx, wid, n.Data.Inputs.WorkflowVersion)
+				versionInfo, existed, err := i.repo.GetVersion(ctx, wid, n.Data.Inputs.WorkflowVersion)
 				if err != nil {
 					return nil, err
+				}
+				if !existed {
+					return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", n.Data.Inputs.WorkflowVersion, wid, err), errorx.KV("id", strconv.FormatInt(wid, 10)))
 				}
 				canvasSchema = versionInfo.Canvas
 			} else {
@@ -831,7 +835,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		return nil, fmt.Errorf("connector ids is required")
 	}
 
-	wfs, _, err := i.MGet(ctx, &vo.MGetPolicy{
+	allWorkflowsInApp, _, err := i.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
 		},
@@ -842,14 +846,15 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	}
 
 	relatedPlugins := make(map[int64]*plugin.PluginEntity, len(config.PluginIDs))
-	relatedWorkflow := make(map[int64]entity.IDVersionPair, len(wfs))
+	relatedWorkflow := make(map[int64]entity.IDVersionPair, len(allWorkflowsInApp))
 
-	for _, wf := range wfs {
+	for _, wf := range allWorkflowsInApp {
 		relatedWorkflow[wf.ID] = entity.IDVersionPair{
 			ID:      wf.ID,
 			Version: config.Version,
 		}
 	}
+
 	for _, id := range config.PluginIDs {
 		relatedPlugins[id] = &plugin.PluginEntity{
 			PluginID:      id,
@@ -858,7 +863,22 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	}
 
 	vIssues := make([]*vo.ValidateIssue, 0)
-	for _, wf := range wfs {
+
+	willPublishWorkflows := make([]*entity.Workflow, 0)
+
+	if len(config.WorkflowIDs) == 0 {
+		willPublishWorkflows = allWorkflowsInApp
+	} else {
+		willPublishWorkflows, _, err = i.MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				AppID: &appID,
+				IDs:   config.WorkflowIDs,
+			},
+			QType: workflowModel.FromDraft,
+		})
+	}
+
+	for _, wf := range willPublishWorkflows {
 		issues, err := validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 			CanvasSchema: wf.Canvas,
 			AppID:        ptr.Of(appID),
@@ -877,7 +897,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		return vIssues, nil
 	}
 
-	for _, wf := range wfs {
+	for _, wf := range willPublishWorkflows {
 		c := &vo.Canvas{}
 		err := sonic.UnmarshalString(wf.Canvas, c)
 		if err != nil {
@@ -901,9 +921,8 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	}
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
-
 	workflowsToPublish := make(map[int64]*vo.VersionInfo)
-	for _, wf := range wfs {
+	for _, wf := range willPublishWorkflows {
 		inputStr, err := sonic.MarshalString(wf.InputParams)
 		if err != nil {
 			return nil, err
@@ -928,8 +947,16 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		}
 	}
 
-	workflowIDs := make([]int64, 0, len(wfs))
+	workflowIDs := make([]int64, 0, len(willPublishWorkflows))
 	for id, vInfo := range workflowsToPublish {
+		// if version existed skip
+		_, existed, err := i.repo.GetVersion(ctx, id, config.Version)
+		if err != nil {
+			return nil, err
+		}
+		if existed {
+			continue
+		}
 		wfRefs, err := canvasToRefs(id, vInfo.Canvas)
 		if err != nil {
 			return nil, err
@@ -946,7 +973,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		return nil, err
 	}
 
-	for _, wf := range wfs {
+	for _, wf := range willPublishWorkflows {
 		if wf.Mode == cloudworkflow.WorkflowMode_ChatFlow {
 			err = i.PublishChatFlowRole(ctx, &vo.PublishRolePolicy{
 				WorkflowID: wf.ID,
@@ -1858,11 +1885,13 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		index := 0
 
 		for id, version := range policy.Versions {
-			v, err := i.repo.GetVersion(ctx, id, version)
+			v, existed, err := i.repo.GetVersion(ctx, id, version)
 			if err != nil {
 				return nil, total, err
 			}
-
+			if !existed {
+				return nil, total, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", version, id, err), errorx.KV("id", strconv.FormatInt(id, 10)))
+			}
 			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
 			if err != nil {
 				return nil, total, err

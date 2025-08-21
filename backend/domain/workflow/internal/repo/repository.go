@@ -556,9 +556,12 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		draftMeta = draft.DraftMeta
 		commitID = draft.CommitID
 	case workflowModel.FromSpecificVersion:
-		v, err := r.GetVersion(ctx, policy.ID, policy.Version)
+		v, existed, err := r.GetVersion(ctx, policy.ID, policy.Version)
 		if err != nil {
 			return nil, err
+		}
+		if !existed {
+			return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", policy.Version, policy.ID, err), errorx.KV("id", strconv.FormatInt(policy.ID, 10)))
 		}
 		canvas = v.Canvas
 		inputParams = v.InputParamsStr
@@ -719,7 +722,7 @@ func (r *RepositoryImpl) DeleteChatFlowRoleConfig(ctx context.Context, id int64,
 	return err
 }
 
-func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (_ *vo.VersionInfo, err error) {
+func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (_ *vo.VersionInfo, existed bool, err error) {
 	defer func() {
 		if err != nil {
 			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
@@ -731,9 +734,9 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", version, id, err), errorx.KV("id", strconv.FormatInt(id, 10)))
+			return nil, false, nil
 		}
-		return nil, fmt.Errorf("failed to get workflow version %s for ID %d: %w", version, id, err)
+		return nil, false, fmt.Errorf("failed to get workflow version %s for ID %d: %w", version, id, err)
 	}
 
 	return &vo.VersionInfo{
@@ -749,7 +752,7 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 			OutputParamsStr: wfVersion.OutputParams,
 		},
 		CommitID: wfVersion.CommitID,
-	}, nil
+	}, true, nil
 }
 
 func (r *RepositoryImpl) GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) (_ []string, err error) {
