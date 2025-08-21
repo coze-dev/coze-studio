@@ -19,8 +19,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Upload, Input, Form, Toast } from '@coze-arch/coze-design';
 import { IconCozPlus, IconArrowLeft } from '@coze-arch/coze-design/icons';
 
-const WorkflowImportSimplePage: React.FC = () => {
-  const { space_id } = useParams<{ space_id: string }>();
+// 临时的工作流导入组件，遵循coze-studio的页面模式
+const WorkflowImportComponent: React.FC<{ spaceId: string }> = ({ spaceId }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   
@@ -48,100 +48,110 @@ const WorkflowImportSimplePage: React.FC = () => {
       const fileContent = await file.text();
       try {
         const workflowData = JSON.parse(fileContent);
-        if (workflowData.name && workflowData.schema) {
-          form.setFieldsValue({ workflowName: workflowData.name });
-        } else {
-          Toast.error('文件内容不是有效的工作流导出数据');
+        
+        // 基本验证工作流数据结构
+        if (!workflowData.schema || !workflowData.nodes) {
+          Toast.error('无效的工作流文件格式');
           return false;
         }
-      } catch (error) {
-        Toast.error('文件格式错误，请选择有效的JSON文件');
+        
+        Toast.success('文件验证成功');
+      } catch (parseError) {
+        Toast.error('JSON格式错误，请检查文件内容');
         return false;
       }
-
+      
       return false; // 阻止自动上传
     } catch (error) {
-      Toast.error('读取文件失败');
+      console.error('文件处理错误:', error);
+      Toast.error('文件处理失败');
       return false;
     }
   };
 
   // 处理导入
   const handleImport = async () => {
-    if (!selectedFile || !space_id) {
-      Toast.error('请先选择要导入的文件');
+    if (!selectedFile) {
+      Toast.error('请先选择文件');
       return;
     }
 
+    const workflowName = form.getFieldValue('workflowName');
+    if (!workflowName || !workflowName.trim()) {
+      Toast.error('请输入工作流名称');
+      return;
+    }
+
+    setImporting(true);
+
     try {
-      await form.validateFields();
-      setImporting(true);
-      
       // 读取文件内容
       const fileContent = await selectedFile.text();
-      const values = form.getFieldsValue();
       
-      // 调用导入API
+      // 准备导入数据
+      const importData = {
+        workflow_data: fileContent,
+        workflow_name: workflowName.trim(),
+        space_id: spaceId,
+        creator_id: 'current_user', // 这里应该从用户上下文获取
+        import_format: 'json'
+      };
+
+      // 发送导入请求
       const response = await fetch('/api/workflow_api/import', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          workflow_data: fileContent,
-          workflow_name: values.workflowName,
-          space_id: space_id,
-          creator_id: '1', // 这里应该从用户上下文获取
-          import_format: 'json',
-        }),
+        body: JSON.stringify(importData),
       });
 
       if (!response.ok) {
-        throw new Error('导入失败');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '导入失败');
       }
 
       const result = await response.json();
+      Toast.success('工作流导入成功！');
       
-      if (result.code === 200 && result.data?.workflow_id) {
-        Toast.success('工作流导入成功！');
-        
-        // 跳转到新创建的工作流或资源库
-        setTimeout(() => {
-          navigate(`/space/${space_id}/library`);
-        }, 1500);
-      } else {
-        throw new Error(result.msg || '工作流导入失败');
-      }
+      // 导入成功后跳转到资源库
+      navigate(`/space/${spaceId}/library`);
+      
     } catch (error) {
-      console.error('导入工作流失败:', error);
-      Toast.error(error instanceof Error ? error.message : '工作流导入失败');
+      console.error('导入失败:', error);
+      Toast.error(error instanceof Error ? error.message : '导入失败，请重试');
     } finally {
       setImporting(false);
     }
   };
 
+  // 返回资源库
+  const handleGoBack = () => {
+    navigate(`/space/${spaceId}/library`);
+  };
+
   return (
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
-      {/* 页面头部 */}
-      <div style={{ marginBottom: '24px' }}>
-        <Button
-          type="tertiary"
+      {/* 头部 */}
+      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Button 
           icon={<IconArrowLeft />}
-          onClick={() => navigate(`/space/${space_id}/library`)}
-          style={{ marginBottom: '16px' }}
-        >
-          返回资源库
-        </Button>
-        
-        <h2>导入工作流</h2>
-        <p style={{ color: '#666' }}>
-          选择之前导出的工作流JSON文件，将其导入到当前工作空间中。
-        </p>
+          theme="borderless"
+          onClick={handleGoBack}
+        />
+        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 500 }}>
+          导入工作流
+        </h1>
       </div>
 
-      {/* 表单 */}
-      <Form form={form} layout="vertical">
-        <Form.Item label="选择工作流文件" required>
+      {/* 导入表单 */}
+      <Form 
+        form={form}
+        layout="vertical"
+        style={{ background: '#fff', padding: '24px', borderRadius: '8px', border: '1px solid #e5e5e5' }}
+      >
+        {/* 文件选择 */}
+        <Form.Item label="选择工作流文件" style={{ marginBottom: '24px' }}>
           <Upload
             accept=".json"
             beforeUpload={handleFileSelect}
@@ -159,20 +169,22 @@ const WorkflowImportSimplePage: React.FC = () => {
                   {selectedFile ? selectedFile.name : '点击选择文件'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999' }}>
-                  支持JSON格式，最大10MB
+                  支持 JSON 格式，文件大小不超过 10MB
                 </div>
               </div>
             </Button>
           </Upload>
         </Form.Item>
 
+        {/* 工作流名称 */}
         <Form.Item
           label="工作流名称"
           name="workflowName"
           rules={[
             { required: true, message: '请输入工作流名称' },
-            { max: 50, message: '工作流名称最多50个字符' }
+            { max: 100, message: '工作流名称不能超过100个字符' }
           ]}
+          style={{ marginBottom: '24px' }}
         >
           <Input
             placeholder="请输入工作流名称"
@@ -180,32 +192,45 @@ const WorkflowImportSimplePage: React.FC = () => {
           />
         </Form.Item>
 
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-          <Button
-            type="primary"
-            size="large"
-            loading={importing}
-            disabled={!selectedFile}
-            onClick={handleImport}
-            style={{ flex: 1 }}
-          >
-            {importing ? '导入中...' : '开始导入'}
-          </Button>
-          
-          <Button
-            size="large"
-            onClick={() => {
-              setSelectedFile(null);
-              form.resetFields();
-            }}
-            disabled={importing}
-          >
-            重置
-          </Button>
-        </div>
+        {/* 操作按钮 */}
+        <Form.Item style={{ marginBottom: 0 }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <Button onClick={handleGoBack}>
+              取消
+            </Button>
+            <Button
+              theme="solid"
+              type="primary"
+              loading={importing}
+              onClick={handleImport}
+              disabled={!selectedFile}
+            >
+              {importing ? '导入中...' : '开始导入'}
+            </Button>
+          </div>
+        </Form.Item>
       </Form>
+
+      {/* 提示信息 */}
+      <div style={{ marginTop: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '6px' }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 500 }}>
+          导入说明：
+        </h4>
+        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: '#666' }}>
+          <li>仅支持本系统导出的 JSON 格式工作流文件</li>
+          <li>文件大小限制为 10MB</li>
+          <li>导入后将在当前工作空间创建新的工作流</li>
+          <li>如果工作流名称已存在，系统会自动添加后缀</li>
+        </ul>
+      </div>
     </div>
   );
 };
 
-export default WorkflowImportSimplePage;
+// 主页面组件，遵循coze-studio的标准模式
+const Page = () => {
+  const { space_id } = useParams();
+  return space_id ? <WorkflowImportComponent spaceId={space_id} /> : null;
+};
+
+export default Page;
