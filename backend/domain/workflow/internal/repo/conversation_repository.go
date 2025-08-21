@@ -798,3 +798,33 @@ func (r *RepositoryImpl) UpdateDynamicConversation(ctx context.Context, env vo.E
 	}
 
 }
+
+func (r *RepositoryImpl) CopyTemplateConversationByAppID(ctx context.Context, appID int64, toAppID int64) error {
+	appConversationTemplateDraft := r.query.AppConversationTemplateDraft
+	templates, err := appConversationTemplateDraft.WithContext(ctx).Where(appConversationTemplateDraft.AppID.Eq(appID), appConversationTemplateDraft.Name.Neq("Default")).Find()
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, err)
+	}
+
+	if len(templates) == 0 {
+		return nil
+	}
+	templateTemplates := make([]*model.AppConversationTemplateDraft, 0, len(templates))
+	ids, err := r.GenMultiIDs(ctx, len(templates))
+	if err != nil {
+		return vo.WrapError(errno.ErrIDGenError, err)
+	}
+	for i := range templates {
+		copiedTemplate := templates[i]
+		copiedTemplate.ID = ids[i]
+		copiedTemplate.TemplateID = ids[i]
+		copiedTemplate.AppID = toAppID
+		templateTemplates = append(templateTemplates, copiedTemplate)
+	}
+	err = appConversationTemplateDraft.WithContext(ctx).CreateInBatches(templateTemplates, batchSize)
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, err)
+	}
+	return nil
+
+}
