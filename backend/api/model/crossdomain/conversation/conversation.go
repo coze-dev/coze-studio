@@ -42,6 +42,7 @@ const (
 
 type Conversation struct {
 	ID          int64              `json:"id"`
+	Name        string             `json:"name"`
 	SectionID   int64              `json:"section_id"`
 	AgentID     int64              `json:"agent_id"`
 	ConnectorID int64              `json:"connector_id"`

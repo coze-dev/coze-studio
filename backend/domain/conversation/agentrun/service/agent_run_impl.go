@@ -84,3 +84,6 @@ func (c *runImpl) List(ctx context.Context, meta *entity.ListRunRecordMeta) ([]*
 func (c *runImpl) Create(ctx context.Context, runRecord *entity.AgentRunMeta) (*entity.RunRecordMeta, error) {
 	return c.RunRecordRepo.Create(ctx, runRecord)
 }
+func (c *runImpl) Cancel(ctx context.Context, req *entity.CancelRunMeta) (*entity.RunRecordMeta, error) {
+	return nil, nil
+}

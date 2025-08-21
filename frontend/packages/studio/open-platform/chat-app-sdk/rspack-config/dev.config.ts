@@ -172,6 +172,26 @@ const config: Configuration = {
     historyApiFallback: true,
     port: '8081',
     hot: true,
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:8888',
+        secure: false,
+        changeOrigin: true,
+      },
+      {
+        context: ['/v1'],
+        target: 'http://localhost:8888',
+        secure: false,
+        changeOrigin: true,
+      },
+      {
+        context: ['/v3'],
+        target: 'http://localhost:8888',
+        secure: false,
+        changeOrigin: true,
+      },
+    ],
   },
 };
 

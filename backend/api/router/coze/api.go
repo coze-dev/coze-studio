@@ -429,9 +429,16 @@ func Register(r *server.Hertz) {
 	{
 		_v1 := root.Group("/v1", _v1Mw()...)
 		_v1.GET("/conversations", append(_listconversationsapiMw(), coze.ListConversationsApi)...)
+		_conversations := _v1.Group("/conversations", _conversationsMw()...)
+		_conversations.DELETE("/:conversation_id", append(_deleteconversationapiMw(), coze.DeleteConversationApi)...)
+		_conversations.PUT("/:conversation_id", append(_updateconversationapiMw(), coze.UpdateConversationApi)...)
 		{
 			_bot0 := _v1.Group("/bot", _bot0Mw()...)
 			_bot0.GET("/get_online_info", append(_getbotonlineinfoMw(), coze.GetBotOnlineInfo)...)
+		}
+		{
+			_bots := _v1.Group("/bots", _botsMw()...)
+			_bots.GET("/:bot_id", append(_opengetbotinfoMw(), coze.OpenGetBotInfo)...)
 		}
 		{
 			_conversation0 := _v1.Group("/conversation", _conversation0Mw()...)
@@ -442,9 +449,9 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
-			_conversations := _v1.Group("/conversations", _conversationsMw()...)
+			_conversations0 := _v1.Group("/conversations", _conversations0Mw()...)
 			{
-				_conversation_id := _conversations.Group("/:conversation_id", _conversation_idMw()...)
+				_conversation_id := _conversations0.Group("/:conversation_id", _conversation_idMw()...)
 				_conversation_id.POST("/clear", append(_clearconversationapiMw(), coze.ClearConversationApi)...)
 			}
 		}
@@ -472,5 +479,7 @@ func Register(r *server.Hertz) {
 	{
 		_v3 := root.Group("/v3", _v3Mw()...)
 		_v3.POST("/chat", append(_chatv3Mw(), coze.ChatV3)...)
+		_chat := _v3.Group("/chat", _chatMw()...)
+		_chat.POST("/cancel", append(_cancelchatapiMw(), coze.CancelChatApi)...)
 	}
 }

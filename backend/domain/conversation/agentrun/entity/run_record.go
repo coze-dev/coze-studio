@@ -168,3 +168,8 @@ type ListRunRecordMeta struct {
 	BeforeID       int64  `json:"before_id"`
 	AfterID        int64  `json:"after_id"`
 }
+
+type CancelRunMeta struct {
+	ConversationID int64 `json:"conversation_id"`
+	RunID          int64 `json:"run_id"`
+}

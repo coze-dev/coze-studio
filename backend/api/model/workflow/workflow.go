@@ -22,7 +22,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
 )
@@ -64348,7 +64347,7 @@ func (p *CreateChatFlowRoleRequest) String() string {
 }
 
 type CreateChatFlowRoleResponse struct {
-	// 数据库中ID
+	// ID in the database
 	ID       string         `thrift:"ID,1" json:"id" query:"id" `
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -64651,10 +64650,10 @@ func (p *CreateChatFlowRoleResponse) String() string {
 }
 
 type DeleteChatFlowRoleRequest struct {
-	WorkflowID  string `thrift:"WorkflowID,1" form:"WorkflowID" json:"WorkflowID" query:"WorkflowID"`
-	ConnectorID string `thrift:"ConnectorID,2" form:"ConnectorID" json:"ConnectorID" query:"ConnectorID"`
+	WorkflowID  string `thrift:"WorkflowID,1" json:"workflow_id" query:"workflow_id" `
+	ConnectorID string `thrift:"ConnectorID,2" json:"connector_id" query:"connector_id" `
 	// ID in the database
-	ID   string     `thrift:"ID,4" form:"ID" json:"ID" query:"ID"`
+	ID   string     `thrift:"ID,4" json:"id" query:"id" `
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 

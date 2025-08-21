@@ -105,15 +105,18 @@ type MesssageEventHanlder struct {
 
 func (mh *MesssageEventHanlder) handlerErr(_ context.Context, err error) {
 
-	errMsg := errorx.ErrorWithoutStack(err)
-	if strings.ToLower(os.Getenv(consts.RunMode)) != "debug" {
-		var statusErr errorx.StatusError
-		if errors.As(err, &statusErr) {
-			errMsg = statusErr.Msg()
-		} else {
+	var errMsg string
+	var statusErr errorx.StatusError
+	if errors.As(err, &statusErr) {
+		errMsg = statusErr.Msg()
+	} else {
+		if strings.ToLower(os.Getenv(consts.RunMode)) != "debug" {
 			errMsg = "Internal Server Error"
+		} else {
+			errMsg = errorx.ErrorWithoutStack(err)
 		}
 	}
+
 	mh.messageEvent.SendErrEvent(entity.RunEventError, mh.sw, &entity.RunError{
 		Code: errno.ErrAgentRun,
 		Msg:  errMsg,

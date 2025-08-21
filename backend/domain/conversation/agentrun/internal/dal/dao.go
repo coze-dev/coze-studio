@@ -61,8 +61,12 @@ func (dao *RunRecordDAO) Create(ctx context.Context, runMeta *entity.AgentRunMet
 	return dao.buildPo2Do(createPO), nil
 }
 
-func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecord, error) {
-	return dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).First()
+func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*entity.RunRecordMeta, error) {
+	po, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).First()
+	if err != nil {
+		return nil, err
+	}
+	return dao.buildPo2Do(po), nil
 }
 
 func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *entity.UpdateMeta) error {
@@ -186,4 +190,17 @@ func (dao *RunRecordDAO) buildPo2Do(po *model.RunRecord) *entity.RunRecordMeta {
 	}
 
 	return runMeta
+}
+
+func (dao *RunRecordDAO) Cancel(ctx context.Context, meta *entity.CancelRunMeta) (*entity.RunRecordMeta, error) {
+
+	m := dao.query.RunRecord
+	_, err := m.WithContext(ctx).Where(m.ID.Eq(meta.RunID)).UpdateColumns(map[string]interface{}{
+		"updated_at": time.Now().UnixMilli(),
+		"status":     entity.RunEventCancelled,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return dao.GetByID(ctx, meta.RunID)
 }
