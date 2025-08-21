@@ -54,7 +54,7 @@ func (c *connectorImpl) AllConnectorInfo(ctx context.Context) []*entity.Connecto
 				ID:   consts.WebSDKConnectorID,
 				Name: "Chat SDK",
 				URI:  "default_icon/connector-chat-sdk.jpg",
-				Desc: "将Bot部署为Web SDK",
+				Desc: "将项目部署到Chat SDK。仅创建过对话流的项目支持该发布方式,安装方式请查看[安装指引](coze://web-sdk-guide)",
 			},
 		},
 		{

@@ -19,6 +19,7 @@ package validate
 import (
 	"context"
 	"fmt"
+
 	"regexp"
 	"strconv"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -390,9 +392,12 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 
 	if len(subID2SubVersion) > 0 {
 		for id, version := range subID2SubVersion {
-			v, err := workflow.GetRepository().GetVersion(ctx, id, version)
+			v, existed, err := workflow.GetRepository().GetVersion(ctx, id, version)
 			if err != nil {
 				return nil, err
+			}
+			if !existed {
+				return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version %s not found for ID %d: %w", version, id, err), errorx.KV("id", strconv.FormatInt(id, 10)))
 			}
 
 			var canvas vo.Canvas
