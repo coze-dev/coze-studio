@@ -3678,7 +3678,7 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	// 验证用户权限（检查工作空间）
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID); err != nil {
 		logs.CtxErrorf(ctx, "ExportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID, err)
-		return nil, vo.WrapError(errno.ErrPermissionDenied, fmt.Errorf("permission denied: %v", err))
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
 	}
 
 	// 构建导出数据
@@ -3816,7 +3816,7 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
 		logs.CtxErrorf(ctx, "ImportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), spaceID, err)
-		return nil, vo.WrapError(errno.ErrPermissionDenied, fmt.Errorf("permission denied: %v", err))
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
 	}
 
 	// 解析工作流数据
