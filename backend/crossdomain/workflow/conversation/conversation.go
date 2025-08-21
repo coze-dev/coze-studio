@@ -220,11 +220,14 @@ func convertToConvAndSchemaMessage(ctx context.Context, msgs []*msgentity.Messag
 		if err != nil {
 			return nil, nil, err
 		}
-		msg.Role = m.Role
+		// Only use database role if ModelContent doesn't have a role
+		if msg.Role == "" {
+			msg.Role = m.Role
+		}
 
 		covMsg := &conversation.Message{
 			ID:          m.ID,
-			Role:        m.Role,
+			Role:        msg.Role, // Use the corrected role from schema.Message
 			ContentType: string(m.ContentType),
 			SectionID:   m.SectionID,
 		}

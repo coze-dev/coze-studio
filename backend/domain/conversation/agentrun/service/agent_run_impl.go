@@ -168,6 +168,15 @@ import (
 	 // 将历史消息和输入转换为 schema.Message 格式
 	 var historySchema []*schema.Message
 	 for _, msg := range historyMsg {
+		 if msg.ModelContent != "" {
+			 // 优先使用ModelContent中的正确结构
+			 var modelMsg schema.Message
+			 if err := json.Unmarshal([]byte(msg.ModelContent), &modelMsg); err == nil {
+				 historySchema = append(historySchema, &modelMsg)
+				 continue
+			 }
+		 }
+		 // 降级方案：如果ModelContent解析失败，使用原来的方式
 		 historySchema = append(historySchema, &schema.Message{
 			 Role:    msg.Role,
 			 Content: msg.Content,
