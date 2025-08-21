@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { useWorkflowResourceAction, useImportWorkflowModal } from '@coze-workflow/components';
+import { useWorkflowResourceAction } from '@coze-workflow/components';
 import { useUserInfo } from '@coze-foundation/account-adapter';
 import { ResType, WorkflowMode } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozChat, IconCozWorkflow, IconUpload } from '@coze-arch/coze-design/icons';
+import { IconCozChat, IconCozWorkflow } from '@coze-arch/coze-design/icons';
 import { Menu, Tag } from '@coze-arch/coze-design';
 
 import { BaseLibraryItem } from '../../components/base-library-item';
@@ -49,14 +49,8 @@ export const useWorkflowConfig: UseEntityConfigHook = ({
     getCommonActions,
   });
 
-  const { openImportModal, importModal } = useImportWorkflowModal({
-    spaceId,
-    userId: userInfo?.user_id_str,
-    refreshPage: reloadList,
-  });
-
   return {
-    modals: [...workflowResourceModals, importModal],
+    modals: workflowResourceModals,
     config: {
       typeFilter: {
         label: I18n.t('library_resource_type_workflow'),
@@ -95,15 +89,6 @@ export const useWorkflowConfig: UseEntityConfigHook = ({
               {I18n.t('wf_chatflow_76')}
             </Menu.Item>
           ) : null}
-          <Menu.Item
-            data-testid="workspace.library.header.import.workflow"
-            icon={<IconUpload />}
-            onClick={() => {
-              openImportModal();
-            }}
-          >
-            导入工作流
-          </Menu.Item>
         </>
       ),
       target: [ResType.Workflow, ResType.Imageflow],
