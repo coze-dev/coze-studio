@@ -163,7 +163,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	} else {
 		if (!pl.hasMultiModal || len(supportedModals) == 0) &&
 			(len(pl.associateUserInputFields) == 0 ||
-				(len(pl.associateUserInputFields) > 0 && userMessage.MultiContent == nil)) {
+				(len(pl.associateUserInputFields) > 0 && userMessage != nil && userMessage.MultiContent == nil)) {
 			var opts []nodes.RenderOption
 			if len(pl.reservedKeys) > 0 {
 				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
