@@ -21,17 +21,17 @@ import {
   Upload, 
   Input, 
   Form, 
-  Card, 
   Typography, 
   Space,
-  message,
+  Toast,
   Divider 
 } from '@coze-arch/coze-design';
+import { Card } from '@coze-arch/bot-semi';
 import { 
-  IconUpload, 
   IconCozWorkflow, 
   IconArrowLeft 
 } from '@coze-arch/coze-design/icons';
+import { IconUpload } from '@coze-arch/bot-icons';
 import { I18n } from '@coze-arch/i18n';
 
 const { Title, Paragraph, Text } = Typography;
@@ -58,13 +58,13 @@ const WorkflowImportPage: React.FC = () => {
     try {
       // 验证文件类型
       if (!file.name.endsWith('.json')) {
-        message.error('请选择JSON格式的文件');
+        Toast.error('请选择JSON格式的文件');
         return false;
       }
 
       // 验证文件大小（限制为10MB）
       if (file.size > 10 * 1024 * 1024) {
-        message.error('文件大小不能超过10MB');
+        Toast.error('文件大小不能超过10MB');
         return false;
       }
 
@@ -78,17 +78,17 @@ const WorkflowImportPage: React.FC = () => {
           setWorkflowPreview(workflowData);
           form.setFieldsValue({ workflowName: workflowData.name });
         } else {
-          message.error('文件内容不是有效的工作流导出数据');
+          Toast.error('文件内容不是有效的工作流导出数据');
           return false;
         }
       } catch (error) {
-        message.error('文件格式错误，请选择有效的JSON文件');
+        Toast.error('文件格式错误，请选择有效的JSON文件');
         return false;
       }
 
       return false; // 阻止自动上传
     } catch (error) {
-      message.error('读取文件失败');
+      Toast.error('读取文件失败');
       return false;
     }
   };
@@ -96,7 +96,7 @@ const WorkflowImportPage: React.FC = () => {
   // 处理导入
   const handleImport = async () => {
     if (!selectedFile || !space_id) {
-      message.error('请先选择要导入的文件');
+      Toast.error('请先选择要导入的文件');
       return;
     }
 
@@ -130,7 +130,7 @@ const WorkflowImportPage: React.FC = () => {
       const result = await response.json();
       
       if (result.code === 200 && result.data?.workflow_id) {
-        message.success('工作流导入成功！');
+        Toast.success('工作流导入成功！');
         
         // 跳转到新创建的工作流或资源库
         setTimeout(() => {
@@ -141,7 +141,7 @@ const WorkflowImportPage: React.FC = () => {
       }
     } catch (error) {
       console.error('导入工作流失败:', error);
-      message.error(error instanceof Error ? error.message : '工作流导入失败');
+      Toast.error(error instanceof Error ? error.message : '工作流导入失败');
     } finally {
       setImporting(false);
     }

@@ -18,7 +18,8 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus, IconUpload } from '@coze-arch/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconUpload } from '@coze-arch/bot-icons';
 import { Button, Menu } from '@coze-arch/coze-design';
 
 import { type LibraryEntityConfig } from '../types';
@@ -30,8 +31,12 @@ export const LibraryHeader: React.FC<{
   const navigate = useNavigate();
 
   const handleImportWorkflow = () => {
-    if (space_id) {
-      navigate(`/space/${space_id}/workflow/import`);
+    try {
+      if (space_id) {
+        navigate(`/space/${space_id}/workflow/import`);
+      }
+    } catch (error) {
+      console.error('导航到导入页面失败:', error);
     }
   };
 
