@@ -54,6 +54,7 @@ type ChatFlowDetail struct {
 	Status         Status `json:"status,omitempty"`
 	Usage          *Usage `json:"usage,omitempty"`
 	ExecuteID      string `json:"execute_id,omitempty"`
+	SectionID      string `json:"section_id"`
 }
 
 type MessageDetail struct {
@@ -65,6 +66,7 @@ type MessageDetail struct {
 	Type           string `json:"type"`
 	Content        string `json:"content"`
 	ContentType    string `json:"content_type"`
+	SectionID      string `json:"section_id"`
 }
 
 type ErrorDetail struct {
