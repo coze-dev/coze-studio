@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 9</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="24" height="24"></rect>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01猎鹰智能体平台_工作空间_项目开发" transform="translate(-28.000000, -222.000000)">
+            <g id="编组-9备份-10" transform="translate(8.000000, 216.000000)">
+                <g id="编组-9" transform="translate(20.000000, 6.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <g id="矩形"></g>
+                    <path d="M9.44013247,20 L19.3600331,20 C19.7139605,20 20,19.7143744 20,19.3600331 L20,8.56007451 L9.44013247,8.56007451 L9.44013247,20 Z" id="路径" fill="#358AFF" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                    <path d="M19.3600331,4 L9.44013247,4 L9.44013247,7.27972679 L20,7.27972679 L20,4.63996688 C20,4.28603953 19.7143744,4 19.3600331,4 L19.3600331,4 Z" id="路径" fill="#9AC5FF" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                    <path d="M4,4.63996688 L4,19.3600331 C4,19.7139605 4.28562558,20 4.63996688,20 L8.15978475,20 L8.15978475,4 L4.63996688,4 C4.28603953,4 4,4.28562558 4,4.63996688 L4,4.63996688 Z" id="路径" fill="#358AFF" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

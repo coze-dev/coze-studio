@@ -22,7 +22,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -87,7 +88,6 @@ func (d *DeleteConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...sche
 		databaseInfoID: d.DatabaseInfoID,
 		clauseGroup:    d.ClauseGroup,
 		outputTypes:    ns.OutputTypes,
-		deleter:        database.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -95,7 +95,6 @@ type Delete struct {
 	databaseInfoID int64
 	clauseGroup    *database.ClauseGroup
 	outputTypes    map[string]*vo.TypeInfo
-	deleter        database.DatabaseOperator
 }
 
 func (d *Delete) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
@@ -111,7 +110,7 @@ func (d *Delete) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 		ConnectorID:    getConnectorID(ctx),
 	}
 
-	response, err := d.deleter.Delete(ctx, request)
+	response, err := crossdatabase.DefaultSVC().Delete(ctx, request)
 	if err != nil {
 		return nil, err
 	}

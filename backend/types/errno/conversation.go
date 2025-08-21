@@ -35,9 +35,30 @@ const (
 	ErrConversationMessageNotFound = 103200001
 
 	ErrAgentRun = 103200002
+
+	ErrRecordNotFound = 103200003
+
+	ErrAgentRunWorkflowNotFound = 103200004
 )
 
 func init() {
+
+	code.Register(
+		ErrAgentRunWorkflowNotFound,
+		"The chatflow is not configured. Please configure it and try again.",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrRecordNotFound,
+		"record not found or nothing to update",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAgentRun,
+		"Interal Server Error",
+		code.WithAffectStability(true),
+	)
 	code.Register(
 		ErrAgentRun,
 		"Interal Server Error",

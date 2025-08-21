@@ -16,11 +16,28 @@
 
 package entity
 
+// Template represents a template entity
+type Template struct {
+	ID                int64
+	Name              string
+	Description       string
+	AgentID           int64
+	SpaceID           int64
+	ProductEntityType int64
+	CreatorID         int64
+	CreatedAt         int64
+	UpdatedAt         int64
+	Data              string
+	Version           int32
+	Status            int32
+}
+
 // TemplateFilter defines filters for listing templates
 type TemplateFilter struct {
 	AgentID           *int64
 	SpaceID           *int64
 	ProductEntityType *int64
+	CreatorID         *int64  // Added for compatibility
 }
 
 type Pagination struct {

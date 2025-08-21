@@ -22,6 +22,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -36,7 +37,7 @@ func (a *asToolImpl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader
 	return execute.WithMessagePipe()
 }
 
-func (a *asToolImpl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
+func (a *asToolImpl) WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option {
 	return einoCompose.WithToolsNodeOption(einoCompose.WithToolOption(execute.WithExecuteConfig(cfg)))
 }
 

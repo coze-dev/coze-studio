@@ -16,6 +16,10 @@
 
 package vo
 
+import (
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+)
+
 type Page struct {
 	Size int32 `json:"size"`
 	Page int32 `json:"page"`
@@ -51,17 +55,9 @@ type QueryToolInfoOption struct {
 	IDs  []int64
 }
 
-type Locator uint8
-
-const (
-	FromDraft Locator = iota
-	FromSpecificVersion
-	FromLatestVersion
-)
-
 type GetPolicy struct {
 	ID       int64
-	QType    Locator
+	QType    model.Locator
 	MetaOnly bool
 	Version  string
 	CommitID string
@@ -76,7 +72,7 @@ type DeletePolicy struct {
 type MGetPolicy struct {
 	MetaQuery
 
-	QType    Locator
+	QType    model.Locator
 	MetaOnly bool
 	Versions map[int64]string
 }

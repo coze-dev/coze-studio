@@ -25,6 +25,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
@@ -240,7 +241,7 @@ func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context
 				return a.GetWorkflowId()
 			}),
 		},
-		QType: vo.FromLatestVersion,
+		QType: workflowModel.FromLatestVersion,
 	}
 	ret, _, err := s.appContext.WorkflowDomainSVC.MGet(ctx, policy)
 	if err != nil {

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-export { ExploreSubMenu } from './components/sub-menu';
-export { TemplatePage } from './pages/template';
+export { ExploreSubMenu, TemplateSubMenu } from './components/sub-menu';
+export { TemplatePage, TemplateProjectPage } from './pages/template';
 export { PluginPage } from './pages/plugin';
+export { ProjectPage } from './pages/project';
+export { ExternalAppPage } from './pages/project/external-app-page';

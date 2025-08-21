@@ -18,91 +18,194 @@ package conversation
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 
-	"github.com/cloudwego/eino/compose"
-
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-type MessageListConfig struct {
+type MessageListConfig struct{}
+
+type MessageList struct {
 	Lister conversation.ConversationManager
 }
-type MessageList struct {
-	config *MessageListConfig
-}
 
-type Param struct {
-	ConversationName string
-	Limit            *int
-	BeforeID         *string
-	AfterID          *string
-}
-
-func NewMessageList(ctx context.Context, cfg *MessageListConfig) (*MessageList, error) {
-	if cfg == nil {
-		return nil, errors.New("config is required")
+func (m *MessageListConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	ns := &schema.NodeSchema{
+		Key:     vo.NodeKey(n.ID),
+		Type:    entity.NodeTypeMessageList,
+		Name:    n.Data.Meta.Title,
+		Configs: m,
 	}
 
-	if cfg.Lister == nil {
-		return nil, errors.New("lister is required")
+	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
 	}
 
+	if err := convert.SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func (m *MessageListConfig) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
 	return &MessageList{
-		config: cfg,
+		Lister: conversation.GetConversationManager(),
 	}, nil
-
 }
 
-func (m *MessageList) List(ctx context.Context, input map[string]any) (map[string]any, error) {
-	param := &Param{}
-	name, ok := nodes.TakeMapValue(input, compose.FieldPath{"ConversationName"})
-	if !ok {
-		return nil, errors.New("ConversationName is required")
-	}
-	param.ConversationName = name.(string)
-	limit, ok := nodes.TakeMapValue(input, compose.FieldPath{"Limit"})
-	if ok {
-		limit := limit.(int)
-		param.Limit = &limit
-	}
-	beforeID, ok := nodes.TakeMapValue(input, compose.FieldPath{"BeforeID"})
-	if ok {
-		beforeID := beforeID.(string)
-		param.BeforeID = &beforeID
-	}
-	afterID, ok := nodes.TakeMapValue(input, compose.FieldPath{"AfterID"})
-	if ok {
-		afterID := afterID.(string)
-		param.BeforeID = &afterID
-	}
-	r, err := m.config.Lister.MessageList(ctx, &conversation.ListMessageRequest{
-		ConversationName: param.ConversationName,
-		Limit:            param.Limit,
-		BeforeID:         param.BeforeID,
-		AfterID:          param.AfterID,
+func (m *MessageList) getConversationIDByName(ctx context.Context, env vo.Env, appID *int64, version, conversationName string, userID, connectorID int64) (int64, error) {
+	template, isExist, err := workflow.GetRepository().GetConversationTemplate(ctx, env, vo.GetConversationTemplatePolicy{
+		AppID:   appID,
+		Name:    ptr.Of(conversationName),
+		Version: ptr.Of(version),
 	})
+
+	if err != nil {
+		return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+	}
+
+	var conversationID int64
+	if isExist {
+		sc, _, err := workflow.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
+		if err != nil {
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+		if sc != nil {
+			conversationID = sc.ConversationID
+		}
+	} else {
+		dc, _, err := workflow.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
+		if err != nil {
+			return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+		if dc != nil {
+			conversationID = dc.ConversationID
+		}
+	}
+
+	return conversationID, nil
+}
+
+func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
+	var (
+		execCtx     = execute.GetExeCtx(ctx)
+		env         = ternary.IFElse(execCtx.ExeCfg.Mode == workflowModel.ExecuteModeRelease, vo.Online, vo.Draft)
+		appID       = execCtx.ExeCfg.AppID
+		agentID     = execCtx.ExeCfg.AgentID
+		version     = execCtx.ExeCfg.Version
+		connectorID = execCtx.ExeCfg.ConnectorID
+		userID      = execCtx.ExeCfg.Operator
+	)
+
+	conversationName, ok := input["conversationName"].(string)
+	if !ok {
+		return nil, vo.WrapError(errno.ErrConversationNodeInvalidOperation, errors.New("ConversationName is required"))
+	}
+
+	var conversationID int64
+	var err error
+	var resolvedAppID int64
+	if appID == nil {
+		if conversationName != "Default" {
+			return nil, vo.WrapError(errno.ErrOnlyDefaultConversationAllowInAgentScenario, errors.New("conversation node only allow in application"))
+		}
+		if agentID == nil || execCtx.ExeCfg.ConversationID == nil {
+			return map[string]any{
+				"messageList": []any{},
+				"firstId":     "0",
+				"lastId":      "0",
+				"hasMore":     false,
+			}, nil
+		}
+		conversationID = *execCtx.ExeCfg.ConversationID
+		resolvedAppID = *agentID
+	} else {
+		conversationID, err = m.getConversationIDByName(ctx, env, appID, version, conversationName, userID, connectorID)
+		if err != nil {
+			return nil, err
+		}
+		resolvedAppID = *appID
+	}
+
+	req := &conversation.MessageListRequest{
+		UserID:         userID,
+		AppID:          resolvedAppID,
+		ConversationID: conversationID,
+	}
+
+	if req.ConversationID == 0 {
+		return map[string]any{
+			"messageList": []any{},
+			"firstId":     "0",
+			"lastId":      "0",
+			"hasMore":     false,
+		}, nil
+	}
+
+	limit, ok := input["limit"].(int64)
+	if ok {
+		if limit > 0 && limit <= 50 {
+			req.Limit = limit
+		} else {
+			req.Limit = 50
+		}
+	} else {
+		req.Limit = 50
+	}
+	beforeID, ok := input["beforeId"].(string)
+	if ok {
+
+		req.BeforeID = &beforeID
+	}
+	afterID, ok := input["afterId"].(string)
+	if ok {
+
+		req.AfterID = &afterID
+	}
+
+	if beforeID != "" && afterID != "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("BeforeID and AfterID cannot be set at the same time"))
+	}
+
+	ml, err := m.Lister.MessageList(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[string]any)
-	objects := make([]any, 0, len(r.Messages))
-	for _, msg := range r.Messages {
-		object := make(map[string]any)
-		bs, _ := json.Marshal(msg)
-		err := json.Unmarshal(bs, &object)
+	var messageList []any
+	for _, msg := range ml.Messages {
+		content, err := ConvertMessageToString(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
-		objects = append(objects, object)
+		messageList = append(messageList, map[string]any{
+			"messageId":   strconv.FormatInt(msg.ID, 10),
+			"role":        string(msg.Role),
+			"contentType": msg.ContentType,
+			"content":     content,
+		})
 	}
 
-	result["messageList"] = objects
-	result["firstId"] = r.FirstID
-	result["hasMore"] = r.HasMore
-	return result, nil
+	return map[string]any{
+		"messageList": messageList,
+		"firstId":     ml.FirstID,
+		"lastId":      ml.LastID,
+		"hasMore":     ml.HasMore,
+	}, nil
 
 }

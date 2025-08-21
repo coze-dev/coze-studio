@@ -1505,3 +1505,33 @@ func _upload1Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _conversation1Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapicreateconversationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _coze_web_appMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _impersonatecozeuserMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _modelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getspacemodellistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

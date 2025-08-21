@@ -197,7 +197,7 @@ export const ExpressionEditorContainer: FC<
             variableTree={variableTree}
             getPopupContainer={() =>
               shouldUseContainerRef
-                ? (containerRef.current ?? document.body)
+                ? containerRef.current ?? document.body
                 : document.body
             }
             onVisibilityChange={handlePopoverVisibilityChange}

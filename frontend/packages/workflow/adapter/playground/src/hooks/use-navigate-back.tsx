@@ -146,7 +146,8 @@ export const useNavigateBack = () => {
       // If history is only one page, navigate (-1) does not take effect at this time, you need to manually specify the path
       // At present, the dead path is written first. The disadvantage is that it needs to be changed with the change of the page structure, and then optimized for a better implementation later.
       // /library coze 2.0 mixed resource list page
-      navigate(`/space/${spaceId}/library`);
+      // Default to library/2 for workflow resources
+      navigate(`/space/${spaceId}/library/2`);
     }
   };
 

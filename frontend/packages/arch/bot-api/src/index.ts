@@ -69,6 +69,8 @@ export { AgentInstanceInfo, AgentInfo } from './idl/card';
 
 export { permissionOAuth2Api } from './permission-oauth2-api';
 export { basicApi } from './basic-api';
+export { aopApi } from './aop-api';
+
 export { Resource } from './resource';
 export { intelligenceApi } from './intelligence-api';
 
@@ -82,3 +84,13 @@ export { fornaxObApi } from './fornax-ob-api';
 export { fornaxApi } from './fornax-api';
 export { evaluationApi } from './fornax-evaluation-api';
 export { cozeSpaceApi } from './coze-space-api';
+export { templateApi } from './template-api';
+export type {
+  PublishAsTemplateRequest,
+  PublishAsTemplateResponse,
+  GetMyTemplateListRequest,
+  GetMyTemplateListResponse,
+  TemplateInfo,
+  DeleteTemplateRequest,
+  DeleteTemplateResponse,
+} from './template-api';

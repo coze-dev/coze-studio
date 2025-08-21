@@ -77,4 +77,11 @@ type User interface {
 	MGetUserProfiles(ctx context.Context, userIDs []int64) (users []*entity.User, err error)
 	ValidateSession(ctx context.Context, sessionKey string) (session *entity.Session, exist bool, err error)
 	GetUserSpaceList(ctx context.Context, userID int64) (spaces []*entity.Space, err error)
+	CreateSpace(ctx context.Context, userID int64, name, description string) (space *entity.Space, err error)
+	GetSpaceMembers(ctx context.Context, spaceID int64, page, pageSize int32, roleType *int32) (members []*entity.SpaceMember, total int64, err error)
+	SearchUsers(ctx context.Context, keyword string, excludeSpaceID int64, limit int32) (users []*entity.User, err error)
+	InviteMember(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *entity.SpaceMember, err error)
+	UpdateMemberRole(ctx context.Context, operatorID, spaceID, userID int64, roleType int32) (member *entity.SpaceMember, err error)
+	RemoveMember(ctx context.Context, operatorID, spaceID, userID int64) (err error)
+	CheckMemberPermission(ctx context.Context, spaceID, userID int64) (isMember bool, roleType int32, canInvite, canManage bool, err error)
 }

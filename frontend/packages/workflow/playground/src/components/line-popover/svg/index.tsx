@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// eslint-disable-next-line @coze-arch/no-pkg-dir-import
 import { IconFactory } from '@coze-arch/bot-icons/src/factory';
 
 import { ReactComponent as SvgLineError } from './line-error.svg';

@@ -23,8 +23,6 @@ import (
 	netHTTP "net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	ollamaEmb "github.com/cloudwego/eino-ext/components/embedding/ollama"
@@ -42,18 +40,14 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
-	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
 	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
@@ -63,21 +57,20 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/wrap"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 	builtinM2Q "github.com/coze-dev/coze-studio/backend/infra/impl/messages2query/builtin"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 type ServiceComponents struct {
-	DB       *gorm.DB
-	IDGenSVC idgen.IDGenerator
-	Storage  storage.Storage
-	RDB      rdb.RDB
-	ImageX   imagex.ImageX
-	ES       es.Client
-	EventBus search.ResourceEventBus
-	CacheCli cache.Cmdable
+	DB                  *gorm.DB
+	IDGenSVC            idgen.IDGenerator
+	Storage             storage.Storage
+	RDB                 rdb.RDB
+	EventBus            search.ResourceEventBus
+	CacheCli            cache.Cmdable
+	OCR                 ocr.OCR
+	ParserManager       parser.Manager
+	SearchStoreManagers []searchstore.Manager
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
@@ -164,20 +157,19 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:                        c.DB,
-		IDGen:                     c.IDGenSVC,
-		RDB:                       c.RDB,
-		Producer:                  knowledgeProducer,
-		SearchStoreManagers:       sManagers,
-		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
-		Storage:                   c.Storage,
-		Rewriter:                  rewriter,
-		Reranker:                  rrf.NewRRFReranker(0), // default rrf
-		NL2Sql:                    n2s,
-		OCR:                       ocrImpl,
-		CacheCli:                  c.CacheCli,
-		IsAutoAnnotationSupported: configured,
-		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
+		DB:                  c.DB,
+		IDGen:               c.IDGenSVC,
+		RDB:                 c.RDB,
+		Producer:            knowledgeProducer,
+		SearchStoreManagers: c.SearchStoreManagers,
+		ParseManager:        c.ParserManager,
+		Storage:             c.Storage,
+		Rewriter:            rewriter,
+		Reranker:            rrf.NewRRFReranker(0), // default rrf
+		NL2Sql:              n2s,
+		OCR:                 c.OCR,
+		CacheCli:            c.CacheCli,
+		ModelFactory:        chatmodelImpl.NewDefaultFactory(),
 	})
 
 	if err = eventbus.DefaultSVC().RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {

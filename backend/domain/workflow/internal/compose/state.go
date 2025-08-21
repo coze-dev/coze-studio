@@ -22,12 +22,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/conversation"
+
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
@@ -36,6 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -79,13 +83,18 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
-	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
-	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
-	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
-	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
-	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
-	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
+	_ = compose.RegisterSerializableType[workflowModel.ExecuteConfig]("execute_config")
+	_ = compose.RegisterSerializableType[workflowModel.ExecuteMode]("execute_mode")
+	_ = compose.RegisterSerializableType[workflowModel.TaskType]("task_type")
+	_ = compose.RegisterSerializableType[workflowModel.SyncPattern]("sync_pattern")
+	_ = compose.RegisterSerializableType[workflowModel.Locator]("wf_locator")
+	_ = compose.RegisterSerializableType[workflowModel.BizType]("biz_type")
 	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
+	_ = compose.RegisterSerializableType[workflow2.WorkflowMode]("workflow_mode")
+	_ = compose.RegisterSerializableType[*schema.Message]("schema_message")
+	_ = compose.RegisterSerializableType[*conversation.Message]("history_messages")
+	_ = compose.RegisterSerializableType[*conversation.Content]("content")
+
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -905,12 +914,12 @@ func streamStatePostHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePos
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string,
-	exeCfg vo.ExecuteConfig) (stateModifier compose.StateModifier) {
+	exeCfg workflowModel.ExecuteConfig) (stateModifier compose.StateModifier) {
 	// TODO: can we unify them all to a map[NodeKey]resumeData?
 	switch e {
 	case entity.InterruptEventInput:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
-			if exeCfg.BizType == vo.BizTypeAgent {
+			if exeCfg.BizType == workflowModel.BizTypeAgent {
 				m := make(map[string]any)
 				sList := strings.Split(resumeData, "\n")
 				for _, s := range sList {

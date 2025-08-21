@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1em" height="1em" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>数据库</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="20" height="20"></rect>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="03猎鹰智能体平台_工作空间_MCP" transform="translate(-100.000000, -439.000000)">
+            <g id="编组-6" transform="translate(80.000000, 0.000000)">
+                <g id="编组-9备份-10" transform="translate(8.000000, 433.000000)">
+                    <g id="数据库" transform="translate(12.000000, 6.000000)">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <g id="矩形"></g>
+                        <g id="服务器_数据库_jurassic" mask="url(#mask-2)" fill="#358AFF" fill-rule="nonzero">
+                            <g transform="translate(3.000000, 2.000000)" id="形状">
+                                <path d="M0,1 L0,15 C6.76353751e-17,15.5522847 0.44771525,16 1,16 L14,16 C14.5522847,16 15,15.5522847 15,15 L15,1 C15,0.44771525 14.5522847,-1.01453063e-16 14,0 L1,0 C0.44771525,1.01453063e-16 -6.76353751e-17,0.44771525 0,1 Z M13.9981526,15 L1,15 L1,11 L14,11 L14,15 L13.9981526,15 Z M1,5 L1,1 L14,1 L14,5 L1,5 Z M1,10 L1,6 L14,6 L14,10 L1,10 Z"></path>
+                                <path d="M9.34254808,2.47142857 L12.2361779,2.47142857 L12.2361779,3.47142857 L9.34254808,3.47142857 L9.34254808,2.47142857 Z M9.34254808,7.42321429 L12.1262019,7.42321429 L12.1262019,8.42321429 L9.34254808,8.42321429 L9.34254808,7.42321429 Z M9.34254808,12.3875 L12.1262019,12.3875 L12.1262019,13.3875 L9.34254808,13.3875 L9.34254808,12.3875 Z"></path>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

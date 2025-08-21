@@ -74,6 +74,7 @@ export const useDatabaseConfig: UseEntityConfigHook = ({
         label: I18n.t('new_db_001'),
         value: ResType.Database,
       },
+      onCreate: openCreateDatabaseModal,
       renderCreateMenu: () => (
         <Menu.Item
           data-testid="workspace.library.header.create.card"

@@ -22,11 +22,16 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 )
 
+//go:generate  mockgen -destination knowledgemock/knowledge_mock.go --package knowledgemock -source knowledge.go
 type Knowledge interface {
 	ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error)
 	GetKnowledgeByID(ctx context.Context, request *knowledge.GetKnowledgeByIDRequest) (response *knowledge.GetKnowledgeByIDResponse, err error)
 	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error)
 	DeleteKnowledge(ctx context.Context, request *knowledge.DeleteKnowledgeRequest) error
+	MGetKnowledgeByID(ctx context.Context, request *knowledge.MGetKnowledgeByIDRequest) (response *knowledge.MGetKnowledgeByIDResponse, err error)
+	Store(ctx context.Context, document *knowledge.CreateDocumentRequest) (*knowledge.CreateDocumentResponse, error)
+	Delete(ctx context.Context, r *knowledge.DeleteDocumentRequest) (*knowledge.DeleteDocumentResponse, error)
+	ListKnowledgeDetail(ctx context.Context, req *knowledge.ListKnowledgeDetailRequest) (*knowledge.ListKnowledgeDetailResponse, error)
 }
 
 var defaultSVC Knowledge

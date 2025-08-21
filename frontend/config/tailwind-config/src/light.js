@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // CSS Variables for Light Mode
 const lightModeVariables = {
   background: '255, 255, 255',
@@ -23,7 +39,7 @@ const lightModeVariables = {
   'coze-fg-7': '255, 255, 255',
   'coze-fg-6': '255, 255, 255',
   'coze-fg-5': '255, 255, 255',
-  'coze-fg-4': '8, 13, 30',
+  'coze-fg-4': '53, 138, 255',
   'coze-fg-3': '15, 21, 40',
   'coze-fg-2': '32, 41, 69',
   'coze-fg-1': '55, 67, 106',
@@ -32,11 +48,11 @@ const lightModeVariables = {
   'coze-bg-8': '68, 83, 130',
   'coze-bg-7': '75, 90, 140',
   'coze-bg-6': '82, 100, 154',
-  'coze-bg-5': '87, 104, 161',
+  'coze-bg-5': '0, 85, 255',
   'coze-bg-4': '90, 108, 167',
   'coze-bg-3': '255, 255, 255',
-  'coze-bg-2': '252, 252, 255',
-  'coze-bg-1': '247, 247, 252',
+  'coze-bg-2': '249, 250, 253',
+  'coze-bg-1': '240, 245, 255',
   'coze-bg-0': '240, 240, 247',
   'coze-stroke-5': '82, 100, 154',
   'coze-stroke-6': '68, 83, 130',
@@ -46,9 +62,9 @@ const lightModeVariables = {
   'coze-shadow-0': '0, 0, 0',
   'coze-brand-50': '102, 108, 255',
   'coze-brand-30': '163, 166, 255',
-  'coze-brand-7': '65, 43, 255',
-  'coze-brand-6': '69, 56, 255',
-  'coze-brand-5': '81, 71, 255',
+  'coze-brand-7': '14, 97, 212',
+  'coze-brand-6': '14, 97, 212',
+  'coze-brand-5': '53, 138, 255',
   'coze-brand-3': '150, 159, 255',
   'coze-brand-2': '161, 170, 255',
   'coze-brand-1': '171, 181, 255',

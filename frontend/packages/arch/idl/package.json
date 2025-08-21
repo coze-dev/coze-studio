@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./app_builder": "./src/auto-generated/app_builder/index.ts",
     "./basic_api": "./src/auto-generated/basic_api/index.ts",
+    "./aop_api": "./src/auto-generated/aop_api/index.ts",
     "./benefit": "./src/auto-generated/benefit/index.ts",
     "./bot_connector": "./src/auto-generated/bot_connector/index.ts",
     "./bot_open_api": "./src/auto-generated/bot_open_api/index.ts",
@@ -85,6 +86,9 @@
       ],
       "basic_api": [
         "./src/auto-generated/basic_api/index.ts"
+      ],
+      "aop_api": [
+        "./src/auto-generated/aop_api/index.ts"
       ],
       "benefit": [
         "./src/auto-generated/benefit/index.ts"

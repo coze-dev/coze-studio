@@ -47,6 +47,7 @@ const (
 
 	RunEventAck                 = "conversation.ack"
 	RunEventError      RunEvent = "conversation.error"
+	RunEventRunError   RunEvent = "conversation.run.error"
 	RunEventStreamDone RunEvent = "conversation.stream.done"
 )
 

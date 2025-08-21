@@ -28,7 +28,7 @@ import (
 )
 
 type ApplicationService struct {
-	templateRepo repository.TemplateRepository
+	templateRepo repository.TemplateRepositoryAdapter
 	storage      storage.Storage
 }
 

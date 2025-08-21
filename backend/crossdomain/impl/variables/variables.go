@@ -21,7 +21,7 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
-
+	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
@@ -64,4 +64,17 @@ func (s *impl) DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) 
 		ConnectorUID: m.ConnectorUID,
 		ConnectorID:  m.ConnectorID,
 	}
+}
+
+func (s *impl) GetVariableChannelInstance(ctx context.Context, e *model.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error) {
+	m := entity.NewUserVariableMeta(e)
+	return s.DomainSVC.GetVariableChannelInstance(ctx, m, keywords, varChannel)
+}
+
+func (s *impl) GetProjectVariablesMeta(ctx context.Context, projectID string, version string) (*entity.VariablesMeta, error) {
+	return s.DomainSVC.GetProjectVariablesMeta(ctx, projectID, version)
+}
+
+func (s *impl) GetAgentVariableMeta(ctx context.Context, agentID int64, version string) (*entity.VariablesMeta, error) {
+	return s.DomainSVC.GetAgentVariableMeta(ctx, agentID, version)
 }

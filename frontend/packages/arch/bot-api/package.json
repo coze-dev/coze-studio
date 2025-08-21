@@ -38,7 +38,8 @@
     "./app_builder": "./src/idl/app_builder.ts",
     "./ui-builder": "./src/idl/ui-builder",
     "./intelligence_api": "./src/idl/intelligence_api.ts",
-    "./hub_api": "./src/idl/hub_api.ts"
+    "./hub_api": "./src/idl/hub_api.ts",
+    "./falcon-api": "./src/falcon-api.ts"
   },
   "main": "./src/index.ts",
   "typesVersions": {

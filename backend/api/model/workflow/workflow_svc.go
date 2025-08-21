@@ -122,10 +122,13 @@ type WorkflowService interface {
 	OpenAPIChatFlowRun(ctx context.Context, request *ChatFlowRunRequest) (r *ChatFlowRunResponse, err error)
 
 	OpenAPIGetWorkflowInfo(ctx context.Context, request *OpenAPIGetWorkflowInfoRequest) (r *OpenAPIGetWorkflowInfoResponse, err error)
+
 	// Card Selector APIs
 	GetCardList(ctx context.Context, request *GetCardListRequest) (r *GetCardListResponse, err error)
 
 	GetCardDetail(ctx context.Context, request *GetCardDetailRequest) (r *GetCardDetailResponse, err error)
+
+	OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationRequest, err error)
 }
 
 type WorkflowServiceClient struct {
@@ -586,6 +589,7 @@ func (p *WorkflowServiceClient) OpenAPIGetWorkflowInfo(ctx context.Context, requ
 	}
 	return _result.GetSuccess(), nil
 }
+
 func (p *WorkflowServiceClient) GetCardList(ctx context.Context, request *GetCardListRequest) (r *GetCardListResponse, err error) {
 	var _args WorkflowServiceGetCardListArgs
 	_args.Request = request
@@ -600,6 +604,13 @@ func (p *WorkflowServiceClient) GetCardDetail(ctx context.Context, request *GetC
 	_args.Request = request
 	var _result WorkflowServiceGetCardDetailResult
 	if err = p.Client_().Call(ctx, "GetCardDetail", &_args, &_result); err != nil {
+
+func (p *WorkflowServiceClient) OpenAPICreateConversation(ctx context.Context, request *CreateConversationRequest) (r *CreateConversationRequest, err error) {
+	var _args WorkflowServiceOpenAPICreateConversationArgs
+	_args.Request = request
+	var _result WorkflowServiceOpenAPICreateConversationResult
+	if err = p.Client_().Call(ctx, "OpenAPICreateConversation", &_args, &_result); err != nil {
+
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -675,6 +686,7 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self.AddToProcessorMap("OpenAPIGetWorkflowInfo", &workflowServiceProcessorOpenAPIGetWorkflowInfo{handler: handler})
 	self.AddToProcessorMap("GetCardList", &workflowServiceProcessorGetCardList{handler: handler})
 	self.AddToProcessorMap("GetCardDetail", &workflowServiceProcessorGetCardDetail{handler: handler})
+	self.AddToProcessorMap("OpenAPICreateConversation", &workflowServiceProcessorOpenAPICreateConversation{handler: handler})
 	return self
 }
 func (p *WorkflowServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -3009,6 +3021,17 @@ func (p *workflowServiceProcessorGetCardList) Process(ctx context.Context, seqId
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
 		oprot.WriteMessageBegin("GetCardList", thrift.EXCEPTION, seqId)
+
+type workflowServiceProcessorOpenAPICreateConversation struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorOpenAPICreateConversation) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceOpenAPICreateConversationArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("OpenAPICreateConversation", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -3022,6 +3045,11 @@ func (p *workflowServiceProcessorGetCardList) Process(ctx context.Context, seqId
 	if retval, err2 = p.handler.GetCardList(ctx, args.Request); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetCardList: "+err2.Error())
 		oprot.WriteMessageBegin("GetCardList", thrift.EXCEPTION, seqId)
+	result := WorkflowServiceOpenAPICreateConversationResult{}
+	var retval *CreateConversationRequest
+	if retval, err2 = p.handler.OpenAPICreateConversation(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing OpenAPICreateConversation: "+err2.Error())
+		oprot.WriteMessageBegin("OpenAPICreateConversation", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -3078,6 +3106,7 @@ func (p *workflowServiceProcessorGetCardDetail) Process(ctx context.Context, seq
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetCardDetail", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("OpenAPICreateConversation", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -17127,6 +17156,22 @@ var WorkflowServiceGetCardListArgs_Request_DEFAULT *GetCardListRequest
 func (p *WorkflowServiceGetCardListArgs) GetRequest() (v *GetCardListRequest) {
 	if !p.IsSetRequest() {
 		return WorkflowServiceGetCardListArgs_Request_DEFAULT
+type WorkflowServiceOpenAPICreateConversationArgs struct {
+	Request *CreateConversationRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceOpenAPICreateConversationArgs() *WorkflowServiceOpenAPICreateConversationArgs {
+	return &WorkflowServiceOpenAPICreateConversationArgs{}
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationArgs) InitDefault() {
+}
+
+var WorkflowServiceOpenAPICreateConversationArgs_Request_DEFAULT *CreateConversationRequest
+
+func (p *WorkflowServiceOpenAPICreateConversationArgs) GetRequest() (v *CreateConversationRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceOpenAPICreateConversationArgs_Request_DEFAULT
 	}
 	return p.Request
 }
@@ -17140,6 +17185,16 @@ func (p *WorkflowServiceGetCardListArgs) IsSetRequest() bool {
 }
 
 func (p *WorkflowServiceGetCardListArgs) Read(iprot thrift.TProtocol) (err error) {
+
+var fieldIDToName_WorkflowServiceOpenAPICreateConversationArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationArgs) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -17185,6 +17240,7 @@ ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetCardListArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPICreateConversationArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -17196,6 +17252,8 @@ ReadStructEndError:
 
 func (p *WorkflowServiceGetCardListArgs) ReadField1(iprot thrift.TProtocol) error {
 	_field := NewGetCardListRequest()
+func (p *WorkflowServiceOpenAPICreateConversationArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewCreateConversationRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -17206,6 +17264,9 @@ func (p *WorkflowServiceGetCardListArgs) ReadField1(iprot thrift.TProtocol) erro
 func (p *WorkflowServiceGetCardListArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("GetCardList_args"); err != nil {
+func (p *WorkflowServiceOpenAPICreateConversationArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPICreateConversation_args"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -17232,6 +17293,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowServiceGetCardListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *WorkflowServiceOpenAPICreateConversationArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -17272,6 +17334,30 @@ var WorkflowServiceGetCardListResult_Success_DEFAULT *GetCardListResponse
 func (p *WorkflowServiceGetCardListResult) GetSuccess() (v *GetCardListResponse) {
 	if !p.IsSetSuccess() {
 		return WorkflowServiceGetCardListResult_Success_DEFAULT
+func (p *WorkflowServiceOpenAPICreateConversationArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPICreateConversationArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceOpenAPICreateConversationResult struct {
+	Success *CreateConversationRequest `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceOpenAPICreateConversationResult() *WorkflowServiceOpenAPICreateConversationResult {
+	return &WorkflowServiceOpenAPICreateConversationResult{}
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationResult) InitDefault() {
+}
+
+var WorkflowServiceOpenAPICreateConversationResult_Success_DEFAULT *CreateConversationRequest
+
+func (p *WorkflowServiceOpenAPICreateConversationResult) GetSuccess() (v *CreateConversationRequest) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceOpenAPICreateConversationResult_Success_DEFAULT
 	}
 	return p.Success
 }
@@ -17285,6 +17371,15 @@ func (p *WorkflowServiceGetCardListResult) IsSetSuccess() bool {
 }
 
 func (p *WorkflowServiceGetCardListResult) Read(iprot thrift.TProtocol) (err error) {
+var fieldIDToName_WorkflowServiceOpenAPICreateConversationResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceOpenAPICreateConversationResult) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -17330,6 +17425,7 @@ ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetCardListResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceOpenAPICreateConversationResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -17341,6 +17437,8 @@ ReadStructEndError:
 
 func (p *WorkflowServiceGetCardListResult) ReadField0(iprot thrift.TProtocol) error {
 	_field := NewGetCardListResponse()
+func (p *WorkflowServiceOpenAPICreateConversationResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewCreateConversationRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -17351,6 +17449,9 @@ func (p *WorkflowServiceGetCardListResult) ReadField0(iprot thrift.TProtocol) er
 func (p *WorkflowServiceGetCardListResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	if err = oprot.WriteStructBegin("GetCardList_result"); err != nil {
+func (p *WorkflowServiceOpenAPICreateConversationResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OpenAPICreateConversation_result"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -17377,6 +17478,7 @@ WriteStructEndError:
 }
 
 func (p *WorkflowServiceGetCardListResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *WorkflowServiceOpenAPICreateConversationResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -17692,5 +17794,10 @@ func (p *WorkflowServiceGetCardDetailResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("WorkflowServiceGetCardDetailResult(%+v)", *p)
+func (p *WorkflowServiceOpenAPICreateConversationResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceOpenAPICreateConversationResult(%+v)", *p)
 
 }

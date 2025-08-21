@@ -25,8 +25,10 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
@@ -242,9 +244,9 @@ func llmToolCallbackOptions(ctx context.Context, ns *schema2.NodeSchema, eventCh
 				if err != nil {
 					return nil, fmt.Errorf("invalid workflow id: %s", wfIDStr)
 				}
-				locator := vo.FromDraft
+				locator := model.FromDraft
 				if wf.WorkflowVersion != "" {
-					locator = vo.FromSpecificVersion
+					locator = model.FromSpecificVersion
 				}
 
 				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{
@@ -290,8 +292,8 @@ func llmToolCallbackOptions(ctx context.Context, ns *schema2.NodeSchema, eventCh
 					return nil, err
 				}
 
-				toolInfoResponse, err := plugin.GetPluginService().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
-					PluginEntity: plugin.Entity{
+				toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
+					PluginEntity: plugin.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: ptr.Of(p.PluginVersion),
 					},

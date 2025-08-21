@@ -37,7 +37,7 @@ func TestParseMarkdown(t *testing.T) {
 	mockStorage := ms.NewMockStorage(ctrl)
 	mockStorage.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	pfn := parseMarkdown(&contract.Config{
+	pfn := ParseMarkdown(&contract.Config{
 		FileExtension: contract.FileExtensionMarkdown,
 		ParsingStrategy: &contract.ParsingStrategy{
 			ExtractImage: true,

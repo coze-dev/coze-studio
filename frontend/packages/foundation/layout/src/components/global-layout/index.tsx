@@ -64,13 +64,14 @@ export const GlobalLayout: FC<PropsWithChildren<LayoutProps>> = ({
     >
       {banner}
       <Layout
+        title="猎鹰"
         className={cls(
           'flex !flex-row items-stretch w-full coz-bg-plus',
           banner ? 'h-[calc(100%_-_30px)]' : 'h-full',
         )}
       >
         {hasSider ? siderContent : null}
-        <Layout className="flex-1 relative flex flex-col overflow-x-hidden coz-bg-plus">
+        <Layout title="猎鹰" className="flex-1 relative flex flex-col overflow-x-hidden coz-bg-plus">
           {children}
         </Layout>
         {mobileTipsModal}

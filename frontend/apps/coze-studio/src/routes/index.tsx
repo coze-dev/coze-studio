@@ -21,6 +21,7 @@ import { GlobalError } from '@coze-foundation/layout';
 import { BaseEnum } from '@coze-arch/web-context';
 
 import { Layout } from '../layout';
+import { ProjectRouter } from '../components/project-router';
 import {
   LoginPage,
   SpaceLayout,
@@ -43,7 +44,9 @@ import {
   KnowledgeUpload,
   DatabaseDetail,
   ExplorePluginPage,
+  ExploreProjectPage,
   ExploreTemplatePage,
+  ExternalAppPage,
 } from './async-components';
 
 export const router: ReturnType<typeof createBrowserRouter> =
@@ -173,10 +176,12 @@ export const router: ReturnType<typeof createBrowserRouter> =
 
                 // resource library
                 {
-                  path: 'library',
+                  path: 'library/:source_type',
                   Component: Library,
-                  loader: () => ({
-                    subMenuKey: SpaceSubModuleEnum.LIBRARY,
+                  loader: request => ({
+                    subMenuKey: `${SpaceSubModuleEnum.LIBRARY}/${
+                      request.params.source_type
+                    }`,
                   }),
                 },
 
@@ -271,9 +276,35 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 type: 'plugin',
               }),
             },
+
+            // project store
+            {
+              path: 'project/:project_type',
+              element: <ExploreProjectPage />,
+              loader: () => ({
+                type: 'project',
+              }),
+            },
+          ],
+        },
+
+        // explore
+        {
+          path: 'template',
+          Component: null,
+          loader: () => ({
+            hasSider: false,
+            requireAuth: true,
+            menuKey: BaseEnum.Template,
+          }),
+          children: [
+            {
+              index: true,
+              element: <Navigate to="list" replace />,
+            },
             // template
             {
-              path: 'template',
+              path: 'list',
               element: <ExploreTemplatePage />,
               loader: () => ({
                 type: 'template',

@@ -63,6 +63,9 @@
       "path": "../browser-upgrade-banner/tsconfig.build.json"
     },
     {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
       "path": "../../components/bot-semi/tsconfig.build.json"
     },
     {

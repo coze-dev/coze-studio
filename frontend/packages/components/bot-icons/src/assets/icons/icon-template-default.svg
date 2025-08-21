@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 14</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="24" height="24"></rect>
+    </defs>
+    <g id="猎鹰智能体平台最终版" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-14">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <g id="矩形"></g>
+            <rect id="矩形" stroke="#333333" stroke-width="1.2" mask="url(#mask-2)" x="4.6" y="4.6" width="14.8" height="14.8" rx="1"></rect>
+            <path d="M9.2,4 L9.2,6.999 L19.6,7 L19.6,8.2 L9.2,8.199 L9.2,20 L8,20 L8,4 L9.2,4 Z" id="形状结合" fill="#333333" mask="url(#mask-2)"></path>
+        </g>
+    </g>
+</svg>

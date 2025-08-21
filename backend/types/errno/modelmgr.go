@@ -22,6 +22,9 @@ import "github.com/coze-dev/coze-studio/backend/pkg/errorx/code"
 const (
 	ErrModelMgrInvalidParamCode = 107000000
 	ErrModelMgrPermissionCode   = 107000001
+	ErrModelMgrDatabaseCode     = 107000002
+	ErrModelMgrNotFoundCode     = 107000003
+	ErrModelMgrCacheCode        = 107000004
 )
 
 func init() {
@@ -34,6 +37,24 @@ func init() {
 	code.Register(
 		ErrModelMgrInvalidParamCode,
 		"invalid parameter : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrModelMgrDatabaseCode,
+		"database error : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrModelMgrNotFoundCode,
+		"model not found : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrModelMgrCacheCode,
+		"cache error : {msg}",
 		code.WithAffectStability(false),
 	)
 }

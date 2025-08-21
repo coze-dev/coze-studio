@@ -25,9 +25,11 @@ const (
 
 type Space struct {
 	ID          int64
+	SpaceID     int64  // Alias for ID for compatibility
 	Name        string
 	Description string
 	IconURL     string
+	IconURI     string // Alias for IconURL for compatibility
 	SpaceType   SpaceType
 	OwnerID     int64
 	CreatorID   int64

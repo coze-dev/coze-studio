@@ -90,6 +90,7 @@ export interface ListData {
 
 export interface BaseLibraryPageProps {
   spaceId: string;
+  sourceType: string;
   isPersonalSpace?: boolean;
   entityConfigs: LibraryEntityConfig[];
 }

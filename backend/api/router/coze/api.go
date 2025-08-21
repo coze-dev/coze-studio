@@ -269,6 +269,10 @@ func Register(r *server.Hertz) {
 		{
 			_permission_api := _api.Group("/permission_api", _permission_apiMw()...)
 			{
+				_coze_web_app := _permission_api.Group("/coze_web_app", _coze_web_appMw()...)
+				_coze_web_app.POST("/impersonate_coze_user", append(_impersonatecozeuserMw(), coze.ImpersonateCozeUser)...)
+			}
+			{
 				_pat := _permission_api.Group("/pat", _patMw()...)
 				_pat.POST("/create_personal_access_token_and_permission", append(_createpersonalaccesstokenandpermissionMw(), coze.CreatePersonalAccessTokenAndPermission)...)
 				_pat.POST("/delete_personal_access_token_and_permission", append(_deletepersonalaccesstokenandpermissionMw(), coze.DeletePersonalAccessTokenAndPermission)...)
@@ -309,6 +313,10 @@ func Register(r *server.Hertz) {
 			{
 				_space := _playground_api.Group("/space", _spaceMw()...)
 				_space.POST("/list", append(_getspacelistv2Mw(), coze.GetSpaceListV2)...)
+				{
+					_model := _space.Group("/model", _modelMw()...)
+					_model.POST("/list", append(_getspacemodellistMw(), coze.GetSpaceModelList)...)
+				}
 			}
 		}
 		{
@@ -458,6 +466,10 @@ func Register(r *server.Hertz) {
 			_workflow.POST("/run", append(_openapirunflowMw(), coze.OpenAPIRunFlow)...)
 			_workflow.POST("/stream_resume", append(_openapistreamresumeflowMw(), coze.OpenAPIStreamResumeFlow)...)
 			_workflow.POST("/stream_run", append(_openapistreamrunflowMw(), coze.OpenAPIStreamRunFlow)...)
+			{
+				_conversation1 := _workflow.Group("/conversation", _conversation1Mw()...)
+				_conversation1.POST("/create", append(_openapicreateconversationMw(), coze.OpenAPICreateConversation)...)
+			}
 		}
 		{
 			_workflows := _v1.Group("/workflows", _workflowsMw()...)

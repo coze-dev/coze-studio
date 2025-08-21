@@ -14,54 +14,168 @@
  * limitations under the License.
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
+import cls from 'classnames';
 import { SubMenuItem } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
-import {
-  IconCozTemplate,
-  IconCozTemplateFill,
-  IconCozPlugin,
-  IconCozPluginFill,
-} from '@coze-arch/coze-design/icons';
 import { Space } from '@coze-arch/coze-design';
+import {
+  IconBotDevelop,
+  IconBotPlugin,
+  IconCard,
+  IconCardActive,
+} from '../../../../../components/bot-icons';
+import { aopApi } from '@coze-arch/bot-api';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
 
-const getMenuConfig = () => [
+import styles from './index.module.less';
+
+const getExploreMenuConfig = () => [
+  {
+    type: 'project',
+    icon: <IconBotDevelop />,
+    activeIcon: <IconBotDevelop />,
+    title: I18n.t('Project'),
+    // isActive: true,
+    // path: '/explore/project',
+    children: [
+      {
+        type: 'latest',
+        title: I18n.t('Project_latest'),
+        isActive: true,
+        path: '/explore/project/latest',
+      },
+      {
+        type: 'tools',
+        title: I18n.t('Project_tools'),
+        isActive: true,
+        path: '/explore/project/tools',
+      },
+    ],
+  },
   {
     type: 'plugin',
-    icon: <IconCozPlugin />,
-    activeIcon: <IconCozPluginFill />,
+    icon: <IconBotPlugin />,
+    activeIcon: <IconBotPlugin />,
     title: I18n.t('Plugins'),
     isActive: true,
     path: '/explore/plugin',
   },
-  {
-    icon: <IconCozTemplate />,
-    activeIcon: <IconCozTemplateFill />,
-    title: I18n.t('template_name'),
-    isActive: true,
-    type: 'template',
-    path: '/explore/template',
-  },
+  // {
+  //   icon: <IconCozTemplate />,
+  //   activeIcon: <IconCozTemplateFill />,
+  //   title: I18n.t('template_name'),
+  //   isActive: true,
+  //   type: 'template',
+  //   path: '/explore/template',
+  // },
 ];
 
-export const ExploreSubMenu = () => {
+const CustomSubMenu = ({ menuConfig }) => {
   const navigate = useNavigate();
   const { type } = useExploreRoute();
-  const menuConfig = getMenuConfig();
+  const { sub_route_id } = useParams();
+  const firstParentNodeIndex = menuConfig.findIndex(item =>
+    Array.isArray(item.children),
+  );
+  const defaultType =
+    firstParentNodeIndex > -1 ? menuConfig[firstParentNodeIndex].type : '';
+
+  const [activeId, setActiveId] = useState(defaultType);
+
+  const toggleActive = id => {
+    if (activeId === id) {
+      setActiveId('');
+      return;
+    }
+    setActiveId(id);
+  };
+
   return (
     <Space spacing={4} vertical>
-      {menuConfig.map(item => (
+      {menuConfig.map(item => [
         <SubMenuItem
+          key={item.type}
           {...item}
-          isActive={item.type === type}
+          isActive={item?.children?.length ? false : item.type === type}
+          suffix={
+            item?.children?.length ? (
+              <div
+                className={cls(styles.groupSubMenuArrow, {
+                  [styles.groupSubMenuArrowActive]: activeId === item.type,
+                })}
+              />
+            ) : null
+          }
           onClick={() => {
-            navigate(item.path);
+            item.path ? navigate(item.path) : toggleActive(item.type);
           }}
-        />
-      ))}
+        />,
+        activeId === item.type &&
+          item?.children?.map(child => (
+            <SubMenuItem
+              key={child.type}
+              {...child}
+              subNode={true}
+              isActive={child.type === sub_route_id}
+              onClick={() => {
+                navigate(child.path);
+              }}
+            />
+          )),
+      ])}
     </Space>
+  );
+};
+
+export const ExploreSubMenu = () => (
+  <CustomSubMenu menuConfig={getExploreMenuConfig()} />
+);
+
+export const TemplateSubMenu = () => {
+  const [subMenus, setSubMenus] = useState([]);
+  useEffect(() => {
+    aopApi.GetCardTypeCount().then(res => {
+      const list = res.body.cardClassList?.map(e => ({
+        type: `${e.id}`,
+        title: e.name,
+        isActive: true,
+        path: `/template/card/${e.id}`,
+      }));
+      setSubMenus(list);
+    });
+  }, []);
+
+  return (
+    <CustomSubMenu
+      menuConfig={[
+        {
+          type: 'project',
+          icon: <IconBotDevelop />,
+          activeIcon: <IconBotDevelop />,
+          title: I18n.t('Template_project'),
+          isActive: true,
+          path: '/template/project',
+        },
+        {
+          type: 'card',
+          icon: <IconCard />,
+          activeIcon: <IconCardActive />,
+          title: I18n.t('Template_card'),
+          children: [
+            {
+              type: 'all',
+              title: I18n.t('All'),
+              isActive: true,
+              path: '/template/card/all',
+            },
+            ...subMenus,
+          ],
+        },
+      ]}
+    />
   );
 };

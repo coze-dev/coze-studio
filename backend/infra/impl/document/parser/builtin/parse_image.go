@@ -31,7 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func parseImage(config *contract.Config, model chatmodel.BaseChatModel) parseFn {
+func ParseImage(config *contract.Config, model chatmodel.BaseChatModel) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		options := parser.GetCommonOptions(&parser.Options{}, opts...)
 		doc := &schema.Document{
@@ -76,14 +76,14 @@ func parseImage(config *contract.Config, model chatmodel.BaseChatModel) parseFn 
 
 			output, err := model.Generate(ctx, []*schema.Message{input})
 			if err != nil {
-				return nil, fmt.Errorf("[parseImage] model generate failed: %w", err)
+				return nil, fmt.Errorf("[ParseImage] model generate failed: %w", err)
 			}
 
 			doc.Content = output.Content
 		case contract.ImageAnnotationTypeManual:
 			// do nothing
 		default:
-			return nil, fmt.Errorf("[parseImage] unknown image annotation type=%d", config.ParsingStrategy.ImageAnnotationType)
+			return nil, fmt.Errorf("[ParseImage] unknown image annotation type=%d", config.ParsingStrategy.ImageAnnotationType)
 		}
 
 		return []*schema.Document{doc}, nil

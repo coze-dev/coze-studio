@@ -10,7 +10,8 @@
     "./knowledge-upload": "./src/pages/knowledge-upload/index.tsx",
     "./knowledge-preview": "./src/pages/knowledge-preview/index.tsx",
     "./develop": "./src/pages/develop/index.tsx",
-    "./library": "./src/pages/library/index.tsx"
+    "./library": "./src/pages/library/index.tsx",
+    "./members": "./src/pages/members/index.tsx"
   },
   "main": "src/index.tsx",
   "typesVersions": {
@@ -29,6 +30,9 @@
       ],
       "library": [
         "./src/pages/library/index.tsx"
+      ],
+      "members": [
+        "./src/pages/members/index.tsx"
       ]
     }
   },

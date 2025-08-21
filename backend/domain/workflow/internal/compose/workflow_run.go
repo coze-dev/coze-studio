@@ -26,6 +26,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -45,7 +46,7 @@ type WorkflowRunner struct {
 	resumeReq    *entity.ResumeRequest
 	schema       *schema2.WorkflowSchema
 	streamWriter *schema.StreamWriter[*entity.Message]
-	config       vo.ExecuteConfig
+	config       model.ExecuteConfig
 
 	executeID      int64
 	eventChan      chan *execute.Event
@@ -77,7 +78,7 @@ func WithStreamWriter(sw *schema.StreamWriter[*entity.Message]) WorkflowRunnerOp
 	}
 }
 
-func NewWorkflowRunner(b *entity.WorkflowBasic, sc *schema2.WorkflowSchema, config vo.ExecuteConfig, opts ...WorkflowRunnerOption) *WorkflowRunner {
+func NewWorkflowRunner(b *entity.WorkflowBasic, sc *schema2.WorkflowSchema, config model.ExecuteConfig, opts ...WorkflowRunnerOption) *WorkflowRunner {
 	options := &workflowRunOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -262,7 +263,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	cancelCtx, cancelFn := context.WithCancel(ctx)
 	var timeoutFn context.CancelFunc
 	if s := execute.GetStaticConfig(); s != nil {
-		timeout := ternary.IFElse(config.TaskType == vo.TaskTypeBackground, s.BackgroundRunTimeout, s.ForegroundRunTimeout)
+		timeout := ternary.IFElse(config.TaskType == model.TaskTypeBackground, s.BackgroundRunTimeout, s.ForegroundRunTimeout)
 		if timeout > 0 {
 			cancelCtx, timeoutFn = context.WithTimeout(cancelCtx, timeout)
 		}

@@ -40,3 +40,5 @@ dumped_hertz_remote_config.json
 /domain/workflow/internal/nodes/code/script/RestrictedPython/__pycache__/**
 .env.dev
 .env.local
+backend/coze-studio-backend
+coze-studio-backend

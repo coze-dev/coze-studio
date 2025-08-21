@@ -275,8 +275,7 @@ export const useAddNodeModal = (prevAddNodeRef: {
           nodeJSON,
         });
       } else {
-        // Dragging the "plug-in", or the "subprocess" node itself,
-        // will follow the logic here, at which point isDrag is true
+        // Dragging the "plug-in", or the "subprocess" node itself, will follow the logic here, at which point isDrag is true
         editService.addNode(StandardNodeType.Api, nodeJSON, position, isDrag);
       }
       Toast.success(

@@ -18,6 +18,6 @@ import { useRouteConfig } from '@coze-arch/bot-hooks';
 import { type TRouteConfigGlobal } from '@coze-arch/bot-hooks';
 
 export interface ExploreRouteType extends TRouteConfigGlobal {
-  type?: 'template' | 'plugin';
+  type?: 'template' | 'plugin' | 'project-latest' | 'project-store' | 'project-tools' | 'project';
 }
 export const useExploreRoute = useRouteConfig<ExploreRouteType>;

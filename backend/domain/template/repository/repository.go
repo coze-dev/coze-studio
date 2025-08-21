@@ -40,4 +40,13 @@ type TemplateRepository interface {
 
 	// List lists templates with filters
 	List(ctx context.Context, filter *entity.TemplateFilter, page *entity.Pagination, orderByField string) ([]*model.Template, int64, error)
+	
+	// Update updates an existing template
+	Update(ctx context.Context, template *model.Template) error
+	
+	// GetByID gets a template by ID
+	GetByID(ctx context.Context, id int64) (*model.Template, error)
+	
+	// Delete deletes a template by ID
+	Delete(ctx context.Context, id int64) error
 }

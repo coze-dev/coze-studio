@@ -35,8 +35,10 @@ import { PlainTextContent } from '../../contents/plain-text-content';
 import { MultimodalContent } from '../../contents/multimodal-content';
 import { ImageContent } from '../../contents/image-content';
 import { FileContent } from '../../contents/file-content';
+import { SpecialAnswerContent } from '../../contents/special-answer-content';
 import { isImage } from '../../../utils/is-image';
 import { defaultEnable } from '../../../utils/default-enable';
+import { isSpecialAnswerMessage, extractContentList } from '../../../utils/special-answer';
 import { MESSAGE_TYPE_VALID_IN_TEXT_LIST } from '../../../constants/content-box';
 
 export interface EnhancedContentConfig {
@@ -161,14 +163,27 @@ export const ContentBox: FC<IContentBoxProps> = props => {
           mentioned={message.mention_list.at(0)}
         />
       ) : (
-        <TextContent
-          message={message}
-          readonly={readonly}
-          onImageClick={onImageClick}
-          onLinkClick={onLinkClick}
-          enableAutoSizeImage={enableAutoSizeImage}
-          mdBoxProps={mdBoxProps}
-        />
+        // 检查是否为特殊的answer消息
+        isSpecialAnswerMessage(message) ? (
+          <SpecialAnswerContent
+            message={message}
+            contentList={extractContentList(message)}
+            readonly={readonly}
+            onImageClick={onImageClick}
+            onLinkClick={onLinkClick}
+            enableAutoSizeImage={enableAutoSizeImage}
+            mdBoxProps={mdBoxProps}
+          />
+        ) : (
+          <TextContent
+            message={message}
+            readonly={readonly}
+            onImageClick={onImageClick}
+            onLinkClick={onLinkClick}
+            enableAutoSizeImage={enableAutoSizeImage}
+            mdBoxProps={mdBoxProps}
+          />
+        )
       );
     }
   }

@@ -24,12 +24,21 @@ import { I18n } from '@coze-arch/i18n';
 import { useRouteConfig } from '@coze-arch/bot-hooks';
 import {
   IconCozPlusCircle,
-  IconCozWorkspace,
-  IconCozWorkspaceFill,
-  IconCozCompass,
-  IconCozCompassFill,
-  IconCozDocument,
+  // IconCozWorkspace,
+  // IconCozWorkspaceFill,
+  // IconCozCompass,
+  // IconCozCompassFill,
+  // IconCozDocument,
 } from '@coze-arch/coze-design/icons';
+import {
+  IconBotDoc,
+  IconBotWorkspace,
+  IconBotShop,
+  IconBotTemplate,
+  IconBotWorkspaceFill,
+  IconBotShopFill,
+  IconBotTemplateFill,
+} from '../../../../../components/bot-icons';
 
 import { AccountDropdown } from '../account-dropdown';
 import { useHasSider } from './hooks/use-has-sider';
@@ -62,22 +71,29 @@ export const GlobalLayoutComposed: FC<PropsWithChildren> = ({ children }) => {
         menus={[
           {
             title: I18n.t('navigation_workspace'),
-            icon: <IconCozWorkspace />,
-            activeIcon: <IconCozWorkspaceFill />,
+            icon: <IconBotWorkspace />,
+            activeIcon: <IconBotWorkspaceFill />,
             path: '/space',
             dataTestId: 'layout_workspace-button',
           },
           {
             title: I18n.t('menu_title_store'),
-            icon: <IconCozCompass />,
-            activeIcon: <IconCozCompassFill />,
+            icon: <IconBotShop />,
+            activeIcon: <IconBotShopFill />,
             path: '/explore',
             dataTestId: 'layout_explore-button',
+          },
+          {
+            title: I18n.t('menu_title_template'),
+            icon: <IconBotTemplate />,
+            activeIcon: <IconBotTemplateFill />,
+            path: '/template/list',
+            dataTestId: 'layout_explore-template-button',
           },
         ]}
         extras={[
           {
-            icon: <IconCozDocument />,
+            icon: <IconBotDoc />,
             tooltip: I18n.t('menu_documents'),
             onClick: () => {
               // cp-disable-next-line

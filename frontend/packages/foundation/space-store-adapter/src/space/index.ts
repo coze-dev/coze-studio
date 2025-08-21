@@ -113,13 +113,33 @@ export const useSpaceStore = create<SpaceStoreState & SpaceStoreAction>()(
           space => space.space_type === SpaceType.Personal,
         )?.id,
 
-      checkSpaceID: spaceID =>
-        !!get().spaces.bot_space_list?.find(space => space.id === spaceID),
+      checkSpaceID: spaceID => {
+        // 商店空间ID (888888) 对所有用户开放访问
+        if (spaceID === '888888') {
+          return true;
+        }
+        return !!get().spaces.bot_space_list?.find(space => space.id === spaceID);
+      },
 
       setSpace: id => {
         const { space, spaces } = get();
 
         if (id) {
+          // 处理商店空间的特殊情况
+          if (id === '888888') {
+            const storeSpace: BotSpace = {
+              id: '888888',
+              name: '智能体商店',
+              space_type: SpaceType.Team,
+              description: '全局智能体商店空间',
+              icon_url: '',
+              created_at: 0,
+              updated_at: 0,
+            };
+            set({ space: storeSpace }, false, 'setSpace');
+            return;
+          }
+          
           const targetSapce = spaces.bot_space_list.find(s => s.id === id);
           if (targetSapce) {
             set({ space: targetSapce }, false, 'setSpace');

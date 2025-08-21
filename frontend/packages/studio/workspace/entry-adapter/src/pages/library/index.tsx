@@ -25,10 +25,14 @@ import {
   useKnowledgeConfig,
 } from '@coze-studio/workspace-base/library';
 
-export const LibraryPage: FC<{ spaceId: string }> = ({ spaceId }) => {
+export const LibraryPage: FC<{ spaceId: string; sourceType: string }> = ({
+  spaceId,
+  sourceType,
+}) => {
   const basePageRef = useRef<{ reloadList: () => void }>(null);
   const configCommonParams = {
     spaceId,
+    sourceType,
     reloadList: () => {
       basePageRef.current?.reloadList();
     },
@@ -48,6 +52,7 @@ export const LibraryPage: FC<{ spaceId: string }> = ({ spaceId }) => {
     <>
       <BaseLibraryPage
         spaceId={spaceId}
+        sourceType={sourceType}
         ref={basePageRef}
         entityConfigs={[
           pluginConfig,

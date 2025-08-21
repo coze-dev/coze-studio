@@ -30,6 +30,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -317,13 +318,16 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 
 func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, draft *vo.DraftInfo) error {
 	d := &model.WorkflowDraft{
-		ID:             id,
-		Canvas:         draft.Canvas,
-		InputParams:    draft.InputParamsStr,
-		OutputParams:   draft.OutputParamsStr,
-		Modified:       draft.Modified,
-		TestRunSuccess: draft.TestRunSuccess,
-		CommitID:       draft.CommitID,
+		ID:           id,
+		Canvas:       draft.Canvas,
+		InputParams:  draft.InputParamsStr,
+		OutputParams: draft.OutputParamsStr,
+		CommitID:     draft.CommitID,
+	}
+
+	if draft.DraftMeta != nil {
+		d.Modified = draft.DraftMeta.Modified
+		d.TestRunSuccess = draft.DraftMeta.TestRunSuccess
 	}
 
 	if err := r.query.WorkflowDraft.WithContext(ctx).Save(d); err != nil {
@@ -497,6 +501,10 @@ func (r *RepositoryImpl) UpdateMeta(ctx context.Context, id int64, metaUpdate *v
 		expressions = append(expressions, r.query.WorkflowMeta.LatestVersion.Value(*metaUpdate.LatestPublishedVersion))
 	}
 
+	if metaUpdate.WorkflowMode != nil {
+		expressions = append(expressions, r.query.WorkflowMeta.Mode.Value(int32(*metaUpdate.WorkflowMode)))
+	}
+
 	if len(expressions) == 0 {
 		return nil
 	}
@@ -536,7 +544,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		commitID                          string
 	)
 	switch policy.QType {
-	case vo.FromDraft:
+	case workflowModel.FromDraft:
 		draft, err := r.DraftV2(ctx, policy.ID, policy.CommitID)
 		if err != nil {
 			return nil, err
@@ -547,7 +555,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = draft.OutputParamsStr
 		draftMeta = draft.DraftMeta
 		commitID = draft.CommitID
-	case vo.FromSpecificVersion:
+	case workflowModel.FromSpecificVersion:
 		v, err := r.GetVersion(ctx, policy.ID, policy.Version)
 		if err != nil {
 			return nil, err
@@ -557,7 +565,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 		outputParams = v.OutputParamsStr
 		versionMeta = v.VersionMeta
 		commitID = v.CommitID
-	case vo.FromLatestVersion:
+	case workflowModel.FromLatestVersion:
 		v, err := r.GetLatestVersion(ctx, policy.ID)
 		if err != nil {
 			return nil, err
@@ -601,6 +609,116 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (_
 	}, nil
 }
 
+func (r *RepositoryImpl) CreateChatFlowRoleConfig(ctx context.Context, chatFlowRole *entity.ChatFlowRole) (int64, error) {
+	id, err := r.GenID(ctx)
+	if err != nil {
+		return 0, vo.WrapError(errno.ErrIDGenError, err)
+	}
+	chatFlowRoleConfig := &model.ChatFlowRoleConfig{
+		ID:                  id,
+		WorkflowID:          chatFlowRole.WorkflowID,
+		Name:                chatFlowRole.Name,
+		Description:         chatFlowRole.Description,
+		Avatar:              chatFlowRole.AvatarUri,
+		AudioConfig:         chatFlowRole.AudioConfig,
+		BackgroundImageInfo: chatFlowRole.BackgroundImageInfo,
+		OnboardingInfo:      chatFlowRole.OnboardingInfo,
+		SuggestReplyInfo:    chatFlowRole.SuggestReplyInfo,
+		UserInputConfig:     chatFlowRole.UserInputConfig,
+		CreatorID:           chatFlowRole.CreatorID,
+		Version:             chatFlowRole.Version,
+	}
+
+	if err := r.query.ChatFlowRoleConfig.WithContext(ctx).Create(chatFlowRoleConfig); err != nil {
+		return 0, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("create chat flow role: %w", err))
+	}
+
+	return id, nil
+}
+
+func (r *RepositoryImpl) UpdateChatFlowRoleConfig(ctx context.Context, workflowID int64, chatFlowRole *vo.ChatFlowRoleUpdate) error {
+	var expressions []field.AssignExpr
+	if chatFlowRole.Name != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Name.Value(*chatFlowRole.Name))
+	}
+	if chatFlowRole.Description != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Description.Value(*chatFlowRole.Description))
+	}
+	if chatFlowRole.AvatarUri != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.Avatar.Value(*chatFlowRole.AvatarUri))
+	}
+	if chatFlowRole.AudioConfig != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.AudioConfig.Value(*chatFlowRole.AudioConfig))
+	}
+	if chatFlowRole.BackgroundImageInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.BackgroundImageInfo.Value(*chatFlowRole.BackgroundImageInfo))
+	}
+	if chatFlowRole.OnboardingInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.OnboardingInfo.Value(*chatFlowRole.OnboardingInfo))
+	}
+	if chatFlowRole.SuggestReplyInfo != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.SuggestReplyInfo.Value(*chatFlowRole.SuggestReplyInfo))
+	}
+	if chatFlowRole.UserInputConfig != nil {
+		expressions = append(expressions, r.query.ChatFlowRoleConfig.UserInputConfig.Value(*chatFlowRole.UserInputConfig))
+	}
+
+	if len(expressions) == 0 {
+		return nil
+	}
+
+	_, err := r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).
+		UpdateColumnSimple(expressions...)
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("update chat flow role: %w", err))
+	}
+
+	return nil
+}
+
+func (r *RepositoryImpl) GetChatFlowRoleConfig(ctx context.Context, workflowID int64, version string) (_ *entity.ChatFlowRole, err error, isExist bool) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+	role := &model.ChatFlowRoleConfig{}
+	if version != "" {
+		role, err = r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID), r.query.ChatFlowRoleConfig.Version.Eq(version)).First()
+	} else {
+		role, err = r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).First()
+	}
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err, false
+		}
+		return nil, fmt.Errorf("failed to get chat flow role for chatflowID %d: %w", workflowID, err), true
+	}
+	res := &entity.ChatFlowRole{
+		ID:                  role.ID,
+		WorkflowID:          role.WorkflowID,
+		Name:                role.Name,
+		Description:         role.Description,
+		AvatarUri:           role.Avatar,
+		AudioConfig:         role.AudioConfig,
+		BackgroundImageInfo: role.BackgroundImageInfo,
+		OnboardingInfo:      role.OnboardingInfo,
+		SuggestReplyInfo:    role.SuggestReplyInfo,
+		UserInputConfig:     role.UserInputConfig,
+		CreatorID:           role.CreatorID,
+		CreatedAt:           time.UnixMilli(role.CreatedAt),
+	}
+	if role.UpdatedAt > 0 {
+		res.UpdatedAt = time.UnixMilli(role.UpdatedAt)
+	}
+	return res, err, true
+}
+
+func (r *RepositoryImpl) DeleteChatFlowRoleConfig(ctx context.Context, id int64, workflowID int64) error {
+	_, err := r.query.ChatFlowRoleConfig.WithContext(ctx).Where(r.query.ChatFlowRoleConfig.ID.Eq(id), r.query.ChatFlowRoleConfig.WorkflowID.Eq(workflowID)).Delete()
+	return err
+}
+
 func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (_ *vo.VersionInfo, err error) {
 	defer func() {
 		if err != nil {
@@ -632,6 +750,28 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 		},
 		CommitID: wfVersion.CommitID,
 	}, nil
+}
+
+func (r *RepositoryImpl) GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) (_ []string, err error) {
+	if limit <= 0 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("limit must be greater than 0"))
+	}
+
+	connectorWorkflowVersion := r.query.ConnectorWorkflowVersion
+	vl, err := connectorWorkflowVersion.WithContext(ctx).
+		Where(connectorWorkflowVersion.ConnectorID.Eq(connectorID),
+			connectorWorkflowVersion.WorkflowID.Eq(workflowID)).
+		Order(connectorWorkflowVersion.CreatedAt.Desc()).
+		Limit(limit).
+		Find()
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrDatabaseError, err)
+	}
+	var versionList []string
+	for _, v := range vl {
+		versionList = append(versionList, v.Version)
+	}
+	return versionList, nil
 }
 
 func (r *RepositoryImpl) IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (b bool, err error) {
@@ -762,6 +902,10 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 
 	if q.LibOnly {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	if q.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*q.Mode)))
 	}
 
 	type combinedDraft struct {
@@ -928,6 +1072,10 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 
 	if q.LibOnly {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	if q.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*q.Mode)))
 	}
 
 	type combinedVersion struct {
@@ -1154,6 +1302,10 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
+	if query.Mode != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Mode.Eq(int32(*query.Mode)))
+	}
+
 	var result []*model.WorkflowMeta
 
 	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...)
@@ -1313,7 +1465,8 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	}
 
 	var opts []compose.WorkflowOption
-	opts = append(opts, compose.WithIDAsName(policy.ID))
+	opts = append(opts, compose.WithIDAsName(policy.ID),
+		compose.WithParentRequireCheckpoint()) // always assumes the 'parent' may pass a checkpoint ID
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
 		opts = append(opts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
 	}
@@ -1516,6 +1669,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			IconURI:   wfMeta.IconURI,
 			Desc:      wfMeta.Description,
 			AppID:     ternary.IFElse(wfMeta.AppID == 0, (*int64)(nil), ptr.Of(wfMeta.AppID)),
+			Mode:      workflowModel.WorkflowMode(wfMeta.Mode),
 		},
 		CanvasInfo: &vo.CanvasInfo{
 			Canvas:          wfDraft.Canvas,
@@ -1588,6 +1742,10 @@ func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context
 
 func (r *RepositoryImpl) GetKnowledgeRecallChatModel() cm.BaseChatModel {
 	return r.builtinModel
+}
+
+func (r *RepositoryImpl) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
+	return r.tos.GetObjectUrl(ctx, objectKey, opts...)
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

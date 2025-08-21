@@ -28,6 +28,8 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	crossmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -232,7 +234,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		err error
 	)
 	if c.LLMParams != nil {
-		m, _, err = crossmodel.GetManager().GetModel(ctx, c.LLMParams)
+		m, _, err = crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
 		if err != nil {
 			return nil, err
 		}

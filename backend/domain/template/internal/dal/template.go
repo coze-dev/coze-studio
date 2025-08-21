@@ -127,3 +127,26 @@ func (t *TemplateImpl) List(ctx context.Context, filter *entity.TemplateFilter, 
 
 	return records, count, nil
 }
+
+// Update updates an existing template
+func (t *TemplateImpl) Update(ctx context.Context, template *model.Template) error {
+	_, err := t.query.Template.WithContext(ctx).Where(
+		t.query.Template.ID.Eq(template.ID),
+	).Updates(template)
+	return err
+}
+
+// GetByID gets a template by ID
+func (t *TemplateImpl) GetByID(ctx context.Context, id int64) (*model.Template, error) {
+	return t.query.Template.WithContext(ctx).Where(
+		t.query.Template.ID.Eq(id),
+	).First()
+}
+
+// Delete deletes a template by ID
+func (t *TemplateImpl) Delete(ctx context.Context, id int64) error {
+	_, err := t.query.Template.WithContext(ctx).Where(
+		t.query.Template.ID.Eq(id),
+	).Delete()
+	return err
+}

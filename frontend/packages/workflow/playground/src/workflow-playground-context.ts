@@ -136,8 +136,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     response[0].status === 'fulfilled' && (resp = response[0].value);
     response[1].status === 'fulfilled' && (favoritePlugins = response[1].value);
 
-    // Convert the template data returned by the server level to type: '1',
-    // which is the same as the standard StandardNodeType.
+    // Convert the template data returned by the server level to type: '1', which is the same as the standard StandardNodeType.
     const typeKey = 'node_type';
 
     this.favoritePlugins = favoritePlugins;

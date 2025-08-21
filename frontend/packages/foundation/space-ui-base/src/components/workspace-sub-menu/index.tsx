@@ -22,7 +22,7 @@ import { useSpaceStore } from '@coze-foundation/space-store';
 
 import { type IWorkspaceListItem } from './components/workspace-list-item';
 import { WorkspaceList } from './components/workspace-list';
-import { FavoritesList } from './components/favorites-list';
+// import { FavoritesList } from './components/favorites-list';
 
 import './components/list.css';
 
@@ -56,9 +56,9 @@ export const WorkspaceSubMenu = ({
             <div className="flex-none w-full">
               <WorkspaceList menus={menus} currentSubMenu={currentSubMenu} />
             </div>
-            <div className="flex-grow max-h-full overflow-y-auto w-full mt-[24px]">
+            {/* <div className="flex-grow max-h-full overflow-y-auto w-full mt-[24px]">
               <FavoritesList />
-            </div>
+            </div> */}
           </>
         ) : null}
       </Space>

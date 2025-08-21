@@ -17,7 +17,18 @@
 package agentrun
 
 import (
+	"context"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
+	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
 )
 
 func TestAgentRun(t *testing.T) {
@@ -96,4 +107,159 @@ func TestAgentRun(t *testing.T) {
 
 	// assert.NoError(t, err)
 
+}
+
+func TestRunImpl_List(t *testing.T) {
+	ctx := context.Background()
+	mockDBGen := orm.NewMockDB()
+	mockDBGen.AddTable(&model.RunRecord{}).AddRows(
+		&model.RunRecord{
+			ID:             1,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix(),
+		},
+		&model.RunRecord{
+			ID:             2,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 1,
+		}, &model.RunRecord{
+			ID:             3,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 2,
+		}, &model.RunRecord{
+			ID:             4,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 3,
+		}, &model.RunRecord{
+			ID:             5,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 4,
+		},
+		&model.RunRecord{
+			ID:             6,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 5,
+		}, &model.RunRecord{
+			ID:             7,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 6,
+		}, &model.RunRecord{
+			ID:             8,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 7,
+		}, &model.RunRecord{
+			ID:             9,
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			UserID:         "123456",
+			CreatedAt:      time.Now().Unix() + 8,
+		},
+	)
+	mockDB, err := mockDBGen.DB()
+	assert.NoError(t, err)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockIDGen := mock.NewMockIDGenerator(ctrl)
+
+	runRecordRepo := repository.NewRunRecordRepo(mockDB, mockIDGen)
+
+	service := &runImpl{
+		Components: Components{
+			RunRecordRepo: runRecordRepo,
+		},
+	}
+
+	t.Run("list success", func(t *testing.T) {
+
+		meta := &entity.ListRunRecordMeta{
+			ConversationID: 123,
+			AgentID:        456,
+			SectionID:      789,
+			Limit:          10,
+			OrderBy:        "desc",
+		}
+
+		result, err := service.List(ctx, meta)
+		// check result
+		assert.NoError(t, err)
+		assert.Len(t, result, 9)
+		assert.Equal(t, int64(123), result[0].ConversationID)
+		assert.Equal(t, int64(456), result[0].AgentID)
+	})
+
+	t.Run("empty list", func(t *testing.T) {
+		meta := &entity.ListRunRecordMeta{
+			ConversationID: 999, //
+			Limit:          10,
+			OrderBy:        "desc",
+		}
+
+		// check result
+		result, err := service.List(ctx, meta)
+		assert.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("search with before id", func(t *testing.T) {
+
+		meta := &entity.ListRunRecordMeta{
+			ConversationID: 123,
+			SectionID:      789,
+			AgentID:        456,
+			BeforeID:       5,
+			Limit:          3,
+			OrderBy:        "desc",
+		}
+
+		result, err := service.List(ctx, meta)
+
+		// check result
+		assert.NoError(t, err)
+		assert.Len(t, result, 3)
+		assert.Equal(t, int64(4), result[0].ID)
+	})
+	t.Run("search with after id and limit", func(t *testing.T) {
+
+		meta := &entity.ListRunRecordMeta{
+			ConversationID: 123,
+			SectionID:      789,
+			AgentID:        456,
+			AfterID:        5,
+			Limit:          3,
+			OrderBy:        "desc",
+		}
+
+		result, err := service.List(ctx, meta)
+
+		// check result
+		assert.NoError(t, err)
+		assert.Len(t, result, 3)
+		assert.Equal(t, int64(9), result[0].ID)
+
+	})
 }

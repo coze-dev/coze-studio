@@ -19,40 +19,39 @@ import path from 'path';
 import { defineConfig } from '@coze-arch/rsbuild-config';
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
 
-const API_PROXY_TARGET = `http://localhost:${
-  process.env.WEB_SERVER_PORT || 8888
-}/`;
+// 常量定义
+const DEFAULT_WEB_SERVER_PORT = 8888;
+
+const API_PROXY_TARGET = `http://localhost:${process.env.WEB_SERVER_PORT || DEFAULT_WEB_SERVER_PORT}/`;
 
 const mergedConfig = defineConfig({
   server: {
     strictPort: true,
     proxy: [
       {
-        context: ['/api/mcp'],
-        target: 'http://10.10.10.208:8500',
+        context: ['/api', '/v1'],
+        target: API_PROXY_TARGET,
         secure: false,
         changeOrigin: true,
-        pathRewrite: {
-          '^/api/mcp': '/aop-web',
-        },
       },
       {
-        context: ['/api'],
-        target: API_PROXY_TARGET,
+        context: ['/aop-web', '/filestore', '/agent-h5/'],
+        target: 'https://agent.finmall.com/',
         secure: false,
         changeOrigin: true,
       },
     ],
   },
   html: {
-    title: '扣子 Studio',
+    title: '猎鹰 Studio',
     favicon: './assets/favicon.png',
     template: './index.html',
     crossorigin: 'anonymous',
   },
   tools: {
     postcss: (opts, { addPlugins }) => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // Use dynamic import for tailwindcss to support postcss configuration
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Required for PostCSS plugin configuration
       addPlugins([require('tailwindcss')('./tailwind.config.ts')]);
     },
     rspack(config, { appendPlugins, addRules, mergeConfig }) {

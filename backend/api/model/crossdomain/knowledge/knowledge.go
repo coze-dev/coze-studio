@@ -23,6 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -124,6 +125,7 @@ type RetrievalStrategy struct {
 	EnableQueryRewrite bool
 	EnableRerank       bool
 	EnableNL2SQL       bool
+	IsPersonalOnly     bool
 }
 
 type SelectType int64
@@ -282,4 +284,70 @@ type CopyKnowledgeResponse struct {
 }
 type MoveKnowledgeToLibraryRequest struct {
 	KnowledgeID int64
+}
+
+type ParseMode string
+
+const (
+	FastParseMode     = "fast_mode"
+	AccurateParseMode = "accurate_mode"
+)
+
+type ChunkType string
+
+const (
+	ChunkTypeDefault ChunkType = "default"
+	ChunkTypeCustom  ChunkType = "custom"
+	ChunkTypeLeveled ChunkType = "leveled"
+)
+
+type ParsingStrategy struct {
+	ParseMode    ParseMode
+	ExtractImage bool
+	ExtractTable bool
+	ImageOCR     bool
+}
+type ChunkingStrategy struct {
+	ChunkType ChunkType
+	ChunkSize int64
+	Separator string
+	Overlap   int64
+}
+
+type CreateDocumentRequest struct {
+	KnowledgeID      int64
+	ParsingStrategy  *ParsingStrategy
+	ChunkingStrategy *ChunkingStrategy
+	FileURL          string
+	FileName         string
+	FileExtension    parser.FileExtension
+}
+type CreateDocumentResponse struct {
+	DocumentID int64
+	FileName   string
+	FileURL    string
+}
+
+type DeleteDocumentRequest struct {
+	DocumentID string
+}
+
+type DeleteDocumentResponse struct {
+	IsSuccess bool
+}
+
+type KnowledgeDetail struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IconURL     string `json:"-"`
+	FormatType  int64  `json:"-"`
+}
+
+type ListKnowledgeDetailRequest struct {
+	KnowledgeIDs []int64
+}
+
+type ListKnowledgeDetailResponse struct {
+	KnowledgeDetails []*KnowledgeDetail
 }

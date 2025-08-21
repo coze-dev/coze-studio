@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /*
  * Copyright 2025 coze-dev Authors
  *
@@ -30,7 +31,8 @@ import {
 import { renderHtmlTitle } from '@coze-arch/bot-utils';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import {
-  type ResType,
+  ResType,
+  // type ResType,
   type LibraryResourceListRequest,
   type ResourceInfo,
 } from '@coze-arch/bot-api/plugin_develop';
@@ -65,12 +67,18 @@ export const BaseLibraryPage = forwardRef<
   { reloadList: () => void },
   BaseLibraryPageProps
 >(
-  // eslint-disable-next-line @coze-arch/max-line-per-function
-  ({ spaceId, isPersonalSpace = true, entityConfigs }, ref) => {
+  // eslint-disable-next-line @coze-arch/max-line-per-function -- Complex library page component
+  ({ spaceId, sourceType, isPersonalSpace = true, entityConfigs }, ref) => {
     const { params, setParams, resetParams, hasFilter, ready } =
       useCachedQueryParams({
         spaceId,
       });
+
+    const resType = Number(sourceType);
+    // const restTypeFilter =
+    //   resType === ResType.Knowledge
+    //     ? [resType, params.res_type_filter?.[1]]
+    //     : [resType];
 
     const listResp = useInfiniteScroll<ListData>(
       async prev => {
@@ -81,12 +89,17 @@ export const BaseLibraryPage = forwardRef<
             hasMore: false,
           };
         }
+        const typeFilter = Number(sourceType);
         // Allow business to customize request parameters
         const resp = await PluginDevelopApi.LibraryResourceList(
           entityConfigs.reduce<LibraryResourceListRequest>(
             (res, config) => config.parseParams?.(res) ?? res,
             {
               ...params,
+              res_type_filter:
+                typeFilter === ResType.Knowledge
+                  ? [typeFilter, params.res_type_filter?.[1] ?? -1]
+                  : [typeFilter],
               cursor: prev?.nextCursorId,
               space_id: spaceId,
               size: LIBRARY_PAGE_SIZE,
@@ -100,7 +113,7 @@ export const BaseLibraryPage = forwardRef<
         };
       },
       {
-        reloadDeps: [params, spaceId],
+        reloadDeps: [params, spaceId, sourceType],
       },
     );
 
@@ -114,10 +127,13 @@ export const BaseLibraryPage = forwardRef<
       isPersonalSpace,
     });
 
-    const typeFilterData = [
-      { label: I18n.t('library_filter_tags_all_types'), value: -1 },
-      ...entityConfigs.map(item => item.typeFilter).filter(filter => !!filter),
-    ];
+    // const typeFilterData = [
+    //   { label: I18n.t('library_filter_tags_all_types'), value: -1 },
+    //   ...entityConfigs.map(item => item.typeFilter).filter(filter => !!filter),
+    // ];
+    const knowledgeFilterData =
+      entityConfigs.find(item => item?.typeFilter?.value === ResType.Knowledge)
+        ?.typeFilter?.children || [];
     const scopeOptions = getScopeOptions();
     const statusOptions = getStatusOptions();
 
@@ -128,20 +144,21 @@ export const BaseLibraryPage = forwardRef<
       >
         <Layout.Header className={classNames(s['layout-header'], 'pb-0')}>
           <div className="w-full">
-            <LibraryHeader entityConfigs={entityConfigs} />
+            <LibraryHeader
+              entityConfigs={entityConfigs}
+              spaceId={spaceId}
+              sourceType={resType}
+              onRefresh={listResp.reload}
+            />
             <div className="flex items-center justify-between">
               <Space>
-                <Cascader
+                {/* <Cascader
                   data-testid="workspace.library.filter.type"
                   className={s.cascader}
-                  style={
-                    params?.res_type_filter?.[0] !== -1
-                      ? highlightFilterStyle
-                      : {}
-                  }
+                  style={restTypeFilter?.[0] !== -1 ? highlightFilterStyle : {}}
                   dropdownClassName="[&_.semi-cascader-option-lists]:h-fit"
                   showClear={false}
-                  value={params.res_type_filter}
+                  value={restTypeFilter}
                   treeData={typeFilterData}
                   onChange={v => {
                     const typeFilter = typeFilterData.find(
@@ -156,13 +173,26 @@ export const BaseLibraryPage = forwardRef<
                       filter_type: 'types',
                       filter_name: typeFilter?.filterName ?? typeFilter?.label,
                     });
-
                     setParams(prev => ({
                       ...prev,
                       res_type_filter: v as Array<number>,
                     }));
                   }}
-                />
+                /> */}
+                {resType === ResType.Knowledge && (
+                  <Select
+                    data-testid="workspace.library.filter.type"
+                    className={s.select}
+                    value={params.res_type_filter?.[1] ?? -1}
+                    optionList={knowledgeFilterData}
+                    onChange={v => {
+                      setParams(prev => ({
+                        ...prev,
+                        res_type_filter: [ResType.Knowledge, v],
+                      }));
+                    }}
+                  />
+                )}
                 {!isPersonalSpace ? (
                   <Select
                     data-testid="workspace.library.filter.user"

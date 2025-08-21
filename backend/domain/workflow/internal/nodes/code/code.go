@@ -25,7 +25,7 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	code2 "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
+	code2 "github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"

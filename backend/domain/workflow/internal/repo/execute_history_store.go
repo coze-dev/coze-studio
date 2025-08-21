@@ -25,6 +25,7 @@ import (
 
 	"gorm.io/gorm"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
@@ -51,21 +52,21 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 	}()
 
 	var mode int32
-	if execution.Mode == vo.ExecuteModeDebug {
+	if execution.Mode == workflowModel.ExecuteModeDebug {
 		mode = 1
-	} else if execution.Mode == vo.ExecuteModeRelease {
+	} else if execution.Mode == workflowModel.ExecuteModeRelease {
 		mode = 2
-	} else if execution.Mode == vo.ExecuteModeNodeDebug {
+	} else if execution.Mode == workflowModel.ExecuteModeNodeDebug {
 		mode = 3
 	}
 
 	var syncPattern int32
 	switch execution.SyncPattern {
-	case vo.SyncPatternSync:
+	case workflowModel.SyncPatternSync:
 		syncPattern = 1
-	case vo.SyncPatternAsync:
+	case workflowModel.SyncPatternAsync:
 		syncPattern = 2
-	case vo.SyncPatternStream:
+	case workflowModel.SyncPatternStream:
 		syncPattern = 3
 	default:
 	}
@@ -211,23 +212,23 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 	}
 
 	rootExe := rootExes[0]
-	var exeMode vo.ExecuteMode
+	var exeMode workflowModel.ExecuteMode
 	if rootExe.Mode == 1 {
-		exeMode = vo.ExecuteModeDebug
+		exeMode = workflowModel.ExecuteModeDebug
 	} else if rootExe.Mode == 2 {
-		exeMode = vo.ExecuteModeRelease
+		exeMode = workflowModel.ExecuteModeRelease
 	} else {
-		exeMode = vo.ExecuteModeNodeDebug
+		exeMode = workflowModel.ExecuteModeNodeDebug
 	}
 
-	var syncPattern vo.SyncPattern
+	var syncPattern workflowModel.SyncPattern
 	switch rootExe.SyncPattern {
 	case 1:
-		syncPattern = vo.SyncPatternSync
+		syncPattern = workflowModel.SyncPatternSync
 	case 2:
-		syncPattern = vo.SyncPatternAsync
+		syncPattern = workflowModel.SyncPatternAsync
 	case 3:
-		syncPattern = vo.SyncPatternStream
+		syncPattern = workflowModel.SyncPatternStream
 	default:
 	}
 
@@ -236,7 +237,7 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		WorkflowID: rootExe.WorkflowID,
 		Version:    rootExe.Version,
 		SpaceID:    rootExe.SpaceID,
-		ExecuteConfig: vo.ExecuteConfig{
+		ExecuteConfig: workflowModel.ExecuteConfig{
 			Operator:     rootExe.OperatorID,
 			Mode:         exeMode,
 			AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),

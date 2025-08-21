@@ -19,8 +19,10 @@ import { useParams } from 'react-router-dom';
 import { LibraryPage } from '@coze-studio/workspace-adapter/library';
 
 const Page = () => {
-  const { space_id } = useParams();
-  return space_id ? <LibraryPage spaceId={space_id} /> : null;
+  const { space_id, source_type } = useParams();
+  return space_id ? (
+    <LibraryPage spaceId={space_id} sourceType={source_type} />
+  ) : null;
 };
 
 export default Page;

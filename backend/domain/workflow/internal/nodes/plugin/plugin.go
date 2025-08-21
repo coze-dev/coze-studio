@@ -23,7 +23,9 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -100,7 +102,6 @@ func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.Buil
 		pluginID:      c.PluginID,
 		toolID:        c.ToolID,
 		pluginVersion: c.PluginVersion,
-		pluginService: plugin.GetPluginService(),
 	}, nil
 }
 
@@ -108,16 +109,14 @@ type Plugin struct {
 	pluginID      int64
 	toolID        int64
 	pluginVersion string
-
-	pluginService plugin.Service
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
-	var exeCfg vo.ExecuteConfig
+	var exeCfg workflowModel.ExecuteConfig
 	if ctxExeCfg := execute.GetExeCtx(ctx); ctxExeCfg != nil {
 		exeCfg = ctxExeCfg.ExeCfg
 	}
-	result, err := p.pluginService.ExecutePlugin(ctx, parameters, &vo.PluginEntity{
+	result, err := crossplugin.DefaultSVC().ExecutePlugin(ctx, parameters, &model.PluginEntity{
 		PluginID:      p.pluginID,
 		PluginVersion: ptr.Of(p.pluginVersion),
 	}, p.toolID, exeCfg)

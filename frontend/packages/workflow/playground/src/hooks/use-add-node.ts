@@ -123,7 +123,7 @@ export const useAddNode = () => {
     };
 
     // Open the plug-in pop-up window to add a node
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- plugin modal requires any type for modalProps
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     openPlugin({ modalProps: modalProps as any });
   };
 

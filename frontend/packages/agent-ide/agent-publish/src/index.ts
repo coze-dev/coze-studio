@@ -15,3 +15,6 @@
  */
 
 export { AgentPublishPage } from './components/bot-publish';
+export { TemplatePublishSection } from './components/template-publish-section';
+export { TemplateStorePage } from './components/template-store-page';
+export { StoreAgentChat } from './components/store-agent-chat';

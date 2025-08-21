@@ -27,6 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/passport"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
+	"github.com/coze-dev/coze-studio/backend/api/model/space"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -338,4 +339,26 @@ func userDo2PlaygroundTo(userDo *entity.User) *playground.UserBasicInfo {
 		UserAvatar:     userDo.IconURL,
 		CreateTime:     ptr.Of(userDo.CreatedAt / 1000),
 	}
+}
+
+// CreateSpace creates a new space
+func (u *UserApplicationService) CreateSpace(ctx context.Context, req *space.CreateSpaceRequest) (*space.CreateSpaceResponse, error) {
+	// Placeholder implementation for chatflow compatibility
+	iconURL := req.GetIconURL()
+	updatedAt := int64(0)
+	return &space.CreateSpaceResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: &space.SpaceInfo{
+			SpaceID:     1,
+			Name:        req.Name,
+			IconURL:     &iconURL,
+			SpaceType:   space.SpaceType_Personal,
+			Status:      space.SpaceStatus_Active,
+			OwnerID:     1,
+			CreatorID:   1,
+			CreatedAt:   0,
+			UpdatedAt:   &updatedAt,
+		},
+	}, nil
 }

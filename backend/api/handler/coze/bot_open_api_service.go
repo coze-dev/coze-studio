@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 
+	openapiauthApp "github.com/coze-dev/coze-studio/backend/application/openauth"
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
@@ -54,6 +55,73 @@ func OauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
 	}
 
 	_, err = plugin.PluginApplicationSVC.OauthAuthorizationCode(ctx, &req)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	redirectURL := fmt.Sprintf("%s/information/auth/success", conf.GetServerHost())
+	c.Redirect(consts.StatusFound, []byte(redirectURL))
+	c.Abort()
+
+	return
+}
+
+// UploadFileOpen .
+// @router /v1/files/upload [POST]
+func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.UploadFileOpenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(bot_open_api.UploadFileOpenResponse)
+	resp, err = upload.SVC.UploadFileOpen(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetBotOnlineInfo .
+// @router /v1/bot/get_online_info [GET]
+func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.GetBotOnlineInfoReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetAgentOnlineInfo(ctx, &req)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ImpersonateCozeUser .
+// @router /api/permission_api/coze_web_app/impersonate_coze_user [POST]
+func ImpersonateCozeUser(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req bot_open_api.ImpersonateCozeUserRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := openapiauthApp.OpenAuthApplication.ImpersonateCozeUserAccessToken(ctx, &req)
+
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

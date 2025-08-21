@@ -45,6 +45,7 @@ import { PublishTableContext, PublishTable } from './publish-table';
 import { PublishResult } from './publish-result';
 import { useGetPublisherInitInfo } from './hooks/use-get-bot-info';
 import { useAuthFail } from './hooks/use-auth-fail';
+import { TemplatePublishSection } from '../template-publish-section';
 
 import styles from './index.module.less';
 
@@ -174,21 +175,26 @@ export const AgentPublishPage = () => {
         >
           <Spin spinning={loading} style={{ width: 800, margin: '0 auto' }}>
             {publishStatus === Publish.NoPublish ? (
-              <PublishTable
-                setPublishStatus={setPublishStatus}
-                setPublishResult={setPublishResult}
-                connectInfoList={connectInfoList ?? []}
-                connectorBrandInfoMap={connectorBrandInfoMap ?? {}}
-                botInfo={botInfo}
-                monetizeConfig={monetizeConfig}
-                publishTips={publishTips}
-                getPublishDisabled={disabled => {
-                  setPublishDisabled(disabled);
-                }}
-                getPublishLoading={pubLoading => setPublishLoading(pubLoading)}
-                ref={publishRef}
-                canOpenSource={canOpenSource}
-              />
+              <div>
+                <PublishTable
+                  setPublishStatus={setPublishStatus}
+                  setPublishResult={setPublishResult}
+                  connectInfoList={connectInfoList ?? []}
+                  connectorBrandInfoMap={connectorBrandInfoMap ?? {}}
+                  botInfo={botInfo}
+                  monetizeConfig={monetizeConfig}
+                  publishTips={publishTips}
+                  getPublishDisabled={disabled => {
+                    setPublishDisabled(disabled);
+                  }}
+                  getPublishLoading={pubLoading => setPublishLoading(pubLoading)}
+                  ref={publishRef}
+                  canOpenSource={canOpenSource}
+                />
+                
+                {/* 模板发布区域 */}
+                <TemplatePublishSection />
+              </div>
             ) : (
               <PublishResult publishResult={publishResult} />
             )}

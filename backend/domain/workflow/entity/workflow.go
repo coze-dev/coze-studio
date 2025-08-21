@@ -76,3 +76,9 @@ type WorkflowBasic struct {
 	AppID    *int64
 	CommitID string
 }
+
+type CopyWorkflowFromAppToLibraryResult struct {
+	WorkflowIDVersionMap map[int64]IDVersionPair
+	ValidateIssues       []*vo.ValidateIssue
+	CopiedWorkflows      []*Workflow
+}

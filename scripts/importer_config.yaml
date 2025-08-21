@@ -1,0 +1,6 @@
+database:
+  database: opencoze
+  host: 10.10.10.224
+  password: coze123
+  port: 3306
+  username: coze

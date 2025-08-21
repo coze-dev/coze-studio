@@ -22,6 +22,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 )
 
+//go:generate  mockgen -destination databasemock/database_mock.go --package databasemock -source database.go
 type Database interface {
 	ExecuteSQL(ctx context.Context, req *database.ExecuteSQLRequest) (*database.ExecuteSQLResponse, error)
 	PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (resp *database.PublishDatabaseResponse, err error)
@@ -30,6 +31,12 @@ type Database interface {
 	UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error
 	MGetDatabase(ctx context.Context, req *database.MGetDatabaseRequest) (*database.MGetDatabaseResponse, error)
 	GetAllDatabaseByAppID(ctx context.Context, req *database.GetAllDatabaseByAppIDRequest) (*database.GetAllDatabaseByAppIDResponse, error)
+
+	Execute(ctx context.Context, request *database.CustomSQLRequest) (*database.Response, error)
+	Query(ctx context.Context, request *database.QueryRequest) (*database.Response, error)
+	Update(context.Context, *database.UpdateRequest) (*database.Response, error)
+	Insert(ctx context.Context, request *database.InsertRequest) (*database.Response, error)
+	Delete(context.Context, *database.DeleteRequest) (*database.Response, error)
 }
 
 var defaultSVC Database
