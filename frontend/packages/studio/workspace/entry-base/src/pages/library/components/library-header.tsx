@@ -19,7 +19,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { I18n } from '@coze-arch/i18n';
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
-import { IconUpload } from '@coze-arch/bot-icons';
 import { Button, Menu } from '@coze-arch/coze-design';
 
 import { type LibraryEntityConfig } from '../types';
@@ -50,7 +49,7 @@ export const LibraryHeader: React.FC<{
         {/* 导入工作流按钮 */}
         <Button
           theme="outline"
-          icon={<IconUpload />}
+          icon={<IconCozPlus />}
           onClick={handleImportWorkflow}
           data-testid="workspace.library.header.import-workflow"
         >

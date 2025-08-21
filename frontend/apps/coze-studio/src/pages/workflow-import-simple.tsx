@@ -17,7 +17,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Upload, Input, Form, Toast } from '@coze-arch/coze-design';
-import { IconUpload, IconArrowLeft } from '@coze-arch/bot-icons';
+import { IconCozPlus, IconArrowLeft } from '@coze-arch/coze-design/icons';
 
 const WorkflowImportSimplePage: React.FC = () => {
   const { space_id } = useParams<{ space_id: string }>();
@@ -149,7 +149,7 @@ const WorkflowImportSimplePage: React.FC = () => {
             maxCount={1}
           >
             <Button 
-              icon={<IconUpload />} 
+              icon={<IconCozPlus />} 
               size="large"
               style={{ width: '100%', height: '120px' }}
               type="tertiary"
