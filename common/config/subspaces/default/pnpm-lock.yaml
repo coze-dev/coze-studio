@@ -22102,6 +22102,9 @@ importers:
       '@coze-project-ide/framework':
         specifier: workspace:*
         version: link:../../project-ide/framework
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../../arch/api-schema
       '@coze-studio/bot-detail-store':
         specifier: workspace:*
         version: link:../../studio/stores/bot-detail

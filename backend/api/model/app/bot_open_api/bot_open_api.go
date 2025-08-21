@@ -1220,6 +1220,7 @@ func (p *File) GetURL() (v string) {
 	return p.URL
 }
 
+
 func (p *File) GetID() (v string) {
 	return p.ID
 }
@@ -1421,6 +1422,7 @@ func (p *File) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 5
 			goto WriteFieldError
 		}
+
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
 			goto WriteFieldError
@@ -1523,6 +1525,7 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
+
 func (p *File) writeField6(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ID", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError

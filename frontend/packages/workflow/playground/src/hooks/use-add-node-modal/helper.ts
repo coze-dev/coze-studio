@@ -15,9 +15,16 @@
  */
 
 import semver from 'semver';
-import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
+import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { BlockInput } from '@coze-workflow/base';
+
+import {
+  parseToolSchema,
+  generateDefaultValue,
+} from '@/utils/mcp-schema-parser';
+import { type McpService, type McpTool } from '@/types/mcp';
+import { OUTPUTS } from '@/node-registries/mcp/constants';
 
 interface PluginApi {
   name: string;
@@ -91,4 +98,104 @@ export const createSubWorkflowNodeInfo = ({
   };
 
   return nodeJson;
+};
+
+export const createMcpNodeInfo = (
+  mcpService: McpService,
+  tool: McpTool,
+  options?: {
+    toolRuntimeParams?: Record<string, unknown>; // 运行时的实际参数值
+    currentWorkspaceId?: string; // 动态传入当前工作空间ID
+  },
+) => {
+  const { toolRuntimeParams, currentWorkspaceId } = options || {};
+  const templateIcon = undefined; // 使用默认图标
+  // 解析工具的schema以生成动态输入参数
+  const parsedSchema = parseToolSchema(tool.schema);
+
+  // 创建完整的inputParameters（包含隐藏的MCP配置参数和用户可见的工具参数）
+  const inputParameters: ReturnType<typeof BlockInput.create>[] = [];
+
+  // 🔧 MCP配置参数 - 正确的参数名称
+  inputParameters.push(
+    BlockInput.create(
+      'sassWorkspaceId',
+      currentWorkspaceId || '7533521629687578624',
+    ),
+    BlockInput.create('mcpId', mcpService.mcpId),
+    BlockInput.create('toolName', tool.name),
+  );
+
+  // 添加隐藏的MCP配置参数供后端使用
+  inputParameters.push(
+    BlockInput.create(
+      '__mcp_sassWorkspaceId',
+      currentWorkspaceId || '7533521629687578624',
+    ),
+    BlockInput.create('__mcp_mcpId', mcpService.mcpId),
+    BlockInput.create('__mcp_toolName', tool.name),
+  );
+
+  // 添加工具的实际参数（用户可见可编辑）
+  parsedSchema.inputParams.forEach(param => {
+    const defaultValue =
+      toolRuntimeParams?.[param.name] !== undefined
+        ? toolRuntimeParams[param.name]
+        : generateDefaultValue(param);
+
+    inputParameters.push(BlockInput.create(param.name, String(defaultValue)));
+  });
+
+  // 🚨 关键验证：确保必要参数不为空
+  if (!mcpService?.mcpId) {
+    console.error('🚨 MCP服务缺少mcpId:', mcpService);
+    throw new Error(
+      `MCP服务缺少必要的mcpId字段: ${mcpService?.mcpName || 'Unknown service'}`,
+    );
+  }
+
+  if (!tool?.name) {
+    console.error('🚨 MCP工具缺少name:', tool);
+    throw new Error(
+      `MCP工具缺少必要的name字段: ${tool?.description || 'Unknown tool'}`,
+    );
+  }
+
+  // 🔧 调试日志：确认数据完整性
+  console.log('🔧 创建MCP节点 - 完整mcpService对象:', mcpService);
+  console.log('🔧 创建MCP节点 - mcpId值:', mcpService.mcpId);
+  console.log('🔧 创建MCP节点 - mcpId类型:', typeof mcpService.mcpId);
+  console.log('🔧 创建MCP节点，参数:', {
+    mcpService: mcpService.mcpName,
+    tool: tool.name,
+    inputParameters: inputParameters.length,
+    parsedParams: parsedSchema.inputParams.length,
+    currentWorkspaceId,
+    mcpServiceId: mcpService.mcpId,
+  });
+
+  console.log('🔧 生成的inputParameters:', inputParameters);
+
+  const nodeData = {
+    data: {
+      nodeMeta: {
+        title: `${mcpService.mcpName} - ${tool.name}`, // 显示服务名和工具名
+        subtitle: `MCP服务: ${mcpService.mcpName}`, // 显示服务信息
+        description: `1.sassWorkspaceId: ${currentWorkspaceId || '7533521629687578624'}\n2.mcpId: ${mcpService.mcpId}\n3.toolName: ${tool.name}\n4.description: ${tool.description}`, // 在描述开头显示关键参数
+        icon: templateIcon,
+      },
+      // 修复：直接在data级别保存inputParameters，而不是嵌套在inputs中
+      inputParameters,
+      // 添加标准的输出参数定义
+      outputs: OUTPUTS,
+      // 同时保持inputs结构以确保兼容性
+      inputs: {
+        inputParameters,
+      },
+    },
+  };
+
+  console.log('🔧 完整的节点数据:', nodeData);
+
+  return nodeData;
 };

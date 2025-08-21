@@ -33,6 +33,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/batch"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/cardselector"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/database"
@@ -47,6 +48,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop"
 	_break "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop/break"
 	_continue "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop/continue"
+	_ "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/mcp" // import for init
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
@@ -671,6 +673,9 @@ func RegisterAllNodeAdaptors() {
 	})
 	nodes.RegisterNodeAdaptor(entity.NodeTypeDatabaseCustomSQL, func() nodes.NodeAdaptor {
 		return &database.CustomSQLConfig{}
+	})
+	nodes.RegisterNodeAdaptor(entity.NodeTypeCardSelector, func() nodes.NodeAdaptor {
+		return &cardselector.Config{}
 	})
 	nodes.RegisterNodeAdaptor(entity.NodeTypeLLM, func() nodes.NodeAdaptor {
 		return &llm.Config{}

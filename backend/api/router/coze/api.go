@@ -19,8 +19,10 @@
 package coze
 
 import (
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	coze "github.com/coze-dev/coze-studio/backend/api/handler/coze"
+	workflow "github.com/coze-dev/coze-studio/backend/api/handler/workflow"
 )
 
 /*
@@ -384,6 +386,8 @@ func Register(r *server.Hertz) {
 			_workflow_api.POST("/batch_delete", append(_batchdeleteworkflowMw(), coze.BatchDeleteWorkflow)...)
 			_workflow_api.POST("/cancel", append(_cancelworkflowMw(), coze.CancelWorkFlow)...)
 			_workflow_api.POST("/canvas", append(_getcanvasinfoMw(), coze.GetCanvasInfo)...)
+			_workflow_api.POST("/card/list", append(_getcardlistMw(), workflow.GetCardList)...)
+			_workflow_api.POST("/card/detail", append(_getcarddetailMw(), workflow.GetCardDetail)...)
 			_workflow_api.POST("/copy", append(_copyworkflowMw(), coze.CopyWorkflow)...)
 			_workflow_api.POST("/copy_wk_template", append(_copywktemplateapiMw(), coze.CopyWkTemplateApi)...)
 			_workflow_api.POST("/create", append(_createworkflowMw(), coze.CreateWorkflow)...)
@@ -480,4 +484,14 @@ func Register(r *server.Hertz) {
 		_v3 := root.Group("/v3", _v3Mw()...)
 		_v3.POST("/chat", append(_chatv3Mw(), coze.ChatV3)...)
 	}
+}
+
+// 新增的GetCardList中间件函数
+func _getcardlistMw() []app.HandlerFunc {
+	return nil
+}
+
+// 新增的GetCardDetail中间件函数
+func _getcarddetailMw() []app.HandlerFunc {
+	return nil
 }

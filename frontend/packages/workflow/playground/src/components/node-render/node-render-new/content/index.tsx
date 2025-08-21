@@ -25,6 +25,7 @@ import { StartContent } from '@/node-registries/start';
 import { SetVariableContent } from '@/node-registries/set-variable';
 import { PluginContent } from '@/node-registries/plugin';
 import { OutputContent } from '@/node-registries/output';
+import { McpContent } from '@/node-registries/mcp';
 import { LtmContent } from '@/node-registries/ltm';
 import { LoopContent } from '@/node-registries/loop';
 import { JsonStringifyContent } from '@/node-registries/json-stringify';
@@ -35,6 +36,7 @@ import { IfContent } from '@/node-registries/if';
 import { EndContent } from '@/node-registries/end';
 import { ContinueContent } from '@/node-registries/continue';
 import { CodeContent } from '@/node-registries/code';
+import { CardSelectorContent } from '@/node-registries/card-selector';
 import { BreakContent } from '@/node-registries/break';
 import { BatchContent } from '@/node-registries/batch';
 
@@ -91,6 +93,8 @@ const ContentMap = {
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
   [StandardNodeType.JsonStringify]: JsonStringifyContent,
+  [StandardNodeType.CardSelector]: CardSelectorContent,
+  [StandardNodeType.Mcp]: McpContent,
   // The cli script inserts the identifier (registry), do not modify/delete this line comment
 };
 

@@ -24,6 +24,7 @@ const config = [
     entries: {
       passport: './idl/passport/passport.thrift', // Entry service name and path
       explore: './idl/marketplace/public_api.thrift',
+      workflow: './idl/workflow/workflow_svc.thrift', // Workflow API with card selector
       template_publish: './idl/template/template_publish.thrift', // Template publish service
     },
     commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile

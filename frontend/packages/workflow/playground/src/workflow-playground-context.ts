@@ -161,6 +161,20 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
         });
       }
     });
+
+    // 强制确保MCP节点模板始终存在并覆盖任何后端数据
+    const mcpTemplate = {
+      type: StandardNodeType.Mcp,
+      name: 'MCP工具',
+      desc: '调用MCP (Model Context Protocol) 工具',
+      icon_url:
+        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBzdHJva2U9IiM2MzY2RjEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjkiIHI9IjIiIGZpbGw9IiM2MzY2RjEiLz4KPC9zdmc+',
+      node_type: StandardNodeType.Mcp,
+      color: '#6366F1',
+    };
+    // 强制覆盖设置，确保显示正确
+    this.nodeTemplateMap.set(StandardNodeType.Mcp, mcpTemplate);
+    console.log('🔧 强制覆盖MCP节点模板以确保正确显示:', mcpTemplate);
   }
 
   getImageFlowNode(pluginId: string, apiName: string) {
@@ -228,7 +242,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
         .sort(
           (prev, next) => Number(NODE_ORDER[prev]) - Number(NODE_ORDER[next]),
         )
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Known to exist by filter
         .map(type => this.nodeTemplateMap.get(type)!)
         .filter(Boolean)
     );
@@ -262,6 +276,15 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     enabledNodeTypes: StandardNodeType[] = [],
     isSupportImageflowNodes = false,
   ): NodeCategory[] {
+    console.log(
+      '🔧 getTemplateCategoryList 被调用, enabledNodeTypes:',
+      enabledNodeTypes,
+    );
+    console.log(
+      '🔧 MCP是否在启用列表中:',
+      enabledNodeTypes.includes(StandardNodeType.Mcp),
+    );
+
     const isBindDouyin = Boolean(this.globalState?.isBindDouyin);
     const nodeCategoryList =
       this.nodeCategoryList.length !== 0
@@ -273,6 +296,8 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
               node_type_list: enabledNodeTypes,
             },
           ];
+
+    console.log('🔧 使用的分类列表:', nodeCategoryList);
     return nodeCategoryList
       .map(category => {
         const nodeList =

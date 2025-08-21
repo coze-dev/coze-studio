@@ -276,6 +276,7 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 type: 'plugin',
               }),
             },
+
             // project store
             {
               path: 'project/:project_type',

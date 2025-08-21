@@ -44,7 +44,6 @@ import (
 type MockService struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockServiceMockRecorder is the mock recorder for MockService.
@@ -383,17 +382,17 @@ func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, appID, confi
 }
 
 // Save mocks base method.
-func (m *MockService) Save(ctx context.Context, id int64, arg2 string) error {
+func (m *MockService) Save(ctx context.Context, id int64, schema string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", ctx, id, arg2)
+	ret := m.ctrl.Call(m, "Save", ctx, id, schema)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockServiceMockRecorder) Save(ctx, id, arg2 any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Save(ctx, id, schema any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockService)(nil).Save), ctx, id, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockService)(nil).Save), ctx, id, schema)
 }
 
 // StreamExecute mocks base method.
@@ -547,7 +546,6 @@ func (mr *MockServiceMockRecorder) WorkflowAsModelTool(ctx, policies any) *gomoc
 type MockRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockRepositoryMockRecorder
-	isgomock struct{}
 }
 
 // MockRepositoryMockRecorder is the mock recorder for MockRepository.

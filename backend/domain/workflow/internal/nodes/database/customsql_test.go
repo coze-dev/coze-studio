@@ -84,6 +84,8 @@ func TestCustomSQL_Execute(t *testing.T) {
 	mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).DoAndReturn(mockSQLer.Execute()).AnyTimes()
 	crossdatabase.SetDefaultSVC(mockDatabaseOperator)
 
+	defer mockey.Mock(database.GetDatabaseOperator).Return(mockDatabaseOperator).Build().UnPatch()
+
 	cfg := &CustomSQLConfig{
 		DatabaseInfoID: 111,
 		SQLTemplate:    "select * from v1 where v1 = {{v1}} and v2 = '{{v2}}' and v3 = `{{v3}}`",

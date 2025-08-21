@@ -147,7 +147,8 @@ func (r *AgentRunner) processWfMidAnswerStream(_ context.Context, sw *schema.Str
 			continue
 		}
 
-		if msg.DataMessage.NodeType != crossworkflow.NodeTypeOutputEmitter {
+		if msg.DataMessage.NodeType != crossworkflow.NodeTypeOutputEmitter && 
+		   msg.DataMessage.NodeType != crossworkflow.NodeTypeCardSelector {
 			continue
 		}
 		if !streamInitialized {

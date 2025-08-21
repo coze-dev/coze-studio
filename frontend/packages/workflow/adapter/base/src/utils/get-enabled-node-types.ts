@@ -46,6 +46,7 @@ export const getEnabledNodeTypes = (_params: {
     [StandardNodeType.Input]: true,
     [StandardNodeType.Comment]: true,
     [StandardNodeType.VariableMerge]: true,
+    [StandardNodeType.CardSelector]: true,
     // [StandardNodeType.QueryMessageList]: true,
     // [StandardNodeType.ClearContext]: true,
     // [StandardNodeType.CreateConversation]: true,
@@ -64,6 +65,7 @@ export const getEnabledNodeTypes = (_params: {
     // [StandardNodeType.CreateMessage]: true,
     // [StandardNodeType.UpdateMessage]: true,
     // [StandardNodeType.DeleteMessage]: true,
+    [StandardNodeType.Mcp]: true,
   };
   const enabledNodeTypes: StandardNodeType[] = Object.keys(nodesMap)
     .filter(key => nodesMap[key])

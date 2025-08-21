@@ -130,7 +130,7 @@ export const useInitChatArea = ({
     cancel,
     run,
   } = useRequest(
-    async () => {
+    () => {
       if (useGlobalInitStore.getState().initStatus === 'initSuccess') {
         return;
       }

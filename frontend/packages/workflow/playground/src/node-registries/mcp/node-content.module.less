@@ -1,0 +1,110 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.mcpContainer {
+  overflow: hidden;
+
+  max-width: 100%;
+  padding: 8px;
+
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+.mcpHeader {
+  display: flex;
+  align-items: center;
+
+  margin-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--semi-color-text-2);
+}
+
+.mcpIcon {
+  margin-right: 4px;
+}
+
+.mcpParametersSection {
+  overflow: hidden;
+  margin-bottom: 8px;
+
+  /* 确保参数标签正确换行和颜色 */
+  :global {
+    .semi-tag {
+      max-width: 100%;
+      margin: 2px 4px 2px 0;
+      color: var(--semi-color-text-2) !important;
+      background-color: var(--semi-color-fill-1) !important;
+
+      .semi-tag-content {
+        overflow: hidden;
+
+        color: var(--semi-color-text-2) !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        background-color: var(--semi-color-fill-1) !important;
+      }
+    }
+
+    /* 移除黄色警告样式，使用默认灰色 */
+    .semi-tag.semi-tag-warning {
+      color: var(--semi-color-text-2) !important;
+      background-color: var(--semi-color-fill-1) !important;
+
+      .semi-tag-content {
+        color: var(--semi-color-text-2) !important;
+        background-color: var(--semi-color-fill-1) !important;
+      }
+    }
+  }
+}
+
+.mcpOutputsSection {
+  overflow: hidden;
+}
+
+/* 修复参数显示的布局 */
+.parametersWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  /* 确保参数行能够换行 */
+  .parameterRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+
+    max-width: 100%;
+  }
+
+  .parameterName {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--semi-color-text-0);
+  }
+
+  .parameterValue {
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+}

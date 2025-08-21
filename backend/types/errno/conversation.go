@@ -60,6 +60,11 @@ func init() {
 		code.WithAffectStability(true),
 	)
 	code.Register(
+		ErrAgentRun,
+		"Interal Server Error",
+		code.WithAffectStability(true),
+	)
+	code.Register(
 		ErrConversationJsonMarshal,
 		"json marshal failed",
 		code.WithAffectStability(true),

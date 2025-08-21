@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import * as base from './../../base';
-export { base };
-export interface Price {
-  /** 金额 */
-  amount: string;
-  /** 币种，如USD、CNY */
-  currency: string;
-  /** 小数位数 */
-  decimal_num: number;
-}
-export enum FollowType {
-  /** 无关系 */
-  Unknown = 0,
-  /** 关注 */
-  Followee = 1,
-  /** 粉丝 */
-  Follower = 2,
-  /** 互相关注 */
-  MutualFollow = 3,
+import { I18n } from '@coze-arch/i18n';
+
+import { Field } from '@/components/node-render/node-render-new/fields';
+
+import { InputParameters } from '../common/components';
+import { FilterStatusDisplay } from './components';
+
+export function CardSelectorContent() {
+  return (
+    <>
+      {/* 显示当前筛选状态 - 使用Field组件遵循Grid布局 */}
+      <Field label="筛选类型">
+        <FilterStatusDisplay />
+      </Field>
+
+      {/* 显示输入参数，类似Message节点 */}
+      <InputParameters label={I18n.t('workflow_detail_end_output')} />
+    </>
+  );
 }

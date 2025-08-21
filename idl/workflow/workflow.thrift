@@ -141,6 +141,9 @@ enum NodeType{
     JsonSerialization   = 58,
     JsonDeserialization = 59,
     DatasetDelete       = 60,
+    CardSelector        = 99,
+    Mcp                 = 61,
+    TestNN                 = 71,
 }
 
 //The node template type is basically the same as NodeType. One copy is due to the addition of an Imageflow type to avoid affecting the business semantics of the original NodeType
@@ -180,6 +183,9 @@ enum NodeTemplateType{
     JsonSerialization   = 58,
     JsonDeserialization = 59,
     DatasetDelete       = 60,
+    Mcp                 = 61,
+    TestNN              = 71,
+    CardSelector        = 99,
 }
 
 enum IfConditionRelation {
@@ -2192,6 +2198,97 @@ struct OpenAPIGetWorkflowInfoResponse{
     255: required base.BaseResp BaseResp
 }
 
+// ===== Card Selector Related Structures =====
+
+// 卡片参数定义
+struct CardParam {
+    1 : string paramName     (go.tag = "json:\"paramName\""),
+    2 : string paramType     (go.tag = "json:\"paramType\""),     // string, number, boolean, array, object
+    3 : bool   required      (go.tag = "json:\"required\""),
+    4 : optional string desc (go.tag = "json:\"desc\""),
+    5 : optional list<CardParam> children (go.tag = "json:\"children\""),  // for array and object types
+}
+
+// 卡片项信息
+struct CardItem {
+    1 : string cardId         (go.tag = "json:\"cardId\""),
+    2 : string cardName       (go.tag = "json:\"cardName\""),
+    3 : string code           (go.tag = "json:\"code\""),
+    4 : optional string cardPicUrl      (go.tag = "json:\"cardPicUrl\""),
+    5 : optional string picUrl          (go.tag = "json:\"picUrl\""),
+    6 : optional string cardShelfStatus (go.tag = "json:\"cardShelfStatus\""),
+    7 : optional string cardShelfTime   (go.tag = "json:\"cardShelfTime\""),
+    8 : optional string createUserId    (go.tag = "json:\"createUserId\""),
+    9 : optional string createUserName  (go.tag = "json:\"createUserName\""),
+    10: optional string sassAppId       (go.tag = "json:\"sassAppId\""),
+    11: optional string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+    12: optional string bizChannel      (go.tag = "json:\"bizChannel\""),
+    13: optional string cardClassId     (go.tag = "json:\"cardClassId\""),
+}
+
+// 卡片详情
+struct CardDetail {
+    1 : string cardId         (go.tag = "json:\"cardId\""),
+    2 : string cardName       (go.tag = "json:\"cardName\""),
+    3 : string code           (go.tag = "json:\"code\""),
+    4 : optional string cardPicUrl      (go.tag = "json:\"cardPicUrl\""),
+    5 : optional string picUrl          (go.tag = "json:\"picUrl\""),
+    6 : optional string cardShelfStatus (go.tag = "json:\"cardShelfStatus\""),
+    7 : optional string cardShelfTime   (go.tag = "json:\"cardShelfTime\""),
+    8 : optional string createUserId    (go.tag = "json:\"createUserId\""),
+    9 : optional string createUserName  (go.tag = "json:\"createUserName\""),
+    10: optional string sassAppId       (go.tag = "json:\"sassAppId\""),
+    11: optional string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+    12: optional string bizChannel      (go.tag = "json:\"bizChannel\""),
+    13: optional string cardClassId     (go.tag = "json:\"cardClassId\""),
+    14: optional list<CardParam> paramList (go.tag = "json:\"paramList\""),  // 卡片参数列表
+}
+
+// 获取卡片列表请求
+struct GetCardListRequest {
+    1 : required string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+    2 : optional i32    pageNo          (go.tag = "json:\"pageNo\""),
+    3 : optional i32    pageSize        (go.tag = "json:\"pageSize\""),
+    4 : optional string searchValue     (go.tag = "json:\"searchValue\""),
+    5 : optional string cardName        (go.tag = "json:\"cardName\""),
+    6 : optional string cardCode        (go.tag = "json:\"cardCode\""),
+
+    255: optional base.Base Base,
+}
+
+// 获取卡片列表响应数据
+struct GetCardListData {
+    1 : list<CardItem> cardList    (go.tag = "json:\"cardList\""),
+    2 : string         pageNo      (go.tag = "json:\"pageNo\""),
+    3 : string         pageSize    (go.tag = "json:\"pageSize\""),
+    4 : string         totalNums   (go.tag = "json:\"totalNums\""),
+    5 : string         totalPages  (go.tag = "json:\"totalPages\""),
+}
+
+// 获取卡片列表响应
+struct GetCardListResponse {
+    1 : required GetCardListData data,
+
+    253: required i64                code,
+    254: required string             msg,
+    255: required base.BaseResp      BaseResp,
+}
+
+// 获取卡片详情请求
+struct GetCardDetailRequest {
+    1 : required string cardId (go.tag = "json:\"cardId\""),
+    2 : required string sassWorkspaceId (go.tag = "json:\"sassWorkspaceId\""),
+
+    255: optional base.Base Base,
+}
+
+// 获取卡片详情响应
+struct GetCardDetailResponse {
+    1 : required CardDetail data,
+
+    253: required i64                code,
+    254: required string             msg,
+    255: required base.BaseResp      BaseResp,
 // Workflow Export Request
 struct ExportWorkflowRequest {
     1  : required list<string> workflow_ids       (go.tag="json:\"workflow_ids\""),

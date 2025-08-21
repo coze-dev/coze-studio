@@ -25,7 +25,6 @@ import (
 	connectorModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
 	databaseModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-
 	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"

@@ -26,7 +26,7 @@ export function createAPI<
 >(meta: IMeta, cancelable?: B) {
   return apiFactory<T, K, O, B>(meta, cancelable, false, {
     config: {
-      clientFactory: _meta => async (uri, init, options) =>
+      clientFactory: _meta => (uri, init, options) =>
         axiosInstance.request({
           url: uri,
           method: init.method ?? 'GET',

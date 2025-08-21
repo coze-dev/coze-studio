@@ -139,6 +139,7 @@ const (
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
 	NodeTypeKnowledgeDeleter           NodeType = "KnowledgeDeleter"
+	NodeTypeCardSelector               NodeType = "CardSelector"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
@@ -161,6 +162,7 @@ const (
 	NodeTypeClearConversationHistory   NodeType = "ClearConversationHistory"
 	NodeTypeConversationHistory        NodeType = "ConversationHistory"
 	NodeTypeComment                    NodeType = "Comment"
+	NodeTypeMcp                        NodeType = "Mcp"
 )
 
 const (
@@ -929,11 +931,46 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSName:        "Knowledge delete",
 		EnUSDescription: "The delete node can delete a document in knowledge base.",
 	},
+	NodeTypeCardSelector: {
+		ID:           99,
+		Key:          NodeTypeCardSelector,
+		DisplayKey:   "CardSelector",
+		Name:         "卡片选择",
+		Category:     "input&output",
+		Desc:         "根据筛选条件选择和过滤卡片内容，支持文本、图片、视频、链接等类型的卡片筛选",
+		Color:        "#5C62FF",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-CardSelector-v2.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Card Selector",
+		EnUSDescription: "Filter and select card content based on criteria, supports filtering text, image, video, link and other types of cards",
+	},
 	NodeTypeLambda: {
 		ID:       1000,
 		Key:      NodeTypeLambda,
 		Name:     "Lambda",
 		EnUSName: "Comment",
+	},
+	NodeTypeMcp: {
+		ID:           61,
+		Key:          NodeTypeMcp,
+		DisplayKey:   "Mcp",
+		Name:         "MCP工具",
+		Category:     "",
+		Desc:         "调用MCP (Model Context Protocol) 工具",
+		Color:        "#6366F1",
+		IconURL:      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBzdHJva2U9IiM2MzY2RjEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjkiIHI9IjIiIGZpbGw9IiM2MzY2RjEiLz4KPC9zdmc+",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			DefaultTimeoutMS: 30 * 1000,
+			PreFillZero:      true,
+			PostFillNil:      true,
+		},
+		EnUSName:        "MCP Tool",
+		EnUSDescription: "Call MCP (Model Context Protocol) tools",
 	},
 }
 

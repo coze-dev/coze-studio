@@ -52,6 +52,7 @@ import (
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
@@ -62,6 +63,7 @@ import (
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
@@ -116,12 +118,15 @@ type wfTestRunner struct {
 	h             *server.Hertz
 	ctrl          *gomock.Controller
 	idGen         *mock.MockIDGenerator
+	search        *searchmock.MockNotifier
+
 	appVarS       *mockvar.MockStore
 	userVarS      *mockvar.MockStore
 	varGetter     *mockvar.MockVariablesMetaGetter
 	modelManage   *mockmodel.MockManager
 	plugin        *mockPlugin.MockPluginService
 	tos           *storageMock.MockStorage
+
 	knowledge     *knowledgemock.MockKnowledge
 	database      *databasemock.MockDatabase
 	pluginSrv     *pluginmock.MockPluginService
