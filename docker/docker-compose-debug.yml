@@ -356,7 +356,7 @@ services:
     environment:
       ETCD_ENDPOINTS: coze-etcd:2379
       MINIO_ADDRESS: coze-minio:9000
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
+      MINIO_BUCKET_NAME: ${MINIO_DEFAULT_BUCKETS:-milvus}
       MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_USE_SSL: false
