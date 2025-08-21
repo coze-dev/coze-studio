@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -3642,22 +3643,27 @@ func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
 func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.ExportWorkflowRequest) (*workflow.ExportWorkflowResponse, error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			logs.CtxErrorf(ctx, "ExportWorkflow panic: %v", panicErr)
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "ExportWorkflow panic: %v", err)
 		}
 	}()
 
-	// 验证请求参数
+	// 参数验证
 	if req.WorkflowID == "" {
-		return nil, fmt.Errorf("workflow_id is required")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_id is required"))
 	}
 	if req.ExportFormat != "json" {
-		return nil, fmt.Errorf("unsupported export format: %s", req.ExportFormat)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported export format: %s", req.ExportFormat))
 	}
+
+	// 记录操作日志
+	logs.CtxInfof(ctx, "ExportWorkflow started, workflowID=%s, includeDependencies=%v", req.WorkflowID, req.IncludeDependencies)
 
 	// 获取工作流信息
 	workflowID, err := strconv.ParseInt(req.WorkflowID, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("invalid workflow_id: %s", req.WorkflowID)
+		logs.CtxErrorf(ctx, "ExportWorkflow failed to parse workflow_id: %s, error: %v", req.WorkflowID, err)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow_id: %s", req.WorkflowID))
 	}
 
 	// 获取工作流详情
@@ -3665,7 +3671,14 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 		ID: workflowID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get workflow: %v", err)
+		logs.CtxErrorf(ctx, "ExportWorkflow failed to get workflow: %d, error: %v", workflowID, err)
+		return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("failed to get workflow: %v", err))
+	}
+
+	// 验证用户权限（检查工作空间）
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID); err != nil {
+		logs.CtxErrorf(ctx, "ExportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID, err)
+		return nil, vo.WrapError(errno.ErrPermissionDenied, fmt.Errorf("permission denied: %v", err))
 	}
 
 	// 构建导出数据
@@ -3693,13 +3706,13 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 			if err := sonic.UnmarshalString(workflowInfo.Canvas, &schemaData); err == nil {
 				exportData.Schema = schemaData
 			}
-			
+
 			// 设置节点
 			exportData.Nodes = make([]interface{}, len(canvas.Nodes))
 			for i, node := range canvas.Nodes {
 				exportData.Nodes[i] = node
 			}
-			
+
 			// 设置边
 			exportData.Edges = make([]interface{}, len(canvas.Edges))
 			for i, edge := range canvas.Edges {
@@ -3717,7 +3730,7 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	// 添加依赖资源信息（如果启用）
 	if req.IncludeDependencies {
 		dependencies := make([]interface{}, 0)
-		
+
 		// 获取工作流中引用的资源
 		if workflowInfo.Canvas != "" {
 			var canvas vo.Canvas
@@ -3740,9 +3753,12 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 				}
 			}
 		}
-		
+
 		exportData.Dependencies = dependencies
 	}
+
+	logs.CtxInfof(ctx, "ExportWorkflow completed successfully, workflowID=%s, nodeCount=%d, edgeCount=%d",
+		req.WorkflowID, len(exportData.Nodes), len(exportData.Edges))
 
 	// 构建响应
 	return &workflow.ExportWorkflowResponse{
@@ -3760,55 +3776,85 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.ImportWorkflowRequest) (*workflow.ImportWorkflowResponse, error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			logs.CtxErrorf(ctx, "ImportWorkflow panic: %v", panicErr)
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "ImportWorkflow panic: %v", err)
 		}
 	}()
 
+	// 记录操作日志
+	logs.CtxInfof(ctx, "ImportWorkflow started, workflowName=%s, spaceID=%s, creatorID=%s",
+		req.WorkflowName, req.SpaceID, req.CreatorID)
+
 	// 验证请求参数
 	if req.WorkflowData == "" {
-		return nil, fmt.Errorf("workflow_data is required")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_data is required"))
 	}
 	if req.WorkflowName == "" {
-		return nil, fmt.Errorf("workflow_name is required")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_name is required"))
 	}
 	if req.SpaceID == "" {
-		return nil, fmt.Errorf("space_id is required")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("space_id is required"))
 	}
 	if req.CreatorID == "" {
-		return nil, fmt.Errorf("creator_id is required")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
 	}
 	if req.ImportFormat != "json" {
-		return nil, fmt.Errorf("unsupported import format: %s", req.ImportFormat)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s", req.ImportFormat))
+	}
+
+	// 验证工作流名称格式
+	if !isValidWorkflowName(req.WorkflowName) {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow name format: %s", req.WorkflowName))
+	}
+
+	// 验证用户权限（检查工作空间）
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to parse space_id: %s, error: %v", req.SpaceID, err)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space_id: %s", req.SpaceID))
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), spaceID, err)
+		return nil, vo.WrapError(errno.ErrPermissionDenied, fmt.Errorf("permission denied: %v", err))
 	}
 
 	// 解析工作流数据
 	var exportData workflow.WorkflowExportData
 	if err := sonic.UnmarshalString(req.WorkflowData, &exportData); err != nil {
-		return nil, fmt.Errorf("failed to parse workflow data: %v", err)
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to parse workflow data: %v", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to parse workflow data: %v", err))
 	}
 
 	// 验证工作流数据结构
 	if exportData.Schema == nil {
-		return nil, fmt.Errorf("invalid workflow data: missing schema")
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow data: missing schema"))
+	}
+
+	// 验证工作流名称长度
+	if len(req.WorkflowName) > 100 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow name too long: %d characters (max: 100)", len(req.WorkflowName)))
 	}
 
 	// 构建工作流创建请求
 	createReq := &workflow.CreateWorkflowRequest{
 		Name:    req.WorkflowName,
 		Desc:    exportData.Description,
-		SpaceID: req.SpaceID, // SpaceID is string type
+		SpaceID: req.SpaceID,
 	}
 
 	// 调用创建工作流服务
 	createResp, err := w.CreateWorkflow(ctx, createReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create workflow: %v", err)
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to create workflow: %v", err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("failed to create workflow: %v", err))
 	}
 
 	// 保存工作流架构数据
 	canvasData, err := sonic.MarshalString(exportData.Schema)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal canvas data: %v", err)
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to marshal canvas data: %v", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to marshal canvas data: %v", err))
 	}
 
 	// 构建保存工作流请求
@@ -3821,8 +3867,12 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 	// 调用保存工作流服务
 	_, err = w.SaveWorkflow(ctx, saveReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to save workflow schema: %v", err)
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to save workflow schema: %v", err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("failed to save workflow schema: %v", err))
 	}
+
+	logs.CtxInfof(ctx, "ImportWorkflow completed successfully, workflowID=%s, workflowName=%s",
+		createResp.Data.WorkflowID, req.WorkflowName)
 
 	// 构建响应
 	return &workflow.ImportWorkflowResponse{
@@ -3834,4 +3884,23 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 			WorkflowID: createResp.Data.WorkflowID,
 		},
 	}, nil
+}
+
+// isValidWorkflowName 验证工作流名称格式
+func isValidWorkflowName(name string) bool {
+	if len(name) < 2 || len(name) > 100 {
+		return false
+	}
+
+	// 检查是否以字母开头
+	if !regexp.MustCompile(`^[a-zA-Z]`).MatchString(name) {
+		return false
+	}
+
+	// 检查是否只包含字母、数字和下划线
+	if !regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`).MatchString(name) {
+		return false
+	}
+
+	return true
 }
