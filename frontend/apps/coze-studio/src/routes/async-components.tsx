@@ -114,6 +114,9 @@ export const WorkflowPage = lazy(() =>
   })),
 );
 
+// workflow import page
+export const WorkflowImportPage = lazy(() => import('../pages/workflow-import'));
+
 // plugin resource page layout component
 export const PluginLayout = lazy(() => import('../pages/plugin/layout'));
 

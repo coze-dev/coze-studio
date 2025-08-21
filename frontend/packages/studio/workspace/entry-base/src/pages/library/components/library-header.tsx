@@ -15,37 +15,63 @@
  */
 
 import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconCozPlus, IconUpload } from '@coze-arch/coze-design/icons';
 import { Button, Menu } from '@coze-arch/coze-design';
 
 import { type LibraryEntityConfig } from '../types';
 
 export const LibraryHeader: React.FC<{
   entityConfigs: LibraryEntityConfig[];
-}> = ({ entityConfigs }) => (
-  <div className="flex items-center justify-between mb-[16px]">
-    <div className="font-[500] text-[20px]">
-      {I18n.t('navigation_workspace_library')}
+}> = ({ entityConfigs }) => {
+  const { space_id } = useParams<{ space_id: string }>();
+  const navigate = useNavigate();
+
+  const handleImportWorkflow = () => {
+    if (space_id) {
+      navigate(`/space/${space_id}/workflow/import`);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between mb-[16px]">
+      <div className="font-[500] text-[20px]">
+        {I18n.t('navigation_workspace_library')}
+      </div>
+      
+      <div className="flex items-center gap-3">
+        {/* 导入工作流按钮 */}
+        <Button
+          theme="outline"
+          icon={<IconUpload />}
+          onClick={handleImportWorkflow}
+          data-testid="workspace.library.header.import-workflow"
+        >
+          导入工作流
+        </Button>
+        
+        {/* 创建资源按钮 */}
+        <Menu
+          position="bottomRight"
+          className="w-120px mt-4px mb-4px"
+          render={
+            <Menu.SubMenu mode="menu">
+              {entityConfigs.map(config => config.renderCreateMenu?.() ?? null)}
+            </Menu.SubMenu>
+          }
+        >
+          <Button
+            theme="solid"
+            type="primary"
+            icon={<IconCozPlus />}
+            data-testid="workspace.library.header.create"
+          >
+            {I18n.t('library_resource')}
+          </Button>
+        </Menu>
+      </div>
     </div>
-    <Menu
-      position="bottomRight"
-      className="w-120px mt-4px mb-4px"
-      render={
-        <Menu.SubMenu mode="menu">
-          {entityConfigs.map(config => config.renderCreateMenu?.() ?? null)}
-        </Menu.SubMenu>
-      }
-    >
-      <Button
-        theme="solid"
-        type="primary"
-        icon={<IconCozPlus />}
-        data-testid="workspace.library.header.create"
-      >
-        {I18n.t('library_resource')}
-      </Button>
-    </Menu>
-  </div>
-);
+  );
+};
