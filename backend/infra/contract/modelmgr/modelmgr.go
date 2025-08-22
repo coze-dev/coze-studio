@@ -25,6 +25,8 @@ type Manager interface {
 	ListInUseModel(ctx context.Context, limit int, Cursor *string) (*ListModelResponse, error)
 	MGetModelByID(ctx context.Context, req *MGetModelRequest) ([]*Model, error)
 	RefreshCache(ctx context.Context, modelID int64) error
+	RefreshSpaceModelCache(ctx context.Context, spaceID uint64, modelID int64) error
+	CheckModelAvailableInSpace(ctx context.Context, spaceID uint64, modelID int64) (bool, error)
 }
 
 type ListModelRequest struct {
@@ -42,5 +44,6 @@ type ListModelResponse struct {
 }
 
 type MGetModelRequest struct {
-	IDs []int64
+	IDs     []int64
+	SpaceID *uint64 // 可选的空间ID，用于空间级别的缓存和状态检查
 }

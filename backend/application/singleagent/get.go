@@ -166,8 +166,12 @@ func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, a
 	}
 
 	modelID := agentInfo.ModelInfo.GetModelId()
+	
+	// 获取Agent信息时，不传SpaceID，这样不会过滤停用的模型
+	// 只是获取模型的基本信息，不检查在空间中的可用性
 	modelInfos, err := s.appContext.ModelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{modelID},
+		IDs:     []int64{modelID},
+		SpaceID: nil, // 不传SpaceID，获取所有模型信息，包括停用的
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fetch model(%d) details failed: %v", modelID, err)

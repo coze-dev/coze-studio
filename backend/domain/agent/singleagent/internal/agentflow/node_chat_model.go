@@ -160,21 +160,37 @@ func responseFormatToOpenai(responseFormat *bot_common.ModelResponseFormat) open
 	return openaiResponseFormatType
 }
 
-func loadModelInfo(ctx context.Context, manager modelmgr.Manager, modelID int64) (*modelmgr.Model, error) {
+func loadModelInfo(ctx context.Context, manager modelmgr.Manager, modelID int64, spaceID int64) (*modelmgr.Model, error) {
 	if modelID == 0 {
 		return nil, fmt.Errorf("modelID is required")
 	}
 
+	// 在运行时传入空间ID，以便检查模型在空间中的可用性
+	var spaceIDPtr *uint64
+	if spaceID > 0 {
+		sid := uint64(spaceID)
+		spaceIDPtr = &sid
+	}
+
 	models, err := manager.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{modelID},
+		IDs:     []int64{modelID},
+		SpaceID: spaceIDPtr, // 传入空间ID，会检查模型在该空间的可用性
 	})
 
 	if err != nil {
 		return nil, fmt.Errorf("MGetModelByID failed, err=%w", err)
 	}
 	if len(models) == 0 {
-		return nil, fmt.Errorf("model not found, modelID=%v", modelID)
+		// 如果模型在空间中被停用，这里会返回空列表
+		return nil, fmt.Errorf("model not found or not available in space, modelID=%v, spaceID=%v", modelID, spaceID)
 	}
 
-	return models[0], nil
+	model := models[0]
+	// 这个检查现在可能是多余的，因为MGetModelByID已经检查了
+	// 但保留以防万一
+	if model.Meta.Status != modelmgr.StatusInUse && model.Meta.Status != modelmgr.StatusDefault {
+		return nil, fmt.Errorf("model is not available, modelID=%v, status=%v", modelID, model.Meta.Status)
+	}
+
+	return model, nil
 }

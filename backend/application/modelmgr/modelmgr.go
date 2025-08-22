@@ -396,7 +396,17 @@ func (m *ModelmgrApplicationService) RemoveModelFromSpace(ctx context.Context, s
 		return fmt.Errorf("invalid model id: %w", err)
 	}
 
-	return m.ModelService.RemoveModelFromSpace(ctx, sid, mid)
+	if err := m.ModelService.RemoveModelFromSpace(ctx, sid, mid); err != nil {
+		return err
+	}
+
+	// 清理该空间的模型缓存
+	if err := m.Mgr.RefreshSpaceModelCache(ctx, sid, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh space model cache after remove, space=%d, model=%d, err=%v", sid, mid, err)
+		// 不中断流程，只记录警告
+	}
+
+	return nil
 }
 
 // UpdateSpaceModelConfig 更新空间模型配置
@@ -415,9 +425,9 @@ func (m *ModelmgrApplicationService) UpdateSpaceModelConfig(ctx context.Context,
 		return err
 	}
 
-	// 刷新缓存
-	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
-		logs.CtxWarnf(ctx, "failed to refresh model cache after config update, id=%d, err=%v", mid, err)
+	// 刷新特定空间的缓存
+	if err := m.Mgr.RefreshSpaceModelCache(ctx, sid, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh space model cache after config update, space=%d, model=%d, err=%v", sid, mid, err)
 		// 不中断流程，只记录警告
 	}
 
@@ -629,9 +639,9 @@ func (m *ModelmgrApplicationService) EnableSpaceModel(ctx context.Context, space
 		return err
 	}
 
-	// 刷新缓存
-	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
-		logs.CtxWarnf(ctx, "failed to refresh model cache after enable, id=%d, err=%v", mid, err)
+	// 刷新特定空间的缓存
+	if err := m.Mgr.RefreshSpaceModelCache(ctx, sid, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh space model cache after enable, space=%d, model=%d, err=%v", sid, mid, err)
 		// 不中断流程，只记录警告
 	}
 
@@ -654,9 +664,9 @@ func (m *ModelmgrApplicationService) DisableSpaceModel(ctx context.Context, spac
 		return err
 	}
 
-	// 刷新缓存
-	if err := m.Mgr.RefreshCache(ctx, int64(mid)); err != nil {
-		logs.CtxWarnf(ctx, "failed to refresh model cache after disable, id=%d, err=%v", mid, err)
+	// 刷新特定空间的缓存
+	if err := m.Mgr.RefreshSpaceModelCache(ctx, sid, int64(mid)); err != nil {
+		logs.CtxWarnf(ctx, "failed to refresh space model cache after disable, space=%d, model=%d, err=%v", sid, mid, err)
 		// 不中断流程，只记录警告
 	}
 

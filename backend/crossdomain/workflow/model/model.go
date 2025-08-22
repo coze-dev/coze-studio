@@ -58,6 +58,10 @@ func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (m
 	for i := range models {
 		md := models[i]
 		if md.ID == modelID {
+			// 检查模型状态，确保模型是启用状态
+			if md.Meta.Status != modelmgr.StatusInUse {
+				return nil, nil, fmt.Errorf("model is not available, modelID=%v, status=%v", modelID, md.Meta.Status)
+			}
 			protocol = md.Meta.Protocol
 			config = md.Meta.ConnConfig
 			mdl = md

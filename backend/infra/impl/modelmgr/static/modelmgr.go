@@ -107,3 +107,18 @@ func (s *staticModelManager) MGetModelByID(_ context.Context, req *modelmgr.MGet
 	}
 	return resp, nil
 }
+
+func (s *staticModelManager) RefreshCache(ctx context.Context, modelID int64) error {
+	// Static model manager doesn't use cache
+	return nil
+}
+
+func (s *staticModelManager) RefreshSpaceModelCache(ctx context.Context, spaceID uint64, modelID int64) error {
+	// Static model manager doesn't use cache
+	return nil
+}
+
+func (s *staticModelManager) CheckModelAvailableInSpace(ctx context.Context, spaceID uint64, modelID int64) (bool, error) {
+	// Static model manager doesn't have space concept, always return true
+	return true, nil
+}
