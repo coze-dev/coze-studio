@@ -825,6 +825,35 @@ func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.Cop
 	if err != nil {
 		return nil, err
 	}
+	// chat flow should copy role config
+	if wf.Mode == cloudworkflow.WorkflowMode_ChatFlow {
+		role, err, isExist := i.repo.GetChatFlowRoleConfig(ctx, workflowID, "")
+		if !isExist {
+			logs.CtxErrorf(ctx, "get draft chat flow role nil, workflow id %v", workflowID)
+			return nil, vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("get draft chat flow role nil, workflow id %v", workflowID))
+		}
+
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrChatFlowRoleOperationFail, err)
+		}
+		_, err = i.repo.CreateChatFlowRoleConfig(ctx, &entity.ChatFlowRole{
+			Name:                role.Name,
+			Description:         role.Description,
+			WorkflowID:          wf.ID,
+			CreatorID:           wf.CreatorID,
+			AudioConfig:         role.AudioConfig,
+			UserInputConfig:     role.UserInputConfig,
+			AvatarUri:           role.AvatarUri,
+			BackgroundImageInfo: role.BackgroundImageInfo,
+			OnboardingInfo:      role.OnboardingInfo,
+			SuggestReplyInfo:    role.SuggestReplyInfo,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
 
 	return wf, nil
 
@@ -1211,7 +1240,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 				return err
 			}
 
-			cwf, err := i.repo.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+			cwf, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
 				TargetAppID:          ptr.Of(int64(0)),
 				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
 			})
