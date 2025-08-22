@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-import { isObject } from 'lodash-es';
+import { type PropsWithChildren } from 'react';
 
-import { type InputWorkflowNodeContent, type WorkflowNode } from './type';
-
-export const isWorkflowNodeData = (value: unknown): value is WorkflowNode =>
-  isObject(value) && 'content' in value && 'content_type' in value;
-
-export const isInputWorkflowNodeContent = (
-  value: unknown,
-): value is InputWorkflowNodeContent =>
-  isObject(value) && 'type' in value && 'name' in value;
-
-export const isInputWorkflowNodeContentLikelyArray = (
-  value: unknown,
-): value is unknown[] => Array.isArray(value);
+export const NodeWrapperUI: React.FC<PropsWithChildren> = ({ children }) => (
+  <div className="overflow-hidden w-full min-w-[282px] max-w-[546px] p-[16px] coz-bg-primary">
+    {children}
+  </div>
+);

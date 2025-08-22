@@ -35,7 +35,7 @@ const defaultEnable = (value?: boolean) => {
   return value;
 };
 
-export const WorkflowRender: ComponentTypesMap['contentBox'] = props => {
+export const ChatFlowRender: ComponentTypesMap['contentBox'] = props => {
   const customTextMessageInnerTopSlotList = usePluginCustomComponents(
     'TextMessageInnerTopSlot',
   );
@@ -47,7 +47,7 @@ export const WorkflowRender: ComponentTypesMap['contentBox'] = props => {
         );
         return contentType === ContentType.Card && isCardEnable;
       },
-      render: ({ message, eventCallbacks, contentConfigs, options }) => {
+      render: ({ message, eventCallbacks, options }) => {
         const { isCardDisabled, readonly } = options;
 
         const { onCardSendMsg } = eventCallbacks ?? {};

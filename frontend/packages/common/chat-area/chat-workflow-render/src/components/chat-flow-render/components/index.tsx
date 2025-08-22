@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
-import { isEqual, isFunction, noop, omitBy } from 'lodash-es';
-import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
+import { isEqual, isFunction, omitBy } from 'lodash-es';
 
-import { isWorkflowNodeData } from './utils';
-import { type RenderNodeEntryProps } from './type';
+import { extractChatflowMessage } from './utils';
+import { type ChatflowNodeData, type RenderNodeEntryProps } from './type';
 import { QuestionNodeRender } from './question-node-render';
 import { InputNodeRender } from './input-node-render';
 
@@ -28,18 +27,32 @@ const BaseComponent: React.FC<RenderNodeEntryProps> = ({
   message,
   ...restProps
 }) => {
-  const data = typeSafeJsonParse(message.content, noop);
-  if (!isWorkflowNodeData(data)) {
-    return 'card content is not supported';
+  const chatflowNodeData: ChatflowNodeData | undefined = useMemo(
+    () => extractChatflowMessage(message),
+    [message],
+  );
+  if (!chatflowNodeData) {
+    return null;
   }
-
-  if (data.content_type === 'option') {
-    return <QuestionNodeRender data={data} message={message} {...restProps} />;
+  if (chatflowNodeData.card_type === 'INPUT') {
+    return (
+      <InputNodeRender
+        data={chatflowNodeData}
+        message={message}
+        {...restProps}
+      />
+    );
+  } else if (chatflowNodeData.card_type === 'QUESTION') {
+    return (
+      <QuestionNodeRender
+        data={chatflowNodeData}
+        message={message}
+        {...restProps}
+      />
+    );
+  } else {
+    return 'content type is not supported';
   }
-  if (data.content_type === 'form_schema') {
-    return <InputNodeRender data={data} message={message} {...restProps} />;
-  }
-  return 'content type is not supported';
 };
 
 export const WorkflowRenderEntry = memo(BaseComponent, (prevProps, nextProps) =>
