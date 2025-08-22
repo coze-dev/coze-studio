@@ -16,47 +16,44 @@
 
 import { useState } from 'react';
 
-import { noop } from 'lodash-es';
 import { produce } from 'immer';
-import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
+import {
+  type IEventCallbacks,
+  type IMessage,
+} from '@coze-common/chat-uikit-shared';
 import { I18n } from '@coze-arch/i18n';
 import { Button, Input, Space, Typography } from '@coze-arch/coze-design';
 
-import {
-  isInputWorkflowNodeContent,
-  isInputWorkflowNodeContentLikelyArray,
-} from './utils';
-import { type InputRenderNodeProps } from './type';
+import { type ChatflowNodeData } from './type';
 import { NodeWrapperUI } from './node-wrapper-ui';
 
-export const InputNodeRender: React.FC<InputRenderNodeProps> = ({
+export const InputNodeRender = ({
   data,
   onCardSendMsg,
   readonly,
   isDisable,
   message,
+}: {
+  data: ChatflowNodeData;
+  onCardSendMsg?: IEventCallbacks['onCardSendMsg'];
+  readonly?: boolean;
+  isDisable?: boolean;
+  message: IMessage;
 }) => {
   const [inputData, setInputData] = useState<Record<string, string>>({});
   const [hasSend, setHasSend] = useState(false);
   const disabled = readonly || isDisable || hasSend;
-  const parsedContent = typeSafeJsonParse(data.content, noop);
-
-  if (!isInputWorkflowNodeContentLikelyArray(parsedContent)) {
-    return 'input node content is not supported';
-  }
-
-  const validContent = parsedContent.filter(isInputWorkflowNodeContent);
 
   return (
     <NodeWrapperUI>
       <Space spacing={12} vertical className="w-full">
-        {validContent.map((item, index) => (
+        {data.input_card_data?.map((item, index) => (
           <Space
             align="start"
             className="w-full"
             spacing={6}
             vertical
-            key={item.name + index}
+            key={item?.name + index}
           >
             <Typography.Text ellipsis className="text-lg !font-medium">
               {item?.name}
@@ -87,10 +84,12 @@ export const InputNodeRender: React.FC<InputRenderNodeProps> = ({
               message,
               extra: {
                 msg:
-                  validContent
-                    .map(item => `${item.name}:${inputData[item.name] || ''}`)
+                  data.input_card_data
+                    ?.map(item => `${item.name}:${inputData[item.name] || ''}`)
                     .join('\n') || '',
-                mentionList: [],
+                mentionList: message.sender_id
+                  ? [{ id: message.sender_id }]
+                  : [],
               },
             });
           }}

@@ -17,7 +17,7 @@
 import React, { type FC, useEffect, useMemo, useRef } from 'react';
 
 import cs from 'classnames';
-import { WorkflowRender } from '@coze-common/chat-workflow-render';
+import { ChatFlowRender } from '@coze-common/chat-workflow-render';
 import {
   ChatArea,
   useInitStatus,
@@ -64,7 +64,7 @@ export const StudioChatArea: FC<StudioChatAreaProps> = ({
           </>
         ),
       },
-      contentBox: WorkflowRender,
+      contentBox: ChatFlowRender,
     }),
     [renderChatInputTopSlot],
   );
