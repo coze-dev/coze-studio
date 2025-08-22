@@ -173,37 +173,18 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 }
 
 func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string, connectorIDs []int64, pConfig map[int64]entity.PublishConfig) (failedResources []*entity.PackResourceFailedInfo, err error) {
-	var (
-		failedPlugins          = make([]*entity.PackResourceFailedInfo, 0)
-		workflowFailedInfoList = make([]*entity.PackResourceFailedInfo, 0)
-	)
 
-	for _, cid := range connectorIDs {
-		if config, ok := pConfig[cid]; !ok {
-			connectorFailedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
-			if err != nil {
-				return nil, err
-			}
-			failedPlugins = append(failedPlugins, connectorFailedPlugins...)
-			connectorWorkflowFailedInfoList, err := a.packAllApplicationWorkflows(ctx, appID, version,
-				slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
-					return a.ID
-				}), connectorIDs)
-			if err != nil {
-				return nil, err
-			}
-			workflowFailedInfoList = append(workflowFailedInfoList, connectorWorkflowFailedInfoList...)
-		} else if len(config.SelectedWorkflows) > 0 {
-			for _, c := range config.SelectedWorkflows {
-				connectorWorkflowFailedInfoList, err := a.packApplicationWorkflow(ctx, appID, []int64{cid}, c.WorkflowID, version)
-				if err != nil {
-					return nil, err
-				}
-				workflowFailedInfoList = append(workflowFailedInfoList, connectorWorkflowFailedInfoList...)
+	failedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
+	if err != nil {
+		return nil, err
+	}
 
-			}
-
-		}
+	workflowFailedInfoList, err := a.packWorkflows(ctx, appID, version,
+		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
+			return a.ID
+		}), connectorIDs)
+	if err != nil {
+		return nil, err
 	}
 
 	length := len(failedPlugins) + len(workflowFailedInfoList)
@@ -239,34 +220,12 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 
 }
 
-func (a *appServiceImpl) packAllApplicationWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64, connectorIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64, connectorIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
 	issues, err := crossworkflow.DefaultSVC().ReleaseApplicationWorkflows(ctx, appID, &crossworkflow.ReleaseWorkflowConfig{
 		Version:      version,
 		PluginIDs:    allDraftPluginIDs,
 		ConnectorIDs: connectorIDs,
 	})
-	if err != nil {
-		return nil, errorx.Wrapf(err, "ReleaseApplicationWorkflows failed, appID=%d, version=%s", appID, version)
-	}
-
-	if len(issues) == 0 {
-		return workflowFailedInfoList, nil
-	}
-
-	workflowFailedInfoList = make([]*entity.PackResourceFailedInfo, 0, len(issues))
-	for _, issue := range issues {
-		workflowFailedInfoList = append(workflowFailedInfoList, &entity.PackResourceFailedInfo{
-			ResID:   issue.WorkflowID,
-			ResType: resourceCommon.ResType_Workflow,
-			ResName: issue.WorkflowName,
-		})
-	}
-
-	return workflowFailedInfoList, nil
-}
-
-func (a *appServiceImpl) packApplicationWorkflow(ctx context.Context, appID int64, connectorIDs []int64, workflowID int64, version string) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
-	issues, err := crossworkflow.DefaultSVC().ReleaseApplicationWorkflow(ctx, appID, connectorIDs, workflowID, version)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ReleaseApplicationWorkflows failed, appID=%d, version=%s", appID, version)
 	}
