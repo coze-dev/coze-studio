@@ -155,6 +155,7 @@ func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int6
 	if limit > 0 {
 		do = do.Limit(int(limit) + 1)
 	}
+	do = do.Order(dao.query.Conversation.CreatedAt.Desc())
 
 	poList, err := do.Find()
 
