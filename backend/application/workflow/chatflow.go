@@ -1303,6 +1303,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				return nil, schema.ErrNoValue
 			}
 			dataMessage := msg.DataMessage
+
 			if shouldNewMessage {
 				intermediateMessage = &message.Message{
 					AgentID:        appID,
@@ -1311,6 +1312,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					ConversationID: conversationID,
 					Role:           schema.Assistant,
 					MessageType:    message.MessageTypeAnswer,
+					ContentType:    message.ContentTypeText,
 				}
 				shouldNewMessage = false
 			}
