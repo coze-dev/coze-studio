@@ -89,7 +89,7 @@ export const CreateWorkflowBtn: FC<
       icon: <IconCozChat />,
     },
     {
-      label: '导入工作流',
+      label: I18n.t('workflow_import'),
       handler: () => {
         openImportModal();
       },

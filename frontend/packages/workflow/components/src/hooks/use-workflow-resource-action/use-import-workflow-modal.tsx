@@ -36,13 +36,13 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
     try {
       // 验证文件类型
       if (!file.name.endsWith('.json')) {
-        message.error('请选择JSON格式的文件');
+        message.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
       // 验证文件大小（限制为10MB）
       if (file.size > 10 * 1024 * 1024) {
-        message.error('文件大小不能超过10MB');
+        message.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
@@ -57,24 +57,24 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
           setWorkflowName(workflowData.name);
           form.setFieldsValue({ workflowName: workflowData.name });
         } else {
-          message.error('文件内容不是有效的工作流导出数据');
+          message.error(I18n.t('workflow_import_failed'));
           return false;
         }
       } catch (error) {
-        message.error('文件格式错误，请选择有效的JSON文件');
+        message.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
       return false; // 阻止自动上传
     } catch (error) {
-      message.error('读取文件失败');
+      message.error(I18n.t('workflow_import_failed'));
       return false;
     }
   };
 
   const handleImport = async () => {
     if (!selectedFile) {
-      message.error('请先选择要导入的文件');
+      message.error(I18n.t('workflow_import_failed'));
       return;
     }
 
@@ -102,12 +102,12 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
 
   const importModal = (
     <Modal
-      title="导入工作流"
+      title={I18n.t('workflow_import')}
       visible={importModalVisible}
       onCancel={handleCancel}
       footer={[
         <Button key="cancel" onClick={handleCancel}>
-          取消
+          {I18n.t('Cancel')}
         </Button>,
         <Button
           key="import"
@@ -116,14 +116,14 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
           disabled={!selectedFile}
           onClick={handleImport}
         >
-          导入
+          {I18n.t('import')}
         </Button>,
       ]}
       width={600}
     >
       <Form form={form} layout="vertical">
         <Form.Item
-          label="选择文件"
+          label={I18n.t('workflow_import_select_file')}
           required
         >
           <Upload
@@ -133,39 +133,39 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
             maxCount={1}
           >
             <Button icon={<IconUpload />}>
-              {selectedFile ? selectedFile.name : '点击上传'}
+              {selectedFile ? selectedFile.name : I18n.t('workflow_import_click_upload')}
             </Button>
           </Upload>
           <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
-            支持JSON格式，最大10MB
+            {I18n.t('workflow_import_support_format')}
           </div>
         </Form.Item>
 
         {workflowPreview && (
           <Form.Item
-            label="工作流预览"
+            label={I18n.t('workflow_import_preview')}
           >
             <div style={{ padding: 12, backgroundColor: '#f5f5f5', borderRadius: 4 }}>
-              <div><strong>名称:</strong> {workflowPreview.name}</div>
+              <div><strong>{I18n.t('workflow_import_name')}:</strong> {workflowPreview.name}</div>
               {workflowPreview.description && (
-                <div><strong>描述:</strong> {workflowPreview.description}</div>
+                <div><strong>{I18n.t('workflow_import_description')}:</strong> {workflowPreview.description}</div>
               )}
-              <div><strong>节点:</strong> {workflowPreview.nodes?.length || 0}</div>
-              <div><strong>连线:</strong> {workflowPreview.edges?.length || 0}</div>
+              <div><strong>{I18n.t('workflow_import_nodes')}:</strong> {workflowPreview.nodes?.length || 0}</div>
+              <div><strong>{I18n.t('workflow_import_edges')}:</strong> {workflowPreview.edges?.length || 0}</div>
             </div>
           </Form.Item>
         )}
 
         <Form.Item
-          label="工作流名称"
+          label={I18n.t('workflow_import_workflow_name')}
           name="workflowName"
           rules={[
-            { required: true, message: '请输入工作流名称' },
-            { max: 50, message: '工作流名称最多50个字符' }
+            { required: true, message: I18n.t('workflow_import_workflow_name_required') },
+            { max: 50, message: I18n.t('workflow_import_workflow_name_max_length') }
           ]}
         >
           <Input
-            placeholder="请输入工作流名称"
+            placeholder={I18n.t('workflow_import_workflow_name_placeholder')}
             value={workflowName}
             onChange={(e) => setWorkflowName(e.target.value)}
           />

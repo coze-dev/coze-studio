@@ -44,7 +44,7 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       });
 
       if (!response.ok) {
-        throw new Error('导出失败');
+        throw new Error(I18n.t('workflow_export_failed'));
       }
 
       const result = await response.json();

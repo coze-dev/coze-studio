@@ -58,13 +58,13 @@ const WorkflowImportPage: React.FC = () => {
     try {
       // 验证文件类型
       if (!file.name.endsWith('.json')) {
-        Toast.error('请选择JSON格式的文件');
+        Toast.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
       // 验证文件大小（限制为10MB）
       if (file.size > 10 * 1024 * 1024) {
-        Toast.error('文件大小不能超过10MB');
+        Toast.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
@@ -78,17 +78,17 @@ const WorkflowImportPage: React.FC = () => {
           setWorkflowPreview(workflowData);
           form.setFieldsValue({ workflowName: workflowData.name });
         } else {
-          Toast.error('文件内容不是有效的工作流导出数据');
+          Toast.error(I18n.t('workflow_import_failed'));
           return false;
         }
       } catch (error) {
-        Toast.error('文件格式错误，请选择有效的JSON文件');
+        Toast.error(I18n.t('workflow_import_failed'));
         return false;
       }
 
       return false; // 阻止自动上传
     } catch (error) {
-      Toast.error('读取文件失败');
+      Toast.error(I18n.t('workflow_import_failed'));
       return false;
     }
   };
@@ -96,7 +96,7 @@ const WorkflowImportPage: React.FC = () => {
   // 处理导入
   const handleImport = async () => {
     if (!selectedFile || !space_id) {
-      Toast.error('请先选择要导入的文件');
+      Toast.error(I18n.t('workflow_import_failed'));
       return;
     }
 
@@ -124,24 +124,24 @@ const WorkflowImportPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('导入失败');
+        throw new Error(I18n.t('workflow_import_failed'));
       }
 
       const result = await response.json();
       
       if (result.code === 200 && result.data?.workflow_id) {
-        Toast.success('工作流导入成功！');
+        Toast.success(I18n.t('workflow_import_success'));
         
         // 跳转到新创建的工作流或资源库
         setTimeout(() => {
           navigate(`/space/${space_id}/library`);
         }, 1500);
       } else {
-        throw new Error(result.msg || '工作流导入失败');
+        throw new Error(result.msg || I18n.t('workflow_import_failed'));
       }
     } catch (error) {
       console.error('导入工作流失败:', error);
-      Toast.error(error instanceof Error ? error.message : '工作流导入失败');
+      Toast.error(error instanceof Error ? error.message : I18n.t('workflow_import_failed'));
     } finally {
       setImporting(false);
     }
@@ -165,26 +165,26 @@ const WorkflowImportPage: React.FC = () => {
             onClick={() => navigate(`/space/${space_id}/library`)}
             className="mb-4"
           >
-            返回资源库
+            {I18n.t('workflow_import_back_to_library')}
           </Button>
           
           <div className="flex items-center mb-4">
             <IconCozWorkflow className="text-2xl mr-3 text-blue-600" />
             <Title level={2} className="m-0">
-              导入工作流
+              {I18n.t('workflow_import')}
             </Title>
           </div>
           
           <Paragraph className="text-gray-600">
-            选择之前导出的工作流JSON文件，将其导入到当前工作空间中。
+            {I18n.t('workflow_import_description')}
           </Paragraph>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 左侧：文件上传和基本信息 */}
-          <Card title="选择文件" className="h-fit">
+          <Card title={I18n.t('workflow_import_select_file')} className="h-fit">
             <Form form={form} layout="vertical">
-              <Form.Item label="选择工作流文件" required>
+              <Form.Item label={I18n.t('workflow_import_select_workflow_file')} required>
                 <Upload
                   accept=".json"
                   beforeUpload={handleFileSelect}
@@ -199,10 +199,10 @@ const WorkflowImportPage: React.FC = () => {
                   >
                     <div className="text-center">
                       <div className="text-lg mb-2">
-                        {selectedFile ? selectedFile.name : '点击选择文件'}
+                        {selectedFile ? selectedFile.name : I18n.t('workflow_import_click_upload')}
                       </div>
                       <div className="text-sm text-gray-500">
-                        支持JSON格式，最大10MB
+                        {I18n.t('workflow_import_support_format')}
                       </div>
                     </div>
                   </Button>
@@ -210,15 +210,15 @@ const WorkflowImportPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item
-                label="工作流名称"
+                label={I18n.t('workflow_import_workflow_name')}
                 name="workflowName"
                 rules={[
-                  { required: true, message: '请输入工作流名称' },
-                  { max: 50, message: '工作流名称最多50个字符' }
+                  { required: true, message: I18n.t('workflow_import_workflow_name_required') },
+                  { max: 50, message: I18n.t('workflow_import_workflow_name_max_length') }
                 ]}
               >
                 <Input
-                  placeholder="请输入工作流名称"
+                  placeholder={I18n.t('workflow_import_workflow_name_placeholder')}
                   size="large"
                 />
               </Form.Item>
@@ -234,7 +234,7 @@ const WorkflowImportPage: React.FC = () => {
                   onClick={handleImport}
                   className="flex-1"
                 >
-                  {importing ? '导入中...' : '开始导入'}
+                  {importing ? I18n.t('Loading') : I18n.t('import')}
                 </Button>
                 
                 <Button
@@ -242,18 +242,18 @@ const WorkflowImportPage: React.FC = () => {
                   onClick={handleReset}
                   disabled={importing}
                 >
-                  重置
+                  {I18n.t('Reset')}
                 </Button>
               </div>
             </Form>
           </Card>
 
           {/* 右侧：工作流预览 */}
-          <Card title="工作流预览" className="h-fit">
+          <Card title={I18n.t('workflow_import_preview')} className="h-fit">
             {workflowPreview ? (
               <Space direction="vertical" className="w-full" size="middle">
                 <div>
-                  <Text strong>名称:</Text>
+                  <Text strong>{I18n.t('workflow_import_name')}:</Text>
                   <div className="mt-1 p-2 bg-gray-50 rounded">
                     {workflowPreview.name}
                   </div>
@@ -261,7 +261,7 @@ const WorkflowImportPage: React.FC = () => {
                 
                 {workflowPreview.description && (
                   <div>
-                    <Text strong>描述:</Text>
+                    <Text strong>{I18n.t('workflow_import_description')}:</Text>
                     <div className="mt-1 p-2 bg-gray-50 rounded">
                       {workflowPreview.description}
                     </div>
@@ -273,51 +273,51 @@ const WorkflowImportPage: React.FC = () => {
                     <div className="text-2xl font-bold text-blue-600">
                       {workflowPreview.nodes?.length || 0}
                     </div>
-                    <div className="text-sm text-gray-600">节点数量</div>
+                    <div className="text-sm text-gray-600">{I18n.t('workflow_import_nodes')}</div>
                   </div>
                   
                   <div className="text-center p-4 bg-green-50 rounded">
                     <div className="text-2xl font-bold text-green-600">
                       {workflowPreview.edges?.length || 0}
                     </div>
-                    <div className="text-sm text-gray-600">连接数量</div>
+                    <div className="text-sm text-gray-600">{I18n.t('workflow_import_edges')}</div>
                   </div>
                 </div>
                 
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
                   <Text className="text-yellow-800 text-sm">
-                    💡 导入后将创建一个新的工作流，原有工作流不会被影响
+                    💡 {I18n.t('workflow_import_tip')}
                   </Text>
                 </div>
               </Space>
             ) : (
               <div className="text-center py-12 text-gray-500">
                 <IconCozWorkflow className="text-4xl mb-4 mx-auto opacity-50" />
-                <div>选择文件后将显示工作流预览信息</div>
+                <div>{I18n.t('workflow_import_select_file_tip')}</div>
               </div>
             )}
           </Card>
         </div>
 
         {/* 使用说明 */}
-        <Card title="使用说明" className="mt-8">
+        <Card title={I18n.t('workflow_import_usage_guide')} className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Title level={4}>支持的文件格式</Title>
+              <Title level={4}>{I18n.t('workflow_import_supported_formats')}</Title>
               <ul className="list-disc list-inside space-y-1 text-gray-600">
-                <li>JSON格式的工作流导出文件</li>
-                <li>文件大小不超过10MB</li>
-                <li>必须包含完整的工作流架构信息</li>
+                <li>{I18n.t('workflow_import_format_json')}</li>
+                <li>{I18n.t('workflow_import_format_size')}</li>
+                <li>{I18n.t('workflow_import_format_complete')}</li>
               </ul>
             </div>
             
             <div>
-              <Title level={4}>导入流程</Title>
+              <Title level={4}>{I18n.t('workflow_import_process')}</Title>
               <ul className="list-disc list-inside space-y-1 text-gray-600">
-                <li>选择要导入的JSON文件</li>
-                <li>系统自动解析并预览工作流信息</li>
-                <li>确认或修改工作流名称</li>
-                <li>点击"开始导入"完成导入</li>
+                <li>{I18n.t('workflow_import_process_step1')}</li>
+                <li>{I18n.t('workflow_import_process_step2')}</li>
+                <li>{I18n.t('workflow_import_process_step3')}</li>
+                <li>{I18n.t('workflow_import_process_step4')}</li>
               </ul>
             </div>
           </div>
