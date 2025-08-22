@@ -997,6 +997,12 @@ table "conversation" {
     comment        = "id"
     auto_increment = true
   }
+  column "name" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "conversation name"
+  }
   column "connector_id" {
     null     = false
     type     = bigint
