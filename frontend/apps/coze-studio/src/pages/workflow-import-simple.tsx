@@ -25,6 +25,9 @@ const Page = () => {
   const [workflowName, setWorkflowName] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [nameError, setNameError] = useState('');
+  const [workflowPreview, setWorkflowPreview] = useState<any>(null);
+  const [parseError, setParseError] = useState('');
+  const [dragActive, setDragActive] = useState(false);
   
   if (!space_id) {
     return <div>No space ID found</div>;
@@ -50,9 +53,9 @@ const Page = () => {
       return '工作流名称只能包含字母、数字和下划线';
     }
     
-    // 检查长度（建议2-50个字符）
-    if (name.length < 2) {
-      return '工作流名称至少需要2个字符';
+    // 检查长度（支持1-50个字符，包括单个字母）
+    if (name.length < 1) {
+      return '工作流名称不能为空';
     }
     
     if (name.length > 50) {
@@ -71,66 +74,113 @@ const Page = () => {
     setNameError(error);
   };
 
+  // 处理文件选择和验证
+  const processFile = (file: File) => {
+    setParseError('');
+    setWorkflowPreview(null);
+    
+    // 验证文件类型
+    if (!file.name.endsWith('.json')) {
+      setParseError('请选择JSON格式的文件');
+      return;
+    }
+    
+    // 验证文件大小（限制为10MB）
+    if (file.size > 10 * 1024 * 1024) {
+      setParseError('文件大小不能超过10MB');
+      return;
+    }
+    
+    setSelectedFile(file);
+    
+    // 尝试读取文件内容并验证
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const workflowData = JSON.parse(content);
+        
+        // 基本验证工作流数据结构
+        if (!workflowData.schema || !workflowData.nodes) {
+          setParseError('无效的工作流文件格式，缺少必要的schema或nodes字段');
+          setSelectedFile(null);
+          return;
+        }
+        
+        // 设置预览数据
+        setWorkflowPreview({
+          name: workflowData.name || '未命名工作流',
+          description: workflowData.description || '',
+          nodeCount: workflowData.nodes?.length || 0,
+          edgeCount: workflowData.edges?.length || 0,
+          version: workflowData.version || 'v1.0'
+        });
+        
+        // 如果文件中有名称且当前名称为空，自动填充
+        if (workflowData.name && !workflowName.trim()) {
+          setWorkflowName(workflowData.name);
+        }
+        
+      } catch (error) {
+        setParseError('JSON格式错误，请检查文件内容是否有效');
+        setSelectedFile(null);
+        setWorkflowPreview(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 验证文件类型
-      if (!file.name.endsWith('.json')) {
-        alert('请选择JSON格式的文件');
-        return;
-      }
-      
-      // 验证文件大小（限制为10MB）
-      if (file.size > 10 * 1024 * 1024) {
-        alert('文件大小不能超过10MB');
-        return;
-      }
-      
-      setSelectedFile(file);
-      
-      // 尝试读取文件内容并验证
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const workflowData = JSON.parse(content);
-          
-          // 基本验证工作流数据结构
-          if (!workflowData.schema || !workflowData.nodes) {
-            alert('无效的工作流文件格式');
-            setSelectedFile(null);
-            return;
-          }
-          
-          // 如果文件中有名称，自动填充
-          if (workflowData.name && !workflowName) {
-            setWorkflowName(workflowData.name);
-          }
-          
-          alert('文件验证成功！');
-        } catch (error) {
-          alert('JSON格式错误，请检查文件内容');
-          setSelectedFile(null);
-        }
-      };
-      reader.readAsText(file);
+      processFile(file);
+    }
+  };
+
+  // 拖拽处理
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      processFile(files[0]);
     }
   };
 
   const handleImport = async () => {
     if (!selectedFile) {
-      alert('请先选择文件');
+      setParseError('请先选择文件');
       return;
     }
 
     // 验证工作流名称
     const nameValidationError = validateWorkflowName(workflowName);
     if (nameValidationError) {
-      alert(nameValidationError);
+      setNameError(nameValidationError);
       return;
     }
 
     setIsImporting(true);
+    setParseError('');
 
     try {
       // 读取文件内容
@@ -156,21 +206,37 @@ const Page = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '导入失败');
+        throw new Error(errorData.message || '导入失败，请检查网络连接或联系管理员');
       }
 
       const result = await response.json();
-      alert('工作流导入成功！');
+      
+      // 成功提示
+      const successMessage = `🎉 工作流"${workflowName}"导入成功！正在跳转到资源库...`;
+      alert(successMessage);
       
       // 导入成功后跳转到资源库
-      navigate(`/space/${space_id}/library`);
+      setTimeout(() => {
+        navigate(`/space/${space_id}/library`);
+      }, 1500);
       
     } catch (error) {
       console.error('导入失败:', error);
-      alert(error instanceof Error ? error.message : '导入失败，请重试');
+      const errorMessage = error instanceof Error ? error.message : '导入失败，请重试';
+      setParseError(errorMessage);
     } finally {
       setIsImporting(false);
     }
+  };
+
+  // 重置所有状态
+  const handleReset = () => {
+    setSelectedFile(null);
+    setWorkflowName('');
+    setWorkflowPreview(null);
+    setParseError('');
+    setNameError('');
+    setDragActive(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -265,23 +331,32 @@ const Page = () => {
             </label>
             
             <div style={{
-              border: '2px dashed #e1e8ed',
+              border: `2px dashed ${dragActive ? '#667eea' : (parseError ? '#e74c3c' : '#e1e8ed')}`,
               borderRadius: '12px',
               padding: '40px 20px',
               textAlign: 'center',
-              background: '#fafbfc',
+              background: dragActive ? '#f0f4ff' : (parseError ? '#fdf2f2' : '#fafbfc'),
               transition: 'all 0.3s ease',
               cursor: 'pointer',
-              position: 'relative'
+              position: 'relative',
+              transform: dragActive ? 'scale(1.02)' : 'scale(1)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#667eea';
-              e.currentTarget.style.background = '#f8f9ff';
+              if (!dragActive && !parseError) {
+                e.currentTarget.style.borderColor = '#667eea';
+                e.currentTarget.style.background = '#f8f9ff';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e1e8ed';
-              e.currentTarget.style.background = '#fafbfc';
+              if (!dragActive && !parseError) {
+                e.currentTarget.style.borderColor = '#e1e8ed';
+                e.currentTarget.style.background = '#fafbfc';
+              }
             }}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             >
               <input
                 type="file"
@@ -379,6 +454,102 @@ const Page = () => {
                 </div>
               )}
             </div>
+            
+            {/* 错误提示 */}
+            {parseError && (
+              <div style={{
+                marginTop: '12px',
+                padding: '12px 16px',
+                background: '#fdf2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                color: '#e74c3c',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '18px' }}>❌</span>
+                {parseError}
+              </div>
+            )}
+            
+            {/* 工作流预览 */}
+            {workflowPreview && !parseError && (
+              <div style={{
+                marginTop: '16px',
+                padding: '20px',
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                border: '1px solid #bae6fd',
+                borderRadius: '12px'
+              }}>
+                <h4 style={{
+                  margin: '0 0 16px 0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#0369a1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  🔍 工作流预览
+                </h4>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e0f2fe'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>名称</div>
+                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{workflowPreview.name}</div>
+                  </div>
+                  <div style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e0f2fe'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>版本</div>
+                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{workflowPreview.version}</div>
+                  </div>
+                  <div style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e0f2fe'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>节点数</div>
+                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{workflowPreview.nodeCount} 个</div>
+                  </div>
+                  <div style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e0f2fe'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>连接数</div>
+                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{workflowPreview.edgeCount} 个</div>
+                  </div>
+                </div>
+                {workflowPreview.description && (
+                  <div style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #e0f2fe'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginBottom: '4px' }}>描述</div>
+                    <div style={{ color: '#1e293b', lineHeight: '1.5' }}>{workflowPreview.description}</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 工作流名称输入 */}
@@ -396,7 +567,7 @@ const Page = () => {
               type="text"
               value={workflowName}
               onChange={handleNameChange}
-              placeholder="请输入工作流名称（以字母开头，只能包含字母、数字、下划线）"
+              placeholder="请输入工作流名称（以字母开头，支持单个字母，只能包含字母、数字、下划线）"
               style={{
                 padding: '16px 20px',
                 border: `2px solid ${nameError ? '#e74c3c' : '#e1e8ed'}`,
@@ -462,28 +633,34 @@ const Page = () => {
             marginBottom: '32px'
           }}>
             <button
-              onClick={handleGoBack}
+              onClick={selectedFile ? handleReset : handleGoBack}
+              disabled={isImporting}
               style={{
                 padding: '16px 32px',
                 border: '2px solid #e1e8ed',
                 borderRadius: '12px',
                 background: 'white',
                 color: '#2c3e50',
-                cursor: 'pointer',
+                cursor: isImporting ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
                 fontWeight: '600',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                opacity: isImporting ? 0.6 : 1
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#bdc3c7';
-                e.currentTarget.style.background = '#f8f9fa';
+                if (!isImporting) {
+                  e.currentTarget.style.borderColor = '#bdc3c7';
+                  e.currentTarget.style.background = '#f8f9fa';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e1e8ed';
-                e.currentTarget.style.background = 'white';
+                if (!isImporting) {
+                  e.currentTarget.style.borderColor = '#e1e8ed';
+                  e.currentTarget.style.background = 'white';
+                }
               }}
             >
-              取消
+              {selectedFile ? '🔄 重置' : '❌ 取消'}
             </button>
             <button
               onClick={handleImport}
@@ -555,7 +732,7 @@ const Page = () => {
                 <strong>文件大小：</strong>限制为 10MB，确保上传速度
               </li>
               <li style={{ marginBottom: '8px' }}>
-                <strong>名称规则：</strong>工作流名称必须以字母开头，只能包含字母、数字和下划线
+                <strong>名称规则：</strong>工作流名称必须以字母开头（支持单个字母），只能包含字母、数字和下划线
               </li>
               <li style={{ marginBottom: '8px' }}>
                 <strong>导入位置：</strong>导入后将在当前工作空间创建新的工作流
