@@ -1112,18 +1112,6 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 	wf, err := w.copyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
 		TargetAppID: &appID,
 	})
-
-	if wf.Mode == workflow.WorkflowMode_ChatFlow {
-		err = GetWorkflowDomainSVC().CopyChatFlowRole(ctx, &vo.CopyRolePolicy{
-			SourceID:  workflowID,
-			TargetID:  wf.ID,
-			CreatorID: wf.CreatorID,
-		})
-		if err != nil {
-			return 0, err
-		}
-	}
-
 	if err != nil {
 		return 0, err
 	}
