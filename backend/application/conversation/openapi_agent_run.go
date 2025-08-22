@@ -37,6 +37,7 @@ import (
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -349,7 +350,22 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 	resp := new(run.CancelChatApiResponse)
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
-	_ = apiKeyInfo.UserID
+	userID := apiKeyInfo.UserID
+
+	runRecord, err := ConversationSVC.AgentRunDomainSVC.GetByID(ctx, req.ChatID)
+	if err != nil {
+		return nil, err
+	}
+	if runRecord == nil {
+		return nil, errorx.New(errno.ErrRecordNotFound)
+	}
+	if userID != runRecord.CreatorID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
+	}
+
+	if runRecord.Status != entity.RunStatusInProgress && runRecord.Status != entity.RunStatusCreated {
+		return nil, errorx.New(errno.ErrInProgressCanNotCancel)
+	}
 
 	runMeta, err := ConversationSVC.AgentRunDomainSVC.Cancel(ctx, &entity.CancelRunMeta{
 		RunID:          req.ChatID,
@@ -358,6 +374,10 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 	if err != nil {
 		return nil, err
 	}
+	if runMeta == nil {
+		return nil, errorx.New(errno.ErrConversationAgentRunError)
+	}
+
 	resp.ChatV3ChatDetail = &run.ChatV3ChatDetail{
 		ID:             runMeta.ID,
 		ConversationID: runMeta.ConversationID,

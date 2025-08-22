@@ -43,6 +43,7 @@ type RunRecordMeta struct {
 	ChatRequest    *string         `json:"chat_message"`
 	CompletedAt    int64           `json:"completed_at"`
 	FailedAt       int64           `json:"failed_at"`
+	CreatorID      int64           `json:"creator_id"`
 }
 
 type ChunkRunItem = RunRecordMeta

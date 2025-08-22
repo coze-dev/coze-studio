@@ -187,6 +187,7 @@ func (dao *RunRecordDAO) buildPo2Do(po *model.RunRecord) *entity.RunRecordMeta {
 		CompletedAt:    po.CompletedAt,
 		FailedAt:       po.FailedAt,
 		Usage:          po.Usage,
+		CreatorID:      po.CreatorID,
 	}
 
 	return runMeta
