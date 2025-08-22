@@ -116,6 +116,7 @@ help:
 	@echo "  middleware       - Setup middlewares docker environment, but exclude the server app."
 	@echo "  web              - Setup web docker environment, include middlewares docker."
 	@echo "  down             - Stop the docker containers."
+	@echo "  down_web         - Stop the web docker containers."
 	@echo "  clean            - Stop the docker containers and clean volumes."
 	@echo "  python           - Setup python environment."
 	@echo "  atlas-hash       - Rehash atlas migration files."
