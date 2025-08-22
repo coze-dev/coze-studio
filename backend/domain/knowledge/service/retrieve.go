@@ -390,6 +390,10 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		}
 		replaceMap[doc.Name].ColumnMap[doc.TableInfo.Columns[i].Name] = convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)
 	}
+	virtualColumnMap := map[string]*entity.TableColumn{}
+	for i := range doc.TableInfo.Columns {
+		virtualColumnMap[convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)] = doc.TableInfo.Columns[i]
+	}
 	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(sql, replaceMap)
 	if err != nil {
 		logs.CtxErrorf(ctx, "parse sql failed: %v", err)
@@ -423,6 +427,32 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 			prefix := "sql:" + sql + ";result:"
 			d.Content = prefix + string(byteData)
 		} else {
+			transferMap := map[string]string{}
+			for cName, val := range resp.ResultSet.Rows[i] {
+				column, found := virtualColumnMap[cName]
+				if !found {
+					logs.CtxInfof(ctx, "column not found, name: %s", cName)
+					continue
+				}
+				columnData, err := convert.ParseAnyData(column, val)
+				if err != nil {
+					logs.CtxErrorf(ctx, "parse any data failed: %v", err)
+					return nil, errorx.New(errno.ErrKnowledgeColumnParseFailCode, errorx.KV("msg", err.Error()))
+				}
+				if columnData.Type == document.TableColumnTypeString {
+					columnData.ValString = ptr.Of(k.formatSliceContent(ctx, columnData.GetStringValue()))
+				}
+				if columnData.Type == document.TableColumnTypeImage {
+					columnData.ValImage = ptr.Of(k.formatSliceContent(ctx, columnData.GetStringValue()))
+				}
+				transferMap[column.Name] = columnData.GetNullableStringValue()
+			}
+			byteData, err := sonic.Marshal(transferMap)
+			if err != nil {
+				logs.CtxErrorf(ctx, "marshal sql resp failed: %v", err)
+				return nil, err
+			}
+			d.Content = string(byteData)
 			d.ID = strconv.FormatInt(id, 10)
 		}
 		d.WithScore(1)

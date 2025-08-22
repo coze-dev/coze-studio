@@ -59,6 +59,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/ppstructure"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
+	vikingReranker "github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/vikingdb"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/vikingdb"
@@ -145,7 +146,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, fmt.Errorf("init knowledge event bus producer failed, err=%w", err)
 	}
 
-	deps.Reranker = rrf.NewRRFReranker(0)
+	deps.Reranker = initReranker()
 
 	deps.Rewriter, err = initRewriter(ctx)
 	if err != nil {
@@ -207,6 +208,26 @@ func initSearchStoreManagers(ctx context.Context, es es.Client) ([]searchstore.M
 	return []searchstore.Manager{esSearchstoreManager, mgr}, nil
 }
 
+func initReranker() rerank.Reranker {
+	rerankerType := os.Getenv("RERANK_TYPE")
+	switch rerankerType {
+	case "vikingdb":
+		return vikingReranker.NewReranker(getVikingRerankerConfig())
+	case "rrf":
+		return rrf.NewRRFReranker(0)
+	default:
+		return rrf.NewRRFReranker(0)
+	}
+}
+func getVikingRerankerConfig() *vikingReranker.Config {
+	return &vikingReranker.Config{
+		AK:     os.Getenv("VIKINGDB_RERANK_AK"),
+		SK:     os.Getenv("VIKINGDB_RERANK_SK"),
+		Domain: os.Getenv("VIKINGDB_RERANK_HOST"),
+		Region: os.Getenv("VIKINGDB_RERANK_REGION"),
+		Model:  os.Getenv("VIKINGDB_RERANK_MODEL"),
+	}
+}
 func initRewriter(ctx context.Context) (messages2query.MessagesToQuery, error) {
 	rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_")
 	if err != nil {

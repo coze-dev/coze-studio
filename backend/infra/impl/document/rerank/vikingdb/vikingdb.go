@@ -33,15 +33,22 @@ import (
 )
 
 type Config struct {
-	AK string
-	SK string
-
+	AK     string
+	SK     string
+	Domain string
+	Model  string
 	Region string // default cn-north-1
 }
 
 func NewReranker(config *Config) rerank.Reranker {
 	if config.Region == "" {
 		config.Region = "cn-north-1"
+	}
+	if config.Domain == "" {
+		config.Domain = domain
+	}
+	if config.Model == "" {
+		config.Model = defaultModel
 	}
 	return &reranker{config: config}
 }
@@ -78,12 +85,32 @@ type rerankResp struct {
 func (r *reranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.Response, error) {
 	rReq := &rerankReq{
 		Datas:       make([]rerankData, 0, len(req.Data)),
-		RerankModel: defaultModel,
+		RerankModel: r.config.Model,
 	}
-
+	sorted := make([]*rerank.Data, 0)
 	var flat []*rerank.Data
+	visited := map[string]bool{}
 	for _, channel := range req.Data {
-		flat = append(flat, channel...)
+		if len(channel) == 0 {
+			continue
+		}
+		for _, item := range channel {
+			if item == nil || item.Document == nil {
+				continue
+			}
+			if item.Document.ID == "" {
+				sorted = append(sorted, &rerank.Data{
+					Document: item.Document,
+					Score:    1,
+				})
+				continue
+			}
+			if visited[item.Document.ID] {
+				continue
+			}
+			visited[item.Document.ID] = true
+			flat = append(flat, item)
+		}
 	}
 
 	for _, item := range flat {
@@ -117,7 +144,6 @@ func (r *reranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.Res
 		return nil, fmt.Errorf("[Rerank] failed, code=%d, msg=%v", rResp.Code, rResp.Message)
 	}
 
-	sorted := make([]*rerank.Data, 0, len(rResp.Data.Scores))
 	for i, score := range rResp.Data.Scores {
 		sorted = append(sorted, &rerank.Data{
 			Document: flat[i].Document,
@@ -143,7 +169,7 @@ func (r *reranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.Res
 func (r *reranker) prepareRequest(body []byte) *http.Request {
 	u := url.URL{
 		Scheme: "https",
-		Host:   domain,
+		Host:   r.config.Domain,
 		Path:   "/api/knowledge/service/rerank",
 	}
 	req, _ := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(body))
