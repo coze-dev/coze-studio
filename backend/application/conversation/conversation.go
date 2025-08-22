@@ -198,7 +198,7 @@ func (c *ConversationApplicationService) DeleteConversation(ctx context.Context,
 	userID := apiKeyInfo.UserID
 
 	if userID == 0 {
-		return resp, errorx.New(errno.ErrConversationNotFound)
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission check failed"))
 	}
 
 	conversationDO, err := c.ConversationDomainSVC.GetByID(ctx, convID)
@@ -226,7 +226,7 @@ func (c *ConversationApplicationService) UpdateConversation(ctx context.Context,
 	userID := apiKeyInfo.UserID
 
 	if userID == 0 {
-		return resp, errorx.New(errno.ErrConversationNotFound)
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission check failed"))
 	}
 
 	conversationDO, err := c.ConversationDomainSVC.GetByID(ctx, convID)
@@ -237,7 +237,7 @@ func (c *ConversationApplicationService) UpdateConversation(ctx context.Context,
 		return resp, errorx.New(errno.ErrConversationNotFound)
 	}
 	if conversationDO.CreatorID != userID {
-		return resp, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
 	updateResult, err := c.ConversationDomainSVC.Update(ctx, &entity.UpdateMeta{
