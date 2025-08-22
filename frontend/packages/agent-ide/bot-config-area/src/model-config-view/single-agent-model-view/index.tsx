@@ -82,10 +82,29 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
   });
 
   useEffect(() => {
-    setCurrentModelIdState(currentModelId);
-  }, [currentModelId]);
+    if (currentModelId) {
+      setCurrentModelIdState(currentModelId);
+    } else if (modelList.length > 0) {
+      // 当前模型不存在时，fallback到第一个可用模型
+      const firstAvailableModelId = String(modelList[0]?.model_type);
+      setCurrentModelIdState(firstAvailableModelId);
+      
+      // 同时更新store中的模型配置
+      setModelByImmer(draft => {
+        draft.config.model = firstAvailableModelId;
+      });
+    }
+  }, [currentModelId, modelList, setModelByImmer]);
 
-  return currentModelIdState ? (
+  // 如果没有可用模型，不渲染组件
+  if (modelList.length === 0) {
+    return null;
+  }
+
+  // 确保有选中的模型，否则使用第一个可用模型
+  const effectiveModelId = currentModelIdState || String(modelList[0]?.model_type);
+
+  return effectiveModelId ? (
     <>
       <ModelSelect
         popoverClassName="h-auto !max-h-[70vh]"
@@ -96,7 +115,7 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
             : undefined
         }
         modelListExtraHeaderSlot={modelListExtraHeaderSlot}
-        selectedModelId={currentModelIdState}
+        selectedModelId={effectiveModelId}
         modelList={modelList}
         onModelChange={m => {
           const modelId = String(m.model_type);
@@ -113,7 +132,7 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
           onConfigChange: v => {
             setModelByImmer(draft => {
               draft.config = {
-                model: currentModelIdState,
+                model: effectiveModelId,
                 ...v,
               };
             });

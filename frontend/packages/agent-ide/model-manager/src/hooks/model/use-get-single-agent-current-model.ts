@@ -33,9 +33,18 @@ export const useGetSingleAgentCurrentModel = () => {
     })),
   );
   const { model } = useBotDetailModelStore(state => state.config);
-  return getModelById({
+  
+  const currentModel = getModelById({
     onlineModelList,
     offlineModelMap,
     id: model ?? '',
   });
+
+  // 如果当前模型不存在且有可用模型，返回第一个可用模型作为fallback
+  // 注意：这里只返回模型信息，不修改store状态，状态修改在组件层处理
+  if (!currentModel && onlineModelList.length > 0) {
+    return onlineModelList[0];
+  }
+
+  return currentModel;
 };
