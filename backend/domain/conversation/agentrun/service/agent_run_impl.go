@@ -85,5 +85,9 @@ func (c *runImpl) Create(ctx context.Context, runRecord *entity.AgentRunMeta) (*
 	return c.RunRecordRepo.Create(ctx, runRecord)
 }
 func (c *runImpl) Cancel(ctx context.Context, req *entity.CancelRunMeta) (*entity.RunRecordMeta, error) {
-	return nil, nil
+	return c.RunRecordRepo.Cancel(ctx, req)
+}
+
+func (c *runImpl) GetByID(ctx context.Context, runID int64) (*entity.RunRecordMeta, error) {
+	return c.RunRecordRepo.GetByID(ctx, runID)
 }

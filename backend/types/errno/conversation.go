@@ -39,9 +39,15 @@ const (
 	ErrRecordNotFound = 103200003
 
 	ErrAgentRunWorkflowNotFound = 103200004
+	ErrInProgressCanNotCancel   = 103200005
 )
 
 func init() {
+	code.Register(
+		ErrInProgressCanNotCancel,
+		"in progress can not be cancelled",
+		code.WithAffectStability(false),
+	)
 
 	code.Register(
 		ErrAgentRunWorkflowNotFound,
