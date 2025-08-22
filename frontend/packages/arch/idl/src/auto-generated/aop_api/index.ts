@@ -233,6 +233,15 @@ export default class AopApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
+  // 获取卡片图片详情
+  GetCardPicDetail(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10022.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
   // 获取卡片市场类型
   GetCardTypeCount(req?: any, options?: T): Promise<any> {
     const _req = req || {};

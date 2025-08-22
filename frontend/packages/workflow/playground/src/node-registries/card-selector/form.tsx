@@ -27,7 +27,7 @@ import {
   STREAMING_OUTPUT_PATH,
   SELECTED_CARD_PATH,
 } from './constants';
-import { CardSelectorField } from './components';
+import { CardSelectorField, CardImageField } from './components';
 
 export const FormRender = withNodeConfigForm(() => {
   const inputParameters = useWatch<InputValueVO[]>(INPUT_PATH);
@@ -63,6 +63,12 @@ export const FormRender = withNodeConfigForm(() => {
         testId={`/${ANSWER_CONTENT_PATH.split('.').join('/')}`}
         switchTestId={STREAMING_OUTPUT_PATH.split('.')?.at(-1)}
         inputParameters={inputParameters}
+      />
+
+      {/* 卡片示意图 - 放在最下方 */}
+      <CardImageField
+        title={I18n.t('卡片示意图')}
+        tooltip={I18n.t('显示所选卡片的示意图')}
       />
     </>
   );
