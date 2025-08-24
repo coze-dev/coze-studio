@@ -75,6 +75,7 @@ func InitService(s *ServiceComponents) *ConversationApplicationService {
 	ConversationOpenAPISVC.ShortcutDomainSVC = shortcutCmdDomainSVC
 	uploadSVC := uploadService.NewUploadSVC(s.DB, s.IDGen, s.TosClient)
 	ConversationOpenAPISVC.UploaodDomainSVC = uploadSVC
+	OpenapiMessageSVC.UploaodDomainSVC = uploadSVC
 
 	return ConversationSVC
 }
