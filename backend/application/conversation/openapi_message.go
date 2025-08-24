@@ -18,23 +18,28 @@ package conversation
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
+	apiMessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	message3 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-type OpenapiMessageApplication struct{}
+type OpenapiMessageApplication struct {
+	UploaodDomainSVC uploadService.UploadService
+}
 
-var OpenapiMessageApplicationService = new(OpenapiMessageApplication)
+var OpenapiMessageSVC = new(OpenapiMessageApplication)
 
 func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *message.ListMessageApiRequest) (*message.ListMessageApiResponse, error) {
 	// Get Conversation ID by agent id & userID & scene
@@ -120,7 +125,7 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 			MetaData:       dm.Ext,
 		}
 		if dm.ContentType == message3.ContentTypeMix && dm.DisplayContent != "" {
-			msg.Content = dm.DisplayContent
+			msg.Content = m.parseDisplayContent(ctx, dm)
 			msg.ContentType = run.ContentTypeMixApi
 		}
 		return msg
@@ -134,4 +139,39 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 	}
 
 	return resp
+}
+
+func (m *OpenapiMessageApplication) parseDisplayContent(ctx context.Context, dm *entity.Message) string {
+
+	var inputs []*run.AdditionalContent
+	err := json.Unmarshal([]byte(dm.DisplayContent), &inputs)
+
+	if err != nil {
+		return dm.DisplayContent
+	}
+	for k, one := range inputs {
+		if one == nil {
+			continue
+		}
+		switch apiMessage.InputType(one.Type) {
+		case apiMessage.InputTypeText:
+			continue
+		case apiMessage.InputTypeImage, apiMessage.InputTypeFile:
+			if one.GetFileID() != 0 {
+				fileInfo, err := m.UploaodDomainSVC.GetFile(ctx, &uploadService.GetFileRequest{
+					ID: one.GetFileID(),
+				})
+				if err == nil {
+					inputs[k].FileURL = ptr.Of(fileInfo.File.Url)
+				}
+			}
+		default:
+			continue
+		}
+	}
+	content, err := json.Marshal(inputs)
+	if err == nil {
+		dm.DisplayContent = string(content)
+	}
+	return dm.DisplayContent
 }
