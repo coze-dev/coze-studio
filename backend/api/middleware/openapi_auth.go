@@ -39,6 +39,7 @@ const HeaderAuthorizationKey = "Authorization"
 
 var needAuthPath = map[string]bool{
 	"/v3/chat":                         true,
+	"/v3/chat/cancel":                  true,
 	"/v1/conversations":                true,
 	"/v1/conversation/create":          true,
 	"/v1/conversation/message/list":    true,

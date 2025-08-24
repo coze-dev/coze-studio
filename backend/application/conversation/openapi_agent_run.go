@@ -359,7 +359,13 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 	if runRecord == nil {
 		return nil, errorx.New(errno.ErrRecordNotFound)
 	}
-	if userID != runRecord.CreatorID {
+
+	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if userID != conversationData.CreatorID {
 		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
