@@ -266,8 +266,9 @@ const Page = () => {
           fileName: file.name,
           workflowName: workflowName,
           workflowData: '',
-        status: 'pending' as const,
-      }));
+          status: 'pending' as const,
+        };
+      });
 
     setSelectedFiles(prev => [...prev, ...newWorkflowFiles]);
 
