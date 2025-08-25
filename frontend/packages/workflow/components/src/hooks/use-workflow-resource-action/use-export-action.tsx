@@ -29,7 +29,6 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   const [selectedRecord, setSelectedRecord] = useState<ResourceInfo | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json');
 
-  console.log('useExportAction hook initialized', { exporting, showFormatModal, selectedFormat });
 
   const performExport = async (record: ResourceInfo, format: ExportFormat) => {
     if (exporting) return;
@@ -39,44 +38,7 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       
       console.log('Starting export:', { recordId: record.res_id, format });
       
-      if (format === 'yml' || format === 'yaml') {
-        // 临时跳过API调用，直接测试YAML内容
-        console.log('Testing YAML export without API call');
-        
-        const testYamlContent = `workflow_id: "${record.res_id}"
-name: "${record.name || 'test-workflow'}"
-description: "Test YAML export"
-export_format: "${format}"
-version: "1.0.0"
-create_time: ${Date.now()}
-nodes: []
-edges: []
-metadata:
-  test: true
-`;
-        
-        const fileName = `${record.name || 'workflow'}_export.${format}`;
-        
-        console.log('Test YAML content:', testYamlContent);
-        console.log('File name:', fileName);
-        
-        // 创建并下载文件
-        const blob = new Blob([testYamlContent], { type: 'text/yaml' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        console.log('Test YAML export completed');
-        return;
-      }
-      
-      // 对于JSON格式，继续使用API调用
+      // 调用导出API
       const response = await fetch('/api/workflow_api/export', {
         method: 'POST',
         headers: {
@@ -89,18 +51,74 @@ metadata:
         }),
       });
 
+      console.log('API Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        
+        // Map HTTP status codes to user-friendly messages
+        let errorKey = 'workflow_export_failed';
+        switch (response.status) {
+          case 403:
+            errorKey = 'workflow_export_error_permission';
+            break;
+          case 404:
+            errorKey = 'workflow_export_error_not_found';
+            break;
+          case 400:
+            errorKey = 'workflow_export_error_invalid_format';
+            break;
+          case 500:
+          case 502:
+          case 503:
+          case 504:
+            errorKey = 'workflow_export_error_network';
+            break;
+          default:
+            errorKey = 'workflow_export_failed';
+        }
+        
+        throw new Error(I18n.t(errorKey));
       }
 
       const result = await response.json();
+      console.log('API Result:', result);
       
       if (result.code === 200 && result.data?.workflow_export) {
         const exportData = result.data.workflow_export;
-        const fileContent = JSON.stringify(exportData, null, 2);
-        const fileName = `${record.name || 'workflow'}_export.json`;
+        let fileContent: string;
+        let fileName: string;
+        let mimeType: string;
 
-        const blob = new Blob([fileContent], { type: 'application/json' });
+        if (format === 'yml' || format === 'yaml') {
+          // 对于YAML格式，使用后端返回的序列化数据
+          if (exportData.serialized_data && typeof exportData.serialized_data === 'string') {
+            fileContent = exportData.serialized_data;
+          } else {
+            console.warn('YAML serialized_data is invalid, fallback to JSON stringify');
+            console.log('serialized_data value:', exportData.serialized_data);
+            fileContent = JSON.stringify(exportData, null, 2);
+          }
+          fileName = `${record.name || 'workflow'}_export.${format}`;
+          mimeType = 'text/yaml';
+        } else {
+          // 对于JSON格式，使用原有逻辑
+          fileContent = JSON.stringify(exportData, null, 2);
+          fileName = `${record.name || 'workflow'}_export.json`;
+          mimeType = 'application/json';
+        }
+
+        console.log('File content length:', fileContent.length);
+        console.log('File name:', fileName);
+
+        // 检查文件内容是否为空
+        if (!fileContent || fileContent.trim() === '') {
+          throw new Error(I18n.t('workflow_export_error_empty_data'));
+        }
+
+        // 创建并下载文件
+        const blob = new Blob([fileContent], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -110,9 +128,20 @@ metadata:
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+        Toast.success(I18n.t('workflow_export_success', 'Export successful'));
+        console.log('Export completed successfully');
+      } else {
+        console.error('Invalid API response:', result);
+        throw new Error(result.msg || 'Invalid response from server');
       }
     } catch (error) {
-      console.error('Export error:', error);
+      console.error('导出工作流失败:', error);
+      let errorMessage = I18n.t('workflow_export_failed', 'Export failed');
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      Toast.error(errorMessage);
     } finally {
       setExporting(false);
     }
@@ -120,17 +149,8 @@ metadata:
 
   const handleExport = (record: ResourceInfo) => {
     console.log('handleExport called with record:', record);
-    
-    // 临时方案：直接显示选择对话框
-    if (confirm('选择导出格式:\nOK = JSON\nCancel = YAML')) {
-      // 用户点击OK，导出JSON
-      console.log('User chose JSON');
-      performExport(record, 'json');
-    } else {
-      // 用户点击Cancel，导出YAML  
-      console.log('User chose YAML');
-      performExport(record, 'yml');
-    }
+    setSelectedRecord(record);
+    setShowFormatModal(true);
   };
 
   const handleConfirmExport = () => {
@@ -170,34 +190,75 @@ metadata:
   const exportModal = (
     <Modal
       visible={showFormatModal}
-      title="选择导出格式"
-      onOk={handleConfirmExport}
+      title={I18n.t('workflow_export_format_title', 'Select Export Format')}
+      footer={null}
       onCancel={handleCancelExport}
-      width={400}
-      okText="确认"
-      cancelText="取消"
+      width={450}
+      destroyOnClose={true}
     >
-      <div className="mb-4">
-        <p className="mb-3">请选择工作流导出格式：</p>
-        <p className="mb-2 text-sm text-gray-500">当前选择: {selectedFormat}</p>
-        <Radio.Group
-          value={selectedFormat}
-          onChange={(value) => {
-            console.log('Format changed to:', value);
-            setSelectedFormat(value as ExportFormat);
-          }}
-        >
-          <div className="mb-2">
-            <Radio value="json">
-              JSON (结构化数据格式)
-            </Radio>
-          </div>
-          <div>
-            <Radio value="yml">
-              YAML (可读性更好的配置格式)
-            </Radio>
-          </div>
-        </Radio.Group>
+      <div className="py-4">
+        <p className="mb-6 text-gray-700">
+          {I18n.t('workflow_export_format_description', 'Please select the format for exporting your workflow:')}
+        </p>
+        
+        <div className="space-y-3">
+          <button
+            className={`w-full p-4 text-left border-2 rounded-lg transition-all hover:border-blue-500 hover:bg-blue-50 ${
+              selectedFormat === 'json' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+            }`}
+            onClick={() => {
+              console.log('JSON format selected');
+              setSelectedFormat('json');
+              setShowFormatModal(false);
+              if (selectedRecord) {
+                performExport(selectedRecord, 'json');
+              }
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-lg">JSON</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {I18n.t('workflow_export_format_json_desc', 'Structured data format, widely supported')}
+                </div>
+              </div>
+              <div className="text-2xl">📄</div>
+            </div>
+          </button>
+          
+          <button
+            className={`w-full p-4 text-left border-2 rounded-lg transition-all hover:border-blue-500 hover:bg-blue-50 ${
+              selectedFormat === 'yml' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+            }`}
+            onClick={() => {
+              console.log('YAML format selected');
+              setSelectedFormat('yml');
+              setShowFormatModal(false);
+              if (selectedRecord) {
+                performExport(selectedRecord, 'yml');
+              }
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-lg">YAML</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {I18n.t('workflow_export_format_yml_desc', 'Human-readable configuration format')}
+                </div>
+              </div>
+              <div className="text-2xl">📝</div>
+            </div>
+          </button>
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <button
+            className="w-full py-2 px-4 text-gray-600 hover:text-gray-800 transition-colors"
+            onClick={handleCancelExport}
+          >
+            {I18n.t('cancel', 'Cancel')}
+          </button>
+        </div>
       </div>
     </Modal>
   );

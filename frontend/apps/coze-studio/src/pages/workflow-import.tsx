@@ -26,10 +26,7 @@ import {
   Toast,
   Divider,
   Progress,
-  Tag,
-  Collapse,
-  Tooltip,
-  Badge
+  Tag
 } from '@coze-arch/coze-design';
 import { Card } from '@coze-arch/bot-semi';
 import { 
@@ -37,24 +34,12 @@ import {
   IconArrowLeft,
   IconFile,
   IconCheckCircle,
-  IconInfoCircle,
-  IconEye,
-  IconEyeOff,
-  IconClock,
-  IconUser,
-  IconVersion,
-  IconLink,
-  IconNode,
-  IconConnection,
-  IconWarning,
-  IconSuccess,
-  IconError
+  IconInfoCircle
 } from '@coze-arch/coze-design/icons';
 import { IconUpload } from '@coze-arch/bot-icons';
 import { I18n } from '@coze-arch/i18n';
 
 const { Title, Paragraph, Text } = Typography;
-const { Panel } = Collapse;
 
 interface WorkflowPreview {
   name: string;
@@ -62,27 +47,6 @@ interface WorkflowPreview {
   nodes?: any[];
   edges?: any[];
   schema?: any;
-  version?: string;
-  createTime?: number;
-  updateTime?: number;
-  dependencies?: any[];
-  metadata?: any;
-}
-
-interface NodeInfo {
-  id: string;
-  type: string;
-  title: string;
-  position: { x: number; y: number };
-  data?: any;
-}
-
-interface EdgeInfo {
-  id: string;
-  source: string;
-  target: string;
-  sourceHandle?: string;
-  targetHandle?: string;
 }
 
 const WorkflowImportPage: React.FC = () => {
@@ -94,7 +58,6 @@ const WorkflowImportPage: React.FC = () => {
   const [workflowPreview, setWorkflowPreview] = useState<WorkflowPreview | null>(null);
   const [importing, setImporting] = useState(false);
   const [parsing, setParsing] = useState(false);
-  const [showDetailedPreview, setShowDetailedPreview] = useState(false);
 
   // 处理文件选择
   const handleFileSelect = async (file: File) => {
@@ -119,16 +82,7 @@ const WorkflowImportPage: React.FC = () => {
       try {
         const workflowData = JSON.parse(fileContent);
         if (workflowData.name && workflowData.schema) {
-          // 增强预览数据
-          const enhancedPreview = {
-            ...workflowData,
-            version: workflowData.version || 'v1.0',
-            createTime: workflowData.create_time || Date.now() / 1000,
-            updateTime: workflowData.update_time || Date.now() / 1000,
-            dependencies: workflowData.dependencies || [],
-            metadata: workflowData.metadata || {}
-          };
-          setWorkflowPreview(enhancedPreview);
+          setWorkflowPreview(workflowData);
           form.setFieldsValue({ workflowName: workflowData.name });
         } else {
           Toast.error(I18n.t('workflow_import_failed'));
@@ -208,7 +162,6 @@ const WorkflowImportPage: React.FC = () => {
     setSelectedFile(null);
     setWorkflowPreview(null);
     setParsing(false);
-    setShowDetailedPreview(false);
     form.resetFields();
   };
 
@@ -221,193 +174,9 @@ const WorkflowImportPage: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // 格式化时间
-  const formatTime = (timestamp: number) => {
-    if (!timestamp) return '未知';
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // 获取节点类型图标
-  const getNodeTypeIcon = (nodeType: string) => {
-    const iconMap: { [key: string]: string } = {
-      'start': '🚀',
-      'end': '🏁',
-      'condition': '🔀',
-      'action': '⚡',
-      'api': '🌐',
-      'llm': '🤖',
-      'tool': '🔧',
-      'data': '💾',
-      'default': '📦'
-    };
-    return iconMap[nodeType] || iconMap.default;
-  };
-
-  // 获取节点类型颜色
-  const getNodeTypeColor = (nodeType: string) => {
-    const colorMap: { [key: string]: string } = {
-      'start': 'blue',
-      'end': 'red',
-      'condition': 'orange',
-      'action': 'green',
-      'api': 'purple',
-      'llm': 'cyan',
-      'tool': 'geekblue',
-      'data': 'magenta',
-      'default': 'default'
-    };
-    return colorMap[nodeType] || colorMap.default;
-  };
-
-  // 渲染工作流结构预览
-  const renderWorkflowStructure = () => {
-    if (!workflowPreview?.nodes || !workflowPreview?.edges) return null;
-
-    const nodes = workflowPreview.nodes.slice(0, 10); // 限制显示前10个节点
-    const edges = workflowPreview.edges.slice(0, 15); // 限制显示前15个连接
-
-    return (
-      <div className="space-y-4">
-        {/* 节点预览 */}
-        <div>
-          <div className="flex items-center mb-3">
-            <IconNode className="text-blue-500 mr-2" />
-            <Text strong className="text-blue-700">节点预览</Text>
-            <Badge count={workflowPreview.nodes.length} className="ml-2" />
-          </div>
-          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-            {nodes.map((node: any, index: number) => (
-              <div key={index} className="flex items-center p-2 bg-gray-50 rounded border">
-                <span className="text-lg mr-2">{getNodeTypeIcon(node.type || 'default')}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-800 truncate">
-                    {node.data?.meta?.title || node.id || `节点 ${index + 1}`}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    类型: {node.type || '未知'} | ID: {node.id?.substring(0, 8) || 'N/A'}
-                  </div>
-                </div>
-                <Tag color={getNodeTypeColor(node.type || 'default')} size="small">
-                  {node.type || 'default'}
-                </Tag>
-              </div>
-            ))}
-            {workflowPreview.nodes.length > 10 && (
-              <div className="text-center text-xs text-gray-500 py-2">
-                还有 {workflowPreview.nodes.length - 10} 个节点...
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 连接预览 */}
-        <div>
-          <div className="flex items-center mb-3">
-            <IconConnection className="text-green-500 mr-2" />
-            <Text strong className="text-green-700">连接预览</Text>
-            <Badge count={workflowPreview.edges.length} className="ml-2" />
-          </div>
-          <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-            {edges.map((edge: any, index: number) => (
-              <div key={index} className="flex items-center p-2 bg-green-50 rounded border">
-                <IconLink className="text-green-500 mr-2" />
-                <div className="flex-1 text-sm">
-                  <span className="text-gray-600">
-                    {edge.source?.substring(0, 8) || 'N/A'} 
-                  </span>
-                  <span className="mx-2 text-green-500">→</span>
-                  <span className="text-gray-600">
-                    {edge.target?.substring(0, 8) || 'N/A'}
-                  </span>
-                </div>
-                <Tag color="green" size="small">连接</Tag>
-              </div>
-            ))}
-            {workflowPreview.edges.length > 15 && (
-              <div className="text-center text-xs text-gray-500 py-2">
-                还有 {workflowPreview.edges.length - 15} 个连接...
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // 渲染元数据信息
-  const renderMetadata = () => {
-    if (!workflowPreview) return null;
-
-    return (
-      <div className="space-y-3">
-        {/* 基本信息 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-            <div className="flex items-center mb-2">
-              <IconVersion className="text-blue-500 mr-2" />
-              <Text strong className="text-blue-700 text-sm">版本</Text>
-            </div>
-            <div className="text-lg font-medium text-blue-800">
-              {workflowPreview.version || 'v1.0'}
-            </div>
-          </div>
-          
-          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-            <div className="flex items-center mb-2">
-              <IconClock className="text-green-500 mr-2" />
-              <Text strong className="text-green-700 text-sm">创建时间</Text>
-            </div>
-            <div className="text-sm text-green-800">
-              {formatTime(workflowPreview.createTime || 0)}
-            </div>
-          </div>
-        </div>
-
-        {/* 依赖信息 */}
-        {workflowPreview.dependencies && workflowPreview.dependencies.length > 0 && (
-          <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-            <div className="flex items-center mb-2">
-              <IconLink className="text-purple-500 mr-2" />
-              <Text strong className="text-purple-700 text-sm">依赖资源</Text>
-              <Badge count={workflowPreview.dependencies.length} className="ml-2" />
-            </div>
-            <div className="text-sm text-purple-800">
-              包含 {workflowPreview.dependencies.length} 个依赖资源
-            </div>
-          </div>
-        )}
-
-        {/* 其他元数据 */}
-        {workflowPreview.metadata && Object.keys(workflowPreview.metadata).length > 0 && (
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-            <div className="flex items-center mb-2">
-              <IconInfoCircle className="text-gray-500 mr-2" />
-              <Text strong className="text-gray-700 text-sm">其他信息</Text>
-            </div>
-            <div className="text-xs text-gray-600 space-y-1">
-              {Object.entries(workflowPreview.metadata).map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <span className="font-medium">{key}:</span>
-                  <span className="truncate ml-2">{String(value)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         {/* 页面头部 */}
         <div className="mb-8">
           <Button
@@ -548,29 +317,15 @@ const WorkflowImportPage: React.FC = () => {
           <div className="xl:col-span-1">
             <Card 
               title={
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <IconCozWorkflow className="mr-2 text-green-600" />
-                    {I18n.t('workflow_import_preview')}
-                  </div>
-                  {workflowPreview && (
-                    <Tooltip title={showDetailedPreview ? "隐藏详细信息" : "显示详细信息"}>
-                      <Button
-                        type="tertiary"
-                        size="small"
-                        icon={showDetailedPreview ? <IconEyeOff /> : <IconEye />}
-                        onClick={() => setShowDetailedPreview(!showDetailedPreview)}
-                        className="ml-2"
-                      />
-                    </Tooltip>
-                  )}
+                <div className="flex items-center">
+                  <IconCozWorkflow className="mr-2 text-green-600" />
+                  {I18n.t('workflow_import_preview')}
                 </div>
               } 
               className="h-fit shadow-lg border-0 bg-white/90 backdrop-blur-sm"
             >
               {workflowPreview ? (
                 <Space direction="vertical" className="w-full" size="large">
-                  {/* 基本信息卡片 */}
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                     <div className="flex items-center mb-3">
                       <IconCheckCircle className="text-green-500 mr-2" />
@@ -581,7 +336,6 @@ const WorkflowImportPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* 描述信息 */}
                   {workflowPreview.description && (
                     <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
                       <div className="flex items-center mb-3">
@@ -594,7 +348,6 @@ const WorkflowImportPage: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* 统计信息 */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
                       <div className="text-3xl font-bold text-blue-600 mb-1">
@@ -612,40 +365,7 @@ const WorkflowImportPage: React.FC = () => {
                       <Tag color="green" className="mt-2">连接</Tag>
                     </div>
                   </div>
-
-                  {/* 详细信息折叠面板 */}
-                  {showDetailedPreview && (
-                    <Collapse 
-                      defaultActiveKey={['structure', 'metadata']} 
-                      className="bg-gray-50 rounded-lg"
-                    >
-                      <Panel 
-                        header={
-                          <div className="flex items-center">
-                            <IconNode className="text-blue-500 mr-2" />
-                            <span className="font-medium">工作流结构</span>
-                          </div>
-                        } 
-                        key="structure"
-                      >
-                        {renderWorkflowStructure()}
-                      </Panel>
-                      
-                      <Panel 
-                        header={
-                          <div className="flex items-center">
-                            <IconInfoCircle className="text-green-500 mr-2" />
-                            <span className="font-medium">元数据信息</span>
-                          </div>
-                        } 
-                        key="metadata"
-                      >
-                        {renderMetadata()}
-                      </Panel>
-                    </Collapse>
-                  )}
                   
-                  {/* 提示信息 */}
                   <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
                     <div className="flex items-start">
                       <IconInfoCircle className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
