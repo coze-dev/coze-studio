@@ -1093,11 +1093,14 @@ func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
 func OpenAPIChatFlowRun(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req workflow.ChatFlowRunRequest
+	fmt.Printf("DEBUG Handler: About to bind request\n")
 	err = c.BindAndValidate(&req)
 	if err != nil {
+		fmt.Printf("DEBUG Handler: BindAndValidate error: %v\n", err)
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
+	fmt.Printf("DEBUG Handler: Successfully bound request, calling application service\n")
 
 	w := sse.NewWriter(c)
 	c.SetContentType("text/event-stream; charset=utf-8")

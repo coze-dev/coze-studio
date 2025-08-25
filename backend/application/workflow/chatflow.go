@@ -490,10 +490,13 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	var parameters = make(map[string]any)
 	if len(req.GetParameters()) > 0 {
-		err := sonic.UnmarshalString(req.GetParameters(), parameters)
+		fmt.Printf("DEBUG: Attempting to unmarshal parameters: %s\n", req.GetParameters())
+		err := sonic.UnmarshalString(req.GetParameters(), &parameters)
 		if err != nil {
+			fmt.Printf("DEBUG: UnmarshalString error: %v\n", err)
 			return nil, err
 		}
+		fmt.Printf("DEBUG: Successfully parsed parameters: %+v\n", parameters)
 	}
 
 	var (
@@ -549,6 +552,9 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
 		if err != nil {
 			return nil, err
+		}
+		if cInfo == nil {
+			return nil, fmt.Errorf("conversation not found: %d", conversationID)
 		}
 		sectionID = cInfo.SectionID
 	} else {
@@ -1110,7 +1116,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 					return nil, err
 				}
 
-				if unbinding() != nil {
+				if unbinding != nil {
 					uErr := unbinding()
 					if uErr != nil {
 						return nil, uErr
@@ -1125,7 +1131,7 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 				}, err
 
 			case entity.WorkflowCancel:
-				if unbinding() != nil {
+				if unbinding != nil {
 					uErr := unbinding()
 					if uErr != nil {
 						return nil, uErr
