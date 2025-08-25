@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
@@ -29,7 +28,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 var defaultSVC crossknowledge.Knowledge
@@ -132,13 +133,24 @@ func (i *impl) Store(ctx context.Context, document *model.CreateDocumentRequest)
 }
 
 func (i *impl) Delete(ctx context.Context, r *model.DeleteDocumentRequest) (*model.DeleteDocumentResponse, error) {
-	docID, err := strconv.ParseInt(r.DocumentID, 10, 64)
+	if r.KnowledgeID == 0 {
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge id cannot be 0"))
+	}
+
+	docs, err := i.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
+		KnowledgeID: r.KnowledgeID,
+		DocumentIDs: []int64{r.DocumentID},
+		SelectAll:   true,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("invalid document id: %s", r.DocumentID)
+		return nil, err
+	}
+	if len(docs.Documents) == 0 {
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "the specified document is not part of this knowledge base"))
 	}
 
 	err = i.DomainSVC.DeleteDocument(ctx, &service.DeleteDocumentRequest{
-		DocumentID: docID,
+		DocumentID: r.DocumentID,
 	})
 	if err != nil {
 		return &model.DeleteDocumentResponse{IsSuccess: false}, err
