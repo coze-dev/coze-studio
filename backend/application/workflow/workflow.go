@@ -4021,7 +4021,7 @@ func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImpor
 func (w *ApplicationService) buildBatchImportConfig(req *workflow.BatchImportWorkflowRequest) workflow.BatchImportConfig {
 	config := workflow.BatchImportConfig{
 		ImportMode:           req.ImportMode,
-		MaxConcurrency:       5,  // 最大并发数
+		MaxConcurrency:       5, // 最大并发数
 		ContinueOnError:      true,
 		ValidateBeforeImport: true,
 	}
@@ -4086,16 +4086,16 @@ type BatchImportResult struct {
 // executeBatchImportParallel 并发执行批量导入
 func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
 	results := make([]BatchImportResult, len(req.WorkflowFiles))
-	
+
 	// 使用信号量控制并发数
 	sem := make(chan struct{}, config.MaxConcurrency)
 	var wg sync.WaitGroup
-	
+
 	for i, file := range req.WorkflowFiles {
 		wg.Add(1)
 		go func(index int, fileData workflow.WorkflowFileData) {
 			defer wg.Done()
-			sem <- struct{}{} // 获取信号量
+			sem <- struct{}{}        // 获取信号量
 			defer func() { <-sem }() // 释放信号量
 
 			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID)
@@ -4103,7 +4103,7 @@ func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req
 			results[index] = result
 		}(i, file)
 	}
-	
+
 	wg.Wait()
 	return results, nil
 }
@@ -4214,7 +4214,7 @@ func (w *ApplicationService) rollbackCreatedWorkflow(ctx context.Context, workfl
 		return
 	}
 
-	if err := w.DomainSVC.Delete(ctx, &vo.DeletePolicy{ID: id}); err != nil {
+	if err := w.DomainSVC.Delete(ctx, &vo.DeletePolicy{ID: &id}); err != nil {
 		logs.CtxErrorf(ctx, "Failed to rollback workflow creation: %d, error: %v", id, err)
 	} else {
 		logs.CtxInfof(ctx, "Successfully rolled back workflow creation: %d", id)
@@ -4233,7 +4233,7 @@ func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResul
 	successList := make([]workflow.WorkflowImportResult, 0)
 	failedList := make([]workflow.WorkflowImportFailedResult, 0)
 	errorStats := make(map[string]int)
-	
+
 	totalNodes := 0
 	totalEdges := 0
 	totalSize := int64(0)
@@ -4241,7 +4241,7 @@ func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResul
 
 	for _, result := range results {
 		file := files[result.Index]
-		
+
 		if result.Success {
 			successList = append(successList, workflow.WorkflowImportResult{
 				FileName:     file.FileName,
@@ -4262,7 +4262,7 @@ func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResul
 			})
 			errorStats[string(result.FailReason)]++
 		}
-		
+
 		totalSize += int64(len(file.WorkflowData))
 	}
 
@@ -4274,7 +4274,7 @@ func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResul
 		TotalEdges:      totalEdges,
 		UniqueNodeTypes: make([]string, 0, len(nodeTypes)),
 	}
-	
+
 	for nodeType := range nodeTypes {
 		resourceInfo.UniqueNodeTypes = append(resourceInfo.UniqueNodeTypes, nodeType)
 	}
