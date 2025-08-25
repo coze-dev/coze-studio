@@ -3772,8 +3772,24 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 
 	// 根据导出格式进行序列化处理
 	if req.ExportFormat == "yml" || req.ExportFormat == "yaml" {
-		// 将整个exportData转换为YAML格式
-		yamlData, err := yaml.Marshal(exportData)
+		// 创建一个不包含SerializedData的副本用于YAML序列化
+		exportDataForYAML := &workflow.WorkflowExportData{
+			WorkflowID:   exportData.WorkflowID,
+			Name:         exportData.Name,
+			Description:  exportData.Description,
+			Version:      exportData.Version,
+			CreateTime:   exportData.CreateTime,
+			UpdateTime:   exportData.UpdateTime,
+			Schema:       exportData.Schema,
+			Nodes:        exportData.Nodes,
+			Edges:        exportData.Edges,
+			Metadata:     exportData.Metadata,
+			Dependencies: exportData.Dependencies,
+			ExportFormat: exportData.ExportFormat,
+			// 不包含 SerializedData 字段
+		}
+		
+		yamlData, err := yaml.Marshal(exportDataForYAML)
 		if err != nil {
 			logs.CtxErrorf(ctx, "ExportWorkflow failed to marshal YAML data: %v", err)
 			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to serialize workflow to YAML: %v", err))

@@ -65,15 +65,25 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       
       if (result.code === 200 && result.data?.workflow_export) {
         const exportData = result.data.workflow_export;
+        console.log('Export data structure:', {
+          keys: Object.keys(exportData),
+          hasSerializedData: !!exportData.serialized_data,
+          serializedDataType: typeof exportData.serialized_data,
+          serializedDataLength: exportData.serialized_data?.length || 0,
+          exportFormat: exportData.export_format
+        });
+        
         let fileContent: string;
         let fileName: string;
         let mimeType: string;
 
         if (format === 'yml' || format === 'yaml') {
           // 对于YAML格式，使用后端返回的序列化数据
-          fileContent = exportData.serialized_data || '';
-          if (!fileContent) {
-            console.warn('YAML serialized_data is empty, fallback to JSON stringify');
+          if (exportData.serialized_data && typeof exportData.serialized_data === 'string') {
+            fileContent = exportData.serialized_data;
+          } else {
+            console.warn('YAML serialized_data is invalid, fallback to JSON stringify');
+            console.log('serialized_data value:', exportData.serialized_data);
             fileContent = JSON.stringify(exportData, null, 2);
           }
           fileName = `${record.name || 'workflow'}_export.${format}`;
@@ -85,6 +95,7 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
           mimeType = 'application/json';
         }
 
+        console.log('Final file content preview:', fileContent.substring(0, 200) + '...');
         console.log('File content length:', fileContent.length);
         console.log('File name:', fileName);
 
@@ -113,7 +124,17 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       }
     } catch (error) {
       console.error('导出工作流失败:', error);
-      Toast.error(error instanceof Error ? error.message : 'Export failed');
+      
+      let errorMessage = 'Export failed';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && error.message) {
+        errorMessage = String(error.message);
+      }
+      
+      Toast.error(errorMessage);
     } finally {
       setExporting(false);
     }
