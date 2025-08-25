@@ -22,7 +22,7 @@ import "github.com/coze-dev/coze-studio/backend/api/model/base"
 type ExportWorkflowRequest struct {
 	WorkflowID         string `json:"workflow_id" binding:"required"`         // 工作流ID
 	IncludeDependencies bool   `json:"include_dependencies"`                  // 是否包含依赖资源
-	ExportFormat       string `json:"export_format" binding:"required"`       // 导出格式，目前支持 "json"
+	ExportFormat       string `json:"export_format" binding:"required"`       // 导出格式，支持 "json", "yml", "yaml"
 	base.Base
 }
 
@@ -38,15 +38,17 @@ type ExportWorkflowResponse struct {
 
 // WorkflowExportData 工作流导出数据
 type WorkflowExportData struct {
-	WorkflowID   string                 `json:"workflow_id"`
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description"`
-	Version      string                 `json:"version"`
-	CreateTime   int64                  `json:"create_time"`
-	UpdateTime   int64                  `json:"update_time"`
-	Schema       map[string]interface{} `json:"schema"`
-	Nodes        []interface{}          `json:"nodes"`
-	Edges        []interface{}          `json:"edges"`
-	Metadata     map[string]interface{} `json:"metadata"`
-	Dependencies []interface{}          `json:"dependencies,omitempty"`
+	WorkflowID      string                 `json:"workflow_id"`
+	Name            string                 `json:"name"`
+	Description     string                 `json:"description"`
+	Version         string                 `json:"version"`
+	CreateTime      int64                  `json:"create_time"`
+	UpdateTime      int64                  `json:"update_time"`
+	Schema          map[string]interface{} `json:"schema"`
+	Nodes           []interface{}          `json:"nodes"`
+	Edges           []interface{}          `json:"edges"`
+	Metadata        map[string]interface{} `json:"metadata"`
+	Dependencies    []interface{}          `json:"dependencies,omitempty"`
+	ExportFormat    string                 `json:"export_format"`              // 导出格式
+	SerializedData  string                 `json:"serialized_data,omitempty"`  // 序列化后的数据（yml格式时使用）
 }

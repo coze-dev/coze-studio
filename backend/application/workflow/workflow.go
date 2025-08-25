@@ -29,6 +29,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 	xmaps "golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
@@ -3653,8 +3654,13 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	if req.WorkflowID == "" {
 		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_id is required"))
 	}
-	if req.ExportFormat != "json" {
-		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported export format: %s", req.ExportFormat))
+	supportedFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+	}
+	if !supportedFormats[req.ExportFormat] {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported export format: %s, supported formats: json, yml, yaml", req.ExportFormat))
 	}
 
 	// 记录操作日志
@@ -3761,6 +3767,21 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 	logs.CtxInfof(ctx, "ExportWorkflow completed successfully, workflowID=%s, nodeCount=%d, edgeCount=%d",
 		req.WorkflowID, len(exportData.Nodes), len(exportData.Edges))
 
+	// 设置导出格式
+	exportData.ExportFormat = req.ExportFormat
+
+	// 根据导出格式进行序列化处理
+	if req.ExportFormat == "yml" || req.ExportFormat == "yaml" {
+		// 将整个exportData转换为YAML格式
+		yamlData, err := yaml.Marshal(exportData)
+		if err != nil {
+			logs.CtxErrorf(ctx, "ExportWorkflow failed to marshal YAML data: %v", err)
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to serialize workflow to YAML: %v", err))
+		}
+		exportData.SerializedData = string(yamlData)
+		logs.CtxInfof(ctx, "ExportWorkflow YAML serialization completed, size=%d bytes", len(yamlData))
+	}
+
 	// 构建响应
 	return &workflow.ExportWorkflowResponse{
 		Code: 200,
@@ -3771,6 +3792,25 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 			WorkflowExport: exportData,
 		},
 	}, nil
+}
+
+// parseWorkflowData 解析工作流数据，支持JSON和YAML格式
+func parseWorkflowData(data string, format string) (*workflow.WorkflowExportData, error) {
+	var exportData workflow.WorkflowExportData
+	
+	if format == "yml" || format == "yaml" {
+		// YAML格式解析
+		if err := yaml.Unmarshal([]byte(data), &exportData); err != nil {
+			return nil, fmt.Errorf("failed to parse YAML workflow data: %v", err)
+		}
+	} else {
+		// JSON格式解析
+		if err := sonic.UnmarshalString(data, &exportData); err != nil {
+			return nil, fmt.Errorf("failed to parse JSON workflow data: %v", err)
+		}
+	}
+	
+	return &exportData, nil
 }
 
 // ImportWorkflow 导入工作流
@@ -3820,11 +3860,21 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
 	}
 
+	// 验证导入格式
+	supportedImportFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+	}
+	if !supportedImportFormats[req.ImportFormat] {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
+	}
+
 	// 解析工作流数据
-	var exportData workflow.WorkflowExportData
-	if err := sonic.UnmarshalString(req.WorkflowData, &exportData); err != nil {
+	exportData, err := parseWorkflowData(req.WorkflowData, req.ImportFormat)
+	if err != nil {
 		logs.CtxErrorf(ctx, "ImportWorkflow failed to parse workflow data: %v", err)
-		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to parse workflow data: %v", err))
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	// 验证工作流数据结构
@@ -3939,7 +3989,7 @@ func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workf
 
 	// 4. 预验证所有文件（如果启用）
 	if config.ValidateBeforeImport {
-		if err := w.preValidateWorkflowFiles(req.WorkflowFiles); err != nil {
+		if err := w.preValidateWorkflowFiles(req.WorkflowFiles, req.ImportFormat); err != nil {
 			return nil, err
 		}
 	}
@@ -3964,6 +4014,16 @@ func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workf
 func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImportWorkflowRequest) error {
 	if len(req.WorkflowFiles) == 0 {
 		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_files cannot be empty"))
+	}
+
+	// 验证导入格式
+	supportedImportFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+	}
+	if !supportedImportFormats[req.ImportFormat] {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
 	}
 
 	// 限制批量导入数量
@@ -4040,11 +4100,11 @@ func (w *ApplicationService) buildBatchImportConfig(req *workflow.BatchImportWor
 }
 
 // preValidateWorkflowFiles 预验证所有工作流文件
-func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowFileData) error {
+func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowFileData, format string) error {
 	for i, file := range files {
-		var exportData workflow.WorkflowExportData
-		if err := sonic.UnmarshalString(file.WorkflowData, &exportData); err != nil {
-			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid JSON format: %v", i, file.FileName, err))
+		exportData, err := parseWorkflowData(file.WorkflowData, format)
+		if err != nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid %s format: %v", i, file.FileName, format, err))
 		}
 
 		// 验证工作流数据结构
@@ -4098,7 +4158,7 @@ func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req
 			sem <- struct{}{}        // 获取信号量
 			defer func() { <-sem }() // 释放信号量
 
-			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID)
+			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID, req.ImportFormat)
 			result.Index = index
 			results[index] = result
 		}(i, file)
@@ -4116,7 +4176,7 @@ func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, 
 
 	// 创建所有工作流
 	for i, file := range req.WorkflowFiles {
-		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID)
+		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID, req.ImportFormat)
 		result.Index = i
 		results[i] = result
 
@@ -4133,14 +4193,14 @@ func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, 
 }
 
 // importSingleWorkflow 导入单个工作流
-func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file workflow.WorkflowFileData, spaceID, creatorID string) BatchImportResult {
+func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file workflow.WorkflowFileData, spaceID, creatorID, format string) BatchImportResult {
 	result := BatchImportResult{Success: false}
 
 	// 1. 解析工作流数据
-	var exportData workflow.WorkflowExportData
-	if err := sonic.UnmarshalString(file.WorkflowData, &exportData); err != nil {
+	exportData, err := parseWorkflowData(file.WorkflowData, format)
+	if err != nil {
 		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
-		result.ErrorMessage = fmt.Sprintf("JSON parsing failed: %v", err)
+		result.ErrorMessage = fmt.Sprintf("%s parsing failed: %v", strings.ToUpper(format), err)
 		result.FailReason = workflow.FailReasonInvalidFormat
 		return result
 	}

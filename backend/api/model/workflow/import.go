@@ -20,11 +20,11 @@ import "github.com/coze-dev/coze-studio/backend/api/model/base"
 
 // ImportWorkflowRequest 工作流导入请求
 type ImportWorkflowRequest struct {
-	WorkflowData     string `json:"workflow_data" binding:"required"`     // 工作流JSON数据
+	WorkflowData     string `json:"workflow_data" binding:"required"`     // 工作流数据（JSON或YAML格式）
 	WorkflowName     string `json:"workflow_name" binding:"required"`     // 工作流名称
 	SpaceID          string `json:"space_id" binding:"required"`          // 工作空间ID
 	CreatorID        string `json:"creator_id" binding:"required"`        // 创建者ID
-	ImportFormat     string `json:"import_format" binding:"required"`     // 导入格式，目前支持 "json"
+	ImportFormat     string `json:"import_format" binding:"required"`     // 导入格式，支持 "json", "yml", "yaml"
 	base.Base
 }
 

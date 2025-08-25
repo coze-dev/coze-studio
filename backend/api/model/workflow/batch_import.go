@@ -23,7 +23,7 @@ type BatchImportWorkflowRequest struct {
 	WorkflowFiles []WorkflowFileData `json:"workflow_files" binding:"required,dive,required"` // 工作流文件数据列表
 	SpaceID       string             `json:"space_id" binding:"required"`                     // 工作空间ID
 	CreatorID     string             `json:"creator_id" binding:"required"`                   // 创建者ID
-	ImportFormat  string             `json:"import_format" binding:"required"`                // 导入格式，目前支持 "json"
+	ImportFormat  string             `json:"import_format" binding:"required"`                // 导入格式，支持 "json", "yml", "yaml"
 	ImportMode    string             `json:"import_mode"`                                     // 导入模式：batch(批量) 或 transaction(事务)
 	base.Base
 }
@@ -31,7 +31,7 @@ type BatchImportWorkflowRequest struct {
 // WorkflowFileData 单个工作流文件数据
 type WorkflowFileData struct {
 	FileName     string `json:"file_name" binding:"required"`     // 文件名
-	WorkflowData string `json:"workflow_data" binding:"required"` // 工作流JSON数据
+	WorkflowData string `json:"workflow_data" binding:"required"` // 工作流数据（JSON或YAML格式）
 	WorkflowName string `json:"workflow_name" binding:"required"` // 工作流名称
 }
 

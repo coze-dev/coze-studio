@@ -62,7 +62,7 @@ export const useWorkflowResourceMenuActions = (
   const { actionHandler: copyAction } = useCopyAction(props);
   const { actionHandler: publishAction, publishModal } =
     usePublishAction(props);
-  const { actionHandler: exportAction, exporting } = useExportAction(props);
+  const { actionHandler: exportAction, exporting, exportModal } = useExportAction(props);
   const { switchToChatflow, switchToWorkflow } = useChatflowSwitch({
     spaceId: props.spaceId ?? '',
     refreshPage: props.refreshPage,
@@ -168,5 +168,5 @@ export const useWorkflowResourceMenuActions = (
       />
     );
   };
-  return { renderWorkflowResourceActions, modals: [deleteModal, publishModal] };
+  return { renderWorkflowResourceActions, modals: [deleteModal, publishModal, exportModal] };
 };
