@@ -38,6 +38,7 @@ type PutOption struct {
 	ContentDisposition *string
 	ContentLanguage    *string
 	Expires            *time.Time
+	ObjectSize         int64
 }
 
 type PutOptFn func(option *PutOption)
@@ -45,6 +46,12 @@ type PutOptFn func(option *PutOption)
 func WithContentType(v string) PutOptFn {
 	return func(o *PutOption) {
 		o.ContentType = &v
+	}
+}
+
+func WithObjectSize(v int64) PutOptFn {
+	return func(o *PutOption) {
+		o.ObjectSize = v
 	}
 }
 

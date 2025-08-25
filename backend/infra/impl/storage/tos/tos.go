@@ -140,22 +140,49 @@ func (t *tosClient) CheckAndCreateBucket(ctx context.Context) error {
 
 	return err
 }
-
 func (t *tosClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
+	opts = append(opts, storage.WithObjectSize(int64(len(content))))
+	return t.PutObjectWithReader(ctx, objectKey, bytes.NewReader(content), opts...)
+}
+
+func (t *tosClient) PutObjectWithReader(ctx context.Context, objectKey string, content io.Reader, opts ...storage.PutOptFn) error {
 	client := t.client
-	body := bytes.NewReader(content)
 	bucketName := t.bucketName
 
-	_, err := client.PutObjectV2(ctx, &tos.PutObjectV2Input{
+	option := storage.PutOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	input := &tos.PutObjectV2Input{
 		PutObjectBasicInput: tos.PutObjectBasicInput{
 			Bucket: bucketName,
 			Key:    objectKey,
 		},
-		Content: body,
-	})
+		Content: content,
+	}
 
-	// logs.CtxDebugf(ctx, "PutObject resp: %v, err: %v", conv.DebugJsonToStr(output), err)
+	if option.ContentType != nil {
+		input.ContentType = *option.ContentType
+	}
+	if option.ContentEncoding != nil {
+		input.ContentEncoding = *option.ContentEncoding
+	}
+	if option.ContentDisposition != nil {
+		input.ContentDisposition = *option.ContentDisposition
+	}
+	if option.ContentLanguage != nil {
+		input.ContentLanguage = *option.ContentLanguage
+	}
+	if option.Expires != nil {
+		input.Expires = *option.Expires
+	}
 
+	if option.ObjectSize > 0 {
+		input.ContentLength = option.ObjectSize
+	}
+
+	_, err := client.PutObjectV2(ctx, input)
 	return err
 }
 

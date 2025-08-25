@@ -138,6 +138,11 @@ func (m *minioClient) test() {
 }
 
 func (m *minioClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
+	opts = append(opts, storage.WithObjectSize(int64(len(content))))
+	return m.PutObjectWithReader(ctx, objectKey, bytes.NewReader(content), opts...)
+}
+
+func (m *minioClient) PutObjectWithReader(ctx context.Context, objectKey string, content io.Reader, opts ...storage.PutOptFn) error {
 	option := storage.PutOption{}
 	for _, opt := range opts {
 		opt(&option)
@@ -165,7 +170,7 @@ func (m *minioClient) PutObject(ctx context.Context, objectKey string, content [
 	}
 
 	_, err := m.client.PutObject(ctx, m.bucketName, objectKey,
-		bytes.NewReader(content), int64(len(content)), minioOpts)
+		content, option.ObjectSize, minioOpts)
 	if err != nil {
 		return fmt.Errorf("PutObject failed: %v", err)
 	}

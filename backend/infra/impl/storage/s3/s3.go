@@ -152,16 +152,47 @@ func (t *s3Client) CheckAndCreateBucket(ctx context.Context) error {
 }
 
 func (t *s3Client) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
+	opts = append(opts, storage.WithObjectSize(int64(len(content))))
+	return t.PutObjectWithReader(ctx, objectKey, bytes.NewReader(content), opts...)
+}
+
+func (t *s3Client) PutObjectWithReader(ctx context.Context, objectKey string, content io.Reader, opts ...storage.PutOptFn) error {
 	client := t.client
-	body := bytes.NewReader(content)
 	bucket := t.bucketName
 
-	// upload object
-	_, err := client.PutObject(ctx, &s3.PutObjectInput{
+	option := storage.PutOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	input := &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(objectKey),
-		Body:   body,
-	})
+		Body:   content,
+	}
+
+	if option.ContentType != nil {
+		input.ContentType = option.ContentType
+	}
+	if option.ContentEncoding != nil {
+		input.ContentEncoding = option.ContentEncoding
+	}
+	if option.ContentDisposition != nil {
+		input.ContentDisposition = option.ContentDisposition
+	}
+	if option.ContentLanguage != nil {
+		input.ContentLanguage = option.ContentLanguage
+	}
+	if option.Expires != nil {
+		input.Expires = option.Expires
+	}
+
+	if option.ObjectSize > 0 {
+		input.ContentLength = aws.Int64(option.ObjectSize)
+	}
+
+	// upload object
+	_, err := client.PutObject(ctx, input)
 	return err
 }
 
