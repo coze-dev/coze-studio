@@ -4062,8 +4062,6 @@ func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowF
 
 // executeBatchImport 执行批量导入
 func (w *ApplicationService) executeBatchImport(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
-	results := make([]BatchImportResult, len(req.WorkflowFiles))
-
 	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
 		// 事务模式：所有文件在同一事务中处理
 		return w.executeBatchImportTransaction(ctx, req, config)
@@ -4204,6 +4202,25 @@ func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file work
 	return result
 }
 
+// rollbackCreatedWorkflow 回滚单个创建的工作流
+func (w *ApplicationService) rollbackCreatedWorkflow(ctx context.Context, workflowID string) {
+	if workflowID == "" {
+		return
+	}
+
+	id, err := strconv.ParseInt(workflowID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "Failed to parse workflow ID for rollback: %s, error: %v", workflowID, err)
+		return
+	}
+
+	if err := w.DomainSVC.Delete(ctx, &vo.DeletePolicy{ID: id}); err != nil {
+		logs.CtxErrorf(ctx, "Failed to rollback workflow creation: %d, error: %v", id, err)
+	} else {
+		logs.CtxInfof(ctx, "Successfully rolled back workflow creation: %d", id)
+	}
+}
+
 // rollbackBatchCreatedWorkflows 回滚批量创建的工作流
 func (w *ApplicationService) rollbackBatchCreatedWorkflows(ctx context.Context, workflowIDs []string) {
 	for _, workflowID := range workflowIDs {
@@ -4222,7 +4239,7 @@ func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResul
 	totalSize := int64(0)
 	nodeTypes := make(map[string]bool)
 
-	for i, result := range results {
+	for _, result := range results {
 		file := files[result.Index]
 		
 		if result.Success {
