@@ -158,48 +158,56 @@ metadata:
 
   console.log('Rendering exportModal', { showFormatModal, selectedRecord, selectedFormat });
 
-  const exportModal = (
+  const exportModal = showFormatModal ? (
     <Modal
-      visible={showFormatModal}
+      open={true}
       title="选择导出格式"
       onOk={() => {
-        console.log('Modal onOk event triggered');
+        console.log('Modal onOk triggered - JSON export');
         handleConfirmExport();
       }}
       onCancel={() => {
-        console.log('Modal onCancel event triggered');
+        console.log('Modal onCancel triggered');
         handleCancelExport();
       }}
-      confirmLoading={false}
       width={400}
-      okText="确认"
+      okText="导出JSON"
       cancelText="取消"
       destroyOnClose={true}
+      mask={true}
+      maskClosable={true}
     >
       <div className="mb-4">
-        <p className="mb-3">请选择工作流导出格式：</p>
-        <p className="mb-2 text-sm text-gray-500">当前选择: {selectedFormat}</p>
-        <Radio.Group
-          value={selectedFormat}
-          onChange={(value) => {
-            console.log('Format changed to:', value);
-            setSelectedFormat(value as ExportFormat);
-          }}
-        >
-          <div className="mb-2">
-            <Radio value="json">
-              JSON (结构化数据格式)
-            </Radio>
-          </div>
-          <div>
-            <Radio value="yml">
-              YAML (可读性更好的配置格式)
-            </Radio>
-          </div>
-        </Radio.Group>
+        <p className="mb-3">选择导出格式：</p>
+        
+        <div className="space-y-3">
+          <button
+            className="w-full p-3 text-left border rounded hover:bg-gray-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('JSON button clicked');
+              setSelectedFormat('json');
+              handleConfirmExport();
+            }}
+          >
+            <strong>JSON</strong> - 结构化数据格式
+          </button>
+          
+          <button
+            className="w-full p-3 text-left border rounded hover:bg-gray-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('YAML button clicked');
+              setSelectedFormat('yml');
+              handleConfirmExport();
+            }}
+          >
+            <strong>YAML</strong> - 可读性更好的配置格式
+          </button>
+        </div>
       </div>
     </Modal>
-  );
+  ) : null;
 
   return {
     actionHandler: handleExport,
