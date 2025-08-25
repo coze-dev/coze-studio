@@ -4137,7 +4137,7 @@ func (w *ApplicationService) OpenAPIGetWorkflowInfo(ctx context.Context, req *wo
 		}
 	}()
 
-	uID := ctxutil.MustGetUIDFromCtx(ctx)
+	uID := ctxutil.GetApiAuthFromCtx(ctx).UserID
 	wf, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
 		ID:       mustParseInt64(req.GetWorkflowID()),
 		MetaOnly: true,

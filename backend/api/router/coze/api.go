@@ -433,6 +433,10 @@ func Register(r *server.Hertz) {
 		_conversations.DELETE("/:conversation_id", append(_deleteconversationapiMw(), coze.DeleteConversationApi)...)
 		_conversations.PUT("/:conversation_id", append(_updateconversationapiMw(), coze.UpdateConversationApi)...)
 		{
+			_apps := _v1.Group("/apps", _appsMw()...)
+			_apps.GET("/:app_id", append(_getonlineappdataMw(), coze.GetOnlineAppData)...)
+		}
+		{
 			_bot0 := _v1.Group("/bot", _bot0Mw()...)
 			_bot0.GET("/get_online_info", append(_getbotonlineinfoMw(), coze.GetBotOnlineInfo)...)
 		}
