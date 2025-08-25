@@ -24,6 +24,11 @@ import (
 	"testing"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
@@ -35,10 +40,6 @@ import (
 	mock_db "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/rdb"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func TestAddSliceIdColumn(t *testing.T) {
