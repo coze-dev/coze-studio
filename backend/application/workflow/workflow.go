@@ -24,6 +24,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudwego/eino/schema"
@@ -3903,4 +3904,384 @@ func isValidWorkflowName(name string) bool {
 	}
 
 	return true
+}
+
+// BatchImportWorkflow 批量导入工作流
+func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workflow.BatchImportWorkflowRequest) (*workflow.BatchImportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "BatchImportWorkflow panic: %v", err)
+		}
+	}()
+
+	startTime := time.Now()
+	logs.CtxInfof(ctx, "BatchImportWorkflow started, fileCount=%d, spaceID=%s, mode=%s",
+		len(req.WorkflowFiles), req.SpaceID, req.ImportMode)
+
+	// 1. 参数验证
+	if err := w.validateBatchImportRequest(req); err != nil {
+		return nil, err
+	}
+
+	// 2. 权限验证
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space_id: %s", req.SpaceID))
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
+	}
+
+	// 3. 构建导入配置
+	config := w.buildBatchImportConfig(req)
+
+	// 4. 预验证所有文件（如果启用）
+	if config.ValidateBeforeImport {
+		if err := w.preValidateWorkflowFiles(req.WorkflowFiles); err != nil {
+			return nil, err
+		}
+	}
+
+	// 5. 执行批量导入
+	results, err := w.executeBatchImport(ctx, req, config)
+	if err != nil {
+		return nil, err
+	}
+
+	// 6. 构建响应
+	endTime := time.Now()
+	response := w.buildBatchImportResponse(results, startTime, endTime, config, req.WorkflowFiles)
+
+	logs.CtxInfof(ctx, "BatchImportWorkflow completed, total=%d, success=%d, failed=%d, duration=%dms",
+		response.Data.TotalCount, response.Data.SuccessCount, response.Data.FailedCount, response.Data.ImportSummary.Duration)
+
+	return response, nil
+}
+
+// validateBatchImportRequest 验证批量导入请求参数
+func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImportWorkflowRequest) error {
+	if len(req.WorkflowFiles) == 0 {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_files cannot be empty"))
+	}
+
+	// 限制批量导入数量
+	maxBatchSize := 50 // 最大批量导入数量
+	if len(req.WorkflowFiles) > maxBatchSize {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("too many files: %d (max: %d)", len(req.WorkflowFiles), maxBatchSize))
+	}
+
+	if req.SpaceID == "" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("space_id is required"))
+	}
+
+	if req.CreatorID == "" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
+	}
+
+	if req.ImportFormat != "json" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s", req.ImportFormat))
+	}
+
+	// 验证导入模式
+	if req.ImportMode != "" && req.ImportMode != string(workflow.BatchImportModeBatch) && req.ImportMode != string(workflow.BatchImportModeTransaction) {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid import mode: %s", req.ImportMode))
+	}
+
+	// 验证每个文件
+	nameSet := make(map[string]bool)
+	for i, file := range req.WorkflowFiles {
+		if file.FileName == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file_name is required for file %d", i))
+		}
+		if file.WorkflowData == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_data is required for file %d", i))
+		}
+		if file.WorkflowName == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_name is required for file %d", i))
+		}
+
+		// 验证工作流名称格式
+		if !isValidWorkflowName(file.WorkflowName) {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow name format: %s for file %s", file.WorkflowName, file.FileName))
+		}
+
+		// 检查名称重复
+		if nameSet[file.WorkflowName] {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("duplicate workflow name: %s", file.WorkflowName))
+		}
+		nameSet[file.WorkflowName] = true
+	}
+
+	return nil
+}
+
+// buildBatchImportConfig 构建批量导入配置
+func (w *ApplicationService) buildBatchImportConfig(req *workflow.BatchImportWorkflowRequest) workflow.BatchImportConfig {
+	config := workflow.BatchImportConfig{
+		ImportMode:           req.ImportMode,
+		MaxConcurrency:       5,  // 最大并发数
+		ContinueOnError:      true,
+		ValidateBeforeImport: true,
+	}
+
+	// 设置默认导入模式
+	if config.ImportMode == "" {
+		config.ImportMode = string(workflow.BatchImportModeBatch)
+	}
+
+	// 事务模式不允许在出错时继续
+	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
+		config.ContinueOnError = false
+	}
+
+	return config
+}
+
+// preValidateWorkflowFiles 预验证所有工作流文件
+func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowFileData) error {
+	for i, file := range files {
+		var exportData workflow.WorkflowExportData
+		if err := sonic.UnmarshalString(file.WorkflowData, &exportData); err != nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid JSON format: %v", i, file.FileName, err))
+		}
+
+		// 验证工作流数据结构
+		if exportData.Schema == nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): missing schema", i, file.FileName))
+		}
+
+		if exportData.Nodes == nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): missing nodes", i, file.FileName))
+		}
+	}
+
+	return nil
+}
+
+// executeBatchImport 执行批量导入
+func (w *ApplicationService) executeBatchImport(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	results := make([]BatchImportResult, len(req.WorkflowFiles))
+
+	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
+		// 事务模式：所有文件在同一事务中处理
+		return w.executeBatchImportTransaction(ctx, req, config)
+	} else {
+		// 批量模式：每个文件独立处理
+		return w.executeBatchImportParallel(ctx, req, config)
+	}
+}
+
+// BatchImportResult 批量导入结果内部结构
+type BatchImportResult struct {
+	Index        int
+	Success      bool
+	WorkflowID   string
+	NodeCount    int
+	EdgeCount    int
+	ErrorCode    int64
+	ErrorMessage string
+	FailReason   workflow.FailReason
+}
+
+// executeBatchImportParallel 并发执行批量导入
+func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	results := make([]BatchImportResult, len(req.WorkflowFiles))
+	
+	// 使用信号量控制并发数
+	sem := make(chan struct{}, config.MaxConcurrency)
+	var wg sync.WaitGroup
+	
+	for i, file := range req.WorkflowFiles {
+		wg.Add(1)
+		go func(index int, fileData workflow.WorkflowFileData) {
+			defer wg.Done()
+			sem <- struct{}{} // 获取信号量
+			defer func() { <-sem }() // 释放信号量
+
+			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID)
+			result.Index = index
+			results[index] = result
+		}(i, file)
+	}
+	
+	wg.Wait()
+	return results, nil
+}
+
+// executeBatchImportTransaction 事务模式批量导入
+func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	// 在事务中导入所有工作流
+	results := make([]BatchImportResult, len(req.WorkflowFiles))
+	createdWorkflowIDs := make([]string, 0)
+
+	// 创建所有工作流
+	for i, file := range req.WorkflowFiles {
+		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID)
+		result.Index = i
+		results[i] = result
+
+		if !result.Success {
+			// 如果任何一个失败，回滚所有已创建的工作流
+			w.rollbackBatchCreatedWorkflows(ctx, createdWorkflowIDs)
+			return results, nil
+		}
+
+		createdWorkflowIDs = append(createdWorkflowIDs, result.WorkflowID)
+	}
+
+	return results, nil
+}
+
+// importSingleWorkflow 导入单个工作流
+func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file workflow.WorkflowFileData, spaceID, creatorID string) BatchImportResult {
+	result := BatchImportResult{Success: false}
+
+	// 1. 解析工作流数据
+	var exportData workflow.WorkflowExportData
+	if err := sonic.UnmarshalString(file.WorkflowData, &exportData); err != nil {
+		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
+		result.ErrorMessage = fmt.Sprintf("JSON parsing failed: %v", err)
+		result.FailReason = workflow.FailReasonInvalidFormat
+		return result
+	}
+
+	// 2. 验证数据结构
+	if exportData.Schema == nil || exportData.Nodes == nil {
+		result.ErrorCode = int64(errno.ErrInvalidParameter)
+		result.ErrorMessage = "Missing required fields: schema or nodes"
+		result.FailReason = workflow.FailReasonInvalidData
+		return result
+	}
+
+	// 3. 创建工作流
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:    file.WorkflowName,
+		Desc:    exportData.Description,
+		SpaceID: spaceID,
+	}
+
+	createResp, err := w.CreateWorkflow(ctx, createReq)
+	if err != nil {
+		result.ErrorCode = int64(errno.ErrWorkflowOperationFail)
+		result.ErrorMessage = fmt.Sprintf("Failed to create workflow: %v", err)
+		result.FailReason = workflow.FailReasonSystemError
+		return result
+	}
+
+	// 4. 保存工作流架构
+	canvasData, err := sonic.MarshalString(exportData.Schema)
+	if err != nil {
+		w.rollbackCreatedWorkflow(ctx, createResp.Data.WorkflowID)
+		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
+		result.ErrorMessage = fmt.Sprintf("Failed to marshal canvas data: %v", err)
+		result.FailReason = workflow.FailReasonSystemError
+		return result
+	}
+
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: createResp.Data.WorkflowID,
+		SpaceID:    ptr.Of(spaceID),
+		Schema:     ptr.Of(canvasData),
+	}
+
+	_, err = w.SaveWorkflow(ctx, saveReq)
+	if err != nil {
+		w.rollbackCreatedWorkflow(ctx, createResp.Data.WorkflowID)
+		result.ErrorCode = int64(errno.ErrWorkflowOperationFail)
+		result.ErrorMessage = fmt.Sprintf("Failed to save workflow schema: %v", err)
+		result.FailReason = workflow.FailReasonSystemError
+		return result
+	}
+
+	// 5. 成功
+	result.Success = true
+	result.WorkflowID = createResp.Data.WorkflowID
+	result.NodeCount = len(exportData.Nodes)
+	result.EdgeCount = len(exportData.Edges)
+
+	return result
+}
+
+// rollbackBatchCreatedWorkflows 回滚批量创建的工作流
+func (w *ApplicationService) rollbackBatchCreatedWorkflows(ctx context.Context, workflowIDs []string) {
+	for _, workflowID := range workflowIDs {
+		w.rollbackCreatedWorkflow(ctx, workflowID)
+	}
+}
+
+// buildBatchImportResponse 构建批量导入响应
+func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResult, startTime, endTime time.Time, config workflow.BatchImportConfig, files []workflow.WorkflowFileData) *workflow.BatchImportWorkflowResponse {
+	successList := make([]workflow.WorkflowImportResult, 0)
+	failedList := make([]workflow.WorkflowImportFailedResult, 0)
+	errorStats := make(map[string]int)
+	
+	totalNodes := 0
+	totalEdges := 0
+	totalSize := int64(0)
+	nodeTypes := make(map[string]bool)
+
+	for i, result := range results {
+		file := files[result.Index]
+		
+		if result.Success {
+			successList = append(successList, workflow.WorkflowImportResult{
+				FileName:     file.FileName,
+				WorkflowName: file.WorkflowName,
+				WorkflowID:   result.WorkflowID,
+				NodeCount:    result.NodeCount,
+				EdgeCount:    result.EdgeCount,
+			})
+			totalNodes += result.NodeCount
+			totalEdges += result.EdgeCount
+		} else {
+			failedList = append(failedList, workflow.WorkflowImportFailedResult{
+				FileName:     file.FileName,
+				WorkflowName: file.WorkflowName,
+				ErrorCode:    result.ErrorCode,
+				ErrorMessage: result.ErrorMessage,
+				FailReason:   string(result.FailReason),
+			})
+			errorStats[string(result.FailReason)]++
+		}
+		
+		totalSize += int64(len(file.WorkflowData))
+	}
+
+	// 构建资源信息
+	resourceInfo := workflow.BatchImportResourceInfo{
+		TotalFiles:      len(files),
+		TotalSize:       totalSize,
+		TotalNodes:      totalNodes,
+		TotalEdges:      totalEdges,
+		UniqueNodeTypes: make([]string, 0, len(nodeTypes)),
+	}
+	
+	for nodeType := range nodeTypes {
+		resourceInfo.UniqueNodeTypes = append(resourceInfo.UniqueNodeTypes, nodeType)
+	}
+
+	// 构建导入摘要
+	summary := workflow.ImportSummary{
+		StartTime:    startTime.Unix(),
+		EndTime:      endTime.Unix(),
+		Duration:     endTime.Sub(startTime).Milliseconds(),
+		ErrorStats:   errorStats,
+		ImportConfig: config,
+		ResourceInfo: resourceInfo,
+	}
+
+	return &workflow.BatchImportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: workflow.BatchImportResponseData{
+			TotalCount:    len(results),
+			SuccessCount:  len(successList),
+			FailedCount:   len(failedList),
+			SuccessList:   successList,
+			FailedList:    failedList,
+			ImportSummary: summary,
+		},
+	}
 }
