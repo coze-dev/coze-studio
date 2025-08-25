@@ -57,7 +57,7 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error:', errorText);
-        throw new Error(`API Error: ${response.status} ${errorText}`);
+        throw new Error(`API Error: ${response.status}`);
       }
 
       const result = await response.json();
@@ -116,25 +116,15 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        Toast.success(I18n.t('workflow_export_success', 'Export successful'));
+        Toast.success('Export successful');
         console.log('Export completed successfully');
       } else {
         console.error('Invalid API response:', result);
-        throw new Error(result.msg || 'Invalid response from server');
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error('导出工作流失败:', error);
-      
-      let errorMessage = 'Export failed';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else if (error && typeof error === 'object' && error.message) {
-        errorMessage = String(error.message);
-      }
-      
-      Toast.error(errorMessage);
+      Toast.error('Export failed');
     } finally {
       setExporting(false);
     }
@@ -147,22 +137,30 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   };
 
   const handleConfirmExport = () => {
-    console.log('handleConfirmExport called', { selectedRecord, selectedFormat });
-    
-    if (!selectedRecord) {
-      console.error('No selected record');
-      Toast.error('No record selected');
-      return;
+    try {
+      console.log('handleConfirmExport called', { 
+        selectedRecord: selectedRecord?.res_id, 
+        selectedFormat 
+      });
+      
+      if (!selectedRecord) {
+        console.error('No selected record');
+        Toast.error('No record selected');
+        return;
+      }
+      
+      // 立即关闭Modal
+      setShowFormatModal(false);
+      
+      // 立即开始导出（不等待结果）
+      performExport(selectedRecord, selectedFormat);
+      
+      // 清理状态
+      setSelectedRecord(null);
+    } catch (error) {
+      console.error('Error in handleConfirmExport:', error);
+      Toast.error('Failed to start export');
     }
-    
-    // 立即关闭Modal
-    setShowFormatModal(false);
-    
-    // 立即开始导出（不等待结果）
-    performExport(selectedRecord, selectedFormat);
-    
-    // 清理状态
-    setSelectedRecord(null);
   };
 
   const handleCancelExport = () => {
@@ -175,23 +173,23 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   const exportModal = (
     <Modal
       visible={showFormatModal}
-      title={I18n.t('workflow_export_format_title', '选择导出格式')}
-      onOk={(e) => {
-        console.log('Modal onOk event triggered', e);
+      title="选择导出格式"
+      onOk={() => {
+        console.log('Modal onOk event triggered');
         handleConfirmExport();
       }}
-      onCancel={(e) => {
-        console.log('Modal onCancel event triggered', e);
+      onCancel={() => {
+        console.log('Modal onCancel event triggered');
         handleCancelExport();
       }}
       confirmLoading={false}
       width={400}
-      okText={I18n.t('confirm', '确认')}
-      cancelText={I18n.t('cancel', '取消')}
+      okText="确认"
+      cancelText="取消"
       destroyOnClose={true}
     >
       <div className="mb-4">
-        <p className="mb-3">{I18n.t('workflow_export_format_description', '请选择工作流导出格式：')}</p>
+        <p className="mb-3">请选择工作流导出格式：</p>
         <p className="mb-2 text-sm text-gray-500">当前选择: {selectedFormat}</p>
         <Radio.Group
           value={selectedFormat}
@@ -202,12 +200,12 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         >
           <div className="mb-2">
             <Radio value="json">
-              JSON {I18n.t('workflow_export_format_json_desc', '(结构化数据格式)')}
+              JSON (结构化数据格式)
             </Radio>
           </div>
           <div>
             <Radio value="yml">
-              YAML {I18n.t('workflow_export_format_yml_desc', '(可读性更好的配置格式)')}
+              YAML (可读性更好的配置格式)
             </Radio>
           </div>
         </Radio.Group>
