@@ -16,6 +16,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useCallback, useRef, useEffect } from 'react';
+import * as yaml from 'js-yaml';
 
 interface WorkflowPreview {
   name: string;
@@ -156,9 +157,12 @@ const Page = () => {
     setParseError('');
     setWorkflowPreview(null);
     
-    // 验证文件类型
-    if (!file.name.endsWith('.json')) {
-      setParseError('请选择JSON格式的文件');
+    // 验证文件类型 - 支持 JSON, YML, YAML
+    const fileName = file.name.toLowerCase();
+    const isValidFile = fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
+    
+    if (!isValidFile) {
+      setParseError('请选择JSON或YAML格式的文件');
       return;
     }
     
@@ -181,7 +185,14 @@ const Page = () => {
           return;
         }
         
-        const workflowData = JSON.parse(content);
+        let workflowData;
+        
+        // 根据文件扩展名选择解析器
+        if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
+          workflowData = yaml.load(content) as any;
+        } else {
+          workflowData = JSON.parse(content);
+        }
         
         // 基本验证工作流数据结构
         if (!workflowData || typeof workflowData !== 'object') {
@@ -234,13 +245,27 @@ const Page = () => {
     }
     
     const newWorkflowFiles: WorkflowFile[] = files
-      .filter(file => file.name.endsWith('.json'))
-      .map(file => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        fileName: file.name,
-        workflowName: file.name.replace('.json', ''),
-        workflowData: '',
+      .filter(file => {
+        const fileName = file.name.toLowerCase();
+        return fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
+      })
+      .map(file => {
+        const fileName = file.name.toLowerCase();
+        let workflowName = file.name;
+        if (fileName.endsWith('.json')) {
+          workflowName = file.name.replace('.json', '');
+        } else if (fileName.endsWith('.yml')) {
+          workflowName = file.name.replace('.yml', '');
+        } else if (fileName.endsWith('.yaml')) {
+          workflowName = file.name.replace('.yaml', '');
+        }
+        
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          file,
+          fileName: file.name,
+          workflowName: workflowName,
+          workflowData: '',
         status: 'pending' as const,
       }));
 
@@ -848,7 +873,7 @@ const Page = () => {
               id="file-input"
               type="file"
               multiple={importMode === 'batch'}
-              accept=".json"
+              accept=".json,.yml,.yaml"
               onChange={handleFileSelect}
               style={{ display: 'none' }}
               disabled={isImporting}

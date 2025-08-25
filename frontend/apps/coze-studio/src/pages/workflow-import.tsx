@@ -38,6 +38,7 @@ import {
 } from '@coze-arch/coze-design/icons';
 import { IconUpload } from '@coze-arch/bot-icons';
 import { I18n } from '@coze-arch/i18n';
+import * as yaml from 'js-yaml';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -62,15 +63,18 @@ const WorkflowImportPage: React.FC = () => {
   // 处理文件选择
   const handleFileSelect = async (file: File) => {
     try {
-      // 验证文件类型
-      if (!file.name.endsWith('.json')) {
-        Toast.error(I18n.t('workflow_import_failed'));
+      // 验证文件类型 - 支持 JSON, YML, YAML
+      const fileName = file.name.toLowerCase();
+      const isValidFile = fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
+      
+      if (!isValidFile) {
+        Toast.error(I18n.t('workflow_import_error_invalid_file'));
         return false;
       }
 
       // 验证文件大小（限制为10MB）
       if (file.size > 10 * 1024 * 1024) {
-        Toast.error(I18n.t('workflow_import_failed'));
+        Toast.error(I18n.t('workflow_import_error_invalid_file'));
         return false;
       }
 
@@ -80,16 +84,35 @@ const WorkflowImportPage: React.FC = () => {
       // 读取并预览文件内容
       const fileContent = await file.text();
       try {
-        const workflowData = JSON.parse(fileContent);
-        if (workflowData.name && workflowData.schema) {
-          setWorkflowPreview(workflowData);
-          form.setFieldsValue({ workflowName: workflowData.name });
+        let workflowData;
+        
+        // 根据文件扩展名选择解析器
+        if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
+          workflowData = yaml.load(fileContent) as any;
         } else {
-          Toast.error(I18n.t('workflow_import_failed'));
+          workflowData = JSON.parse(fileContent);
+        }
+        
+        // 验证工作流数据结构
+        if (workflowData && typeof workflowData === 'object') {
+          // 兼容不同的数据结构
+          const workflowName = workflowData.name || workflowData.workflow_id || `Imported_${Date.now()}`;
+          
+          setWorkflowPreview({
+            name: workflowName,
+            description: workflowData.description,
+            nodes: workflowData.nodes || [],
+            edges: workflowData.edges || [],
+            schema: workflowData.schema
+          });
+          form.setFieldsValue({ workflowName: workflowName });
+        } else {
+          Toast.error(I18n.t('workflow_import_error_invalid_structure'));
           return false;
         }
       } catch (error) {
-        Toast.error(I18n.t('workflow_import_failed'));
+        console.error('File parsing error:', error);
+        Toast.error(I18n.t('workflow_import_error_parse_failed'));
         return false;
       } finally {
         setParsing(false);
@@ -97,7 +120,8 @@ const WorkflowImportPage: React.FC = () => {
 
       return false; // 阻止自动上传
     } catch (error) {
-      Toast.error(I18n.t('workflow_import_failed'));
+      console.error('File selection error:', error);
+      Toast.error(I18n.t('workflow_import_error_invalid_file'));
       setParsing(false);
       return false;
     }
@@ -118,6 +142,11 @@ const WorkflowImportPage: React.FC = () => {
       const fileContent = await selectedFile.text();
       const values = form.getFieldsValue();
       
+      // 确定文件格式
+      const fileName = selectedFile.name.toLowerCase();
+      const importFormat = fileName.endsWith('.yml') ? 'yml' : 
+                          fileName.endsWith('.yaml') ? 'yaml' : 'json';
+      
       // 调用导入API
       const response = await fetch('/api/workflow_api/import', {
         method: 'POST',
@@ -129,7 +158,7 @@ const WorkflowImportPage: React.FC = () => {
           workflow_name: values.workflowName,
           space_id: space_id,
           creator_id: '1', // 这里应该从用户上下文获取
-          import_format: 'json',
+          import_format: importFormat,
         }),
       });
 
@@ -218,7 +247,7 @@ const WorkflowImportPage: React.FC = () => {
               <Form form={form} layout="vertical">
                 <Form.Item label={I18n.t('workflow_import_select_workflow_file')} required>
                   <Upload
-                    accept=".json"
+                    accept=".json,.yml,.yaml"
                     beforeUpload={handleFileSelect}
                     showUploadList={false}
                     maxCount={1}
