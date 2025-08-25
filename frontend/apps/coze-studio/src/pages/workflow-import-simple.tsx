@@ -93,11 +93,15 @@ const Page = () => {
 
   if (!space_id) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="max-w-md p-6 bg-red-50 border border-red-200 rounded-lg">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">错误</h3>
-          <p className="text-red-600">未找到工作空间ID</p>
-        </div>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#e53e3e'
+      }}>
+        未找到工作空间ID
       </div>
     );
   }
@@ -609,167 +613,195 @@ const Page = () => {
   }, []);
 
   const validBatchFileCount = selectedFiles.filter(f => f.status === 'valid').length;
-
-  // 获取状态图标
-  const getStatusIcon = (status: WorkflowFile['status']) => {
-    switch (status) {
-      case 'pending':
-        return <span className="text-gray-400">⏳</span>;
-      case 'valid':
-        return <span className="text-green-500">✅</span>;
-      case 'invalid':
-        return <span className="text-red-500">❌</span>;
-      case 'success':
-        return <span className="text-green-600">✅</span>;
-      case 'failed':
-        return <span className="text-red-600">❌</span>;
-      default:
-        return <span className="text-gray-400">⏳</span>;
-    }
-  };
-
-  // 获取状态标签颜色
-  const getStatusTagColor = (status: WorkflowFile['status']) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-gray-100 text-gray-800';
-      case 'valid':
-        return 'bg-green-100 text-green-800';
-      case 'invalid':
-        return 'bg-red-100 text-red-800';
-      case 'success':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // 获取状态标签文本
-  const getStatusTagText = (status: WorkflowFile['status']) => {
-    switch (status) {
-      case 'pending':
-        return '等待中';
-      case 'valid':
-        return '有效';
-      case 'invalid':
-        return '无效';
-      case 'success':
-        return '成功';
-      case 'failed':
-        return '失败';
-      default:
-        return '未知';
-    }
-  };
   
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      padding: '32px 24px'
+    }}>
+      <div style={{ 
+        maxWidth: '1000px', 
+        margin: '0 auto',
+        background: 'white',
+        borderRadius: '20px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
+        overflow: 'hidden'
+      }}>
         {/* 页面头部 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleGoBack}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-              >
-                ← 返回资源库
-              </button>
-              <div className="h-6 w-px bg-gray-300" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  📦 工作流导入
-                </h1>
-                <p className="text-gray-600">
-                  支持单个和批量导入工作流，快速部署您的工作流程
-                </p>
-              </div>
-            </div>
-          </div>
+        <div style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          padding: '40px',
+          textAlign: 'center',
+          position: 'relative'
+        }}>
+          <button 
+            onClick={handleGoBack}
+            style={{ 
+              position: 'absolute',
+              left: '24px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '12px 20px',
+              border: '2px solid rgba(255,255,255,0.3)',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.1)',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+            }}
+          >
+            ← 返回资源库
+          </button>
+          
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '800',
+            margin: '0 0 12px 0',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            📦 工作流导入
+          </h1>
+          <p style={{
+            fontSize: '16px',
+            margin: '0 auto',
+            opacity: '0.9',
+            maxWidth: '500px'
+          }}>
+            支持单个和批量导入工作流，快速部署您的工作流程
+          </p>
         </div>
 
         {/* 导入模式选择 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              选择导入模式
-            </h2>
-            <div className="flex space-x-4">
-              <button
-                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  importMode === 'single'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                onClick={() => setImportMode('single')}
+        <div style={{ padding: '32px 40px 24px 40px' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: '20px', 
+            marginBottom: '24px',
+            justifyContent: 'center'
+          }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              cursor: 'pointer',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: `2px solid ${importMode === 'single' ? '#667eea' : '#e2e8f0'}`,
+              background: importMode === 'single' ? '#f0f4ff' : 'white',
+              transition: 'all 0.3s ease'
+            }}>
+              <input
+                type="radio"
+                value="single"
+                checked={importMode === 'single'}
+                onChange={(e) => setImportMode(e.target.value as 'single' | 'batch')}
+                style={{ marginRight: '8px' }}
                 disabled={isImporting}
-              >
+              />
+              <span style={{ fontSize: '16px', fontWeight: '600' }}>
                 🎯 单个导入
-              </button>
-              <button
-                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  importMode === 'batch'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                onClick={() => setImportMode('batch')}
+              </span>
+            </label>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              cursor: 'pointer',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: `2px solid ${importMode === 'batch' ? '#667eea' : '#e2e8f0'}`,
+              background: importMode === 'batch' ? '#f0f4ff' : 'white',
+              transition: 'all 0.3s ease'
+            }}>
+              <input
+                type="radio"
+                value="batch"
+                checked={importMode === 'batch'}
+                onChange={(e) => setImportMode(e.target.value as 'single' | 'batch')}
+                style={{ marginRight: '8px' }}
                 disabled={isImporting}
-              >
+              />
+              <span style={{ fontSize: '16px', fontWeight: '600' }}>
                 📦 批量导入
-              </button>
-            </div>
+              </span>
+            </label>
           </div>
 
           {/* 批量导入模式选择 */}
           {importMode === 'batch' && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-md font-semibold text-gray-900 mb-3">
+            <div style={{ 
+              textAlign: 'center', 
+              marginBottom: '24px',
+              padding: '16px',
+              background: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '12px', 
+                fontSize: '14px', 
+                fontWeight: '600',
+                color: '#2d3748' 
+              }}>
                 批量导入模式
-              </h3>
-              <div className="flex space-x-4">
-                <button
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    batchImportMode === 'batch'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setBatchImportMode('batch')}
-                  disabled={isImporting}
-                >
-                  批量模式
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    batchImportMode === 'transaction'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setBatchImportMode('transaction')}
-                  disabled={isImporting}
-                >
-                  事务模式
-                </button>
-              </div>
-              <div className="mt-3 text-sm text-gray-600">
-                <div>• <strong>批量模式</strong> - 允许部分失败，失败的文件不影响其他文件</div>
-                <div>• <strong>事务模式</strong> - 全部成功或全部失败，确保数据一致性</div>
+              </label>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    value="batch"
+                    checked={batchImportMode === 'batch'}
+                    onChange={(e) => setBatchImportMode(e.target.value as 'batch' | 'transaction')}
+                    style={{ marginRight: '8px' }}
+                    disabled={isImporting}
+                  />
+                  <span style={{ fontSize: '14px' }}>
+                    <strong>批量模式</strong> - 允许部分失败，失败的文件不影响其他文件
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    value="transaction"
+                    checked={batchImportMode === 'transaction'}
+                    onChange={(e) => setBatchImportMode(e.target.value as 'batch' | 'transaction')}
+                    style={{ marginRight: '8px' }}
+                    disabled={isImporting}
+                  />
+                  <span style={{ fontSize: '14px' }}>
+                    <strong>事务模式</strong> - 全部成功或全部失败，确保数据一致性
+                  </span>
+                </label>
               </div>
             </div>
           )}
         </div>
 
         {/* 文件上传区域 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div style={{ padding: '0 40px 24px 40px' }}>
           <div
-            className={`
-              border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
-              ${dragActive 
-                ? 'border-blue-500 bg-blue-50 scale-105' 
-                : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
-              }
-            `}
+            style={{
+              border: `2px dashed ${dragActive ? '#667eea' : '#e2e8f0'}`,
+              borderRadius: '16px',
+              padding: '40px 20px',
+              textAlign: 'center',
+              background: dragActive ? '#f0f4ff' : '#fafbfc',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              position: 'relative',
+              transform: dragActive ? 'scale(1.02)' : 'scale(1)'
+            }}
             onClick={() => {
               const fileInput = document.getElementById('file-input') as HTMLInputElement;
               if (fileInput && !isImporting) {
@@ -793,11 +825,20 @@ const Page = () => {
             }}
             aria-label="拖拽文件到此处或点击选择文件"
           >
-            <div className="text-4xl text-gray-400 mb-4">📁</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📁</div>
+            <h3 style={{ 
+              fontSize: '20px', 
+              fontWeight: '600', 
+              color: '#2d3748',
+              marginBottom: '8px'
+            }}>
               {importMode === 'single' ? '拖拽文件到此处或点击选择文件' : '拖拽文件到此处或点击选择多个文件'}
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#718096',
+              marginBottom: '16px'
+            }}>
               {importMode === 'single' 
                 ? '支持JSON格式的工作流文件，最大10MB'
                 : '支持同时选择多个JSON格式的工作流文件，最多50个文件，每个最大10MB'
@@ -809,114 +850,170 @@ const Page = () => {
               multiple={importMode === 'batch'}
               accept=".json"
               onChange={handleFileSelect}
-              className="hidden"
+              style={{ display: 'none' }}
               disabled={isImporting}
               autoComplete="off"
               aria-label="选择工作流文件"
             />
-            <button
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isImporting}
-            >
+            <div style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              background: '#667eea',
+              color: 'white',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}>
               选择文件
-            </button>
+            </div>
           </div>
         </div>
 
         {/* 单个导入界面 */}
-        {importMode === 'single' && selectedFile && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                文件信息
-              </h2>
-              <button
-                onClick={() => setSelectedFile(null)}
-                className="px-3 py-1 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors duration-200 disabled:opacity-50"
-                disabled={isImporting}
-              >
-                移除文件
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-50 p-3 rounded">
-                <p className="text-sm text-gray-600">文件名</p>
-                <div className="font-medium">{selectedFile.name}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded">
-                <p className="text-sm text-gray-600">文件大小</p>
-                <div className="font-medium">{formatFileSize(selectedFile.size)}</div>
-              </div>
-            </div>
-
-            {workflowPreview && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="text-md font-semibold text-blue-800 mb-3">
-                  工作流预览
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+        {importMode === 'single' && (
+          <div style={{ padding: '0 40px 24px 40px' }}>
+            {/* 文件信息 */}
+            {selectedFile && (
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '24px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
+                    文件信息
+                  </h4>
+                  <button
+                    onClick={() => setSelectedFile(null)}
+                    style={{
+                      padding: '6px',
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: '18px',
+                      cursor: 'pointer',
+                      color: '#e53e3e',
+                      opacity: isImporting ? 0.6 : 1
+                    }}
+                    disabled={isImporting}
+                  >
+                    ❌
+                  </button>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
                   <div>
-                    <span className="text-gray-600">名称：</span>
-                    <span className="font-medium">{workflowPreview.name}</span>
+                    <strong>文件名：</strong> {selectedFile.name}
                   </div>
                   <div>
-                    <span className="text-gray-600">版本：</span>
-                    <span className="font-medium">{workflowPreview.version}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">节点数：</span>
-                    <span className="font-medium">{workflowPreview.nodeCount}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">连接数：</span>
-                    <span className="font-medium">{workflowPreview.edgeCount}</span>
+                    <strong>文件大小：</strong> {formatFileSize(selectedFile.size)}
                   </div>
                 </div>
-                {workflowPreview.description && (
-                  <div className="mt-3">
-                    <span className="text-gray-600">描述：</span>
-                    <span className="ml-2">{workflowPreview.description}</span>
+
+                {workflowPreview && (
+                  <div style={{
+                    background: 'white',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    marginTop: '16px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <h5 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#2d3748' }}>
+                      工作流预览
+                    </h5>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                      <div><strong>名称：</strong> {workflowPreview.name}</div>
+                      <div><strong>版本：</strong> {workflowPreview.version}</div>
+                      <div><strong>节点数：</strong> {workflowPreview.nodeCount}</div>
+                      <div><strong>连接数：</strong> {workflowPreview.edgeCount}</div>
+                    </div>
+                    {workflowPreview.description && (
+                      <div style={{ marginTop: '12px' }}>
+                        <strong>描述：</strong> {workflowPreview.description}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
 
-            <div className="border-t border-gray-200 my-6" />
-
             {/* 工作流名称输入 */}
-            <div className="mb-4">
-              <h3 className="text-md font-semibold text-gray-900 mb-2">
-                工作流名称 <span className="text-red-500">*</span>
-              </h3>
-              <input
-                type="text"
-                value={workflowName}
-                onChange={handleNameChange}
-                placeholder="请输入工作流名称（必须以字母开头）"
-                disabled={isImporting}
-                className={`
-                  w-full px-3 py-2 border rounded-lg transition-colors duration-200
-                  ${nameError 
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
-                  }
-                  focus:outline-none focus:ring-2
-                `}
-              />
-              {nameError && (
-                <p className="text-red-500 text-sm mt-1">
-                  {nameError}
-                </p>
-              )}
-            </div>
+            {selectedFile && (
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontSize: '14px', 
+                  fontWeight: '600',
+                  color: '#2d3748' 
+                }}>
+                  工作流名称 <span style={{ color: '#e53e3e' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={workflowName}
+                  onChange={handleNameChange}
+                  placeholder="请输入工作流名称（必须以字母开头）"
+                  disabled={isImporting}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: `1px solid ${nameError ? '#e53e3e' : '#e2e8f0'}`,
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                />
+                {nameError && (
+                  <div style={{ 
+                    color: '#e53e3e', 
+                    fontSize: '12px', 
+                    marginTop: '4px' 
+                  }}>
+                    {nameError}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 错误提示 */}
+            {parseError && (
+              <div style={{
+                background: '#fed7d7',
+                color: '#c53030',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginBottom: '24px',
+                border: '1px solid #feb2b2'
+              }}>
+                ❌ {parseError}
+              </div>
+            )}
 
             {/* 操作按钮 */}
-            <div className="flex justify-center space-x-4">
+            <div style={{ 
+              display: 'flex', 
+              gap: '16px', 
+              justifyContent: 'center'
+            }}>
               <button
                 onClick={handleReset}
                 disabled={isImporting}
-                className="px-6 py-3 border-2 border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+                style={{
+                  padding: '14px 28px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '10px',
+                  background: 'white',
+                  color: '#4a5568',
+                  cursor: isImporting ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  opacity: isImporting ? 0.6 : 1
+                }}
               >
                 🔄 重置
               </button>
@@ -924,9 +1021,34 @@ const Page = () => {
               <button
                 onClick={handleSingleImport}
                 disabled={isImporting || !selectedFile || !workflowName.trim()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  padding: '14px 28px',
+                  border: 'none',
+                  borderRadius: '10px',
+                  background: isImporting || !selectedFile || !workflowName.trim() 
+                    ? '#a0a0a0' 
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  cursor: isImporting || !selectedFile || !workflowName.trim() ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  transform: isImporting ? 'scale(0.98)' : 'scale(1)'
+                }}
               >
-                {isImporting ? '导入中...' : '🚀 开始导入'}
+                {isImporting ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ 
+                      animation: 'spin 1s linear infinite',
+                      display: 'inline-block'
+                    }}>
+                      ⏳
+                    </span>
+                    导入中...
+                  </span>
+                ) : (
+                  '🚀 开始导入'
+                )}
               </button>
             </div>
           </div>
@@ -934,58 +1056,112 @@ const Page = () => {
 
         {/* 批量导入界面 */}
         {importMode === 'batch' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div style={{ padding: '0 40px 24px 40px' }}>
             {/* 文件列表 */}
             {selectedFiles.length > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <h4 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: '600', 
+                    color: '#2d3748'
+                  }}>
                     文件列表 ({selectedFiles.length}) - 有效: {validBatchFileCount}
-                  </h2>
+                  </h4>
                   <button
                     onClick={() => setSelectedFiles([])}
                     disabled={isImporting}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
+                    style={{
+                      padding: '8px 16px',
+                      background: '#e2e8f0',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      cursor: isImporting ? 'not-allowed' : 'pointer',
+                      opacity: isImporting ? 0.6 : 1
+                    }}
                   >
                     清空全部
                   </button>
                 </div>
                 
-                <div className="max-h-96 overflow-y-auto space-y-3">
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   {selectedFiles.map(file => (
-                    <div key={file.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
-                            {getStatusIcon(file.status)}
-                            <span className="font-medium">{file.fileName}</span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusTagColor(file.status)}`}>
-                              {getStatusTagText(file.status)}
+                    <div key={file.id} style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: '12px',
+                      background: 'white'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: '600', color: '#2d3748' }}>{file.fileName}</span>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              background: file.status === 'valid' ? '#d1fae5' : 
+                                         file.status === 'invalid' ? '#fee2e2' : '#f3f4f6',
+                              color: file.status === 'valid' ? '#065f46' : 
+                                    file.status === 'invalid' ? '#dc2626' : '#6b7280'
+                            }}>
+                              {file.status === 'pending' && '等待中'}
+                              {file.status === 'valid' && '✅ 有效'}
+                              {file.status === 'invalid' && '❌ 无效'}
+                              {file.status === 'success' && '✅ 成功'}
+                              {file.status === 'failed' && '❌ 失败'}
                             </span>
                           </div>
                           
                           {file.status === 'valid' && (
-                            <div className="mb-3">
+                            <div style={{ marginBottom: '12px' }}>
                               <input
                                 type="text"
                                 value={file.workflowName}
                                 onChange={(e) => updateBatchWorkflowName(file.id, e.target.value)}
                                 placeholder="工作流名称"
                                 disabled={isImporting}
-                                className="w-80 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                style={{
+                                  width: '300px',
+                                  padding: '8px 12px',
+                                  border: '1px solid #e2e8f0',
+                                  borderRadius: '6px',
+                                  fontSize: '14px'
+                                }}
                               />
                             </div>
                           )}
 
                           {file.preview && (
-                            <div className="bg-white p-3 rounded text-sm text-gray-600">
+                            <div style={{
+                              background: '#f7fafc',
+                              padding: '12px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              color: '#4a5568'
+                            }}>
                               <div>名称: {file.preview.name} | 节点: {file.preview.nodeCount} | 连接: {file.preview.edgeCount} | 版本: {file.preview.version}</div>
                               {file.preview.description && <div>描述: {file.preview.description}</div>}
                             </div>
                           )}
 
                           {file.error && (
-                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                            <div style={{
+                              background: '#fed7d7',
+                              color: '#c53030',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              marginTop: '8px'
+                            }}>
                               {file.error}
                             </div>
                           )}
@@ -994,7 +1170,15 @@ const Page = () => {
                         <button
                           onClick={() => removeBatchFile(file.id)}
                           disabled={isImporting}
-                          className="px-2 py-1 text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors duration-200 disabled:opacity-50"
+                          style={{
+                            padding: '6px',
+                            background: 'transparent',
+                            border: 'none',
+                            fontSize: '18px',
+                            cursor: isImporting ? 'not-allowed' : 'pointer',
+                            color: '#e53e3e',
+                            opacity: isImporting ? 0.6 : 1
+                          }}
                         >
                           ❌
                         </button>
@@ -1007,38 +1191,93 @@ const Page = () => {
 
             {/* 导入进度 */}
             {importProgress && (
-              <div className="mb-6">
-                <h3 className="text-md font-semibold text-gray-900 mb-3">
+              <div style={{ 
+                marginBottom: '24px',
+                padding: '20px',
+                background: '#f0f4ff',
+                border: '1px solid #c7d2fe',
+                borderRadius: '12px'
+              }}>
+                <h4 style={{ 
+                  fontSize: '16px', 
+                  fontWeight: '600', 
+                  color: '#3730a3',
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
                   📊 导入进度
-                </h3>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{importProgress.totalCount}</div>
-                    <p className="text-gray-600">总数</p>
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e40af' }}>
+                      {importProgress.totalCount}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#64748b' }}>总数</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{importProgress.successCount}</div>
-                    <p className="text-gray-600">成功</p>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
+                      {importProgress.successCount}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#64748b' }}>成功</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">{importProgress.failedCount}</div>
-                    <p className="text-gray-600">失败</p>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#dc2626' }}>
+                      {importProgress.failedCount}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#64748b' }}>失败</div>
                   </div>
                 </div>
                 {importProgress.currentProcessing && (
-                  <div className="text-center text-blue-600">
+                  <div style={{ 
+                    marginTop: '12px', 
+                    fontSize: '14px', 
+                    color: '#4338ca',
+                    textAlign: 'center'
+                  }}>
                     正在处理: {importProgress.currentProcessing}
                   </div>
                 )}
               </div>
             )}
 
+            {/* 错误提示 */}
+            {parseError && (
+              <div style={{
+                background: '#fed7d7',
+                color: '#c53030',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginBottom: '24px',
+                border: '1px solid #feb2b2'
+              }}>
+                ❌ {parseError}
+              </div>
+            )}
+
             {/* 操作按钮 */}
-            <div className="flex justify-center space-x-4">
+            <div style={{ 
+              display: 'flex', 
+              gap: '16px', 
+              justifyContent: 'center'
+            }}>
               <button
                 onClick={handleReset}
                 disabled={isImporting}
-                className="px-6 py-3 border-2 border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+                style={{
+                  padding: '14px 28px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '10px',
+                  background: 'white',
+                  color: '#4a5568',
+                  cursor: isImporting ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  opacity: isImporting ? 0.6 : 1
+                }}
               >
                 🔄 重置
               </button>
@@ -1046,68 +1285,86 @@ const Page = () => {
               <button
                 onClick={handleBatchImport}
                 disabled={isImporting || validBatchFileCount === 0}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  padding: '14px 28px',
+                  border: 'none',
+                  borderRadius: '10px',
+                  background: isImporting || validBatchFileCount === 0 
+                    ? '#a0a0a0' 
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  cursor: isImporting || validBatchFileCount === 0 ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  transform: isImporting ? 'scale(0.98)' : 'scale(1)'
+                }}
               >
-                {isImporting ? '批量导入中...' : `📦 批量导入 (${validBatchFileCount}个文件)`}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 错误提示 */}
-        {parseError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-red-800 font-semibold mb-2">导入错误</h3>
-                <p className="text-red-700 whitespace-pre-line">{parseError}</p>
-              </div>
-              <button
-                onClick={() => setParseError('')}
-                className="text-red-400 hover:text-red-600"
-              >
-                ✕
+                {isImporting ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ 
+                      animation: 'spin 1s linear infinite',
+                      display: 'inline-block'
+                    }}>
+                      ⏳
+                    </span>
+                    批量导入中...
+                  </span>
+                ) : (
+                  `📦 批量导入 (${validBatchFileCount}个文件)`
+                )}
               </button>
             </div>
           </div>
         )}
 
         {/* 帮助信息 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div style={{ 
+          padding: '24px 40px 40px 40px',
+          background: '#f8fafc',
+          borderTop: '1px solid #e2e8f0'
+        }}>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', marginBottom: '12px' }}>
             💡 使用说明
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          </h4>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-2">
+              <h5 style={{ fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
                 🎯 单个导入
-              </h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• 支持JSON格式的工作流文件</li>
-                <li>• 文件大小限制：最大10MB</li>
-                <li>• 自动预览工作流信息</li>
-                <li>• 支持拖拽上传</li>
+              </h5>
+              <ul style={{ fontSize: '13px', color: '#718096', lineHeight: '1.6', paddingLeft: '16px', margin: '0' }}>
+                <li>支持JSON格式的工作流文件</li>
+                <li>文件大小限制：最大10MB</li>
+                <li>自动预览工作流信息</li>
+                <li>支持拖拽上传</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-2">
+              <h5 style={{ fontSize: '14px', fontWeight: '600', color: '#4a5568', marginBottom: '8px' }}>
                 📦 批量导入
-              </h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• 支持同时导入最多50个文件</li>
-                <li>• 批量模式：允许部分失败</li>
-                <li>• 事务模式：全部成功或全部失败</li>
-                <li>• 实时进度跟踪</li>
+              </h5>
+              <ul style={{ fontSize: '13px', color: '#718096', lineHeight: '1.6', paddingLeft: '16px', margin: '0' }}>
+                <li>支持同时导入最多50个文件</li>
+                <li>批量模式：允许部分失败</li>
+                <li>事务模式：全部成功或全部失败</li>
+                <li>实时进度跟踪</li>
               </ul>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-sm">
-              <strong>注意：</strong>工作流名称必须以字母开头，支持单个字母，只能包含字母、数字和下划线
-            </p>
+          <div style={{ marginTop: '16px', fontSize: '13px', color: '#718096' }}>
+            <strong>注意：</strong>工作流名称必须以字母开头，支持单个字母，只能包含字母、数字和下划线
           </div>
         </div>
       </div>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };
