@@ -971,6 +971,8 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...nodes.NodeO
 					return ctx
 				}
 
+				c.RootCtx.ResumeEvent.Popped = true
+
 				return ctx
 			},
 		}).Handler()

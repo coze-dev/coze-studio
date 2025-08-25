@@ -67,6 +67,16 @@ func (i *invokableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return i.info, nil
 }
 
+func resumeOnce(rInfo *entity.ResumeRequest, callID string, allIEs map[string]*entity.ToolInterruptEvent) {
+	if rInfo != nil {
+		rInfo.Resumed = true
+	}
+
+	if allIEs != nil {
+		delete(allIEs, callID)
+	}
+}
+
 func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	rInfo, allIEs := execute.GetResumeRequest(opts...)
 	var (
@@ -88,9 +98,10 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	}
 
 	cfg := execute.GetExecuteConfig(opts...)
+	defer resumeOnce(rInfo, callID, allIEs)
 
 	var runOpts []WorkflowRunnerOption
-	if rInfo != nil {
+	if rInfo != nil && !rInfo.Resumed {
 		runOpts = append(runOpts, WithResumeReq(rInfo))
 	} else {
 		runOpts = append(runOpts, WithInput(argumentsInJSON))
@@ -237,9 +248,10 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	cfg := execute.GetExecuteConfig(opts...)
+	defer resumeOnce(rInfo, callID, allIEs)
 
 	var runOpts []WorkflowRunnerOption
-	if rInfo != nil {
+	if rInfo != nil && !rInfo.Resumed {
 		runOpts = append(runOpts, WithResumeReq(rInfo))
 	} else {
 		runOpts = append(runOpts, WithInput(argumentsInJSON))

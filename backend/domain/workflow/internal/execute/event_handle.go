@@ -283,7 +283,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, fmt.Errorf("failed to update workflow execution to interrupted for execution id %d, current status is %v", exeID, currentStatus)
 		}
 
-		if event.RootCtx.ResumeEvent != nil {
+		if event.RootCtx.ResumeEvent != nil && !event.RootCtx.ResumeEvent.Popped {
 			needPop := false
 			for _, ie := range event.InterruptEvents {
 				if ie.NodeKey == event.RootCtx.ResumeEvent.NodeKey {

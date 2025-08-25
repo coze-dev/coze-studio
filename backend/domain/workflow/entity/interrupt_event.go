@@ -35,6 +35,7 @@ type InterruptEvent struct {
 	NodeIcon      string             `json:"node_icon,omitempty"`
 	EventType     InterruptEventType `json:"event_type"`
 	NodePath      []string           `json:"node_path,omitempty"`
+	Popped        bool               `json:"popped,omitempty"`
 
 	// index within composite node -> interrupt info for that index
 	// TODO: separate the following fields with InterruptEvent
@@ -60,6 +61,7 @@ type ResumeRequest struct {
 	ExecuteID  int64
 	EventID    int64
 	ResumeData string
+	Resumed    bool
 }
 
 func (r *ResumeRequest) GetResumeID() string {
