@@ -346,6 +346,43 @@ const WorkflowBatchImport: React.FC = () => {
           }}>
             支持批量上传多个工作流JSON文件，可选择批量模式（允许部分失败）或事务模式（全部成功或全部失败）
           </p>
+          
+          {/* 测试API连接按钮 */}
+          <button
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/workflow_api/batch_import', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    workflow_files: [],
+                    space_id: space_id,
+                    creator_id: 'test',
+                    import_format: 'json',
+                    import_mode: 'batch'
+                  })
+                });
+                const result = await response.json();
+                console.log('API测试结果:', result);
+                alert(`API连接测试: ${response.ok ? '成功' : '失败'}\n状态码: ${response.status}\n响应: ${JSON.stringify(result)}`);
+              } catch (error) {
+                console.error('API测试失败:', error);
+                alert(`API测试失败: ${error}`);
+              }
+            }}
+            style={{
+              marginTop: '16px',
+              padding: '8px 16px',
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            🧪 测试API连接
+          </button>
         </div>
 
         {/* 导入模式选择 */}

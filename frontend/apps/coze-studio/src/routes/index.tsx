@@ -34,6 +34,7 @@ import {
   exploreSubMenu,
   WorkflowPage,
   WorkflowImportPage,
+  WorkflowBatchImportPage,
   ProjectIDE,
   ProjectIDEPublish,
   Library,
@@ -185,6 +186,15 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 {
                   path: 'workflow/import',
                   Component: WorkflowImportPage,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.LIBRARY,
+                  }),
+                },
+
+                // workflow batch import
+                {
+                  path: 'workflow/batch-import',
+                  Component: WorkflowBatchImportPage,
                   loader: () => ({
                     subMenuKey: SpaceSubModuleEnum.LIBRARY,
                   }),
