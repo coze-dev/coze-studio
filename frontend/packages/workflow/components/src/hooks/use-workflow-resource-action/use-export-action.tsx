@@ -35,6 +35,8 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
     try {
       setExporting(true);
       
+      console.log('Starting export:', { recordId: record.res_id, format });
+      
       // 调用导出API
       const response = await fetch('/api/workflow_api/export', {
         method: 'POST',
@@ -48,11 +50,16 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         }),
       });
 
+      console.log('API Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(I18n.t('workflow_export_failed'));
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`API Error: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
+      console.log('API Result:', result);
       
       if (result.code === 200 && result.data?.workflow_export) {
         const exportData = result.data.workflow_export;
@@ -63,13 +70,25 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         if (format === 'yml' || format === 'yaml') {
           // 对于YAML格式，使用后端返回的序列化数据
           fileContent = exportData.serialized_data || '';
-          fileName = `${record.name}_workflow_export.${format}`;
+          if (!fileContent) {
+            console.warn('YAML serialized_data is empty, fallback to JSON stringify');
+            fileContent = JSON.stringify(exportData, null, 2);
+          }
+          fileName = `${record.name || 'workflow'}_export.${format}`;
           mimeType = 'text/yaml';
         } else {
           // 对于JSON格式，使用原有逻辑
           fileContent = JSON.stringify(exportData, null, 2);
-          fileName = `${record.name}_workflow_export.json`;
+          fileName = `${record.name || 'workflow'}_export.json`;
           mimeType = 'application/json';
+        }
+
+        console.log('File content length:', fileContent.length);
+        console.log('File name:', fileName);
+
+        // 检查文件内容是否为空
+        if (!fileContent || fileContent.trim() === '') {
+          throw new Error('Export data is empty');
         }
 
         // 创建并下载文件
@@ -78,18 +97,21 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         const link = document.createElement('a');
         link.href = url;
         link.download = fileName;
+        link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        Toast.success(I18n.t('workflow_export_success'));
+        Toast.success(I18n.t('workflow_export_success', 'Export successful'));
+        console.log('Export completed successfully');
       } else {
-        throw new Error(result.msg || I18n.t('workflow_export_failed'));
+        console.error('Invalid API response:', result);
+        throw new Error(result.msg || 'Invalid response from server');
       }
     } catch (error) {
       console.error('导出工作流失败:', error);
-      Toast.error(I18n.t('workflow_export_failed'));
+      Toast.error(error instanceof Error ? error.message : 'Export failed');
     } finally {
       setExporting(false);
     }
@@ -101,10 +123,19 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   };
 
   const handleConfirmExport = async () => {
-    if (!selectedRecord) return;
+    console.log('handleConfirmExport called', { selectedRecord, selectedFormat });
+    if (!selectedRecord) {
+      console.error('No selected record');
+      return;
+    }
     setShowFormatModal(false);
-    await performExport(selectedRecord, selectedFormat);
-    setSelectedRecord(null);
+    try {
+      await performExport(selectedRecord, selectedFormat);
+    } catch (error) {
+      console.error('Error in handleConfirmExport:', error);
+    } finally {
+      setSelectedRecord(null);
+    }
   };
 
   const handleCancelExport = () => {
@@ -125,14 +156,21 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         <p className="mb-3">{I18n.t('workflow_export_format_description', '请选择工作流导出格式：')}</p>
         <Radio.Group
           value={selectedFormat}
-          onChange={(e) => setSelectedFormat(e.target.value as ExportFormat)}
+          onChange={(value) => {
+            console.log('Format changed to:', value);
+            setSelectedFormat(value as ExportFormat);
+          }}
         >
-          <Radio value="json" className="mb-2">
-            JSON {I18n.t('workflow_export_format_json_desc', '(结构化数据格式)')}
-          </Radio>
-          <Radio value="yml">
-            YAML {I18n.t('workflow_export_format_yml_desc', '(可读性更好的配置格式)')}
-          </Radio>
+          <div className="mb-2">
+            <Radio value="json">
+              JSON {I18n.t('workflow_export_format_json_desc', '(结构化数据格式)')}
+            </Radio>
+          </div>
+          <div>
+            <Radio value="yml">
+              YAML {I18n.t('workflow_export_format_yml_desc', '(可读性更好的配置格式)')}
+            </Radio>
+          </div>
         </Radio.Group>
       </div>
     </Modal>
