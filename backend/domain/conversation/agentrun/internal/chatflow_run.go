@@ -45,7 +45,18 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 		messageEvent: art.MessageEvent,
 	}
 	resumeInfo := parseResumeInfo(ctx, art.GetHistory())
-	wfID, _ := strconv.ParseInt(art.GetAgentInfo().LayoutInfo.WorkflowId, 10, 64)
+	
+	// 从Workflow列表中获取第一个WorkflowId，而不是从LayoutInfo
+	var wfID int64
+	agentInfo := art.GetAgentInfo()
+	if len(agentInfo.Workflow) > 0 && agentInfo.Workflow[0].WorkflowId != nil {
+		wfID = *agentInfo.Workflow[0].WorkflowId
+	} else {
+		// 兼容性：如果Workflow列表为空，尝试从LayoutInfo获取
+		if agentInfo.LayoutInfo != nil && agentInfo.LayoutInfo.WorkflowId != "" {
+			wfID, _ = strconv.ParseInt(agentInfo.LayoutInfo.WorkflowId, 10, 64)
+		}
+	}
 
 	if wfID == 0 {
 		mh.handlerErr(ctx, errorx.New(errno.ErrAgentRunWorkflowNotFound))

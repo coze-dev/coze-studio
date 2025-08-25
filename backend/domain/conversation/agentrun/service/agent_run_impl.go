@@ -163,6 +163,29 @@ import (
  }
 
  func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, rtDependence *runtimeDependence) (err error) {
+	 // 检查bot_mode，如果是WorkflowMode(2)，使用内部的AgentRuntime来处理
+	 if rtDependence.agentInfo != nil && rtDependence.agentInfo.BotMode == 2 {
+		 // 使用内部的AgentRuntime来处理WorkflowMode
+		 art := &internal.AgentRuntime{
+			 RunRecord:     &entity.RunRecordMeta{ID: rtDependence.runID},
+			 AgentInfo:     rtDependence.agentInfo,
+			 QuestionMsgID: rtDependence.questionMsgID,
+			 RunMeta:       rtDependence.runMeta,
+			 StartTime:     rtDependence.startTime,
+			 Input:         input,
+			 HistoryMsg:    historyMsg,
+			 SW:            sw,
+			 RunProcess:    c.runProcess,
+			 RunRecordRepo: c.Components.RunRecordRepo,
+			 ImagexClient:  c.Components.ImagexSVC,
+			 MessageEvent:  c.runEvent,
+		 }
+		 
+		 // 调用Run方法，这会根据bot_mode选择ChatflowRun或AgentStreamExecute
+		 return art.Run(ctx)
+	 }
+
+	 // 原有的SingleAgent逻辑
 	 mainChan := make(chan *entity.AgentRespEvent, 100)
 
 	 // 将历史消息和输入转换为 schema.Message 格式

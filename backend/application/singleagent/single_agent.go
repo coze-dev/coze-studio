@@ -372,6 +372,16 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.Database = patch.DatabaseList
 	}
 
+	// Fix: Add missing BotMode handling
+	if patch.BotMode != nil {
+		target.BotMode = *patch.BotMode
+	}
+
+	// Fix: Add missing LayoutInfo handling for WorkflowMode
+	if patch.LayoutInfo != nil {
+		target.LayoutInfo = patch.LayoutInfo
+	}
+
 	return target, nil
 }
 
@@ -420,7 +430,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		TaskInfo:                &bot_common.TaskInfo{},
 		CreateTime:              do.CreatedAt / 1000,
 		UpdateTime:              do.UpdatedAt / 1000,
-		BotMode:                 bot_common.BotMode_SingleMode,
+		BotMode:                 do.BotMode,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Status:                  bot_common.BotStatus_Using,
 		DatabaseList:            do.Database,
