@@ -146,9 +146,12 @@ export const useWorkflowResourceMenuActions = (
     extraActions.push({
       hide: false,
       disabled: exporting,
-      actionKey: ActionKey.Export,
-      actionText: I18n.t('export'),
-      handler: () => exportAction(record),
+      actionKey: 'export',
+      actionText: I18n.t('export', '导出'),
+      handler: () => {
+        console.log('Export action handler called for record:', record);
+        exportAction(record);
+      },
     });
 
     return (

@@ -29,6 +29,8 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   const [selectedRecord, setSelectedRecord] = useState<ResourceInfo | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json');
 
+  console.log('useExportAction hook initialized', { exporting, showFormatModal, selectedFormat });
+
   const performExport = async (record: ResourceInfo, format: ExportFormat) => {
     if (exporting) return;
 
@@ -118,24 +120,28 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   };
 
   const handleExport = (record: ResourceInfo) => {
+    console.log('handleExport called with record:', record);
     setSelectedRecord(record);
     setShowFormatModal(true);
   };
 
-  const handleConfirmExport = async () => {
+  const handleConfirmExport = () => {
     console.log('handleConfirmExport called', { selectedRecord, selectedFormat });
+    
     if (!selectedRecord) {
       console.error('No selected record');
+      Toast.error('No record selected');
       return;
     }
+    
+    // 立即关闭Modal
     setShowFormatModal(false);
-    try {
-      await performExport(selectedRecord, selectedFormat);
-    } catch (error) {
-      console.error('Error in handleConfirmExport:', error);
-    } finally {
-      setSelectedRecord(null);
-    }
+    
+    // 立即开始导出（不等待结果）
+    performExport(selectedRecord, selectedFormat);
+    
+    // 清理状态
+    setSelectedRecord(null);
   };
 
   const handleCancelExport = () => {
@@ -143,17 +149,29 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
     setSelectedRecord(null);
   };
 
+  console.log('Rendering exportModal', { showFormatModal, selectedRecord, selectedFormat });
+
   const exportModal = (
     <Modal
       visible={showFormatModal}
       title={I18n.t('workflow_export_format_title', '选择导出格式')}
-      onOk={handleConfirmExport}
-      onCancel={handleCancelExport}
-      confirmLoading={exporting}
+      onOk={(e) => {
+        console.log('Modal onOk event triggered', e);
+        handleConfirmExport();
+      }}
+      onCancel={(e) => {
+        console.log('Modal onCancel event triggered', e);
+        handleCancelExport();
+      }}
+      confirmLoading={false}
       width={400}
+      okText={I18n.t('confirm', '确认')}
+      cancelText={I18n.t('cancel', '取消')}
+      destroyOnClose={true}
     >
       <div className="mb-4">
         <p className="mb-3">{I18n.t('workflow_export_format_description', '请选择工作流导出格式：')}</p>
+        <p className="mb-2 text-sm text-gray-500">当前选择: {selectedFormat}</p>
         <Radio.Group
           value={selectedFormat}
           onChange={(value) => {
