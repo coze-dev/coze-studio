@@ -404,3 +404,23 @@ func DraftProjectCopy(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetOnlineAppData .
+// @router /v1/apps/:app_id [GET]
+func GetOnlineAppData(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project.GetOnlineAppDataRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.GetOnlineAppData(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
