@@ -138,7 +138,10 @@ type ConversationRepository interface {
 	GetStaticConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error)
 	GetDynamicConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (*entity.DynamicConversation, bool, error)
 }
-
 type WorkflowConfig interface {
 	GetNodeOfCodeConfig() *config.NodeOfCodeConfig
+}
+
+type Suggester interface {
+	Suggest(ctx context.Context, input *vo.SuggestInfo) ([]string, error)
 }

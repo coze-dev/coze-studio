@@ -20,11 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -613,6 +613,11 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		return nil, err
 	}
 
+	userSchemaMessage, err := w.toSchemaMessage(ctx, lastUserMessage)
+	if err != nil {
+		return nil, err
+	}
+
 	if existed {
 		wfExecution, existed, err := domainWorkflow.GetRepository().GetWorkflowExecution(ctx, info.ExecID)
 		if err != nil {
@@ -652,43 +657,17 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 				return nil, err
 			}
 			return schema.StreamReaderWithConvert(sr, convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
-				appID:          resolveAppID,
-				conversationID: conversationID,
-				roundID:        roundID,
-				workflowID:     mustParseInt64(req.GetWorkflowID()),
-				sectionID:      sectionID,
-				unbinding:      unbinding,
+				appID:            resolveAppID,
+				conversationID:   conversationID,
+				roundID:          roundID,
+				workflowID:       mustParseInt64(req.GetWorkflowID()),
+				sectionID:        sectionID,
+				unbinding:        unbinding,
+				userMessage:      userSchemaMessage,
+				suggestReplyInfo: req.GetSuggestReplyInfo(),
 			})), nil
 		}
 
-	}
-
-	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
-	if err != nil {
-		return nil, err
-	}
-
-	if len(historyMessages) > 0 {
-		g := taskgroup.NewTaskGroup(ctx, len(historyMessages))
-		for _, hm := range historyMessages {
-			hMsg := hm
-			g.Go(func() error {
-				_, err := messageClient.Create(ctx, hMsg)
-				if err != nil {
-					return err
-				}
-				return nil
-			})
-		}
-		err = g.Wait()
-		if err != nil {
-			logs.CtxWarnf(ctx, "create history message failed, err=%v", err)
-		}
-	}
-
-	userSchemaMessage, err := w.toSchemaMessage(ctx, lastUserMessage)
-	if err != nil {
-		return nil, err
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
@@ -713,6 +692,28 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		Cancellable:    isDebug,
 	}
 
+	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
+	if err != nil {
+		return nil, err
+	}
+
+	if len(historyMessages) > 0 {
+		g := taskgroup.NewTaskGroup(ctx, len(historyMessages))
+		for _, hm := range historyMessages {
+			hMsg := hm
+			g.Go(func() error {
+				_, err := messageClient.Create(ctx, hMsg)
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+		}
+		err = g.Wait()
+		if err != nil {
+			logs.CtxWarnf(ctx, "create history message failed, err=%v", err)
+		}
+	}
 	parameters["USER_INPUT"], err = w.makeChatFlowUserInput(ctx, lastUserMessage)
 	if err != nil {
 		return nil, err
@@ -724,12 +725,14 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	return schema.StreamReaderWithConvert(sr, convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
-		appID:          resolveAppID,
-		conversationID: conversationID,
-		roundID:        roundID,
-		workflowID:     mustParseInt64(req.GetWorkflowID()),
-		sectionID:      sectionID,
-		unbinding:      unbinding,
+		appID:            resolveAppID,
+		conversationID:   conversationID,
+		roundID:          roundID,
+		workflowID:       mustParseInt64(req.GetWorkflowID()),
+		sectionID:        sectionID,
+		unbinding:        unbinding,
+		userMessage:      userSchemaMessage,
+		suggestReplyInfo: req.GetSuggestReplyInfo(),
 	})), nil
 
 }
@@ -1042,12 +1045,14 @@ func (w *ApplicationService) toSchemaMessage(ctx context.Context, msg *workflow.
 }
 
 type convertToChatFlowInfo struct {
-	appID          int64
-	conversationID int64
-	roundID        int64
-	workflowID     int64
-	sectionID      int64
-	unbinding      func() error
+	userMessage      *schema.Message
+	appID            int64
+	conversationID   int64
+	roundID          int64
+	workflowID       int64
+	sectionID        int64
+	unbinding        func() error
+	suggestReplyInfo *workflow.SuggestReplyInfo
 }
 
 func parserInput(inputString string) string {
@@ -1102,6 +1107,41 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			}
 			switch msg.StateMessage.Status {
 			case entity.WorkflowSuccess:
+				suggestWorkflowResponse := make([]*workflow.ChatFlowRunResponse, 0, 3)
+				if info.suggestReplyInfo != nil && info.suggestReplyInfo.IsSetSuggestReplyMode() && info.suggestReplyInfo.GetSuggestReplyMode() != workflow.SuggestReplyInfoMode_Disable {
+					sInfo := &vo.SuggestInfo{
+						UserInput:    info.userMessage,
+						AnswerInput:  schema.AssistantMessage(intermediateMessage.Content, nil),
+						PersonaInput: info.suggestReplyInfo.CustomizedSuggestPrompt,
+					}
+
+					suggests, err := domainWorkflow.GetRepository().Suggest(ctx, sInfo)
+					if err != nil {
+						return nil, err
+					}
+
+					for _, s := range suggests {
+						suggestWorkflowResponse = append(suggestWorkflowResponse, &workflow.ChatFlowRunResponse{
+							Event: string(vo.ChatFlowMessageCompleted),
+							Data: func() string {
+								s, _ := sonic.MarshalString(&vo.MessageDetail{
+									ID:             strconv.FormatInt(time.Now().UnixMilli(), 10),
+									ChatID:         strconv.FormatInt(roundID, 10),
+									ConversationID: strconv.FormatInt(conversationID, 10),
+									SectionID:      strconv.FormatInt(sectionID, 10),
+									BotID:          strconv.FormatInt(appID, 10),
+									Role:           string(schema.Assistant),
+									Type:           "follow_up",
+									ContentType:    "text",
+									Content:        s,
+								})
+								return s
+							}(),
+						})
+
+					}
+				}
+
 				chatDoneEvent := &vo.ChatFlowDetail{
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
@@ -1132,7 +1172,8 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 						return nil, err
 					}
 				}
-				return []*workflow.ChatFlowRunResponse{
+
+				return append(suggestWorkflowResponse, []*workflow.ChatFlowRunResponse{
 					{
 						Event: string(vo.ChatFlowCompleted),
 						Data:  data,
@@ -1141,7 +1182,8 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 						Event: string(vo.ChatFlowDone),
 						Data:  doneData,
 					},
-				}, err
+				}...), nil
+
 			case entity.WorkflowFailed:
 				var wfe vo.WorkflowError
 				if !errors.As(msg.StateMessage.LastError, &wfe) {

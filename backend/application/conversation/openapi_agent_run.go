@@ -394,7 +394,7 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 		CompletedAt:    ptr.Of(int32(runMeta.CompletedAt / 1000)),
 		FailedAt:       ptr.Of(int32(runMeta.FailedAt / 1000)),
 	}
-	if runMeta != nil && runMeta.Usage != nil {
+	if runMeta.Usage != nil {
 		resp.ChatV3ChatDetail.Usage = &run.Usage{
 			TokenCount:   ptr.Of(int32(runMeta.Usage.LlmTotalTokens)),
 			InputTokens:  ptr.Of(int32(runMeta.Usage.LlmPromptTokens)),

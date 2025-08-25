@@ -19,6 +19,7 @@ package dal
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 
@@ -161,7 +162,10 @@ func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.Agen
 	}
 
 	timeNow := time.Now().UnixMilli()
-
+	creatorID, err := strconv.ParseInt(runMeta.UserID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 	return &model.RunRecord{
 		ID:             runID,
 		ConversationID: runMeta.ConversationID,
@@ -171,6 +175,7 @@ func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.Agen
 		ChatRequest:    string(reqOrigin),
 		UserID:         runMeta.UserID,
 		CreatedAt:      timeNow,
+		CreatorID:      creatorID,
 	}, nil
 }
 

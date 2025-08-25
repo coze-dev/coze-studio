@@ -123,6 +123,7 @@ type Repository interface {
 	GetKnowledgeRecallChatModel() model.BaseChatModel
 	ConversationRepository
 	WorkflowConfig
+	Suggester
 }
 
 var repositorySingleton Repository

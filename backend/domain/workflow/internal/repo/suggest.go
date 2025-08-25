@@ -1,0 +1,93 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package repo
+
+import (
+	"context"
+
+	"github.com/cloudwego/eino/components/model"
+	"github.com/cloudwego/eino/components/prompt"
+	"github.com/cloudwego/eino/compose"
+	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+)
+
+const SUGGESTION_PROMPT = `
+You are a recommendation expert who can analyze users' questions and answers, 
+identify the interest points of previous questions, and provide the three most likely unique questions that the user will ask next.
+These questions must meet the above requirements and must be returned in the format of a string array containing these three recommended questions. 
+
+### Personal
+{{ suggest_persona }}
+
+Note:
+- The output language must be consistent with the language of the user's question.
+- Three recommended questions must be returned in the format of a string array.
+- Three recommended questions must be returned in the format of a string array.
+- The returned format must be an a string array. format example:
+	["Forbidden City", "Great Wall", "Summer Palace"]
+
+`
+
+type suggesterV3 struct {
+	r einoCompose.Runnable[*vo.SuggestInfo, []string]
+}
+type state struct {
+	userMessage *schema.Message
+	answer      *schema.Message
+}
+
+func NewSuggester(chatModel model.BaseChatModel) (workflow.Suggester, error) {
+	chain := einoCompose.NewChain[*vo.SuggestInfo, []string](einoCompose.WithGenLocalState(func(ctx context.Context) (s *state) {
+		return &state{}
+	}))
+	r, err := chain.AppendLambda(einoCompose.InvokableLambda(func(ctx context.Context, input *vo.SuggestInfo) (output map[string]any, err error) {
+		_ = compose.ProcessState(ctx, func(ctx context.Context, s *state) error {
+			s.userMessage = input.UserInput
+			s.answer = input.AnswerInput
+			return nil
+		})
+		output = map[string]any{}
+		if input.PersonaInput != nil {
+			output["persona_input"] = *input.PersonaInput
+		}
+		return
+	})).AppendChatTemplate(prompt.FromMessages(schema.Jinja2, schema.SystemMessage(SUGGESTION_PROMPT))).AppendChatModel(chatModel, compose.WithStatePreHandler(func(ctx context.Context, in []*schema.Message, state *state) ([]*schema.Message, error) {
+		return append(in, []*schema.Message{state.userMessage, state.answer}...), nil
+	})).AppendLambda(einoCompose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output []string, err error) {
+		suggests := make([]string, 0)
+		err = sonic.UnmarshalString(input.Content, &suggests)
+		if err != nil {
+			return
+		}
+		return suggests, err
+	})).Compile(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &suggesterV3{r: r}, nil
+
+}
+
+func (s *suggesterV3) Suggest(ctx context.Context, info *vo.SuggestInfo) ([]string, error) {
+	return s.r.Invoke(ctx, info)
+}

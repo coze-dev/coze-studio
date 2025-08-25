@@ -16,6 +16,8 @@
 
 package vo
 
+import "github.com/cloudwego/eino/schema"
+
 type ChatFlowEvent string
 
 const (
@@ -73,4 +75,10 @@ type ErrorDetail struct {
 	Code     string `form:"code,required" json:"code,required"`
 	Msg      string `form:"msg,required" json:"msg,required"`
 	DebugUrl string `form:"debug_url" json:"debug_url,omitempty"`
+}
+
+type SuggestInfo struct {
+	UserInput    *schema.Message `json:"user_input,omitempty"`
+	AnswerInput  *schema.Message `json:"answer,omitempty"`
+	PersonaInput *string         `json:"persona_input,omitempty"`
 }

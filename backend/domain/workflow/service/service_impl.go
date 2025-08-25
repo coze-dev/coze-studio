@@ -25,6 +25,7 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
+
 	"strconv"
 
 	einoCompose "github.com/cloudwego/eino/compose"
@@ -75,8 +76,9 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 }
 
 func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel, workflowConfig workflow.WorkflowConfig) workflow.Repository {
-	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel, workflowConfig)
+	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel, cfg workflow.WorkflowConfig) (workflow.Repository, error) {
+	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel, cfg)
+
 }
 
 func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
