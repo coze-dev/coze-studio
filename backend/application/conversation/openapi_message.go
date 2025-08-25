@@ -107,18 +107,19 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 		content := dm.Content
 
 		msg := &message.OpenMessageApi{
-			ID:             dm.ID,
-			ConversationID: dm.ConversationID,
-			BotID:          dm.AgentID,
-			Role:           string(dm.Role),
-			Type:           string(dm.MessageType),
-			Content:        content,
-			ContentType:    string(dm.ContentType),
-			SectionID:      strconv.FormatInt(dm.SectionID, 10),
-			CreatedAt:      dm.CreatedAt / 1000,
-			UpdatedAt:      dm.UpdatedAt / 1000,
-			ChatID:         dm.RunID,
-			MetaData:       dm.Ext,
+			ID:               dm.ID,
+			ConversationID:   dm.ConversationID,
+			BotID:            dm.AgentID,
+			Role:             string(dm.Role),
+			Type:             string(dm.MessageType),
+			Content:          content,
+			ContentType:      string(dm.ContentType),
+			SectionID:        strconv.FormatInt(dm.SectionID, 10),
+			CreatedAt:        dm.CreatedAt / 1000,
+			UpdatedAt:        dm.UpdatedAt / 1000,
+			ChatID:           dm.RunID,
+			MetaData:         dm.Ext,
+			ReasoningContent: ptr.Of(dm.ReasoningContent),
 		}
 		if dm.ContentType == message3.ContentTypeMix && dm.DisplayContent != "" {
 			msg.Content = m.parseDisplayContent(ctx, dm)
