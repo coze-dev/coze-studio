@@ -19,6 +19,7 @@ import { useBoolean } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
 import { Modal, Upload, Button, Input, Form, message, Space, Typography, Tag, Progress } from '@coze-arch/coze-design';
 import { IconUpload, IconFile, IconCheckCircle, IconInfoCircle } from '@coze-arch/coze-design/icons';
+import * as yaml from 'js-yaml';
 
 import { useImportAction } from './use-import-action';
 import { type WorkflowResourceActionProps } from './type';
@@ -37,15 +38,18 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
 
   const handleFileSelect = async (file: File) => {
     try {
-      // 验证文件类型
-      if (!file.name.endsWith('.json')) {
-        message.error(I18n.t('workflow_import_failed'));
+      // 验证文件类型 - 支持 JSON, YML, YAML
+      const fileName = file.name.toLowerCase();
+      const isValidFile = fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
+      
+      if (!isValidFile) {
+        message.error(I18n.t('workflow_import_error_invalid_file'));
         return false;
       }
 
       // 验证文件大小（限制为10MB）
       if (file.size > 10 * 1024 * 1024) {
-        message.error(I18n.t('workflow_import_failed'));
+        message.error(I18n.t('workflow_import_error_invalid_file'));
         return false;
       }
 
@@ -55,17 +59,30 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
       // 读取并预览文件内容
       const fileContent = await file.text();
       try {
-        const workflowData = JSON.parse(fileContent);
-        if (workflowData.name && workflowData.schema) {
-          setWorkflowPreview(workflowData);
-          setWorkflowName(workflowData.name);
-          form.setFieldsValue({ workflowName: workflowData.name });
+        let workflowData;
+        
+        // 根据文件扩展名选择解析器
+        if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
+          workflowData = yaml.load(fileContent) as any;
         } else {
-          message.error(I18n.t('workflow_import_failed'));
+          workflowData = JSON.parse(fileContent);
+        }
+        
+        // 验证工作流数据结构
+        if (workflowData && typeof workflowData === 'object') {
+          // 兼容不同的数据结构
+          const workflowName = workflowData.name || workflowData.workflow_id || `Imported_${Date.now()}`;
+          
+          setWorkflowPreview(workflowData);
+          setWorkflowName(workflowName);
+          form.setFieldsValue({ workflowName: workflowName });
+        } else {
+          message.error(I18n.t('workflow_import_error_invalid_structure'));
           return false;
         }
       } catch (error) {
-        message.error(I18n.t('workflow_import_failed'));
+        console.error('File parsing error:', error);
+        message.error(I18n.t('workflow_import_error_parse_failed'));
         return false;
       } finally {
         setParsing(false);
@@ -73,7 +90,8 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
 
       return false; // 阻止自动上传
     } catch (error) {
-      message.error(I18n.t('workflow_import_failed'));
+      console.error('File selection error:', error);
+      message.error(I18n.t('workflow_import_error_invalid_file'));
       setParsing(false);
       return false;
     }
@@ -151,7 +169,7 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
           required
         >
           <Upload
-            accept=".json"
+            accept=".json,.yml,.yaml"
             beforeUpload={handleFileSelect}
             showUploadList={false}
             maxCount={1}
@@ -173,8 +191,16 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
                   <div className="text-sm text-green-600 mb-1">
                     {selectedFile.name}
                   </div>
-                  <div className="text-xs text-green-500">
-                    {formatFileSize(selectedFile.size)}
+                  <div className="flex items-center justify-center space-x-2 text-xs">
+                    <span className="text-green-500">{formatFileSize(selectedFile.size)}</span>
+                    <span className="text-gray-300">•</span>
+                    <Tag 
+                      size="small" 
+                      className="text-xs px-2 py-0"
+                      color={selectedFile.name.toLowerCase().endsWith('.json') ? 'blue' : 'purple'}
+                    >
+                      {selectedFile.name.toLowerCase().endsWith('.json') ? 'JSON' : 'YAML'}
+                    </Tag>
                   </div>
                 </div>
               ) : (
@@ -204,7 +230,19 @@ export const useImportWorkflowModal = (props: WorkflowResourceActionProps) => {
 
         {workflowPreview && (
           <Form.Item
-            label={I18n.t('workflow_import_preview')}
+            label={
+              <div className="flex items-center justify-between">
+                <span>{I18n.t('workflow_import_preview')}</span>
+                {selectedFile && (
+                  <Tag 
+                    color={selectedFile.name.toLowerCase().endsWith('.json') ? 'blue' : 'purple'}
+                    className="ml-2"
+                  >
+                    {selectedFile.name.toLowerCase().endsWith('.json') ? 'JSON Format' : 'YAML Format'}
+                  </Tag>
+                )}
+              </div>
+            }
           >
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
               <div className="grid grid-cols-2 gap-4 mb-3">

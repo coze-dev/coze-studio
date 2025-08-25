@@ -190,21 +190,38 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
   const exportModal = (
     <Modal
       visible={showFormatModal}
-      title={I18n.t('workflow_export_format_title', 'Select Export Format')}
+      title={null}
       footer={null}
       onCancel={handleCancelExport}
-      width={450}
+      width={520}
       destroyOnClose={true}
+      className="workflow-export-modal"
+      style={{ top: '20vh' }}
     >
-      <div className="py-4">
-        <p className="mb-6 text-gray-700">
-          {I18n.t('workflow_export_format_description', 'Please select the format for exporting your workflow:')}
-        </p>
+      <div className="px-6 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
+              <path d="M12 16L7 11L8.4 9.6L11 12.2L15.6 7.6L17 9L12 16Z" fill="currentColor"/>
+              <path d="M12 2C13.1 2 14 2.9 14 4V6H10V4C10 2.9 10.9 2 12 2ZM21 9V7L20 6H4L3 7V9H4V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V9H21ZM18 9V19H6V9H18Z" fill="currentColor" fillOpacity="0.7"/>
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {I18n.t('workflow_export_format_title', 'Select Export Format')}
+          </h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            {I18n.t('workflow_export_format_description', 'Please select the format for exporting your workflow:')}
+          </p>
+        </div>
         
-        <div className="space-y-3">
+        {/* Format Options */}
+        <div className="space-y-4 mb-8">
           <button
-            className={`w-full p-4 text-left border-2 rounded-lg transition-all hover:border-blue-500 hover:bg-blue-50 ${
-              selectedFormat === 'json' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+            className={`w-full p-5 text-left rounded-xl transition-all duration-200 group ${
+              selectedFormat === 'json' 
+                ? 'bg-blue-50 border-2 border-blue-200 shadow-sm' 
+                : 'bg-gray-50 border-2 border-transparent hover:border-blue-100 hover:bg-blue-50'
             }`}
             onClick={() => {
               console.log('JSON format selected');
@@ -215,20 +232,40 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
               }
             }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-lg">JSON</div>
-                <div className="text-sm text-gray-600 mt-1">
-                  {I18n.t('workflow_export_format_json_desc', 'Structured data format, widely supported')}
+            <div className="flex items-center">
+              <div className="flex-shrink-0 mr-4">
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  selectedFormat === 'json' ? 'bg-blue-500' : 'bg-gray-400 group-hover:bg-blue-400'
+                } transition-colors duration-200`}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
+                    <path d="M7 2V13H10V22L17 10H13L17 2H7Z" fill="currentColor"/>
+                  </svg>
                 </div>
               </div>
-              <div className="text-2xl">📄</div>
+              <div className="flex-1">
+                <div className="flex items-center mb-1">
+                  <span className="font-semibold text-lg text-gray-900">JSON</span>
+                  <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                    {I18n.t('recommended', 'Recommended')}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {I18n.t('workflow_export_format_json_desc', 'Structured data format, widely supported')}
+                </p>
+                <div className="flex items-center mt-2 text-xs text-gray-500">
+                  <span>• {I18n.t('fast_processing', 'Fast processing')}</span>
+                  <span className="mx-2">•</span>
+                  <span>• {I18n.t('wide_compatibility', 'Wide compatibility')}</span>
+                </div>
+              </div>
             </div>
           </button>
           
           <button
-            className={`w-full p-4 text-left border-2 rounded-lg transition-all hover:border-blue-500 hover:bg-blue-50 ${
-              selectedFormat === 'yml' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+            className={`w-full p-5 text-left rounded-xl transition-all duration-200 group ${
+              selectedFormat === 'yml' 
+                ? 'bg-purple-50 border-2 border-purple-200 shadow-sm' 
+                : 'bg-gray-50 border-2 border-transparent hover:border-purple-100 hover:bg-purple-50'
             }`}
             onClick={() => {
               console.log('YAML format selected');
@@ -239,21 +276,40 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
               }
             }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-lg">YAML</div>
-                <div className="text-sm text-gray-600 mt-1">
-                  {I18n.t('workflow_export_format_yml_desc', 'Human-readable configuration format')}
+            <div className="flex items-center">
+              <div className="flex-shrink-0 mr-4">
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  selectedFormat === 'yml' ? 'bg-purple-500' : 'bg-gray-400 group-hover:bg-purple-400'
+                } transition-colors duration-200`}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
+                    <path d="M14 2H6C4.89 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
+                  </svg>
                 </div>
               </div>
-              <div className="text-2xl">📝</div>
+              <div className="flex-1">
+                <div className="flex items-center mb-1">
+                  <span className="font-semibold text-lg text-gray-900">YAML</span>
+                  <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                    {I18n.t('human_readable', 'Human Readable')}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {I18n.t('workflow_export_format_yml_desc', 'Human-readable configuration format')}
+                </p>
+                <div className="flex items-center mt-2 text-xs text-gray-500">
+                  <span>• {I18n.t('easy_to_read', 'Easy to read')}</span>
+                  <span className="mx-2">•</span>
+                  <span>• {I18n.t('configuration_friendly', 'Config friendly')}</span>
+                </div>
+              </div>
             </div>
           </button>
         </div>
         
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        {/* Footer */}
+        <div className="flex justify-end pt-4 border-t border-gray-100">
           <button
-            className="w-full py-2 px-4 text-gray-600 hover:text-gray-800 transition-colors"
+            className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 font-medium"
             onClick={handleCancelExport}
           >
             {I18n.t('cancel', 'Cancel')}
