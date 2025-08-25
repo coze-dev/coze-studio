@@ -108,7 +108,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		ws        *nodes.ConversionWarnings
 	)
 
-	if rInfo == nil {
+	if rInfo == nil && len(i.wfEntity.InputParams) > 0 {
 		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
 			return "", err
 		}
@@ -257,7 +257,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		ws        *nodes.ConversionWarnings
 	)
 
-	if rInfo == nil {
+	if rInfo == nil && len(s.wfEntity.InputParams) > 0 {
 		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
 			return nil, err
 		}
