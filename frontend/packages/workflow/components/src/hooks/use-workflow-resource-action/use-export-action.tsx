@@ -120,8 +120,17 @@ metadata:
 
   const handleExport = (record: ResourceInfo) => {
     console.log('handleExport called with record:', record);
-    setSelectedRecord(record);
-    setShowFormatModal(true);
+    
+    // 临时方案：直接显示选择对话框
+    if (confirm('选择导出格式:\nOK = JSON\nCancel = YAML')) {
+      // 用户点击OK，导出JSON
+      console.log('User chose JSON');
+      performExport(record, 'json');
+    } else {
+      // 用户点击Cancel，导出YAML  
+      console.log('User chose YAML');
+      performExport(record, 'yml');
+    }
   };
 
   const handleConfirmExport = () => {
@@ -158,56 +167,40 @@ metadata:
 
   console.log('Rendering exportModal', { showFormatModal, selectedRecord, selectedFormat });
 
-  const exportModal = showFormatModal ? (
+  const exportModal = (
     <Modal
-      open={true}
+      visible={showFormatModal}
       title="选择导出格式"
-      onOk={() => {
-        console.log('Modal onOk triggered - JSON export');
-        handleConfirmExport();
-      }}
-      onCancel={() => {
-        console.log('Modal onCancel triggered');
-        handleCancelExport();
-      }}
+      onOk={handleConfirmExport}
+      onCancel={handleCancelExport}
       width={400}
-      okText="导出JSON"
+      okText="确认"
       cancelText="取消"
-      destroyOnClose={true}
-      mask={true}
-      maskClosable={true}
     >
       <div className="mb-4">
-        <p className="mb-3">选择导出格式：</p>
-        
-        <div className="space-y-3">
-          <button
-            className="w-full p-3 text-left border rounded hover:bg-gray-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('JSON button clicked');
-              setSelectedFormat('json');
-              handleConfirmExport();
-            }}
-          >
-            <strong>JSON</strong> - 结构化数据格式
-          </button>
-          
-          <button
-            className="w-full p-3 text-left border rounded hover:bg-gray-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('YAML button clicked');
-              setSelectedFormat('yml');
-              handleConfirmExport();
-            }}
-          >
-            <strong>YAML</strong> - 可读性更好的配置格式
-          </button>
-        </div>
+        <p className="mb-3">请选择工作流导出格式：</p>
+        <p className="mb-2 text-sm text-gray-500">当前选择: {selectedFormat}</p>
+        <Radio.Group
+          value={selectedFormat}
+          onChange={(value) => {
+            console.log('Format changed to:', value);
+            setSelectedFormat(value as ExportFormat);
+          }}
+        >
+          <div className="mb-2">
+            <Radio value="json">
+              JSON (结构化数据格式)
+            </Radio>
+          </div>
+          <div>
+            <Radio value="yml">
+              YAML (可读性更好的配置格式)
+            </Radio>
+          </div>
+        </Radio.Group>
       </div>
     </Modal>
-  ) : null;
+  );
 
   return {
     actionHandler: handleExport,
