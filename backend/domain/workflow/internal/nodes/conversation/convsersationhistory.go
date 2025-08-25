@@ -25,7 +25,6 @@ import (
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -75,7 +74,6 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		userID      = execCtx.ExeCfg.Operator
 		version     = execCtx.ExeCfg.Version
 		initRunID   = execCtx.ExeCfg.InitRoundID
-		execMode    = execCtx.ExeCfg.Mode
 	)
 	if agentID != nil {
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, fmt.Errorf("in the agent scenario, query conversation list is not available"))
@@ -128,11 +126,6 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		return nil, vo.WrapError(errno.ErrConversationOfAppNotFound, fmt.Errorf("the conversation name does not exist: '%v'", conversationName))
 	}
 
-	isChatFlow := execCtx.ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
-	if isChatFlow && execMode != workflowModel.ExecuteModeNodeDebug {
-		rounds += 1
-	}
-
 	currentConversationID := execCtx.ExeCfg.ConversationID
 	isCurrentConversation := currentConversationID != nil && *currentConversationID == conversationID
 	var sectionID int64
@@ -166,15 +159,6 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		return map[string]any{
 			"messageList": []any{},
 		}, nil
-	}
-
-	if isChatFlow && execMode != workflowModel.ExecuteModeNodeDebug {
-		if len(runIDs) == 1 {
-			return map[string]any{
-				"messageList": []any{},
-			}, nil
-		}
-		runIDs = runIDs[1:] // chatflow needs to filter out this session
 	}
 
 	response, err := crossmessage.DefaultSVC().GetMessagesByRunIDs(ctx, &crossmessage.GetMessagesByRunIDsRequest{
