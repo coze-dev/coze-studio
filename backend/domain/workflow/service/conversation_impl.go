@@ -433,3 +433,7 @@ func (c *conversationImpl) GetTemplateByName(ctx context.Context, env vo.Env, ap
 		Name:  ptr.Of(templateName),
 	})
 }
+
+func (c *conversationImpl) GetDynamicConversationByName(ctx context.Context, env vo.Env, appID, connectorID, userID int64, name string) (*entity.DynamicConversation, bool, error) {
+	return c.repo.GetDynamicConversationByName(ctx, env, appID, connectorID, userID, name)
+}
