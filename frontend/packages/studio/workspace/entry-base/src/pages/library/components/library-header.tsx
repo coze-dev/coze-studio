@@ -56,24 +56,6 @@ export const LibraryHeader: React.FC<{
           导入工作流
         </Button>
         
-        {/* 批量导入工作流按钮 */}
-        <Button
-          theme="outline"
-          icon={<IconCozPlus />}
-          onClick={() => {
-            try {
-              if (space_id) {
-                navigate(`/space/${space_id}/workflow/batch-import`);
-              }
-            } catch (error) {
-              console.error('导航到批量导入页面失败:', error);
-            }
-          }}
-          data-testid="workspace.library.header.batch-import-workflow"
-        >
-          批量导入
-        </Button>
-        
         {/* 创建资源按钮 */}
         <Menu
           position="bottomRight"
