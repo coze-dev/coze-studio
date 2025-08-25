@@ -86,9 +86,13 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	if err != nil {
 		return nil, err
 	}
-	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
-		components.Tos, components.CPStore, components.WorkflowBuildInChatModel, cfg)
 
+	workflowRepo, err := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
+		components.Tos, components.CPStore, components.WorkflowBuildInChatModel, cfg)
+	if err != nil {
+		return nil, err
+	}
+	
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)

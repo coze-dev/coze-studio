@@ -70,10 +70,15 @@ type RepositoryImpl struct {
 	workflow.ExecuteHistoryStore
 	builtinModel cm.BaseChatModel
 	workflow.WorkflowConfig
+	workflow.Suggester
 }
 
 func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel, workflowConfig workflow.WorkflowConfig) workflow.Repository {
+	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel, workflowConfig workflow.WorkflowConfig) (workflow.Repository, error) {
+	sg, err := NewSuggester(chatModel)
+	if err != nil {
+		return nil, err
+	}
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
 		query:           query.Use(db),
@@ -90,9 +95,12 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, to
 			query: query.Use(db),
 			redis: redis,
 		},
+
 		builtinModel:   chatModel,
+		Suggester:      sg,
 		WorkflowConfig: workflowConfig,
-	}
+	}, nil
+
 }
 
 func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error) {

@@ -103,8 +103,9 @@ func TestQuestionAnswer(t *testing.T) {
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-		repo := repo2.NewRepository(mockIDGen, db, redisClient, mockTos,
+		repo, _ := repo2.NewRepository(mockIDGen, db, redisClient, mockTos,
 			checkpoint.NewRedisStore(redisClient), nil, nil)
+
 		mockey.Mock(workflow.GetRepository).Return(repo).Build()
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
