@@ -85,7 +85,7 @@ interface EdgeInfo {
   targetHandle?: string;
 }
 
-const WorkflowImportPage: React.FC = () => {
+const WorkflowImportEnhancedPage: React.FC = () => {
   const { space_id } = useParams<{ space_id: string }>();
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -731,4 +731,4 @@ const WorkflowImportPage: React.FC = () => {
   );
 };
 
-export default WorkflowImportPage;
+export default WorkflowImportEnhancedPage; 
