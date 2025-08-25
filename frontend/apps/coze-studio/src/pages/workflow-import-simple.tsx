@@ -223,7 +223,8 @@ const Page = () => {
         
       } catch (error) {
         console.error('文件解析错误:', error);
-        setParseError('JSON格式错误，请检查文件内容是否有效');
+        const formatName = fileName.endsWith('.yml') || fileName.endsWith('.yaml') ? 'YAML' : 'JSON';
+        setParseError(`${formatName}格式错误，请检查文件内容是否有效`);
         setSelectedFile(null);
         setWorkflowPreview(null);
       }
@@ -331,12 +332,15 @@ const Page = () => {
           }));
         } catch (error) {
           console.error('批量文件解析错误:', error);
+          const fileName = workflowFile.fileName.toLowerCase();
+          const formatName = fileName.endsWith('.yml') || fileName.endsWith('.yaml') ? 'YAML' : 'JSON';
+          
           setSelectedFiles(prev => prev.map(f => {
             if (f.id === workflowFile.id) {
               return {
                 ...f,
                 status: 'invalid' as const,
-                error: 'JSON格式错误，请检查文件内容是否有效',
+                error: `${formatName}格式错误，请检查文件内容是否有效`,
               };
             }
             return f;

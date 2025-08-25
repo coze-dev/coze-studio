@@ -120,12 +120,16 @@ const WorkflowBatchImport: React.FC = () => {
             return f;
           }));
         } catch (error) {
+          console.error('文件解析错误:', error, '文件:', workflowFile.fileName);
+          const fileName = workflowFile.fileName.toLowerCase();
+          const formatName = fileName.endsWith('.yml') || fileName.endsWith('.yaml') ? 'YAML' : 'JSON';
+          
           setSelectedFiles(prev => prev.map(f => {
             if (f.id === workflowFile.id) {
               return {
                 ...f,
                 status: 'invalid' as const,
-                error: 'JSON格式错误，请检查文件内容是否有效',
+                error: `${formatName}格式错误，请检查文件内容是否有效`,
               };
             }
             return f;
@@ -240,11 +244,18 @@ const WorkflowBatchImport: React.FC = () => {
     });
 
     try {
-      const workflowFiles = validFiles.map(file => ({
-        file_name: file.fileName,
-        workflow_data: file.workflowData,
-        workflow_name: file.workflowName,
-      }));
+      const workflowFiles = validFiles.map(file => {
+        const fileName = file.fileName.toLowerCase();
+        const format = fileName.endsWith('.yml') ? 'yml' : 
+                      fileName.endsWith('.yaml') ? 'yaml' : 'json';
+        
+        return {
+          file_name: file.fileName,
+          workflow_data: file.workflowData,
+          workflow_name: file.workflowName,
+          import_format: format,
+        };
+      });
 
       const response = await fetch('/api/workflow_api/batch_import', {
         method: 'POST',
@@ -255,7 +266,6 @@ const WorkflowBatchImport: React.FC = () => {
           workflow_files: workflowFiles,
           space_id: space_id,
           creator_id: 'current_user',
-          import_format: 'json',
           import_mode: importMode,
         }),
       });
@@ -368,7 +378,7 @@ const WorkflowBatchImport: React.FC = () => {
             margin: '0 auto',
             lineHeight: '1.6'
           }}>
-            支持批量上传多个工作流JSON文件，可选择批量模式（允许部分失败）或事务模式（全部成功或全部失败）
+            支持批量上传多个工作流文件（JSON、YAML格式），可选择批量模式（允许部分失败）或事务模式（全部成功或全部失败）
           </p>
           
           {/* 测试API连接按钮 */}
@@ -484,7 +494,7 @@ const WorkflowBatchImport: React.FC = () => {
               color: '#718096',
               marginBottom: '16px'
             }}>
-              支持同时选择多个JSON格式的工作流文件，最多50个文件
+              支持同时选择多个工作流文件（JSON、YAML格式），最多50个文件
             </p>
             <input
               id="file-input"
@@ -762,7 +772,7 @@ const WorkflowBatchImport: React.FC = () => {
           </h4>
           <ul style={{ fontSize: '14px', color: '#4a5568', lineHeight: '1.6', paddingLeft: '20px' }}>
             <li style={{ marginBottom: '6px' }}>
-              <strong>支持格式：</strong>仅支持JSON格式的工作流文件
+              <strong>支持格式：</strong>支持JSON和YAML格式的工作流文件（.json、.yml、.yaml）
             </li>
             <li style={{ marginBottom: '6px' }}>
               <strong>批量限制：</strong>单次最多支持50个文件
