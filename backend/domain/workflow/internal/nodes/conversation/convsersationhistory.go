@@ -75,6 +75,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		userID      = execCtx.ExeCfg.Operator
 		version     = execCtx.ExeCfg.Version
 		initRunID   = execCtx.ExeCfg.InitRoundID
+		execMode    = execCtx.ExeCfg.Mode
 	)
 	if agentID != nil {
 		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, fmt.Errorf("in the agent scenario, query conversation list is not available"))
@@ -128,7 +129,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	}
 
 	isChatFlow := execCtx.ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
-	if isChatFlow {
+	if isChatFlow && execMode != workflowModel.ExecuteModeNodeDebug {
 		rounds += 1
 	}
 
@@ -167,7 +168,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		}, nil
 	}
 
-	if isChatFlow {
+	if isChatFlow && execMode != workflowModel.ExecuteModeNodeDebug {
 		if len(runIDs) == 1 {
 			return map[string]any{
 				"messageList": []any{},
