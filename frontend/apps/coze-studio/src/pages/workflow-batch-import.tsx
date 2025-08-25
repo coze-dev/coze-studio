@@ -96,11 +96,25 @@ const WorkflowBatchImport: React.FC = () => {
 
           setSelectedFiles(prev => prev.map(f => {
             if (f.id === workflowFile.id) {
-              if (!workflowData.schema || !workflowData.nodes) {
+              // 更灵活的验证逻辑，支持不同的工作流文件结构
+              if (!workflowData || typeof workflowData !== 'object') {
                 return {
                   ...f,
                   status: 'invalid' as const,
-                  error: '无效的工作流文件格式，缺少必要的schema或nodes字段',
+                  error: '无效的工作流文件格式，文件内容不是有效对象',
+                };
+              }
+              
+              // 检查是否有基本的工作流信息（更宽松的验证）
+              const hasBasicStructure = workflowData.schema || workflowData.nodes || 
+                                      workflowData.workflow_id || workflowData.name ||
+                                      workflowData.edges || workflowData.canvas;
+              
+              if (!hasBasicStructure) {
+                return {
+                  ...f,
+                  status: 'invalid' as const,
+                  error: '无效的工作流文件格式，缺少必要的工作流信息',
                 };
               }
 

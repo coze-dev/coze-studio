@@ -686,7 +686,7 @@ const WorkflowImportEnhancedPage: React.FC = () => {
                     <IconCozWorkflow className="text-3xl opacity-50" />
                   </div>
                   <div className="text-lg font-medium mb-2">{I18n.t('workflow_import_select_file_tip')}</div>
-                  <div className="text-sm text-gray-400">选择JSON文件后将显示工作流预览</div>
+                  <div className="text-sm text-gray-400">选择工作流文件后将显示预览信息</div>
                 </div>
               )}
             </Card>

@@ -870,8 +870,8 @@ const Page = () => {
               marginBottom: '16px'
             }}>
               {importMode === 'single' 
-                ? '支持JSON格式的工作流文件，最大10MB'
-                : '支持同时选择多个JSON格式的工作流文件，最多50个文件，每个最大10MB'
+                ? '支持JSON和YAML格式的工作流文件，最大10MB'
+                : '支持同时选择多个工作流文件（JSON、YAML格式），最多50个文件，每个最大10MB'
               }
             </p>
             <input
@@ -1363,7 +1363,7 @@ const Page = () => {
                 🎯 单个导入
               </h5>
               <ul style={{ fontSize: '13px', color: '#718096', lineHeight: '1.6', paddingLeft: '16px', margin: '0' }}>
-                <li>支持JSON格式的工作流文件</li>
+                <li>支持JSON和YAML格式的工作流文件（.json、.yml、.yaml）</li>
                 <li>文件大小限制：最大10MB</li>
                 <li>自动预览工作流信息</li>
                 <li>支持拖拽上传</li>
