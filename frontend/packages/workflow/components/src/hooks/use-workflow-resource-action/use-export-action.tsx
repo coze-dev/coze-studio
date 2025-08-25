@@ -39,7 +39,44 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       
       console.log('Starting export:', { recordId: record.res_id, format });
       
-      // 调用导出API
+      if (format === 'yml' || format === 'yaml') {
+        // 临时跳过API调用，直接测试YAML内容
+        console.log('Testing YAML export without API call');
+        
+        const testYamlContent = `workflow_id: "${record.res_id}"
+name: "${record.name || 'test-workflow'}"
+description: "Test YAML export"
+export_format: "${format}"
+version: "1.0.0"
+create_time: ${Date.now()}
+nodes: []
+edges: []
+metadata:
+  test: true
+`;
+        
+        const fileName = `${record.name || 'workflow'}_export.${format}`;
+        
+        console.log('Test YAML content:', testYamlContent);
+        console.log('File name:', fileName);
+        
+        // 创建并下载文件
+        const blob = new Blob([testYamlContent], { type: 'text/yaml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        console.log('Test YAML export completed');
+        return;
+      }
+      
+      // 对于JSON格式，继续使用API调用
       const response = await fetch('/api/workflow_api/export', {
         method: 'POST',
         headers: {
@@ -52,60 +89,18 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         }),
       });
 
-      console.log('API Response status:', response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
         throw new Error(`API Error: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('API Result:', result);
       
       if (result.code === 200 && result.data?.workflow_export) {
         const exportData = result.data.workflow_export;
-        console.log('Export data structure:', {
-          keys: Object.keys(exportData),
-          hasSerializedData: !!exportData.serialized_data,
-          serializedDataType: typeof exportData.serialized_data,
-          serializedDataLength: exportData.serialized_data?.length || 0,
-          exportFormat: exportData.export_format
-        });
-        
-        let fileContent: string;
-        let fileName: string;
-        let mimeType: string;
+        const fileContent = JSON.stringify(exportData, null, 2);
+        const fileName = `${record.name || 'workflow'}_export.json`;
 
-        if (format === 'yml' || format === 'yaml') {
-          // 对于YAML格式，使用后端返回的序列化数据
-          if (exportData.serialized_data && typeof exportData.serialized_data === 'string') {
-            fileContent = exportData.serialized_data;
-          } else {
-            console.warn('YAML serialized_data is invalid, fallback to JSON stringify');
-            console.log('serialized_data value:', exportData.serialized_data);
-            fileContent = JSON.stringify(exportData, null, 2);
-          }
-          fileName = `${record.name || 'workflow'}_export.${format}`;
-          mimeType = 'text/yaml';
-        } else {
-          // 对于JSON格式，使用原有逻辑
-          fileContent = JSON.stringify(exportData, null, 2);
-          fileName = `${record.name || 'workflow'}_export.json`;
-          mimeType = 'application/json';
-        }
-
-        console.log('Final file content preview:', fileContent.substring(0, 200) + '...');
-        console.log('File content length:', fileContent.length);
-        console.log('File name:', fileName);
-
-        // 检查文件内容是否为空
-        if (!fileContent || fileContent.trim() === '') {
-          throw new Error('Export data is empty');
-        }
-
-        // 创建并下载文件
-        const blob = new Blob([fileContent], { type: mimeType });
+        const blob = new Blob([fileContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -115,16 +110,9 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-
-        Toast.success('Export successful');
-        console.log('Export completed successfully');
-      } else {
-        console.error('Invalid API response:', result);
-        throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('导出工作流失败:', error);
-      Toast.error('Export failed');
+      console.error('Export error:', error);
     } finally {
       setExporting(false);
     }
