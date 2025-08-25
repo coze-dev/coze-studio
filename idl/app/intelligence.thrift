@@ -26,6 +26,11 @@ service IntelligenceService {
     publish.PublishProjectResponse PublishProject(1: publish.PublishProjectRequest request)(api.post='/api/intelligence_api/publish/publish_project', api.category="publish",agw.preserve_base="true")
     publish.GetPublishRecordListResponse GetPublishRecordList(1: publish.GetPublishRecordListRequest request)(api.post='/api/intelligence_api/publish/publish_record_list', api.category="publish",agw.preserve_base="true")
     publish.GetPublishRecordDetailResponse GetPublishRecordDetail(1: publish.GetPublishRecordDetailRequest request)(api.post='/api/intelligence_api/publish/publish_record_detail', api.category="publish",agw.preserve_base="true")
+    // OpenAPI
+    project.GetOnlineAppDataResponse GetOnlineAppData(1: project.GetOnlineAppDataRequest request) (api.get='/v1/apps/:app_id', api.category="publish")
+
+
+
 }
 
 

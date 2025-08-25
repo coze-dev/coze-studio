@@ -1560,3 +1560,13 @@ func _cancelchatapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _appsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getonlineappdataMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

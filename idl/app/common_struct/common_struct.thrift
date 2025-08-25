@@ -91,3 +91,26 @@ struct Space {
     3: SpaceStatus status,
     4: string name,
 }
+
+typedef string VariableType
+
+const VariableType VariableTypeKVVariable = 'KVVariable'
+const VariableType VariableTypeListVariable = 'ListVariable'
+
+typedef string VariableChannel
+
+const VariableChannel VariableChannelCustom = 'custom'
+const VariableChannel VariableChannelSystem = 'system'
+const VariableChannel VariableChannelLocation = 'location'
+const VariableChannel VariableChannelFeishu = 'feishu'
+const VariableChannel VariableChannelAPP = 'app'
+
+struct Variable {
+    1: string keyword,
+    2: string default_value,
+    3: VariableType variable_type,
+    4: VariableChannel channel,
+    5: string description,
+    6: bool enable,
+    7: bool prompt_enable,
+}
