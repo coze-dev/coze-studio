@@ -442,6 +442,9 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			if err != nil {
 				return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 			}
+			if cInfo == nil {
+				return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("conversation not found"))
+			}
 			return ret.ConversationID, cInfo.SectionID, true, nil
 		}
 
@@ -485,6 +488,9 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, ret.ConversationID)
 			if err != nil {
 				return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
+			}
+			if cInfo == nil {
+				return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("conversation not found"))
 			}
 			return ret.ConversationID, cInfo.SectionID, true, nil
 		}
@@ -574,6 +580,9 @@ func (r *RepositoryImpl) getOrCreateDraftStaticConversation(ctx context.Context,
 		if err != nil {
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
+		if cInfo == nil {
+			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("conversation not found"))
+		}
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
 
@@ -611,6 +620,9 @@ func (r *RepositoryImpl) getOrCreateOnlineStaticConversation(ctx context.Context
 		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, cs[0].ConversationID)
 		if err != nil {
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
+		}
+		if cInfo == nil {
+			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("conversation not found"))
 		}
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
