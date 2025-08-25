@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import * as yaml from 'js-yaml';
 
 interface WorkflowFile {
   id: string;
@@ -50,15 +51,30 @@ const WorkflowBatchImport: React.FC = () => {
   // 添加文件
   const addFiles = (files: File[]) => {
     const newWorkflowFiles: WorkflowFile[] = files
-      .filter(file => file.name.endsWith('.json'))
-      .map(file => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        fileName: file.name,
-        workflowName: file.name.replace('.json', ''),
-        workflowData: '',
-        status: 'pending' as const,
-      }));
+      .filter(file => {
+        const fileName = file.name.toLowerCase();
+        return fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
+      })
+      .map(file => {
+        const fileName = file.name.toLowerCase();
+        let workflowName = file.name;
+        if (fileName.endsWith('.json')) {
+          workflowName = file.name.replace('.json', '');
+        } else if (fileName.endsWith('.yml')) {
+          workflowName = file.name.replace('.yml', '');
+        } else if (fileName.endsWith('.yaml')) {
+          workflowName = file.name.replace('.yaml', '');
+        }
+        
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          file,
+          fileName: file.name,
+          workflowName: workflowName,
+          workflowData: '',
+          status: 'pending' as const,
+        };
+      });
 
     setSelectedFiles(prev => [...prev, ...newWorkflowFiles]);
 
@@ -68,7 +84,15 @@ const WorkflowBatchImport: React.FC = () => {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          const workflowData = JSON.parse(content);
+          let workflowData;
+          
+          // 根据文件扩展名选择解析器
+          const fileName = workflowFile.fileName.toLowerCase();
+          if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
+            workflowData = yaml.load(content) as any;
+          } else {
+            workflowData = JSON.parse(content);
+          }
 
           setSelectedFiles(prev => prev.map(f => {
             if (f.id === workflowFile.id) {
@@ -466,7 +490,7 @@ const WorkflowBatchImport: React.FC = () => {
               id="file-input"
               type="file"
               multiple
-              accept=".json"
+              accept=".json,.yml,.yaml"
               onChange={handleFileSelect}
               style={{ display: 'none' }}
               disabled={isImporting}
