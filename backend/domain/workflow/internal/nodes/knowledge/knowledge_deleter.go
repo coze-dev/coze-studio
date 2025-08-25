@@ -19,6 +19,7 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
@@ -27,9 +28,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/spf13/cast"
 )
 
-type DeleterConfig struct{}
+type DeleterConfig struct {
+	KnowledgeID int64
+}
 
 func (d *DeleterConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	ns := &schema.NodeSchema{
@@ -38,6 +42,18 @@ func (d *DeleterConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOpt
 		Name:    n.Data.Meta.Title,
 		Configs: d,
 	}
+
+	inputs := n.Data.Inputs
+	datasetListInfoParam := inputs.DatasetParam[0]
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+	if len(datasetIDs) == 0 {
+		return nil, fmt.Errorf("dataset ids is required")
+	}
+	knowledgeID, err := cast.ToInt64E(datasetIDs[0])
+	if err != nil {
+		return nil, err
+	}
+	d.KnowledgeID = knowledgeID
 
 	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
@@ -51,19 +67,24 @@ func (d *DeleterConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOpt
 }
 
 func (d *DeleterConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
-	return &Deleter{}, nil
+	return &Deleter{
+		KnowledgeID: d.KnowledgeID,
+	}, nil
 }
 
-type Deleter struct{}
+type Deleter struct {
+	KnowledgeID int64
+}
 
-func (k *Deleter) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
+func (d *Deleter) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	documentID, ok := input["documentID"].(string)
 	if !ok {
 		return nil, errors.New("documentID is required and must be a string")
 	}
 
 	req := &knowledge.DeleteDocumentRequest{
-		DocumentID: documentID,
+		DocumentID:  documentID,
+		KnowledgeID: d.KnowledgeID,
 	}
 
 	response, err := crossknowledge.DefaultSVC().Delete(ctx, req)

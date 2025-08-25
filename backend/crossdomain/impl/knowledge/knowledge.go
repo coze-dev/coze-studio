@@ -29,7 +29,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 var defaultSVC crossknowledge.Knowledge
@@ -135,6 +137,21 @@ func (i *impl) Delete(ctx context.Context, r *model.DeleteDocumentRequest) (*mod
 	docID, err := strconv.ParseInt(r.DocumentID, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid document id: %s", r.DocumentID)
+	}
+
+	if r.KnowledgeID == 0 {
+		return nil, errors.New("knowledge id is required")
+	}
+
+	docs, err := i.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
+		KnowledgeID: r.KnowledgeID,
+		DocumentIDs: []int64{docID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(docs.Documents) == 0 {
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "document not in this knowledge"))
 	}
 
 	err = i.DomainSVC.DeleteDocument(ctx, &service.DeleteDocumentRequest{
