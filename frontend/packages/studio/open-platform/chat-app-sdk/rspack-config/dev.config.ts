@@ -169,6 +169,7 @@ const config: Configuration = {
   stats: false,
   devServer: {
     allowedHosts: 'all',
+    compress: false,
     historyApiFallback: true,
     port: '8081',
     hot: true,
