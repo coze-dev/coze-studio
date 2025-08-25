@@ -122,7 +122,8 @@ func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*
 
 func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy string) ([]*entity.Message, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Debug().Where(m.RunID.In(runIDs...))
+	do := m.WithContext(ctx).Debug().Where(m.RunID.In(runIDs...)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
+
 	if orderBy == "DESC" {
 		do = do.Order(m.CreatedAt.Desc())
 	} else {
