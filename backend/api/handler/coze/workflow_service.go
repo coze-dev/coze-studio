@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"strconv"
 
 	"github.com/cloudwego/eino/schema"
@@ -1162,7 +1163,14 @@ func sendChatFlowStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.Str
 // @router /v1/workflows/:workflow_id [GET]
 func OpenAPIGetWorkflowInfo(ctx context.Context, c *app.RequestContext) {
 	var err error
+
+	if err = processOpenAPIGetWorkflowInfoRequest(ctx, c); err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
 	var req workflow.OpenAPIGetWorkflowInfoRequest
+
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
@@ -1176,6 +1184,22 @@ func OpenAPIGetWorkflowInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func processOpenAPIGetWorkflowInfoRequest(_ context.Context, c *app.RequestContext) error {
+	queryString := c.Request.QueryString()
+
+	values, err := url.ParseQuery(string(queryString))
+	if err != nil {
+		return fmt.Errorf("parse query parameter failed, err:%v", err)
+	}
+	isDebug := values.Get("is_debug")
+	if len(isDebug) == 0 {
+		values.Set("is_debug", "false")
+	}
+	c.Request.SetQueryString(values.Encode())
+
+	return nil
 }
 
 // GetHistorySchema .
