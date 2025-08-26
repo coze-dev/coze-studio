@@ -747,15 +747,19 @@ func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message 
 				texts = append(texts, *ct.Text)
 			}
 			if ct.FileID != nil && len(*ct.FileID) > 0 {
-				u, err := w.ImageX.GetResourceURL(ctx, *ct.FileID)
+				fileID := mustParseInt64(*ct.FileID)
+				file, err := crossupload.DefaultSVC().GetFile(ctx, &service.GetFileRequest{ID: fileID})
 				if err != nil {
 					return "", err
 				}
-				urls = append(urls, u.URL)
+				if file.File == nil {
+					return "", fmt.Errorf("file not found")
+				}
+				urls = append(urls, file.File.Url)
 			}
 		}
 
-		return strings.Join(texts, ",") + strings.Join(urls, ","), nil
+		return strings.Join(append(texts, urls...), ","), nil
 
 	} else {
 		return "", fmt.Errorf("invalid message ccontent type %v", message.ContentType)
@@ -885,7 +889,6 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 		FileID *string `json:"file_id"`
 		Text   *string `json:"text"`
 	}
-	var uploadSVC = crossupload.DefaultSVC()
 	if msg.ContentType == "text" {
 		return &message.Message{
 			Role:           schema.User,
@@ -926,7 +929,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 				})
 			} else if ct.FileID != nil {
 				fileID := mustParseInt64(*ct.FileID)
-				file, err := uploadSVC.GetFile(ctx, &service.GetFileRequest{ID: fileID})
+				file, err := crossupload.DefaultSVC().GetFile(ctx, &service.GetFileRequest{ID: fileID})
 				if err != nil {
 					return nil, err
 				}
@@ -987,38 +990,41 @@ func (w *ApplicationService) toSchemaMessage(ctx context.Context, msg *workflow.
 					Text: *ct.Text,
 				})
 			} else if ct.FileID != nil {
-				uri := *ct.FileID
-				u, err := w.ImageX.GetResourceURL(ctx, uri)
+				fileID := mustParseInt64(*ct.FileID)
+				file, err := crossupload.DefaultSVC().GetFile(ctx, &service.GetFileRequest{ID: fileID})
 				if err != nil {
 					return nil, err
+				}
+				if file.File == nil {
+					return nil, fmt.Errorf("file not found")
 				}
 				switch ct.Type {
 				case "file":
 					m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 						Type: schema.ChatMessagePartTypeFileURL,
 						FileURL: &schema.ChatMessageFileURL{
-							URL: u.URL,
+							URL: file.File.Url,
 						},
 					})
 				case "image":
 					m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 						Type: schema.ChatMessagePartTypeImageURL,
 						ImageURL: &schema.ChatMessageImageURL{
-							URL: u.URL,
+							URL: file.File.Url,
 						},
 					})
 				case "audio":
 					m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 						Type: schema.ChatMessagePartTypeAudioURL,
 						AudioURL: &schema.ChatMessageAudioURL{
-							URL: u.URL,
+							URL: file.File.Url,
 						},
 					})
 				case "video":
 					m.MultiContent = append(m.MultiContent, schema.ChatMessagePart{
 						Type: schema.ChatMessagePartTypeVideoURL,
 						VideoURL: &schema.ChatMessageVideoURL{
-							URL: u.URL,
+							URL: file.File.Url,
 						},
 					})
 				}
