@@ -267,22 +267,12 @@ const WorkflowBatchImport: React.FC = () => {
           file_name: file.fileName,
           workflow_data: file.workflowData,
           workflow_name: file.workflowName,
+          import_format: format,
         };
       });
 
-      // 确定整体导入格式（如果所有文件都是同一种格式）
-      const allFormats = validFiles.map(file => {
-        const fileName = file.fileName.toLowerCase();
-        return fileName.endsWith('.yml') ? 'yml' : 
-               fileName.endsWith('.yaml') ? 'yaml' : 'json';
-      });
-      
-      const uniqueFormats = [...new Set(allFormats)];
-      if (uniqueFormats.length > 1) {
-        throw new Error('批量导入的文件格式必须一致，当前包含多种格式：' + uniqueFormats.join(', '));
-      }
-      
-      const importFormat = uniqueFormats[0];
+      // 现在支持混合格式导入，每个文件都有自己的 import_format
+      console.log('批量导入文件:', workflowFiles.map(f => ({ name: f.file_name, format: f.import_format })));
 
       const response = await fetch('/api/workflow_api/batch_import', {
         method: 'POST',
@@ -293,17 +283,28 @@ const WorkflowBatchImport: React.FC = () => {
           workflow_files: workflowFiles,
           space_id: space_id,
           creator_id: 'current_user',
-          import_format: importFormat,
           import_mode: importMode,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (jsonError) {
+          console.error('API错误响应解析失败:', jsonError);
+          throw new Error(`批量导入失败，HTTP状态码: ${response.status}`);
+        }
         throw new Error(errorData.message || '批量导入失败');
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('API响应JSON解析失败:', jsonError);
+        throw new Error('服务器返回了无效的响应格式，请检查API接口');
+      }
       console.log('批量导入API响应:', result);
       
       // 安全地访问响应数据
@@ -427,7 +428,6 @@ const WorkflowBatchImport: React.FC = () => {
                     workflow_files: [],
                     space_id: space_id,
                     creator_id: 'test',
-                    import_format: 'json',
                     import_mode: 'batch'
                   })
                 });

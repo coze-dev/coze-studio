@@ -557,19 +557,35 @@ const Page = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: '批量导入失败' }));
-        throw new Error(errorData.message || '批量导入失败');
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (jsonError) {
+          console.error('API错误响应解析失败:', jsonError);
+          throw new Error(`批量导入失败，HTTP状态码: ${response.status}`);
+        }
+        throw new Error(errorData.message || '批量导入失败，请检查网络连接或联系管理员');
       }
 
-      const result: ApiResponse = await response.json();
-      setImportResults(result.data);
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('API响应JSON解析失败:', jsonError);
+        throw new Error('服务器返回了无效的响应格式，请检查API接口');
+      }
+      console.log('简单导入批量模式API响应:', result);
+      
+      // 安全地访问响应数据
+      const responseData = result.data || result || {};
+      setImportResults(responseData);
 
       // 更新文件状态
       setSelectedFiles(prev => prev.map(file => {
-        const successResult = result.data.success_list?.find(
+        const successResult = responseData.success_list?.find(
           (s) => s.file_name === file.fileName
         );
-        const failedResult = result.data.failed_list?.find(
+        const failedResult = responseData.failed_list?.find(
           (f) => f.file_name === file.fileName
         );
 
@@ -585,16 +601,21 @@ const Page = () => {
         return file;
       }));
 
+      const validFileCount = selectedFiles.filter(f => f.status === 'valid').length;
+      
       setImportProgress({
-        totalCount: result.data.total_count,
-        successCount: result.data.success_count,
-        failedCount: result.data.failed_count,
+        totalCount: responseData.total_count || validFileCount,
+        successCount: responseData.success_count || responseData.success_list?.length || 0,
+        failedCount: responseData.failed_count || responseData.failed_list?.length || 0,
         currentProcessing: '',
       });
 
-      if (result.data.success_count > 0) {
+      const successCount = responseData.success_count || responseData.success_list?.length || 0;
+      const failedCount = responseData.failed_count || responseData.failed_list?.length || 0;
+      
+      if (successCount > 0) {
         setTimeout(() => {
-          alert(`批量导入完成！\n成功: ${result.data.success_count}个\n失败: ${result.data.failed_count}个`);
+          alert(`批量导入完成！\n成功: ${successCount}个\n失败: ${failedCount}个`);
         }, 1000);
       }
 
