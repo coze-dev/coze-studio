@@ -189,6 +189,7 @@ func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation 
 		Ext:         conversation.Ext,
 		CreatedAt:   time.Now().UnixMilli(),
 		UpdatedAt:   time.Now().UnixMilli(),
+		Name:        conversation.Name,
 	}
 }
 
