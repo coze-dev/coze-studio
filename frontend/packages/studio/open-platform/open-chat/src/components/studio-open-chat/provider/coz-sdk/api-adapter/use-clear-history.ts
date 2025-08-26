@@ -18,7 +18,7 @@ import { useMemo, useRef } from 'react';
 
 import { type SceneConfig } from '@coze-common/chat-core';
 
-import { ChatType } from '@/types/client';
+import { OpenApiSource } from '@/types/open';
 import { useChatAppProps } from '@/components/studio-open-chat/store';
 
 import { type ChatProviderFunc } from '../type';
@@ -48,10 +48,9 @@ export const useClearHistoryAdapter = ({
         };
       },
     ];
-
     const config = {
       url:
-        IS_OPEN_SOURCE && chatConfig.type === ChatType.APP
+        IS_OPEN_SOURCE && chatConfig.source === OpenApiSource.ChatFlow
           ? '/v1/workflow/conversation/create'
           : '/v1/conversation/create',
       method: 'POST',
