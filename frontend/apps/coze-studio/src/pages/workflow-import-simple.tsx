@@ -288,7 +288,15 @@ const Page = () => {
             return;
           }
           
-          const workflowData = JSON.parse(content);
+          let workflowData;
+          
+          // 根据文件扩展名选择解析器
+          const fileName = workflowFile.fileName.toLowerCase();
+          if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
+            workflowData = yaml.load(content) as any;
+          } else {
+            workflowData = JSON.parse(content);
+          }
           
           if (!workflowData || typeof workflowData !== 'object') {
             setSelectedFiles(prev => prev.map(f => 
