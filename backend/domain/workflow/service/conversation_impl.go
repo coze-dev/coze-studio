@@ -439,13 +439,6 @@ func (c *conversationImpl) GetDynamicConversationByName(ctx context.Context, env
 }
 
 func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error) {
-	dc, existed, err := c.repo.GetDynamicConversationByID(ctx, env, appID, connectorID, conversationID)
-	if err != nil {
-		return "", false, err
-	}
-	if existed {
-		return dc.Name, true, nil
-	}
 	sc, existed, err := c.repo.GetStaticConversationByID(ctx, env, appID, connectorID, conversationID)
 	if err != nil {
 		return "", false, err
@@ -453,5 +446,15 @@ func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.E
 	if existed {
 		return sc, true, nil
 	}
+
+	dc, existed, err := c.repo.GetDynamicConversationByID(ctx, env, appID, connectorID, conversationID)
+	if err != nil {
+		return "", false, err
+	}
+
+	if existed {
+		return dc.Name, true, nil
+	}
+
 	return "", false, nil
 }
