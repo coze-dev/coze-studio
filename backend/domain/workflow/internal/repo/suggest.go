@@ -18,6 +18,7 @@ package repo
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
@@ -26,10 +27,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 const SUGGESTION_PROMPT = `
+# Role
 You are a recommendation expert who can analyze users' questions and answers, 
 identify the interest points of previous questions, and provide the three most likely unique questions that the user will ask next.
 These questions must meet the above requirements and must be returned in the format of a string array containing these three recommended questions. 
@@ -37,13 +40,11 @@ These questions must meet the above requirements and must be returned in the for
 ### Personal
 {{ suggest_persona }}
 
-Note:
-- The output language must be consistent with the language of the user's question.
+## Constraints:
 - Three recommended questions must be returned in the format of a string array.
-- Three recommended questions must be returned in the format of a string array.
-- The returned format must be an a string array. format example:
+- The returned format must be only an a string array. json format example:
 	["Forbidden City", "Great Wall", "Summer Palace"]
-
+- The output language must be consistent with the language of the user's question.
 `
 
 type suggesterV3 struct {
@@ -53,6 +54,8 @@ type state struct {
 	userMessage *schema.Message
 	answer      *schema.Message
 }
+
+var suggestRegexp = regexp.MustCompile(`\[(.*?)\]`)
 
 func NewSuggester(chatModel model.BaseChatModel) (workflow.Suggester, error) {
 	chain := einoCompose.NewChain[*vo.SuggestInfo, []string](einoCompose.WithGenLocalState(func(ctx context.Context) (s *state) {
@@ -69,15 +72,21 @@ func NewSuggester(chatModel model.BaseChatModel) (workflow.Suggester, error) {
 			output["persona_input"] = *input.PersonaInput
 		}
 		return
-	})).AppendChatTemplate(prompt.FromMessages(schema.Jinja2, schema.SystemMessage(SUGGESTION_PROMPT))).AppendChatModel(chatModel, compose.WithStatePreHandler(func(ctx context.Context, in []*schema.Message, state *state) ([]*schema.Message, error) {
-		return append(in, []*schema.Message{state.userMessage, state.answer}...), nil
-	})).AppendLambda(einoCompose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output []string, err error) {
-		suggests := make([]string, 0)
-		err = sonic.UnmarshalString(input.Content, &suggests)
-		if err != nil {
+	})).AppendChatTemplate(prompt.FromMessages(schema.Jinja2, schema.SystemMessage(SUGGESTION_PROMPT))).AppendChatModel(chatModel,
+		compose.WithStatePreHandler(func(ctx context.Context, in []*schema.Message, state *state) ([]*schema.Message, error) {
+			return append(in, []*schema.Message{state.userMessage, state.answer}...), nil
+		})).AppendLambda(einoCompose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output []string, err error) {
+		content := suggestRegexp.FindString(input.Content)
+		if len(content) == 0 {
 			return
 		}
-		return suggests, err
+		suggests := make([]string, 0)
+		err = sonic.UnmarshalString(content, &suggests)
+		if err != nil {
+			logs.CtxErrorf(ctx, "Failed unmarshalling suggestions: %s", input.Content)
+
+		}
+		return suggests, nil
 	})).Compile(context.Background())
 
 	if err != nil {
