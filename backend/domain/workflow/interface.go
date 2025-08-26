@@ -68,6 +68,7 @@ type Service interface {
 
 	BindConvRelatedInfo(ctx context.Context, convID int64, info entity.ConvRelatedInfo) error
 	GetConvRelatedInfo(ctx context.Context, convID int64) (*entity.ConvRelatedInfo, bool, func() error, error)
+	Suggest(ctx context.Context, input *vo.SuggestInfo) ([]string, error)
 }
 
 type Repository interface {
