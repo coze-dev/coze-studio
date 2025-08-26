@@ -8,6 +8,7 @@ interface WorkflowFile {
   fileName: string;
   workflowName: string;
   workflowData: string;
+  originalContent: string; // 添加原始文件内容字段
   status: 'pending' | 'validating' | 'valid' | 'invalid' | 'importing' | 'success' | 'failed';
   error?: string;
   preview?: {
@@ -72,6 +73,7 @@ const WorkflowBatchImport: React.FC = () => {
           fileName: file.name,
           workflowName: workflowName,
           workflowData: '',
+          originalContent: '', // 初始化原始内容字段
           status: 'pending' as const,
         };
       });
@@ -121,6 +123,7 @@ const WorkflowBatchImport: React.FC = () => {
               return {
                 ...f,
                 workflowData: JSON.stringify(workflowData),
+                originalContent: content, // 保存原始文件内容
                 status: 'valid' as const,
                 preview: {
                   name: workflowData.name || '未命名工作流',
@@ -245,7 +248,7 @@ const WorkflowBatchImport: React.FC = () => {
     });
 
     if (nameErrors.length > 0) {
-      alert(`名称验证失败:\\n${nameErrors.join('\\n')}`);
+      alert(`名称验证失败:\n${nameErrors.join('\n')}`);
       return;
     }
 
@@ -265,7 +268,7 @@ const WorkflowBatchImport: React.FC = () => {
         
         return {
           file_name: file.fileName,
-          workflow_data: file.workflowData,
+          workflow_data: file.originalContent, // 使用原始文件内容，而不是JSON字符串
           workflow_name: file.workflowName,
           import_format: format,
         };
@@ -282,6 +285,8 @@ const WorkflowBatchImport: React.FC = () => {
         body: JSON.stringify({
           workflow_files: workflowFiles,
           space_id: space_id,
+          creator_id: 'current_user', // 添加creator_id参数
+          import_format: 'mixed', // 添加import_format参数，表示混合格式
           import_mode: importMode,
         }),
       });
@@ -343,7 +348,7 @@ const WorkflowBatchImport: React.FC = () => {
       
       if (successCount > 0) {
         setTimeout(() => {
-          alert(`批量导入完成！\\n成功: ${successCount}个\\n失败: ${failedCount}个`);
+          alert(`批量导入完成！\n成功: ${successCount}个\n失败: ${failedCount}个`);
         }, 1000);
       }
 

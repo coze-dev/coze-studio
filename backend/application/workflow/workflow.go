@@ -4006,7 +4006,7 @@ func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workf
 
 	// 4. 预验证所有文件（如果启用）
 	if config.ValidateBeforeImport {
-		if err := w.preValidateWorkflowFiles(req.WorkflowFiles, req.ImportFormat); err != nil {
+		if err := w.preValidateWorkflowFiles(req.WorkflowFiles); err != nil {
 			return nil, err
 		}
 	}
@@ -4035,12 +4035,13 @@ func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImpor
 
 	// 验证导入格式
 	supportedImportFormats := map[string]bool{
-		"json": true,
-		"yml":  true,
-		"yaml": true,
+		"json":  true,
+		"yml":   true,
+		"yaml":  true,
+		"mixed": true, // 支持混合格式
 	}
 	if !supportedImportFormats[req.ImportFormat] {
-		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml, mixed", req.ImportFormat))
 	}
 
 	// 限制批量导入数量
@@ -4118,8 +4119,19 @@ func (w *ApplicationService) buildBatchImportConfig(req *workflow.BatchImportWor
 }
 
 // preValidateWorkflowFiles 预验证所有工作流文件
-func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowFileData, format string) error {
+func (w *ApplicationService) preValidateWorkflowFiles(files []workflow.WorkflowFileData) error {
 	for i, file := range files {
+		// 根据文件名确定格式
+		fileName := strings.ToLower(file.FileName)
+		var format string
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else {
+			format = "json"
+		}
+
 		exportData, err := parseWorkflowData(file.WorkflowData, format)
 		if err != nil {
 			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid %s format: %v", i, file.FileName, format, err))
@@ -4176,7 +4188,7 @@ func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req
 			sem <- struct{}{}        // 获取信号量
 			defer func() { <-sem }() // 释放信号量
 
-			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID, req.ImportFormat)
+			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID, "")
 			result.Index = index
 			results[index] = result
 		}(i, file)
@@ -4194,7 +4206,7 @@ func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, 
 
 	// 创建所有工作流
 	for i, file := range req.WorkflowFiles {
-		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID, req.ImportFormat)
+		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID, "")
 		result.Index = i
 		results[i] = result
 
@@ -4214,7 +4226,19 @@ func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, 
 func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file workflow.WorkflowFileData, spaceID, creatorID, format string) BatchImportResult {
 	result := BatchImportResult{Success: false}
 
-	// 1. 解析工作流数据
+	// 1. 根据文件名确定格式（如果传入的format为空）
+	if format == "" {
+		fileName := strings.ToLower(file.FileName)
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else {
+			format = "json"
+		}
+	}
+
+	// 2. 解析工作流数据
 	exportData, err := parseWorkflowData(file.WorkflowData, format)
 	if err != nil {
 		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
