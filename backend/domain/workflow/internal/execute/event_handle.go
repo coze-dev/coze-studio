@@ -789,6 +789,7 @@ func HandleExecuteEvent(ctx context.Context,
 			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
 				event.Type, event.Context.RootWorkflowBasic.ID)
 			cancelTicker.Stop() // Clean up timer
+			waitUntilToolFinish(ctx)
 			if timeoutFn != nil {
 				timeoutFn()
 			}
@@ -880,11 +881,41 @@ func cacheToolStreamingResponse(ctx context.Context, event *Event) {
 		c[event.NodeKey][event.toolResponse.CallID].output = event.toolResponse
 	}
 	c[event.NodeKey][event.toolResponse.CallID].output.Response += event.toolResponse.Response
+	c[event.NodeKey][event.toolResponse.CallID].output.Complete = event.toolResponse.Complete
 }
 
 func getFCInfos(ctx context.Context, nodeKey vo.NodeKey) map[string]*fcInfo {
 	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
 	return c[nodeKey]
+}
+
+func waitUntilToolFinish(ctx context.Context) {
+	var cnt int
+outer:
+	for {
+		if cnt > 1000 {
+			return
+		}
+
+		c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+		if len(c) == 0 {
+			return
+		}
+
+		for _, m := range c {
+			for _, info := range m {
+				if info.output == nil {
+					cnt++
+					continue outer
+				}
+
+				if !info.output.Complete {
+					cnt++
+					continue outer
+				}
+			}
+		}
+	}
 }
 
 func (f *fcInfo) inputString() string {

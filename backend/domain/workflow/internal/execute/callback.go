@@ -370,6 +370,10 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 				interruptEvent.EventType, interruptEvent.NodeKey)
 		}
 
+		if c.TokenCollector != nil { // wait until all streaming chunks are collected
+			_ = c.TokenCollector.wait()
+		}
+
 		done := make(chan struct{})
 
 		w.ch <- &Event{
@@ -1309,6 +1313,7 @@ func (t *ToolHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
 			Response:     output.Response,
+			Complete:     true,
 		},
 	}
 
@@ -1347,6 +1352,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 							toolResponse: &entity.ToolResponseInfo{
 								FunctionInfo: t.info,
 								CallID:       callID,
+								Complete:     true,
 							},
 						}
 					}

@@ -40,7 +40,7 @@ type Workflow interface {
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
 	SyncExecuteWorkflow(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
 	WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Option
-	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
+	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message], func())
 }
 
 type ExecuteConfig = workflowModel.ExecuteConfig

@@ -33,7 +33,7 @@ type asToolImpl struct {
 	repo workflow.Repository
 }
 
-func (a *asToolImpl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message]) {
+func (a *asToolImpl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message], func()) {
 	return execute.WithMessagePipe()
 }
 

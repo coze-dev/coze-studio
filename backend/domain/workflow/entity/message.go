@@ -85,6 +85,7 @@ type ToolResponseInfo struct {
 	FunctionInfo
 	CallID   string
 	Response string
+	Complete bool
 }
 
 type ToolType = workflow.PluginType

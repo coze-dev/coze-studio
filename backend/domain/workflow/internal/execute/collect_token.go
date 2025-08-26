@@ -76,6 +76,20 @@ func (t *TokenCollector) add(i int) {
 	return
 }
 
+func (t *TokenCollector) startStreamCounting() {
+	t.wg.Add(1)
+	if t.Parent != nil {
+		t.Parent.startStreamCounting()
+	}
+}
+
+func (t *TokenCollector) finishStreamCounting() {
+	t.wg.Done()
+	if t.Parent != nil {
+		t.Parent.finishStreamCounting()
+	}
+}
+
 func getTokenCollector(ctx context.Context) *TokenCollector {
 	c := GetExeCtx(ctx)
 	if c == nil {
@@ -92,7 +106,6 @@ func GetTokenCallbackHandler() callbacks.Handler {
 				return ctx
 			}
 			c.add(1)
-			//c.wg.Add(1)
 			return ctx
 		},
 		OnEnd: func(ctx context.Context, runInfo *callbacks.RunInfo, output *model.CallbackOutput) context.Context {
@@ -114,6 +127,7 @@ func GetTokenCallbackHandler() callbacks.Handler {
 				output.Close()
 				return ctx
 			}
+			c.startStreamCounting()
 			safego.Go(ctx, func() {
 				defer func() {
 					output.Close()
@@ -141,6 +155,7 @@ func GetTokenCallbackHandler() callbacks.Handler {
 				if newC.TotalTokens > 0 {
 					c.addTokenUsage(newC)
 				}
+				c.finishStreamCounting()
 			})
 			return ctx
 		},

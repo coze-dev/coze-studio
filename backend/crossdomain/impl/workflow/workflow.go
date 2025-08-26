@@ -66,7 +66,7 @@ func (i *impl) WithExecuteConfig(cfg workflowModel.ExecuteConfig) einoCompose.Op
 	return i.DomainSVC.WithExecuteConfig(cfg)
 }
 
-func (i *impl) WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message]) {
+func (i *impl) WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message], func()) {
 	return i.DomainSVC.WithMessagePipe()
 }
 

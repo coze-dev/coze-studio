@@ -33,17 +33,22 @@ import (
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 const answerKey = "output"
 
 type invokableWorkflow struct {
+	workflowTool
+	invoke func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (map[string]any, error)
+}
+
+type workflowTool struct {
 	info          *schema.ToolInfo
-	invoke        func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (map[string]any, error)
-	terminatePlan vo.TerminatePlan
 	wfEntity      *entity.Workflow
 	sc            *schema2.WorkflowSchema
 	repo          wf.Repository
+	terminatePlan vo.TerminatePlan
 }
 
 func NewInvokableWorkflow(info *schema.ToolInfo,
@@ -54,12 +59,14 @@ func NewInvokableWorkflow(info *schema.ToolInfo,
 	repo wf.Repository,
 ) wf.ToolFromWorkflow {
 	return &invokableWorkflow{
-		info:          info,
-		invoke:        invoke,
-		terminatePlan: terminatePlan,
-		wfEntity:      wfEntity,
-		sc:            sc,
-		repo:          repo,
+		workflowTool: workflowTool{
+			info:          info,
+			wfEntity:      wfEntity,
+			sc:            sc,
+			repo:          repo,
+			terminatePlan: terminatePlan,
+		},
+		invoke: invoke,
 	}
 }
 
@@ -75,6 +82,52 @@ func resumeOnce(rInfo *entity.ResumeRequest, callID string, allIEs map[string]*e
 	if allIEs != nil {
 		delete(allIEs, callID)
 	}
+}
+
+func (wt *workflowTool) prepare(ctx context.Context, rInfo *entity.ResumeRequest, argumentsInJSON string, opts ...tool.Option) (
+	cancelCtx context.Context, executeID int64, input map[string]any, callOpts []einoCompose.Option, err error) {
+	cfg := execute.GetExecuteConfig(opts...)
+
+	var runOpts []WorkflowRunnerOption
+	if rInfo != nil && !rInfo.Resumed {
+		runOpts = append(runOpts, WithResumeReq(rInfo))
+	} else {
+		runOpts = append(runOpts, WithInput(argumentsInJSON))
+	}
+	if container := execute.GetParentStreamContainer(opts...); container != nil {
+		sr, sw := schema.Pipe[*entity.Message](10)
+		container.AddChild(sr)
+		runOpts = append(runOpts, WithStreamWriter(sw))
+	}
+
+	var ws *nodes.ConversionWarnings
+
+	if (rInfo == nil || rInfo.Resumed) && len(wt.wfEntity.InputParams) > 0 {
+		if err = sonic.UnmarshalString(argumentsInJSON, &input); err != nil {
+			err = vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+			return
+		}
+
+		var entryNode *schema2.NodeSchema
+		for _, node := range wt.sc.Nodes {
+			if node.Type == entity.NodeTypeEntry {
+				entryNode = node
+				break
+			}
+		}
+		if entryNode == nil {
+			panic("entry node not found in tool workflow")
+		}
+		input, ws, err = nodes.ConvertInputs(ctx, input, entryNode.OutputTypes)
+		if err != nil {
+			return
+		} else if ws != nil {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		}
+	}
+
+	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(wt.wfEntity.GetBasic(), wt.sc, cfg, runOpts...).Prepare(ctx)
+	return
 }
 
 func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
@@ -97,52 +150,9 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		return "", einoCompose.InterruptAndRerun
 	}
 
-	cfg := execute.GetExecuteConfig(opts...)
 	defer resumeOnce(rInfo, callID, allIEs)
 
-	var runOpts []WorkflowRunnerOption
-	if rInfo != nil && !rInfo.Resumed {
-		runOpts = append(runOpts, WithResumeReq(rInfo))
-	} else {
-		runOpts = append(runOpts, WithInput(argumentsInJSON))
-	}
-	if sw := execute.GetIntermediateStreamWriter(opts...); sw != nil {
-		runOpts = append(runOpts, WithStreamWriter(sw))
-	}
-
-	var (
-		cancelCtx context.Context
-		executeID int64
-		callOpts  []einoCompose.Option
-		in        map[string]any
-		err       error
-		ws        *nodes.ConversionWarnings
-	)
-
-	if rInfo == nil && len(i.wfEntity.InputParams) > 0 {
-		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
-			return "", err
-		}
-
-		var entryNode *schema2.NodeSchema
-		for _, node := range i.sc.Nodes {
-			if node.Type == entity.NodeTypeEntry {
-				entryNode = node
-				break
-			}
-		}
-		if entryNode == nil {
-			panic("entry node not found in tool workflow")
-		}
-		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
-		if err != nil {
-			return "", err
-		} else if ws != nil {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
-		}
-	}
-
-	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(i.wfEntity.GetBasic(), i.sc, cfg, runOpts...).Prepare(ctx)
+	cancelCtx, executeID, in, callOpts, err := i.prepare(ctx, rInfo, argumentsInJSON, opts...)
 	if err != nil {
 		return "", err
 	}
@@ -198,12 +208,8 @@ func (i *invokableWorkflow) GetWorkflow() *entity.Workflow {
 }
 
 type streamableWorkflow struct {
-	info          *schema.ToolInfo
-	stream        func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
-	terminatePlan vo.TerminatePlan
-	wfEntity      *entity.Workflow
-	sc            *schema2.WorkflowSchema
-	repo          wf.Repository
+	workflowTool
+	stream func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
 }
 
 func NewStreamableWorkflow(info *schema.ToolInfo,
@@ -214,12 +220,14 @@ func NewStreamableWorkflow(info *schema.ToolInfo,
 	repo wf.Repository,
 ) wf.ToolFromWorkflow {
 	return &streamableWorkflow{
-		info:          info,
-		stream:        stream,
-		terminatePlan: terminatePlan,
-		wfEntity:      wfEntity,
-		sc:            sc,
-		repo:          repo,
+		workflowTool: workflowTool{
+			info:          info,
+			wfEntity:      wfEntity,
+			sc:            sc,
+			repo:          repo,
+			terminatePlan: terminatePlan,
+		},
+		stream: stream,
 	}
 }
 
@@ -247,52 +255,9 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		return nil, einoCompose.InterruptAndRerun
 	}
 
-	cfg := execute.GetExecuteConfig(opts...)
 	defer resumeOnce(rInfo, callID, allIEs)
 
-	var runOpts []WorkflowRunnerOption
-	if rInfo != nil && !rInfo.Resumed {
-		runOpts = append(runOpts, WithResumeReq(rInfo))
-	} else {
-		runOpts = append(runOpts, WithInput(argumentsInJSON))
-	}
-	if sw := execute.GetIntermediateStreamWriter(opts...); sw != nil {
-		runOpts = append(runOpts, WithStreamWriter(sw))
-	}
-
-	var (
-		cancelCtx context.Context
-		executeID int64
-		callOpts  []einoCompose.Option
-		in        map[string]any
-		err       error
-		ws        *nodes.ConversionWarnings
-	)
-
-	if rInfo == nil && len(s.wfEntity.InputParams) > 0 {
-		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
-			return nil, err
-		}
-
-		var entryNode *schema2.NodeSchema
-		for _, node := range s.sc.Nodes {
-			if node.Type == entity.NodeTypeEntry {
-				entryNode = node
-				break
-			}
-		}
-		if entryNode == nil {
-			panic("entry node not found in tool workflow")
-		}
-		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
-		if err != nil {
-			return nil, err
-		} else if ws != nil {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
-		}
-	}
-
-	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(s.wfEntity.GetBasic(), s.sc, cfg, runOpts...).Prepare(ctx)
+	cancelCtx, executeID, in, callOpts, err := s.prepare(ctx, rInfo, argumentsInJSON, opts...)
 	if err != nil {
 		return nil, err
 	}

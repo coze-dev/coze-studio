@@ -446,9 +446,6 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 			return nil, err
 		}
 
-		fmt.Println("save interruptEvent in state within batch: ", iEvent)
-		fmt.Println("save composite info in state within batch: ", compState)
-
 		return nil, compose.InterruptAndRerun
 	} else {
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
