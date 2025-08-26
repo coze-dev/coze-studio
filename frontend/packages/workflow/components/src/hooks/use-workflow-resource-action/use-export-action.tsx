@@ -201,136 +201,146 @@ export const useExportAction = (props: WorkflowResourceActionProps) => {
       title={null}
       footer={null}
       onCancel={handleCancelExport}
-      width={240}
+      width={480}
       destroyOnClose={true}
       className="workflow-export-modal"
-      style={{ top: '20vh' }}
+      style={{ top: '25vh' }}
     >
-      <div className="px-4 py-5">
+      <div className="px-4 py-4">
         {/* Header */}
         <div className="text-center mb-5">
-          <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
+          <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
               <path d="M14 2H6C4.89 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
               <path d="M9 13V15H15V13H9ZM9 16V18H13V16H9Z" fill="currentColor" fillOpacity="0.8"/>
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-800 mb-1">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
             {I18n.t('workflow_export_format_title', 'Export Format')}
           </h2>
-          <p className="text-gray-500 text-xs leading-relaxed">
+          <p className="text-gray-500 text-sm leading-relaxed">
             {I18n.t('workflow_export_format_description', 'Choose your preferred format')}
           </p>
         </div>
         
         {/* Format Options */}
-        <div className="space-y-2 mb-5">
+        <div className="space-y-3 mb-5">
           <button
-            className={`relative w-full p-3 text-left rounded-lg transition-all duration-300 group ${
+            className={`relative w-full p-4 text-left rounded-xl transition-all duration-300 group overflow-hidden ${
               selectedFormat === 'json' 
-                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-sm' 
-                : 'bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-md transform scale-[1.02]' 
+                : 'bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md hover:transform hover:scale-[1.01]'
             }`}
             onClick={() => {
               console.log('JSON format selected');
               setSelectedFormat('json');
             }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center mr-3 ${
+            <div className="flex items-center relative z-10">
+              <div className="flex-shrink-0 mr-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
                   selectedFormat === 'json' 
                     ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
                     : 'bg-gradient-to-br from-gray-400 to-gray-500 group-hover:from-blue-400 group-hover:to-blue-500'
                 } transition-all duration-300`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
                     <path d="M5 3H7V5H9V7H7V9H5V7H3V5H5V3ZM11 3H19C19.6 3 20 3.4 20 4V6C20 6.6 19.6 7 19 7H11V3ZM11 9H19C19.6 9 20 9.4 20 10V12C20 12.6 19.6 13 19 13H11V9ZM11 15H19C19.6 15 20 15.4 20 16V18C20 18.6 19.6 19 19 19H11V15Z" fill="currentColor"/>
                   </svg>
                 </div>
-                <div>
-                  <div className="flex items-center">
-                    <span className="font-semibold text-sm text-gray-800">JSON</span>
-                    <span className="ml-2 px-1.5 py-0.5 bg-green-500 text-white text-xs font-medium rounded">
-                      {I18n.t('recommended', 'REC')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {I18n.t('workflow_export_format_json_desc', 'Standard format')}
-                  </p>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center mb-1">
+                  <span className="font-bold text-lg text-gray-800">JSON</span>
+                  <span className="ml-3 px-2 py-1 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold rounded-full shadow-sm">
+                    {I18n.t('recommended', 'RECOMMENDED')}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">
+                  {I18n.t('workflow_export_format_json_desc', 'Standard structured data format with excellent compatibility')}
+                </p>
+                <div className="flex items-center text-xs text-gray-500">
+                  <span className="inline-flex items-center">
+                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></span>
+                    {I18n.t('fast_processing', 'Fast processing')}
+                  </span>
+                  <span className="mx-2 text-gray-400">•</span>
+                  <span className="inline-flex items-center">
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1"></span>
+                    {I18n.t('wide_compatibility', 'Universal support')}
+                  </span>
                 </div>
               </div>
-              <div className={`w-4 h-4 rounded-full border-2 ${
-                selectedFormat === 'json' 
-                  ? 'border-blue-500 bg-blue-500' 
-                  : 'border-gray-300 group-hover:border-blue-400'
-              } transition-all duration-300`}>
-                {selectedFormat === 'json' && (
-                  <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                )}
-              </div>
             </div>
+            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 transform -skew-x-12 -translate-x-full transition-all duration-700 ${
+              selectedFormat === 'json' ? '' : 'group-hover:translate-x-full group-hover:opacity-20'
+            }`}></div>
           </button>
           
           <button
-            className={`relative w-full p-3 text-left rounded-lg transition-all duration-300 group ${
+            className={`relative w-full p-4 text-left rounded-xl transition-all duration-300 group overflow-hidden ${
               selectedFormat === 'yml' 
-                ? 'bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-400 shadow-sm' 
-                : 'bg-white border-2 border-gray-200 hover:border-purple-300 hover:bg-purple-50 hover:shadow-sm'
+                ? 'bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-400 shadow-md transform scale-[1.02]' 
+                : 'bg-white border-2 border-gray-200 hover:border-purple-300 hover:bg-purple-50 hover:shadow-md hover:transform hover:scale-[1.01]'
             }`}
             onClick={() => {
               console.log('YAML format selected');
               setSelectedFormat('yml');
             }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center mr-3 ${
+            <div className="flex items-center relative z-10">
+              <div className="flex-shrink-0 mr-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
                   selectedFormat === 'yml' 
                     ? 'bg-gradient-to-br from-purple-500 to-purple-600' 
                     : 'bg-gradient-to-br from-gray-400 to-gray-500 group-hover:from-purple-400 group-hover:to-purple-500'
                 } transition-all duration-300`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
                     <path d="M14 2H6C4.89 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
                     <path d="M8 12H10V14H8V12ZM8 15H14V17H8V15ZM8 9H16V11H8V9Z" fill="currentColor" fillOpacity="0.7"/>
                   </svg>
                 </div>
-                <div>
-                  <div className="flex items-center">
-                    <span className="font-semibold text-sm text-gray-800">YAML</span>
-                    <span className="ml-2 px-1.5 py-0.5 bg-purple-500 text-white text-xs font-medium rounded">
-                      {I18n.t('human_readable', 'READABLE')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {I18n.t('workflow_export_format_yml_desc', 'Human readable')}
-                  </p>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center mb-1">
+                  <span className="font-bold text-lg text-gray-800">YAML</span>
+                  <span className="ml-3 px-2 py-1 bg-gradient-to-r from-indigo-400 to-purple-500 text-white text-xs font-bold rounded-full shadow-sm">
+                    {I18n.t('human_readable', 'READABLE')}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">
+                  {I18n.t('workflow_export_format_yml_desc', 'Clean, human-readable format perfect for configuration')}
+                </p>
+                <div className="flex items-center text-xs text-gray-500">
+                  <span className="inline-flex items-center">
+                    <span className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-1"></span>
+                    {I18n.t('easy_to_read', 'Easy to edit')}
+                  </span>
+                  <span className="mx-2 text-gray-400">•</span>
+                  <span className="inline-flex items-center">
+                    <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full mr-1"></span>
+                    {I18n.t('configuration_friendly', 'Developer friendly')}
+                  </span>
                 </div>
               </div>
-              <div className={`w-4 h-4 rounded-full border-2 ${
-                selectedFormat === 'yml' 
-                  ? 'border-purple-500 bg-purple-500' 
-                  : 'border-gray-300 group-hover:border-purple-400'
-              } transition-all duration-300`}>
-                {selectedFormat === 'yml' && (
-                  <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                )}
-              </div>
             </div>
+            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 transform -skew-x-12 -translate-x-full transition-all duration-700 ${
+              selectedFormat === 'yml' ? '' : 'group-hover:translate-x-full group-hover:opacity-20'
+            }`}></div>
           </button>
         </div>
         
         {/* Footer */}
-        <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <button
-            className="px-4 py-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 font-medium text-xs"
+            className="px-6 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium text-sm"
             onClick={handleCancelExport}
           >
             {I18n.t('cancel', 'Cancel')}
           </button>
           <button
-            className={`px-4 py-1.5 rounded-md transition-all duration-200 font-medium text-xs ${
+            className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium text-sm shadow-sm ${
               selectedFormat 
-                ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm' 
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transform hover:scale-105' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
             onClick={handleConfirmExport}
