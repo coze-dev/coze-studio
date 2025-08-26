@@ -24,22 +24,17 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type minioClient struct {
-	host            string
 	client          *minio.Client
 	accessKeyID     string
 	secretAccessKey string
@@ -47,11 +42,12 @@ type minioClient struct {
 	endpoint        string
 }
 
-func NewStorageImagex(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (imagex.ImageX, error) {
+func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (storage.Storage, error) {
 	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
 	if err != nil {
 		return nil, err
 	}
+
 	return m, nil
 }
 
@@ -76,14 +72,8 @@ func getMinioClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, b
 	if err != nil {
 		return nil, fmt.Errorf("init minio client failed %v", err)
 	}
-	return m, nil
-}
 
-func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (storage.Storage, error) {
-	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
-	if err != nil {
-		return nil, err
-	}
+	// m.test()
 	return m, nil
 }
 
@@ -108,6 +98,8 @@ func (m *minioClient) createBucketIfNeed(ctx context.Context, client *minio.Clie
 func (m *minioClient) test() {
 	ctx := context.Background()
 	objectName := fmt.Sprintf("test-file-%d.txt", rand.Int())
+
+	m.ListObjects(ctx, "")
 
 	err := m.PutObject(ctx, objectName, []byte("hello content"), storage.WithContentType("text/plain"))
 	if err != nil {
@@ -223,47 +215,48 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	return presignedURL.String(), nil
 }
 
-func (m *minioClient) GetUploadHost(ctx context.Context) string {
-	currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-	if !ok {
-		return ""
+func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input cannot be nil")
 	}
-	return currentHost + consts.ApplyUploadActionURI
-}
-
-func (m *minioClient) GetServerID() string {
-	return ""
-}
-
-func (m *minioClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	scheme := strings.ToLower(os.Getenv(consts.StorageUploadHTTPScheme))
-	if scheme == "" {
-		scheme = "http"
+	if input.PageSize <= 0 {
+		return nil, fmt.Errorf("page size must be positive")
 	}
-	return &imagex.SecurityToken{
-		AccessKeyID:     "",
-		SecretAccessKey: "",
-		SessionToken:    "",
-		ExpiredTime:     time.Now().Add(time.Hour).Format("2006-01-02 15:04:05"),
-		CurrentTime:     time.Now().Format("2006-01-02 15:04:05"),
-		HostScheme:      scheme,
-	}, nil
-}
 
-func (m *minioClient) GetResourceURL(ctx context.Context, uri string, opts ...imagex.GetResourceOpt) (*imagex.ResourceURL, error) {
-	url, err := m.GetObjectUrl(ctx, uri)
+	files, err := m.ListObjects(ctx, input.Prefix)
 	if err != nil {
 		return nil, err
 	}
-	return &imagex.ResourceURL{
-		URL: url,
+
+	return &storage.ListObjectsPaginatedOutput{
+		Files:       files,
+		IsTruncated: false,
+		Cursor:      "",
 	}, nil
 }
 
-func (m *minioClient) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
-	return nil, nil
-}
+func (m *minioClient) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
+	opts := minio.ListObjectsOptions{
+		Prefix:    prefix,
+		Recursive: true,
+	}
 
-func (m *minioClient) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	return nil, nil
+	objectCh := m.client.ListObjects(ctx, m.bucketName, opts)
+
+	var files []*storage.FileInfo
+	for object := range objectCh {
+		if object.Err != nil {
+			return nil, object.Err
+		}
+		files = append(files, &storage.FileInfo{
+			Key:          object.Key,
+			LastModified: object.LastModified,
+			ETag:         object.ETag,
+			Size:         object.Size,
+		})
+
+		logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d", object.Key, object.LastModified, object.ETag, object.Size)
+	}
+
+	return files, nil
 }

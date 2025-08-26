@@ -28,14 +28,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type s3Client struct {
@@ -43,7 +38,7 @@ type s3Client struct {
 	bucketName string
 }
 
-func NewStorageImagex(ctx context.Context, ak, sk, bucketName, endpoint, region string) (imagex.ImageX, error) {
+func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (storage.Storage, error) {
 	t, err := getS3Client(ctx, ak, sk, bucketName, endpoint, region)
 	if err != nil {
 		return nil, err
@@ -87,14 +82,6 @@ func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region strin
 		return nil, err
 	}
 
-	return t, nil
-}
-
-func New(ctx context.Context, ak, sk, bucketName, endpoint, region string) (storage.Storage, error) {
-	t, err := getS3Client(ctx, ak, sk, bucketName, endpoint, region)
-	if err != nil {
-		return nil, err
-	}
 	return t, nil
 }
 
@@ -252,47 +239,106 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 	return req.URL, nil
 }
 
-func (i *s3Client) GetUploadHost(ctx context.Context) string {
-	currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-	if !ok {
-		return ""
+func (t *s3Client) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
+	client := t.client
+	bucket := t.bucketName
+	const (
+		DefaultPageSize = 100
+		MaxListObjects  = 10000
+	)
+
+	input := &s3.ListObjectsV2Input{
+		Bucket:  aws.String(bucket),
+		Prefix:  aws.String(prefix),
+		MaxKeys: aws.Int32(DefaultPageSize),
 	}
-	return currentHost + consts.ApplyUploadActionURI
-}
 
-func (t *s3Client) GetServerID() string {
-	return ""
-}
+	paginator := s3.NewListObjectsV2Paginator(client, input)
 
-func (t *s3Client) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	scheme, ok := ctxcache.Get[string](ctx, consts.RequestSchemeKeyInCtx)
-	if !ok {
-		return nil, errorx.New(errno.ErrUploadHostSchemaNotExistCode)
+	var files []*storage.FileInfo
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get page, %v", err)
+		}
+		for _, obj := range page.Contents {
+			f := &storage.FileInfo{}
+			if obj.Key != nil {
+				f.Key = *obj.Key
+			}
+			if obj.LastModified != nil {
+				f.LastModified = *obj.LastModified
+			}
+			if obj.ETag != nil {
+				f.ETag = *obj.ETag
+			}
+			if obj.Size != nil {
+				f.Size = *obj.Size
+			}
+
+			files = append(files, f)
+
+		}
+
+		if len(files) >= MaxListObjects {
+			logs.CtxErrorf(ctx, "[ListObjects] max list objects reached, total: %d", len(files))
+			break
+		}
 	}
-	return &imagex.SecurityToken{
-		AccessKeyID:     "",
-		SecretAccessKey: "",
-		SessionToken:    "",
-		ExpiredTime:     time.Now().Add(time.Hour).Format("2006-01-02 15:04:05"),
-		CurrentTime:     time.Now().Format("2006-01-02 15:04:05"),
-		HostScheme:      scheme,
-	}, nil
+
+	return files, nil
 }
 
-func (t *s3Client) GetResourceURL(ctx context.Context, uri string, opts ...imagex.GetResourceOpt) (*imagex.ResourceURL, error) {
-	url, err := t.GetObjectUrl(ctx, uri)
+func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input cannot be nil")
+	}
+	if input.PageSize <= 0 {
+		return nil, fmt.Errorf("page size must be positive")
+	}
+
+	client := t.client
+	bucket := t.bucketName
+
+	listObjectsInput := &s3.ListObjectsV2Input{
+		Bucket:            aws.String(bucket),
+		Prefix:            aws.String(input.Prefix),
+		MaxKeys:           aws.Int32(int32(input.PageSize)),
+		ContinuationToken: aws.String(input.Cursor),
+	}
+
+	p, err := client.ListObjectsV2(ctx, listObjectsInput)
 	if err != nil {
 		return nil, err
 	}
-	return &imagex.ResourceURL{
-		URL: url,
-	}, nil
-}
 
-func (t *s3Client) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
-	return nil, nil
-}
+	var files []*storage.FileInfo
+	for _, obj := range p.Contents {
+		f := &storage.FileInfo{}
+		if obj.Key != nil {
+			f.Key = *obj.Key
+		}
+		if obj.LastModified != nil {
+			f.LastModified = *obj.LastModified
+		}
+		if obj.ETag != nil {
+			f.ETag = *obj.ETag
+		}
+		if obj.Size != nil {
+			f.Size = *obj.Size
+		}
+		files = append(files, f)
+	}
 
-func (t *s3Client) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	return nil, nil
+	output := &storage.ListObjectsPaginatedOutput{
+		Files: files,
+	}
+	if p.IsTruncated != nil {
+		output.IsTruncated = *p.IsTruncated
+	}
+	if p.NextContinuationToken != nil {
+		output.Cursor = *p.NextContinuationToken
+	}
+
+	return output, nil
 }
