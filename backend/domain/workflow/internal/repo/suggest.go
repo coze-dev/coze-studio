@@ -33,18 +33,20 @@ import (
 
 const SUGGESTION_PROMPT = `
 # Role
-You are a recommendation expert who can analyze users' questions and answers, 
-identify the interest points of previous questions, and provide the three most likely unique questions that the user will ask next.
-These questions must meet the above requirements and must be returned in the format of a string array containing these three recommended questions. 
+You are an AI assistant that quickly generates 3 relevant follow-up questions.
 
-### Personal
+# Task
+Analyze the user's question and the assistant's answer to suggest 3 unique, concise follow-up questions.
+
+**IMPORTANT**: The assistant's answer can be very long. To be fast, focus only on the main ideas and topics in the answer. Do not analyze the full text in detail.
+
+### Persona
 {{ suggest_persona }}
 
-## Constraints:
-- Three recommended questions must be returned in the format of a string array.
-- The returned format must be only an a string array. json format example:
-	["Forbidden City", "Great Wall", "Summer Palace"]
-- The output language must be consistent with the language of the user's question.
+## Output Format
+- Return **only** a single JSON string array.
+- Example: ["What is the history?", "How does it work?", "What are the benefits?"]
+- The questions must be in the same language as the user's input.
 `
 
 type suggesterV3 struct {
