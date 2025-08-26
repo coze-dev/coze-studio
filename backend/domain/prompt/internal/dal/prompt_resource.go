@@ -116,24 +116,24 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*ent
 	return do, nil
 }
 
-func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
+func (d *PromptDAO) UpdatePromptResource(ctx context.Context, promptID int64, name, description, promptText *string) error {
 	updateMap := make(map[string]any, 5)
 
-	if p.Name != "" {
-		updateMap["name"] = p.Name
+	if name != nil {
+		updateMap["name"] = *name
 	}
 
-	if p.Description != "" {
-		updateMap["description"] = p.Description
+	if description != nil {
+		updateMap["description"] = *description
 	}
 
-	if p.PromptText != "" {
-		updateMap["prompt_text"] = p.PromptText
+	if promptText != nil {
+		updateMap["prompt_text"] = *promptText
 	}
 
 	promptModel := query.PromptResource
 	promptWhere := []gen.Condition{
-		promptModel.ID.Eq(p.ID),
+		promptModel.ID.Eq(promptID),
 	}
 
 	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Updates(updateMap)

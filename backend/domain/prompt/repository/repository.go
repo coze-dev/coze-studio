@@ -33,6 +33,6 @@ func NewPromptRepo(db *gorm.DB, generator idgen.IDGenerator) PromptRepository {
 type PromptRepository interface {
 	CreatePromptResource(ctx context.Context, do *entity.PromptResource) (int64, error)
 	GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error)
-	UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error
+	UpdatePromptResource(ctx context.Context, promptID int64, name, description, promptText *string) error
 	DeletePromptResource(ctx context.Context, ID int64) error
 }
