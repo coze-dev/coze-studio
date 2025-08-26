@@ -458,3 +458,7 @@ func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.E
 
 	return "", false, nil
 }
+
+func (c *conversationImpl) Suggest(ctx context.Context, input *vo.SuggestInfo) ([]string, error) {
+	return c.repo.Suggest(ctx, input)
+}
