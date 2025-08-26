@@ -998,7 +998,7 @@ table "conversation" {
     auto_increment = true
   }
   column "name" {
-    null    = false
+    null    = true
     type    = varchar(255)
     default = ""
     comment = "conversation name"
