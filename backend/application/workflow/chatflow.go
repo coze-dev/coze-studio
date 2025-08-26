@@ -1120,12 +1120,12 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 						return nil, err
 					}
 
-					for _, s := range suggests {
+					for index, s := range suggests {
 						suggestWorkflowResponse = append(suggestWorkflowResponse, &workflow.ChatFlowRunResponse{
 							Event: string(vo.ChatFlowMessageCompleted),
 							Data: func() string {
 								s, _ := sonic.MarshalString(&vo.MessageDetail{
-									ID:             strconv.FormatInt(time.Now().UnixMilli(), 10),
+									ID:             strconv.FormatInt(time.Now().UnixNano()+int64(index), 10),
 									ChatID:         strconv.FormatInt(roundID, 10),
 									ConversationID: strconv.FormatInt(conversationID, 10),
 									SectionID:      strconv.FormatInt(sectionID, 10),
