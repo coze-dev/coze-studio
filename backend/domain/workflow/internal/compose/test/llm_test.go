@@ -31,6 +31,8 @@ import (
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -98,6 +100,14 @@ func TestLLM(t *testing.T) {
 
 		ctx := ctxcache.Init(context.Background())
 
+		defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+			RootCtx: execute.RootCtx{
+				ExeCfg: workflowModel.ExecuteConfig{
+					WorkflowMode: 0,
+				},
+			},
+			NodeCtx: &execute.NodeCtx{},
+		}).Build().UnPatch()
 		t.Run("plain text output, non-streaming mode", func(t *testing.T) {
 			if openaiModel == nil {
 				defer func() {
