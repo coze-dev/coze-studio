@@ -262,6 +262,15 @@ const Page = () => {
           workflowName = file.name.replace('.yaml', '');
         }
         
+        // 确保工作流名称符合后端验证规则（只能包含字母、数字、下划线，且以字母开头）
+        workflowName = workflowName.replace(/[^a-zA-Z0-9_]/g, '_');
+        if (!/^[a-zA-Z]/.test(workflowName)) {
+          workflowName = 'Workflow_' + workflowName;
+        }
+        if (workflowName.length < 2) {
+          workflowName = 'Workflow_' + Math.random().toString(36).substr(2, 6);
+        }
+        
         return {
           id: Math.random().toString(36).substr(2, 9),
           file,
@@ -493,6 +502,11 @@ const Page = () => {
 
   // 批量导入处理
   const handleBatchImport = useCallback(async () => {
+    if (!space_id) {
+      setParseError('缺少工作空间ID，请重新进入页面');
+      return;
+    }
+
     if (selectedFiles.length === 0) {
       setParseError('请先选择文件');
       return;
@@ -539,15 +553,10 @@ const Page = () => {
       abortControllerRef.current = new AbortController();
       
       const workflowFiles = validFiles.map(file => {
-        const fileName = file.fileName.toLowerCase();
-        const format = fileName.endsWith('.yml') ? 'yml' : 
-                      fileName.endsWith('.yaml') ? 'yaml' : 'json';
-        
         return {
           file_name: file.fileName,
           workflow_data: file.originalContent, // 使用原始文件内容，而不是JSON字符串
           workflow_name: file.workflowName,
-          import_format: format,
         };
       });
 

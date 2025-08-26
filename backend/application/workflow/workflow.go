@@ -4058,10 +4058,7 @@ func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImpor
 		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
 	}
 
-	// 验证导入格式
-	if req.ImportFormat != "json" && req.ImportFormat != "yml" && req.ImportFormat != "yaml" {
-		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
-	}
+	// 验证导入格式（重复验证，已在上面的supportedImportFormats中处理）
 
 	// 验证导入模式
 	if req.ImportMode != "" && req.ImportMode != string(workflow.BatchImportModeBatch) && req.ImportMode != string(workflow.BatchImportModeTransaction) {

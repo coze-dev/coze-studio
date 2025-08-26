@@ -67,6 +67,15 @@ const WorkflowBatchImport: React.FC = () => {
           workflowName = file.name.replace('.yaml', '');
         }
         
+        // 确保工作流名称符合后端验证规则（只能包含字母、数字、下划线，且以字母开头）
+        workflowName = workflowName.replace(/[^a-zA-Z0-9_]/g, '_');
+        if (!/^[a-zA-Z]/.test(workflowName)) {
+          workflowName = 'Workflow_' + workflowName;
+        }
+        if (workflowName.length < 2) {
+          workflowName = 'Workflow_' + Math.random().toString(36).substr(2, 6);
+        }
+        
         return {
           id: Math.random().toString(36).substr(2, 9),
           file,
@@ -183,8 +192,8 @@ const WorkflowBatchImport: React.FC = () => {
       return '工作流名称只能包含字母、数字和下划线';
     }
     
-    if (name.length < 1 || name.length > 50) {
-      return '工作流名称长度应在1-50个字符之间';
+    if (name.length < 2 || name.length > 100) {
+      return '工作流名称长度应在2-100个字符之间';
     }
     
     return '';
@@ -219,6 +228,11 @@ const WorkflowBatchImport: React.FC = () => {
 
   // 批量导入
   const handleBatchImport = async () => {
+    if (!space_id) {
+      alert('缺少工作空间ID，请重新进入页面');
+      return;
+    }
+
     if (selectedFiles.length === 0) {
       alert('请先选择文件');
       return;
@@ -262,20 +276,15 @@ const WorkflowBatchImport: React.FC = () => {
 
     try {
       const workflowFiles = validFiles.map(file => {
-        const fileName = file.fileName.toLowerCase();
-        const format = fileName.endsWith('.yml') ? 'yml' : 
-                      fileName.endsWith('.yaml') ? 'yaml' : 'json';
-        
         return {
           file_name: file.fileName,
           workflow_data: file.originalContent, // 使用原始文件内容，而不是JSON字符串
           workflow_name: file.workflowName,
-          import_format: format,
         };
       });
 
-      // 现在支持混合格式导入，每个文件都有自己的 import_format
-      console.log('批量导入文件:', workflowFiles.map(f => ({ name: f.file_name, format: f.import_format })));
+      // 现在支持混合格式导入
+      console.log('批量导入文件:', workflowFiles.map(f => ({ name: f.file_name, workflow_name: f.workflow_name })));
 
       const response = await fetch('/api/workflow_api/batch_import', {
         method: 'POST',
