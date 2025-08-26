@@ -535,11 +535,18 @@ const Page = () => {
       // 创建新的AbortController
       abortControllerRef.current = new AbortController();
       
-      const workflowFiles = validFiles.map(file => ({
-        file_name: file.fileName,
-        workflow_data: file.workflowData,
-        workflow_name: file.workflowName,
-      }));
+      const workflowFiles = validFiles.map(file => {
+        const fileName = file.fileName.toLowerCase();
+        const format = fileName.endsWith('.yml') ? 'yml' : 
+                      fileName.endsWith('.yaml') ? 'yaml' : 'json';
+        
+        return {
+          file_name: file.fileName,
+          workflow_data: file.workflowData,
+          workflow_name: file.workflowName,
+          import_format: format,
+        };
+      });
 
       const response = await fetch('/api/workflow_api/batch_import', {
         method: 'POST',
@@ -550,7 +557,6 @@ const Page = () => {
           workflow_files: workflowFiles,
           space_id: space_id,
           creator_id: 'current_user',
-          import_format: 'json',
           import_mode: batchImportMode,
         }),
         signal: abortControllerRef.current.signal,
