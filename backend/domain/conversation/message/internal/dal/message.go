@@ -75,6 +75,11 @@ func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*
 	m := dao.query.Message
 	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(listMeta.ConversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
 
+	if len(listMeta.RunID) > 0 {
+		do = do.Where(m.RunID.In(slices.Transform(listMeta.RunID, func(t *int64) int64 {
+			return *t
+		})...))
+	}
 	if len(listMeta.MessageType) > 0 {
 		do = do.Where(m.MessageType.In(slices.Transform(listMeta.MessageType, func(t *message.MessageType) string {
 			return string(*t)

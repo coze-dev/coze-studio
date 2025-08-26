@@ -66,6 +66,11 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		ConversationID: currentConversation.ID,
 		AgentID:        currentConversation.AgentID,
 		Limit:          int(ptr.From(mr.Limit)),
+		RunID:          []*int64{mr.ChatID},
+		MessageType: []*message3.MessageType{
+			ptr.Of(message3.MessageTypeQuestion),
+			ptr.Of(message3.MessageTypeAnswer),
+		},
 	}
 
 	if mr.BeforeID != nil {
@@ -81,20 +86,14 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		msgListMeta.OrderBy = mr.Order
 	}
 
-	mListMessages, err := ConversationSVC.MessageDomainSVC.List(ctx, msgListMeta)
+	mListMessages, err := ConversationSVC.MessageDomainSVC.ListWithoutPair(ctx, msgListMeta)
 	if err != nil {
 		return nil, err
 	}
 
-	// get agent id
-	var agentIDs []int64
-	for _, mOne := range mListMessages.Messages {
-		agentIDs = append(agentIDs, mOne.AgentID)
-	}
-
 	resp := m.buildMessageListResponse(ctx, mListMessages, currentConversation)
 
-	return resp, err
+	return resp, nil
 }
 
 func getConversation(ctx context.Context, conversationID int64) (*convEntity.Conversation, error) {
