@@ -325,7 +325,7 @@ const Page = () => {
             if (f.id === workflowFile.id) {
               return {
                 ...f,
-                workflowData: content,
+                workflowData: JSON.stringify(workflowData),
                 status: 'valid' as const,
                 preview: {
                   name: workflowData.name || '未命名工作流',
@@ -556,7 +556,6 @@ const Page = () => {
         body: JSON.stringify({
           workflow_files: workflowFiles,
           space_id: space_id,
-          creator_id: 'current_user',
           import_mode: batchImportMode,
         }),
         signal: abortControllerRef.current.signal,
