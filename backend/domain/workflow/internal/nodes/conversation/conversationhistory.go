@@ -104,21 +104,23 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 
 	var conversationID int64
 	if existed {
-		sts, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
+		var sc *entity.StaticConversation
+		sc, existed, err = wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 		}
 		if existed {
-			conversationID = sts.ConversationID
+			conversationID = sc.ConversationID
 		}
 
 	} else {
-		dyConversation, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
+		var dc *entity.DynamicConversation
+		dc, existed, err = wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 		}
 		if existed {
-			conversationID = dyConversation.ConversationID
+			conversationID = dc.ConversationID
 		}
 	}
 
