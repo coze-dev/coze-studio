@@ -555,6 +555,14 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			return nil, err
 		}
 		sectionID = cInfo.SectionID
+		conversationName, existed, err := GetWorkflowDomainSVC().GetConversationNameByID(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, conversationID)
+		if err != nil {
+			return nil, err
+		}
+		if !existed {
+			return nil, fmt.Errorf("conversation not found")
+		}
+		parameters["CONVERSATION_NAME"] = conversationName
 	} else {
 		conversationName, ok := parameters["CONVERSATION_NAME"].(string)
 		if !ok {

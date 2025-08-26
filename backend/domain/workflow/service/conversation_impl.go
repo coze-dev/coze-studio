@@ -437,3 +437,21 @@ func (c *conversationImpl) GetTemplateByName(ctx context.Context, env vo.Env, ap
 func (c *conversationImpl) GetDynamicConversationByName(ctx context.Context, env vo.Env, appID, connectorID, userID int64, name string) (*entity.DynamicConversation, bool, error) {
 	return c.repo.GetDynamicConversationByName(ctx, env, appID, connectorID, userID, name)
 }
+
+func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error) {
+	dc, existed, err := c.repo.GetDynamicConversationByID(ctx, env, appID, connectorID, conversationID)
+	if err != nil {
+		return "", false, err
+	}
+	if existed {
+		return dc.Name, true, nil
+	}
+	sc, existed, err := c.repo.GetStaticConversationByID(ctx, env, appID, connectorID, conversationID)
+	if err != nil {
+		return "", false, err
+	}
+	if existed {
+		return sc, true, nil
+	}
+	return "", false, nil
+}

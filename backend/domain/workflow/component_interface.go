@@ -71,6 +71,7 @@ type ConversationService interface {
 	UpdateConversation(ctx context.Context, env vo.Env, appID, connectorID, userID int64, conversationName string) (int64, error)
 	GetTemplateByName(ctx context.Context, env vo.Env, appID int64, templateName string) (*entity.ConversationTemplate, bool, error)
 	GetDynamicConversationByName(ctx context.Context, env vo.Env, appID, connectorID, userID int64, name string) (*entity.DynamicConversation, bool, error)
+	GetConversationNameByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error)
 }
 
 type InterruptEventStore interface {
@@ -134,6 +135,8 @@ type ConversationRepository interface {
 	UpdateStaticConversation(ctx context.Context, env vo.Env, templateID int64, connectorID int64, userID int64, newConversationID int64) error
 	UpdateDynamicConversation(ctx context.Context, env vo.Env, conversationID, newConversationID int64) error
 	CopyTemplateConversationByAppID(ctx context.Context, appID int64, toAppID int64) error
+	GetStaticConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error)
+	GetDynamicConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (*entity.DynamicConversation, bool, error)
 }
 
 type WorkflowConfig interface {
