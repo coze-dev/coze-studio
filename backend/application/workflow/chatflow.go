@@ -510,8 +510,14 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		locator        workflowModel.Locator
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
 		userID         = apiKeyInfo.UserID
-		connectorID    = ternary.IFElse(isDebug, consts.CozeConnectorID, apiKeyInfo.ConnectorID)
+		connectorID    int64
 	)
+	if len(req.GetConnectorID()) == 0 {
+		connectorID = ternary.IFElse(isDebug, consts.CozeConnectorID, apiKeyInfo.ConnectorID)
+	} else {
+		connectorID = mustParseInt64(req.GetConnectorID())
+	}
+
 	if req.IsSetAppID() {
 		appID = ptr.Of(mustParseInt64(req.GetAppID()))
 		resolveAppID = mustParseInt64(req.GetAppID())
@@ -555,6 +561,8 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			return nil, err
 		}
 		sectionID = cInfo.SectionID
+
+		//  only trust the conversation name under the app
 		conversationName, existed, err := GetWorkflowDomainSVC().GetConversationNameByID(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, conversationID)
 		if err != nil {
 			return nil, err

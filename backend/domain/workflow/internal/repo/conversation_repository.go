@@ -856,7 +856,7 @@ func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.E
 		}
 		appConversationTemplateDraft := r.query.AppConversationTemplateDraft
 		template, err := appConversationTemplateDraft.WithContext(ctx).Where(
-			appConversationTemplateDraft.ID.Eq(ret.TemplateID),
+			appConversationTemplateDraft.TemplateID.Eq(ret.TemplateID),
 			appConversationTemplateDraft.AppID.Eq(appID),
 		).First()
 		if err != nil {
@@ -880,7 +880,7 @@ func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.E
 		}
 		appConversationTemplateOnline := r.query.AppConversationTemplateOnline
 		template, err := appConversationTemplateOnline.WithContext(ctx).Where(
-			appConversationTemplateOnline.ID.Eq(ret.TemplateID),
+			appConversationTemplateOnline.TemplateID.Eq(ret.TemplateID),
 			appConversationTemplateOnline.AppID.Eq(appID),
 		).First()
 		if err != nil {
