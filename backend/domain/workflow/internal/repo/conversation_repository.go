@@ -840,3 +840,101 @@ func (r *RepositoryImpl) CopyTemplateConversationByAppID(ctx context.Context, ap
 	return nil
 
 }
+
+func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error) {
+	if env == vo.Draft {
+		appStaticConversationDraft := r.query.AppStaticConversationDraft
+		ret, err := appStaticConversationDraft.WithContext(ctx).Where(
+			appStaticConversationDraft.ConnectorID.Eq(connectorID),
+			appStaticConversationDraft.ConversationID.Eq(conversationID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		appConversationTemplateDraft := r.query.AppConversationTemplateDraft
+		template, err := appConversationTemplateDraft.WithContext(ctx).Where(
+			appConversationTemplateDraft.ID.Eq(ret.TemplateID),
+			appConversationTemplateDraft.AppID.Eq(appID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		return template.Name, true, nil
+	} else if env == vo.Online {
+		appStaticConversationOnline := r.query.AppStaticConversationOnline
+		ret, err := appStaticConversationOnline.WithContext(ctx).Where(
+			appStaticConversationOnline.ConnectorID.Eq(connectorID),
+			appStaticConversationOnline.ConversationID.Eq(conversationID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		appConversationTemplateOnline := r.query.AppConversationTemplateOnline
+		template, err := appConversationTemplateOnline.WithContext(ctx).Where(
+			appConversationTemplateOnline.ID.Eq(ret.TemplateID),
+			appConversationTemplateOnline.AppID.Eq(appID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		return template.Name, true, nil
+	}
+	return "", false, fmt.Errorf("unknown env %v", env)
+}
+
+func (r *RepositoryImpl) GetDynamicConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (*entity.DynamicConversation, bool, error) {
+	if env == vo.Draft {
+		appDynamicConversationDraft := r.query.AppDynamicConversationDraft
+		ret, err := appDynamicConversationDraft.WithContext(ctx).Where(
+			appDynamicConversationDraft.AppID.Eq(appID),
+			appDynamicConversationDraft.ConnectorID.Eq(connectorID),
+			appDynamicConversationDraft.ConversationID.Eq(conversationID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
+		return &entity.DynamicConversation{
+			ID:             ret.ID,
+			UserID:         ret.UserID,
+			ConnectorID:    ret.ConnectorID,
+			ConversationID: ret.ConversationID,
+			Name:           ret.Name,
+		}, true, nil
+	} else if env == vo.Online {
+		appDynamicConversationOnline := r.query.AppDynamicConversationOnline
+		ret, err := appDynamicConversationOnline.WithContext(ctx).Where(
+			appDynamicConversationOnline.AppID.Eq(appID),
+			appDynamicConversationOnline.ConnectorID.Eq(connectorID),
+			appDynamicConversationOnline.ConversationID.Eq(conversationID),
+		).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
+		return &entity.DynamicConversation{
+			ID:             ret.ID,
+			UserID:         ret.UserID,
+			ConnectorID:    ret.ConnectorID,
+			ConversationID: ret.ConversationID,
+			Name:           ret.Name,
+		}, true, nil
+	}
+	return nil, false, fmt.Errorf("unknown env %v", env)
+}
