@@ -1384,7 +1384,12 @@ func convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlo
 			dataMessage := msg.DataMessage
 
 			if shouldNewMessage {
+				id, err := domainWorkflow.GetRepository().GenID(ctx)
+				if err != nil {
+					return nil, err
+				}
 				intermediateMessage = &message.Message{
+					ID:             id,
 					AgentID:        appID,
 					RunID:          roundID,
 					SectionID:      sectionID,
