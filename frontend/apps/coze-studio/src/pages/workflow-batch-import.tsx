@@ -267,9 +267,22 @@ const WorkflowBatchImport: React.FC = () => {
           file_name: file.fileName,
           workflow_data: file.workflowData,
           workflow_name: file.workflowName,
-          import_format: format,
         };
       });
+
+      // 确定整体导入格式（如果所有文件都是同一种格式）
+      const allFormats = validFiles.map(file => {
+        const fileName = file.fileName.toLowerCase();
+        return fileName.endsWith('.yml') ? 'yml' : 
+               fileName.endsWith('.yaml') ? 'yaml' : 'json';
+      });
+      
+      const uniqueFormats = [...new Set(allFormats)];
+      if (uniqueFormats.length > 1) {
+        throw new Error('批量导入的文件格式必须一致，当前包含多种格式：' + uniqueFormats.join(', '));
+      }
+      
+      const importFormat = uniqueFormats[0];
 
       const response = await fetch('/api/workflow_api/batch_import', {
         method: 'POST',
@@ -280,6 +293,7 @@ const WorkflowBatchImport: React.FC = () => {
           workflow_files: workflowFiles,
           space_id: space_id,
           creator_id: 'current_user',
+          import_format: importFormat,
           import_mode: importMode,
         }),
       });

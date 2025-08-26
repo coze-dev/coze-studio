@@ -3788,7 +3788,7 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 			ExportFormat: exportData.ExportFormat,
 			// 不包含 SerializedData 字段
 		}
-		
+
 		yamlData, err := yaml.Marshal(exportDataForYAML)
 		if err != nil {
 			logs.CtxErrorf(ctx, "ExportWorkflow failed to marshal YAML data: %v", err)
@@ -3813,7 +3813,7 @@ func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.E
 // parseWorkflowData 解析工作流数据，支持JSON和YAML格式
 func parseWorkflowData(data string, format string) (*workflow.WorkflowExportData, error) {
 	var exportData workflow.WorkflowExportData
-	
+
 	if format == "yml" || format == "yaml" {
 		// YAML格式解析
 		if err := yaml.Unmarshal([]byte(data), &exportData); err != nil {
@@ -3825,7 +3825,7 @@ func parseWorkflowData(data string, format string) (*workflow.WorkflowExportData
 			return nil, fmt.Errorf("failed to parse JSON workflow data: %v", err)
 		}
 	}
-	
+
 	return &exportData, nil
 }
 
@@ -3855,8 +3855,14 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 	if req.CreatorID == "" {
 		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
 	}
-	if req.ImportFormat != "json" {
-		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s", req.ImportFormat))
+	// 验证导入格式
+	supportedImportFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+	}
+	if !supportedImportFormats[req.ImportFormat] {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
 	}
 
 	// 验证工作流名称格式
@@ -3877,12 +3883,7 @@ func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.I
 	}
 
 	// 验证导入格式
-	supportedImportFormats := map[string]bool{
-		"json": true,
-		"yml":  true,
-		"yaml": true,
-	}
-	if !supportedImportFormats[req.ImportFormat] {
+	if req.ImportFormat != "json" && req.ImportFormat != "yml" && req.ImportFormat != "yaml" {
 		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
 	}
 
@@ -4056,8 +4057,9 @@ func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImpor
 		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
 	}
 
-	if req.ImportFormat != "json" {
-		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s", req.ImportFormat))
+	// 验证导入格式
+	if req.ImportFormat != "json" && req.ImportFormat != "yml" && req.ImportFormat != "yaml" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
 	}
 
 	// 验证导入模式
