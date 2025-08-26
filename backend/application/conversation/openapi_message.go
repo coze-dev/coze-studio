@@ -66,11 +66,14 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		ConversationID: currentConversation.ID,
 		AgentID:        currentConversation.AgentID,
 		Limit:          int(ptr.From(mr.Limit)),
-		RunID:          []*int64{mr.ChatID},
+
 		MessageType: []*message3.MessageType{
 			ptr.Of(message3.MessageTypeQuestion),
 			ptr.Of(message3.MessageTypeAnswer),
 		},
+	}
+	if mr.ChatID != nil {
+		msgListMeta.RunID = []*int64{mr.ChatID}
 	}
 
 	if mr.BeforeID != nil {
