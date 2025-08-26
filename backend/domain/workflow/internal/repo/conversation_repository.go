@@ -90,21 +90,21 @@ func (r *RepositoryImpl) GetConversationTemplate(ctx context.Context, env vo.Env
 		}, true, nil
 
 	} else if env == vo.Online {
-		if policy.Version == nil {
-			return nil, false, fmt.Errorf("need to set the version to query the online environment template")
+		if policy.Version != nil {
+			conditions = append(conditions, r.query.AppConversationTemplateOnline.Version.Eq(*version))
 		}
-		conditions = append(conditions, r.query.AppConversationTemplateOnline.Version.Eq(*version))
 		if appID != nil {
 			conditions = append(conditions, r.query.AppConversationTemplateOnline.AppID.Eq(*appID))
 		}
 		if name != nil {
 			conditions = append(conditions, r.query.AppConversationTemplateOnline.Name.Eq(*name))
 		}
+
 		if templateID != nil {
 			conditions = append(conditions, r.query.AppConversationTemplateOnline.TemplateID.Eq(*templateID))
 		}
 
-		template, err := r.query.AppConversationTemplateOnline.WithContext(ctx).Where(conditions...).First()
+		template, err := r.query.AppConversationTemplateOnline.WithContext(ctx).Where(conditions...).Order(r.query.AppConversationTemplateOnline.CreatedAt.Desc()).First()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, false, nil

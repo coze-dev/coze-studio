@@ -833,15 +833,15 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 		var wg sync.WaitGroup
 		wg.Add(2)
 
-		go func() {
+		safego.Go(ctx, func() {
 			defer wg.Done()
 			_, tplExisted, tplErr = GetWorkflowDomainSVC().GetTemplateByName(ctx, env, appID, req.GetConversationMame())
-		}()
+		})
 
-		go func() {
+		safego.Go(ctx, func() {
 			defer wg.Done()
 			_, dcExisted, dcErr = GetWorkflowDomainSVC().GetDynamicConversationByName(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
-		}()
+		})
 
 		wg.Wait()
 
