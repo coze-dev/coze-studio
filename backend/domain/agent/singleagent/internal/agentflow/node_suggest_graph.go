@@ -56,6 +56,7 @@ func newSuggestGraph(_ context.Context, conf *Config, chatModel chatmodel.ToolCa
 	}
 	suggestPrompt := prompt.FromMessages(schema.Jinja2,
 		schema.SystemMessage(SUGGESTION_PROMPT_JINJA2),
+		schema.UserMessage("Based on the contextual information, provide three recommended questions"),
 	)
 
 	suggestGraph := compose.NewGraph[[]*schema.Message, *schema.Message]()
