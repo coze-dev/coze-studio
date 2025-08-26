@@ -304,14 +304,18 @@ const WorkflowBatchImport: React.FC = () => {
       }
 
       const result = await response.json();
-      setImportResults(result.data);
+      console.log('批量导入API响应:', result);
+      
+      // 安全地访问响应数据
+      const responseData = result.data || result || {};
+      setImportResults(responseData);
 
       // 更新文件状态
       setSelectedFiles(prev => prev.map(file => {
-        const successResult = result.data.success_list?.find(
+        const successResult = responseData.success_list?.find(
           (s: any) => s.file_name === file.fileName
         );
-        const failedResult = result.data.failed_list?.find(
+        const failedResult = responseData.failed_list?.find(
           (f: any) => f.file_name === file.fileName
         );
 
@@ -328,15 +332,18 @@ const WorkflowBatchImport: React.FC = () => {
       }));
 
       setImportProgress({
-        totalCount: result.data.total_count,
-        successCount: result.data.success_count,
-        failedCount: result.data.failed_count,
+        totalCount: responseData.total_count || validFiles.length,
+        successCount: responseData.success_count || responseData.success_list?.length || 0,
+        failedCount: responseData.failed_count || responseData.failed_list?.length || 0,
         currentProcessing: '',
       });
 
-      if (result.data.success_count > 0) {
+      const successCount = responseData.success_count || responseData.success_list?.length || 0;
+      const failedCount = responseData.failed_count || responseData.failed_list?.length || 0;
+      
+      if (successCount > 0) {
         setTimeout(() => {
-          alert(`批量导入完成！\\n成功: ${result.data.success_count}个\\n失败: ${result.data.failed_count}个`);
+          alert(`批量导入完成！\\n成功: ${successCount}个\\n失败: ${failedCount}个`);
         }, 1000);
       }
 
