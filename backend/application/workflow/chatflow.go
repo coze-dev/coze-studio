@@ -18,6 +18,7 @@ package workflow
 
 import (
 	"context"
+
 	"errors"
 	"fmt"
 	"runtime/debug"
@@ -1244,7 +1245,7 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 
 		if !tplExisted && !dcExisted {
 			return &workflow.CreateConversationResponse{
-				Code: 4200,
+				Code: errno.ErrConversationNotFoundForOperation,
 				Msg:  "Conversation not found. Please create a conversation before attempting to perform any related operations.",
 			}, nil
 		}
