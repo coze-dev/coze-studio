@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -99,7 +100,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	var conversationID int64
@@ -107,7 +108,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		var sc *entity.StaticConversation
 		sc, existed, err = wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if existed {
 			conversationID = sc.ConversationID
@@ -117,7 +118,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		var dc *entity.DynamicConversation
 		dc, existed, err = wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if existed {
 			conversationID = dc.ConversationID
@@ -154,7 +155,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	if len(runIDs) == 0 {
@@ -168,14 +169,14 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		RunIDs:         runIDs,
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	var messageList []any
 	for _, msg := range response.Messages {
 		content, err := nodes.ConvertMessageToString(ctx, msg)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		messageList = append(messageList, map[string]any{
 			"role":    string(msg.Role),
