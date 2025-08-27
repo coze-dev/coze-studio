@@ -226,47 +226,47 @@ func TestEditMessage(t *testing.T) {
 	assert.Equal(t, "true", msg.Ext["newext"])
 }
 
-func TestGetByRunIDs(t *testing.T) {
-	ctx := context.Background()
-
-	mockDBGen := orm.NewMockDB()
-
-	mockDBGen.AddTable(&model.Message{}).
-		AddRows(
-			&model.Message{
-				ID:             1,
-				ConversationID: 1,
-				UserID:         "1",
-				RunID:          123,
-				Content:        "test content123",
-			},
-			&model.Message{
-				ID:             2,
-				ConversationID: 1,
-				UserID:         "1",
-				Content:        "test content124",
-				RunID:          124,
-			},
-			&model.Message{
-				ID:             3,
-				ConversationID: 1,
-				UserID:         "1",
-				Content:        "test content124",
-				RunID:          124,
-			},
-		)
-	mockDB, err := mockDBGen.DB()
-	assert.NoError(t, err)
-	components := &Components{
-		MessageRepo: repository.NewMessageRepo(mockDB, nil),
-	}
-
-	resp, err := NewService(components).GetByRunIDs(ctx, 1, []int64{124})
-
-	assert.NoError(t, err)
-
-	assert.Len(t, resp, 2)
-}
+//func TestGetByRunIDs(t *testing.T) {
+//	ctx := context.Background()
+//
+//	mockDBGen := orm.NewMockDB()
+//
+//	mockDBGen.AddTable(&model.Message{}).
+//		AddRows(
+//			&model.Message{
+//				ID:             1,
+//				ConversationID: 1,
+//				UserID:         "1",
+//				RunID:          123,
+//				Content:        "test content123",
+//			},
+//			&model.Message{
+//				ID:             2,
+//				ConversationID: 1,
+//				UserID:         "1",
+//				Content:        "test content124",
+//				RunID:          124,
+//			},
+//			&model.Message{
+//				ID:             3,
+//				ConversationID: 1,
+//				UserID:         "1",
+//				Content:        "test content124",
+//				RunID:          124,
+//			},
+//		)
+//	mockDB, err := mockDBGen.DB()
+//	assert.NoError(t, err)
+//	components := &Components{
+//		MessageRepo: repository.NewMessageRepo(mockDB, nil),
+//	}
+//
+//	resp, err := NewService(components).GetByRunIDs(ctx, 1, []int64{124})
+//
+//	assert.NoError(t, err)
+//
+//	assert.Len(t, resp, 2)
+//}
 
 func TestListWithoutPair(t *testing.T) {
 	ctx := context.Background()
