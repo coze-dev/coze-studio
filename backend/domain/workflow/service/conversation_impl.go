@@ -19,6 +19,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
+	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
@@ -357,11 +359,12 @@ func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.E
 		return 0, 0, err
 	}
 
-	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
-		return crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
-			AppID:       appID,
+	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (*conventity.Conversation, error) {
+		return crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
+			AgentID:     appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
+			Scene:       common.Scene_SceneWorkflow,
 		})
 	})
 
@@ -402,16 +405,23 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 	}
 
 	if existed {
-		newConversationID, _, err := crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
-			AppID:       appID,
+		conv, err := crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
+			AgentID:     appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
+			Scene:       common.Scene_SceneWorkflow,
 		})
-		err = c.repo.UpdateStaticConversation(ctx, env, t.TemplateID, connectorID, userID, newConversationID)
 		if err != nil {
 			return 0, err
 		}
-		return newConversationID, nil
+		if conv == nil {
+			return 0, fmt.Errorf("create conversation failed")
+		}
+		err = c.repo.UpdateStaticConversation(ctx, env, t.TemplateID, connectorID, userID, conv.ID)
+		if err != nil {
+			return 0, err
+		}
+		return conv.ID, nil
 	}
 
 	dy, existed, err := c.repo.GetDynamicConversationByName(ctx, env, appID, connectorID, userID, conversationName)
@@ -423,16 +433,23 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 		return 0, fmt.Errorf("conversation name %v not found", conversationName)
 	}
 
-	newConversationID, _, err := crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
-		AppID:       appID,
+	conv, err := crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
+		AgentID:     appID,
 		UserID:      userID,
 		ConnectorID: connectorID,
+		Scene:       common.Scene_SceneWorkflow,
 	})
-	err = c.repo.UpdateDynamicConversation(ctx, env, dy.ConversationID, newConversationID)
 	if err != nil {
 		return 0, err
 	}
-	return newConversationID, nil
+	if conv == nil {
+		return 0, fmt.Errorf("create conversation failed")
+	}
+	err = c.repo.UpdateDynamicConversation(ctx, env, dy.ConversationID, conv.ID)
+	if err != nil {
+		return 0, err
+	}
+	return conv.ID, nil
 
 }
 

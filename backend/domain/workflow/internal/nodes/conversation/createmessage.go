@@ -20,10 +20,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
+	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 
 	"strconv"
 	"sync/atomic"
 
+	einoSchema "github.com/cloudwego/eino/schema"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
@@ -80,11 +84,12 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 		return 0, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
-	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error) {
-		return crossconversation.DefaultSVC().CreateConversation(ctx, &crossconversation.CreateConversationRequest{
-			AppID:       appID,
+	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (*conventity.Conversation, error) {
+		return crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
+			AgentID:     appID,
 			UserID:      userID,
 			ConnectorID: connectorID,
+			Scene:       common.Scene_SceneWorkflow,
 		})
 	})
 
@@ -260,22 +265,28 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		}
 	}
 
-	mID, err := crossmessage.DefaultSVC().CreateMessage(ctx, &crossmessage.CreateMessageRequest{
+	message := &model.Message{
 		ConversationID: conversationID,
-		Role:           role,
+		Role:           einoSchema.RoleType(role),
 		Content:        content,
-		ContentType:    "text",
-		UserID:         userID,
-		AppID:          resolvedAppID,
+		ContentType:    model.ContentType("text"),
+		UserID:         strconv.FormatInt(userID, 10),
+		AgentID:        resolvedAppID,
 		RunID:          runID,
 		SectionID:      sectionID,
-	})
+	}
+	if message.Role == einoSchema.User {
+		message.MessageType = model.MessageTypeQuestion
+	} else {
+		message.MessageType = model.MessageTypeAnswer
+	}
+	msg, err := crossmessage.DefaultSVC().Create(ctx, message)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create message: %w", err)
+		return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 
 	messageOutput := map[string]any{
-		"messageId":   mID,
+		"messageId":   msg.ID,
 		"role":        role,
 		"contentType": "text",
 		"content":     content,

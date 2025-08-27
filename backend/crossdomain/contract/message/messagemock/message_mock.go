@@ -74,21 +74,6 @@ func (mr *MockMessageMockRecorder) Create(ctx, msg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessage)(nil).Create), ctx, msg)
 }
 
-// CreateMessage mocks base method.
-func (m *MockMessage) CreateMessage(ctx context.Context, req *message0.CreateMessageRequest) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMessage", ctx, req)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateMessage indicates an expected call of CreateMessage.
-func (mr *MockMessageMockRecorder) CreateMessage(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMessage", reflect.TypeOf((*MockMessage)(nil).CreateMessage), ctx, req)
-}
-
 // Delete mocks base method.
 func (m *MockMessage) Delete(ctx context.Context, req *entity.DeleteMeta) error {
 	m.ctrl.T.Helper()
@@ -101,20 +86,6 @@ func (m *MockMessage) Delete(ctx context.Context, req *entity.DeleteMeta) error 
 func (mr *MockMessageMockRecorder) Delete(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMessage)(nil).Delete), ctx, req)
-}
-
-// DeleteMessage mocks base method.
-func (m *MockMessage) DeleteMessage(ctx context.Context, req *message0.DeleteMessageRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMessage", ctx, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteMessage indicates an expected call of DeleteMessage.
-func (mr *MockMessageMockRecorder) DeleteMessage(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockMessage)(nil).DeleteMessage), ctx, req)
 }
 
 // Edit mocks base method.
@@ -130,20 +101,6 @@ func (m *MockMessage) Edit(ctx context.Context, msg *message.Message) (*message.
 func (mr *MockMessageMockRecorder) Edit(ctx, msg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Edit", reflect.TypeOf((*MockMessage)(nil).Edit), ctx, msg)
-}
-
-// EditMessage mocks base method.
-func (m *MockMessage) EditMessage(ctx context.Context, req *message0.EditMessageRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EditMessage", ctx, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EditMessage indicates an expected call of EditMessage.
-func (mr *MockMessageMockRecorder) EditMessage(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditMessage", reflect.TypeOf((*MockMessage)(nil).EditMessage), ctx, req)
 }
 
 // GetByRunIDs mocks base method.

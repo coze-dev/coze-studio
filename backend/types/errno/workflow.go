@@ -46,6 +46,7 @@ const (
 )
 
 const (
+	ErrConversationNodeOperationFail    = 777777782
 	ErrMessageNodeOperationFail         = 777777781
 	ErrChatFlowRoleOperationFail        = 777777780
 	ErrConversationOfAppOperationFail   = 777777779
@@ -139,6 +140,12 @@ func init() {
 	code.Register(
 		ErrMessageNodeOperationFail,
 		"Message node operation failure: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrConversationNodeOperationFail,
+		"Conversation node operation failure: {cause}",
 		code.WithAffectStability(false),
 	)
 

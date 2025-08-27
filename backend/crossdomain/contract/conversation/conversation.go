@@ -20,15 +20,14 @@ import (
 	"context"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 )
 
 //go:generate  mockgen -destination conversationmock/conversation_mock.go --package conversationmock -source conversation.go
 type Conversation interface {
 	GetCurrentConversation(ctx context.Context, req *conversation.GetCurrent) (*conversation.Conversation, error)
-	CreateConversation(ctx context.Context, req *CreateConversationRequest) (int64, int64, error)
-	ClearConversationHistory(ctx context.Context, req *ClearConversationHistoryReq) (int64, error)
+	CreateConversation(ctx context.Context, req *entity.CreateMeta) (*entity.Conversation, error)
+	ClearConversationHistory(ctx context.Context, req *ClearConversationHistoryReq) (*entity.NewConversationCtxResponse, error)
 	GetByID(ctx context.Context, id int64) (*entity.Conversation, error)
 }
 
@@ -40,23 +39,6 @@ func DefaultSVC() Conversation {
 
 func SetDefaultSVC(c Conversation) {
 	defaultSVC = c
-}
-
-type CreateConversationRequest struct {
-	AppID       int64
-	UserID      int64
-	ConnectorID int64
-}
-
-type ConversationHistoryRequest struct {
-	ConversationID int64
-	AppID          int64
-	UserID         int64
-	Rounds         int64
-}
-
-type ConversationHistoryResponse struct {
-	Messages []*message.WfMessage
 }
 
 type ClearConversationHistoryReq struct {

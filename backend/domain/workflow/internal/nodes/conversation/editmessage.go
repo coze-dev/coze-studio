@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"strconv"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
@@ -112,7 +113,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID, Content: newContent})
+		_, err = crossmessage.DefaultSVC().Edit(ctx, &model.Message{ConversationID: *execCtx.ExeCfg.ConversationID, ID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -151,7 +152,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID, Content: newContent})
+		_, err = crossmessage.DefaultSVC().Edit(ctx, &model.Message{ConversationID: sts.ConversationID, ID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -168,7 +169,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().EditMessage(ctx, &crossmessage.EditMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID, Content: newContent})
+		_, err = crossmessage.DefaultSVC().Edit(ctx, &model.Message{ConversationID: dyConversation.ConversationID, ID: messageID, Content: newContent})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}

@@ -99,7 +99,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 	}
 
 	var conversationID int64
@@ -107,7 +107,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		var sc *entity.StaticConversation
 		sc, existed, err = wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, template.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 		}
 		if existed {
 			conversationID = sc.ConversationID
@@ -117,7 +117,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		var dc *entity.DynamicConversation
 		dc, existed, err = wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 		}
 		if existed {
 			conversationID = dc.ConversationID
@@ -154,7 +154,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 	}
 
 	if len(runIDs) == 0 {
@@ -168,14 +168,14 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 		RunIDs:         runIDs,
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 	}
 
 	var messageList []any
 	for _, msg := range response.Messages {
 		content, err := nodes.ConvertMessageToString(ctx, msg)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 		}
 		messageList = append(messageList, map[string]any{
 			"role":    string(msg.Role),
