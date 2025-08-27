@@ -18,6 +18,7 @@ package workflow
 
 import (
 	"context"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 	"os"
@@ -61,7 +62,11 @@ type ServiceComponents struct {
 }
 
 func initWorkflowConfig() (workflow.WorkflowConfig, error) {
-	configBs, err := os.ReadFile("resources/conf/workflow/config.yaml")
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	configBs, err := os.ReadFile(filepath.Join(wd, "resources/conf/workflow/config.yaml"))
 	if err != nil {
 		return nil, err
 	}
