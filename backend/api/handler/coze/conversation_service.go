@@ -178,7 +178,7 @@ func UpdateConversationApi(ctx context.Context, c *app.RequestContext) {
 	var req conversation.UpdateConversationApiRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -198,7 +198,7 @@ func DeleteConversationApi(ctx context.Context, c *app.RequestContext) {
 	var req conversation.DeleteConversationApiRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := application.ConversationSVC.DeleteConversation(ctx, &req)

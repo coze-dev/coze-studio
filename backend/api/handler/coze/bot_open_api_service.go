@@ -74,7 +74,7 @@ func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
 	var req bot_open_api.UploadFileOpenRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -95,7 +95,7 @@ func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
 	var req bot_open_api.GetBotOnlineInfoReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -136,7 +136,7 @@ func OpenGetBotInfo(ctx context.Context, c *app.RequestContext) {
 	var req bot_open_api.OpenGetBotInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
