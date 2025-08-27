@@ -31,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -94,13 +95,13 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 	var conversationID int64
 	if existed {
 		ret, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if existed {
 			conversationID = ret.ConversationID
@@ -108,7 +109,7 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 	} else {
 		ret, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 		if existed {
 			conversationID = ret.ConversationID
@@ -125,7 +126,7 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 		ConversationID: conversationID,
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 	}
 	if resp == nil {
 		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, fmt.Errorf("clear conversation history failed, response is nil"))
