@@ -66,6 +66,7 @@ const (
 	ErrAuthorizationRequired            = 777777765
 	ErrVariablesAPIFail                 = 777777764
 	ErrInputFieldMissing                = 777777763
+	ErrConversationNotFoundForOperation = 777777762
 )
 
 // stability problems
@@ -318,6 +319,12 @@ func init() {
 	code.Register(
 		ErrInputFieldMissing,
 		"input field {name} not found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrConversationNotFoundForOperation,
+		"Conversation not found. Please create a conversation before attempting to perform any related operations.",
 		code.WithAffectStability(false),
 	)
 
