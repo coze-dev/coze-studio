@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 
@@ -355,8 +356,9 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 
 	ret := map[string]any{
 		"chatHistory": []any{},
-		"query":       in["query"],
 	}
+	maps.Copy(ret, in)
+
 	if len(messages) == 0 {
 		return ret, nil
 	}

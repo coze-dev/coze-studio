@@ -19,6 +19,7 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"maps"
 
 	"github.com/spf13/cast"
 
@@ -251,8 +252,8 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 
 	ret := map[string]any{
 		"chatHistory": []any{},
-		"Query":       in["Query"],
 	}
+	maps.Copy(ret, in)
 
 	if len(messages) == 0 {
 		return ret, nil
