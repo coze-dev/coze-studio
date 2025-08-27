@@ -17,14 +17,17 @@
 package nodes
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"reflect"
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
-
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -280,6 +283,29 @@ func GetConcatFunc(typ reflect.Type) func(reflect.Value) (reflect.Value, error) 
 	return nil
 }
 
-// func ChatHistoryCallbackInput(ctx context.Context, input map[string]any, enableHistory bool) (map[string]any, error) {
+func ConvertMessageToString(_ context.Context, msg *crossmessage.WfMessage) (string, error) {
+	if msg.MultiContent != nil {
+		var textContents []string
+		var otherContents []string
+		for _, m := range msg.MultiContent {
+			if m.Text != nil {
+				textContents = append(textContents, ptr.From(m.Text))
+			} else if m.Uri != nil {
+				otherContents = append(otherContents, ptr.From(m.Url))
+			}
+		}
 
-// }
+		var allParts []string
+		if len(textContents) > 0 {
+			allParts = append(allParts, textContents...)
+		}
+		if len(otherContents) > 0 {
+			allParts = append(allParts, otherContents...)
+		}
+		return strings.Join(allParts, ","), nil
+	} else if msg.Text != nil {
+		return ptr.From(msg.Text), nil
+	} else {
+		return "", vo.WrapError(errno.ErrInvalidParameter, errors.New("message is invalid"))
+	}
+}

@@ -185,7 +185,7 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 
 	var messageList []any
 	for _, msg := range ml.Messages {
-		content, err := ConvertMessageToString(ctx, msg)
+		content, err := nodes.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			return nil, err
 		}

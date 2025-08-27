@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
@@ -300,38 +301,46 @@ func (c *conversationImpl) replaceWorkflowsConversationName(ctx context.Context,
 		}
 		return nil
 	}
-
+	tg := taskgroup.NewTaskGroup(ctx, len(wfs))
 	for _, wf := range wfs {
-		canvas := &vo.Canvas{}
-		err := sonic.UnmarshalString(wf.Canvas, canvas)
-		if err != nil {
-			return err
-		}
+		wfEntity := wf
+		tg.Go(func() error {
+			canvas := &vo.Canvas{}
+			err := sonic.UnmarshalString(wfEntity.Canvas, canvas)
+			if err != nil {
+				return err
+			}
 
-		conversationName := workflowID2ConversionName[wf.ID]
-		err = replaceConversionName(canvas.Nodes, conversationName)
-		if err != nil {
-			return err
-		}
+			conversationName := workflowID2ConversionName[wfEntity.ID]
+			err = replaceConversionName(canvas.Nodes, conversationName)
+			if err != nil {
+				return err
+			}
 
-		replaceCanvas, err := sonic.MarshalString(canvas)
-		if err != nil {
-			return err
-		}
+			replaceCanvas, err := sonic.MarshalString(canvas)
+			if err != nil {
+				return err
+			}
 
-		err = c.repo.CreateOrUpdateDraft(ctx, wf.ID, &vo.DraftInfo{
-			DraftMeta: &vo.DraftMeta{
-				TestRunSuccess: false,
-				Modified:       true,
-			},
-			Canvas: replaceCanvas,
+			err = c.repo.CreateOrUpdateDraft(ctx, wfEntity.ID, &vo.DraftInfo{
+				DraftMeta: &vo.DraftMeta{
+					TestRunSuccess: false,
+					Modified:       true,
+				},
+				Canvas: replaceCanvas,
+			})
+
+			if err != nil {
+				return err
+			}
+			return nil
+
 		})
-
-		if err != nil {
-			return err
-		}
 	}
-
+	err := tg.Wait()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -47,12 +47,6 @@ type Service interface {
 
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*vo.Meta, error)
 
-	CreateChatFlowRole(ctx context.Context, role *vo.ChatFlowRoleCreate) (int64, error)
-	UpdateChatFlowRole(ctx context.Context, workflowID int64, role *vo.ChatFlowRoleUpdate) error
-	GetChatFlowRole(ctx context.Context, workflowID int64, version string) (*entity.ChatFlowRole, error)
-	DeleteChatFlowRole(ctx context.Context, id int64, workflowID int64) error
-	PublishChatFlowRole(ctx context.Context, policy *vo.PublishRolePolicy) error
-	CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error
 	GetWorkflowVersionsByConnector(ctx context.Context, connectorID, workflowID int64, limit int) ([]string, error)
 
 	Executable
@@ -64,7 +58,8 @@ type Service interface {
 	GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error)
 	SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error
 
-	ConversationService
+	ChatFlowRole
+	Conversation
 
 	BindConvRelatedInfo(ctx context.Context, convID int64, info entity.ConvRelatedInfo) error
 	GetConvRelatedInfo(ctx context.Context, convID int64) (*entity.ConvRelatedInfo, bool, func() error, error)

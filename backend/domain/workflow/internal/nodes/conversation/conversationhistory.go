@@ -173,7 +173,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 
 	var messageList []any
 	for _, msg := range response.Messages {
-		content, err := ConvertMessageToString(ctx, msg)
+		content, err := nodes.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
 		}
