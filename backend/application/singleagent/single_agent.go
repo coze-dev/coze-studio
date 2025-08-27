@@ -654,16 +654,24 @@ func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, 
 	if connectorID == 0 {
 		connectorID = ctxutil.GetApiAuthFromCtx(ctx).ConnectorID
 	}
-	agentInfo, err := s.DomainSVC.ObtainAgentByIdentity(ctx, &entity.AgentIdentity{
-		AgentID:     req.BotID,
+
+	return s.getAgentInfo(ctx, req.BotID, connectorID, uid, req.Version)
+}
+
+func (s *SingleAgentApplicationService) getAgentInfo(ctx context.Context, botID int64, connectorID int64, uid int64, version *string) (*bot_common.OpenAPIBotInfo, error) {
+	ae := &entity.AgentIdentity{
+		AgentID:     botID,
 		ConnectorID: connectorID,
-		Version:     ptr.From(req.Version),
-	})
+	}
+	if version != nil {
+		ae.Version = ptr.From(version)
+	}
+	agentInfo, err := s.DomainSVC.ObtainAgentByIdentity(ctx, ae)
 	if err != nil {
 		return nil, err
 	}
 	if agentInfo == nil {
-		logs.CtxErrorf(ctx, "agent(%d) is not exist", req.BotID)
+		logs.CtxErrorf(ctx, "agent(%d) is not exist", botID)
 		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "agent not exist"))
 	}
 	if agentInfo.CreatorID != uid {
@@ -739,7 +747,8 @@ func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, 
 	return combineInfo, nil
 }
 
-func (s *SingleAgentApplicationService) OpenGetBotInfo(ctx context.Context, req *bot_open_api.OpenGetBotInfoRequest) (*bot_common.OpenAPIBotInfo, error) {
+func (s *SingleAgentApplicationService) OpenGetBotInfo(ctx context.Context, req *bot_open_api.OpenGetBotInfoRequest) (*bot_open_api.OpenGetBotInfoResponse, error) {
+	resp := new(bot_open_api.OpenGetBotInfoResponse)
 
 	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
 
@@ -748,86 +757,10 @@ func (s *SingleAgentApplicationService) OpenGetBotInfo(ctx context.Context, req 
 	if connectorID == 0 {
 		connectorID = ctxutil.GetApiAuthFromCtx(ctx).ConnectorID
 	}
-	agentInfo, err := s.DomainSVC.ObtainAgentByIdentity(ctx, &entity.AgentIdentity{
-		AgentID:     req.BotID,
-		ConnectorID: connectorID,
-	})
+	agentInfo, err := s.getAgentInfo(ctx, req.BotID, connectorID, uid, nil)
 	if err != nil {
 		return nil, err
 	}
-	if agentInfo == nil {
-		logs.CtxErrorf(ctx, "agent(%d) is not exist", req.BotID)
-		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "agent not exist"))
-	}
-	if agentInfo.CreatorID != uid {
-		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "agent not own"))
-	}
-	combineInfo := &bot_common.OpenAPIBotInfo{
-		BotID:            agentInfo.AgentID,
-		Name:             agentInfo.Name,
-		Description:      agentInfo.Desc,
-		IconURL:          agentInfo.IconURI,
-		Version:          agentInfo.Version,
-		BotMode:          bot_common.BotMode_SingleMode,
-		PromptInfo:       agentInfo.Prompt,
-		OnboardingInfo:   agentInfo.OnboardingInfo,
-		ModelInfo:        agentInfo.ModelInfo,
-		WorkflowInfoList: agentInfo.Workflow,
-		PluginInfoList:   agentInfo.Plugin,
-	}
-
-	if agentInfo.IconURI != "" {
-		url, err := s.appContext.TosClient.GetObjectUrl(ctx, agentInfo.IconURI)
-		if err != nil {
-			return nil, err
-		}
-		combineInfo.IconURL = url
-	}
-
-	if len(agentInfo.ShortcutCommand) > 0 {
-		shortcutInfos, err := s.ShortcutCMDSVC.ListCMD(ctx, &shortcutEntity.ListMeta{
-			ObjectID: agentInfo.AgentID,
-			IsOnline: 1,
-			CommandIDs: slices.Transform(agentInfo.ShortcutCommand, func(s string) int64 {
-				i, _ := conv.StrToInt64(s)
-				return i
-			}),
-		})
-		if err != nil {
-			return nil, err
-		}
-		combineInfo.ShortcutCommands = make([]*bot_common.ShortcutCommandInfo, 0, len(shortcutInfos))
-		combineInfo.ShortcutCommands = slices.Transform(shortcutInfos, func(si *shortcutEntity.ShortcutCmd) *bot_common.ShortcutCommandInfo {
-			url := ""
-			if si.ShortcutIcon != nil && si.ShortcutIcon.URI != "" {
-				getUrl, e := s.appContext.TosClient.GetObjectUrl(ctx, si.ShortcutIcon.URI)
-				if e == nil {
-					url = getUrl
-				}
-			}
-
-			return &bot_common.ShortcutCommandInfo{
-				ID:            si.CommandID,
-				Name:          si.CommandName,
-				Description:   si.Description,
-				IconURL:       url,
-				QueryTemplate: si.TemplateQuery,
-				AgentID:       ptr.Of(si.ObjectID),
-				Command:       si.ShortcutCommand,
-				Components: slices.Transform(si.Components, func(i *playground.Components) *bot_common.ShortcutCommandComponent {
-					return &bot_common.ShortcutCommandComponent{
-						Name:          i.Name,
-						Description:   i.Description,
-						Type:          i.InputType.String(),
-						ToolParameter: ptr.Of(i.Parameter),
-						Options:       i.Options,
-						DefaultValue:  ptr.Of(i.DefaultValue.Value),
-						IsHide:        i.Hide,
-					}
-				}),
-			}
-		})
-
-	}
-	return combineInfo, nil
+	resp.Data = agentInfo
+	return resp, nil
 }
